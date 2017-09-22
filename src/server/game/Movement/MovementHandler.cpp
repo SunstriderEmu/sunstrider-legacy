@@ -115,12 +115,11 @@ void WorldSession::HandleMoveWorldportAck()
         GetPlayer()->SetMap(oldMap);
 
         // teleport the player home
-        GetPlayer()->SetDontMove(false);
         if(!GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation()))
         {
             // the player must always be able to teleport home
             TC_LOG_ERROR("network","WORLD: failed to teleport player %s (%d) to homebind location %d,%f,%f,%f,%f!", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow(), GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
-            ABORT();
+            DEBUG_ASSERT(false);
         }
         return;
     }
@@ -134,7 +133,7 @@ void WorldSession::HandleMoveWorldportAck()
         if(!mEntry->IsBattlegroundOrArena())
         {
             // Do next only if found in battleground
-            _player->SetBattlegroundId(0);                          // We're not in BG.
+            _player->SetBattlegroundId(0, BATTLEGROUND_TYPE_NONE);  // We're not in BG.
             // reset destination bg team
             _player->SetBGTeam(0);
         }
@@ -196,14 +195,20 @@ void WorldSession::HandleMoveWorldportAck()
     if(!mEntry->IsMountAllowed())
         _player->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
+    // update zone immediately, otherwise leave channel will cause crash in mtmap
+    uint32 newzone, newarea;
+    GetPlayer()->GetZoneAndAreaId(newzone, newarea);
+    GetPlayer()->UpdateZone(newzone, newarea);
+
     // honorless target
     if(GetPlayer()->pvpInfo.IsHostile)
         GetPlayer()->CastSpell(GetPlayer(), 2479, true);
+    // in friendly area
+    else if (GetPlayer()->IsPvP() && !GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP))
+        GetPlayer()->UpdatePvP(false, false);
 
     // resummon pet
     GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
-
-    GetPlayer()->SetDontMove(false);
 
     //lets process all delayed operations on successful teleport
     GetPlayer()->ProcessDelayedOperations();

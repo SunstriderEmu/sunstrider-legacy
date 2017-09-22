@@ -2040,9 +2040,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void LearnSkillRewardedSpells( uint32 skillId, uint32 skillValue);
         void LearnSkillRewardedSpells();
 
-        void SetDontMove(bool dontMove);
-        bool GetDontMove() const { return m_dontMove; }
-
         void CheckAreaExploreAndOutdoor(void);
 
         static uint32 TeamForRace(uint8 race);
@@ -2636,8 +2633,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         typedef std::list<Channel*> JoinedChannelsList;
         JoinedChannelsList m_channels;
-
-        bool m_dontMove;
 
         int m_cinematic;
 

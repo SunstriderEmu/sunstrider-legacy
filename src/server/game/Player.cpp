@@ -5948,11 +5948,6 @@ void Player::removeActionButton(uint8 button)
     TC_LOG_DEBUG("entities.player", "Action Button '%u' Removed from Player '%u'", button, GetGUIDLow() );
 }
 
-void Player::SetDontMove(bool dontMove)
-{
-    m_dontMove = dontMove;
-}
-
 bool Player::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
 {
     if (!Unit::UpdatePosition(x, y, z, orientation, teleport))
