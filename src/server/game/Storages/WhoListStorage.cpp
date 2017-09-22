@@ -14,7 +14,7 @@ void WhoListStorageMgr::Update()
 {
     // clear current list
     _whoListStorage.clear();
-    _whoListStorage.reserve(1000 /*sWorld->GetPlayerCount()+1*/);
+    _whoListStorage.reserve( (size_t) 1000 /*sWorld->GetPlayerCount()+1*/);
 
     HashMapHolder<Player>::MapType const& m = ObjectAccessor::GetPlayers();
     for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
@@ -35,10 +35,9 @@ void WhoListStorageMgr::Update()
             continue;
 
         wstrToLower(wideGuildName);
-
         //do not show players in arenas
         uint32 playerZoneId = itr->second->GetZoneId();
-        if (playerZoneId == 3698 || playerZoneId == 3968 || playerZoneId == 3702)
+        if (playerZoneId == (uint32) 3698 || playerZoneId == (uint32) 3968 || playerZoneId == (uint32) 3702)
         {
             uint32 mapId = itr->second->GetBattlegroundEntryPointMap();
             Map * map = sMapMgr->FindBaseNonInstanceMap(mapId);
@@ -51,6 +50,7 @@ void WhoListStorageMgr::Update()
             }
         }
 
+        // Conversion uint32 to uint8 here
         _whoListStorage.emplace_back(itr->second->GetGUID(), itr->second->GetTeam(), itr->second->GetSession()->GetSecurity(), itr->second->GetLevel(), 
             itr->second->GetClass(), itr->second->GetRace(), playerZoneId, itr->second->GetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER), itr->second->IsVisible(),
             widePlayerName, wideGuildName, playerName, guildName);

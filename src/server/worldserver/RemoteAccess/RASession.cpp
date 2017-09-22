@@ -149,15 +149,21 @@ bool RASession::CheckAccessLevel(const std::string& user)
     return true;
 }
 
+// Wrapper
+char char_toupper(char ch)
+{
+    return ::toupper(static_cast<unsigned char>(ch));
+}
+
 bool RASession::CheckPassword(const std::string& user, const std::string& pass)
 {
     std::string safe_user = user;
-    std::transform(safe_user.begin(), safe_user.end(), safe_user.begin(), ::toupper);
+    std::transform(safe_user.begin(), safe_user.end(), safe_user.begin(), char_toupper); // replaced ::toupper by char_toupper
     AccountMgr::normalizeString(safe_user);
 
     std::string safe_pass = pass;
     AccountMgr::normalizeString(safe_pass);
-    std::transform(safe_pass.begin(), safe_pass.end(), safe_pass.begin(), ::toupper);
+    std::transform(safe_pass.begin(), safe_pass.end(), safe_pass.begin(), char_toupper); // replaced ::toupper by char_toupper
 
     std::string hash = AccountMgr::CalculateShaPassHash(safe_user, safe_pass);
 
