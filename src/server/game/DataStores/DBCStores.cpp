@@ -528,7 +528,6 @@ G3D::Vector3 TranslateLocation(G3D::Vector4 const* DBCPosition, G3D::Vector3 con
 // Number of cameras not used. Multiple cameras never used in 3.3.5
 bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, CinematicCameraEntry const* dbcentry)
 {
-    char const* buffer = reinterpret_cast<char const*>(header);
 
     FlyByCameraCollection cameras;
     FlyByCameraCollection targetcam;
@@ -541,6 +540,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
 
 #ifndef LICH_KING 
 #ifdef NOT_TESTED
+    char const* buffer = reinterpret_cast<char const*>(header);
     // kelno: This is adapted from LK code, not tested yet. Note, positions seems to be wrong, maybe target_positions is swapped on BC
 
     uint32 targetInterpolationMin = 0;
@@ -679,6 +679,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     }
 #endif //NOT_TESTED
 #else
+    char const* buffer = reinterpret_cast<char const*>(header);
     // Read target locations, only so that we can calculate orientation
     for (uint32 k = 0; k < cam->target_positions.timestampsLK.number; ++k)
     {

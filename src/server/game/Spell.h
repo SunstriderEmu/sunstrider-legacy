@@ -679,7 +679,7 @@ class TC_GAME_API Spell
         void CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& targets, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
         void CallScriptObjectTargetSelectHandlers(WorldObject*& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
         void CallScriptDestinationTargetSelectHandlers(SpellDestination& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
-        bool CheckScriptEffectImplicitTargets(uint32 effIndex, uint32 effIndexToCheck);
+        bool CheckScriptEffectImplicitTargets(SpellEffIndex effIndex, SpellEffIndex effIndexToCheck);
         std::vector<SpellScript*> m_loadedScripts;
         // -------------------------------------------
 

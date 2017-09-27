@@ -990,7 +990,7 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
     if (!targetType.GetTarget())
         return;
 
-    uint32 effectMask = 1 << effIndex;
+    uint8 effectMask = 1 << effIndex;
     // set the same target list for all effects
     // some spells appear to need this, however this requires more research
     switch (targetType.GetSelectionCategory())
@@ -1002,14 +1002,14 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
         if (effectMask & processedEffectMask)
             return;
         // choose which targets we can select at once
-        for (uint32 j = effIndex + 1; j < MAX_SPELL_EFFECTS; ++j)
+        for (uint8 j = effIndex + 1; j < MAX_SPELL_EFFECTS; ++j)
         {
             SpellEffectInfo const* effects = GetSpellInfo()->Effects;
             if (effects[effIndex].TargetA.GetTarget() == effects[j].TargetA.GetTarget() &&
                 effects[effIndex].TargetB.GetTarget() == effects[j].TargetB.GetTarget() &&
                 effects[effIndex].ImplicitTargetConditions == effects[j].ImplicitTargetConditions &&
                 effects[effIndex].CalcRadius(m_caster) == effects[j].CalcRadius(m_caster) &&
-                CheckScriptEffectImplicitTargets(effIndex, j) 
+                CheckScriptEffectImplicitTargets(effIndex, (SpellEffIndex) j) 
                 )
             {
                 effectMask |= 1 << j;
@@ -1297,8 +1297,8 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
 
             for (auto & target : targets)
             {
-                if (Unit* unitTarget = target->ToUnit())
-                    AddUnitTarget(unitTarget, effMask, false);
+                if (Unit* newTarget = target->ToUnit())
+                    AddUnitTarget(newTarget, effMask, false);
                 else if (GameObject* gObjTarget = target->ToGameObject())
                     AddGOTarget(gObjTarget, effMask);
             }
@@ -1391,8 +1391,8 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
 
         for (auto & target : targets)
         {
-            if (Unit* unitTarget = target->ToUnit())
-                AddUnitTarget(unitTarget, effMask, false);
+            if (Unit* newTarget = target->ToUnit())
+                AddUnitTarget(newTarget, effMask, false);
             else if (GameObject* gObjTarget = target->ToGameObject())
                 AddGOTarget(gObjTarget, effMask);
         }
@@ -1779,7 +1779,6 @@ void Spell::SelectImplicitTrajTargets(SpellEffIndex effIndex, SpellImplicitTarge
         const float objDist2d = srcPos.GetExactDist2d(*itr);
         const float dz = (*itr)->GetPositionZ() - srcPos.m_positionZ;
 
-        float dist = objDist2d - size;
         const float horizontalDistToTraj = std::fabs(objDist2d * std::sin(srcPos.GetRelativeAngle(*itr)));
         const float sizeFactor = std::cos((horizontalDistToTraj / size) * (M_PI / 2.0f));
         const float distToHitPoint = std::max(objDist2d * std::cos(srcPos.GetRelativeAngle(*itr)) - size * sizeFactor, 0.0f);
@@ -1849,8 +1848,8 @@ void Spell::SelectEffectTypeImplicitTargets(uint8 effIndex)
         // player which not released his spirit is Unit, but target flag for it is TARGET_FLAG_CORPSE_MASK
         if (targetMask & (TARGET_FLAG_UNIT_MASK | TARGET_FLAG_CORPSE_MASK))
         {
-            if (Unit* unitTarget = m_targets.GetUnitTarget())
-                target = unitTarget;
+            if (Unit* newTarget = m_targets.GetUnitTarget())
+                target = newTarget;
             else if (targetMask & TARGET_FLAG_CORPSE_MASK)
             {
                 if (Corpse* corpseTarget = m_targets.GetCorpseTarget())
@@ -1865,8 +1864,8 @@ void Spell::SelectEffectTypeImplicitTargets(uint8 effIndex)
         }
         if (targetMask & TARGET_FLAG_ITEM_MASK)
         {
-            if (Item* itemTarget = m_targets.GetItemTarget())
-                AddItemTarget(itemTarget, 1 << effIndex);
+            if (Item* pitemTarget = m_targets.GetItemTarget())
+                AddItemTarget(pitemTarget, 1 << effIndex);
             return;
         }
         if (targetMask & TARGET_FLAG_GAMEOBJECT_MASK)
@@ -3367,11 +3366,11 @@ void Spell::cast(bool skipCheck)
         // Let any pets know we've attacked something. Check DmgClass for harmful spells only
         // This prevents spells such as Hunter's Mark from triggering pet attack
         if (this->GetSpellInfo()->DmgClass != SPELL_DAMAGE_CLASS_NONE)
-            if (Unit* unitTarget = m_targets.GetUnitTarget())
+            if (Unit* newTarget = m_targets.GetUnitTarget())
                 for (Unit* controlled : playerCaster->m_Controlled)
                     if (Creature* cControlled = controlled->ToCreature())
                         if (cControlled->IsAIEnabled)
-                            cControlled->AI()->OwnerAttacked(unitTarget);
+                            cControlled->AI()->OwnerAttacked(newTarget);
     }
 
     SetExecutedCurrently(true);
@@ -6008,8 +6007,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (target->IsPet() && (!target->GetOwner() || target->GetOwner()->ToPlayer()))
                         return SPELL_FAILED_CANT_BE_CHARMED;
 
-                    int32 damage = CalculateDamage(i, target);
-                    if (damage && int32(target->GetLevel()) > damage)
+                    int32 localDamage = CalculateDamage(i, target);
+                    if (localDamage && int32(target->GetLevel()) > localDamage)
                         return SPELL_FAILED_HIGHLEVEL;
                 }
 
@@ -8221,7 +8220,7 @@ void Spell::CallScriptOnHitHandlers()
     }
 }
 
-bool Spell::CheckScriptEffectImplicitTargets(uint32 effIndex, uint32 effIndexToCheck)
+bool Spell::CheckScriptEffectImplicitTargets(SpellEffIndex effIndex, SpellEffIndex effIndexToCheck)
 {
     // Skip if there are not any script
     if (!m_loadedScripts.size())

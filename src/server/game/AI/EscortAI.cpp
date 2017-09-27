@@ -14,6 +14,13 @@ EndScriptData */
 
 #define WP_LAST_POINT   0xFFFFFF
 
+npc_escortAI::npc_escortAI(Creature *c) : ScriptedAI(c),
+PlayerTimer(1000), MaxPlayerDistance(DEFAULT_MAX_PLAYER_DISTANCE), CanMelee(true),
+DespawnAtEnd(true), DespawnAtFar(true), m_uiEscortState(STATE_ESCORT_NONE)
+{
+	me->GetPosition(LastPos.x, LastPos.y, LastPos.z);
+}
+
 void npc_escortAI::AttackStart(Unit *who) 
 {
     if (!who)

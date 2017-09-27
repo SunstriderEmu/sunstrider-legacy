@@ -322,10 +322,10 @@ bool Guild::LoadRanksFromDB(uint32 GuildId)
         for(size_t i =0; i < m_ranks.size(); ++i)
         {
             // guild_rank.rid always store rank+1
-            std::string name = m_ranks[i].name;
+            std::string thename = m_ranks[i].name;
             uint32 rights = m_ranks[i].rights;
-            CharacterDatabase.EscapeString(name);
-            trans->PAppend( "INSERT INTO guild_rank (guildid,rid,rname,rights) VALUES ('%u', '%u', '%s', '%u')", GuildId, i+1, name.c_str(), rights);
+            CharacterDatabase.EscapeString(thename);
+            trans->PAppend( "INSERT INTO guild_rank (guildid,rid,rname,rights) VALUES ('%u', '%u', '%s', '%u')", GuildId, i+1, thename.c_str(), rights);
         }
         CharacterDatabase.CommitTransaction(trans);
     }

@@ -518,7 +518,7 @@ enum PlayerFlags
     PLAYER_FLAGS_COMMENTATOR_UBER   = 0x00400000
 };
 
-enum PlayerBytesOffsets
+enum PlayerBytesOffsets : uint8
 {
     PLAYER_BYTES_OFFSET_SKIN_ID         = 0,
     PLAYER_BYTES_OFFSET_FACE_ID         = 1,
@@ -526,14 +526,14 @@ enum PlayerBytesOffsets
     PLAYER_BYTES_OFFSET_HAIR_COLOR_ID   = 3
 };
 
-enum PlayerBytes2Offsets
+enum PlayerBytes2Offsets : uint8
 {
     PLAYER_BYTES_2_OFFSET_FACIAL_STYLE      = 0,
 	//BC OK ?   PLAYER_BYTES_2_OFFSET_PARTY_TYPE        = 1,
 	//BC OK ?   PLAYER_BYTES_2_OFFSET_BANK_BAG_SLOTS    = 2,
 	//BC OK ?   PLAYER_BYTES_2_OFFSET_REST_STATE        = 3
 };
-enum PlayerBytes3Offsets
+enum PlayerBytes3Offsets : uint8
 {
     PLAYER_BYTES_3_OFFSET_GENDER = 0,
     //BC OK ? PLAYER_BYTES_3_OFFSET_INEBRIATION = 1,

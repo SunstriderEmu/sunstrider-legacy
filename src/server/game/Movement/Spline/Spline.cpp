@@ -215,7 +215,7 @@ void SplineBase::init_cyclic_spline(const Vector3 * controls, index_type count, 
     (this->*initializers[m_mode])(controls, count, cyclic, cyclic_point);
 }
 
-void SplineBase::InitLinear(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
+void SplineBase::InitLinear(const Vector3* controls, index_type count, bool localCyclic, index_type cyclic_point)
 {
     ASSERT(count >= 2);
     const int real_size = count + 1;
@@ -226,18 +226,18 @@ void SplineBase::InitLinear(const Vector3* controls, index_type count, bool cycl
 
     // first and last two indexes are space for special 'virtual points'
     // these points are required for proper C_Evaluate and C_Evaluate_Derivative methtod work
-    if (cyclic)
+    if (localCyclic)
         points[count] = controls[cyclic_point];
     else
         points[count] = controls[count-1];
 
     index_lo = 0;
-    index_hi = cyclic ? count : (count - 1);
+    index_hi = localCyclic ? count : (count - 1);
 }
 
-void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool cyclic, index_type cyclic_point)
+void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool localCyclic, index_type cyclic_point)
 {
-    const int real_size = count + (cyclic ? (1+2) : (1+1));
+    const int real_size = count + (localCyclic ? (1+2) : (1+1));
 
     points.resize(real_size);
 
@@ -248,7 +248,7 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
 
     // first and last two indexes are space for special 'virtual points'
     // these points are required for proper C_Evaluate and C_Evaluate_Derivative methtod work
-    if (cyclic)
+    if (localCyclic)
     {
         if (cyclic_point == 0)
             points[0] = controls[count-1];

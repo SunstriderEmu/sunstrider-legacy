@@ -31,7 +31,7 @@ class TransportBase;
 //TC compat
 typedef Aura AuraApplication;
 
-enum SpellInterruptFlags
+enum SpellInterruptFlags : uint32
 {
     SPELL_INTERRUPT_FLAG_MOVEMENT     = 0x01, // why need this for instant?
     SPELL_INTERRUPT_FLAG_PUSH_BACK    = 0x02, // push back
@@ -40,7 +40,7 @@ enum SpellInterruptFlags
     SPELL_INTERRUPT_FLAG_DAMAGE       = 0x10  // _complete_ interrupt on direct damage?
 };
 
-enum SpellChannelInterruptFlags
+enum SpellChannelInterruptFlags : uint32
 {
     CHANNEL_FLAG_DAMAGE      = 0x0002,
     CHANNEL_FLAG_MOVEMENT    = 0x0008,
@@ -49,7 +49,7 @@ enum SpellChannelInterruptFlags
     CHANNEL_FLAG_DELAY       = 0x4000
 };
 
-enum SpellAuraInterruptFlags
+enum SpellAuraInterruptFlags : uint32
 {
     AURA_INTERRUPT_FLAG_HITBYSPELL          = 0x00000001,   // 0    removed when getting hit by a negative spell?
     AURA_INTERRUPT_FLAG_TAKE_DAMAGE         = 0x00000002,   // 1    removed by any damage
@@ -82,7 +82,7 @@ enum SpellAuraInterruptFlags
 #endif
 };
 
-enum SpellModOp
+enum SpellModOp : uint32
 {
     SPELLMOD_DAMAGE                 = 0,
     SPELLMOD_DURATION               = 1,
@@ -116,7 +116,7 @@ enum SpellModOp
 
 #define MAX_SPELLMOD 32
 
-enum SpellValueMod
+enum SpellValueMod : uint32
 {
     SPELLVALUE_BASE_POINT0,
     SPELLVALUE_BASE_POINT1,
@@ -448,7 +448,7 @@ enum DeathState
     JUST_RESPAWNED = 4
 };
 
-enum UnitState
+enum UnitState : uint32
 {
     UNIT_STATE_DIED                  = 0x00000001,
     UNIT_STATE_MELEE_ATTACKING       = 0x00000002,                     // player is melee attacking someone
