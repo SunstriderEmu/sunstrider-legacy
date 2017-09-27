@@ -278,10 +278,10 @@ void BattlegroundMgr::BuildPlaySoundPacket(WorldPacket *data, uint32 soundid)
     *data << uint32(soundid);
 }
 
-void BattlegroundMgr::BuildPlayerLeftBattlegroundPacket(WorldPacket *data, Player *plr)
+void BattlegroundMgr::BuildPlayerLeftBattlegroundPacket(WorldPacket *data, uint64 guid)
 {
     data->Initialize(SMSG_BATTLEGROUND_PLAYER_LEFT, 8); //LK OK
-    *data << uint64(plr->GetGUID());
+    *data << uint64(guid);
 }
 
 void BattlegroundMgr::BuildPlayerJoinedBattlegroundPacket(WorldPacket *data, Player *plr)

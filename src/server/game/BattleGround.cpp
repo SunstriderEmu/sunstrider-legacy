@@ -862,22 +862,20 @@ void Battleground::RewardMark(Player *plr,uint32 count)
         return;
    
     // Give less marks if the player has been disconnected during the battleground
-    if (count == 3) { // Winner
-        auto itr = m_Players.find(plr->GetGUIDLow());
-        if (itr != m_Players.end()) {
-            float ratio = itr->second.OfflineRemoveTime / (float) MAX_OFFLINE_TIME * 100.f;
-            if (ratio <= 33.3f)
+    auto itr = m_Players.find(plr->GetGUIDLow());
+    if (itr != m_Players.end())
+    {
+        float offlineRatio = itr->second.TotalOfflineTime / float(m_StartTime);
+        if (count == 3) { // Winner
+            if (offlineRatio <= 0.33f)
                 count = 3;
-            else if (ratio <= 66.66f)
+            else if (offlineRatio <= 0.66f)
                 count = 2;
             else
                 count = 1;
         }
-    } else if (count == 1) { // Loser
-        auto itr = m_Players.find(plr->GetGUIDLow());
-        if (itr != m_Players.end()) {
-            float ratio = itr->second.OfflineRemoveTime / (float) MAX_OFFLINE_TIME * 100.f;
-            if (ratio <= 50.0f)
+        else if (count == 1) { // Loser
+            if (offlineRatio <= 0.5f)
                 count = 1;
             else
                 count = 0;
@@ -1146,7 +1144,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         }
         // Let others know
         WorldPacket data;
-        sBattlegroundMgr->BuildPlayerLeftBattlegroundPacket(&data, plr);
+        sBattlegroundMgr->BuildPlayerLeftBattlegroundPacket(&data, guid);
         SendPacketToTeam(team, &data, plr, false);
 
         TC_LOG_DEBUG("battleground","BATTLEGROUND: Removed player %s from Battleground.", plr->GetName().c_str());
@@ -1243,6 +1241,7 @@ void Battleground::AddPlayer(Player *plr)
 
     BattlegroundPlayer bp;
     bp.OfflineRemoveTime = 0;
+    bp.TotalOfflineTime = 0;
     bp.Team = team;
 
     // Add to list/maps

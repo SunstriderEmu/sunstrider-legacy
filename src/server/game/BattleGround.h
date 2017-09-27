@@ -68,7 +68,7 @@ enum BattlegroundTimeIntervals
     INVITATION_REMIND_TIME          = 20 * SECOND * IN_MILLISECONDS, // ms
     INVITE_ACCEPT_WAIT_TIME         = 80 * SECOND * IN_MILLISECONDS, // ms
     TIME_TO_AUTOREMOVE              = 2 * MINUTE * IN_MILLISECONDS,
-    MAX_OFFLINE_TIME                = 2 * MINUTE * IN_MILLISECONDS,
+    MAX_OFFLINE_TIME                = 2 * MINUTE * SECOND,
     START_DELAY0                    = 2 * MINUTE * IN_MILLISECONDS,
     START_DELAY1                    = 1 * MINUTE * IN_MILLISECONDS,
     START_DELAY2                    = 30 * SECOND * IN_MILLISECONDS,
@@ -109,7 +109,7 @@ enum BattlegroundStartingEvents
 
 struct BattlegroundPlayer
 {
-    uint32  OfflineRemoveTime;                              // for tracking and removing offline players from queue after 5 minutes
+    uint32  OfflineRemoveTime;                              // for tracking and removing offline players from queue after 2 minutes
     uint32  TotalOfflineTime;
     uint32  Team;                                           // Player's team
 };

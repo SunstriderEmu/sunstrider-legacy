@@ -62,7 +62,7 @@ class TC_GAME_API BattlegroundMgr
 
         /* Packet Building */
         void BuildPlayerJoinedBattlegroundPacket(WorldPacket *data, Player *plr);
-        void BuildPlayerLeftBattlegroundPacket(WorldPacket *data, Player *plr);
+        void BuildPlayerLeftBattlegroundPacket(WorldPacket *data, uint64 guid);
         //fromWhere is LK only
         void BuildBattlegroundListPacket(WorldPacket* data, uint64 guid, Player* plr, BattlegroundTypeId bgTypeId, uint8 fromWhere = 0);
         void BuildGroupJoinedBattlegroundPacket(WorldPacket* data, GroupJoinBattlegroundResult result);
