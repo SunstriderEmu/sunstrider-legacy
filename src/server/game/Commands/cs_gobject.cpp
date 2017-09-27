@@ -169,7 +169,7 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     uint32 db_lowGUID = sObjectMgr->GenerateGameObjectSpawnId();
     //use AddGOData instead? Then how do we spawn them in instance?
 
-    if(!pGameObj->Create(db_lowGUID, goI->entry, map, chr->GetPhaseMask(), Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
+    if(!pGameObj->Create(db_lowGUID, goI->entry, map, chr->GetPhaseMask(), Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY, 0, db_lowGUID))
     {
         delete pGameObj;
         return false;
@@ -192,7 +192,8 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     if(!pGameObj->LoadFromDB(db_lowGUID, map))
     {
         delete pGameObj;
-        return false;
+        SendSysMessage("Failed to create object");
+        return true;
     }
 
     map->AddToMap(pGameObj);
@@ -302,12 +303,13 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
     obj->SetFloatValue(GAMEOBJECT_PARENTROTATION+2, rot2);
     obj->SetFloatValue(GAMEOBJECT_PARENTROTATION+3, rot3);
 
+    obj->SetMap(chr->GetMap());
     chr->GetMap()->AddToMap(obj);
 
     obj->SaveToDB();
     obj->Refresh();
 
-    PSendSysMessage(LANG_COMMAND_TURNOBJMESSAGE, obj->GetGUIDLow(), o);
+    PSendSysMessage(LANG_COMMAND_TURNOBJMESSAGE, obj->GetSpawnId(), o);
 
     return true;
 }
@@ -354,6 +356,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
         obj->SetFloatValue(GAMEOBJECT_POS_Y, chr->GetPositionY());
         obj->SetFloatValue(GAMEOBJECT_POS_Z, chr->GetPositionZ());
 
+        obj->SetMap(map);
         map->AddToMap(obj, true);
     }
     else
@@ -380,6 +383,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
         obj->SetFloatValue(GAMEOBJECT_POS_Y, y);
         obj->SetFloatValue(GAMEOBJECT_POS_Z, z);
 
+        obj->SetMap(map);
         map->AddToMap(obj, true);
     }
 
@@ -730,6 +734,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
     if(Map* map = sMapMgr->FindMap(target->GetMapId(), target->GetInstanceId()))
     {
         map->RemoveFromMap(target,false);
+        target->SetMap(map);
         map->AddToMap(target, true);
     }
 

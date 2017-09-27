@@ -711,7 +711,7 @@ StaticTransport::~StaticTransport()
     ASSERT(_passengers.empty());
 }
 
-bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit)
+bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit, uint32 spawnid)
 {
     ASSERT(map);
     SetMap(map);
@@ -802,6 +802,10 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 ph
         SetPathProgress(0);
 
     LastUsedScriptID = GetScriptId();
+    AIM_Initialize();
+
+    if (spawnid)
+        m_spawnId = spawnid;
 
     //this->SetKeepActive(true);
     return true;

@@ -257,7 +257,7 @@ void GameObject::RemoveFromWorld()
 }
 
 //spawnId will be generated on save later if needed
-bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit)
+bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit, uint32 spawnid)
 {
     ASSERT(map);
     SetMap(map);
@@ -366,6 +366,10 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMa
     }
     
     LastUsedScriptID = GetScriptId();
+    AIM_Initialize();
+
+    if (spawnid)
+        m_spawnId = spawnid;
 
     return true;
 }
@@ -694,6 +698,10 @@ void GameObject::Refresh()
     if(m_respawnTime > 0 && m_spawnedByDefault)
         return;
 
+    //suntrider addition, else we're trying to re add object twice to the map
+    if (IsInWorld())
+        return;
+
     if(isSpawned())
        GetMap()->AddToMap(this);
 }
@@ -777,7 +785,7 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
 
     // updated in DB
     std::ostringstream ss;
-    ss << "INSERT INTO gameobject VALUES ( "
+    ss << "INSERT INTO gameobject (guid, id, map, spawnMask, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state) VALUES ( "
         << m_spawnId << ", "
         << GetUInt32Value (OBJECT_FIELD_ENTRY) << ", "
         << mapid << ", "
