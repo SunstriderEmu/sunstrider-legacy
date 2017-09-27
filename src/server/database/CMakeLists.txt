@@ -1,4 +1,3 @@
-
 CollectSourceFiles(
   ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE_SOURCES
@@ -15,7 +14,7 @@ add_library(database
   ${PRIVATE_PCH_SOURCE}
   ${PRIVATE_SOURCES}
 )
-
+ 
 # Do NOT add any extra include directory unless it does not create unneeded extra dependencies,
 # and specially, not add any dependency to neither of these: shared, game, scripts
 # This way we ensure that if either a PR does that without modifying this file,

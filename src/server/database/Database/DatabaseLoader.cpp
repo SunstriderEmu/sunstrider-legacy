@@ -16,67 +16,16 @@
  */
 
 #include "DatabaseLoader.h"
-//#include "DBUpdater.h"
+#include "DBUpdater.h"
 #include "Config.h"
 #include <iostream>
 #include <fstream>
 #include <mysqld_error.h>
 
 DatabaseLoader::DatabaseLoader(std::string const& logger, uint32 const defaultUpdateMask)
-    : _logger(logger), _autoSetup(/*sConfigMgr->GetBoolDefault("Updates.AutoSetup", true)*/ false),
-    _updateFlags(/*sConfigMgr->GetIntDefault("Updates.EnableDatabases", defaultUpdateMask)*/ false)
+    : _logger(logger), _autoSetup(sConfigMgr->GetBoolDefault("Updates.AutoSetup", true)),
+    _updateFlags(sConfigMgr->GetIntDefault("Updates.EnableDatabases", defaultUpdateMask))
 {
-}
-
-//Sunstrider: moved part of DBUpdater code from TC here, we don't implement it and just need this bit :
-#include <boost/filesystem.hpp>
-using Path = boost::filesystem::path;
-
-template<class T>
-bool DBUpdaterCreate(DatabaseWorkerPool<T>& pool)
-{
-    TC_LOG_INFO("sql.updates", "Database \"%s\" does not exist, do you want to create it? [yes (default) / no]: ",
-        pool.GetConnectionInfo()->database.c_str());
-
-    std::string answer;
-    std::getline(std::cin, answer);
-    if (!answer.empty() && !(answer.substr(0, 1) == "y"))
-        return false;
-
-    TC_LOG_INFO("sql.updates", "Creating database \"%s\"...", pool.GetConnectionInfo()->database.c_str());
-
-    // Path of temp file
-    static Path const temp("create_table.sql");
-
-    // Create temporary query to use external MySQL CLi
-    std::ofstream file(temp.generic_string());
-    if (!file.is_open())
-    {
-        TC_LOG_FATAL("sql.updates", "Failed to create temporary query file \"%s\"!", temp.generic_string().c_str());
-        return false;
-    }
-
-    file << "CREATE DATABASE `" << pool.GetConnectionInfo()->database << "` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci\n\n";
-
-    file.close();
-
-    /*
-    try
-    {
-        DBUpdater<T>::ApplyFile(pool, pool.GetConnectionInfo()->host, pool.GetConnectionInfo()->user, pool.GetConnectionInfo()->password,
-            pool.GetConnectionInfo()->port_or_socket, "", temp);
-    }
-    catch (UpdateException&)
-    {
-        TC_LOG_FATAL("sql.updates", "Failed to create database %s! Does the user (named in *.conf) have `CREATE`, `ALTER`, `DROP`, `INSERT` and `DELETE` privileges on the MySQL server?", pool.GetConnectionInfo()->database.c_str());
-        boost::filesystem::remove(temp);
-        return false;
-    }
-    */
-
-    TC_LOG_INFO("sql.updates", "Done.");
-    boost::filesystem::remove(temp);
-    return true;
 }
 
 template <class T>
@@ -112,9 +61,7 @@ DatabaseLoader& DatabaseLoader::AddDatabase(DatabaseWorkerPool<T>& pool, std::st
             {
                 // Try to create the database and connect again if auto setup is enabled
 
-                if (//DBUpdater<T>::Create(pool) 
-                    DBUpdaterCreate(pool)
-                    && (!pool.Open()))
+                if (DBUpdater<T>::Create(pool) && (!pool.Open()))
                     error = 0;
             }
 
@@ -136,7 +83,6 @@ DatabaseLoader& DatabaseLoader::AddDatabase(DatabaseWorkerPool<T>& pool, std::st
     });
 
     // Populate and update only if updates are enabled for this pool
-    /*TC
     if (updatesEnabledForThis)
     {
         _populate.push([this, name, &pool]() -> bool
@@ -159,7 +105,6 @@ DatabaseLoader& DatabaseLoader::AddDatabase(DatabaseWorkerPool<T>& pool, std::st
             return true;
         });
     }
-    */
 
     _prepare.push([this, name, &pool]() -> bool
     {
@@ -176,9 +121,9 @@ DatabaseLoader& DatabaseLoader::AddDatabase(DatabaseWorkerPool<T>& pool, std::st
 
 bool DatabaseLoader::Load()
 {
-   /* TC if (!_updateFlags)
+    if (!_updateFlags)
         TC_LOG_INFO("sql.updates", "Automatic database updates are disabled for all databases!");
-        */
+
     if (!OpenDatabases())
         return false;
 
