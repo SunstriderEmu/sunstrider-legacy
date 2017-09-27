@@ -39,15 +39,11 @@ void WhoListStorageMgr::Update()
         uint32 playerZoneId = itr->second->GetZoneId();
         if (playerZoneId == (uint32) 3698 || playerZoneId == (uint32) 3968 || playerZoneId == (uint32) 3702)
         {
-            uint32 mapId = itr->second->GetBattlegroundEntryPointMap();
-            Map * map = sMapMgr->FindBaseNonInstanceMap(mapId);
+            WorldLocation const& loc = itr->second->GetBattlegroundEntryPoint();
+            uint32 mapId = loc.GetMapId();
+            Map const* map = sMapMgr->FindBaseNonInstanceMap(mapId);
             if (map)
-            {
-                float x = itr->second->GetBattlegroundEntryPointX();
-                float y = itr->second->GetBattlegroundEntryPointY();
-                float z = itr->second->GetBattlegroundEntryPointZ();
-                playerZoneId = map->GetZoneId(x, y, z);
-            }
+                playerZoneId = map->GetZoneId(loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ());
         }
 
         // Conversion uint32 to uint8 here

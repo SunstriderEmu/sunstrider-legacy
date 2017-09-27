@@ -1069,83 +1069,93 @@ void Group::SendTargetIconList(WorldSession *session)
     session->SendPacket(&data);
 }
 
-void Group::SendUpdate()
+void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
 {
-    Player *player;
+    Player* player = sObjectMgr->GetPlayer(playerGUID);
+    if (!player || !player->GetSession() || player->GetGroup() != this)
+        return;
 
-    for(member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
+    // if MemberSlot wasn't provided
+    if (!slot)
     {
-        player = sObjectMgr->GetPlayer(citr->guid);
-        if (!player || !player->GetSession() || player->GetGroup() != this)
+        member_witerator witr = _getMemberWSlot(playerGUID);
+
+        if (witr == m_memberSlots.end()) // if there is no MemberSlot for such a player
+            return;
+
+        slot = &(*witr);
+    }
+
+    //LK OK                                             // guess size
+    WorldPacket data(SMSG_GROUP_LIST, (1 + 1 + 1 + 1 + 8 + 4 + GetMembersCount() * 20));
+    data << (uint8)m_groupType;                         // group type
+#ifndef LICH_KING
+    data << (uint8)(isBGGroup() ? 1 : 0);               // 2.0.x, isBattlegroundGroup?
+#endif
+    data << (uint8)(slot->group);                       // groupid
+#ifdef LICH_KING
+    data << uint8(slot->flags);
+#endif
+    data << (uint8)(slot->assistant ? 0x01 : 0);            // 0x2 main assist, 0x4 main tank
+#ifdef LICH_KING
+    if (isLFGGroup())
+    {
+        data << uint8(sLFGMgr->GetState(m_guid) == lfg::LFG_STATE_FINISHED_DUNGEON ? 2 : 0); // FIXME - Dungeon save status? 2 = done
+        data << uint32(sLFGMgr->GetDungeon(m_guid));
+    }
+    data << uint64(m_guid);
+    data << uint32(m_counter++);                        // 3.3, value increases every time this packet gets sent
+#else
+    data << uint64(0x50000000FFFFFFFELL);               // related to voice chat?
+#endif
+    data << uint32(GetMembersCount() - 1);
+    for (member_citerator citr2 = m_memberSlots.begin(); citr2 != m_memberSlots.end(); ++citr2)
+    {
+        if (slot->guid == citr2->guid)
             continue;
 
-        //LK OK                                             // guess size
-        WorldPacket data(SMSG_GROUP_LIST, (1+1+1+1+8+4+GetMembersCount()*20));
-        data << (uint8)m_groupType;                         // group type
-#ifndef LICH_KING
-        data << (uint8)(isBGGroup() ? 1 : 0);               // 2.0.x, isBattlegroundGroup?
-#endif
-        data << (uint8)(citr->group);                       // groupid
-#ifdef LICH_KING
-        data << uint8(slot->flags);
-#endif
-        data << (uint8)(citr->assistant?0x01:0);            // 0x2 main assist, 0x4 main tank
-#ifdef LICH_KING
-        if (isLFGGroup())
-        {
-            data << uint8(sLFGMgr->GetState(m_guid) == lfg::LFG_STATE_FINISHED_DUNGEON ? 2 : 0); // FIXME - Dungeon save status? 2 = done
-            data << uint32(sLFGMgr->GetDungeon(m_guid));
-        }
-        data << uint64(m_guid);
-        data << uint32(m_counter++);                        // 3.3, value increases every time this packet gets sent
-#else
-        data << uint64(0x50000000FFFFFFFELL);               // related to voice chat?
-#endif
-        data << uint32(GetMembersCount()-1);
-        for(member_citerator citr2 = m_memberSlots.begin(); citr2 != m_memberSlots.end(); ++citr2)
-        {
-            if(citr->guid == citr2->guid)
-                continue;
-                
-            Player* member = sObjectMgr->GetPlayer(citr2->guid);
-            uint8 onlineState = (member) ? MEMBER_STATUS_ONLINE : MEMBER_STATUS_OFFLINE;
-            onlineState = onlineState | ((isBGGroup()) ? MEMBER_STATUS_PVP : 0);
+        Player* member = sObjectMgr->GetPlayer(citr2->guid);
+        uint8 onlineState = (member) ? MEMBER_STATUS_ONLINE : MEMBER_STATUS_OFFLINE;
+        onlineState = onlineState | ((isBGGroup()) ? MEMBER_STATUS_PVP : 0);
 
-            data << citr2->name;
-            data << (uint64)citr2->guid;
-                                                            // online-state
-            data << (uint8)(onlineState);
-            data << (uint8)(citr2->group);                  // groupid
+        data << citr2->name;
+        data << (uint64)citr2->guid;
+        // online-state
+        data << (uint8)(onlineState);
+        data << (uint8)(citr2->group);                  // groupid
 #ifdef LICH_KING
-            data << uint8(citr->flags);                     // See enum GroupMemberFlags
+        data << uint8(citr->flags);                     // See enum GroupMemberFlags
 #endif
-            data << (uint8)(citr2->assistant?0x01:0);       // 0x2 main assist, 0x4 main tank
-        }
-
-        data << uint64(m_leaderGuid);                       // leader guid
-        if(GetMembersCount()-1)
-        {
-            data << (uint8)m_lootMethod;                    // loot method
-            if (m_lootMethod == MASTER_LOOT)
-                data << uint64(m_masterLooterGuid);         // master looter guid
-            else
-                data << uint64(0);
-            data << (uint8)m_lootThreshold;                 // loot threshold
-            data << (uint8)m_dungeonDifficulty;             // Heroic Mod Group
-#ifdef LICH_KING
-            data << uint8(m_raidDifficulty);                // Raid Difficulty
-            data << uint8(m_raidDifficulty >= RAID_DIFFICULTY_10MAN_HEROIC);    // 3.3 Dynamic Raid Difficulty - 0 normal/1 heroic
-#endif
-        }
-        player->SendDirectMessage( &data );
+        data << (uint8)(citr2->assistant ? 0x01 : 0);       // 0x2 main assist, 0x4 main tank
     }
+
+    data << uint64(m_leaderGuid);                       // leader guid
+    if (GetMembersCount() - 1)
+    {
+        data << (uint8)m_lootMethod;                    // loot method
+        if (m_lootMethod == MASTER_LOOT)
+            data << uint64(m_masterLooterGuid);         // master looter guid
+        else
+            data << uint64(0);
+        data << (uint8)m_lootThreshold;                 // loot threshold
+        data << (uint8)m_dungeonDifficulty;             // Heroic Mod Group
+#ifdef LICH_KING
+        data << uint8(m_raidDifficulty);                // Raid Difficulty
+        data << uint8(m_raidDifficulty >= RAID_DIFFICULTY_10MAN_HEROIC);    // 3.3 Dynamic Raid Difficulty - 0 normal/1 heroic
+#endif
+    }
+    player->SendDirectMessage(&data);
+}
+
+void Group::SendUpdate()
+{
+    for(member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
+        SendUpdateToPlayer(citr->guid);
 }
 
 // Automatic Update by World thread
 void Group::Update(time_t diff)
 {
-    
-
     //change the leader if it has disconnect for a long time
     if (m_leaderLogoutTime) {
         time_t thisTime = time(nullptr);
@@ -1635,54 +1645,131 @@ void Group::UpdateLooterGuid( WorldObject* object, bool ifneed )
     SendUpdate();
 }
 
-uint32 Group::CanJoinBattlegroundQueue(uint32 bgTypeId, uint32 bgQueueType, uint32 MinPlayerCount, uint32 MaxPlayerCount, bool isRated, uint32 arenaSlot)
+GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* bgOrTemplate, BattlegroundQueueTypeId bgQueueTypeId, uint32 MinPlayerCount, uint32 /*MaxPlayerCount*/, bool isRated, uint32 arenaSlot)
 {
-    // check for min / max count
+#ifdef LICH_KING
+    // check if this group is LFG group
+    if (isLFGGroup())
+        return ERR_LFG_CANT_USE_BATTLEGROUND;
+#endif
+
+    BattlemasterListEntry const* bgEntry = sBattlemasterListStore.LookupEntry(bgOrTemplate->GetTypeID());
+    if (!bgEntry)
+        return ERR_GROUP_JOIN_BATTLEGROUND_FAIL;            // shouldn't happen
+
+                                                            // check for min / max count
     uint32 memberscount = GetMembersCount();
-    if(memberscount < MinPlayerCount)
-        return BG_JOIN_ERR_GROUP_NOT_ENOUGH;
-    if(memberscount > MaxPlayerCount)
-        return BG_JOIN_ERR_GROUP_TOO_MANY;
+
+#ifdef LICH_KING
+    if (memberscount > bgEntry->maxGroupSize)                // no MinPlayerCount for battlegrounds
+#else
+    if (memberscount > bgEntry->maxplayersperteam)
+#endif
+        return ERR_BATTLEGROUND_NONE;                        // ERR_GROUP_JOIN_BATTLEGROUND_TOO_MANY handled on client side
 
     // get a player as reference, to compare other players' stats to (arena team id, queue id based on level, etc.)
-    Player * reference = GetFirstMember()->GetSource();
+    Player* reference = ASSERT_NOTNULL(GetFirstMember())->GetSource();
     // no reference found, can't join this way
-    if(!reference)
-        return BG_JOIN_ERR_OFFLINE_MEMBER;
+    if (!reference)
+#ifdef LICH_KING
+        return ERR_BATTLEGROUND_JOIN_FAILED;
+#else
+        return ERR_BATTLEGROUND_NONE;
+#endif
 
-    uint32 bgQueueId = reference->GetBattlegroundQueueIdFromLevel();
+    PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bgOrTemplate->GetMapId(), reference->GetLevel());
+    if (!bracketEntry)
+#ifdef LICH_KING
+        return ERR_BATTLEGROUND_JOIN_FAILED;
+#else
+        return ERR_BATTLEGROUND_NONE;
+#endif
+
     uint32 arenaTeamId = reference->GetArenaTeamId(arenaSlot);
     uint32 team = reference->GetTeam();
 
+#ifdef LICH_KING
+    BattlegroundQueueTypeId bgQueueTypeIdRandom = BattlegroundMgr::BGQueueTypeId(BATTLEGROUND_RB, 0);
+#endif
+
     // check every member of the group to be able to join
-    for(GroupReference *itr = GetFirstMember(); itr != nullptr; itr = itr->next())
+    memberscount = 0;
+    for (GroupReference* itr = GetFirstMember(); itr != nullptr; itr = itr->next(), ++memberscount)
     {
-        Player *member = itr->GetSource();
+        Player* member = itr->GetSource();
         // offline member? don't let join
-        if(!member)
-            return BG_JOIN_ERR_OFFLINE_MEMBER;
+        if (!member)
+#ifdef LICH_KING
+            return ERR_BATTLEGROUND_JOIN_FAILED;
+#else
+            return FAKE_ERR_BATTLEGROUND_OFFLINE_MEMBER;
+#endif
         // don't allow cross-faction join as group
-        if(member->GetTeam() != team)
-            return BG_JOIN_ERR_MIXED_FACTION;
+        if (member->GetTeam() != team)
+#ifdef LICH_KING
+            return ERR_BATTLEGROUND_JOIN_TIMED_OUT;
+#else
+            return ERR_BATTLEGROUND_MIXED_TEAM;
+#endif
         // not in the same battleground level braket, don't let join
-        if(member->GetBattlegroundQueueIdFromLevel() != bgQueueId)
-            return BG_JOIN_ERR_MIXED_LEVELS;
+        PvPDifficultyEntry const* memberBracketEntry = GetBattlegroundBracketByLevel(bracketEntry->mapId, member->GetLevel());
+        if (memberBracketEntry != bracketEntry)
+#ifdef LICH_KING
+            return ERR_BATTLEGROUND_JOIN_RANGE_INDEX;
+#else
+            return FAKE_ERR_BATTLEGROUND_MIXED_LEVELS;
+#endif
         // don't let join rated matches if the arena team id doesn't match
-        if(isRated && member->GetArenaTeamId(arenaSlot) != arenaTeamId)
-            return BG_JOIN_ERR_MIXED_ARENATEAM;
+        if (isRated && member->GetArenaTeamId(arenaSlot) != arenaTeamId)
+#ifdef LICH_KING
+            return ERR_BATTLEGROUND_JOIN_FAILED;
+#else
+            return ERR_BATTLEGROUND_NONE;
+#endif
         // don't let join if someone from the group is already in that bg queue
-        if(member->InBattlegroundQueueForBattlegroundQueueType(bgQueueType))
-            return BG_JOIN_ERR_GROUP_MEMBER_ALREADY_IN_QUEUE;
+        if (member->InBattlegroundQueueForBattlegroundQueueType(bgQueueTypeId))
+#ifdef LICH_KING
+            return ERR_BATTLEGROUND_JOIN_FAILED;  // not blizz-like
+#else
+            return FAKE_ERR_BATTLEGROUND_ALREADY_IN_QUEUE;  // not blizz-like
+#endif           
+#ifdef LICH_KING
+        // don't let join if someone from the group is in bg queue random
+        if (member->InBattlegroundQueueForBattlegroundQueueType(bgQueueTypeIdRandom))
+            return ERR_IN_RANDOM_BG;
+        // don't let join to bg queue random if someone from the group is already in bg queue
+        if (bgOrTemplate->GetTypeID() == BATTLEGROUND_RB && member->InBattlegroundQueue())
+            return ERR_IN_NON_RANDOM_BG;
+#endif
         // check for deserter debuff in case not arena queue
-        if(bgTypeId != BATTLEGROUND_AA && !member->CanJoinToBattleground())
-            return BG_JOIN_ERR_GROUP_DESERTER;
+        if (bgOrTemplate->GetTypeID() != BATTLEGROUND_AA && !member->CanJoinToBattleground(bgOrTemplate))
+            return ERR_GROUP_JOIN_BATTLEGROUND_DESERTERS;
         // check if member can join any more battleground queues
-        if(!member->HasFreeBattlegroundQueueId())
-            return BG_JOIN_ERR_ALL_QUEUES_USED;
-        if(member->isSpectator())
-            return BG_JOIN_ERR_OFFLINE_MEMBER; //not good message for this
+        if (!member->HasFreeBattlegroundQueueId())
+            return ERR_BATTLEGROUND_TOO_MANY_QUEUES;        // not blizz-like
+#ifdef LICH_KING
+        // check if someone in party is using dungeon system
+        if (member->isUsingLfg())
+            return ERR_LFG_CANT_USE_BATTLEGROUND;
+#endif
+        // check Freeze debuff
+        if (member->HasAura(9454))
+#ifdef LICH_KING
+            return ERR_BATTLEGROUND_JOIN_FAILED;  // not blizz-like
+#else
+            return FAKE_ERR_BATTLEGROUND_FROZEN;  // not blizz-like
+#endif         
     }
-    return BG_JOIN_ERR_OK;
+
+    // only check for MinPlayerCount since MinPlayerCount == MaxPlayerCount for arenas...
+    if (bgOrTemplate->IsArena() && memberscount != MinPlayerCount)
+#ifdef LICH_KING
+        return ERR_ARENA_TEAM_PARTY_SIZE;
+#else
+        return FAKE_ERR_BATTLEGROUND_TEAM_SIZE;
+#endif
+
+    return GroupJoinBattlegroundResult(bgOrTemplate->GetTypeID());
 }
 
 //===================================================

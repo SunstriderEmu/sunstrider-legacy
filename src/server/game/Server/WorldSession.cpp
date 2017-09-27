@@ -586,22 +586,23 @@ void WorldSession::LogoutPlayer(bool Save)
 
         //drop a flag if player is carrying it
         if(Battleground *bg = _player->GetBattleground())
-        {
-            if (!bg->IsArena())
-                bg->EventPlayerLoggedOut(_player);
+            bg->EventPlayerLoggedOut(_player);
 
-            if (bg->IsArena())
-                _player->LeaveBattleground();
-        }
+        ///- Teleport to home if the player is in an invalid instance
+        if (!_player->m_InstanceValid && !_player->IsGameMaster())
+            _player->TeleportTo(_player->m_homebindMapId, _player->m_homebindX, _player->m_homebindY, _player->m_homebindZ, _player->GetOrientation());
 
         sOutdoorPvPMgr->HandlePlayerLeaveZone(_player,_player->GetZoneId());
 
         for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
         {
-            if(int32 bgTypeId = _player->GetBattlegroundQueueId(i))
+            if (BattlegroundQueueTypeId bgQueueTypeId = _player->GetBattlegroundQueueTypeId(i))
             {
-                _player->RemoveBattlegroundQueueId(bgTypeId);
-                sBattlegroundMgr->m_BattlegroundQueues[ bgTypeId ].RemovePlayer(_player->GetGUID(), true);
+                //TC has deserter code here too... why ?
+
+                _player->RemoveBattlegroundQueueId(bgQueueTypeId);
+                BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
+                queue.RemovePlayer(_player->GetGUID(), true);
             }
         }
 
@@ -1016,7 +1017,7 @@ void WorldSession::ReadAddonsInfo(ByteBuffer &data)
     {
         switch(GetClientBuild())
         {
-#ifdef BUILD_335_SUPPORT
+#ifdef LICH_KING
             case BUILD_335:
             {
                 uint32 addonsCount;
@@ -1155,8 +1156,7 @@ void WorldSession::InitializeSession()
 void WorldSession::InitializeSessionCallback(SQLQueryHolder* realmHolder)
 {
 #ifdef LICH_KING
-    if (GetClientBuild() == BUILD_335)
-        LoadAccountData(realmHolder->GetPreparedResult(AccountInfoQueryHolderPerRealm::GLOBAL_ACCOUNT_DATA), GLOBAL_CACHE_MASK);
+    LoadAccountData(realmHolder->GetPreparedResult(AccountInfoQueryHolderPerRealm::GLOBAL_ACCOUNT_DATA), GLOBAL_CACHE_MASK);
 #endif
 
     LoadTutorialsData(realmHolder->GetPreparedResult(AccountInfoQueryHolderPerRealm::TUTORIALS));
@@ -1170,12 +1170,9 @@ void WorldSession::InitializeSessionCallback(SQLQueryHolder* realmHolder)
     ResetTimeOutTime();
 
     SendAddonsInfo();
-#ifdef BUILD_335_SUPPORT
-    if (GetClientBuild() == BUILD_335)
-    {
-        SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
-        SendTutorialsData(); //ON 243 it seems to be sent after adding player to map
-    }
+#ifdef LICH_KING
+    SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+    SendTutorialsData(); //ON 243 it seems to be sent after adding player to map
 #endif
 
     delete realmHolder;
@@ -1510,7 +1507,7 @@ void WorldSession::SendAccountDataTimes(uint32 mask /* = 0 */)
 {
     switch(GetClientBuild())
     {
-#ifdef BUILD_335_SUPPORT
+#ifdef LICH_KING
     case BUILD_335:
     {
         WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);
@@ -1813,7 +1810,7 @@ void WorldSession::SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket*& 
 {
     switch(session->GetClientBuild())
     {
-#ifdef BUILD_335_SUPPORT
+#ifdef LICH_KING
     case BUILD_335:
         if(!packetLK)
         {

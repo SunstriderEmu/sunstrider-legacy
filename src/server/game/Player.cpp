@@ -56,6 +56,7 @@
 #include "Bag.h"
 #include "CharacterCache.h"
 #include "UpdateFieldFlags.h"
+#include "CharacterDatabase.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -371,7 +372,6 @@ Player::Player (WorldSession *session) :
     mSemaphoreTeleport_Near = false;
     mSemaphoreTeleport_Far = false;
 
-    m_dontMove = false;
     m_unitMovedByMe = this;
     m_playerMovingMe = this;
 
@@ -402,11 +402,10 @@ Player::Player (WorldSession *session) :
 
     m_swingErrorMsg = 0;
 
-    m_bgBattlegroundID = 0;
-    for (auto & j : m_bgBattlegroundQueueID)
+    for (uint8 j = 0; j < PLAYER_MAX_BATTLEGROUND_QUEUES; ++j)
     {
-        j.bgQueueType  = 0;
-        j.invitedToInstance = 0;
+        m_bgBattlegroundQueueID[j].bgQueueTypeId = BATTLEGROUND_QUEUE_NONE;
+        m_bgBattlegroundQueueID[j].invitedToInstance = 0;
     }
     m_bgTeam = 0;
 
@@ -4175,6 +4174,11 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             trans->PAppend("DELETE FROM character_pet WHERE owner = '%u'", guid);
             trans->PAppend("DELETE FROM character_pet_declinedname WHERE owner = '%u'", guid);
             trans->PAppend("DELETE FROM character_skills WHERE guid = '%u'", guid);
+
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_BGDATA);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+
         } break;
         // The character gets unlinked from the account, the name gets freed up and appears as deleted ingame
         case CHAR_DELETE_UNLINK:
@@ -4742,10 +4746,10 @@ void Player::RepopAtGraveyard()
     if (IsInDuelArea())
         return; //stay where we are
 
-    WorldSafeLocsEntry const *ClosestGrave = nullptr;
+    WorldSafeLocsEntry const* ClosestGrave = nullptr;
 
     // Special handle for battleground maps
-    Battleground *bg = sBattlegroundMgr->GetBattleground(GetBattlegroundId());
+    Battleground *bg = GetBattleground();
 
     if(bg && (bg->GetTypeID() == BATTLEGROUND_AB || bg->GetTypeID() == BATTLEGROUND_EY || bg->GetTypeID() == BATTLEGROUND_AV || bg->GetTypeID() == BATTLEGROUND_WS))
         ClosestGrave = bg->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetTeam());
@@ -5947,11 +5951,6 @@ void Player::removeActionButton(uint8 button)
         buttonItr->second.uState = ACTIONBUTTON_DELETED;    // saved, will deleted at next save
 
     TC_LOG_DEBUG("entities.player", "Action Button '%u' Removed from Player '%u'", button, GetGUIDLow() );
-}
-
-void Player::SetDontMove(bool dontMove)
-{
-    m_dontMove = dontMove;
 }
 
 bool Player::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
@@ -15142,7 +15141,7 @@ void Player::_LoadDeclinedNames(QueryResult result)
 
 void Player::_LoadArenaTeamInfo(QueryResult result)
 {
-    // arenateamid, played_week, played_season, personal_rating
+    // arenateamid, played_week, played_season, PersonalRating
     memset((void*)&m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1], 0, sizeof(uint32)*18);
     if (!result)
         return;
@@ -15154,7 +15153,7 @@ void Player::_LoadArenaTeamInfo(QueryResult result)
         uint32 arenateamid     = fields[0].GetUInt32();
         uint32 played_week     = fields[1].GetUInt32();
         uint32 played_season   = fields[2].GetUInt32();
-        uint32 personal_rating = fields[3].GetUInt32();
+        uint32 PersonalRating = fields[3].GetUInt32();
 
         ArenaTeam* aTeam = sObjectMgr->GetArenaTeamById(arenateamid);
         if(!aTeam)
@@ -15169,9 +15168,31 @@ void Player::_LoadArenaTeamInfo(QueryResult result)
         m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + arenaSlot * 6 + 2] = played_week;      // Played Week
         m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + arenaSlot * 6 + 3] = played_season;    // Played Season
         m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + arenaSlot * 6 + 4] = 0;                // Unk
-        m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + arenaSlot * 6 + 5] = personal_rating;  // Personal Rating
+        m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + arenaSlot * 6 + 5] = PersonalRating;  // Personal Rating
 
     }while (result->NextRow());
+}
+
+void Player::_LoadBGData(PreparedQueryResult result)
+{
+    if (!result)
+        return;
+
+    Field* fields = result->Fetch();
+    // Expecting only one row
+    //        0           1     2      3      4      5      6          7          8        9
+    // SELECT instanceId, team, joinX, joinY, joinZ, joinO, joinMapId, taxiStart, taxiEnd, mountSpell FROM character_battleground_data WHERE guid = ?
+
+    m_bgData.bgInstanceID = fields[0].GetUInt32();
+    m_bgData.bgTeam = fields[1].GetUInt16();
+    m_bgData.joinPos = WorldLocation(fields[6].GetUInt16(),    // Map
+        fields[2].GetFloat(),     // X
+        fields[3].GetFloat(),     // Y
+        fields[4].GetFloat(),     // Z
+        fields[5].GetFloat());    // Orientation
+    m_bgData.taxiPath[0] = fields[7].GetUInt32();
+    m_bgData.taxiPath[1] = fields[8].GetUInt32();
+    m_bgData.mountSpell = fields[9].GetUInt32();
 }
 
 bool Player::LoadPositionFromDB(uint32& mapid, float& x,float& y,float& z,float& o, bool& in_flight, uint64 guid)
@@ -15420,61 +15441,78 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[LOAD_DATA_YESTERDAYKILLS].GetUInt16());
 
     _LoadBoundInstances(holder->GetResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
+    _LoadBGData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BG_DATA));
+
+    GetSession()->SetPlayer(this);
 
 #define RelocateToHomebind(){ mapId = m_homebindMapId; instanceId = 0; Relocate(m_homebindX, m_homebindY, m_homebindZ); }
+
+    bool player_at_bg = false;
 
     if(!mapEntry || !IsPositionValid())
     {
         TC_LOG_ERROR("entities.player","Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
         RelocateToHomebind();
-
         transGUIDLow = 0;
-
         m_movementInfo.transport.pos.Relocate(0.0,0.0,0.0,0.0f);
     }
 
-
-    std::string taxi_nodes = fields[LOAD_DATA_TAXI_PATH].GetString();
-
-    ////                                                     0     1       2      3    4    5    6
-    //QueryResult result = CharacterDatabase.PQuery("SELECT bgid, bgteam, bgmap, bgx, bgy, bgz, bgo FROM character_bgcoord WHERE guid = '%u'", GUID_LOPART(m_guid));
-    QueryResult resultbg = holder->GetResult(PLAYER_LOGIN_QUERY_LOADBGCOORD);
-    if(resultbg)
+    // Player was saved in Arena or Bg
+    else if (mapEntry && mapEntry->IsBattlegroundOrArena())
     {
-        Field *fieldsbg = resultbg->Fetch();
+        Battleground* currentBg = nullptr;
+        if (m_bgData.bgInstanceID)                                                //saved in Battleground
+            currentBg = sBattlegroundMgr->GetBattleground(m_bgData.bgInstanceID, BATTLEGROUND_TYPE_NONE);
 
-        uint32 bgid = fieldsbg[0].GetUInt32();
-        uint32 bgteam = fieldsbg[1].GetUInt32();
+        player_at_bg = currentBg && currentBg->IsPlayerInBattleground(GetGUID());
 
-        if(bgid) //saved in Battleground
+        if (player_at_bg && currentBg->GetStatus() != STATUS_WAIT_LEAVE)
         {
-            SetBattlegroundEntryPoint(fieldsbg[2].GetUInt32(),fieldsbg[3].GetFloat(),fieldsbg[4].GetFloat(),fieldsbg[5].GetFloat(),fieldsbg[6].GetFloat());
+            map = currentBg->GetBgMap();
 
-            Battleground *currentBg = sBattlegroundMgr->GetBattleground(bgid);
+            BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetArenaType());
+            AddBattlegroundQueueId(bgQueueTypeId);
 
-            if(currentBg && currentBg->IsPlayerInBattleground(GetGUID()))
+            m_bgData.bgTypeID = currentBg->GetTypeID();
+
+            //join player to battleground group
+            currentBg->EventPlayerLoggedIn(this);
+            currentBg->AddOrSetPlayerToCorrectBgGroup(this, m_bgData.bgTeam);
+
+            SetInviteForBattlegroundQueueType(bgQueueTypeId, currentBg->GetInstanceID());
+        }
+        // Bg was not found - go to Entry Point
+        else
+        {
+            // leave bg
+            if (player_at_bg)
             {
-                uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetArenaType());
-                AddBattlegroundQueueId(bgQueueTypeId);
+                player_at_bg = false;
+                currentBg->RemovePlayerAtLeave(GetGUID(), false, true);
+            }
 
-                SetBattlegroundId(currentBg->GetInstanceID());
-                SetBGTeam(bgteam);
+            // Do not look for instance if bg not found
+            WorldLocation const& _loc = GetBattlegroundEntryPoint();
+            mapId = _loc.GetMapId();
+            instanceId = 0;
 
-                SetInviteForBattlegroundQueueType(bgQueueTypeId,currentBg->GetInstanceID());
-
-                map = currentBg->GetBgMap();
+            // Db field type is type int16, so it can never be MAPID_INVALID
+            //if (mapId == MAPID_INVALID) -- code kept for reference
+            if (int16(mapId) == int16(-1)) // Battleground Entry Point not found (???)
+            {
+                TC_LOG_ERROR("entities.player", "Player::LoadFromDB: Player (%u) was in BG in database, but BG was not found and entry point was invalid! Teleport to default race/class locations.",
+                    guid);
+                RelocateToHomebind();
             }
             else
-            {
-                Relocate(GetBattlegroundEntryPointX(),GetBattlegroundEntryPointY(),GetBattlegroundEntryPointZ(),GetBattlegroundEntryPointO());
+                Relocate(&_loc);
 
-                mapId = GetBattlegroundEntryPointMap();
-                instanceId = 0;
-
-                //RemoveArenaAuras(true);
-            }
+            // We are not in BG anymore
+            m_bgData.bgInstanceID = 0;
         }
     }
+
+    std::string taxi_nodes = fields[LOAD_DATA_TAXI_PATH].GetString();
 
     if (transGUIDLow)
     {
@@ -16139,11 +16177,11 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
 
 void Player::LoadCorpse(PreparedQueryResult result)
 {
-    if( IsAlive() )
+    if( IsAlive() || HasAtLoginFlag(AT_LOGIN_RESURRECT))
         SpawnCorpseBones(false);
     else
     {
-        if (result /* && !HasAtLoginFlag(AT_LOGIN_RESURRECT) */)
+        if (result && !HasAtLoginFlag(AT_LOGIN_RESURRECT) )
         {
             Field* fields = result->Fetch();
             _corpseLocation.WorldRelocate(fields[0].GetUInt16(), fields[1].GetFloat(), fields[2].GetFloat(), fields[3].GetFloat(), fields[4].GetFloat());
@@ -16156,7 +16194,7 @@ void Player::LoadCorpse(PreparedQueryResult result)
         }
     }
 
-    // RemoveAtLoginFlag(AT_LOGIN_RESURRECT);
+    RemoveAtLoginFlag(AT_LOGIN_RESURRECT);
 }
 
 void Player::_LoadInventory(QueryResult result, uint32 timediff)
@@ -17248,7 +17286,7 @@ void Player::SaveToDB(bool create /*=false*/)
         _SaveMail(trans);
     }
 
-    _SaveBattlegroundCoord(trans);
+    _SaveBGData(trans);
     _SaveInventory(trans);
     _SaveQuestStatus(trans);
     _SaveDailyQuestStatus(trans);
@@ -17373,30 +17411,25 @@ void Player::_SaveAuras(SQLTransaction trans)
     }
 }
 
-void Player::_SaveBattlegroundCoord(SQLTransaction trans)
+void Player::_SaveBGData(SQLTransaction& trans)
 {
-    trans->PAppend("DELETE FROM character_bgcoord WHERE guid = '%u'", GetGUIDLow());
-
-    // don't save if not needed
-    if(!InBattleground())
-        return;
-
-    std::ostringstream ss;
-    ss << "INSERT INTO character_bgcoord (guid, bgid, bgteam, bgmap, bgx,"
-        "bgy, bgz, bgo) VALUES ("
-        << GetGUIDLow() << ", ";
-    ss << GetBattlegroundId();
-    ss << ", ";
-    ss << GetBGTeam();
-    ss << ", ";
-    ss << GetBattlegroundEntryPointMap() << ", "
-        << finiteAlways(GetBattlegroundEntryPointX()) << ", "
-        << finiteAlways(GetBattlegroundEntryPointY()) << ", "
-        << finiteAlways(GetBattlegroundEntryPointZ()) << ", "
-        << finiteAlways(GetBattlegroundEntryPointO());
-    ss << ")";
-
-    trans->Append( ss.str().c_str() );
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_BGDATA);
+    stmt->setUInt32(0, GetGUIDLow());
+    trans->Append(stmt);
+    /* guid, bgInstanceID, bgTeam, x, y, z, o, map, taxi[0], taxi[1], mountSpell */
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PLAYER_BGDATA);
+    stmt->setUInt32(0, GetGUIDLow());
+    stmt->setUInt32(1, m_bgData.bgInstanceID);
+    stmt->setUInt16(2, m_bgData.bgTeam);
+    stmt->setFloat(3, m_bgData.joinPos.GetPositionX());
+    stmt->setFloat(4, m_bgData.joinPos.GetPositionY());
+    stmt->setFloat(5, m_bgData.joinPos.GetPositionZ());
+    stmt->setFloat(6, m_bgData.joinPos.GetOrientation());
+    stmt->setUInt16(7, m_bgData.joinPos.GetMapId());
+    stmt->setUInt16(8, m_bgData.taxiPath[0]);
+    stmt->setUInt16(9, m_bgData.taxiPath[1]);
+    stmt->setUInt16(10, m_bgData.mountSpell);
+    trans->Append(stmt);
 }
 
 void Player::_SaveInventory(SQLTransaction trans)
@@ -19625,21 +19658,51 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
     }
 }
 
-void Player::SetBattlegroundEntryPoint(uint32 Map, float PosX, float PosY, float PosZ, float PosO)
+void Player::SetBattlegroundEntryPoint()
 {
-    MapEntry const* mEntry = sMapStore.LookupEntry(Map);
-    DEBUG_ASSERT(!mEntry->IsBattlegroundOrArena());
+    // Taxi path store
+    if (!m_taxi.empty())
+    {
+        m_bgData.mountSpell = 0;
+        m_bgData.taxiPath[0] = m_taxi.GetTaxiSource();
+        m_bgData.taxiPath[1] = m_taxi.GetTaxiDestination();
 
-    m_bgEntryPointMap = Map;
-    m_bgEntryPointX = PosX;
-    m_bgEntryPointY = PosY;
-    m_bgEntryPointZ = PosZ;
-    m_bgEntryPointO = PosO;
+        // On taxi we don't need check for dungeon
+        m_bgData.joinPos = WorldLocation(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
+    }
+    else
+    {
+        m_bgData.ClearTaxiPath();
+
+        // Mount spell id storing
+        if (IsMounted())
+        {
+            AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOUNTED);
+            if (!auras.empty())
+                m_bgData.mountSpell = (*auras.begin())->GetId();
+        }
+        else
+            m_bgData.mountSpell = 0;
+
+        // If map is dungeon find linked graveyard
+        if (GetMap()->IsDungeon())
+        {
+            if (WorldSafeLocsEntry const* entry = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam()))
+                m_bgData.joinPos = WorldLocation(entry->map_id, entry->x, entry->y, entry->z, 0.0f);
+            else
+                TC_LOG_ERROR("entities.player", "Player::SetBattlegroundEntryPoint: Dungeon (MapID: %u) has no linked graveyard, setting home location as entry point.", GetMapId());
+        }
+        // If new entry point is not BG or arena set it
+        else if (!GetMap()->IsBattlegroundOrArena())
+            m_bgData.joinPos = WorldLocation(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
+    }
+
+    if (m_bgData.joinPos.m_mapId == MAPID_INVALID) // In error cases use homebind position
+        m_bgData.joinPos = WorldLocation(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, 0.0f);
 }
 
 bool Player::TeleportToBGEntryPoint()
 {
-    /*
       if (m_bgData.joinPos.m_mapId == MAPID_INVALID)
         return false;
 
@@ -19647,21 +19710,24 @@ bool Player::TeleportToBGEntryPoint()
     ScheduleDelayedOperation(DELAYED_BG_TAXI_RESTORE);
     ScheduleDelayedOperation(DELAYED_BG_GROUP_RESTORE);
     return TeleportTo(m_bgData.joinPos);
-    */
-
-    uint32 map = GetBattlegroundEntryPointMap();
-    float positionX = GetBattlegroundEntryPointX();
-    float positionY = GetBattlegroundEntryPointY();
-    float positionZ = GetBattlegroundEntryPointZ();
-    float positionO = GetBattlegroundEntryPointO();
-    return TeleportTo(map, positionX, positionY, positionZ, positionO);
 }
 
-bool Player::CanJoinToBattleground() const
+bool Player::CanJoinToBattleground(Battleground const* bg) const
 {
     // check Deserter debuff
     if(GetDummyAura(26013))
         return false;
+
+    /* TC
+      if (bg->isArena() && !GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_ARENAS))
+        return false;
+
+    if (bg->IsRandom() && !GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_RANDOM_BG))
+        return false;
+
+    if (!GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_NORMAL_BG))
+        return false;
+    */
 
     return true;
 }
@@ -19683,15 +19749,15 @@ void Player::ReportedAfkBy(Player* reporter)
         return;
 
     // check if player has 'Idle' or 'Inactive' debuff
-    if(m_bgAfkReporter.find(reporter->GetGUIDLow())==m_bgAfkReporter.end() && !HasAuraEffect(SPELL_AURA_PLAYER_IDLE,0) && !HasAuraEffect(SPELL_AURA_PLAYER_INACTIVE,0) && reporter->CanReportAfkDueToLimit())
+    if(m_bgData.bgAfkReporter.find(reporter->GetGUIDLow()) == m_bgData.bgAfkReporter.end() && !HasAuraEffect(SPELL_AURA_PLAYER_IDLE, 0) && !HasAuraEffect(SPELL_AURA_PLAYER_INACTIVE,0) && reporter->CanReportAfkDueToLimit())
     {
-        m_bgAfkReporter.insert(reporter->GetGUIDLow());
+        m_bgData.bgAfkReporter.insert(reporter->GetGUIDLow());
         // 3 players have to complain to apply debuff
-        if(m_bgAfkReporter.size() >= 3)
+        if(m_bgData.bgAfkReporter.size() >= 3)
         {
             // cast 'Idle' spell
             CastSpell(this, SPELL_AURA_PLAYER_IDLE, true);
-            m_bgAfkReporter.clear();
+            m_bgData.bgAfkReporter.clear();
         }
     }
 }
@@ -20431,42 +20497,6 @@ void Player::SendInitialPacketsAfterAddToMap()
         SendMessageToSet(&data,true);
     }
 
-    // setup BG group membership if need
-    if(Battleground* currentBg = GetBattleground())
-    {
-        // call for invited (join) or listed (relogin) and avoid other cases (GM teleport)
-        if (IsInvitedForBattlegroundInstance(GetBattlegroundId()) ||
-            currentBg->IsPlayerInBattleground(GetGUID()))
-        {
-            currentBg->PlayerRelogin(GetGUID());
-            if(currentBg->GetMapId() == GetMapId())             // we teleported/login to/in bg
-            {
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                uint32 team = currentBg->GetPlayerTeam(GetGUID());
-                if(!team)
-                    team = GetTeam();
-                Group* group = currentBg->GetBgRaid(team);
-                if(!group)                                      // first player joined
-                {
-                    group = new Group;
-                    currentBg->SetBgRaid(team, group);
-                    group->Create(GetGUIDLow(), GetName(), trans);
-                }
-                else                                            // raid already exist
-                {
-                    if(group->IsMember(GetGUID()))
-                    {
-                        uint8 subgroup = group->GetMemberGroup(GetGUID());
-                        SetBattlegroundRaid(group, subgroup);
-                    }
-                    else
-                        currentBg->GetBgRaid(team)->AddMember(GetGUID(), GetName(), trans);
-                }
-                CharacterDatabase.CommitTransaction(trans);
-            }
-        }
-    }
-
     //SendAurasForTarget(this);
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
@@ -21183,7 +21213,98 @@ Battleground* Player::GetBattleground() const
     if(GetBattlegroundId()==0)
         return nullptr;
 
-    return sBattlegroundMgr->GetBattleground(GetBattlegroundId());
+    return sBattlegroundMgr->GetBattleground(GetBattlegroundId(), m_bgData.bgTypeID);
+}
+
+
+bool Player::InBattlegroundQueue() const
+{
+    for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+        if (m_bgBattlegroundQueueID[i].bgQueueTypeId != BATTLEGROUND_QUEUE_NONE)
+            return true;
+    return false;
+}
+
+BattlegroundQueueTypeId Player::GetBattlegroundQueueTypeId(uint32 index) const
+{
+    return m_bgBattlegroundQueueID[index].bgQueueTypeId;
+}
+
+uint32 Player::GetBattlegroundQueueIndex(BattlegroundQueueTypeId bgQueueTypeId) const
+{
+    for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+        if (m_bgBattlegroundQueueID[i].bgQueueTypeId == bgQueueTypeId)
+            return i;
+    return PLAYER_MAX_BATTLEGROUND_QUEUES;
+}
+
+bool Player::IsInvitedForBattlegroundQueueType(BattlegroundQueueTypeId bgQueueTypeId) const
+{
+    for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+        if (m_bgBattlegroundQueueID[i].bgQueueTypeId == bgQueueTypeId)
+            return m_bgBattlegroundQueueID[i].invitedToInstance != 0;
+    return false;
+}
+
+bool Player::InBattlegroundQueueForBattlegroundQueueType(BattlegroundQueueTypeId bgQueueTypeId) const
+{
+    return GetBattlegroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES;
+}
+
+void Player::SetBattlegroundId(uint32 val, BattlegroundTypeId bgTypeId)
+{
+    m_bgData.bgInstanceID = val;
+    m_bgData.bgTypeID = bgTypeId;
+}
+
+uint32 Player::AddBattlegroundQueueId(BattlegroundQueueTypeId val)
+{
+    for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+    {
+        if (m_bgBattlegroundQueueID[i].bgQueueTypeId == BATTLEGROUND_QUEUE_NONE || m_bgBattlegroundQueueID[i].bgQueueTypeId == val)
+        {
+            m_bgBattlegroundQueueID[i].bgQueueTypeId = val;
+            m_bgBattlegroundQueueID[i].invitedToInstance = 0;
+            return i;
+        }
+    }
+    return PLAYER_MAX_BATTLEGROUND_QUEUES;
+}
+
+bool Player::HasFreeBattlegroundQueueId() const
+{
+    for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+        if (m_bgBattlegroundQueueID[i].bgQueueTypeId == BATTLEGROUND_QUEUE_NONE)
+            return true;
+    return false;
+}
+
+void Player::RemoveBattlegroundQueueId(BattlegroundQueueTypeId val)
+{
+    for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+    {
+        if (m_bgBattlegroundQueueID[i].bgQueueTypeId == val)
+        {
+            m_bgBattlegroundQueueID[i].bgQueueTypeId = BATTLEGROUND_QUEUE_NONE;
+            m_bgBattlegroundQueueID[i].invitedToInstance = 0;
+            return;
+        }
+    }
+}
+
+void Player::SetInviteForBattlegroundQueueType(BattlegroundQueueTypeId bgQueueTypeId, uint32 instanceId)
+{
+    for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+        if (m_bgBattlegroundQueueID[i].bgQueueTypeId == bgQueueTypeId)
+            m_bgBattlegroundQueueID[i].invitedToInstance = instanceId;
+}
+
+bool Player::IsInvitedForBattlegroundInstance(uint32 instanceId) const
+{
+    for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+        if (m_bgBattlegroundQueueID[i].invitedToInstance == instanceId)
+            return true;
+    return false;
 }
 
 bool Player::InArena() const
@@ -21195,7 +21316,7 @@ bool Player::InArena() const
     return true;
 }
 
-bool Player::GetBGAccessByLevel(uint32 bgTypeId) const
+bool Player::GetBGAccessByLevel(BattlegroundTypeId bgTypeId) const
 {
     // get a template bg instead of running one
     Battleground *bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
@@ -21206,42 +21327,6 @@ bool Player::GetBGAccessByLevel(uint32 bgTypeId) const
         return false;
 
     return true;
-}
-
-uint32 Player::GetMinLevelForBattlegroundQueueId(uint32 queue_id)
-{
-    if(queue_id < 1)
-        return 0;
-
-    if(queue_id >=6)
-        queue_id = 6;
-
-    return 10*(queue_id+1);
-}
-
-uint32 Player::GetMaxLevelForBattlegroundQueueId(uint32 queue_id)
-{
-    if(queue_id >=6)
-        return 255;                                         // hardcoded max level
-
-    return 10*(queue_id+2)-1;
-}
-
-//TODO make this more generic - current implementation is wrong
-uint32 Player::GetBattlegroundQueueIdFromLevel() const
-{
-    uint32 level = GetLevel();
-    if(level <= 19)
-        return 0;
-    else if (level > 69)
-        return 6;
-    else
-        return level/10 - 1;                                // 20..29 -> 1, 30-39 -> 2, ...
-    /*
-    assert(bgTypeId < MAX_BATTLEGROUND_TYPE_ID);
-    Battleground *bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
-    assert(bg);
-    return (GetLevel() - bg->GetMinLevel()) / 10;*/
 }
 
 float Player::GetReputationPriceDiscount( Creature const* pCreature ) const
@@ -21568,6 +21653,15 @@ uint32 Player::GetResurrectionSpellId()
         spell_id = 21169;
 
     return spell_id;
+}
+
+void Player::OfflineResurrect(ObjectGuid const& guid, SQLTransaction& trans)
+{
+    Corpse::DeleteFromDB(guid, trans);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
+    stmt->setUInt16(0, uint16(AT_LOGIN_RESURRECT));
+    stmt->setUInt64(1, guid.GetCounter());
+    CharacterDatabase.ExecuteOrAppend(trans, stmt);
 }
 
 bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
@@ -22962,7 +23056,7 @@ void Player::UpdateArenaTitles()
         ArenaTeam * at = sObjectMgr->GetArenaTeamById(teamid);
         if(at)
             if(ArenaTeamMember* member = at->GetMember(GetGUID()))
-                closeRating = ((int)at->GetStats().rating - (int)member->personal_rating) < 100; //no more than 100 under the team rating
+                closeRating = ((int)at->GetStats().rating - (int)member->PersonalRating) < 100; //no more than 100 under the team rating
 
         hasRank[rank-1] = sameTeam && closeRating;
     }
@@ -23083,7 +23177,7 @@ void Player::ProcessDelayedOperations()
 
     if (m_DelayedOperations & DELAYED_SPELL_CAST_DESERTER)
         CastSpell(this, 26013, true);               // Deserter
-    /* NYI
+
     if (m_DelayedOperations & DELAYED_BG_MOUNT_RESTORE)
     {
         if (m_bgData.mountSpell)
@@ -23112,7 +23206,6 @@ void Player::ProcessDelayedOperations()
     }
 
     //we have executed ALL delayed ops, so clear the flag
-    */
     m_DelayedOperations = 0;
 }
 

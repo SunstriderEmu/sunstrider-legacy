@@ -78,7 +78,7 @@ struct BattlemasterListEntry
     uint32      minlvl;                                     // 10
     uint32      maxlvl;                                     // 11
     uint32      maxplayersperteam;                          // 12
-                                                            // 13-14 unused
+                                                            // 13-14 unused (14= JoinAsGroup ?)
     char*       name[16];                                   // 15-30
                                                             // 31 string flag, unused
                                                             // 32 unused
@@ -587,6 +587,23 @@ struct MapEntry
             MapID==509 || MapID==534 || MapID==560 || // AhnQiraj, HyjalPast, HillsbradPast
             MapID==568 || MapID==580;                 // ZulAman, Sunwell Plateau
     }
+};
+
+struct PvPDifficultyEntry
+{
+    //uint32      id;                                       // 0        m_ID
+    uint32      mapId;                                      // 1
+    uint32      bracketId;                                  // 2
+    uint32      minLevel;                                   // 3
+    uint32      maxLevel;                                   // 4
+    uint32      difficulty;                                 // 5
+
+    PvPDifficultyEntry() {}
+    PvPDifficultyEntry(uint32 mapId, uint32 bracketId, uint32 minLevel, uint32 maxLevel, uint32 difficulty)
+        : mapId(mapId), bracketId(bracketId), minLevel(minLevel), maxLevel(maxLevel), difficulty(difficulty)
+    {}
+                                                            // helpers
+    BattlegroundBracketId GetBracketId() const { return BattlegroundBracketId(bracketId); }
 };
 
 struct QuestSortEntry

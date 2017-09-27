@@ -4,6 +4,7 @@
 #include "LogsDatabaseAccessor.h"
 #include "TargetedMovementGenerator.h"
 #include "BattleGroundMgr.h"
+#include "ArenaTeamMgr.h"
 #include "TestMgr.h"
 #include "Weather.h"
 #include "GridNotifiersImpl.h"
@@ -1677,13 +1678,12 @@ bool ChatHandler::HandleSendMessageCommand(const char* args)
 
 bool ChatHandler::HandleFlushArenaPointsCommand(const char * /*args*/)
 {
-    sBattlegroundMgr->DistributeArenaPoints();
+    sArenaTeamMgr->DistributeArenaPoints();
     return true;
 }
 
 bool ChatHandler::HandlePlayAllCommand(const char* args)
 {
-    
     ARGS_CHECK
 
     uint32 soundId = atoi((char*)args);

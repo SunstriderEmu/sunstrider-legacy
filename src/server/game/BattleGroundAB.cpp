@@ -178,17 +178,17 @@ void BattlegroundAB::Update(time_t diff)
                 m_ReputationScoreTics[team] += BG_AB_TickPoints[points];
                 if( m_ReputationScoreTics[team] >= BG_AB_ReputationScoreTicks[m_HonorMode] )
                 {
-                    (team == BG_ALLIANCE) ? RewardReputationToTeam(509, 10, ALLIANCE) : RewardReputationToTeam(510, 10, HORDE);
+                    (team == TEAM_ALLIANCE) ? RewardReputationToTeam(509, 10, ALLIANCE) : RewardReputationToTeam(510, 10, HORDE);
                     m_ReputationScoreTics[team] -= BG_AB_ReputationScoreTicks[m_HonorMode];
                 }
                 if( m_HonorScoreTics[team] >= BG_AB_HonorScoreTicks[m_HonorMode] )
                 {
-                    (team == BG_ALLIANCE) ? RewardHonorToTeam(20, ALLIANCE) : RewardHonorToTeam(20, HORDE);
+                    (team == TEAM_ALLIANCE) ? RewardHonorToTeam(20, ALLIANCE) : RewardHonorToTeam(20, HORDE);
                     m_HonorScoreTics[team] -= BG_AB_HonorScoreTicks[m_HonorMode];
                 }
                 if( !m_IsInformedNearVictory && m_TeamScores[team] > 1800 )
                 {
-                    if( team == BG_ALLIANCE )
+                    if( team == TEAM_ALLIANCE )
                         SendMessageToAll(GetTrinityString(LANG_BG_AB_A_NEAR_VICTORY));
                     else
                         SendMessageToAll(GetTrinityString(LANG_BG_AB_H_NEAR_VICTORY));
@@ -198,20 +198,20 @@ void BattlegroundAB::Update(time_t diff)
 
                 if( m_TeamScores[team] > 2000 )
                     m_TeamScores[team] = 2000;
-                if( team == BG_ALLIANCE )
+                if( team == TEAM_ALLIANCE )
                     UpdateWorldState(BG_AB_OP_RESOURCES_ALLY, m_TeamScores[team]);
-                if( team == BG_HORDE )
+                if( team == TEAM_HORDE )
                     UpdateWorldState(BG_AB_OP_RESOURCES_HORDE, m_TeamScores[team]);
             }
         }
 
         // Test win condition
-        if (m_TeamScores[BG_ALLIANCE] >= 2000) {
+        if (m_TeamScores[TEAM_ALLIANCE] >= 2000) {
             RewardHonorToTeam(40, ALLIANCE);
             RewardHonorToTeam(20, HORDE);
             EndBattleground(ALLIANCE);
         }
-        if (m_TeamScores[BG_HORDE] >= 2000) {
+        if (m_TeamScores[TEAM_HORDE] >= 2000) {
             RewardHonorToTeam(40, HORDE);
             RewardHonorToTeam(20, ALLIANCE);
             EndBattleground(HORDE);
@@ -225,7 +225,7 @@ void BattlegroundAB::AddPlayer(Player *plr)
     //create score and add it to map, default values are set in the constructor
     auto  sc = new BattlegroundABScore;
 
-    m_PlayerScores[plr->GetGUID()] = sc;
+    PlayerScores[plr->GetGUID()] = sc;
 }
 
 void BattlegroundAB::RemovePlayer(Player * /*plr*/, uint64 /*guid*/)
@@ -350,8 +350,8 @@ void BattlegroundAB::FillInitialWorldStates(WorldPacket& data)
     // Team scores
     data << uint32(BG_AB_OP_RESOURCES_MAX)      << uint32(BG_AB_MAX_TEAM_SCORE);
     data << uint32(BG_AB_OP_RESOURCES_WARNING)  << uint32(BG_AB_WARNING_SCORE);
-    data << uint32(BG_AB_OP_RESOURCES_ALLY)     << uint32(m_TeamScores[BG_ALLIANCE]);
-    data << uint32(BG_AB_OP_RESOURCES_HORDE)    << uint32(m_TeamScores[BG_HORDE]);
+    data << uint32(BG_AB_OP_RESOURCES_ALLY)     << uint32(m_TeamScores[TEAM_ALLIANCE]);
+    data << uint32(BG_AB_OP_RESOURCES_HORDE)    << uint32(m_TeamScores[TEAM_HORDE]);
 
     // other unknown
     data << uint32(0x745) << uint32(0x2);           // 37 1861 unk
@@ -582,14 +582,14 @@ bool BattlegroundAB::SetupBattleground()
 
 void BattlegroundAB::ResetBGSubclass()
 {
-    m_TeamScores[BG_ALLIANCE]          = 0;
-    m_TeamScores[BG_HORDE]             = 0;
-    m_lastTick[BG_ALLIANCE]            = 0;
-    m_lastTick[BG_HORDE]               = 0;
-    m_HonorScoreTics[BG_ALLIANCE]      = 0;
-    m_HonorScoreTics[BG_HORDE]         = 0;
-    m_ReputationScoreTics[BG_ALLIANCE] = 0;
-    m_ReputationScoreTics[BG_HORDE]    = 0;
+    m_TeamScores[TEAM_ALLIANCE]          = 0;
+    m_TeamScores[TEAM_HORDE]             = 0;
+    m_lastTick[TEAM_ALLIANCE]            = 0;
+    m_lastTick[TEAM_HORDE]               = 0;
+    m_HonorScoreTics[TEAM_ALLIANCE]      = 0;
+    m_HonorScoreTics[TEAM_HORDE]         = 0;
+    m_ReputationScoreTics[TEAM_ALLIANCE] = 0;
+    m_ReputationScoreTics[TEAM_HORDE]    = 0;
     m_IsInformedNearVictory                 = false;
     for (uint8 i = 0; i < BG_AB_DYNAMIC_NODES_COUNT; ++i)
     {
@@ -642,9 +642,9 @@ WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveYard(float x, float y, 
 
 void BattlegroundAB::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
 {
-    auto itr = m_PlayerScores.find(Source->GetGUID());
+    auto itr = PlayerScores.find(Source->GetGUID());
 
-    if( itr == m_PlayerScores.end() )                         // player not found...
+    if( itr == PlayerScores.end() )                         // player not found...
         return;
 
     switch(type)

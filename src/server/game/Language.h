@@ -622,8 +622,8 @@ enum TrinityStrings
     LANG_PLAYER_DND_DEFAULT             = 709,
     LANG_PLAYER_AFK_DEFAULT             = 710,
 
-    LANG_BG_QUEUE_ANNOUNCE_SELF         = 711,
-    LANG_BG_QUEUE_ANNOUNCE_WORLD        = 712,
+    LANG_BG_QUEUE_TOO_LARGE_FOR_BG      = 711,
+    LANG_BG_QUEUE_TOO_LARGE_FOR_ARENA   = 712,
 
 
     LANG_YOUR_ARENA_LEVEL_REQ_ERROR     = 713,
@@ -694,7 +694,8 @@ enum TrinityStrings
     LANG_BG_GROUP_MIXED_LEVELS          = 1131, // "Your group has players from different battleground brakets. You can't join as group."
     LANG_BG_GROUP_MEMBER_ALREADY_IN_QUEUE = 1132, // "Someone in your party is already in this battleground queue. (S)he must leave it before joining as group."
     LANG_BG_GROUP_MEMBER_DESERTER       = 1133, // "Someone in your party is Deserter. You can't join as group."
-    LANG_BG_GROUP_MEMBER_NO_FREE_QUEUE_SLOTS = 1134, // "Someone in your party is already in three battleground queues. You cannot join as group."
+    //LANG_BG_GROUP_MEMBER_NO_FREE_QUEUE_SLOTS = 1134, // "Someone in your party is already in three battleground queues. You cannot join as group."
+    LANG_BG_GROUP_MEMBER_FROZEN         = 1134, // "You cannot queue while frozen"
 
     LANG_CANNOT_TELE_TO_BG              = 1135, // "You cannot teleport to a battleground or arena map."
     LANG_CANNOT_SUMMON_TO_BG            = 1136, // "You cannot summon players to a battleground or arena map."

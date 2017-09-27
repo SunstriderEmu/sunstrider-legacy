@@ -173,13 +173,13 @@ void Monitor::UpdateGeneralInfos(uint32 diff)
     std::string bgs = "alterac warsong arathi eye 2v2 3v3 5v5";
     std::stringstream bgs_wait;
 
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_AV].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_WS].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_AB].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_EY].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_2v2].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_3v3].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_5v5].GetAvgTime();
+    bgs_wait << sBattlegroundMgr->GetAverageQueueWaitTimeForMaxLevels(BATTLEGROUND_QUEUE_AV) << " ";
+    bgs_wait << sBattlegroundMgr->GetAverageQueueWaitTimeForMaxLevels(BATTLEGROUND_QUEUE_WS) << " ";
+    bgs_wait << sBattlegroundMgr->GetAverageQueueWaitTimeForMaxLevels(BATTLEGROUND_QUEUE_AB) << " ";
+    bgs_wait << sBattlegroundMgr->GetAverageQueueWaitTimeForMaxLevels(BATTLEGROUND_QUEUE_EY) << " ";
+    bgs_wait << sBattlegroundMgr->GetAverageQueueWaitTimeForMaxLevels(BATTLEGROUND_QUEUE_2v2) << " ";
+    bgs_wait << sBattlegroundMgr->GetAverageQueueWaitTimeForMaxLevels(BATTLEGROUND_QUEUE_3v3) << " ";
+    bgs_wait << sBattlegroundMgr->GetAverageQueueWaitTimeForMaxLevels(BATTLEGROUND_QUEUE_5v5) << " ";
 
     /* races && classes */
     std::string races = "human orc dwarf nightelf undead tauren gnome troll bloodelf draenei";

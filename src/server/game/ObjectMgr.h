@@ -1034,6 +1034,11 @@ class TC_GAME_API ObjectMgr
 
         bool IsTransportMap(uint32 mapId) const { return _transportMaps.count(mapId); }
 
+#ifndef LICH_KING
+        //storage used instead of the PvPDifficulty.dbc, which does not exists on BC
+        std::map<uint32, PvPDifficultyEntry> BCDifficultyEntries;
+#endif
+
     protected:
 
         // first free id for selected id type

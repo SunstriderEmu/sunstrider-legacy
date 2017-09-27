@@ -93,8 +93,10 @@ DBCStorage <MapEntry> sMapStore(MapEntryfmt);
 // DBC used only for initialization sMapDifficultyMap at startup.
 #ifdef LICH_KING //this one does not exist on BC
 DBCStorage <MapDifficultyEntry> sMapDifficultyStore(MapDifficultyEntryfmt); // only for loading
+DBCStorage <PvPDifficultyEntry> sPvPDifficultyStore(PvPDifficultyfmt);
 #endif
 MapDifficultyMap sMapDifficultyMap;
+
 
 DBCStorage <QuestSortEntry> sQuestSortStore(QuestSortEntryfmt);
 
@@ -298,6 +300,8 @@ void LoadDBCStores(const std::string& dataPath)
         if (MapDifficultyEntry const* entry = sMapDifficultyStore.LookupEntry(i))
             sMapDifficultyMap[MAKE_PAIR32(entry->MapId, entry->Difficulty)] = MapDifficulty(entry->resetTime, entry->maxPlayers, entry->areaTriggerText[0] != '\0');
     sMapDifficultyStore.Clear();
+
+    LOAD_DBC(sPvPDifficultyStore, "PvpDifficulty.dbc");
 #else
     //fake MapDifficulty.dbc for BC is handled in ObjectMgr::LoadInstanceTemplate()
 #endif
@@ -401,6 +405,13 @@ void LoadDBCStores(const std::string& dataPath)
             }
         }
     }
+
+#ifdef LICH_KING
+    for (PvPDifficultyEntry const* entry : sPvPDifficultyStore)
+    {
+        ASSERT(entry->bracketId < MAX_BATTLEGROUND_BRACKETS, "PvpDifficulty bracket (%d) exceeded max allowed value (%d)", entry->bracketId, MAX_BATTLEGROUND_BRACKETS);
+    }
+#endif
 
     LoadDBC(availableDbcLocales,bad_dbc_files,sTaxiNodesStore,           dbcPath,"TaxiNodes.dbc");
 
@@ -1117,6 +1128,136 @@ uint32 GetLiquidFlags(uint32 liquidTypeRec)
         return GetLiquidFlagsFromType(liq->GetType());
 
     return 0;
+}
+
+#ifndef LICH_KING
+//only for BC, use this instead of the non existing DBC
+std::map<uint32, PvPDifficultyEntry> const& GetBCDifficultyEntries()
+{
+    auto& BCDifficultyEntries = sObjectMgr->BCDifficultyEntries;
+    if (!BCDifficultyEntries.empty())
+        return BCDifficultyEntries;
+
+    //PVPZone01 (Alterac Valley)
+    BCDifficultyEntries[1] = std::move(PvPDifficultyEntry(30, 0, 51, 60, 0));
+    BCDifficultyEntries[2] = std::move(PvPDifficultyEntry(30, 1, 61, 70, 1));
+    //PVPZone03 (Warsong Gulch)
+    BCDifficultyEntries[5] = std::move(PvPDifficultyEntry(489, 0, 10, 19, 0));
+    BCDifficultyEntries[6] = std::move(PvPDifficultyEntry(489, 1, 20, 29, 0));
+    BCDifficultyEntries[7] = std::move(PvPDifficultyEntry(489, 2, 30, 39, 0));
+    BCDifficultyEntries[8] = std::move(PvPDifficultyEntry(489, 3, 40, 49, 0));
+    BCDifficultyEntries[9] = std::move(PvPDifficultyEntry(489, 4, 50, 59, 0));
+    BCDifficultyEntries[10] = std::move(PvPDifficultyEntry(489, 5, 60, 69, 0));
+    BCDifficultyEntries[11] = std::move(PvPDifficultyEntry(489, 6, 70, 79, 0));
+    //PVPZone04 (Arathi Basin)
+    BCDifficultyEntries[13] = std::move(PvPDifficultyEntry(529, 0, 20, 29, 0));
+    BCDifficultyEntries[14] = std::move(PvPDifficultyEntry(529, 1, 30, 39, 0));
+    BCDifficultyEntries[15] = std::move(PvPDifficultyEntry(529, 2, 40, 49, 0));
+    BCDifficultyEntries[16] = std::move(PvPDifficultyEntry(529, 3, 50, 59, 0));
+    BCDifficultyEntries[17] = std::move(PvPDifficultyEntry(529, 4, 60, 69, 0));
+    BCDifficultyEntries[18] = std::move(PvPDifficultyEntry(529, 5, 70, 79, 0));
+    //PVPZone05 (Nagrand Arena)
+    BCDifficultyEntries[20] = std::move(PvPDifficultyEntry(559, 0, 10, 14, 0));
+    BCDifficultyEntries[21] = std::move(PvPDifficultyEntry(559, 1, 15, 19, 0));
+    BCDifficultyEntries[22] = std::move(PvPDifficultyEntry(559, 2, 20, 24, 0));
+    BCDifficultyEntries[23] = std::move(PvPDifficultyEntry(559, 3, 25, 29, 0));
+    BCDifficultyEntries[24] = std::move(PvPDifficultyEntry(559, 4, 30, 34, 0));
+    BCDifficultyEntries[25] = std::move(PvPDifficultyEntry(559, 5, 35, 39, 0));
+    BCDifficultyEntries[26] = std::move(PvPDifficultyEntry(559, 6, 40, 44, 0));
+    BCDifficultyEntries[27] = std::move(PvPDifficultyEntry(559, 7, 45, 49, 0));
+    BCDifficultyEntries[28] = std::move(PvPDifficultyEntry(559, 8, 50, 54, 0));
+    BCDifficultyEntries[29] = std::move(PvPDifficultyEntry(559, 9, 55, 59, 0));
+    BCDifficultyEntries[30] = std::move(PvPDifficultyEntry(559, 10, 60, 64, 0));
+    BCDifficultyEntries[31] = std::move(PvPDifficultyEntry(559, 11, 65, 69, 0));
+    BCDifficultyEntries[32] = std::move(PvPDifficultyEntry(559, 12, 70, 74, 0));
+    //bladesedgearena (Blade's Edge Arena)
+    BCDifficultyEntries[36] = std::move(PvPDifficultyEntry(562, 0, 10, 14, 0));
+    BCDifficultyEntries[37] = std::move(PvPDifficultyEntry(562, 1, 15, 19, 0));
+    BCDifficultyEntries[38] = std::move(PvPDifficultyEntry(562, 2, 20, 24, 0));
+    BCDifficultyEntries[39] = std::move(PvPDifficultyEntry(562, 3, 25, 29, 0));
+    BCDifficultyEntries[40] = std::move(PvPDifficultyEntry(562, 4, 30, 34, 0));
+    BCDifficultyEntries[41] = std::move(PvPDifficultyEntry(562, 5, 35, 39, 0));
+    BCDifficultyEntries[42] = std::move(PvPDifficultyEntry(562, 6, 40, 44, 0));
+    BCDifficultyEntries[43] = std::move(PvPDifficultyEntry(562, 7, 45, 49, 0));
+    BCDifficultyEntries[44] = std::move(PvPDifficultyEntry(562, 8, 50, 54, 0));
+    BCDifficultyEntries[45] = std::move(PvPDifficultyEntry(562, 9, 55, 59, 0));
+    BCDifficultyEntries[46] = std::move(PvPDifficultyEntry(562, 10, 60, 64, 0));
+    BCDifficultyEntries[47] = std::move(PvPDifficultyEntry(562, 11, 65, 69, 0));
+    BCDifficultyEntries[48] = std::move(PvPDifficultyEntry(562, 12, 70, 74, 0));
+    //NetherstormBG (Eye of the Storm)
+    BCDifficultyEntries[52] = std::move(PvPDifficultyEntry(566, 0, 61, 69, 0));
+    BCDifficultyEntries[53] = std::move(PvPDifficultyEntry(566, 1, 70, 79, 0));
+    //PVPLordaeron (Ruins of Lordaeron)
+    BCDifficultyEntries[55] = std::move(PvPDifficultyEntry(572, 0, 10, 14, 0));
+    BCDifficultyEntries[56] = std::move(PvPDifficultyEntry(572, 1, 15, 19, 0));
+    BCDifficultyEntries[57] = std::move(PvPDifficultyEntry(572, 2, 20, 24, 0));
+    BCDifficultyEntries[58] = std::move(PvPDifficultyEntry(572, 3, 25, 29, 0));
+    BCDifficultyEntries[59] = std::move(PvPDifficultyEntry(572, 4, 30, 34, 0));
+    BCDifficultyEntries[60] = std::move(PvPDifficultyEntry(572, 5, 35, 39, 0));
+    BCDifficultyEntries[61] = std::move(PvPDifficultyEntry(572, 6, 40, 44, 0));
+    BCDifficultyEntries[62] = std::move(PvPDifficultyEntry(572, 7, 45, 49, 0));
+    BCDifficultyEntries[63] = std::move(PvPDifficultyEntry(572, 8, 50, 54, 0));
+    BCDifficultyEntries[64] = std::move(PvPDifficultyEntry(572, 9, 55, 59, 0));
+    BCDifficultyEntries[65] = std::move(PvPDifficultyEntry(572, 10, 60, 64, 0));
+    BCDifficultyEntries[66] = std::move(PvPDifficultyEntry(572, 11, 65, 69, 0));
+    BCDifficultyEntries[67] = std::move(PvPDifficultyEntry(572, 12, 70, 74, 0));
+
+    return BCDifficultyEntries;
+}
+
+#endif
+
+PvPDifficultyEntry const* GetBattlegroundBracketByLevel(uint32 mapid, uint32 level)
+{
+    PvPDifficultyEntry const* maxEntry = nullptr;              // used for level > max listed level case
+#ifdef LICH_KING
+    for (uint32 i = 0; i < sPvPDifficultyStore.GetNumRows(); ++i)
+    {
+        if (PvPDifficultyEntry const* entry = sPvPDifficultyStore.LookupEntry(i))
+#else
+    auto const& BCDifficultyEntries = GetBCDifficultyEntries();
+    for (auto const& itr : BCDifficultyEntries)
+    {
+        PvPDifficultyEntry const* entry = &(itr.second);
+#endif
+        {
+            // skip unrelated and too-high brackets
+            if (entry->mapId != mapid || entry->minLevel > level)
+                continue;
+
+            // exactly fit
+            if (entry->maxLevel >= level)
+                return entry;
+
+            // remember for possible out-of-range case (search higher from existed)
+            if (!maxEntry || maxEntry->maxLevel < entry->maxLevel)
+                maxEntry = entry;
+        }
+    }
+
+    return maxEntry;
+}
+
+PvPDifficultyEntry const* GetBattlegroundBracketById(uint32 mapid, BattlegroundBracketId id)
+{
+#ifdef LICH_KING
+    for (uint32 i = 0; i < sPvPDifficultyStore.GetNumRows(); ++i)
+    {
+        PvPDifficultyEntry const* entry = sPvPDifficultyStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+#else
+    auto const& BCDifficultyEntries = GetBCDifficultyEntries();
+    for (auto const& itr : BCDifficultyEntries)
+    {
+        PvPDifficultyEntry const* entry = &(itr.second);
+#endif
+        if (entry->mapId == mapid && entry->GetBracketId() == id)
+            return entry;
+    }
+
+    return nullptr;
 }
 
 uint32 GetDefaultMapLight(uint32 mapId)

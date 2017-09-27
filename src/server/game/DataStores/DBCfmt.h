@@ -58,6 +58,7 @@ const char LightEntryfmt[] = "nifffxxxxxxx";
 const char LockEntryfmt[]="niiiiiiiiiiiiiiiiiixxxxxxxxxxxxxx";
 const char MailTemplateEntryfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 const char MapEntryfmt[]="nxixssssssssssssssssxxxxxxxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxiffiixxi";
+const char PvPDifficultyfmt[]="fake for bc. Will be harcoded in core as static values";
 const char QuestSortEntryfmt[]="nxxxxxxxxxxxxxxxxx";
 const char RandomPropertiesPointsfmt[]="niiiiiiiiiiiiiii";
 const char SkillLinefmt[]="nixssssssssssssssssxxxxxxxxxxxxxxxxxxi";

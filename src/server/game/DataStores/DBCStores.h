@@ -459,6 +459,10 @@ TC_GAME_API SkillRaceClassInfoEntry const* GetSkillRaceClassInfo(uint32 skill, u
 TC_GAME_API uint32 GetLiquidFlagsFromType(uint32 type); //convert LiquidTypeEntry.Type to MAP_LIQUID_*
 TC_GAME_API uint32 GetLiquidFlags(uint32 liquidTypeRec);
 
+//Those dbc exists only on LK... fake them for BC
+TC_GAME_API PvPDifficultyEntry const* GetBattlegroundBracketByLevel(uint32 mapid, uint32 level);
+TC_GAME_API PvPDifficultyEntry const* GetBattlegroundBracketById(uint32 mapid, BattlegroundBracketId id);
+
 TC_GAME_API uint32 GetTalentInspectBitPosInTab(uint32 talentId);
 TC_GAME_API uint32 GetTalentTabInspectBitSize(uint32 talentTabId);
 TC_GAME_API uint32 const* /*[3]*/ GetTalentTabPages(uint32 cls);

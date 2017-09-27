@@ -1277,6 +1277,13 @@ Arena.RatingDiscardTimer = 60000
 Arena.AutoDistributePoints = 1
 Arena.AutoDistributeInterval = 7
 
+#
+#    Arena.RatedUpdateTimer
+#        Description: Time (in milliseconds) between checks for matchups in rated arena.
+#        Default:     5000 - (5 seconds)
+
+Arena.RatedUpdateTimer = 5000
+
 ###################################################################################################################
 #
 # BATTLEGROUND CONFIG
@@ -1299,6 +1306,25 @@ Arena.AutoDistributeInterval = 7
 Battleground.PrematureFinishTimer = 300000
 Battleground.TimeLimit.Warsong = 0
 Battleground.TimeLimit.Arena = 0
+
+#
+#    Battleground.InvitationType
+#        Description: Set Battleground invitation type.
+#        Default:     0 - (Normal, Invite as much players to battlegrounds as queued,
+#                          Don't bother with balance)
+#                     1 - (Experimental, Don't allow to invite much more players
+#                          of one faction)
+#                     2 - (Experimental, Try to have even teams)
+Battleground.InvitationType = 0
+
+#
+#    Battleground.PremadeGroupWaitForMatch
+#        Description: Time (in milliseconds) a pre-made group has to wait for matching group of the
+#                     other faction.
+#        Default:     1800000 - (Enabled, 30 minutes)
+#                     0       - (Disabled, Not recommended)
+
+Battleground.PremadeGroupWaitForMatch = 30000
 
 ###################################################################################################
 # NETWORK CONFIG
@@ -1817,6 +1843,10 @@ PacketLogFile = ""
 #        Disable creature loading (must be set before startup to take effect).
 #        Default: 0
 #
+#    Debug.DisableGameObjectsLoading
+#        Disable creature loading (must be set before startup to take effect).
+#        Default: 0
+#
 #    Debug.LogLastPackets
 #		  When activated, server will log last packets sent to client after its last response, then print those as errors if a client time out. Use this to debug client crashes. /!\ This dump packets as log entries with error level with filter "network.opcode", make sur this is logged somewhere.
 #        Default: 0
@@ -1838,6 +1868,7 @@ PacketLogFile = ""
 #        Default: 0
 
 Debug.DisableCreaturesLoading = 0
+Debug.DisableGameObjectsLoading = 0
 Debug.LogLastPackets = 0
 Debug.LogAllPackets = 0
 Debug.DisableMainHand = 0

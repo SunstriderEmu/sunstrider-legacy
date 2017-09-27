@@ -258,7 +258,7 @@ bool ChatHandler::HandleBattlegroundCommand(const char* args)
     char* cBGType = strtok((char*)args, " ");
     char* cAsGroup = strtok(nullptr, " ");
 
-    uint32 bgTypeId = 0;
+    BattlegroundTypeId bgTypeId = BATTLEGROUND_TYPE_NONE;
     if (strcmp(cBGType, "warsong") == 0)
         bgTypeId = BATTLEGROUND_WS;
     else if (strcmp(cBGType, "eye") == 0)
@@ -268,7 +268,7 @@ bool ChatHandler::HandleBattlegroundCommand(const char* args)
     else if (strcmp(cBGType, "alterac") == 0)
         bgTypeId = BATTLEGROUND_AV;
 
-    if (bgTypeId == 0) //no valid bg type provided
+    if (bgTypeId == BATTLEGROUND_TYPE_NONE) //no valid bg type provided
         return false;
 
     bool asGroup = false;
@@ -285,7 +285,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 {
     ARGS_CHECK
 
-        std::string name = args;
+    std::string name = args;
 
     if (!normalizePlayerName(name))
     {
@@ -324,9 +324,10 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             }
             // all's well, set bg id
             // when porting out from the bg, it will be reset to 0
-            target->SetBattlegroundId(m_session->GetPlayer()->GetBattlegroundId());
+            target->SetBattlegroundId(m_session->GetPlayer()->GetBattlegroundId(), m_session->GetPlayer()->GetBattlegroundTypeId());
             // remember current position as entry point for return at bg end teleportation
-            target->SetBattlegroundEntryPoint(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation());
+            if (!target->GetMap()->IsBattlegroundOrArena())
+                target->SetBattlegroundEntryPoint();
         }
         else if (pMap->IsDungeon())
         {
@@ -429,16 +430,14 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             }
             // if both players are in different bgs
             else if (_player->GetBattlegroundId() && _player->GetBattlegroundId() != target->GetBattlegroundId())
-            {
-                PSendSysMessage(LANG_CANNOT_GO_TO_BG_FROM_BG, target->GetName().c_str());
-                SetSentErrorMessage(true);
-                return false;
-            }
+                _player->LeaveBattleground(false); // Note: should be changed so _player gets no Deserter debuff
+
             // all's well, set bg id
             // when porting out from the bg, it will be reset to 0
-            _player->SetBattlegroundId(target->GetBattlegroundId());
+            _player->SetBattlegroundId(target->GetBattlegroundId(), target->GetBattlegroundTypeId());
             // remember current position as entry point for return at bg end teleportation
-            _player->SetBattlegroundEntryPoint(_player->GetMapId(), _player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(), _player->GetOrientation());
+            if (!_player->GetMap()->IsBattlegroundOrArena())
+                _player->SetBattlegroundEntryPoint();
 
         }
         else if (cMap->IsDungeon())
@@ -501,6 +500,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 
         if (_player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAngle(target), TELE_TO_GM_MODE))
         {
+            _player->SetPhaseMask(target->GetPhaseMask(), true);
             PSendSysMessage(LANG_APPEARING_AT, target->GetName().c_str());
             if (_player->IsVisibleGloballyFor(target))
                 ChatHandler(target).PSendSysMessage(LANG_APPEARING_TO, _player->GetName().c_str());
@@ -538,7 +538,6 @@ bool ChatHandler::HandleGonameCommand(const char* args)
     }
 
     PSendSysMessage(LANG_NO_PLAYER, args);
-
     SetSentErrorMessage(true);
     return false;
 }

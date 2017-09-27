@@ -208,17 +208,17 @@ void BattlegroundAV::UpdateScore(uint16 team, int16 points )
 
     m_score[teamindex] = m_Team_Scores[teamindex];
 
-    UpdateWorldState(((teamindex==BG_HORDE)?AV_Horde_Score:AV_Alliance_Score), m_Team_Scores[teamindex]);
+    UpdateWorldState(((teamindex==TEAM_HORDE)?AV_Horde_Score:AV_Alliance_Score), m_Team_Scores[teamindex]);
     if( points < 0)
     {
         if( m_Team_Scores[teamindex] < 1)
         {
             m_Team_Scores[teamindex]=0;
-            EndBattleground(((teamindex==BG_HORDE)?ALLIANCE:HORDE));
+            EndBattleground(((teamindex==TEAM_HORDE)?ALLIANCE:HORDE));
         }
         else if(!m_IsInformedNearVictory[teamindex] && m_Team_Scores[teamindex] < SEND_MSG_NEAR_LOSE)
         {
-            SendMessageToAll(GetTrinityString((teamindex==BG_HORDE)?LANG_BG_AV_H_NEAR_LOSE:LANG_BG_AV_A_NEAR_LOSE));
+            SendMessageToAll(GetTrinityString((teamindex==TEAM_HORDE)?LANG_BG_AV_H_NEAR_LOSE:LANG_BG_AV_A_NEAR_LOSE));
             PlaySoundToAll(AV_SOUND_NEAR_VICTORY);
             m_IsInformedNearVictory[teamindex] = true;
         }
@@ -354,19 +354,19 @@ void BattlegroundAV::Update(time_t diff)
             SpawnBGObject(BG_AV_OBJECT_AURA_N_SNOWFALL_GRAVE,RESPAWN_IMMEDIATELY);
 
             //creatures
-            for(BG_AV_Nodes j = BG_AV_NODES_FIRSTAID_STATION; j < BG_AV_NODES_MAX; ++j )
+            for(BG_AV_Nodes n = BG_AV_NODES_FIRSTAID_STATION; n < BG_AV_NODES_MAX; ++n )
             {
-                if(m_Nodes[i].Owner)
-                    PopulateNode(j);
+                if(m_Nodes[n].Owner)
+                    PopulateNode(n);
             }
             //all creatures which don't get despawned through the script are static
-            for(i=0; i < AV_STATICCPLACE_MAX; i++ )
+            for(i = 0; i < AV_STATICCPLACE_MAX; i++)
                 AddAVCreature(0,i+AV_CPLACE_MAX);
             //mainspiritguides:
             AddSpiritGuide(7, BG_AV_CreaturePos[7][0], BG_AV_CreaturePos[7][1], BG_AV_CreaturePos[7][2], BG_AV_CreaturePos[7][3], ALLIANCE);
             AddSpiritGuide(8, BG_AV_CreaturePos[8][0], BG_AV_CreaturePos[8][1], BG_AV_CreaturePos[8][2], BG_AV_CreaturePos[8][3], HORDE);
             //spawn the marshals (those who get deleted, if a tower gets destroyed)
-            for(i=AV_NPC_A_MARSHAL_SOUTH; i<= AV_NPC_H_MARSHAL_WTOWER; i++)
+            for(i = AV_NPC_A_MARSHAL_SOUTH; i <= AV_NPC_H_MARSHAL_WTOWER; i++)
                 AddAVCreature(i,AV_CPLACE_A_MARSHAL_SOUTH+(i-AV_NPC_A_MARSHAL_SOUTH));
 
             AddAVCreature(AV_NPC_HERALD,AV_CPLACE_HERALD);
@@ -509,7 +509,7 @@ void BattlegroundAV::AddPlayer(Player *plr)
     Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
     auto  sc = new BattlegroundAVScore;
-    m_PlayerScores[plr->GetGUID()] = sc;
+    PlayerScores[plr->GetGUID()] = sc;
     if(m_MaxLevel==0)
         m_MaxLevel=(plr->GetLevel()%10 == 0)? plr->GetLevel() : (plr->GetLevel()-(plr->GetLevel()%10))+10; //TODO: just look at the code \^_^/ --but queue-info should provide this information..
 
@@ -632,9 +632,9 @@ void BattlegroundAV::HandleAreaTrigger(Player *Source, uint32 Trigger)
 void BattlegroundAV::UpdatePlayerScore(Player* Source, uint32 type, uint32 value)
 {
 
-    auto itr = m_PlayerScores.find(Source->GetGUID());
+    auto itr = PlayerScores.find(Source->GetGUID());
 
-    if(itr == m_PlayerScores.end())                         // player not found...
+    if(itr == PlayerScores.end())                         // player not found...
         return;
 
     switch(type)

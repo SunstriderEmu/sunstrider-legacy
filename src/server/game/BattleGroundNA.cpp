@@ -92,7 +92,7 @@ void BattlegroundNA::AddPlayer(Player *plr)
     //create score and add it to map, default values are set in constructor
     auto  sc = new BattlegroundNAScore;
 
-    m_PlayerScores[plr->GetGUID()] = sc;
+    PlayerScores[plr->GetGUID()] = sc;
 
     UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
     UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
