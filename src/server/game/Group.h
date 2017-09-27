@@ -250,7 +250,6 @@ class TC_GAME_API Group
         void ConvertToRaid();
 
         void SetBattlegroundGroup(Battleground *bg) { m_bgGroup = bg; }
-        //uint32 CanJoinBattlegroundQueue(uint32 bgTypeId, uint32 bgQueueType, uint32 MinPlayerCount, uint32 MaxPlayerCount, bool isRated, uint32 arenaSlot);
 #ifdef LICH_KING
         void SetBattlefieldGroup(Battlefield* bf);
 #endif

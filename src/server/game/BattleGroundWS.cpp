@@ -54,15 +54,11 @@ void BattlegroundWS::Update(time_t diff)
             m_Events |= BG_STARTING_EVENT_1;
 
             // setup here, only when at least one player has ported to the map
-            /*
             if(!SetupBattleground())
             {
                 EndNow();
                 return;
             }
-
-//            for(uint32 i = WS_SPIRIT_MAIN_ALLIANCE; i <= WS_SPIRIT_MAIN_HORDE; i++)
-//                SpawnBGCreature(i, RESPAWN_IMMEDIATELY);
 
             for(uint32 i = BG_WS_OBJECT_DOOR_A_1; i <= BG_WS_OBJECT_DOOR_H_4; i++)
             {
@@ -71,7 +67,6 @@ void BattlegroundWS::Update(time_t diff)
             }
             for(uint32 i = BG_WS_OBJECT_A_FLAG; i <= BG_WS_OBJECT_BERSERKBUFF_2; i++)
                 SpawnBGObject(i, RESPAWN_ONE_DAY);
-                */
 
             SetStartDelayTime(START_DELAY0);
         }

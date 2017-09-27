@@ -987,14 +987,6 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
             return;
 
         err = grp->CanJoinBattlegroundQueue(bg, bgQueueTypeId, arenatype, arenatype, isRated != 0, arenaslot);
-        /*
-        uint32 err = grp->CanJoinBattlegroundQueue(bgTypeId, bgQueueTypeId, arenatype, arenatype, (bool)isRated, arenaslot);
-        if (err != BG_JOIN_ERR_OK)
-        {
-            SendBattlegroundOrArenaJoinError(err);
-            return;
-        }
-        */
     }
 
     uint32 ateamId = 0;
@@ -1136,44 +1128,4 @@ void WorldSession::HandleReportPvPAFK( WorldPacket & recvData )
     }
 
     reportedPlayer->ReportedAfkBy(_player);
-}
-
-void WorldSession::SendBattlegroundOrArenaJoinError(uint8 err)
-{
-    /* Re enable this if GroupJoinBattlegroundResult are not usable on BC
-    WorldPacket data;
-    int32 msg;
-    switch (err)
-    {
-        case BG_JOIN_ERR_OFFLINE_MEMBER:
-            msg = LANG_BG_GROUP_OFFLINE_MEMBER;
-            break;
-        case BG_JOIN_ERR_GROUP_TOO_MANY:
-            msg = LANG_BG_GROUP_TOO_LARGE;
-            break;
-        case BG_JOIN_ERR_MIXED_FACTION:
-            msg = LANG_BG_GROUP_MIXED_FACTION;
-            break;
-        case BG_JOIN_ERR_MIXED_LEVELS:
-            msg = LANG_BG_GROUP_MIXED_LEVELS;
-            break;
-        case BG_JOIN_ERR_GROUP_MEMBER_ALREADY_IN_QUEUE:
-            msg = LANG_BG_GROUP_MEMBER_ALREADY_IN_QUEUE;
-            break;
-        case BG_JOIN_ERR_GROUP_DESERTER:
-            msg = LANG_BG_GROUP_MEMBER_DESERTER;
-            break;
-        case BG_JOIN_ERR_ALL_QUEUES_USED:
-            msg = LANG_BG_GROUP_MEMBER_NO_FREE_QUEUE_SLOTS;
-            break;
-        case BG_JOIN_ERR_GROUP_NOT_ENOUGH:
-        case BG_JOIN_ERR_MIXED_ARENATEAM:
-        default:
-            return;
-            break;
-    }
-    ChatHandler::BuildChatPacket(data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, nullptr, nullptr, GetTrinityString(msg));
-    SendPacket(&data);
-    return;
-    */
 }

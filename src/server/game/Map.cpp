@@ -527,6 +527,18 @@ bool Map::AddPlayerToMap(Player *player)
     return true;
 }
 
+bool Map::CanUnload(uint32 diff)
+{
+    if (!m_unloadTimer) 
+        return false;
+
+    if (m_unloadTimer <= diff) 
+        return true;
+
+    m_unloadTimer -= diff;
+    return false;
+}
+
 template<class T>
 void Map::InitializeObject(T* /*obj*/) { }
 
@@ -872,66 +884,35 @@ void Map::Update(const uint32 &t_diff)
 
 void Map::RemovePlayerFromMap(Player *player, bool remove)
 {
+    // Before leaving map, update zone/area for stats
+    player->UpdateZone(MAP_INVALID_ZONE, 0);
+    sScriptMgr->OnPlayerLeaveMap(this, player);
+
+    player->GetHostileRefManager().deleteReferences(); // multithreading crashfix
+
     ASSERT(player);
 
-    player->GetMapRef().unlink();
-    CellCoord p = Trinity::ComputeCellCoord(player->GetPositionX(), player->GetPositionY());
-    if(!p.IsCoordValid())
-    {
-        bool const inWorld = player->IsInWorld();
-        // invalid coordinates
-        player->RemoveFromWorld();
-        SendRemoveTransports(player);
-
-        if (!inWorld) // if was in world, RemoveFromWorld() called DestroyForNearbyPlayers()
-            player->DestroyForNearbyPlayers(); // previous player->UpdateObjectVisibility(true)
-
-        if (player->IsInGrid())
-            player->RemoveFromGrid();
-        else
-            ASSERT(remove); //maybe deleted in logoutplayer when player is not in a map
-
-        if(remove)
-            DeleteFromWorld(player);
-
-        return;
-    }
-
-    Cell cell(p);
-
-    if( !getNGrid(cell.data.Part.grid_x, cell.data.Part.grid_y))
-    {
-        TC_LOG_ERROR("maps","Map::Remove() i_grids was NULL x:%d, y:%d", uint32(cell.data.Part.grid_x), uint32(cell.data.Part.grid_y));
-        return;
-    }
-
-    //TC_LOG_DEBUG("maps","Remove player %s from grid[%u,%u]", player->GetName(), cell.GridX(), cell.GridY());
-    NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
-    assert(grid != nullptr);
-
+    bool const inWorld = player->IsInWorld();
     player->RemoveFromWorld();
-    player->RemoveFromGrid();
 
     SendRemoveTransports(player);
 
+    if (!inWorld) // if was in world, RemoveFromWorld() called DestroyForNearbyPlayers()
+        player->DestroyForNearbyPlayers(); // previous player->UpdateObjectVisibility(true)
+
+    if (player->IsInGrid())
+        player->RemoveFromGrid();
+    else
+        ASSERT(remove); //maybe deleted in logoutplayer when player is not in a map
+
     if (remove)
-    {
         DeleteFromWorld(player);
-        sScriptMgr->OnPlayerLeaveMap(this, player);
-    }
 }
 
 template<class T>
 void
 Map::RemoveFromMap(T *obj, bool remove)
 {
-    CellCoord p = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
-    if (!p.IsCoordValid())
-    {
-        TC_LOG_ERROR("maps", "Map::Remove: Object " UI64FMTD " have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
-        return;
-    }
-
     bool const inWorld = obj->IsInWorld() && obj->GetTypeId() >= TYPEID_UNIT && obj->GetTypeId() <= TYPEID_GAMEOBJECT;
     obj->RemoveFromWorld();
 
@@ -3180,8 +3161,8 @@ void BattlegroundMap::SetUnload()
 void BattlegroundMap::RemoveAllPlayers()
 {
     if (HavePlayers())
-        for (auto & itr : m_mapRefManager)
-            if (Player* player = itr.GetSource())
+        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+            if (Player* player = itr->GetSource())
                 if (!player->IsBeingTeleportedFar())
                     player->TeleportTo(player->GetBattlegroundEntryPoint());
 }

@@ -354,19 +354,19 @@ void BattlegroundAV::Update(time_t diff)
             SpawnBGObject(BG_AV_OBJECT_AURA_N_SNOWFALL_GRAVE,RESPAWN_IMMEDIATELY);
 
             //creatures
-            for(BG_AV_Nodes j = BG_AV_NODES_FIRSTAID_STATION; j < BG_AV_NODES_MAX; ++j )
+            for(BG_AV_Nodes n = BG_AV_NODES_FIRSTAID_STATION; n < BG_AV_NODES_MAX; ++n )
             {
-                if(m_Nodes[i].Owner)
-                    PopulateNode(j);
+                if(m_Nodes[n].Owner)
+                    PopulateNode(n);
             }
             //all creatures which don't get despawned through the script are static
-            for(i=0; i < AV_STATICCPLACE_MAX; i++ )
+            for(i = 0; i < AV_STATICCPLACE_MAX; i++)
                 AddAVCreature(0,i+AV_CPLACE_MAX);
             //mainspiritguides:
             AddSpiritGuide(7, BG_AV_CreaturePos[7][0], BG_AV_CreaturePos[7][1], BG_AV_CreaturePos[7][2], BG_AV_CreaturePos[7][3], ALLIANCE);
             AddSpiritGuide(8, BG_AV_CreaturePos[8][0], BG_AV_CreaturePos[8][1], BG_AV_CreaturePos[8][2], BG_AV_CreaturePos[8][3], HORDE);
             //spawn the marshals (those who get deleted, if a tower gets destroyed)
-            for(i=AV_NPC_A_MARSHAL_SOUTH; i<= AV_NPC_H_MARSHAL_WTOWER; i++)
+            for(i = AV_NPC_A_MARSHAL_SOUTH; i <= AV_NPC_H_MARSHAL_WTOWER; i++)
                 AddAVCreature(i,AV_CPLACE_A_MARSHAL_SOUTH+(i-AV_NPC_A_MARSHAL_SOUTH));
 
             AddAVCreature(AV_NPC_HERALD,AV_CPLACE_HERALD);

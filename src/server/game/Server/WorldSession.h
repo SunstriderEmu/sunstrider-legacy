@@ -99,6 +99,7 @@ enum PartyResult
     PARTY_RESULT_YOU_NOT_LEADER       = 7,
     PARTY_RESULT_TARGET_UNFRIENDLY    = 8,
     PARTY_RESULT_TARGET_IGNORE_YOU    = 9,
+    PARTY_RESULT_PENDING_MATCH        = 12,
     PARTY_RESULT_INVITE_RESTRICTED    = 13
 };
 
@@ -381,7 +382,6 @@ class TC_GAME_API WorldSession
         void SendNotInArenaTeamPacket(uint8 type);
         void SendPetitionShowList( uint64 guid );
         void SendSaveGuildEmblem( uint32 msg );
-        void SendBattlegroundOrArenaJoinError(uint8 err);
 
         // Dynamic map data
         void SendPlayMusic(uint32 musicId);

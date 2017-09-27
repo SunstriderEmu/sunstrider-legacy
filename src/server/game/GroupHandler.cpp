@@ -356,7 +356,7 @@ void WorldSession::HandleGroupDisbandOpcode( WorldPacket & /*recvData*/ )
 
     if(_player->InBattleground())
     {
-        SendPartyResult(PARTY_OP_INVITE, "", PARTY_RESULT_INVITE_RESTRICTED);
+        SendPartyResult(PARTY_OP_INVITE, "", /*PARTY_RESULT_INVITE_RESTRICTED*/ PARTY_RESULT_OK); //sunstrider: changed result, PARTY_RESULT_OK shows nothing
         return;
     }
 

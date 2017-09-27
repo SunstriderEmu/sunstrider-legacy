@@ -20,6 +20,7 @@
 #include "Chat.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
+#include "Battleground.h"
 
 bool BattlegroundTemplate::IsArena() const
 {
@@ -230,12 +231,38 @@ void BattlegroundMgr::BuildGroupJoinedBattlegroundPacket(WorldPacket* data, Grou
     5 - Your group has joined the queue for BE Arena
     6 - Your group has joined the queue for All Arenas
     7 - Your group has joined the queue for EotS*/
-    data->Initialize(SMSG_GROUP_JOINED_BATTLEGROUND, 4);
-    *data << int32(result);
-    /* LK ONLY?
-    if (result == ERR_BATTLEGROUND_JOIN_TIMED_OUT || result == ERR_BATTLEGROUND_JOIN_FAILED)
-        *data << uint64(0);                                 // player guid
-    */
+
+    TrinityStrings msg = TrinityStrings(0);
+    switch (result)
+    {
+    //some cases for BC only. We don't have these messages in BC client.
+    case FAKE_ERR_BATTLEGROUND_MIXED_LEVELS:
+        msg = LANG_BG_GROUP_MIXED_LEVELS; 
+        break;
+    case FAKE_ERR_BATTLEGROUND_OFFLINE_MEMBER:
+        msg = LANG_BG_GROUP_OFFLINE_MEMBER; 
+        break;
+    case FAKE_ERR_BATTLEGROUND_ALREADY_IN_QUEUE:
+        msg = LANG_BG_GROUP_MEMBER_ALREADY_IN_QUEUE; 
+        break;
+    case FAKE_ERR_BATTLEGROUND_FROZEN:
+        msg = LANG_BG_GROUP_MEMBER_FROZEN; 
+        break;
+    case FAKE_ERR_BATTLEGROUND_TEAM_SIZE:
+        msg = LANG_BG_GROUP_TOO_LARGE; 
+        break;
+    default:    
+        data->Initialize(SMSG_GROUP_JOINED_BATTLEGROUND, 4);
+        *data << int32(result);
+#ifdef LICH_KING
+        if (result == ERR_BATTLEGROUND_JOIN_TIMED_OUT || result == ERR_BATTLEGROUND_JOIN_FAILED)
+            *data << uint64(0);                                 // player guid
+#endif
+        break;
+    }
+
+    if (msg != TrinityStrings(0)) 
+        ChatHandler::BuildChatPacket(*data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, nullptr, nullptr, Battleground::GetTrinityString(msg));
 }
 
 void BattlegroundMgr::BuildUpdateWorldStatePacket(WorldPacket *data, uint32 field, uint32 value)

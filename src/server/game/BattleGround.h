@@ -282,7 +282,7 @@ class TC_GAME_API Battleground
         //here we can count minlevel and maxlevel for players
         void SetBracket(PvPDifficultyEntry const* bracketEntry);
         void SetInstanceID(uint32 InstanceID) { m_InstanceID = InstanceID; }
-        void SetStatus(uint32 Status);
+        void SetStatus(BattlegroundStatus Status);
         void SetClientInstanceID(uint32 InstanceID) { m_ClientInstanceID = InstanceID; }
         void SetStartTime(uint32 Time)      { m_StartTime = Time; }
         void SetEndTime(uint32 Time)        { m_EndTime = Time; }
@@ -319,7 +319,6 @@ class TC_GAME_API Battleground
             else
                 return m_InvitedHorde;
         }
-        bool HasFreeSlotsForTeam(uint32 Team) const;
         bool HasFreeSlots() const;
         uint32 GetFreeSlotsForTeam(uint32 Team) const;
 
@@ -461,14 +460,13 @@ class TC_GAME_API Battleground
 
         void DoorOpen(uint32 type);
         void DoorClose(uint32 type);
-        const char *GetTrinityString(int32 entry);
+        static const char* GetTrinityString(int32 entry);
 
         virtual bool HandlePlayerUnderMap(Player * plr) {return false;}
 
         // since arenas can be AvA or Hvh, we have to get the "temporary" team of a player
         uint32 GetPlayerTeam(uint64 guid);
         bool IsPlayerInBattleground(uint64 guid);
-        void PlayerRelogin(uint64 guid);
 
         bool ToBeDeleted() const { return m_SetDeleteThis; }
         void SetDeleteThis() {m_SetDeleteThis = true;}

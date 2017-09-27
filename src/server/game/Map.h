@@ -141,13 +141,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         MapType GetMapType() const { return i_mapType; }
 
         // currently unused for normal maps
-        bool CanUnload(uint32 diff)
-        {
-            if(!m_unloadTimer) return false;
-            if(m_unloadTimer <= diff) return true;
-            m_unloadTimer -= diff;
-            return false;
-        }
+        bool CanUnload(uint32 diff);
 
         virtual bool AddPlayerToMap(Player *);
         virtual void RemovePlayerFromMap(Player *, bool);

@@ -2662,20 +2662,31 @@ enum GroupJoinBattlegroundResult
 
     ERR_BATTLEGROUND_NONE                   = -1,           // not show anything
     ERR_GROUP_JOIN_BATTLEGROUND_DESERTERS   = -2,           // You cannot join the battleground yet because you or one of your party members is flagged as a Deserter.
+#ifdef LICH_KING
     ERR_ARENA_TEAM_PARTY_SIZE               = -3,           // Incorrect party size for this arena.
+#else
+    ERR_BATTLEGROUND_MIXED_TEAM             = -3,           // Your group is not in the same team
+#endif
     ERR_BATTLEGROUND_TOO_MANY_QUEUES        = -4,           // You can only be queued for 2/3 battles at once
     ERR_BATTLEGROUND_CANNOT_QUEUE_FOR_RATED = -5,           // You cannot queue for a rated match while queued for other battles
     ERR_BATTLEDGROUND_QUEUED_FOR_RATED      = -6,           // You cannot queue for another battle while queued for a rated arena match
     ERR_BATTLEGROUND_TEAM_LEFT_QUEUE        = -7,           // Your team has left the arena queue
+    //after that, BC client only show "Your group has joined a battleground queue, but you are not eligible". Tested on -8 -9 -10 -11 -12
+#ifdef LICH_KING
     ERR_BATTLEGROUND_NOT_IN_BATTLEGROUND    = -8,           // You can't do that in a battleground.
     ERR_BATTLEGROUND_JOIN_XP_GAIN           = -9,           // wtf, doesn't exist in client...
     ERR_BATTLEGROUND_JOIN_RANGE_INDEX       = -10,          // Cannot join the queue unless all members of your party are in the same battleground level range.
     ERR_BATTLEGROUND_JOIN_TIMED_OUT         = -11,          // %s was unavailable to join the queue. (uint64 guid exist in client cache)
     ERR_BATTLEGROUND_JOIN_FAILED            = -12,          // Join as a group failed (uint64 guid doesn't exist in client cache)
-#ifdef LICH_KING
     ERR_LFG_CANT_USE_BATTLEGROUND           = -13,          // You cannot queue for a battleground or arena while using the dungeon system.
     ERR_IN_RANDOM_BG                        = -14,          // Can't do that while in a Random Battleground queue.
     ERR_IN_NON_RANDOM_BG                    = -15           // Can't queue for Random Battleground while in another Battleground queue.
+#else
+    FAKE_ERR_BATTLEGROUND_MIXED_LEVELS      = -100, //LANG_BG_GROUP_MIXED_LEVELS
+    FAKE_ERR_BATTLEGROUND_OFFLINE_MEMBER    , //LANG_BG_GROUP_OFFLINE_MEMBER
+    FAKE_ERR_BATTLEGROUND_ALREADY_IN_QUEUE  , //LANG_BG_GROUP_MEMBER_ALREADY_IN_QUEUE
+    FAKE_ERR_BATTLEGROUND_FROZEN            , //LANG_BG_GROUP_MEMBER_FROZEN
+    FAKE_ERR_BATTLEGROUND_TEAM_SIZE         , //LANG_BG_GROUP_TOO_LARGE
 #endif
 };
 

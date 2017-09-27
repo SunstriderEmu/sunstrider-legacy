@@ -233,6 +233,7 @@ void Battleground::Update(time_t diff)
             else {
                 //_ProcessResurrect(diff);
             }
+            break;
         case STATUS_WAIT_LEAVE:
             _ProcessLeave(diff);
             break;
@@ -835,7 +836,7 @@ uint32 Battleground::GetBattlemasterEntry() const
     }
 }
 
-void Battleground::SetStatus(uint32 Status)       
+void Battleground::SetStatus(BattlegroundStatus Status)
 { 
     m_Status = Status; 
 
@@ -1165,7 +1166,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     {
         // Do next only if found in battleground
         plr->SetBattlegroundId(0, BATTLEGROUND_TYPE_NONE);  // We're not in BG.
-                                                               // reset destination bg team
+        // reset destination bg team
         plr->SetBGTeam(0);
 
         // remove all criterias on bg leave
@@ -1452,12 +1453,6 @@ void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
         return;
 
     plr->CastSpell(plr, SPELL_WAITING_FOR_RESURRECT, true);
-    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(SPELL_WAITING_FOR_RESURRECT);
-    if(spellInfo)
-    {
-        Aura *Aur = CreateAura(spellInfo, 0, nullptr, plr);
-        plr->AddAura(Aur);
-    }
 }
 
 void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
@@ -1689,7 +1684,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
         return false;
     }
 
-    pCreature->SetDeathState(DEAD);
+    //pCreature->SetDeathState(DEAD);
 
     pCreature->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, pCreature->GetGUID());
     // aura
@@ -1839,30 +1834,6 @@ bool Battleground::IsPlayerInBattleground(uint64 guid)
     if(itr!=m_Players.end())
         return true;
     return false;
-}
-
-void Battleground::PlayerRelogin(uint64 guid)
-{
-    if(GetStatus() != STATUS_WAIT_LEAVE)
-        return;
-
-    Player *plr = sObjectMgr->GetPlayer(guid);
-    if(!plr)
-        return;
-
-    BlockMovement(plr);
-
-
-    WorldPacket pvpLogData;
-    BuildPvPLogDataPacket(pvpLogData);
-
-    BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(GetTypeID(), GetArenaType());
-
-    plr->SendDirectMessage(&pvpLogData);
-
-    WorldPacket data;
-    sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, plr->GetBattlegroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime(), GetArenaType(), plr->GetBGTeam());
-    plr->SendDirectMessage(&data);
 }
 
 uint32 Battleground::GetAlivePlayersCountByTeam(uint32 Team) const

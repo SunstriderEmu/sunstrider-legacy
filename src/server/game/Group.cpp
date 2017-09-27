@@ -1645,58 +1645,6 @@ void Group::UpdateLooterGuid( WorldObject* object, bool ifneed )
     SendUpdate();
 }
 
-/*
-uint32 Group::CanJoinBattlegroundQueue(uint32 bgTypeId, uint32 bgQueueType, uint32 MinPlayerCount, uint32 MaxPlayerCount, bool isRated, uint32 arenaSlot)
-{
-    // check for min / max count
-    uint32 memberscount = GetMembersCount();
-    if(memberscount < MinPlayerCount)
-        return BG_JOIN_ERR_GROUP_NOT_ENOUGH;
-    if(memberscount > MaxPlayerCount)
-        return BG_JOIN_ERR_GROUP_TOO_MANY;
-
-    // get a player as reference, to compare other players' stats to (arena team id, queue id based on level, etc.)
-    Player * reference = GetFirstMember()->GetSource();
-    // no reference found, can't join this way
-    if(!reference)
-        return BG_JOIN_ERR_OFFLINE_MEMBER;
-
-    uint32 bgQueueId = reference->GetBattlegroundQueueIdFromLevel();
-    uint32 arenaTeamId = reference->GetArenaTeamId(arenaSlot);
-    uint32 team = reference->GetTeam();
-
-    // check every member of the group to be able to join
-    for(GroupReference *itr = GetFirstMember(); itr != nullptr; itr = itr->next())
-    {
-        Player *member = itr->GetSource();
-        // offline member? don't let join
-        if(!member)
-            return BG_JOIN_ERR_OFFLINE_MEMBER;
-        // don't allow cross-faction join as group
-        if(member->GetTeam() != team)
-            return BG_JOIN_ERR_MIXED_FACTION;
-        // not in the same battleground level braket, don't let join
-        if(member->GetBattlegroundQueueIdFromLevel() != bgQueueId)
-            return BG_JOIN_ERR_MIXED_LEVELS;
-        // don't let join rated matches if the arena team id doesn't match
-        if(isRated && member->GetArenaTeamId(arenaSlot) != arenaTeamId)
-            return BG_JOIN_ERR_MIXED_ARENATEAM;
-        // don't let join if someone from the group is already in that bg queue
-        if(member->InBattlegroundQueueForBattlegroundQueueType(bgQueueType))
-            return BG_JOIN_ERR_GROUP_MEMBER_ALREADY_IN_QUEUE;
-        // check for deserter debuff in case not arena queue
-        if(bgTypeId != BATTLEGROUND_AA && !member->CanJoinToBattleground())
-            return BG_JOIN_ERR_GROUP_DESERTER;
-        // check if member can join any more battleground queues
-        if(!member->HasFreeBattlegroundQueueId())
-            return BG_JOIN_ERR_ALL_QUEUES_USED;
-        if(member->isSpectator())
-            return BG_JOIN_ERR_OFFLINE_MEMBER; //not good message for this
-    }
-    return BG_JOIN_ERR_OK;
-}
-*/
-
 GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* bgOrTemplate, BattlegroundQueueTypeId bgQueueTypeId, uint32 MinPlayerCount, uint32 /*MaxPlayerCount*/, bool isRated, uint32 arenaSlot)
 {
 #ifdef LICH_KING
@@ -1719,15 +1667,23 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
 #endif
         return ERR_BATTLEGROUND_NONE;                        // ERR_GROUP_JOIN_BATTLEGROUND_TOO_MANY handled on client side
 
-                                                             // get a player as reference, to compare other players' stats to (arena team id, queue id based on level, etc.)
+    // get a player as reference, to compare other players' stats to (arena team id, queue id based on level, etc.)
     Player* reference = ASSERT_NOTNULL(GetFirstMember())->GetSource();
     // no reference found, can't join this way
     if (!reference)
+#ifdef LICH_KING
         return ERR_BATTLEGROUND_JOIN_FAILED;
+#else
+        return ERR_BATTLEGROUND_NONE;
+#endif
 
     PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bgOrTemplate->GetMapId(), reference->GetLevel());
     if (!bracketEntry)
+#ifdef LICH_KING
         return ERR_BATTLEGROUND_JOIN_FAILED;
+#else
+        return ERR_BATTLEGROUND_NONE;
+#endif
 
     uint32 arenaTeamId = reference->GetArenaTeamId(arenaSlot);
     uint32 team = reference->GetTeam();
@@ -1743,20 +1699,40 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
         Player* member = itr->GetSource();
         // offline member? don't let join
         if (!member)
+#ifdef LICH_KING
             return ERR_BATTLEGROUND_JOIN_FAILED;
+#else
+            return FAKE_ERR_BATTLEGROUND_OFFLINE_MEMBER;
+#endif
         // don't allow cross-faction join as group
         if (member->GetTeam() != team)
+#ifdef LICH_KING
             return ERR_BATTLEGROUND_JOIN_TIMED_OUT;
+#else
+            return ERR_BATTLEGROUND_MIXED_TEAM;
+#endif
         // not in the same battleground level braket, don't let join
         PvPDifficultyEntry const* memberBracketEntry = GetBattlegroundBracketByLevel(bracketEntry->mapId, member->GetLevel());
         if (memberBracketEntry != bracketEntry)
+#ifdef LICH_KING
             return ERR_BATTLEGROUND_JOIN_RANGE_INDEX;
+#else
+            return FAKE_ERR_BATTLEGROUND_MIXED_LEVELS;
+#endif
         // don't let join rated matches if the arena team id doesn't match
         if (isRated && member->GetArenaTeamId(arenaSlot) != arenaTeamId)
+#ifdef LICH_KING
             return ERR_BATTLEGROUND_JOIN_FAILED;
+#else
+            return ERR_BATTLEGROUND_NONE;
+#endif
         // don't let join if someone from the group is already in that bg queue
         if (member->InBattlegroundQueueForBattlegroundQueueType(bgQueueTypeId))
-            return ERR_BATTLEGROUND_JOIN_FAILED;            // not blizz-like
+#ifdef LICH_KING
+            return ERR_BATTLEGROUND_JOIN_FAILED;  // not blizz-like
+#else
+            return FAKE_ERR_BATTLEGROUND_ALREADY_IN_QUEUE;  // not blizz-like
+#endif           
 #ifdef LICH_KING
         // don't let join if someone from the group is in bg queue random
         if (member->InBattlegroundQueueForBattlegroundQueueType(bgQueueTypeIdRandom))
@@ -1778,12 +1754,20 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
 #endif
         // check Freeze debuff
         if (member->HasAura(9454))
-            return ERR_BATTLEGROUND_JOIN_FAILED;
+#ifdef LICH_KING
+            return ERR_BATTLEGROUND_JOIN_FAILED;  // not blizz-like
+#else
+            return FAKE_ERR_BATTLEGROUND_FROZEN;  // not blizz-like
+#endif         
     }
 
     // only check for MinPlayerCount since MinPlayerCount == MaxPlayerCount for arenas...
     if (bgOrTemplate->IsArena() && memberscount != MinPlayerCount)
+#ifdef LICH_KING
         return ERR_ARENA_TEAM_PARTY_SIZE;
+#else
+        return FAKE_ERR_BATTLEGROUND_TEAM_SIZE;
+#endif
 
     return GroupJoinBattlegroundResult(bgOrTemplate->GetTypeID());
 }

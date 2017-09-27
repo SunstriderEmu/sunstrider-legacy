@@ -994,7 +994,7 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, 
     }
 #endif
 
-    //LastUsedScriptID = GetScriptId(); Moved to InitEntry
+    //LastUsedScriptID = GetScriptId(); sunstrider: Moved to InitEntry
 
     if (IsSpiritHealer() || IsSpiritGuide() || (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_GHOST_VISIBILITY))
     {

@@ -20498,44 +20498,6 @@ void Player::SendInitialPacketsAfterAddToMap()
         SendMessageToSet(&data,true);
     }
 
-    /*
-    // setup BG group membership if need
-    if(Battleground* currentBg = GetBattleground())
-    {
-        // call for invited (join) or listed (relogin) and avoid other cases (GM teleport)
-        if (IsInvitedForBattlegroundInstance(GetBattlegroundId()) ||
-            currentBg->IsPlayerInBattleground(GetGUID()))
-        {
-            currentBg->PlayerRelogin(GetGUID());
-            if(currentBg->GetMapId() == GetMapId())             // we teleported/login to/in bg
-            {
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                uint32 team = currentBg->GetPlayerTeam(GetGUID());
-                if(!team)
-                    team = GetTeam();
-                Group* group = currentBg->GetBgRaid(team);
-                if(!group)                                      // first player joined
-                {
-                    group = new Group;
-                    currentBg->SetBgRaid(team, group);
-                    group->Create(GetGUIDLow(), GetName(), trans);
-                }
-                else                                            // raid already exist
-                {
-                    if(group->IsMember(GetGUID()))
-                    {
-                        uint8 subgroup = group->GetMemberGroup(GetGUID());
-                        SetBattlegroundRaid(group, subgroup);
-                    }
-                    else
-                        currentBg->GetBgRaid(team)->AddMember(GetGUID(), GetName(), trans);
-                }
-                CharacterDatabase.CommitTransaction(trans);
-            }
-        }
-    }
-    */
-
     //SendAurasForTarget(this);
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
