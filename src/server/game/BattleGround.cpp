@@ -291,7 +291,12 @@ void Battleground::Update(time_t diff)
     }
 
     // if less then minimum players are in on one side, then start premature finish timer
-    if(GetStatus() == STATUS_IN_PROGRESS && !IsArena() && sBattlegroundMgr->GetPrematureFinishTime() && (GetPlayersCountByTeam(ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(HORDE) < GetMinPlayersPerTeam()))
+    if(GetStatus() == STATUS_IN_PROGRESS && !IsArena() 
+        && sBattlegroundMgr->GetPrematureFinishTime() 
+        && (GetPlayersCountByTeam(ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(HORDE) < GetMinPlayersPerTeam())
+        && !(IsArena() && sBattlegroundMgr->IsArenaTesting())
+        && !(isBattleground() && sBattlegroundMgr->IsBattleGroundTesting())
+        )
     {
         if(!m_PrematureCountDown)
         {
