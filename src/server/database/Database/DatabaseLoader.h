@@ -3,7 +3,7 @@
 #define DatabaseLoader_h__
 
 #include "DatabaseWorkerPool.h"
-//#include "DBUpdater.h"
+#include "Define.h"
 
 #include <functional>
 #include <stack>
