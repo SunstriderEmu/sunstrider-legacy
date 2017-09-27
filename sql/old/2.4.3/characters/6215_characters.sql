@@ -1,0 +1,2 @@
+ALTER TABLE arena_team_stats
+	ADD COLUMN nonplayedweeks INT(10) UNSIGNED NOT NULL DEFAULT 0;

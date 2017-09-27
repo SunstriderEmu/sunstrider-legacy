@@ -1,0 +1,1 @@
+ALTER TABLE gm_tickets DROP COLUMN name;

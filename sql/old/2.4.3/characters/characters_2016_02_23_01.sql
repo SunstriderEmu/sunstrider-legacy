@@ -1,0 +1,62 @@
+
+DELETE FROM character_inventory;
+DELETE FROM guild_bank_item;
+DELETE FROM mail;
+DELETE FROM mail_items;
+
+DROP TABLE IF EXISTS `item_instance`;
+
+CREATE TABLE `item_instance` (
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `owner_guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `template` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `container_guid` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `creator` int(11) unsigned NOT NULL DEFAULT '0',
+  `gift_creator` int(11) unsigned NOT NULL DEFAULT '0',
+  `stacks` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `duration` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `spell1_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `spell2_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `spell3_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `spell4_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `spell5_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `flags` int(11) unsigned NOT NULL DEFAULT '0',
+  `enchant1_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant1_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant1_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant2_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant2_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant2_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant3_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant3_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant3_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant4_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant4_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant4_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant5_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant5_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant5_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant6_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant6_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant6_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant7_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant7_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant7_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant8_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant8_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant8_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant9_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant9_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant9_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant10_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant10_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant10_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `enchant11_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant11_duration` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `enchant11_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `property_seed` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `random_prop_id` smallint(5) NOT NULL DEFAULT '0',
+  `durability` smallint(5) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`guid`),
+  KEY `idx_owner_guid` (`owner_guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Item System';

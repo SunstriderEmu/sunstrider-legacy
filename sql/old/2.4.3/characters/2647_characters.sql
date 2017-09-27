@@ -1,0 +1,9 @@
+ALTER TABLE characters ADD COLUMN level TINYINT UNSIGNED NOT NULL default '0' AFTER gender;
+ALTER TABLE characters ADD COLUMN xp INT UNSIGNED NOT NULL default '0' AFTER level;
+ALTER TABLE characters ADD COLUMN money INT UNSIGNED NOT NULL default '0' after xp;
+
+UPDATE characters SET
+level = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(data, ' ', 35), ' ', -1) AS UNSIGNED),
+xp = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(data, ' ', 927), ' ', -1) AS UNSIGNED),
+money = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(data, ' ', 1462), ' ', -1) AS UNSIGNED);
+
