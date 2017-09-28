@@ -59,43 +59,6 @@ http://slproweb.com/products/Win32OpenSSL.html
 https://sourceforge.net/projects/boost/files/boost-binaries/1.65.1/
 
 <!----------------------------------------------------------------------------->
-## Setting Up The DB
-
-1. Download [MariaDB][maria_db] 10.1 series) and install it. Be sure to note
-   down your root password, and the port you select if it not the default. If
-   you don't already have an SQL client, you can install HeidiSQL when proposed
-   to do so.
-   /!\ Only 10.1 series or lower are supported at the moment.
-
-2. Download the last world database [here][world_db], copy it to the `sql`
-   directory in the repository then rename it to `world.sql` (so that it is ignored by Git and taken into account by the script at step 3).
-
-3. If this is a first-time setup, switch to the `sql` sub-directory of the
-   repository, then run `mysql -u root -p < create_mysql.sql` then `mysql -u
-   root -p < populate_mysql.sql`.
-
-4. Apply every 'world', 'char', 'auth' updates in the `sql/updates` directory,
-   applying them from the lowest date to the highest.
-
-   Under bash, this can be achieved by running the `apply_updates.sh` script
-   that is in the `sql` directory.
-
-   *When the database creation scripts are updated, those updates are moved to
-   the `sql/updates/old` directory and are not needed anymore.*
-
-As an aside, you can dispense with the `-u root -p` part if you [configure the
-user and password in the `my.ini` file][my_ini].
-
-[maria_db]:
-https://downloads.mariadb.org/
-
-[world_db]:
-https://github.com/kelno/sunstrider/releases
-
-[my_ini]:
-http://www.avajava.com/tutorials/lessons/how-do-i-log-on-to-mysql-automatically.html
-
-<!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc
 
 You can skip this step by downloading [the already extracted data folders][githubdata] and extracting them into your `<install dir>/data` folder.
@@ -138,10 +101,36 @@ Otherwise, if those files were missing, outdated, if if you want to do it by you
 [githubdata]:
 https://github.com/kelno/sunstrider/releases
 
+
+<!----------------------------------------------------------------------------->
+## Setting Up The DB
+
+1. Download [MariaDB][maria_db] (10.1 series) and install it. Be sure to note
+   down your root password, and the port you select if it not the default. If
+   you don't already have an SQL client, you can install HeidiSQL when proposed
+   to do so.  
+   /!\ Only 10.1 series or lower are supported at the moment.
+
+2. Download the last world database [here][world_db], extract it to your CMAKE_INSTALL_PREFIX directory. 
+
+3. You may follow the instructions [here][trinity_db_instructions]. Just use the world you just downloaded instead.
+
+[maria_db]:
+https://downloads.mariadb.org/
+
+[world_db]:
+https://github.com/kelno/sunstrider/releases
+
+[my_ini]:
+http://www.avajava.com/tutorials/lessons/how-do-i-log-on-to-mysql-automatically.html
+
+[trinity_db_instructions]:
+https://trinitycore.atlassian.net/wiki/spaces/tc/pages/2130092/Databases+Installation
+
 <!----------------------------------------------------------------------------->
 ## Install and Configure the Server
 
-- Copy to your server install directory :
+- Copy to your CMAKE_INSTALL_PREFIX directory :
 
 	- `libeay32.dll` from the OpenSSL install directory.
 	- `libmysql.dll` from your mariadb directory (for example `C:\Program Files\MariaDB 10.1\lib`)
@@ -162,15 +151,18 @@ https://github.com/kelno/sunstrider/releases
 	- **WorldDatabaseInfo**: See info in conf file
 	- **CharacterDatabaseInfo**: See info in conf file
 	- **LogsDatabaseInfo**: See info in conf file
+	- **MySQLExecutable**: See info in conf file
 	- **DataDir**: Set this your data folder you just filled last step.
 	- **LogsDir***: Because you'll probably want logs. See info in conf file.
-
+	
 Local realmlist entries are already configured in database for BC and LK, so you don't need
 to add one yourself for development. If you need to, just look at the structure
 of the `realmlist` table in the `auth` database.
 
 Some dummy accounts are already in the database, from `test1` to `test5`. The
 password are the usernames.
+
+
 
 <!----------------------------------------------------------------------------->
 ## Running the Server
