@@ -39,30 +39,30 @@ Inside, create the following folders :
 `make install -j <x>`   <sub>where x is a number of processors to use for the compilation.</sub>   
 	This will install the server binaries in `<root_install_folder>/bin`, and the configurations files in `<root_install_folder>/etc`
 
-
 <!----------------------------------------------------------------------------->
 ## Setting Up The DB
 
-The server use 4 differents databases. 
- 
-1. If this is a first-time setup, switch to the `sql` sub-directory of the
-   repository, then run `mysql -u root -p < create_mysql.sql`. This will create the four empty databases: `auth`, `characters`, `logs`, `world`.
-2. From the `sql` directory, import 'auth.sql', 'characters.sql' and 'logs.sql' into their corresponding databases.
-3. Download the last [World Database][worlddatabase], and import it into the `world` database.
-4. Apply every 'world', 'char', 'auth' updates in the `sql/updates` directory,
-   applying them from the lowest date to the highest.
+1. Download [MariaDB][maria_db] (10.1 series) and install it. Be sure to note
+   down your root password, and the port you select if it not the default. If
+   you don't already have an SQL client, you can install HeidiSQL when proposed
+   to do so.  
+   /!\ Only 10.1 series or lower are supported at the moment.
 
-   You can do it by hand, or under bash, this can be achieved by running the `apply_updates.sh` script that is in the `sql` directory.
+2. Download the last world database [here][world_db], extract it to your CMAKE_INSTALL_PREFIX directory. 
 
-   <sub>*When the database creation scripts are updated, those updates are moved to the `sql/updates/old` directory and are not needed anymore.*</sub>
+3. You may follow the instructions [here][trinity_db_instructions]. Just use the world you just downloaded instead.
 
-As an aside, you can dispense yourself from typing your mysql password if you [configure the
-user and password in the `.my.cnf` file][autologin].
+[maria_db]:
+https://downloads.mariadb.org/
 
-[worlddatabase]:
+[world_db]:
 https://github.com/kelno/sunstrider/releases
-[autologin]:
-http://stackoverflow.com/questions/19171021/auto-authenticate-password-in-mysql
+
+[my_ini]:
+http://www.avajava.com/tutorials/lessons/how-do-i-log-on-to-mysql-automatically.html
+
+[trinity_db_instructions]:
+https://trinitycore.atlassian.net/wiki/spaces/tc/pages/2130092/Databases+Installation
 
 <!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc
