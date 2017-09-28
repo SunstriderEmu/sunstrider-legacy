@@ -72,7 +72,7 @@ class TC_DATABASE_API MySQLConnection
         MySQLConnection(ProducerConsumerQueue<SQLOperation*>* queue, MySQLConnectionInfo& connInfo);  //! Constructor for asynchronous connections.
         virtual ~MySQLConnection();
 
-        virtual bool Open();
+        virtual uint32 Open();
         void Close();
 
     public:

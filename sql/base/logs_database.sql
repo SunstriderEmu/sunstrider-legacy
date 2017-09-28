@@ -1,8 +1,3 @@
--- MySQL dump 10.15  Distrib 10.0.28-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: localhost    Database: localhost
--- ------------------------------------------------------
--- Server version	10.0.28-MariaDB-0+deb8u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -670,6 +665,33 @@ CREATE TABLE `warden_fails` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+
+DROP TABLE IF EXISTS `updates_include`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `updates_include` (
+  `path` varchar(200) NOT NULL COMMENT 'directory to include. $ means relative to the source directory.',
+  `state` enum('RELEASED','ARCHIVED') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if the directory contains released or archived updates.',
+  PRIMARY KEY (`path`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='List of directories where we want to include sql updates.';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+INSERT INTO `updates_include` VALUES ('$/sql/updates/logs','RELEASED'),('$/sql/custom/logs','RELEASED'),('$/sql/old/2.4.3/logs','ARCHIVED');
+
+DROP TABLE IF EXISTS `updates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `updates` (
+  `name` varchar(200) NOT NULL COMMENT 'filename with extension of the update.',
+  `hash` char(40) DEFAULT '' COMMENT 'sha1 hash of the sql file.',
+  `state` enum('RELEASED','ARCHIVED') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if an update is released or archived.',
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'timestamp when the query was applied.',
+  `speed` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'time the query takes to apply in ms.',
+  PRIMARY KEY (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='List of all applied updates in this database.';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -679,5 +701,3 @@ CREATE TABLE `warden_fails` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2017-03-22 17:10:46

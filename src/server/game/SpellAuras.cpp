@@ -4922,7 +4922,7 @@ void Aura::HandleModRegen(bool apply, bool Real)            // eating
     m_isPeriodic = apply;
 }
 
-void Aura::HandleModPowerRegen(bool apply, bool Real)       // drinking
+void Aura::HandleModPowerRegen(bool apply, bool Real)       // Drinking, Symbol of Hope, Water Shield, ...
 {
     if ((GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) && apply && !m_target->IsSitState())
         m_target->SetStandState(PLAYER_STATE_SIT);

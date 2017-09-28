@@ -15,8 +15,7 @@ DatabaseLoader::DatabaseLoader(std::string const& logger, uint32 const defaultUp
 template <class T>
 DatabaseLoader& DatabaseLoader::AddDatabase(DatabaseWorkerPool<T>& pool, std::string const& name)
 {
-    //bool const updatesEnabledForThis = DBUpdater<T>::IsEnabled(_updateFlags);
-    bool const updatesEnabledForThis = false;
+    bool const updatesEnabledForThis = DBUpdater<T>::IsEnabled(_updateFlags);
 
     _open.push([this, name, updatesEnabledForThis, &pool]() -> bool
     {
@@ -45,6 +44,7 @@ DatabaseLoader& DatabaseLoader::AddDatabase(DatabaseWorkerPool<T>& pool, std::st
             {
                 // Try to create the database and connect again if auto setup is enabled
 
+                // undefined reference to `DBUpdater<LogsDatabaseConnection>::Create(DatabaseWorkerPool<LogsDatabaseConnection>&)'
                 if (DBUpdater<T>::Create(pool) && (!pool.Open()))
                     error = 0;
             }

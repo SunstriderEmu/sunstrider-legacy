@@ -20,7 +20,7 @@
 #include "Chat.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
-#include "Battleground.h"
+#include "BattleGround.h"
 
 bool BattlegroundTemplate::IsArena() const
 {

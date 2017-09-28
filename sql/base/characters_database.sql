@@ -1,8 +1,3 @@
--- MySQL dump 10.15  Distrib 10.0.28-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: localhost    Database: localhost
--- ------------------------------------------------------
--- Server version	10.0.28-MariaDB-0+deb8u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -408,6 +403,24 @@ CREATE TABLE `character_banned` (
   PRIMARY KEY (`guid`,`bandate`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Ban List';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `character_battleground_data`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `character_battleground_data` (
+  `guid` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `instanceId` int(10) unsigned NOT NULL COMMENT 'Instance Identifier',
+  `team` smallint(5) unsigned NOT NULL,
+  `joinX` float NOT NULL DEFAULT '0',
+  `joinY` float NOT NULL DEFAULT '0',
+  `joinZ` float NOT NULL DEFAULT '0',
+  `joinO` float NOT NULL DEFAULT '0',
+  `joinMapId` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'Map Identifier',
+  `taxiStart` int(10) unsigned NOT NULL DEFAULT '0',
+  `taxiEnd` int(10) unsigned NOT NULL DEFAULT '0',
+  `mountSpell` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Player System';
 
 --
 -- Table structure for table `character_bgcoord`
@@ -1574,6 +1587,33 @@ CREATE TABLE `temp_equipcache` (
   PRIMARY KEY (`i`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `updates_include`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `updates_include` (
+  `path` varchar(200) NOT NULL COMMENT 'directory to include. $ means relative to the source directory.',
+  `state` enum('RELEASED','ARCHIVED') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if the directory contains released or archived updates.',
+  PRIMARY KEY (`path`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='List of directories where we want to include sql updates.';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+INSERT INTO `updates_include` VALUES ('$/sql/updates/characters','RELEASED'),('$/sql/custom/characters','RELEASED'),('$/sql/old/2.4.3/characters','ARCHIVED');
+
+
+DROP TABLE IF EXISTS `updates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `updates` (
+  `name` varchar(200) NOT NULL COMMENT 'filename with extension of the update.',
+  `hash` char(40) DEFAULT '' COMMENT 'sha1 hash of the sql file.',
+  `state` enum('RELEASED','ARCHIVED') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if an update is released or archived.',
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'timestamp when the query was applied.',
+  `speed` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'time the query takes to apply in ms.',
+  PRIMARY KEY (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='List of all applied updates in this database.';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

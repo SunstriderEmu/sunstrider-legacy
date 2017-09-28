@@ -272,7 +272,7 @@ bool DBUpdater<T>::Populate(DatabaseWorkerPool<T>& pool)
 
     TC_LOG_INFO("sql.updates", "Database %s is empty, auto populating it...", DBUpdater<T>::GetTableName().c_str());
 
-    std::string const p = DBUpdater<T>::GetBaseFile();
+    std::string const p = DBUpdater<T> ::GetBaseFile();
     if (p.empty())
     {
         TC_LOG_INFO("sql.updates", ">> No base file provided, skipped!");
@@ -402,3 +402,4 @@ void DBUpdater<T>::ApplyFile(DatabaseWorkerPool<T>& pool, std::string const& hos
 template class TC_DATABASE_API DBUpdater<LoginDatabaseConnection>;
 template class TC_DATABASE_API DBUpdater<WorldDatabaseConnection>;
 template class TC_DATABASE_API DBUpdater<CharacterDatabaseConnection>;
+template class TC_DATABASE_API DBUpdater<LogsDatabaseConnection>;
