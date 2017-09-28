@@ -2472,7 +2472,7 @@ int32 Unit::GetMechanicResistChance(const SpellInfo *spell)
         return 0;
 
     int32 resist_mech = 0;
-    for(int eff = 0; eff < 3; ++eff)
+    for(int32 eff = 0; eff < MAX_SPELL_EFFECTS; ++eff)
     {
         if(spell->Effects[eff].Effect == 0)
            break;
@@ -4216,7 +4216,7 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
         return false;
 
     uint32 spellId = Aur->GetId();
-    uint32 effIndex = Aur->GetEffIndex();
+    uint8 effIndex = Aur->GetEffIndex();
 
     AuraMap::iterator i,next;
     for (i = m_Auras.begin(); i != m_Auras.end(); i = next)
@@ -4331,7 +4331,7 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
     return true;
 }
 
-void Unit::RemoveAura(uint32 spellId, uint32 effindex, Aura* except)
+void Unit::RemoveAura(uint32 spellId, uint8 effindex, Aura* except)
 {
     spellEffectPair spair = spellEffectPair(spellId, effindex);
     for(auto iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
@@ -4346,7 +4346,7 @@ void Unit::RemoveAura(uint32 spellId, uint32 effindex, Aura* except)
     }
 }
 
-void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint32 effindex, uint64 casterGUID)
+void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint8 effindex, uint64 casterGUID)
 {
     spellEffectPair spair = spellEffectPair(spellId, effindex);
     for (auto iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
@@ -4410,7 +4410,7 @@ Aura* Unit::GetAuraByCasterSpell(uint32 spellId, uint64 casterGUID)
     return nullptr;
 }
 
-Aura* Unit::GetAuraByCasterSpell(uint32 spellId, uint32 effIndex, uint64 casterGUID)
+Aura* Unit::GetAuraByCasterSpell(uint32 spellId, uint8 effIndex, uint64 casterGUID)
 {
     // Returns first found aura from spell-use only in cases where effindex of spell doesn't matter!
     spellEffectPair spair = spellEffectPair(spellId, effIndex);
@@ -4598,7 +4598,7 @@ void Unit::RemoveSingleAuraFromStackByDispel(uint32 spellId)
     }
 }
 
-void Unit::RemoveSingleAuraFromStack(uint32 spellId, uint32 effindex)
+void Unit::RemoveSingleAuraFromStack(uint32 spellId, uint8 effindex)
 {
     auto iter = m_Auras.find(spellEffectPair(spellId, effindex));
     if(iter != m_Auras.end())
@@ -4941,7 +4941,7 @@ void Unit::RemoveAllAurasOnDeath()
     }
 }
 
-void Unit::DelayAura(uint32 spellId, uint32 effindex, int32 delaytime)
+void Unit::DelayAura(uint32 spellId, uint8 effindex, int32 delaytime)
 {
     AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));
     if (iter != m_Auras.end())
@@ -4972,7 +4972,7 @@ void Unit::_ApplyAllAuraMods()
 
 Aura* Unit::GetAuraApplication(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask, AuraApplication* except) const
 {
-    for (uint32 effindex = 0; effindex < MAX_SPELL_EFFECTS; effindex++)
+    for (uint8 effindex = 0; effindex < MAX_SPELL_EFFECTS; effindex++)
     {
         auto range = m_Auras.equal_range(spellEffectPair(spellId, effindex));
         for (; range.first != range.second; ++range.first)
@@ -4991,7 +4991,7 @@ Aura* Unit::GetAuraApplication(uint32 spellId, uint64 casterGUID, uint64 itemCas
     return nullptr;
 }
 
-Aura* Unit::GetAura(uint32 spellId, uint32 effindex)
+Aura* Unit::GetAura(uint32 spellId, uint8 effindex)
 {
     AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));
     if (iter != m_Auras.end())
@@ -5019,7 +5019,7 @@ Aura* Unit::GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID, uint64 itemC
 
 Aura* Unit::GetAuraWithCaster(uint32 spellId, uint64 casterGUID)
 {
-    for (uint32 effindex = 0; effindex < MAX_SPELL_EFFECTS; effindex++)
+    for (uint8 effindex = 0; effindex < MAX_SPELL_EFFECTS; effindex++)
     {
         AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));
         if (iter != m_Auras.end())
@@ -5067,7 +5067,7 @@ void Unit::RemoveAllDynObjects()
     }
 }
 
-DynamicObject * Unit::GetDynObject(uint32 spellId, uint32 effIndex)
+DynamicObject * Unit::GetDynObject(uint32 spellId, uint8 effIndex)
 {
     for (auto i = m_dynObjGUIDs.begin(); i != m_dynObjGUIDs.end();)
     {
@@ -5360,7 +5360,7 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAura, SpellInfo const * procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown)
 {
     SpellInfo const *dummySpell = triggeredByAura->GetSpellInfo();
-    uint32 effIndex = triggeredByAura->GetEffIndex ();
+    uint8 effIndex = triggeredByAura->GetEffIndex ();
 
     Item* castItem = triggeredByAura->GetCastItemGUID() && GetTypeId()==TYPEID_PLAYER
         ? (this->ToPlayer())->GetItemByGuid(triggeredByAura->GetCastItemGUID()) : nullptr;

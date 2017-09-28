@@ -1649,16 +1649,16 @@ class TC_GAME_API Unit : public WorldObject
         bool AddAura(Aura *aur);
 
         void RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
-        void RemoveAura(uint32 spellId, uint32 effindex, Aura* except = nullptr);
+        void RemoveAura(uint32 spellId, uint8 effindex, Aura* except = nullptr);
         void RemoveSingleAuraFromStackByDispel(uint32 spellId);
-        void RemoveSingleAuraFromStack(uint32 spellId, uint32 effindex);
+        void RemoveSingleAuraFromStack(uint32 spellId, uint8 effindex);
         void RemoveAurasDueToSpell(uint32 spellId, Aura* except = nullptr);
         void RemoveAurasDueToItemSpell(Item* castItem,uint32 spellId);
-        void RemoveAurasByCasterSpell(uint32 spellId, uint32 effIndex, uint64 casterGUID);
+        void RemoveAurasByCasterSpell(uint32 spellId, uint8 effIndex, uint64 casterGUID);
         void RemoveAurasByCasterSpell(uint32 spellId, uint64 casterGUID);
         void SetAurasDurationByCasterSpell(uint32 spellId, uint64 casterGUID, int32 duration);
         Aura* GetAuraByCasterSpell(uint32 spellId, uint64 casterGUID);
-        Aura* GetAuraByCasterSpell(uint32 spellId, uint32 effIndex, uint64 casterGUID);
+        Aura* GetAuraByCasterSpell(uint32 spellId, uint8 effIndex, uint64 casterGUID);
         void RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit *dispeler);
         void RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit *stealer);
         void RemoveAurasDueToSpellByCancel(uint32 spellId);
@@ -1686,7 +1686,7 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveArenaAuras(bool onleave = false);
         void RemoveAllAurasOnDeath();
         void RemoveAurasOnEvade();
-        void DelayAura(uint32 spellId, uint32 effindex, int32 delaytime);
+        void DelayAura(uint32 spellId, uint8 effindex, int32 delaytime);
 
         // Convenience methods removing auras by predicate
         void RemoveAppliedAuras(std::function<bool(Aura const*)> const& check);
@@ -1895,7 +1895,7 @@ class TC_GAME_API Unit : public WorldObject
 
         //TC compat
         Aura* GetAuraApplication(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint8 reqEffMask = 0, AuraApplication * except = nullptr) const;
-        Aura* GetAura(uint32 spellId, uint32 effindex);
+        Aura* GetAura(uint32 spellId, uint8 effindex);
         Aura* GetAuraWithCaster(uint32 spellId, uint64 casterGUID);
 
         AuraApplication* GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint8 reqEffMask = 0, AuraApplication * except = nullptr) const;
@@ -1952,7 +1952,7 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveGameObject(GameObject* gameObj, bool del);
         void RemoveGameObject(uint32 spellid, bool del);
         void RemoveAllGameObjects();
-        DynamicObject *GetDynObject(uint32 spellId, uint32 effIndex);
+        DynamicObject *GetDynObject(uint32 spellId, uint8 effIndex);
         DynamicObject *GetDynObject(uint32 spellId);
 
         /** Change aura state if not already at given value. Be careful not to remove a state if other auras have the same state also active, you can use the m_auraStateAuras to check for those. */
