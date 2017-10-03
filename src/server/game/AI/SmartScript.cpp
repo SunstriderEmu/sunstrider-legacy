@@ -150,8 +150,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 }
             }
 
+            /* kelno: why this check? SMART_TARGET_NONE should be a valid target for most talk types
             if (!talkTarget)
                 return;
+            */
 
             if (!talker)
                 break;
