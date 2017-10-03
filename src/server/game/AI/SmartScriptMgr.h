@@ -524,7 +524,7 @@ enum SMART_ACTION
     SMART_ACTION_SET_INVINCIBILITY_HP_LEVEL         = 42,     // MinHpValue(+pct, -flat)
     SMART_ACTION_MOUNT_TO_ENTRY_OR_MODEL            = 43,     // Creature_template entry(param1) OR ModelId (param2) (or 0 for both to dismount)
     SMART_ACTION_SET_INGAME_PHASE_MASK              = 44,     // mask
-    SMART_ACTION_SET_DATA                           = 45,     // Field, Data (only creature @todo)
+    SMART_ACTION_SET_DATA                           = 45,     // Field, Data
     SMART_ACTION_MOVE_FORWARD                       = 46,     // distance
     SMART_ACTION_SET_VISIBILITY                     = 47,     // on/off
     SMART_ACTION_SET_ACTIVE                         = 48,     // on/off
@@ -1620,14 +1620,8 @@ typedef std::vector<WorldObject*> ObjectVector;
 
 class ObjectGuidVector
 {
-
 public:
-    explicit ObjectGuidVector(ObjectVector const& objectVector)
-    {
-        _guidVector.reserve(_objectVector.size());
-        for (WorldObject* obj : _objectVector)
-            _guidVector.push_back(obj->GetGUID());
-    }
+    explicit ObjectGuidVector(ObjectVector const& objectVector);
 
     ObjectVector const* GetObjectVector(WorldObject const& ref) const
     {
@@ -1635,21 +1629,14 @@ public:
         return &_objectVector;
     }
 
-    ~ObjectGuidVector() {}
+    ~ObjectGuidVector() { }
 
 private:
-    //sanitize vector using _guidVector
-    void UpdateObjects(WorldObject const& ref) const
-    {
-        _objectVector.clear();
-
-        for (uint64 const& guid : _guidVector)
-            if (WorldObject* obj = ObjectAccessor::GetWorldObject(ref, guid))
-                _objectVector.push_back(obj);
-    }
-
     GuidVector _guidVector;
     mutable ObjectVector _objectVector;
+
+    //sanitize vector using _guidVector
+    void UpdateObjects(WorldObject const& ref) const;
 };
 typedef std::unordered_map<uint32, ObjectGuidVector> ObjectVectorMap;
 
