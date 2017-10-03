@@ -1017,6 +1017,21 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, 
     return true;
 }
 
+void Creature::SetReactState(ReactStates st) 
+{ 
+    m_reactState = st; 
+    //sunstrider: also reset combat on passive
+    switch (st)
+    {
+    //+ also recheck aggro on aggressive ?
+    case REACT_PASSIVE:
+        if (GetVictim())
+            AI()->EnterEvadeMode();
+
+        break;
+    }
+}
+
 bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
 {
     if(!IsTrainer())

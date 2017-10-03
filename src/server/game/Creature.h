@@ -523,7 +523,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool isRacialLeader() const { return GetCreatureTemplate()->RacialLeader; }
         bool IsCivilian() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
         bool IsTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
-        void SetReactState(ReactStates st) { m_reactState = st; }
+        void SetReactState(ReactStates st);
         ReactStates GetReactState() { return m_reactState; }
         bool HasReactState(ReactStates state) const { return (m_reactState == state); }
         bool isTrainerFor(Player* player, bool msg) const;
