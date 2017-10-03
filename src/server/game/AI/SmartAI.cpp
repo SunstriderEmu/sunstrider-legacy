@@ -591,9 +591,6 @@ void SmartAI::AttackStart(Unit* who)
         return;
     }
 
-    if(!me->IsInCombat())
-        EnterCombat(who);
-
     if (who && me->Attack(who, me->IsWithinMeleeRange(who)))
     {
         if (mCanCombatMove)
