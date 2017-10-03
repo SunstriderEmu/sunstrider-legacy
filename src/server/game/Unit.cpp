@@ -2029,7 +2029,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     *absorb = damage - RemainingDamage - *resist;
 }
 
-void Unit::AttackerStateUpdate(Unit *pVictim, WeaponAttackType attType, bool extra )
+void Unit::AttackerStateUpdate(Unit* pVictim, WeaponAttackType attType, bool extra )
 {
     if (ToPlayer() && ToPlayer()->isSpectator())
         return;
@@ -2052,6 +2052,9 @@ void Unit::AttackerStateUpdate(Unit *pVictim, WeaponAttackType attType, bool ext
 
     if (attType != BASE_ATTACK && attType != OFF_ATTACK)
         return;                                             // ignore ranged case
+
+    if (GetTypeId() == TYPEID_UNIT && !HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
+        SetFacingToObject(pVictim, false); // update client side facing to face the target (prevents visual glitches when casting untargeted spells)
 
     // melee attack spell casted at main hand attack only
     if (!extra && attType == BASE_ATTACK && GetCurrentSpell(CURRENT_MELEE_SPELL))
@@ -15853,10 +15856,10 @@ void Unit::SetFacingTo(float ori)
     init.Launch();
 }
 
-void Unit::SetFacingToObject(WorldObject const* object)
+void Unit::SetFacingToObject(WorldObject const* object, bool force)
 {
-    // never face when already moving
-    if (!IsStopped())
+    // do not face when already moving
+    if (!force && (!IsStopped() || !movespline->Finalized()))
         return;
 
     /// @todo figure out under what conditions creature will move towards object instead of facing it where it currently is.

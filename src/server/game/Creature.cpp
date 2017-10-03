@@ -2905,9 +2905,10 @@ bool Creature::IsFocusing(Spell const* focusSpell, bool withDelay)
     if (focusSpell && (focusSpell != _focusSpell))
         return false;
 
-    /* TC 
     if (!_focusSpell)
     {
+        return false;
+        /* TC
         if (!withDelay || !m_focusDelay)
             return false;
         if (GetMSTimeDiffToNow(m_focusDelay) > 1000) // @todo figure out if we can get rid of this magic number somehow
@@ -2915,8 +2916,8 @@ bool Creature::IsFocusing(Spell const* focusSpell, bool withDelay)
             m_focusDelay = 0; // save checks in the future
             return false;
         }
+        */
     }
-    */
 
     return true;
 }

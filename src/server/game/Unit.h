@@ -1816,7 +1816,7 @@ class TC_GAME_API Unit : public WorldObject
         void SetInFront(WorldObject const* target);
         void SetInFront(float x, float y);
         void SetFacingTo(float ori);
-        void SetFacingToObject(WorldObject const* object);
+        void SetFacingToObject(WorldObject const* object, bool force = true);
 
         uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
         virtual void SetTarget(uint64 /*guid*/) = 0;
