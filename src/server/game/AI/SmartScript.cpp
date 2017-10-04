@@ -48,6 +48,7 @@ SmartScript::SmartScript() :
     me(nullptr),
     trigger(nullptr),
     mEventPhase(0),
+    mStoredPhase(0),
     mEventTemplatePhase(0),
     mPathId(0),
     mTextTimer(0),
@@ -2417,6 +2418,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             }
             break;
         }
+        case SMART_ACTION_STORE_PHASE:
+            mStoredPhase = GetPhase();
+            break;
+        case SMART_ACTION_RESTORE_PHASE:
+            SetPhase(mStoredPhase);
+            break;
         default:
             TC_LOG_ERROR("sql.sql","SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Unhandled Action type %u", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
             break;

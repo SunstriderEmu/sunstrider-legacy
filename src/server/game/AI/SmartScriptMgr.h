@@ -630,6 +630,10 @@ enum SMART_ACTION
     SMART_ACTION_SET_SPELL_IMMUNITY                 = 161,    // id, apply
     // Should only be used internally
     SMART_ACTION_SET_EVENT_TEMPLATE_PHASE           = 162,    // Phase 
+    // Store a phase for future usage
+    SMART_ACTION_STORE_PHASE                        = 163,    //
+    // Apply stored phase by previous action
+    SMART_ACTION_RESTORE_PHASE                      = 164,    //
 
     SMART_ACTION_END,
 };

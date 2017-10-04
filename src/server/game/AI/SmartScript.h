@@ -298,6 +298,7 @@ class TC_GAME_API SmartScript
         SmartScriptType mScriptType;
         uint32 mEventPhase;
         uint32 mEventTemplatePhase;
+        uint32 mStoredPhase; //for SMART_ACTION_STORE_PHASE & SMART_ACTION_RESTORE_PHASE
 
         std::unordered_map<int32, int32> mStoredDecimals;
         uint32 mPathId;
