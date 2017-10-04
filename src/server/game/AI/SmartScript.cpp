@@ -48,6 +48,7 @@ SmartScript::SmartScript() :
     me(nullptr),
     trigger(nullptr),
     mEventPhase(0),
+    mEventTemplatePhase(0),
     mPathId(0),
     mTextTimer(0),
     mLastTextID(0),
@@ -2399,6 +2400,23 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             break;
         }
+        case SMART_ACTION_SET_EVENT_TEMPLATE_PHASE:
+        {
+            for (WorldObject* target : targets)
+            {
+                if (!IsUnit(target))
+                    break;
+
+                Creature* c = target->ToCreature();
+                if (!IsSmart(c))
+                    break;
+
+                ENSURE_AI(SmartAI, c->AI())->GetScript()->SetTemplatePhase(e.action.setEventPhase.phase);
+                TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SET_EVENT_PHASE: Creature %u set event template phase %u",
+                    target->GetGUIDLow(), e.action.setEventPhase.phase);
+            }
+            break;
+        }
         default:
             TC_LOG_ERROR("sql.sql","SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Unhandled Action type %u", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
             break;
@@ -2452,18 +2470,18 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
                 manaPercent = std::max(std::min(manaPercent, uint32(99)), uint32(10));
 
                 //only cast spell in phase 1
-                AddEvent(SMART_EVENT_UPDATE_IC, 0, 0, 0, repeatMin, repeatMax, SMART_ACTION_CAST, spellID, e.target.raw.param1, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, SmartPhaseMask(1));
+                AddEvent(SMART_EVENT_UPDATE_IC, 0, 0, 0, repeatMin, repeatMax, SMART_ACTION_CAST, spellID, e.target.raw.param1, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                 if (range)
                 {
                     //enable movement (switch to phase 1) when out of given range
-                    AddEvent(SMART_EVENT_RANGE, 0, range, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(1));
+                    AddEvent(SMART_EVENT_RANGE, 0, range, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                     //disable movement when in given range
-                    AddEvent(SMART_EVENT_RANGE, 0, 0, range, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(1));
+                    AddEvent(SMART_EVENT_RANGE, 0, 0, range, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                 }
                 // start casting (go to phase 1) when at least at manaPercent
-                AddEvent(SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+                AddEvent(SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
                 // stop casting (go back to phase 0) when under manaPercent
-                AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+                AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
                 // enable movement when under given mana
                 AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
                 break;
@@ -2489,15 +2507,15 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
                 uint32 manaPercent = uint32((float(spellInfo->ManaCost) / float(me->GetMaxPower(POWER_MANA))) * 100.0f) + 1;
 
                 //only cast spell in phase 1
-                AddEvent(SMART_EVENT_UPDATE_IC, 0, 0, 0, repeatMin, repeatMax, SMART_ACTION_CAST, spellID, castFlags, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, SmartPhaseMask(1));
+                AddEvent(SMART_EVENT_UPDATE_IC, 0, 0, 0, repeatMin, repeatMax, SMART_ACTION_CAST, spellID, castFlags, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                 //enable movement (switch to phase 1) when out of given range
-                AddEvent(SMART_EVENT_RANGE, 0, range, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(1));
+                AddEvent(SMART_EVENT_RANGE, 0, range, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                 //disable movement when in given range
-                AddEvent(SMART_EVENT_RANGE, 0, 0, range, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(1));
+                AddEvent(SMART_EVENT_RANGE, 0, 0, range, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                 // start casting (go to phase 1) when at least at manaPercent
-                AddEvent(SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+                AddEvent(SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
                 // stop casting (go back to phase 0) when under manaPercent
-                AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+                AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
                 // enable movement when under given mana
                 AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
                 break;
@@ -2519,16 +2537,16 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
                 AddEvent(SMART_EVENT_UPDATE, SMART_EVENT_FLAG_NOT_REPEATABLE, 0, 0, 0, 0, SMART_ACTION_RESET_GOBJECT, 0, 0, 0, 0, 0, 0, SMART_TARGET_GAMEOBJECT_DISTANCE, e.action.installTtemplate.param1, 5, 0, SmartPhaseMask(0));
 
                 AddEvent(SMART_EVENT_DATA_SET, 0, 0, 0, 0, 0, SMART_ACTION_SET_RUN, e.action.installTtemplate.param3, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, SmartPhaseMask(0));
-                AddEvent(SMART_EVENT_DATA_SET, 0, 0, 0, 0, 0, SMART_ACTION_SET_EVENT_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, SmartPhaseMask(0));
+                AddEvent(SMART_EVENT_DATA_SET, 0, 0, 0, 0, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, SmartPhaseMask(0));
 
-                AddEvent(SMART_EVENT_UPDATE, SMART_EVENT_FLAG_NOT_REPEATABLE, 1000, 1000, 0, 0, SMART_ACTION_MOVE_OFFSET, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, e.action.installTtemplate.param4, 0, SmartPhaseMask(1));
+                AddEvent(SMART_EVENT_UPDATE, SMART_EVENT_FLAG_NOT_REPEATABLE, 1000, 1000, 0, 0, SMART_ACTION_MOVE_OFFSET, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, e.action.installTtemplate.param4, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                 //phase 1: give quest credit on movepoint reached
-                AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_SET_DATA, 0, 0, 0, 0, 0, 0, SMART_TARGET_STORED, 1, 0, 0, SmartPhaseMask(1));
+                AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_SET_DATA, 0, 0, 0, 0, 0, 0, SMART_TARGET_STORED, 1, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                 //phase 1: despawn after time on movepoint reached
-                AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_FORCE_DESPAWN, e.action.installTtemplate.param2, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, SmartPhaseMask(1));
+                AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_FORCE_DESPAWN, e.action.installTtemplate.param2, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
 
                 if (sCreatureTextMgr->TextExist(me->GetEntry(), (uint8)e.action.installTtemplate.param5))
-                    AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_TALK, e.action.installTtemplate.param5, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, SmartPhaseMask(1));
+                    AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_TALK, e.action.installTtemplate.param5, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                 break;
             }
         case SMARTAI_TEMPLATE_CAGED_GO_PART:
@@ -2554,12 +2572,12 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
     }
 }
 
-void SmartScript::AddEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask)
+void SmartScript::AddEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask, SmartPhaseMask templatePhaseMask)
 {
-    mInstallEvents.push_back(CreateEvent(e, event_flags, event_param1, event_param2, event_param3, event_param4, action, action_param1, action_param2, action_param3, action_param4, action_param5, action_param6, t, target_param1, target_param2, target_param3, phaseMask));
+    mInstallEvents.push_back(CreateEvent(e, event_flags, event_param1, event_param2, event_param3, event_param4, action, action_param1, action_param2, action_param3, action_param4, action_param5, action_param6, t, target_param1, target_param2, target_param3, phaseMask, templatePhaseMask));
 }
 
-SmartScriptHolder SmartScript::CreateEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask)
+SmartScriptHolder SmartScript::CreateEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask, SmartPhaseMask templatePhaseMask)
 {
     SmartScriptHolder script;
     script.event.type = e;
@@ -2568,6 +2586,7 @@ SmartScriptHolder SmartScript::CreateEvent(SMART_EVENT e, uint32 event_flags, ui
     script.event.raw.param3 = event_param3;
     script.event.raw.param4 = event_param4;
     script.event.event_phase_mask = phaseMask;
+    script.event.event_template_phase_mask = templatePhaseMask;
     script.event.event_flags = event_flags;
     script.event.event_chance = 100;
 
@@ -3048,6 +3067,9 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
         return;
 
     if ((e.event.event_phase_mask && !IsInPhase(e.event.event_phase_mask)) || ((e.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE) && e.runOnce))
+        return;
+
+    if ((e.event.event_template_phase_mask && !IsInTemplatePhase(e.event.event_template_phase_mask)) || ((e.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE) && e.runOnce))
         return;
 
     if (!(e.event.event_flags & SMART_EVENT_FLAG_WHILE_CHARMED) && IsCreature(me) && IsCharmedCreature(me))

@@ -190,6 +190,7 @@ struct SmartEvent
 {
     SMART_EVENT type;
     SmartPhaseMask event_phase_mask;
+    SmartPhaseMask event_template_phase_mask; //internal phase system for templates
     uint32 event_chance;
     uint32 event_flags;
     union
@@ -627,6 +628,8 @@ enum SMART_ACTION
     SMART_ACTION_BREAK_FORMATION                    = 159,    // none
     SMART_ACTION_SET_MECHANIC_IMMUNITY              = 160,    // type, apply
     SMART_ACTION_SET_SPELL_IMMUNITY                 = 161,    // id, apply
+    // Should only be used internally
+    SMART_ACTION_SET_EVENT_TEMPLATE_PHASE           = 162,    // Phase 
 
     SMART_ACTION_END,
 };

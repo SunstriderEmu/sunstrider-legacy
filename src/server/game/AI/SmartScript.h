@@ -45,8 +45,8 @@ class TC_GAME_API SmartScript
         //returns a NEW object list, the called must delete if after usage
         void GetWorldObjectsInDist(ObjectVector& targets, float dist) const;
         void InstallTemplate(SmartScriptHolder const& e);
-        SmartScriptHolder CreateEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask = SmartPhaseMask(0));
-        void AddEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask = SmartPhaseMask(0));
+        SmartScriptHolder CreateEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask = SmartPhaseMask(0), SmartPhaseMask templatePhaseMask = SmartPhaseMask(0));
+        void AddEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask = SmartPhaseMask(0), SmartPhaseMask templatePhaseMask = SmartPhaseMask(0));
         void SetPathId(uint32 id) { mPathId = id; }
         uint32 GetPathId() const { return mPathId; }
         WorldObject* GetBaseObject() const
@@ -264,12 +264,26 @@ class TC_GAME_API SmartScript
             return ((1 << (mEventPhase - 1)) & phaseMask) != 0; 
         }
 
+        bool IsInTemplatePhase(SmartPhaseMask phaseMask) const
+        {
+            if (mEventTemplatePhase == 0)
+                return false;
+
+            return ((1 << (mEventTemplatePhase - 1)) & phaseMask) != 0;
+        }
+
         void SetPhase(uint32 p = 0) 
         { 
+
             uint32 previous = mEventPhase;
             mEventPhase = p;
             if(mEventPhase != previous)
                 ProcessEventsFor(SMART_EVENT_ENTER_PHASE, nullptr, mEventPhase);
+        }
+
+        void SetTemplatePhase(uint32 p = 0)
+        {
+            mEventTemplatePhase = p;
         }
 
         SmartAIEventList mEvents;
@@ -283,6 +297,7 @@ class TC_GAME_API SmartScript
         AreaTriggerEntry const* trigger;
         SmartScriptType mScriptType;
         uint32 mEventPhase;
+        uint32 mEventTemplatePhase;
 
         std::unordered_map<int32, int32> mStoredDecimals;
         uint32 mPathId;
