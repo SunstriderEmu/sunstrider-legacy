@@ -49,7 +49,8 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id) 
     i_nextMoveTime(0), 
     i_recalculatePath(false),
     reachedFirstNode(false),
-    customPath(nullptr)
+    customPath(nullptr), 
+    _stalled(false)
 { 
 
 }
@@ -599,7 +600,7 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
 {
     // Waypoint movement can be switched on/off
     // This is quite handy for escort quests and other stuff */
-    if (!creature->CanFreeMove())
+    if (_stalled || !creature->CanFreeMove() || creature->IsMovementPreventedByCasting())
     {
         creature->ClearUnitState(UNIT_STATE_ROAMING_MOVE); //will be reset at next move
         return true;
@@ -669,6 +670,19 @@ bool WaypointMovementGenerator<Creature>::GetCurrentDestinationPoint(Creature* c
         return true;
     }
     return false;
+}
+
+void WaypointMovementGenerator<Creature>::Pause(uint32 timer/* = 0*/)
+{
+    _stalled = timer ? false : true;
+    i_nextMoveTime.Reset(timer ? timer : 1);
+}
+
+void WaypointMovementGenerator<Creature>::Resume(uint32 overrideTimer/* = 0*/)
+{
+    _stalled = false;
+    if (overrideTimer)
+        i_nextMoveTime.Reset(overrideTimer);
 }
 
 //----------------------------------------------------//

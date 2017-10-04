@@ -107,6 +107,8 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         bool DoUpdate(Creature*, uint32 diff);
 
         void UnitSpeedChanged() override { i_recalculatePath = true; }
+        void Pause(uint32 timer = 0) override;
+        void Resume(uint32 overrideTimer = 0) override;
 
         void MovementInform(Creature*, uint32 DBNodeId);
 
@@ -185,6 +187,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         uint32 _splineId;
         //true when creature has reached the start node in path (it has to travel from its current position first)
         uint32 reachedFirstNode;
+        bool _stalled;
 
         typedef std::unordered_map<uint32 /*splineId*/, uint32 /*pathNodeId*/> SplineToPathIdMapping;
         //filled at spline path generation. Used to determine which node spline system reached. When spline id is finished, it means we've reached path id.
