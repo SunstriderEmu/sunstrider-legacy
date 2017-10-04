@@ -255,7 +255,6 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
 {
 //    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GOSSIP_HELLO");
     
-
     uint64 guid;
     recvData >> guid;
 

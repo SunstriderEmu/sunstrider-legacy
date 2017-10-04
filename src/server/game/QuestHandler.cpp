@@ -19,6 +19,7 @@
 #include "CreatureAI.h"
 #include "GameObjectAI.h"
 #include "Language.h"
+#include "ScriptedGossip.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 {
@@ -251,7 +252,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
                     if (Quest const* nextquest = _player->GetNextQuest(guid, pQuest))
                         _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest, guid, true);
 
-                    _player->PlayerTalkClass->ClearMenus();
+                    ClearGossipMenuFor(_player);
                     questgiver->AI()->QuestReward(_player, pQuest, reward);
                     break;
                 }
@@ -269,7 +270,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
                         }
                     }
 
-                    _player->PlayerTalkClass->ClearMenus();
+                    ClearGossipMenuFor(_player);
                     (pObject->ToGameObject())->AI()->QuestReward(_player, pQuest, reward);
                     break;
             }

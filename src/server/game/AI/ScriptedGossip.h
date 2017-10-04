@@ -192,6 +192,9 @@ extern uint32 GetSkillLevel(Player *player,uint32 skill);
 */
 #define ADD_GOSSIP_ITEM(iconId, textStr, sender, action)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, iconId, textStr, sender, action, "", 0)
 #define ADD_GOSSIP_ITEM_EXTENDED(iconId, textStr, sender, action, popupTextStr, popupMoneyValue, coded)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, iconId, textStr, sender, action, popupTextStr, popupMoneyValue, coded)
+
+void TC_GAME_API ClearGossipMenuFor(Player* player);
+
 /*
  menuId       - menuId
  menuItemId   - menuItemId
