@@ -34,10 +34,10 @@ class TC_GAME_API GameObjectAI
         virtual bool OnReportUse(Player* /*player*/) { return false; } // (LK) prevents achievement tracking if returning true
 
         // Called when a player selects a gossip item in the gameobject's gossip menu.
-        virtual bool GossipSelect(Player* player, uint32 sender, uint32 action) {return false;}
+        virtual bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId) { return false; }
 
         // Called when a player selects a gossip with a code in the gameobject's gossip menu.
-        virtual bool GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) {return false;}
+        virtual bool GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { return false; }
 
         virtual void QuestAccept(Player* player, Quest const* quest) {  }
 

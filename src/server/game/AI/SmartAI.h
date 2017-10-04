@@ -164,8 +164,8 @@ class TC_GAME_API SmartAI : public CreatureAI
         void SetInvincibilityHpLevel(uint32 level) { mInvincibilityHpLevel = level; }
 
         bool GossipHello(Player* player) override;
-        bool GossipSelect(Player* player, uint32 sender, uint32 action) override;
-        bool GossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) override;
+        bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override;
+        bool GossipSelectCode(Player* player, uint32 menuId, uint32 gossipListId, const char* code) override;
         void QuestAccept(Player* player, Quest const* quest) override;
         void QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         bool sOnDummyEffect(Unit* caster, uint32 spellId, uint32 effIndex) override;
@@ -258,8 +258,8 @@ class TC_GAME_API SmartGameObjectAI : public GameObjectAI
 
         bool GossipHello(Player* player) override;
         bool OnReportUse(Player* player) override;
-        bool GossipSelect(Player* player, uint32 sender, uint32 action) override;
-        bool GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) override;
+        bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override;
+        bool GossipSelectCode(Player* /*player*/, uint32 /*menuId*/, uint32 /*gossipListId*/, const char* /*code*/) override;
         void QuestAccept(Player* player, Quest const* quest) override;
         void QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         void Destroyed(Player* player, uint32 eventId) override;

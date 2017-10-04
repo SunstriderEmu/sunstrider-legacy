@@ -412,20 +412,7 @@ public: /* Script contexts */
 
     public: /* CreatureScript */
 
-        /*
-        bool OnGossipHello(Player* player, Creature* creature);
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action);
-        bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code);
-        bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest);
-        bool OnQuestSelect(Player* player, Creature* creature, Quest const* quest);
-        bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest);
-        bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt);
-        uint32 GetDialogStatus(Player* player, Creature* creature);
-        void OnCreatureUpdate(Creature* creature, uint32 diff);
-        //!Only here for backward compat, if you're scripting a new creature override CreatureAI::ReceiveEmote instead
-        bool ReceiveEmote(Player *player, Creature *_Creature, uint32 emote);
-        bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
-        */
+        //TC bool CanSpawn(ObjectGuid::LowType spawnId, uint32 entry, CreatureData const* cData, Map const* map);
         CreatureAI* GetCreatureAI(Creature* creature);
 
     public: /* GameObjectScript */

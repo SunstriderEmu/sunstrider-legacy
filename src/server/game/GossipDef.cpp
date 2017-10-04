@@ -247,11 +247,10 @@ void PlayerMenu::SendGossipMenuTextID(uint32 titleTextId, uint64 senderGUID)
             data << uint32(questID);
             data << uint32(item.QuestIcon);
             data << uint32(quest->GetQuestLevel());
-            if(_session->GetClientBuild() == BUILD_335)
-            {
-                data << uint32(quest->GetFlags());              // 3.3.3 quest flags
-                data << uint8(0);                               // 3.3.3 changes icon: blue question or yellow exclamation
-            }
+#ifdef LICH_KING
+            data << uint32(quest->GetFlags());              // 3.3.3 quest flags
+            data << uint8(0);                               // 3.3.3 changes icon: blue question or yellow exclamation
+#endif
             std::string title = quest->GetTitle();
 
             int32 locale = _session->GetSessionDbLocaleIndex();
