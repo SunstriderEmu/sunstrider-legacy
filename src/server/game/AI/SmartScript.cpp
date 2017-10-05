@@ -687,25 +687,34 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_CALL_GROUPEVENTHAPPENS:
         {
-            if (!unit)
-                break;
+            //sunstrider: apply to both invoker unit and targets, why should we ignore targets?
+            if (unit)
+                targets.push_back(unit);
 
-            // If invoker was pet or charm
-            Player* player = unit->GetCharmerOrOwnerPlayerOrPlayerItself();
-            if (player && GetBaseObject())
+            for (WorldObject* target : targets)
             {
-                player->GroupEventHappens(e.action.quest.quest, GetBaseObject());
-                TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_CALL_GROUPEVENTHAPPENS: Player %u, group credit for quest %u",
-                    unit->GetGUIDLow(), e.action.quest.quest);
-            }
+                if (!IsUnit(target))
+                    continue;
+                // If invoker was pet or charm
+                Player* player = target->ToUnit()->GetCharmerOrOwnerPlayerOrPlayerItself();
+                if (!player)
+                    continue;
 
-            /*
-            // Special handling for vehicles
-            if (Vehicle* vehicle = unit->GetVehicleKit())
-                for (SeatMap::iterator it = vehicle->Seats.begin(); it != vehicle->Seats.end(); ++it)
-                    if (Player* player = ObjectAccessor::GetPlayer(*(target), it->second.Passenger.Guid))
-                        player->GroupEventHappens(e.action.quest.quest, GetBaseObject());
-            */
+                if (player && GetBaseObject())
+                {
+                    player->GroupEventHappens(e.action.quest.quest, GetBaseObject());
+                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_CALL_GROUPEVENTHAPPENS: Player %u, group credit for quest %u",
+                        unit->GetGUIDLow(), e.action.quest.quest);
+                }
+
+#ifdef LICH_KING
+                // Special handling for vehicles
+                if (Vehicle* vehicle = target->GetVehicleKit())
+                    for (SeatMap::iterator it = vehicle->Seats.begin(); it != vehicle->Seats.end(); ++it)
+                        if (Player* player = ObjectAccessor::GetPlayer(*(target), it->second.Passenger.Guid))
+                            player->GroupEventHappens(e.action.quest.quest, GetBaseObject());
+#endif
+            }
             break;
         }
 
