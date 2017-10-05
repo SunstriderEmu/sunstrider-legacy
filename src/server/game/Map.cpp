@@ -32,6 +32,8 @@
 #include "Pet.h"
 #include "GridStates.h"
 #include "Totem.h"
+#include "Transport.h"
+#include "ScriptMgr.h"
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
@@ -63,48 +65,6 @@ Map::~Map()
         sMapMgr->DecreaseScheduledScriptCount(m_scriptSchedule.size());
 
     MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), i_InstanceId);
-}
-
-void Map::UnloadAll()
-{
-    // clear all delayed moves, useless anyway do this moves before map unload.
-    _creaturesToMove.clear();
-    _gameObjectsToMove.clear();
-
-    for (GridRefManager<NGridType>::iterator i = GridRefManager<NGridType>::begin(); i != GridRefManager<NGridType>::end();)
-    {
-        NGridType &grid(*i->GetSource());
-        ++i;
-        UnloadGrid(grid, true);       // deletes the grid and removes it from the GridRefManager
-    }
-
-    // sunwell: crashfix, some npc can be left on transport (not a default passenger)
-    if (!AllTransportsEmpty())
-        AllTransportsRemovePassengers();
-
-    _transportsUpdateIter = _transports.end();
-    for (auto itr = _transports.begin(); itr != _transports.end();)
-    {
-        MotionTransport* transport = *itr;
-        ++itr;
-
-        RemoveFromMap<Transport>(transport, true);
-    }
-    _transports.clear();
-
-    for (auto& cellCorpsePair : _corpsesByCell)
-    {
-        for (Corpse* corpse : cellCorpsePair.second)
-        {
-            corpse->RemoveFromWorld();
-            corpse->ResetMap();
-            delete corpse;
-        }
-    }
-
-    _corpsesByCell.clear();
-    _corpsesByPlayer.clear();
-    _corpseBones.clear();
 }
 
 void Map::LoadVMap(int x,int y)
@@ -910,8 +870,7 @@ void Map::RemovePlayerFromMap(Player *player, bool remove)
 }
 
 template<class T>
-void
-Map::RemoveFromMap(T *obj, bool remove)
+void Map::RemoveFromMap(T *obj, bool remove)
 {
     bool const inWorld = obj->IsInWorld() && obj->GetTypeId() >= TYPEID_UNIT && obj->GetTypeId() <= TYPEID_GAMEOBJECT;
     obj->RemoveFromWorld();
@@ -937,7 +896,7 @@ Map::RemoveFromMap(T *obj, bool remove)
 }
 
 template<>
-void Map::RemoveFromMap(MotionTransport *obj, bool remove)
+void Map::RemoveFromMap(MotionTransport* obj, bool remove)
 {
     obj->RemoveFromWorld();
     if (obj->isActiveObject())
@@ -980,6 +939,7 @@ void Map::RemoveFromMap(MotionTransport *obj, bool remove)
         // if option set then object already saved at this moment
         if (!sWorld->getBoolConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
             obj->SaveRespawnTime();
+
         DeleteFromWorld(obj);
     }
 }
@@ -2394,11 +2354,14 @@ void Map::RemoveAllObjectsInRemoveList()
             RemoveFromMap((DynamicObject*)obj,true);
             break;
         case TYPEID_GAMEOBJECT:
-            if (MotionTransport* transport = obj->ToGameObject()->ToMotionTransport())
+        {
+            GameObject* go = obj->ToGameObject();
+            if (MotionTransport* transport = go->ToMotionTransport())
                 RemoveFromMap(transport, true);
             else
-                RemoveFromMap(obj->ToGameObject(), true);
+                RemoveFromMap(go, true);
             break;
+        }
         case TYPEID_UNIT:
             // HACK in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
             // make sure that like sources auras/etc removed before destructor start
@@ -3567,4 +3530,46 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     Cell::VisitAllObjects(summon, notifier, GetVisibilityRange());
 
     return summon;
+}
+
+void Map::UnloadAll()
+{
+    // clear all delayed moves, useless anyway do this moves before map unload.
+    _creaturesToMove.clear();
+    _gameObjectsToMove.clear();
+
+    for (GridRefManager<NGridType>::iterator i = GridRefManager<NGridType>::begin(); i != GridRefManager<NGridType>::end();)
+    {
+        NGridType &grid(*i->GetSource());
+        ++i;
+        UnloadGrid(grid, true);       // deletes the grid and removes it from the GridRefManager
+    }
+
+    // sunwell: crashfix, some npc can be left on transport (not a default passenger)
+    if (!AllTransportsEmpty())
+        AllTransportsRemovePassengers();
+
+    _transportsUpdateIter = _transports.end();
+    for (auto itr = _transports.begin(); itr != _transports.end();)
+    {
+        MotionTransport* transport = *itr;
+        ++itr;
+
+        RemoveFromMap(transport, true);
+    }
+    _transports.clear();
+
+    for (auto& cellCorpsePair : _corpsesByCell)
+    {
+        for (Corpse* corpse : cellCorpsePair.second)
+        {
+            corpse->RemoveFromWorld();
+            corpse->ResetMap();
+            delete corpse;
+        }
+    }
+
+    _corpsesByCell.clear();
+    _corpsesByPlayer.clear();
+    _corpseBones.clear();
 }
