@@ -40,7 +40,7 @@ uint8 ThreatValue::Calculate(Unit* target)
     if (!group)
         return 0;
 
-    float botThreat = target->getThreatManager().getThreat(bot);
+    float botThreat = target->GetThreatManager().getThreat(bot);
     float maxThreat = 0;
 
     Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
@@ -50,7 +50,7 @@ uint8 ThreatValue::Calculate(Unit* target)
         if( !player || !player->IsAlive() || player == bot)
             continue;
 
-        float threat = target->getThreatManager().getThreat(player);
+        float threat = target->GetThreatManager().getThreat(player);
         if (maxThreat < threat)
             maxThreat = threat;
     }

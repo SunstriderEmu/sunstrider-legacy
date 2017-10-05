@@ -1268,7 +1268,7 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget, 19712, false);
                     if (m_caster->ToCreature())
                         if (m_caster->ToCreature()->AI())
-                            m_caster->ToCreature()->getThreatManager().clearReferences();
+                            m_caster->ToCreature()->GetThreatManager().clearReferences();
                     return;
                 }
                 case 23448:                                 // Ultrasafe Transporter: Gadgetzan - backfires
@@ -1379,7 +1379,7 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 29858:                                 // Soulshatter
                     if (unitTarget && unitTarget->CanHaveThreatList()
-                        && unitTarget->getThreatManager().getThreat(m_caster) > 0.0f)
+                        && unitTarget->GetThreatManager().getThreat(m_caster) > 0.0f)
                         m_caster->CastSpell(unitTarget,32835,true);
                     return;
                 case 30458:                                 // Nigh Invulnerability
@@ -4760,16 +4760,16 @@ void Spell::EffectTaunt(uint32 /*i*/)
     }
 
     // Also use this effect to set the taunter's threat to the taunted creature's highest value
-    if (!unitTarget->getThreatManager().getOnlineContainer().empty())
+    if (!unitTarget->GetThreatManager().getOnlineContainer().empty())
     {
-        float myThreat = unitTarget->getThreatManager().getThreat(m_caster);
-        float topThreat = unitTarget->getThreatManager().getOnlineContainer().getMostHated()->getThreat();
+        float myThreat = unitTarget->GetThreatManager().getThreat(m_caster);
+        float topThreat = unitTarget->GetThreatManager().getOnlineContainer().getMostHated()->getThreat();
         if (topThreat > myThreat)
-            unitTarget->getThreatManager().doAddThreat(m_caster, topThreat - myThreat);
+            unitTarget->GetThreatManager().doAddThreat(m_caster, topThreat - myThreat);
 
         //Set aggro victim to caster
-        if(HostileReference* forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
-            unitTarget->getThreatManager().setCurrentVictim(forcedVictim);
+        if(HostileReference* forcedVictim = unitTarget->GetThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
+            unitTarget->GetThreatManager().setCurrentVictim(forcedVictim);
     }
 
     if((unitTarget->ToCreature())->IsAIEnabled) {
@@ -7021,7 +7021,7 @@ void Spell::EffectModifyThreatPercent(uint32 /*effIndex*/)
     if(!unitTarget)
         return;
 
-    unitTarget->getThreatManager().modifyThreatPercent(m_caster, damage);
+    unitTarget->GetThreatManager().modifyThreatPercent(m_caster, damage);
 }
 
 void Spell::EffectTransmitted(uint32 effIndex)

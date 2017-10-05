@@ -145,10 +145,20 @@ bool CreatureAI::UpdateVictim(bool evade)
     if(!me->IsInCombat())
         return false;
 
-    if(Unit *victim = me->SelectVictim(evade)) 
-        AttackStart(victim);
+    if (!me->HasReactState(REACT_PASSIVE))
+    {
+        if (Unit* victim = me->SelectVictim(evade))
+            if (!me->IsFocusing(nullptr, true) && victim != me->GetVictim())
+                AttackStart(victim);
 
-    return me->GetVictim();
+        return me->GetVictim() != nullptr;
+    } else if (me->GetThreatManager().isThreatListEmpty())
+    {
+        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        return false;
+    }
+
+    return true;
 }
 
 void CreatureAI::EnterEvadeMode(EvadeReason why)
@@ -241,7 +251,7 @@ void CreatureAI::DoZoneInCombat(Unit* pUnit, bool force)
 
     if (!pUnit->CanHaveThreatList())
     {
-        if (!force && pUnit->getThreatManager().isThreatListEmpty())
+        if (!force && pUnit->GetThreatManager().isThreatListEmpty())
         {
             error_log("TSCR: DoZoneInCombat called for creature that either cannot have threat list or has empty threat list (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? (pUnit->ToCreature())->GetEntry() : 0);
 

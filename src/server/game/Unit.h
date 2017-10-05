@@ -1887,7 +1887,7 @@ class TC_GAME_API Unit : public WorldObject
         void DeleteThreatList();
         void TauntApply(Unit* pVictim);
         void TauntFadeOut(Unit *taunter);
-        ThreatManager& getThreatManager() { return m_ThreatManager; }
+        ThreatManager& GetThreatManager() { return m_ThreatManager; }
         void addHatedBy(HostileReference* pHostileReference) { m_HostileRefManager.insertFirst(pHostileReference); };
         void removeHatedBy(HostileReference* /*pHostileReference*/ ) { /* nothing to do yet */ }
         HostileRefManager& GetHostileRefManager() { return m_HostileRefManager; }

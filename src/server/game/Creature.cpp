@@ -662,7 +662,7 @@ void Creature::Update(uint32 diff)
             {
                 if(m_areaCombatTimer < diff)
                 {
-                    std::list<HostileReference *> t_list = getThreatManager().getThreatList();
+                    std::list<HostileReference *> t_list = GetThreatManager().getThreatList();
                     for(auto & i : t_list)
                         if(i && IS_PLAYER_GUID(i->getUnitGuid()))
                         {
@@ -2800,7 +2800,7 @@ bool Creature::HadPlayerInThreatListAtDeath(uint64 guid) const
 
 void Creature::ConvertThreatListIntoPlayerListAtDeath()
 {
-    auto threatList = getThreatManager().getThreatList();
+    auto threatList = GetThreatManager().getThreatList();
     for(auto itr : threatList)
     {
         if(itr->getThreat() > 0.0f && itr->getSourceUnit()->GetTypeId() == TYPEID_PLAYER)

@@ -614,7 +614,7 @@ bool ChatHandler::HandleDebugThreatList(const char * args)
     if(args)
         limit = (uint32)atoi(args);
 
-    std::list<HostileReference*>& tlist = target->getThreatManager().getThreatList();
+    std::list<HostileReference*>& tlist = target->GetThreatManager().getThreatList();
     std::list<HostileReference*>::iterator itr;
     uint32 cnt = 0;
     PSendSysMessage("Threat list of %s (guid %u)",target->GetName().c_str(), target->GetGUIDLow());

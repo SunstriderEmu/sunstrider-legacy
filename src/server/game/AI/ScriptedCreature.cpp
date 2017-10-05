@@ -404,14 +404,14 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea()
 
 void ScriptedAI::DoResetThreat()
 {
-    if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty())
+    if (!me->CanHaveThreatList() || me->GetThreatManager().isThreatListEmpty())
     {
         error_log("TSCR: DoResetThreat called for creature that either cannot have threat list or has empty threat list (me entry = %d)", me->GetEntry());
 
         return;
     }
 
-    std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*>& m_threatlist = me->GetThreatManager().getThreatList();
     std::list<HostileReference*>::iterator itr;
 
     for(itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
@@ -426,7 +426,7 @@ void ScriptedAI::DoResetThreat()
 void ScriptedAI::DoModifyThreatPercent(Unit *pUnit, int32 pct)
 {
     if(!pUnit) return;
-    me->getThreatManager().modifyThreatPercent(pUnit, pct);
+    me->GetThreatManager().modifyThreatPercent(pUnit, pct);
 }
 
 void ScriptedAI::DoTeleportTo(float x, float y, float z, uint32 time)
@@ -523,7 +523,7 @@ void BossAI::TeleportCheaters()
     float x, y, z;
     me->GetPosition(x, y, z);
 
-    ThreatContainer::StorageType threatList = me->getThreatManager().getThreatList();
+    ThreatContainer::StorageType threatList = me->GetThreatManager().getThreatList();
     for (ThreatContainer::StorageType::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
         if (Unit* target = (*itr)->getTarget())
             if (target->GetTypeId() == TYPEID_PLAYER && !CheckBoundary(target))

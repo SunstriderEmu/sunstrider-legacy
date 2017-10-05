@@ -6895,7 +6895,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  return false;
 
              if(pVictim && pVictim->IsAlive())
-                 pVictim->getThreatManager().modifyThreatPercent(this,-10);
+                 pVictim->GetThreatManager().modifyThreatPercent(this,-10);
 
              basepoints0 = triggerAmount * GetMaxHealth() / 100;
              trigger_spell_id = 31616;
@@ -7648,7 +7648,7 @@ bool Unit::AttackStop()
         return false;
 
     Unit* victim = m_attacking;
-    getThreatManager().clearCurrentVictim();
+    GetThreatManager().clearCurrentVictim();
 
     m_attacking->_removeAttacker(this);
     m_attacking = nullptr;
@@ -11003,8 +11003,8 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
             // modify threat lists for new phasemask
             if (GetTypeId() != TYPEID_PLAYER)
             {
-                std::list<HostileReference*> threatList = getThreatManager().getThreatList();
-                std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
+                std::list<HostileReference*> threatList = GetThreatManager().getThreatList();
+                std::list<HostileReference*> offlineThreatList = GetThreatManager().getOfflineThreatList();
 
                 // merge expects sorted lists
                 threatList.sort();

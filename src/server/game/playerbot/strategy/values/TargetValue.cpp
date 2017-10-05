@@ -13,7 +13,7 @@ Unit* TargetValue::FindTarget(FindTargetStrategy* strategy)
         if (!unit)
             continue;
 
-        ThreatManager &threatManager = unit->getThreatManager();
+        ThreatManager &threatManager = unit->GetThreatManager();
         strategy->CheckAttacker(unit, &threatManager);
     }
 

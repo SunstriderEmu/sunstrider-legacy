@@ -113,7 +113,7 @@ bool UnitAI::GetRestoreCombatMovementOnOOM()
 
 Unit* UnitAI::SelectTarget(SelectAggroTarget target, uint32 position)
 {
-    std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*>& m_threatlist = me->GetThreatManager().getThreatList();
     auto i = m_threatlist.begin();
     auto r = m_threatlist.rbegin();
 
@@ -140,7 +140,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget target, uint32 position)
 
 Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float radius, bool playersOnly, bool noTank)
 {
-    std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*>& threatlist = me->GetThreatManager().getThreatList();
     if (position >= threatlist.size())
         return nullptr;
 
@@ -199,7 +199,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
 {
     if (targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
     {
-        std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
+        std::list<HostileReference*> &m_threatlist = me->GetThreatManager().getThreatList();
         if (m_threatlist.empty()) return nullptr;
         std::list<Unit*> targetList;
         auto itr = m_threatlist.begin();
@@ -235,7 +235,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
     }
     else
     {
-        std::list<HostileReference*> m_threatlist = me->getThreatManager().getThreatList();
+        std::list<HostileReference*> m_threatlist = me->GetThreatManager().getThreatList();
         std::list<HostileReference*>::iterator i;
         Unit *target;
         while (position < m_threatlist.size())
@@ -277,7 +277,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
 // selects random unit not having aura
 Unit* UnitAI::SelectTarget(uint32 position, float distNear, float distFar, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex)
 {
-    std::list<HostileReference*> m_threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*> m_threatlist = me->GetThreatManager().getThreatList();
     std::list<HostileReference*>::iterator i;
     Unit *target;
     while (position < m_threatlist.size())
@@ -308,7 +308,7 @@ Unit* UnitAI::SelectTarget(uint32 position, float distNear, float distFar, bool 
 
 void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 maxTargets, SelectAggroTarget targetType, float radius, bool playersOnly, uint32 notHavingAuraId, uint8 effIndex)
 {
-    std::list<HostileReference*> const& threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*> const& threatlist = me->GetThreatManager().getThreatList();
     if (threatlist.empty())
         return;
 

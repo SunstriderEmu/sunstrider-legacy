@@ -7087,9 +7087,9 @@ void Aura::HandleAuraIgnored(bool apply, bool Real)
     Unit* caster = GetCaster();
     
     if (apply)
-        caster->getThreatManager().detauntApply(m_target);
+        caster->GetThreatManager().detauntApply(m_target);
     else
-        caster->getThreatManager().detauntFadeOut(m_target);
+        caster->GetThreatManager().detauntFadeOut(m_target);
 }
 
 void Aura::HandleModStateImmunityMask(bool apply, bool Real)

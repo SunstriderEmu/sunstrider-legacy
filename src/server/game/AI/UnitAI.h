@@ -111,7 +111,7 @@ class TC_GAME_API UnitAI
         // predicate shall extend std::unary_function<Unit*, bool>
         template<class PREDICATE> Unit* SelectTarget(SelectAggroTarget targetType, uint32 position, PREDICATE const& predicate)
         {
-            ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
+            ThreatContainer::StorageType const& threatlist = me->GetThreatManager().getThreatList();
             if (position >= threatlist.size())
                 return nullptr;
 
