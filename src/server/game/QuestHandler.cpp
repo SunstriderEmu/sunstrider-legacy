@@ -68,7 +68,7 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
     uint64 guid;
     recvData >> guid;
 
-    Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(guid);
+    Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(guid);
     if (!pCreature)
     {
         TC_LOG_ERROR ("network","WORLD: HandleQuestgiverHelloOpcode - Unit (GUID: %u) not found or you can't interact with him.",
@@ -79,8 +79,10 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
     // remove fake death
     if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
+
     // Stop the npc if moving
-    pCreature->StopMoving();
+    pCreature->PauseMovement(sWorld->getIntConfig(CONFIG_CREATURE_STOP_FOR_PLAYER));
+    pCreature->SetHomePosition(pCreature->GetPosition());
 
     if (pCreature->AI()->GossipHello(_player))
         return;

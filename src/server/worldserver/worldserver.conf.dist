@@ -896,6 +896,14 @@ ListenRange.Say = 40
 ListenRange.TextEmote = 40
 ListenRange.Yell = 300
 
+#
+#    Creature.MovingStopTimeForPlayer
+#        Description: Time (in milliseconds) during which creature will not move after
+#                     interaction with player.
+#        Default: 60000
+
+Creature.MovingStopTimeForPlayer = 60000
+
 ###################################################################################################################
 # CHAT SETTINGS
 #

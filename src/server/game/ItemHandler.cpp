@@ -717,7 +717,7 @@ void WorldSession::HandleListInventoryOpcode( WorldPacket & recvData )
 
 void WorldSession::SendListInventory( uint64 vendorguid )
 {
-    Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
+    Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
         TC_LOG_ERROR("FIXME", "WORLD: SendListInventory - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
@@ -730,7 +730,8 @@ void WorldSession::SendListInventory( uint64 vendorguid )
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
     // Stop the npc if moving
-    pCreature->StopMoving();
+    pCreature->PauseMovement(sWorld->getIntConfig(CONFIG_CREATURE_STOP_FOR_PLAYER));
+    pCreature->SetHomePosition(pCreature->GetPosition());
 
     VendorItemData const* vItems = pCreature->GetVendorItems();
     if(!vItems)

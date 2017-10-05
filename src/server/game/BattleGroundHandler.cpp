@@ -24,7 +24,7 @@ void WorldSession::HandleBattleMasterHelloOpcode( WorldPacket & recvData )
     uint64 guid;
     recvData >> guid;
 
-    Creature *unit = ObjectAccessor::GetCreature(*_player, guid);
+    Creature* unit = ObjectAccessor::GetCreature(*_player, guid);
     if(!unit)
         return;
 
@@ -32,7 +32,8 @@ void WorldSession::HandleBattleMasterHelloOpcode( WorldPacket & recvData )
         return;
 
     // Stop the npc if moving
-    unit->StopMoving();
+    unit->PauseMovement(sWorld->getIntConfig(CONFIG_CREATURE_STOP_FOR_PLAYER));
+    unit->SetHomePosition(creature->GetPosition());
 
     BattlegroundTypeId bgTypeId = sObjectMgr->GetBattleMasterBG(unit->GetEntry());
 
