@@ -6012,6 +6012,9 @@ void Spell::EffectSanctuary(uint32 /*i*/)
     if(!unitTarget)
         return;
 
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+        unitTarget->ToPlayer()->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
+
     unitTarget->GetHostileRefManager().UpdateVisibility();
 
     std::list<Unit*> targets;
