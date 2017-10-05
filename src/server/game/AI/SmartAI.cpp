@@ -63,9 +63,9 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
 bool SmartAI::IsAIControlled() const
 {
     if (me->IsControlledByPlayer())
-            return false;
+        return false;
     if (mIsCharmed)
-            return false;
+         return false;
     return true;
 }
 
@@ -616,7 +616,7 @@ void SmartAI::DamageTaken(Unit* doneBy, uint32& damage)
     GetScript()->ProcessEventsFor(SMART_EVENT_DAMAGED, doneBy, damage);
 
     // don't allow players to use unkillable units
-    if (!IsAIControlled() && mInvincibilityHpLevel && (damage >= me->GetHealth() - mInvincibilityHpLevel))
+    if (IsAIControlled() && mInvincibilityHpLevel && (damage >= me->GetHealth() - mInvincibilityHpLevel))
     {
         damage = 0;
         me->SetHealth(mInvincibilityHpLevel);
