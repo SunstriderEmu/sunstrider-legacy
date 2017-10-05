@@ -4702,7 +4702,7 @@ void Aura::HandleModBaseResistance(bool apply, bool Real)
 
 void Aura::HandleAuraModStat(bool apply, bool Real)
 {
-    if (m_modifier.m_miscvalue < -2 || m_modifier.m_miscvalue > 4)
+    if (/*m_modifier.m_miscvalue < -2 || */m_modifier.m_miscvalue > 4)
     {
         TC_LOG_ERROR("FIXME","WARNING: Spell %u effect %u have unsupported misc value (%i) for SPELL_AURA_MOD_STAT ",GetId(),GetEffIndex(),m_modifier.m_miscvalue);
         return;
