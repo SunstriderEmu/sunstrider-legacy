@@ -6017,6 +6017,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
 
     unitTarget->GetHostileRefManager().UpdateVisibility();
 
+    //stop spells currently cast against this target
     std::list<Unit*> targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityRange());
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(m_caster, targets, u_check);
