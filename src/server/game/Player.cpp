@@ -7116,7 +7116,7 @@ void Player::UpdateArea(uint32 newArea)
 
 void Player::UpdateZone(uint32 newZone, uint32 newArea)
 {
-    if(sWorld->getConfig(CONFIG_ARENASERVER_ENABLED) //bring back the escapers !
+    if (sWorld->getConfig(CONFIG_ARENASERVER_ENABLED) //bring back the escapers !
         && newZone != 616  //Hyjal arena zone
         && newZone != 406 // zone pvp
         && GetAreaId() != 19 //Zul Gurub arena zone
@@ -7128,81 +7128,90 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         return;
     }
 
-    uint32 oldZoneId  = m_zoneUpdateId;
-    m_zoneUpdateId    = newZone;
+    uint32 const oldZoneId = m_zoneUpdateId;
+    m_zoneUpdateId = newZone;
     m_zoneUpdateTimer = ZONE_UPDATE_INTERVAL;
 
-    // zone changed, so area changed as well, update it
-    UpdateArea(GetAreaId());
-
-    AreaTableEntry const* zone = sAreaTableStore.LookupEntry(newZone);
-    if(!zone)
-        return;
-
     // inform outdoor pvp
-    if(oldZoneId != m_zoneUpdateId)
+    if (oldZoneId != m_zoneUpdateId)
     {
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, oldZoneId);
-        sOutdoorPvPMgr->HandlePlayerEnterZone(this, m_zoneUpdateId);
 #ifdef LICH_KING
         sBattlefieldMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
         sBattlefieldMgr->HandlePlayerEnterZone(this, newZone);
 #endif
     }
 
+    // zone changed, so area changed as well, update it
+    UpdateArea(GetAreaId());
+
+    AreaTableEntry const* zone = sAreaTableStore.LookupEntry(newZone);
+    if (!zone)
+        return;
+
+
     if (sWorld->getConfig(CONFIG_WEATHER))
     {
-        Weather *wth = sWorld->FindWeather(zone->ID);
-        if(wth)
-        {
+        if(Weather *wth = sWorld->FindWeather(zone->ID))
             wth->SendWeatherUpdateToPlayer(this);
-        }
-        else
-        {
-            if(!sWorld->AddWeather(zone->ID))
-            {
-                // send fine weather packet to remove old zone's weather
-                Weather::SendFineWeatherUpdateToPlayer(this);
-            }
-        }
+        else if (!sWorld->AddWeather(zone->ID))
+            // send fine weather packet to remove old zone's weather
+            Weather::SendFineWeatherUpdateToPlayer(this);
     }
 
-    pvpInfo.IsInHostileArea =
-        (GetTeam() == ALLIANCE && zone->team == AREAHORDE) ||
-        (GetTeam() == HORDE    && zone->team == AREATEAM_ALLY)  ||
-        (!IsInDuelArea() && sWorld->IsPvPRealm() && zone->team == 0)  ||
-        InBattleground();                                   // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
+    // in PvP, any not controlled zone (except zone->team == 6, default case)
+    // in PvE, only opposition team capital
+    switch (zone->team)
+    {
+    case AREATEAM_ALLY:
+        pvpInfo.IsInHostileArea = GetTeam() != ALLIANCE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
+        break;
+    case AREATEAM_HORDE:
+        pvpInfo.IsInHostileArea = GetTeam() != HORDE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
+        break;
+    case AREATEAM_NONE:
+        // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
+        pvpInfo.IsInHostileArea = sWorld->IsPvPRealm() || InBattleground() 
+#ifdef LICH_KING
+            || zone->flags & AREA_FLAG_WINTERGRASP
+#endif
+            ;
+        break;
+    default:                                            // 6 in fact
+        pvpInfo.IsInHostileArea = false;
+        break;
+    }
 
     // Treat players having a quest flagging for PvP as always in hostile area
     pvpInfo.IsHostile = pvpInfo.IsInHostileArea
 #ifdef LICH_KING
         || HasPvPForcingQuest()
 #endif
-    ;
+        ;
 
-    if(zone->flags & AREA_FLAG_CAPITAL)                     // in capital city
+    if (zone->flags & AREA_FLAG_CAPITAL)                     // in capital city
     {
         if (!pvpInfo.IsHostile || zone->IsSanctuary())
             SetRestType(REST_TYPE_IN_CITY);
 
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-        InnEnter(time(nullptr),GetMapId(),0,0,0);
+        InnEnter(time(nullptr), GetMapId(), 0, 0, 0);
 
         pvpInfo.IsInNoPvPArea = true;
     }
     else                                                    // anywhere else
     {
-        if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING))     // but resting (walk from city or maybe in tavern or leave tavern recently)
+        if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING))     // but resting (walk from city or maybe in tavern or leave tavern recently)
         {
-            if(GetRestType()==REST_TYPE_IN_TAVERN)          // has been in tavern. Is still in?
+            if (GetRestType() == REST_TYPE_IN_TAVERN)          // has been in tavern. Is still in?
             {
-                if(GetMapId()!=GetInnPosMapId() || sqrt((GetPositionX()-GetInnPosX())*(GetPositionX()-GetInnPosX())+(GetPositionY()-GetInnPosY())*(GetPositionY()-GetInnPosY())+(GetPositionZ()-GetInnPosZ())*(GetPositionZ()-GetInnPosZ()))>40)
+                if (GetMapId() != GetInnPosMapId() || sqrt((GetPositionX() - GetInnPosX())*(GetPositionX() - GetInnPosX()) + (GetPositionY() - GetInnPosY())*(GetPositionY() - GetInnPosY()) + (GetPositionZ() - GetInnPosZ())*(GetPositionZ() - GetInnPosZ())) > 40)
                 {
                     RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
                     SetRestType(REST_TYPE_NO);
                 }
             }
-            else                                            // not in tavern (leave city then)
+            else   // not in tavern (leave city then)
             {
                 RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
                 SetRestType(REST_TYPE_NO);
@@ -7214,17 +7223,34 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     // remove items with area/map limitations (delete only for alive player to allow back in ghost mode)
     // if player resurrected at teleport this will be applied in resurrect code
-    if(IsAlive())
-        DestroyZoneLimitedItem( true, newZone );
+    if (IsAlive())
+        DestroyZoneLimitedItem(true, newZone);
+
+    // check some item equip limitations (in result lost CanTitanGrip at talent reset, for example)
+    AutoUnequipOffhandIfNeed();
 
     // recent client version not send leave/join channel packets for built-in local channels
-    UpdateLocalChannels( newZone );
+    UpdateLocalChannels(newZone);
 
     // group update
-    if(GetGroup())
+    if (GetGroup())
         SetGroupUpdateFlag(GROUP_UPDATE_FLAG_ZONE);
 
     UpdateZoneDependentAuras(newZone);
+
+
+    if (oldZoneId != newZone)
+    {
+        sOutdoorPvPMgr->HandlePlayerEnterZone(this, m_zoneUpdateId);
+#ifdef LICH_KING
+        sBattlefieldMgr->HandlePlayerEnterZone(this, newZone);
+#endif
+        SendInitWorldStates(newZone, newArea);              // only if really enters to new zone, not just area change, works strange...
+        /* TC
+        if (Guild* guild = GetGuild())
+            guild->UpdateMemberData(this, GUILD_MEMBER_DATA_ZONEID, newZone);
+            */
+    }
 }
 
 //If players are too far way of duel flag... then player loose the duel
