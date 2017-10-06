@@ -11384,6 +11384,7 @@ void Unit::AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask, Sp
 {
     // Only mobs can manage threat lists
     if(CanHaveThreatList())
+
         m_ThreatManager.addThreat(pVictim, threat, schoolMask, threatSpell);
 }
 
@@ -11446,7 +11447,7 @@ void Unit::TauntFadeOut(Unit *taunter)
     if(!target || target != taunter)
         return;
 
-    if(m_ThreatManager.isThreatListEmpty())
+    if(m_ThreatManager.IsThreatListEmpty())
     {
         if(creature->IsAIEnabled)
             creature->AI()->EnterEvadeMode(CreatureAI::EVADE_REASON_NO_HOSTILES);
@@ -11527,7 +11528,7 @@ Unit* Creature::SelectVictim(bool evade)
 
     if (CanHaveThreatList())
     {
-        if (!target && !m_ThreatManager.isThreatListEmpty())
+        if (!target && !m_ThreatManager.IsThreatListEmpty())
         {
             //TC_LOG_INFO("%s SelectVictim2", GetName());
             if (!HasAuraType(SPELL_AURA_MOD_TAUNT)) {

@@ -1424,6 +1424,12 @@ class TC_GAME_API Unit : public WorldObject
 
         bool IsInFlight()  const { return HasUnitState(UNIT_STATE_IN_FLIGHT); }
 
+        bool IsEngaged() const { return IsInCombat(); }
+        bool IsEngagedBy(Unit const* who) const { return IsInCombatWith(who); }
+        void EngageWithTarget(Unit* who) { SetInCombatWith(who); who->SetInCombatWith(this); GetThreatManager().AddThreat(who, 0.0f); }
+        bool IsThreatened() const { return CanHaveThreatList() && !GetThreatManager().IsThreatListEmpty(); }
+        bool IsThreatenedBy(Unit const* who) const { return who && CanHaveThreatList() && GetThreatManager().IsThreatenedBy(who); }
+
         bool IsInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
         bool IsPetInCombat() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT); }
         void CombatStart(Unit* target, bool updatePvP = true);
@@ -1888,6 +1894,7 @@ class TC_GAME_API Unit : public WorldObject
         void TauntApply(Unit* pVictim);
         void TauntFadeOut(Unit *taunter);
         ThreatManager& GetThreatManager() { return m_ThreatManager; }
+        ThreatManager const& GetThreatManager() const { return m_ThreatManager; }
         void addHatedBy(HostileReference* pHostileReference) { m_HostileRefManager.insertFirst(pHostileReference); };
         void removeHatedBy(HostileReference* /*pHostileReference*/ ) { /* nothing to do yet */ }
         HostileRefManager& GetHostileRefManager() { return m_HostileRefManager; }
@@ -2165,6 +2172,8 @@ class TC_GAME_API Unit : public WorldObject
         void old_TextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false);
         void old_Whisper(int32 textId, uint64 receiver, bool IsBossWhisper = false);
 
+        virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
+
     protected:
         explicit Unit (bool isWorldObject);
 
@@ -2222,8 +2231,6 @@ class TC_GAME_API Unit : public WorldObject
         CharmInfo *m_charmInfo;
         //Players sharing this unit vision
         SharedVisionList m_sharedVision;
-
-        virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
         MotionMaster* i_motionMaster;
 

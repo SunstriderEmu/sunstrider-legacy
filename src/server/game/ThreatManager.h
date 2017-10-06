@@ -155,7 +155,7 @@ class TC_GAME_API ThreatContainer
 
         HostileReference* getMostHated() { return iThreatList.empty() ? nullptr : iThreatList.front(); }
 
-        HostileReference* getReferenceByTarget(Unit* pVictim) const;
+        HostileReference* getReferenceByTarget(Unit const* pVictim) const;
 
         StorageType& getThreatList() { return iThreatList; }
         StorageType const& getThreatList() const { return iThreatList; }
@@ -172,6 +172,17 @@ class TC_GAME_API ThreatManager
         ThreatContainer iThreatOfflineContainer;
 
         void _addThreat(Unit* target, float threat);
+
+public:
+
+    void AddThreat(Unit* victim, float amount, SpellInfo const* spell = nullptr, bool ignoreModifiers = false, bool ignoreRedirection = false);
+    bool IsThreatenedBy(Unit const* who, bool includeOffline = false) const { return (FindReference(who, includeOffline) != nullptr); }
+
+private:
+    HostileReference* FindReference(Unit const* who, bool includeOffline) const { if (auto* ref = iThreatContainer.getReferenceByTarget(who)) return ref; if (includeOffline) if (auto* ref = iThreatOfflineContainer.getReferenceByTarget(who)) return ref; return nullptr; }
+
+public:
+
     public:
         explicit ThreatManager(Unit *pOwner);
 
@@ -189,12 +200,13 @@ class TC_GAME_API ThreatManager
 
         float getThreat(Unit *pVictim, bool pAlsoSearchOfflineList = false) const;
 
-        bool isThreatListEmpty() const { return iThreatContainer.empty();}
+        bool IsThreatListEmpty(bool includeOffline = false) const { return includeOffline ? areThreatListsEmpty() : isThreatListEmpty(); }
+        bool isThreatListEmpty() const { return iThreatContainer.empty(); }
 		bool areThreatListsEmpty() const { return iThreatContainer.empty() && iThreatOfflineContainer.empty(); }
 
         bool processThreatEvent(const UnitBaseEvent* pUnitBaseEvent);
 
-        HostileReference* getCurrentVictim() const { return iCurrentVictim; }
+        HostileReference* GetCurrentVictim() const { return iCurrentVictim; }
 
         Unit*  GetOwner() { return iOwner; }
 

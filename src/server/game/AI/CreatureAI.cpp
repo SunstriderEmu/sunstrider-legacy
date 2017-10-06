@@ -98,14 +98,14 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
     if (!me->HasReactState(REACT_AGGRESSIVE))
         return;
 
-    //attack target if no current victim, else just enter combat with it
+    CanAttackResult result = me->CanAggro(who, false);
+    if (result != CAN_ATTACK_RESULT_OK)
+        return;
+
+    //attack target if no current victim
     if (!me->GetVictim())
     {
         if (AssistPlayerInCombatAgainst(who))
-            return;
-
-        CanAttackResult result = me->CanAggro(who, false);
-        if (result != CAN_ATTACK_RESULT_OK)
             return;
 
         if (me->HasUnitState(UNIT_STATE_DISTRACTED))
@@ -116,12 +116,13 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
 
         me->ClearUnitState(UNIT_STATE_EVADE);
         who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
-        AttackStart(who);
+
+        me->EngageWithTarget(who);
     } else {
-        if(!me->IsInCombatWith(who))
+        // else just enter combat with it if in melee range
+        if(me->IsWithinMeleeRange(who))
         {
-            who->SetInCombatWith(me);
-            me->AddThreat(who, 0.0f);
+            me->EngageWithTarget(who);
         }
     }
 }
@@ -133,10 +134,7 @@ void CreatureAI::_OnOwnerCombatInteraction(Unit* target)
 
     if (!me->HasReactState(REACT_PASSIVE) && /*me->CanStartAttack(target, true)*/ me->CanAttack(target, true))
     {
-        if (me->IsInCombat())
-            me->AddThreat(target, 0.0f);
-        else
-            AttackStart(target);
+        me->EngageWithTarget(target);
     }
 }
 
@@ -152,7 +150,7 @@ bool CreatureAI::UpdateVictim(bool evade)
                 AttackStart(victim);
 
         return me->GetVictim() != nullptr;
-    } else if (me->GetThreatManager().isThreatListEmpty())
+    } else if (me->GetThreatManager().IsThreatListEmpty())
     {
         EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
         return false;
@@ -251,7 +249,7 @@ void CreatureAI::DoZoneInCombat(Unit* pUnit, bool force)
 
     if (!pUnit->CanHaveThreatList())
     {
-        if (!force && pUnit->GetThreatManager().isThreatListEmpty())
+        if (!force && pUnit->GetThreatManager().IsThreatListEmpty())
         {
             error_log("TSCR: DoZoneInCombat called for creature that either cannot have threat list or has empty threat list (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? (pUnit->ToCreature())->GetEntry() : 0);
 

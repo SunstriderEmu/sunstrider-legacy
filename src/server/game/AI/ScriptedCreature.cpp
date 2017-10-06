@@ -404,7 +404,7 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea()
 
 void ScriptedAI::DoResetThreat()
 {
-    if (!me->CanHaveThreatList() || me->GetThreatManager().isThreatListEmpty())
+    if (!me->CanHaveThreatList() || me->GetThreatManager().IsThreatListEmpty())
     {
         error_log("TSCR: DoResetThreat called for creature that either cannot have threat list or has empty threat list (me entry = %d)", me->GetEntry());
 
