@@ -1,4 +1,4 @@
-#include "BattlegroundQueue.h"
+#include "BattleGroundQueue.h"
 #include "ArenaTeam.h"
 //#include "ArenaTeamMgr.h"
 #include "BattlegroundMgr.h"
