@@ -163,7 +163,7 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
     }
 
     // prevent movement while casting spells with cast time or channel time
-    if (owner->HasUnitState(UNIT_STATE_CASTING))
+    if (owner->IsMovementPreventedByCasting())
     {
         if (!owner->IsStopped())
             owner->StopMoving();
