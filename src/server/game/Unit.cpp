@@ -11690,12 +11690,59 @@ int32 Unit::CalculateSpellDamage(SpellInfo const* spellProto, uint8 effect_index
         }
     }
 
-    if(!basePointsPerLevel && (spellProto->Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION && spellProto->SpellLevel) &&
-            spellProto->Effects[effect_index].Effect != SPELL_EFFECT_WEAPON_PERCENT_DAMAGE &&
-            spellProto->Effects[effect_index].Effect != SPELL_EFFECT_KNOCK_BACK)
-            //there are many more: slow speed, -healing pct
-        //value = int32(value*0.25f*exp(GetLevel()*(70-spellProto->SpellLevel)/1000.0f));
-        value = int32(value * (int32)GetLevel() / (int32)(spellProto->SpellLevel ? spellProto->SpellLevel : 1));
+    if (!basePointsPerLevel && (spellProto->Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION && spellProto->SpellLevel) &&
+        spellProto->Effects[effect_index].Effect != SPELL_EFFECT_WEAPON_PERCENT_DAMAGE &&
+        spellProto->Effects[effect_index].Effect != SPELL_EFFECT_KNOCK_BACK)
+    {
+        bool canEffectScale = false;
+        switch (spellProto->Effects[effect_index].Effect)
+        {
+        case SPELL_EFFECT_SCHOOL_DAMAGE:
+        case SPELL_EFFECT_DUMMY:
+        case SPELL_EFFECT_POWER_DRAIN:
+        case SPELL_EFFECT_HEALTH_LEECH:
+        case SPELL_EFFECT_HEAL:
+        case SPELL_EFFECT_WEAPON_DAMAGE:
+        case SPELL_EFFECT_POWER_BURN:
+        case SPELL_EFFECT_SCRIPT_EFFECT:
+        case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+        case SPELL_EFFECT_FORCE_CAST_WITH_VALUE:
+        case SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE:
+#ifdef LICH_KING
+        case SPELL_EFFECT_TRIGGER_MISSILE_SPELL_WITH_VALUE:
+#endif
+            canEffectScale = true;
+            break;
+        default:
+            break;
+        }
+
+        switch (spellProto->Effects[effect_index].ApplyAuraName)
+        {
+        case SPELL_AURA_PERIODIC_DAMAGE:
+        case SPELL_AURA_DUMMY:
+        case SPELL_AURA_PERIODIC_HEAL:
+        case SPELL_AURA_DAMAGE_SHIELD:
+        case SPELL_AURA_PROC_TRIGGER_DAMAGE:
+        case SPELL_AURA_PERIODIC_LEECH:
+        case SPELL_AURA_PERIODIC_MANA_LEECH:
+        case SPELL_AURA_SCHOOL_ABSORB:
+        case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+            canEffectScale = true;
+            break;
+        default:
+            break;
+        }
+
+        if (canEffectScale)
+        {
+            GtNPCManaCostScalerEntry const* spellScaler = sGtNPCManaCostScalerStore.LookupEntry(spellProto->SpellLevel - 1);
+            GtNPCManaCostScalerEntry const* casterScaler = sGtNPCManaCostScalerStore.LookupEntry(this->GetLevel() - 1);
+            if (spellScaler && casterScaler)
+                value *= casterScaler->ratio / spellScaler->ratio;
+            //old calculation //value = int32(value * (int32)GetLevel() / (int32)(spellProto->SpellLevel ? spellProto->SpellLevel : 1));
+        }
+    }
 
     //TC_LOG_INFO("Returning %u", value);
 
