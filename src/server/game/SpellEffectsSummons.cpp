@@ -328,138 +328,12 @@ void Spell::EffectSummonType(uint32 effIndex)
         //TC ExecuteLogEffectSummonObject(effIndex, summon);
 
     }
-    /* old 
-    switch(m_spellInfo->Effects[effIndex].MiscValueB)
-    {
-        case SUMMON_PROPERTIES_ID_GUARDIAN:
-            EffectSummonGuardian(i);
-            break;
-        case SUMMON_PROPERTIES_ID_POSESSED:
-        case SUMMON_PROPERTIES_ID_POSESSED2:
-        case SUMMON_PROPERTIES_ID_POSESSED3:
-            EffectSummonPossessed(i);
-            break;
-        case SUMMON_PROPERTIES_ID_WILD:
-            EffectSummonWild(i);
-            break;
-        case SUMMON_PROPERTIES_ID_DEMON:
-            EffectSummonDemon(i);
-            break;
-        case SUMMON_PROPERTIES_ID_SUMMON:
-            EffectSummon(i);
-            break;
-        case SUMMON_PROPERTIES_ID_CRITTER:
-        case SUMMON_PROPERTIES_ID_CRITTER2:
-        case SUMMON_PROPERTIES_ID_CRITTER3:
-            EffectSummonCritter(i);
-            break;
-        case SUMMON_PROPERTIES_ID_TOTEM_SLOT1:
-        case SUMMON_PROPERTIES_ID_TOTEM_SLOT2:
-        case SUMMON_PROPERTIES_ID_TOTEM_SLOT3:
-        case SUMMON_PROPERTIES_ID_TOTEM_SLOT4:
-        case SUMMON_PROPERTIES_ID_TOTEM:
-            EffectSummonTotem(i);
-            break;
-        case SUMMON_PROPERTIES_ID_UNKNOWN1:
-        case SUMMON_PROPERTIES_ID_UNKNOWN3:
-        case SUMMON_PROPERTIES_ID_UNKNOWN4:
-        case SUMMON_PROPERTIES_ID_UNKNOWN5:
-            break;
-        default:
-            TC_LOG_ERROR("network","EffectSummonType: Unhandled summon type %u", m_spellInfo->Effects[i].MiscValueB);
-            break;
-    }
-    */
 }
 
 
 void Spell::EffectSummonTotem(uint32 effIndex)
 {
     EffectSummonType(effIndex);
-    /*
-    
-
-    uint8 slot = 0;
-    switch (properties->Id)
-    {
-    case SUMMON_PROPERTIES_ID_TOTEM_SLOT1: slot = 0; break;
-    case SUMMON_PROPERTIES_ID_TOTEM_SLOT2: slot = 1; break;
-    case SUMMON_PROPERTIES_ID_TOTEM_SLOT3: slot = 2; break;
-    case SUMMON_PROPERTIES_ID_TOTEM_SLOT4: slot = 3; break;
-    // Battle standard case
-    case SUMMON_PROPERTIES_ID_TOTEM:       slot = 254; break;
-    // jewelery statue case, like totem without slot
-    case SUMMON_PROPERTIES_ID_GUARDIAN:    slot = 255; break;
-    default: return;
-    }
-
-    if (slot < MAX_TOTEM)
-    {
-    uint64 guid = m_caster->m_SummonSlot[slot];
-    if (guid != 0)
-    {
-    Creature *OldTotem = ObjectAccessor::GetCreature(*m_caster, guid);
-    if (OldTotem && OldTotem->IsTotem())
-    ((Totem*)OldTotem)->UnSummon();
-    }
-    }
-
-    auto  pTotem = new Totem;
-
-    float angle = slot < MAX_TOTEM ? M_PI / MAX_TOTEM - (slot * 2 * M_PI / MAX_TOTEM) : 0;
-    Position pos = m_caster->GetFirstWalkableCollisionPosition(4.5f, angle);
-    pTotem->Relocate(pos);
-
-    if (!pTotem->Create(m_caster->GetMap()->GenerateLowGuid<HighGuid::Unit>(), m_caster->GetMap(), SpawnMask(0), m_spellInfo->Effects[i].MiscValue, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), m_caster->GetOrientation()))
-    {
-    delete pTotem;
-    return;
-    }
-
-    if (slot < MAX_TOTEM)
-    m_caster->m_SummonSlot[slot] = pTotem->GetGUID();
-    else if (slot == 254)
-    m_caster->m_SummonSlot254 = pTotem->GetGUID();
-
-    pTotem->SetOwner(m_caster->GetGUID());
-    pTotem->SetTypeBySummonSpell(m_spellInfo);              // must be after Create call where m_spells initilized
-
-    int32 duration = m_spellInfo->GetDuration();
-    if (Player* modOwner = m_caster->GetSpellModOwner())
-    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
-    pTotem->SetDuration(duration);
-
-    if (damage)                                             // if not spell info, DB values used
-    {
-    pTotem->SetMaxHealth(damage);
-    pTotem->SetHealth(damage);
-    }
-
-    pTotem->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
-    pTotem->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
-
-    pTotem->ApplySpellImmune(m_spellInfo->Id, IMMUNITY_STATE, SPELL_AURA_MOD_FEAR, true);
-    pTotem->ApplySpellImmune(m_spellInfo->Id, IMMUNITY_STATE, SPELL_AURA_TRANSFORM, true);
-    // Naj'entus Needle Spine
-    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 39968, true);
-    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 39835, true);
-    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 45661, true);
-    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 45662, true);
-    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 45665, true);
-
-    if (slot < MAX_TOTEM && m_caster->GetTypeId() == TYPEID_PLAYER)
-    {
-    WorldPacket data(SMSG_TOTEM_CREATED, 1 + 8 + 4 + 4);
-    data << uint8(slot);
-    data << uint64(pTotem->GetGUID());
-    data << uint32(duration);
-    data << uint32(m_spellInfo->Id);
-    (m_caster->ToPlayer())->SendDirectMessage(&data);
-    }
-
-    pTotem->Summon(m_caster);
-
-    */
 }
 
 //if caster is a creature, this handles like a normal summon (instead of 'toggling' minipet like for players)
@@ -468,50 +342,6 @@ void Spell::EffectSummonCritter(uint32 effIndex)
     EffectSummonType(effIndex);
     
 }
-
-
-/*
-void Spell::EffectSummon(uint32 effIndex)
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
-        return;
-
-    uint32 pet_entry = m_spellInfo->Effects[i].MiscValue;
-    if(!pet_entry)
-        return;
-
-    if(!m_originalCaster || m_originalCaster->GetTypeId() != TYPEID_PLAYER)
-    {
-        EffectSummonWild(i);
-        return;
-    }
-
-    Player *owner = m_originalCaster->ToPlayer();
-
-    if(owner->GetMinionGUID())
-        return;
-
-    // Summon in dest location
-    float x,y,z;
-    if(m_targets.HasDst())
-    {
-        destTarget->GetPosition(x, y, z);
-    }
-    else
-        m_caster->GetClosePoint(x,y,z,owner->GetCombatReach());
-
-    Pet *spawnCreature = owner->SummonPet(pet_entry, x, y, z, m_caster->GetOrientation(), SUMMON_PET, m_spellInfo->GetDuration());
-    if(!spawnCreature)
-        return;
-
-    spawnCreature->SetUInt32Value(UNIT_NPC_FLAGS, 0);
-    spawnCreature->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, 0);
-    spawnCreature->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
-    spawnCreature->SetName(spawnCreature->GetNameForLocaleIdx(owner->GetSession()->GetSessionDbcLocale()));
-
-    spawnCreature->SetReactState( REACT_DEFENSIVE );
-}
-    */
 
 void Spell::EffectSummonWild(uint32 effIndex)
 {
@@ -588,7 +418,8 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         }
         
 
-        summon->AI()->EnterEvadeMode();
+        //sunstrider: removed for now, this breaks any aura added in AI inits/reset scripting hooks
+        //summon->AI()->EnterEvadeMode();
 
         //TC ExecuteLogEffectSummonObject(i, summon);
     }
