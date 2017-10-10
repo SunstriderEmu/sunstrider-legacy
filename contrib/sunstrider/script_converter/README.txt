@@ -1,0 +1,1 @@
+This is the script that was used to convert all creature scripts from the old Mangos format to recent TC format.

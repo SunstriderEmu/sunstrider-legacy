@@ -1,0 +1,1 @@
+php D:/sunstrider/converter/convert.php %1
