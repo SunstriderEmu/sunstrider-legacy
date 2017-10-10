@@ -1,7 +1,7 @@
 #include "BattleGroundQueue.h"
 #include "ArenaTeam.h"
 //#include "ArenaTeamMgr.h"
-#include "BattlegroundMgr.h"
+#include "BattleGroundMgr.h"
 #include "Chat.h"
 #include "DatabaseEnv.h"
 #include "DBCStores.h"
