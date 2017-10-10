@@ -135,7 +135,7 @@ bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
 
 string RandomPlayerbotFactory::CreateRandomBotName()
 {
-    QueryResult result = CharacterDatabase.Query("SELECT MAX(name_id) FROM ai_playerbot_names");
+    QueryResult result = WorldDatabase.Query("SELECT MAX(name_id) FROM ai_playerbot_names");
     if (!result)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "No more names left for random guilds");
@@ -146,7 +146,7 @@ string RandomPlayerbotFactory::CreateRandomBotName()
     uint32 maxId = fields[0].GetUInt32();
 
     uint32 id = urand(0, maxId);
-    result = CharacterDatabase.PQuery("SELECT n.name FROM ai_playerbot_names n "
+    result = WorldDatabase.PQuery("SELECT n.name FROM ai_playerbot_names n "
             "LEFT OUTER JOIN characters e ON e.name = n.name "
             "WHERE e.guid IS NULL AND n.name_id >= '%u' LIMIT 1", id);
     if (!result)
@@ -331,7 +331,7 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
 
 string RandomPlayerbotFactory::CreateRandomGuildName()
 {
-    QueryResult result = CharacterDatabase.Query("SELECT MAX(name_id) FROM ai_playerbot_guild_names");
+    QueryResult result = WorldDatabase.Query("SELECT MAX(name_id) FROM ai_playerbot_guild_names");
     if (!result)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "No more names left for random guilds");
@@ -342,7 +342,7 @@ string RandomPlayerbotFactory::CreateRandomGuildName()
     uint32 maxId = fields[0].GetUInt32();
 
     uint32 id = urand(0, maxId);
-    result = CharacterDatabase.PQuery("SELECT n.name FROM ai_playerbot_guild_names n "
+    result = WorldDatabase.PQuery("SELECT n.name FROM ai_playerbot_guild_names n "
             "LEFT OUTER JOIN guild e ON e.name = n.name "
             "WHERE e.guildid IS NULL AND n.name_id >= '%u' LIMIT 1", id);
     if (!result)
