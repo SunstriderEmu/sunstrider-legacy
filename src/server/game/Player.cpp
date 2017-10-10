@@ -861,8 +861,6 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     }
     // all item positions resolved
 
-    m_lastGenderChange = 0;
-
     //lot of free stuff
     if (sWorld->getConfig(CONFIG_ARENASERVER_ENABLED))
     {
@@ -15426,8 +15424,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     // Experience Blocking
     m_isXpBlocked = fields[LOAD_DATA_XP_BLOCKED].GetUInt8();
 
-    m_lastGenderChange = fields[LOAD_DATA_LAST_GENDER_CHANGE].GetUInt64();
-
     m_customXp = fields[LOAD_DATA_CUSTOM_XP].GetDouble();
     // Check value
     if (m_customXp < 1.0f || m_customXp > sWorld->GetRate(RATE_XP_KILL))
@@ -17174,7 +17170,7 @@ void Player::SaveToDB(bool create /*=false*/)
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
         "death_expire_time, taxi_path, arena_pending_points, arenapoints, totalHonorPoints, todayHonorPoints, yesterdayHonorPoints, "
         "totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, health, power1, power2, power3, power4, power5, latency, "
-        "exploredZones, equipmentCache, ammoId, knownTitles, actionBars, xp_blocked, lastGenderChange) VALUES ("
+        "exploredZones, equipmentCache, ammoId, knownTitles, actionBars, xp_blocked) VALUES ("
         << GetGUIDLow() << ", "
         << GetSession()->GetAccountId() << ", '"
         << sql_name << "', "
@@ -17301,8 +17297,6 @@ void Player::SaveToDB(bool create /*=false*/)
     ss << uint32(GetByteValue(PLAYER_FIELD_BYTES, 2));
     ss << "', '";
     ss << m_isXpBlocked;
-    ss << "', '";
-    ss << m_lastGenderChange;
     ss << "' )";
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();

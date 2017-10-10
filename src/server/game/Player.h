@@ -350,7 +350,6 @@ enum LoadData
     LOAD_DATA_KNOWNTITLES,
     LOAD_DATA_ACTIONBARS,
     LOAD_DATA_XP_BLOCKED,
-    LOAD_DATA_LAST_GENDER_CHANGE,
     LOAD_DATA_CUSTOM_XP
 };
 
@@ -2440,9 +2439,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetSpiritRedeptionKiller(uint64 killerGUID) { m_spiritRedemptionKillerGUID = killerGUID; }
         uint64 GetSpiritRedemptionKiller() { return m_spiritRedemptionKillerGUID; }
 
-        uint64 GetLastGenderChange() { return m_lastGenderChange; }
-        void SetLastGenderChange(uint64 timestamp) { m_lastGenderChange = timestamp; }
-        
         bool hasCustomXpRate() const { return m_customXp != 0.0f; }
         float getCustomXpRate() const { return m_customXp; }
 
@@ -2732,8 +2728,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         
         // Spirit of Redemption
         uint64 m_spiritRedemptionKillerGUID;
-        
-        uint64 m_lastGenderChange;
         
         time_t _attackersCheckTime;
         
