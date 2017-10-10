@@ -2002,6 +2002,7 @@ bool ChatHandler::HandleTestsCommand(const char* args)
     if(tokens.size() == 0)
         return false;
 
+    //Prepare arguments for Catch. First argument must be "worldserver"
     int argc = tokens.size() + 1;
     char** argv = new char*[argc];
     std::string const& osef = "worldserver";
