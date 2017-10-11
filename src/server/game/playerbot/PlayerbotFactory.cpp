@@ -526,30 +526,30 @@ bool PlayerbotFactory::CanEquipItem(ItemTemplate const* proto, uint32 desiredQua
     if (!requiredLevel)
         return false;
 
-    uint32 level = bot->GetLevel();
+    uint32 _level = bot->GetLevel();
     uint32 delta = 2;
-    if (level < 15)
+    if (_level < 15)
         delta = urand(7, 15);
     else if (proto->Class == ITEM_CLASS_WEAPON || proto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)
         delta = urand(2, 3);
-    else if (!(level % 10) || (level % 10) == 9)
+    else if (!(_level % 10) || (_level % 10) == 9)
         delta = 2;
-    else if (level < 40)
+    else if (_level < 40)
         delta = urand(5, 10);
-    else if (level < 60)
+    else if (_level < 60)
         delta = urand(3, 7);
-    else if (level < 70)
+    else if (_level < 70)
         delta = urand(2, 5);
-    else if (level < 80)
+    else if (_level < 80)
         delta = urand(2, 4);
 
     if (desiredQuality > ITEM_QUALITY_NORMAL &&
-            (requiredLevel > level || requiredLevel < level - delta))
+            (requiredLevel > _level || requiredLevel < _level - delta))
         return false;
 
     for (uint32 gap = 60; gap <= 80; gap += 10)
     {
-        if (level > gap && requiredLevel <= gap)
+        if (_level > gap && requiredLevel <= gap)
             return false;
     }
 
@@ -983,7 +983,7 @@ void PlayerbotFactory::UpdateTradeSkills()
 
 void PlayerbotFactory::InitSkills()
 {
-    uint32 maxValue = level * 5;
+    //uint32 maxValue = level * 5;
     SetRandomSkill(SKILL_DEFENSE);
     SetRandomSkill(SKILL_SWORDS);
     SetRandomSkill(SKILL_AXES);
@@ -1096,8 +1096,8 @@ void PlayerbotFactory::InitSpecialSpells()
 
 void PlayerbotFactory::InitTalents(uint32 specNo)
 {
-    uint32 classMask = bot->GetClassMask();
     /* TODO PLAYERBOT
+    uint32 classMask = bot->GetClassMask();
     map<uint32, vector<TalentEntry const*> > spells;
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
@@ -1193,7 +1193,7 @@ void PlayerbotFactory::InitQuests()
     Replaced original code to avoid unecessary db query
     */
 
-    uint32 botLevel = bot->GetLevel();
+    //uint32 botLevel = bot->GetLevel();
     auto quests = sObjectMgr->GetQuestTemplates();
     for (auto itr : quests)
     {
@@ -1284,7 +1284,7 @@ void PlayerbotFactory::InitMounts()
         map<int32, vector<uint32> >& spells = allSpells[type];
         for (map<int32, vector<uint32> >::iterator i = spells.begin(); i != spells.end(); ++i)
         {
-            int32 effect = i->first;
+//            int32 effect = i->first;
             vector<uint32>& ids = i->second;
             uint32 index = urand(0, ids.size() - 1);
             if (index >= ids.size())
@@ -1301,7 +1301,7 @@ void PlayerbotFactory::InitPotions()
     ItemTemplateContainer const* itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
     for (ItemTemplateContainer::const_iterator i = itemTemplateContainer->begin(); i != itemTemplateContainer->end(); ++i)
     {
-        ItemTemplate const& itemTemplate = i->second;
+//        ItemTemplate const& itemTemplate = i->second;
         uint32 itemId = i->first;
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
         if (!proto)
@@ -1360,7 +1360,7 @@ void PlayerbotFactory::InitFood()
     ItemTemplateContainer const* itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
     for (ItemTemplateContainer::const_iterator i = itemTemplateContainer->begin(); i != itemTemplateContainer->end(); ++i)
     {
-        ItemTemplate const& itemTemplate = i->second;
+//        ItemTemplate const& itemTemplate = i->second;
         uint32 itemId = i->first;
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
         if (!proto)
@@ -1442,7 +1442,7 @@ void PlayerbotFactory::InitInventorySkill()
 
 Item* PlayerbotFactory::StoreItem(uint32 itemId, uint32 count)
 {
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+//    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
     ItemPosCountVec sDest;
     InventoryResult msg = bot->CanStoreNewItem(INVENTORY_SLOT_BAG_0, NULL_SLOT, sDest, itemId, count);
     if (msg != EQUIP_ERR_OK)
@@ -1457,7 +1457,7 @@ void PlayerbotFactory::InitInventoryTrade()
     ItemTemplateContainer const* itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
     for (ItemTemplateContainer::const_iterator i = itemTemplateContainer->begin(); i != itemTemplateContainer->end(); ++i)
     {
-        ItemTemplate const& itemTemplate = i->second;
+//        ItemTemplate const& itemTemplate = i->second;
         uint32 itemId = i->first;
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
         if (!proto)
@@ -1526,7 +1526,7 @@ void PlayerbotFactory::InitInventoryEquip()
     ItemTemplateContainer const* itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
     for (ItemTemplateContainer::const_iterator i = itemTemplateContainer->begin(); i != itemTemplateContainer->end(); ++i)
     {
-        ItemTemplate const& itemTemplate = i->second;
+//        ItemTemplate const& itemTemplate = i->second;
         uint32 itemId = i->first;
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
         if (!proto)

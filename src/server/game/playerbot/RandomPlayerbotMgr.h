@@ -50,7 +50,7 @@ class TC_GAME_API RandomPlayerbotMgr : public PlayerbotHolder
         void RandomTeleportForLevel(Player* bot);
 
         //made public for testing
-        uint32 AddRandomBot(bool alliance);
+        uint32 AddRandomBot(bool alliance = true);
     protected:
         void OnBotLoginInternal(Player * const bot) override {}
 

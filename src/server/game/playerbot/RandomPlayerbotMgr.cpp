@@ -85,7 +85,10 @@ uint32 RandomPlayerbotMgr::AddRandomBot(bool alliance)
 {
     vector<uint32> bots = GetFreeBots(alliance);
     if (bots.size() == 0)
+    {
+        sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Failed to add random bot, no free bot found");
         return 0;
+    }
 
     int index = urand(0, bots.size() - 1);
     uint32 bot = bots[index];
