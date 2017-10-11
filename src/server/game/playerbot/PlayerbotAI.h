@@ -164,7 +164,7 @@ private:
 public:
     Player* GetBot() { return bot; }
     Player* GetMaster() { return master; }
-    void SetMaster(Player* master) { this->master = master; }
+    void SetMaster(Player* _master) { master = _master; }
     AiObjectContext* GetAiObjectContext() { return aiObjectContext; }
     ChatHelper* GetChatHelper() { return &chatHelper; }
     bool IsOpposing(Player* player);

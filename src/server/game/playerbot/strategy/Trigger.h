@@ -70,7 +70,7 @@ namespace ai
 
     public:
         Trigger* getTrigger() { return trigger; }
-        void setTrigger(Trigger* trigger) { this->trigger = trigger; }
+        void setTrigger(Trigger* _trigger) { trigger = _trigger; }
         std::string getName() { return name; }
 
     public:

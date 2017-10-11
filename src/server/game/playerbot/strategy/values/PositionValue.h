@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         Position() : valueSet(false) {}
-        void Set(double x, double y, double z) { this->x = x; this->y = y; this->z = z; this->valueSet = true; }
+        void Set(double _x, double _y, double _z) { this->x = _x; this->y = _y; this->z = _z; this->valueSet = true; }
         void Reset() { valueSet = false; }
         bool isSet() { return valueSet; }
 

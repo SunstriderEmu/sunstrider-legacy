@@ -91,7 +91,7 @@ namespace ai
 
     public:
         Action* getAction() { return action; }
-        void setAction(Action* action) { this->action = action; }
+        void setAction(Action* _action) { action = _action; }
         std::string getName() { return name; }
 
     public:

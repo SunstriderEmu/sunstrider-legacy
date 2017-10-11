@@ -9,11 +9,11 @@ namespace ai
         LastSpellCast() : id(0),time(0) {}
 
     public:
-        void Set(uint32 id, ObjectGuid target, time_t time)
+        void Set(uint32 _id, ObjectGuid _target, time_t _time)
         {
-            this->id = id;
-            this->target = target;
-            this->time = time;
+            this->id = _id;
+            this->target = _target;
+            this->time = _time;
         }
         
         void Reset()

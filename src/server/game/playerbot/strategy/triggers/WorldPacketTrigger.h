@@ -8,10 +8,10 @@ namespace ai
     public:
         WorldPacketTrigger(PlayerbotAI* ai, std::string command) : Trigger(ai, command), triggered(false) {}
 
-        virtual void ExternalEvent(WorldPacket &packet, Player* owner = NULL)
+        virtual void ExternalEvent(WorldPacket& _packet, Player* _owner = NULL)
         {
-            this->packet = packet;
-            this->owner = owner;
+            this->packet = _packet;
+            this->owner = _owner;
             triggered = true;
         }
 

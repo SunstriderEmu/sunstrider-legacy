@@ -11,7 +11,7 @@ void Testing::PrepareCasterAndTarget(Player*& caster, Creature*& target)
     //corner in testing map
     static const WorldLocation testLoc = WorldLocation(13, -128.0f, -128.0f, -144.7f, 0.4f);
 
-    uint32 bot = sRandomPlayerbotMgr.AddRandomBot(false);
+    uint32 bot = sRandomPlayerbotMgr.AddRandomBot();
     REQUIRE(bot != 0);
 
     Player* playerBot = sRandomPlayerbotMgr.AddPlayerBot(bot, 0);

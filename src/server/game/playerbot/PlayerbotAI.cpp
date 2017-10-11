@@ -451,7 +451,7 @@ void PlayerbotAI::DoNextAction()
         //bot->GetSession()->HandleMovementOpcodes(packet);
     }
 
-    Player* master = GetMaster();
+    Player* _master = GetMaster();
     if (bot->IsMounted() && bot->IsFlying())
     {
         bot->m_movementInfo.SetMovementFlags((MovementFlags)(MOVEMENTFLAG_PLAYER_FLYING|MOVEMENTFLAG_CAN_FLY));
@@ -461,8 +461,8 @@ void PlayerbotAI::DoNextAction()
 
         if (master)
         {
-            bot->SetSpeedRate(MOVE_FLIGHT, master->GetSpeedRate(MOVE_FLIGHT), true);
-            bot->SetSpeedRate(MOVE_RUN, master->GetSpeedRate(MOVE_FLIGHT), true);
+            bot->SetSpeedRate(MOVE_FLIGHT, _master->GetSpeedRate(MOVE_FLIGHT), true);
+            bot->SetSpeedRate(MOVE_RUN, _master->GetSpeedRate(MOVE_FLIGHT), true);
         }
 
     }
@@ -474,15 +474,15 @@ void PlayerbotAI::DoNextAction()
         ChangeEngine(BOT_STATE_NON_COMBAT);
 
     Group *group = bot->GetGroup();
-    if (!master && group)
+    if (!_master && group)
     {
         for (GroupReference *gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
             PlayerbotAI* ai = bot->GetPlayerbotAI();
-            if (member && member->IsInWorld() && !member->GetPlayerbotAI() && (!master || master->GetPlayerbotAI()))
+            if (member && member->IsInWorld() && !member->GetPlayerbotAI() && (!_master || _master->GetPlayerbotAI()))
             {
-                ai->SetMaster(member);
+                ai->SetMaster(_master);
                 ai->ResetStrategies();
                 ai->TellMaster("Hello");
                 break;
@@ -700,19 +700,19 @@ GameObject* PlayerbotAI::GetGameObject(ObjectGuid guid)
 
 bool PlayerbotAI::TellMasterNoFacing(std::string text, PlayerbotSecurityLevel securityLevel)
 {
-    Player* master = GetMaster();
-    if (!master)
+    Player* _master = GetMaster();
+    if (!_master)
         return false;
 
-    if (!GetSecurity()->CheckLevelFor(securityLevel, true, master))
+    if (!GetSecurity()->CheckLevelFor(securityLevel, true, _master))
         return false;
 
     if (sPlayerbotAIConfig.whisperDistance && !bot->GetGroup() && sRandomPlayerbotMgr.IsRandomBot(bot) &&
-            master->GetSession()->GetSecurity() < SEC_GAMEMASTER1 &&
-            (bot->GetMapId() != master->GetMapId() || bot->GetDistance(master) > sPlayerbotAIConfig.whisperDistance))
+            _master->GetSession()->GetSecurity() < SEC_GAMEMASTER1 &&
+            (bot->GetMapId() != _master->GetMapId() || bot->GetDistance(_master) > sPlayerbotAIConfig.whisperDistance))
         return false;
 
-    bot->Whisper(text, LANG_UNIVERSAL, master);
+    bot->Whisper(text, LANG_UNIVERSAL, _master);
     return true;
 }
 
@@ -1099,7 +1099,7 @@ bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
         {
             const Aura *const aura = *itr;
             const SpellInfo* entry = aura->GetSpellInfo();
-            uint32 spellId = entry->Id;
+//            uint32 spellId = entry->Id;
 
             bool isPositiveSpell = entry->IsPositive();
             if (isPositiveSpell && bot->IsFriendlyTo(target))

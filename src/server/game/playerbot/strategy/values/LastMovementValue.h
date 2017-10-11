@@ -27,10 +27,10 @@ namespace ai
             lastMoveToOri = other.lastMoveToOri;
         }
         
-        void Set(Unit* lastFollow)
+        void Set(Unit* _lastFollow)
         {
             Set(0.0f, 0.0f, 0.0f, 0.0f);
-            this->lastFollow = lastFollow;
+            this->lastFollow = _lastFollow;
         }
 
         void Set(float x, float y, float z, float ori)

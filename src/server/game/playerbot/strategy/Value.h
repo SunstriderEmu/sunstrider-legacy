@@ -42,7 +42,7 @@ namespace ai
             }
             return value;
         }
-        void Set(T value) override { this->value = value; }
+        void Set(T _value) override { value = _value; }
         void Update() override
         {
             if (ticksElapsed < checkInterval) {
@@ -152,7 +152,7 @@ namespace ai
 
     public:
         T Get() override { return value; }
-        void Set(T value) override { this->value = value; }
+        void Set(T _value) override { value = _value; }
         void Update() override { }
         void Reset() override { value = defaultValue; }
 

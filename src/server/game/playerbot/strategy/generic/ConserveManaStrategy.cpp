@@ -17,12 +17,12 @@ float ConserveManaMultiplier::GetValue(Action* action)
     bool hasMana = AI_VALUE2(bool, "has mana", "self target");
     bool mediumMana = hasMana && mana < sPlayerbotAIConfig.mediumMana;
 
-    std::string name = action->getName();
+    std::string _name = action->getName();
 
     if (health < sPlayerbotAIConfig.lowHealth)
         return 1.0f;
 
-    if (name == "melee" || name == "reach melee" || name == "reach spell")
+    if (_name == "melee" || _name == "reach melee" || _name == "reach spell")
         return 1.0f;
 
     if (mediumMana && dynamic_cast<CastBuffSpellAction*>(action))

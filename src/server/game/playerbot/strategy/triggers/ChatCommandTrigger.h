@@ -8,10 +8,10 @@ namespace ai
     public:
         ChatCommandTrigger(PlayerbotAI* ai, std::string command) : Trigger(ai, command), triggered(false) {}
 
-        virtual void ExternalEvent(std::string param, Player* owner = NULL)
+        virtual void ExternalEvent(std::string _param, Player* _owner = nullptr)
         {
-            this->param = param;
-            this->owner = owner;
+            this->param = _param;
+            this->owner = _owner;
             triggered = true;
         }
 

@@ -10,7 +10,7 @@ namespace ai
         Qualified() {};
 
     public:
-        void Qualify(std::string qualifier) { this->qualifier = qualifier; }
+        void Qualify(std::string _qualifier) { qualifier = _qualifier; }
 
     protected:
         std::string qualifier;
