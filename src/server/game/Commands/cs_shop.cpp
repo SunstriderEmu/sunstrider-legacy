@@ -382,7 +382,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     uint32 m_race = m_session->GetPlayer()->GetRace();
     uint32 m_gender = m_session->GetPlayer()->GetGender();
     
-    if (t_race != m_race /*|| t_gender != m_gender */|| t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
+    if (t_race != m_race || t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
         return false;
 
     uint32 bankBags = m_session->GetPlayer()->GetByteValue(PLAYER_BYTES_2, 2);
@@ -391,10 +391,6 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES_2, t_playerBytes2);
     m_session->GetPlayer()->SetByteValue(PLAYER_BYTES_2, 2, bankBags);
     m_session->GetPlayer()->SetGender(t_gender);
-    if (t_gender != m_gender) {
-        m_session->GetPlayer()->SetLastGenderChange(time(nullptr));
-        //CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '4' WHERE guid ='%u'", m_session->GetPlayer()->GetGUIDLow()); //TODO: to be discussed
-    }
 
     LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(nullptr), account_id);
    // CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", m_session->GetPlayer()->GetGUID(), "reskin", time(NULL));
