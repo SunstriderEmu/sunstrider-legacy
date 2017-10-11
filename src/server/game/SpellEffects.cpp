@@ -3083,9 +3083,7 @@ void Spell::EffectSendEvent(uint32 effIndex)
         return;
 
     //special cases TODO: Move them to instanceScript->ProcessEvent
-    if (m_spellInfo->Id == 31949 && m_caster->GetTypeId() == TYPEID_PLAYER)
-        (m_caster->ToPlayer())->CompleteQuest(9816);
-    else if (m_spellInfo->Id == 34140 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(10305) == QUEST_STATUS_INCOMPLETE)
+    if (m_spellInfo->Id == 34140 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(10305) == QUEST_STATUS_INCOMPLETE)
         (m_caster->ToPlayer())->KilledMonsterCredit(19547, 0);
     else if (m_spellInfo->Id == 30098 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(9444) == QUEST_STATUS_INCOMPLETE)
         (m_caster->ToPlayer())->CompleteQuest(9444);
