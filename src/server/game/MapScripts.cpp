@@ -387,7 +387,6 @@ void Map::ScriptsProcess()
                 }
 
                 GameObject *go = nullptr;
-                int32 time_to_despawn = step.script->datalong2<5 ? 5 : (int32)step.script->datalong2;
 
                 CellCoord p(Trinity::ComputeCellCoord(summoner->GetPositionX(), summoner->GetPositionY()));
                 Cell cell(p);
@@ -414,13 +413,16 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                if( go->isSpawned() )
-                    break;                                  //gameobject already spawned
+                // Check that GO is not spawned
+                if (!go->isSpawned())
+                {
+                    int32 nTimeToDespawn = std::max(5, int32(step.script->datalong2));
+                    go->SetLootState(GO_READY);
+                    go->SetRespawnTime(nTimeToDespawn);        //despawn object in ? seconds
 
-                go->SetLootState(GO_READY);
-                go->SetRespawnTime(time_to_despawn);        //despawn object in ? seconds
-
-                go->GetMap()->AddToMap(go);
+                    if (!go->IsInWorld()) //sunstrider: A Gobjet may be already in world (but invisible) even when waiting for respawn
+                        go->GetMap()->AddToMap(go);
+                }
                 break;
             }
             case SCRIPT_COMMAND_OPEN_DOOR:
