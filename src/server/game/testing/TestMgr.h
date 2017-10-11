@@ -15,7 +15,7 @@ https://github.com/philsquared/Catch/issues/720
 namespace Testing
 {
     // Run Catch main. Can Throw
-    int RunCatch(int argc, char const* const* const argv);
+    int RunCatch(int argc, char* argv[]);
     void ClearAllTests();
 };
 

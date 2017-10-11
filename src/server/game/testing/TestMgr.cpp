@@ -6,7 +6,7 @@
 
 namespace Testing
 {
-    int RunCatch(int argc, char const* const* const argv)
+    int RunCatch(int argc, char* argv[])
     {
         // Prepare Catch. CatchSession may be initialized only once, so we store it as static
         static Catch::Session* catch_session = nullptr;

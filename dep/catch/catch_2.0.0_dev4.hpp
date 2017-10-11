@@ -7,11 +7,7 @@
  *
  *  Distributed under the Boost Software License, Version 1.0. (See accompanying
  *  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- 
- * Edited for Sunstrider:
- All edition are marked with a comment "Sunstrider", except for the added TC_GAME_API
  */
- 
 #ifndef TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 #define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 // start catch.hpp
@@ -229,7 +225,7 @@ namespace Catch {
         virtual ~NonCopyable();
     };
 
-    struct TC_GAME_API SourceLineInfo {
+    struct SourceLineInfo {
 
         SourceLineInfo() = delete;
         SourceLineInfo( char const* _file, std::size_t _line ) noexcept;
@@ -250,9 +246,9 @@ namespace Catch {
     std::ostream& operator << ( std::ostream& os, SourceLineInfo const& info );
 
     // This is just here to avoid compiler warnings with macro constants and boolean literals
-    TC_GAME_API bool isTrue( bool value );
-    TC_GAME_API bool alwaysTrue();
-    TC_GAME_API bool alwaysFalse();
+    bool isTrue( bool value );
+    bool alwaysTrue();
+    bool alwaysFalse();
 
     // Use this in variadic streaming macros to allow
     //    >> +StreamEndStop
@@ -333,7 +329,7 @@ namespace Catch {
     /// (taking a copy), if necessary. In theory this ownership is not externally
     /// visible - but it does mean (substring) StringRefs should not be shared between
     /// threads.
-    class TC_GAME_API StringRef {
+    class StringRef {
         friend struct StringRefTestAccess;
 
         using size_type = std::size_t;
@@ -403,20 +399,20 @@ public:
     }
 };
 
-TC_GAME_API auto makeTestInvoker( void(*testAsFunction)() ) noexcept -> ITestInvoker*;
+auto makeTestInvoker( void(*testAsFunction)() ) noexcept -> ITestInvoker*;
 
 template<typename C>
 auto makeTestInvoker( void (C::*testAsMethod)() ) noexcept -> ITestInvoker* {
     return new(std::nothrow) TestInvokerAsMethod<C>( testAsMethod );
 }
 
-struct TC_GAME_API NameAndTags {
+struct NameAndTags {
     NameAndTags( StringRef name_ = "", StringRef tags_ = "" ) noexcept;
     StringRef name;
     StringRef tags;
 };
 
-struct TC_GAME_API AutoReg : NonCopyable {
+struct AutoReg : NonCopyable {
     AutoReg( ITestInvoker* invoker, SourceLineInfo const& lineInfo, StringRef classOrMethod, NameAndTags const& nameAndTags ) noexcept;
     ~AutoReg();
 };
@@ -551,7 +547,7 @@ namespace Catch {
 
         extern const std::string unprintableString;
 
-        TC_GAME_API std::string rawMemoryToString( const void *object, std::size_t size );
+        std::string rawMemoryToString( const void *object, std::size_t size );
 
         template<typename T>
         std::string rawMemoryToString( const T& object ) {
@@ -575,7 +571,7 @@ namespace Catch {
 
     // If we decide for C++14, change these to enable_if_ts
     template <typename T>
-    struct TC_GAME_API StringMaker {
+    struct StringMaker {
         template <typename Fake = T>
         static
         typename std::enable_if<::Catch::Detail::IsStreamInsertable<Fake>::value, std::string>::type
@@ -607,109 +603,109 @@ namespace Catch {
     // Some predefined specializations
 
     template<>
-    struct TC_GAME_API StringMaker<std::string> {
+    struct StringMaker<std::string> {
         static std::string convert(const std::string& str);
     };
     template<>
-    struct TC_GAME_API StringMaker<std::wstring> {
+    struct StringMaker<std::wstring> {
         static std::string convert(const std::wstring& wstr);
     };
 
     template<>
-    struct TC_GAME_API StringMaker<char const *> {
+    struct StringMaker<char const *> {
         static std::string convert(char const * str);
     };
     template<>
-    struct TC_GAME_API StringMaker<char *> {
+    struct StringMaker<char *> {
         static std::string convert(char * str);
     };
     template<>
-    struct TC_GAME_API StringMaker<wchar_t const *> {
+    struct StringMaker<wchar_t const *> {
         static std::string convert(wchar_t const * str);
     };
     template<>
-    struct TC_GAME_API StringMaker<wchar_t *> {
+    struct StringMaker<wchar_t *> {
         static std::string convert(wchar_t * str);
     };
 
     template<int SZ>
-    struct TC_GAME_API StringMaker<char[SZ]> {
+    struct StringMaker<char[SZ]> {
         static std::string convert(const char* str) {
             return ::Catch::Detail::stringify(std::string{ str });
         }
     };
     template<int SZ>
-    struct TC_GAME_API StringMaker<signed char[SZ]> {
+    struct StringMaker<signed char[SZ]> {
         static std::string convert(const char* str) {
             return ::Catch::Detail::stringify(std::string{ str });
         }
     };
     template<int SZ>
-    struct TC_GAME_API StringMaker<unsigned char[SZ]> {
+    struct StringMaker<unsigned char[SZ]> {
         static std::string convert(const char* str) {
             return ::Catch::Detail::stringify(std::string{ str });
         }
     };
 
     template<>
-    struct TC_GAME_API StringMaker<int> {
+    struct StringMaker<int> {
         static std::string convert(int value);
     };
     template<>
-    struct TC_GAME_API StringMaker<long> {
+    struct StringMaker<long> {
         static std::string convert(long value);
     };
     template<>
-    struct TC_GAME_API StringMaker<long long> {
+    struct StringMaker<long long> {
         static std::string convert(long long value);
     };
     template<>
-    struct TC_GAME_API StringMaker<unsigned int> {
+    struct StringMaker<unsigned int> {
         static std::string convert(unsigned int value);
     };
     template<>
-    struct TC_GAME_API StringMaker<unsigned long> {
+    struct StringMaker<unsigned long> {
         static std::string convert(unsigned long value);
     };
     template<>
-    struct TC_GAME_API StringMaker<unsigned long long> {
+    struct StringMaker<unsigned long long> {
         static std::string convert(unsigned long long value);
     };
 
     template<>
-    struct TC_GAME_API StringMaker<bool> {
+    struct StringMaker<bool> {
         static std::string convert(bool b);
     };
 
     template<>
-    struct TC_GAME_API StringMaker<char> {
+    struct StringMaker<char> {
         static std::string convert(char c);
     };
     template<>
-    struct TC_GAME_API StringMaker<signed char> {
+    struct StringMaker<signed char> {
         static std::string convert(signed char c);
     };
     template<>
-    struct TC_GAME_API StringMaker<unsigned char> {
+    struct StringMaker<unsigned char> {
         static std::string convert(unsigned char c);
     };
 
     template<>
-    struct TC_GAME_API StringMaker<std::nullptr_t> {
+    struct StringMaker<std::nullptr_t> {
         static std::string convert(std::nullptr_t);
     };
 
     template<>
-    struct TC_GAME_API StringMaker<float> {
+    struct StringMaker<float> {
         static std::string convert(float value);
     };
     template<>
-    struct TC_GAME_API StringMaker<double> {
+    struct StringMaker<double> {
         static std::string convert(double value);
     };
 
     template <typename T>
-    struct TC_GAME_API StringMaker<T*> {
+    struct StringMaker<T*> {
         template <typename U>
         static std::string convert(U* p) {
             if (p) {
@@ -721,7 +717,7 @@ namespace Catch {
     };
 
     template <typename R, typename C>
-    struct TC_GAME_API StringMaker<R C::*> {
+    struct StringMaker<R C::*> {
         static std::string convert(R C::* p) {
             if (p) {
                 return ::Catch::Detail::rawMemoryToString(p);
@@ -852,7 +848,7 @@ namespace Catch {
 
 namespace Catch {
 
-    struct TC_GAME_API ITransientExpression {
+    struct ITransientExpression {
         virtual auto isBinaryExpression() const -> bool = 0;
         virtual auto getResult() const -> bool = 0;
         virtual void streamReconstructedExpression( std::ostream &os ) const = 0;
@@ -862,7 +858,7 @@ namespace Catch {
         virtual ~ITransientExpression();
     };
 
-    TC_GAME_API void formatReconstructedExpression( std::ostream &os, std::string const& lhs, StringRef op, std::string const& rhs );
+    void formatReconstructedExpression( std::ostream &os, std::string const& lhs, StringRef op, std::string const& rhs );
 
     template<typename LhsT, typename RhsT>
     class BinaryExpr  : public ITransientExpression {
@@ -1076,7 +1072,7 @@ namespace Catch {
         friend auto operator << ( std::ostream& os, LazyExpression const& lazyExpr ) -> std::ostream&;
     };
 
-    class TC_GAME_API AssertionHandler {
+    class AssertionHandler {
         AssertionInfo m_assertionInfo;
         bool m_shouldDebugBreak = false;
         bool m_shouldThrow = false;
@@ -1227,7 +1223,7 @@ namespace Catch {
 // start catch_debugger.h
 
 namespace Catch {
-    TC_GAME_API bool isDebuggerActive();
+    bool isDebuggerActive();
 }
 
 #ifdef CATCH_PLATFORM_MAC
@@ -1446,7 +1442,7 @@ namespace Catch {
 
 namespace Catch {
 
-    struct TC_GAME_API SectionInfo {
+    struct SectionInfo {
         SectionInfo
             (   SourceLineInfo const& _lineInfo,
                 std::string const& _name,
@@ -1457,7 +1453,7 @@ namespace Catch {
         SourceLineInfo lineInfo;
     };
 
-    struct TC_GAME_API SectionEndInfo {
+    struct SectionEndInfo {
         SectionEndInfo( SectionInfo const& _sectionInfo, Counts const& _prevAssertions, double _durationInSeconds );
 
         SectionInfo sectionInfo;
@@ -1477,7 +1473,7 @@ namespace Catch {
     auto getCurrentNanosecondsSinceEpoch() -> uint64_t;
     auto getEstimatedClockResolution() -> uint64_t;
 
-    class TC_GAME_API Timer {
+    class Timer {
         uint64_t m_nanoseconds = 0;
     public:
         void start();
@@ -1494,7 +1490,7 @@ namespace Catch {
 
 namespace Catch {
 
-    class TC_GAME_API Section : NonCopyable {
+    class Section : NonCopyable {
     public:
         Section( SectionInfo const& info );
         ~Section();
@@ -1593,8 +1589,6 @@ namespace Catch {
         virtual IExceptionTranslatorRegistry& getExceptionTranslatorRegistry() = 0;
 
         virtual StartupExceptionRegistry const& getStartupExceptionRegistry() const = 0;
-		//sunstrider
-		virtual void clearAllTestsFromRegistry() = 0;
     };
 
     struct IMutableRegistryHub {
@@ -6030,20 +6024,20 @@ namespace Catch {
 #include <string>
 
 namespace Catch {
-    TC_GAME_API void writeToDebugConsole( std::string const& text );
+    void writeToDebugConsole( std::string const& text );
 }
 
 // end catch_debug_console.h
 #ifdef CATCH_PLATFORM_WINDOWS
 
     namespace Catch {
-        TC_GAME_API void writeToDebugConsole( std::string const& text ) {
+        void writeToDebugConsole( std::string const& text ) {
             ::OutputDebugStringA( text.c_str() );
         }
     }
 #else
     namespace Catch {
-        TC_GAME_API void writeToDebugConsole( std::string const& text ) {
+        void writeToDebugConsole( std::string const& text ) {
             // !TBD: Need a version for Mac/ XCode and other IDEs
             Catch::cout() << text;
         }
@@ -7128,13 +7122,6 @@ namespace Catch {
         std::vector<TestCase> const& getAllTests() const override;
         std::vector<TestCase> const& getAllTestsSorted( IConfig const& config ) const override;
 
-		//sunstrider, needed for reloadable tests
-		virtual void clearAllTests() {
-			m_functions.clear();
-			m_sortedFunctions.clear();
-			m_unnamedCount = 0;
-		}
-		
     private:
         std::vector<TestCase> m_functions;
         mutable RunTests::InWhatOrder m_currentSortOrder = RunTests::InDeclarationOrder;
@@ -7265,10 +7252,6 @@ namespace Catch {
             StartupExceptionRegistry const& getStartupExceptionRegistry() const override {
                 return m_exceptionRegistry;
             }
-			//sunstrider
-			virtual void clearAllTestsFromRegistry() override {
-				return m_testCaseRegistry.clearAllTests();
-			}
 
         public: // IMutableRegistryHub
             void registerReporter( std::string const& name, IReporterFactoryPtr const& factory ) override {
@@ -7913,9 +7896,6 @@ namespace Catch {
         void cli( clara::Parser const& newParser );
         ConfigData& configData();
         Config& config();
-
-        //sunstrider
-        void resetConfigData();
     private:
         int runInternal();
 
@@ -8061,14 +8041,6 @@ namespace Catch {
     Session::~Session() {
         Catch::cleanUp();
     }
-	
-	//Sunstrider: Added to allow multiple runs
-	void Session::resetConfigData() {
-		// m_cli never changes
-		// m_unusedTokens already reset at new exec
-		m_configData = ConfigData();
-		// m_config already reset at the end of each exec
-	}
 
     void Session::showHelp() const {
         Catch::cout()
