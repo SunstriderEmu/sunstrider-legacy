@@ -1700,36 +1700,17 @@ bool Creature::CanAlwaysSee(WorldObject const* obj) const
     return false;
 }
 
-//Trinity CanAttackStart // Sunwell CanCreatureAttack
 CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false */) const
 {
-    if (!who->IsInMap(this))
-        return CAN_ATTACK_RESULT_OTHER_MAP;
-
-    if(IsInEvadeMode())
-        return CAN_ATTACK_RESULT_SELF_EVADE;
-
     if(IsCivilian())
         return CAN_ATTACK_RESULT_CIVILIAN;
 
     if (IsAIEnabled && !AI()->CanAIAttack(who))
         return CAN_ATTACK_RESULT_OTHERS;
 
-    // This set of checks is should be done only for creatures
-    if ((HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC) && who->GetTypeId() != TYPEID_PLAYER)                                   // flag is valid only for non player characters
-        || (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC) && who->GetTypeId() == TYPEID_PLAYER)                                 // immune to PC and target is a player, return false
-        || (who->GetOwner() && who->GetOwner()->GetTypeId() == TYPEID_PLAYER && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))) // player pets are immune to pc as well
-        return CAN_ATTACK_RESULT_IMMUNE_TO_TARGET;
-
     // Do not attack non-combat pets
     if (who->GetTypeId() == TYPEID_UNIT && who->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET)
         return CAN_ATTACK_RESULT_OTHERS;
-
-    if(Creature const* c = who->ToCreature())
-    {
-        if(c->IsInEvadeMode())
-            return CAN_ATTACK_RESULT_TARGET_EVADE;
-    }
 
     if(!CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE + m_CombatDistance)
         return CAN_ATTACK_RESULT_TOO_FAR_Z;
@@ -1739,22 +1720,107 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false 
         if(!IsWithinSightDist(who))
             return CAN_ATTACK_RESULT_TOO_FAR;
     } else {
-        if(!IsWithinDistInMap(who, GetAggroRange(who) + m_CombatDistance)) //m_CombatDistance is usually 0 for melee. Ranged creatures will aggro from further, is this correct?
+        if(!IsWithinDistInMap(who, GetAggroRange(who) + m_CombatDistance + GetCombatReach() + who->GetCombatReach())) //m_CombatDistance is usually 0 for melee. Ranged creatures will aggro from further, is this correct?
             return CAN_ATTACK_RESULT_TOO_FAR;
     }
 
-    CanAttackResult result = CanAttack(who, false);
-    if(result != CAN_ATTACK_RESULT_OK)
-        return result;
-
     //ignore LoS for assist
-    if(!assistAggro && !IsWithinLOSInMap(who))
+    if (!assistAggro && !IsWithinLOSInMap(who))
         return CAN_ATTACK_RESULT_NOT_IN_LOS;
 
     if (!who->isInAccessiblePlaceFor(this))
         return CAN_ATTACK_RESULT_NOT_ACCESSIBLE;
 
+    CanAttackResult result = CanCreatureAttack(who, false);
+    if(result != CAN_ATTACK_RESULT_OK)
+        return result;
+
+
     return CAN_ATTACK_RESULT_OK;
+}
+
+// force will use IsFriendlyTo instead of IsHostileTo, so that neutral creatures can also attack players
+// force also ignore feign death
+CanAttackResult Creature::CanCreatureAttack(Unit const* target, bool force /*= true*/) const
+{
+    ASSERT(target);
+
+    if (!target->IsInMap(this))
+        return CAN_ATTACK_RESULT_OTHER_MAP;
+
+    if (!IsValidAttackTarget(target))
+        return CAN_ATTACK_RESULT_OTHERS;
+
+    if (force) {
+        if (IsFriendlyTo(target))
+            return CAN_ATTACK_RESULT_FRIENDLY;
+    }
+    else if (!IsHostileTo(target))
+        return CAN_ATTACK_RESULT_FRIENDLY;
+
+    if ((target->GetTypeId() == TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator()))
+        || (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !IsPet()) //training dummies
+        )
+        return CAN_ATTACK_RESULT_OTHERS;
+
+    // we cannot attack in evade mode
+    if (IsInEvadeMode())
+        return CAN_ATTACK_RESULT_SELF_EVADE;
+
+    // or if enemy is in evade mode
+    if (target->GetTypeId() == TYPEID_UNIT && target->ToCreature()->IsInEvadeMode())
+        return CAN_ATTACK_RESULT_TARGET_EVADE;
+
+    // feign death case
+    if (!force && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {
+        if ((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
+            return CAN_ATTACK_RESULT_FEIGN_DEATH;
+        // if this == player or owner == player check other conditions
+    }
+    else if (target->GetTransForm() == FORM_SPIRITOFREDEMPTION)
+        return CAN_ATTACK_RESULT_OTHERS;
+
+    //Sathrovarr the Corruptor HACK
+    if (target->GetEntry() == 24892 && IsPet())
+        return CAN_ATTACK_RESULT_OTHERS;
+
+    if (!CanSeeOrDetect(target, true))
+        return CAN_ATTACK_RESULT_CANNOT_DETECT;
+
+    return CAN_ATTACK_RESULT_OK;
+}
+
+// Used to determined if a creature already in combat is still a valid victim
+bool Creature::IsOutOfThreatArea(Unit* pVictim) const
+{
+    if (!pVictim)
+        return true;
+
+    if (CanCreatureAttack(pVictim) != CAN_ATTACK_RESULT_OK)
+        return true;
+
+    if (!pVictim->isInAccessiblePlaceFor(this))
+        return true;
+
+    if (((Creature*)this)->IsCombatStationary() && !CanReachWithMeleeAttack(pVictim))
+        return true;
+
+    if (sMapStore.LookupEntry(GetMapId())->IsDungeon())
+        return false;
+
+    float length;
+    if (IsHomeless() || ((Creature*)this)->IsBeingEscorted())
+        length = pVictim->GetDistance(GetPositionX(), GetPositionY(), GetPositionZ());
+    else {
+        float x, y, z, o;
+        GetHomePosition(x, y, z, o);
+        length = pVictim->GetDistance(x, y, z);
+    }
+    float AttackDist = GetAggroRange(pVictim);
+    uint32 ThreatRadius = sWorld->getConfig(CONFIG_THREAT_RADIUS);
+
+    //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
+    return (length > ((ThreatRadius > AttackDist) ? ThreatRadius : AttackDist));
 }
 
 float Creature::GetAggroRange(Unit const* pl) const
@@ -2372,41 +2438,6 @@ void Creature::SaveRespawnTime()
     sObjectMgr->SaveCreatureRespawnTime(m_spawnId, GetMapId(), GetInstanceId(), m_respawnTime);
 }
 
-bool Creature::IsOutOfThreatArea(Unit* pVictim) const
-{
-    if(!pVictim)
-        return true;
-
-    if(!pVictim->IsInMap(this))
-        return true;
-
-    if(CanAttack(pVictim) != CAN_ATTACK_RESULT_OK)
-        return true;
-
-    if(!pVictim->isInAccessiblePlaceFor(this))
-        return true;
-
-    if (((Creature*)this)->IsCombatStationary() && !CanReachWithMeleeAttack(pVictim))
-        return true;
-
-    if(sMapStore.LookupEntry(GetMapId())->IsDungeon())
-        return false;
-
-    float length;
-    if (IsHomeless() || ((Creature*)this)->IsBeingEscorted())
-        length = pVictim->GetDistance(GetPositionX(), GetPositionY(), GetPositionZ());
-    else {
-        float x,y,z,o;
-        GetHomePosition(x,y,z,o);
-        length = pVictim->GetDistance(x, y, z);
-    }
-    float AttackDist = GetAggroRange(pVictim);
-    uint32 ThreatRadius = sWorld->getConfig(CONFIG_THREAT_RADIUS);
-
-    //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
-    return ( length > ((ThreatRadius > AttackDist) ? ThreatRadius : AttackDist));
-}
-
 void Creature::LoadCreatureAddon()
 {
     if (m_spawnId)
@@ -2782,12 +2813,8 @@ void Creature::AreaCombat()
         for(const auto & i : PlayerList)
         {
             if (Player* i_pl = i.GetSource())
-                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && CanAttack(i_pl, false) == CAN_ATTACK_RESULT_OK)
-                {
-                    SetInCombatWith(i_pl);
-                    i_pl->SetInCombatWith(this);
-                    AddThreat(i_pl, 0.0f);
-               }
+                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && CanCreatureAttack(i_pl, false) == CAN_ATTACK_RESULT_OK)
+                    GetThreatManager().AddThreat(i_pl, 0.0f);
         }
     }
 }

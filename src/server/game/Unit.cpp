@@ -893,11 +893,11 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         {
             if(spellProto && IsDamageToThreatSpell(spellProto)) {
                 //TC_LOG_INFO("DealDamage (IsDamageToThreatSpell), AddThreat : %f * 2 = %f",damage,damage*2);
-                pVictim->AddThreat(this, damage*2, damageSchoolMask, spellProto);
+                pVictim->GetThreatManager().AddThreat(this, float(damage*2), spellProto);
             } else {
-                float threat = damage * sSpellMgr->GetSpellThreatModPercent(spellProto);
                 //TC_LOG_INFO("DealDamage, AddThreat : %f",threat);
-                pVictim->AddThreat(this, threat, damageSchoolMask, spellProto);
+                float threat = damage * sSpellMgr->GetSpellThreatModPercent(spellProto);
+                pVictim->GetThreatManager().AddThreat(this, float(threat), spellProto);
             }
         }
         else                                                // victim is a player
@@ -7606,12 +7606,19 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         SendAIReaction(AI_REACTION_HOSTILE);
         ToCreature()->CallAssistance();
 
-        // should not let player enter combat by right clicking target
+        GetThreatManager().addThreat(victim, 0.0f); //not we call addThreat and not AddThreat to manager SetInCombat ourselves here
         SetInCombatWith(victim);
+        // should not let player enter combat by right clicking target
         if (victim->GetTypeId() == TYPEID_PLAYER)
             victim->SetInCombatWith(this);
 
-        AddThreat(victim, 0.0f);
+        if (Unit* owner = victim->GetOwner())
+        {
+            GetThreatManager().addThreat(owner, 0.0f);
+            SetInCombatWith(owner);
+            if (owner->GetTypeId() == TYPEID_PLAYER)
+                owner->SetInCombatWith(this);
+        }
     }
 
     // delay offhand weapon attack to next attack time
@@ -10359,52 +10366,6 @@ bool CharmInfo::IsReturning()
     return _isReturning;
 }
 
-// force will use IsFriendlyTo instead of IsHostileTo, so that neutral creatures can also attack players
-// force also ignore feign death
-CanAttackResult Unit::CanAttack(Unit const* target, bool force /*= true*/) const
-{
-    ASSERT(target);
-
-    if (force) {
-        if (IsFriendlyTo(target))
-            return CAN_ATTACK_RESULT_FRIENDLY;
-    } else if (!IsHostileTo(target))
-        return CAN_ATTACK_RESULT_FRIENDLY;
-
-    if(target->HasFlag(UNIT_FIELD_FLAGS,
-        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC))
-        return CAN_ATTACK_RESULT_TARGET_FLAGS;
-
-    //do not let players attack not selectable units
-    if(this->GetTypeId() == TYPEID_PLAYER)
-        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
-            return CAN_ATTACK_RESULT_TARGET_FLAGS;
-
-    if(   (target->GetTypeId() == TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator()))
-       || (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !IsPet()) //training dummies
-      ) 
-       return CAN_ATTACK_RESULT_OTHERS; 
-
-    // feign death case
-    if (!force && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {
-        if ((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
-            return CAN_ATTACK_RESULT_FEIGN_DEATH;
-        // if this == player or owner == player check other conditions
-    } else if (!target->IsAlive()) // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STATE_DIED
-        return CAN_ATTACK_RESULT_DEAD;
-    else if (target->GetTransForm() == FORM_SPIRITOFREDEMPTION)
-        return CAN_ATTACK_RESULT_OTHERS;
-    
-    //Sathrovarr the Corruptor HACK
-    if (target->GetEntry() == 24892 && IsPet())
-        return CAN_ATTACK_RESULT_OTHERS;
-
-    if(!CanSeeOrDetect(target, true))
-        return CAN_ATTACK_RESULT_CANNOT_DETECT;
-
-    return CAN_ATTACK_RESULT_OK;
-}
-
 bool Unit::IsAttackableByAOE() const
 {
     if(!IsAlive())
@@ -10493,8 +10454,10 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     if ((!bySpell || !bySpell->IsAllowingDeadTarget()) && !target->IsAlive())
         return false;
 
-    // can't attack untargetable
-    if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_UNTARGETABLE))
+    // can't attack untargetable 
+    // sunstrider: only apply this to player, allow easier scripting
+    if (attacker->GetTypeId() == TYPEID_PLAYER
+        && (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_UNTARGETABLE))
         && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
@@ -10520,9 +10483,9 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     if(((!isWorldTrigger && (!obj || !obj->isType(TYPEMASK_GAMEOBJECT | TYPEMASK_DYNAMICOBJECT))) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC)))
         return false;
 
-    // CvC case - can attack each other only when one of them is hostile
+    // CvC case - can attack each other only when one of them is hostile // Sunstrider: allow creatures to attack neutral creatures... that's a valid target, their exclusion on aggro shouldn't be done here
     if (!attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
-        return attacker->GetReactionTo(target) <= REP_HOSTILE || target->GetReactionTo(this) <= REP_HOSTILE;
+        return attacker->GetReactionTo(target) <= REP_NEUTRAL || target->GetReactionTo(this) <= REP_NEUTRAL;
 
     // PvP, PvC, CvP case
     // can't attack friendly targets
@@ -11257,7 +11220,7 @@ void Unit::SetDeathState(DeathState s)
     if (s != ALIVE && s!= JUST_RESPAWNED)
     {
         CombatStop();
-        DeleteThreatList();
+        GetThreatManager().ClearAllThreat();
         GetHostileRefManager().deleteReferences();
         ClearComboPointHolders();                           // any combo points pointed to unit lost at it death
 
@@ -11335,14 +11298,14 @@ void Unit::SetOwnerGUID(uint64 owner)
 ########       AGGRO SYSTEM       ########
 ########                          ########
 ########################################*/
-bool Unit::CanHaveThreatList() const
+bool Unit::CanHaveThreatList(bool skipAliveCheck ) const
 {
     // only creatures can have threat list
     if( GetTypeId() != TYPEID_UNIT )
         return false;
 
     // only alive units can have threat list
-    if (!IsAlive()/* || IsDying()*/)
+    if (!skipAliveCheck && !IsAlive())
         return false;
 
     // totems can not have threat list
@@ -11379,27 +11342,6 @@ void Unit::ApplyTotalThreatModifier(float& threat, SpellSchoolMask schoolMask)
 }
 
 //======================================================================
-
-void Unit::AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask, SpellInfo const *threatSpell)
-{
-    // Only mobs can manage threat lists
-    if(CanHaveThreatList())
-
-        m_ThreatManager.addThreat(pVictim, threat, schoolMask, threatSpell);
-}
-
-void Unit::ModifyThreatPct(Unit* victim, int32 percent)
-{
-    if (CanHaveThreatList())
-        m_ThreatManager.modifyThreatPercent(victim, percent);
-}
-
-//======================================================================
-
-void Unit::DeleteThreatList()
-{
-    m_ThreatManager.clearReferences();
-}
 
 //======================================================================
 
@@ -11515,7 +11457,6 @@ Unit* Creature::SelectVictim(bool evade)
                 --aura;
                 caster = (*aura)->GetCaster();
                 if (caster && CanSeeOrDetect(caster, true) && IsValidAttackTarget(caster) && caster->isInAccessiblePlaceFor(ToCreature()))
-                //if (caster && CanSeeOrDetect(caster, true) && /* IsValidAttackTarget */ CanAttack(caster) == CAN_ATTACK_RESULT_OK && caster->isInAccessiblePlaceFor(ToCreature()))
                 {
                     target = caster;
                     break;
@@ -11569,7 +11510,7 @@ Unit* Creature::SelectVictim(bool evade)
     else
         return nullptr;
 
-    if(target && CanAttack(target) == CAN_ATTACK_RESULT_OK)
+    if (target /*&& _IsTargetAcceptable(target)*/ && CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
     {
         //TC_LOG_INFO("%s SelectVictim3", GetName());
         if (!IsFocusing(nullptr, true))
@@ -12639,7 +12580,7 @@ void Unit::CleanupsBeforeDelete(bool finalCleanup)
     m_Events.KillAllEvents(false);                      // non-delatable (currently casted spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList
     CombatStop();
     ClearComboPointHolders();
-    DeleteThreatList();
+    GetThreatManager().ClearAllThreat();
     GetHostileRefManager().setOnlineOfflineState(false);
     RemoveAllGameObjects();
     RemoveAllDynObjects();
@@ -14205,7 +14146,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             if(cVictim->IsWorldBoss())
                 cVictim->ConvertThreatListIntoPlayerListAtDeath();
 
-            cVictim->DeleteThreatList();
+            cVictim->GetThreatManager().ClearAllThreat();
             if(!cVictim->GetFormation() || !cVictim->GetFormation()->isLootLinked(cVictim)) //the flag is set when whole group is dead for those with linked loot 
                 cVictim->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         }
@@ -14618,7 +14559,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
 
     CastStop();
     CombatStop(); /// @todo CombatStop(true) may cause crash (interrupt spells)
-    DeleteThreatList();
+    GetThreatManager().ClearAllThreat();
     SetEmoteState(0);
     HandleEmoteCommand(0);
 
@@ -14769,7 +14710,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     AttackStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     GetHostileRefManager().deleteReferences();
-    DeleteThreatList();
+    GetThreatManager().ClearAllThreat();
     RestoreFaction();
 
     GetMotionMaster()->InitDefault();
@@ -14849,7 +14790,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
         {
             if(charmer && !IsFriendlyTo(charmer))
             {
-                (this->ToCreature())->AddThreat(charmer, 10000.0f); //maybe tweak this for lower levels
+                (this->ToCreature())->GetThreatManager().AddThreat(charmer, 10000.0f); //we should tweak this for lower levels
                 (this->ToCreature())->AI()->AttackStart(charmer);
             }
             else {

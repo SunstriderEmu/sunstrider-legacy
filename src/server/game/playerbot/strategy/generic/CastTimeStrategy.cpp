@@ -10,14 +10,14 @@ float CastTimeMultiplier::GetValue(Action* action)
     if (action == NULL) return 1.0f;
 
     uint8 targetHealth = AI_VALUE2(uint8, "health", "current target");
-    std::string name = action->getName();
+    std::string _name = action->getName();
 
     if (action->GetTarget() != AI_VALUE(Unit*, "current target"))
         return 1.0f;
 
     if (targetHealth < sPlayerbotAIConfig.lowHealth && dynamic_cast<CastSpellAction*>(action))
     {
-        uint32 spellId = AI_VALUE2(uint32, "spell id", name);
+        uint32 spellId = AI_VALUE2(uint32, "spell id", _name);
         const SpellInfo* const pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!pSpellInfo)
             return 1.0f;

@@ -440,7 +440,8 @@ void ThreatManager::AddThreat(Unit* victim, float amount, SpellInfo const* spell
         if (iOwner->IsFriendlyTo(victim) || victim->IsFriendlyTo(iOwner))
             return;
     }
-    else if (!iOwner->IsHostileTo(victim) && !victim->IsHostileTo(iOwner))
+    //suntrider: allow adding threat on a neutral target
+    else if (iOwner->IsFriendlyTo(victim) || victim->IsFriendlyTo(iOwner))
         return;
 
     iOwner->SetInCombatWith(victim);
@@ -454,6 +455,15 @@ void ThreatManager::addThreat(Unit* victim, float threat, SpellSchoolMask school
         return;
 
     doAddThreat(victim, ThreatCalcHelper::calcThreat(victim, iOwner, threat, schoolMask, threatSpell));
+}
+
+void ThreatManager::ClearAllThreat()
+{
+#ifdef LICH_KING
+    if (iOwner->CanHaveThreatList(true) && !isThreatListEmpty())
+        iOwner->SendClearThreatListOpcode();
+#endif
+    clearReferences();
 }
 
 void ThreatManager::doAddThreat(Unit* victim, float threat)

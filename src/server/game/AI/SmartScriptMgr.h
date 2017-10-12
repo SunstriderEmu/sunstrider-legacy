@@ -1336,7 +1336,6 @@ struct SmartTarget
             uint32 creature;
             uint32 minDist;
             uint32 maxDist;
-            uint32 livingState;
         } unitRange;
 
         struct

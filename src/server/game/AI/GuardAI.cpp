@@ -57,12 +57,12 @@ void GuardAI::EnterEvadeMode(EvadeReason why)
 
         i_victimGuid = 0;
         i_creature.CombatStop(true);
-        i_creature.DeleteThreatList();
+        i_creature.GetThreatManager().ClearAllThreat();
         return;
     }
 
     i_creature.RemoveAllAuras();
-    i_creature.DeleteThreatList();
+    i_creature.GetThreatManager().ClearAllThreat();
     i_victimGuid = 0;
     i_creature.CombatStop();
     i_state = STATE_NORMAL;

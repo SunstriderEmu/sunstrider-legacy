@@ -4084,9 +4084,7 @@ void Spell::EffectDispel(uint32 i)
     if (!unitTarget->IsFriendlyTo(m_caster))
     {
         if (unitTarget->GetTypeId() == TYPEID_UNIT)
-            unitTarget->AddThreat(m_caster, 0.0f);
-        
-        m_caster->CombatStart(unitTarget); 
+            unitTarget->GetThreatManager().AddThreat(m_caster, 10.0f);
     }
 
     // Create dispel mask by dispel type
@@ -4843,7 +4841,7 @@ void Spell::EffectWeaponDmg(uint32 i)
             }
 
             float threat = 14 * stack;
-            m_targets.GetUnitTarget()->AddThreat(m_caster, threat, (SpellSchoolMask)m_spellInfo->SchoolMask, m_spellInfo);
+            m_targets.GetUnitTarget()->GetThreatManager().AddThreat(m_caster, threat, m_spellInfo);
 
             if (stack < 5)
             {
@@ -5029,7 +5027,7 @@ void Spell::EffectThreat(uint32 /*i*/)
     if(!unitTarget->CanHaveThreatList())
         return;
 
-    unitTarget->AddThreat(m_caster, float(damage));
+    unitTarget->GetThreatManager().AddThreat(m_caster, float(damage));
 }
 
 void Spell::EffectHealMaxHealth(uint32 /*i*/)

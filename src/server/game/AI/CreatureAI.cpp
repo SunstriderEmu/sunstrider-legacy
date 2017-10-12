@@ -65,8 +65,7 @@ bool CreatureAI::AssistPlayerInCombatAgainst(Unit* who)
                 AttackStart(itr);
             else
             {
-                itr->SetInCombatWith(me);
-                me->AddThreat(itr, 0.0f);
+                me->GetThreatManager().AddThreat(itr, 0.0f);
             }
             return true;
         }
@@ -132,7 +131,7 @@ void CreatureAI::_OnOwnerCombatInteraction(Unit* target)
     if (!target || !me->IsAlive())
         return;
 
-    if (!me->HasReactState(REACT_PASSIVE) && /*me->CanStartAttack(target, true)*/ me->CanAttack(target, true))
+    if (!me->HasReactState(REACT_PASSIVE) && /*me->CanStartAttack(target, true)*/ me->CanCreatureAttack(target, true))
     {
         me->EngageWithTarget(target);
     }
@@ -197,7 +196,7 @@ void CreatureAI::EnterEvadeMode(EvadeReason why)
 bool CreatureAI::_EnterEvadeMode(EvadeReason /*why*/)
 {
     me->RemoveAurasOnEvade();
-    me->DeleteThreatList();
+    me->GetThreatManager().ClearAllThreat();
     me->CombatStop();
     me->InitCreatureAddon();
     me->SetLootRecipient(nullptr);
@@ -264,9 +263,7 @@ void CreatureAI::DoZoneInCombat(Unit* pUnit, bool force)
             if (i_pl->IsAlive()
                 && !i_pl->IsGameMaster())
             {
-                pUnit->SetInCombatWith(i_pl);
-                i_pl->SetInCombatWith(pUnit);
-                pUnit->AddThreat(i_pl, 0.0f);
+                pUnit->GetThreatManager().AddThreat(i_pl, 0.0f);
             }
     }
 }
@@ -277,6 +274,6 @@ void CreatureAI::AttackStartIfCan(Unit* victim)
         return;
 
     //Merge conflict : set CanStartAttack
-    if(me->CanAttack(victim) == CAN_ATTACK_RESULT_OK)
+    if(me->CanCreatureAttack(victim) == CAN_ATTACK_RESULT_OK)
         AttackStart(victim);
 }

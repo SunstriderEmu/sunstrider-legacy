@@ -51,7 +51,7 @@ LootObject::LootObject(Player* bot, ObjectGuid guid)
     Refresh(bot, guid);
 }
 
-void LootObject::Refresh(Player* bot, ObjectGuid guid)
+void LootObject::Refresh(Player* bot, ObjectGuid _guid)
 {
     skillId = SKILL_NONE;
     reqSkillValue = 0;
@@ -59,11 +59,11 @@ void LootObject::Refresh(Player* bot, ObjectGuid guid)
     this->guid = ObjectGuid();
 
     PlayerbotAI* ai = bot->GetPlayerbotAI();
-    Creature *creature = ai->GetCreature(guid);
+    Creature *creature = ai->GetCreature(_guid);
     if (creature && creature->GetDeathState() == CORPSE)
     {
         if (creature->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
-            this->guid = guid;
+            this->guid = _guid;
 
         if (creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
         {
@@ -71,13 +71,13 @@ void LootObject::Refresh(Player* bot, ObjectGuid guid)
             uint32 targetLevel = creature->GetLevel();
             reqSkillValue = targetLevel < 10 ? 0 : targetLevel < 20 ? (targetLevel - 10) * 10 : targetLevel * 5;
             if (bot->HasSkill(skillId) && bot->GetSkillValue(skillId) >= reqSkillValue)
-                this->guid = guid;
+                this->guid = _guid;
         }
 
         return;
     }
 
-    GameObject* go = ai->GetGameObject(guid);
+    GameObject* go = ai->GetGameObject(_guid);
     if (go && go->isSpawned())
     {
         uint32 lockId = go->GetGOInfo()->GetLockId();
@@ -90,7 +90,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid guid)
         {
             if (go->GetGOInfo()->questItems[i])
             {
-                this->guid = guid;
+                this->guid = _guid;
                 return;
             }
         }
@@ -103,7 +103,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid guid)
                 if (lockInfo->Index[i] > 0)
                 {
                     reqItem = lockInfo->Index[i];
-                    this->guid = guid;
+                    this->guid = _guid;
                 }
                 break;
             case LOCK_KEY_SKILL:
@@ -111,7 +111,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid guid)
                 {
                     skillId = SkillByLockType(LockType(lockInfo->Index[i]));
                     //TODO PLAYERBOT reqSkillValue = lockInfo->Skill[i];
-                    this->guid = guid;
+                    this->guid = _guid;
                 }
                 break;
             default:

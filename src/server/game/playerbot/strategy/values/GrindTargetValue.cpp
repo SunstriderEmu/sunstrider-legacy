@@ -26,7 +26,7 @@ Unit* GrindTargetValue::Calculate()
 
 Unit* GrindTargetValue::FindTargetForGrinding(int assistCount)
 {
-    uint32 memberCount = 1;
+//    uint32 memberCount = 1;
     Group* group = bot->GetGroup();
     Player* master = GetMaster();
 
@@ -115,9 +115,9 @@ int GrindTargetValue::GetTargetingPlayerCount( Unit* unit )
         if( !member || !member->IsAlive() || member == bot)
             continue;
 
-        PlayerbotAI* ai = member->GetPlayerbotAI();
-        if ((ai && *ai->GetAiObjectContext()->GetValue<Unit*>("current target") == unit) ||
-            (!ai && member->GetSelectedUnit() == unit))
+        PlayerbotAI* _ai = member->GetPlayerbotAI();
+        if ((_ai && *_ai->GetAiObjectContext()->GetValue<Unit*>("current target") == unit) ||
+            (!_ai && member->GetSelectedUnit() == unit))
             count++;
     }
 

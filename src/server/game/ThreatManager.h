@@ -177,6 +177,7 @@ public:
 
     void AddThreat(Unit* victim, float amount, SpellInfo const* spell = nullptr, bool ignoreModifiers = false, bool ignoreRedirection = false);
     bool IsThreatenedBy(Unit const* who, bool includeOffline = false) const { return (FindReference(who, includeOffline) != nullptr); }
+    void ClearAllThreat();
 
 private:
     HostileReference* FindReference(Unit const* who, bool includeOffline) const { if (auto* ref = iThreatContainer.getReferenceByTarget(who)) return ref; if (includeOffline) if (auto* ref = iThreatOfflineContainer.getReferenceByTarget(who)) return ref; return nullptr; }

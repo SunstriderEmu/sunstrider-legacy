@@ -519,8 +519,6 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
                         type.c_str(), value, validIn);
 
             } while (result->NextRow());
-
-            Field* fields = result->Fetch();
         }
 
         return true;
@@ -560,7 +558,6 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
                 sGuildTaskMgr.Reward(owner, guildId);
             } while (result->NextRow());
 
-            Field* fields = result->Fetch();
             return true;
         }
     }

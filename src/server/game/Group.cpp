@@ -1184,12 +1184,12 @@ void Group::UpdatePlayerOutOfRange(Player* pPlayer)
     }
 }
 
-void Group::BroadcastPacket(WorldPacket *packet, bool ignorePlayersInBGRaid, int group, uint64 ignore)
+void Group::BroadcastPacket(WorldPacket *packet, bool ignorePlayersInBGRaid, int group, uint64 _ignore)
 {
     for(GroupReference *itr = GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player *pl = itr->GetSource();
-        if(!pl || (ignore != 0 && pl->GetGUID() == ignore) || (ignorePlayersInBGRaid && pl->GetGroup() != this))
+        if(!pl || (_ignore != 0 && pl->GetGUID() == _ignore) || (ignorePlayersInBGRaid && pl->GetGroup() != this))
             continue;
 
         if (pl->GetSession() && (group==-1 || itr->getSubGroup()==group))

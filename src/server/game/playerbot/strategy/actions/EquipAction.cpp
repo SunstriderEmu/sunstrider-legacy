@@ -29,17 +29,17 @@ bool EquipAction::Execute(Event event)
     return true;
 }
 
-bool EquipAction::UseEquipmentSet(string& name)
+bool EquipAction::UseEquipmentSet(string& _name)
 {
    /* EquipmentSets &sets = bot->GetEquipmentSets();
     for (EquipmentSets::iterator i = sets.begin(); i != sets.end(); i++)
     {
-        if (i->second.state == EQUIPMENT_SET_DELETED || i->second.Name != name)
+        if (i->second.state == EQUIPMENT_SET_DELETED || i->second.Name != _name)
             continue;
 
         UseEquipmentSet(i->second);
 
-        std::ostringstream out; out << name << " set equipped";
+        std::ostringstream out; out << _name << " set equipped";
         ai->TellMaster(out);
         return true;
     }

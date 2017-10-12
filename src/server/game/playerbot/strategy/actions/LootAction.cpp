@@ -168,7 +168,7 @@ bool OpenLootAction::CanOpenLock(LootObject& lootObject, const SpellInfo* pSpell
         if (!lockInfo)
             return false;
 
-        bool reqKey = false;                                    // some locks not have reqs
+//        bool reqKey = false;                                    // some locks not have reqs
 
         for(int j = 0; j < 8; ++j)
         {
@@ -238,7 +238,7 @@ bool StoreLootAction::Execute(Event event)
         uint32 itemcount;
         uint8 lootslot_type;
         uint8 itemindex;
-        bool grab = false;
+//        bool grab = false;
 
         p >> itemindex;
         p >> itemid;

@@ -99,8 +99,9 @@ void TradeStatusAction::BeginTrade()
         uint32 discount = sRandomPlayerbotMgr.GetTradeDiscount(bot);
         if (discount)
         {
-            std::ostringstream out; out << "Discount up to: " << chat->formatMoney(discount);
-            ai->TellMaster(out);
+            std::ostringstream _out;
+            _out << "Discount up to: " << chat->formatMoney(discount);
+            ai->TellMaster(_out);
         }
     }
 }

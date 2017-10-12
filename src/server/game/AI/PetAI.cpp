@@ -62,7 +62,7 @@ bool PetAI::_needToStop() const
         if (owner->GetExactDist(me) >= (owner->GetVisibilityRange() - 10.0f))
             return true;
 
-    return i_pet.CanAttack(i_pet.GetVictim()) != CAN_ATTACK_RESULT_OK;
+    return i_pet.CanCreatureAttack(i_pet.GetVictim()) != CAN_ATTACK_RESULT_OK;
 }
 
 void PetAI::ResetMovement()

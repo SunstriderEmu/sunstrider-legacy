@@ -81,6 +81,29 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed)
         PrintStats();
 }
 
+Player* RandomPlayerbotMgr::CreateRandomTestBot(WorldLocation loc)
+{
+    uint32 bot = sRandomPlayerbotMgr.AddRandomBot(bool(urand(0,1)));
+    if (!bot)
+        return nullptr;
+
+    Player* playerBot = sRandomPlayerbotMgr.AddPlayerBot(bot, 0);
+    if (!playerBot)
+        return nullptr;
+
+    PlayerbotAI* ai = playerBot->GetPlayerbotAI();
+    if (!ai)
+        return nullptr;
+
+    //handle bot position
+    bool teleportOK = playerBot->TeleportTo(loc, TELE_TO_GM_MODE);
+    if (!teleportOK)
+        return nullptr;
+    ai->HandleTeleportAck(); //immediately handle teleport packet
+
+    return playerBot;
+}
+
 uint32 RandomPlayerbotMgr::AddRandomBot(bool alliance)
 {
     vector<uint32> bots = GetFreeBots(alliance);

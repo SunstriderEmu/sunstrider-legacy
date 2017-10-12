@@ -82,7 +82,7 @@ void npc_escortAI::JustRespawned()
 void npc_escortAI::EnterEvadeMode(EvadeReason /* why */)
 {
     me->RemoveAllAuras();
-    me->DeleteThreatList();
+    me->GetThreatManager().ClearAllThreat();
     me->CombatStop();
     me->SetLootRecipient(nullptr);
 
@@ -136,7 +136,7 @@ void npc_escortAI::UpdateAI(const uint32 diff)
                     me->SetDeathState(JUST_DIED);
                     me->SetHealth(0);
                     me->CombatStop();
-                    me->DeleteThreatList();
+                    me->GetThreatManager().ClearAllThreat();
                     me->Respawn();
                     me->GetMotionMaster()->Clear(true);
 
@@ -175,7 +175,7 @@ void npc_escortAI::UpdateAI(const uint32 diff)
                 me->SetDeathState(JUST_DIED);
                 me->SetHealth(0);
                 me->CombatStop();
-                me->DeleteThreatList();
+                me->GetThreatManager().ClearAllThreat();
                 me->Respawn();
                 me->GetMotionMaster()->Clear(true);
 
@@ -404,8 +404,7 @@ bool npc_escortAI::AssistPlayerInCombat(Unit* who)
         }
         else
         {
-            who->SetInCombatWith(me);
-            me->AddThreat(who, 0.0f);
+            me->GetThreatManager().AddThreat(who, 0.0f);
             return true;
         }
     }

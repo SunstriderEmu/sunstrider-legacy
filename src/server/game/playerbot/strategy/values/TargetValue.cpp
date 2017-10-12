@@ -22,7 +22,7 @@ Unit* TargetValue::FindTarget(FindTargetStrategy* strategy)
 
 void FindTargetStrategy::GetPlayerCount(Unit* creature, int* tankCount, int* dpsCount)
 {
-    Player* bot = ai->GetBot();
+//    Player* bot = ai->GetBot();
     if (tankCountCache.find(creature) != tankCountCache.end())
     {
         *tankCount = tankCountCache[creature];

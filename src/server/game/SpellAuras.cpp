@@ -2127,7 +2127,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 1515:                                      // Tame beast
                 // FIX_ME: this is 2.0.12 threat effect replaced in 2.1.x by dummy aura, must be checked for correctness
                 if( caster && m_target->CanHaveThreatList())
-                    m_target->AddThreat(caster, 10.0f);
+                    m_target->GetThreatManager().AddThreat(caster, 10.0f);
                 return;
             case 10909: //Mind Vision
                 if (caster->HasAuraEffect(14751))
@@ -3513,7 +3513,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                 if (Creature *c = target->ToCreature())
                 {
                     if (c->GetVictim() && c->GetVictim()->GetGUID() == m_target->GetGUID())
-                        c->AddThreat(lastmd, 0.0f);
+                        c->GetThreatManager().AddThreat(lastmd, 10.0f);
                 }
             }
         }
@@ -6440,7 +6440,7 @@ void Aura::PeriodicTick()
             if(gain_amount)
             {
                 int32 gain = pCaster->ModifyPower(power,gain_amount);
-                m_target->AddThreat(pCaster, float(gain) * 0.5f, GetSpellInfo()->GetSchoolMask(), GetSpellInfo());
+                m_target->GetThreatManager().AddThreat(pCaster, float(gain) * 0.5f, GetSpellInfo());
             }
 
             //no procs?

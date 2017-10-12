@@ -1,9 +1,3 @@
-/* Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * Thanks to the original authors: ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- *
- * This program is free software licensed under GPL version 2
- * Please see the included DOCS/LICENSE.TXT for more information */
 
 #include "ScriptedCreature.h"
 #include "CellImpl.h"
@@ -118,37 +112,27 @@ ScriptedAI::ScriptedAI(Creature* creature) : CreatureAI(creature),
 
 void ScriptedAI::AttackStart(Unit* who, bool melee)
 {
+    if(melee)
+        CreatureAI::AttackStart(who);
+    else
+        AttackStartNoMove(who);
+}
+
+void ScriptedAI::AttackStartNoMove(Unit* who)
+{
     if (!who)
         return;
 
-    if (me->Attack(who, melee))
-    {
-        me->AddThreat(who, 0.0f);
-
-        if(melee)
-            DoStartMovement(who);
-        else
-            DoStartNoMovement(who);
-    }
+    if (me->Attack(who, true))
+        DoStartNoMovement(who);
 }
 
 void ScriptedAI::AttackStart(Unit* who)
 {
-    if (!who)
-        return;
-    
-    bool melee = (GetCombatDistance() > ATTACK_DISTANCE) ? me->GetDistance(who) <= ATTACK_DISTANCE : true;
-    if (me->Attack(who, melee))
-    {
-        me->AddThreat(who, 0.0f);
-
-        if(IsCombatMovementAllowed())
-        {
-            DoStartMovement(who);
-        } else {
-            DoStartNoMovement(who);
-        }
-    }
+    if (IsCombatMovementAllowed())
+        CreatureAI::AttackStart(who);
+    else
+        AttackStartNoMove(who);
 }
 
 void ScriptedAI::UpdateAI(const uint32 diff)
@@ -172,7 +156,7 @@ void ScriptedAI::EnterEvadeMode(EvadeReason why)
 {
     //me->InterruptNonMeleeSpells(true);
     me->RemoveAllAuras();
-    me->DeleteThreatList();
+    me->GetThreatManager().ClearAllThreat();
     me->CombatStop();
     me->InitCreatureAddon();
     me->SetLootRecipient(nullptr);

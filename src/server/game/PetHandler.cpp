@@ -75,8 +75,9 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     if(!TargetUnit)
                         return;
 
-                    if(pet->CanAttack(TargetUnit, true) != CAN_ATTACK_RESULT_OK)
-                        return;
+                    if (Unit* owner = pet->GetOwner())
+                        if (!owner->IsValidAttackTarget(TargetUnit))
+                            return;
 
                     pet->ClearUnitState(UNIT_STATE_FOLLOW);
 

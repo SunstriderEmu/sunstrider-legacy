@@ -34,9 +34,7 @@ void FollowerAI::AttackStart(Unit* pWho)
 
     if (me->Attack(pWho, true))
     {
-        me->AddThreat(pWho, 0.0f);
-        me->SetInCombatWith(pWho);
-        pWho->SetInCombatWith(me);
+        me->GetThreatManager().AddThreat(pWho, 0.0f);
 
         if (me->HasUnitState(UNIT_STATE_FOLLOW))
             me->ClearUnitState(UNIT_STATE_FOLLOW);
@@ -77,8 +75,7 @@ bool FollowerAI::AssistPlayerInCombat(Unit* pWho)
         }
         else
         {
-            pWho->SetInCombatWith(me);
-            me->AddThreat(pWho, 0.0f);
+            me->GetThreatManager().AddThreat(pWho, 0.0f);
             return true;
         }
     }
@@ -88,7 +85,7 @@ bool FollowerAI::AssistPlayerInCombat(Unit* pWho)
 
 void FollowerAI::MoveInLineOfSight(Unit* pWho)
 {
-    if (!me->HasUnitState(UNIT_STATE_STUNNED) && me->CanAttack(pWho) == CAN_ATTACK_RESULT_OK && pWho->isInAccessiblePlaceFor(me))
+    if (!me->HasUnitState(UNIT_STATE_STUNNED) && me->CanCreatureAttack(pWho) == CAN_ATTACK_RESULT_OK && pWho->isInAccessiblePlaceFor(me))
     {
         if (HasFollowState(STATE_FOLLOW_INPROGRESS) && AssistPlayerInCombat(pWho))
             return;
@@ -108,8 +105,7 @@ void FollowerAI::MoveInLineOfSight(Unit* pWho)
                 }
                 else if (me->GetMap()->IsDungeon())
                 {
-                    pWho->SetInCombatWith(me);
-                    me->AddThreat(pWho, 0.0f);
+                    me->GetThreatManager().AddThreat(pWho, 0.0f);
                 }
             }
         }
@@ -159,7 +155,7 @@ void FollowerAI::JustRespawned()
 void FollowerAI::EnterEvadeMode(EvadeReason /* why */)
 {
     me->RemoveAllAuras();
-    me->DeleteThreatList();
+    me->GetThreatManager().ClearAllThreat();
     me->CombatStop(true);
     me->SetLootRecipient(nullptr);
 

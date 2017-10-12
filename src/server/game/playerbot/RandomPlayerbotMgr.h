@@ -50,7 +50,8 @@ class TC_GAME_API RandomPlayerbotMgr : public PlayerbotHolder
         void RandomTeleportForLevel(Player* bot);
 
         //made public for testing
-        uint32 AddRandomBot(bool alliance = true);
+        Player* CreateRandomTestBot(WorldLocation loc);
+
     protected:
         void OnBotLoginInternal(Player * const bot) override {}
 
@@ -64,6 +65,7 @@ class TC_GAME_API RandomPlayerbotMgr : public PlayerbotHolder
         void RandomTeleport(Player* bot, uint16 mapId, float teleX, float teleY, float teleZ);
         void RandomTeleport(Player* bot, vector<WorldLocation> &locs);
         uint32 GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ);
+        uint32 AddRandomBot(bool alliance);
 
     private:
         vector<Player*> players;

@@ -1191,7 +1191,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             for (WorldObject* target : targets)
             {
                 if (IsUnit(target))
-                    me->AddThreat(target->ToUnit(), (float)e.action.threatPCT.threatINC - (float)e.action.threatPCT.threatDEC);
+                    me->GetThreatManager().AddThreat(target->ToUnit(), (float)e.action.threatPCT.threatINC - (float)e.action.threatPCT.threatDEC);
             }
 
             break;
@@ -1283,7 +1283,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     Unit* targetUnit = target->ToUnit();
                     if(Unit* victim = targetUnit->GetVictim())
                     {
-                        if (me->CanAttack(victim))
+                        if (me->CanCreatureAttack(victim))
                         {
                             me->AI()->AttackStart(victim);
                             break; //found a valid target, no need to continue
@@ -2783,15 +2783,6 @@ void SmartScript::GetTargets(ObjectVector& targets, SmartScriptHolder const& e, 
 
                 if (me && me->GetGUID() == unit->GetGUID())
                     continue;
-
-                // check alive state - 1 alive, 2 dead, 0 both
-                if (uint32 state = e.target.unitRange.livingState)
-                {
-                    if (unit->ToCreature()->IsAlive() && state == 2)
-                        continue;
-                    if (!unit->ToCreature()->IsAlive() && state == 1)
-                        continue;
-                }
 
                 if (e.target.unitRange.creature && unit->ToCreature()->GetEntry() != e.target.unitRange.creature)
                     continue;

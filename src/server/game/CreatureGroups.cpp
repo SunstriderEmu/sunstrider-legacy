@@ -292,7 +292,7 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
         if(m_member.first->GetVictim())
             continue;
 
-        if(m_member.first->CanAttack(target) == CAN_ATTACK_RESULT_OK) {
+        if(m_member.first->CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK) {
             m_member.first->AI()->AttackStart(target);
         }
     }

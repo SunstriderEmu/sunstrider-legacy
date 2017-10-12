@@ -5054,7 +5054,7 @@ void Spell::HandleFlatThreat()
 
         //apply threat to every negative targets
         if(!m_spellInfo->IsPositive(!m_caster->IsFriendlyTo(targetUnit)))
-            targetUnit->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
+            targetUnit->GetThreatManager().AddThreat(m_caster, threat, m_spellInfo);
         else //or assist threat if friendly target
             m_caster->GetHostileRefManager().threatAssist(targetUnit, threat, m_spellInfo);
     }

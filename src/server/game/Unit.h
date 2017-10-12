@@ -1475,7 +1475,6 @@ class TC_GAME_API Unit : public WorldObject
             Is not in flight
         */
         bool IsAttackableByAOE() const;
-        CanAttackResult CanAttack(Unit const* target, bool force = true) const;
 
 /* TC
         bool isTargetableForAttack(bool checkFakeDeath = true, Unit const* byWho = NULL) const;
@@ -1885,12 +1884,9 @@ class TC_GAME_API Unit : public WorldObject
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
 
         // Threat related methods
-        bool CanHaveThreatList() const;
+        bool CanHaveThreatList(bool skipAliveCheck = false) const;
         float GetThreat(Unit* u) const;
-        void AddThreat(Unit* victim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = nullptr);
-        void ModifyThreatPct(Unit* victim, int32 percent);
         void ApplyTotalThreatModifier(float& threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL);
-        void DeleteThreatList();
         void TauntApply(Unit* pVictim);
         void TauntFadeOut(Unit *taunter);
         ThreatManager& GetThreatManager() { return m_ThreatManager; }

@@ -6,12 +6,12 @@ using namespace ai;
 
 bool UseItemAction::Execute(Event event)
 {
-    std::string name = event.getParam();
-    if (name.empty())
-        name = getName();
+    std::string _name = event.getParam();
+    if (_name.empty())
+        _name = getName();
 
-    list<Item*> items = AI_VALUE2(list<Item*>, "inventory items", name);
-    list<ObjectGuid> gos = chat->parseGameobjects(name);
+    list<Item*> items = AI_VALUE2(list<Item*>, "inventory items", _name);
+    list<ObjectGuid> gos = chat->parseGameobjects(_name);
 
     if (gos.empty())
     {

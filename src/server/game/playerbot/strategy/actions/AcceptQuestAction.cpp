@@ -16,7 +16,7 @@ bool AcceptQuestAction::Execute(Event event)
     if (!master)
         return false;
 
-    Player *bot = ai->GetBot();
+    //Player* _bot = ai->GetBot();
     uint64 guid;
     uint32 quest;
 
@@ -31,6 +31,7 @@ bool AcceptQuestAction::Execute(Event event)
             ai->TellMaster("Please select quest giver NPC");
             return false;
         }
+        guid = npc->GetGUID();
     }
     else if (!event.getPacket().empty())
     {
@@ -55,7 +56,7 @@ bool AcceptQuestAction::Execute(Event event)
 bool AcceptQuestShareAction::Execute(Event event)
 {
     Player* master = GetMaster();
-    Player *bot = ai->GetBot();
+    Player* _bot = ai->GetBot();
 
     WorldPacket& p = event.getPacket();
     p.rpos(0);
@@ -63,36 +64,36 @@ bool AcceptQuestShareAction::Execute(Event event)
     p >> quest;
     Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest);
 
-    if (!qInfo || !bot->GetDivider())
+    if (!qInfo || !_bot->GetDivider())
         return false;
 
     quest = qInfo->GetQuestId();
-    if( !bot->CanTakeQuest( qInfo, false ) )
+    if( !_bot->CanTakeQuest( qInfo, false ) )
     {
         // can't take quest
-        bot->SetDivider( ObjectGuid() );
+        _bot->SetDivider( ObjectGuid() );
         ai->TellMaster("I can't take this quest");
 
         return false;
     }
 
     // send msg to quest giving player
-    master->SendPushToPartyResponse( bot, QUEST_PARTY_MSG_ACCEPT_QUEST );
-    bot->SetDivider( ObjectGuid() );
+    master->SendPushToPartyResponse(_bot, QUEST_PARTY_MSG_ACCEPT_QUEST );
+    _bot->SetDivider( ObjectGuid() );
 
-    if( bot->CanAddQuest( qInfo, false ) )
+    if(_bot->CanAddQuest( qInfo, false ) )
     {
-        bot->AddQuest( qInfo, master );
+        _bot->AddQuest( qInfo, master );
 
-        if( bot->CanCompleteQuest( quest ) )
-            bot->CompleteQuest( quest );
+        if(_bot->CanCompleteQuest( quest ) )
+            _bot->CompleteQuest( quest );
 
         // Runsttren: did not add typeid switch from WorldSession::HandleQuestgiverAcceptQuestOpcode!
         // I think it's not needed, cause typeid should be TYPEID_PLAYER - and this one is not handled
         // there and there is no default case also.
 
         if( qInfo->GetSrcSpell() > 0 )
-            bot->CastSpell( bot, qInfo->GetSrcSpell(), true );
+            _bot->CastSpell(_bot, qInfo->GetSrcSpell(), true );
 
         ai->TellMaster("Quest accepted");
         return true;

@@ -29,10 +29,6 @@
 
 void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
 {
-    
-
-    
-
     uint64 guid;
     recvData >> guid;
 
@@ -49,7 +45,8 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
         return;
     }
 
-    if (_player->CanAttack(enemy) != CAN_ATTACK_RESULT_OK) {
+    if (!_player->IsValidAttackTarget(enemy))
+    {
         // stop attack state at client
         SendMeleeAttackStop(enemy);
         return;

@@ -36,7 +36,7 @@ bool AttackMyTargetAction::Execute(Event event)
 
 bool AttackAction::Attack(Unit* target)
 {
-    MotionMaster &mm = *bot->GetMotionMaster();
+//    MotionMaster &mm = *bot->GetMotionMaster();
     if (bot->IsFlying())
     {
         if (verbose) ai->TellMaster("I cannot attack in flight");

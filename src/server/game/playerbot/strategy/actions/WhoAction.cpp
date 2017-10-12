@@ -78,9 +78,9 @@ string WhoAction::QuerySkill(std::string text)
 
     for (map<uint32, std::string>::iterator i = skills.begin(); i != skills.end(); ++i)
     {
-        std::string name = i->second;
+        std::string _name = i->second;
         uint16 skill = i->first;
-        if (!strcmpi(text.c_str(), name.c_str()) && bot->HasSkill(skill))
+        if (!strcmpi(text.c_str(), _name.c_str()) && bot->HasSkill(skill))
         {
             std::string skillName = i->second;
             uint32 spellId = AI_VALUE2(uint32, "spell id", skillName);
