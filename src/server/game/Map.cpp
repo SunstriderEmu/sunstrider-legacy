@@ -517,6 +517,8 @@ void Map::InitializeObject(GameObject* obj)
 template<class T>
 bool Map::AddToMap(T *obj, bool checkTransport)
 {
+    static_assert(!std::is_same<Player, T>::value, "Players must use AddPlayerToMap function");
+
     /// @todo Needs clean up. An object should not be added to map twice.
     if (obj->IsInWorld())
     {
