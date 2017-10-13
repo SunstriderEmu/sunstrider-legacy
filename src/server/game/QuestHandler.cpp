@@ -133,7 +133,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 
         if( _player->CanAddQuest( qInfo, true ) )
         {
-            _player->AddQuest( qInfo, pObject );
+            _player->AddQuestAndCheckCompletion( qInfo, pObject );
 
             if (qInfo->HasFlag(QUEST_FLAGS_PARTY_ACCEPT))
             {
@@ -158,9 +158,6 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
                     }
                 }
             }
-
-            if ( _player->CanCompleteQuest( quest ) )
-                _player->CompleteQuest( quest );
 
             if (   sWorld->getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE)
                 && !(qInfo->IsDaily())
