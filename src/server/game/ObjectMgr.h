@@ -145,10 +145,10 @@ typedef std::unordered_map<uint64/*(instance,guid) pair*/,time_t> RespawnTimes;
 
 
 // mangos string ranges
-#define MIN_TRINITY_STRING_ID    1
-#define MAX_TRINITY_STRING_ID    2000000000
-#define MIN_DB_SCRIPT_STRING_ID MAX_TRINITY_STRING_ID
-#define MAX_DB_SCRIPT_STRING_ID 2000010000
+#define MIN_TRINITY_STRING_ID	1
+#define MAX_TRINITY_STRING_ID	1000000
+#define MIN_DB_SCRIPT_STRING_ID	MAX_TRINITY_STRING_ID
+#define MAX_DB_SCRIPT_STRING_ID	2000000
 
 struct TrinityStringLocale
 {
