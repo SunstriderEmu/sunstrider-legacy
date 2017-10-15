@@ -993,8 +993,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     else
                         creatureTarget->DespawnOrUnsummon(respawnDelay);
                 }
-                else if (GameObject* goTarget = target->ToGameObject())
-                    goTarget->SetRespawnTime(respawnDelay);
+				else if (GameObject* goTarget = target->ToGameObject())
+					goTarget->SetDespawnTimer(respawnDelay);
             }
 
             break;
