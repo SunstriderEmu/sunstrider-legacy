@@ -137,7 +137,7 @@ void Map::ScriptsProcess()
 
         //if(source && !source->IsInWorld()) source = NULL;
 
-        Object* target = nullptr;
+        WorldObject* target = nullptr;
 
         if(step.targetGUID)
         {
@@ -195,33 +195,48 @@ void Map::ScriptsProcess()
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
-                if(step.script->datalong > 3)
+                if(step.script->Talk.ChatType > 3)
                 {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK invalid chat type (%u), skipping.",step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK invalid chat type (%u), skipping.", step.script->Talk.ChatType);
                     break;
                 }
 
+                /*TC
+                if (step.script->Talk.Flags & SF_TALK_USE_PLAYER)
+                    source = _GetScriptPlayerSourceOrTarget(source, target, step.script);
+                else
+                    source = _GetScriptCreatureSourceOrTarget(source, target, step.script);
+                    */
+
                 uint64 unit_target = target ? target->GetGUID() : 0;
 
+                Unit* sourceUnit = source->ToUnit();
                 //datalong 0=normal say, 1=whisper, 2=yell, 3=emote text
-                switch(step.script->datalong)
+                switch(step.script->Talk.ChatType)
                 {
                     case 0:                                 // Say
-                        (source->ToCreature())->old_Say(step.script->dataint, LANG_UNIVERSAL, unit_target);
+                        sourceUnit->Say(step.script->Talk.TextID, target);
+                        //(source->ToCreature())->old_Say(step.script->Talk.TextID, LANG_UNIVERSAL, unit_target);
                         break;
                     case 1:                                 // Whisper
-                        if(!unit_target)
+                    {
+                        if (!unit_target)
                         {
-                            TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK attempt to whisper (%u) NULL, skipping.",step.script->datalong);
+                            TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_TALK attempt to whisper (%u) NULL, skipping.", step.script->Talk.ChatType);
                             break;
                         }
-                        (source->ToCreature())->old_Whisper(step.script->dataint,unit_target);
+                        Player* receiver = target ? target->ToPlayer() : nullptr;
+                        //(source->ToCreature())->old_Whisper(step.script->Talk.TextID, unit_target);
+                        sourceUnit->Whisper(step.script->Talk.TextID, receiver, false /*step.script->Talk.ChatType == CHAT_TYPE_BOSS_WHISPER*/);
                         break;
+                    }
                     case 2:                                 // Yell
-                        (source->ToCreature())->old_Yell(step.script->dataint, LANG_UNIVERSAL, unit_target);
+                        sourceUnit->Yell(step.script->Talk.TextID, target);
+                        //(source->ToCreature())->old_Yell(step.script->Talk.TextID, LANG_UNIVERSAL, unit_target);
                         break;
                     case 3:                                 // Emote text
-                        (source->ToCreature())->old_TextEmote(step.script->dataint, unit_target);
+                        //(source->ToCreature())->old_TextEmote(step.script->Talk.TextID, unit_target);
+                        sourceUnit->TextEmote(step.script->Talk.TextID, target, false /*, step.script->Talk.ChatType == CHAT_TYPE_BOSS_EMOTE*/);
                         break;
                     default:
                         break;                              // must be already checked at load
@@ -242,7 +257,7 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                (source->ToCreature())->HandleEmoteCommand(step.script->datalong);
+                (source->ToCreature())->HandleEmoteCommand(step.script->Emote.EmoteID);
                 break;
             case SCRIPT_COMMAND_FIELD_SET:
                 if(!source)
@@ -250,44 +265,57 @@ void Map::ScriptsProcess()
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FIELD_SET call for NULL object.");
                     break;
                 }
-                if(step.script->datalong <= OBJECT_FIELD_ENTRY || step.script->datalong >= source->GetValuesCount())
+                if(step.script->FieldSet.FieldID <= OBJECT_FIELD_ENTRY || step.script->FieldSet.FieldID >= source->GetValuesCount())
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FIELD_SET call for wrong field %u (max count: %u) in object (TypeId: %u).",
-                        step.script->datalong,source->GetValuesCount(),source->GetTypeId());
+                        step.script->FieldSet.FieldID, source->GetValuesCount(), source->GetTypeId());
                     break;
                 }
 
-                source->SetUInt32Value(step.script->datalong, step.script->datalong2);
+                source->SetUInt32Value(step.script->FieldSet.FieldID, step.script->FieldSet.FieldValue);
                 break;
             case SCRIPT_COMMAND_MOVE_TO:
-                if(!source)
+            {
+                if (!source)
                 {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_MOVE_TO call for NULL creature.");
+                    TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_MOVE_TO call for NULL creature.");
                     break;
                 }
 
-                if(source->GetTypeId()!=TYPEID_UNIT)
+                if (source->GetTypeId() != TYPEID_UNIT)
                 {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_MOVE_TO call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_MOVE_TO call for non-creature (TypeId: %u), skipping.", source->GetTypeId());
                     break;
                 }
-                ((Unit *)source)->MonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, step.script->datalong2 );
-                ((Unit *)source)->GetMap()->CreatureRelocation((source->ToCreature()), step.script->x, step.script->y, step.script->z, 0);
+                Unit* unit = (Unit*)source;
+                if (step.script->MoveTo.CalculateSpeed != 0)
+                {
+                    unit->SetWalk(true);
+                    unit->GetMotionMaster()->MovePoint(0, step.script->MoveTo.DestX, step.script->MoveTo.DestY, step.script->MoveTo.DestZ);
+                } else if (step.script->MoveTo.TravelTime != 0)
+                {
+                    float speed = unit->GetDistance(step.script->MoveTo.DestX, step.script->MoveTo.DestY, step.script->MoveTo.DestZ) / ((float)step.script->MoveTo.TravelTime * 0.001f);
+                    unit->MonsterMoveWithSpeed(step.script->MoveTo.DestX, step.script->MoveTo.DestY, step.script->MoveTo.DestZ, speed);
+                }
+                else {
+                    unit->NearTeleportTo(step.script->MoveTo.DestX, step.script->MoveTo.DestY, step.script->MoveTo.DestZ, unit->GetOrientation());
+                }
                 break;
+            }
             case SCRIPT_COMMAND_FLAG_SET:
                 if(!source)
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FLAG_SET call for NULL object.");
                     break;
                 }
-                if(step.script->datalong <= OBJECT_FIELD_ENTRY || step.script->datalong >= source->GetValuesCount())
+                if (step.script->FlagToggle.FieldID <= OBJECT_FIELD_ENTRY || step.script->FlagToggle.FieldID >= source->GetValuesCount())
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FLAG_SET call for wrong field %u (max count: %u) in object (TypeId: %u).",
-                        step.script->datalong,source->GetValuesCount(),source->GetTypeId());
+                        step.script->FlagToggle.FieldID, source->GetValuesCount(), source->GetTypeId());
                     break;
                 }
 
-                source->SetFlag(step.script->datalong, step.script->datalong2);
+                source->SetFlag(step.script->FlagToggle.FieldID, step.script->FlagToggle.FieldValue);
                 break;
             case SCRIPT_COMMAND_FLAG_REMOVE:
                 if(!source)
@@ -295,14 +323,14 @@ void Map::ScriptsProcess()
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FLAG_REMOVE call for NULL object.");
                     break;
                 }
-                if(step.script->datalong <= OBJECT_FIELD_ENTRY || step.script->datalong >= source->GetValuesCount())
+                if(step.script->FlagToggle.FieldID <= OBJECT_FIELD_ENTRY || step.script->FlagToggle.FieldID >= source->GetValuesCount())
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FLAG_REMOVE call for wrong field %u (max count: %u) in object (TypeId: %u).",
-                        step.script->datalong,source->GetValuesCount(),source->GetTypeId());
+                        step.script->FlagToggle.FieldID, source->GetValuesCount(), source->GetTypeId());
                     break;
                 }
 
-                source->RemoveFlag(step.script->datalong, step.script->datalong2);
+                source->RemoveFlag(step.script->FlagToggle.FieldID, step.script->FlagToggle.FieldValue);
                 break;
 
             case SCRIPT_COMMAND_TELEPORT_TO:
@@ -323,18 +351,12 @@ void Map::ScriptsProcess()
 
                 Player* pSource = target && target->GetTypeId() == TYPEID_PLAYER ? target->ToPlayer() : source->ToPlayer();
 
-                pSource->TeleportTo(step.script->datalong, step.script->x, step.script->y, step.script->z, step.script->o);
+                pSource->TeleportTo(step.script->TeleportTo.MapID, step.script->TeleportTo.DestX, step.script->TeleportTo.DestY, step.script->TeleportTo.DestZ, step.script->TeleportTo.Orientation);
                 break;
             }
 
             case SCRIPT_COMMAND_TEMP_SUMMON_CREATURE:
             {
-                if(!step.script->datalong)                  // creature not specified
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TEMP_SUMMON_CREATURE call for NULL creature.");
-                    break;
-                }
-
                 if(!source)
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TEMP_SUMMON_CREATURE call for NULL world object.");
@@ -342,22 +364,21 @@ void Map::ScriptsProcess()
                 }
 
                 WorldObject* summoner = dynamic_cast<WorldObject*>(source);
-
                 if(!summoner)
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TEMP_SUMMON_CREATURE call for non-WorldObject (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
 
-                float x = step.script->x;
-                float y = step.script->y;
-                float z = step.script->z;
-                float o = step.script->o;
+                float x = step.script->TempSummonCreature.PosX;
+                float y = step.script->TempSummonCreature.PosY;
+                float z = step.script->TempSummonCreature.PosZ;
+                float o = step.script->TempSummonCreature.Orientation;
 
-                Creature* pCreature = summoner->SummonCreature(step.script->datalong, x, y, z, o,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,step.script->datalong2);
+                Creature* pCreature = summoner->SummonCreature(step.script->TempSummonCreature.CreatureEntry, x, y, z, o,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, step.script->TempSummonCreature.DespawnDelay);
                 if (!pCreature)
                 {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TEMP_SUMMON failed for creature (entry: %u).",step.script->datalong);
+                    TC_LOG_ERROR("scripts","%s failed for creature (entry: %u).", step.script->GetDebugInfo().c_str(), step.script->TempSummonCreature.CreatureEntry);
                     break;
                 }
 
@@ -366,7 +387,7 @@ void Map::ScriptsProcess()
 
             case SCRIPT_COMMAND_RESPAWN_GAMEOBJECT:
             {
-                if(!step.script->datalong)                  // gameobject not specified
+                if(!step.script->RespawnGameobject.GOGuid)                  // gameobject not specified
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT call for NULL gameobject.");
                     break;
@@ -391,7 +412,7 @@ void Map::ScriptsProcess()
                 CellCoord p(Trinity::ComputeCellCoord(summoner->GetPositionX(), summoner->GetPositionY()));
                 Cell cell(p);
 
-                Trinity::GameObjectWithSpawnIdCheck go_check(*summoner,step.script->datalong);
+                Trinity::GameObjectWithSpawnIdCheck go_check(*summoner,step.script->RespawnGameobject.GOGuid);
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(go,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
@@ -399,7 +420,7 @@ void Map::ScriptsProcess()
 
                 if ( !go )
                 {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT failed for gameobject(guid: %u).", step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT failed for gameobject (guid: %u).", step.script->RespawnGameobject.GOGuid);
                     break;
                 }
 
@@ -409,14 +430,14 @@ void Map::ScriptsProcess()
                     go->GetGoType()==GAMEOBJECT_TYPE_BUTTON      ||
                     go->GetGoType()==GAMEOBJECT_TYPE_TRAP )
                 {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT can not be used with gameobject of type %u (guid: %u).", uint32(go->GetGoType()), step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT can not be used with gameobject of type %u (guid: %u).", uint32(go->GetGoType()), step.script->RespawnGameobject.GOGuid);
                     break;
                 }
 
                 // Check that GO is not spawned
                 if (!go->isSpawned())
                 {
-                    int32 nTimeToDespawn = std::max(5, int32(step.script->datalong2));
+                    int32 nTimeToDespawn = std::max(5, int32(step.script->RespawnGameobject.DespawnDelay));
                     go->SetLootState(GO_READY);
                     go->SetRespawnTime(nTimeToDespawn);        //despawn object in ? seconds
 
@@ -427,7 +448,7 @@ void Map::ScriptsProcess()
             }
             case SCRIPT_COMMAND_OPEN_DOOR:
             {
-                if(!step.script->datalong)                  // door not specified
+                if(!step.script->ToggleDoor.GOGuid)                  // door not specified
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR call for NULL door.");
                     break;
@@ -448,12 +469,12 @@ void Map::ScriptsProcess()
                 Unit* caster = (Unit*)source;
 
                 GameObject *door = nullptr;
-                int32 time_to_close = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
+                int32 time_to_close = step.script->ToggleDoor.ResetDelay < 15 ? 15 : (int32)step.script->ToggleDoor.ResetDelay;
 
                 CellCoord p(Trinity::ComputeCellCoord(caster->GetPositionX(), caster->GetPositionY()));
                 Cell cell(p);
 
-                Trinity::GameObjectWithSpawnIdCheck go_check(*caster,step.script->datalong);
+                Trinity::GameObjectWithSpawnIdCheck go_check(*caster,step.script->ToggleDoor.GOGuid);
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(door,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
@@ -461,7 +482,7 @@ void Map::ScriptsProcess()
 
                 if ( !door )
                 {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR failed for gameobject(guid: %u).", step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR failed for gameobject(guid: %u).", step.script->ToggleDoor.GOGuid);
                     break;
                 }
                 if ( door->GetGoType() != GAMEOBJECT_TYPE_DOOR )
@@ -481,7 +502,7 @@ void Map::ScriptsProcess()
             }
             case SCRIPT_COMMAND_CLOSE_DOOR:
             {
-                if(!step.script->datalong)                  // guid for door not specified
+                if(!step.script->ToggleDoor.GOGuid)                  // guid for door not specified
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR call for NULL door.");
                     break;
@@ -502,12 +523,12 @@ void Map::ScriptsProcess()
                 Unit* caster = (Unit*)source;
 
                 GameObject *door = nullptr;
-                int32 time_to_open = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
+                int32 time_to_open = step.script->ToggleDoor.ResetDelay < 15 ? 15 : (int32)step.script->ToggleDoor.ResetDelay;
 
                 CellCoord p(Trinity::ComputeCellCoord(caster->GetPositionX(), caster->GetPositionY()));
                 Cell cell(p);
 
-                Trinity::GameObjectWithSpawnIdCheck go_check(*caster,step.script->datalong);
+                Trinity::GameObjectWithSpawnIdCheck go_check(*caster,step.script->ToggleDoor.GOGuid);
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(door,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
@@ -515,7 +536,7 @@ void Map::ScriptsProcess()
 
                 if ( !door )
                 {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR failed for gameobject(guid: %u).", step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR failed for gameobject(guid: %u).", step.script->ToggleDoor.GOGuid);
                     break;
                 }
                 if ( door->GetGoType() != GAMEOBJECT_TYPE_DOOR )
@@ -583,10 +604,10 @@ void Map::ScriptsProcess()
 
                 // quest id and flags checked at script loading
                 if( (worldObject->GetTypeId()!=TYPEID_UNIT || ((Unit*)worldObject)->IsAlive()) &&
-                    (step.script->datalong2==0 || worldObject->IsWithinDistInMap(player,float(step.script->datalong2))) )
-                    player->AreaExploredOrEventHappens(step.script->datalong);
+                    (step.script->QuestExplored.Distance == 0 || worldObject->IsWithinDistInMap(player,float(step.script->QuestExplored.Distance))) )
+                    player->AreaExploredOrEventHappens(step.script->QuestExplored.QuestID);
                 else
-                    player->FailQuest(step.script->datalong);
+                    player->FailQuest(step.script->QuestExplored.QuestID);
 
                 break;
             }
@@ -627,21 +648,21 @@ void Map::ScriptsProcess()
 
             case SCRIPT_COMMAND_REMOVE_AURA:
             {
-                Object* cmdTarget = step.script->datalong2 ? source : target;
+                Object* cmdTarget = step.script->RemoveAura.Flags ? source : target;
 
                 if(!cmdTarget)
                 {
-                    TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_REMOVE_AURA call for NULL %s.", step.script->datalong2 ? "source" : "target");
+                    TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_REMOVE_AURA call for NULL %s.", step.script->RemoveAura.Flags ? "source" : "target");
                     break;
                 }
 
                 if(!cmdTarget->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_REMOVE_AURA %s isn't unit (TypeId: %u), skipping.",step.script->datalong2 ? "source" : "target",cmdTarget->GetTypeId());
+                    TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_REMOVE_AURA %s isn't unit (TypeId: %u), skipping.",step.script->RemoveAura.Flags ? "source" : "target",cmdTarget->GetTypeId());
                     break;
                 }
 
-                ((Unit*)cmdTarget)->RemoveAurasDueToSpell(step.script->datalong);
+                ((Unit*)cmdTarget)->RemoveAurasDueToSpell(step.script->RemoveAura.SpellID);
                 break;
             }
 
@@ -655,28 +676,28 @@ void Map::ScriptsProcess()
 
                 if(!source->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL source caster isn't unit (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL source caster isn't unit (TypeId: %u), skipping.", source->GetTypeId());
                     break;
                 }
 
-                Object* cmdTarget = step.script->datalong2 ? source : target;
+                Object* cmdTarget = step.script->CastSpell.Flags ? source : target;
 
                 if(!cmdTarget)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL (ID: %u) call for NULL %s.",step.script->id, step.script->datalong2 ? "source" : "target");
+                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL (ID: %u) call for NULL %s.",step.script->id, step.script->CastSpell.Flags ? "source" : "target");
                     break;
                 }
 
                 if(!cmdTarget->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL %s isn't unit (TypeId: %u), skipping.",step.script->datalong2 ? "source" : "target",cmdTarget->GetTypeId());
+                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL %s isn't unit (TypeId: %u), skipping.",step.script->CastSpell.Flags ? "source" : "target", cmdTarget->GetTypeId());
                     break;
                 }
 
                 Unit* spellTarget = (Unit*)cmdTarget;
 
                 //TODO: when GO cast implemented, code below must be updated accordingly to also allow GO spell cast
-                ((Unit*)source)->CastSpell(spellTarget,step.script->datalong,false);
+                ((Unit*)source)->CastSpell(spellTarget,step.script->CastSpell.Flags,false);
 
                 break;
             }
@@ -695,26 +716,26 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                if(!sWaypointMgr->GetPath(step.script->datalong))
+                if(!sWaypointMgr->GetPath(step.script->LoadPath.PathID))
                 {
-                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE source mover has an invalid path (%u), skipping.", step.script->datalong);
+                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE source mover has an invalid path (%u), skipping.", step.script->LoadPath.PathID);
                     break;
                 }
 
-                dynamic_cast<Unit*>(source)->GetMotionMaster()->MovePath(step.script->datalong);
+                dynamic_cast<Unit*>(source)->GetMotionMaster()->MovePath(step.script->LoadPath.PathID);
                 break;
             }
 
             case SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT:
             {
-                if(!step.script->datalong || !step.script->datalong2)
+                if(!step.script->CallScript.CreatureEntry || !step.script->CallScript.ScriptID)
                 {
                     TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_CALLSCRIPT calls invallid db_script_id or lowguid not present: skipping.");
                     break;
                 }
                 //our target
                 Creature* creatureTarget = nullptr;
-                auto creatureBounds = dynamic_cast<Unit*>(source)->GetMap()->GetCreatureBySpawnIdStore().equal_range(step.script->datalong);
+                auto creatureBounds = dynamic_cast<Unit*>(source)->GetMap()->GetCreatureBySpawnIdStore().equal_range(step.script->CallScript.CreatureEntry);
                 if (creatureBounds.first != creatureBounds.second)
                 {
                     // Prefer alive (last respawned) creature
@@ -728,14 +749,14 @@ void Map::ScriptsProcess()
                 //TC_LOG_DEBUG("scripts","attempting to pass target...");
                 if (!creatureTarget)
                 {
-                    TC_LOG_ERROR("scripts", "%s target was not found (entry: %u)", step.script->GetDebugInfo().c_str(), step.script->datalong);
+                    TC_LOG_ERROR("scripts", "%s target was not found (entry: %u)", step.script->GetDebugInfo().c_str(), step.script->CallScript.CreatureEntry);
                     break;
                 }   
 
                 //TC_LOG_DEBUG("scripts","target passed");
                 //Lets choose our ScriptMap map
                 ScriptMapMap *datamap = nullptr;
-                switch (step.script->dataint)
+                switch (step.script->CallScript.ScriptType)
                 {
                 case 1://QUEST END SCRIPTMAP
                     datamap = &sQuestEndScripts;
@@ -763,7 +784,7 @@ void Map::ScriptsProcess()
                 if (!datamap)
                     break;
 
-                uint32 script_id = step.script->datalong2;
+                uint32 script_id = step.script->CallScript.ScriptID;
                 //insert script into schedule but do not start it
                 ScriptsStart(*datamap, script_id, creatureTarget, nullptr, false);
                 break;
@@ -774,8 +795,8 @@ void Map::ScriptsProcess()
                 if (!source)
                     break;
                 //datalong sound_id, datalong2 onlyself
-                Player* target = step.script->datalong2 ? source->ToPlayer() : nullptr;
-                ((WorldObject*)source)->PlayDirectSound(step.script->datalong, target);
+                Player* target = step.script->PlaySound.Flags ? source->ToPlayer() : nullptr;
+                ((WorldObject*)source)->PlayDirectSound(step.script->PlaySound.SoundID, target);
                 break;
             }
 
@@ -786,7 +807,7 @@ void Map::ScriptsProcess()
 
                 (source->ToCreature())->DealDamage((source->ToCreature()), (source->ToCreature())->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
 
-                switch (step.script->dataint)
+                switch (step.script->Kill.RemoveCorpse)
                 {
                 case 0: break; //return false not remove corpse
                 case 1: (source->ToCreature())->RemoveCorpse(); break;
@@ -798,10 +819,10 @@ void Map::ScriptsProcess()
             {
                 if (!source || ((Unit*)source)->GetTypeId() != TYPEID_PLAYER)
                     break;
-                if (step.script->datalong2)
-                    source->ToPlayer()->CastedCreatureOrGO(step.script->datalong, 0, step.script->datalong2);
+                if (step.script->KillCredit.SpellID)
+                    source->ToPlayer()->CastedCreatureOrGO(step.script->KillCredit.CreatureEntry, 0, step.script->KillCredit.SpellID);
                 else
-                    source->ToPlayer()->KilledMonsterCredit(step.script->datalong, 0);
+                    source->ToPlayer()->KilledMonsterCredit(step.script->KillCredit.CreatureEntry, 0);
                 break;
             }
 
@@ -822,7 +843,7 @@ void Map::ScriptsProcess()
                     if (!smartAI)
                         break;
 
-                    smartAI->SetData(step.script->datalong, step.script->datalong2);
+                    smartAI->SetData(step.script->SmartSetData.DataID, step.script->SmartSetData.Value);
                 }
                 else if (GameObject* gob = setObject->ToGameObject())
                 {
@@ -833,7 +854,7 @@ void Map::ScriptsProcess()
                     if (!smartAI)
                         break;
 
-                    smartAI->SetData(step.script->datalong, step.script->datalong2);
+                    smartAI->SetData(step.script->SmartSetData.DataID, step.script->SmartSetData.Value);
                 }
             }
             break;

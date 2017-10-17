@@ -108,7 +108,6 @@ bool ChatHandler::HandleReloadAllScriptsCommand(const char*)
     HandleReloadQuestStartScriptsCommand("a");
     HandleReloadSpellScriptsCommand("a");
     SendGlobalGMSysMessage("DB tables `*_scripts` reloaded.");
-    HandleReloadDbScriptStringCommand("a");
     HandleReloadWpScriptsCommand("a");
     return true;
 }
@@ -667,14 +666,6 @@ bool ChatHandler::HandleReloadSpellScriptsCommand(const char* arg)
     if(*arg!='a')
         SendGlobalGMSysMessage("DB table `spell_scripts` reloaded.");
 
-    return true;
-}
-
-bool ChatHandler::HandleReloadDbScriptStringCommand(const char* arg)
-{
-    TC_LOG_INFO("command", "Re-Loading Script strings from `db_script_string`...");
-    sObjectMgr->LoadDbScriptStrings();
-    SendGlobalGMSysMessage("DB table `db_script_string` reloaded.");
     return true;
 }
 
