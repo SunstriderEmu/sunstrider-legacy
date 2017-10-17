@@ -711,12 +711,25 @@ void Map::ScriptsProcess()
 
             case SCRIPT_COMMAND_PLAY_SOUND:
             {
-                if (!source)
-                    break;
-                //datalong sound_id, datalong2 onlyself
-                Player* target = step.script->PlaySound.Flags ? source->ToPlayer() : nullptr;
-                ((WorldObject*)source)->PlayDirectSound(step.script->PlaySound.SoundID, target);
-                break;
+                // Source must be WorldObject.
+                if (WorldObject* object = _GetScriptWorldObject(source, true, step.script))
+                {
+                    // PlaySound.Flags bitmask: 0/1=anyone/target
+                    Player* player = nullptr;
+                    if (step.script->PlaySound.Flags & SF_PLAYSOUND_TARGET_PLAYER)
+                    {
+                        // Target must be Player.
+                        player = _GetScriptPlayer(target, false, step.script);
+                        if (!target)
+                            break;
+                    }
+
+                    // PlaySound.Flags bitmask: 0/2=without/with distance dependent
+                    if (step.script->PlaySound.Flags & SF_PLAYSOUND_DISTANCE_SOUND)
+                        object->PlayDistanceSound(step.script->PlaySound.SoundID, player);
+                    else
+                        object->PlayDirectSound(step.script->PlaySound.SoundID, player);
+                }
             }
 
             case SCRIPT_COMMAND_KILL:

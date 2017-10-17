@@ -306,7 +306,6 @@ class TC_GAME_API WorldSession
         void SendPetitionQueryOpcode( uint64 petitionguid);
 
         void SendMinimapPing(uint64 guid, uint32 x, uint32 y);
-        void SendSoundFromObject(uint32 soundId, uint64 guid);
 
         //pet
         void SendPetNameQuery(uint64 guid, uint32 petnumber);

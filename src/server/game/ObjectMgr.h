@@ -60,6 +60,11 @@ enum eScriptFlags
     SF_CASTSPELL_TARGET_TO_SOURCE = 3,
     SF_CASTSPELL_SEARCH_CREATURE  = 4,
     SF_CASTSPELL_TRIGGERED      = 0x1,
+
+    
+    // PlaySound flags
+    SF_PLAYSOUND_TARGET_PLAYER  = 0x1,
+    SF_PLAYSOUND_DISTANCE_SOUND = 0x2,
 };
 
 

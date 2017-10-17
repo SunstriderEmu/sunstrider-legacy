@@ -1549,14 +1549,6 @@ void WorldSession::SendMinimapPing(uint64 guid, uint32 x, uint32 y)
     SendPacket(&data);
 }
 
-void WorldSession::SendSoundFromObject(uint32 soundId, uint64 guid)
-{
-    WorldPacket data(SMSG_PLAY_OBJECT_SOUND,4+8);
-    data << uint32(soundId);
-    data << uint64(guid);
-    SendPacket(&data);
-}
-
 void WorldSession::SendMotd()
 {
     WorldPacket data(SMSG_MOTD, 50);
