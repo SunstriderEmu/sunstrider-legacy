@@ -159,7 +159,7 @@ class TC_GAME_API MotionMaster //: private std::stack<MovementGenerator *>
         void MoveSeekAssistanceDistract(uint32 timer);
         void MoveTaxiFlight(uint32 path, uint32 pathnode);
         void MoveDistract(float x, float y, uint32 time);
-        void MovePath(uint32 path_id);
+        void MovePath(uint32 path_id, bool repeatable = true);
         void MoveRotate(uint32 time, RotateDirection direction);
         /** Look towards the target for given time */
         void MoveStealthAlert(Unit const* target, uint32 time);

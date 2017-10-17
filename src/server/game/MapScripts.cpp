@@ -641,7 +641,7 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                dynamic_cast<Unit*>(source)->GetMotionMaster()->MovePath(step.script->LoadPath.PathID);
+                dynamic_cast<Unit*>(source)->GetMotionMaster()->MovePath(step.script->LoadPath.PathID, step.script->LoadPath.IsRepeatable != 0);
                 break;
             }
 

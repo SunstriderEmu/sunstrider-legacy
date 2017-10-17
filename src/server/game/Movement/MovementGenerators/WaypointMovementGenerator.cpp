@@ -34,17 +34,17 @@
 
 #include "WaypointManager.h"
 
-WaypointMovementGenerator<Creature>::WaypointMovementGenerator(Movement::PointsArray& points) :
-    WaypointMovementGenerator(uint32(0))
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(Movement::PointsArray& points, bool repeating) :
+    WaypointMovementGenerator(uint32(0), repeating)
 {
     CreateCustomPath(points);
     path_type = WP_PATH_TYPE_ONCE;
     direction = WP_PATH_DIRECTION_NORMAL;
 }
 
-WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id) : 
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id, bool repeating) :
     path_id(_path_id), 
-    path_type(WP_PATH_TYPE_LOOP),
+    path_type(repeating ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE),
     direction(WP_PATH_DIRECTION_NORMAL),
     i_nextMoveTime(0), 
     i_recalculatePath(false),
