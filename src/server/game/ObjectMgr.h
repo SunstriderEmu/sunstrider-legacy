@@ -49,7 +49,10 @@ struct GameTele
 typedef std::unordered_map<uint32, GameTele > GameTeleContainer;
 
 enum eScriptFlags
-{
+{    
+    // Talk Flags
+    SF_TALK_USE_PLAYER          = 0x1,
+
     // CastSpell flags
     SF_CASTSPELL_SOURCE_TO_TARGET = 0,
     SF_CASTSPELL_SOURCE_TO_SOURCE = 1,

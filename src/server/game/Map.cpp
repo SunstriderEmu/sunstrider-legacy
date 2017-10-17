@@ -3575,3 +3575,181 @@ void Map::UnloadAll()
     _corpsesByPlayer.clear();
     _corpseBones.clear();
 }
+
+// Helpers for ScriptProcess method.
+inline Player* Map::_GetScriptPlayerSourceOrTarget(Object* source, Object* target, ScriptInfo const* scriptInfo) const
+{
+    Player* player = nullptr;
+    if (!source && !target)
+        TC_LOG_ERROR("scripts", "%s source and target objects are NULL.", scriptInfo->GetDebugInfo().c_str());
+    else
+    {
+        // Check target first, then source.
+        if (target)
+            player = target->ToPlayer();
+        if (!player && source)
+            player = source->ToPlayer();
+
+        if (!player)
+            TC_LOG_ERROR("scripts", "%s neither source nor target object is player (source: TypeId: %u, Entry: %u, GUID: %u; target: TypeId: %u, Entry: %u, GUID: %u), skipping.",
+                scriptInfo->GetDebugInfo().c_str(),
+                source ? source->GetTypeId() : 0, source ? source->GetEntry() : 0, source ? source->GetGUIDLow() : 0,
+                target ? target->GetTypeId() : 0, target ? target->GetEntry() : 0, target ? target->GetGUIDLow() : 0);
+    }
+    return player;
+}
+
+inline Creature* Map::_GetScriptCreatureSourceOrTarget(Object* source, Object* target, ScriptInfo const* scriptInfo, bool bReverse) const
+{
+    Creature* creature = nullptr;
+    if (!source && !target)
+        TC_LOG_ERROR("scripts", "%s source and target objects are NULL.", scriptInfo->GetDebugInfo().c_str());
+    else
+    {
+        if (bReverse)
+        {
+            // Check target first, then source.
+            if (target)
+                creature = target->ToCreature();
+            if (!creature && source)
+                creature = source->ToCreature();
+        }
+        else
+        {
+            // Check source first, then target.
+            if (source)
+                creature = source->ToCreature();
+            if (!creature && target)
+                creature = target->ToCreature();
+        }
+
+        if (!creature)
+            TC_LOG_ERROR("scripts", "%s neither source nor target are creatures (source: TypeId: %u, Entry: %u, GUID: %u; target: TypeId: %u, Entry: %u, GUID: %u), skipping.",
+                scriptInfo->GetDebugInfo().c_str(),
+                source ? source->GetTypeId() : 0, source ? source->GetEntry() : 0, source ? source->GetGUIDLow() : 0,
+                target ? target->GetTypeId() : 0, target ? target->GetEntry() : 0, target ? target->GetGUIDLow() : 0);
+    }
+    return creature;
+}
+
+inline Unit* Map::_GetScriptUnit(Object* obj, bool isSource, ScriptInfo const* scriptInfo) const
+{
+    Unit* unit = nullptr;
+    if (!obj)
+        TC_LOG_ERROR("scripts", "%s %s object is NULL.", scriptInfo->GetDebugInfo().c_str(), isSource ? "source" : "target");
+    else if (!obj->isType(TYPEMASK_UNIT))
+        TC_LOG_ERROR("scripts", "%s %s object is not unit (TypeId: %u, Entry: %u, GUID: %u), skipping.",
+            scriptInfo->GetDebugInfo().c_str(), isSource ? "source" : "target", obj->GetTypeId(), obj->GetEntry(), obj->GetGUIDLow());
+    else
+    {
+        unit = obj->ToUnit();
+        if (!unit)
+            TC_LOG_ERROR("scripts", "%s %s object could not be cast to unit.",
+                scriptInfo->GetDebugInfo().c_str(), isSource ? "source" : "target");
+    }
+    return unit;
+}
+
+inline Player* Map::_GetScriptPlayer(Object* obj, bool isSource, ScriptInfo const* scriptInfo) const
+{
+    Player* player = nullptr;
+    if (!obj)
+        TC_LOG_ERROR("scripts", "%s %s object is NULL.", scriptInfo->GetDebugInfo().c_str(), isSource ? "source" : "target");
+    else
+    {
+        player = obj->ToPlayer();
+        if (!player)
+            TC_LOG_ERROR("scripts", "%s %s object is not a player (TypeId: %u, Entry: %u, GUID: %u).",
+                scriptInfo->GetDebugInfo().c_str(), isSource ? "source" : "target", obj->GetTypeId(), obj->GetEntry(), obj->GetGUIDLow());
+    }
+    return player;
+}
+
+inline Creature* Map::_GetScriptCreature(Object* obj, bool isSource, ScriptInfo const* scriptInfo) const
+{
+    Creature* creature = nullptr;
+    if (!obj)
+        TC_LOG_ERROR("scripts", "%s %s object is NULL.", scriptInfo->GetDebugInfo().c_str(), isSource ? "source" : "target");
+    else
+    {
+        creature = obj->ToCreature();
+        if (!creature)
+            TC_LOG_ERROR("scripts", "%s %s object is not a creature (TypeId: %u, Entry: %u, GUID: %u).", scriptInfo->GetDebugInfo().c_str(),
+                isSource ? "source" : "target", obj->GetTypeId(), obj->GetEntry(), obj->GetGUIDLow());
+    }
+    return creature;
+}
+
+inline WorldObject* Map::_GetScriptWorldObject(Object* obj, bool isSource, ScriptInfo const* scriptInfo) const
+{
+    WorldObject* pWorldObject = nullptr;
+    if (!obj)
+        TC_LOG_ERROR("scripts", "%s %s object is NULL.",
+            scriptInfo->GetDebugInfo().c_str(), isSource ? "source" : "target");
+    else
+    {
+        pWorldObject = dynamic_cast<WorldObject*>(obj);
+        if (!pWorldObject)
+            TC_LOG_ERROR("scripts", "%s %s object is not a world object (TypeId: %u, Entry: %u, GUID: %u).",
+                scriptInfo->GetDebugInfo().c_str(), isSource ? "source" : "target", obj->GetTypeId(), obj->GetEntry(), obj->GetGUIDLow());
+    }
+    return pWorldObject;
+}
+
+inline void Map::_ScriptProcessDoor(Object* source, Object* target, ScriptInfo const* scriptInfo) const
+{
+    bool bOpen = false;
+    ObjectGuid::LowType guid = scriptInfo->ToggleDoor.GOGuid;
+    int32 nTimeToToggle = std::max(15, int32(scriptInfo->ToggleDoor.ResetDelay));
+    switch (scriptInfo->command)
+    {
+        case SCRIPT_COMMAND_OPEN_DOOR: bOpen = true; break;
+        case SCRIPT_COMMAND_CLOSE_DOOR: break;
+        default:
+            TC_LOG_ERROR("scripts", "%s unknown command for _ScriptProcessDoor.", scriptInfo->GetDebugInfo().c_str());
+            return;
+    }
+    if (!guid)
+        TC_LOG_ERROR("scripts", "%s door guid is not specified.", scriptInfo->GetDebugInfo().c_str());
+    else if (!source)
+        TC_LOG_ERROR("scripts", "%s source object is NULL.", scriptInfo->GetDebugInfo().c_str());
+    else if (!source->isType(TYPEMASK_UNIT))
+        TC_LOG_ERROR("scripts", "%s source object is not unit (TypeId: %u, Entry: %u, GUID: %u), skipping.", scriptInfo->GetDebugInfo().c_str(),
+            source->GetTypeId(), source->GetEntry(), source->GetGUIDLow());
+    else
+    {
+        WorldObject* wSource = dynamic_cast <WorldObject*> (source);
+        if (!wSource)
+            TC_LOG_ERROR("scripts", "%s source object could not be cast to world object (TypeId: %u, Entry: %u, GUID: %u), skipping.",
+                scriptInfo->GetDebugInfo().c_str(), source->GetTypeId(), source->GetEntry(), source->GetGUIDLow());
+        else
+        {
+            GameObject* pDoor = _FindGameObject(wSource, guid);
+            if (!pDoor)
+                TC_LOG_ERROR("scripts", "%s gameobject was not found (guid: %u).", scriptInfo->GetDebugInfo().c_str(), guid);
+            else if (pDoor->GetGoType() != GAMEOBJECT_TYPE_DOOR)
+                TC_LOG_ERROR("scripts", "%s gameobject is not a door (GoType: %u, Entry: %u, GUID: %u).",
+                    scriptInfo->GetDebugInfo().c_str(), pDoor->GetGoType(), pDoor->GetEntry(), pDoor->GetGUIDLow());
+            else if (bOpen == (pDoor->GetGoState() == GO_STATE_READY))
+            {
+                pDoor->UseDoorOrButton(nTimeToToggle);
+
+                if (target && target->isType(TYPEMASK_GAMEOBJECT))
+                {
+                    GameObject* goTarget = target->ToGameObject();
+                    if (goTarget && goTarget->GetGoType() == GAMEOBJECT_TYPE_BUTTON)
+                        goTarget->UseDoorOrButton(nTimeToToggle);
+                }
+            }
+        }
+    }
+}
+
+inline GameObject* Map::_FindGameObject(WorldObject* searchObject, ObjectGuid::LowType guid) const
+{
+    auto bounds = searchObject->GetMap()->GetGameObjectBySpawnIdStore().equal_range(guid);
+    if (bounds.first == bounds.second)
+        return nullptr;
+
+    return bounds.first->second;
+}

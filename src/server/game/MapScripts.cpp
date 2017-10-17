@@ -201,12 +201,10 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                /*TC
                 if (step.script->Talk.Flags & SF_TALK_USE_PLAYER)
                     source = _GetScriptPlayerSourceOrTarget(source, target, step.script);
                 else
                     source = _GetScriptCreatureSourceOrTarget(source, target, step.script);
-                    */
 
                 uint64 unit_target = target ? target->GetGUID() : 0;
 
@@ -447,114 +445,9 @@ void Map::ScriptsProcess()
                 break;
             }
             case SCRIPT_COMMAND_OPEN_DOOR:
-            {
-                if(!step.script->ToggleDoor.GOGuid)                  // door not specified
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR call for NULL door.");
-                    break;
-                }
-
-                if(!source)
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR call for NULL unit.");
-                    break;
-                }
-
-                if(!source->isType(TYPEMASK_UNIT))          // must be any Unit (creature or player)
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR call for non-unit (TypeId: %u), skipping.",source->GetTypeId());
-                    break;
-                }
-
-                Unit* caster = (Unit*)source;
-
-                GameObject *door = nullptr;
-                int32 time_to_close = step.script->ToggleDoor.ResetDelay < 15 ? 15 : (int32)step.script->ToggleDoor.ResetDelay;
-
-                CellCoord p(Trinity::ComputeCellCoord(caster->GetPositionX(), caster->GetPositionY()));
-                Cell cell(p);
-
-                Trinity::GameObjectWithSpawnIdCheck go_check(*caster,step.script->ToggleDoor.GOGuid);
-                Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(door,go_check);
-
-                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *caster->GetMap(), *caster, caster->GetGridActivationRange());
-
-                if ( !door )
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR failed for gameobject(guid: %u).", step.script->ToggleDoor.GOGuid);
-                    break;
-                }
-                if ( door->GetGoType() != GAMEOBJECT_TYPE_DOOR )
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR failed for non-door(GoType: %u).", door->GetGoType());
-                    break;
-                }
-
-                if( !door->GetGoState() )
-                    break;                                  //door already  open
-
-                door->UseDoorOrButton(time_to_close);
-
-                if(target && target->isType(TYPEMASK_GAMEOBJECT) && ((GameObject*)target)->GetGoType()==GAMEOBJECT_TYPE_BUTTON)
-                    ((GameObject*)target)->UseDoorOrButton(time_to_close);
-                break;
-            }
             case SCRIPT_COMMAND_CLOSE_DOOR:
-            {
-                if(!step.script->ToggleDoor.GOGuid)                  // guid for door not specified
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR call for NULL door.");
-                    break;
-                }
-
-                if(!source)
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR call for NULL unit.");
-                    break;
-                }
-
-                if(!source->isType(TYPEMASK_UNIT))          // must be any Unit (creature or player)
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR call for non-unit (TypeId: %u), skipping.",source->GetTypeId());
-                    break;
-                }
-
-                Unit* caster = (Unit*)source;
-
-                GameObject *door = nullptr;
-                int32 time_to_open = step.script->ToggleDoor.ResetDelay < 15 ? 15 : (int32)step.script->ToggleDoor.ResetDelay;
-
-                CellCoord p(Trinity::ComputeCellCoord(caster->GetPositionX(), caster->GetPositionY()));
-                Cell cell(p);
-
-                Trinity::GameObjectWithSpawnIdCheck go_check(*caster,step.script->ToggleDoor.GOGuid);
-                Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(door,go_check);
-
-                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *caster->GetMap(), *caster, caster->GetGridActivationRange());
-
-                if ( !door )
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR failed for gameobject(guid: %u).", step.script->ToggleDoor.GOGuid);
-                    break;
-                }
-                if ( door->GetGoType() != GAMEOBJECT_TYPE_DOOR )
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR failed for non-door(GoType: %u).", door->GetGoType());
-                    break;
-                }
-
-                if( door->GetGoState() )
-                    break;                                  //door already closed
-
-                door->UseDoorOrButton(time_to_open);
-
-                if(target && target->isType(TYPEMASK_GAMEOBJECT) && ((GameObject*)target)->GetGoType()==GAMEOBJECT_TYPE_BUTTON)
-                    ((GameObject*)target)->UseDoorOrButton(time_to_open);
-
+                _ScriptProcessDoor(source, target, step.script);
                 break;
-            }
             case SCRIPT_COMMAND_QUEST_EXPLORED:
             {
                 if(!source)
