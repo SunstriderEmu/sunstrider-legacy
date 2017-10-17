@@ -29,17 +29,17 @@ float PassiveMultiplier::GetValue(Action* action) {
     if (!action)
         return 1.0f;
 
-    std::string name = action->getName();
+    std::string _name = action->getName();
 
     for (list<std::string>::iterator i = allowedActions.begin(); i != allowedActions.end(); i++)
     {
-        if (name == *i)
+        if (_name == *i)
             return 1.0f;
     }
 
     for (list<std::string>::iterator i = allowedParts.begin(); i != allowedParts.end(); i++)
     {
-        if (name.find(*i) != std::string::npos)
+        if (_name.find(*i) != std::string::npos)
             return 1.0f;
     }
 

@@ -120,10 +120,10 @@ bool AndTrigger::IsActive()
 
 string AndTrigger::getName()
 {
-    std::string name(ls->getName());
-    name = name + " and ";
-    name = name + rs->getName();
-    return name;
+    std::string _name(ls->getName());
+    _name = _name + " and ";
+    _name = _name + rs->getName();
+    return _name;
 }
 
 bool BoostTrigger::IsActive()

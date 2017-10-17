@@ -390,21 +390,21 @@ void PlayerbotMgr::UpdateAIInternal(uint32 elapsed)
 
 void PlayerbotMgr::HandleCommand(uint32 type, const std::string& text)
 {
-    Player *master = GetMaster();
-    if (!master)
+    Player* _master = GetMaster();
+    if (!_master)
         return;
 
     for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
     {
         Player* const bot = it->second;
-        bot->GetPlayerbotAI()->HandleCommand(type, text, *master);
+        bot->GetPlayerbotAI()->HandleCommand(type, text, *_master);
     }
 
     for (PlayerBotMap::const_iterator it = sRandomPlayerbotMgr.GetPlayerBotsBegin(); it != sRandomPlayerbotMgr.GetPlayerBotsEnd(); ++it)
     {
         Player* const bot = it->second;
         if (bot->GetPlayerbotAI()->GetMaster() == master)
-            bot->GetPlayerbotAI()->HandleCommand(type, text, *master);
+            bot->GetPlayerbotAI()->HandleCommand(type, text, *_master);
     }
 }
 

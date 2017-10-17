@@ -25,10 +25,10 @@ float MagePullMultiplier::GetValue(Action* _action)
     if (!_action)
         return 1.0f;
 
-    std::string name = _action->getName();
-    if (this->action == name ||
-        name == "reach spell" ||
-        name == "change strategy")
+    std::string _name = _action->getName();
+    if (this->action == _name ||
+        _name == "reach spell" ||
+        _name == "change strategy")
         return 1.0f;
 
     return PassiveMultiplier::GetValue(_action);

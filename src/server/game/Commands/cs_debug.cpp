@@ -704,7 +704,7 @@ bool ChatHandler::HandleDebugPlaySoundCommand(const char* args)
             return false;
         }
 
-        m_session->SendSoundFromObject(m_session->GetPlayer()->GetGUID(), dwSoundId);
+        m_session->GetPlayer()->PlayDistanceSound(dwSoundId, m_session->GetPlayer());
 
         PSendSysMessage(LANG_YOU_HEAR_SOUND, dwSoundId);
         return true;

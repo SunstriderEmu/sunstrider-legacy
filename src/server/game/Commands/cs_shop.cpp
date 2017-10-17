@@ -380,7 +380,6 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     uint32 t_playerBytes2 = fields[5].GetUInt32();
     
     uint32 m_race = m_session->GetPlayer()->GetRace();
-    uint32 m_gender = m_session->GetPlayer()->GetGender();
     
     if (t_race != m_race || t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
         return false;

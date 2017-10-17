@@ -249,7 +249,6 @@ class TC_GAME_API ChatHandler
         bool HandleReloadCreatureQuestStartersCommand(const char* args);
         bool HandleReloadCreatureQuestEndersCommand(const char* args);
         bool HandleReloadCreatureLinkedRespawnCommand(const char* args);
-        bool HandleReloadDbScriptStringCommand(const char* args);
         bool HandleReloadGameEventCommand(const char* args);
         bool HandleReloadGameGraveyardZoneCommand(const char* args);
         bool HandleReloadGameObjectScriptsCommand(const char* args);

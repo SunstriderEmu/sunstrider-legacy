@@ -2839,6 +2839,8 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
         case FORM_MOONKIN:
         case FORM_TREE:
         case FORM_NONE:
+        case FORM_CREATUREBEAR: //sunstrider: several quest spells used by npc
+        case FORM_CREATURECAT: //sunstrider: several quest spells used by npc
             break;
         default:
             TC_LOG_ERROR("FIXME","Auras: Unknown Shapeshift Type: %u for spell %u", form, GetId());
@@ -2935,7 +2937,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                     }
 
                     if (m_target->GetPower(POWER_RAGE) > Rage_val)
-                        m_target->SetPower(POWER_RAGE,Rage_val);
+                        m_target->SetPower(POWER_RAGE, Rage_val);
                     break;
                 }
                 default:

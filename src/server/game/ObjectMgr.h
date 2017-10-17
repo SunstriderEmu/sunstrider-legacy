@@ -48,21 +48,175 @@ struct GameTele
 
 typedef std::unordered_map<uint32, GameTele > GameTeleContainer;
 
+enum eScriptFlags
+{    
+    // Talk Flags
+    SF_TALK_USE_PLAYER          = 0x1,
+
+    // CastSpell flags
+    SF_CASTSPELL_SOURCE_TO_TARGET = 0,
+    SF_CASTSPELL_SOURCE_TO_SOURCE = 1,
+    SF_CASTSPELL_TARGET_TO_TARGET = 2,
+    SF_CASTSPELL_TARGET_TO_SOURCE = 3,
+    SF_CASTSPELL_SEARCH_CREATURE  = 4,
+    SF_CASTSPELL_TRIGGERED      = 0x1,
+
+    
+    // PlaySound flags
+    SF_PLAYSOUND_TARGET_PLAYER  = 0x1,
+    SF_PLAYSOUND_DISTANCE_SOUND = 0x2,
+};
+
+
 struct ScriptInfo
 {
     uint32 id;
     uint32 delay;
     uint32 command;
-    uint32 datalong;
-    uint32 datalong2;
-    int32  dataint;
-    float x;
-    float y;
-    float z;
-    float o;
+
+    union
+    {
+        struct
+        {
+            uint32 nData[3];
+            float  fData[4];
+        } Raw;
+
+        struct                      // SCRIPT_COMMAND_TALK (0)
+        {
+            uint32 ChatType;        // datalong !! Not TC type, special type for scripts only...
+            uint32 Flags;           // datalong2
+            int32  TextID;          // dataint
+        } Talk;
+
+        struct                      // SCRIPT_COMMAND_EMOTE (1)
+        {
+            uint32 EmoteID;         // datalong
+            uint32 Flags;           // datalong2
+        } Emote;
+
+        struct                      // SCRIPT_COMMAND_FIELD_SET (2)
+        {
+            uint32 FieldID;         // datalong
+            uint32 FieldValue;      // datalong2
+        } FieldSet;
+
+        struct                      // SCRIPT_COMMAND_MOVE_TO (3)
+        {
+            uint32 Unused1;         // datalong
+            uint32 TravelTime;      // datalong2
+            int32  CalculateSpeed;  // dataint, added by sunstrider to keep retro compat
+
+            float DestX;
+            float DestY;
+            float DestZ;
+        } MoveTo;
+
+        struct                      // SCRIPT_COMMAND_FLAG_SET (4)
+                                    // SCRIPT_COMMAND_FLAG_REMOVE (5)
+        {
+            uint32 FieldID;         // datalong
+            uint32 FieldValue;      // datalong2
+        } FlagToggle;
+
+        struct                      // SCRIPT_COMMAND_TELEPORT_TO (6)
+        {
+            uint32 MapID;           // datalong
+            uint32 Flags;           // datalong2
+            int32  Unused1;         // dataint
+
+            float DestX;
+            float DestY;
+            float DestZ;
+            float Orientation;
+        } TeleportTo;
+
+        struct                      // SCRIPT_COMMAND_QUEST_EXPLORED (7)
+        {
+            uint32 QuestID;         // datalong
+            uint32 Distance;        // datalong2
+        } QuestExplored;
+
+        struct                      // SCRIPT_COMMAND_KILL_CREDIT (8)
+        {
+            uint32 CreatureEntry;   // datalong
+            uint32 SpellID;         // datalong2 /!\ Not the same as TC, TC has Flags here
+        } KillCredit;
+
+        struct                      // SCRIPT_COMMAND_RESPAWN_GAMEOBJECT (9)
+        {
+            uint32 GOGuid;          // datalong
+            uint32 DespawnDelay;    // datalong2
+        } RespawnGameobject;
+
+        struct                      // SCRIPT_COMMAND_TEMP_SUMMON_CREATURE (10)
+        {
+            uint32 CreatureEntry;   // datalong
+            uint32 DespawnDelay;    // datalong2
+            int32  Unused1;         // dataint
+
+            float PosX;
+            float PosY;
+            float PosZ;
+            float Orientation;
+        } TempSummonCreature;
+
+        struct                      // SCRIPT_COMMAND_CLOSE_DOOR (12)
+                                    // SCRIPT_COMMAND_OPEN_DOOR (11)
+        {
+            uint32 GOGuid;          // datalong
+            uint32 ResetDelay;      // datalong2
+        } ToggleDoor;
+
+        struct                      // SCRIPT_COMMAND_REMOVE_AURA (14)
+        {
+            uint32 SpellID;         // datalong
+            uint32 Flags;           // datalong2
+        } RemoveAura;
+
+        struct                      // SCRIPT_COMMAND_CAST_SPELL (15)
+        {
+            uint32 SpellID;         // datalong
+            uint32 Flags;           // datalong2
+            int32  CreatureEntry;   // dataint
+
+            float SearchRadius;
+        } CastSpell;
+
+        struct                      // SCRIPT_COMMAND_PLAY_SOUND (16)
+        {
+            uint32 SoundID;         // datalong
+            uint32 Flags;           // datalong2
+        } PlaySound;
+
+        struct                      // SCRIPT_COMMAND_LOAD_PATH (20)
+        {
+            uint32 PathID;          // datalong
+            uint32 IsRepeatable;    // datalong2
+        } LoadPath;
+
+        struct                      // SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT (21)
+        {
+            uint32 CreatureEntry;   // datalong
+            uint32 ScriptID;        // datalong2
+            uint32 ScriptType;      // dataint
+        } CallScript;
+
+        struct                      // SCRIPT_COMMAND_KILL (22)
+        {
+            uint32 Unused1;         // datalong
+            uint32 Unused2;         // datalong2
+            int32  RemoveCorpse;    // dataint
+        } Kill;
+
+        struct                      // SCRIPT_COMMAND_SMART_SET_DATA
+        {
+            uint32 DataID;          // datalong
+            uint32 Value;           // datalong2
+        } SmartSetData;
+    };
 
     std::string GetDebugInfo() const;
-    //TC static std::string GetScriptsTableNameByType(ScriptsType type);
     static std::string GetScriptCommandName(ScriptCommands command);
 };
 
@@ -624,7 +778,6 @@ class TC_GAME_API ObjectMgr
 
         bool LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table, int32 min_value, int32 max_value);
         bool LoadTrinityStrings() { return LoadTrinityStrings(WorldDatabase,"trinity_string",MIN_TRINITY_STRING_ID,MAX_TRINITY_STRING_ID); }
-        void LoadDbScriptStrings();
         void LoadPetCreateSpells();
         void LoadBroadcastTexts();
         void LoadBroadcastTextLocales();
@@ -1133,7 +1286,6 @@ class TC_GAME_API ObjectMgr
 
     private:
         void LoadScripts(ScriptMapMap& scripts, char const* tablename);
-        void CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids);
         void ConvertCreatureAddonAuras(CreatureAddon* addon, char const* table, char const* guidEntryStr);
         void LoadQuestRelationsHelper(QuestRelations& map,char const* table);
 

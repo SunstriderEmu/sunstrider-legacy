@@ -25,13 +25,13 @@ void Queue::Push(ActionBasket *action)
     }
 }
 
-void Queue::Push(ActionBasket **actions)
+void Queue::Push(ActionBasket** _actions)
 {
-    if (actions)
+    if (_actions)
     {
-        for (int i=0; i<sizeof(actions)/sizeof(ActionBasket*); i++)
+        for (int i=0; i<sizeof(_actions)/sizeof(ActionBasket*); i++)
         {
-            Push(actions[i]);
+            Push(_actions[i]);
         }
     }
 }

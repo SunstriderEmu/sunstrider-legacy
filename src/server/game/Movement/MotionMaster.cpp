@@ -716,12 +716,12 @@ bool MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
     return true;
 }
 
-void MotionMaster::MovePath(uint32 path_id)
+void MotionMaster::MovePath(uint32 path_id, bool repeatable)
 {
     if (!path_id)
         return;
     //We set waypoint movement as new default movement generator
-    Mutate(new WaypointMovementGenerator<Creature>(path_id), MOTION_SLOT_IDLE);
+    Mutate(new WaypointMovementGenerator<Creature>(path_id, repeatable), MOTION_SLOT_IDLE);
 
    /* TC_LOG_DEBUG("misc", "%s (GUID: %u) start moving over path(Id: %u)",
         _owner->GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature",

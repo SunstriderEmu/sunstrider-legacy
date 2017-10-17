@@ -97,9 +97,9 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
     public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
-        WaypointMovementGenerator(Movement::PointsArray& points);
+        WaypointMovementGenerator(Movement::PointsArray& points, bool repeating = false);
         // If path_id is left at 0, will try to get path id from Creature::GetWaypointPathId()
-        WaypointMovementGenerator(uint32 _path_id = 0);
+        WaypointMovementGenerator(uint32 _path_id = 0, bool repeating = true);
         ~WaypointMovementGenerator() override;
         bool DoInitialize(Creature*);
         void DoFinalize(Creature*);
