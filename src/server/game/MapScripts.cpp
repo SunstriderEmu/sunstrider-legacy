@@ -676,28 +676,54 @@ void Map::ScriptsProcess()
 
                 if(!source->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL source caster isn't unit (TypeId: %u), skipping.", source->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CAST_SPELL source caster isn't unit (TypeId: %u), skipping.", source->GetTypeId());
                     break;
                 }
-
-                Object* cmdTarget = step.script->CastSpell.Flags ? source : target;
-
-                if(!cmdTarget)
+                
+                Unit* uSource = nullptr;
+                Unit* uTarget = nullptr;
+                // source/target cast spell at target/source (script->datalong2: 0: s->t 1: s->s 2: t->t 3: t->s
+                switch (step.script->CastSpell.Flags)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL (ID: %u) call for NULL %s.",step.script->id, step.script->CastSpell.Flags ? "source" : "target");
+                case SF_CASTSPELL_SOURCE_TO_TARGET: // source -> target
+                    uSource = source ? source->ToUnit() : nullptr;
+                    uTarget = target ? target->ToUnit() : nullptr;
+                    break;
+                case SF_CASTSPELL_SOURCE_TO_SOURCE: // source -> source
+                    uSource = source ? source->ToUnit() : nullptr;
+                    uTarget = uSource;
+                    break;
+                case SF_CASTSPELL_TARGET_TO_TARGET: // target -> target
+                    uSource = target ? target->ToUnit() : nullptr;
+                    uTarget = uSource;
+                    break;
+                case SF_CASTSPELL_TARGET_TO_SOURCE: // target -> source
+                    uSource = target ? target->ToUnit() : nullptr;
+                    uTarget = source ? source->ToUnit() : nullptr;
+                    break;
+                case SF_CASTSPELL_SEARCH_CREATURE: // source -> creature with entry
+                    uSource = source ? source->ToUnit() : nullptr;
+                    uTarget = uSource ? uSource->FindNearestCreature(abs(step.script->CastSpell.CreatureEntry), step.script->CastSpell.SearchRadius) : nullptr;
                     break;
                 }
 
-                if(!cmdTarget->isType(TYPEMASK_UNIT))
+                if (!uSource || !uSource->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL %s isn't unit (TypeId: %u), skipping.",step.script->CastSpell.Flags ? "source" : "target", cmdTarget->GetTypeId());
+                    TC_LOG_ERROR("scripts", "%s no source unit found for spell %u", step.script->GetDebugInfo().c_str(), step.script->CastSpell.SpellID);
                     break;
                 }
 
-                Unit* spellTarget = (Unit*)cmdTarget;
+                if (!uTarget || !uTarget->isType(TYPEMASK_UNIT))
+                {
+                    TC_LOG_ERROR("scripts", "%s no target unit found for spell %u", step.script->GetDebugInfo().c_str(), step.script->CastSpell.SpellID);
+                    break;
+                }
 
                 //TODO: when GO cast implemented, code below must be updated accordingly to also allow GO spell cast
-                ((Unit*)source)->CastSpell(spellTarget,step.script->CastSpell.Flags,false);
+                bool triggered = (step.script->CastSpell.Flags != SF_CASTSPELL_SEARCH_CREATURE) ?
+                    step.script->CastSpell.CreatureEntry & SF_CASTSPELL_TRIGGERED :
+                    step.script->CastSpell.CreatureEntry < 0;
+                uSource->CastSpell(uTarget, step.script->CastSpell.Flags, triggered);
 
                 break;
             }

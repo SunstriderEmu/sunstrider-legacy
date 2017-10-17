@@ -48,6 +48,18 @@ struct GameTele
 
 typedef std::unordered_map<uint32, GameTele > GameTeleContainer;
 
+enum eScriptFlags
+{
+    // CastSpell flags
+    SF_CASTSPELL_SOURCE_TO_TARGET = 0,
+    SF_CASTSPELL_SOURCE_TO_SOURCE = 1,
+    SF_CASTSPELL_TARGET_TO_TARGET = 2,
+    SF_CASTSPELL_TARGET_TO_SOURCE = 3,
+    SF_CASTSPELL_SEARCH_CREATURE  = 4,
+    SF_CASTSPELL_TRIGGERED      = 0x1,
+};
+
+
 struct ScriptInfo
 {
     uint32 id;
