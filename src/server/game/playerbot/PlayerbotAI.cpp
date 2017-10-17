@@ -923,7 +923,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target)
     aiObjectContext->GetValue<LastSpellCast&>("last spell cast")->Get().Set(spellId, ObjectGuid(target->GetGUID()), time(0));
     aiObjectContext->GetValue<LastMovement&>("last movement")->Get().Set(NULL);
 
-    MotionMaster &mm = *bot->GetMotionMaster();
+//    MotionMaster &mm = *bot->GetMotionMaster();
 
     if (bot->IsFlying())
         return false;

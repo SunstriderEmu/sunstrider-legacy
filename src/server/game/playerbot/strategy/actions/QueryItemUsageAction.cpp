@@ -41,12 +41,12 @@ bool QueryItemUsageAction::Execute(Event event)
         if (!item)
             return false;
 
-        std::ostringstream out; out << chat->formatItem(item, count);
+        std::ostringstream _out; _out << chat->formatItem(item, count);
         if (created)
-            out << " created";
+            _out << " created";
         else if (received)
-            out << " received";
-        ai->TellMaster(out);
+            _out << " received";
+        ai->TellMaster(_out);
 
         QueryItemUsage(item);
         QueryQuestItem(itemId);
@@ -108,8 +108,8 @@ void QueryItemUsageAction::QueryItemPrice(ItemTemplate const *item)
         }
     }
 
-    std::ostringstream out; out << item->ItemId;
-    ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
+    std::ostringstream _out; _out << item->ItemId;
+    ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", _out.str());
     if (usage == ITEM_USAGE_NONE)
         return;
 
@@ -117,9 +117,9 @@ void QueryItemUsageAction::QueryItemPrice(ItemTemplate const *item)
     int32 buyPrice = item->BuyPrice * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
     if (buyPrice)
     {
-        std::ostringstream out;
-        out << "Will buy for " << chat->formatMoney(buyPrice);
-        ai->TellMaster(out.str());
+        std::ostringstream ___out;
+        ___out << "Will buy for " << chat->formatMoney(buyPrice);
+        ai->TellMaster(___out.str());
     }
 }
 
@@ -136,8 +136,8 @@ void QueryItemUsageAction::QueryItemsUsage(ItemIds items)
 
 void QueryItemUsageAction::QueryQuestItem(uint32 itemId)
 {
-    Player *bot = ai->GetBot();
-    QuestStatusMap const& questMap = bot->getQuestStatusMap();
+    Player* _bot = ai->GetBot();
+    QuestStatusMap const& questMap = _bot->getQuestStatusMap();
     for (QuestStatusMap::const_iterator i = questMap.begin(); i != questMap.end(); i++)
     {
         const Quest *questTemplate = sObjectMgr->GetQuestTemplate( i->first );
@@ -145,8 +145,8 @@ void QueryItemUsageAction::QueryQuestItem(uint32 itemId)
             continue;
 
         uint32 questId = questTemplate->GetQuestId();
-        QuestStatus status = bot->GetQuestStatus(questId);
-        if (status == QUEST_STATUS_INCOMPLETE || (status == QUEST_STATUS_COMPLETE && !bot->GetQuestRewardStatus(questId)))
+        QuestStatus status = _bot->GetQuestStatus(questId);
+        if (status == QUEST_STATUS_INCOMPLETE || (status == QUEST_STATUS_COMPLETE && !_bot->GetQuestRewardStatus(questId)))
         {
             QuestStatusData const& questStatus = i->second;
             QueryQuestItem(itemId, questTemplate, &questStatus);

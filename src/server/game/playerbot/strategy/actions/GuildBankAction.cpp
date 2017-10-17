@@ -51,7 +51,7 @@ bool GuildBankAction::MoveFromCharToBank(Item* item, GameObject* bank)
     uint32 playerSlot = item->GetSlot();
     uint32 playerBag = item->GetBagSlot();
 
-    Guild* guild = sObjectMgr->GetGuildById(bot->GetGuildId());
+//    Guild* guild = sObjectMgr->GetGuildById(bot->GetGuildId());
    /* TODO PLAYERBOT guild->SwapItems(bot, 0, playerSlot, 0, INVENTORY_SLOT_BAG_0, 0);
 
     std::ostringstream out; out << chat->formatItem(item->GetTemplate()) << " put to guild bank";

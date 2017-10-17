@@ -151,7 +151,7 @@ bool LootObject::IsLootPossible(Player* bot)
     if (IsEmpty() || !GetWorldObject(bot))
         return false;
 
-    PlayerbotAI* ai = bot->GetPlayerbotAI();
+//    PlayerbotAI* ai = bot->GetPlayerbotAI();
 
     if (reqItem && !bot->HasItemCount(reqItem, 1))
         return false;
