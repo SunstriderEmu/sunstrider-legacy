@@ -10193,6 +10193,13 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
     }
 
 }
+void Unit::EngageWithTarget(Unit* who) 
+{ 
+    SetInCombatWith(who); 
+    who->SetInCombatWith(this); 
+    GetThreatManager().AddThreat(who, 0.0f); 
+    who->GetThreatManager().AddThreat(this, 0.0f); //sunstrider: also add threat to target... why not doing this? Else we end up with units in combat but no threat list
+}
 
 void Unit::SetInCombatState(bool PvP, Unit* enemy)
 {
@@ -10203,8 +10210,10 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
     if(PvP)
         m_CombatTimer = 5250;
 
-    if (IsInCombat())
+    if (IsInCombat() || HasUnitState(UNIT_STATE_EVADE))
         return;
+
+    TC_LOG_TRACE("entities.unit.threat", "%s set in combat with victim %s.", GetName().c_str(), enemy->GetName().c_str());
 
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
     
@@ -11470,17 +11479,8 @@ Unit* Creature::SelectVictim(bool evade)
     if (CanHaveThreatList())
     {
         if (!target && !m_ThreatManager.IsThreatListEmpty())
-        {
-            //TC_LOG_INFO("%s SelectVictim2", GetName());
-            if (!HasAuraType(SPELL_AURA_MOD_TAUNT)) {
-                //TC_LOG_INFO("FIXME","%s if");
-                target = m_ThreatManager.getHostilTarget();
-            }
-            else {
-                //TC_LOG_INFO("%s else");
-                target = GetVictim();
-            }
-        }
+            // No taunt aura or taunt aura caster is dead standard target selection
+            target = m_ThreatManager.getHostilTarget();
     }
     else if (!HasReactState(REACT_PASSIVE))
     {
@@ -11539,9 +11539,13 @@ Unit* Creature::SelectVictim(bool evade)
                 return NULL;
         }
     }*/
+#ifdef LICH_KING
+    /// @todo a vehicle may eat some mob, so mob should not evade
+    if (GetVehicle())
+        return nullptr;
+#endif
 
     // search nearby enemy before enter evade mode
-    //TC_LOG_INFO("%s SelectVictim5", GetName());
     if(HasReactState(REACT_AGGRESSIVE))
     {
         //TC_LOG_INFO("%s SelectVictim6", GetName());
@@ -11549,9 +11553,6 @@ Unit* Creature::SelectVictim(bool evade)
         if (target && /*_IsTargetAcceptable(target) &&*/ CanAggro(target))
             return target;
     }
-    
-    /* if(m_attackers.size())
-        return NULL; */
 
     Unit::AuraList const& iAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
     if (!iAuras.empty())
@@ -11569,7 +11570,6 @@ Unit* Creature::SelectVictim(bool evade)
     if (evade) {
         AI()->EnterEvadeMode(CreatureAI::EVADE_REASON_NO_HOSTILES);
     }
-    //TC_LOG_INFO("%s: Returning null", GetName());
     return nullptr;
 }
 

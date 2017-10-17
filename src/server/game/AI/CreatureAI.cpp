@@ -139,7 +139,7 @@ void CreatureAI::_OnOwnerCombatInteraction(Unit* target)
 
 bool CreatureAI::UpdateVictim(bool evade)
 {
-    if(!me->IsInCombat())
+    if (!me->IsEngaged())
         return false;
 
     if (!me->HasReactState(REACT_PASSIVE))
