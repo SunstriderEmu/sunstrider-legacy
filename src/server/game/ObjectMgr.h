@@ -140,7 +140,7 @@ struct ScriptInfo
         struct                      // SCRIPT_COMMAND_KILL_CREDIT (8)
         {
             uint32 CreatureEntry;   // datalong
-            uint32 SpellID;         // datalong2 /!\ Not the same as TC
+            uint32 SpellID;         // datalong2 /!\ Not the same as TC, TC has Flags here
         } KillCredit;
 
         struct                      // SCRIPT_COMMAND_RESPAWN_GAMEOBJECT (9)

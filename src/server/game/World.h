@@ -455,7 +455,7 @@ enum HonorKillPvPRank
 // DB scripting commands
 enum ScriptCommands
 {
-    SCRIPT_COMMAND_TALK =                  0,              // source = unit, target=any, datalong (0,=say,1,=whisper,2,=yell,3,=emote text)
+    SCRIPT_COMMAND_TALK                  = 0,              // source/target = Creature, target = any, datalong = talk type (see ChatType enum), datalong2 & 1 = player talk (instead of creature), dataint = string_id
     SCRIPT_COMMAND_EMOTE =                 1,              // source = unit, datalong = anim_id
     SCRIPT_COMMAND_FIELD_SET =             2,              // source = any, datalong = field_id, datalog2 = value
     SCRIPT_COMMAND_MOVE_TO =               3,              // source = Creature, datalog2 = time, x/y/z

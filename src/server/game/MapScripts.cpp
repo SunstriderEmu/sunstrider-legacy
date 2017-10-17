@@ -190,12 +190,7 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                if(source->GetTypeId()!=TYPEID_UNIT)
-                {
-                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
-                    break;
-                }
-                if(step.script->Talk.ChatType > 3)
+                if (step.script->Talk.ChatType > CHAT_TYPE_BOSS_WHISPER && step.script->Talk.ChatType != CHAT_MSG_RAID_BOSS_WHISPER)
                 {
                     TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK invalid chat type (%u), skipping.", step.script->Talk.ChatType);
                     break;
@@ -210,34 +205,31 @@ void Map::ScriptsProcess()
 
                 Unit* sourceUnit = source->ToUnit();
                 //datalong 0=normal say, 1=whisper, 2=yell, 3=emote text
-                switch(step.script->Talk.ChatType)
+                switch (step.script->Talk.ChatType)
                 {
-                    case 0:                                 // Say
-                        sourceUnit->Say(step.script->Talk.TextID, target);
-                        //(source->ToCreature())->old_Say(step.script->Talk.TextID, LANG_UNIVERSAL, unit_target);
-                        break;
-                    case 1:                                 // Whisper
-                    {
-                        if (!unit_target)
-                        {
-                            TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_TALK attempt to whisper (%u) NULL, skipping.", step.script->Talk.ChatType);
-                            break;
-                        }
-                        Player* receiver = target ? target->ToPlayer() : nullptr;
-                        //(source->ToCreature())->old_Whisper(step.script->Talk.TextID, unit_target);
-                        sourceUnit->Whisper(step.script->Talk.TextID, receiver, false /*step.script->Talk.ChatType == CHAT_TYPE_BOSS_WHISPER*/);
-                        break;
-                    }
-                    case 2:                                 // Yell
-                        sourceUnit->Yell(step.script->Talk.TextID, target);
-                        //(source->ToCreature())->old_Yell(step.script->Talk.TextID, LANG_UNIVERSAL, unit_target);
-                        break;
-                    case 3:                                 // Emote text
-                        //(source->ToCreature())->old_TextEmote(step.script->Talk.TextID, unit_target);
-                        sourceUnit->TextEmote(step.script->Talk.TextID, target, false /*, step.script->Talk.ChatType == CHAT_TYPE_BOSS_EMOTE*/);
-                        break;
-                    default:
-                        break;                              // must be already checked at load
+                case CHAT_TYPE_SAY:
+                    sourceUnit->Say(step.script->Talk.TextID, target);
+                    break;
+                case CHAT_TYPE_YELL:
+                    sourceUnit->Yell(step.script->Talk.TextID, target);
+                    break;
+                case CHAT_TYPE_TEXT_EMOTE:
+                case CHAT_TYPE_BOSS_EMOTE:
+                    sourceUnit->TextEmote(step.script->Talk.TextID, target, step.script->Talk.ChatType == CHAT_TYPE_BOSS_EMOTE);
+                    break;
+                case CHAT_TYPE_WHISPER:
+                case CHAT_TYPE_BOSS_WHISPER:
+                {
+                    Player* receiver = target ? target->ToPlayer() : nullptr;
+                    if (!receiver)
+                        TC_LOG_ERROR("scripts", "%s attempt to whisper to non-player unit, skipping.", step.script->GetDebugInfo().c_str());
+                    else
+                        sourceUnit->Whisper(step.script->Talk.TextID, receiver, step.script->Talk.ChatType == CHAT_TYPE_BOSS_WHISPER);
+                    break;
+                }
+                case CHAT_MSG_RAID_BOSS_WHISPER:  //Not yet handled 
+                default:
+                    break;                              // must be already checked at load
                 }
                 break;
             }

@@ -4027,9 +4027,10 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
         {
             case SCRIPT_COMMAND_TALK:
             {
-                if(tmp.Talk.ChatType > 3)
+                if (tmp.Talk.ChatType > CHAT_TYPE_WHISPER && tmp.Talk.ChatType != CHAT_MSG_RAID_BOSS_WHISPER)
                 {
-                    TC_LOG_ERROR("sql.sql","Table `%s` has invalid talk type (datalong = %u) in SCRIPT_COMMAND_TALK for script id %u", tablename, tmp.Talk.ChatType, tmp.id);
+                    TC_LOG_ERROR("sql.sql", "Table `%s` has invalid talk type (datalong = %u) in SCRIPT_COMMAND_TALK for script id %u",
+                        tablename, tmp.Talk.ChatType, tmp.id);
                     continue;
                 }
                 if (!sObjectMgr->GetBroadcastText(uint32(tmp.Talk.TextID)))
