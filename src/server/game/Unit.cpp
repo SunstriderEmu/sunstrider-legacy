@@ -1545,19 +1545,15 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
 
     //You don't lose health from damage taken from another player while in a sanctuary
     //You still see it in the combat log though
-    if(pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
-    {
-        const AreaTableEntry *area = sAreaTableStore.LookupEntry(pVictim->GetAreaId());
-        if(area && area->flags & 0x800)                     //sanctuary
-            return;
-    }
+    if(pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER && pVictim->IsInSanctuary())
+        return;
 
     // Call default DealDamage
     CleanDamage cleanDamage(damageInfo->cleanDamage,damageInfo->attackType,damageInfo->hitOutCome);
     DealDamage(pVictim, damageInfo->damage, &cleanDamage, DIRECT_DAMAGE, SpellSchoolMask(damageInfo->damageSchoolMask), nullptr, durabilityLoss);
 
     // If this is a creature and it attacks from behind it has a probability to daze it's victim
-    if( (damageInfo->hitOutCome==MELEE_HIT_CRIT || damageInfo->hitOutCome==MELEE_HIT_CRUSHING || damageInfo->hitOutCome==MELEE_HIT_NORMAL || damageInfo->hitOutCome==MELEE_HIT_GLANCING) &&
+    if( (damageInfo->hitOutCome == MELEE_HIT_CRIT || damageInfo->hitOutCome == MELEE_HIT_CRUSHING || damageInfo->hitOutCome == MELEE_HIT_NORMAL || damageInfo->hitOutCome == MELEE_HIT_GLANCING) &&
         GetTypeId() != TYPEID_PLAYER && !(this->ToCreature())->GetCharmerOrOwnerGUID() && !pVictim->HasInArc(M_PI, this)
         && (pVictim->GetTypeId() == TYPEID_PLAYER || !(pVictim->ToCreature())->IsWorldBoss()))
     {
@@ -2785,18 +2781,18 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, I
 //   Parry
 // For spells
 //   Resist
-SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool CanReflect, Item* castItem)
+SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool canReflect, Item* castItem)
 {
     if (ToCreature() && ToCreature()->IsTotem())
         if (Unit *owner = GetOwner())
-            return owner->SpellHitResult(pVictim, spell, CanReflect, castItem);
+            return owner->SpellHitResult(pVictim, spell, canReflect, castItem);
 
     // Return evade for units in evade mode
     if (pVictim->GetTypeId()==TYPEID_UNIT && pVictim->ToCreature()->IsEvadingAttacks())
         return SPELL_MISS_EVADE;
 
-    // Check for immune (use charges)
-    if (pVictim->IsImmunedToSpell(spell,true))
+    // Check for immune
+    if (pVictim->IsImmunedToSpell(spell, this))
         return SPELL_MISS_IMMUNE;
 
     // Check for immune (use charges)
@@ -2814,7 +2810,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool C
     //TC_LOG_INFO("SpellHitResult1 %u", spell->Id);
 
     // Try victim reflect spell
-    if (CanReflect)
+    if (canReflect)
     {
         //TC_LOG_INFO("SpellHitResult2 %u", spell->Id);
         int32 reflectchance = pVictim->GetTotalAuraModifier(SPELL_AURA_REFLECT_SPELLS);
@@ -3937,7 +3933,7 @@ bool Unit::AddAura(Aura *Aur)
         return false;
     }
 
-    if (IsImmunedToSpell(Aur->GetSpellInfo())) {
+    if (IsImmunedToSpell(Aur->GetSpellInfo(), this)) {
         delete Aur;
         return false;
     }
@@ -9661,6 +9657,63 @@ int32 Unit::SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask)
     return AdvertisedBenefit;
 }
 
+uint32 Unit::GetSchoolImmunityMask() const
+{
+    uint32 mask = 0;
+    //If m_immuneToSchool type contain this school type, IMMUNE damage.
+    SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+    for (auto itr : schoolList)
+        mask |= itr.type;
+
+    /* TC
+    SpellImmuneContainer const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+    for (auto itr = schoolList.begin(); itr != schoolList.end(); ++itr)
+        mask |= itr->first;
+        */
+    return mask;
+}
+
+uint32 Unit::GetDamageImmunityMask() const
+{
+    uint32 mask = 0;
+
+    //If m_immuneToDamage type contain magic, IMMUNE damage.
+    SpellImmuneList const& damageList = m_spellImmune[IMMUNITY_DAMAGE];
+    for (auto itr : damageList)
+        mask |= itr.type;
+
+    return mask;
+}
+
+uint32 Unit::GetMechanicImmunityMask() const
+{
+    uint32 mask = 0;
+
+    SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
+    for (auto itr : mechanicList)
+        mask |= (1 << itr.type);
+
+    return mask;
+} 
+
+bool Unit::IsImmunedToDamage(SpellSchoolMask schoolMask) const
+{
+    if (schoolMask == SPELL_SCHOOL_MASK_NONE)
+        return false;
+
+    // If m_immuneToSchool type contain this school type, IMMUNE damage.
+    uint32 schoolImmunityMask = GetSchoolImmunityMask();
+    if ((schoolImmunityMask & schoolMask) == schoolMask) // We need to be immune to all types
+        return true;
+
+    // If m_immuneToDamage type contain magic, IMMUNE damage.
+    uint32 damageImmunityMask = GetDamageImmunityMask();
+    if ((damageImmunityMask & schoolMask) == schoolMask) // We need to be immune to all types
+        return true;
+
+    return false;
+}
+
 bool Unit::IsImmunedToDamage(SpellInfo const* spellInfo) const
 {
     if (!spellInfo)
@@ -9673,27 +9726,28 @@ bool Unit::IsImmunedToDamage(SpellInfo const* spellInfo) const
     if (spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE) || spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
         return false;
 
-    return IsImmunedToDamage(spellInfo->GetSchoolMask());
-}
+    if (uint32 schoolMask = spellInfo->GetSchoolMask())
+    {
+        // If m_immuneToSchool type contain this school type, IMMUNE damage.
+        uint32 schoolImmunityMask = 0;
+        SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+        for (auto itr = schoolList.begin(); itr != schoolList.end(); ++itr)
+            if ((itr->type & schoolMask) && !spellInfo->CanPierceImmuneAura(sSpellMgr->GetSpellInfo(itr->spellId)))
+                schoolImmunityMask |= itr->type;
 
-bool Unit::IsImmunedToDamage(SpellSchoolMask schoolMask) const
-{
-    //If m_immuneToSchool type contain this school type, IMMUNE damage.
-    SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
-    for (auto itr : schoolList)
-        if(itr.type & schoolMask)
+        // // We need to be immune to all types
+        if ((schoolImmunityMask & schoolMask) == schoolMask)
             return true;
 
-    //If m_immuneToDamage type contain magic, IMMUNE damage.
-    SpellImmuneList const& damageList = m_spellImmune[IMMUNITY_DAMAGE];
-    for (auto itr : damageList)
-        if(itr.type & schoolMask)
+        // If m_immuneToDamage type contain magic, IMMUNE damage.
+        uint32 damageImmunityMask = GetDamageImmunityMask();
+        if ((damageImmunityMask & schoolMask) == schoolMask) // We need to be immune to all types
             return true;
+    }
 
     return false;
 }
-
-bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
+bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster)
 {
     if (!spellInfo)
         return false;
@@ -9709,12 +9763,8 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
     //Single spells immunity
     SpellImmuneList const& idList = m_spellImmune[IMMUNITY_ID];
     for(auto itr : idList)
-    {
         if(itr.type == spellInfo->Id)
-        {
             return true;
-        }
-    }
 
     if(spellInfo->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
         return false;
@@ -9724,27 +9774,51 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
         if(itr.type == spellInfo->Dispel)
             return true;
 
-    if( !(spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE)) &&         // unaffected by school immunity
-        !(spellInfo->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)) &&             // can remove immune (by dispell or immune it)
-        !(spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE)) &&
-         (spellInfo->Id != 42292))
+    // Spells that don't have effectMechanics.
+    if (uint32 mechanic = spellInfo->Mechanic)
     {
-        SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
-        for(auto itr : schoolList)
-        {
-            SpellInfo const* spellImmuneInfo = sSpellMgr->GetSpellInfo(itr.spellId);
-            if(!spellImmuneInfo)
-                continue;
-            if( !(spellImmuneInfo->IsPositive() && spellInfo->IsPositive()) && //at least one of the given spell and the immune spell is negative
-                (itr.type & spellInfo->GetSchoolMask()) )
+        SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
+        for (auto itr : mechanicList)
+            if (itr.type == mechanic)
                 return true;
+    }
+
+    bool immuneToAllEffects = true;
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        // State/effect immunities applied by aura expect full spell immunity
+        // Ignore effects with mechanic, they are supposed to be checked separately
+        if (!spellInfo->Effects[i].IsEffect())
+            continue;
+
+        if (!IsImmunedToSpellEffect(spellInfo, i, caster))
+        {
+            immuneToAllEffects = false;
+            break;
         }
     }
 
-    SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
-    for(auto itr : mechanicList)
-        if(itr.type == (uint32) spellInfo->Mechanic)
+    if (immuneToAllEffects) //Return immune only if the target is immune to all spell effects.
+        return true;
+
+    if (uint32 schoolMask = spellInfo->GetSchoolMask())
+    {
+        uint32 schoolImmunityMask = 0;
+        SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+        for (auto itr = schoolList.begin(); itr != schoolList.end(); ++itr)
+        {
+            if ((itr->type & schoolMask) == 0)
+                continue;
+
+            SpellInfo const* immuneSpellInfo = sSpellMgr->GetSpellInfo(itr->spellId);
+            if (!(immuneSpellInfo && immuneSpellInfo->IsPositive() && spellInfo->IsPositive() && caster && IsFriendlyTo(caster)))
+                if (!spellInfo->CanPierceImmuneAura(immuneSpellInfo))
+                    schoolImmunityMask |= itr->type;
+        }
+
+        if ((schoolImmunityMask & schoolMask) == schoolMask)
             return true;
+    }
 
     if(ToCreature() && ToCreature()->IsTotem())
         if(spellInfo->IsChanneled())
@@ -9753,7 +9827,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
     return false;
 }
 
-bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const
+bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
 {
     if (!spellInfo || !spellInfo->Effects[index].IsEffect())
         return false;
@@ -9800,7 +9874,7 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
             AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
             for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
                 if (((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) &&        // Check school
-                    (!IsFriendlyTo(caster) || !spellInfo->IsPositiveEffect(index)))  // Harmful
+                    ((caster && !IsFriendlyTo(caster)) || !spellInfo->IsPositiveEffect(index))) // Harmful
                     return true;
         }
 #endif
@@ -14943,14 +15017,14 @@ void Unit::AddAura(uint32 spellId, Unit* target)
     if(!target || (!target->IsAlive() && !(spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD)))
         return;
 
-    if (target->IsImmunedToSpell(spellInfo))
+    if (target->IsImmunedToSpell(spellInfo, this))
         return;
         
     for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
         {
-            if(target->IsImmunedToSpellEffect(spellInfo, i))
+            if(target->IsImmunedToSpellEffect(spellInfo, i, this))
                 continue;
 
             /*if(spellInfo->Effects[i].TargetA.GetTarget()== TARGET_UNIT_CASTER)

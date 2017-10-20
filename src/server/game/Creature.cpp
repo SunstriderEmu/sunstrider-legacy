@@ -2022,19 +2022,28 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
     RemoveCorpse(false, false);
 }
 
-bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
+bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster)
 {
     if (!spellInfo)
         return false;
 
-    if(spellInfo->Mechanic)
-        if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Mechanic - 1)))
-            return true;
+    bool immunedToAllEffects = true;
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (spellInfo->Effects[i].IsEffect() && !IsImmunedToSpellEffect(spellInfo, i, caster))
+        {
+            immunedToAllEffects = false;
+            break;
+        }
+    }
 
-    return Unit::IsImmunedToSpell(spellInfo, useCharges);
+    if (immunedToAllEffects)
+        return true;
+
+    return Unit::IsImmunedToSpell(spellInfo, caster);
 }
 
-bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const
+bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
 {
     if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Effects[index].Mechanic - 1)))
         return true;
@@ -2042,7 +2051,7 @@ bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) 
     if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellInfo->Effects[index].Effect == SPELL_EFFECT_HEAL)
         return true;
 
-    return Unit::IsImmunedToSpellEffect(spellInfo, index);
+    return Unit::IsImmunedToSpellEffect(spellInfo, index, caster);
 }
 
 void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)

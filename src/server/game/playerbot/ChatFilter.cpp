@@ -66,7 +66,7 @@ public:
         }
 
         int level = atoi(message.substr(message.find("@") + 1, message.find(" ")).c_str());
-        if (bot->GetLevel() == level)
+        if (level > 0 && bot->GetLevel() == uint32(level))
             return ChatFilter::Filter(message);
 
         return message;

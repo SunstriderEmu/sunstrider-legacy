@@ -2210,7 +2210,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
 
     // Check for effect immune skip if immuned
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
-        if (target->IsImmunedToSpellEffect(m_spellInfo, effIndex))
+        if (target->IsImmunedToSpellEffect(m_spellInfo, effIndex, m_caster))
             effectMask &= ~(1 << effIndex);
 
     uint64 targetGUID = target->GetGUID();
@@ -2735,18 +2735,18 @@ bool Spell::UpdateChanneledTargetList()
     return channelTargetEffectMask == 0;
 }
 
-void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
+void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
 {
     if(!unit || !effectMask)
         return;
 
-    Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
+    Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
 
     // Recheck immune (only for delayed spells)
     if(    m_spellInfo->Speed
         && !(m_spellInfo->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
         && !(m_spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE))
-        && unit->IsImmunedToSpell(m_spellInfo,true) 
+        && unit->IsImmunedToSpell(m_spellInfo, caster)
       )
     {
         caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
@@ -4271,6 +4271,13 @@ void Spell::SendSpellStart()
 
     uint32 castFlags = CAST_FLAG_UNKNOWN_2;
 
+#ifdef LICH_KING
+    uint32 schoolImmunityMask = m_caster->GetSchoolImmunityMask();
+    uint32 mechanicImmunityMask = m_caster->GetMechanicImmunityMask();
+    if (schoolImmunityMask || mechanicImmunityMask)
+        castFlags |= CAST_FLAG_IMMUNITY;
+#endif
+
     if (((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell()) || m_triggeredByAuraSpell) && !m_spellInfo->IsChanneled() && !m_cast_count)
         castFlags |= CAST_FLAG_PENDING;
 
@@ -5069,7 +5076,7 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
     destTarget = &m_destTargets[i]._position;
 
     //Simply return. Do not display "immune" in red text on client
-    if(unitTarget && unitTarget->IsImmunedToSpellEffect(m_spellInfo, i))
+    if(unitTarget && unitTarget->IsImmunedToSpellEffect(m_spellInfo, i, m_caster))
         return;
 
     //we do not need DamageMultiplier here.
@@ -5326,7 +5333,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     }
 
     // prevent casting at immune friendly target
-    if(m_spellInfo->IsPositive(!m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo))
+    if(m_spellInfo->IsPositive(!m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo, m_caster))
         return SPELL_FAILED_TARGET_AURASTATE;
 
     // target state requirements (not allowed state)

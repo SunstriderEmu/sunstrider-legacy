@@ -489,6 +489,7 @@ public:
     bool IsHighRankOf(SpellInfo const* spellInfo) const;
 
     bool CanDispelAura(SpellInfo const* auraSpellInfo) const;
+    bool CanPierceImmuneAura(SpellInfo const* auraSpellInfo) const;
 
     int32 GetDuration() const;
     int32 GetMaxDuration() const;
@@ -532,7 +533,7 @@ public:
 
     // spell immunities
     void ApplyAllSpellImmunitiesTo(Unit* target, uint8 effIndex, bool apply) const;
-    //bool CanSpellProvideImmunityAgainstAura(SpellInfo const* auraSpellInfo) const;
+    bool CanSpellProvideImmunityAgainstAura(SpellInfo const* auraSpellInfo) const;
     bool SpellCancelsAuraEffect(SpellInfo const* auraSpellInfo, uint8 auraEffIndex) const;
 
     uint32 GetAllowedMechanicMask() const;

@@ -2472,6 +2472,17 @@ void Player::SetInWater(bool apply)
     GetHostileRefManager().updateThreatTables();
 }
 
+bool Player::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
+{
+    // players are immune to taunt (the aura and the spell effect)
+    if (spellInfo->Effects[index].IsAura(SPELL_AURA_MOD_TAUNT))
+        return true;
+    if (spellInfo->Effects[index].IsEffect(SPELL_EFFECT_ATTACK_ME))
+        return true;
+
+    return Unit::IsImmunedToSpellEffect(spellInfo, index, caster);
+}
+
 void Player::SetGameMaster(bool on)
 {
     if(on)

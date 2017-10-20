@@ -38,8 +38,7 @@ class TC_GAME_API Totem : public Minion
         void UpdateAttackPowerAndDamage(bool /*ranged*/ ) override {}
         void UpdateDamagePhysical(WeaponAttackType /*attType*/) override {}
 
-        bool IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges = false) override;
-
+        bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const override;
     protected:
         TotemType m_type;
         uint32 m_duration;

@@ -121,22 +121,6 @@ Unit *Totem::GetOwner()
 }
 */
 
-bool Totem::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
-{
-/*    for (int i=0;i<3;i++)
-    {
-        switch(spellInfo->Effects[i].ApplyAuraName)
-        {
-            case SPELL_AURA_PERIODIC_DAMAGE:
-            case SPELL_AURA_PERIODIC_LEECH:
-                return true;
-            default:
-                continue;
-        }
-    }*/
-    return Creature::IsImmunedToSpell(spellInfo, useCharges);
-}
-
 void Totem::InitSummon()
 {
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE); //sunstrider
@@ -197,4 +181,24 @@ void Totem::InitStats(uint32 duration)
     m_duration = duration;
 
     SetLevel(GetOwner()->GetLevel());
+}
+
+bool Totem::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
+{
+    /// @todo possibly all negative auras immune?
+    if (GetEntry() == 5925)
+        return false;
+
+    switch (spellInfo->Effects[index].ApplyAuraName)
+    {
+    case SPELL_AURA_PERIODIC_DAMAGE:
+    case SPELL_AURA_PERIODIC_LEECH:
+    case SPELL_AURA_MOD_FEAR:
+    case SPELL_AURA_TRANSFORM:
+        return true;
+    default:
+        break;
+    }
+
+    return Creature::IsImmunedToSpellEffect(spellInfo, index, caster);
 }

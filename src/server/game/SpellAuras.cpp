@@ -5976,7 +5976,7 @@ void Aura::PeriodicTick()
             if (m_target->GetEntry() != 25653 || GetId() != 45848)
             {
                 // Check for immune (not use charges)
-                if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellInfo()->GetSchoolMask()))
+                if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellInfo()))
                 {
                     SendTickImmune(m_target, pCaster);
                     return;
@@ -6160,8 +6160,8 @@ void Aura::PeriodicTick()
                 pCaster->SpellHitResult(m_target,GetSpellInfo(),false)!=SPELL_MISS_NONE)
                 return;
 
-            // Check for immune (not use charges)
-            if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellInfo()->GetSchoolMask()))
+            // Check for immune
+            if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellInfo()))
             {
                 SendTickImmune(m_target, pCaster);
                 return;
@@ -6397,8 +6397,8 @@ void Aura::PeriodicTick()
                 pCaster->SpellHitResult(m_target,GetSpellInfo(),false)!=SPELL_MISS_NONE)
                 return;
 
-            // Check for immune (not use charges)
-            if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellInfo()->GetSchoolMask()))
+            // Check for immune
+            if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellInfo()))
             {
                 SendTickImmune(m_target, GetCaster());
                 return;
@@ -6545,8 +6545,8 @@ void Aura::PeriodicTick()
             if(!pCaster)
                 return;
 
-            // Check for immune (not use charges)
-            if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellInfo()->GetSchoolMask()))
+            // Check for immune
+            if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellInfo()))
             {
                 SendTickImmune(m_target, pCaster);
                 return;

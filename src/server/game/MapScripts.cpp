@@ -201,8 +201,6 @@ void Map::ScriptsProcess()
                 else
                     source = _GetScriptCreatureSourceOrTarget(source, target, step.script);
 
-                uint64 unit_target = target ? target->GetGUID() : 0;
-
                 Unit* sourceUnit = source->ToUnit();
                 //datalong 0=normal say, 1=whisper, 2=yell, 3=emote text
                 switch (step.script->Talk.ChatType)

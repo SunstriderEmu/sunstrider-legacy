@@ -91,11 +91,11 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     //return if already an area aura that can't stack with ours
 
     // Check target immune to spell or aura
-    if (target->IsImmunedToSpell(spellInfo) || target->IsImmunedToSpellEffect(spellInfo, eff_index))
+    if (target->IsImmunedToSpell(spellInfo, i_check) || target->IsImmunedToSpellEffect(spellInfo, eff_index, i_check))
         return;
     
     // Add dynamic object as source to any existing aura from the same caster, or try to add one if none found
-    if(Aura* aur = target->GetAuraByCasterSpell(spellInfo->Id,eff_index,i_check->GetGUID()))
+    if(Aura* aur = target->GetAuraByCasterSpell(spellInfo->Id, eff_index, i_check->GetGUID()))
     {
         if(PersistentAreaAura* pAur = dynamic_cast<PersistentAreaAura*>(aur))
         {

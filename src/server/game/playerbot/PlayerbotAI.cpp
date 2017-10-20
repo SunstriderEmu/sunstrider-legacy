@@ -851,7 +851,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell)
     if (!positiveSpell && bot->IsFriendlyTo(target))
         return false;
 
-    if (target->IsImmunedToSpell(spellInfo))
+    if (target->IsImmunedToSpell(spellInfo, bot))
         return false;
 
     if (bot != target && bot->GetDistance(target) > sPlayerbotAIConfig.sightDistance)
@@ -1074,7 +1074,7 @@ bool PlayerbotAI::IsInterruptableSpellCasting(Unit* target, std::string spell)
     if (!spellInfo)
         return false;
 
-    if (target->IsImmunedToSpell(spellInfo))
+    if (target->IsImmunedToSpell(spellInfo, bot))
         return false;
 
     for (uint32 i = EFFECT_0; i <= EFFECT_2; i++)
@@ -1083,7 +1083,7 @@ bool PlayerbotAI::IsInterruptableSpellCasting(Unit* target, std::string spell)
             return true;
 
         if ((/*spellInfo->Effects[i].Effect == SPELL_EFFECT_REMOVE_AURA || */ spellInfo->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST) &&
-                !target->IsImmunedToSpellEffect(spellInfo, i))
+                !target->IsImmunedToSpellEffect(spellInfo, i, bot))
             return true;
     }
 

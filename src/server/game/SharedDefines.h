@@ -198,7 +198,7 @@ enum Powers : uint32
 
 #define MAX_POWERS                        5                 // not count POWER_RUNES for now
 
-enum SpellSchools
+enum SpellSchools : uint32
 {
     SPELL_SCHOOL_NORMAL                 = 0,
     SPELL_SCHOOL_HOLY                   = 1,
@@ -211,7 +211,7 @@ enum SpellSchools
 
 #define MAX_SPELL_SCHOOL                  7
 
-enum SpellSchoolMask
+enum SpellSchoolMask : uint32
 {
     SPELL_SCHOOL_MASK_NONE    = 0x00,                       // not exist
     SPELL_SCHOOL_MASK_NORMAL  = (1 << SPELL_SCHOOL_NORMAL), // PHYSICAL (Armor)
