@@ -2412,20 +2412,14 @@ bool Unit::IsSpellBlocked(Unit *pVictim, SpellInfo const *spellProto, WeaponAtta
 
 // Melee based spells can be miss, parry or dodge on this step
 // Crit or block - determined on damage calculation phase! (and can be both in some time)
+// http://wowwiki.wikia.com/wiki/Weapon_skill
 float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, int32 skillDiff, uint32 spellId) const
 {
     // Calculate hit chance (more correct for chance mod)
     int32 HitChance;
 
-    // PvP - PvE melee chances
-    /*int32 lchance = pVictim->GetTypeId() == TYPEID_PLAYER ? 5 : 7;
-    int32 leveldif = pVictim->GetLevelForTarget(this) - GetLevelForTarget(pVictim);
-    if(leveldif < 3)
-        HitChance = 95 - leveldif;
-    else
-        HitChance = 93 - (leveldif - 2) * lchance;*/
     if (spellId || attType == RANGED_ATTACK || !HaveOffhandWeapon() || (GetTypeId() == TYPEID_UNIT && ToCreature()->IsWorldBoss()))
-        HitChance = 95.0f;
+        HitChance = 95.0f; 
     else
         HitChance = 76.0f;
 
@@ -2443,7 +2437,7 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
     }
 
     // Miss = 100 - hit
-    float miss_chance= 100.0f - HitChance;
+    float miss_chance = 100.0f - HitChance;
 
     // Bonuses from attacker aura and ratings
     if (attType == RANGED_ATTACK)
@@ -2451,13 +2445,11 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
     else
         miss_chance -= m_modMeleeHitChance;
 
-    // bonus from skills is 0.04%
-    //miss_chance -= skillDiff * 0.04f;
     int32 diff = -skillDiff;
     if(pVictim->GetTypeId()==TYPEID_PLAYER)
         miss_chance += diff > 0 ? diff * 0.04 : diff * 0.02;
     else
-        miss_chance += diff > 10 ? 2 + (diff - 10) * 0.4 : diff * 0.1;
+        miss_chance += diff > 10 ? 2 + (diff - 10) * 0.4 : diff * 0.1; // http://wowwiki.wikia.com/wiki/Weapon_skill
 
     // Limit miss chance from 0 to 60%
     RoundToInterval(miss_chance, 0.f, 60.f);
