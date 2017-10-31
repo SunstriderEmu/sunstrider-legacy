@@ -1125,9 +1125,13 @@ class TC_GAME_API PlayerTaxi
         }
         std::deque<uint32> const& GetPath() const { return m_TaxiDestinations; }
         bool empty() const { return m_TaxiDestinations.empty(); }
+        FactionTemplateEntry const* GetFlightMasterFactionTemplate() const;
+        void SetFlightMasterFactionTemplateId(uint32 factionTemplateId) { m_flightMasterFactionId = factionTemplateId; }
+
     private:
         TaxiMask m_taximask;
         std::deque<uint32> m_TaxiDestinations;
+        uint32 m_flightMasterFactionId;
 };
 
 struct SpamReport
@@ -1438,6 +1442,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint64 bagguid, uint8 slot);
 
         float GetReputationPriceDiscount( Creature const* pCreature ) const;
+        float GetReputationPriceDiscount(FactionTemplateEntry const* factionTemplate) const;
         Player* GetTrader() const { return pTrader; }
         void ClearTrade();
         void TradeCancel(bool sendback);

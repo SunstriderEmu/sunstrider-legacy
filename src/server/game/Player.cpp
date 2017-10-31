@@ -149,11 +149,9 @@ enum CharacterCustomizeFlags
 static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 
 //== PlayerTaxi ================================================
-
-PlayerTaxi::PlayerTaxi()
-{
-    // Taxi nodes
-    memset(m_taximask, 0, sizeof(m_taximask));
+PlayerTaxi::PlayerTaxi() : m_flightMasterFactionId(0) 
+{ 
+    m_taximask.fill(0); 
 }
 
 void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 level)
@@ -238,11 +236,15 @@ bool PlayerTaxi::LoadTaxiDestinationsFromString( const std::string& values, uint
 {
     ClearTaxiDestinations();
 
-    Tokens tokens = StrSplit(values," ");
+    Tokenizer tokens(values, ' ');
+    auto iter = tokens.begin();
+    if (iter != tokens.end())
+        m_flightMasterFactionId = atoul(*iter);
 
-    for(auto & token : tokens)
+    ++iter;
+    for (; iter != tokens.end(); ++iter)
     {
-        uint32 node = uint32(atol(token.c_str()));
+        uint32 node = atoul(*iter);
         AddTaxiDestination(node);
     }
 
@@ -275,6 +277,7 @@ std::string PlayerTaxi::SaveTaxiDestinationsToString()
         return "";
 
     std::ostringstream ss;
+    ss << m_flightMasterFactionId << ' ';
 
     for(uint32 m_TaxiDestination : m_TaxiDestinations)
         ss << m_TaxiDestination << " ";
@@ -293,6 +296,11 @@ uint32 PlayerTaxi::GetCurrentTaxiPath() const
     sObjectMgr->GetTaxiPath(m_TaxiDestinations[0],m_TaxiDestinations[1],path,cost);
 
     return path;
+}
+
+FactionTemplateEntry const* PlayerTaxi::GetFlightMasterFactionTemplate() const
+{
+    return sFactionTemplateStore.LookupEntry(m_flightMasterFactionId);
 }
 
 //== Player ====================================================
@@ -18845,8 +18853,15 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
 
     uint32 money = GetMoney();
 
-    if (npc)
-        totalcost = (uint32)ceil(totalcost*GetReputationPriceDiscount(npc));
+     if (npc)
+    {
+        float discount = GetReputationPriceDiscount(npc);
+        totalcost = uint32(ceil(totalcost * discount));
+        firstcost = uint32(ceil(firstcost * discount));
+        m_taxi.SetFlightMasterFactionTemplateId(npc->GetFaction());
+    }
+    else
+        m_taxi.SetFlightMasterFactionTemplateId(0);
 
     if (money < totalcost)
     {
@@ -21360,14 +21375,18 @@ bool Player::GetBGAccessByLevel(BattlegroundTypeId bgTypeId) const
     return true;
 }
 
-float Player::GetReputationPriceDiscount( Creature const* pCreature ) const
+float Player::GetReputationPriceDiscount(Creature const* creature) const
 {
-    FactionTemplateEntry const* vendor_faction = pCreature->GetFactionTemplateEntry();
-    if(!vendor_faction)
+    return GetReputationPriceDiscount(creature->GetFactionTemplateEntry());
+}
+
+float Player::GetReputationPriceDiscount(FactionTemplateEntry const* factionTemplate) const
+{
+    if (!factionTemplate || !factionTemplate->faction)
         return 1.0f;
 
-    ReputationRank rank = GetReputationRank(vendor_faction->faction);
-    if(rank <= REP_NEUTRAL)
+    ReputationRank rank = GetReputationRank(factionTemplate->faction);
+    if (rank <= REP_NEUTRAL)
         return 1.0f;
 
     return 1.0f - 0.05f* (rank - REP_NEUTRAL);
