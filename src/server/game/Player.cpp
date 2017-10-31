@@ -6979,6 +6979,9 @@ void Player::UpdateArea(uint32 newArea)
 
 void Player::UpdateZone(uint32 newZone, uint32 newArea)
 {
+    if (!IsInWorld())
+        return;
+
     if (sWorld->getConfig(CONFIG_ARENASERVER_ENABLED) //bring back the escapers !
         && newZone != 616  //Hyjal arena zone
         && newZone != 406 // zone pvp
