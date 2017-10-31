@@ -1,4 +1,5 @@
 #include "PlayerTaxi.h"
+#include "GameEventMgr.h"
 
 //== PlayerTaxi ================================================
 PlayerTaxi::PlayerTaxi() : m_flightMasterFactionId(0) 
