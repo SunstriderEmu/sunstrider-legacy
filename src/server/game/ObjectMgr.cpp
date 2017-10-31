@@ -4893,6 +4893,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
     if ( !result )
         return;                                             // any mails need to be returned or deleted
     Field *fields;
+    PreparedStatement* stmt;
     //std::ostringstream delitems, delmails; //will be here for optimization
     //bool deletemail = false, deleteitem = false;
     //delitems << "DELETE FROM item_instance WHERE guid IN ( ";
@@ -4945,6 +4946,10 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
                 // mail open and then not returned
                 for(auto & item : m->items)
                     CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item.item_guid);
+
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_ITEM_BY_ID);
+                stmt->setUInt32(0, m->messageID);
+                CharacterDatabase.Execute(stmt);
             }
             else
             {
