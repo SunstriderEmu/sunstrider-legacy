@@ -1,6 +1,10 @@
 IF(NOT PLAYERBOT)
     SET(EXCLUDE_PLAYERBOT ${CMAKE_CURRENT_SOURCE_DIR}/playerbot)
 ENDIF(NOT PLAYERBOT)
+ 
+IF(NOT TESTS)
+	SET(EXCLUDE_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/testing)
+ENDIF(NOT TESTS)
 
 CollectSourceFiles(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -8,6 +12,7 @@ CollectSourceFiles(
   # Exclude
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   ${EXCLUDE_PLAYERBOT}
+  ${EXCLUDE_TESTS}
 )
  
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/gamePCH.h)
@@ -59,8 +64,6 @@ target_link_libraries(game
   PRIVATE
     ${gperftools_lib}
     efsw
-    segvcatch
-    catch
 )
 
 set_target_properties(game
