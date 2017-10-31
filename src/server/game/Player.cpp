@@ -13067,17 +13067,16 @@ void Player::SendItemDurations()
     }
 }
 
-void Player::SendNewItem(Item *item, uint32 count, bool received, bool created, bool broadcast)
+void Player::SendNewItem(Item *item, uint32 count, bool received, bool created, bool broadcast, bool sendChatMessage)
 {
     if(!item)                                               // prevent crash
         return;
-
                                                             // last check 2.0.10
     WorldPacket data( SMSG_ITEM_PUSH_RESULT, (8+4+4+4+1+4+4+4+4+4) );
     data << GetGUID();                                      // player GUID
     data << uint32(received);                               // 0=looted, 1=from npc
     data << uint32(created);                                // 0=received, 1=created
-    data << uint32(1);                                      // always 0x01 (probably meant to be count of listed items)
+    data << uint32(sendChatMessage);                        // bool print message to chat
     data << (uint8)item->GetBagSlot();                      // bagslot
                                                             // item slot, but when added to stack: 0xFFFFFFFF
     data << (uint32) ((item->GetCount()==count) ? item->GetSlot() : -1);
@@ -13663,7 +13662,11 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
                 if( CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewardItemId[i], pQuest->RewardItemIdCount[i] ) == EQUIP_ERR_OK )
                 {
                     Item* item = StoreNewItem( dest, pQuest->RewardItemId[i], true);
-                    SendNewItem(item, pQuest->RewardItemIdCount[i], true, false);
+#ifdef LICH_KING
+                    SendNewItem(item, pQuest->RewardItemIdCount[i], true, false, false, false);
+#else
+                    SendNewItem(item, pQuest->RewardItemIdCount[i], true, false, false, true);
+#endif
                 }
             }
         }
@@ -13677,7 +13680,11 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
             if (CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, pQuest->RewardChoiceItemId[reward], pQuest->RewardChoiceItemCount[reward]) == EQUIP_ERR_OK)
             {
                 Item* item = StoreNewItem(dest, pQuest->RewardChoiceItemId[reward], true);
-                SendNewItem(item, pQuest->RewardChoiceItemCount[reward], true, false);
+#ifdef LICH_KING
+                SendNewItem(item, pQuest->RewardChoiceItemCount[reward], true, false, false, false);
+#else
+                SendNewItem(item, pQuest->RewardChoiceItemCount[reward], true, false, false, true);
+#endif
             }
         }
     }
@@ -14889,7 +14896,7 @@ void Player::SendQuestComplete( uint32 quest_id )
     }
 }
 
-void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGiver )
+void Player::SendQuestReward( Quest const *pQuest, uint32 xp, Object * questGiver )
 {
     uint32 questid = pQuest->GetQuestId();
     sGameEventMgr->HandleQuestComplete(questid);
@@ -14899,7 +14906,7 @@ void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGive
 
     if ( GetLevel() < sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL) )
     {
-        data << XP;
+        data << xp;
         data << uint32(pQuest->GetRewOrReqMoney());
     }
     else
