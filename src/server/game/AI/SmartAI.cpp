@@ -665,9 +665,9 @@ void SmartAI::InitializeAI()
 {
     GetScript()->OnInitialize(me);
     if (!me->IsDead())
-    mJustReset = true;
+        mJustReset = true;
+
     JustReachedHome();
-    GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);
 }
 
 void SmartAI::OnCharmed(Unit* charmer, bool apply)
@@ -908,7 +908,6 @@ void SmartGameObjectAI::UpdateAI(uint32 diff)
 void SmartGameObjectAI::InitializeAI()
 {
     GetScript()->OnInitialize(me);
-    GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);
     //Reset();
 }
 
