@@ -64,6 +64,7 @@ target_link_libraries(game
   PRIVATE
     ${gperftools_lib}
     efsw
+	catch
 )
 
 set_target_properties(game

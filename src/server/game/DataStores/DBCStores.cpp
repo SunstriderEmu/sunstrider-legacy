@@ -418,7 +418,7 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales,bad_dbc_files,sTaxiNodesStore,           dbcPath,"TaxiNodes.dbc");
 
     // Initialize global taxinodes mask
-    memset(sTaxiNodesMask,0,sizeof(sTaxiNodesMask));
+    sTaxiNodesMask.fill(0);
     for(uint32 i = 1; i < sTaxiNodesStore.GetNumRows(); ++i)
     {
         if(sTaxiNodesStore.LookupEntry(i))
