@@ -2450,6 +2450,21 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     }
                 }
                 return;
+            case 16093:                                  // Self Visual - Sleep Until Cancelled (DND)
+            {
+                if (apply)
+                {
+                    m_target->SetStandState(UNIT_STAND_STATE_DEAD);
+                    m_target->AddUnitState(UNIT_STATE_ROOT);
+                }
+                else
+                {
+                    m_target->ClearUnitState(UNIT_STATE_ROOT);
+                    m_target->SetStandState(UNIT_STAND_STATE_STAND);
+                }
+
+                return;
+            }
             case 24658: // Unstable Power
                 {
                 uint32 spellId = 24659;
