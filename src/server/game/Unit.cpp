@@ -1193,8 +1193,12 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
             // Physical Damage
             if ( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL )
             {
-                // Get blocked status
-                blocked = IsSpellBlocked(pVictim, spellInfo, attackType);
+                // Spells with this attribute were already calculated in MeleeSpellHitResult
+                if (!spellInfo->HasAttribute(SPELL_ATTR3_BLOCKABLE_SPELL))
+                {
+                    // Get blocked status
+                    blocked = IsSpellBlocked(pVictim, spellInfo, attackType);
+                }
             }
 
             if (crit)
@@ -1233,7 +1237,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                 damageInfo->blocked = uint32(pVictim->GetShieldBlockValue());
                 if (damage < damageInfo->blocked)
                     damageInfo->blocked = damage;
-                damage-=damageInfo->blocked;
+                damage -= damageInfo->blocked;
             }
         }
         break;
@@ -1256,7 +1260,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
 
 
     if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL  && !spellInfo->HasAttribute(SPELL_ATTR_CU_IGNORE_ARMOR))
-        damage = CalcArmorReducedDamage(pVictim, damage);
+        damage = CalcArmorReducedDamage(pVictim, damage, spellInfo, attackType);
 
     // Calculate absorb resist
     if(damage > 0)
@@ -1386,7 +1390,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
     // Add melee damage bonus
     MeleeDamageBonus(damageInfo->target, &damage, damageInfo->attackType);
     // Calculate armor reduction
-    damageInfo->damage = (damageInfo->damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL) ? CalcArmorReducedDamage(damageInfo->target, damage) : damage;
+    damageInfo->damage = (damageInfo->damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL) ? CalcArmorReducedDamage(damageInfo->target, damage, nullptr, attackType) : damage;
     damageInfo->cleanDamage += damage - damageInfo->damage;
 
     damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, (SpellSchoolMask)damageInfo->damageSchoolMask);
@@ -1651,7 +1655,7 @@ void Unit::HandleEmoteCommand(uint32 emote_id)
     SendMessageToSet(&data, true);
 }
 
-uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
+uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage, SpellInfo const* spellInfo, WeaponAttackType attackType) const
 {
     if(sWorld->getConfig(CONFIG_DEBUG_DISABLE_ARMOR))
         return damage;
@@ -1661,9 +1665,6 @@ uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
     armor += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, SPELL_SCHOOL_MASK_NORMAL);
 
 #ifdef LICH_KING
-    if (spellInfo)
-        if (Player* modOwner = GetSpellModOwner())
-            modOwner->ApplySpellMod<SPELLMOD_IGNORE_ARMOR>(spellInfo->Id, armor);
 
     AuraEffectList const& resIgnoreAurasAb = GetAuraEffectsByType(SPELL_AURA_MOD_ABILITY_IGNORE_TARGET_RESIST);
     for (AuraEffectList::const_iterator j = resIgnoreAurasAb.begin(); j != resIgnoreAurasAb.end(); ++j)
@@ -1701,62 +1702,141 @@ uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
     return std::max<uint32>(damage * (1.0f - damageReduction), 1);
 }
 
-void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist, uint32 spellId)
+float Unit::CalculateAverageResistReduction(SpellSchoolMask schoolMask, Unit const* victim, SpellInfo const* spellInfo) const
+{
+    // Get base victim resistance for school
+    int32 victimResistance = (float)victim->GetResistance(GetFirstSchoolInMask(schoolMask));
+    // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura (aka spell penetration)
+    Player const* player = GetSpellModOwner();
+    if (player && GetEntry() != WORLD_TRIGGER)
+    {
+        victimResistance += float(GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask));
+        //victimResistance -= float(player->GetSpellPenetrationItemMod());
+    } else 
+        victimResistance += float(GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask));
+
+    // holy resistance exists in pve and comes from level difference, ignore template values
+    if (schoolMask & SPELL_SCHOOL_MASK_HOLY)
+        victimResistance = 0.0f;
+
+#ifdef LICH_KING
+    // Chaos Bolt exception, ignore all target resistances (unknown attribute?)
+    if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellIconID == 3178)
+        victimResistance = 0.0f;
+#endif
+
+    // Resistance can't be negative
+    victimResistance = std::max(victimResistance, 0);
+
+    // level-based resistance does not apply to binary spells, and cannot be overcome by spell penetration
+    int32 levelDiff = victim->GetLevelForTarget(this) - GetLevelForTarget(victim);
+    if (levelDiff > 0 /* && (!spellInfo || !spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL))*/)
+        victimResistance += std::max(levelDiff * 5.0f, 0.0f);
+
+#ifdef LICH_KING
+    uint32 level = victim->getLevel();
+    float resistanceConstant = 0.0f;
+
+    if (level == BOSS_LEVEL)
+        resistanceConstant = BOSS_RESISTANCE_CONSTANT;
+    else
+        resistanceConstant = level * 5.0f;
+
+    return victimResistance / (victimResistance + resistanceConstant);
+#else
+    float fResistance = ((float)victimResistance / (float)(5.0f * GetLevel())) * 0.75f; //% from 0.0 to 1.0
+
+    // Resistance can't be more than 75%
+    if (fResistance > 0.75f)
+        fResistance = 0.75f;
+
+    return fResistance;
+#endif
+}
+
+uint32 Unit::CalcSpellResistedDamage(Unit* victim, uint32 damage, SpellSchoolMask schoolMask, SpellInfo const* spellInfo, DamageEffectType damagetype) const
+{
+    // Magic damage, check for resists
+    if (!(schoolMask & SPELL_SCHOOL_MASK_MAGIC))
+        return 0;
+
+    // Npcs can have holy resistance
+    if ((schoolMask & SPELL_SCHOOL_MASK_HOLY) && victim->GetTypeId() != TYPEID_UNIT)
+        return 0;
+
+    // Ignore spells that can't be resisted
+    if (spellInfo)
+    {
+        if (spellInfo->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES))
+            return 0;
+
+        // Binary spells can't have damage part resisted
+        /*if (spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL))
+            return 0;*/
+    }
+
+    float const averageResist = CalculateAverageResistReduction(schoolMask, victim, spellInfo);
+    float damageResisted = 0;
+   
+    float discreteResistProbability[11] = {};
+    uint32 faq[4] = { 24,6,4,6 };
+    for (uint32 i = 0; i < sizeof(discreteResistProbability); ++i)
+        discreteResistProbability[i] = 2400 * (powf(averageResist, i) * powf((1 - averageResist), (4 - i))) / faq[i];
+
+    uint32 roll = GetMap()->urand(0, 100);
+    uint8 resistance = 0;
+    float probabilitySum = 0.0f;
+    float binom = 0.0f;
+    for (; resistance < sizeof(discreteResistProbability); ++resistance)
+        if (roll < (probabilitySum += discreteResistProbability[resistance]))
+            break;
+
+    if (damagetype == DOT && resistance == 4)
+        damageResisted += uint32(damage - 1);
+    else
+        damageResisted += uint32(damage * resistance / 4);
+    if (damageResisted > damage)
+        damageResisted = damage;
+
+#ifdef LICH_KING
+    if (damageResisted > 0.0f) // if any damage was resisted
+    {
+        int32 ignoredResistance = 0;
+        ignoredResistance += GetTotalAuraModifier(SPELL_AURA_MOD_ABILITY_IGNORE_TARGET_RESIST, [schoolMask, spellInfo](AuraEffect const* aurEff) -> bool
+        {
+            if ((aurEff->GetMiscValue() & schoolMask) && aurEff->IsAffectedOnSpell(spellInfo))
+                return true;
+            return false;
+        });
+
+        ignoredResistance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_IGNORE_TARGET_RESIST, schoolMask);
+
+        ignoredResistance = std::min<int32>(ignoredResistance, 100);
+        ApplyPct(damageResisted, 100 - ignoredResistance);
+
+        // Spells with melee and magic school mask, decide whether resistance or armor absorb is higher
+        if (spellInfo && spellInfo->HasAttribute(SPELL_ATTR0_CU_SCHOOLMASK_NORMAL_WITH_MAGIC)) //there is no such spell on BC
+        {
+            uint32 damageAfterArmor = CalcArmorReducedDamage(victim, damage, spellInfo, BASE_ATTACK);
+            float armorReduction = damage - damageAfterArmor;
+
+            // pick the lower one, the weakest resistance counts
+            damageResisted = std::min(damageResisted, armorReduction);
+        }
+    }
+#endif
+
+    return damageResisted;
+}
+
+void Unit::CalcAbsorbResist(Unit* pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32* absorb, uint32* resist, uint32 spellId)
 {
     if(!pVictim || !pVictim->IsAlive() || !damage)
         return;
 
     SpellInfo const* spellProto = sSpellMgr->GetSpellInfo(spellId);
 
-    // Magic damage, check for resists
-    if(  (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
-         && (  !spellProto 
-               || !spellProto->IsBinarySpell()
-               || !(spellProto->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)) 
-               || !(spellProto->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT)) ) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
-      )              
-    {
-        // Get base victim resistance for school
-        int32 resistance = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
-        // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura (aka spell penetration)
-        resistance += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
-        // Resistance can't be negative
-        
-        if(resistance < 0) 
-            resistance = 0;
-
-        float fResistance = (float)resistance * (float)(0.15f / GetLevel()); //% from 0.0 to 1.0
-     
-        //incompressive magic resist. Can't seem to find the proper rule for this... meanwhile let's have use an approximation
-        int32 levelDiff = pVictim->GetLevel() - GetLevel();
-        if(levelDiff > 0)
-            fResistance += (int32) ((levelDiff<3?levelDiff:3) * (0.006f)); //Cap it a 3 level diff, probably not blizz but this doesn't change anything at HL and is A LOT less boring for people pexing
-
-        // Resistance can't be more than 75%
-        if (fResistance > 0.75f)
-            fResistance = 0.75f;
-
-        uint32 ran = GetMap()->urand(0, 100);
-        uint32 faq[4] = {24,6,4,6};
-        uint8 m = 0;
-        float Binom = 0.0f;
-        for (uint8 i = 0; i < 4; i++)
-        {
-            Binom += 2400 *( powf(fResistance, i) * powf( (1-fResistance), (4-i)))/faq[i];
-            if (ran > Binom )
-                ++m;
-            else
-                break;
-        }
-        if (damagetype == DOT && m == 4)
-            *resist += uint32(damage - 1);
-        else
-            *resist += uint32(damage * m / 4);
-        if(*resist > damage)
-            *resist = damage;
-    }
-    else
-        *resist = 0;
+    *resist = CalcSpellResistedDamage(pVictim, damage, schoolMask, spellProto, damagetype);
 
     int32 RemainingDamage = damage - *resist;
 

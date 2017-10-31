@@ -1260,6 +1260,7 @@ class TC_GAME_API Unit : public WorldObject
 
         uint32 GetResistance(SpellSchools school) const { return GetUInt32Value(UNIT_FIELD_RESISTANCES+school); }
         void SetResistance(SpellSchools school, int32 val) { SetStatInt32Value(UNIT_FIELD_RESISTANCES+school,val); }
+        float CalculateAverageResistReduction(SpellSchoolMask schoolMask, Unit const* victim, SpellInfo const* spellInfo = nullptr) const;
 
         uint32 GetHealth()    const { return GetUInt32Value(UNIT_FIELD_HEALTH); }
         uint32 GetMaxHealth() const { return GetUInt32Value(UNIT_FIELD_MAXHEALTH); }
@@ -2021,7 +2022,8 @@ class TC_GAME_API Unit : public WorldObject
         uint32 GetDamageImmunityMask() const;
         uint32 GetMechanicImmunityMask() const;
 
-        uint32 CalcArmorReducedDamage(Unit* pVictim, const uint32 damage);
+        uint32 CalcArmorReducedDamage(Unit* pVictim, const uint32 damage, SpellInfo const* spellInfo, WeaponAttackType attackType) const;
+        uint32 CalcSpellResistedDamage(Unit* victim, uint32 damage, SpellSchoolMask schoolMask, SpellInfo const* spellInfo, DamageEffectType damagetype) const;
         void CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist, uint32 spellId);
 
         void  UpdateSpeed(UnitMoveType mtype);
