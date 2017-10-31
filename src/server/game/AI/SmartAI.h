@@ -171,8 +171,6 @@ class TC_GAME_API SmartAI : public CreatureAI
         bool sOnDummyEffect(Unit* caster, uint32 spellId, uint32 effIndex) override;
         //FIXME void sOnGameEvent(bool start, uint16 eventId) override;
 
-        uint32 mEscortQuestID;
-
         void SetDespawnTime(uint32 t)
         {
             mDespawnTime = t;
@@ -187,6 +185,8 @@ class TC_GAME_API SmartAI : public CreatureAI
         void SetWPPauseTimer(uint32 time) { mWPPauseTimer = time; }
 
         void SetGossipReturn(bool val) { _gossipReturn = val; }
+
+        void SetEscortQuest(uint32 questID) { mEscortQuestID = questID; }
 
         void FriendlyKilled(Creature const* c, float range) override;
 
@@ -242,6 +242,8 @@ class TC_GAME_API SmartAI : public CreatureAI
 #endif
         // Gossip
         bool _gossipReturn;
+
+        uint32 mEscortQuestID;
 };
 
 class TC_GAME_API SmartGameObjectAI : public GameObjectAI

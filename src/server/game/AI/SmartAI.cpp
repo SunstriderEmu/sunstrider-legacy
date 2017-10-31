@@ -13,18 +13,10 @@
 
 #include "SmartAI.h"
 
-SmartAI::SmartAI(Creature* c) : CreatureAI(c)
+SmartAI::SmartAI(Creature* c) : CreatureAI(c), mEscortQuestID(0), mIsCharmed(false), mWayPoints(nullptr),
+    mEscortState(SMART_ESCORT_NONE), mCurrentWPID(0 /*first wp id is 1 !!*/), mWPReached(false), mOOCReached(false), mWPPauseTimer(0), mLastWP(nullptr)
 {
     // copy script to local (protection for table reload)
-
-    mIsCharmed = false;
-    mWayPoints = nullptr;
-    mEscortState = SMART_ESCORT_NONE;
-    mCurrentWPID = 0; //first wp id is 1 !!
-    mWPReached = false;
-    mOOCReached = false;
-    mWPPauseTimer = 0;
-    mLastWP = nullptr;
 
     mCanRepeatPath = false;
 
@@ -40,8 +32,6 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
 
     mForcedPaused = false;
     mLastWPIDReached = 0;
-
-    mEscortQuestID = 0;
 
     mDespawnTime = 0;
     mDespawnState = 0;
