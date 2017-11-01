@@ -1041,6 +1041,31 @@ bool SpellInfo::HasAreaAuraEffect() const
     return false;
 }
 
+bool SpellInfo::HasOnlyDamageEffects() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (Effects[i].IsEffect())
+        {
+            switch (Effects[i].Effect)
+            {
+            case SPELL_EFFECT_WEAPON_DAMAGE:
+            case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+            case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+            case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+            case SPELL_EFFECT_SCHOOL_DAMAGE:
+            case SPELL_EFFECT_ENVIRONMENTAL_DAMAGE:
+            case SPELL_EFFECT_HEALTH_LEECH:
+                continue;
+            default:
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 uint32 SpellInfo::GetCategory() const
 {
     return Category ? Category->Id : 0;
@@ -1584,7 +1609,7 @@ bool SpellInfo::IsStackableWithRanks() const
 
 bool SpellInfo::IsBinarySpell() const
 {
-    return AttributesCu & SPELL_ATTR_CU_BINARY;
+    return AttributesCu & SPELL_ATTR_CU_BINARY_SPELL;
 }
 
 bool SpellInfo::IsProfessionOrRiding() const
@@ -1938,6 +1963,7 @@ void SpellInfo::LoadCustomAttributes()
             case SPELL_AURA_MOD_POSSESS:
             case SPELL_AURA_MOD_CONFUSE:
             case SPELL_AURA_MOD_CHARM:
+            case SPELL_AURA_AOE_CHARM:
             case SPELL_AURA_MOD_FEAR:
             case SPELL_AURA_MOD_STUN:
                 AttributesCu |= SPELL_ATTR_CU_AURA_CC;
@@ -2121,7 +2147,38 @@ void SpellInfo::LoadCustomAttributes()
     }
 
     if (SpellMgr::IsBinaryMagicResistanceSpell(this))
-        AttributesCu |= SPELL_ATTR_CU_BINARY;
+        AttributesCu |= SPELL_ATTR_CU_BINARY_SPELL;
+
+    // addition for binary spells, ommit spells triggering other spells
+    if(HasAttribute(SPELL_ATTR_CU_BINARY_SPELL)) //sunstrider: this is the opposite condition than the trinity code, but they're is wrong
+    {
+        bool allNonBinary = true;
+        bool overrideAttr = false;
+        for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+        {
+            if (Effects[j].IsAura() && Effects[j].TriggerSpell)
+            {
+                switch (Effects[j].ApplyAuraName)
+                {
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    if (SpellInfo const* triggerSpell = sSpellMgr->GetSpellInfo(Effects[j].TriggerSpell))
+                    {
+                        overrideAttr = true;
+                        if (triggerSpell->HasAttribute(SPELL_ATTR_CU_BINARY_SPELL))
+                            allNonBinary = false;
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        if (overrideAttr && allNonBinary)
+            AttributesCu &= ~SPELL_ATTR_CU_BINARY_SPELL;
+    }
+
 }
 
 bool SpellInfo::IsSingleTarget() const

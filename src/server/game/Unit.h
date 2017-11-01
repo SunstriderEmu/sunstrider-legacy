@@ -1378,7 +1378,6 @@ class TC_GAME_API Unit : public WorldObject
         SpellMissInfo MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell);
         SpellMissInfo MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, Item* castItem = nullptr);
         SpellMissInfo SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool canReflect = false, Item* castItem = nullptr);
-        float GetAverageSpellResistance(Unit* caster, SpellSchoolMask damageSchoolMask);
 
         float GetUnitDodgeChance()    const;
         float GetUnitParryChance()    const;
@@ -1671,7 +1670,8 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveAurasAtChanneledTarget(SpellInfo const* spellInfo, Unit * caster);
         void RemoveNotOwnSingleTargetAuras();
         void RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemode = AURA_REMOVE_BY_DEFAULT, uint32 except = 0);
-        void RemoveMovementImpairingAuras();
+        void RemoveMovementImpairingAuras(bool withRoot);
+        void RemoveAurasByShapeShift();
 
         void RemoveAurasByType(AuraType auraType);
         void RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID);
@@ -1942,6 +1942,7 @@ class TC_GAME_API Unit : public WorldObject
         uint32 GetNativeDisplayId() const { return GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID); }
         void SetNativeDisplayId(uint32 modelId) { SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID, modelId); }
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, 3)); }
+        void SetShapeshiftForm(ShapeshiftForm form);
         uint32 GetModelForTotem(PlayerTotemType totemType);
         uint32 GetModelForForm (ShapeshiftForm from) const;
         void SetTransForm(uint32 spellid) { m_transform = spellid;}

@@ -2874,7 +2874,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
         case FORM_FLIGHT:
         case FORM_MOONKIN:
             // remove movement affects
-            m_target->RemoveMovementImpairingAuras();
+            m_target->RemoveAurasByShapeShift();
 
             // and polymorphic affects
             if(m_target->IsPolymorphed())
@@ -2965,9 +2965,12 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
     }
     else
     {
-        m_target->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, FORM_NONE);
-        if(m_target->GetClass() == CLASS_DRUID)
+        m_target->SetShapeshiftForm(FORM_NONE);
+        if (m_target->GetClass() == CLASS_DRUID)
+        {
             m_target->SetPowerType(POWER_MANA);
+            m_target->RemoveAurasByShapeShift();
+        }
         m_target->m_ShapeShiftFormSpellId = 0;
         m_target->m_form = FORM_NONE;
 

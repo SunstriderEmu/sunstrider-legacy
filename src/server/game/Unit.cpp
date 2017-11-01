@@ -1729,8 +1729,12 @@ float Unit::CalculateAverageResistReduction(SpellSchoolMask schoolMask, Unit con
     victimResistance = std::max(victimResistance, 0);
 
     // level-based resistance does not apply to binary spells, and cannot be overcome by spell penetration
+    // "Empirical evidence shows that mobs that are higher level than yourself have an innate chance of partially resisting spell damage that is impossible to counter."
+    /* See also Wowwiki's article on Magical Resistance: http://wowwiki.wikia.com/wiki/Formulas:Magical_resistance?oldid=1603715
+    Level-based resistance (not to be confused with level-based miss) can play a factor in total resists. For every level that a mob has over the player, there is 8 resist (believed; the exact number may be higher) added. For boss fights, this means there is 15-24 resistance added. This extra resistance means there will be partial resists on non-binary spells from the added resistance. However, this resistance has been shown to not apply to binary spells at all. This level based resistance cannot be reduced by any means, not even Spell Penetration.
+    */
     int32 levelDiff = victim->GetLevelForTarget(this) - GetLevelForTarget(victim);
-    if (levelDiff > 0 /* && (!spellInfo || !spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL))*/)
+    if (levelDiff > 0 && (!spellInfo || !spellInfo->HasAttribute(SPELL_ATTR_CU_BINARY_SPELL)))
         victimResistance += std::max(levelDiff * 5.0f, 0.0f);
 
 #ifdef LICH_KING
@@ -1771,32 +1775,34 @@ uint32 Unit::CalcSpellResistedDamage(Unit* victim, uint32 damage, SpellSchoolMas
             return 0;
 
         // Binary spells can't have damage part resisted
-        /*if (spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL))
-            return 0;*/
+       if (spellInfo->HasAttribute(SPELL_ATTR_CU_BINARY_SPELL))
+            return 0;
     }
 
     float const averageResist = CalculateAverageResistReduction(schoolMask, victim, spellInfo);
-    float damageResisted = 0;
    
-    float discreteResistProbability[11] = {};
+    // Distribute reduction between 4 ranges of damage : 75%, 50%, 25% and 0%
+    // Probably wrong... Interesting discussion here : https://github.com/cmangos/issues/issues/1193
+    // Also note that we can't use LK since it has changed a lot after BC
+    std::array<float, 4> discreteResistProbability = {};
     uint32 faq[4] = { 24,6,4,6 };
-    for (uint32 i = 0; i < sizeof(discreteResistProbability); ++i)
+    for (uint32 i = 0; i < discreteResistProbability.size(); ++i)
         discreteResistProbability[i] = 2400 * (powf(averageResist, i) * powf((1 - averageResist), (4 - i))) / faq[i];
 
-    uint32 roll = GetMap()->urand(0, 100);
-    uint8 resistance = 0;
+    float roll = float(rand_norm()) * 100.0f;
+    uint8 resistance = 0; //resistance range (from 0 to 4)
     float probabilitySum = 0.0f;
-    float binom = 0.0f;
-    for (; resistance < sizeof(discreteResistProbability); ++resistance)
+    for (; resistance < discreteResistProbability.size(); ++resistance)
         if (roll < (probabilitySum += discreteResistProbability[resistance]))
             break;
 
+    float damageResisted = 0;
     if (damagetype == DOT && resistance == 4)
-        damageResisted += uint32(damage - 1);
+        damageResisted = uint32(damage - 1);
     else
-        damageResisted += uint32(damage * resistance / 4);
-    if (damageResisted > damage)
-        damageResisted = damage;
+        damageResisted = uint32(damage * resistance / 4);
+
+    DEBUG_ASSERT(damageResisted < damage);
 
 #ifdef LICH_KING
     if (damageResisted > 0.0f) // if any damage was resisted
@@ -2717,27 +2723,6 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
     return SPELL_MISS_NONE;
 }
 
-/*  From 0.0f to 1.0f. Used for binaries spell resistance.
-http://www.wowwiki.com/Formulas:Magical_resistance#Magical_Resistances
-*/
-float Unit::GetAverageSpellResistance(Unit* caster, SpellSchoolMask damageSchoolMask)
-{
-    if(!caster)
-        return 0;
-
-    int32 resistance = GetResistance(GetFirstSchoolInMask(damageSchoolMask));
-    resistance += caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, damageSchoolMask); // spell penetration
-
-    if(resistance < 0)
-        resistance = 0;
-
-    float resistChance = (0.75f * resistance / (caster->GetLevel() * 5));
-    if(resistChance > 0.75f)
-        resistChance = 0.75f;
-
-    return resistChance;
-}
-
 SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, Item* castItem)
 {
     // Can`t miss on dead target (on skinning for example)
@@ -2814,8 +2799,11 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, I
         {
             //TODO LK: LK spells seems to have different values in the spells (I believe: * -100)
             modHitChance -= pVictim->GetMaxPositiveAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, static_cast<int32>(spell->Dispel)); 
-            modHitChance -= pVictim->GetMaxNegativeAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, static_cast<int32>(spell->Dispel)); 
         }
+
+        // resistance chance for binary spells, equals to average damage reduction of non-binary spell
+        if (spell->HasAttribute(SPELL_ATTR_CU_BINARY_SPELL) && (spell->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
+            modHitChance -= int32(CalculateAverageResistReduction(spell->GetSchoolMask(), pVictim, spell) * 100.f); 
     }
 
     int32 HitChance = modHitChance * 100;
@@ -2853,27 +2841,27 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, I
 //   Parry
 // For spells
 //   Resist
-SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool canReflect, Item* castItem)
+SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const* spellInfo, bool canReflect, Item* castItem)
 {
     if (ToCreature() && ToCreature()->IsTotem())
         if (Unit *owner = GetOwner())
-            return owner->SpellHitResult(pVictim, spell, canReflect, castItem);
+            return owner->SpellHitResult(pVictim, spellInfo, canReflect, castItem);
 
     // Return evade for units in evade mode
     if (pVictim->GetTypeId()==TYPEID_UNIT && pVictim->ToCreature()->IsEvadingAttacks())
         return SPELL_MISS_EVADE;
 
     // Check for immune
-    if (pVictim->IsImmunedToSpell(spell, this))
+    if (pVictim->IsImmunedToSpell(spellInfo, this))
         return SPELL_MISS_IMMUNE;
 
     // Check for immune (use charges)
-    if (!spell->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)  && pVictim->IsImmunedToDamage(spell))
+    if (!spellInfo->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY) && spellInfo->HasOnlyDamageEffects() && pVictim->IsImmunedToDamage(spellInfo))
         return SPELL_MISS_IMMUNE;
 
     // All positive spells can`t miss
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
-    if (spell->IsPositive(!IsFriendlyTo(pVictim)))
+    if (spellInfo->IsPositive(!IsFriendlyTo(pVictim)))
         return SPELL_MISS_NONE;
 
     if(this == pVictim)
@@ -2889,9 +2877,9 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool c
         //TC_LOG_INFO("SpellHitResult3 %u - reflect chance %d", spell->Id, reflectchance);
         Unit::AuraList const& mReflectSpellsSchool = pVictim->GetAurasByType(SPELL_AURA_REFLECT_SPELLS_SCHOOL);
         for(auto i : mReflectSpellsSchool) {
-            //TC_LOG_INFO("For1 %u %u", spell->Id, (*i)->GetId());
-            if(i->GetModifier()->m_miscvalue & spell->GetSchoolMask()) {
-                //TC_LOG_INFO("For2 %u %u %u %u %d", spell->Id, (*i)->GetId(), (*i)->GetModifier()->m_miscvalue, spell->GetSchoolMask(), (*i)->GetModifierValue());
+            //TC_LOG_INFO("For1 %u %u", spellInfo->Id, (*i)->GetId());
+            if(i->GetModifier()->m_miscvalue & spellInfo->GetSchoolMask()) {
+                //TC_LOG_INFO("For2 %u %u %u %u %d", spellInfo->Id, (*i)->GetId(), (*i)->GetModifier()->m_miscvalue, spell->GetSchoolMask(), (*i)->GetModifierValue());
                 reflectchance = i->GetModifierValue();
             }
         }
@@ -2903,30 +2891,18 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool c
         }
     }
 
-    //Check magic resistance for binaries spells (see IsBinaryMagicResistanceSpell(...) for more details). This check is not rolled inside attack table.
-    if(    spell->IsBinarySpell()
-        && !(spell->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)) 
-        && !(spell->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))  )
-    {
-        float random = (float)rand()/(float)RAND_MAX;
-        float resistChance = pVictim->GetAverageSpellResistance(this,(SpellSchoolMask)spell->SchoolMask);
-        if(resistChance > random)
-            return SPELL_MISS_RESIST;
-        //no else, the binary spell can still be resisted in the next check
-    }
-
-    switch (spell->DmgClass)
+    switch (spellInfo->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_RANGED:
         case SPELL_DAMAGE_CLASS_MELEE:
-            return MeleeSpellHitResult(pVictim, spell);
+            return MeleeSpellHitResult(pVictim, spellInfo);
         case SPELL_DAMAGE_CLASS_NONE:
-            if (spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL)
-                return MagicSpellHitResult(pVictim, spell, castItem);
+            if (spellInfo->SchoolMask & SPELL_SCHOOL_MASK_SPELL)
+                return MagicSpellHitResult(pVictim, spellInfo, castItem);
             else
                 return SPELL_MISS_NONE;
         case SPELL_DAMAGE_CLASS_MAGIC:
-            return MagicSpellHitResult(pVictim, spell, castItem);
+            return MagicSpellHitResult(pVictim, spellInfo, castItem);
     }
 
     return SPELL_MISS_NONE;
@@ -16551,8 +16527,11 @@ void Unit::RemoveAppliedAuras(std::function<bool(Aura const*)> const& check)
     }
 }
 
-void Unit::RemoveMovementImpairingAuras()
+void Unit::RemoveMovementImpairingAuras(bool withRoot)
 {
+    if (withRoot)
+        RemoveAurasWithMechanic(1 << MECHANIC_ROOT);
+
     for (auto iter = m_Auras.begin(); iter != m_Auras.end();)
     {
         if (iter->second->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_MOVEMENT_IMPAIR))
@@ -16562,12 +16541,20 @@ void Unit::RemoveMovementImpairingAuras()
     }
 }
 
-/*
-void Unit::RemoveMovementImpairingAuras()
+void Unit::RemoveAurasByShapeShift()
 {
-    RemoveAurasWithMechanic((1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT));
+    uint32 mechanic_mask = (1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT);
+    for (auto iter = m_Auras.begin(); iter != m_Auras.end();)
+    {
+        Aura const* aura = iter->second->GetBase();
+        if ((aura->GetSpellInfo()->GetAllEffectsMechanicMask() & mechanic_mask) && !aura->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_AURA_CC))
+        {
+            RemoveAura(iter);
+            continue;
+        }
+        ++iter;
+    }
 }
-*/
 
 void Unit::RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemode, uint32 except)
 {
@@ -16580,4 +16567,9 @@ void Unit::RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemo
         else
             iter++;
     }
+}
+
+void Unit::SetShapeshiftForm(ShapeshiftForm form)
+{
+    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, form);
 }

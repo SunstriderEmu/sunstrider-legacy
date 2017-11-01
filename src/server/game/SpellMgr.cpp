@@ -2929,17 +2929,37 @@ dwarfpriest :
 "Spells that do no damage, or that have a snare effect built in to them (like Mind Flay or Frostbolt), are binary spells."
 Taking this second one. And let's extend "snare effect" to "control effects".
 Also I'm assuming this is not checked in the attack table but is a plain check after this.
+
+This function is wrong for LK... "Every spell with a damage component can now be partially resisted."
 */
 bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
 {
     if(!spell)
         return false;
 
+#ifdef LICH_KING
+    // Sindragosa Frost Breath
+    if (spell->Id == 69649 || spell->Id == 71056 || spell->Id == 71057 || spell->Id == 71058 || spell->Id == 73061 || spell->Id == 73062 || spell->Id == 73063 || spell->Id == 73064)
+        return false;
+
+    // Frost Fever
+    if (spell->Id == 55095)
+        return false;
+
+    // Haunt
+    if (spell->SpellFamilyName == SPELLFAMILY_WARLOCK && (spell->SpellFamilyFlags[1] & 0x40000))
+        return false;
+
+    // Frostbolt (changed from LK)
+    if (spell->SpellFamilyName == SPELLFAMILY_MAGE && (spell->SpellFamilyFlags & 0x20))
+        return false;
+#endif
+
     if (!(spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL))
         return false;
 
     bool doDamage = false;
-    for(const auto & Effect : spell->Effects)
+    for(const auto& Effect : spell->Effects)
     {
         if( Effect.Effect == 0 )
             continue;
@@ -2966,6 +2986,38 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
         {
             doDamage = true;
         } 
+    }
+
+    bool binary = !doDamage;
+
+    // addition for binary spells, ommit spells triggering other spells
+    if (binary) //sunstrider: this is the opposite condition than the trinity code, but they're is wrong
+    {
+        bool allNonBinary = true;
+        bool overrideAttr = false;
+        for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+        {
+            if (spell->Effects[j].IsAura() && spell->Effects[j].TriggerSpell)
+            {
+                switch (spell->Effects[j].ApplyAuraName)
+                {
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    if (SpellInfo const* triggerSpell = sSpellMgr->GetSpellInfo(spell->Effects[j].TriggerSpell))
+                    {
+                        overrideAttr = true;
+                        if (triggerSpell->HasAttribute(SPELL_ATTR_CU_BINARY_SPELL))
+                            allNonBinary = false;
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        if (overrideAttr && allNonBinary)
+            return false;
     }
 
     return !doDamage;

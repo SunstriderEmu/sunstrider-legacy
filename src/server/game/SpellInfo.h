@@ -24,7 +24,7 @@ enum SpellCustomAttributes
     SPELL_ATTR_CU_AURA_HOT                      = 0x00000010,
     SPELL_ATTR_CU_AURA_DOT                      = 0x00000020,
     SPELL_ATTR_CU_AURA_CC                       = 0x00000040,
-    SPELL_ATTR_CU_BINARY                        = 0x00000080,
+    //SPELL_ATTR_CU_BINARY                        = 0x00000080,
     SPELL_ATTR_CU_DIRECT_DAMAGE                 = 0x00000100,
     SPELL_ATTR_CU_CHARGE                        = 0x00000200,
     SPELL_ATTR_CU_LINK_CAST                     = 0x00000400,
@@ -41,7 +41,7 @@ enum SpellCustomAttributes
     SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER      = 0x00200000,     // Auras removed when target enters an instance
     SPELL_ATTR_CU_AOE_CANT_TARGET_SELF          = 0x00400000,
     SPELL_ATTR_CU_CONE_180                      = 0x00800000,
-    SPELL_ATTR_CU_NOT_USED                      = 0x01000000, // UNUSED
+    SPELL_ATTR_CU_BINARY_SPELL                  = 0x01000000,
 
     SPELL_ATTR_CU_NEGATIVE_EFF0                 = 0x02000000,
     SPELL_ATTR_CU_NEGATIVE_EFF1                 = 0x04000000,
@@ -434,6 +434,7 @@ public:
     bool HasAura(AuraType aura) const;
     bool HasAuraEffect(AuraType aura) const;
     bool HasAreaAuraEffect() const;
+    bool HasOnlyDamageEffects() const;
 
     inline bool HasAttribute(SpellAttr0 attribute) const { return !!(Attributes & attribute); }
     inline bool HasAttribute(SpellAttr1 attribute) const { return !!(AttributesEx & attribute); }
