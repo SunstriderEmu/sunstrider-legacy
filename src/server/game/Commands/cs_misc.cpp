@@ -2056,6 +2056,7 @@ bool ChatHandler::HandleTestsStartCommand(const char* args) { SendSysMessage("Co
 bool ChatHandler::HandleTestsListCommand(const char* args) { return HandleTestsStartCommand(args); }
 bool ChatHandler::HandleTestsRunningCommand(const char* args) { return HandleTestsStartCommand(args); }
 bool ChatHandler::HandleTestsGoCommand(const char* args) { return HandleTestsStartCommand(args); }
+bool ChatHandler::HandleTestsCancelCommand(consr char* args) { return HandleTestsStartCommand(args); }
 #endif
 
 bool ChatHandler::HandleYoloCommand(const char* /* args */)
