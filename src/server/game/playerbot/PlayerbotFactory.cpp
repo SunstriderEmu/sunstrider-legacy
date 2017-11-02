@@ -125,6 +125,7 @@ void PlayerbotFactory::Randomize(bool incremental)
 
 void PlayerbotFactory::InitPet()
 {
+    /* TODO PLAYERBOT
     Pet* pet = bot->GetPet();
 
     if (!pet)
@@ -160,7 +161,6 @@ void PlayerbotFactory::InitPet()
             return;
         }
 
-        /* TODO PLAYERBOT
         for (int i = 0; i < 100; i++)
         {
             int index = urand(0, ids.size() - 1);
@@ -193,15 +193,12 @@ void PlayerbotFactory::InitPet()
             pet->SavePetToDB(PET_SAVE_AS_CURRENT);
             break;
         }
-    */
     }
     if (!pet)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Cannot create pet for bot %s", bot->GetName().c_str());
         return;
     }
-
-    /* TODO PLAYERBOT
 
     for (PetSpellMap::const_iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end(); ++itr)
     {
@@ -1194,7 +1191,8 @@ void PlayerbotFactory::InitQuests()
     */
 
     //uint32 botLevel = bot->GetLevel();
-    auto quests = sObjectMgr->GetQuestTemplates();
+    /* sunstrider: Commented out since it takes forever...
+    auto& quests = sObjectMgr->GetQuestTemplates();
     for (auto itr : quests)
     {
         uint32 questId = itr.first;
@@ -1208,6 +1206,7 @@ void PlayerbotFactory::InitQuests()
         bot->RewardQuest(questInfo, 0, bot, false);
         ClearInventory();
     }
+    */
 }
 
 void PlayerbotFactory::ClearInventory()

@@ -18,7 +18,6 @@ class MapUpdateRequest
         MapUpdater& m_updater;
         uint32 m_diff;
         uint32 m_loopCount;
-        bool const crash_recovery_enabled = false;
 
     public:
 
@@ -26,8 +25,7 @@ class MapUpdateRequest
             m_map(m), 
             m_updater(u), 
             m_diff(d), 
-            m_loopCount(0),
-            crash_recovery_enabled(sWorld->getBoolConfig(CONFIG_MAP_CRASH_RECOVERY_ENABLED))
+            m_loopCount(0)
         {
         }
 
@@ -36,21 +34,7 @@ class MapUpdateRequest
         void call()
         {
             sMonitor->MapUpdateStart(m_map);
-            if (crash_recovery_enabled)
-            {
-                try
-                {
-                    m_map.DoUpdate(m_diff, MINIMUM_MAP_UPDATE_INTERVAL);
-                }
-                catch (std::runtime_error&)
-                {
-                    sMapMgr->MapCrashed(m_map);
-                }
-            }
-            else 
-            {
-                m_map.DoUpdate(m_diff, MINIMUM_MAP_UPDATE_INTERVAL);
-            }
+            m_map.DoUpdate(m_diff, MINIMUM_MAP_UPDATE_INTERVAL);
             sMonitor->MapUpdateEnd(m_map);
             m_loopCount++;
         }
@@ -122,7 +106,7 @@ void MapUpdater::schedule_update(Map& map, uint32 diff)
     std::lock_guard<std::mutex> lock(_lock);
 
     MapUpdateRequest* request = new MapUpdateRequest(map, *this, diff);
-    if(map.Instanceable() && map.GetMapType() != MAP_TYPE_MAP_INSTANCED) { //MapInstanced re schedule the instances it contains by itself, so we want to call it only once
+    if((map.Instanceable() || map.GetMapType() != MAP_TYPE_TEST_MAP) && map.GetMapType() != MAP_TYPE_MAP_INSTANCED) { // MapInstanced re schedule the instances it contains by itself, so we want to call it only once
         pending_loop_maps++;
         _loop_queue.Push(request);
     } else {

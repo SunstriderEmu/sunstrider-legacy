@@ -50,8 +50,6 @@ target_link_libraries(worldserver
     gsoap
     readline
     ${UNIX_LIBS}
-  PRIVATE
-    segvcatch
 )
 
 CollectIncludeDirectories(

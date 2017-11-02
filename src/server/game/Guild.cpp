@@ -591,14 +591,6 @@ void Guild::BroadcastToGuild(WorldSession *session, const std::string& msg, Lang
     }
 }
 
-void Guild::BroadcastToGuildFromIRC(const std::string& msg)
-{
-    uint64 senderGuid = sConfigMgr->GetIntDefault("IRC.CharGUID", 0);
-    WorldPacket data;
-    ChatHandler::BuildChatPacket(data, CHAT_MSG_GUILD, LANG_UNIVERSAL, senderGuid, 0, msg); 
-    BroadcastPacket(&data);
-}
-
 std::string Guild::GetOnlineMembersName()
 {
     std::string ret = "";

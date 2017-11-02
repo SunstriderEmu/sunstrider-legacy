@@ -45,6 +45,7 @@ struct SpellSummary;
 class ScriptMgr;
 class SpellScript;
 class ModuleReference;
+class TestCase;
 
 #define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)
 #define VISIBLE_RANGE       (166.0f)                        //MAX visible range (size of grid)
@@ -218,6 +219,18 @@ public:
     virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/) { return false; }
 };
 
+class TC_GAME_API TestCaseScript : public ScriptObject, public UpdatableScript<TestCase>
+{
+protected:
+
+    TestCaseScript(const char* name);
+
+public:
+
+    // Called when loading tests
+    virtual std::shared_ptr<TestCase> GetTest() const { return nullptr; }
+};
+
 // Manages registration, loading, and execution of scripts.
 class TC_GAME_API ScriptMgr
 {
@@ -279,6 +292,8 @@ public: /* Script contexts */
         /// The shared library is lazy unloaded as soon as all references to it are released.
         std::shared_ptr<ModuleReference> AcquireModuleReferenceOfScriptName(
             std::string const& scriptname) const;
+
+        std::unordered_multimap<std::string /*context*/, std::unique_ptr<TestCaseScript>> const& GetAllTests() const;
 
     public: /* Unloading */
 

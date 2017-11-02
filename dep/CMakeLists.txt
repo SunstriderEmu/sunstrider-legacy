@@ -8,7 +8,6 @@ else()
 endif()
 
 add_subdirectory(boost)
-add_subdirectory(catch)
 add_subdirectory(efsw)
 add_subdirectory(g3dlite)
 if(USE_GPERFTOOLS)
@@ -31,5 +30,3 @@ if(TOOLS)
     add_subdirectory(bzip2)
     add_subdirectory(libmpq)
 endif()
-
-add_subdirectory(segvcatch)

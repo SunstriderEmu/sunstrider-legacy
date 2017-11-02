@@ -62,6 +62,10 @@ template<>
 struct is_script_database_bound<AreaTriggerScript>
     : std::true_type { };
 
+template<>
+struct is_script_database_bound<TestCaseScript>
+    : std::false_type { };
+
 /*
 template<>
 struct is_script_database_bound<BattlegroundScript>
@@ -1548,6 +1552,12 @@ AreaTriggerScript::AreaTriggerScript(const char* name)
     ScriptRegistry<AreaTriggerScript>::Instance()->AddScript(this);
 }
 
+TestCaseScript::TestCaseScript(const char* name)
+    : ScriptObject(name)
+{
+    ScriptRegistry<TestCaseScript>::Instance()->AddScript(this);
+}
+
 SpellScriptLoader::SpellScriptLoader(const char* name)
     : ScriptObject(name)
 {
@@ -1641,6 +1651,11 @@ void ScriptMgr::FillSpellSummary()
     }
 }
 
+std::unordered_multimap<std::string, std::unique_ptr<TestCaseScript>> const& ScriptMgr::GetAllTests() const
+{
+    return ScriptRegistry<TestCaseScript>::Instance()->GetScripts();
+}
+
 // Specialize for each script type class like so:
 template class ScriptRegistry<SpellScriptLoader>;
 /*
@@ -1655,6 +1670,7 @@ template class ScriptRegistry<ItemScript>;
 template class ScriptRegistry<CreatureScript>;
 template class ScriptRegistry<GameObjectScript>;
 template class ScriptRegistry<AreaTriggerScript>;
+template class ScriptRegistry<TestCaseScript>;
 /*
 template class ScriptRegistry<BattlegroundScript>;
 template class ScriptRegistry<OutdoorPvPScript>;

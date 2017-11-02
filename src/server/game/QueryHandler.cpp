@@ -173,7 +173,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         data << uint32(entry | 0x80000000);
         SendPacket( &data );
     }
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
+    TC_LOG_TRACE("network", "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
 }
 
 /// Only _static_ data send in this packet !!!

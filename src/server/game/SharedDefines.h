@@ -67,8 +67,9 @@ enum Races
     (1<<(RACE_DRAENEI-1)) )
 
 // Class value is index in ChrClasses.dbc
-enum Classes
+enum Classes : uint32
 {
+    CLASS_NONE          = 0,
     CLASS_WARRIOR       = 1,
     CLASS_PALADIN       = 2,
     CLASS_HUNTER        = 3,
@@ -91,7 +92,7 @@ enum Classes
     (1<<(CLASS_MAGE-1))   |(1<<(CLASS_WARLOCK-1))|(1<<(CLASS_DRUID-1))   )
 
 // valid classes for creature_template.unit_class
-enum UnitClass
+enum UnitClass : uint32
 {
     UNIT_CLASS_WARRIOR                  = 1,
     UNIT_CLASS_PALADIN                  = 2,
@@ -105,7 +106,7 @@ enum UnitClass
 
 #define PLAYER_MAX_BATTLEGROUND_QUEUES 3
 
-enum ReputationRank
+enum ReputationRank : uint32
 {
     REP_HATED       = 0,
     REP_HOSTILE     = 1,
@@ -120,7 +121,7 @@ enum ReputationRank
 #define MIN_REPUTATION_RANK (REP_HATED)
 #define MAX_REPUTATION_RANK 8
 
-enum FactionTemplates
+enum FactionTemplates : uint32
 {
     FACTION_NONE                        = 0,
     FACTION_CREATURE                    = 7,
@@ -167,14 +168,14 @@ enum FactionTemplates
 #endif
 };
 
-enum MoneyConstants
+enum MoneyConstants : uint32
 {
     COPPER = 1,
     SILVER = COPPER*100,
     GOLD   = SILVER*100
 };
 
-enum Stats
+enum Stats : uint32
 {
     STAT_STRENGTH                      = 0,
     STAT_AGILITY                       = 1,

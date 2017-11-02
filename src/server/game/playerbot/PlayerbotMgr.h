@@ -19,7 +19,8 @@ public:
     PlayerbotHolder();
     virtual ~PlayerbotHolder();
 
-    Player* AddPlayerBot(uint64 guid, uint32 masterAccountId);
+    //Connect bot to server
+    Player* AddPlayerBot(uint64 guid, uint32 masterAccountId, bool testingBot = false);
     void LogoutPlayerBot(uint64 guid);
     Player* GetPlayerBot (uint64 guid) const;
     PlayerBotMap::const_iterator GetPlayerBotsBegin() const { return playerBots.begin(); }
@@ -29,7 +30,7 @@ public:
     void UpdateSessions(uint32 elapsed);
 
     void LogoutAllBots();
-    void OnBotLogin(Player * const bot);
+    void OnBotLogin(Player* const bot, bool testingBot = false);
 
     list<std::string> HandlePlayerbotCommand(char const* args, Player* master = nullptr);
     std::string ProcessBotCommand(std::string cmd, ObjectGuid guid, bool admin, uint32 masterAccountId, uint32 masterGuildId);

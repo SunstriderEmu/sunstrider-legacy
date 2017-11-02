@@ -5,6 +5,8 @@
 #include "Map.h"
 #include "InstanceSaveMgr.h"
 
+class TestMap;
+
 /* 
 MapInstanced handles all instances for one particular instanceable map. It has fake cells and shouldn't ever have any players on it.
 Actual instances are InstanceMap's.
@@ -49,7 +51,7 @@ class TC_GAME_API MapInstanced : public Map
        
         std::list<Map*> crashedMaps; //those map have crashed, remove them as soon as possible. Contains either BattlegroundMap or InstanceMap
 
-
+        TestMap* CreateTestInsteance(uint32 InstanceId, Difficulty difficulty, bool enableMapObjects = false);
         InstanceMap* CreateInstance(uint32 InstanceId, InstanceSave *save, Difficulty difficulty);
         BattlegroundMap* CreateBattleground(uint32 InstanceId, Battleground* bg);
 

@@ -46,19 +46,9 @@ void MapInstanced::Update(const uint32& t)
         {
             // update only here, because it may schedule some bad things before delete
             if (sMapMgr->GetMapUpdater()->activated())
-            {
                 sMapMgr->GetMapUpdater()->schedule_update(*i->second, t);
-            } else
-            {
-                try
-                {
-                    i->second->Update(t);
-                }
-                catch (std::exception& /* e */)
-                {
-                    MapCrashed(i->second);
-                }
-            }
+            else
+                i->second->Update(t);
 
             ++i;
         }
@@ -233,10 +223,36 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
 Map* MapInstanced::FindInstanceMap(uint32 InstanceId)
 {
     auto i = m_InstancedMaps.find(InstanceId);
-    return(i == m_InstancedMaps.end() ? nullptr : i->second);
+    return i == m_InstancedMaps.end() ? nullptr : i->second;
 }
 
-InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save, Difficulty difficulty)
+TestMap* MapInstanced::CreateTestInsteance(uint32 instanceId, Difficulty difficulty, bool enableMapObjects)
+{
+    // load/create a map
+    std::lock_guard<std::mutex> lock(_mapLock);
+
+    // make sure we have a valid map id
+    const MapEntry* entry = sMapStore.LookupEntry(GetId());
+    if (!entry)
+    {
+        TC_LOG_ERROR("maps", "CreateInstance: no entry for map %d", GetId());
+        ABORT();
+    }
+
+    // some instances only have one difficulty
+    GetDownscaledMapDifficultyData(GetId(), difficulty);
+
+    TC_LOG_DEBUG("maps", "MapInstanced::CreateTestInsteance: map instance %d for %d created with difficulty %s", instanceId, GetId(), difficulty ? "heroic" : "normal");
+
+    TestMap* map = new TestMap(GetId(), instanceId, difficulty, this, enableMapObjects);
+
+    map->CreateInstanceScript(false);
+
+    m_InstancedMaps[instanceId] = map;
+    return map;
+}
+
+InstanceMap* MapInstanced::CreateInstance(uint32 instanceId, InstanceSave* save, Difficulty difficulty)
 {
     // load/create a map
     std::lock_guard<std::mutex> lock(_mapLock);
@@ -248,7 +264,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
         TC_LOG_ERROR("maps","CreateInstance: no entry for map %d", GetId());
         ABORT();
     }
-    const InstanceTemplate * iTemplate = sObjectMgr->GetInstanceTemplate(GetId());
+    const InstanceTemplate* iTemplate = sObjectMgr->GetInstanceTemplate(GetId());
     if(!iTemplate)
     {
         TC_LOG_ERROR("maps","CreateInstance: no instance template for map %d", GetId());
@@ -258,9 +274,10 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     // some instances only have one difficulty
     GetDownscaledMapDifficultyData(GetId(), difficulty);
 
-    TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save ? "" : "new ", InstanceId, GetId(), difficulty ? "heroic" : "normal");
+    TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save ? "" : "new ", instanceId, GetId(), difficulty ? "heroic" : "normal");
 
-    auto map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, this);
+    InstanceMap* map = new InstanceMap(GetId(), GetGridExpiry(), instanceId, difficulty, this);
+
     assert(map->IsDungeon());
 
     //TC  map->LoadRespawnTimes();
@@ -269,7 +286,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     bool load_data = save != nullptr;
     map->CreateInstanceScript(load_data);
 
-    m_InstancedMaps[InstanceId] = map;
+    m_InstancedMaps[instanceId] = map;
     return map;
 }
 

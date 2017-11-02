@@ -72,9 +72,14 @@ Player* PlayerbotHolder::GetPlayerBot(uint64 playerGuid) const
     return (it == playerBots.end()) ? 0 : it->second;
 }
 
-void PlayerbotHolder::OnBotLogin(Player * const bot)
+void PlayerbotHolder::OnBotLogin(Player * const bot, bool testingBot)
 {
-    PlayerbotAI* ai = new PlayerbotAI(bot);
+    PlayerbotAI* ai;
+    if (!testingBot)
+        ai = new PlayerbotAI(bot);
+    else
+        ai = new PlayerbotTestingAI(bot);
+
     bot->SetPlayerbotAI(ai);
     OnBotLoginInternal(bot);
 

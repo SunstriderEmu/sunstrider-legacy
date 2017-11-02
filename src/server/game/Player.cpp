@@ -153,7 +153,7 @@ static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 
 const int32 Player::ReputationRank_Length[MAX_REPUTATION_RANK] = {36000, 3000, 3000, 3000, 6000, 12000, 21000, 1000};
 
-Player::Player (WorldSession *session) :
+Player::Player(WorldSession *session) :
     Unit(true),
     m_bHasDelayedTeleport(false),
     m_bCanDelayTeleport(false),
@@ -164,7 +164,8 @@ Player::Player (WorldSession *session) :
     m_timeSyncCounter(0),
     m_timeSyncTimer(0),
     m_timeSyncClient(0),
-    m_timeSyncServer(0)
+    m_timeSyncServer(0),
+    m_teleportToTestInstanceId(0)
 {
     m_speakTime = 0;
     m_speakCount = 0;
@@ -1630,6 +1631,11 @@ void Player::SetMap(Map* map)
     m_mapRef.link(map, this);
 }
 
+void Player::SetTeleportingToTest(uint32 instanceId)
+{
+    m_teleportToTestInstanceId = instanceId;
+}
+
 bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options)
 {
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
@@ -1654,23 +1660,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     // preparing unsummon pet if lost (we must get pet before teleportation or will not find it later)
     Pet* pet = GetPet();
 
-    // client without expansion support
-    /*
-    if (GetSession()->Expansion() < mEntry->Expansion())
-    {
-        TC_LOG_DEBUG("maps", "Player %s using client without required expansion tried teleport to non accessible map %u", GetName().c_str(), mapid);
-
-        if (Transport* transport = GetTransport())
-        {
-            transport->RemovePassenger(this);
-            RepopAtGraveyard();                             // teleport to near graveyard if on transport, looks blizz like :)
-        }
-
-        SendTransferAborted(mapid, TRANSFER_ABORT_INSUF_EXPAN_LVL);
-
-        return false;                                       // normal client can't teleport to this map...
-    }
-    */
     TC_LOG_DEBUG("maps", "Player %s is being teleported to map %u", GetName().c_str(), mapid);
 
     // reset movement flags at teleport, because player will continue move with these flags after teleport
@@ -3354,6 +3343,11 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
     auto itr2 = reqMap.find(spell_id);
     for (uint32 i=reqMap.count(spell_id);i>0;i--,itr2++)
         RemoveSpell(itr2->second,disabled);
+
+    // re-search, it can be corrupted in prev loop
+    itr = m_spells.find(spell_id);
+    if (itr == m_spells.end())
+        return;
 
     // removing
     WorldPacket data(SMSG_REMOVED_SPELL, 4);
@@ -16655,7 +16649,6 @@ void Player::_LoadBoundInstances(QueryResult result)
 
             if (deleteInstance)
             {
-                TC_LOG_ERROR("entities.player","_LoadBoundInstances: player %s(%d) is in group %d but has a non-permanent character bind to map %d,%d,%d", GetName().c_str(), GetGUIDLow(), GUID_LOPART(group->GetLeaderGUID()), mapId, instanceId, difficulty);
                 CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND instance = '%d'", GetGUIDLow(), instanceId);
                 continue;
             }

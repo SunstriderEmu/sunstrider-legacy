@@ -23,14 +23,16 @@ class TC_GAME_API MapManager
         }
 
         //Find base map, create it if needed
-        Map* CreateBaseMap(uint32 id);
+        Map* CreateBaseMap(uint32 id, bool testing = false);
         //Return base map if it exists, null otherwise
-        Map* FindBaseMap(uint32 id) const;
+        Map* FindBaseMap(uint32 id, bool testing = false) const;
         //Same as FindBaseMap, but exclude all instanceable maps
         Map* FindBaseNonInstanceMap(uint32 mapId) const;
         Map* CreateMap(uint32 id, Player* player, uint32 loginInstanceId = 0);
         Map* FindMap(uint32 mapid, uint32 instanceId);
-        
+        //enableMapObjects = spawn npcs and gobjects on the map
+        TestMap* CreateTestMap(uint32 mapid, uint32& testMapInstanceId, Difficulty diff = REGULAR_DIFFICULTY, bool enableMapObjects = false);
+
         uint32 GetAreaId(uint32 mapid, float x, float y, float z) const;
         uint32 GetZoneId(uint32 mapid, float x, float y, float z) const;
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z);
@@ -57,6 +59,7 @@ class TC_GAME_API MapManager
 
         //void LoadGrid(int mapid, float x, float y, const WorldObject* obj, bool no_unload = false);
         void UnloadAll();
+        bool UnloadTestMap(uint32 mapId, uint32 instanceId);
 
         static bool ExistMapAndVMap(uint32 mapid, float x, float y);
         static bool IsValidMAP(uint32 mapid, bool startUp = false);

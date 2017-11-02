@@ -2989,38 +2989,7 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
     }
 
     bool binary = !doDamage;
-
-    // addition for binary spells, ommit spells triggering other spells
-    if (binary) //sunstrider: this is the opposite condition than the trinity code, but they're is wrong
-    {
-        bool allNonBinary = true;
-        bool overrideAttr = false;
-        for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-        {
-            if (spell->Effects[j].IsAura() && spell->Effects[j].TriggerSpell)
-            {
-                switch (spell->Effects[j].ApplyAuraName)
-                {
-                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
-                    if (SpellInfo const* triggerSpell = sSpellMgr->GetSpellInfo(spell->Effects[j].TriggerSpell))
-                    {
-                        overrideAttr = true;
-                        if (triggerSpell->HasAttribute(SPELL_ATTR_CU_BINARY_SPELL))
-                            allNonBinary = false;
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-
-        if (overrideAttr && allNonBinary)
-            return false;
-    }
-
-    return !doDamage;
+    return binary;
 }
 
 SpellBonusEntry const* SpellMgr::GetSpellBonusData(uint32 spellId) const

@@ -1,16 +1,15 @@
 #include "test_utils.h"
-#include "catch.hpp"
 
 #include "Player.h"
 #include "Creature.h"
 #include "PlayerbotAI.h"
 #include "RandomPlayerbotMgr.h"
 
+/*
 void Testing::PrepareCasterAndTarget(Player*& caster, Creature*& target)
 {
     //corner in testing map
     static const WorldLocation testLoc = WorldLocation(13, -128.0f, -128.0f, -144.7f, 0.4f);
-    /*
     uint32 bot = sRandomPlayerbotMgr.AddRandomBot(false);
     REQUIRE(bot != 0);
 
@@ -33,7 +32,6 @@ void Testing::PrepareCasterAndTarget(Player*& caster, Creature*& target)
 
     caster = playerBot;
     target = targetCreature;
-    */
 }
 
 void Testing::PrepareCasterAndTarget_cleanup(Player*& caster, Creature*& target)
@@ -41,3 +39,5 @@ void Testing::PrepareCasterAndTarget_cleanup(Player*& caster, Creature*& target)
     caster->GetSession()->KickPlayer(); //not working for bots ?
     target->DespawnOrUnsummon();
 }
+
+*/

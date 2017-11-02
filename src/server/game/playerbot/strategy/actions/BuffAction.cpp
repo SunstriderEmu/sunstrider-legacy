@@ -93,7 +93,7 @@ bool BuffAction::Execute(Event event)
     FindBuffVisitor visitor(bot);
     IterateItems(&visitor);
 
-    uint32 oldSubClass = -1;
+    uint32 oldSubClass = uint32(-1);
     for (map<uint32, list<Item*> >::iterator i = visitor.items.begin(); i != visitor.items.end(); ++i)
     {
         list<Item*> items = i->second;

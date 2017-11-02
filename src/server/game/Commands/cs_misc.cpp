@@ -5,7 +5,6 @@
 #include "TargetedMovementGenerator.h"
 #include "BattleGroundMgr.h"
 #include "ArenaTeamMgr.h"
-#include "TestMgr.h"
 #include "Weather.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
@@ -15,6 +14,9 @@
 #ifdef PLAYERBOT
 #include "playerbot.h"
 #include "GuildTaskMgr.h"
+#endif
+#ifdef TESTS
+#include "TestMgr.h"
 #endif
 
 //kick player
@@ -1994,48 +1996,67 @@ bool ChatHandler::HandleRemoveTitleCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleTestsCommand(const char* args)
-{
 #ifdef TESTS
-    // Convert args input to argc & argv
-    Tokenizer tokens(args, ' ');
-    if(tokens.size() == 0)
-        return false;
-
-    //Prepare arguments for Catch. First argument must be "worldserver"
-    int argc = tokens.size() + 1;
-    char** argv = new char*[argc];
-    std::string const& osef = "worldserver";
-    argv[0] = new char[osef.size() + 1];
-    std::strcpy(argv[0], osef.c_str());
-    for(size_t i = 0; i < tokens.size(); i++)
+bool ChatHandler::HandleTestsStartCommand(const char* args)
+{
+    bool ok = sTestMgr->Run(args);
+    if (ok)
     {
-        std::string const& str = tokens[i];
-        argv[i + 1] = new char[str.size() + 1];
-        std::strcpy(argv[i + 1], str.c_str());
+        SendSysMessage("Tests started. Results will be dumped to all players.");
+    } else {
+        std::string testStatus = sTestMgr->GetStatusString();
+        SendSysMessage("Tests currently running or failed to start. Current status:");
+        PSendSysMessage("%s", testStatus.c_str());
     }
-
-    // Execute Catch
-    int result = -1;
-    try {
-        result = Testing::RunCatch(argc, argv);
-    } catch (std::exception const& e) {
-        PSendSysMessage("Catch threw exception %s", e.what());
-    }
-
-    if(result != -1)
-        PSendSysMessage("Catch finished running with result %i", result);
-
-    // Cleaning up
-    for(size_t i = 0; i < argc; i++)
-        delete argv[i];
-    delete argv;
-
-#else
-    SendSysMessage("Core has not been compiled with tests");
-#endif
     return true;
 }
+
+bool ChatHandler::HandleTestsListCommand(const char* args)
+{
+    std::string list_str = sTestMgr->ListAvailable(args);
+    PSendSysMessage("%s", list_str.c_str());
+    return true;
+}
+
+bool ChatHandler::HandleTestsRunningCommand(const char* args)
+{
+    std::string list_str = sTestMgr->ListRunning(args);
+    PSendSysMessage("%s", list_str.c_str());
+    return true;
+}
+
+bool ChatHandler::HandleTestsCancelCommand(const char* args)
+{
+    if (!sTestMgr->IsRunning())
+    {
+        SendSysMessage("Tests are not running");
+        return true;
+    }
+
+    sTestMgr->Cancel();
+    return true;
+}
+
+bool ChatHandler::HandleTestsGoCommand(const char* args)
+{
+    uint32 instanceId = atoi(args);
+    if (instanceId == 0)
+        return false;
+
+    bool ok = sTestMgr->GoToTest(GetSession()->GetPlayer(), instanceId);
+    if(ok)
+        PSendSysMessage("Teleporting player to test");
+    else
+        PSendSysMessage("Failed to teleport player to test");
+    return true;
+}
+
+#else
+bool ChatHandler::HandleTestsStartCommand(const char* args) { SendSysMessage("Core has not been compiled with tests"); return true; }
+bool ChatHandler::HandleTestsListCommand(const char* args) { return HandleTestsStartCommand(args); }
+bool ChatHandler::HandleTestsRunningCommand(const char* args) { return HandleTestsStartCommand(args); }
+bool ChatHandler::HandleTestsGoCommand(const char* args) { return HandleTestsStartCommand(args); }
+#endif
 
 bool ChatHandler::HandleYoloCommand(const char* /* args */)
 {

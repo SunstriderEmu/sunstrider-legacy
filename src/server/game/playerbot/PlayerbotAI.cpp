@@ -159,6 +159,20 @@ void PlayerbotAI::UpdateAI(uint32 elapsed)
     PlayerbotAIBase::UpdateAI(elapsed);
 }
 
+PlayerbotTestingAI::PlayerbotTestingAI(Player* bot)
+    : PlayerbotAI(bot)
+{ }
+
+void PlayerbotTestingAI::UpdateAIInternal(uint32 elapsed)
+{
+    /*
+    ExternalEventHelper helper(aiObjectContext);
+    botOutgoingPacketHandlers.Handle(helper);
+    masterIncomingPacketHandlers.Handle(helper);
+    masterOutgoingPacketHandlers.Handle(helper);
+    */
+}
+
 void PlayerbotAI::UpdateAIInternal(uint32 elapsed)
 {
     ExternalEventHelper helper(aiObjectContext);

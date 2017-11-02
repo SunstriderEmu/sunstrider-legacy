@@ -49,9 +49,6 @@ class TC_GAME_API RandomPlayerbotMgr : public PlayerbotHolder
         void Refresh(Player* bot);
         void RandomTeleportForLevel(Player* bot);
 
-        //made public for testing
-        Player* CreateRandomTestBot(WorldLocation loc);
-
     protected:
         void OnBotLoginInternal(Player * const bot) override {}
 
@@ -72,6 +69,9 @@ class TC_GAME_API RandomPlayerbotMgr : public PlayerbotHolder
         int processTicks;
 };
 
+//extra ifdef to make sure we don't try to include the playerbot mgr if playerbot are disabled
+#ifdef PLAYERBOT
 #define sRandomPlayerbotMgr RandomPlayerbotMgr::instance()
+#endif
 
 #endif

@@ -17,6 +17,7 @@
 
 class Player;
 class PlayerbotMgr;
+class TestPlayer;
 
 using namespace std;
 using namespace ai;
@@ -186,6 +187,15 @@ protected:
     PacketHandlingHelper masterOutgoingPacketHandlers;
     CompositeChatFilter chatFilter;
     PlayerbotSecurity security;
+};
+
+class TC_GAME_API PlayerbotTestingAI : public PlayerbotAI
+{
+public:
+    PlayerbotTestingAI(Player* bot);
+    virtual ~PlayerbotTestingAI() {}
+
+    void UpdateAIInternal(uint32 elapsed) override;
 };
 
 #endif
