@@ -401,8 +401,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 bool ChatHandler::HandleGonameCommand(const char* args)
 {
     ARGS_CHECK
-
-        Player* _player = m_session->GetPlayer();
+    Player* _player = m_session->GetPlayer();
 
     std::string name = args;
 
@@ -418,7 +417,10 @@ bool ChatHandler::HandleGonameCommand(const char* args)
     {
         Map* cMap = target->GetMap();
         if (!cMap)
-            return false;
+        {
+            SendSysMessage("Target is not in any map");
+            return true;
+        }
         if (cMap->IsBattlegroundOrArena())
         {
             // only allow if gm mode is on
@@ -470,12 +472,12 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 
             // if the player or the player's group is bound to another instance
             // the player will not be bound to another one
-            InstancePlayerBind *pBind = _player->GetBoundInstance(target->GetMapId(), target->GetDifficulty());
+            InstancePlayerBind* pBind = _player->GetBoundInstance(target->GetMapId(), target->GetDifficulty());
             if (!pBind)
             {
-                Group *group = _player->GetGroup();
+                Group* group = _player->GetGroup();
                 // if no bind exists, create a solo bind
-                InstanceGroupBind *gBind = group ? group->GetBoundInstance(target->GetDifficulty(), target->GetMapId()) : nullptr;
+                InstanceGroupBind* gBind = group ? group->GetBoundInstance(target->GetDifficulty(), target->GetMapId()) : nullptr;
                 if (!gBind)
                     if (InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(target->GetInstanceId()))
                         _player->BindToInstance(save, !save->CanReset());

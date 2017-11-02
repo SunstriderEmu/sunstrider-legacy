@@ -300,7 +300,6 @@ class TC_GAME_API Guild
         void LoadPlayerStatsByGuid(uint64 guid);
 
         void BroadcastToGuild(WorldSession *session, const std::string& msg, Language language = LANG_UNIVERSAL);
-        void BroadcastToGuildFromIRC(const std::string& msg);
         void BroadcastToOfficers(WorldSession *session, const std::string& msg, Language language = LANG_UNIVERSAL);
         void BroadcastPacketToRank(WorldPacket *packet, uint32 rankId);
         void BroadcastPacket(WorldPacket *packet);

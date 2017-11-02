@@ -793,7 +793,7 @@ void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    GetPlayer()->ModifyMoney(-10*GOLD);
+    GetPlayer()->ModifyMoney(-10*int32(GOLD));
     guild->SetEmblem(EmblemStyle, EmblemColor, BorderStyle, BorderColor, BackgroundColor);
 
     //"Guild Emblem saved."

@@ -32,19 +32,6 @@
 #include "PlayerbotAIConfig.h"
 #endif
 
-class LoginQueryHolder : public SQLQueryHolder
-{
-    private:
-        uint32 m_accountId;
-        uint64 m_guid;
-    public:
-        LoginQueryHolder(uint32 accountId, uint64 guid)
-            : m_accountId(accountId), m_guid(guid) { }
-        uint64 GetGuid() const { return m_guid; }
-        uint32 GetAccountId() const { return m_accountId; }
-        bool Initialize();
-};
-
 #ifdef PLAYERBOT
 
 class PlayerbotLoginQueryHolder : public LoginQueryHolder
@@ -62,7 +49,7 @@ public:
     PlayerbotHolder* GetPlayerbotHolder() { return playerbotHolder; }
 };
 
-Player* PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
+Player* PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount, bool testingBot)
 {
     // has bot already been added?x
     Player* bot = sObjectMgr->GetPlayer(playerGuid);
@@ -107,7 +94,9 @@ Player* PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
     else if (sPlayerbotAIConfig.IsInRandomAccountList(botAccountId))
         allowed = true;
 
-    if (allowed)
+    if(testingBot)
+        OnBotLogin(bot, testingBot);
+    else if (allowed)
         OnBotLogin(bot);
     else if (masterSession)
     {
@@ -562,23 +551,10 @@ void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recvData )
     _charLoginCallback = CharacterDatabase.DelayQueryHolder((SQLQueryHolder*)holder);
 }
 
-void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
+void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holder)
 {
-    uint64 playerGuid = holder->GetGuid();
-
-    auto  pCurrChar = new Player(this);
     // for send server info and strings (config)
     ChatHandler chH = ChatHandler(pCurrChar);
-
-    // "GetAccountId()==db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
-    if (!pCurrChar->LoadFromDB(GUID_LOPART(playerGuid), holder))
-    {
-        KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick
-        delete pCurrChar;                                   // delete it manually
-        delete holder;                                      // delete all unprocessed queries
-        m_playerLoading = false;
-        return;
-    }
 
     pCurrChar->GetMotionMaster()->Initialize();
 
@@ -620,12 +596,12 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     /*disabled QueryResult resultMail = LoginDatabase.PQuery("SELECT email, newMail FROM account WHERE id = '%u'", pCurrChar->GetSession()->GetAccountId());
     if(resultMail)
     {
-        Field *fields = resultMail->Fetch();
-        const char* mail = fields[0].GetCString();
-        const char* mail_temp = fields[1].GetCString();
+    Field *fields = resultMail->Fetch();
+    const char* mail = fields[0].GetCString();
+    const char* mail_temp = fields[1].GetCString();
 
-        if(!(mail && strcmp(mail, "") != 0) && !(mail_temp && strcmp(mail_temp, "") != 0))
-            chH.PSendSysMessage("|cffff0000Aucune adresse email n'est actuellement associée a ce compte. Un compte sans mail associé ne peux etre recupéré en cas de perte. Vous pouvez utiliser le manager pour corriger ce problème.|r");
+    if(!(mail && strcmp(mail, "") != 0) && !(mail_temp && strcmp(mail_temp, "") != 0))
+    chH.PSendSysMessage("|cffff0000Aucune adresse email n'est actuellement associée a ce compte. Un compte sans mail associé ne peux etre recupéré en cas de perte. Vous pouvez utiliser le manager pour corriger ce problème.|r");
     }
     */
 
@@ -743,14 +719,14 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if (pCurrChar->HasCorpse())
     {
         int32 corpseReclaimDelay = pCurrChar->CalculateCorpseReclaimDelay();
-        if(corpseReclaimDelay >= 0)
+        if (corpseReclaimDelay >= 0)
             pCurrChar->SendCorpseReclaimDelay(corpseReclaimDelay);
     }
 
     pCurrChar->SendInitialPacketsBeforeAddToMap();
 
     //Show cinematic at the first time that player login
-    if( !pCurrChar->getCinematic() )
+    if (!pCurrChar->getCinematic())
     {
         pCurrChar->setCinematic(1);
 
@@ -776,7 +752,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if (!pCurrChar->GetMap()->AddPlayerToMap(pCurrChar))
     {
         AreaTrigger const* at = sObjectMgr->GetGoBackTrigger(pCurrChar->GetMapId());
-        if(at)
+        if (at)
             pCurrChar->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, pCurrChar->GetOrientation());
         else
             pCurrChar->TeleportTo(pCurrChar->m_homebindMapId, pCurrChar->m_homebindX, pCurrChar->m_homebindY, pCurrChar->m_homebindZ, pCurrChar->GetOrientation());
@@ -784,18 +760,21 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     ObjectAccessor::AddObject(pCurrChar);
     //TC_LOG_DEBUG("FIXME","Player %s added to Map.",pCurrChar->GetName());
-    pCurrChar->GetSocial()->SendSocialList();
+    if (!pCurrChar->GetSocial())
+        pCurrChar->m_social = sSocialMgr->GetDefault(pCurrChar->GetGUIDLow());
+    else 
+        pCurrChar->GetSocial()->SendSocialList();
 
     pCurrChar->SendInitialPacketsAfterAddToMap();
 
     CharacterDatabase.PExecute("UPDATE characters SET online = 1 WHERE guid = '%u'", pCurrChar->GetGUIDLow());
     LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = '%u'", GetAccountId());
-    pCurrChar->SetInGameTime( GetMSTime() );
+    pCurrChar->SetInGameTime(GetMSTime());
 
     // friend status
     sSocialMgr->SendFriendStatus(pCurrChar, FRIEND_ONLINE, pCurrChar->GetGUIDLow(), true);
 
-    if(sWorld->getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+    if (sWorld->getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
         pCurrChar->UpdateArenaTitles();
 
     // Place character in world (and load zone) before some object loading
@@ -805,7 +784,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if (pCurrChar->m_deathState != ALIVE)
     {
         // not blizz like, we must correctly save and load player instead...
-        if(pCurrChar->GetRace() == RACE_NIGHTELF)
+        if (pCurrChar->GetRace() == RACE_NIGHTELF)
             pCurrChar->CastSpell(pCurrChar, 20584, true, nullptr);// auras SPELL_AURA_INCREASE_SPEED(+speed in wisp form), SPELL_AURA_INCREASE_SWIM_SPEED(+swim speed in wisp form), SPELL_AURA_TRANSFORM (to wisp form)
         pCurrChar->CastSpell(pCurrChar, 8326, true, nullptr);     // auras SPELL_AURA_GHOST, SPELL_AURA_INCREASE_SPEED(why?), SPELL_AURA_INCREASE_SWIM_SPEED(why?)
 
@@ -815,26 +794,26 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     pCurrChar->ContinueTaxiFlight();
 
     // Load pet if any and player is alive and not in taxi flight
-    if(pCurrChar->IsAlive() && pCurrChar->m_taxi.GetTaxiSource()==0)
+    if (pCurrChar->IsAlive() && pCurrChar->m_taxi.GetTaxiSource() == 0)
         pCurrChar->LoadPet();
 
     // Set FFA PvP for non GM in non-rest mode
-    if(sWorld->IsFFAPvPRealm() && !pCurrChar->IsGameMaster() && !pCurrChar->HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_RESTING) )
-        pCurrChar->SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+    if (sWorld->IsFFAPvPRealm() && !pCurrChar->IsGameMaster() && !pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING))
+        pCurrChar->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
 
-    if(pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
+    if (pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
         pCurrChar->SetContestedPvP();
 
     pCurrChar->RemoveAurasByType(SPELL_AURA_BIND_SIGHT);
 
     // Apply at_login requests
-    if(pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_SPELLS))
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_SPELLS))
     {
         pCurrChar->resetSpells();
         SendNotification(LANG_RESET_SPELLS);
     }
 
-    if(pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
     {
         pCurrChar->ResetTalents(true);
         SendNotification(LANG_RESET_TALENTS);
@@ -860,42 +839,42 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'16' WHERE guid = %u", pCurrChar->GetGUIDLow());
     }
 
-    if(pCurrChar->HasAtLoginFlag(AT_LOGIN_ALL_REP)) {
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(942),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(935),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(936),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(1011),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(970),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(967),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(989),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(932),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(934),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(1038),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(1077),42999);
-        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(990),42999);
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_ALL_REP)) {
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(942), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(935), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(936), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(1011), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(970), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(967), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(989), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(932), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(934), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(1038), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(1077), 42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(990), 42999);
 
         // Factions depending on team, like cities and some more stuff
-        switch(pCurrChar->GetTeam())
+        switch (pCurrChar->GetTeam())
         {
         case ALLIANCE:
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(72),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(47),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(69),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(930),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(730),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(978),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(54),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(946),42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(72), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(47), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(69), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(930), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(730), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(978), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(54), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(946), 42999);
             break;
         case HORDE:
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(76),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(68),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(81),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(911),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(729),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(941),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(530),42999);
-            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(947),42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(76), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(68), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(81), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(911), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(729), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(941), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(530), 42999);
+            pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(947), 42999);
             break;
         default:
             break;
@@ -904,7 +883,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     }
 
     // announce group about member online (must be after add to player list to receive announce to self)
-    if(Group *group = pCurrChar->GetGroup())
+    if (Group *group = pCurrChar->GetGroup())
     {
         //pCurrChar->groupInfo.group->SendInit(this); // useless
         group->CheckLeader(pCurrChar->GetGUID(), false); //check leader login
@@ -912,28 +891,28 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     }
 
     // show time before shutdown if shutdown planned.
-    if(sWorld->IsShuttingDown())
-        sWorld->ShutdownMsg(true,pCurrChar,sWorld->GetShutdownReason());
+    if (sWorld->IsShuttingDown())
+        sWorld->ShutdownMsg(true, pCurrChar, sWorld->GetShutdownReason());
 
-    if(sWorld->getConfig(CONFIG_ALL_TAXI_PATHS))
+    if (sWorld->getConfig(CONFIG_ALL_TAXI_PATHS))
         pCurrChar->SetTaxiCheater(true);
 
-    if(pCurrChar->IsGameMaster())
+    if (pCurrChar->IsGameMaster())
         SendNotification(LANG_GM_ON);
 
     std::string IP_str = GetRemoteAddress();
     //sLog->outChar("Account: %d (IP: %s) Login Character:[%s] (guid:%u)",
-   //     GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUIDLow());
+    //     GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUIDLow());
 
     m_playerLoading = false;
 
-    #ifdef PLAYERBOT
+#ifdef PLAYERBOT
     if (!_player->GetPlayerbotAI())
     {
         _player->SetPlayerbotMgr(new PlayerbotMgr(_player));
         sRandomPlayerbotMgr.OnPlayerLogin(_player);
     }
-    #endif
+#endif
 
     //Hook for OnLogin Event
     //    sScriptMgr->OnPlayerLogin(pCurrChar, firstLogin);
@@ -945,6 +924,26 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     {
         pCurrChar->RepopAtGraveyard();
     }
+}
+
+void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
+{
+    uint64 playerGuid = holder->GetGuid();
+
+    Player* pCurrChar = nullptr;
+    pCurrChar = new Player(this);
+
+    // "GetAccountId()==db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
+    if (!pCurrChar->LoadFromDB(GUID_LOPART(playerGuid), holder))
+    {
+        KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick
+        delete pCurrChar;                                   // delete it manually
+        delete holder;                                      // delete all unprocessed queries
+        m_playerLoading = false;
+        return;
+    }
+
+    _HandlePlayerLogin(pCurrChar, holder);
 }
 
 void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )

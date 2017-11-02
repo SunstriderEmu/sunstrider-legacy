@@ -1,10 +1,10 @@
 // List all touches here
 
-void Touch_test_auras();
-void Touch_test_talent_priest();    
+void AddSC_test_dummy();
+void AddSC_test_auras_stacking();
 
 void AddTestsScripts()
 {
-    Touch_test_auras();
-    Touch_test_talent_priest();
+    AddSC_test_dummy();
+    AddSC_test_auras_stacking();
 }

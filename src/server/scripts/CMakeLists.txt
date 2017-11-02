@@ -165,8 +165,6 @@ foreach(SCRIPT_MODULE ${SCRIPT_MODULE_LIST})
       PRIVATE
 		#sunstrider: Added dependency to scripts library, so that we include pch directory. Dunno why it is needed for intellisense to work properly
 		scripts
-        #sunstrider: this one is only used for tests but let's keep this simple
-        catch
     )
     set_target_properties(${SCRIPT_MODULE_PROJECT_NAME}
       PROPERTIES
@@ -211,8 +209,6 @@ target_link_libraries(scripts
   PUBLIC
     game-interface
     database
-  PRIVATE
-    catch
 )
 
 target_include_directories(scripts
@@ -243,3 +239,4 @@ if (DISABLED_SCRIPT_MODULE_PROJECTS)
 endif()
 
 message("")
+

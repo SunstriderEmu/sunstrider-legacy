@@ -34,7 +34,6 @@
 #include "MapManager.h"
 #include "ScriptReloadMgr.h"
 #include "AppenderDB.h"
-#include <segvcatch.h>
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_UNIX
 #include <fstream>
 #include <execinfo.h>
@@ -170,12 +169,6 @@ extern int main(int argc, char **argv)
     {
         printf("Error in config file: %s\n", configError.c_str());
         return 1;
-    }
-
-    if (sWorld->getConfig(CONFIG_MAP_CRASH_RECOVERY_ENABLED))
-    {
-        segvcatch::init_segv(handle_segv);
-        segvcatch::init_fpe(handle_segv);
     }
 
     std::shared_ptr<boost::asio::io_service> ioService = std::make_shared<boost::asio::io_service>();

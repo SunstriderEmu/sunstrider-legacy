@@ -120,14 +120,16 @@ typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMa
 
 enum MapType
 {
-    //not specialized
+    // not specialized
     MAP_TYPE_MAP, 
-    //MapInstanced class
+    // MapInstanced class
     MAP_TYPE_MAP_INSTANCED,
-    //InstanceMap class
+    // InstanceMap class
     MAP_TYPE_INSTANCE_MAP,
-    //BattlegroundMap class
+    // BattlegroundMap class
     MAP_TYPE_BATTLEGROUND_MAP,
+    // TestMap class
+    MAP_TYPE_TEST_MAP,
 };
 
 class TC_GAME_API Map : public GridRefManager<NGridType>
@@ -292,7 +294,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         MapDifficulty const* GetMapDifficulty() const;
 
         bool Instanceable() const;
-        // NOTE: this duplicate of Instanceable(), but Instanceable() can be changed when BG also will be instanceable
         bool IsDungeon() const;
         bool IsNonRaidDungeon() const;
         bool IsRaid() const;
@@ -327,6 +328,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         DynamicObject* GetDynamicObject(ObjectGuid const& guid);
 		Pet* GetPet(ObjectGuid const& guid);
 		Creature* GetCreatureWithSpawnId(uint32 tableGUID);
+        WorldObject* GetWorldObject(ObjectGuid const& guid);
 
 		MapStoredObjectTypesContainer& GetObjectsStore() { return _objectsStore; }
 
@@ -460,6 +462,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 		}
 
 		uint32 GetLastMapUpdateTime() const { return _lastMapUpdate; }
+
     private:
 
         void LoadVMap(int pX, int pY);
@@ -553,7 +556,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         ActiveForcedNonPlayers m_activeForcedNonPlayers;
         ActiveForcedNonPlayers::iterator m_activeForcedNonPlayersIter;
 
-
+        MapType i_mapType;
+        bool m_disableMapObjects; //do not load creatures and gameobjects. For testing purpose.
     private:
         Player* _GetScriptPlayerSourceOrTarget(Object* source, Object* target, ScriptInfo const* scriptInfo) const;
         Creature* _GetScriptCreatureSourceOrTarget(Object* source, Object* target, ScriptInfo const* scriptInfo, bool bReverse = false) const;
@@ -565,19 +569,14 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         GameObject* _FindGameObject(WorldObject* pWorldObject, ObjectGuid::LowType guid) const;
 
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
-        GridMap *GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
+        GridMap* GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
 		//these functions used to process player/mob aggro reactions and
 		//visibility calculations. Highly optimized for massive calculations
 		void ProcessRelocationNotifies(const uint32 diff);
 
-        MapType i_mapType;
 		bool i_scriptLock;
-		/*
-        std::vector<uint64> i_unitsToNotifyBacklog;
-        std::vector<Unit*> i_unitsToNotify;
-		*/
         std::set<WorldObject *> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;
 		std::set<WorldObject*> i_worldObjects;
@@ -588,14 +587,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         // Type specific code for add/remove to/from grid
         template<class T>
             void AddToGrid(T*, Cell const&);
-
-        template<class T>
-            void AddNotifier(T*);
-
-			/*
-        template<class T>
-            void RemoveFromGrid(T*, NGridType *, Cell const&);
-			*/
 
         template<class T>
             void DeleteFromWorld(T*);
@@ -655,6 +646,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 		//used for fast base_map (e.g. MapInstanced class object) search for
 		//InstanceMaps and BattlegroundMaps...
 		Map* m_parentMap;
+
 };
 
 enum InstanceResetMethod
@@ -689,11 +681,20 @@ class TC_GAME_API InstanceMap : public Map
 
         float GetDefaultVisibilityDistance() const override;
 		float GetVisibilityNotifierPeriod() const override;
+    protected:
+        bool m_unloadWhenEmpty;
     private:
         bool m_resetAfterUnload;
-        bool m_unloadWhenEmpty;
         InstanceScript* i_data;
         uint32 i_script_id;
+};
+
+class TC_GAME_API TestMap : public InstanceMap
+{
+public:
+    TestMap(uint32 id, uint32 InstanceId, uint8 spawnMode, Map* parent, bool enableMapObjects);
+    void RemoveAllPlayers() override;
+    void DisconnectAllBots();
 };
 
 class TC_GAME_API BattlegroundMap : public Map

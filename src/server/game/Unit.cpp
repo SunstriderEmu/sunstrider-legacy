@@ -1728,10 +1728,11 @@ float Unit::CalculateAverageResistReduction(SpellSchoolMask schoolMask, Unit con
     // Resistance can't be negative
     victimResistance = std::max(victimResistance, 0);
 
-    // level-based resistance does not apply to binary spells, and cannot be overcome by spell penetration
+    // TC: level-based resistance does not apply to binary spells, and cannot be overcome by spell penetration
     // "Empirical evidence shows that mobs that are higher level than yourself have an innate chance of partially resisting spell damage that is impossible to counter."
-    /* See also Wowwiki's article on Magical Resistance: http://wowwiki.wikia.com/wiki/Formulas:Magical_resistance?oldid=1603715
-    Level-based resistance (not to be confused with level-based miss) can play a factor in total resists. For every level that a mob has over the player, there is 8 resist (believed; the exact number may be higher) added. For boss fights, this means there is 15-24 resistance added. This extra resistance means there will be partial resists on non-binary spells from the added resistance. However, this resistance has been shown to not apply to binary spells at all. This level based resistance cannot be reduced by any means, not even Spell Penetration.
+    /* "See also Wowwiki's article on Magical Resistance: http://wowwiki.wikia.com/wiki/Formulas:Magical_resistance?oldid=1603715 Level-based resistance (not to be confused with level-based miss) can play a factor in total resists. For every level that a mob has over the player, there is 8 resist (believed; the exact number may be higher) added. For boss fights, this means there is 15-24 resistance added. This extra resistance means there will be partial resists on non-binary spells from the added resistance. However, this resistance has been shown to not apply to binary spells at all. This level based resistance cannot be reduced by any means, not even Spell Penetration."
+    But Is it 8 or 5 per level ?
+    "Frostbolt, however, is a binary spell, meaning it has special rules regarding magic resist. A binary spell can only ever hit or miss; it will not ever partially resist. Because of this, frostbolt is completely unaffected by level based magic resist. We're not exactly sure why this occurs, but frost mages almost always see a 99% hit rate on frostbolt (assuming they are hit capped like they should be)  Therefore the 6% damage reduction can be completely ignored. This does not mean that frostbolt does more damage than fireball; it is only another consideration that has been made when comparing specs and theorycrafting."
     */
     int32 levelDiff = victim->GetLevelForTarget(this) - GetLevelForTarget(victim);
     if (levelDiff > 0 && (!spellInfo || !spellInfo->HasAttribute(SPELL_ATTR_CU_BINARY_SPELL)))

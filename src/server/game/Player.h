@@ -979,6 +979,7 @@ enum TeleportToOptions
     TELE_TO_NOT_UNSUMMON_PET    = 0x08,
     TELE_TO_SPELL               = 0x10,
     TELE_TO_TRANSPORT_TELEPORT  = 0x20,
+    TELE_TO_TEST_MODE           = 0x40,
 };
 
 /// Type of environmental damages
@@ -1095,6 +1096,19 @@ struct Gladiator {
     uint8 rank;
 };
 
+class LoginQueryHolder : public SQLQueryHolder
+{
+private:
+    uint32 m_accountId;
+    uint64 m_guid;
+public:
+    LoginQueryHolder(uint32 accountId, uint64 guid)
+        : m_accountId(accountId), m_guid(guid) { }
+    uint64 GetGuid() const { return m_guid; }
+    uint32 GetAccountId() const { return m_accountId; }
+    bool Initialize();
+};
+
 #define MAX_GLADIATORS_RANK 3
 
 /// Holder for Battleground data
@@ -1143,6 +1157,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 		void StopCastingCharm();
         void StopCastingBindSight();
 
+        void SetTeleportingToTest(uint32 instanceId);
+        uint32 GetTeleportingToTest() const { return m_teleportToTestInstanceId; }
         bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0);
 
         bool TeleportTo(WorldLocation const &loc, uint32 options = 0)
@@ -1542,7 +1558,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /***                   SAVE SYSTEM                     ***/
         /*********************************************************/
 
-        void SaveToDB(bool create = false);
+        virtual void SaveToDB(bool create = false);
         void SaveInventoryAndGoldToDB(SQLTransaction trans);                    // fast save function for item/money cheating preventing
         void SaveGoldToDB(SQLTransaction trans);
         void SaveDataFieldToDB();
@@ -2607,6 +2623,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         time_t m_deathTime; //time of death
 
         uint32 m_restTime;
+
+        uint32 m_teleportToTestInstanceId; //bypass most teleport checks...
 
         uint32 m_WeaponProficiency;
         uint32 m_ArmorProficiency;

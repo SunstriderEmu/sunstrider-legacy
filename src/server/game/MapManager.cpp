@@ -13,6 +13,8 @@
 #include "ObjectMgr.h"
 #include "GridMap.h"
 
+#define TEST_MAP_STARTING_ID 10000
+
 MapManager::MapManager() : 
     _nextInstanceId(0), _scheduledScripts(0)
 {
@@ -39,16 +41,19 @@ void MapManager::InitializeVisibilityDistanceInfo()
         i_map.second->InitVisibilityDistance();
 }
 
-Map* MapManager::CreateBaseMap(uint32 id)
+Map* MapManager::CreateBaseMap(uint32 id, bool testing)
 {
-    Map *m = FindBaseMap(id);
+    Map* m = FindBaseMap(id, testing);
 
     if( m == nullptr )
     {
         std::lock_guard<std::mutex> lock(_mapsLock);
 
         const MapEntry* entry = sMapStore.LookupEntry(id);
-        if (entry && entry->Instanceable())
+        if (!entry)
+            return nullptr; //unknown map
+
+        if (entry->Instanceable() || testing)
         {
             m = new MapInstanced(id, i_gridCleanUpDelay);
         }
@@ -58,7 +63,8 @@ Map* MapManager::CreateBaseMap(uint32 id)
             //TC map->LoadRespawnTimes();
             m->LoadCorpseData();
         }
-        i_maps[id] = m;
+        uint32 internal_id = testing ? id + TEST_MAP_STARTING_ID : id;
+        i_maps[internal_id] = m;
     }
 
     assert(m != nullptr);
@@ -73,17 +79,31 @@ Map* MapManager::FindBaseNonInstanceMap(uint32 mapId) const
     return map;
 }
 
-Map* MapManager::FindBaseMap(uint32 id) const
+Map* MapManager::FindBaseMap(uint32 id, bool testing) const
 {
-    auto iter = i_maps.find(id);
+    uint32 internal_id = testing ? id + TEST_MAP_STARTING_ID : id;
+    auto iter = i_maps.find(internal_id);
     return (iter == i_maps.end() ? nullptr : iter->second);
 }
 
 Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId)
 {
-    Map *m = CreateBaseMap(id);
+    Map* m = CreateBaseMap(id);
 
-    if (m && m->Instanceable()) 
+    if (uint32 teleportToTestInstance = player->GetTeleportingToTest())
+    {
+        uint32 internal_id = id + TEST_MAP_STARTING_ID;
+        auto iter = i_maps.find(internal_id);
+        m = iter != i_maps.end() ? iter->second : nullptr;
+        if (m)
+        {
+            ASSERT(m->GetMapType() == MAP_TYPE_MAP_INSTANCED);
+            m = static_cast<MapInstanced*>(m)->FindInstanceMap(teleportToTestInstance);
+            if (m == nullptr)
+                return nullptr;
+            ASSERT(m->GetId() == id);
+        }
+    } else if (m && m->Instanceable())
         m = ((MapInstanced*)m)->CreateInstanceForPlayer(id, player, loginInstanceId);
 
     return m;
@@ -107,7 +127,7 @@ Map::EnterState MapManager::PlayerCannotEnter(uint32 mapid, Player* player, bool
     if (!entry)
         return Map::CANNOT_ENTER_NO_ENTRY;
 
-    if (!entry->IsDungeon())
+    if (!entry->IsDungeon() || player->GetTeleportingToTest())
         return Map::CAN_ENTER;
 
     InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(mapid);
@@ -254,6 +274,45 @@ void MapManager::UnloadAll()
         m_updater.deactivate();
 
     Map::DeleteStateMachine();
+}
+
+TestMap* MapManager::CreateTestMap(uint32 mapid, uint32& testMapInstanceId, Difficulty diff, bool enableMapObjects)
+{
+    MapInstanced* mapInstanced = static_cast<MapInstanced*>(CreateBaseMap(mapid, true));
+    if (!mapInstanced)
+        return nullptr;
+
+    testMapInstanceId = sMapMgr->GenerateInstanceId();
+    TestMap* testMap = mapInstanced->CreateTestInsteance(testMapInstanceId, diff, enableMapObjects);
+    return testMap;
+}
+
+bool MapManager::UnloadTestMap(uint32 mapId, uint32 instanceId)
+{
+    uint32 internalId = TEST_MAP_STARTING_ID + mapId;
+    auto itr = i_maps.find(internalId);
+    if (itr == i_maps.end())
+        return false;
+
+    MapInstanced* map = dynamic_cast<MapInstanced*>(itr->second);
+    ASSERT(map != nullptr);
+    Map* _testMap = map->FindInstanceMap(instanceId);
+    if (!_testMap)
+    {
+        TC_LOG_ERROR("test.unit_test", "Failed to delete map %u because it was not found", instanceId);
+        return false;
+    }
+    if (_testMap->GetMapType() != MAP_TYPE_TEST_MAP)
+    {
+        TC_LOG_ERROR("test.unit_test", "Failed to delete map %u because it is not a test map!", instanceId);
+        return false;
+    }
+    TestMap* testMap = static_cast<TestMap*>(_testMap);
+
+    testMap->DisconnectAllBots(); //This will delete players objects
+    testMap->RemoveAllPlayers();
+    //testMap should trigger unload when all players have left
+    return true;
 }
 
 uint32 MapManager::GetNumInstances()

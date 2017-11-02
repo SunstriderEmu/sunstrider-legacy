@@ -2923,7 +2923,10 @@ PlayerInfo const* ObjectMgr::GetPlayerInfo(uint32 race, uint32 class_) const
     if (race >= MAX_RACES)   return nullptr;
     if (class_ >= MAX_CLASSES) return nullptr;
     PlayerInfo const* info = _playerInfo[race][class_];
-    if (info->displayId_m == 0 || info->displayId_f == 0) return nullptr;
+    if (!info)
+        return nullptr;
+    if (info->displayId_m == 0 || info->displayId_f == 0) 
+        return nullptr;
     return info;
 }
 

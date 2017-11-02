@@ -1,4 +1,3 @@
-#include "catch.hpp"
 #include <vector>
 
 #include "Player.h"

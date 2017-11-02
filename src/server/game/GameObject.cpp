@@ -909,11 +909,11 @@ void GameObject::SetLootState(LootState state, Unit* unit)
     }*/
 }
 
-void GameObject::SetGoState(GOState state)
+void GameObject::SetGoState(GOState state, Unit* invoker /* = nullptr */)
 {
     SetUInt32Value(GAMEOBJECT_STATE, state);
     if(AI())
-        AI()->OnStateChanged(state, nullptr);
+        AI()->OnStateChanged(state, invoker);
 
     if (m_model && !IsTransport())
     {
@@ -1176,8 +1176,8 @@ void GameObject::UseDoorOrButton(uint32 time_to_restore /* = 0 */, bool alternat
     if(!time_to_restore)
         time_to_restore = GetAutoCloseTime();
 
-    SwitchDoorOrButton(true,alternative);
-    SetLootState(GO_ACTIVATED,user);
+    SwitchDoorOrButton(true, alternative, user);
+    SetLootState(GO_ACTIVATED, user);
 
     m_cooldownTime = time_to_restore ? (GameTime::GetGameTimeMS() + time_to_restore * SECOND * IN_MILLISECONDS) : 0;
 }
@@ -1257,7 +1257,7 @@ void GameObject::SetGoArtKit(uint32 kit)
         data->ArtKit = kit;
 }
 
-void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false */)
+void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false */, Unit* user /* = nullptr */ )
 {
     if (activate)
         SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
@@ -1265,9 +1265,9 @@ void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false *
         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
     if (GetGoState() == GO_STATE_READY)                      //if closed -> open
-        SetGoState(alternative ? GO_STATE_ACTIVE_ALTERNATIVE : GO_STATE_ACTIVE);
+        SetGoState(alternative ? GO_STATE_ACTIVE_ALTERNATIVE : GO_STATE_ACTIVE, user);
     else                                                    //if open -> close
-        SetGoState(GO_STATE_READY);
+        SetGoState(GO_STATE_READY, user);
 }
 
 void GameObject::Use(Unit* user)
@@ -1956,4 +1956,29 @@ void GameObject::GetRespawnPosition(float &x, float &y, float &z, float* ori /* 
     z = GetPositionZ();
     if (ori)
         *ori = GetOrientation();
+}
+
+//return close time in second
+uint32 GameObject::GetAutoCloseTime() const
+{
+    uint32 autoCloseTime = 0;
+    switch (GetGoType())
+    {
+    case GAMEOBJECT_TYPE_DOOR:          autoCloseTime = GetGOInfo()->door.autoCloseTime; break;
+    case GAMEOBJECT_TYPE_BUTTON:        autoCloseTime = GetGOInfo()->button.autoCloseTime; break;
+    case GAMEOBJECT_TYPE_TRAP:          autoCloseTime = GetGOInfo()->trap.autoCloseTime; break;
+    case GAMEOBJECT_TYPE_GOOBER:        autoCloseTime = GetGOInfo()->goober.autoCloseTime; break;
+    case GAMEOBJECT_TYPE_TRANSPORT:     autoCloseTime = GetGOInfo()->transport.autoCloseTime; break;
+    case GAMEOBJECT_TYPE_AREADAMAGE:    autoCloseTime = GetGOInfo()->areadamage.autoCloseTime; break;
+    default: break;
+    }
+    uint32 closeTime = autoCloseTime / 0x10000;
+    if (autoCloseTime != 0 && closeTime == 0)
+    {
+        //sunstrider: a close time was specified but it was rounded down to 0... probably a scripting error, but let's at least return 1s so that the gameobject has an auto close time
+        closeTime = 1;
+        TC_LOG_ERROR("entities.gameobject", "Gameobject %u has an auto close time but is too low (%u is going to be rounded down to 0 after calculation). Using 1000ms instead.", GetGOInfo()->entry, autoCloseTime);
+    }
+    return closeTime;
+    //TC:             return autoCloseTime;              // prior to 3.0.3, conversion was / 0x10000;
 }

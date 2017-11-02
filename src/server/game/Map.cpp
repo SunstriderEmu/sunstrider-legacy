@@ -34,6 +34,9 @@
 #include "Totem.h"
 #include "Transport.h"
 #include "ScriptMgr.h"
+#ifdef TESTS
+#include "TestCase.h"
+#endif
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
@@ -101,6 +104,7 @@ void Map::LoadMap(uint32 mapid, uint32 instanceid, int x,int y)
 //+++        if (!baseMap->GridMaps[x][y])  don't check for GridMaps[gx][gy], we need the management for vmaps
 //            return;
 
+        ASSERT(m_parentMap != this);
         ((MapInstanced*)(m_parentMap))->AddGridMapReference(GridCoord(x,y));
         GridMaps[x][y] = m_parentMap->GridMaps[x][y];
         return;
@@ -170,7 +174,7 @@ Map::Map(MapType type, uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnM
    _transportsUpdateIter(_transports.end()),
    _defaultLight(GetDefaultMapLight(id)),
    i_mapType(type), i_gridExpiry(expiry),
-   i_scriptLock(false)
+   i_scriptLock(false), m_disableMapObjects(false)
 {
     m_parentMap = (_parent ? _parent : this);
     for(uint32 idx=0; idx < MAX_NUMBER_OF_GRIDS; ++idx)
@@ -442,8 +446,11 @@ void Map::EnsureGridLoaded(const Cell& cell)
 
         setGridObjectDataLoaded(true, cell.GridX(), cell.GridY());
 
-        ObjectGridLoader loader(*grid, this, cell);
-        loader.LoadN();
+        if (!m_disableMapObjects)
+        {
+            ObjectGridLoader loader(*grid, this, cell);
+            loader.LoadN();
+        }
 
         Balance();
     }
@@ -2513,6 +2520,23 @@ void Map::UpdateIteratorBack(Player* player)
         m_mapRefIter = m_mapRefIter->nocheck_prev();
 }
 
+WorldObject* Map::GetWorldObject(ObjectGuid const& guid)
+{
+    switch (guid.GetHigh())
+    {
+    case HighGuid::Player:        return GetPlayer(guid);
+    case HighGuid::Transport:
+    case HighGuid::Mo_Transport:
+    case HighGuid::GameObject:    return GetGameObject(guid);
+    case HighGuid::Vehicle:
+    case HighGuid::Unit:          return GetCreature( guid);
+    case HighGuid::Pet:           return GetPet(guid);
+    case HighGuid::DynamicObject: return GetDynamicObject(guid);
+    case HighGuid::Corpse:        return GetCorpse( guid);
+    default:                      return nullptr;
+    }
+}
+
 Creature* Map::GetCreatureWithSpawnId(uint32 spawnId)
 {
     auto creatureBounds = GetCreatureBySpawnIdStore().equal_range(spawnId);
@@ -2613,8 +2637,8 @@ template TC_GAME_API void Map::RemoveFromMap(DynamicObject *, bool);
 
 /* ******* Dungeon Instance Maps ******* */
 
-InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _parent)
-  : Map(MAP_TYPE_INSTANCE_MAP, id, expiry, InstanceId, SpawnMode, _parent), i_data(nullptr),
+InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 instanceId, uint8 spawnMode, Map* _parent)
+  : Map(MAP_TYPE_INSTANCE_MAP, id, expiry, instanceId, spawnMode, _parent), i_data(nullptr),
     m_resetAfterUnload(false), m_unloadWhenEmpty(false)
 {
     //lets initialize visibility distance for dungeons
@@ -2623,6 +2647,15 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 Spaw
     // the timer is started by default, and stopped when the first player joins
     // this make sure it gets unloaded if for some reason no player joins
     m_unloadTimer = std::max(sWorld->getConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
+}
+
+TestMap::TestMap(uint32 id, uint32 instanceId, uint8 spawnMode, Map* _parent, bool enableMapObjects)
+    : InstanceMap(id, 0, instanceId, spawnMode, _parent)
+{
+    i_mapType = MAP_TYPE_TEST_MAP;
+    m_unloadTimer = 0; //disable unload for test maps
+    m_unloadWhenEmpty = true;
+    m_disableMapObjects = !enableMapObjects;
 }
 
 InstanceMap::~InstanceMap()
@@ -2658,10 +2691,10 @@ Map::EnterState InstanceMap::CannotEnter(Player* player)
         ABORT();
         // return CANNOT_ENTER_ALREADY_IN_MAP;
     }
-
+    
     // cannot enter if the instance is full (player cap), GMs don't count
-    InstanceTemplate const* iTemplate = sObjectMgr->GetInstanceTemplate(GetId());
-    if (!player->IsGameMaster() && GetPlayersCountExceptGMs() >= iTemplate->maxPlayers)
+    InstanceTemplate const* instanceTemplate = sObjectMgr->GetInstanceTemplate(GetId());
+    if (instanceTemplate && !player->IsGameMaster() && GetPlayersCountExceptGMs() >= instanceTemplate->maxPlayers)
     {
         //TC_LOG_DEBUG("maps","MAP: Instance '%u' of map '%s' cannot have more than '%u' players. Player '%s' rejected", GetInstanceId(), GetMapName(), iTemplate->maxPlayers, player->GetName());
         return CANNOT_ENTER_MAX_PLAYERS;
@@ -2945,10 +2978,35 @@ void Map::RemoveAllPlayers()
             {
                 TC_LOG_ERROR("maps", "Map::UnloadAll: player %s is still in map %u during unload, this should not happen!", player->GetName().c_str(), GetId());
                 player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->GetOrientation());
-               
             }
         }
     }
+}
+
+void TestMap::RemoveAllPlayers()
+{
+    if (HavePlayers())
+        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+            if (Player* player = itr->GetSource())
+                if (!player->IsBeingTeleportedFar())
+                    player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->GetOrientation());
+}
+
+void TestMap::DisconnectAllBots()
+{
+#ifdef TESTS
+    if (!HavePlayers())
+        return;
+
+    std::list<Player*> botsToRemove;
+    for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+        if (Player* player = itr->GetSource())
+            if (player->GetPlayerbotAI())
+                botsToRemove.push_back(player);
+
+    for (auto itr : botsToRemove)
+        TestCase::_RemoveTestBot(itr);
+#endif
 }
 
 void InstanceMap::UnloadAll()

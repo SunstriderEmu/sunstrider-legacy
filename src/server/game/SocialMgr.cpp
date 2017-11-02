@@ -295,10 +295,16 @@ void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
         }
     }
 }
-
-PlayerSocial *SocialMgr::LoadFromDB(QueryResult result, uint32 guid)
+PlayerSocial* SocialMgr::GetDefault(uint32 guid)
 {
-    PlayerSocial *social = &m_socialMap[guid];
+    PlayerSocial* social = &m_socialMap[guid];
+    social->SetPlayerGUID(guid);
+    return social;
+}
+
+PlayerSocial* SocialMgr::LoadFromDB(QueryResult result, uint32 guid)
+{
+    PlayerSocial* social = &m_socialMap[guid];
     social->SetPlayerGUID(guid);
 
     if(!result)

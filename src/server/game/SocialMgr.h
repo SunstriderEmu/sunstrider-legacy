@@ -133,7 +133,8 @@ class TC_GAME_API SocialMgr
         void SendFriendStatus(Player *player, FriendsResult result, uint32 friend_guid, bool broadcast);
         void BroadcastToFriendListers(Player *player, WorldPacket *packet);
         // Loading
-        PlayerSocial *LoadFromDB(QueryResult result, uint32 guid);
+        PlayerSocial* LoadFromDB(QueryResult result, uint32 guid);
+        PlayerSocial* GetDefault(uint32 guid);
     private:
         SocialMap m_socialMap;
 };

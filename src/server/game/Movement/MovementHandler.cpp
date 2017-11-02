@@ -70,6 +70,7 @@ void WorldSession::HandleMoveWorldportAck()
 
     Map* oldMap = GetPlayer()->GetMap();
     Map* newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer());
+    GetPlayer()->SetTeleportingToTest(0);
 
     if (GetPlayer()->IsInWorld())
     {

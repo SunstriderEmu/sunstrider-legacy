@@ -339,8 +339,6 @@ enum WorldConfigs
     CONFIG_HOTSWAP_INSTALL_ENABLED,
     CONFIG_HOTSWAP_PREFIX_CORRECTION_ENABLED,
 
-    CONFIG_MAP_CRASH_RECOVERY_ENABLED,
-
     CONFIG_DB_PING_INTERVAL,
 
     CONFIG_VALUE_COUNT,
@@ -588,13 +586,13 @@ class TC_GAME_API World
         void LoadMotdAndTwitter();
 
         void SendWorldText(int32 string_id, ...);
-        void SendGlobalText(const char* text, WorldSession *self);
+        void SendGlobalText(const char* text, WorldSession* self = nullptr);
         void SendGMText(int32 string_id, ...);
-        void SendGlobalMessage(WorldPacket *packet, WorldSession *self = nullptr, uint32 team = 0);
-        void SendGlobalGMMessage(WorldPacket *packet, WorldSession *self = nullptr, uint32 team = 0);
-        void SendZoneMessage(uint32 zone, WorldPacket *packet, WorldSession *self = nullptr, uint32 team = 0);
-        void SendZoneText(uint32 zone, const char *text, WorldSession *self = nullptr, uint32 team = 0);
-        void SendServerMessage(uint32 type, const char *text = "", Player* player = nullptr);
+        void SendGlobalMessage(WorldPacket* packet, WorldSession* self = nullptr, uint32 team = 0);
+        void SendGlobalGMMessage(WorldPacket* packet, WorldSession* self = nullptr, uint32 team = 0);
+        void SendZoneMessage(uint32 zone, WorldPacket* packet, WorldSession *self = nullptr, uint32 team = 0);
+        void SendZoneText(uint32 zone, const char* text, WorldSession* self = nullptr, uint32 team = 0);
+        void SendServerMessage(uint32 type, const char* text = "", Player* player = nullptr);
 
         //Force all connected clients to clear specified player cache
         void InvalidatePlayerDataToAllClient(uint64 guid);

@@ -158,21 +158,24 @@ class CharacterCreateInfo
 
     public:
 
-        /// User specified variables
-        std::string Name;
-        uint8 Race       = 0;
-        uint8 Class      = 0;
-        uint8 Gender     = GENDER_NONE;
-        uint8 Skin       = 0;
-        uint8 Face       = 0;
-        uint8 HairStyle  = 0;
-        uint8 HairColor  = 0;
-        uint8 FacialHair = 0;
-        uint8 OutfitId   = 0;
-        WorldPacket Data;
+    /// User specified variables
+    std::string Name;
+    uint8 Race       = 0;
+    uint8 Class      = 0;
+    uint8 Gender     = GENDER_NONE;
+    uint8 Skin       = 0;
+    uint8 Face       = 0;
+    uint8 HairStyle  = 0;
+    uint8 HairColor  = 0;
+    uint8 FacialHair = 0;
+    uint8 OutfitId   = 0;
+    WorldPacket Data;
 
-        /// Server side data
-        uint8 CharCount = 0;
+    /// Server side data
+    uint8 CharCount = 0;
+
+    // Randomize appearance and gender
+    void RandomizeAppearance();
 };
 
 struct CharacterRenameInfo
@@ -453,6 +456,7 @@ class TC_GAME_API WorldSession
         void HandlePlayerLoginOpcode(WorldPacket& recvPacket);
         void HandleCharEnum(PreparedQueryResult result);
         void HandlePlayerLogin(LoginQueryHolder * holder);
+        void _HandlePlayerLogin(Player* player, LoginQueryHolder * holder);
 
         void SendCharCreate(ResponseCodes result);
         void SendCharDelete(ResponseCodes result);

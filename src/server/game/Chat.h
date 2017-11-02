@@ -21,10 +21,9 @@ class ChatCommand
         uint32                        SecurityLevel;                   // function pointer required correct align (use uint32)
         /**
         Only set this to true if the command doesn't use the session.
-        This is used to determine if CLI or IRC can use the command, because they don't have sessions
+        This is used to determine if CLI can use the command, because it does not have have session
         */
         bool                          noSessionNeeded; 
-        bool                          AllowIRC;     //no effect if noSessionNeeded is set to false. This is the default irc authorisation and may be replaced by the 'commands' table value
         bool (ChatHandler::*Handler)(const char* args);
         std::string                   Help;
         std::vector<ChatCommand>      ChildCommands;
@@ -96,7 +95,7 @@ class TC_GAME_API ChatHandler
         static void SendGlobalGMSysMessage(const char *str);
     protected:
         explicit ChatHandler() : m_session(nullptr) {}      // for CLI subclass
-        static bool SetDataForCommandInTable(std::vector<ChatCommand>& table, const char* text, uint32 securityLevel, std::string const& help, std::string const& fullcommand, bool allowIRC);
+        static bool SetDataForCommandInTable(std::vector<ChatCommand>& table, const char* text, uint32 securityLevel, std::string const& help, std::string const& fullcommand);
 
         bool hasStringAbbr(const char* name, const char* part) const;
 
@@ -326,7 +325,12 @@ class TC_GAME_API ChatHandler
         bool HandleServerShutDownCommand(const char* args);
         bool HandleServerShutDownCancelCommand(const char* args);
         bool HandleServerSetConfigCommand(const char* args);
-        bool HandleTestsCommand(const char* args);
+
+        bool HandleTestsStartCommand(const char* args);
+        bool HandleTestsListCommand(const char* args);
+        bool HandleTestsRunningCommand(const char* args);
+        bool HandleTestsGoCommand(const char* args);
+        bool HandleTestsCancelCommand(const char* args);
 
         bool HandleAddHonorCommand(const char* args);
         bool HandleHonorAddKillCommand(const char* args);
@@ -616,13 +620,6 @@ class TC_GAME_API ChatHandler
         bool HandleDebugPvPAnnounce(const char* args);
         bool HandleSpawnBatchObjects(const char* args);
 
-        //IRC
-        bool HandleIRCReconnectCommand(const char* args);
-        //NYI
-        bool HandleIRCJoinCommand(const char* args);
-        bool HandleIRCPartCommand(const char* args);
-        bool HandleIRCQuitCommand(const char* args);
-
         bool HandleNpcSetCombatDistanceCommand(const char* args);
         bool HandleNpcAllowCombatMovementCommand(const char* args);
 
@@ -674,7 +671,7 @@ class TC_GAME_API ChatHandler
         static uint32 ReputationRankStrIndex[MAX_REPUTATION_RANK];
 
     private:
-        WorldSession * m_session;                           // != NULL for chat command call and NULL for CLI/IRC command
+        WorldSession * m_session;                           // != NULL for chat command call and NULL for CLI command
 
         // common global flag
         static bool load_command_table;

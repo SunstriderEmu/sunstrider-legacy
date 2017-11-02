@@ -152,7 +152,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 }
             }
 
-            /* kelno: why this check? SMART_TARGET_NONE should be a valid target for most talk types
+            /* sunstrider: why this check? SMART_TARGET_NONE should be a valid target for most talk types
             if (!talkTarget)
                 return;
             */
@@ -3494,11 +3494,12 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             ProcessAction(e, unit, var0, var1);
             break;
         }
-        case SMART_EVENT_DUMMY_EFFECT:
+        case SMART_EVENT_EVENT_PHASE_CHANGE:
         {
-            if (e.event.dummy.spell != var0 || e.event.dummy.effIndex != var1)
+            if (!IsInPhase(SmartPhaseMask(e.event.eventPhaseChange.phasemask)))
                 return;
-            ProcessAction(e, unit, var0, var1);
+
+            ProcessAction(e, GetLastInvoker());
             break;
         }
         case SMART_EVENT_GAME_EVENT_START:
@@ -3835,6 +3836,53 @@ void SmartScript::InstallEvents()
 
         mInstallEvents.clear();
     }
+}
+
+void SmartScript::IncPhase(uint32 p)
+{
+    // protect phase from overflowing
+    SetPhase(std::min<uint32>(SMART_EVENT_PHASE_COUNT, mEventPhase + p));
+}
+
+void SmartScript::DecPhase(uint32 p)
+{
+    if (p >= mEventPhase)
+        SetPhase(0);
+    else
+        SetPhase(mEventPhase - p);
+}
+
+bool SmartScript::IsInPhase(SmartPhaseMask phaseMask) const
+{
+    if (mEventPhase == 0)
+        return false;
+
+    return ((1 << (mEventPhase - 1)) & phaseMask) != 0;
+}
+
+bool SmartScript::IsInTemplatePhase(SmartPhaseMask phaseMask) const
+{
+    if (mEventTemplatePhase == 0)
+        return false;
+
+    return ((1 << (mEventTemplatePhase - 1)) & phaseMask) != 0;
+}
+
+void SmartScript::SetPhase(uint32 p)
+{
+
+    uint32 previous = mEventPhase;
+    mEventPhase = p;
+    if (mEventPhase != previous) 
+    {
+        ProcessEventsFor(SMART_EVENT_EVENT_PHASE_CHANGE); //TC event
+        ProcessEventsFor(SMART_EVENT_ENTER_PHASE, nullptr, mEventPhase); //Sunstrider event
+    }
+}
+
+void SmartScript::SetTemplatePhase(uint32 p)
+{
+    mEventTemplatePhase = p;
 }
 
 void SmartScript::OnUpdate(uint32 const diff)

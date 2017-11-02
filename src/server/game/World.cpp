@@ -57,6 +57,9 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#ifdef TESTS
+#include "TestMgr.h"
+#endif
 
 #ifdef PLAYERBOT
 #include "PlayerbotAIConfig.h"
@@ -1186,8 +1189,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_HOTSWAP_INSTALL_ENABLED] = sConfigMgr->GetBoolDefault("HotSwap.EnableInstall", true);
     m_configs[CONFIG_HOTSWAP_PREFIX_CORRECTION_ENABLED] = sConfigMgr->GetBoolDefault("HotSwap.EnablePrefixCorrection", true);
 
-    m_configs[CONFIG_MAP_CRASH_RECOVERY_ENABLED] = sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", false);
-
     m_configs[CONFIG_DB_PING_INTERVAL] = sConfigMgr->GetIntDefault("MaxPingTime", 5);
 }
 
@@ -1937,6 +1938,11 @@ void World::Update(time_t diff)
 
     sOutdoorPvPMgr->Update(diff);
     RecordTimeDiff("UpdateOutdoorPvPMgr");
+
+#ifdef TESTS
+    sTestMgr->Update(diff);
+    RecordTimeDiff("UpdatesTestMgr");
+#endif
 
     ///- Erase corpses once every 20 minutes
     if (m_timers[WUPDATE_CORPSES].Passed())

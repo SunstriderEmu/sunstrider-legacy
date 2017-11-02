@@ -307,6 +307,7 @@ extern LootStore LootTemplates_Skinning;
 extern LootStore LootTemplates_Disenchant;
 extern LootStore LootTemplates_Prospecting;
 extern LootStore LootTemplates_QuestMail;
+extern LootStore LootTemplates_Reference;
 
 void LoadLootTemplates_Creature();
 void LoadLootTemplates_Fishing();

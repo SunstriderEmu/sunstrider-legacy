@@ -6,6 +6,10 @@ IF(NOT TESTS)
 	SET(EXCLUDE_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/testing)
 ENDIF(NOT TESTS)
 
+IF(NOT TESTS)
+	SET(EXCLUDE_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/testing)
+ENDIF(NOT TESTS)
+
 CollectSourceFiles(
   ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE_SOURCES
@@ -64,7 +68,6 @@ target_link_libraries(game
   PRIVATE
     ${gperftools_lib}
     efsw
-	catch
 )
 
 set_target_properties(game

@@ -8,110 +8,115 @@
 #include "Guild.h"
 //#include "GuildMgr.h"
 #include "RandomPlayerbotFactory.h"
+#include "TestPlayer.h"
 
-map<uint8, vector<uint8> > RandomPlayerbotFactory::availableRaces;
+std::map<uint8, std::vector<uint8>> RandomPlayerbotFactory::availableRaces;
+
+std::map<uint8, std::vector<uint8>> const& RandomPlayerbotFactory::GetAvailableRacesForClasses()
+{
+    if (availableRaces.empty())
+    {
+        availableRaces[CLASS_WARRIOR].push_back(RACE_HUMAN);
+        availableRaces[CLASS_WARRIOR].push_back(RACE_NIGHTELF);
+        availableRaces[CLASS_WARRIOR].push_back(RACE_GNOME);
+        availableRaces[CLASS_WARRIOR].push_back(RACE_DWARF);
+        availableRaces[CLASS_WARRIOR].push_back(RACE_ORC);
+        availableRaces[CLASS_WARRIOR].push_back(RACE_UNDEAD_PLAYER);
+        availableRaces[CLASS_WARRIOR].push_back(RACE_TAUREN);
+        availableRaces[CLASS_WARRIOR].push_back(RACE_TROLL);
+        availableRaces[CLASS_WARRIOR].push_back(RACE_DRAENEI);
+
+        availableRaces[CLASS_PALADIN].push_back(RACE_HUMAN);
+        availableRaces[CLASS_PALADIN].push_back(RACE_DWARF);
+        availableRaces[CLASS_PALADIN].push_back(RACE_DRAENEI);
+        availableRaces[CLASS_PALADIN].push_back(RACE_BLOODELF);
+
+        availableRaces[CLASS_ROGUE].push_back(RACE_HUMAN);
+        availableRaces[CLASS_ROGUE].push_back(RACE_DWARF);
+        availableRaces[CLASS_ROGUE].push_back(RACE_NIGHTELF);
+        availableRaces[CLASS_ROGUE].push_back(RACE_GNOME);
+        availableRaces[CLASS_ROGUE].push_back(RACE_ORC);
+        availableRaces[CLASS_ROGUE].push_back(RACE_TROLL);
+        availableRaces[CLASS_ROGUE].push_back(RACE_BLOODELF);
+
+        availableRaces[CLASS_PRIEST].push_back(RACE_HUMAN);
+        availableRaces[CLASS_PRIEST].push_back(RACE_DWARF);
+        availableRaces[CLASS_PRIEST].push_back(RACE_NIGHTELF);
+        availableRaces[CLASS_PRIEST].push_back(RACE_DRAENEI);
+        availableRaces[CLASS_PRIEST].push_back(RACE_TROLL);
+        availableRaces[CLASS_PRIEST].push_back(RACE_UNDEAD_PLAYER);
+        availableRaces[CLASS_PRIEST].push_back(RACE_BLOODELF);
+
+        availableRaces[CLASS_MAGE].push_back(RACE_HUMAN);
+        availableRaces[CLASS_MAGE].push_back(RACE_GNOME);
+        availableRaces[CLASS_MAGE].push_back(RACE_DRAENEI);
+        availableRaces[CLASS_MAGE].push_back(RACE_UNDEAD_PLAYER);
+        availableRaces[CLASS_MAGE].push_back(RACE_TROLL);
+        availableRaces[CLASS_MAGE].push_back(RACE_BLOODELF);
+
+        availableRaces[CLASS_WARLOCK].push_back(RACE_HUMAN);
+        availableRaces[CLASS_WARLOCK].push_back(RACE_GNOME);
+        availableRaces[CLASS_WARLOCK].push_back(RACE_UNDEAD_PLAYER);
+        availableRaces[CLASS_WARLOCK].push_back(RACE_ORC);
+        availableRaces[CLASS_WARLOCK].push_back(RACE_BLOODELF);
+
+        availableRaces[CLASS_SHAMAN].push_back(RACE_DRAENEI);
+        availableRaces[CLASS_SHAMAN].push_back(RACE_ORC);
+        availableRaces[CLASS_SHAMAN].push_back(RACE_TAUREN);
+        availableRaces[CLASS_SHAMAN].push_back(RACE_TROLL);
+
+        availableRaces[CLASS_HUNTER].push_back(RACE_DWARF);
+        availableRaces[CLASS_HUNTER].push_back(RACE_NIGHTELF);
+        availableRaces[CLASS_HUNTER].push_back(RACE_DRAENEI);
+        availableRaces[CLASS_HUNTER].push_back(RACE_ORC);
+        availableRaces[CLASS_HUNTER].push_back(RACE_TAUREN);
+        availableRaces[CLASS_HUNTER].push_back(RACE_TROLL);
+        availableRaces[CLASS_HUNTER].push_back(RACE_BLOODELF);
+
+        availableRaces[CLASS_DRUID].push_back(RACE_NIGHTELF);
+        availableRaces[CLASS_DRUID].push_back(RACE_TAUREN);
+    }
+    return availableRaces;
+}
 
 RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(accountId)
 {
-    availableRaces[CLASS_WARRIOR].push_back(RACE_HUMAN);
-    availableRaces[CLASS_WARRIOR].push_back(RACE_NIGHTELF);
-    availableRaces[CLASS_WARRIOR].push_back(RACE_GNOME);
-    availableRaces[CLASS_WARRIOR].push_back(RACE_DWARF);
-    availableRaces[CLASS_WARRIOR].push_back(RACE_ORC);
-    availableRaces[CLASS_WARRIOR].push_back(RACE_UNDEAD_PLAYER);
-    availableRaces[CLASS_WARRIOR].push_back(RACE_TAUREN);
-    availableRaces[CLASS_WARRIOR].push_back(RACE_TROLL);
-    availableRaces[CLASS_WARRIOR].push_back(RACE_DRAENEI);
-
-    availableRaces[CLASS_PALADIN].push_back(RACE_HUMAN);
-    availableRaces[CLASS_PALADIN].push_back(RACE_DWARF);
-    availableRaces[CLASS_PALADIN].push_back(RACE_DRAENEI);
-    availableRaces[CLASS_PALADIN].push_back(RACE_BLOODELF);
-
-    availableRaces[CLASS_ROGUE].push_back(RACE_HUMAN);
-    availableRaces[CLASS_ROGUE].push_back(RACE_DWARF);
-    availableRaces[CLASS_ROGUE].push_back(RACE_NIGHTELF);
-    availableRaces[CLASS_ROGUE].push_back(RACE_GNOME);
-    availableRaces[CLASS_ROGUE].push_back(RACE_ORC);
-    availableRaces[CLASS_ROGUE].push_back(RACE_TROLL);
-    availableRaces[CLASS_ROGUE].push_back(RACE_BLOODELF);
-
-    availableRaces[CLASS_PRIEST].push_back(RACE_HUMAN);
-    availableRaces[CLASS_PRIEST].push_back(RACE_DWARF);
-    availableRaces[CLASS_PRIEST].push_back(RACE_NIGHTELF);
-    availableRaces[CLASS_PRIEST].push_back(RACE_DRAENEI);
-    availableRaces[CLASS_PRIEST].push_back(RACE_TROLL);
-    availableRaces[CLASS_PRIEST].push_back(RACE_UNDEAD_PLAYER);
-    availableRaces[CLASS_PRIEST].push_back(RACE_BLOODELF);
-
-    availableRaces[CLASS_MAGE].push_back(RACE_HUMAN);
-    availableRaces[CLASS_MAGE].push_back(RACE_GNOME);
-    availableRaces[CLASS_MAGE].push_back(RACE_DRAENEI);
-    availableRaces[CLASS_MAGE].push_back(RACE_UNDEAD_PLAYER);
-    availableRaces[CLASS_MAGE].push_back(RACE_TROLL);
-    availableRaces[CLASS_MAGE].push_back(RACE_BLOODELF);
-
-    availableRaces[CLASS_WARLOCK].push_back(RACE_HUMAN);
-    availableRaces[CLASS_WARLOCK].push_back(RACE_GNOME);
-    availableRaces[CLASS_WARLOCK].push_back(RACE_UNDEAD_PLAYER);
-    availableRaces[CLASS_WARLOCK].push_back(RACE_ORC);
-    availableRaces[CLASS_WARLOCK].push_back(RACE_BLOODELF);
-
-    availableRaces[CLASS_SHAMAN].push_back(RACE_DRAENEI);
-    availableRaces[CLASS_SHAMAN].push_back(RACE_ORC);
-    availableRaces[CLASS_SHAMAN].push_back(RACE_TAUREN);
-    availableRaces[CLASS_SHAMAN].push_back(RACE_TROLL);
-
-    availableRaces[CLASS_HUNTER].push_back(RACE_DWARF);
-    availableRaces[CLASS_HUNTER].push_back(RACE_NIGHTELF);
-    availableRaces[CLASS_HUNTER].push_back(RACE_DRAENEI);
-    availableRaces[CLASS_HUNTER].push_back(RACE_ORC);
-    availableRaces[CLASS_HUNTER].push_back(RACE_TAUREN);
-    availableRaces[CLASS_HUNTER].push_back(RACE_TROLL);
-    availableRaces[CLASS_HUNTER].push_back(RACE_BLOODELF);
-
-    availableRaces[CLASS_DRUID].push_back(RACE_NIGHTELF);
-    availableRaces[CLASS_DRUID].push_back(RACE_TAUREN);
+    GetAvailableRacesForClasses();
 }
 
-bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
+uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
+{
+    uint8 race = availableRaces[cls][urand(0, availableRaces[cls].size() - 1)];
+    return CreateRandomBot(cls, race, false);
+}
+
+uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls, uint8 race, bool testBot)
 {
     sLog->outMessage("playerbot", LOG_LEVEL_DEBUG, "Creating new random bot for class %d", cls);
 
-    uint8 gender = rand() % 2 ? GENDER_MALE : GENDER_FEMALE;
-
-    uint8 race = availableRaces[cls][urand(0, availableRaces[cls].size() - 1)];
     std::string name = CreateRandomBotName();
     if (name.empty())
-        return false;
-
-    uint8 skin = urand(0, 7);
-    uint8 face = urand(0, 7);
-    uint8 hairStyle = urand(0, 7);
-    uint8 hairColor = urand(0, 7);
-    uint8 facialHair = urand(0, 7);
-    uint8 outfitId = 0;
+        return 0;
 
     WorldSession* session = new WorldSession(accountId, BUILD_243, "rndbot", NULL, SEC_PLAYER, 1, 0, LOCALE_enUS, 0, false);
     if (!session)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Couldn't create session for random bot account %d", accountId);
         delete session;
-        return false;
+        return 0;
     }
 
-    Player *player = new Player(session);
+    Player* player;
+    if(testBot)
+        player = new Player(session);
+    else
+        player = new TestPlayer(session);
+
     CharacterCreateInfo cci;
+    cci.RandomizeAppearance();
     cci.Name = name;
     cci.Race = race;
     cci.Class = cls;
-    cci.Gender = gender;
-    cci.Skin = skin;
-    cci.Face = face;
-    cci.HairStyle = hairStyle;
-    cci.HairColor = hairColor;
-    cci.FacialHair = facialHair;
-    cci.OutfitId = outfitId;
 
     if (!player->Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), &cci))
     {
@@ -119,8 +124,8 @@ bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
         delete session;
         delete player;
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Unable to create random bot for account %d - name: \"%s\"; race: %u; class: %u; gender: %u; skin: %u; face: %u; hairStyle: %u; hairColor: %u; facialHair: %u; outfitId: %u",
-                accountId, name.c_str(), race, cls, gender, skin, face, hairStyle, hairColor, facialHair, outfitId);
-        return false;
+                accountId, name.c_str(), race, cls, cci.Gender, cci.Skin, cci.Face, cci.HairStyle, cci.HairColor, cci.FacialHair, cci.OutfitId);
+        return 0;
     }
 
     player->setCinematic(2);
@@ -128,9 +133,24 @@ bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
     player->SaveToDB(true);
 
     sLog->outMessage("playerbot", LOG_LEVEL_DEBUG, "Random bot created for account %d - name: \"%s\"; race: %u; class: %u; gender: %u; skin: %u; face: %u; hairStyle: %u; hairColor: %u; facialHair: %u; outfitId: %u",
-            accountId, name.c_str(), race, cls, gender, skin, face, hairStyle, hairColor, facialHair, outfitId);
+            accountId, name.c_str(), race, cls, cci.Gender, cci.Skin, cci.Face, cci.HairStyle, cci.HairColor, cci.FacialHair, cci.OutfitId);
+    
+    uint32 guid = player->GetGUIDLow();
+    //delete session;
+    //delete player;
+    return guid;
+}
 
-    return true;
+string RandomPlayerbotFactory::CreateTestBotName()
+{
+    QueryResult result = CharacterDatabase.PQuery("SELECT n.name FROM ai_playerbot_names n ORDER BY RAND() LIMIT 1");
+    if (!result)
+    {
+        sLog->outMessage("playerbot", LOG_LEVEL_FATAL, "No names in ai_playerbot_name table");
+        return "";
+    }
+    Field* fields = result->Fetch();
+    return fields[0].GetString();
 }
 
 string RandomPlayerbotFactory::CreateRandomBotName()
@@ -142,7 +162,7 @@ string RandomPlayerbotFactory::CreateRandomBotName()
         return "";
     }
 
-    Field *fields = result->Fetch();
+    Field* fields = result->Fetch();
 
     result = CharacterDatabase.PQuery("SELECT n.name FROM ai_playerbot_names n "
             "LEFT OUTER JOIN characters e ON e.name = n.name "
@@ -156,7 +176,6 @@ string RandomPlayerbotFactory::CreateRandomBotName()
     fields = result->Fetch();
     return fields[0].GetString();
 }
-
 
 void RandomPlayerbotFactory::CreateRandomBots()
 {
