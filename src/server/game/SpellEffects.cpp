@@ -5256,16 +5256,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (Player *plr = m_caster->ToPlayer())
                 plr->KilledMonsterCredit(18393, 0);
             break;
-        // Unban Azaloth (quest 10637 && 10688)
-        case 37834:
-            if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            {
-                if ((m_caster->ToPlayer())->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
-                    (m_caster->ToPlayer())->CompleteQuest(10637);
-                else if ((m_caster->ToPlayer())->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
-                    (m_caster->ToPlayer())->KilledMonsterCredit(21892, 0);
-            }
-            break;
         // Grillok's Eye Quest Credit
         case 38530:
             if(unitTarget->GetTypeId() == TYPEID_PLAYER)
