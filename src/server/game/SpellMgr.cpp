@@ -1683,10 +1683,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 31344:  //SPELL_HOWL_OF_AZGALOR
             spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_100_YARDS;//100yards instead of 50000?!
             break;
-        case 43734: //jan'alai SPELL_HATCH_EGG
-            spellInfo->EffectImplicitTargetA[0] = 1;
-            spellInfo->EffectImplicitTargetB[0] = 0;
-            break;
         case 31298: //anatheron SPELL_SLEEP
             spellInfo->EffectImplicitTargetA[0] = 1;
             spellInfo->EffectImplicitTargetB[0] = 0;
