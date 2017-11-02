@@ -745,29 +745,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
             }
         }
 
-        uint32 GetAutoCloseTime() const
-        {
-            uint32 autoCloseTime = 0;
-            switch(GetGoType())
-            {
-                case GAMEOBJECT_TYPE_DOOR:          autoCloseTime = GetGOInfo()->door.autoCloseTime; break;
-                case GAMEOBJECT_TYPE_BUTTON:        autoCloseTime = GetGOInfo()->button.autoCloseTime; break;
-                case GAMEOBJECT_TYPE_TRAP:          autoCloseTime = GetGOInfo()->trap.autoCloseTime; break;
-                case GAMEOBJECT_TYPE_GOOBER:        autoCloseTime = GetGOInfo()->goober.autoCloseTime; break;
-                case GAMEOBJECT_TYPE_TRANSPORT:     autoCloseTime = GetGOInfo()->transport.autoCloseTime; break;
-                case GAMEOBJECT_TYPE_AREADAMAGE:    autoCloseTime = GetGOInfo()->areadamage.autoCloseTime; break;
-                default: break;
-            }
-            closeTimeMS = autoCloseTime / 0x10000;
-            if (autoCloseTime != 0 && closeTimeMS == 0)
-            {
-                //sunstrider: a close time was specified but it was rounded down to 0... probably a scripting error, but let's at least return 1000ms so that the gameobject has an auto close time
-                closeTimeMS = 1000; 
-                TC_LOG_ERROR("entities.gameobject", "Gameobject %u has an auto close time but is too low (%u is going to be rounded down to 0 after calculation). Using 1000ms instead.", GetGOInfo()->entry, autoCloseTime);
-            }
-            return closeTimeMS;
-            //TC:             return autoCloseTime;              // prior to 3.0.3, conversion was / 0x10000;
-        }
+        uint32 GetAutoCloseTime() const;
 
         void TriggeringLinkedGameObject( uint32 trapEntry, Unit* target);
 
