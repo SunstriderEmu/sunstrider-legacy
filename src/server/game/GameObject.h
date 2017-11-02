@@ -680,7 +680,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetUInt32Value(GAMEOBJECT_TYPE_ID)); }
         void SetGoType(GameobjectTypes type) { SetUInt32Value(GAMEOBJECT_TYPE_ID, type); }
         uint32 GetGoState() const { return GetUInt32Value(GAMEOBJECT_STATE); }
-        void SetGoState(GOState state);
+        void SetGoState(GOState state, Unit* invoker = nullptr);
         uint32 GetGoArtKit() const { return GetUInt32Value(GAMEOBJECT_ARTKIT); }
         void SetGoArtKit(uint32 artkit);
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }
@@ -770,7 +770,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void SendCustomAnim(uint32 anim);
         bool IsInRange(float x, float y, float z, float radius) const;
         
-        void SwitchDoorOrButton(bool activate, bool alternative = false);
+        void SwitchDoorOrButton(bool activate, bool alternative = false, Unit* user = nullptr);
         
         GameObjectModel * m_model;
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr) const;

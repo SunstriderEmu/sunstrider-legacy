@@ -3677,7 +3677,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
         {
             case GAMEOBJECT_TYPE_DOOR:
             case GAMEOBJECT_TYPE_BUTTON:
-                gameObjTarget->UseDoorOrButton();
+                gameObjTarget->UseDoorOrButton(0, false, player);
                 gameObjTarget->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetSpawnId(), player, gameObjTarget);
                 return;
 

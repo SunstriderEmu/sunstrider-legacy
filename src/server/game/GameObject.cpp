@@ -909,11 +909,11 @@ void GameObject::SetLootState(LootState state, Unit* unit)
     }*/
 }
 
-void GameObject::SetGoState(GOState state)
+void GameObject::SetGoState(GOState state, Unit* invoker /* = nullptr */)
 {
     SetUInt32Value(GAMEOBJECT_STATE, state);
     if(AI())
-        AI()->OnStateChanged(state, nullptr);
+        AI()->OnStateChanged(state, invoker);
 
     if (m_model && !IsTransport())
     {
@@ -1176,8 +1176,8 @@ void GameObject::UseDoorOrButton(uint32 time_to_restore /* = 0 */, bool alternat
     if(!time_to_restore)
         time_to_restore = GetAutoCloseTime();
 
-    SwitchDoorOrButton(true,alternative);
-    SetLootState(GO_ACTIVATED,user);
+    SwitchDoorOrButton(true, alternative, user);
+    SetLootState(GO_ACTIVATED, user);
 
     m_cooldownTime = time_to_restore ? (GameTime::GetGameTimeMS() + time_to_restore * SECOND * IN_MILLISECONDS) : 0;
 }
@@ -1257,7 +1257,7 @@ void GameObject::SetGoArtKit(uint32 kit)
         data->ArtKit = kit;
 }
 
-void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false */)
+void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false */, Unit* user /* = nullptr */ )
 {
     if (activate)
         SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
@@ -1265,9 +1265,9 @@ void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false *
         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
     if (GetGoState() == GO_STATE_READY)                      //if closed -> open
-        SetGoState(alternative ? GO_STATE_ACTIVE_ALTERNATIVE : GO_STATE_ACTIVE);
+        SetGoState(alternative ? GO_STATE_ACTIVE_ALTERNATIVE : GO_STATE_ACTIVE, user);
     else                                                    //if open -> close
-        SetGoState(GO_STATE_READY);
+        SetGoState(GO_STATE_READY, user);
 }
 
 void GameObject::Use(Unit* user)
