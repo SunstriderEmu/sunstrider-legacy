@@ -3115,8 +3115,6 @@ void Spell::EffectSendEvent(uint32 effIndex)
         else                   // Summon Soulgrinder
             m_caster->SummonCreature(23019, 3535.181641, 5590.692871, 0.183175, 3.915725, TEMPSUMMON_DEAD_DESPAWN, 0);
     }
-    else if (m_spellInfo->Id == 34142 && m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->ToPlayer()->CompleteQuest(10306);
     else if (m_spellInfo->Id == 24706 && m_caster->ToPlayer())
         m_caster->ToPlayer()->KilledMonsterCredit(15415, 0);
     else if (m_spellInfo->Id == 20737 && m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -5257,16 +5255,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 32314:
             if (Player *plr = m_caster->ToPlayer())
                 plr->KilledMonsterCredit(18393, 0);
-            break;
-        // Unban Azaloth (quest 10637 && 10688)
-        case 37834:
-            if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            {
-                if ((m_caster->ToPlayer())->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
-                    (m_caster->ToPlayer())->CompleteQuest(10637);
-                else if ((m_caster->ToPlayer())->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
-                    (m_caster->ToPlayer())->KilledMonsterCredit(21892, 0);
-            }
             break;
         // Grillok's Eye Quest Credit
         case 38530:
