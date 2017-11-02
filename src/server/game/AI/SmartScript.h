@@ -235,56 +235,12 @@ class TC_GAME_API SmartScript
         CounterMap mCounterList;
 
     private:
-        void IncPhase(int32 p)
-        {
-            uint32 previous = mEventPhase;
-
-            if (p >= 0)
-                mEventPhase = std::min<uint32>(SMART_EVENT_PHASE_COUNT, mEventPhase + p); // protect phase from overflowing
-            else
-                DecPhase(abs(p));
-
-            if(mEventPhase != previous)
-                ProcessEventsFor(SMART_EVENT_ENTER_PHASE, nullptr, mEventPhase);
-        }
-
-        void DecPhase(int32 p) 
-        { 
-            if(mEventPhase > (uint32)p)
-                mEventPhase -= (uint32)p; 
-            else
-                mEventPhase = 0;
-        }
-
-        bool IsInPhase(SmartPhaseMask phaseMask) const 
-        { 
-            if (mEventPhase == 0)
-                return false;
-
-            return ((1 << (mEventPhase - 1)) & phaseMask) != 0; 
-        }
-
-        bool IsInTemplatePhase(SmartPhaseMask phaseMask) const
-        {
-            if (mEventTemplatePhase == 0)
-                return false;
-
-            return ((1 << (mEventTemplatePhase - 1)) & phaseMask) != 0;
-        }
-
-        void SetPhase(uint32 p = 0) 
-        { 
-
-            uint32 previous = mEventPhase;
-            mEventPhase = p;
-            if(mEventPhase != previous)
-                ProcessEventsFor(SMART_EVENT_ENTER_PHASE, nullptr, mEventPhase);
-        }
-
-        void SetTemplatePhase(uint32 p = 0)
-        {
-            mEventTemplatePhase = p;
-        }
+        void IncPhase(uint32 p);
+        void DecPhase(uint32 p);
+        bool IsInPhase(SmartPhaseMask phaseMask) const;
+        bool IsInTemplatePhase(SmartPhaseMask phaseMask) const;
+        void SetPhase(uint32 p = 0);
+        void SetTemplatePhase(uint32 p = 0);
 
         SmartAIEventList mEvents;
         SmartAIEventList mInstallEvents;
