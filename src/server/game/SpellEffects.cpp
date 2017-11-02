@@ -3115,8 +3115,6 @@ void Spell::EffectSendEvent(uint32 effIndex)
         else                   // Summon Soulgrinder
             m_caster->SummonCreature(23019, 3535.181641, 5590.692871, 0.183175, 3.915725, TEMPSUMMON_DEAD_DESPAWN, 0);
     }
-    else if (m_spellInfo->Id == 34142 && m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->ToPlayer()->CompleteQuest(10306);
     else if (m_spellInfo->Id == 24706 && m_caster->ToPlayer())
         m_caster->ToPlayer()->KilledMonsterCredit(15415, 0);
     else if (m_spellInfo->Id == 20737 && m_caster->GetTypeId() == TYPEID_PLAYER)
