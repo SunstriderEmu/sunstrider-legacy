@@ -200,7 +200,6 @@ class TC_GAME_API SmartAI : public CreatureAI
         float mFollowAngle;
 
         void ReturnToLastOOCPos();
-        void UpdatePath(const uint32 diff);
         SmartScript mScript;
         std::shared_ptr<WPPath> mWayPoints;
         uint32 mEscortState;
@@ -221,6 +220,10 @@ class TC_GAME_API SmartAI : public CreatureAI
         bool mForcedPaused;
         uint32 mInvincibilityHpLevel;
 
+        void UpdatePath(const uint32 diff);
+        void UpdateDespawn(uint32 diff);
+        void UpdateFollow(uint32 diff);
+
         uint32 mDespawnTime;
         /**
          // 0 - no despawn scheduled
@@ -229,7 +232,6 @@ class TC_GAME_API SmartAI : public CreatureAI
             3 -- despawn when mDespawnTime reached 0
         */
         uint32 mDespawnState;
-        void UpdateDespawn(uint32 diff);
         uint32 mEscortInvokerCheckTimer;
         bool mJustReset;
 
