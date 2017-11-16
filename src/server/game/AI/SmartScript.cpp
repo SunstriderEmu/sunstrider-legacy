@@ -2337,7 +2337,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         }
 
                         if (closestWp)
-                            CAST_AI(SmartAI, target->AI())->StartPath(false, closestWp->id, true);
+                            ENSURE_AI(SmartAI, target->AI())->StartPath(false, closestWp->id, true);
                     }
                 }
             }
