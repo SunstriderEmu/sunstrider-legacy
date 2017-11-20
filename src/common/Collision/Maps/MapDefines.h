@@ -5,8 +5,7 @@
 #include "DetourNavMesh.h"
 
 const uint32 MMAP_MAGIC = 0x4d4d4150; // 'MMAP'
-#define MMAP_VERSION 5
-//TC has 6 for now, but this isn't a change we're affected by so don't bother with it. Delete this comment when we get to 7.
+#define MMAP_VERSION 7
 
 struct MmapTileHeader
 {
