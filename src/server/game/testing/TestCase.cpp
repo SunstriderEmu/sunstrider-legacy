@@ -429,3 +429,18 @@ TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 e
     summon->SetTempSummonType(TEMPSUMMON_MANUAL_DESPAWN); //Make sur it does not despawn
     return summon;
 }
+
+bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
+{
+    auto items = creature->loot.items;
+    auto quest_items = creature->loot.quest_items;
+    for (auto itr : items)
+        if (itr.itemid == itemID)
+            return true;
+
+    for (auto itr : quest_items)
+        if (itr.itemid == itemID)
+            return true;
+
+    return false;
+}

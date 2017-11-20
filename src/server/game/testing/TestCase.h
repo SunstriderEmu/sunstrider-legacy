@@ -37,13 +37,24 @@ public:
     TestMap* GetMap() const { return _map; }
     void EnableMapObjects();
     
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnRandomPlayer();
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnRandomPlayer(Powers power, uint32 level = 70);
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnRandomPlayer(Races race, uint32 level = 70);
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnRandomPlayer(Classes cls, uint32 level = 70);
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnPlayer(Classes cls, Races _race, uint32 level = 70, Position spawnPosition = {});
+    //Spawn creature. Fail test on failure
     TempSummon* SpawnCreature(uint32 entry = 0, bool spawnInFront = true);
+    //Spawn creature. Fail test on failure
     TempSummon* SpawnCreatureWithPosition(Position spawnPosition, uint32 entry = 0);
+
+    //may not be 100% accurate... This checks if item exists in loot but we cannot say if player can actually loot it
+    bool HasLootForMe(Creature*, Player*, uint32 itemID);
+
     void TestStacksCount(Player* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount);
     ///!\ This is VERY slow, do not abuse of this function. Randomize talents, spells, stuff for this player
     void RandomizePlayer(TestPlayer* player);
