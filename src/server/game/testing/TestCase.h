@@ -51,6 +51,10 @@ public:
     TempSummon* SpawnCreature(uint32 entry = 0, bool spawnInFront = true);
     //Spawn creature. Fail test on failure
     TempSummon* SpawnCreatureWithPosition(Position spawnPosition, uint32 entry = 0);
+
+    //This checks if item exists in loot (but we cannot say if player can actually loot it)
+    bool HasLootForMe(Creature*, Player*, uint32 itemID);
+
     //Create item and equip it to player. Will remove any item already in slot. Fail test on failure
     void EquipItem(TestPlayer* p, uint32 itemID);
     void LearnTalent(TestPlayer* p, uint32 spellID);
