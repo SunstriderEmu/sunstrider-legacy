@@ -5778,6 +5778,9 @@ bool Aura::CanBeSaved() const
     if (IsPassive())
         return false;
 
+    if (GetSpellInfo()->IsChanneled())
+        return false;
+
     if (GetCasterGUID() != GetTarget()->GetGUID())
         if(GetSpellInfo()->IsSingleTarget())
             return false;
