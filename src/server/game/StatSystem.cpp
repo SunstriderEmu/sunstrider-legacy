@@ -269,7 +269,8 @@ void Unit::UpdateDamagePctDoneMods(WeaponAttackType attackType)
 
     factor *= GetTotalAuraMultiplier(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, [attackType, this](AuraEffect const* aurEff) -> bool
     {
-        if (!(aurEff->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
+        /*sunstrider: partially disabled check, we need to check wands too*/
+        if (attackType != RANGED_ATTACK && !(aurEff->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
             return false;
 
         return CheckAttackFitToAuraRequirement(attackType, aurEff);
@@ -687,7 +688,15 @@ void Player::UpdateShieldBlockValue()
     SetUInt32Value(PLAYER_SHIELD_BLOCK, GetShieldBlockValue());
 }
 
-//TODO : This should not add attack power to wands
+bool Player::HasWand() const
+{
+    Item* weapon = GetWeaponForAttack(RANGED_ATTACK, true);
+    if (!weapon)
+        return false;
+
+    return weapon->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_WAND;
+}
+
 void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target)
 {
     UnitMods unitMod;
@@ -706,15 +715,16 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
             break;
     }
 
-    float const attackPowerMod = std::max(GetAPMultiplier(attType, normalized), 0.25f);
+    float weaponMinDamage = GetWeaponDamageRange(attType, MINDAMAGE);
+    float weaponMaxDamage = GetWeaponDamageRange(attType, MAXDAMAGE);
+    bool wandCase = attType == RANGED_ATTACK  && HasWand(); //wand case, do not use attack power
+
+    float const attackPowerMod = wandCase ? 0.0f : std::max(GetAPMultiplier(attType, normalized), 0.25f);
     
     float baseValue  = GetFlatModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / 14.0f * attackPowerMod;
     float basePct    = GetPctModifierValue(unitMod, BASE_PCT);
     float totalValue = GetFlatModifierValue(unitMod, TOTAL_VALUE);
     float totalPct   = addTotalPct ? GetPctModifierValue(unitMod, TOTAL_PCT) : 1.0f;
-
-    float weaponMinDamage = GetWeaponDamageRange(attType, MINDAMAGE);
-    float weaponMaxDamage = GetWeaponDamageRange(attType, MAXDAMAGE);
 
     if (IsInFeralForm()) // check if player is druid and in cat or bear forms
     {
@@ -737,7 +747,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
         weaponMinDamage = BASE_MINDAMAGE;
         weaponMaxDamage = BASE_MAXDAMAGE;
     }
-    else if (attType == RANGED_ATTACK) // add ammo DPS to ranged damage
+    else if (!HasWand() && attType == RANGED_ATTACK) // add ammo DPS to ranged damage
     {
         weaponMinDamage += GetAmmoDPS() * attackPowerMod;
         weaponMaxDamage += GetAmmoDPS() * attackPowerMod;

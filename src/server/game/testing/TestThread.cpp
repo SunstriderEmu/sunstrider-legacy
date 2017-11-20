@@ -17,6 +17,9 @@ void TestThread::Run()
         bool setupSuccess = _testCase->_InternalSetup();
         if(!setupSuccess)
             _testCase->_Fail("Failed to setup test");
+
+        _thisUpdateStartTimeMS = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+
         _testCase->Test();
         if (_testCase->GetTestCount() == 0)
             _testCase->_Fail("No checks executed in test");
@@ -89,11 +92,16 @@ bool TestThread::Wait(uint32 ms)
     if (ms == 0)
         return true;
 
-    _SetWait(ms);
+    //see _thisUpdateStartTimeMS comment
+    milliseconds nowMS = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+    uint32 timeSinceThisUpdateStart = (nowMS - _thisUpdateStartTimeMS).count();
+
+    _SetWait(ms + timeSinceThisUpdateStart);
     std::unique_lock<std::mutex> lk(_m);
     if (_waitTimer == 0)
         return true;
 
     _cv.wait(lk, [this] { return _finished || _waitTimer == 0; });
+    _thisUpdateStartTimeMS = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
     return true;
 }

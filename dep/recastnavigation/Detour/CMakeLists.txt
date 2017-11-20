@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+# Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -10,6 +10,7 @@
 
 set(Detour_STAT_SRCS
     Source/DetourAlloc.cpp 
+    Source/DetourAssert.cpp 
     Source/DetourCommon.cpp 
     Source/DetourNavMesh.cpp 
     Source/DetourNavMeshBuilder.cpp 
@@ -25,7 +26,7 @@ target_include_directories(Detour
 
 target_link_libraries(Detour
   PUBLIC
-    ${ZLIB_LIBRARIES})
+    zlib)
 
 set_target_properties(Detour
     PROPERTIES

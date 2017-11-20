@@ -16,7 +16,7 @@ public:
         void Test() override
         {
             Map* m = GetMap();
-            TEST_CHECK(m != nullptr);
+            TEST_ASSERT(m != nullptr);
             //std::string str(m->GetMapName());
             //sWorld->SendGlobalText("DUMMY BEFORE WAIT");
             Creature* summon = SpawnCreature();
@@ -30,7 +30,7 @@ public:
             Wait(30 * SECOND * IN_MILLISECONDS);
             //sWorld->SendGlobalText("DUMMY AFTER WAIT");
             //sWorld->SendGlobalText(str.c_str());
-            //TEST_CHECK(urand(0, 1) == 1);
+            //TEST_ASSERT(urand(0, 1) == 1);
         }
     };
 
@@ -92,7 +92,7 @@ public:
             p->HandleEmoteCommand(EMOTE_STATE_DANCE);
 
             Wait(15 * SECOND * IN_MILLISECONDS);
-            TEST_CHECK(true);
+            TEST_ASSERT(true);
         }
     };
 

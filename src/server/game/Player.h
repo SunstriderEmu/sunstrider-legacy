@@ -38,6 +38,7 @@ class PlayerAI;
 #ifdef PLAYERBOT
 // Playerbot mod
 class PlayerbotAI;
+class PlayerbotTestingAI;
 class PlayerbotMgr;
 #endif
 
@@ -1559,9 +1560,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /*********************************************************/
 
         virtual void SaveToDB(bool create = false);
-        void SaveInventoryAndGoldToDB(SQLTransaction trans);                    // fast save function for item/money cheating preventing
-        void SaveGoldToDB(SQLTransaction trans);
-        void SaveDataFieldToDB();
+        virtual void SaveInventoryAndGoldToDB(SQLTransaction trans);                    // fast save function for item/money cheating preventing
+        virtual void SaveGoldToDB(SQLTransaction trans);
+        virtual void SaveDataFieldToDB();
         static bool SaveValuesArrayInDB(Tokens const& data,uint64 guid);
         static void SetUInt32ValueInArray(Tokens& data,uint16 index, uint32 value);
         static void SetFloatValueInArray(Tokens& data,uint16 index, float value);
@@ -1869,6 +1870,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdateSpellDamageAndHealingBonus();
 
         void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) override;
+        bool HasWand() const;
 
         void UpdateDefenseBonusesMod();
         void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
@@ -2264,8 +2266,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         // A Player can either have a playerbotMgr (to manage its bots), or have playerbotAI (if it is a bot), or
         // neither. Code that enables bots must create the playerbotMgr and set it using SetPlayerbotMgr.
         // EquipmentSets& GetEquipmentSets() { return m_EquipmentSets; } //revmoed, not existing on BC
-        void SetPlayerbotAI(PlayerbotAI* ai) { m_playerbotAI=ai; }
+        void SetPlayerbotAI(PlayerbotAI* ai) { m_playerbotAI = ai; }
         PlayerbotAI* GetPlayerbotAI() { return m_playerbotAI; }
+        PlayerbotTestingAI* GetTestingPlayerbotAI();
         void SetPlayerbotMgr(PlayerbotMgr* mgr) { m_playerbotMgr=mgr; }
         PlayerbotMgr* GetPlayerbotMgr() { return m_playerbotMgr; }
         void SetBotDeathTimer() { m_deathTimer = 0; }

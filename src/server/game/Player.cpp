@@ -2178,6 +2178,9 @@ void Player::ApplyItemDependentAuras(Item* item, bool apply)
 
 bool Player::CheckAttackFitToAuraRequirement(WeaponAttackType attackType, AuraEffect const* aurEff) const
 {
+    if (!HasWand() && !aurEff->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
+        return false;
+
     SpellInfo const* spellInfo = aurEff->GetSpellInfo();
     if (spellInfo->EquippedItemClass == -1)
         return true;
@@ -23701,4 +23704,9 @@ uint32 Player::GetRank() const
 void Player::InitTaxiNodesForLevel() 
 { 
     m_taxi.InitTaxiNodesForLevel(GetRace(), GetLevel()); 
+}
+
+PlayerbotTestingAI* Player::GetTestingPlayerbotAI()
+{
+    return dynamic_cast<PlayerbotTestingAI*>(m_playerbotAI);
 }

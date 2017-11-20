@@ -2531,6 +2531,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                     bg->UpdatePlayerScore(unitTarget->ToPlayer(), SCORE_HEALING_TAKEN, gain);
             }
         }
+
+        if (IS_PLAYER_GUID(m_caster))
+            if (m_caster->ToPlayer()->GetPlayerbotAI())
+                m_caster->ToPlayer()->GetPlayerbotAI()->CastedHealingSpell(unitTarget, addhealth, gain, m_spellInfo->Id, missInfo);
     }
     // Do damage and triggers
     else if (m_damage > 0)
@@ -2539,7 +2543,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
 
         // Add bonuses and fill damageInfo struct
-        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType,  target->crit);
+        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType, target->crit);
 
         // Send log damage message to client
         caster->SendSpellNonMeleeDamageLog(&damageInfo);
@@ -2587,12 +2591,16 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                 case 25251: BTAura = 25252; break;
                 case 30335: BTAura = 30339; break;
                 default:
-                    TC_LOG_ERROR("FIXME","Spell::EffectSchoolDMG: Spell %u not handled in BTAura",m_spellInfo->Id);
+                    TC_LOG_ERROR("spells","Spell::EffectSchoolDMG: Spell %u not handled in blood thirst Aura",m_spellInfo->Id);
                     break;
             }
             if (BTAura)
-                m_caster->CastSpell(m_caster,BTAura,true);
+                m_caster->CastSpell(m_caster, BTAura, true);
         }
+
+        if (IS_PLAYER_GUID(m_caster))
+            if (m_caster->ToPlayer()->GetPlayerbotAI())
+                m_caster->ToPlayer()->GetPlayerbotAI()->CastedDamageSpell(unitTarget, damageInfo, missInfo, target->crit);
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
     else
@@ -2603,6 +2611,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
             caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_canTrigger);
+
+        if (IS_PLAYER_GUID(m_caster->GetGUID()))
+            if (m_caster->ToPlayer()->GetPlayerbotAI())
+                m_caster->ToPlayer()->GetPlayerbotAI()->CastedDamageSpell(unitTarget, damageInfo, missInfo);
     }
 
     // Call scripted function for AI if this spell is casted upon a creature (except pets)

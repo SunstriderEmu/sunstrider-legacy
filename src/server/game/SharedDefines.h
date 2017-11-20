@@ -1101,7 +1101,9 @@ enum SpellMissInfo
     SPELL_MISS_IMMUNE2                 = 8,
     SPELL_MISS_DEFLECT                 = 9,
     SPELL_MISS_ABSORB                  = 10,
-    SPELL_MISS_REFLECT                 = 11
+    SPELL_MISS_REFLECT                 = 11,
+
+    SPELL_MISS_TOTAL,
 };
 
 enum SpellHitType

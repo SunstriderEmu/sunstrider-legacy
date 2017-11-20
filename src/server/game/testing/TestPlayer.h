@@ -8,7 +8,10 @@ public:
     explicit TestPlayer(WorldSession *session) : Player(session) {}
     virtual ~TestPlayer() {}
 
-    virtual void SaveToDB(bool create = false) override;
+    virtual void SaveToDB(bool create = false) override {}
+    virtual void SaveInventoryAndGoldToDB(SQLTransaction trans) override {}
+    virtual void SaveGoldToDB(SQLTransaction trans) override {}
+    virtual void SaveDataFieldToDB() override {}
 };
 
 #endif TEST_PLAYER_H

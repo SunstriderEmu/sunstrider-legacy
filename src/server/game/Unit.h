@@ -565,7 +565,9 @@ enum DamageEffectType : unsigned int
     DOT                     = 2,
     HEAL                    = 3,
     NODAMAGE                = 4,                            // used also in case when damage applied to health but not applied to spell channelInterruptFlags/etc
-    SELF_DAMAGE             = 5
+    SELF_DAMAGE             = 5,
+
+    TOTAL_DAMAGE_EFFECT_TYPE,
 };
 
 /*
