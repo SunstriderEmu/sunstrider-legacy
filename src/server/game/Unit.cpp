@@ -664,7 +664,7 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spellId)
     }
 }
 
-uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const *spellProto, bool durabilityLoss)
+uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
     if (pVictim->IsImmunedToDamage(spellProto))
     {
@@ -677,7 +677,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         pVictim->ToCreature()->AI()->DamageTaken(this, damage);
     }
 
-    if(this->GetTypeId()== TYPEID_UNIT && (this->ToCreature())->IsAIEnabled)
+    if(GetTypeId()== TYPEID_UNIT && ToCreature()->IsAIEnabled)
         if (IsAIEnabled)
             ToCreature()->AI()->DamageDealt(pVictim, damage, damagetype);
 
@@ -1155,7 +1155,7 @@ uint32 Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *cas
     return spell->prepare(&targets, triggeredByAura);
 }
 
-// Obsolete func need remove, here only for comotability vs another patches
+// Obsolete func need remove, here only for compatibility vs another patches
 uint32 Unit::SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool IsTriggeredSpell, bool useSpellDamage)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellID);
@@ -1248,7 +1248,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
             // If crit add critical bonus
             if (crit)
             {
-                damageInfo->HitInfo|= SPELL_HIT_TYPE_CRIT;
+                damageInfo->HitInfo |= SPELL_HIT_TYPE_CRIT;
                 damage = SpellCriticalDamageBonus(spellInfo, damage, pVictim);
                 // Resilience - reduce crit damage
                 if (pVictim->GetTypeId()==TYPEID_PLAYER && !(spellInfo->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)))
@@ -1281,7 +1281,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
 
 void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
 {
-    if (damageInfo==nullptr)
+    if (damageInfo == nullptr)
         return;
 
     Unit *pVictim = damageInfo->target;
@@ -1497,7 +1497,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
             int32 leveldif = int32(pVictim->GetLevel()) - int32(GetLevel());
             if (leveldif > 3) leveldif = 3;
             float reducePercent = 1 - leveldif * 0.1f;
-            damageInfo->cleanDamage += damageInfo->damage-uint32(reducePercent *  damageInfo->damage);
+            damageInfo->cleanDamage += damageInfo->damage - uint32(reducePercent *  damageInfo->damage);
             damageInfo->damage   = uint32(reducePercent *  damageInfo->damage);
             break;
         }
@@ -9197,7 +9197,7 @@ bool Unit::IsSpellCrit(Unit *pVictim, SpellInfo const *spellProto, SpellSchoolMa
 uint32 Unit::SpellCriticalDamageBonus(SpellInfo const *spellProto, uint32 damage, Unit* victim)
 {
     // Calculate critical bonus
-    int32 crit_bonus;
+    int32 crit_bonus = damage;
     float crit_mod = 0.0f;
 
     switch(spellProto->DmgClass)
@@ -9205,10 +9205,10 @@ uint32 Unit::SpellCriticalDamageBonus(SpellInfo const *spellProto, uint32 damage
         case SPELL_DAMAGE_CLASS_MELEE:                      // for melee based spells is 100%
         case SPELL_DAMAGE_CLASS_RANGED:
             // TODO: write here full calculation for melee/ranged spells
-            crit_bonus = damage;
+            crit_bonus += damage;
             break;
         default:
-            crit_bonus = damage / 2;                        // for spells is 50%
+            crit_bonus += damage / 2;                        // for spells is 50%
             break;
     }
     

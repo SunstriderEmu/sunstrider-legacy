@@ -5,7 +5,7 @@ class TestMap;
 class TestThread;
 class TestPlayer;
 
-#define TEST_CHECK( expr ) Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr)
+#define TEST_ASSERT( expr ) Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr)
 
 class TC_GAME_API TestCase
 {
@@ -37,14 +37,29 @@ public:
     TestMap* GetMap() const { return _map; }
     void EnableMapObjects();
     
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnRandomPlayer();
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnRandomPlayer(Powers power, uint32 level = 70);
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnRandomPlayer(Races race, uint32 level = 70);
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnRandomPlayer(Classes cls, uint32 level = 70);
+    //Spawn player. Fail test on failure
     TestPlayer* SpawnPlayer(Classes cls, Races _race, uint32 level = 70, Position spawnPosition = {});
+    //Spawn creature. Fail test on failure
     TempSummon* SpawnCreature(uint32 entry = 0, bool spawnInFront = true);
+    //Spawn creature. Fail test on failure
     TempSummon* SpawnCreatureWithPosition(Position spawnPosition, uint32 entry = 0);
-    void TestStacksCount(Player* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount);
+    //Create item and equip it to player. Will remove any item already in slot. Fail test on failure
+    void EquipItem(TestPlayer* p, uint32 itemID);
+    void LearnTalent(TestPlayer* p, uint32 spellID);
+
+    //Will cast the spell a bunch of time and test if results match the expected damage. Reason I keep expected min and max separated is because it gives me some data to do some math magic later to reduce iterations 
+    //Note for multithread: You can only have only one TestSpellDamage function running for each caster/target combination at the same time
+    void TestSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
+
+    void TestStacksCount(TestPlayer* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount);
     ///!\ This is VERY slow, do not abuse of this function. Randomize talents, spells, stuff for this player
     void RandomizePlayer(TestPlayer* player);
 
@@ -53,7 +68,7 @@ protected:
 
     //Scripting function
     void Wait(uint32 ms);
-    //Main check function, used by TEST_CHECK macro. Will stop execution on failure
+    //Main check function, used by TEST_ASSERT macro. Will stop execution on failure
     void Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition);
 
     // Test Map

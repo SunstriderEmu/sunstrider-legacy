@@ -159,19 +159,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed)
     PlayerbotAIBase::UpdateAI(elapsed);
 }
 
-PlayerbotTestingAI::PlayerbotTestingAI(Player* bot)
-    : PlayerbotAI(bot)
-{ }
-
-void PlayerbotTestingAI::UpdateAIInternal(uint32 elapsed)
-{
-    /*
-    ExternalEventHelper helper(aiObjectContext);
-    botOutgoingPacketHandlers.Handle(helper);
-    masterIncomingPacketHandlers.Handle(helper);
-    masterOutgoingPacketHandlers.Handle(helper);
-    */
-}
 
 void PlayerbotAI::UpdateAIInternal(uint32 elapsed)
 {
@@ -1413,4 +1400,97 @@ string PlayerbotAI::HandleRemoteCommand(std::string command)
     }
     std::ostringstream out; out << "invalid command: " << command;
     return out.str();
+}
+
+
+PlayerbotTestingAI::PlayerbotTestingAI(Player* bot)
+    : PlayerbotAI(bot)
+{
+}
+
+void PlayerbotTestingAI::UpdateAIInternal(uint32 elapsed)
+{
+    /*
+    ExternalEventHelper helper(aiObjectContext);
+    botOutgoingPacketHandlers.Handle(helper);
+    masterIncomingPacketHandlers.Handle(helper);
+    masterOutgoingPacketHandlers.Handle(helper);
+    */
+}
+
+
+//virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo) override;
+//virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo) override;
+
+void PlayerbotTestingAI::CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit)
+{
+    DamageDoneInfo info(damageInfo.SpellID, damageInfo, missInfo, crit);
+    damageDone[target->GetGUID()].push_back(std::move(info));
+}
+
+void PlayerbotTestingAI::CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit)
+{
+    HealingDoneInfo info;
+    info.spellID = spellID;
+    info.healing = healing;
+    info.realGain = realGain;
+    info.missInfo = missInfo;
+    info.crit = crit;
+
+    healingDone[target->GetGUID()].push_back(std::move(info));
+}
+
+float PlayerbotTestingAI::GetDamagePerSpellsTo(Unit* victim, uint32 spellID)
+{
+    auto damageToTarget = damageDone.find(victim->GetGUID());
+    if (damageToTarget == damageDone.end())
+    {
+        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for a victim (%s) with no data", victim->GetName().c_str());
+        return 0;
+    }
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    if (spellInfo == nullptr)
+    {
+        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellID);
+        return 0.0f;
+    }
+
+    uint64 totalDamage = 0;
+    uint32 count = 0;
+    for (auto itr : damageToTarget->second)
+    {
+        if (itr.spellID != spellID)
+            continue;
+
+        //use only spells that hit target
+        if (itr.missInfo != SPELL_MISS_NONE)
+            continue;
+
+        if (itr.crit)
+            continue; //ignore crit... damage crits are affected by a whole lot of other factors so best just using regulars hit
+
+        uint32 damage = itr.damageInfo.damage;
+        damage += itr.damageInfo.resist;
+        damage += itr.damageInfo.blocked;
+        damage += itr.damageInfo.absorb;
+        //resilience not taken into account...
+
+        totalDamage += damage;
+        count++;
+    }
+    if (count == 0)
+    {
+        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for a victim (%s) for this spell (ID %u)", victim->GetName().c_str(), spellID);
+        return 0.0f;
+    }
+
+    return totalDamage / count;
+}
+
+void PlayerbotTestingAI::ResetSpellCounters()
+{
+    TC_LOG_TRACE("test.unit_test", "PlayerbotTestingAI: Counters were reset");
+    damageDone.clear();
+    healingDone.clear();
 }

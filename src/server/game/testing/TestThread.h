@@ -19,7 +19,7 @@ public:
 
     // Sleep caller execution until ... (this does not sleep the test thread)
     void SleepUntilDoneOrWaiting(std::shared_ptr<TestCase> test);
-    // Sleep caller execution for given ms (this is meant to be called from the TestCase). False if test is cancelling
+    // Sleep caller execution for given ms (Must be called from the TestCase). False if test is cancelling
     bool Wait(uint32 ms);    
     
     //stop and fail tests as soon as possible
@@ -35,6 +35,8 @@ private:
     std::condition_variable _cv;
     std::mutex _m;
     std::atomic<uint32>     _waitTimer;
+    /* When waiting, we need some way to ignore time that has already passed in this update. This is particularly needed if we're using the debugger. This is very approximative...*/
+    milliseconds _thisUpdateStartTimeMS;
     // --
 };
 

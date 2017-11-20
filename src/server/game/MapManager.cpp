@@ -90,8 +90,9 @@ Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId)
 {
     Map* m = CreateBaseMap(id);
 
-    if (uint32 teleportToTestInstance = player->GetTeleportingToTest())
+    if (player && player->GetTeleportingToTest()) //testing code
     {
+        uint32 teleportToTestInstance = player->GetTeleportingToTest();
         uint32 internal_id = id + TEST_MAP_STARTING_ID;
         auto iter = i_maps.find(internal_id);
         m = iter != i_maps.end() ? iter->second : nullptr;

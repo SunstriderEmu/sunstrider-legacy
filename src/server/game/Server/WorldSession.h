@@ -693,6 +693,7 @@ class TC_GAME_API WorldSession
         void HandleSplitItemOpcode(WorldPacket& recvPacket);
         void HandleSwapInvItemOpcode(WorldPacket& recvPacket);
         void HandleDestroyItemOpcode(WorldPacket& recvPacket);
+        void _HandleAutoEquipItemOpcode(uint8 srcBag, uint8 srcSlot);
         void HandleAutoEquipItemOpcode(WorldPacket& recvPacket);
         void HandleItemQuerySingleOpcode(WorldPacket& recvPacket);
         void HandleSellItemOpcode(WorldPacket& recvPacket);

@@ -5336,17 +5336,21 @@ void Aura::HandleModDamagePercentDone(bool apply, bool Real)
     // with spell->EquippedItemClass and  EquippedItemSubClassMask and EquippedItemInventoryTypeMask
     // m_modifier.m_miscvalue comparison with item generated damage types
 
-    if((m_modifier.m_miscvalue & SPELL_SCHOOL_MASK_NORMAL))
-    {
+    //sunstrider: removed condition, we need to update wands too. // if((m_modifier.m_miscvalue & SPELL_SCHOOL_MASK_NORMAL))
+    //{
         m_target->UpdateAllDamagePctDoneMods();
-    }
+    //}
 
     // Magic damage percent modifiers implemented in Unit::SpellDamageBonusDone
     // Send info to client
     if(m_target->GetTypeId() == TYPEID_PLAYER)
         for(int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
             if (GetMiscValue() & (1 << i))
-                m_target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+i,m_modifier.m_amount/100.0f,apply);
+            {
+                // only aura type modifying PLAYER_FIELD_MOD_DAMAGE_DONE_PCT
+                float amount = m_target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, 1 << i);
+                m_target->SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT + i, amount);
+            }
             
     //Netherspite (Karazhan) nether beam UGLY HACK
     if (Real && !apply && GetId() == 30423 && !m_target->HasAuraEffect(30423) && !m_target->HasAuraEffect(30463))

@@ -78,9 +78,9 @@ public:
         
         void Test() override
         {
-            TEST_CHECK(1 == 1);
+            TEST_ASSERT(1 == 1);
             Wait(5 * SECOND * IN_MILLISECONDS);
-            //TEST_CHECK(0 == 1);
+            //TEST_ASSERT(0 == 1);
         }
     };
 

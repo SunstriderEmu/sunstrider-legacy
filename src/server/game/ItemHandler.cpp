@@ -131,42 +131,36 @@ void WorldSession::HandleSwapItem( WorldPacket & recvData )
     _player->SwapItem( src, dst );
 }
 
-void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
+void WorldSession::_HandleAutoEquipItemOpcode(uint8 srcbag, uint8 srcslot)
 {
-    //TC_LOG_DEBUG("network.opcode","WORLD: CMSG_AUTOEQUIP_ITEM");
-    uint8 srcbag, srcslot;
-
-    recvData >> srcbag >> srcslot;
-    //TC_LOG_DEBUG("network.opcode","STORAGE: receive srcbag = %u, srcslot = %u", srcbag, srcslot);
-
-    Item *pSrcItem  = _player->GetItemByPos( srcbag, srcslot );
-    if( !pSrcItem )
+    Item *pSrcItem = _player->GetItemByPos(srcbag, srcslot);
+    if (!pSrcItem)
         return;                                             // only at cheat
 
-    if(pSrcItem->m_lootGenerated)                           // prevent swap looting item
+    if (pSrcItem->m_lootGenerated)                           // prevent swap looting item
     {
         //best error message found for attempting to swap while looting
-        _player->SendEquipError( EQUIP_ERR_CANT_DO_RIGHT_NOW, pSrcItem, nullptr );
+        _player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW, pSrcItem, nullptr);
         return;
     }
 
     uint16 dest;
-    uint8 msg = _player->CanEquipItem( NULL_SLOT, dest, pSrcItem, !pSrcItem->IsBag() );
-    if( msg != EQUIP_ERR_OK )
+    uint8 msg = _player->CanEquipItem(NULL_SLOT, dest, pSrcItem, !pSrcItem->IsBag());
+    if (msg != EQUIP_ERR_OK)
     {
-        _player->SendEquipError( msg, pSrcItem, nullptr );
+        _player->SendEquipError(msg, pSrcItem, nullptr);
         return;
     }
 
     uint16 src = pSrcItem->GetPos();
-    if(dest==src)                                           // prevent equip in same slot, only at cheat
+    if (dest == src)                                           // prevent equip in same slot, only at cheat
         return;
 
-    Item *pDstItem = _player->GetItemByPos( dest );
-    if( !pDstItem )                                         // empty slot, simple case
+    Item* pDstItem = _player->GetItemByPos(dest);
+    if (!pDstItem)                                         // empty slot, simple case
     {
-        _player->RemoveItem( srcbag, srcslot, true );
-        _player->EquipItem( dest, pSrcItem, true );
+        _player->RemoveItem(srcbag, srcslot, true);
+        _player->EquipItem(dest, pSrcItem, true);
         _player->AutoUnequipOffhandIfNeed();
     }
     else                                                    // have currently equipped item, not simple case
@@ -174,42 +168,42 @@ void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
         uint8 dstbag = pDstItem->GetBagSlot();
         uint8 dstslot = pDstItem->GetSlot();
 
-        msg = _player->CanUnequipItem( dest, !pSrcItem->IsBag() );
-        if( msg != EQUIP_ERR_OK )
+        msg = _player->CanUnequipItem(dest, !pSrcItem->IsBag());
+        if (msg != EQUIP_ERR_OK)
         {
-            _player->SendEquipError( msg, pDstItem, nullptr );
+            _player->SendEquipError(msg, pDstItem, nullptr);
             return;
         }
 
         // check dest->src move possibility
         ItemPosCountVec sSrc;
         uint16 eSrc = {};
-        if( _player->IsInventoryPos( src ) )
+        if (_player->IsInventoryPos(src))
         {
-            msg = _player->CanStoreItem( srcbag, srcslot, sSrc, pDstItem, true );
-            if( msg != EQUIP_ERR_OK )
-                msg = _player->CanStoreItem( srcbag, NULL_SLOT, sSrc, pDstItem, true );
-            if( msg != EQUIP_ERR_OK )
-                msg = _player->CanStoreItem( NULL_BAG, NULL_SLOT, sSrc, pDstItem, true );
+            msg = _player->CanStoreItem(srcbag, srcslot, sSrc, pDstItem, true);
+            if (msg != EQUIP_ERR_OK)
+                msg = _player->CanStoreItem(srcbag, NULL_SLOT, sSrc, pDstItem, true);
+            if (msg != EQUIP_ERR_OK)
+                msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, sSrc, pDstItem, true);
         }
-        else if( _player->IsBankPos( src ) )
+        else if (_player->IsBankPos(src))
         {
-            msg = _player->CanBankItem( srcbag, srcslot, sSrc, pDstItem, true );
-            if( msg != EQUIP_ERR_OK )
-                msg = _player->CanBankItem( srcbag, NULL_SLOT, sSrc, pDstItem, true );
-            if( msg != EQUIP_ERR_OK )
-                msg = _player->CanBankItem( NULL_BAG, NULL_SLOT, sSrc, pDstItem, true );
+            msg = _player->CanBankItem(srcbag, srcslot, sSrc, pDstItem, true);
+            if (msg != EQUIP_ERR_OK)
+                msg = _player->CanBankItem(srcbag, NULL_SLOT, sSrc, pDstItem, true);
+            if (msg != EQUIP_ERR_OK)
+                msg = _player->CanBankItem(NULL_BAG, NULL_SLOT, sSrc, pDstItem, true);
         }
-        else if( _player->IsEquipmentPos( src ) )
+        else if (_player->IsEquipmentPos(src))
         {
-            msg = _player->CanEquipItem( srcslot, eSrc, pDstItem, true);
-            if( msg == EQUIP_ERR_OK )
-                msg = _player->CanUnequipItem( eSrc, true);
+            msg = _player->CanEquipItem(srcslot, eSrc, pDstItem, true);
+            if (msg == EQUIP_ERR_OK)
+                msg = _player->CanUnequipItem(eSrc, true);
         }
 
-        if( msg != EQUIP_ERR_OK )
+        if (msg != EQUIP_ERR_OK)
         {
-            _player->SendEquipError( msg, pDstItem, pSrcItem );
+            _player->SendEquipError(msg, pDstItem, pSrcItem);
             return;
         }
 
@@ -221,11 +215,11 @@ void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
         _player->EquipItem(dest, pSrcItem, true);
 
         // add to src
-        if( _player->IsInventoryPos( src ) )
+        if (_player->IsInventoryPos(src))
             _player->StoreItem(sSrc, pDstItem, true);
-        else if( _player->IsBankPos( src ) )
+        else if (_player->IsBankPos(src))
             _player->BankItem(sSrc, pDstItem, true);
-        else if( _player->IsEquipmentPos( src ) )
+        else if (_player->IsEquipmentPos(src))
             _player->EquipItem(eSrc, pDstItem, true);
 
         _player->AutoUnequipOffhandIfNeed();
@@ -235,6 +229,17 @@ void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
         if ((srcbag == INVENTORY_SLOT_BAG_0 && srcslot < INVENTORY_SLOT_BAG_END) || (dstbag == INVENTORY_SLOT_BAG_0 && dstslot < INVENTORY_SLOT_BAG_END))
             _player->ApplyItemDependentAuras((Item*)nullptr, false);
     }
+}
+
+void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
+{
+    //TC_LOG_DEBUG("network.opcode","WORLD: CMSG_AUTOEQUIP_ITEM");
+    uint8 srcbag, srcslot;
+
+    recvData >> srcbag >> srcslot;
+    //TC_LOG_DEBUG("network.opcode","STORAGE: receive srcbag = %u, srcslot = %u", srcbag, srcslot);
+
+    _HandleAutoEquipItemOpcode(srcbag, srcslot);
 }
 
 void WorldSession::HandleDestroyItemOpcode( WorldPacket & recvData )
