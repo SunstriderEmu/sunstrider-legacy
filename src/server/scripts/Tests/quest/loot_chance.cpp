@@ -12,13 +12,6 @@ float CalcChance(uint32 iterations, const std::function<bool()>& f)
     return float(success) / float(iterations);
 }
 
-
-template<class T>
-bool Between(T value, T from, T to)
-{
-    return value >= from && value <= to;
-}
-
 template<class T>
 bool WithinStandartDeviation(T resultChance, T theoricChance, uint32 iterations)
 {

@@ -7,6 +7,12 @@ class TestPlayer;
 
 #define TEST_ASSERT( expr ) Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr)
 
+template<class T>
+bool Between(T value, T from, T to)
+{
+    return value >= from && value <= to;
+}
+
 class TC_GAME_API TestCase
 {
     friend class TestMgr;
@@ -62,6 +68,9 @@ public:
     //Will cast the spell a bunch of time and test if results match the expected damage. Reason I keep expected min and max separated is because it gives me some data to do some math magic later to reduce iterations 
     //Note for multithread: You can only have only one TestSpellDamage function running for each caster/target combination at the same time
     void TestSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
+    void TestHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
+    std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
+    void DisableRegen(TestPlayer* caster);
 
     void TestStacksCount(TestPlayer* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount);
     ///!\ This is VERY slow, do not abuse of this function. Randomize talents, spells, stuff for this player
