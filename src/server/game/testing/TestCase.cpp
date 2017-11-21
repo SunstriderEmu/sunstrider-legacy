@@ -471,26 +471,27 @@ void TestCase::TestSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID,
     INTERNAL_TEST_ASSERT(AI != nullptr);
     AI->ResetSpellCounters();
 
-    uint32 castCount = 500; //todo: improve this
-    uint32 maxDiff = 5; //todo: improve this
+    uint32 maxPredictionError = (expectedMaxDamage - expectedMinDamage) / 50; //arbitary
+    //const float confidenceLevel = 99.9f;
+    uint32 sampleSize = 500;
 
-    for (uint32 i = 0; i < castCount; i++)
+    for (uint32 i = 0; i < sampleSize; i++)
     {
         uint32 result = caster->CastSpell(target, spellID, true);
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
     }
 
     Wait(10 * SECOND * IN_MILLISECONDS);
-    float damageDealt = AI->GetDamagePerSpellsTo(target, spellID);
+    float avgDamageDealt = AI->GetDamagePerSpellsTo(target, spellID);
     //test hard limits
-    TEST_ASSERT(damageDealt <= expectedMaxDamage);
-    TEST_ASSERT(damageDealt >= expectedMinDamage);
+    TEST_ASSERT(avgDamageDealt <= expectedMaxDamage);
+    TEST_ASSERT(avgDamageDealt >= expectedMinDamage);
 
     //test if avg is close enough to expected value
     float avgExpected = (expectedMinDamage + expectedMaxDamage) / 2;
-    uint32 allowedMin = avgExpected > maxDiff ? avgExpected - maxDiff : 0;
-    uint32 allowedMax = avgExpected + maxDiff;
+    uint32 allowedMin = avgExpected > maxPredictionError ? avgExpected - maxPredictionError : 0;
+    uint32 allowedMax = avgExpected + maxPredictionError;
 
-    TEST_ASSERT(damageDealt <= allowedMax);
-    TEST_ASSERT(damageDealt >= allowedMin);
+    TEST_ASSERT(avgDamageDealt <= allowedMax);
+    TEST_ASSERT(avgDamageDealt >= allowedMin);
 }

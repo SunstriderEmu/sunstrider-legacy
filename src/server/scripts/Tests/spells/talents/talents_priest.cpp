@@ -6,7 +6,6 @@
 class WandSpecializationTest : public TestCaseScript
 {
 public:
-
     WandSpecializationTest() : TestCaseScript("talents priest wandspecialization") { }
 
     class WandSpecializationTestImpt : public TestCase
