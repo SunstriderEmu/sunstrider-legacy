@@ -2,16 +2,6 @@
 #include "TestPlayer.h"
 #include "World.h"
 
-float CalcChance(uint32 iterations, const std::function<bool()>& f)
-{
-    uint32 success = 0;
-    for (uint32 i = 0; i < iterations; i++)
-    {
-        success += uint32(f());
-    }
-    return float(success) / float(iterations);
-}
-
 template<class T>
 bool WithinStandartDeviation(T resultChance, T theoricChance, uint32 iterations)
 {

@@ -7,6 +7,16 @@ class TestPlayer;
 
 #define TEST_ASSERT( expr ) Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr)
 
+float CalcChance(uint32 iterations, const std::function<bool()>& f)
+{
+    uint32 success = 0;
+    for (uint32 i = 0; i < iterations; i++)
+    {
+        success += uint32(f());
+    }
+    return float(success) / float(iterations);
+}
+
 template<class T>
 bool Between(T value, T from, T to)
 {
