@@ -26,11 +26,11 @@ public:
             TestSpellDamage(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage, wandMaxDamage);
 
             //Test improved damage 5%
-            LearnTalent(player, Talents::Priest::WAND_SPEC_RNK_1);
+            LearnTalent(player, Talents::Priest::WAND_SPECIALIZATION_RNK_1);
             TestSpellDamage(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.05f, wandMaxDamage * 1.05f);
 
             //Test improved damage 25%
-            LearnTalent(player, Talents::Priest::WAND_SPEC_RNK_5);
+            LearnTalent(player, Talents::Priest::WAND_SPECIALIZATION_RNK_5);
             TestSpellDamage(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f);
         }
     };
