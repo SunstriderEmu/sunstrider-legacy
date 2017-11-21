@@ -6,7 +6,7 @@
 class WandSpecializationTest : public TestCaseScript
 {
 public:
-    WandSpecializationTest() : TestCaseScript("talents priest wandspecialization") { }
+    WandSpecializationTest() : TestCaseScript("talents priest wand_specialization") { }
 
     class WandSpecializationTestImpt : public TestCase
     {
@@ -44,7 +44,7 @@ class SearingLightTest : public TestCaseScript
 {
 public:
 
-	SearingLightTest() : TestCaseScript("talents priest searinglight") { }
+	SearingLightTest() : TestCaseScript("talents priest searing_light") { }
 
 	class SearingLightTestImpt : public TestCase
 	{

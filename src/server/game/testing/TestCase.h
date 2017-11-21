@@ -7,16 +7,6 @@ class TestPlayer;
 
 #define TEST_ASSERT( expr ) Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr)
 
-float CalcChance(uint32 iterations, const std::function<bool()>& f)
-{
-    uint32 success = 0;
-    for (uint32 i = 0; i < iterations; i++)
-    {
-        success += uint32(f());
-    }
-    return float(success) / float(iterations);
-}
-
 template<class T>
 bool Between(T value, T from, T to)
 {
@@ -81,6 +71,8 @@ public:
     void TestHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     void DisableRegen(TestPlayer* caster);
+
+	float CalcChance(uint32 iterations, const std::function<bool()>& f);
 
     void TestStacksCount(TestPlayer* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount);
     ///!\ This is VERY slow, do not abuse of this function. Randomize talents, spells, stuff for this player

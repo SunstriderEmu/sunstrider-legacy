@@ -510,3 +510,13 @@ void TestCase::TestSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID,
     TEST_ASSERT(avgDamageDealt <= allowedMax);
     TEST_ASSERT(avgDamageDealt >= allowedMin);
 }
+
+float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)
+{
+	uint32 success = 0;
+	for (uint32 i = 0; i < iterations; i++)
+	{
+		success += uint32(f());
+	}
+	return float(success) / float(iterations);
+}
