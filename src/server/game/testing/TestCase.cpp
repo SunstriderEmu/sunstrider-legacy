@@ -465,6 +465,21 @@ void TestCase::LearnTalent(TestPlayer* p, uint32 spellID)
     p->LearnSpell(spellID, false);
 }
 
+bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
+{
+    auto items = creature->loot.items;
+    auto quest_items = creature->loot.quest_items;
+    for (auto itr : items)
+        if (itr.itemid == itemID)
+            return true;
+
+    for (auto itr : quest_items)
+        if (itr.itemid == itemID)
+            return true;
+
+    return false;
+}
+
 void TestCase::TestSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedMinDamage, uint32 expectedMaxDamage)
 {
     auto AI = caster->GetTestingPlayerbotAI();
