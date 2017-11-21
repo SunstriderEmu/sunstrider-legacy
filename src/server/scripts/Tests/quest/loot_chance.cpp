@@ -2,6 +2,29 @@
 #include "TestPlayer.h"
 #include "World.h"
 
+float CalcChance(uint32 iterations, const std::function<bool()>& f)
+{
+    uint32 success = 0;
+    for (uint32 i = 0; i < iterations; i++)
+    {
+        success += uint32(f());
+    }
+    return float(success) / float(iterations);
+}
+
+
+template<class T>
+bool Between(T value, T from, T to)
+{
+    return value >= from && value <= to;
+}
+
+template<class T>
+bool WithinStandartDeviation(T resultChance, T theoricChance, uint32 iterations)
+{
+    return true;
+}
+
 class QuestLootChanceTest : public TestCaseScript
 {
 public:
@@ -19,13 +42,17 @@ public:
             Player* player = SpawnRandomPlayer();
             Quest const* quest = sObjectMgr->GetQuestTemplate(10637); // A Necessary Distraction
             TEST_ASSERT(quest != nullptr);
-            /*
-            TEST_ASSERT(player->CanAddQuest(quest));
+            TEST_ASSERT(player->CanAddQuest(quest, false));
             player->AddQuest(quest, nullptr);
-            Creature* warlock = SpawnCreature(21503); //Sunfury Warlock
-            player->DealDamage(warlock, 9999999);
-            TEST_ASSERT(warlock->GetLootRecipient() == player);
-            */
+            uint32 const iterations = 500;
+            float chance = CalcChance(iterations, [&]
+            { 
+                Creature* warlock = SpawnCreature(21503); //Sunfury Warlock
+                player->DealDamage(warlock, 9999999);
+                TEST_ASSERT(warlock->GetLootRecipient() == player);
+                return HasLootForMe(warlock, player, 30811);
+            });
+            TEST_ASSERT(WithinStandartDeviation(chance, lootChance, iterations));
         }
     };
 
@@ -35,7 +62,7 @@ public:
     }
 };
 
-void AddSC_loot_chance()
+void AddSC_test_loot_chance()
 {
     new QuestLootChanceTest();
 }

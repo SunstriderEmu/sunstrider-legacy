@@ -1726,7 +1726,9 @@ enum Anim
     ANIM_CUSTOMSPELL08             = 220,
     ANIM_CUSTOMSPELL09             = 221,
     ANIM_CUSTOMSPELL10             = 222,
-    ANIM_StealthRun                = 223
+    ANIM_StealthRun                = 223,
+        //ANIM_EMERGE? found it in decompiled client
+        //ANIM_COWER? found it in decompiled client
 };
 
 enum LockKeyType
