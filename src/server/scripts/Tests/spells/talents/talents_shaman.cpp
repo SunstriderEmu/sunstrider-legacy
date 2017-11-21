@@ -237,6 +237,53 @@ public:
 	}
 };
 
+class TidalFocusTest : public TestCaseScript
+{
+public:
+	TidalFocusTest() : TestCaseScript("talents shaman tidal_focus") { }
+
+	class TidalFocusTestImpt : public TestCase
+	{
+	public:
+		TidalFocusTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+
+			uint32 const startCH = 540;
+			uint32 const startHW = 720;
+			uint32 const startLHW = 440;
+
+			uint32 const expectedCH = 513;
+			uint32 const expectedHW = 684;
+			uint32 const expectedLHW = 418;
+
+			// Test regular
+			player->SetMaxPower(POWER_MANA, startCH);
+			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::CHAIN_HEAL_RNK_5, player);
+			player->SetMaxPower(POWER_MANA, startHW);
+			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::HEALING_WAVE_RNK_12, player);
+			player->SetMaxPower(POWER_MANA, startLHW);
+			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::LESSER_HEALING_WAVE_RNK_7, player);
+
+			// Test improved
+			LearnTalent(player, Talents::Shaman::TIDAL_FOCUS_RNK_5);
+			player->SetMaxPower(POWER_MANA, expectedCH);
+			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::CHAIN_HEAL_RNK_5, player);
+			player->SetMaxPower(POWER_MANA, expectedHW);
+			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::HEALING_WAVE_RNK_12, player);
+			player->SetMaxPower(POWER_MANA, expectedLHW);
+			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::LESSER_HEALING_WAVE_RNK_7, player);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<TidalFocusTestImpt>();
+	}
+};
+
 void AddSC_test_talents_shaman()
 {
 	new AncestralKnowledgeTest();
@@ -245,4 +292,5 @@ void AddSC_test_talents_shaman()
 	new ToughnessTest();
 	new WeaponMasteryTest();
 	new ImprovedHealingWaveTest();
+	new TidalFocusTest();
 }
