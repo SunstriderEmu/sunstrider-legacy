@@ -318,6 +318,40 @@ public:
 	}
 };
 
+class ImprovedChainHealTest : public TestCaseScript
+{
+public:
+	ImprovedChainHealTest() : TestCaseScript("talents shaman improved_chain_heal") { }
+
+	class ImprovedChainHealTestImpt : public TestCase
+	{
+	public:
+		ImprovedChainHealTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+
+			uint32 const minCH = 826;
+			uint32 const maxCH = 942;
+
+			// Test regular
+			//TestHeal(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH, maxCH);
+
+			// Test improved
+			LearnTalent(player, Talents::Shaman::IMPROVED_CHAIN_HEAL_RNK_2);
+			//TestHeal(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH * 1.2f, maxCH * 1.2f);
+
+			// TODO: test bounces : spawn 2 players, group players, each bounce 50% less
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<ImprovedChainHealTestImpt>();
+	}
+};
+
 void AddSC_test_talents_shaman()
 {
 	new AncestralKnowledgeTest();
@@ -328,4 +362,5 @@ void AddSC_test_talents_shaman()
 	new ImprovedHealingWaveTest();
 	new TidalFocusTest();
 	new NaturesBlessingTest();
+	new ImprovedChainHealTest();
 }
