@@ -5,7 +5,7 @@ GetScriptModuleList(SCRIPT_MODULE_LIST)
 if(NOT TESTS)
 	list(REMOVE_ITEM SCRIPT_MODULE_LIST Tests)
 endif(NOT TESTS)
-
+ 
 # Make the native install offset available in this scope
 GetInstallOffset(INSTALL_OFFSET)
 

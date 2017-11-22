@@ -2044,7 +2044,8 @@ namespace ClassSpells
             // Restoration
             ABOLISH_POISON_RNK_1 = 2893,
             GIFT_OF_THE_WILD_RNK_1 = 21849,
-            GIFT_OF_THE_WILD_RNK_2 = 21850,
+			GIFT_OF_THE_WILD_RNK_2 = 21850,
+			GIFT_OF_THE_WILD_RNK_3 = 26991,
             HEALING_TOUCH_RNK_1 = 5185,
             HEALING_TOUCH_RNK_2 = 5186,
             HEALING_TOUCH_RNK_3 = 5187,
@@ -2287,6 +2288,9 @@ namespace ClassSpells
     {
         enum Mage
         {
+			//Generic
+			WAND = 5019,
+
             // Arcane
             AMPLIFY_MAGIC_RNK_1 = 1008,
             AMPLIFY_MAGIC_RNK_2 = 8455,

@@ -336,11 +336,11 @@ public:
 			uint32 const maxCH = 942;
 
 			// Test regular
-			//TestHeal(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH, maxCH);
+			TestDirectHeal(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH, maxCH);
 
 			// Test improved
 			LearnTalent(player, Talents::Shaman::IMPROVED_CHAIN_HEAL_RNK_2);
-			//TestHeal(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH * 1.2f, maxCH * 1.2f);
+			TestDirectHeal(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH * 1.2f, maxCH * 1.2f);
 
 			// TODO: test bounces : spawn 2 players, group players, each bounce 50% less
 		}
