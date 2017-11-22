@@ -284,6 +284,40 @@ public:
 	}
 };
 
+class NaturesBlessingTest : public TestCaseScript
+{
+public:
+	NaturesBlessingTest() : TestCaseScript("talents shaman natures_blessing") { }
+
+	class NaturesBlessingTestImpt : public TestCase
+	{
+	public:
+		NaturesBlessingTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+
+			uint32 const intellect = player->GetStat(STAT_INTELLECT);
+			uint32 const startHealing = player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
+			uint32 const startDamage = player->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+
+			uint32 const expectedHealing = startHealing + intellect * 0.3;
+			uint32 const expectedDamage = startDamage + intellect * 0.3;
+
+			// Test improved
+			LearnTalent(player, Talents::Shaman::NATURES_BLESSING_RNK_3);
+			TEST_ASSERT(Between<float>(player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedHealing - 1, expectedHealing + 1));
+			TEST_ASSERT(Between<float>(player->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL), expectedDamage - 1, expectedDamage + 1));
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<NaturesBlessingTestImpt>();
+	}
+};
+
 void AddSC_test_talents_shaman()
 {
 	new AncestralKnowledgeTest();
@@ -293,4 +327,5 @@ void AddSC_test_talents_shaman()
 	new WeaponMasteryTest();
 	new ImprovedHealingWaveTest();
 	new TidalFocusTest();
+	new NaturesBlessingTest();
 }
