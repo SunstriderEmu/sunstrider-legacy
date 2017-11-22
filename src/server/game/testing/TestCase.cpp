@@ -478,7 +478,7 @@ bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
     return false;
 }
 
-void TestCase::TestSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedMinDamage, uint32 expectedMaxDamage)
+void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedMinDamage, uint32 expectedMaxDamage)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_TEST_ASSERT(AI != nullptr);
@@ -495,7 +495,7 @@ void TestCase::TestSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID,
     }
 
     Wait(10 * SECOND * IN_MILLISECONDS);
-    float avgDamageDealt = AI->GetDamagePerSpellsTo(target, spellID);
+    float avgDamageDealt = GetDamagePerSpellsTo(caster, target, spellID);
     //test hard limits
     TEST_ASSERT(avgDamageDealt <= expectedMaxDamage);
     TEST_ASSERT(avgDamageDealt >= expectedMinDamage);
@@ -509,6 +509,101 @@ void TestCase::TestSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID,
     TEST_ASSERT(avgDamageDealt >= allowedMin);
 }
 
+void TestCase::TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax)
+{
+
+}
+
+float TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    auto damageToTarget = AI->GetDamageDoneInfo(victim);
+    if (damageToTarget.empty())
+    {
+        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
+        return 0.0f;
+    }
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    if (spellInfo == nullptr)
+    {
+        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellID);
+        return 0.0f;
+    }
+
+    uint64 totalDamage = 0;
+    uint32 count = 0;
+    for (auto itr : damageToTarget)
+    {
+        if (itr.spellID != spellID)
+            continue;
+
+        //use only spells that hit target
+        if (itr.missInfo != SPELL_MISS_NONE)
+            continue;
+
+        if (itr.crit)
+            continue; //ignore crit... damage crits are affected by a whole lot of other factors so best just using regulars hit
+
+        uint32 damage = itr.damageInfo.damage;
+        damage += itr.damageInfo.resist;
+        damage += itr.damageInfo.blocked;
+        damage += itr.damageInfo.absorb;
+        //resilience not taken into account...
+
+        totalDamage += damage;
+        count++;
+    }
+
+    if (count == 0)
+    {
+        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for a victim (%s) with no valid data for this spell (ID %u)", victim->GetName().c_str(), spellID);
+        return 0.0f;
+    }
+
+    return totalDamage / count;
+}
+
+void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    bool spellHasFlyTime = spellInfo->Speed != 0.0f;
+
+    for (uint32 i = 0; i < 100; i++)
+    {
+        AI->ResetSpellCounters();
+        uint32 result = caster->CastSpell(target, spellID, true);
+        if (result == SPELL_CAST_OK)
+        {
+            if (spellHasFlyTime)
+                Wait(5 * SECOND*IN_MILLISECONDS);
+
+            Wait(1);
+            Aura* aura = target->GetAuraWithCaster(spellID, caster->GetGUID());
+            if (!aura)
+                continue; //aura could have been resisted
+
+            //spell did hit, let's wait for dot duration
+            Wait(aura->GetAuraDuration() + 1);
+            //aura may be deleted at this point, do not use anymore
+
+            //make sure aura expired
+            INTERNAL_TEST_ASSERT(!target->HasAuraWithCaster(spellID, 0, caster->GetGUID()));
+
+            int32 dotDamageToTarget = AI->GetDotDamage(target, spellID);
+            TEST_ASSERT(dotDamageToTarget >= (expectedAmount - 1) && dotDamageToTarget <= (expectedAmount + 1));
+            return;
+        }
+    }
+    INTERNAL_TEST_ASSERT((false && "Failed to cast the spell 100 times")); //failed to cast the spell 100 times
+}
+
 float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)
 {
 	uint32 success = 0;
@@ -517,4 +612,9 @@ float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)
 		success += uint32(f());
 	}
 	return float(success) / float(iterations);
+}
+
+void TestCase::DisableRegen(TestPlayer* caster)
+{
+    caster->DisableRegen(true);
 }

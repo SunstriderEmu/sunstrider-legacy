@@ -22,15 +22,15 @@ public:
 
             Creature* dummyTarget = SpawnCreature();
             //Test regular damage
-            TestSpellDamage(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage, wandMaxDamage);
+            TestDirectSpellDamage(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage, wandMaxDamage);
 
             //Test improved damage 5%
             LearnTalent(player, Talents::Priest::WAND_SPECIALIZATION_RNK_1);
-            TestSpellDamage(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.05f, wandMaxDamage * 1.05f);
+            TestDirectSpellDamage(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.05f, wandMaxDamage * 1.05f);
 
             //Test improved damage 25%
             LearnTalent(player, Talents::Priest::WAND_SPECIALIZATION_RNK_5);
-            TestSpellDamage(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f);
+            TestDirectSpellDamage(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f);
         }
     };
 
@@ -54,6 +54,7 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_PRIEST);
+            Wait(10000);
 			// Smite rank 10
 			uint32 const smiteMinDamage = 549;
 			uint32 const smiteMaxDamage = 616;
@@ -64,18 +65,18 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
-			TestSpellDamage(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage, smiteMaxDamage);
-			TestSpellDamage(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, smiteMinDamage, smiteMaxDamage);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage, smiteMaxDamage);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, smiteMinDamage, smiteMaxDamage);
 
 			//Test improved damage 5%
 			LearnTalent(player, Talents::Priest::SEARING_LIGHT_RNK_1);
-			TestSpellDamage(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMaxDamage * 1.05f, smiteMaxDamage * 1.05f);
-			TestSpellDamage(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.05f, holyFireMaxDamage * 1.05f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMaxDamage * 1.05f, smiteMaxDamage * 1.05f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.05f, holyFireMaxDamage * 1.05f);
 
 			//Test improved damage 10%
 			LearnTalent(player, Talents::Priest::SEARING_LIGHT_RNK_2);
-			TestSpellDamage(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMaxDamage * 1.1f, smiteMaxDamage * 1.1f);
-			TestSpellDamage(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.1f, holyFireMaxDamage * 1.1f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMaxDamage * 1.1f, smiteMaxDamage * 1.1f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.1f, holyFireMaxDamage * 1.1f);
 		}
 	};
 
