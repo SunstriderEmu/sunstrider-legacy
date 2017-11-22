@@ -10019,6 +10019,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     for(auto mDamageDoneVersu : mDamageDoneVersus)
         if(creatureTypeMask & uint32(mDamageDoneVersu->GetModifier()->m_miscvalue))
             DoneTotalMod *= (mDamageDoneVersu->GetModifierValue()+100.0f)/100.0f;
+
     // ..taken
     AuraList const& mModDamagePercentTaken = pVictim->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
     for(auto i : mModDamagePercentTaken) {

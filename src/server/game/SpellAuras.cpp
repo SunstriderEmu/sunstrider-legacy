@@ -6164,9 +6164,11 @@ void Aura::PeriodicTick()
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
             uint32 procEx = PROC_EX_INTERNAL_DOT | PROC_EX_NORMAL_HIT;
-            pdamage = (pdamage <= absorb+resist) ? 0 : (pdamage-absorb-resist);
+
+            // Reduce damage by absorb and resist
+            pdamage = (pdamage <= absorb + resist) ? 0 : (pdamage - absorb - resist);
             if (pdamage)
-                procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
+                procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
             pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);

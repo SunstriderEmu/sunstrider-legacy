@@ -165,40 +165,32 @@ Player::Player(WorldSession *session) :
     m_timeSyncTimer(0),
     m_timeSyncClient(0),
     m_timeSyncServer(0),
-    m_teleportToTestInstanceId(0)
+    m_teleportToTestInstanceId(0),
+    m_disabledRegen(false),
+    m_speakTime(0),
+    m_speakCount(0),
+    m_session(session),
+    m_divider(0),
+    m_ExtraFlags(0),
+    m_lootGuid(0),
+    m_comboTarget(0),
+    m_comboPoints(0),
+    m_usedTalentCount(0),
+    m_regenTimer(0),
+    m_weaponChangeTimer(0),
+    m_zoneUpdateId(0),
+    m_zoneUpdateTimer(0),
+    m_areaUpdateId(0)
 {
-    m_speakTime = 0;
-    m_speakCount = 0;
 
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
 
     m_valuesCount = PLAYER_END;
 
-    m_session = session;
-
-    m_divider = 0;
-
-    m_ExtraFlags = 0;
-
     // players always accept
     if(GetSession()->GetSecurity() == SEC_PLAYER/* && !(GetSession()->GetGroupId()) */)
         SetAcceptWhispers(true);
-
-    m_lootGuid = 0;
-
-    m_comboTarget = 0;
-    m_comboPoints = 0;
-
-    m_usedTalentCount = 0;
-
-    m_regenTimer = 0;
-    m_weaponChangeTimer = 0;
-
-    m_zoneUpdateId = 0;
-    m_zoneUpdateTimer = 0;
-
-    m_areaUpdateId = 0;
 
     m_nextSave = sWorld->getConfig(CONFIG_INTERVAL_SAVE);
 
@@ -1948,8 +1940,12 @@ void Player::RewardRage( uint32 damage, uint32 weaponSpeedHitFactor, bool attack
 
 void Player::RegenerateAll()
 {
+    if (m_disabledRegen)
+        return;
+
     if (m_regenTimer != 0)
         return;
+
     uint32 regenDelay = 2000;
 
     // Not in combat or they have regeneration

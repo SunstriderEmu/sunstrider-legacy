@@ -270,15 +270,13 @@ TestPlayer* TestCase::_CreateTestBot(WorldLocation loc, Classes cls, Races race,
     if (level == 0)
         level = sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL);
 
-    player->SetLevel(level);
+    player->GiveLevel(level);
     player->LearnAllClassProficiencies();
     player->UpdateSkillsToMaxSkillsForLevel();
 
     session->_HandlePlayerLogin(player, holder);
 
     player->SetTeleportingToTest(_testMapInstanceId);
-    player->ResetAllPowers();
-    player->SetFullHealth();
 
     //handle bot position
     bool teleportOK = player->TeleportTo(loc, TELE_TO_GM_MODE);
