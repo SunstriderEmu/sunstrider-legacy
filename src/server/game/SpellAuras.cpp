@@ -5985,17 +5985,19 @@ void Aura::PeriodicTick()
     if(!m_target->IsAlive())
         return;
 
+    uint32 realDamage = 0; //tick value before reduction
+
     switch(m_modifier.m_auraname)
     {
         case SPELL_AURA_PERIODIC_DAMAGE:
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
         {
-            Unit *pCaster = GetCaster();
+            Unit* pCaster = GetCaster();
             if(!pCaster)
                 return;
 
             if( GetSpellInfo()->Effects[GetEffIndex()].Effect==SPELL_EFFECT_PERSISTENT_AREA_AURA &&
-                pCaster->SpellHitResult(m_target,GetSpellInfo(),false)!=SPELL_MISS_NONE)
+                pCaster->SpellHitResult(m_target,GetSpellInfo(),false) != SPELL_MISS_NONE)
                 return;
 
             if (m_target->GetEntry() != 25653 || GetId() != 45848)
@@ -6140,6 +6142,7 @@ void Aura::PeriodicTick()
             }
 
             pdamage *= GetStackAmount();
+            realDamage = pdamage;
 
             pCaster->CalcAbsorbResist(m_target, GetSpellInfo()->GetSchoolMask(), DOT, pdamage, &absorb, &resist, GetId());
 
@@ -6164,9 +6167,11 @@ void Aura::PeriodicTick()
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
             uint32 procEx = PROC_EX_INTERNAL_DOT | PROC_EX_NORMAL_HIT;
-            pdamage = (pdamage <= absorb+resist) ? 0 : (pdamage-absorb-resist);
+
+            // Reduce damage by absorb and resist
+            pdamage = (pdamage <= absorb + resist) ? 0 : (pdamage - absorb - resist);
             if (pdamage)
-                procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
+                procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
             pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
@@ -6268,6 +6273,7 @@ void Aura::PeriodicTick()
 
             pCaster->SendSpellNonMeleeDamageLog(m_target, GetId(), pdamage, GetSpellInfo()->GetSchoolMask(), absorb, resist, false, 0);
 
+            realDamage = pdamage;
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellInfo const* spellProto = GetSpellInfo();
@@ -6354,6 +6360,8 @@ void Aura::PeriodicTick()
             
             SpellPeriodicAuraLogInfo pInfo(this, heal, 0, 0, 0.0f);
             m_target->SendPeriodicAuraLog(&pInfo);
+
+            realDamage = heal;
 
             int32 gain = m_target->ModifyHealth(heal);
 
@@ -6451,6 +6459,7 @@ void Aura::PeriodicTick()
                 drain_amount -= (m_target->ToPlayer())->GetSpellCritDamageReduction(drain_amount);
 
             m_target->ModifyPower(power, -drain_amount);
+            realDamage = pdamage;
 
             float gain_multiplier = 0;
 
@@ -6523,6 +6532,7 @@ void Aura::PeriodicTick()
             m_target->SendPeriodicAuraLog(&pInfo);
 
             int32 gain = m_target->ModifyPower(power,amount);
+            realDamage = amount;
 
             if(Unit* pCaster = GetCaster())
                 m_target->GetHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellInfo(),false,true); //to confirm : threat from energize spells is not subject to threat modifiers
@@ -6558,6 +6568,8 @@ void Aura::PeriodicTick()
             SpellPeriodicAuraLogInfo pInfo(this, amount, 0, 0, 0.0f);
             m_target->SendPeriodicAuraLog(&pInfo);
 
+            realDamage = amount;
+
             int32 gain = m_target->ModifyPower(powerType, amount);
 
             if(Unit* pCaster = GetCaster())
@@ -6589,6 +6601,7 @@ void Aura::PeriodicTick()
                 pdamage -= (m_target->ToPlayer())->GetSpellCritDamageReduction(pdamage);
 
             uint32 gain = uint32(-m_target->ModifyPower(powerType, -pdamage));
+            realDamage = gain;
 
             gain = uint32(gain * GetSpellInfo()->Effects[GetEffIndex()].ValueMultiplier);
 
@@ -6698,6 +6711,10 @@ void Aura::PeriodicTick()
         default:
             break;
     }
+
+    if (GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER)
+        if (auto playerBotAI = GetCaster()->ToPlayer()->GetPlayerbotAI())
+            playerBotAI->PeriodicTick(m_target, realDamage, GetId());
 }
 
 void Aura::PeriodicDummyTick()

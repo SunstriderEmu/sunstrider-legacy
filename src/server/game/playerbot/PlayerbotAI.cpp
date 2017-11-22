@@ -1440,52 +1440,45 @@ void PlayerbotTestingAI::CastedHealingSpell(Unit* target, uint32 healing, uint32
     healingDone[target->GetGUID()].push_back(std::move(info));
 }
 
-float PlayerbotTestingAI::GetDamagePerSpellsTo(Unit* victim, uint32 spellID)
+
+void PlayerbotTestingAI::PeriodicTick(Unit* target, int32 amount, uint32 spellID)
 {
-    auto damageToTarget = damageDone.find(victim->GetGUID());
-    if (damageToTarget == damageDone.end())
-    {
-        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for a victim (%s) with no data", victim->GetName().c_str());
+    TickInfo info;
+    info.spellID = spellID;
+    info.amount = amount;
+
+    ticksDone[target->GetGUID()].push_back(std::move(info));
+}
+
+void PlayerbotTestingAI::SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID)
+{
+    //TODO
+}
+
+int32 PlayerbotTestingAI::GetDotDamage(Unit* victim, uint32 spellID)
+{
+    auto ticksToVictim = ticksDone.find(victim->GetGUID());
+    if (ticksToVictim == ticksDone.end())
         return 0;
-    }
 
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    if (spellInfo == nullptr)
-    {
-        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellID);
-        return 0.0f;
-    }
-
-    uint64 totalDamage = 0;
-    uint32 count = 0;
-    for (auto itr : damageToTarget->second)
+    int32 totalAmount = 0;
+    for (auto itr : ticksToVictim->second)
     {
         if (itr.spellID != spellID)
             continue;
 
-        //use only spells that hit target
-        if (itr.missInfo != SPELL_MISS_NONE)
-            continue;
-
-        if (itr.crit)
-            continue; //ignore crit... damage crits are affected by a whole lot of other factors so best just using regulars hit
-
-        uint32 damage = itr.damageInfo.damage;
-        damage += itr.damageInfo.resist;
-        damage += itr.damageInfo.blocked;
-        damage += itr.damageInfo.absorb;
-        //resilience not taken into account...
-
-        totalDamage += damage;
-        count++;
+        totalAmount += itr.amount;
     }
-    if (count == 0)
-    {
-        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for a victim (%s) for this spell (ID %u)", victim->GetName().c_str(), spellID);
-        return 0.0f;
-    }
+    return totalAmount;
+}
 
-    return totalDamage / count;
+std::vector<PlayerbotTestingAI::DamageDoneInfo> const& PlayerbotTestingAI::GetDamageDoneInfo(Unit* target)
+{
+    auto infoForVictim = damageDone.find(target->GetGUID());
+    if (infoForVictim == damageDone.end())
+        return std::vector<PlayerbotTestingAI::DamageDoneInfo>();
+
+    return (*infoForVictim).second;
 }
 
 void PlayerbotTestingAI::ResetSpellCounters()
@@ -1493,4 +1486,5 @@ void PlayerbotTestingAI::ResetSpellCounters()
     TC_LOG_TRACE("test.unit_test", "PlayerbotTestingAI: Counters were reset");
     damageDone.clear();
     healingDone.clear();
+    ticksDone.clear();
 }

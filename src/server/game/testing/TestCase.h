@@ -66,9 +66,12 @@ public:
     void LearnTalent(TestPlayer* p, uint32 spellID);
 
     //Will cast the spell a bunch of time and test if results match the expected damage. Reason I keep expected min and max separated is because it gives me some data to do some math magic later to reduce iterations 
-    //Note for multithread: You can only have only one TestSpellDamage function running for each caster/target combination at the same time
-    void TestSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
-    void TestHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
+    //Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time
+    void TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
+    void TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
+    float GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID);
+    //use expectedAmount negative values for healing
+    void TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount);
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     void DisableRegen(TestPlayer* caster);
 

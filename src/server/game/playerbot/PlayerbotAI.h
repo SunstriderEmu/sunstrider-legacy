@@ -165,6 +165,8 @@ public:
     //virtual void DamageTaken(Unit *done_by, uint32 & /*damage*/, DamageEffectType /*damageType*/) { }
     virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit = false) { }
     virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit = false) { }
+    virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) { }
+    virtual void SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID) { }
 
 private:
     void _fillGearScoreData(Player *player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore);
@@ -205,28 +207,11 @@ public:
     void UpdateAIInternal(uint32 elapsed) override;
     virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit = false) override;
     virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit = false) override;
+    virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) override;
+    virtual void SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID) override;
+
     void ResetSpellCounters();
 
-    //will only use full hit spells
-    float GetDamagePerSpellsTo(Unit* to, uint32 spellID);
-    /*
-    //Get all damage taken
-    uint64 GetDamageTaken();
-    uint64 GetDamageTakenFrom(Unit* from, uint32 spellID = 0);
-
-    uint64 GetDamageDealtTo(Unit* to, uint32 spellID = 0);
-    uint64 GetHealDoneTo(Unit* to, uint32 spellID = 0);
-    //will only use full hit spells
-    uint32 GetDamagePerSpellsTo(Unit* to, uint32 spellID);
-
-    void ResetDamageOrHealTaken();
-    void ResetDamageOrHealDealt();
-    void ResetDamageOrHealTakenFrom(Unit* from);
-    void ResetDamageOrHealDealtTo(Unit* to);
-    void ResetCastSpellTo(Unit* to);
-    */
-
-private:
     struct DamageDoneInfo
     {
         DamageDoneInfo(uint32 spellID, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) :
@@ -238,8 +223,6 @@ private:
         SpellMissInfo missInfo;
         bool crit;
     };
-    std::unordered_map<uint64 /*targetGUID*/, std::vector<DamageDoneInfo>> damageDone;
-
     struct HealingDoneInfo
     {
         uint32 spellID;
@@ -248,18 +231,22 @@ private:
         SpellMissInfo missInfo;
         bool crit;
     };
-    std::unordered_map<uint64 /*targetGUID*/, std::vector<HealingDoneInfo>> healingDone;
-
-    /*
-    struct SpellCastInfo
+    struct TickInfo
     {
         uint32 spellID;
-        SpellMissInfo missInfo;
+        int32 amount;
     };
-    std::unordered_map<uint64 targetGUID, std::vector<SpellCastInfo>> spellsCast; //spells that reached target, regardless of miss/dodge/etc...
-    uint32 _GetDamageFrom(std::vector<DamageDoneInfo> const&, uint32 spellID = 0);
-    uint32 _GetHealFrom(std::vector<DamageDoneInfo> const&, uint32 spellID = 0);
-    */
+
+    //will only use full hit spells
+    int32 GetDotDamage(Unit* to, uint32 spellID);
+    std::vector<DamageDoneInfo> const& GetDamageDoneInfo(Unit* target);
+
+private:
+   
+    std::unordered_map<uint64 /*targetGUID*/, std::vector<DamageDoneInfo>> damageDone;
+    std::unordered_map<uint64 /*targetGUID*/, std::vector<HealingDoneInfo>> healingDone;
+    std::unordered_map<uint64 /*targetGUID*/, std::vector<TickInfo>> ticksDone;
+
 };
 
 #endif
