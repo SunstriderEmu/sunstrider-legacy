@@ -190,7 +190,6 @@ public:
 
 			uint32 const startInt = player->GetStat(STAT_INTELLECT);
 			uint32 const expectedInt = startInt * 1.15f;
-
 			LearnTalent(player, Talents::Mage::ARCANE_MIND_RNK_5);
 			TEST_ASSERT(Between<float>(player->GetStat(STAT_INTELLECT), expectedInt - 1, expectedInt + 1));
 		}
@@ -218,7 +217,7 @@ public:
 			EquipItem(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
 
 			float const startSP = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
-			float  const startSC = player->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_FIRE);
+			float const startSC = player->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_FIRE);
 
 			float const expectedSP = startSP * 1.03f;
 			float const expectedSC = startSC + 3;
@@ -235,6 +234,154 @@ public:
 	}
 };
 
+class EmpoweredArcaneMissilesTest : public TestCaseScript
+{
+public:
+	EmpoweredArcaneMissilesTest() : TestCaseScript("talents mage empowered_arcane_missiles") { }
+
+	class EmpoweredArcaneMissilesTestImpt : public TestCase
+	{
+	public:
+		EmpoweredArcaneMissilesTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			Creature* dummyTarget = SpawnCreature();
+			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
+			//EquipItem(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
+
+			float const startCoeff = 142.86;
+			float const expectedCoeff = startCoeff + (3 * 15);
+
+			uint32 const tickAM = 260;
+
+			float const expectedTickAM = tickAM + player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_ARCANE) * expectedCoeff;
+
+			LearnTalent(player, Talents::Mage::EMPOWERED_ARCANE_MISSILES_RNK_3);
+			//TestChannelDamage(player, dummyTarget, ClassSpells::Mage::ARCANE_MISSILES_RNK_10, expectedTickAM);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<EmpoweredArcaneMissilesTestImpt>();
+	}
+};
+
+class MindMasteryTest : public TestCaseScript
+{
+public:
+	MindMasteryTest() : TestCaseScript("talents mage mind_mastery") { }
+
+	class MindMasteryTestImpt : public TestCase
+	{
+	public:
+		MindMasteryTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
+
+			uint32 const startSP = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_ARCANE);
+			uint32 const expectedSP = startSP + player->GetStat(STAT_INTELLECT) * 0.25f;
+
+			LearnTalent(player, Talents::Mage::MIND_MASTERY_RNK_5);
+			TEST_ASSERT(Between<float>(player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_ARCANE), expectedSP - 1, expectedSP + 1));
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<MindMasteryTestImpt>();
+	}
+};
+
+class CriticalMassTest : public TestCaseScript
+{
+public:
+	CriticalMassTest() : TestCaseScript("talents mage critical_mass") { }
+
+	class CriticalMassTestImpt : public TestCase
+	{
+	public:
+		CriticalMassTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
+
+			float const startSC = player->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_FIRE);
+
+			float const expectedSC = startSC + 6;
+
+			LearnTalent(player, Talents::Mage::CRITICAL_MASS_RNK_3);
+			TEST_ASSERT(player->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_FIRE) == expectedSC);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<CriticalMassTestImpt>();
+	}
+};
+
+class FirePowerTest : public TestCaseScript
+{
+public:
+
+	FirePowerTest() : TestCaseScript("talents mage fire_power") { }
+
+	class FirePowerTestImpt : public TestCase
+	{
+	public:
+		FirePowerTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
+
+			// Fireblast rank 9
+			uint32 const fireblastMinDamage = 664;
+			uint32 const fireblastMaxDamage = 786;
+
+			// Fireball rank 13
+			uint32 const fireballMinDamage = 649;
+			uint32 const fireballMaxDamage = 821;
+
+			// Flamestrike rank 5
+			uint32 const flamestrikeMinDamage = 480;
+			uint32 const flamestrikeMaxDamage = 585;
+
+			// Molten armor rank 1
+			uint32 const moltenArmorDamage = 75;
+
+			// Scorch rank 9
+			uint32 const scorchMinDamage = 305;
+			uint32 const scorchMaxDamage = 361;
+
+			Creature* dummyTarget = SpawnCreature();
+			//Test regular damage
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FIRE_BLAST_RNK_9, fireblastMinDamage, fireblastMaxDamage);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage, fireballMaxDamage);
+			//TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FLAMESTRIKE_RNK_7, flamestrikeMinDamage, flamestrikeMaxDamage);
+			//TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::MOLTEN_ARMOR_RNK_1, moltenArmorDamage);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::SCORCH_RNK_9, scorchMinDamage, scorchMaxDamage);
+
+			//Test improved damage 10%
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FIRE_BLAST_RNK_9, fireblastMinDamage * 1.1f, fireblastMaxDamage * 1.1f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage * 1.1f, fireballMaxDamage * 1.1f);
+			//TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FLAMESTRIKE_RNK_7, flamestrikeMinDamage * 1.1f, flamestrikeMaxDamage * 1.1f);
+			//TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::MOLTEN_ARMOR_RNK_1, moltenArmorDamage * 1.1f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::SCORCH_RNK_9, scorchMinDamage * 1.1f, scorchMaxDamage * 1.1f);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<FirePowerTestImpt>();
+	}
+};
+
 void AddSC_test_talents_mage()
 {
 	new WandSpecializationTest();
@@ -244,4 +391,8 @@ void AddSC_test_talents_mage()
 	new ImprovedCounterspellTest();
 	new ArcaneMindTest();
 	new ArcaneInstabilityTest();
+	new EmpoweredArcaneMissilesTest();
+	new MindMasteryTest();
+	new CriticalMassTest();
+	new FirePowerTest();
 }
