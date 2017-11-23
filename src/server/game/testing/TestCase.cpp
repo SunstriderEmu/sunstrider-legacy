@@ -496,6 +496,7 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
 
     Wait(10 * SECOND * IN_MILLISECONDS);
     float avgDamageDealt = GetDamagePerSpellsTo(caster, target, spellID);
+	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> avgDamageDealt: %f - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, avgDamageDealt, expectedMinDamage, expectedMaxDamage);
     //test hard limits
     TEST_ASSERT(avgDamageDealt <= expectedMaxDamage);
     TEST_ASSERT(avgDamageDealt >= expectedMinDamage);
