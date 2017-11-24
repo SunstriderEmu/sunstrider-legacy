@@ -23,6 +23,8 @@ void TestThread::Run()
         _testCase->Test();
         if (_testCase->GetTestCount() == 0)
             _testCase->_Fail("No checks executed in test");
+        //Yay time!
+        _testCase->Celebrate();
     }
     catch (std::exception& e)
     { 

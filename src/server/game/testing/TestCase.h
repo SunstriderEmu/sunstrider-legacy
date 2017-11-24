@@ -92,6 +92,8 @@ public:
     static uint32 GetTestBotAccountId();
     void _SetCaller(std::string callerFile, int32 callerLine);
     void _ResetCaller();
+    void Celebrate();
+
 protected:
 
     //Scripting function

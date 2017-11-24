@@ -27,7 +27,7 @@ public:
             p->Say("YOLO!", LANG_UNIVERSAL);
             Wait(3 * SECOND * IN_MILLISECONDS);
             summon->Say("lol");
-            Wait(30 * SECOND * IN_MILLISECONDS);
+            Wait(2 * SECOND * IN_MILLISECONDS);
             //sWorld->SendGlobalText("DUMMY AFTER WAIT");
             //sWorld->SendGlobalText(str.c_str());
             //TEST_ASSERT(urand(0, 1) == 1);

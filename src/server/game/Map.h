@@ -695,6 +695,7 @@ public:
     TestMap(uint32 id, uint32 InstanceId, uint8 spawnMode, Map* parent, bool enableMapObjects);
     void RemoveAllPlayers() override;
     void DisconnectAllBots();
+    Player* GetFirstHumanPlayer();
 };
 
 class TC_GAME_API BattlegroundMap : public Map

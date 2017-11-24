@@ -3009,6 +3009,16 @@ void TestMap::DisconnectAllBots()
 #endif
 }
 
+Player* TestMap::GetFirstHumanPlayer()
+{
+    for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+        if (Player* player = itr->GetSource())
+            if (!player->GetPlayerbotAI())
+                return player;
+
+    return nullptr;
+}
+
 void InstanceMap::UnloadAll()
 {
     ASSERT(!HavePlayers());

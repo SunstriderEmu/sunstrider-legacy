@@ -503,7 +503,7 @@ bool ChatHandler::HandleTempGameObjectCommand(const char* args)
 
     uint32 id = atoi(charID);
 
-    chr->SummonGameObject(id,Position(x,y,z,ang), G3D::Quat(0,0,rot2,rot3),spawntm);
+    chr->SummonGameObject(id,Position(x,y,z,ang), G3D::Quat(0,0,rot2,rot3), spawntm);
 
     return true;
 }
