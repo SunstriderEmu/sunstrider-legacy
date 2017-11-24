@@ -107,7 +107,7 @@ public:
 			uint32 const startResNature = victim->GetResistance(SPELL_SCHOOL_NATURE);
 			uint32 const startResShadow = victim->GetResistance(SPELL_SCHOOL_SHADOW);
 
-			uint32 const expectedArmor = startArmor + 340 * 1.35f;
+            uint32 const expectedArmor = startArmor + 340 * 1.35f + 14 * 1.35f * 2; //also add armor related to agility increase
 			uint32 const expectedAgi = startAgi + 14 * 1.35f;
 			uint32 const expectedInt = startInt + 14 * 1.35f;
 			uint32 const expectedSpi = startSpi + 14 * 1.35f;
