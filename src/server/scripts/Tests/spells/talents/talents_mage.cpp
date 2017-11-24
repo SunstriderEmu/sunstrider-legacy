@@ -106,7 +106,8 @@ public:
 			//TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, minHW, maxHW);
 
 			// Test improved
-			mage->CastSpell(mage, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6);
+			uint32 result = mage->CastSpell(mage, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6);
+            TEST_ASSERT(result == SPELL_CAST_OK);
 			LearnTalent(mage, Talents::Mage::MAGIC_ATTUNEMENT_RNK_2);
 			//TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, expectedMinHW, expectedMaxHW);
 		}
@@ -163,8 +164,8 @@ public:
 
 			LearnTalent(mage, Talents::Mage::IMPROVED_COUNTERSPELL_RNK_2);
 			mage->CastSpell(dummyTarget, ClassSpells::Mage::COUNTERSPELL_RNK_1);
-			Wait(3500);
-			TEST_ASSERT(dummyTarget->HasAura(18469));
+			Wait(1000);
+			TEST_ASSERT(dummyTarget->HasAura(18469)); //"Counterspell - Silenced", 4s
 		}
 	};
 
@@ -220,7 +221,7 @@ public:
 			float const startSC = player->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_FIRE);
 
 			float const expectedSP = startSP * 1.03f;
-			float const expectedSC = startSC + 3;
+			float const expectedSC = startSC + 3.0f;
 
 			LearnTalent(player, Talents::Mage::ARCANE_INSTABILITY_RNK_3);
 			TEST_ASSERT(Between<float>(player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE), expectedSP - 1, expectedSP + 1));
@@ -249,16 +250,16 @@ public:
 			Creature* dummyTarget = SpawnCreature();
 			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
 			EquipItem(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
+            uint32 arcaneSpellPower = player->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_ARCANE);
+			float const startCoeff = 1.429;
+			float const expectedCoeff = startCoeff + (3 * 0.15);
+            uint32 const tickCount = 5;
+			uint32 const totalDamage = 260 * tickCount;
+            uint32 const expectedTickDmg = (float(totalDamage) + arcaneSpellPower * expectedCoeff) / tickCount;
 
-			float const startCoeff = 142.86;
-			float const expectedCoeff = startCoeff + (3 * 15);
-
-			uint32 const tickAM = 260;
-
-			float const expectedTickAM = tickAM + player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_ARCANE) * expectedCoeff;
-
+            Wait(5000);
 			LearnTalent(player, Talents::Mage::EMPOWERED_ARCANE_MISSILES_RNK_3);
-			//TestChannelDamage(player, dummyTarget, ClassSpells::Mage::ARCANE_MISSILES_RNK_10, expectedTickAM);
+            TEST_CHANNEL_DAMAGE(player, dummyTarget, ClassSpells::Mage::ARCANE_MISSILES_RNK_10, ClassSpells::Mage::ARCANE_MISSILES_RNK_10_PROC, 5, expectedTickDmg);
 		}
 	};
 

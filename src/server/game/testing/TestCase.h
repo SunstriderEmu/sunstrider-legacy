@@ -82,9 +82,13 @@ public:
     void TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
 
     float GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID);
+    float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
     //use expectedAmount negative values for healing
     #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount) _SetCaller(__FILE__, __LINE__); TestDotDamage(caster, target, spellID, expectedAmount); _ResetCaller()
     void TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount);
+
+    #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedAmount) _SetCaller(__FILE__, __LINE__); TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount); _ResetCaller()
+    void TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
 
     #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) _SetCaller(__FILE__, __LINE__); TestStacksCount(caster, target, talent, castSpellID, testSpellID, requireCount); _ResetCaller()
     void TestStacksCount(TestPlayer* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount);

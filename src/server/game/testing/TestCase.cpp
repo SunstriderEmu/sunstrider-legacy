@@ -571,12 +571,68 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
 
 void TestCase::TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax)
 {
+    ASSERT_INFO("TestDirectHeal NYI");
+    INTERNAL_TEST_ASSERT(false);
+}
 
+float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32 tickCount, bool& mustRetry)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    if (spellInfo == nullptr)
+    {
+        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellID);
+        return 0.0f;
+    }
+
+    auto damageToTarget = AI->GetDamageDoneInfo(victim);
+    if (damageToTarget.empty())
+    {
+        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
+        return 0.0f;
+    }
+
+    decltype(damageToTarget) filteredDamageToTarget;
+    //Copy only relevent entries
+    for (auto itr : damageToTarget)
+        if (itr.spellID == spellID)
+            filteredDamageToTarget.push_back(itr);
+
+    if (filteredDamageToTarget.size() != tickCount)
+    {
+        ASSERT_INFO("Victim did not received expected tick count %u but received %u instead", tickCount, damageToTarget.size());
+        INTERNAL_TEST_ASSERT(false);
+    }
+
+    uint64 totalDamage = 0;
+    for (auto itr : filteredDamageToTarget)
+    {
+        //some spells were resisted or did crit... cannot use this data
+        if (itr.missInfo != SPELL_MISS_NONE || itr.crit)
+        {
+            mustRetry = true;
+            return 0.0f;
+        }
+
+        uint32 damage = itr.damageInfo.damage;
+        damage += itr.damageInfo.resist;
+        damage += itr.damageInfo.blocked;
+        damage += itr.damageInfo.absorb;
+        //resilience not taken into account...
+
+        totalDamage += damage;
+    }
+
+    return totalDamage;
 }
 
 float TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID)
 {
     auto AI = caster->GetTestingPlayerbotAI();
+    ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetDamageDoneInfo(victim);
@@ -668,6 +724,41 @@ void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, i
         }
     }
     INTERNAL_TEST_ASSERT((false && "Failed to cast the spell 100 times")); //failed to cast the spell 100 times
+}
+
+void TestCase::TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    ASSERT_INFO("Spell %u does not exists", spellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    uint32 baseCastTime = spellInfo->CalcCastTime(nullptr);
+    uint32 baseDurationTime = spellInfo->GetDuration();
+
+    for (uint32 i = 0; i < 100; i++)
+    {
+        AI->ResetSpellCounters();
+        uint32 result = caster->CastSpell(target, spellID, true);
+        if (result == SPELL_CAST_OK)
+        {
+            Wait(baseCastTime + baseDurationTime + 1000);
+            bool mustRetry = false;
+            float totalChannelDmg = GetChannelDamageTo(caster, target, testedSpell, tickCount, mustRetry);
+            if (mustRetry)
+                continue;
+            ASSERT_INFO("Check if totalChannelDmg (%f) is round", totalChannelDmg);
+            INTERNAL_TEST_ASSERT(totalChannelDmg == std::floor(totalChannelDmg));
+            uint32 resultTickAmount = totalChannelDmg / tickCount;
+            ASSERT_INFO("Enforcing channel damage. resultTickAmount: %i, expectedTickAmount: %i", resultTickAmount, expectedTickAmount);
+            INTERNAL_TEST_ASSERT(resultTickAmount >= (expectedTickAmount - 2) && resultTickAmount <= (expectedTickAmount + 2)); //channels have greater error since they got their damage divided in several ticks
+            return;
+        }
+    }
+    ASSERT_INFO("Failed to cast spell (%u) 100 times", spellID);
+    INTERNAL_TEST_ASSERT(false); //failed to cast the spell 100 times
 }
 
 float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)

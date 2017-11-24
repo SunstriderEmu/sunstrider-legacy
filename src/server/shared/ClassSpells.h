@@ -2324,6 +2324,7 @@ namespace ClassSpells
             ARCANE_MISSILES_RNK_8 = 25345,
             ARCANE_MISSILES_RNK_9 = 27075,
             ARCANE_MISSILES_RNK_10 = 38699,
+            ARCANE_MISSILES_RNK_10_PROC = 38700,
             ARCANE_POWER_RNK_1 = 12042,
             BLINK_RNK_1 = 1953,
             CONJURE_FOOD_RNK_1 = 587,
