@@ -434,14 +434,7 @@ TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 e
 
 void TestCase::EquipItem(TestPlayer* player, uint32 itemID)
 {
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemID);
-    INTERNAL_TEST_ASSERT(proto != nullptr);
-
-    ItemPosCountVec dest;
-    uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemID, 1);
-    INTERNAL_TEST_ASSERT(msg == EQUIP_ERR_OK);
-
-    Item* item = player->StoreNewItem(dest, itemID, true, Item::GenerateItemRandomPropertyId(itemID));
+    Item* item = AddItem(player, itemID);
     INTERNAL_TEST_ASSERT(item != nullptr);
 
     uint16 dest2;
@@ -453,6 +446,20 @@ void TestCase::EquipItem(TestPlayer* player, uint32 itemID)
     Item* equipedItem = player->GetItemByPos(dest2);
     INTERNAL_TEST_ASSERT(equipedItem != nullptr);
     Wait(1); //not sure this is needed but... let's just wait next update to make sure item spells are properly applied
+}
+
+Item* TestCase::AddItem(TestPlayer* player, uint32 itemID)
+{
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemID);
+    INTERNAL_TEST_ASSERT(proto != nullptr);
+
+    ItemPosCountVec dest;
+    uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemID, 1);
+    INTERNAL_TEST_ASSERT(msg == EQUIP_ERR_OK);
+
+    Item* item = player->StoreNewItem(dest, itemID, true, Item::GenerateItemRandomPropertyId(itemID));
+    INTERNAL_TEST_ASSERT(item != nullptr);
+    return item;
 }
 
 void TestCase::LearnTalent(TestPlayer* p, uint32 spellID)
