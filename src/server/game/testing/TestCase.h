@@ -114,6 +114,7 @@ private:
     bool                     _enableMapObjects;
     std::string              _callerFile; //used for error output
     int32                    _callerLine; //used for error output
+    std::string              _assertInfo;
 
     bool _InternalSetup();
     void _Cleanup();
@@ -123,6 +124,8 @@ private:
     void _SetThread(TestThread* testThread) { _testThread = testThread; }
     //if callerFile and callerLine are specified, also print them in message
     void _Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, bool increaseTestCount, std::string callerFile = "", int32 callerLine = 0);
+    void _AssertInfo(const char* err, ...) ATTR_PRINTF(2, 3);
+    void _ResetAssertInfo();
 
       std::string _GetCallerFile();
     int32 _GetCallerLine();

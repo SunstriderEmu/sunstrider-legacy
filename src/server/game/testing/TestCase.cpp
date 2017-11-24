@@ -11,7 +11,9 @@
 #define TEST_CREATURE_ENTRY 8
 
 //same as TEST_ASSERT but will track caller file and line to print it in case of error
-#define INTERNAL_TEST_ASSERT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine());
+#define INTERNAL_TEST_ASSERT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine()); _ResetAssertInfo();
+//input info for next check, place this before INTERNAL_TEST_ASSERT
+#define ASSERT_INFO( expr, ... ) _AssertInfo(expr, __VA_ARGS__);
 
 TestCase::TestCase(bool needMap) :
     _failed(false),
@@ -79,6 +81,24 @@ void TestCase::_FailNoException(std::string msg)
 {
     _failed = true;
     _errMsg = msg;
+    if (!_assertInfo.empty())
+        _errMsg = _errMsg + '\n' + _assertInfo;
+}
+
+void TestCase::_AssertInfo(const char* err, ...)
+{
+    char buffer[256];
+    va_list args;
+    va_start(args, err);
+    vsnprintf(buffer, 256, err, args);
+    va_end(args);
+
+    _assertInfo = buffer;
+}
+
+void TestCase::_ResetAssertInfo()
+{
+    _assertInfo = {};
 }
 
 void TestCase::Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition)
@@ -156,6 +176,7 @@ TestPlayer* TestCase::SpawnRandomPlayer()
     Races race = RACE_NONE;
     _GetRandomClassAndRace(cls, race);
     TestPlayer* playerBot = _CreateTestBot(_location, cls, race);
+    ASSERT_INFO("Creating random test bot with class %u and race %u", uint32(cls), uint32(race));
     TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
@@ -167,6 +188,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Powers power, uint32 level)
     _GetRandomClassAndRace(cls, race, true, power);
 
     TestPlayer* playerBot = _CreateTestBot(_location, cls, race, level);
+    ASSERT_INFO("Creating random test with power %u and level %u", uint32(power), level);
     INTERNAL_TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
@@ -174,6 +196,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Powers power, uint32 level)
 TestPlayer* TestCase::SpawnRandomPlayer(Races race, uint32 level)
 {
     TestPlayer* playerBot = _CreateTestBot(_location, _GetRandomClassForRace(race), race, level);
+    ASSERT_INFO("Creating random test bot with race %u and level %u", uint32(race), level);
     INTERNAL_TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
@@ -181,6 +204,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Races race, uint32 level)
 TestPlayer* TestCase::SpawnRandomPlayer(Classes cls, uint32 level)
 {
     TestPlayer* playerBot = _CreateTestBot(_location, cls, _GetRandomRaceForClass(cls), level);
+    ASSERT_INFO("Creating random test bot with class %u and level %u", uint32(cls), level);
     INTERNAL_TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
@@ -188,6 +212,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Classes cls, uint32 level)
 TestPlayer* TestCase::SpawnPlayer(Classes _class, Races _race, uint32 level, Position spawnPosition)
 {
     TestPlayer* playerBot = _CreateTestBot(_location, _class, _race, level);
+    ASSERT_INFO("Creating random test bot with class %u, race %u and level %u", uint32(_class), uint32(_race), level);
     INTERNAL_TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
@@ -330,6 +355,7 @@ void TestCase::_GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower
             };
             break;
         default:
+            ASSERT_INFO("_GetRandomClassAndRace: invalid power forcedPower %u", forcedPower);
             INTERNAL_TEST_ASSERT(false);
         }
     }
@@ -428,10 +454,12 @@ TempSummon* TestCase::SpawnCreature(uint32 entry, bool spawnInFront)
 
 TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 entry)
 {
+    ASSERT_INFO("Test has no map");
     INTERNAL_TEST_ASSERT(GetMap() != nullptr);
     uint32 creatureEntry = entry ? entry : TEST_CREATURE_ENTRY;
 
     TempSummon* summon = GetMap()->SummonCreature(creatureEntry, spawnPosition);
+    ASSERT_INFO("Failed to summon creature with entry %u", creatureEntry);
     INTERNAL_TEST_ASSERT(summon != nullptr);
     summon->SetTempSummonType(TEMPSUMMON_MANUAL_DESPAWN); //Make sur it does not despawn
     return summon;
@@ -440,15 +468,18 @@ TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 e
 void TestCase::EquipItem(TestPlayer* player, uint32 itemID)
 {
     Item* item = AddItem(player, itemID);
+    ASSERT_INFO("Failed to add item %u to player", itemID);
     INTERNAL_TEST_ASSERT(item != nullptr);
 
     uint16 dest2;
     uint8 msg2 = player->CanEquipItem(NULL_SLOT, dest2, item, !item->IsBag());
+    ASSERT_INFO("Player cannot equip item %u, reason: %u", itemID, msg2);
     INTERNAL_TEST_ASSERT(msg2 == EQUIP_ERR_OK);
 
     player->GetSession()->_HandleAutoEquipItemOpcode(item->GetBagSlot(), item->GetSlot());
 
     Item* equipedItem = player->GetItemByPos(dest2);
+    ASSERT_INFO("Player failed to equip item (dest: %u)", itemID, dest2);
     INTERNAL_TEST_ASSERT(equipedItem != nullptr);
     Wait(1); //not sure this is needed but... let's just wait next update to make sure item spells are properly applied
 }
@@ -456,13 +487,16 @@ void TestCase::EquipItem(TestPlayer* player, uint32 itemID)
 Item* TestCase::AddItem(TestPlayer* player, uint32 itemID)
 {
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemID);
+    ASSERT_INFO("Item %u does not exists", itemID);
     INTERNAL_TEST_ASSERT(proto != nullptr);
 
     ItemPosCountVec dest;
     uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemID, 1);
+    ASSERT_INFO("Player cannot store item %u in bags", itemID);
     INTERNAL_TEST_ASSERT(msg == EQUIP_ERR_OK);
 
     Item* item = player->StoreNewItem(dest, itemID, true, Item::GenerateItemRandomPropertyId(itemID));
+    ASSERT_INFO("Failed to store item %u in bags", itemID);
     INTERNAL_TEST_ASSERT(item != nullptr);
     return item;
 }
@@ -493,6 +527,7 @@ bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
 void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedMinDamage, uint32 expectedMaxDamage)
 {
     auto AI = caster->GetTestingPlayerbotAI();
+    ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
     AI->ResetSpellCounters();
 
@@ -503,6 +538,7 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     for (uint32 i = 0; i < sampleSize; i++)
     {
         uint32 result = caster->CastSpell(target, spellID, true);
+        ASSERT_INFO("Spell casting failed with reason %u", result);
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
     }
 
@@ -510,7 +546,9 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     float avgDamageDealt = GetDamagePerSpellsTo(caster, target, spellID);
 	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> avgDamageDealt: %f - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, avgDamageDealt, expectedMinDamage, expectedMaxDamage);
     //test hard limits
+    ASSERT_INFO("Enforcing higher limit for spell %u. expectedMaxDamage: %u, avgDamageDealt %f", spellID, expectedMaxDamage, avgDamageDealt);
     INTERNAL_TEST_ASSERT(avgDamageDealt <= expectedMaxDamage);
+    ASSERT_INFO("Enforcing lower limit for spell %u. expectedMinDamage: %u, avgDamageDealt %f", spellID, expectedMinDamage, avgDamageDealt);
     INTERNAL_TEST_ASSERT(avgDamageDealt >= expectedMinDamage);
 
     //test if avg is close enough to expected value
@@ -518,7 +556,9 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     uint32 allowedMin = avgExpected > maxPredictionError ? avgExpected - maxPredictionError : 0;
     uint32 allowedMax = avgExpected + maxPredictionError;
 
+    ASSERT_INFO("Enforcing high average result for spell %u. allowedMax: %u, avgDamageDealt %f", spellID, allowedMax, avgDamageDealt);
     INTERNAL_TEST_ASSERT(avgDamageDealt <= allowedMax);
+    ASSERT_INFO("Enforcing low average result for spell %u. allowedMin: %u, avgDamageDealt %f", spellID, allowedMin, avgDamageDealt);
     INTERNAL_TEST_ASSERT(avgDamageDealt >= allowedMin);
 }
 
@@ -582,9 +622,11 @@ float TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 sp
 void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
+    ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    ASSERT_INFO("Spell %u does not exists", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
     bool spellHasFlyTime = spellInfo->Speed != 0.0f;
 
@@ -603,14 +645,17 @@ void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, i
                 continue; //aura could have been resisted
 
             //spell did hit, let's wait for dot duration
-            Wait(aura->GetAuraDuration() + 1 * SECOND * IN_MILLISECONDS);
+            uint32 waitTime = aura->GetAuraDuration() + 1 * SECOND * IN_MILLISECONDS;
+            Wait(waitTime);
             //aura may be deleted at this point, do not use anymore
 
             //make sure aura expired
+            ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
             INTERNAL_TEST_ASSERT(!target->HasAuraWithCaster(spellID, 0, caster->GetGUID()));
 
             int32 dotDamageToTarget = AI->GetDotDamage(target, spellID);
 			TC_LOG_DEBUG("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedAmount: %i", spellID, dotDamageToTarget, expectedAmount);
+            ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedAmount: %i", dotDamageToTarget, expectedAmount);
             TEST_ASSERT(dotDamageToTarget >= (expectedAmount - 1) && dotDamageToTarget <= (expectedAmount + 1));
             return;
         }
