@@ -7,7 +7,7 @@ class MoonfuryTest : public TestCaseScript
 {
 public:
 
-	MoonfuryTest() : TestCaseScript("talents shaman Moonfury") { }
+	MoonfuryTest() : TestCaseScript("talents druid Moonfury") { }
 
 	class MoonfuryTestImpt : public TestCase
 	{
@@ -16,18 +16,18 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
 			// Starfire rank 8
-			uint32 const starfireMinDamage = 563;
-			uint32 const starfireMaxDamage = 634;
+			uint32 const starfireMinDamage = 550;
+			uint32 const starfireMaxDamage = 647;
 
 			// Moonfire rank 12
-			uint32 const moonfireMinDamage = 734;
-			uint32 const moonfireMaxDamage = 838;
+			uint32 const moonfireMinDamage = 305;
+			uint32 const moonfireMaxDamage = 357;
 
 			// Wrath rank 10
-			uint32 const wrathMinDamage = 658;
-			uint32 const wrathMaxDamage = 692;
+			uint32 const wrathMinDamage = 383;
+			uint32 const wrathMaxDamage = 432;
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
