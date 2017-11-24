@@ -382,6 +382,38 @@ public:
 	}
 };
 
+class EmpoweredFireballTest : public TestCaseScript
+{
+public:
+
+	EmpoweredFireballTest() : TestCaseScript("talents mage empowered_fireball") { }
+
+	class EmpoweredFireballTestImpt : public TestCase
+	{
+	public:
+		EmpoweredFireballTestImpt() : TestCase(true) { }
+		
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
+
+			float const fireballSpellCoeff = 100.00;
+			float const playerFireSpellPower = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
+			float const fireballMinDamage = 649 + (fireballSpellCoeff + 15) * playerFireSpellPower;
+			float const fireballMaxDamage = 821 + (fireballSpellCoeff + 15) * playerFireSpellPower;
+
+			Creature* dummyTarget = SpawnCreature();
+			LearnTalent(player, Talents::Mage::EMPOWERED_FIREBALL_RNK_5);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage, fireballMaxDamage);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<EmpoweredFireballTestImpt>();
+	}
+};
+
 class FrostWardingTest : public TestCaseScript
 {
 public:
@@ -549,6 +581,8 @@ public:
 			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FROST_NOVA_RNK_5, novaMinDamage * 1.05f, novaMaxDamage * 1.05f);
 			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage * 1.05f, frostboltMaxDamage * 1.05f);
 			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::ICE_LANCE_RNK_1, lanceMinDamage * 1.05f, lanceMaxDamage * 1.05f);
+
+			// TODO: test hit rating from melee and ranged attackers is reduced
 		}
 	};
 
@@ -573,7 +607,6 @@ public:
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
 
-			// Cone of cold rank 6
 			float const frostboltSpellCoeff = 81.43;
 			float const playerFrostSpellPower = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST);
 			float const frostboltMinDamage = 780 + (frostboltSpellCoeff + 10) * playerFrostSpellPower;
@@ -606,6 +639,7 @@ void AddSC_test_talents_mage()
 	// Fire
 	new CriticalMassTest();
 	new FirePowerTest();
+	new EmpoweredFireballTest();
 	// Frost
 	new FrostWardingTest();
 	new PiercingIceTest();
