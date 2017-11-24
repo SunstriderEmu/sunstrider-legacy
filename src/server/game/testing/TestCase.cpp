@@ -552,7 +552,7 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     INTERNAL_TEST_ASSERT(avgDamageDealt >= expectedMinDamage);
 
     //test if avg is close enough to expected value
-    float avgExpected = (expectedMinDamage + expectedMaxDamage) / 2;
+    float avgExpected = (expectedMinDamage + expectedMaxDamage) / 2.0f;
     uint32 allowedMin = avgExpected > maxPredictionError ? avgExpected - maxPredictionError : 0;
     uint32 allowedMax = avgExpected + maxPredictionError;
 
