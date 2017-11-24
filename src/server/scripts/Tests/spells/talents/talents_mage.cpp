@@ -248,7 +248,7 @@ public:
 		{
 			Creature* dummyTarget = SpawnCreature();
 			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
-			//EquipItem(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
+			EquipItem(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
 
 			float const startCoeff = 142.86;
 			float const expectedCoeff = startCoeff + (3 * 15);

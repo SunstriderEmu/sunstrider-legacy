@@ -9262,7 +9262,7 @@ uint8 Player::FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap )
             if (_slot != NULL_SLOT && !GetItemByPos( INVENTORY_SLOT_BAG_0, _slot) )
             {
                 // in case 2hand equipped weapon offhand slot empty but not free
-                if(_slot ==EQUIPMENT_SLOT_OFFHAND)
+                if(_slot == EQUIPMENT_SLOT_OFFHAND)
                 {
                     Item* mainItem = GetItemByPos( INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND );
                     if(!mainItem || mainItem->GetTemplate()->InventoryType != INVTYPE_2HWEAPON)
@@ -9277,7 +9277,7 @@ uint8 Player::FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap )
         for (unsigned char _slot : slots)
         {
             if (_slot != NULL_SLOT && swap )
-                return slot;
+                return _slot;
         }
     }
 
