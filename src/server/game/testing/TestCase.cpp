@@ -546,9 +546,9 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     float avgDamageDealt = GetDamagePerSpellsTo(caster, target, spellID);
 	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> avgDamageDealt: %f - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, avgDamageDealt, expectedMinDamage, expectedMaxDamage);
     //test hard limits
-    ASSERT_INFO("Enforcing higher limit for spell %u. expectedMaxDamage: %u, avgDamageDealt %f", spellID, expectedMaxDamage, avgDamageDealt);
+    ASSERT_INFO("Enforcing higher limit for spell %u. expectedMaxDamage: %u, avgDamageDealt: %f", spellID, expectedMaxDamage, avgDamageDealt);
     INTERNAL_TEST_ASSERT(avgDamageDealt <= expectedMaxDamage);
-    ASSERT_INFO("Enforcing lower limit for spell %u. expectedMinDamage: %u, avgDamageDealt %f", spellID, expectedMinDamage, avgDamageDealt);
+    ASSERT_INFO("Enforcing lower limit for spell %u. expectedMinDamage: %u, avgDamageDealt: %f", spellID, expectedMinDamage, avgDamageDealt);
     INTERNAL_TEST_ASSERT(avgDamageDealt >= expectedMinDamage);
 
     //test if avg is close enough to expected value
@@ -556,9 +556,9 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     uint32 allowedMin = avgExpected > maxPredictionError ? avgExpected - maxPredictionError : 0;
     uint32 allowedMax = avgExpected + maxPredictionError;
 
-    ASSERT_INFO("Enforcing high average result for spell %u. allowedMax: %u, avgDamageDealt %f", spellID, allowedMax, avgDamageDealt);
+    ASSERT_INFO("Enforcing high average result for spell %u. allowedMax: %u, avgDamageDealt: %f", spellID, allowedMax, avgDamageDealt);
     INTERNAL_TEST_ASSERT(avgDamageDealt <= allowedMax);
-    ASSERT_INFO("Enforcing low average result for spell %u. allowedMin: %u, avgDamageDealt %f", spellID, allowedMin, avgDamageDealt);
+    ASSERT_INFO("Enforcing low average result for spell %u. allowedMin: %u, avgDamageDealt: %f", spellID, allowedMin, avgDamageDealt);
     INTERNAL_TEST_ASSERT(avgDamageDealt >= allowedMin);
 }
 

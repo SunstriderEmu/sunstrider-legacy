@@ -18,16 +18,16 @@ public:
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 			// Starfire rank 8
-			uint32 const starfireMinDamage = 563;
-			uint32 const starfireMaxDamage = 634;
+			uint32 const starfireMinDamage = 605;
+			uint32 const starfireMaxDamage = 711;
 
 			// Moonfire rank 12
-			uint32 const moonfireMinDamage = 734;
-			uint32 const moonfireMaxDamage = 838;
+			uint32 const moonfireMinDamage = 366;
+			uint32 const moonfireMaxDamage = 429;
 
 			// Wrath rank 10
-			uint32 const wrathMinDamage = 658;
-			uint32 const wrathMaxDamage = 692;
+			uint32 const wrathMinDamage = 422;
+			uint32 const wrathMaxDamage = 475;
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
