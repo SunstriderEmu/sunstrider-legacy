@@ -427,7 +427,7 @@ uint32 MapManager::GenerateInstanceId()
             _instanceIds.resize(_instanceIds.capacity());
         }
         else
-            _instanceIds.resize((newInstanceId / 32) * 32 + (newInstanceId % 32 > 0 ? 32 : 0));
+            _instanceIds.resize(((newInstanceId + 1) / 32) * 32 + (newInstanceId % 32 > 0 ? 32 : 0)); //sunstrider: +1 to handle newInstanceId == 32 case. No idea how this can work on trinitycore
     }
 
     _instanceIds[newInstanceId] = true;
