@@ -7,7 +7,7 @@ class MoonfuryTest : public TestCaseScript
 {
 public:
 
-	MoonfuryTest() : TestCaseScript("talents shaman Moonfury") { }
+	MoonfuryTest() : TestCaseScript("talents druid Moonfury") { }
 
 	class MoonfuryTestImpt : public TestCase
 	{
@@ -16,7 +16,7 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
 			// Starfire rank 8
 			uint32 const starfireMinDamage = 550;
 			uint32 const starfireMaxDamage = 647;
