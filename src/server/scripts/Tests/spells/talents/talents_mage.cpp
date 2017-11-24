@@ -382,8 +382,218 @@ public:
 	}
 };
 
+class FrostWardingTest : public TestCaseScript
+{
+public:
+	FrostWardingTest() : TestCaseScript("talents mage frost_warding") { }
+
+	class FrostWardingTestImpt : public TestCase
+	{
+	public:
+		FrostWardingTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* mage1 = SpawnRandomPlayer(CLASS_MAGE);
+			TestPlayer* mage2 = SpawnRandomPlayer(CLASS_MAGE);
+
+			uint32 const expectedArmorFA = mage1->GetArmor() + 200 * 1.3f;
+
+			uint32 const expectedArmorIA = mage2->GetArmor() + 645 * 1.3f;
+			uint32 const expectedFrostResIA = mage2->GetResistance(SPELL_SCHOOL_FROST) + 18 * 1.3f;
+
+			LearnTalent(mage1, Talents::Mage::FROST_WARDING_RNK_2);
+			mage1->CastSpell(mage1, ClassSpells::Mage::FROST_ARMOR_RNK_3);
+			TEST_ASSERT(Between<float>(mage1->GetArmor(), expectedArmorFA - 1, expectedArmorFA + 1));
+
+			LearnTalent(mage2, Talents::Mage::FROST_WARDING_RNK_2);
+			mage2->CastSpell(mage2, ClassSpells::Mage::ICE_ARMOR_RNK_5);
+			TEST_ASSERT(Between<float>(mage2->GetArmor(), expectedArmorIA - 1, expectedArmorIA + 1));
+			TEST_ASSERT(Between<float>(mage2->GetResistance(SPELL_SCHOOL_FROST), expectedFrostResIA - 1, expectedFrostResIA + 1));
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<FrostWardingTestImpt>();
+	}
+};
+
+class PiercingIceTest : public TestCaseScript
+{
+public:
+
+	PiercingIceTest() : TestCaseScript("talents mage piercing_ice") { }
+
+	class PiercingIceTestImpt : public TestCase
+	{
+	public:
+		PiercingIceTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
+
+			// Blizzard rank 7
+			uint32 const blizzardTotal = 1920;
+
+			// Cone of cold rank 6
+			uint32 const coneMinDamage = 544;
+			uint32 const coneMaxDamage = 594;
+
+			// Frost nova rank 5
+			uint32 const novaMinDamage = 130;
+			uint32 const novaMaxDamage = 147;
+
+			// Frostbolt rank 13
+			uint32 const frostboltMinDamage = 780;
+			uint32 const frostboltMaxDamage = 841;
+
+			// Ice lance rank 1
+			uint32 const lanceMinDamage = 173;
+			uint32 const lanceMaxDamage = 200;
+
+			Creature* dummyTarget = SpawnCreature();
+			LearnTalent(player, Talents::Mage::PIERCING_ICE_RNK_3);
+
+			//Test improved damage 6%
+			//TestChannelSpellDamage(player, dummyTarget, ClassSpells::Mage::BLIZZARD_RNK_7, blizzardMinDamage * 1.06f, blizzardMaxDamage * 1.06f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::CONE_OF_COLD_RNK_6, coneMinDamage * 1.06f, coneMaxDamage * 1.06f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FROST_NOVA_RNK_5, novaMinDamage * 1.06f, novaMaxDamage * 1.06f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage * 1.06f, frostboltMaxDamage * 1.06f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::ICE_LANCE_RNK_1, lanceMinDamage * 1.06f, lanceMaxDamage * 1.06f);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<PiercingIceTestImpt>();
+	}
+};
+
+class ImprovedConeOfColdTest : public TestCaseScript
+{
+public:
+
+	ImprovedConeOfColdTest() : TestCaseScript("talents mage improved_cone_of_cold") { }
+
+	class ImprovedConeOfColdTestImpt : public TestCase
+	{
+	public:
+		ImprovedConeOfColdTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
+
+			// Cone of cold rank 6
+			float const coneSpellCoeff = 13.57;
+			float const playerFrostSpellPower = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST);;
+			float const coneMinDamage = 544 + coneSpellCoeff * playerFrostSpellPower;
+			float const coneMaxDamage = 594 + coneSpellCoeff * playerFrostSpellPower;
+
+			Creature* dummyTarget = SpawnCreature();
+			LearnTalent(player, Talents::Mage::IMPROVED_CONE_OF_COLD_RNK_3);
+
+			//Test improved damage 6%
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::CONE_OF_COLD_RNK_6, coneMinDamage * 1.35f, coneMaxDamage * 1.35f);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<ImprovedConeOfColdTestImpt>();
+	}
+};
+
+class ArcticWindsTest : public TestCaseScript
+{
+public:
+
+	ArcticWindsTest() : TestCaseScript("talents mage arctic_winds") { }
+
+	class ArcticWindsTestImpt : public TestCase
+	{
+	public:
+		ArcticWindsTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
+
+			// Blizzard rank 7
+			uint32 const blizzardTotal = 1920;
+
+			// Cone of cold rank 6
+			uint32 const coneMinDamage = 544;
+			uint32 const coneMaxDamage = 594;
+
+			// Frost nova rank 5
+			uint32 const novaMinDamage = 130;
+			uint32 const novaMaxDamage = 147;
+
+			// Frostbolt rank 13
+			uint32 const frostboltMinDamage = 780;
+			uint32 const frostboltMaxDamage = 841;
+
+			// Ice lance rank 1
+			uint32 const lanceMinDamage = 173;
+			uint32 const lanceMaxDamage = 200;
+
+			Creature* dummyTarget = SpawnCreature();
+			LearnTalent(player, Talents::Mage::ARCTIC_WINDS_RNK_5);
+
+			//Test improved damage 6%
+			//TestChannelSpellDamage(player, dummyTarget, ClassSpells::Mage::BLIZZARD_RNK_7, blizzardMinDamage * 1.06f, blizzardMaxDamage * 1.06f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::CONE_OF_COLD_RNK_6, coneMinDamage * 1.05f, coneMaxDamage * 1.05f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FROST_NOVA_RNK_5, novaMinDamage * 1.05f, novaMaxDamage * 1.05f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage * 1.05f, frostboltMaxDamage * 1.05f);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::ICE_LANCE_RNK_1, lanceMinDamage * 1.05f, lanceMaxDamage * 1.05f);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<ArcticWindsTestImpt>();
+	}
+};
+
+class EmpoweredFrostboltTest : public TestCaseScript
+{
+public:
+
+	EmpoweredFrostboltTest() : TestCaseScript("talents mage empowered_frostbolt") { }
+
+	class EmpoweredFrostboltTestImpt : public TestCase
+	{
+	public:
+		EmpoweredFrostboltTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
+
+			// Cone of cold rank 6
+			float const frostboltSpellCoeff = 81.43;
+			float const playerFrostSpellPower = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST);
+			float const frostboltMinDamage = 780 + (frostboltSpellCoeff + 10) * playerFrostSpellPower;
+			float const frostboltMaxDamage = 841 + (frostboltSpellCoeff + 10) * playerFrostSpellPower;
+
+			Creature* dummyTarget = SpawnCreature();
+			LearnTalent(player, Talents::Mage::IMPROVED_FROSTBOLT_RNK_5);
+			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage, frostboltMaxDamage);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<EmpoweredFrostboltTestImpt>();
+	}
+};
+
 void AddSC_test_talents_mage()
 {
+	// Arcane
 	new WandSpecializationTest();
 	new MagicAbsorptionTest();
 	new MagicAttunementTest();
@@ -393,6 +603,13 @@ void AddSC_test_talents_mage()
 	new ArcaneInstabilityTest();
 	new EmpoweredArcaneMissilesTest();
 	new MindMasteryTest();
+	// Fire
 	new CriticalMassTest();
 	new FirePowerTest();
+	// Frost
+	new FrostWardingTest();
+	new PiercingIceTest();
+	new ImprovedConeOfColdTest();
+	new ArcticWindsTest();
+	new EmpoweredFrostboltTest();
 }
