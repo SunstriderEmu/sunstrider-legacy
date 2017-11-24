@@ -591,13 +591,14 @@ void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, i
                 continue; //aura could have been resisted
 
             //spell did hit, let's wait for dot duration
-            Wait(aura->GetAuraDuration() + 1);
+            Wait(aura->GetAuraDuration() + 1 * SECOND * IN_MILLISECONDS);
             //aura may be deleted at this point, do not use anymore
 
             //make sure aura expired
             INTERNAL_TEST_ASSERT(!target->HasAuraWithCaster(spellID, 0, caster->GetGUID()));
 
             int32 dotDamageToTarget = AI->GetDotDamage(target, spellID);
+			TC_LOG_DEBUG("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedAmount: %i", spellID, dotDamageToTarget, expectedAmount);
             TEST_ASSERT(dotDamageToTarget >= (expectedAmount - 1) && dotDamageToTarget <= (expectedAmount + 1));
             return;
         }
