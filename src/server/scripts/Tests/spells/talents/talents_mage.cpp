@@ -260,6 +260,10 @@ public:
             Wait(5000);
 			LearnTalent(player, Talents::Mage::EMPOWERED_ARCANE_MISSILES_RNK_3);
             TEST_CHANNEL_DAMAGE(player, dummyTarget, ClassSpells::Mage::ARCANE_MISSILES_RNK_10, ClassSpells::Mage::ARCANE_MISSILES_RNK_10_PROC, 5, expectedTickDmg);
+            /* 
+            Does not work... According to our formula in Unit::CalculateSpellDamage the base damage is 260 + 1.2 per level between 64 and 68 -> 264.8 -> 264
+            This is a very fondamental function working for most other spells... Is the tooltip wrong?
+            */
 		}
 	};
 
