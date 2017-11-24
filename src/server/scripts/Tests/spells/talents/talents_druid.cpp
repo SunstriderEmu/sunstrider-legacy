@@ -166,9 +166,15 @@ public:
 			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
 
 			LearnTalent(player, Talents::Druid::FUROR_RNK_5);
-			player->CastSpell(player, ClassSpells::Druid::BEAR_FORM_RNK_1);
-			TEST_ASSERT(player->GetPower(POWER_RAGE) == 10);
-			player->CastSpell(player, ClassSpells::Druid::CAT_FORM_RNK_1);
+            uint32 result = player->CastSpell(player, ClassSpells::Druid::BEAR_FORM_RNK_1);
+            TEST_ASSERT(result == SPELL_CAST_OK);
+            TEST_ASSERT(player->HasAura(ClassSpells::Druid::BEAR_FORM_RNK_1));
+			TEST_ASSERT(player->GetPower(POWER_RAGE) == 100); // = 10 rage
+            player->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1); //we need to dispell it manually, clients send CMSG_CANCEL_AURA when switching form
+            Wait(2000); //Wait GCD
+			result = player->CastSpell(player, ClassSpells::Druid::CAT_FORM_RNK_1);
+            TEST_ASSERT(result == SPELL_CAST_OK);
+            TEST_ASSERT(player->HasAura(ClassSpells::Druid::CAT_FORM_RNK_1));
 			TEST_ASSERT(player->GetPower(POWER_ENERGY) == 40);
 		}
 	};

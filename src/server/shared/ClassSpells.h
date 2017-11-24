@@ -1853,8 +1853,8 @@ namespace ClassSpells
             // Shapeshift
             AQUATIC_FORM_RNK_1 = 1066,
             BEAR_FORM_RNK_1 = 5487,
-            CAT_FORM_RNK_1 = 768,
             DIRE_BEAR_FORM_RNK_2 = 9634,
+            CAT_FORM_RNK_1 = 768,
             FLIGHT_FORM_RNK_1 = 33943,
             MOONKIN_FORM_RNK_1 = 24858,
             TRAVEL_FORM_RNK_1 = 783,
