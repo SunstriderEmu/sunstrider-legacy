@@ -4840,9 +4840,9 @@ void Aura::HandleModHealingDone(bool /*apply*/, bool Real)
 
 void Aura::HandleModTotalPercentStat(bool apply, bool Real)
 {
-    if (m_modifier.m_miscvalue < -1 || m_modifier.m_miscvalue > 4)
+    if (GetMiscValue() < -1 || GetMiscValue() > 4)
     {
-        TC_LOG_ERROR("spells", "WARNING: Misc Value for SPELL_AURA_MOD_PERCENT_STAT not valid");
+        TC_LOG_ERROR("spells", "WARNING: Misc Value for SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE not valid");
         return;
     }
 
