@@ -31,15 +31,15 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, starfireMinDamage, starfireMaxDamage);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Druid::MOONFIRE_RNK_12, moonfireMinDamage, moonfireMaxDamage);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, wrathMinDamage, wrathMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, starfireMinDamage, starfireMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::MOONFIRE_RNK_12, moonfireMinDamage, moonfireMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, wrathMinDamage, wrathMaxDamage);
 
 			//Test improved damage 5%
 			LearnTalent(player, Talents::Druid::MOONFURY_RNK_5);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, starfireMinDamage * 1.1f, starfireMaxDamage * 1.1f);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Druid::MOONFIRE_RNK_12, moonfireMinDamage * 1.1f, moonfireMaxDamage * 1.1f);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, wrathMinDamage * 1.1f, wrathMaxDamage * 1.1f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, starfireMinDamage * 1.1f, starfireMaxDamage * 1.1f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::MOONFIRE_RNK_12, moonfireMinDamage * 1.1f, moonfireMaxDamage * 1.1f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, wrathMinDamage * 1.1f, wrathMaxDamage * 1.1f);
 		}
 	};
 

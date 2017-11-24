@@ -65,18 +65,18 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage, lightningBoltMaxDamage);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage, chainLightningMaxDamage);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage, earthShockMaxDamage);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage, flameShockMinDoT);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage, frostShockMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage, lightningBoltMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage, chainLightningMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage, earthShockMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage, flameShockMinDoT);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage, frostShockMaxDamage);
 
 			//Test improved damage 5%
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage * 1.05f, lightningBoltMaxDamage * 1.05f);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage * 1.05f, chainLightningMaxDamage * 1.05f);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage * 1.05f, earthShockMaxDamage * 1.05f);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage * 1.05f, flameShockMinDoT * 1.05f);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage * 1.05f, frostShockMaxDamage * 1.05f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage * 1.05f, lightningBoltMaxDamage * 1.05f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage * 1.05f, chainLightningMaxDamage * 1.05f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage * 1.05f, earthShockMaxDamage * 1.05f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage * 1.05f, flameShockMinDoT * 1.05f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage * 1.05f, frostShockMaxDamage * 1.05f);
 		}
 	};
 
@@ -336,11 +336,11 @@ public:
 			uint32 const maxCH = 942;
 
 			// Test regular
-			TestDirectHeal(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH, maxCH);
+            TEST_DIRECT_HEAL(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH, maxCH);
 
 			// Test improved
 			LearnTalent(player, Talents::Shaman::IMPROVED_CHAIN_HEAL_RNK_2);
-			TestDirectHeal(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH * 1.2f, maxCH * 1.2f);
+            TEST_DIRECT_HEAL(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH * 1.2f, maxCH * 1.2f);
 
 			// TODO: test bounces : spawn 2 players, group players, each bounce 50% less
 		}

@@ -60,30 +60,38 @@ public:
 
     //This checks if item exists in loot (but we cannot say if player can actually loot it)
     bool HasLootForMe(Creature*, Player*, uint32 itemID);
-
     //Create item and equip it to player. Will remove any item already in slot. Fail test on failure
     void EquipItem(TestPlayer* p, uint32 itemID);
     //Create item and add it to player inventory
     Item* AddItem(TestPlayer* p, uint32 itemID);
     void LearnTalent(TestPlayer* p, uint32 spellID);
-
-    //Will cast the spell a bunch of time and test if results match the expected damage. Reason I keep expected min and max separated is because it gives me some data to do some math magic later to reduce iterations 
-    //Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time
-    void TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
-    void TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
-    float GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID);
-    //use expectedAmount negative values for healing
-    void TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount);
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
+    float CalcChance(uint32 iterations, const std::function<bool()>& f);
     void DisableRegen(TestPlayer* caster);
-
-	float CalcChance(uint32 iterations, const std::function<bool()>& f);
-
-    void TestStacksCount(TestPlayer* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount);
     ///!\ This is VERY slow, do not abuse of this function. Randomize talents, spells, stuff for this player
     void RandomizePlayer(TestPlayer* player);
 
+    // Testing functions 
+    // Test must use macro so that we can store from which line their calling. If calling function does a direct call without using the macro, we just print the internal line */
+
+    //Will cast the spell a bunch of time and test if results match the expected damage. Reason I keep expected min and max separated is because it gives me some data to do some math magic later to reduce iterations 
+    //Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time
+    #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage) _SetCaller(__FILE__, __LINE__); TestDirectSpellDamage(caster, target, spellID, expectedMinDamage, expectedMaxDamage); _ResetCaller()
+    void TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
+    #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax) _SetCaller(__FILE__, __LINE__); TestDirectHeal(caster, target, spellID, expectedHealMin, expectedHealMax); _ResetCaller()
+    void TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
+
+    float GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID);
+    //use expectedAmount negative values for healing
+    #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount) _SetCaller(__FILE__, __LINE__); TestDotDamage(caster, target, spellID, expectedAmount); _ResetCaller()
+    void TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount);
+
+    #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) _SetCaller(__FILE__, __LINE__); TestStacksCount(caster, target, talent, castSpellID, testSpellID, requireCount); _ResetCaller()
+    void TestStacksCount(TestPlayer* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount);
+
     static uint32 GetTestBotAccountId();
+    void _SetCaller(std::string callerFile, int32 callerLine);
+    void _ResetCaller();
 protected:
 
     //Scripting function
@@ -104,6 +112,8 @@ private:
     bool                     _failed;
     std::atomic<bool>        _setup;
     bool                     _enableMapObjects;
+    std::string              _callerFile; //used for error output
+    int32                    _callerLine; //used for error output
 
     bool _InternalSetup();
     void _Cleanup();
@@ -111,7 +121,11 @@ private:
     void _FailNoException(std::string);
     void _SetName(std::string name) { _testName = name; }
     void _SetThread(TestThread* testThread) { _testThread = testThread; }
-    void _Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, bool increaseTestCount);
+    //if callerFile and callerLine are specified, also print them in message
+    void _Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, bool increaseTestCount, std::string callerFile = "", int32 callerLine = 0);
+
+      std::string _GetCallerFile();
+    int32 _GetCallerLine();
 
     /* return a new randomized test bot. Returned player must be deleted by the caller
     if level == 0, set bot at max player level

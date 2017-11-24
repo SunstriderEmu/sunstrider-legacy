@@ -10,8 +10,8 @@
 #define MAP_TESTING_ID 13
 #define TEST_CREATURE_ENTRY 8
 
-//same as TEST_ASSERT but do not increase testCount
-#define INTERNAL_TEST_ASSERT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false)
+//same as TEST_ASSERT but will track caller file and line to print it in case of error
+#define INTERNAL_TEST_ASSERT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine());
 
 TestCase::TestCase(bool needMap) :
     _failed(false),
@@ -86,12 +86,17 @@ void TestCase::Assert(std::string file, int32 line, std::string function, bool c
     _Assert(file, line, function, condition, failedCondition, true);
 }
 
-void TestCase::_Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, bool increaseTestCount)
+void TestCase::_Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, bool increaseTestCount, std::string callerFile, int32 callerLine)
 {
     if(increaseTestCount)
         _testsCount++;
     if (!condition)
-        _Fail("'%s:%i in %s CHECK FAILED: %s'", file.c_str(), line, function.c_str(), failedCondition.c_str());
+    {
+        if (callerFile.empty() || callerLine == 0)
+            _Fail("'%s:%i in %s CHECK FAILED: %s'", file.c_str(), line, function.c_str(), failedCondition.c_str());
+        else
+            _Fail("'%s:%i in %s CHECK FAILED: %s'. (Internal: %s:%i)", callerFile.c_str(), callerLine, function.c_str(), failedCondition.c_str(), file.c_str(), line);
+    }
 }
 
 void TestCase::Wait(uint32 ms) 
@@ -151,7 +156,7 @@ TestPlayer* TestCase::SpawnRandomPlayer()
     Races race = RACE_NONE;
     _GetRandomClassAndRace(cls, race);
     TestPlayer* playerBot = _CreateTestBot(_location, cls, race);
-    INTERNAL_TEST_ASSERT(playerBot != nullptr);
+    TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -505,16 +510,16 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     float avgDamageDealt = GetDamagePerSpellsTo(caster, target, spellID);
 	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> avgDamageDealt: %f - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, avgDamageDealt, expectedMinDamage, expectedMaxDamage);
     //test hard limits
-    TEST_ASSERT(avgDamageDealt <= expectedMaxDamage);
-    TEST_ASSERT(avgDamageDealt >= expectedMinDamage);
+    INTERNAL_TEST_ASSERT(avgDamageDealt <= expectedMaxDamage);
+    INTERNAL_TEST_ASSERT(avgDamageDealt >= expectedMinDamage);
 
     //test if avg is close enough to expected value
     float avgExpected = (expectedMinDamage + expectedMaxDamage) / 2;
     uint32 allowedMin = avgExpected > maxPredictionError ? avgExpected - maxPredictionError : 0;
     uint32 allowedMax = avgExpected + maxPredictionError;
 
-    TEST_ASSERT(avgDamageDealt <= allowedMax);
-    TEST_ASSERT(avgDamageDealt >= allowedMin);
+    INTERNAL_TEST_ASSERT(avgDamageDealt <= allowedMax);
+    INTERNAL_TEST_ASSERT(avgDamageDealt >= allowedMin);
 }
 
 void TestCase::TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax)
@@ -626,4 +631,24 @@ float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)
 void TestCase::DisableRegen(TestPlayer* caster)
 {
     caster->DisableRegen(true);
+}
+
+void TestCase::_SetCaller(std::string callerFile, int32 callerLine) 
+{ 
+    _callerFile = callerFile; 
+    _callerLine = callerLine; 
+}
+
+void TestCase::_ResetCaller() 
+{
+    _callerFile = {}; _callerLine = 0;
+}
+std::string TestCase::_GetCallerFile() 
+{ 
+    return _callerFile; 
+}
+
+int32 TestCase::_GetCallerLine() 
+{ 
+    return _callerLine; 
 }
