@@ -2436,7 +2436,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     }
 
     // Get original caster (if exist) and calculate damage/healing from him
-    Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
+    Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
 
     // Skip if m_originalCaster not avaiable
     if (!caster)
@@ -2863,7 +2863,7 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
     }
 
     int8 sanct_effect = -1;
-    for(uint32 effectNumber = 0;effectNumber < MAX_SPELL_EFFECTS;effectNumber++)
+    for(uint32 effectNumber = 0;effectNumber < MAX_SPELL_EFFECTS; effectNumber++)
     {
         // handle sanctuary effects after aura apply!
         if (m_spellInfo->Effects[effectNumber].Effect == SPELL_EFFECT_SANCTUARY)
@@ -2873,7 +2873,7 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
         }
 
         if (effectMask & (1<<effectNumber))
-            HandleEffects(unit,nullptr,nullptr,effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
+            HandleEffects(unit, nullptr, nullptr, effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
     }
 
     if (sanct_effect >= 0 && (effectMask & (1 << sanct_effect)))
@@ -5076,7 +5076,7 @@ void Spell::HandleFlatThreat()
     }
 }
 
-void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i, SpellEffectHandleMode mode)
+void Spell::HandleEffects(Unit* pUnitTarget,Item* pItemTarget,GameObject* pGOTarget, uint32 i, SpellEffectHandleMode mode)
 {
     effectHandleMode = mode;
     unitTarget = pUnitTarget;
@@ -5094,11 +5094,8 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
     bool preventDefault = CallScriptEffectHandlers((SpellEffIndex)i, mode);
 
     uint8 eff = m_spellInfo->Effects[i].Effect;
-    if(!preventDefault && eff<TOTAL_SPELL_EFFECTS)
-    {
-        //TC_LOG_DEBUG("FIXME", "WORLD: Spell FX %d < TOTAL_SPELL_EFFECTS ", eff);
+    if(!preventDefault && eff < TOTAL_SPELL_EFFECTS)
         (*this.*SpellEffects[eff])(i);
-    }
 }
 
 void Spell::TriggerSpell()

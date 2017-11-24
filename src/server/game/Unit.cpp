@@ -1009,34 +1009,34 @@ void Unit::CastStop(uint32 except_spellid)
             InterruptSpell(i,false, false);
 }
 
-uint32 Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+uint32 Unit::CastSpell(Unit* victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
 
     if(!spellInfo)
     {
-        TC_LOG_ERROR("FIXME","CastSpell: unknown spell id %i by caster: %s %u)", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
+        TC_LOG_ERROR("FIXME","CastSpell: unknown spell id %i by caster: %s %u)", spellId, (GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"), (GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
         return SPELL_FAILED_UNKNOWN;
     }
 
-    return CastSpell(Victim,spellInfo,triggered,castItem,triggeredByAura, originalCaster);
+    return CastSpell(victim, spellInfo, triggered, castItem, triggeredByAura, originalCaster);
 }
 
-uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool skipHit)
+uint32 Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem, Aura* triggeredByAura, uint64 originalCaster, bool skipHit)
 {
     if(!spellInfo)
     {
-        TC_LOG_ERROR("spell","CastSpell: unknown spell by caster: %s %u)", (GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
+        TC_LOG_ERROR("spell","CastSpell: unknown spell by caster: %s %u)", (GetTypeId() == TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"), (GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
         return SPELL_FAILED_UNKNOWN;
     }
 
     SpellCastTargets targets;
-    targets.SetUnitTarget(Victim);
+    targets.SetUnitTarget(victim);
 
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
 
-    auto spell = new Spell(this, spellInfo, triggered, originalCaster, nullptr, false );
+    auto spell = new Spell(this, spellInfo, triggered, originalCaster, nullptr, false);
 
     spell->m_CastItem = castItem;
     spell->m_skipHitCheck = skipHit;

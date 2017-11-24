@@ -2880,7 +2880,7 @@ void Spell::EffectApplyAura(uint32 i)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if(!unitTarget)
+    if (!unitTarget)
         return;
 
     // Intervention shouldn't be used in a bg in preparation phase (possibility to get out of starting area with that spell)
@@ -2933,7 +2933,7 @@ void Spell::EffectApplyAura(uint32 i)
     
     if(!Aur->IsPositive())
     {
-        unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);
+        unitTarget->ApplyDiminishingToDuration(m_diminishGroup, duration, caster, m_diminishLevel);
         Aur->setDiminishGroup(m_diminishGroup);
     }
 
@@ -2942,7 +2942,7 @@ void Spell::EffectApplyAura(uint32 i)
         caster->ModSpellCastTime(m_spellInfo, duration, this);
 
     // if Aura removed and deleted, do not continue.
-    if(duration== 0 && !(Aur->IsPermanent()))
+    if(duration == 0 && !(Aur->IsPermanent()))
     {
         delete Aur;
         return;
