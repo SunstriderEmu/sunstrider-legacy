@@ -32,10 +32,6 @@
 
 void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
 {
-    
-    
-    
-
     uint64 guidNPC;
     uint64 unk1, unk3, unk4, unk5, unk6, unk7;
     uint32 unk2;
@@ -413,10 +409,6 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 {
-    
-    
-    
-
     Field *fields;
     uint64 petitionguid;
     uint8 unk;

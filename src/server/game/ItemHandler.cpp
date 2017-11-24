@@ -701,11 +701,12 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recvData )
 {
     uint64 vendorguid;
     uint32 item;
-    uint8 count, unk1; //slot?
+    uint8 count;
+    uint8 unused; //sunstrider: reversed from client, always 1
 
-    recvData >> vendorguid >> item >> count >> unk1;
+    recvData >> vendorguid >> item >> count >> unused;
 
-    GetPlayer()->BuyItemFromVendor(vendorguid,item,count,NULL_BAG,NULL_SLOT);
+    GetPlayer()->BuyItemFromVendor(vendorguid, item, count, NULL_BAG, NULL_SLOT);
 }
 
 void WorldSession::HandleListInventoryOpcode( WorldPacket & recvData )
