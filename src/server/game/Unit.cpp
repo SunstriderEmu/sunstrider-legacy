@@ -11729,7 +11729,8 @@ int32 Unit::CalculateSpellDamage(SpellInfo const* spellProto, uint8 effect_index
         level = (int32)spellProto->MaxLevel;
     else if (level < (int32)spellProto->BaseLevel)
         level = (int32)spellProto->BaseLevel;
-    level -= (int32)spellProto->SpellLevel;
+    // if base level is greater than spell level, reduce by base level (eg. pilgrims foods)
+    level -= int32(std::max(spellProto->BaseLevel, spellProto->SpellLevel));
     
     /** Dice rolls are from 1 to DieSides */
     float basePointsPerLevel = spellProto->Effects[effect_index].RealPointsPerLevel;
