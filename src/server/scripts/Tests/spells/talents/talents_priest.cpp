@@ -62,21 +62,25 @@ public:
 			// Holy fire rank 9
 			uint32 const holyFireMinDamage = 426;
 			uint32 const holyFireMaxDamage = 537;
+            uint32 const holyFireDotDamage = 165;
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
             TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage, smiteMaxDamage);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, smiteMinDamage, smiteMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage, holyFireMaxDamage);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDotDamage);
 
 			//Test improved damage 5%
 			LearnTalent(player, Talents::Priest::SEARING_LIGHT_RNK_1);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMaxDamage * 1.05f, smiteMaxDamage * 1.05f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage * 1.05f, smiteMaxDamage * 1.05f);
             TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.05f, holyFireMaxDamage * 1.05f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDotDamage * 1.05f);
 
 			//Test improved damage 10%
 			LearnTalent(player, Talents::Priest::SEARING_LIGHT_RNK_2);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMaxDamage * 1.1f, smiteMaxDamage * 1.1f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage * 1.1f, smiteMaxDamage * 1.1f);
             TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.1f, holyFireMaxDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDotDamage * 1.1f);
 		}
 	};
 

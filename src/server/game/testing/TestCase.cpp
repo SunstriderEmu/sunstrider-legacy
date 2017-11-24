@@ -660,7 +660,7 @@ void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, i
             int32 dotDamageToTarget = AI->GetDotDamage(target, spellID);
 			TC_LOG_DEBUG("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedAmount: %i", spellID, dotDamageToTarget, expectedAmount);
             ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedAmount: %i", dotDamageToTarget, expectedAmount);
-            TEST_ASSERT(dotDamageToTarget >= (expectedAmount - 1) && dotDamageToTarget <= (expectedAmount + 1));
+            TEST_ASSERT(dotDamageToTarget >= (expectedAmount - 6) && dotDamageToTarget <= (expectedAmount + 6)); //dots have greater error since they got their damage divided in several ticks
             return;
         }
     }
