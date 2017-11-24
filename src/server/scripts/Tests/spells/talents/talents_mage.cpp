@@ -3,10 +3,10 @@
 #include "World.h"
 #include "ClassSpells.h"
 
-class WandSpecializationTest : public TestCaseScript
+class MageWandSpecializationTest : public TestCaseScript
 {
 public:
-	WandSpecializationTest() : TestCaseScript("talents mage wand_specialization") { }
+    MageWandSpecializationTest() : TestCaseScript("talents mage wand_specialization") { }
 
 	class WandSpecializationTestImpt : public TestCase
 	{
@@ -628,7 +628,7 @@ public:
 void AddSC_test_talents_mage()
 {
 	// Arcane
-	new WandSpecializationTest();
+	new MageWandSpecializationTest();
 	new MagicAbsorptionTest();
 	new MagicAttunementTest();
 	new ArcaneFortitudeTest();
