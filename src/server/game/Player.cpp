@@ -442,13 +442,12 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
     Unit::CleanupsBeforeDelete(finalCleanup);
 }
 
-
 bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
 {
-    return Create(guidlow,createInfo->Name,createInfo->Race,createInfo->Class,createInfo->Gender,createInfo->Skin,createInfo->Face,createInfo->HairStyle, createInfo->HairColor,createInfo->FacialHair,createInfo->OutfitId);
+    return Create(guidlow, createInfo->Name, createInfo->Race, createInfo->Class, createInfo->Gender, createInfo->Skin, createInfo->Face, createInfo->HairStyle, createInfo->HairColor, createInfo->FacialHair, createInfo->OutfitId);
 }
 
-bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId)
+bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId, bool setMap)
 {
     //FIXME: outfitId not used in player creating
 
@@ -469,16 +468,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     m_race = race;
     m_class = class_;
     m_gender = gender;
-
-    if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
-    {
-        RelocateToBetaZone();
-    }
-    else
-    {
-        Relocate(info->positionX, info->positionY, info->positionZ);
-    }
-
+    
     ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(class_);
     if(!cEntry)
     {
@@ -486,8 +476,16 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
         return false;
     }
 
-    SetMap(sMapMgr->CreateMap(info->mapId, this));
-    UpdatePositionData();
+    if (setMap)
+    {
+        if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
+            RelocateToBetaZone();
+        else
+            Relocate(info->positionX, info->positionY, info->positionZ);
+
+        SetMap(sMapMgr->CreateMap(info->mapId, this));
+        UpdatePositionData();
+    }
 
     uint8 powertype = cEntry->PowerType;
 

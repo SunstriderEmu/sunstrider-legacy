@@ -253,11 +253,13 @@ TestPlayer* TestCase::_CreateTestBot(WorldLocation loc, Classes cls, Races race,
     INTERNAL_TEST_ASSERT(cls != CLASS_NONE && race != RACE_NONE);
     TC_LOG_ERROR("test.unit_test", "Creating new random bot for class %d", cls);
 
-    std::string name = RandomPlayerbotFactory::CreateTestBotName();
-    if (name.empty())
-        return 0;
-    //note that test bots name may sometime overlap with connected bots name... BUT WELL WHATEVER.
+    if (!_map)
+        return nullptr;
 
+    std::string name = RandomPlayerbotFactory::CreateTestBotName();  //note that by doing this test bots name may sometime overlap with other connected bots name... BUT WELL WHATEVER.
+    if (name.empty())
+        return nullptr;
+   
     uint32 testAccountId = TestCase::GetTestBotAccountId();
     WorldSession* session = new WorldSession(testAccountId, BUILD_243, TEST_ACCOUNT_NAME, NULL, SEC_PLAYER, 1, 0, LOCALE_enUS, 0, false);
     if (!session)
@@ -304,7 +306,9 @@ TestPlayer* TestCase::_CreateTestBot(WorldLocation loc, Classes cls, Races race,
     player->LearnAllClassProficiencies();
     player->UpdateSkillsToMaxSkillsForLevel();
 
-    session->_HandlePlayerLogin(player, holder);
+    //make sure player is alreary linked to this map before calling _HandlePlayerLogin, else a lot of stuff will be loaded around default player location
+    player->SetMap(_map); 
+    session->_HandlePlayerLogin((Player*)player, holder);
 
     player->SetTeleportingToTest(_testMapInstanceId);
 
