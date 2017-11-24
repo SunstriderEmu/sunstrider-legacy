@@ -1484,7 +1484,8 @@ bool Group::_setAssistantFlag(const uint64 &guid, const bool &state)
         return false;
 
     slot->assistant = state;
-    if(!isBGGroup()) CharacterDatabase.PExecute("UPDATE group_member SET assistant='%u' WHERE memberGuid='%u'", (state==true)?1:0, GUID_LOPART(guid));
+    if(!isBGGroup()) 
+        CharacterDatabase.PExecute("UPDATE group_member SET assistant='%u' WHERE memberGuid='%u'", (state==true)?1:0, GUID_LOPART(guid));
     return true;
 }
 

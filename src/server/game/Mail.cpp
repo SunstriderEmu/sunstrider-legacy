@@ -28,10 +28,10 @@ void MailItem::deleteItem( bool inDB )
 
 void WorldSession::HandleSendMail(WorldPacket & recvData )
 {
-    uint64 mailbox, unk3;
+    uint64 mailbox, unused;
     std::string receiver, subject, body;
     uint32 StationeryID, PackageID, money, COD;
-    uint8 unk4;
+    uint8 unused2;
     recvData >> mailbox;
     recvData >> receiver;
     recvData >> subject;
@@ -44,7 +44,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
     uint8 items_count;
     recvData >> items_count;                               // attached items count
 
-    if(items_count > 12)                                    // client limit
+    if(items_count > 16)                                    // client limit (sunstrider: value reversed from client binary)
         return;
 
     if(items_count)
@@ -60,8 +60,8 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
     }
 
     recvData >> money >> COD;                              // money and cod
-    recvData >> unk3;                                      // const 0, removed in later version
-    recvData >> unk4;                                      // const 0, removed in later version
+    recvData >> unused;                                    // const 0, removed in later version (sunstrider: always 0, reversed from client binary)
+    recvData >> unused2;                                   // const 0, removed in later version (sunstrider: always 0, reversed from client binary)
 
     items_count = mi.size();                                // this is the real size after the duplicates have been removed
 
@@ -247,6 +247,7 @@ void WorldSession::HandleMailDelete(WorldPacket & recvData )
     uint32 mailId;
     recvData >> mailbox;
     recvData >> mailId;
+    //then one more uint32 with 2 or 3?
     Player* pl = _player;
     pl->m_mailsUpdated = true;
     Mail *m = pl->GetMail(mailId);

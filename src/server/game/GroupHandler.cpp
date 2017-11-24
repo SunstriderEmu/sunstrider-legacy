@@ -445,6 +445,8 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
     /** error handling **/
     if(minimum > maximum || maximum > 10000)                // < 32768 for urand call
         return;
+    //sunstrider: client sends max 1000000
+
     /********************/
 
     // everything's fine, do it
@@ -469,25 +471,28 @@ void WorldSession::HandleRaidTargetUpdateOpcode( WorldPacket & recvData )
     if(!group)
         return;
 
-    uint8  x;
-    recvData >> x;
+    uint8 icon;
+    recvData >> icon;
 
     /** error handling **/
     /********************/
 
     // everything's fine, do it
-    if(x == 0xFF)                                           // target icon request
+    if(icon == 0xFF)                                        // target icon request
     {
         group->SendTargetIconList(this);
     }
     else                                                    // target icon update
     {
+        if (icon >= 8) //sunstrider: max valid value, reversed from client
+            return;
+
         if(!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
             return;
 
         uint64 guid;
         recvData >> guid;
-        group->SetTargetIcon(x, guid);
+        group->SetTargetIcon(icon, guid);
     }
 }
 
@@ -565,10 +570,6 @@ void WorldSession::HandleGroupAssistantLeaderOpcode( WorldPacket & recvData )
 
 void WorldSession::HandlePartyAssignmentOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     Group *group = GetPlayer()->GetGroup();
     if(!group)
         return;
@@ -596,8 +597,6 @@ void WorldSession::HandlePartyAssignmentOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleRaidReadyCheckOpcode( WorldPacket & recvData )
 {
-    
-    
     Group *group = GetPlayer()->GetGroup();
     if(!group)
         return;

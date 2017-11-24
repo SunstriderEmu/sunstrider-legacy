@@ -63,6 +63,8 @@ public:
 
     //Create item and equip it to player. Will remove any item already in slot. Fail test on failure
     void EquipItem(TestPlayer* p, uint32 itemID);
+    //Create item and add it to player inventory
+    Item* AddItem(TestPlayer* p, uint32 itemID);
     void LearnTalent(TestPlayer* p, uint32 spellID);
 
     //Will cast the spell a bunch of time and test if results match the expected damage. Reason I keep expected min and max separated is because it gives me some data to do some math magic later to reduce iterations 

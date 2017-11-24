@@ -136,8 +136,6 @@ void WorldSession::HandleGMTicketGetTicketOpcode( WorldPacket & /*recvData*/)
 
 void WorldSession::HandleGMTicketSystemStatusOpcode( WorldPacket & /*recvData*/)
 {
-    
-    
     WorldPacket data(SMSG_GMTICKET_SYSTEMSTATUS, 4);
     data << uint32(1);
     SendPacket(&data);
@@ -163,5 +161,22 @@ void WorldSession::SendGMTicketGetTicket(uint32 status, char const* text)
 
 void WorldSession::HandleGMSurveySubmit(WorldPacket& recvData)
 {
-    //TODO
+    /* 
+    //sunstrider: struct reversed from binary
+    uint32 unk1;
+    uint32 unk2[10];
+    uint8 unk3[10];
+    std::string unk4[10];
+    std::string unk5;
+
+    recvData >> unk1;
+    for(int i = 0; i < 10; i++)
+    {
+        recvData >> unk2[i];
+        //possible break from loop
+        recvData >> unk3[i];
+        recvData >> unk4[i];
+    }
+    recvData >> unk5;
+    */
 }
