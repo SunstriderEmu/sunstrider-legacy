@@ -12,6 +12,9 @@
 
 //same as TEST_ASSERT but will track caller file and line to print it in case of error
 #define INTERNAL_TEST_ASSERT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine()); _ResetAssertInfo();
+//same as last but does not increase test count
+#define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetAssertInfo();
+
 //input info for next check, place this before INTERNAL_TEST_ASSERT
 #define ASSERT_INFO( expr, ... ) _AssertInfo(expr, __VA_ARGS__);
 
@@ -177,7 +180,7 @@ TestPlayer* TestCase::SpawnRandomPlayer()
     _GetRandomClassAndRace(cls, race);
     TestPlayer* playerBot = _CreateTestBot(_location, cls, race);
     ASSERT_INFO("Creating random test bot with class %u and race %u", uint32(cls), uint32(race));
-    TEST_ASSERT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -189,7 +192,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Powers power, uint32 level)
 
     TestPlayer* playerBot = _CreateTestBot(_location, cls, race, level);
     ASSERT_INFO("Creating random test with power %u and level %u", uint32(power), level);
-    INTERNAL_TEST_ASSERT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -197,7 +200,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Races race, uint32 level)
 {
     TestPlayer* playerBot = _CreateTestBot(_location, _GetRandomClassForRace(race), race, level);
     ASSERT_INFO("Creating random test bot with race %u and level %u", uint32(race), level);
-    INTERNAL_TEST_ASSERT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -205,7 +208,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Classes cls, uint32 level)
 {
     TestPlayer* playerBot = _CreateTestBot(_location, cls, _GetRandomRaceForClass(cls), level);
     ASSERT_INFO("Creating random test bot with class %u and level %u", uint32(cls), level);
-    INTERNAL_TEST_ASSERT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -213,7 +216,7 @@ TestPlayer* TestCase::SpawnPlayer(Classes _class, Races _race, uint32 level, Pos
 {
     TestPlayer* playerBot = _CreateTestBot(_location, _class, _race, level);
     ASSERT_INFO("Creating random test bot with class %u, race %u and level %u", uint32(_class), uint32(_race), level);
-    INTERNAL_TEST_ASSERT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -250,7 +253,7 @@ void TestCase::_RemoveTestBot(Player* player)
 //create a player of random level with no equipement, no talents, max skills for his class
 TestPlayer* TestCase::_CreateTestBot(WorldLocation loc, Classes cls, Races race, uint32 level)
 {
-    INTERNAL_TEST_ASSERT(cls != CLASS_NONE && race != RACE_NONE);
+    INTERNAL_TEST_ASSERT_NOCOUNT(cls != CLASS_NONE && race != RACE_NONE);
     TC_LOG_ERROR("test.unit_test", "Creating new random bot for class %d", cls);
 
     if (!_map)
@@ -386,7 +389,7 @@ void TestCase::_GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower
     {
         std::map<uint8, std::vector<uint8>> availableRacesForClasses = RandomPlayerbotFactory::GetAvailableRacesForClasses();
         auto availableRacesForClass = availableRacesForClasses[uint8(cls)];
-        INTERNAL_TEST_ASSERT(!availableRacesForClass.empty());
+        INTERNAL_TEST_ASSERT_NOCOUNT(!availableRacesForClass.empty());
         race = Races(availableRacesForClass[urand(0, availableRacesForClass.size() - 1)]);
     }
     //case 2 - we want a random class for given race
@@ -412,7 +415,7 @@ void TestCase::_GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower
                 }
             }
         }
-        INTERNAL_TEST_ASSERT(!availableClassesForRace.empty());
+        INTERNAL_TEST_ASSERT_NOCOUNT(!availableClassesForRace.empty());
         //random on on resulting available classes
         cls = Classes(availableClassesForRace[urand(0, availableClassesForRace.size() - 1)]);
     }
@@ -425,7 +428,7 @@ void TestCase::_GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower
     else 
     {
         //if we reach here, both race and class were specified, so no use using this randomize function
-        INTERNAL_TEST_ASSERT(false);
+        INTERNAL_TEST_ASSERT_NOCOUNT(false);
     }
 }
 
@@ -459,12 +462,12 @@ TempSummon* TestCase::SpawnCreature(uint32 entry, bool spawnInFront)
 TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 entry)
 {
     ASSERT_INFO("Test has no map");
-    INTERNAL_TEST_ASSERT(GetMap() != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(GetMap() != nullptr);
     uint32 creatureEntry = entry ? entry : TEST_CREATURE_ENTRY;
 
     TempSummon* summon = GetMap()->SummonCreature(creatureEntry, spawnPosition);
     ASSERT_INFO("Failed to summon creature with entry %u", creatureEntry);
-    INTERNAL_TEST_ASSERT(summon != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(summon != nullptr);
     summon->SetTempSummonType(TEMPSUMMON_MANUAL_DESPAWN); //Make sur it does not despawn
     return summon;
 }
@@ -473,18 +476,18 @@ void TestCase::EquipItem(TestPlayer* player, uint32 itemID)
 {
     Item* item = AddItem(player, itemID);
     ASSERT_INFO("Failed to add item %u to player", itemID);
-    INTERNAL_TEST_ASSERT(item != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(item != nullptr);
 
     uint16 dest2;
     uint8 msg2 = player->CanEquipItem(NULL_SLOT, dest2, item, !item->IsBag());
     ASSERT_INFO("Player cannot equip item %u, reason: %u", itemID, msg2);
-    INTERNAL_TEST_ASSERT(msg2 == EQUIP_ERR_OK);
+    INTERNAL_TEST_ASSERT_NOCOUNT(msg2 == EQUIP_ERR_OK);
 
     player->GetSession()->_HandleAutoEquipItemOpcode(item->GetBagSlot(), item->GetSlot());
 
     Item* equipedItem = player->GetItemByPos(dest2);
     ASSERT_INFO("Player failed to equip item (dest: %u)", itemID, dest2);
-    INTERNAL_TEST_ASSERT(equipedItem != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(equipedItem != nullptr);
     Wait(1); //not sure this is needed but... let's just wait next update to make sure item spells are properly applied
 }
 
@@ -492,16 +495,16 @@ Item* TestCase::AddItem(TestPlayer* player, uint32 itemID)
 {
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemID);
     ASSERT_INFO("Item %u does not exists", itemID);
-    INTERNAL_TEST_ASSERT(proto != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(proto != nullptr);
 
     ItemPosCountVec dest;
     uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemID, 1);
     ASSERT_INFO("Player cannot store item %u in bags", itemID);
-    INTERNAL_TEST_ASSERT(msg == EQUIP_ERR_OK);
+    INTERNAL_TEST_ASSERT_NOCOUNT(msg == EQUIP_ERR_OK);
 
     Item* item = player->StoreNewItem(dest, itemID, true, Item::GenerateItemRandomPropertyId(itemID));
     ASSERT_INFO("Failed to store item %u in bags", itemID);
-    INTERNAL_TEST_ASSERT(item != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(item != nullptr);
     return item;
 }
 

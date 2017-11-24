@@ -103,12 +103,12 @@ public:
 			uint32 const expectedMaxHW = 2436 + 360 * coeffHW;
 
 			// Test regular
-			//TestHeal(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, minHW, maxHW);
+			//TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, minHW, maxHW);
 
 			// Test improved
 			mage->CastSpell(mage, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6);
 			LearnTalent(mage, Talents::Mage::MAGIC_ATTUNEMENT_RNK_2);
-			//TestHeal(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, expectedMinHW, expectedMaxHW);
+			//TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, expectedMinHW, expectedMaxHW);
 		}
 	};
 
