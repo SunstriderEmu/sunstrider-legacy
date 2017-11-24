@@ -11733,7 +11733,7 @@ int32 Unit::CalculateSpellDamage(SpellInfo const* spellProto, uint8 effect_index
     
     /** Dice rolls are from 1 to DieSides */
     float basePointsPerLevel = spellProto->Effects[effect_index].RealPointsPerLevel;
-    int32 basePoints = 1 + int32(effBasePoints + level * basePointsPerLevel); //sunstrider: Add 1 but keep the basePointsPerLevel rounded down. Seems to match client info better
+    int32 basePoints = int32(effBasePoints + level * basePointsPerLevel);
     float comboDamage = spellProto->Effects[effect_index].PointsPerComboPoint;
     int32 diceCount = spellProto->Effects[effect_index].BaseDice; //actually diceCount is always 0 or 1
     int32 maxRoll = diceCount * spellProto->Effects[effect_index].DieSides;
@@ -11749,13 +11749,13 @@ int32 Unit::CalculateSpellDamage(SpellInfo const* spellProto, uint8 effect_index
         switch(effect_index)
         {
             case 0:
-                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT1, value);
+                modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_EFFECT1, value);
                 break;
             case 1:
-                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT2, value);
+                modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_EFFECT2, value);
                 break;
             case 2:
-                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT3, value);
+                modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_EFFECT3, value);
                 break;
         }
     }
