@@ -4722,9 +4722,10 @@ void Aura::HandleModBaseResistance(bool apply, bool Real)
 
 void Aura::HandleAuraModStat(bool apply, bool Real)
 {
-    if (/*m_modifier.m_miscvalue < -2 || */m_modifier.m_miscvalue > 4)
+    //-1 = all stats (such as mark of the wild)
+    if (GetMiscValue() < -1 || GetMiscValue() > 4)
     {
-        TC_LOG_ERROR("FIXME","WARNING: Spell %u effect %u have unsupported misc value (%i) for SPELL_AURA_MOD_STAT ",GetId(),GetEffIndex(),m_modifier.m_miscvalue);
+        TC_LOG_ERROR("spells","WARNING: Spell %u effect %u have unsupported misc value (%i) for SPELL_AURA_MOD_STAT ",GetId(),GetEffIndex(),m_modifier.m_miscvalue);
         return;
     }
 
