@@ -491,7 +491,7 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     INTERNAL_TEST_ASSERT(AI != nullptr);
     AI->ResetSpellCounters();
 
-    uint32 maxPredictionError = (expectedMaxDamage - expectedMinDamage) / 50; //arbitary
+    uint32 maxPredictionError = (expectedMaxDamage - expectedMinDamage) / 25; //arbitary
     //const float confidenceLevel = 99.9f;
     uint32 sampleSize = 500;
 
