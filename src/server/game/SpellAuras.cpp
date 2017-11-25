@@ -5986,7 +5986,7 @@ void Aura::PeriodicTick()
     if(!m_target->IsAlive())
         return;
 
-    uint32 realDamage = 0; //tick value before reduction
+    uint32 realDamage = 0; //tick value before reduction, for testing purposes
 
     switch(m_modifier.m_auraname)
     {
@@ -6444,7 +6444,7 @@ void Aura::PeriodicTick()
             TC_LOG_DEBUG("FIXME","PeriodicTick: %u (TypeId: %u) power leech of %u (TypeId: %u) for %u dmg inflicted by %u",
                 GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId());
 
-            if(m_modifier.m_miscvalue < 0 || m_modifier.m_miscvalue > 4)
+            if(GetMiscValue() < 0 || GetMiscValue() > 4)
                 break;
 
             Powers power = Powers(m_modifier.m_miscvalue);
@@ -6515,7 +6515,7 @@ void Aura::PeriodicTick()
             TC_LOG_DEBUG("FIXME","PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u dmg inflicted by %u",
                 GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), amount, GetId());
 
-            if(m_modifier.m_miscvalue < 0 || m_modifier.m_miscvalue > 4)
+            if(GetMiscValue() < 0 || GetMiscValue() > 4)
                 break;
 
             if (m_target->HasUnitState(UNIT_STATE_ISOLATED))
@@ -6713,9 +6713,11 @@ void Aura::PeriodicTick()
             break;
     }
 
+#ifdef TESTS
     if (GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER)
         if (auto playerBotAI = GetCaster()->ToPlayer()->GetPlayerbotAI())
             playerBotAI->PeriodicTick(m_target, realDamage, GetId());
+#endif
 }
 
 void Aura::PeriodicDummyTick()

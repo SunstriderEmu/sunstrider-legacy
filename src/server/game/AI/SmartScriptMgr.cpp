@@ -647,7 +647,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
 
                 if (e.event.event_phase_mask && !(e.event.event_phase_mask & e.event.eventPhaseChange.phasemask))
                 {
-                    TC_LOG_ERROR("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses event phasemask %u and incompatible event_param1 %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.event.event_phase_mask, e.event.eventPhaseChange.phasemask);
+                    TC_LOG_ERROR("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses event phasemask %u and incompatible event_param1 %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), uint32(e.event.event_phase_mask), uint32(e.event.eventPhaseChange.phasemask));
                     return false;
                 }
                 break;

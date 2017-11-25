@@ -1326,9 +1326,11 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
     CleanDamage cleanDamage(damageInfo->cleanDamage, BASE_ATTACK, MELEE_HIT_NORMAL);
     DealDamage(pVictim, damageInfo->damage, &cleanDamage, SPELL_DIRECT_DAMAGE, SpellSchoolMask(damageInfo->schoolMask), spellProto, durabilityLoss);
 
+#ifdef TESTS
     if (GetTypeId() == TYPEID_PLAYER)
         if (auto playerBotAI = ToPlayer()->GetPlayerbotAI())
             playerBotAI->SpellDamageDealt(pVictim, damageInfo->damage, spellProto->Id);
+#endif
 }
 
 //TODO for melee need create structure as in

@@ -433,8 +433,8 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
             }
         }
         */
-        TC_LOG_ERROR("bg.battleground", "CMSG_BATTLEFIELD_PORT %s ArenaType: %u, Unk: %u, BgType: %u, Action: %u. Wrong bg type id received!",
-            GetPlayerInfo().c_str(), type, unk2, bgTypeId_, action, bgTypeId_);
+        TC_LOG_ERROR("bg.battleground", "CMSG_BATTLEFIELD_PORT %s ArenaType: %u, Unk: %u, BgType: %u, Action: %u. Wrong bg type id %u received!",
+            GetPlayerInfo().c_str(), type, unk2, bgTypeId_, action, uint32(bgTypeId_));
         return;
     }
 

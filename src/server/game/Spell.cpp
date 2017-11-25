@@ -2532,9 +2532,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             }
         }
 
+#ifdef TESTS
         if (IS_PLAYER_GUID(m_caster))
             if (m_caster->ToPlayer()->GetPlayerbotAI())
                 m_caster->ToPlayer()->GetPlayerbotAI()->CastedHealingSpell(unitTarget, addhealth, gain, m_spellInfo->Id, missInfo);
+#endif
     }
     // Do damage and triggers
     else if (m_damage > 0)
@@ -2598,9 +2600,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                 m_caster->CastSpell(m_caster, BTAura, true);
         }
 
+#ifdef TESTS
         if (IS_PLAYER_GUID(m_caster))
             if (m_caster->ToPlayer()->GetPlayerbotAI())
                 m_caster->ToPlayer()->GetPlayerbotAI()->CastedDamageSpell(unitTarget, damageInfo, missInfo, target->crit);
+#endif
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
     else
@@ -2612,9 +2616,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (missInfo != SPELL_MISS_REFLECT)
             caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_canTrigger);
 
+#ifdef TESTS
         if (IS_PLAYER_GUID(m_caster->GetGUID()))
             if (m_caster->ToPlayer()->GetPlayerbotAI())
                 m_caster->ToPlayer()->GetPlayerbotAI()->CastedDamageSpell(unitTarget, damageInfo, missInfo);
+#endif
     }
 
     // Call scripted function for AI if this spell is casted upon a creature (except pets)
