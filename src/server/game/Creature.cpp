@@ -2045,7 +2045,7 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster)
 
 bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
 {
-    if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Effects[index].Mechanic - 1)))
+    if (spellInfo->Effects[index].Mechanic && GetCreatureTemplate()->MechanicImmuneMask & (1 << spellInfo->Effects[index].Mechanic - 1)) 
         return true;
 
     if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellInfo->Effects[index].Effect == SPELL_EFFECT_HEAL)
