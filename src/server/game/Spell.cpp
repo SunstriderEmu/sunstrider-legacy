@@ -2533,7 +2533,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         }
 
 #ifdef TESTS
-        if (IS_PLAYER_GUID(m_caster))
+        if (IS_PLAYER_GUID(m_caster->GetGUID()))
             if (m_caster->ToPlayer()->GetPlayerbotAI())
                 m_caster->ToPlayer()->GetPlayerbotAI()->CastedHealingSpell(unitTarget, addhealth, gain, m_spellInfo->Id, missInfo);
 #endif
@@ -2601,7 +2601,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         }
 
 #ifdef TESTS
-        if (IS_PLAYER_GUID(m_caster))
+        if (IS_PLAYER_GUID(m_caster->GetGUID()))
             if (m_caster->ToPlayer()->GetPlayerbotAI())
                 m_caster->ToPlayer()->GetPlayerbotAI()->CastedDamageSpell(unitTarget, damageInfo, missInfo, target->crit);
 #endif
