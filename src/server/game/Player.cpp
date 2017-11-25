@@ -23700,7 +23700,9 @@ void Player::InitTaxiNodesForLevel()
     m_taxi.InitTaxiNodesForLevel(GetRace(), GetLevel()); 
 }
 
+#ifdef TESTS
 PlayerbotTestingAI* Player::GetTestingPlayerbotAI()
 {
     return dynamic_cast<PlayerbotTestingAI*>(m_playerbotAI);
 }
+#endif

@@ -2268,11 +2268,13 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         // EquipmentSets& GetEquipmentSets() { return m_EquipmentSets; } //revmoed, not existing on BC
         void SetPlayerbotAI(PlayerbotAI* ai) { m_playerbotAI = ai; }
         PlayerbotAI* GetPlayerbotAI() { return m_playerbotAI; }
-        PlayerbotTestingAI* GetTestingPlayerbotAI();
         void SetPlayerbotMgr(PlayerbotMgr* mgr) { m_playerbotMgr=mgr; }
         PlayerbotMgr* GetPlayerbotMgr() { return m_playerbotMgr; }
         void SetBotDeathTimer() { m_deathTimer = 0; }
         //PlayerTalentMap& GetTalentMap(uint8 spec) { return *m_talents[spec]; }
+        #endif
+        #ifdef TESTS
+        PlayerbotTestingAI* GetTestingPlayerbotAI();
         #endif
 
         // Testing
