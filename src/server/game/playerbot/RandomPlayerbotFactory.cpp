@@ -141,26 +141,29 @@ uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls, uint8 race, bool testB
     return guid;
 }
 
-string RandomPlayerbotFactory::CreateTestBotName()
+std::string RandomPlayerbotFactory::CreateTestBotName()
 {
     static std::list<std::string> botNames; // a bit of caching since this request is quite heavy
     if (botNames.empty())
     {
-        QueryResult result = CharacterDatabase.PQuery("SELECT n.name FROM ai_playerbot_names n ORDER BY RAND() LIMIT 100");
-        if (!result)
+        QueryResult results = CharacterDatabase.PQuery("SELECT n.name FROM ai_playerbot_names n ORDER BY RAND() LIMIT 100");
+        if (!results)
         {
             sLog->outMessage("playerbot", LOG_LEVEL_FATAL, "No names in ai_playerbot_name table");
             return "";
         }
-        while (Field* fields = result->Fetch())
+        do
+        {
+            Field* fields = results->Fetch();
             botNames.push_back(fields[0].GetString());
+        } while (results->NextRow());
     }
     std::string name = botNames.front();
     botNames.pop_front();
     return name;
 }
 
-string RandomPlayerbotFactory::CreateRandomBotName()
+std::string RandomPlayerbotFactory::CreateRandomBotName()
 {
     QueryResult result = CharacterDatabase.Query("SELECT MAX(name_id) FROM ai_playerbot_names");
     if (!result)
