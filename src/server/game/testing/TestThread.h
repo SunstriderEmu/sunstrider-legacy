@@ -5,8 +5,6 @@ class TestCase;
 #include "TestResults.h"
 #include <atomic>
 
-#define EXCEPTION_MESSAGE "fail"
-
 class TestThread
 {
 public:

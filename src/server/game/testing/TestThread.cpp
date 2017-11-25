@@ -28,8 +28,7 @@ void TestThread::Run()
     }
     catch (std::exception& e)
     { 
-        if (std::string(e.what()) != EXCEPTION_MESSAGE) //make sure that wasn't some other execption
-            _testCase->_FailNoException(e.what());
+        _testCase->_FailNoException(e.what());
     }
 
     _finished = true;

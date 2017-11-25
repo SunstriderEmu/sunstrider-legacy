@@ -1,7 +1,7 @@
 #include "TestCase.h"
 #include "MapManager.h"
 #include "TestThread.h"
-#include "RandomPlayerBotMgr.h"
+#include "RandomPlayerbotMgr.h"
 #include "TestPlayer.h"
 #include "RandomPlayerbotFactory.h"
 #include "PlayerbotFactory.h"
@@ -16,7 +16,7 @@
 #define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetAssertInfo();
 
 //input info for next check, place this before INTERNAL_TEST_ASSERT
-#define ASSERT_INFO( expr, ... ) _AssertInfo(expr, __VA_ARGS__);
+#define ASSERT_INFO(expr, ...) _AssertInfo(expr, ## __VA_ARGS__);
 
 TestCase::TestCase(bool needMap) :
     _failed(false),
@@ -77,7 +77,7 @@ void TestCase::_Fail(const char* err, ...)
     va_end(args);
 
     _FailNoException(buffer);
-    throw std::exception(EXCEPTION_MESSAGE);
+    throw std::exception();
 }
 
 void TestCase::_FailNoException(std::string msg)
@@ -486,7 +486,7 @@ void TestCase::EquipItem(TestPlayer* player, uint32 itemID)
     player->GetSession()->_HandleAutoEquipItemOpcode(item->GetBagSlot(), item->GetSlot());
 
     Item* equipedItem = player->GetItemByPos(dest2);
-    ASSERT_INFO("Player failed to equip item (dest: %u)", itemID, dest2);
+    ASSERT_INFO("Player failed to equip item %u (dest: %u)", itemID, dest2);
     INTERNAL_TEST_ASSERT_NOCOUNT(equipedItem != nullptr);
     Wait(1); //not sure this is needed but... let's just wait next update to make sure item spells are properly applied
 }
@@ -603,7 +603,7 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
 
     if (filteredDamageToTarget.size() != tickCount)
     {
-        ASSERT_INFO("Victim did not received expected tick count %u but received %u instead", tickCount, damageToTarget.size());
+        ASSERT_INFO("Victim did not received expected tick count %u but received %u instead", tickCount, uint32(damageToTarget.size()));
         INTERNAL_TEST_ASSERT(false);
     }
 

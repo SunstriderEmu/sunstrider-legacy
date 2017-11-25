@@ -222,8 +222,8 @@ public:
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 
-			uint32 const startCast = 3;
-			uint32 const expectedCast = 2.5;
+			float const startCastTime = 3.0f;
+			float const expectedCastTime = 2.5f;
 
 			// Test before
 			LearnTalent(player, Talents::Shaman::IMPROVED_HEALING_WAVE_RNK_5);

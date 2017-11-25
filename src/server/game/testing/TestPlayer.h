@@ -17,4 +17,4 @@ public:
     virtual bool Create(uint32 guidlow, CharacterCreateInfo* createInfo) override;
 };
 
-#endif TEST_PLAYER_H
+#endif //TEST_PLAYER_H
