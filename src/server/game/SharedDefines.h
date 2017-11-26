@@ -523,9 +523,9 @@ enum SpellAttr6
     SPELL_ATTR6_CAN_TARGET_UNTARGETABLE         = 0x01000000,           // 24 not set in 2.4.2
     SPELL_ATTR6_NOT_RESET_SWING_IF_INSTANT      = 0x02000000,           // 25 NYI, not set in 2.4.2
     SPELL_ATTR6_UNK26                           = 0x04000000,           // 26 not set in 2.4.2
-    SPELL_ATTR6_LIMIT_PCT_HEALING_MODS          = 0x08000000,           // 27 not set in 2.4.2 // xinef: complicated and guessed
+    SPELL_ATTR6_LIMIT_PCT_HEALING_MODS          = 0x08000000,           // 27 not set in 2.4.2 // sunwell: complicated and guessed
     SPELL_ATTR6_UNK28                           = 0x10000000,           // 28 not set in 2.4.2
-    SPELL_ATTR6_LIMIT_PCT_DAMAGE_MODS           = 0x20000000,           // 29 not set in 2.4.2 // xinef: complicated and guessed
+    SPELL_ATTR6_LIMIT_PCT_DAMAGE_MODS           = 0x20000000,           // 29 not set in 2.4.2 // sunwell: complicated and guessed
     SPELL_ATTR6_UNK30                           = 0x40000000,           // 30 not set in 2.4.2
     SPELL_ATTR6_IGNORE_CATEGORY_COOLDOWN_MODS   = 0x80000000,           // 31 not set in 2.4.2 // Spells with this attribute skip applying modifiers to category cooldowns
 };

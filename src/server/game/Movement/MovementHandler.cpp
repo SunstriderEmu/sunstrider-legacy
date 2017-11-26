@@ -521,10 +521,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     if (m_clientTimeDelay == 0)
         m_clientTimeDelay = mstime > movementInfo.time ? std::min(mstime - movementInfo.time, (uint32)100) : 0;
 
-    // Xinef: do not allow to move with UNIT_FLAG_REMOVE_CLIENT_CONTROL
+    // sunwell: do not allow to move with UNIT_FLAG_REMOVE_CLIENT_CONTROL
     if (mover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
     {
-        // Xinef: skip moving packets
+        // sunwell: skip moving packets
         if (movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING))
             return;
         movementInfo.pos.Relocate(mover->GetPositionX(), mover->GetPositionY(), mover->GetPositionZ());

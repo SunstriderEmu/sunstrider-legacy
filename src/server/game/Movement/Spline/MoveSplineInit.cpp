@@ -218,7 +218,7 @@ namespace Movement
 #endif
         }
 
-        // Xinef: increase z position in packet
+        // sunwell: increase z position in packet
         loc.z += unit->GetHoverHeight();
 
         PacketBuilder::WriteStopMovement(loc, args.splineId, data, BUILD_243);

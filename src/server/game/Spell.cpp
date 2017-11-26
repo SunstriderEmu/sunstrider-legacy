@@ -117,7 +117,7 @@ SpellCastTargets::SpellCastTargets() : m_elevation(0), m_speed(0), m_strTarget()
 
     m_targetMask = 0;
 
-    // Xinef: Channel data
+    // sunwell: Channel data
     m_objectTargetGUIDChannel = 0;
 }
 
@@ -461,7 +461,7 @@ void SpellCastTargets::RemoveDst()
     m_targetMask &= ~(TARGET_FLAG_DEST_LOCATION);
 }
 
-// Xinef: Channel Data
+// sunwell: Channel Data
 void SpellCastTargets::SetObjectTargetChannel(uint64 targetGUID)
 {
     m_objectTargetGUIDChannel = targetGUID;
@@ -669,7 +669,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     for (auto & m_destTarget : m_destTargets)
         m_destTarget = SpellDestination(*m_caster);
 
-    // xinef:
+    // sunwell:
     _spellTargetsSelected = false;
 
     if (uint64 dstDelay = CalculateDelayMomentForDst())
@@ -1110,7 +1110,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
     {
     case TARGET_UNIT_CHANNEL_TARGET:
     {
-        // Xinef: All channel selectors have needed data passed in m_targets structure
+        // sunwell: All channel selectors have needed data passed in m_targets structure
         WorldObject* target = m_targets.GetObjectTargetChannel(m_caster);
         if (target)
         {
@@ -1226,9 +1226,9 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
         if (Unit* _unitTarget = target->ToUnit())
         {
             AddUnitTarget(_unitTarget, effMask, true, false);
-            // xinef: important! if channeling spell have nearby entry, it has no unitTarget by default
+            // sunwell: important! if channeling spell have nearby entry, it has no unitTarget by default
             // and if channeled spell has target 77, it requires unitTarget, set it here!
-            // xinef: if we have NO unit target
+            // sunwell: if we have NO unit target
             if (!m_targets.GetUnitTarget())
                 m_targets.SetUnitTarget(_unitTarget);
         }
@@ -1358,7 +1358,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
         return;
     }
 
-    // Xinef: the distance should be increased by caster size, it is neglected in latter calculations
+    // sunwell: the distance should be increased by caster size, it is neglected in latter calculations
     std::list<WorldObject*> targets;
     float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster);
     // Workaround for some spells that don't have RadiusEntry set in dbc (but SpellRange instead)
@@ -1494,7 +1494,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         if (dist < objSize)
         {
             dist = objSize;
-            // xinef: give the summon some space (eg. totems)
+            // sunwell: give the summon some space (eg. totems)
             if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Effects[effIndex].IsEffect(SPELL_EFFECT_SUMMON))
                 dist += objSize;
         }
@@ -2009,12 +2009,12 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
     if (isBouncingFar && !isChainHeal)
         searchRadius *= chainTargets;
 
-    // Xinef: the distance should be increased by caster size, it is neglected in latter calculations
+    // sunwell: the distance should be increased by caster size, it is neglected in latter calculations
     std::list<WorldObject*> tempTargets;
     SearchAreaTargets(tempTargets, searchRadius, (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE ? m_caster : target), m_caster, objectType, selectType, condList);
     tempTargets.remove(target);
 
-    // xinef: if we have select category nearby and checktype entry, select random of what we have, not by distance
+    // sunwell: if we have select category nearby and checktype entry, select random of what we have, not by distance
     if (selectCategory == TARGET_SELECT_CATEGORY_NEARBY && selectType == TARGET_CHECK_ENTRY)
     {
         Trinity::Containers::RandomResize(tempTargets, chainTargets);
@@ -2055,7 +2055,7 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
                 if (Unit* itrTarget = (*itr)->ToUnit())
                 {
                     uint32 deficit = itrTarget->GetMaxHealth() - itrTarget->GetHealth();
-                    // xinef: chain should not heal targets with max health
+                    // sunwell: chain should not heal targets with max health
                     if (deficit == 0)
                         continue;
 
@@ -2421,7 +2421,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (!farMask)
             return;
         // find unit in world
-        // Xinef: FindUnit Access without Map check!!! Intended
+        // sunwell: FindUnit Access without Map check!!! Intended
         unit = ObjectAccessor::FindPlayer(target->targetGUID);
         if (!unit)
             return;
@@ -2564,7 +2564,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         }
 
         // Shadow Word: Death - deals damage equal to damage done to caster if victim is not killed
-        if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && m_spellInfo->SpellFamilyFlags&0x0000000200000000LL &&
+        if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && m_spellInfo->SpellFamilyFlags & 0x0000000200000000LL &&
             caster != unitTarget && unitTarget->IsAlive())
         {
             // Redirect damage to caster if victim alive
@@ -2731,7 +2731,7 @@ bool Spell::UpdateChanneledTargetList()
         }
     }
 
-    // Xinef: not all effects are covered, remove applications from all targets
+    // sunwell: not all effects are covered, remove applications from all targets
     if (channelTargetEffectMask != 0)
     {
         for (auto & ihit : m_UniqueTargetInfo)
@@ -3175,7 +3175,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
         }
     }
 
-    // xinef: if spell have nearby target entry only, do not allow to cast if no targets are found
+    // sunwell: if spell have nearby target entry only, do not allow to cast if no targets are found
     if (m_CastItem)
     {
         bool selectTargets = false;
@@ -3190,7 +3190,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
                 break;
             }
 
-            // xinef: by default set it to false, and to true if any valid target is found
+            // sunwell: by default set it to false, and to true if any valid target is found
             selectTargets = true;
         }
 
@@ -3573,7 +3573,7 @@ void Spell::cast(bool skipCheck)
             if (GetDelayMoment() > 0 && !m_caster->IsFriendlyTo(target) && !m_spellInfo->HasAura(SPELL_AURA_BIND_SIGHT) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
                 if (!m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO))
                     m_caster->CombatStart(target);
-                 //m_caster->CombatStartOnCast(target, !m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO), GetDelayMoment() + 500); // xinef: increase this time so we dont leave and enter combat in a moment
+                 //m_caster->CombatStartOnCast(target, !m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO), GetDelayMoment() + 500); // sunwell: increase this time so we dont leave and enter combat in a moment
                  */
 
     SetExecutedCurrently(false);
@@ -4260,7 +4260,7 @@ void Spell::SendCastResult(SpellCastResult result, uint32* param1 /*= nullptr*/,
         return;
 
 /* Sunwell
-    // Xinef: override every possible result, except for gm fail result... breaks many things and goes unnoticed because of this and makes me rage when i find this out
+    // sunwell: override every possible result, except for gm fail result... breaks many things and goes unnoticed because of this and makes me rage when i find this out
     if ((_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) && result != SPELL_FAILED_BM_OR_INVISGOD)
         result = SPELL_FAILED_DONT_REPORT;
     */
@@ -4574,7 +4574,7 @@ void Spell::WriteSpellGoTargets( WorldPacket * data )
         if ((*ihit).missCondition == SPELL_MISS_NONE)       // Add only hits
         {
             *data << uint64(ihit->targetGUID);
-            // Xinef: WTF is this? No channeled spell checked, no anything
+            // sunwell: WTF is this? No channeled spell checked, no anything
             //m_channelTargetEffectMask |=ihit->effectMask;
             ++hit;
         }
@@ -4601,7 +4601,7 @@ void Spell::WriteSpellGoTargets( WorldPacket * data )
         }
     }
     // Reset m_needAliveTargetMask for non channeled spell
-    // Xinef: Why do we reset something that is not set??????
+    // sunwell: Why do we reset something that is not set??????
     //if (!m_spellInfo->IsChanneled())
     //    m_channelTargetEffectMask = 0;
 
@@ -5330,11 +5330,11 @@ SpellCastResult Spell::CheckCast(bool strict)
     // those spells may have incorrect target entries or not filled at all (for example 15332)
     // such spells when learned are not targeting anyone using targeting system, they should apply directly to caster instead
     // also, such casts shouldn't be sent to client
-    // Xinef: do not check explicit casts for self cast of triggered spells (eg. reflect case)
+    // sunwell: do not check explicit casts for self cast of triggered spells (eg. reflect case)
     if (!(m_spellInfo->HasAttribute(SPELL_ATTR0_PASSIVE) && (!m_targets.GetUnitTarget() || m_targets.GetUnitTarget() == m_caster)))
     {
         // Check explicit target for m_originalCaster - todo: get rid of such workarounds
-        // Xinef: do not check explicit target for triggered spell casted on self with targetflag enemy
+        // sunwell: do not check explicit target for triggered spell casted on self with targetflag enemy
         if (!m_triggeredByAuraSpell || m_targets.GetUnitTarget() != m_caster || !(m_spellInfo->GetExplicitTargetMask() & TARGET_FLAG_UNIT_ENEMY))
         {
             Unit* caster = (m_originalCaster && m_caster->GetEntry() != WORLD_TRIGGER) ? m_originalCaster : m_caster;
@@ -7166,7 +7166,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
         break;
     }
 
-    // xinef: skip los checking if spell has appropriate attribute, or target requires specific entry
+    // sunwell: skip los checking if spell has appropriate attribute, or target requires specific entry
     // this is only for target addition and target has to have unselectable flag, this is valid for FLAG_EXTRA_TRIGGER and quest triggers however there are some without this flag, used not_selectable
     if (m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) || (target->GetTypeId() == TYPEID_UNIT && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) && (m_spellInfo->Effects[eff].TargetA.GetCheckType() == TARGET_CHECK_ENTRY || m_spellInfo->Effects[eff].TargetB.GetCheckType() == TARGET_CHECK_ENTRY)))
         return true;
@@ -7676,7 +7676,7 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier,
 
             if (m_damage > 0)
             {
-                // Xinef: Area Auras, AoE Targetting spells AND Chain Target spells (cleave etc.)
+                // sunwell: Area Auras, AoE Targetting spells AND Chain Target spells (cleave etc.)
                 if (m_spellInfo->Effects[i].IsAreaAuraEffect() || m_spellInfo->Effects[i].IsTargetingArea() || (m_spellInfo->Effects[i].ChainTarget > 1 && m_spellInfo->DmgClass != SPELL_DAMAGE_CLASS_MAGIC))
                 {
                     m_damage = unit->CalculateAOEDamageReduction(m_damage, m_spellInfo->SchoolMask, m_caster);
@@ -7713,7 +7713,7 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier,
         }
     }
 
-    // xinef: totem's inherit owner crit chance and dancing rune weapon
+    // sunwell: totem's inherit owner crit chance and dancing rune weapon
     Unit* caster = m_caster;
     if ((m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->IsTotem()) || m_caster->GetEntry() == 27893)
     {

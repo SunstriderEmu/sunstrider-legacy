@@ -1337,7 +1337,7 @@ void Player::Update( uint32 p_time )
 
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
-    // xinef: so we store it to the end of the world and teleport out of the ass after resurrection?
+    // sunwell: so we store it to the end of the world and teleport out of the ass after resurrection?
     if (IsHasDelayedTeleport() /* && IsAlive()*/)
         TeleportTo(m_teleport_dest, m_teleport_options);
 
@@ -7666,9 +7666,8 @@ void Player::UpdateEquipSpellsAtFormChange()
         }
     }
 }
-void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellInfo const *spellInfo)
+void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellInfo const* spellInfo)
 {
-
     if(spellInfo && ( (spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) ||
       (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC || spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE)) )
         return;
@@ -7894,9 +7893,9 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
         spell->m_cast_count = cast_count;               //set count of casts
         spell->InitExplicitTargets(targets);
 
-        // Xinef: dont allow to cast such spells, it may happen that spell possess 2 spells, one for players and one for items / gameobjects
-        // Xinef: if first one is cast on player, it may be deleted thus resulting in crash because second spell has saved pointer to the item
-        // Xinef: there is one problem with scripts which wont be loaded at the moment of call
+        // sunwell: dont allow to cast such spells, it may happen that spell possess 2 spells, one for players and one for items / gameobjects
+        // sunwell: if first one is cast on player, it may be deleted thus resulting in crash because second spell has saved pointer to the item
+        // sunwell: there is one problem with scripts which wont be loaded at the moment of call
         SpellCastResult result = spell->CheckCast(true);
         if (result != SPELL_CAST_OK)
         {

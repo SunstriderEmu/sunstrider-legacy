@@ -31,6 +31,7 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
+
             TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, starfireMinDamage, starfireMaxDamage);
             TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::MOONFIRE_RNK_12, moonfireMinDamage, moonfireMaxDamage);
             TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, wrathMinDamage, wrathMaxDamage);
@@ -121,6 +122,7 @@ public:
 
 			LearnTalent(player, Talents::Druid::IMPROVED_MARK_OF_THE_WILD_RNK_5);
 			uint32 result = player->CastSpell(victim, spell);
+            TEST_ASSERT(result == SPELL_CAST_OK);
 
 			TEST_ASSERT(Between<float>(victim->GetArmor(), expectedArmor - 1, expectedArmor + 1));
 			TEST_ASSERT(Between<float>(victim->GetStat(STAT_AGILITY), expectedAgi - 1, expectedAgi + 1));
@@ -141,7 +143,7 @@ public:
 			TestPlayer* player2 = SpawnRandomPlayer(CLASS_WARRIOR);
 
 			TestSpellOfTheWild(player, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8, player);
-			//TestSpellOfTheWild(player, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_3, player2);
+			//TODO TestSpellOfTheWild(player, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_3, player2);
 		}
 	};
 

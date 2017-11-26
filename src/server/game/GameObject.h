@@ -382,7 +382,7 @@ struct GameObjectTemplate
         case GAMEOBJECT_TYPE_AREADAMAGE:    autoCloseTime = areadamage.autoCloseTime; break;
         default: break;
         }
-        return autoCloseTime /* xinef: changed to milliseconds/ IN_MILLISECONDS*/;              // prior to 3.0.3, conversion was / 0x10000;
+        return autoCloseTime /* sunwell: changed to milliseconds/ IN_MILLISECONDS*/;              // prior to 3.0.3, conversion was / 0x10000;
     }
 
     bool IsDespawnAtAction() const

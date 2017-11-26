@@ -369,11 +369,11 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
         if(member == m_leader || !member->IsAlive() || member->GetVictim())
             continue;
 
-        // Xinef: If member is stunned / rooted etc don't allow to move him
+        // sunwell: If member is stunned / rooted etc don't allow to move him
         if (member->HasUnitState(UNIT_STATE_NOT_MOVE))
             continue;
 
-        // Xinef: this should be automatized, if turn angle is greater than PI/2 (90°) we should swap formation angle
+        // sunwell: this should be automatized, if turn angle is greater than PI/2 (90°) we should swap formation angle
         if (M_PI - fabs(fabs(m_leader->GetOrientation() - pathAngle) - M_PI) > M_PI*0.50f)
         {
             // sunwell: in both cases should be 2*M_PI - follow_angle
@@ -392,8 +392,8 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
         else if (!run && !member->IsWalking())
             member->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
             
-        // xinef: if we move members to position without taking care of sizes, we should compare distance without sizes
-        // xinef: change members speed basing on distance - if too far speed up, if too close slow down
+        // sunwell: if we move members to position without taking care of sizes, we should compare distance without sizes
+        // sunwell: change members speed basing on distance - if too far speed up, if too close slow down
         UnitMoveType mtype = Movement::SelectSpeedType(member->GetUnitMovementFlags());
         member->SetSpeedRate(mtype, m_leader->GetSpeedRate(mtype) * member->GetExactDist(POSITION_GET_X_Y_Z(&memberDest)) / pathDist);
 

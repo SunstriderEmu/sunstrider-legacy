@@ -340,7 +340,7 @@ void MotionMaster::GenerateWaypointArray(Unit* me, Movement::PointsArray& from, 
     // Flying unit, just fill array
     if (me->m_movementInfo.HasMovementFlag((MovementFlags)(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY)))
     {
-        // xinef: first point in vector is unit real position
+        // sunwell: first point in vector is unit real position
         points.clear();
         points.push_back(G3D::Vector3(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()));
         for (uint32 i = startingWaypointId; i < from.size(); i++)
@@ -351,7 +351,7 @@ void MotionMaster::GenerateWaypointArray(Unit* me, Movement::PointsArray& from, 
         for (float size = 1.0f; size; size *= 0.5f)
         {
             std::vector<G3D::Vector3> pVector;
-            // xinef: first point in vector is unit real position
+            // sunwell: first point in vector is unit real position
             pVector.push_back(G3D::Vector3(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()));
             uint32 length = (from.size() - startingWaypointId)*size;
 
@@ -770,7 +770,7 @@ MovementGeneratorType MotionMaster::GetMotionSlotType(int slot) const
         return Impl[slot]->GetMovementGeneratorType();
 }
 
-// Xinef: Escort system
+// sunwell: Escort system
 uint32 MotionMaster::GetCurrentSplineId() const
 {
     if (empty())

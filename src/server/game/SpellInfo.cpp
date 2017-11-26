@@ -1185,7 +1185,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
     // creature/player specific target checks
     if (unitTarget)
     {
-        // xinef: spells cannot be cast if player is in fake combat also
+        // sunwell: spells cannot be cast if player is in fake combat also
         if (AttributesEx & SPELL_ATTR1_CANT_TARGET_IN_COMBAT && (unitTarget->IsInCombat() || unitTarget->IsPetInCombat()))
             return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
 
@@ -1312,7 +1312,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
             return SPELL_FAILED_TARGET_CANNOT_BE_RESURRECTED;
 #endif
 
-    // xinef: check if stronger aura is active
+    // sunwell: check if stronger aura is active
     /* Todo spel strongerauras
     if (IsStrongerAuraActive(caster, unitTarget))
         return SPELL_FAILED_AURA_BOUNCED;

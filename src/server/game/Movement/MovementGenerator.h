@@ -24,7 +24,7 @@ class MovementGenerator
 
         virtual MovementGeneratorType GetMovementGeneratorType() = 0;
 
-        virtual uint32 GetSplineId() const { return 0; }  // Xinef: Escort system
+        virtual uint32 GetSplineId() const { return 0; }  // sunwell: Escort system
 
         virtual void UnitSpeedChanged() { }
         virtual void Pause(uint32/* timer = 0*/) { } // timer in ms

@@ -97,7 +97,7 @@ void InstanceScript::UpdateDoorState(GameObject* door)
     if (range.first == range.second)
         return;
 
-    // xinef: doors can be assigned to few bosses, if any of them demands doors closed - they should be closed (added & operator for assigment)
+    // sunwell: doors can be assigned to few bosses, if any of them demands doors closed - they should be closed (added & operator for assigment)
     bool open = true;
     for (; range.first != range.second && open; ++range.first)
     {

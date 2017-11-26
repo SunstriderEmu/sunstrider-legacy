@@ -624,7 +624,7 @@ void MotionTransport::DelayedTeleportTransport()
 
     Map* newMap = sMapMgr->CreateBaseMap(newMapId);
     GetMap()->RemoveFromMap<MotionTransport>(this, false);
-    newMap->LoadGrid(x, y); // xinef: load before adding passengers to new map
+    newMap->LoadGrid(x, y); // sunwell: load before adding passengers to new map
     SetMap(newMap);
 
     Relocate(x, y, z, o);

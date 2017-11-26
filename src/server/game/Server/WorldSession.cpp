@@ -1739,7 +1739,7 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
     REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY) && mi->HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING),
         MOVEMENTFLAG_JUMPING_OR_FALLING);
 
-    // Xinef: Spline enabled flag should be never sent by client, its internal movementflag
+    // sunwell: Spline enabled flag should be never sent by client, its internal movementflag
     REMOVE_VIOLATING_FLAGS(!GetPlayer()->m_unitMovedByMe->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_SPLINE_ENABLED),
         MOVEMENTFLAG_SPLINE_ENABLED);
 

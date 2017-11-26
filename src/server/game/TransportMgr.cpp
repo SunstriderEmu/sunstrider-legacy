@@ -434,7 +434,7 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
     data.spawnMask = (1 << trans->GetMap()->GetSpawnMode());
     data.ArtKit = trans->GetUInt32Value(GAMEOBJECT_ARTKIT);
 
-    // xinef: transports are active so passengers can be relocated (grids must be loaded)
+    // sunwell: transports are active so passengers can be relocated (grids must be loaded)
     ///trans->SetKeepActive(true);
     // Passengers will be loaded once a player is near
     HashMapHolder<MotionTransport>::Insert(trans);

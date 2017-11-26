@@ -7531,7 +7531,7 @@ ReputationRank Unit::GetFactionReactionTo(FactionTemplateEntry const* factionTem
     if (!targetFactionTemplateEntry)
         return REP_NEUTRAL;
 
-    // xinef: check forced reputation for self also
+    // sunwell: check forced reputation for self also
     if (Player const* selfPlayerOwner = GetAffectingPlayer())
     {
         //if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(target->GetFactionTemplateEntry()))
@@ -8334,7 +8334,7 @@ bool RedirectSpellEvent::Execute(uint64 e_time, uint32 p_time)
 {
     if (Unit* auraOwner = ObjectAccessor::GetUnit(_self, _auraOwnerGUID))
     {
-        // Xinef: already removed
+        // sunwell: already removed
         if (!auraOwner->HasAuraType(SPELL_AURA_SPELL_MAGNET))
             return true;
 
@@ -8365,7 +8365,7 @@ Unit* Unit::GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
                 && _IsValidAttackTarget(magnet, spellInfo)
                 /*&& IsWithinLOSInMap(magnet)*/)
             {
-                // Xinef: We should choose minimum between flight time and queue time as in reflect, however we dont know flight time at this point, use arbitrary small number
+                // sunwell: We should choose minimum between flight time and queue time as in reflect, however we dont know flight time at this point, use arbitrary small number
                 magnet->m_Events.AddEvent(new RedirectSpellEvent(*magnet, victim->GetGUID(), magnetAura), magnet->m_Events.CalculateQueueTime(100));
 
                 if (magnet->ToCreature() && magnet->ToCreature()->IsTotem())
@@ -8749,7 +8749,7 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, ui
 
 #ifdef LICH_KING
 
-    // xinef: sanctified wrath talent
+    // sunwell: sanctified wrath talent
     if (caster && TakenTotalMod < 1.0f && caster->HasAuraType(SPELL_AURA_MOD_IGNORE_TARGET_RESIST))
     {
         float ignoreModifier = 1.0f - TakenTotalMod;
@@ -9083,8 +9083,8 @@ int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask, bool isDoT)
         if ((i->GetModifier()->m_miscvalue & schoolMask) != 0)
         {
             /* SunWell core has this additional check. May be useful one day, can't investigate it right now.
-            // Xinef: if we have DoT damage type and aura has charges, check if it affects DoTs
-            // Xinef: required for hemorrhage & rupture / garrote
+            // sunwell: if we have DoT damage type and aura has charges, check if it affects DoTs
+            // sunwell: required for hemorrhage & rupture / garrote
             if (isDoT && (*i)->IsUsingCharges() && !((*i)->GetSpellInfo()->ProcFlags & PROC_FLAG_TAKEN_PERIODIC))
                 continue;
             */
@@ -9251,7 +9251,7 @@ float Unit::SpellPctHealingModsDone(Unit* victim, SpellInfo const *spellProto, D
         return 1.0f;
 
 #ifdef LICH_KING
-    // xinef: Some spells don't benefit from done mods
+    // sunwell: Some spells don't benefit from done mods
     if (spellProto->HasAttribute(SPELL_ATTR6_LIMIT_PCT_HEALING_MODS))
         return 1.0f;
 #endif
@@ -9296,7 +9296,7 @@ float Unit::SpellPctHealingModsDone(Unit* victim, SpellInfo const *spellProto, D
 
         case 7871: // Glyph of Lesser Healing Wave
         {
-            // xinef: affected by any earth shield
+            // sunwell: affected by any earth shield
             if (victim->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0, 0x00000400, 0))
                 AddPct(DoneTotalMod, (*i)->GetAmount());
             break;
@@ -9919,7 +9919,7 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit
 #endif
                 )
                 if (!spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
-                    //sunwell if (itr->blockType == SPELL_BLOCK_TYPE_ALL || spellInfo->IsPositive()) // xinef: added for pet scaling
+                    //sunwell if (itr->blockType == SPELL_BLOCK_TYPE_ALL || spellInfo->IsPositive()) // sunwell: added for pet scaling
                         return true;
 
 #ifdef LICH_KING
@@ -10737,7 +10737,7 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
 
     if (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG))
     {
-        // xinef: do not allow to assist non attackable units
+        // sunwell: do not allow to assist non attackable units
         if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             return false;
 

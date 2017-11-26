@@ -173,7 +173,7 @@ public:
     void Update(Unit* caster);
     void OutDebug() const;
 
-    // Xinef: Channel data
+    // sunwell: Channel data
     void SetObjectTargetChannel(uint64 targetGUID);
     void SetDstChannel(SpellDestination const& spellDest);
     WorldObject* GetObjectTargetChannel(Unit* caster) const;
@@ -198,7 +198,7 @@ private:
     float m_elevation, m_speed;
     std::string m_strTarget;
 
-    // Xinef: Save channel data
+    // sunwell: Save channel data
     SpellDestination m_dstChannel;
     uint64 m_objectTargetGUIDChannel;
 };
@@ -571,7 +571,7 @@ class TC_GAME_API Spell
         // Delayed spells system
         uint64 m_delayStart;                                // time of spell delay start, filled by event handler, zero = just started
         uint64 m_delayMoment;                               // moment of next delay call, used internally
-        uint64 m_delayTrajectory;                            // Xinef: Trajectory delay
+        uint64 m_delayTrajectory;                            // sunwell: Trajectory delay
         bool m_immediateHandled;                            // were immediate actions handled? (used by delayed spells only)
 
         // These vars are used in both delayed spell system and modified immediate spell system
@@ -709,7 +709,7 @@ class TC_GAME_API Spell
 
         uint8 m_auraScaleMask;
 
-        // xinef:
+        // sunwell:
         bool _spellTargetsSelected;
 
         PathGenerator* m_preGeneratedPath;

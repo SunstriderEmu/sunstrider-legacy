@@ -166,7 +166,7 @@ class TC_GAME_API MotionMaster //: private std::stack<MovementGenerator *>
 
         MovementGeneratorType GetCurrentMovementGeneratorType() const;
         MovementGeneratorType GetMotionSlotType(int slot) const;
-        uint32 GetCurrentSplineId() const; // Xinef: Escort system
+        uint32 GetCurrentSplineId() const; // sunwell: Escort system
 
         void PropagateSpeedChange();
         void ReinitializeMovement();

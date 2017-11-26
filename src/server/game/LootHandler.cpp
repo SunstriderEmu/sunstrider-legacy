@@ -417,7 +417,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
 
         loot = &corpse->loot;
 
-        // Xinef: Buggs client? (Opening loot after closing)
+        // sunwell: Buggs client? (Opening loot after closing)
         //if (loot->isLooted())
         {
             loot->clear();
