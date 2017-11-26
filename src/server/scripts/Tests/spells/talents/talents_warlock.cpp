@@ -622,15 +622,127 @@ public:
 		{
 			float const sp = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
 
-			uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * 1.15f + ClassSpellsCoeff::Warlock::INCINERATE * sp;
-			uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * 1.15f + ClassSpellsCoeff::Warlock::INCINERATE * sp;
+			// Immolate
+			uint32 expectedDirectImmolate = floor(ClassSpellsDamage::Warlock::IMMOLATE_RNK_9 * 1.15f + sp * ClassSpellsCoeff::Warlock::IMMOLATE);
+			uint32 expectedDotImmolate = floor(ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_DOT * 1.15f + sp * ClassSpellsCoeff::Warlock::IMMOLATE_DOT);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDirectImmolate, expectedDirectImmolate);
+			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDotImmolate);
 
+			// Rain of Fire
+			uint32 expectedRoFTick = floor((ClassSpellsDamage::Warlock::RAIN_OF_FIRE_RNK_5_TOTAL * 1.15f + sp * ClassSpellsCoeff::Warlock::RAIN_OF_FIRE) * 0.25f);
+			TEST_CHANNEL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5_PROC, 4, expectedRoFTick);
+
+			// Incinerate
+			uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * 1.15f + sp * ClassSpellsCoeff::Warlock::INCINERATE;
+			uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * 1.15f + sp * ClassSpellsCoeff::Warlock::INCINERATE;
 			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax);
+
+			// Searing Pain
+			uint32 expectedSearingPainMin = ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MIN * 1.15f + sp * ClassSpellsCoeff::Warlock::SEARING_PAIN;
+			uint32 expectedSearingPainMax = ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MAX * 1.15f + sp * ClassSpellsCoeff::Warlock::SEARING_PAIN;
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSearingPainMin, expectedSearingPainMax);
+
+			// Soul Fire
+			uint32 expectedSoulFireMin = ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MIN * 1.15f + sp * ClassSpellsCoeff::Warlock::SOUL_FIRE;
+			uint32 expectedSoulFireMax = ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MAX * 1.15f + sp * ClassSpellsCoeff::Warlock::SOUL_FIRE;
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SOUL_FIRE_RNK_4, expectedSoulFireMin, expectedSoulFireMax);
+
+			// Hellfire
+			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+			DisableRegen(player);
+			DisableRegen(enemy);
+			player->SetMaxHealth(10000);
+			player->SetHealth(10000);
+			enemy->SetMaxHealth(10000);
+			enemy->SetHealth(10000);
+			uint32 startPlayerHealth = player->GetHealth();
+			uint32 startEnemyHealth = enemy->GetHealth();
+			uint32 expectedPlayerHealth = startPlayerHealth - 15 * floor(ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK * 1.15f + sp * ClassSpellsCoeff::Warlock::HELLFIRE_SELF);
+			uint32 expectedEnemyHealth = startEnemyHealth - 15 * floor(ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK * 1.15f + sp * ClassSpellsCoeff::Warlock::HELLFIRE_ENEMIES);
+			player->CastSpell(player, ClassSpells::Warlock::HELLFIRE_RNK_4);
+			Wait(15500);
+			TEST_ASSERT(Between<float>(player->GetHealth(), expectedPlayerHealth - 1, expectedPlayerHealth + 1));
+			TEST_ASSERT(Between<float>(enemy->GetHealth(), expectedEnemyHealth - 1, expectedEnemyHealth + 1));
+
+		}
+
+		void TestVoidwalkerSacrifice(TestPlayer* player)
+		{
+			EnableRegen(player);
+			player->SetHealth(1);
+
+			Wait(10 * SECOND * IN_MILLISECONDS);
+			const float regen = floor(player->OCTRegenHPPerSpirit());
+			uint32 totalHealth = player->GetMaxHealth();
+			uint32 expectedHealth = 1 + floor(10 * regen + 2 * totalHealth * 0.01f);
+			TEST_ASSERT(player->GetHealth() == expectedHealth);
+			Wait(2500);
+			expectedHealth = 1 + floor(10 * regen + 3 * totalHealth * 0.01f);
+			TEST_ASSERT(player->GetHealth() == expectedHealth);
+		}
+
+		void TestSuccubusSacrifice(TestPlayer* player, Creature* dummyTarget, float percentage)
+		{
+			float const sp = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+
+			// Death Coil
+			uint32 expectedDeathCoil = floor(ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4 * percentage + sp * ClassSpellsCoeff::Warlock::DEATH_COIL);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoil, expectedDeathCoil);
+
+			// Shadow Bolt
+			uint32 expectedShadowBoltMin = floor(ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SHADOW_BOLT);
+			uint32 expectedShadowBoltMax = floor(ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SHADOW_BOLT);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax);
+
+			// TODO: Shadowburn (takes 1 soul shard per cast)
+			uint32 expectedShadowburnMin = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
+			uint32 expectedShadowburnMax = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
+			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin, expectedShadowburnMax);
+
+			// Corruption
+			uint32 expectedCorruption = floor(ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::CORRUPTION);
+			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruption);
+
+			// Curse of Agony
+			uint32 expectedCoA = floor(ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::CURSE_OF_AGONY);
+			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoA);
+
+			// Curse of Doom
+			uint32 expectedCoD = floor(ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 * percentage + sp * ClassSpellsCoeff::Warlock::CURSE_OF_DOOM);
+			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoD);
+
+			// TODO: Seed of Corruption test DoT + end damage
+			uint32 expectedDot = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION_DOT);
+			uint32 expectedDamageMin = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION);
+			uint32 expectedDamageMax = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION);
+			//TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedCoA);
+		}
+
+		void TestFelhunterSacrifice(TestPlayer* player, float percentage)
+		{
+			EnableRegen(player);
+			player->SetMaxPower(POWER_MANA, 10000);
+			uint32 totalMana = player->GetMaxPower(POWER_MANA);
+			player->SetPower(POWER_MANA, 0);
+			const float regen = floor(sqrt(player->GetStat(STAT_INTELLECT)) * player->OCTRegenMPPerSpirit());
+			TEST_ASSERT(player->GetPower(POWER_MANA) == 0);
+			Wait(10000);
+			uint32 expectedMana = floor(10 * regen + 2 * (totalMana * percentage));
+			TEST_ASSERT(player->GetPower(POWER_MANA) == expectedMana);
+			Wait(1500);
+			expectedMana = floor(12 * regen + 3 * (totalMana * percentage));
+			TEST_ASSERT(player->GetPower(POWER_MANA) == expectedMana);
+		}
+
+		void TestFelguardSacrifice(TestPlayer* player, Creature* dummyTarget)
+		{
+			TestSuccubusSacrifice(player, dummyTarget, 1.1f);
+			TestFelhunterSacrifice(player, 0.02f);
 		}
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* player = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
 
 			uint32 const summonImp = 1673;
 			uint32 const summonVoid = 2092;
@@ -648,16 +760,20 @@ public:
 			player->SetPower(POWER_MANA, startMana);
 			TEST_ASSERT(player->GetPower(POWER_MANA) == 10000);
 
-
 			Creature* dummyTarget = SpawnCreature();
 
 			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
 			LearnTalent(player, Talents::Warlock::DEMONIC_SACRIFICE_RNK_1);
 			SacrificePet(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1, 18789); // Burning Wish
+			TestImpSacrifice(player, dummyTarget);
 			SacrificePet(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, 18790, 18789); // Fel Stamina
+			TestVoidwalkerSacrifice(player);
 			SacrificePet(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, 18791, 18790); // Touch of Shadow
+			TestSuccubusSacrifice(player, dummyTarget, 1.15f);
 			SacrificePet(player, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, 18792, 18791); // Fel Energy
+			TestFelhunterSacrifice(player, 0.03f);
 			SacrificePet(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, 35701, 18792); // Touch of Shadow
+			TestFelguardSacrifice(player, dummyTarget);
 		}
 	};
 

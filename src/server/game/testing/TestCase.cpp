@@ -586,7 +586,7 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
 
     if (filteredDamageToTarget.size() != tickCount)
     {
-        ASSERT_INFO("Victim did not received expected tick count %u but received %u instead", tickCount, uint32(damageToTarget.size()));
+        ASSERT_INFO("Victim did not received expected tick count %u but received %u instead", tickCount, uint32(filteredDamageToTarget.size()));
         INTERNAL_TEST_ASSERT(false);
     }
 
@@ -756,7 +756,12 @@ float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)
 
 void TestCase::DisableRegen(TestPlayer* caster)
 {
-    caster->DisableRegen(true);
+	caster->DisableRegen(true);
+}
+
+void TestCase::EnableRegen(TestPlayer* caster)
+{
+	caster->DisableRegen(false);
 }
 
 void TestCase::_SetCaller(std::string callerFile, int32 callerLine) 
