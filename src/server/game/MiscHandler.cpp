@@ -999,8 +999,6 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
 
     //TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK");
     /*
-
-
         TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK" );
         recvData.hexlike();
         uint64 guid;
@@ -1031,8 +1029,6 @@ void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
     // no used
     recvData.rfinish();                       // prevent warnings spam
     /*
-
-
         TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_ROOT_ACK" );
         recvData.hexlike();
         uint64 guid;
