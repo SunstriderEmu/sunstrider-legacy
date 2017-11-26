@@ -77,7 +77,15 @@ void MotionMaster::UpdateMotion(uint32 diff)
     if (!top()->Update(_owner, diff))
     {
         _cleanFlag &= ~MMCF_UPDATE;
-        MovementExpired();
+        /* sunstrider: tweaked this, a movement generator in the idle telling us it's done can only mean two things atm :
+        - Waypoint generator has an invalid path 
+        - Waypoint generator has finished its path (not repeating case). (TC handle this case by having the generator stalling)
+        In both case, we want to end the generator. In both case restarting the waypoint generator does not make sense.
+        */
+        if (_top != MOTION_SLOT_IDLE)
+            MovementExpired();
+        else
+            MoveIdle();
     } else
         _cleanFlag &= ~MMCF_UPDATE;
 
@@ -170,7 +178,7 @@ void MotionMaster::DirectExpire(bool reset, bool premature)
         pop();
         DirectDelete(curr, premature);
 
-        /* Kelno: There is one case when whe shouldn't reset: if a new movement generator was created (in scripts) during the delete,
+        /* sunstrider: There is one case when whe shouldn't reset: if a new movement generator was created (in scripts) during the delete,
         it was just initialized and we don't want to reset it. We can detect that's the case if _top has not decreased.
         Any case this may be wrong?    */
         if (reset && _top >= previousTop)
@@ -185,8 +193,10 @@ void MotionMaster::DirectExpire(bool reset, bool premature)
         Initialize();
     else if (needInitTop())
         InitTop();
-    else if (reset) 
+    else if (reset)
+    {
         top()->Reset(_owner);
+    }
 }
 
 void MotionMaster::DelayedExpire(bool premature)
@@ -716,16 +726,24 @@ bool MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
     return true;
 }
 
-void MotionMaster::MovePath(uint32 path_id, bool repeatable)
+void MotionMaster::MovePath(uint32 path_id, bool repeatable, bool smoothSpline)
 {
     if (!path_id)
         return;
     //We set waypoint movement as new default movement generator
-    Mutate(new WaypointMovementGenerator<Creature>(path_id, repeatable), MOTION_SLOT_IDLE);
+    Mutate(new WaypointMovementGenerator<Creature>(path_id, repeatable, smoothSpline), MOTION_SLOT_IDLE);
 
    /* TC_LOG_DEBUG("misc", "%s (GUID: %u) start moving over path(Id: %u)",
         _owner->GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature",
         _owner->GetGUIDLow(), path_id); */
+}
+
+void MotionMaster::MovePath(WaypointPath& path, bool repeatable, bool smoothSpline)
+{
+    //We set waypoint movement as new default movement generator. If non repeating case, the generator will trigger a MoveIdle itself at the end
+    Mutate(new WaypointMovementGenerator<Creature>(path, repeatable, smoothSpline), MOTION_SLOT_IDLE);
+
+    TC_LOG_DEBUG("misc", "%s (GUID: %u) start moving over path(repeatable: %s)", _owner->GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature", _owner->GetGUIDLow(), repeatable ? "YES" : "NO");
 }
 
 void MotionMaster::MoveRotate(uint32 time, RotateDirection direction)

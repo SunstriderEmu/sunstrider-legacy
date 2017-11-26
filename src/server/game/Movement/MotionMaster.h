@@ -10,6 +10,7 @@
 class MovementGenerator;
 class Unit;
 class PathGenerator;
+struct WaypointPath;
 
 // Creature Entry ID used for waypoints show, visible only for GMs
 #define VISUAL_WAYPOINT 1
@@ -159,7 +160,10 @@ class TC_GAME_API MotionMaster //: private std::stack<MovementGenerator *>
         void MoveSeekAssistanceDistract(uint32 timer);
         void MoveTaxiFlight(uint32 path, uint32 pathnode);
         void MoveDistract(float x, float y, uint32 time);
-        void MovePath(uint32 path_id, bool repeatable = true);
+        //see WaypointMovementGenerator for info about smoothSpline
+        void MovePath(uint32 path_id, bool repeatable = true, bool smoothSpline = false);
+        //see WaypointMovementGenerator for info about smoothSpline
+        void MovePath(WaypointPath& path, bool repeatable = true, bool smoothSpline = false);
         void MoveRotate(uint32 time, RotateDirection direction);
         /** Look towards the target for given time */
         void MoveStealthAlert(Unit const* target, uint32 time);

@@ -40,7 +40,7 @@ struct TC_GAME_API npc_escortAI : public ScriptedAI
     public:
 
         // Pure Virtual Functions
-        virtual void WaypointReached(uint32) = 0;
+        virtual void WaypointReached(uint32, uint32) = 0;
 
         void EnterCombat(Unit*) override = 0;
 
@@ -53,7 +53,7 @@ struct TC_GAME_API npc_escortAI : public ScriptedAI
 
         void MoveInLineOfSight(Unit*) override;
 
-        void JustRespawned() override;
+        void JustAppeared() override;
 
         void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) override;
 

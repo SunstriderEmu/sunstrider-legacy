@@ -66,16 +66,16 @@ template<class T, class P>
 class PathMovementBase
 {
     public:
-        PathMovementBase() : i_path(), i_currentNode(0) { }
+        PathMovementBase() : _path(), _currentNode(0) { }
         virtual ~PathMovementBase() { };
 
         // template pattern, not defined .. override required
-        uint32 GetCurrentNode() const { return i_currentNode; }
+        uint32 GetCurrentNode() const { return _currentNode; }
 
     protected:
-        P i_path;
+        P _path;
         //The node we're currently going to. Index for i_path. /!\ not always equal to path id in db (db path may not start at 0 or all points be contiguous)
-        uint32 i_currentNode;
+        uint32 _currentNode;
 };
 
 template<class T>
@@ -86,20 +86,18 @@ class WaypointMovementGenerator;
 You can set this path as repeatable or not with SetPathType.
 Default type is WP_PATH_TYPE_LOOP.
 Creature will have UNIT_STATE_ROAMING_MOVE and UNIT_STATE_ROAMING when currently moving.
-This generator does NOT used mmaps to create path between points
 
-TODO:
-- mmaps
-- cyclic choz (check if position equals then skip
 */
 template<>
 class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
     public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
-        WaypointMovementGenerator(Movement::PointsArray& points, bool repeating = false);
+        /* using smoothSpline will calculate path to further points to allow using smooth splines. This has better visuals (for flying creatures only) but can lead to more imprecise positions, plus it has bad visual when pausing the waypoint */
+        explicit WaypointMovementGenerator(Movement::PointsArray& points, bool repeating = false, bool smoothSpline = false);
+        explicit WaypointMovementGenerator(WaypointPath& path, bool repeating = true, bool smoothSpline = false);
         // If path_id is left at 0, will try to get path id from Creature::GetWaypointPathId()
-        WaypointMovementGenerator(uint32 _path_id = 0, bool repeating = true);
+        explicit  WaypointMovementGenerator(uint32 _path_id = 0, bool repeating = true, bool smoothSpline = false);
         ~WaypointMovementGenerator() override;
         bool DoInitialize(Creature*);
         void DoFinalize(Creature*);
@@ -154,10 +152,11 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
 
         /* Fill m_precomputedPath with data from i_path according to current node (that is, points until next stop), then start spline path
         nextNode = skip current node
+        Returns false on error getting new point
         */
         bool StartSplinePath(Creature* c, bool nextNode = false);
         //meant to be used by StartSplinePath only. Return false if should break in loop
-        bool GeneratePathToNextPoint(Position const& from, Creature* creature, WaypointData* nextNode, uint32& splineId);
+        bool GeneratePathToNextPoint(Position const& from, Creature* creature, WaypointNode const& nextNode, uint32& splineId);
 
         bool IsPaused();
 
@@ -178,10 +177,12 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         uint32 path_id;
         //this movement generator can be constructed with either a path id or with given points, stored in customPath in this second case
         WaypointPath* customPath;
+        bool erasePathAtEnd; //
         WaypointPathType path_type;
         WaypointPathDirection direction;
 
         Movement::PointsArray m_precomputedPath;
+        uint32 m_useSmoothSpline; //calculate path to further points to allow using smooth splines
         bool i_recalculatePath;
 
         uint32 _splineId;
@@ -207,7 +208,7 @@ class TC_GAME_API FlightPathMovementGenerator : public MovementGeneratorMedium< 
     public:
         explicit FlightPathMovementGenerator(uint32 startNode = 0)
         {
-            i_currentNode = startNode;
+            _currentNode = startNode;
             _endGridX = 0.0f;
             _endGridY = 0.0f;
             _endMapId = 0;
@@ -220,11 +221,11 @@ class TC_GAME_API FlightPathMovementGenerator : public MovementGeneratorMedium< 
         bool DoUpdate(Player*, uint32);
         MovementGeneratorType GetMovementGeneratorType() override { return FLIGHT_MOTION_TYPE; }
 
-        TaxiPathNodeList const& GetPath() { return i_path; }
+        TaxiPathNodeList const& GetPath() { return _path; }
         uint32 GetPathAtMapEnd() const;
-        bool HasArrived() const { return (i_currentNode >= i_path.size()); }
+        bool HasArrived() const { return (_currentNode >= _path.size()); }
         void SetCurrentNodeAfterTeleport();
-        void SkipCurrentNode() { ++i_currentNode; }
+        void SkipCurrentNode() { ++_currentNode; }
         void DoEventIfAny(Player* player, TaxiPathNodeEntry const* node, bool departure);
 
         bool GetResetPos(Player*, float& x, float& y, float& z) const;

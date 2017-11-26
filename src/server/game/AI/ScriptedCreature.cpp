@@ -175,7 +175,7 @@ void ScriptedAI::EnterEvadeMode(EvadeReason why)
     Reset();
 }
 
-void ScriptedAI::JustRespawned()
+void ScriptedAI::JustAppeared()
 {
     Reset();
 }

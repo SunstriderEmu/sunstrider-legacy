@@ -193,7 +193,8 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_creaturePoolId(0), 
     _focusSpell(nullptr),
     m_isBeingEscorted(false), 
-    m_path_id(0), 
+    _waypointPathId(0),
+    _currentWaypointNodeInfo(0, 0),
     m_unreachableTargetTime(0), 
     m_evadingAttacks(false), 
     m_canFly(false),
@@ -213,7 +214,7 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_CreatureCategoryCooldowns.clear();
     m_GlobalCooldown = 0;
     DisableReputationGain = false;
-    TriggerJustRespawned = false;
+    TriggerJustAppeared = false;
 }
 
 Creature::~Creature()
@@ -548,10 +549,10 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
 
 void Creature::Update(uint32 diff)
 {
-    if (IsAIEnabled && TriggerJustRespawned)
+    if (IsAIEnabled && TriggerJustAppeared)
     {
-        TriggerJustRespawned = false;
-        AI()->JustRespawned();
+        TriggerJustAppeared = false;
+        AI()->JustAppeared();
             
         Map *map = FindMap();
         if (map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
@@ -1988,7 +1989,7 @@ void Creature::Respawn(bool force /* = false */)
 
     //Call AI respawn virtual function
     if (IsAIEnabled)
-        TriggerJustRespawned = true;//delay event to next tick so all creatures are created on the map before processing
+        TriggerJustAppeared = true;//delay event to next tick so all creatures are created on the map before processing
 
     m_timeSinceSpawn = 0;
 
@@ -2045,7 +2046,7 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster)
 
 bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
 {
-    if (spellInfo->Effects[index].Mechanic && GetCreatureTemplate()->MechanicImmuneMask & (1 << spellInfo->Effects[index].Mechanic - 1)) 
+    if (spellInfo->Effects[index].Mechanic && GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Effects[index].Mechanic - 1))) 
         return true;
 
     if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellInfo->Effects[index].Effect == SPELL_EFFECT_HEAL)
@@ -2401,7 +2402,7 @@ void Creature::CallForHelp(float radius)
 bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction /* = true */) const
 {
     // is it true?
-    if(!HasReactState(REACT_AGGRESSIVE) || (HasJustRespawned() && !m_summoner)) //ignore justrespawned if summoned
+    if(!HasReactState(REACT_AGGRESSIVE) || (HasJustAppeared() && !m_summoner)) //ignore justrespawned if summoned
         return false;
 
     // we don't need help from zombies :)
@@ -2484,7 +2485,7 @@ bool Creature::InitCreatureAddon(bool reload)
 
     //Load Path
     if (m_creatureInfoAddon->path_id != 0)
-        m_path_id = m_creatureInfoAddon->path_id;
+        _waypointPathId = m_creatureInfoAddon->path_id;
 
     for(auto id : m_creatureInfoAddon->auras)
     {

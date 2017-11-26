@@ -163,7 +163,7 @@ public:
     {
         index_type i = index_lo;
         lengths.resize(index_hi+1);
-        length_type prev_length = 0, new_length = 0;
+        length_type prev_length = 0, new_length = 0; // new_length = cumulated lengths
         while (i < index_hi)
         {
             new_length = cacher(*this, i);

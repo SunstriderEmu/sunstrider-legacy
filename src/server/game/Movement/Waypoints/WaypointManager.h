@@ -1,65 +1,9 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #ifndef TRINITY_WAYPOINTMANAGER_H
 #define TRINITY_WAYPOINTMANAGER_H
 
-#include <vector>
 #include <unordered_map>
-
-enum WaypointMoveType : uint32
-{
-    WAYPOINT_MOVE_TYPE_WALK     = 0,
-    WAYPOINT_MOVE_TYPE_RUN      = 1,
-    WAYPOINT_MOVE_TYPE_LAND     = 2,
-    WAYPOINT_MOVE_TYPE_TAKEOFF  = 3,
-
-    //check for MOVEMENTFLAG_WALKING
-    WAYPOINT_MOVE_TYPE_USE_UNIT_MOVEMENT_FLAG = 100,
-
-    WAYPOINT_MOVE_TYPE_MAX
-};
-
-struct WaypointData
-{
-    uint32 id;
-    float x;
-    float y;
-    float z;
-    float orientation = 0.0f;
-    uint32 delay = 0;
-    uint32 event_id = 0;
-    uint32 move_type = WAYPOINT_MOVE_TYPE_USE_UNIT_MOVEMENT_FLAG;
-    uint8 event_chance = 0;
-};
-
-typedef std::vector<WaypointData*> WaypointPathNodes;
-
-struct WaypointPath : public std::vector<WaypointData*>
-{
-    WaypointPath() :
-        pathType(0),
-        pathDirection(0)
-    {}
-
-    uint16 pathType;
-    uint8 pathDirection;
-};
+#include "WaypointDefines.h"
 
 typedef std::unordered_map<uint32, WaypointPath> WaypointPathContainer;
 

@@ -13546,7 +13546,7 @@ void Unit::StopMovingOnCurrentPos() // sunwell
     init.Launch();
 }
 
-void Unit::PauseMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/)
+void Unit::PauseMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/, bool forced/* = true*/)
 {
     if (slot >= MAX_MOTION_SLOT)
         return;
@@ -13554,7 +13554,8 @@ void Unit::PauseMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/)
     if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(slot))
         movementGenerator->Pause(timer);
 
-    StopMoving();
+    if(forced)
+        StopMoving();
 }
 
 void Unit::ResumeMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/)
@@ -15874,7 +15875,7 @@ public:
     bool operator()(Movement::MoveSpline::UpdateResult result)
     {
         auto motionType = _unit->GetMotionMaster()->GetCurrentMovementGeneratorType();
-        if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived)) 
+        if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived | Movement::MoveSpline::Result_Arrived))
             && _unit->GetTypeId() == TYPEID_UNIT 
             && (motionType == WAYPOINT_MOTION_TYPE)
             && _unit->movespline->GetId() == _unit->GetMotionMaster()->GetCurrentSplineId())

@@ -9,6 +9,7 @@
 #include "SmartScript.h"
 #include "SmartScriptMgr.h"
 #include "GameObjectAI.h"
+#include "WaypointDefines.h"
 
 enum SmartEscortState
 {
@@ -34,17 +35,16 @@ class TC_GAME_API SmartAI : public CreatureAI
         bool IsAIControlled() const;
 
         // Start moving to the desired MovePoint
-        void StartPath(bool run = false, uint32 path = 0, bool repeat = false, Unit* invoker = nullptr);
+        void StartPath(bool run = false, uint32 path = 0, bool repeat = false, Unit* invoker = nullptr, uint32 nodeId = 1);
         bool LoadPath(uint32 entry);
         void PausePath(uint32 delay, bool forced = false);
         void StopPath(uint32 DespawnTime = 0, uint32 quest = 0, bool fail = false);
-        void EndPath(bool fail = false, bool died = false);
+        void EndPath(bool fail = false);
         void ResumePath();
         void MovePointInPath(bool run, uint32 id, float x, float y, float z, float o = 0.0f);
-        std::shared_ptr<WayPoint> GetNextWayPoint();
-        bool HasEscortState(uint32 uiEscortState) const { return (mEscortState & uiEscortState) != 0; }
-        void AddEscortState(uint32 uiEscortState) { mEscortState |= uiEscortState; }
-        void RemoveEscortState(uint32 uiEscortState) { mEscortState &= ~uiEscortState; }
+        bool HasEscortState(uint32 uiEscortState) const { return (_escortState & uiEscortState) != 0; }
+        void AddEscortState(uint32 uiEscortState) { _escortState |= uiEscortState; }
+        void RemoveEscortState(uint32 uiEscortState) { _escortState &= ~uiEscortState; }
         void SetAutoAttack(bool on) { mCanAutoAttack = on; }
         void SetCombatMove(bool on);
         bool CanCombatMove() { return mCanCombatMove; }
@@ -55,8 +55,13 @@ class TC_GAME_API SmartAI : public CreatureAI
         SmartScript* GetScript() { return &mScript; }
         bool IsEscortInvokerInRange();
 
+        void WaypointPathStarted(uint32 nodeId, uint32 pathId) override;
+        void WaypointStarted(uint32 nodeId, uint32 pathId) override;
+        void WaypointReached(uint32 nodeId, uint32 pathId) override;
+        void WaypointPathEnded(uint32 nodeId, uint32 pathId) override;
+
         // Called when creature is spawned or respawned
-        void JustRespawned() override;
+        void JustAppeared() override;
 
         // Called at reaching home after evade, InitializeAI(), EnterEvadeMode() for resetting variables
         void JustReachedHome() override;
@@ -170,6 +175,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         //FIXME void sOnGameEvent(bool start, uint16 eventId) override;
 
+
         void SetDespawnTime(uint32 t)
         {
             mDespawnTime = t;
@@ -181,7 +187,7 @@ class TC_GAME_API SmartAI : public CreatureAI
 
         void OnSpellClick(Unit* clicker, bool& result) override;
 
-        void SetWPPauseTimer(uint32 time) { mWPPauseTimer = time; }
+        void SetWPPauseTimer(uint32 time) { _waypointPauseTimer = time; }
 
         void SetGossipReturn(bool val) { _gossipReturn = val; }
 
@@ -201,23 +207,23 @@ class TC_GAME_API SmartAI : public CreatureAI
 
         void ReturnToLastOOCPos();
         SmartScript mScript;
-        std::shared_ptr<WPPath> mWayPoints;
-        uint32 mEscortState;
-        uint32 mCurrentWPID;
-        uint32 mLastWPIDReached;
-        bool mOOCReached; //just reached last SMART_ESCORT_LAST_OOC_POINT
-        bool mWPReached; //just reached any point
-        uint32 mWPPauseTimer;
-        uint32 mEscortNPCFlags;
-        std::shared_ptr<WayPoint> mLastWP;
-        Position mLastOOCPos;//set on enter combat
-        uint32 GetWPCount() const { return mWayPoints ? mWayPoints->size() : 0; }
-        bool mCanRepeatPath;
+
+        uint32 _escortState;
+        uint32 _escortNPCFlags;
+        uint32 _escortInvokerCheckTimer;
+        WaypointPath _path;
+        uint32 _currentWaypointNode;
+        bool _waypointReached;
+        uint32 _waypointPauseTimer;
+        bool _waypointPauseForced;
+        bool _repeatWaypointPath;
+        bool _OOCReached;
+        bool _waypointPathEnded;
+
         bool mRun;
         bool mEvadeDisabled;
         bool mCanAutoAttack;
         bool mCanCombatMove;
-        bool mForcedPaused;
         uint32 mInvincibilityHpLevel;
 
         void UpdatePath(const uint32 diff);
@@ -233,7 +239,6 @@ class TC_GAME_API SmartAI : public CreatureAI
         */
         uint32 mDespawnState;
         uint32 mEscortInvokerCheckTimer;
-        bool mJustReset;
 
 #ifdef LICH_KING
         // Vehicle conditions

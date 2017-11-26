@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "WaypointMovementGenerator.h"
+#include "WaypointDefines.h"
 
 bool ChatHandler::HandleWpShowCommand(const char* args)
 {
@@ -31,7 +32,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             return false;
         }
 
-        pathid = target->GetWaypointPathId();
+        pathid = target->GetWaypointPath();
     }
 
     else
@@ -369,7 +370,6 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
         if(target->GetCreatureAddon()->path_id != 0)
         {
             WorldDatabase.PExecute("UPDATE creature_addon SET path_id = 0 WHERE guid = %u", guidlow);
-            target->UpdateWaypointID(0);
             WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", IDLE_MOTION_TYPE, guidlow);
             target->LoadPath(0);
             target->SetDefaultMovementType(IDLE_MOTION_TYPE);
@@ -913,11 +913,11 @@ bool ChatHandler::HandleWpTeleportToPathCommand(const char* args)
         return false;
     }
 
-    for (auto itr : *path)
+    for (auto itr : path->nodes)
     {
-        if (itr->id == pointId)
+        if (itr.id == pointId)
         {
-            p->TeleportTo(p->GetMapId(), itr->x, itr->y, itr->z, itr->orientation ? itr->orientation : p->GetOrientation());
+            p->TeleportTo(p->GetMapId(), itr.x, itr.y, itr.z, itr.orientation ? itr.orientation : p->GetOrientation());
             return true;
         }
     }
@@ -1020,7 +1020,7 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
     if (!path_number)
         {
         if(target)
-            pathid = target->GetWaypointPathId();
+            pathid = target->GetWaypointPath();
                 else
                 {
                     QueryResult result = WorldDatabase.PQuery( "SELECT MAX(id) FROM waypoint_data");

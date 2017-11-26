@@ -104,7 +104,7 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     void SpellHitTarget(Unit* target, const SpellInfo*) override {}
 
     // Called when creature is spawned or respawned (for reseting variables)
-    void JustRespawned() override;
+    void JustAppeared() override;
 
     //Called at waypoint reached or PointMovement end
     void MovementInform(uint32, uint32) override {}

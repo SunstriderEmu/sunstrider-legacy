@@ -728,18 +728,18 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         uint32 GetGlobalCooldown() const { return m_GlobalCooldown; }
 
-        uint32 GetWaypointPathId(){return m_path_id;}
-        void LoadPath(uint32 pathid) { m_path_id = pathid; }
+        uint32 GetWaypointPath() const { return _waypointPathId; }
+        void LoadPath(uint32 pathid) { _waypointPathId = pathid; }
 
-        uint32 GetCurrentWaypointID(){return m_waypointID;}
-        void UpdateWaypointID(uint32 wpID){m_waypointID = wpID;}
+        std::pair<uint32, uint32> GetCurrentWaypointInfo() const { return _currentWaypointNodeInfo; }
+        void UpdateCurrentWaypointInfo(uint32 nodeId, uint32 pathId) { _currentWaypointNodeInfo = { nodeId, pathId }; }
 
         //check if creature is present in a formation from CreatureGroupManager, and adds it to it if one is found
         void SearchFormation();
         CreatureGroup *GetFormation(){return m_formation;}
         void SetFormation(CreatureGroup *formation) {m_formation = formation;}
 
-        Unit *SelectVictim(bool evade = true);
+        Unit* SelectVictim(bool evade = true);
 
         void SetDisableReputationGain(bool disable) { DisableReputationGain = disable; }
         bool IsReputationGainDisabled() const { return DisableReputationGain; }
@@ -763,7 +763,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         std::set<uint32> const& GetThreatListAtDeath() const { return m_playerInThreatListAtDeath; }
 
         // Respawned since less than 5 secs
-        bool HasJustRespawned() const { return (m_timeSinceSpawn < 5000); }
+        bool HasJustAppeared() const { return (m_timeSinceSpawn < 5000); }
         void SetCorpseRemoveTime(uint32 removeTime) { m_corpseRemoveTime = removeTime; }
         uint32 GetCorpseDelay() const { return m_corpseDelay; }
         
@@ -892,13 +892,13 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 m_keepActiveTimer;
 
     private:
-        //WaypointMovementGenerator vars
-        uint32 m_waypointID;
-        uint32 m_path_id;
+        // Waypoint path
+        uint32 _waypointPathId;
+        std::pair<uint32/*nodeId*/, uint32/*pathId*/> _currentWaypointNodeInfo;
 
         //Formation var
         CreatureGroup *m_formation;
-        bool TriggerJustRespawned;
+        bool TriggerJustAppeared;
 
         GridReference<Creature> m_gridRef;
         CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjectMgr::GetCreatureTemplate(GetEntry())

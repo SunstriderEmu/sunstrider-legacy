@@ -1666,16 +1666,10 @@ class TC_GAME_API SmartWaypointMgr
         }
 
         void LoadFromDB();
-
-        std::shared_ptr<WPPath> GetPath(uint32 id)
-        {
-            if (waypoint_map.find(id) != waypoint_map.end())
-                return waypoint_map[id];
-            else return nullptr;
-        }
+        WaypointPath const* GetPath(uint32 id);
 
     private:
-        std::unordered_map<uint32, std::shared_ptr<WPPath>> waypoint_map;
+        std::unordered_map<uint32, WaypointPath> _waypointStore;
 };
 
 // all events for a single entry

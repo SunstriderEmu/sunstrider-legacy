@@ -8,6 +8,7 @@
 #include "SkillDiscovery.h"
 #include "CharacterCache.h"
 #include "ItemEnchantmentMgr.h"
+#include "WaypointDefines.h"
 
 //reload commands
 bool ChatHandler::HandleReloadCommand(const char* arg)

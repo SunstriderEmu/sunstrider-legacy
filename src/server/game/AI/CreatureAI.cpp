@@ -88,7 +88,7 @@ void CreatureAI::MoveInLineOfSight_Safe(Unit* who)
 void CreatureAI::MoveInLineOfSight(Unit* who)
 {
     //if has just respawned and not a summon, wait a bit before reacting
-    if (me->HasJustRespawned() && !me->GetSummonerGUID())
+    if (me->HasJustAppeared() && !me->GetSummonerGUID())
         return;
 
     if (me->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET) // non-combat pets should just stand there and look good;)

@@ -108,7 +108,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual bool canReachByRangeAttack(Unit*) { return false; }
 
         // Called when creature is spawned or respawned (for reseting variables)
-        virtual void JustRespawned() {}
+        virtual void JustAppeared() {}
 
         // Called at waypoint reached or point movement finished
         virtual void MovementInform(uint32 /*MovementType*/, uint32 /*Data*/) {}

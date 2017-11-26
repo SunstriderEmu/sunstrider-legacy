@@ -698,8 +698,8 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     {
         SendSysMessage(LANG_NPCINFO_TRAINER);
     }
-    if(target->GetWaypointPathId())
-        PSendSysMessage("PathID : %u", target->GetWaypointPathId());
+    if(target->GetWaypointPath())
+        PSendSysMessage("PathID : %u", target->GetWaypointPath());
 
     if(target->GetFormation())
         PSendSysMessage("Creature is member of group %u", target->GetFormation()->GetId());
@@ -1505,7 +1505,7 @@ bool ChatHandler::HandleNpcPathCurrentIdCommand(const char* args)
         return true;
     }
 
-    uint32 pathId = target->GetWaypointPathId();
+    uint32 pathId = target->GetWaypointPath();
     PSendSysMessage("Target creature current path id : %u.", pathId);
 
     return true;

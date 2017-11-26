@@ -68,7 +68,7 @@ void npc_escortAI::MoveInLineOfSight(Unit *who)
     AttackStart(who);
 }
 
-void npc_escortAI::JustRespawned()
+void npc_escortAI::JustAppeared()
 {
     RemoveEscortState(STATE_ESCORT_ESCORTING);
     IsOnHold = false;
@@ -218,7 +218,7 @@ void npc_escortAI::MovementInform(uint32 type, uint32 id)
             }
 
             //Call WP function
-            WaypointReached(CurrentWP->id);
+            WaypointReached(CurrentWP->id, 0);
 
             WaitTimer = CurrentWP->WaitTimeMs + 1;
 
@@ -232,7 +232,7 @@ void npc_escortAI::MovementInform(uint32 type, uint32 id)
             //Call WP function
             me->UpdatePosition(CurrentWP->x, CurrentWP->y, CurrentWP->z, me->GetOrientation());
             me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
-            WaypointReached(CurrentWP->id);
+            WaypointReached(CurrentWP->id, 0);
 
             WaitTimer = CurrentWP->WaitTimeMs + 1;
 

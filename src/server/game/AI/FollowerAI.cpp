@@ -139,7 +139,7 @@ void FollowerAI::JustDied(Unit* pKiller)
     }
 }
 
-void FollowerAI::JustRespawned()
+void FollowerAI::JustAppeared()
 {
     m_uiFollowState = STATE_FOLLOW_NONE;
 

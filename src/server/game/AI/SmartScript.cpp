@@ -2298,43 +2298,38 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             waypoints[4] = e.action.closestWaypointFromList.wp5;
             waypoints[5] = e.action.closestWaypointFromList.wp6;
             float distanceToClosest = std::numeric_limits<float>::max();
-            std::shared_ptr<WayPoint> closestWp = nullptr;
+            std::pair<uint32, uint32> closest = { 0, 0 };
 
             for (WorldObject* _target : targets)
             {
-                if (Creature* target = _target->ToCreature())
+                if (Creature* creature = _target->ToCreature())
                 {
-                    if (IsSmart(target))
+                    if (IsSmart(creature))
                     {
-                        for (uint32 waypoint : waypoints)
+                        for (uint32 pathId : waypoints)
                         {
-                            if (!waypoint)
+                            if (!pathId)
                                 continue;
 
-                            auto path = sSmartWaypointMgr->GetPath(waypoint);
-
-                            if (!path || path->empty())
+                            auto path = sSmartWaypointMgr->GetPath(pathId);
+                            if (!path || path->nodes.empty())
                                 continue;
 
-                            WPPath::const_iterator itrWp = path->find(0);
-
-                            if (itrWp != path->end())
+                            for (auto itr = path->nodes.begin(); itr != path->nodes.end(); ++itr)
                             {
-                                if (auto wp = itrWp->second)
+                                WaypointNode const waypoint = *itr;
+                                float distamceToThisNode = creature->GetDistance(waypoint.x, waypoint.y, waypoint.z);
+                                if (distamceToThisNode < distanceToClosest)
                                 {
-                                    float distToThisPath = target->GetDistance(wp->x, wp->y, wp->z);
-
-                                    if (distToThisPath < distanceToClosest)
-                                    {
-                                        distanceToClosest = distToThisPath;
-                                        closestWp = wp;
-                                    }
+                                    distanceToClosest = distamceToThisNode;
+                                    closest.first = pathId;
+                                    closest.second = waypoint.id;
                                 }
                             }
                         }
 
-                        if (closestWp)
-                            ENSURE_AI(SmartAI, target->AI())->StartPath(false, closestWp->id, true);
+                        if (closest.first != 0)
+                            ENSURE_AI(SmartAI, creature->AI())->StartPath(false, closest.first, true, nullptr, closest.second);
                     }
                 }
             }

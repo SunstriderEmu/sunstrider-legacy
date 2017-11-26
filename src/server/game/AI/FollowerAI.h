@@ -24,8 +24,6 @@ class TC_GAME_API FollowerAI : public ScriptedAI
         explicit FollowerAI(Creature* pCreature);
         ~FollowerAI() {}
 
-        //virtual void WaypointReached(uint32 uiPointId) = 0;
-
         void MovementInform(uint32 uiMotionType, uint32 uiPointId) override;
 
         void AttackStart(Unit*) override;
@@ -36,7 +34,7 @@ class TC_GAME_API FollowerAI : public ScriptedAI
 
         void JustDied(Unit*) override;
 
-        void JustRespawned() override;
+        void JustAppeared() override;
 
         void UpdateAI(const uint32) override;                        //the "internal" update, calls UpdateFollowerAI()
         virtual void UpdateFollowerAI(const uint32);        //used when it's needed to add code in update (abilities, scripted events, etc)

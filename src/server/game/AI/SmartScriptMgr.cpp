@@ -13,12 +13,22 @@
 #include "GameEventMgr.h"
 #include "CreatureTextMgr.h"
 #include "SmartScriptMgr.h"
+#include "WaypointDefines.h"
+
+WaypointPath const* SmartWaypointMgr::GetPath(uint32 id)
+{
+    auto itr = _waypointStore.find(id);
+    if (itr != _waypointStore.end())
+        return &itr->second;
+    return nullptr;
+}
+
 
 void SmartWaypointMgr::LoadFromDB()
 {
     uint32 oldMSTime = GetMSTime();
 
-    waypoint_map.clear();
+    _waypointStore.clear();
 
     QueryResult result = WorldDatabase.Query("SELECT entry, pointid, position_x, position_y, position_z FROM waypoints ORDER BY entry, pointid");
 
@@ -39,14 +49,12 @@ void SmartWaypointMgr::LoadFromDB()
         Field* fields = result->Fetch();
         uint32 entry = fields[0].GetUInt32();
         uint32 id = fields[1].GetUInt32();
-        float x, y, z;
-        x = fields[2].GetFloat();
-        y = fields[3].GetFloat();
-        z = fields[4].GetFloat();
-
+        float x = fields[2].GetFloat();
+        float y = fields[3].GetFloat();
+        float z = fields[4].GetFloat();
+    
         if (last_entry != entry)
         {
-            waypoint_map[entry] = std::make_shared<WPPath>();
             last_id = 1;
             count++;
         }
@@ -55,7 +63,9 @@ void SmartWaypointMgr::LoadFromDB()
             TC_LOG_ERROR("sql.sql","SmartWaypointMgr::LoadFromDB: Path entry %u, unexpected point id %u, expected %u.", entry, id, last_id);
 
         last_id++;
-        (*waypoint_map[entry])[id] = std::make_shared<WayPoint>(id, x, y, z);
+        WaypointPath& path = _waypointStore[entry];
+        path.id = entry;
+        path.nodes.emplace_back(id, x, y, z);
 
         last_entry = entry;
         total++;
@@ -1066,7 +1076,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_WP_START:
             {
                 auto const path = sSmartWaypointMgr->GetPath(e.action.wpStart.pathID);
-                if (!path || path->empty())
+                if (!path || path->nodes.empty())
                 {
                     SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Creature %d Event %u Action %u uses non-existent or empty WaypointPath id %u, skipped.", e.entryOrGuid, e.event_id, e.GetActionType(), e.action.wpStart.pathID);
                     return false;
