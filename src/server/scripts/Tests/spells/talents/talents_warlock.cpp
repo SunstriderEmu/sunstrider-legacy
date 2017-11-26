@@ -3,6 +3,7 @@
 #include "World.h"
 #include "ClassSpells.h"
 #include "Pet.h"
+#include "ClassSpellsDamage.h"
 
 class ImprovedLifeTapTest : public TestCaseScript
 {
@@ -595,6 +596,82 @@ public:
 	}
 };
 
+class DemonicSacrificeTest : public TestCaseScript
+{
+public:
+	DemonicSacrificeTest() : TestCaseScript("talents warlock demonic_sacrifice") { }
+
+	class DemonicSacrificeTestImpt : public TestCase
+	{
+	public:
+		DemonicSacrificeTestImpt() : TestCase(true) { }
+
+		void SacrificePet(TestPlayer* player, uint32 summon, uint32 aura, uint32 previousAura = 0)
+		{
+			uint32 res = player->CastSpell(player, summon, true);
+			Wait(1 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+			Pet* pet = player->GetPet();
+			TEST_ASSERT(pet != nullptr);
+			if(previousAura != 0)
+				TEST_ASSERT(!player->HasAura(previousAura));
+
+			res = player->CastSpell(player, ClassSpells::Warlock::DEMONIC_SACRIFICE_RNK_1, true);
+			Wait(1 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+
+			TEST_ASSERT(player->HasAura(aura));
+		}
+
+		void TestImpSacrifice(TestPlayer* player, Creature* dummyTarget)
+		{
+			float const sp = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
+
+			uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * 1.15f + ClassSpellsCoeff::Warlock::INCINERATE * sp;
+			uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * 1.15f + ClassSpellsCoeff::Warlock::INCINERATE * sp;
+
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax);
+		}
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+
+			uint32 const summonImp = 1673;
+			uint32 const summonVoid = 2092;
+			uint32 const summonSuc = 2092;
+			uint32 const summonFh = 2092;
+			uint32 const summonFg = 2092;
+
+			AddItem(player, 6265, 4); // Soul shard
+			Wait(1000);
+			TEST_ASSERT(player->HasItemCount(6265, 4, false));
+
+			uint32 const startMana = 10000;
+			DisableRegen(player);
+			player->SetMaxPower(POWER_MANA, startMana);
+			player->SetPower(POWER_MANA, startMana);
+			TEST_ASSERT(player->GetPower(POWER_MANA) == 10000);
+
+
+			Creature* dummyTarget = SpawnCreature();
+
+			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+			LearnTalent(player, Talents::Warlock::DEMONIC_SACRIFICE_RNK_1);
+			SacrificePet(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1, 18789); // Burning Wish
+			SacrificePet(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, 18790, 18789); // Fel Stamina
+			SacrificePet(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, 18791, 18790); // Touch of Shadow
+			SacrificePet(player, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, 18792, 18791); // Fel Energy
+			SacrificePet(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, 35701, 18792); // Touch of Shadow
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<DemonicSacrificeTestImpt>();
+	}
+};
+
 void AddSC_test_talents_warlock()
 {
 	// Affliction
@@ -612,4 +689,5 @@ void AddSC_test_talents_warlock()
 	new FelStaminaTest();
 	new DemonicAegisTest();
 	new MasterSummonerTest();
+	new DemonicSacrificeTest();
 }
