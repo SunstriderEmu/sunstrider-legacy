@@ -5,7 +5,7 @@ if(WIN32)
   )
 endif(WIN32)
   
-  add_subdirectory(genrev)
+add_subdirectory(genrev)
 add_subdirectory(common)
 add_subdirectory(server)
 

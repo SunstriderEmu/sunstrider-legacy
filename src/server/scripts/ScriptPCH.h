@@ -29,6 +29,12 @@
 #include "MotionMaster.h"
 #include "Map.h"
 
+#ifdef TESTS
+    #include "TestCase.h"
+    #include "TestPlayer.h"
+    #include "ClassSpells.h"
+#endif
+
 #ifdef _WIN32
 #include <windows.h>
 #endif

@@ -224,7 +224,6 @@ set_target_properties(scripts
 list(APPEND ALL_SCRIPT_PROJECTS scripts ${DYNAMIC_SCRIPT_MODULE_PROJECTS})
 add_cxx_pch("${ALL_SCRIPT_PROJECTS}" ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
 
-
 # Remove all shared libraries in the installl directory which
 # are contained in the static library already.
 if (DISABLED_SCRIPT_MODULE_PROJECTS)

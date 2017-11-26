@@ -1,9 +1,5 @@
-#include "TestCase.h"
-#include "TestPlayer.h"
-#include "World.h"
-#include "ClassSpells.h"
-#include "Pet.h"
-#include "ClassSpellsDamage.h"
+#include "../../ClassSpellsDamage.h"
+#include "../../ClassSpellsCoeff.h"
 
 class ImprovedLifeTapTest : public TestCaseScript
 {
@@ -642,7 +638,7 @@ public:
 			uint32 const summonFh = 2092;
 			uint32 const summonFg = 2092;
 
-			AddItem(player, 6265, 4); // Soul shard
+            player->AddItem(6265, 4); // Soul shard
 			Wait(1000);
 			TEST_ASSERT(player->HasItemCount(6265, 4, false));
 

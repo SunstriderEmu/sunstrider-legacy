@@ -1,7 +1,5 @@
-#include "TestCase.h"
-#include "TestPlayer.h"
-#include "World.h"
-#include "ClassSpells.h"
+#include "../../ClassSpellsDamage.h"
+#include "../../ClassSpellsCoeff.h"
 
 class MageWandSpecializationTest : public TestCaseScript
 {
