@@ -33,6 +33,7 @@
     #include "TestCase.h"
     #include "TestPlayer.h"
     #include "ClassSpells.h"
+    #include "Pet.h"
 #endif
 
 #ifdef _WIN32
