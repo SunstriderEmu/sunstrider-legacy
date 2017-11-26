@@ -39,7 +39,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const * item)
     if (item->InventoryType == INVTYPE_NON_EQUIP)
         return ITEM_USAGE_NONE;
 
-    Item *pItem = Item::CreateItem(item->ItemId, 1, bot);
+    Item* pItem = Item::CreateItem(item->ItemId, 1, bot);
     if (!pItem)
         return ITEM_USAGE_NONE;
 

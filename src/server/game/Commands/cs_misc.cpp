@@ -1536,7 +1536,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     for(ItemPairs::const_iterator itr = items.begin(); itr != items.end(); ++itr)
     {
-        if(Item* item = Item::CreateItem(itr->first,itr->second,m_session ? m_session->GetPlayer() : nullptr))
+        if(Item* item = Item::CreateItem(itr->first, itr->second,m_session ? m_session->GetPlayer() : nullptr))
         {
             item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
             mi.AddItem(item->GetGUIDLow(), item->GetEntry(), item);

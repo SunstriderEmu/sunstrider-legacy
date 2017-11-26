@@ -1352,7 +1352,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void AutoUnequipOffhandIfNeed();
         bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count, ItemTemplate const *proto = nullptr);
         uint32 GetEquipedItemsLevelSum();
-        void UnequipAllItems(bool force = false); //destroy items if no room
+        //Add item count to player, return pointer to item in variable item
+        Item* AddItem(uint32 itemId, uint32 count);
 
         InventoryResult _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = nullptr) const;
         InventoryResult _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = nullptr, bool swap = false, uint32* no_space_count = nullptr, ItemTemplate const* proto = nullptr ) const;

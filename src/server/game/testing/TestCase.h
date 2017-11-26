@@ -62,8 +62,6 @@ public:
     bool HasLootForMe(Creature*, Player*, uint32 itemID);
     //Create item and equip it to player. Will remove any item already in slot. Fail test on failure
     void EquipItem(TestPlayer* p, uint32 itemID);
-    //Create item and add it to player inventory
-    Item* AddItem(TestPlayer* p, uint32 itemID, uint32 count);
     void LearnTalent(TestPlayer* p, uint32 spellID);
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     float CalcChance(uint32 iterations, const std::function<bool()>& f);

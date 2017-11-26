@@ -254,7 +254,7 @@ public:
 			float const expectedHealth = startHealth - 99 - 65 * 10;
 
 			LearnTalent(player, Talents::Warlock::IMPROVED_HEALTH_FUNNEL_RNK_2);
-			AddItem(player, 6265, 1);
+            player->AddItem(6265, 1);
 			Wait(1000);
 			uint32 res = player->CastSpell(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
 			Wait(10500);
@@ -305,8 +305,7 @@ public:
 			uint32 const startMana = player->GetPower(POWER_MANA);
 			float const expectedMana = startMana * 1.03f;
 
-
-			AddItem(player, 6265, 8); // Soul shard
+            player->AddItem(6265, 8); // Soul shard
 			Wait(1000);
 			TEST_ASSERT(player->HasItemCount(6265, 8, false));
 
@@ -382,7 +381,7 @@ public:
 			uint32 const summonFh = 2092;
 			uint32 const summonFg = 2092;
 
-			AddItem(player, 6265, 4); // Soul shard
+            player->AddItem(6265, 4); // Soul shard
 			Wait(1000);
 			TEST_ASSERT(player->HasItemCount(6265, 4, false));
 
@@ -436,7 +435,7 @@ public:
 			float const expectedHealth = startHealth * 1.03f;
 
 
-			AddItem(player, 6265, 8); // Soul shard
+            player->AddItem(6265, 8); // Soul shard
 			Wait(1000);
 			TEST_ASSERT(player->HasItemCount(6265, 8, false));
 
@@ -569,7 +568,7 @@ public:
 			uint32 const summonFh = 2092;
 			uint32 const summonFg = 2092;
 
-			AddItem(player, 6265, 4); // Soul shard
+            player->AddItem(6265, 4); // Soul shard
 			Wait(1000);
 			TEST_ASSERT(player->HasItemCount(6265, 4, false));
 

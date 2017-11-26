@@ -1373,10 +1373,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if(!IsPlayer((target))) 
                     continue;
 
-                ItemPosCountVec dest;
-                uint8 msg = target->ToPlayer()->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, e.action.item.entry, e.action.item.count);
-                if (msg == EQUIP_ERR_OK)
-                    target->ToPlayer()->StoreNewItem( dest, e.action.item.entry, e.action.item.count, true);
+                target->ToPlayer()->AddItem(e.action.item.entry, e.action.item.count);
             }
             break;
             }

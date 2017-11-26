@@ -474,38 +474,21 @@ TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 e
 
 void TestCase::EquipItem(TestPlayer* player, uint32 itemID)
 {
-    Item* item = AddItem(player, itemID, 1);
+    Item* item = player->AddItem(itemID, 1);
     ASSERT_INFO("Failed to add item %u to player", itemID);
     INTERNAL_TEST_ASSERT_NOCOUNT(item != nullptr);
 
-    uint16 dest2;
-    uint8 msg2 = player->CanEquipItem(NULL_SLOT, dest2, item, !item->IsBag());
+    uint16 dest;
+    uint8 msg2 = player->CanEquipItem(NULL_SLOT, dest, item, !item->IsBag());
     ASSERT_INFO("Player cannot equip item %u, reason: %u", itemID, msg2);
     INTERNAL_TEST_ASSERT_NOCOUNT(msg2 == EQUIP_ERR_OK);
 
     player->GetSession()->_HandleAutoEquipItemOpcode(item->GetBagSlot(), item->GetSlot());
 
-    Item* equipedItem = player->GetItemByPos(dest2);
-    ASSERT_INFO("Player failed to equip item %u (dest: %u)", itemID, dest2);
+    Item* equipedItem = player->GetItemByPos(dest);
+    ASSERT_INFO("Player failed to equip item %u (dest: %u)", itemID, dest);
     INTERNAL_TEST_ASSERT_NOCOUNT(equipedItem != nullptr);
     Wait(1); //not sure this is needed but... let's just wait next update to make sure item spells are properly applied
-}
-
-Item* TestCase::AddItem(TestPlayer* player, uint32 itemID, uint32 count)
-{
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemID);
-    ASSERT_INFO("Item %u does not exists", itemID);
-    INTERNAL_TEST_ASSERT_NOCOUNT(proto != nullptr);
-
-    ItemPosCountVec dest;
-    uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemID, count);
-    ASSERT_INFO("Player cannot store item %u in bags", itemID);
-    INTERNAL_TEST_ASSERT_NOCOUNT(msg == EQUIP_ERR_OK);
-
-    Item* item = player->StoreNewItem(dest, itemID, true, Item::GenerateItemRandomPropertyId(itemID));
-    ASSERT_INFO("Failed to store item %u in bags", itemID);
-    INTERNAL_TEST_ASSERT_NOCOUNT(item != nullptr);
-    return item;
 }
 
 void TestCase::LearnTalent(TestPlayer* p, uint32 spellID)
