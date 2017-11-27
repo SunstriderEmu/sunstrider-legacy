@@ -783,6 +783,136 @@ public:
 	}
 };
 
+class ManaFeedTest : public TestCaseScript
+{
+public:
+	ManaFeedTest() : TestCaseScript("talents warlock mana_feed") { }
+
+	class ManaFeedTestImpt : public TestCase
+	{
+	public:
+		ManaFeedTestImpt() : TestCase(true) { }
+
+		// drain mana + life tap 100% to pet
+
+		void AssertManaFeed(TestPlayer* player, TestPlayer* enemy, uint32 summon)
+		{
+			uint32 res = player->CastSpell(player, summon, true);
+			Wait(1 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+			Pet* pet = player->GetPet();
+			TEST_ASSERT(pet != nullptr);
+
+			pet->SetPower(POWER_MANA, 0);
+			player->SetPower(POWER_MANA, 2000);
+
+			// Drain Mana
+			uint32 expectedMana = ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK + player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * ClassSpellsCoeff::Warlock::DRAIN_MANA;
+			
+			res = player->CastSpell(enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6);
+			Wait(1 * SECOND * IN_MILLISECONDS);
+			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
+			while (res != SPELL_CAST_OK)
+				res = player->CastSpell(player, summon, true);
+			Wait(1 * SECOND * IN_MILLISECONDS);
+			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
+			Wait(1 * SECOND * IN_MILLISECONDS);
+			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
+			Wait(1 * SECOND * IN_MILLISECONDS);
+			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
+			Wait(1 * SECOND * IN_MILLISECONDS);
+			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
+
+			TEST_ASSERT(1 == 0);
+			Wait(5500);
+			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
+			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedMana);
+
+			// Life Tap
+			//const float regen = floor(sqrt(player->GetStat(STAT_INTELLECT)) * pet->OCTRegenMPPerSpirit());
+			player->CastSpell(player, ClassSpells::Warlock::LIFE_TAP_RNK_7);
+			Wait(1500);
+			expectedMana = ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7;
+			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
+			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedMana);
+
+		}
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+			Creature* dummyTarget = SpawnCreature();
+
+			player->AddItem(6265, 4); // Soul shard
+			Wait(1000);
+			TEST_ASSERT(player->HasItemCount(6265, 4, false));
+
+			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+			LearnTalent(player, Talents::Warlock::MANA_FEED_RNK_3);
+			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1);
+			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<ManaFeedTestImpt>();
+	}
+};
+
+class DemonicKnowledgeTest : public TestCaseScript
+{
+public:
+	DemonicKnowledgeTest() : TestCaseScript("talents warlock demonic_knowledge") { }
+
+	class DemonicKnowledgeTestImpt : public TestCase
+	{
+	public:
+		DemonicKnowledgeTestImpt() : TestCase(true) { }
+
+		void AssertDemonicKnowledge(TestPlayer* player, uint32 summon, float spellPower)
+		{
+			uint32 res = player->CastSpell(player, summon, true);
+			Wait(1 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+			Pet* pet = player->GetPet();
+			TEST_ASSERT(pet != nullptr);
+
+			float expectedSP = spellPower + (pet->GetStat(STAT_STAMINA) + pet->GetStat(STAT_INTELLECT)) * 0.12;
+			TC_LOG_DEBUG("test.unit_test", "current: %f, start: %f, expected: %f", player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW), spellPower, expectedSP);
+			TEST_ASSERT(player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == expectedSP);
+		}
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+
+			float const sp = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+
+			player->AddItem(6265, 4); // Soul shard
+			Wait(1000);
+			TEST_ASSERT(player->HasItemCount(6265, 4, false));
+
+			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+			LearnTalent(player, Talents::Warlock::DEMONIC_KNOWLEDGE_RNK_3);
+			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1, sp);
+			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, sp);
+			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, sp);
+			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, sp);
+			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, sp);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<DemonicKnowledgeTestImpt>();
+	}
+};
+
 void AddSC_test_talents_warlock()
 {
 	// Affliction
@@ -801,4 +931,6 @@ void AddSC_test_talents_warlock()
 	new DemonicAegisTest();
 	new MasterSummonerTest();
 	new DemonicSacrificeTest();
+	new DemonicKnowledgeTest();
+	new ManaFeedTest();
 }
