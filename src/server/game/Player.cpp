@@ -10431,7 +10431,7 @@ Item* Player::AddItem(uint32 itemId, uint32 count)
     {
         /// @todo Send to mailbox if no space
         ChatHandler(GetSession()).PSendSysMessage("You don't have any space in your bags.");
-        return false;
+        return nullptr;
     }
 
     Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));

@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "WaypointDefines.h"
 #include "Util.h"
 #include "UpdateFields.h"
 #include "Transaction.h"
