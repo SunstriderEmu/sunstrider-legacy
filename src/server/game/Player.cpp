@@ -447,7 +447,18 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     return Create(guidlow, createInfo->Name, createInfo->Race, createInfo->Class, createInfo->Gender, createInfo->Skin, createInfo->Face, createInfo->HairStyle, createInfo->HairColor, createInfo->FacialHair, createInfo->OutfitId);
 }
 
-bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId, bool setMap)
+void Player::SetMapAtCreation(PlayerInfo const* info)
+{
+    if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
+        RelocateToBetaZone();
+    else
+        Relocate(info->positionX, info->positionY, info->positionZ);
+
+    SetMap(sMapMgr->CreateMap(info->mapId, this));
+    UpdatePositionData();
+}
+
+bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId)
 {
     //FIXME: outfitId not used in player creating
 
@@ -476,16 +487,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
         return false;
     }
 
-    if (setMap)
-    {
-        if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
-            RelocateToBetaZone();
-        else
-            Relocate(info->positionX, info->positionY, info->positionZ);
-
-        SetMap(sMapMgr->CreateMap(info->mapId, this));
-        UpdatePositionData();
-    }
+    SetMapAtCreation(info);
 
     uint8 powertype = cEntry->PowerType;
 

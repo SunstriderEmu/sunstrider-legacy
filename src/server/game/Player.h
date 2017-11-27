@@ -1181,8 +1181,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdateSummonExpireTime() { m_summon_expire = time(nullptr) + MAX_PLAYER_SUMMON_DELAY; }
         time_t GetSummonExpireTimer() const { return m_summon_expire; }
 
-        virtual bool Create(uint32 guidlow, CharacterCreateInfo* createInfo);
-        bool Create( uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId, bool setMap = true);
+        bool Create(uint32 guidlow, CharacterCreateInfo* createInfo);
+        bool Create( uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId);
+        virtual void SetMapAtCreation(PlayerInfo const* info);
 
         void Update( uint32 time ) override;
 

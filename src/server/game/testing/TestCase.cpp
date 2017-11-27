@@ -143,7 +143,10 @@ bool TestCase::_InternalSetup()
 {
     ASSERT(!_map);
     if (_location.GetMapId() == MAPID_INVALID) // test has been started with needMap = false
+    {
+        _setup = true;
         return true;
+    }
 
     _map = sMapMgr->CreateTestMap(_location.GetMapId(), _testMapInstanceId, _diff, _enableMapObjects);
     if (!_map)
@@ -311,6 +314,7 @@ TestPlayer* TestCase::_CreateTestBot(WorldLocation loc, Classes cls, Races race,
     player->UpdateSkillsToMaxSkillsForLevel();
 
     //make sure player is alreary linked to this map before calling _HandlePlayerLogin, else a lot of stuff will be loaded around default player location
+    player->ResetMap();
     player->SetMap(_map); 
     session->_HandlePlayerLogin((Player*)player, holder);
 
