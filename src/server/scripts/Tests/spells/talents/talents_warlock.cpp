@@ -803,45 +803,43 @@ public:
 			Pet* pet = player->GetPet();
 			TEST_ASSERT(pet != nullptr);
 
+			pet->DisableRegeneration(true);
 			pet->SetPower(POWER_MANA, 0);
 			player->SetPower(POWER_MANA, 2000);
 
+			Wait(4000);
+
 			// Drain Mana
-			uint32 expectedMana = ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK + player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * ClassSpellsCoeff::Warlock::DRAIN_MANA;
+			uint32 expectedDrain = ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK + player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * ClassSpellsCoeff::Warlock::DRAIN_MANA;
 			
 			res = player->CastSpell(enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6);
 			Wait(1 * SECOND * IN_MILLISECONDS);
-			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
 			while (res != SPELL_CAST_OK)
-				res = player->CastSpell(player, summon, true);
-			Wait(1 * SECOND * IN_MILLISECONDS);
-			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
-			Wait(1 * SECOND * IN_MILLISECONDS);
-			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
-			Wait(1 * SECOND * IN_MILLISECONDS);
-			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
-			Wait(1 * SECOND * IN_MILLISECONDS);
-			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
-
-			TEST_ASSERT(1 == 0);
+				res = player->CastSpell(enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, true);
 			Wait(5500);
-			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedMana);
+			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedDrain);
+			
+			Wait(4000);
 
 			// Life Tap
-			//const float regen = floor(sqrt(player->GetStat(STAT_INTELLECT)) * pet->OCTRegenMPPerSpirit());
 			player->CastSpell(player, ClassSpells::Warlock::LIFE_TAP_RNK_7);
 			Wait(1500);
-			expectedMana = ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7;
-			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedMana);
+			uint32 expectedLT = ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7;
+			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedLT);
+			Wait(500);
+			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedLT);
 
+
+			Wait(4000);
 		}
 
 		void Test() override
 		{
 			TestPlayer* player = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
-			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+			Position spawnPosition(_location);
+			spawnPosition.MoveInFront(_location, 10.0f);
+			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawnPosition);
 			Creature* dummyTarget = SpawnCreature();
 
 			player->AddItem(6265, 4); // Soul shard

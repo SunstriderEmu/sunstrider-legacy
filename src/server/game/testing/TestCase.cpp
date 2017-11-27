@@ -218,7 +218,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Classes cls, uint32 level)
 
 TestPlayer* TestCase::SpawnPlayer(Classes _class, Races _race, uint32 level, Position spawnPosition)
 {
-    TestPlayer* playerBot = _CreateTestBot(_location, _class, _race, level);
+    TestPlayer* playerBot = _CreateTestBot(WorldLocation(_location.GetMapId(), spawnPosition), _class, _race, level);
     ASSERT_INFO("Creating random test bot with class %u, race %u and level %u", uint32(_class), uint32(_race), level);
     INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
