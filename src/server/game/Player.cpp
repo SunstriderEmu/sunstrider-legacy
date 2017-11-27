@@ -166,7 +166,6 @@ Player::Player(WorldSession *session) :
     m_timeSyncClient(0),
     m_timeSyncServer(0),
     m_teleportToTestInstanceId(0),
-    m_disabledRegen(false),
     m_speakTime(0),
     m_speakCount(0),
     m_session(session),

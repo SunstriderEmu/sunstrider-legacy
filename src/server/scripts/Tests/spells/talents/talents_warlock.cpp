@@ -14,7 +14,7 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
-			DisableRegen(player);
+            player->DisableRegeneration(true);
 			player->SetPower(POWER_MANA, 0);
 
 			float const expectedMana = 580 * 1.2f;
@@ -181,7 +181,7 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
-			DisableRegen(player);
+            player->DisableRegeneration(true);
 			player->SetHealth(1);
 
 			float const expectedHealth = 2080 * 1.2f + 1;
@@ -244,7 +244,7 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
-			DisableRegen(player);
+            player->DisableRegeneration(true);
 
 			uint32 const startHealth = player->GetHealth();
 			float const expectedHealth = startHealth - 99 - 65 * 10;
@@ -382,7 +382,7 @@ public:
 			TEST_ASSERT(player->HasItemCount(6265, 4, false));
 
 			uint32 const startMana = 10000;
-			DisableRegen(player);
+            player->DisableRegeneration(true);
 			player->SetMaxPower(POWER_MANA, startMana);
 			player->SetPower(POWER_MANA, startMana);
 			TEST_ASSERT(player->GetPower(POWER_MANA) == 10000);
@@ -569,7 +569,7 @@ public:
 			TEST_ASSERT(player->HasItemCount(6265, 4, false));
 
 			uint32 const startMana = 10000;
-			DisableRegen(player);
+            player->DisableRegeneration(true);
 			player->SetMaxPower(POWER_MANA, startMana);
 			player->SetPower(POWER_MANA, startMana);
 			TEST_ASSERT(player->GetPower(POWER_MANA) == 10000);
@@ -649,8 +649,8 @@ public:
 
 			// Hellfire
 			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
-			DisableRegen(player);
-			DisableRegen(enemy);
+            player->DisableRegeneration(true);
+            enemy->DisableRegeneration(true);
 			player->SetMaxHealth(10000);
 			player->SetHealth(10000);
 			enemy->SetMaxHealth(10000);
@@ -668,7 +668,7 @@ public:
 
 		void TestVoidwalkerSacrifice(TestPlayer* player)
 		{
-			EnableRegen(player);
+			player->DisableRegeneration(false);
 			player->SetHealth(1);
 
 			Wait(10 * SECOND * IN_MILLISECONDS);
@@ -720,7 +720,7 @@ public:
 
 		void TestFelhunterSacrifice(TestPlayer* player, float percentage)
 		{
-			EnableRegen(player);
+            player->DisableRegeneration(false);
 			player->SetMaxPower(POWER_MANA, 10000);
 			uint32 totalMana = player->GetMaxPower(POWER_MANA);
 			player->SetPower(POWER_MANA, 0);
@@ -755,7 +755,7 @@ public:
 			TEST_ASSERT(player->HasItemCount(6265, 4, false));
 
 			uint32 const startMana = 10000;
-			DisableRegen(player);
+            player->DisableRegeneration(true);
 			player->SetMaxPower(POWER_MANA, startMana);
 			player->SetPower(POWER_MANA, startMana);
 			TEST_ASSERT(player->GetPower(POWER_MANA) == 10000);

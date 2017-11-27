@@ -759,16 +759,6 @@ float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)
 	return float(success) / float(iterations);
 }
 
-void TestCase::DisableRegen(TestPlayer* caster)
-{
-	caster->DisableRegen(true);
-}
-
-void TestCase::EnableRegen(TestPlayer* caster)
-{
-	caster->DisableRegen(false);
-}
-
 void TestCase::_SetCaller(std::string callerFile, int32 callerLine) 
 { 
     _callerFile = callerFile; 
