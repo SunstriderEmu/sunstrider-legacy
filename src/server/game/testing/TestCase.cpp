@@ -454,12 +454,8 @@ Races TestCase::_GetRandomRaceForClass(Classes cls)
 TempSummon* TestCase::SpawnCreature(uint32 entry, bool spawnInFront)
 {
     Position spawnPosition(_location);
-    if (spawnInFront)
-    {
-        //get a position in front of default location
-        spawnPosition.m_positionX = spawnPosition.m_positionX + 10.0f * std::cos(spawnPosition.m_orientation);
-        spawnPosition.m_positionY = spawnPosition.m_positionY + 10.0f * std::sin(spawnPosition.m_orientation);
-    }
+    if(spawnInFront)
+        spawnPosition.MoveInFront(_location, 10.0f);
 
     return SpawnCreatureWithPosition(spawnPosition, entry);
 }
