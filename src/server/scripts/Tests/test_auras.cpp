@@ -65,6 +65,7 @@ TEST_CASE("Aura duration", "[aura]")
 };
 */
 
+/*
 class AuraStackLimitTest : public TestCaseScript
 {
 public:
@@ -89,8 +90,9 @@ public:
         return std::make_shared<AuraStackLimitTestImpl>();
     }
 };
+*/
 
 void AddSC_test_auras_stacking()
 {
-    new AuraStackLimitTest();
+  //  new AuraStackLimitTest();
 }

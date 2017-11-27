@@ -1,6 +1,9 @@
 #include "TestPlayer.h"
 
-bool TestPlayer::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
+void TestPlayer::SetMapAtCreation(PlayerInfo const* info)
 {
-    return Player::Create(guidlow, createInfo->Name, createInfo->Race, createInfo->Class, createInfo->Gender, createInfo->Skin, createInfo->Face, createInfo->HairStyle, createInfo->HairColor, createInfo->FacialHair, createInfo->OutfitId, false);
+    //harcoded position lost in the middle of nowhere... Players may cast spells at creation so they need to be on a map if I don't want to change a lot of things. Lets just spawn them in an empty zone to avoid uneccessary loading
+    Relocate(0.0f, 0.0f, 0.0f);
+    SetMap(sMapMgr->CreateMap(169, this)); //emerald dream
+    UpdatePositionData();
 }

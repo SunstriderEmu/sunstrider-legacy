@@ -14,7 +14,7 @@ public:
     virtual void SaveInventoryAndGoldToDB(SQLTransaction trans) override {}
     virtual void SaveGoldToDB(SQLTransaction trans) override {}
     virtual void SaveDataFieldToDB() override {}
-    virtual bool Create(uint32 guidlow, CharacterCreateInfo* createInfo) override;
+    virtual void SetMapAtCreation(PlayerInfo const* info) override;
 };
 
 #endif //TEST_PLAYER_H
