@@ -41,8 +41,13 @@ void TestThread::Run()
         //Yay time!
         _testCase->Celebrate();
     }
+    catch (TestException e)
+    {
+        //test failed! nothing more to do, failure message is already handled by TestCase
+    }
     catch (std::exception& e)
     { 
+        //a regular exception happened (not one we triggered). Set its what in failure message
         _testCase->_FailNoException(e.what());
     }
 

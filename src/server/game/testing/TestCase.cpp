@@ -78,7 +78,7 @@ void TestCase::_Fail(const char* err, ...)
     va_end(args);
 
     _FailNoException(buffer);
-    throw std::exception();
+    throw TestException();
 }
 
 void TestCase::_FailNoException(std::string msg)

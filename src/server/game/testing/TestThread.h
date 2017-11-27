@@ -5,6 +5,15 @@ class TestCase;
 #include "TestResults.h"
 #include <atomic>
 
+//Custom exception. This is to have a different type than exception and be able to differenciate test and regular exceptions
+class TestException : public std::exception
+{
+public:
+    explicit TestException() :
+        exception()
+    { }
+};
+
 class TestThread
 {
 public:
