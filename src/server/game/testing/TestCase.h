@@ -136,7 +136,7 @@ private:
     /* return a new randomized test bot. Returned player must be deleted by the caller
     if level == 0, set bot at max player level
     */
-    TestPlayer* _CreateTestBot(WorldLocation loc, Classes cls, Races race, uint32 level = 0);
+    TestPlayer* _CreateTestBot(Position loc, Classes cls, Races race, uint32 level = 0);
     void _GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower = false, Powers power = POWER_MANA);
     Classes _GetRandomClassForRace(Races race);
     Races _GetRandomRaceForClass(Classes race);
