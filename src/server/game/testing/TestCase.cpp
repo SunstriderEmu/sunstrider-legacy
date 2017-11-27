@@ -24,7 +24,8 @@ TestCase::TestCase(bool needMap) :
     _testMapInstanceId(0),
     _diff(REGULAR_DIFFICULTY),
     _map(nullptr),
-    _enableMapObjects(false)
+    _enableMapObjects(false),
+    _setup(false)
 {
     //default pos:
     if (needMap && _location.GetMapId() == MAPID_INVALID) //not yet defined by the other constructor

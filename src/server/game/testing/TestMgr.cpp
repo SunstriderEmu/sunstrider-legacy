@@ -84,22 +84,24 @@ void TestMgr::Update(uint32 const diff)
 
     // Tests are being run in threads but still executed one at a time. Threads are actually used to keep the call stack rather than running tests in parallel.
     // This loop will iterate over every tests, and wait for them to finish or to have triggered a wait time.
+    // TODO: Actually... can't we have them execute in parallel now? since they are on separate maps
     for (decltype(_tests)::iterator itr = _tests.begin(); itr != _tests.end();)
     {
         auto testThread = (*itr).second;
         auto test = testThread->GetTest();
-        testThread->SleepUntilDoneOrWaiting(test);
+
+        if (!testThread->IsStarted())
+            testThread->Start();
+
+        testThread->WakeUp();
+        testThread->WaitUntilDoneOrWaiting(test);
+        ASSERT(test->IsSetup());
         //from this line only can we be sure that the test thread is not currently running
         if (testThread->IsFinished())
         {
             _results.TestFinished(*test);
             testThread->GetTest()->_Cleanup();
             itr = _tests.erase(itr);
-            continue;
-        }
-        if (!test->IsSetup())
-        {
-            itr++; 
             continue;
         }
         testThread->UpdateWaitTimer(diff);
