@@ -117,8 +117,15 @@ void TestMgr::Update(uint32 const diff)
             results = _results.ToString();
 
         sWorld->SendGlobalText("\nTests finished. Results:");
-        sWorld->SendGlobalText(results.c_str());
-        TC_LOG_INFO("test.unit_test", "Test finished. Results: %s", results.c_str());
+        TC_LOG_INFO("test.unit_test", "Test finished. Results:");
+        //print it line by line, messages too long may not be displayed
+        std::istringstream iss(results);
+        for (std::string line; std::getline(iss, line); )
+        {
+            sWorld->SendGlobalText(line.c_str());
+            TC_LOG_INFO("test.unit_test", "*%s", line.c_str());
+        }
+
         _running = false;
     }
 }

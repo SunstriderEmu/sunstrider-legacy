@@ -1282,6 +1282,9 @@ class TC_GAME_API Unit : public WorldObject
         inline void SetFullHealth() { SetHealth(GetMaxHealth()); }
         int32 ModifyHealth(int32 val);
 
+        // Testing
+        void DisableRegeneration(bool set) { m_disabledRegen = set; }
+
         Powers GetPowerType() const { return Powers(GetByteValue(UNIT_FIELD_BYTES_0, 3)); }
         void SetPowerType(Powers power);
         uint32 GetPower(   Powers power) const { return GetUInt32Value(UNIT_FIELD_POWER1   +power); }
@@ -2250,7 +2253,9 @@ class TC_GAME_API Unit : public WorldObject
 
         std::map<uint64,uint16> m_detectedUnit; // <guid,timer> for stealth detection, a spotted unit is kept visible for a while 
         std::set<uint64> m_detectedByUnit; //we need to keep track of who detected us to be able to reset it when needed
-
+        
+        // Testing
+        bool m_disabledRegen;
     private:
         bool IsTriggeredAtSpellProcEvent( Aura* aura, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent );
         bool HandleDummyAuraProc(   Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);

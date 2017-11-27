@@ -520,6 +520,7 @@ bool MySQLConnection::_HandleMySQLErrno(uint32 errNo)
         // Outdated table or database structure - terminate core
         case ER_BAD_FIELD_ERROR:
         case ER_NO_SUCH_TABLE:
+        case ER_WARN_DATA_OUT_OF_RANGE:
             TC_LOG_ERROR("sql.sql", "Your database structure is not up to date.");
             std::this_thread::sleep_for(std::chrono::seconds(10));
             std::abort();

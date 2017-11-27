@@ -724,7 +724,7 @@ void Creature::Update(uint32 diff)
                         m_regenTimer -= diff;
                 }
             
-            if (m_regenTimer == 0)
+            if (m_regenTimer == 0 && !m_disabledRegen)
             {
                 if (!IsInCombat())
                 {
@@ -786,6 +786,9 @@ void Creature::Update(uint32 diff)
 
 void Creature::Regenerate(Powers power)
 {
+    if(m_disabledRegen)
+        return;
+
     uint32 curValue = GetPower(power);
     uint32 maxValue = GetMaxPower(power);
 

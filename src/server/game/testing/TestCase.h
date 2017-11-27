@@ -65,8 +65,6 @@ public:
     void LearnTalent(TestPlayer* p, uint32 spellID);
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     float CalcChance(uint32 iterations, const std::function<bool()>& f);
-	void DisableRegen(TestPlayer* caster);
-	void EnableRegen(TestPlayer* caster);
     ///!\ This is VERY slow, do not abuse of this function. Randomize talents, spells, stuff for this player
     void RandomizePlayer(TestPlayer* player);
 

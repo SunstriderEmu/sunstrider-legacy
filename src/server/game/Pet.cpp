@@ -338,7 +338,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     }
 
     // since last save (in seconds)
-    uint32 timediff = (time(nullptr) - fields[18].GetUInt64());
+    uint32 timediff = (time(nullptr) - fields[18].GetUInt32());
 
     //load spells/cooldowns/auras
     SetCanModifyStats(true);
@@ -1404,7 +1404,7 @@ void Pet::_LoadSpellCooldowns()
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
 
-    QueryResult result = CharacterDatabase.PQuery("SELECT spell,time FROM pet_spell_cooldown WHERE guid = '%u'",m_charmInfo->GetPetNumber());
+    QueryResult result = CharacterDatabase.PQuery("SELECT spell, time FROM pet_spell_cooldown WHERE guid = '%u'",m_charmInfo->GetPetNumber());
 
     if(result)
     {
@@ -1468,7 +1468,7 @@ void Pet::_SaveSpellCooldowns()
 
 void Pet::_LoadSpells()
 {
-    QueryResult result = CharacterDatabase.PQuery("SELECT spell,slot,active FROM pet_spell WHERE guid = '%u'",m_charmInfo->GetPetNumber());
+    QueryResult result = CharacterDatabase.PQuery("SELECT spell, slot, active FROM pet_spell WHERE guid = '%u'",m_charmInfo->GetPetNumber());
 
     if(result)
     {
@@ -1476,7 +1476,7 @@ void Pet::_LoadSpells()
         {
             Field *fields = result->Fetch();
 
-            AddSpell(fields[0].GetUInt16(), fields[2].GetUInt8(), PETSPELL_UNCHANGED, fields[1].GetUInt16());
+            AddSpell(fields[0].GetUInt32(), fields[2].GetUInt16(), PETSPELL_UNCHANGED, fields[1].GetUInt16());
         }
         while( result->NextRow() );
     }
@@ -1492,7 +1492,7 @@ void Pet::_SaveSpells()
         if (itr->second->state == PETSPELL_REMOVED || itr->second->state == PETSPELL_CHANGED)
             trans->PAppend("DELETE FROM pet_spell WHERE guid = '%u' and spell = '%u'", m_charmInfo->GetPetNumber(), itr->first);
         if (itr->second->state == PETSPELL_NEW || itr->second->state == PETSPELL_CHANGED)
-            trans->PAppend("INSERT INTO pet_spell (guid,spell,slot,active) VALUES ('%u', '%u', '%u','%u')", m_charmInfo->GetPetNumber(), itr->first, itr->second->slotId,itr->second->active);
+            trans->PAppend("INSERT INTO pet_spell (guid,spell,slot,active) VALUES ('%u', '%u', '%u','%u')", m_charmInfo->GetPetNumber(), itr->first, itr->second->slotId, itr->second->active);
         CharacterDatabase.CommitTransaction(trans);
 
         if (itr->second->state == PETSPELL_REMOVED)

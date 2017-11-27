@@ -2279,9 +2279,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         PlayerbotTestingAI* GetTestingPlayerbotAI();
         #endif
 
-        // Testing
-        void DisableRegen(bool set) { m_disabledRegen = set; }
-
         // Recall position
         uint32 m_recallMap;
         float  m_recallX;
@@ -2722,8 +2719,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         // true if player has moved in this update. In the previous system, in a player moved and stopped in the same update you had no way to know it. (this is used to fix spell not always properly interrupted)
         bool m_hasMovedInUpdate;
 
-        // Testing
-        bool m_disabledRegen;
     private:
         // internal common parts for CanStore/StoreItem functions
         InventoryResult _CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemTemplate const *pProto, uint32& count, bool swap, Item *pSrcItem ) const;

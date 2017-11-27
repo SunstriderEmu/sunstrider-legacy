@@ -151,7 +151,8 @@ i_AI(nullptr), i_disabledAI(nullptr), m_removedAurasCount(0), m_procDeep(0), m_u
 _lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_miniPet(0), 
 _is_in_water_status(false),
 m_last_isunderwater_status(false),
-m_duringRemoveFromWorld(false)
+m_duringRemoveFromWorld(false),
+m_disabledRegen(false)
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
