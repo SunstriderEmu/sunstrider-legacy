@@ -247,6 +247,15 @@ struct TC_GAME_API Position
     {
         return !(operator==(a));
     }
+
+    //Use negative dist to move behind
+    void MoveInFront(Position& frontOf, float dist)
+    {
+        m_positionX = frontOf.m_positionX + dist * std::cos(frontOf.m_orientation);
+        m_positionY = frontOf.m_positionY + dist * std::sin(frontOf.m_orientation);
+        m_positionZ = frontOf.m_positionZ;
+    }
+
 };
 TC_GAME_API ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
 TC_GAME_API ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);
