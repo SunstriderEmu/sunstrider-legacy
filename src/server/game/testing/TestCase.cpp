@@ -218,7 +218,10 @@ TestPlayer* TestCase::SpawnRandomPlayer(Classes cls, uint32 level)
 
 TestPlayer* TestCase::SpawnPlayer(Classes _class, Races _race, uint32 level, Position spawnPosition)
 {
-    TestPlayer* playerBot = _CreateTestBot(WorldLocation(_location.GetMapId(), spawnPosition), _class, _race, level);
+    Position targetLocation = _location;
+    if (spawnPosition.GetPositionX() != 0.0f && spawnPosition.GetPositionY() != 0.0f && spawnPosition.GetPositionZ() != 0.0f)
+        targetLocation.Relocate(spawnPosition);
+    TestPlayer* playerBot = _CreateTestBot(targetLocation, _class, _race, level);
     ASSERT_INFO("Creating random test bot with class %u, race %u and level %u", uint32(_class), uint32(_race), level);
     INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
@@ -255,7 +258,7 @@ void TestCase::_RemoveTestBot(Player* player)
 }
 
 //create a player of random level with no equipement, no talents, max skills for his class
-TestPlayer* TestCase::_CreateTestBot(WorldLocation loc, Classes cls, Races race, uint32 level)
+TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint32 level)
 {
     INTERNAL_TEST_ASSERT_NOCOUNT(cls != CLASS_NONE && race != RACE_NONE);
     TC_LOG_ERROR("test.unit_test", "Creating new random bot for class %d", cls);
@@ -321,7 +324,7 @@ TestPlayer* TestCase::_CreateTestBot(WorldLocation loc, Classes cls, Races race,
     player->SetTeleportingToTest(_testMapInstanceId);
 
     //handle bot position
-    bool teleportOK = player->TeleportTo(loc, TELE_TO_GM_MODE);
+    bool teleportOK = player->TeleportTo(WorldLocation(_location.GetMapId(), loc), TELE_TO_GM_MODE);
     if (!teleportOK)
         return nullptr;
     ai->HandleTeleportAck(); //immediately handle teleport packet

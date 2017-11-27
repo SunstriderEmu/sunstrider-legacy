@@ -795,10 +795,9 @@ public:
 
 		// drain mana + life tap 100% to pet
 
-		void AssertManaFeed(TestPlayer* player, TestPlayer* enemy, uint32 summon)
+		void AssertManaFeed(TestPlayer* player, TestPlayer* enemy, uint32 summonSpell)
 		{
-			uint32 res = player->CastSpell(player, summon, true);
-			Wait(1 * SECOND * IN_MILLISECONDS);
+			uint32 res = player->CastSpell(player, summonSpell, true);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();
 			TEST_ASSERT(pet != nullptr);
@@ -812,10 +811,8 @@ public:
 			// Drain Mana
 			uint32 expectedDrain = ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK + player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * ClassSpellsCoeff::Warlock::DRAIN_MANA;
 			
-			res = player->CastSpell(enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6);
-			Wait(1 * SECOND * IN_MILLISECONDS);
-			while (res != SPELL_CAST_OK)
-				res = player->CastSpell(enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, true);
+			res = player->CastSpell(enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, true);
+            TEST_ASSERT(res == SPELL_CAST_OK);
 			Wait(5500);
 			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedDrain);
 			
