@@ -34,7 +34,7 @@ private:
     void _Load(std::string name_or_pattern);
     bool _TestMatchPattern(std::shared_ptr<TestCase> test, std::string const& pattern) const;
 
-    std::map<uint32 /*testId*/, std::shared_ptr<TestThread>> _tests; //all remaining tests, tests finished are removed from it
+    std::map<uint32 /*testId*/, std::shared_ptr<TestThread>> _remainingTests; //all remaining tests, tests finished are removed from it
     TestResults _results;
     std::atomic<bool> _running;
     std::atomic<bool> _loading;

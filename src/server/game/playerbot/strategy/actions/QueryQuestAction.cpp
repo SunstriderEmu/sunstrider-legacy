@@ -5,9 +5,9 @@
 
 using namespace ai;
 
-void QueryQuestAction::TellObjective(std::string name, int available, int required)
+void QueryQuestAction::TellObjective(std::string _name, int available, int required)
 {
-    ai->TellMaster(chat->formatQuestObjective(name, available, required));
+    ai->TellMaster(chat->formatQuestObjective(_name, available, required));
 }
 
 

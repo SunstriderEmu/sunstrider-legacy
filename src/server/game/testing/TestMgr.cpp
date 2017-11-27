@@ -34,7 +34,7 @@ void TestMgr::_Load(std::string name_or_pattern)
             testCase->_SetName(testScript->second->GetName()); //to improve: move this to ScriptMgr?
             if (_TestMatchPattern(testCase, name_or_pattern))
             {
-                _tests[testId] = std::move(std::make_shared<TestThread>(testCase)); //will immediately start a new thread running the test
+                _remainingTests[testId] = std::move(std::make_shared<TestThread>(testCase)); //will immediately start a new thread running the test
                 testId++;
             }
             else
@@ -82,12 +82,26 @@ void TestMgr::Update(uint32 const diff)
     if (!_running || _loading)
         return;
 
-    // Tests are being run in threads but still executed one at a time. Threads are actually used to keep the call stack rather than running tests in parallel.
-    // This loop will iterate over every tests, and wait for them to finish or to have triggered a wait time.
-    // TODO: Actually... can't we have them execute in parallel now? since they are on separate maps
-    for (decltype(_tests)::iterator itr = _tests.begin(); itr != _tests.end();)
+    uint32 available_threads = std::thread::hardware_concurrency();
+
+    //prepare X first tests from _remainingTests and copy them in updatingTests 
+    std::vector<std::pair<uint32, std::shared_ptr<TestThread>>> updatingTests;
+    uint32 usedThreads = 0;
+    auto remaining_itr = _remainingTests.begin();
+    while (usedThreads < available_threads && remaining_itr != _remainingTests.end())
     {
-        auto testThread = (*itr).second;
+        updatingTests.push_back(std::make_pair(remaining_itr->first, remaining_itr->second));
+        remaining_itr++;
+        usedThreads++;
+    }
+
+    // Tests are being run in threads and executed in parralel. Threads are actually used to keep the call stack rather than running tests in parallel.
+    // This loop will iterate over every prepared tests, and wait for them to finish or to have triggered a wait time.
+    #pragma omp parallel for
+    for(auto itr = updatingTests.begin(); itr != updatingTests.end(); itr++)
+    {
+        uint32 testID = itr->first;
+        auto& testThread = itr->second;
         auto test = testThread->GetTest();
 
         if (!testThread->IsStarted())
@@ -101,14 +115,15 @@ void TestMgr::Update(uint32 const diff)
         {
             _results.TestFinished(*test);
             testThread->GetTest()->_Cleanup();
-            itr = _tests.erase(itr);
+            size_t removed = _remainingTests.erase(testID);
+            ASSERT(removed == 1);
             continue;
         }
         testThread->UpdateWaitTimer(diff);
-        itr++;
     }
+    updatingTests.clear();
 
-    if (_tests.empty()) //then we're done!
+    if (_remainingTests.empty()) //then we're done!
     {
         std::string results;
         if (_cancelling)
@@ -133,14 +148,14 @@ void TestMgr::Update(uint32 const diff)
 void TestMgr::Cancel()
 {
     _cancelling = true;
-    for (decltype(_tests)::iterator itr = _tests.begin(); itr != _tests.end(); itr++)
-        itr->second->Cancel();
+    for (auto itr : _remainingTests)
+        itr.second->Cancel();
 }
 
 std::string TestMgr::GetStatusString() const
 {
     std::stringstream ss;
-    ss << _tests.size() << " test(s) left" << std::endl;
+    ss << _remainingTests.size() << " test(s) left" << std::endl;
     return ss.str();
 }
 
@@ -181,8 +196,8 @@ std::string TestMgr::ListAvailable(std::string filter) const
 
 bool TestMgr::GoToTest(Player* player, uint32 testId) const
 {
-    auto test = _tests.find(testId);
-    if (test == _tests.end())
+    auto test = _remainingTests.find(testId);
+    if (test == _remainingTests.end())
         return false;
 
     auto testThread = (*test).second;
@@ -209,10 +224,10 @@ std::string TestMgr::ListRunning(std::string filter) const
 
     std::vector<std::string> foundList;
     bool found = false;
-    for (decltype(_tests)::const_iterator itr = _tests.begin(); itr != _tests.end(); itr++)
+    for (auto itr : _remainingTests)
     {
-        auto testId = (*itr).first;
-        auto testThread = (*itr).second;
+        auto testId = itr.first;
+        auto testThread = itr.second;
         auto test = testThread->GetTest();
         ss << testId << " - " << test->GetName() << std::endl;
         found = true;

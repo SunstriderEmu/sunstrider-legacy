@@ -102,9 +102,9 @@ void QueryItemUsageAction::QueryItemPrice(ItemTemplate const *item)
             Item* sell = *i;
             //TC int32 sellPrice = sell->GetCount() * auctionbot.GetSellPrice(sell->GetTemplate()) * sRandomPlayerbotMgr.GetSellMultiplier(bot);
             int32 sellPrice = sell->GetCount() * sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr.GetSellMultiplier(bot);
-            std::ostringstream out;
-            out << "Selling " << chat->formatItem(sell->GetTemplate(), sell->GetCount()) << " for " << chat->formatMoney(sellPrice);
-            ai->TellMaster(out.str());
+            std::ostringstream _out;
+            _out << "Selling " << chat->formatItem(sell->GetTemplate(), sell->GetCount()) << " for " << chat->formatMoney(sellPrice);
+            ai->TellMaster(_out.str());
         }
     }
 
