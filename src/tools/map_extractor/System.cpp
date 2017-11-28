@@ -818,7 +818,7 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
     }
 
     // map hole info
-    uint32 holes[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
+    uint32 holes[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID]; //sunstrider: changed this to uin32, as it's uint32 in the adt. Probably won't change anything. (also changed mmaps extractor to handle this change)
 
     if (map.liquidMapOffset)
         map.holesOffset = map.liquidMapOffset + map.liquidMapSize;
