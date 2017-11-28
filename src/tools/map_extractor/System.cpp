@@ -330,7 +330,7 @@ float selectUInt16StepStore(float maxDiff)
     return 65535 / maxDiff;
 }
 // Temporary grid data store
-uint16 area_ids[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
+uint32 area_ids[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
 
 float V8[ADT_GRID_SIZE][ADT_GRID_SIZE];
 float V9[ADT_GRID_SIZE + 1][ADT_GRID_SIZE + 1];

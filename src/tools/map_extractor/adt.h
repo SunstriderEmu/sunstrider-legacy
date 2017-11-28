@@ -96,7 +96,7 @@ public:
     uint32 sizeMCAL;
     uint32 offsMCSH;        // Shadow map for static shadows on the terrain
     uint32 sizeMCSH;
-    uint16 areaid;
+    uint32 areaid;
     uint32 nMapObjRefs;
     uint32 holes;
     uint16 s[2];
