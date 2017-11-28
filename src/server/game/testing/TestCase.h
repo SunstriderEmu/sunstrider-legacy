@@ -10,6 +10,8 @@ class TestPlayer;
 template<class T>
 bool Between(T value, T from, T to)
 {
+    if (from > to) //extra protection against both typos and underflow
+        return false;
     return value >= from && value <= to;
 }
 
