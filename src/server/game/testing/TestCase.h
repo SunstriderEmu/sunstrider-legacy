@@ -82,7 +82,7 @@ public:
 	#define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) _SetCaller(__FILE__, __LINE__); TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller()
 	void TestMeleeDamage(TestPlayer* player, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit) {}
 
-    float GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID);
+    bool GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage);
     float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
     //use expectedAmount negative values for healing
     #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount) _SetCaller(__FILE__, __LINE__); TestDotDamage(caster, target, spellID, expectedAmount); _ResetCaller()

@@ -537,23 +537,20 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     }
 
     Wait(10 * SECOND * IN_MILLISECONDS);
-    float avgDamageDealt = GetDamagePerSpellsTo(caster, target, spellID);
-	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> avgDamageDealt: %f - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, avgDamageDealt, expectedMinDamage, expectedMaxDamage);
-    //test hard limits
-    ASSERT_INFO("Enforcing higher limit for spell %u. expectedMaxDamage: %u, avgDamageDealt: %f", spellID, expectedMaxDamage, avgDamageDealt);
-    INTERNAL_TEST_ASSERT(avgDamageDealt <= expectedMaxDamage);
-    ASSERT_INFO("Enforcing lower limit for spell %u. expectedMinDamage: %u, avgDamageDealt: %f", spellID, expectedMinDamage, avgDamageDealt);
-    INTERNAL_TEST_ASSERT(avgDamageDealt >= expectedMinDamage);
+    uint32 damageDealtMin;
+    uint32 damageDealtMax;
+    bool foundData = GetDamagePerSpellsTo(caster, target, spellID, damageDealtMin, damageDealtMax);
+    ASSERT_INFO("No data found for spell: %f", spellID);
+    INTERNAL_TEST_ASSERT(foundData);
+	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> minDealt: %u - maxDealt %u - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, damageDealtMin, damageDealtMax, expectedMinDamage, expectedMaxDamage);
 
-    //test if avg is close enough to expected value
-    float avgExpected = (expectedMinDamage + expectedMaxDamage) / 2.0f;
-    uint32 allowedMin = avgExpected > maxPredictionError ? avgExpected - maxPredictionError : 0;
-    uint32 allowedMax = avgExpected + maxPredictionError;
+    uint32 allowedMin = expectedMinDamage > maxPredictionError ? expectedMinDamage - maxPredictionError : 0; //protect against underflow
+    uint32 allowedMax = expectedMaxDamage + maxPredictionError;
 
-    ASSERT_INFO("Enforcing high average result for spell %u. allowedMax: %u, avgDamageDealt: %f", spellID, allowedMax, avgDamageDealt);
-    INTERNAL_TEST_ASSERT(avgDamageDealt <= allowedMax);
-    ASSERT_INFO("Enforcing low average result for spell %u. allowedMin: %u, avgDamageDealt: %f", spellID, allowedMin, avgDamageDealt);
-    INTERNAL_TEST_ASSERT(avgDamageDealt >= allowedMin);
+    ASSERT_INFO("Enforcing high result for spell %u. allowedMax: %u, damageDealtMax: %u", spellID, allowedMax, damageDealtMax);
+    INTERNAL_TEST_ASSERT(damageDealtMax <= allowedMax);
+    ASSERT_INFO("Enforcing low result for spell %u. allowedMin: %u, damageDealtMin: %u", spellID, allowedMin, damageDealtMin);
+    INTERNAL_TEST_ASSERT(damageDealtMin >= allowedMin);
 }
 
 void TestCase::TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax)
@@ -616,7 +613,7 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
     return totalDamage;
 }
 
-float TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID)
+bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     ASSERT_INFO("Caster in not a testing bot");
@@ -626,15 +623,18 @@ float TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 sp
     if (damageToTarget.empty())
     {
         TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
-        return 0.0f;
+        return false;
     }
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     if (spellInfo == nullptr)
     {
         TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellID);
-        return 0.0f;
+        return false;
     }
+
+    minDamage = std::numeric_limits<uint32>::max();
+    maxDamage = 0;
 
     uint64 totalDamage = 0;
     uint32 count = 0;
@@ -656,17 +656,20 @@ float TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 sp
         damage += itr.damageInfo.absorb;
         //resilience not taken into account...
 
+        minDamage = std::min(minDamage, damage);
+        maxDamage = std::max(maxDamage, damage);
+
         totalDamage += damage;
         count++;
     }
 
-    if (count == 0)
+    if (count == 0) 
     {
         TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for a victim (%s) with no valid data for this spell (ID %u)", victim->GetName().c_str(), spellID);
-        return 0.0f;
+        return false;
     }
 
-    return totalDamage / count;
+    return true;
 }
 
 void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount)
