@@ -27,8 +27,9 @@ PathGenerator::PathGenerator(const Position& startPos, uint32 mapId, uint32 inst
     _polyLength(0), _type(PATHFIND_BLANK), _useStraightPath(false),
     _forceDestination(false), _pointPathLimit(MAX_POINT_PATH_LENGTH), _straightLine(false),
     _endPosition(G3D::Vector3::zero()), _sourceUnit(nullptr), _navMesh(NULL), _navMeshQuery(NULL),
-    _sourceMapId(mapId), _options((PathOptions)options), _forceSourcePos(false)
+    _sourceMapId(mapId), _forceSourcePos(false)
 {
+    _options = options == 0 ? PATHFIND_OPTION_CANWALK : (PathOptions)options; //default to land path. Needed if we directly call to PathGenerator. Will be overriden in PathGenerator(const Unit* owner) constructor if called
     _sourcePos.Relocate(startPos);
     memset(_pathPolyRefs, 0, sizeof(_pathPolyRefs));
 
@@ -630,6 +631,8 @@ void PathGenerator::CreateFilter()
         includeFlags |= (NAV_WATER | NAV_MAGMA | NAV_SLIME);
     if(SourceCanWalk())
         includeFlags |= NAV_GROUND;
+
+    DEBUG_ASSERT(includeFlags != 0);
 
     _filter.setIncludeFlags(includeFlags);
     _filter.setExcludeFlags(excludeFlags);
