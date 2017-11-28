@@ -32,7 +32,7 @@ public:
 
             const float spiritRegen = sqrt(player->GetStat(STAT_SPIRIT)) * player->OCTRegenMPPerSpirit();
             const float blessingRegen = ClassSpellsDamage::Paladin::BLESSING_OF_WISDOM_RNK_7_MIN / 5.0f;
-            TC_LOG_DEBUG("test.unit_test", "regen: %f, wisdomRegen: %f", spiritRegen, blessingRegen);
+            TC_LOG_TRACE("test.unit_test", "regen: %f, wisdomRegen: %f", spiritRegen, blessingRegen);
 
             const uint32 startMana = 150; // Blessing of Wisdom mana cost
 
@@ -41,7 +41,6 @@ public:
             player->SetPower(POWER_MANA, startMana);
             TEST_ASSERT(player->GetPower(POWER_MANA) == startMana);
 
-            //LearnTalent(player, Talents::Paladin::IMPROVED_BLESSING_OF_WISDOM_RNK_2);
             uint32 res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7);
             TEST_ASSERT(res == SPELL_CAST_OK);
             TEST_ASSERT(player->GetPower(POWER_MANA) == 0);
@@ -51,15 +50,15 @@ public:
             //between 0 - 2s have passed, we're still in fsr
             uint32 expectedMana = floor(2 * blessingRegen);      
             lastMana = newMana;
-            TC_LOG_DEBUG("test.unit_test", "t1: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+            TC_LOG_TRACE("test.unit_test", "t1: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
             TEST_ASSERT(newMana == expectedMana);     
 
             //between 2 - 4s have passed, we're still in fsr
             newMana = WaitNextManaTick(player);
             expectedMana = lastMana + floor(2 * blessingRegen);
             lastMana = newMana;                                                                                        
-            TC_LOG_DEBUG("test.unit_test", "t2: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
-            TEST_ASSERT(player->GetPower(POWER_MANA) == expectedMana);                                                  
+            TC_LOG_TRACE("test.unit_test", "t2: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+            TEST_ASSERT(newMana == expectedMana);
 
             //wait some ticks to make sure we're out of fsr
             WaitNextManaTick(player);
@@ -68,15 +67,34 @@ public:
             newMana = WaitNextManaTick(player);                                                                     
             expectedMana = lastMana + floor(2 * blessingRegen + 2 * spiritRegen);       //spirit should now increase regen                                         
             lastMana = newMana;
-            TC_LOG_DEBUG("test.unit_test", "t3: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
-            TEST_ASSERT(player->GetPower(POWER_MANA) == expectedMana);
+            TC_LOG_TRACE("test.unit_test", "t3: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+            TEST_ASSERT(newMana == expectedMana);
 
             //one last time to be sure
             newMana = WaitNextManaTick(player);
             expectedMana = lastMana + floor(2 * blessingRegen + 2 * spiritRegen);
             lastMana = newMana;
-            TC_LOG_DEBUG("test.unit_test", "t3: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
-            TEST_ASSERT(player->GetPower(POWER_MANA) == expectedMana);
+            TC_LOG_TRACE("test.unit_test", "t4: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+            TEST_ASSERT(newMana == expectedMana);
+
+            //now with talent!
+            LearnTalent(player, Talents::Paladin::IMPROVED_BLESSING_OF_WISDOM_RNK_2);
+            const float improvedBlessingRegen = blessingRegen * 1.2f;
+            //re cast spell
+            res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7, true); //triggered has no mana cost
+            TEST_ASSERT(res == SPELL_CAST_OK);
+
+            newMana = WaitNextManaTick(player);
+            expectedMana = lastMana + floor(2 * improvedBlessingRegen + 2 * spiritRegen);
+            lastMana = newMana;
+            TC_LOG_TRACE("test.unit_test", "t5: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+            TEST_ASSERT(Between<uint32>(newMana, expectedMana - 1, expectedMana + 1));
+            
+            newMana = WaitNextManaTick(player);
+            expectedMana = lastMana + floor(2 * improvedBlessingRegen + 2 * spiritRegen);
+            lastMana = newMana;
+            TC_LOG_TRACE("test.unit_test", "t6: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+            TEST_ASSERT(Between<uint32>(newMana, expectedMana - 1, expectedMana + 1));
         }
     };
 
