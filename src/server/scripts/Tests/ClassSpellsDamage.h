@@ -179,11 +179,18 @@ namespace ClassSpellsDamage
 	{
 		enum Paladin
 		{
+			// Holy
 			BLESSING_OF_WISDOM_RNK_7_MIN = 41,
 			FLASH_OF_LIGHT_RNK_7_MIN = 458,
 			FLASH_OF_LIGHT_RNK_7_MAX = 513,
 			HOLY_LIGHT_RNK_11_MIN = 2196,
 			HOLY_LIGHT_RNK_11_MAX = 2446,
+
+			// Protection
+			DEVOTION_AURA_RNK_8 = 861,
+
+			// Retribution
+			BLESSING_OF_MIGHT_RNK_8 = 220,
 		};
 	};
 
