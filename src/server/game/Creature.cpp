@@ -159,7 +159,7 @@ bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
-    m_owner.ForcedDespawn();
+    m_owner.DespawnOrUnsummon(0, m_respawnTimer);    // since we are here, we are not TempSummon as object type cannot change during runtime
     return true;
 }
 
@@ -1955,10 +1955,10 @@ void Creature::Respawn(bool force /* = false */)
 
     this->loot.ClearRemovedItemsList();
 
-    if(GetDeathState()==DEAD)
+    if(GetDeathState() == DEAD)
     {
         if (m_spawnId)
-            sObjectMgr->SaveCreatureRespawnTime(m_spawnId,GetMapId(), GetInstanceId(),0);
+            sObjectMgr->SaveCreatureRespawnTime(m_spawnId, GetMapId(), GetInstanceId(),0);
 
         TC_LOG_DEBUG("entities.creature","Respawning...");
         m_respawnTime = 0;
@@ -1999,20 +1999,19 @@ void Creature::Respawn(bool force /* = false */)
     UpdateObjectVisibility();
 }
 
-void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
+void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/, uint32 forceRespawnTimer)
 {
     if (TempSummon* summon = this->ToTempSummon())
         summon->UnSummon(msTimeToDespawn); 
     else
-        ForcedDespawn(msTimeToDespawn);
+        ForcedDespawn(msTimeToDespawn, forceRespawnTimer);
 }
 
-void Creature::ForcedDespawn(uint32 timeMSToDespawn)
+void Creature::ForcedDespawn(uint32 timeMSToDespawn, uint32 forceRespawnTimer)
 {
     if (timeMSToDespawn)
     {
-        auto  pEvent = new ForcedDespawnDelayEvent(*this);
-
+        auto pEvent = new ForcedDespawnDelayEvent(*this, forceRespawnTimer);
         m_Events.AddEvent(pEvent, m_Events.CalculateTime(timeMSToDespawn));
         return;
     }

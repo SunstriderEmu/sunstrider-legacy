@@ -135,11 +135,13 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
 
     _currentNode = GetFirstMemoryNode();
 
-    // inform AI
-    if (path_id && creature->AI())
-        creature->AI()->WaypointPathStarted(_path->nodes[_currentNode].id, path_id);
+    i_nextMoveTime.Reset(1000); //movement will start after 1s
 
-    return StartMoveNow(creature);
+    // inform AI
+    if (creature->AI())
+        creature->AI()->WaypointPathStarted(_path->nodes[_currentNode].id, _path->id);
+
+    return true;
 }
 
 bool WaypointMovementGenerator<Creature>::DoInitialize(Creature* creature)
@@ -166,9 +168,10 @@ void WaypointMovementGenerator<Creature>::DoFinalize(Creature* creature)
 
 void WaypointMovementGenerator<Creature>::DoReset(Creature* creature)
 {
-    bool result = StartMoveNow(creature);
-    if (!result)
-        DoInitialize(creature); //this may help with some cases where the generator keep resetting because there is no next points
+    if (!i_nextMoveTime.Passed() || creature->HasUnitState(UNIT_STATE_NOT_MOVE) || creature->IsMovementPreventedByCasting())
+        return;
+
+    i_nextMoveTime.Reset(1); //movement will start after 1s
 }
 
 //Must be called at each point reached. MovementInform is done in here.
@@ -220,12 +223,11 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 a
         return;
     }
 
-    //continue movement if needed/possible
+    //warn path end
     if (creature->movespline->Finalized())
     {
-        if (GetNextMemoryNode(arrivedNodeIndex, _currentNode, true))
-            StartSplinePath(creature);
-        else {
+        if (!HasNextMemoryNode(arrivedNodeIndex, true))
+        {
             //waypoints ended
             creature->UpdateCurrentWaypointInfo(0, 0);
             if (creature->AI())
@@ -267,11 +269,15 @@ uint32 WaypointMovementGenerator<Creature>::GetFirstMemoryNode()
         //let GetNextMemoryNode handle it
         GetNextMemoryNode(node, node, true);
         return node;
-        break;
     }
-    default:
+    default: //Invalid direction
         return 0;
     }
+}
+bool WaypointMovementGenerator<Creature>::HasNextMemoryNode(uint32 fromNode, bool allowReverseDirection)
+{
+    uint32 nextNode = 0;
+    return GetNextMemoryNode(fromNode, nextNode, allowReverseDirection);
 }
 
 bool WaypointMovementGenerator<Creature>::GetNextMemoryNode(uint32 fromNode, uint32& nextNode, bool allowReverseDirection)
@@ -405,7 +411,7 @@ bool WaypointMovementGenerator<Creature>::GeneratePathToNextPoint(Position const
     return true;
 }
 
-bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bool nextNode /*= false*/)
+bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature, bool nextNode /*= false*/)
 {
     //make sure we don't trigger OnArrived from last path at this point
     _splineId = 0;
@@ -640,8 +646,11 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
         {
             TC_LOG_TRACE("misc", "Creature %u resumed from pause (path %u)", creature->GetEntry(), _path->id);
             if (GetNextMemoryNode(_currentNode, _currentNode, true))
-                return StartSplinePath(creature, false);
-            else {
+            {
+                return StartMove(creature, false);
+            }
+            else 
+            {
                 TC_LOG_ERROR("misc", "Creature %u resumed from pause (path %u) but there was no next node", creature->GetEntry(), _path->id);
                 return false;
             }
@@ -653,11 +662,18 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
     { //!IsPaused()
         bool arrived = creature->movespline->Finalized();
 
-        if (i_recalculatePath)
-            return StartSplinePath(creature); //relaunch spline to current dest
+        if (arrived) 
+        {
+            return StartMove(creature, true);
+        }
+        else 
+        {
+            // Set home position at place on waypoint movement.
+            if (!creature->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) || creature->GetTransGUID())
+                creature->SetHomePosition(creature->GetPosition());
 
-        if (arrived) {
-            return StartSplinePath(creature, true);
+            if (i_recalculatePath)
+                return StartMove(creature); //relaunch spline to current dest
         }
     }
 

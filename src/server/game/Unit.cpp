@@ -567,7 +567,7 @@ void Unit::UpdateInterruptMask()
 uint32 Unit::GetAuraCount(uint32 spellId) const
 {
     uint32 count = 0;
-    for (auto itr = m_Auras.lower_bound(spellEffectPair(spellId, 0)); itr != m_Auras.upper_bound(spellEffectPair(spellId, 0)); ++itr)
+    for (auto itr = m_Auras.lower_bound(spellEffectPair(spellId, uint8(0))); itr != m_Auras.upper_bound(spellEffectPair(spellId, uint8(0))); ++itr)
     {
         if (!itr->second->GetStackAmount())
             count++;
@@ -10330,6 +10330,24 @@ void Unit::EngageWithTarget(Unit* who)
     who->SetInCombatWith(this); 
     GetThreatManager().AddThreat(who, 0.0f); 
     who->GetThreatManager().AddThreat(this, 0.0f); //sunstrider: also add threat to target... why not doing this? Else we end up with units in combat but no threat list
+}
+
+void Unit::SetImmuneToPC(bool apply, bool keepCombat)
+{
+    (void)keepCombat;
+    if (apply)
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+    else
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+}
+
+void Unit::SetImmuneToNPC(bool apply, bool keepCombat)
+{
+    (void)keepCombat;
+    if (apply)
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC);
+    else
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC);
 }
 
 void Unit::SetInCombatState(bool PvP, Unit* enemy)

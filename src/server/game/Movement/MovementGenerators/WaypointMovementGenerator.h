@@ -137,6 +137,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
 
         // Get next node as current depending on direction, return false if already at last node
         //Enable allowReverseDirection to allow generator direction to revert if type is WP_PATH_TYPE_ROUND_TRIP and we're at path end
+        bool HasNextMemoryNode(uint32 fromNode, bool allowReverseDirection = true);
         bool GetNextMemoryNode(uint32 fromNode, uint32& nextNode, bool allowReverseDirection = true);
         
         // Get first node in path (depending on direction)
@@ -154,7 +155,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         nextNode = skip current node
         Returns false on error getting new point
         */
-        bool StartSplinePath(Creature* c, bool nextNode = false);
+        bool StartMove(Creature* c, bool nextNode = false);
         //meant to be used by StartSplinePath only. Return false if should break in loop
         bool GeneratePathToNextPoint(Position const& from, Creature* creature, WaypointNode const& nextNode, uint32& splineId);
 
@@ -162,13 +163,6 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
 
         // Update pause timer if any and return wheter we can continue. Return false if not pausing at the moment.
         bool UpdatePause(int32 diff);
-
-        // Remove pause if any and <insert StartSplinePath comment here>
-        bool StartMoveNow(Creature* creature, bool nextNode = false)
-        {
-            i_nextMoveTime.Reset(0);
-            return StartSplinePath(creature, nextNode);
-        }
         
         //create a new customPath object with given array
         bool CreateCustomPath(Movement::PointsArray&);

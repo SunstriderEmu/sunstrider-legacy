@@ -684,9 +684,11 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
 
         void RemoveCorpse(bool setSpawnTime = true, bool destroyForNearbyPlayers = true);
-        
-        void DespawnOrUnsummon(uint32 msTimeToDespawn = 0);
-        void ForcedDespawn(uint32 timeMSToDespawn = 0);
+
+        //forceRespawnTime NYI
+        void DespawnOrUnsummon(uint32 msTimeToDespawn = 0, uint32 forceRespawnTime = 0);
+        //forceRespawnTime NYI
+        void ForcedDespawn(uint32 timeMSToDespawn = 0, uint32 forceRespawnTime = 0);
 
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;
@@ -928,11 +930,12 @@ class TC_GAME_API AssistDelayEvent : public BasicEvent
 class TC_GAME_API ForcedDespawnDelayEvent : public BasicEvent
 {
     public:
-        ForcedDespawnDelayEvent(Creature& owner) : BasicEvent(), m_owner(owner) { }
+        ForcedDespawnDelayEvent(Creature& owner, uint32 respawnTimer) : BasicEvent(), m_owner(owner), m_respawnTimer(respawnTimer) { }
         bool Execute(uint64 e_time, uint32 p_time) override;
 
     private:
         Creature& m_owner;
+        uint32 m_respawnTimer;
 };
 
 class TC_GAME_API AIMessageEvent : public BasicEvent

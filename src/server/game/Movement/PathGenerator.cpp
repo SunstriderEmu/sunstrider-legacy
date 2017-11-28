@@ -76,7 +76,6 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
     if (!Trinity::IsValidMapCoord(destX, destY, destZ) || !Trinity::IsValidMapCoord(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ()))
         return false;
 
-
     //reset last result if any
     _type = PATHFIND_BLANK;
 

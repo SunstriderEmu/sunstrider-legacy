@@ -1,11 +1,9 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- * This program is free software licensed under GPL version 2
- * Please see the included DOCS/LICENSE.TXT for more information */
 
 #ifndef SC_ESCORTAI_H
 #define SC_ESCORTAI_H
 
 #include "ScriptedCreature.h"
+#include "WaypointDefines.h"
 
 #define DEFAULT_MAX_PLAYER_DISTANCE 50
 
@@ -35,7 +33,7 @@ enum eEscortState
     STATE_ESCORT_PAUSED     = 0x004                         //will not proceed with waypoints before state is removed
 };
 
-struct TC_GAME_API npc_escortAI : public ScriptedAI
+struct TC_GAME_API EscortAI : public ScriptedAI
 {
     public:
 
@@ -47,82 +45,78 @@ struct TC_GAME_API npc_escortAI : public ScriptedAI
         void Reset() override = 0;
 
         // CreatureAI functions
-		npc_escortAI(Creature *c);
-
-        void AttackStart(Unit * who) override;
+		EscortAI(Creature *c);
 
         void MoveInLineOfSight(Unit*) override;
-
+        void JustDied(Unit*) override;
+        void FailQuest();
         void JustAppeared() override;
-
+        void ReturnToLastPoint();
         void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) override;
-
         void UpdateAI(const uint32) override;
-
         void MovementInform(uint32, uint32) override;
 
-        void OnPossess(Unit* charmer, bool apply) override;
-
+        virtual void UpdateEscortAI(uint32 diff); // used when it's needed to add code in update (abilities, scripted events, etc)
         // EscortAI functions
-        void AddWaypoint(uint32 id, float x, float y, float z, uint32 WaitTimeMs = 0);
-        
-        void GetWaypointListFromDB(uint32 entry);
 
-        void Start(bool bAttack, bool bDefend, bool bRun = false, uint64 pGUID = 0, uint32 entry = 0);
+        //Use manually added waypoint. When using this, SetRun is ignored and unit flags are used instead
+        void AddWaypoint(uint32 id, float x, float y, float z, float orientation = 0, uint32 waitTime = 0);
+
+        void Start(bool isActiveAttacker = true, bool run = false, uint64 playerGUID = 0, Quest const* quest = nullptr, bool instantRespawn = false, bool canLoopPath = false, bool resetWaypoints = true);
         
-        void SetRun(bool bRun = true);
+        //sunstrider: keeping for compat but pretty useless, wp moveType will be used instead in all case except when using AddWaypoint
+        void SetRun(bool on = true);
+
         void SetEscortPaused(bool uPaused);
+        void SetPauseTimer(uint32 Timer) { _pauseTimer = Timer; }
         
-        bool HasEscortState(uint32 uiEscortState) { return (m_uiEscortState & uiEscortState); }
-        bool IsEscorted() const override { return (m_uiEscortState & STATE_ESCORT_ESCORTING); }
+        bool HasEscortState(uint32 uiEscortState) { return (_escortState & uiEscortState); }
+        bool IsEscorted() const override { return (_escortState & STATE_ESCORT_ESCORTING); }
 
-        void SetMaxPlayerDistance(float newMax) { MaxPlayerDistance = newMax; }
-        float GetMaxPlayerDistance() const { return MaxPlayerDistance; }
+        void SetMaxPlayerDistance(float newMax) { _maxPlayerDistance = newMax; }
+        float GetMaxPlayerDistance() const { return _maxPlayerDistance; }
 
-        void SetCanMelee(bool usemelee) { CanMelee = usemelee; }
-        void SetCanDefend(bool canDef) { Defend = canDef; }
-        void SetDespawnAtEnd(bool despawn) { DespawnAtEnd = despawn; }
-        void SetDespawnAtFar(bool despawn) { DespawnAtFar = despawn; }
-        bool GetAttack() const { return Attack; }//used in EnterEvadeMode override
-        
-        Player* GetPlayerForEscort();
-        
-        bool AssistPlayerInCombat(Unit* who);
-        
-        void SetLastPos(float x, float y, float z) { LastPos.x = x; LastPos.y = y; LastPos.z = z; }
-
-        void AddEscortState(uint32 uiEscortState) { m_uiEscortState |= uiEscortState; }
-        void RemoveEscortState(uint32 uiEscortState) { m_uiEscortState &= ~uiEscortState; }
+        void SetDespawnAtEnd(bool despawn) { _despawnAtEnd = despawn; }
+        void SetDespawnAtFar(bool despawn) { _despawnAtFar = despawn; }
+       
+        bool GetAttack() const { return _activeAttacker; } // used in EnterEvadeMode override
+        void SetCanAttack(bool attack) { _activeAttacker = attack; }
 
     // EscortAI variables
     protected:
-        uint64 PlayerGUID;
-        bool IsOnHold;
+        uint64 _playerGUID;
 
+        Player* GetPlayerForEscort();
     private:
-    
-        uint32 WaitTimer;
-        uint32 PlayerTimer;
-        uint32 m_uiEscortState;
-        float MaxPlayerDistance;
 
-        struct
-        {
-            float x;
-            float y;
-            float z;
-        }LastPos;
+        bool AssistPlayerInCombatAgainst(Unit* who);
+        bool IsPlayerOrGroupInRange();
+        void FillPointMovementListForCreature();
 
-        std::list<Escort_Waypoint> WaypointList;
-        std::list<Escort_Waypoint>::iterator CurrentWP;
+        void AddEscortState(uint32 uiEscortState) { _escortState |= uiEscortState; }
+        void RemoveEscortState(uint32 uiEscortState) { _escortState &= ~uiEscortState; }
 
-        bool Attack;
-        bool Defend;
-        bool ReconnectWP;
-        bool Run;
-        bool CanMelee;
-        bool DespawnAtEnd;
-        bool DespawnAtFar;
+        uint32 _pauseTimer;
+        uint32 _playerCheckTimer;
+        uint32 _escortState;
+        float _maxPlayerDistance;
+
+        Quest const* _escortQuest; // generally passed in Start() when regular escort script.
+
+        WaypointPath _path;
+
+        bool _activeAttacker;      // obsolete, determined by faction.
+        bool _running;             // all creatures are walking by default (has flag MOVEMENTFLAG_WALK)
+        bool _instantRespawn;      // if creature should respawn instantly after escort over (if not, database respawntime are used)
+        bool _returnToStart;       // if creature can walk same path (loop) without despawn. Not for regular escort quests.
+        bool _despawnAtEnd;
+        bool _despawnAtFar;
+        bool _manualPath;
+        bool _hasImmuneToNPCFlags;
+        bool _started;
+        bool _useUnitWalkFlag;
+        bool _ended;
+        bool _resume;
 };
 #endif
 
