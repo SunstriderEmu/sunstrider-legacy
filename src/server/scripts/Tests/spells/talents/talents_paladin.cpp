@@ -1,6 +1,182 @@
 #include "../../ClassSpellsDamage.h"
 #include "../../ClassSpellsCoeff.h"
 
+class DivineStrengthTest : public TestCaseScript
+{
+public:
+	DivineStrengthTest() : TestCaseScript("talents paladin divine_strength") { }
+
+	class DivineStrengthTestImpt : public TestCase
+	{
+	public:
+		DivineStrengthTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+
+			uint32 const startStr = player->GetStat(STAT_STRENGTH);
+			uint32 const expectedStr = startStr * 1.1f;
+
+			LearnTalent(player, Talents::Paladin::DIVINE_STRENGTH_RNK_5);
+			TEST_ASSERT(Between<float>(player->GetStat(STAT_STRENGTH), expectedStr - 1, expectedStr + 1));
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<DivineStrengthTestImpt>();
+	}
+};
+
+class DivineIntellectTest : public TestCaseScript
+{
+public:
+	DivineIntellectTest() : TestCaseScript("talents paladin divine_intellect") { }
+
+	class DivineIntellectTestImpt : public TestCase
+	{
+	public:
+		DivineIntellectTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+
+			uint32 const startInt = player->GetStat(STAT_INTELLECT);
+			uint32 const expectedInt = startInt * 1.1f;
+
+			LearnTalent(player, Talents::Paladin::DIVINE_INTELLECT_RNK_5);
+			TEST_ASSERT(Between<float>(player->GetStat(STAT_INTELLECT), expectedInt - 1, expectedInt + 1));
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<DivineIntellectTestImpt>();
+	}
+};
+
+class HealingLightTest : public TestCaseScript
+{
+public:
+	HealingLightTest() : TestCaseScript("talents paladin healing_light") { }
+
+	class ImprovedSealOfRighteousnessTestImpt : public TestCase
+	{
+	public:
+		ImprovedSealOfRighteousnessTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+
+			uint32 const bh = player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
+			uint32 const expectedFoLMin = ClassSpellsDamage::Paladin::FLASH_OF_LIGHT_RNK_7_MIN * 1.12f + bh * ClassSpellsCoeff::Paladin::FLASH_OF_LIGHT;
+			uint32 const expectedFoLMax = ClassSpellsDamage::Paladin::FLASH_OF_LIGHT_RNK_7_MAX * 1.12f + bh * ClassSpellsCoeff::Paladin::FLASH_OF_LIGHT;
+			uint32 const expectedHLMin = ClassSpellsDamage::Paladin::HOLY_LIGHT_RNK_11_MIN * 1.12f + bh * ClassSpellsCoeff::Paladin::HOLY_LIGHT;
+			uint32 const expectedHLMax = ClassSpellsDamage::Paladin::HOLY_LIGHT_RNK_11_MAX * 1.12f + bh * ClassSpellsCoeff::Paladin::HOLY_LIGHT;
+
+			LearnTalent(player, Talents::Paladin::HEALING_LIGHT_RNK_3);
+			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::FLASH_OF_LIGHT_RNK_7, expectedFoLMin, expectedFoLMax);
+			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::HOLY_LIGHT_RNK_11, expectedHLMin, expectedHLMax);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<ImprovedSealOfRighteousnessTestImpt>();
+	}
+};
+
+class ImprovedLayOnHandsTest : public TestCaseScript
+{
+public:
+	ImprovedLayOnHandsTest() : TestCaseScript("talents paladin improved_lay_on_hands") { }
+
+	class ImprovedLayOnHandsTestImpt : public TestCase
+	{
+	public:
+		ImprovedLayOnHandsTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+
+			uint32 const startInt = player->GetStat(STAT_INTELLECT);
+			uint32 const expectedInt = startInt * 1.1f;
+
+			RemoveAllItems(player);
+			uint32 const startingArmor = player->GetArmor();
+			EquipItem(player, 34135); // Sword Breaker's Bulwark - 6459 armor
+
+			uint32 const shieldArmor = player->GetArmor() - startingArmor;
+			TEST_ASSERT(shieldArmor == 6459);
+
+			// Assert cooldown, armor through items, mana restored
+			LearnTalent(player, Talents::Paladin::IMPROVED_LAY_ON_HANDS_RNK_2);
+			uint32 res = player->CastSpell(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+			uint32 cooldown = player->GetSpellCooldownDelay(ClassSpells::Paladin::LAY_ON_HANDS_RNK_4);
+			TEST_ASSERT(cooldown == 40 * MINUTE);
+			uint32 const newShieldArmor = player->GetArmor() - startingArmor;
+			uint32 const expectedShieldArmor = shieldArmor * 1.3f;
+			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
+			TEST_ASSERT(player->GetPower(POWER_MANA) == 900);
+
+			// Assert armor not from items is not taken into account
+			player->AddAura(33079, player); // Scroll of Protection V - 300 armor
+			player->RemoveAurasDueToSpell(20236); // Remove Lay on Hands proc aura
+			player->RemoveAllSpellCooldown();
+			res = player->CastSpell(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
+
+			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4, player->GetHealth(), player->GetHealth());
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<ImprovedLayOnHandsTestImpt>();
+	}
+};
+
+class HolyGuidanceTest : public TestCaseScript
+{
+public:
+	HolyGuidanceTest() : TestCaseScript("talents paladin holy_guidance") { }
+
+	class HolyGuidanceTestImpt : public TestCase
+	{
+	public:
+		HolyGuidanceTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+
+			int32 const startBH = player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
+			int32 const startSP = player->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+
+			float const startInt = player->GetStat(STAT_INTELLECT);
+			int32 const expectedBH = startBH + startInt * 0.35f;
+			int32 const expectedSP = startSP + startInt * 0.35f;
+
+			LearnTalent(player, Talents::Paladin::HOLY_GUIDANCE_RNK_5);
+			TC_LOG_DEBUG("test.unit_test", "current bh: %i, expected: %i", player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedBH);
+			TEST_ASSERT(Between<int32>(player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedBH - 1, expectedBH + 1));
+			TC_LOG_DEBUG("test.unit_test", "current sp: %i, expected: %i", player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedSP);
+			TEST_ASSERT(Between<int32>(player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedSP - 1, expectedSP + 1));
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<HolyGuidanceTestImpt>();
+	}
+};
+
 class ImprovedBlessingOfWisdomTest : public TestCaseScript
 {
 public:
@@ -106,5 +282,10 @@ public:
 
 void AddSC_test_talents_paladin()
 {
+	new DivineStrengthTest();
+	new DivineIntellectTest();
+	new HealingLightTest();
+	new ImprovedLayOnHandsTest();
     new ImprovedBlessingOfWisdomTest();
+	new HolyGuidanceTest();
 }
