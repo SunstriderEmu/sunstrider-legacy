@@ -143,7 +143,7 @@ namespace MMAP
         }
 
         // data used later
-        uint16 holes[16][16];
+        uint32 holes[16][16]; //sunstrider change: was uint16, this is wrong since the map extractor write them as uint32
         memset(holes, 0, sizeof(holes));
         uint8 liquid_type[16][16];
         memset(liquid_type, 0, sizeof(liquid_type));
@@ -205,18 +205,11 @@ namespace MMAP
             // hole data
             if (fheader.holesSize != 0)
             {
-                //sunstrider: extra check. Is my game corrupted?
-                if (fheader.holesSize > sizeof(holes))
-                {
-                    //why? 
-                    printf("TerrainBuilder::loadMap: tile has more than 16*16 holes? Found %u\n", fheader.holesSize);
-                }
-                else {
-                    memset(holes, 0, fheader.holesSize);
-                    fseek(mapFile, fheader.holesOffset, SEEK_SET);
-                    if (fread(holes, fheader.holesSize, 1, mapFile) != 1)
-                        printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
-                }
+                ASSERT(fheader.holesSize == sizeof(holes)); //sunstrider: extra assert
+                memset(holes, 0, fheader.holesSize);
+                fseek(mapFile, fheader.holesOffset, SEEK_SET);
+                if (fread(holes, fheader.holesSize, 1, mapFile) != 1)
+                    printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
             }
 
             int count = meshData.solidVerts.size() / 3;
@@ -586,7 +579,7 @@ namespace MMAP
     static uint16 holetab_v[4] = {0x000F, 0x00F0, 0x0F00, 0xF000};
 
     /**************************************************************************/
-    bool TerrainBuilder::isHole(int square, const uint16 holes[16][16])
+    bool TerrainBuilder::isHole(int square, const uint32 holes[16][16])
     {
         int row = square / 128;
         int col = square % 128;
@@ -595,7 +588,7 @@ namespace MMAP
         int holeRow = row % 8 / 2;
         int holeCol = (square - (row * 128 + cellCol * 8)) / 2;
 
-        uint16 hole = holes[cellRow][cellCol];
+        uint32 hole = holes[cellRow][cellCol];
 
         return (hole & holetab_h[holeCol] & holetab_v[holeRow]) != 0;
     }
