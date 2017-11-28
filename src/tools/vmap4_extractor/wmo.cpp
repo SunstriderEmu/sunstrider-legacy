@@ -344,8 +344,8 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         //-------INDX------------------------------------
         //-------MOPY--------
         MoviEx = new uint16[nTriangles*3]; // "worst case" size...
-        uint16 *IndexRenum = new uint16[nVertices];
-        memset(IndexRenum, 0xFF, nVertices*sizeof(int));
+        uint16 *IndexRenum = new uint16[nVertices]; //sunstrider: changed int to uint16
+        memset(IndexRenum, 0xFF, nVertices*sizeof(uint16));
         for (int i=0; i<nTriangles; ++i)
         {
             // Skip no collision triangles
