@@ -91,7 +91,8 @@ void EscortAI::EnterEvadeMode(EvadeReason /* why */)
         AddEscortState(STATE_ESCORT_RETURNING);
         ReturnToLastPoint();
 
-    }else
+    } 
+    else
     {
         if (_hasImmuneToNPCFlags)
             me->SetImmuneToNPC(true);

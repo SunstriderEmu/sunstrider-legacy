@@ -16,7 +16,7 @@
 #define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetAssertInfo();
 
 //input info for next check, place this before INTERNAL_TEST_ASSERT
-#define ASSERT_INFO(expr, ...) _AssertInfo(expr, ## __VA_ARGS__);
+#define INTERNAL_ASSERT_INFO(expr, ...) _AssertInfo(expr, ## __VA_ARGS__);
 
 TestCase::TestCase(bool needMap) :
     _failed(false),
@@ -163,16 +163,9 @@ void TestCase::EnableMapObjects()
     _enableMapObjects = true;
 }
 
-void TestCase::TestStacksCount(TestPlayer* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount)
+void TestCase::TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount)
 {
-    caster->LearnSpell(castSpell, false);
-    caster->LearnSpell(talent, false);
-
-    uint32 castCount = 0;
-    while (castCount < requireCount * 5) { //cast a bunch more
-        caster->CastSpell(target, castSpell, true);
-        castCount++;
-    }
+   /* TODO: cast */
     uint32 auraCount = target->GetAuraCount(testSpell);
     INTERNAL_TEST_ASSERT(auraCount == requireCount);
 }
@@ -183,7 +176,7 @@ TestPlayer* TestCase::SpawnRandomPlayer()
     Races race = RACE_NONE;
     _GetRandomClassAndRace(cls, race);
     TestPlayer* playerBot = _CreateTestBot(_location, cls, race);
-    ASSERT_INFO("Creating random test bot with class %u and race %u", uint32(cls), uint32(race));
+    INTERNAL_ASSERT_INFO("Creating random test bot with class %u and race %u", uint32(cls), uint32(race));
     INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
@@ -195,7 +188,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Powers power, uint32 level)
     _GetRandomClassAndRace(cls, race, true, power);
 
     TestPlayer* playerBot = _CreateTestBot(_location, cls, race, level);
-    ASSERT_INFO("Creating random test with power %u and level %u", uint32(power), level);
+    INTERNAL_ASSERT_INFO("Creating random test with power %u and level %u", uint32(power), level);
     INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
@@ -203,7 +196,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Powers power, uint32 level)
 TestPlayer* TestCase::SpawnRandomPlayer(Races race, uint32 level)
 {
     TestPlayer* playerBot = _CreateTestBot(_location, _GetRandomClassForRace(race), race, level);
-    ASSERT_INFO("Creating random test bot with race %u and level %u", uint32(race), level);
+    INTERNAL_ASSERT_INFO("Creating random test bot with race %u and level %u", uint32(race), level);
     INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
@@ -211,7 +204,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Races race, uint32 level)
 TestPlayer* TestCase::SpawnRandomPlayer(Classes cls, uint32 level)
 {
     TestPlayer* playerBot = _CreateTestBot(_location, cls, _GetRandomRaceForClass(cls), level);
-    ASSERT_INFO("Creating random test bot with class %u and level %u", uint32(cls), level);
+    INTERNAL_ASSERT_INFO("Creating random test bot with class %u and level %u", uint32(cls), level);
     INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
@@ -222,7 +215,7 @@ TestPlayer* TestCase::SpawnPlayer(Classes _class, Races _race, uint32 level, Pos
     if (spawnPosition.GetPositionX() != 0.0f && spawnPosition.GetPositionY() != 0.0f && spawnPosition.GetPositionZ() != 0.0f)
         targetLocation.Relocate(spawnPosition);
     TestPlayer* playerBot = _CreateTestBot(targetLocation, _class, _race, level);
-    ASSERT_INFO("Creating random test bot with class %u, race %u and level %u", uint32(_class), uint32(_race), level);
+    INTERNAL_ASSERT_INFO("Creating random test bot with class %u, race %u and level %u", uint32(_class), uint32(_race), level);
     INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
     return playerBot;
 }
@@ -370,7 +363,7 @@ void TestCase::_GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower
             };
             break;
         default:
-            ASSERT_INFO("_GetRandomClassAndRace: invalid power forcedPower %u", forcedPower);
+            INTERNAL_ASSERT_INFO("_GetRandomClassAndRace: invalid power forcedPower %u", forcedPower);
             INTERNAL_TEST_ASSERT(false);
         }
     }
@@ -465,12 +458,12 @@ TempSummon* TestCase::SpawnCreature(uint32 entry, bool spawnInFront)
 
 TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 entry)
 {
-    ASSERT_INFO("Test has no map");
+    INTERNAL_ASSERT_INFO("Test has no map");
     INTERNAL_TEST_ASSERT_NOCOUNT(GetMap() != nullptr);
     uint32 creatureEntry = entry ? entry : TEST_CREATURE_ENTRY;
 
     TempSummon* summon = GetMap()->SummonCreature(creatureEntry, spawnPosition);
-    ASSERT_INFO("Failed to summon creature with entry %u", creatureEntry);
+    INTERNAL_ASSERT_INFO("Failed to summon creature with entry %u", creatureEntry);
     INTERNAL_TEST_ASSERT_NOCOUNT(summon != nullptr);
     summon->SetTempSummonType(TEMPSUMMON_MANUAL_DESPAWN); //Make sur it does not despawn
     return summon;
@@ -479,18 +472,18 @@ TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 e
 void TestCase::EquipItem(TestPlayer* player, uint32 itemID)
 {
     Item* item = player->AddItem(itemID, 1);
-    ASSERT_INFO("Failed to add item %u to player", itemID);
+    INTERNAL_ASSERT_INFO("Failed to add item %u to player", itemID);
     INTERNAL_TEST_ASSERT_NOCOUNT(item != nullptr);
 
     uint16 dest;
     uint8 msg2 = player->CanEquipItem(NULL_SLOT, dest, item, !item->IsBag());
-    ASSERT_INFO("Player cannot equip item %u, reason: %u", itemID, msg2);
+    INTERNAL_ASSERT_INFO("Player cannot equip item %u, reason: %u", itemID, msg2);
     INTERNAL_TEST_ASSERT_NOCOUNT(msg2 == EQUIP_ERR_OK);
 
     player->GetSession()->_HandleAutoEquipItemOpcode(item->GetBagSlot(), item->GetSlot());
 
     Item* equipedItem = player->GetItemByPos(dest);
-    ASSERT_INFO("Player failed to equip item %u (dest: %u)", itemID, dest);
+    INTERNAL_ASSERT_INFO("Player failed to equip item %u (dest: %u)", itemID, dest);
     INTERNAL_TEST_ASSERT_NOCOUNT(equipedItem != nullptr);
     Wait(1); //not sure this is needed but... let's just wait next update to make sure item spells are properly applied
 }
@@ -521,7 +514,7 @@ bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
 void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedMinDamage, uint32 expectedMaxDamage)
 {
     auto AI = caster->GetTestingPlayerbotAI();
-    ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
     AI->ResetSpellCounters();
 
@@ -532,7 +525,7 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     for (uint32 i = 0; i < sampleSize; i++)
     {
         uint32 result = caster->CastSpell(target, spellID, true);
-        ASSERT_INFO("Spell casting failed with reason %u", result);
+        INTERNAL_ASSERT_INFO("Spell casting failed with reason %u", result);
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
     }
 
@@ -540,29 +533,29 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     uint32 damageDealtMin;
     uint32 damageDealtMax;
     bool foundData = GetDamagePerSpellsTo(caster, target, spellID, damageDealtMin, damageDealtMax);
-    ASSERT_INFO("No data found for spell: %f", spellID);
+    INTERNAL_ASSERT_INFO("No data found for spell: %f", spellID);
     INTERNAL_TEST_ASSERT(foundData);
 	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> minDealt: %u - maxDealt %u - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, damageDealtMin, damageDealtMax, expectedMinDamage, expectedMaxDamage);
 
     uint32 allowedMin = expectedMinDamage > maxPredictionError ? expectedMinDamage - maxPredictionError : 0; //protect against underflow
     uint32 allowedMax = expectedMaxDamage + maxPredictionError;
 
-    ASSERT_INFO("Enforcing high result for spell %u. allowedMax: %u, damageDealtMax: %u", spellID, allowedMax, damageDealtMax);
+    INTERNAL_ASSERT_INFO("Enforcing high result for spell %u. allowedMax: %u, damageDealtMax: %u", spellID, allowedMax, damageDealtMax);
     INTERNAL_TEST_ASSERT(damageDealtMax <= allowedMax);
-    ASSERT_INFO("Enforcing low result for spell %u. allowedMin: %u, damageDealtMin: %u", spellID, allowedMin, damageDealtMin);
+    INTERNAL_ASSERT_INFO("Enforcing low result for spell %u. allowedMin: %u, damageDealtMin: %u", spellID, allowedMin, damageDealtMin);
     INTERNAL_TEST_ASSERT(damageDealtMin >= allowedMin);
 }
 
 void TestCase::TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax)
 {
-    ASSERT_INFO("TestDirectHeal NYI");
+    INTERNAL_ASSERT_INFO("TestDirectHeal NYI");
     INTERNAL_TEST_ASSERT(false);
 }
 
 float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32 tickCount, bool& mustRetry)
 {
     auto AI = caster->GetTestingPlayerbotAI();
-    ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
@@ -587,7 +580,7 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
 
     if (filteredDamageToTarget.size() != tickCount)
     {
-        ASSERT_INFO("Victim did not received expected tick count %u but received %u instead", tickCount, uint32(filteredDamageToTarget.size()));
+        INTERNAL_ASSERT_INFO("Victim did not received expected tick count %u but received %u instead", tickCount, uint32(filteredDamageToTarget.size()));
         INTERNAL_TEST_ASSERT(false);
     }
 
@@ -616,7 +609,7 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
 bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage)
 {
     auto AI = caster->GetTestingPlayerbotAI();
-    ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetDamageDoneInfo(victim);
@@ -675,11 +668,11 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
 void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
-    ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    ASSERT_INFO("Spell %u does not exists", spellID);
+    INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
     bool spellHasFlyTime = spellInfo->Speed != 0.0f;
 
@@ -703,12 +696,12 @@ void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, i
             //aura may be deleted at this point, do not use anymore
 
             //make sure aura expired
-            ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
+            INTERNAL_ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
             INTERNAL_TEST_ASSERT(!target->HasAuraWithCaster(spellID, 0, caster->GetGUID()));
 
             int32 dotDamageToTarget = AI->GetDotDamage(target, spellID);
 			TC_LOG_DEBUG("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedAmount: %i", spellID, dotDamageToTarget, expectedAmount);
-            ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedAmount: %i", dotDamageToTarget, expectedAmount);
+            INTERNAL_ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedAmount: %i", dotDamageToTarget, expectedAmount);
             TEST_ASSERT(dotDamageToTarget >= (expectedAmount - 6) && dotDamageToTarget <= (expectedAmount + 6)); //dots have greater error since they got their damage divided in several ticks
             return;
         }
@@ -719,11 +712,11 @@ void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, i
 void TestCase::TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
-    ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    ASSERT_INFO("Spell %u does not exists", spellID);
+    INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
     uint32 baseCastTime = spellInfo->CalcCastTime(nullptr);
     uint32 baseDurationTime = spellInfo->GetDuration();
@@ -739,15 +732,15 @@ void TestCase::TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellI
             float totalChannelDmg = GetChannelDamageTo(caster, target, testedSpell, tickCount, mustRetry);
             if (mustRetry)
                 continue;
-            ASSERT_INFO("Check if totalChannelDmg (%f) is round", totalChannelDmg);
+            INTERNAL_ASSERT_INFO("Check if totalChannelDmg (%f) is round", totalChannelDmg);
             INTERNAL_TEST_ASSERT(totalChannelDmg == std::floor(totalChannelDmg));
             uint32 resultTickAmount = totalChannelDmg / tickCount;
-            ASSERT_INFO("Enforcing channel damage. resultTickAmount: %i, expectedTickAmount: %i", resultTickAmount, expectedTickAmount);
+            INTERNAL_ASSERT_INFO("Enforcing channel damage. resultTickAmount: %i, expectedTickAmount: %i", resultTickAmount, expectedTickAmount);
             INTERNAL_TEST_ASSERT(resultTickAmount >= (expectedTickAmount - 2) && resultTickAmount <= (expectedTickAmount + 2)); //channels have greater error since they got their damage divided in several ticks
             return;
         }
     }
-    ASSERT_INFO("Failed to cast spell (%u) 100 times", spellID);
+    INTERNAL_ASSERT_INFO("Failed to cast spell (%u) 100 times", spellID);
     INTERNAL_TEST_ASSERT(false); //failed to cast the spell 100 times
 }
 
