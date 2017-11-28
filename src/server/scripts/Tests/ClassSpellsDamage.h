@@ -179,6 +179,7 @@ namespace ClassSpellsDamage
 	{
 		enum Paladin
 		{
+            BLESSING_OF_WISDOM_RNK_7_MIN = 41,
 		};
 	};
 
