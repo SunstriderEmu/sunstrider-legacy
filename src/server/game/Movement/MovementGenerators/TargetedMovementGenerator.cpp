@@ -234,6 +234,7 @@ bool ChaseMovementGenerator<Player>::DoInitialize(Player* owner)
 template<>
 bool ChaseMovementGenerator<Creature>::DoInitialize(Creature* owner)
 {
+    _restoreWalking = owner->IsWalking();
     owner->SetWalk(false);
     owner->AddUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
     _setTargetLocation(owner);
@@ -246,6 +247,8 @@ void ChaseMovementGenerator<T>::DoFinalize(T* owner)
     owner->ClearUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
     if(Creature* creature = owner->ToCreature())
         creature->SetCannotReachTarget(false);
+    if (_restoreWalking)
+        owner->SetWalk(true);
 }
 
 template<class T>

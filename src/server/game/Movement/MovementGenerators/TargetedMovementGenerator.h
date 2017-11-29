@@ -86,9 +86,9 @@ class TC_GAME_API ChaseMovementGenerator : public TargetedMovementGenerator<T, C
 {
     public:
         ChaseMovementGenerator(Unit* target)
-            : TargetedMovementGenerator<T, ChaseMovementGenerator<T> >(target) { }
+            : TargetedMovementGenerator<T, ChaseMovementGenerator<T> >(target), _restoreWalking(false) { }
         ChaseMovementGenerator(Unit* target, float offset, float angle)
-            : TargetedMovementGenerator<T, ChaseMovementGenerator<T> >(target, offset, angle) { }
+            : TargetedMovementGenerator<T, ChaseMovementGenerator<T> >(target, offset, angle), _restoreWalking(false) { }
         ~ChaseMovementGenerator() { }
 
         MovementGeneratorType GetMovementGeneratorType() { return CHASE_MOTION_TYPE; }
@@ -103,6 +103,8 @@ class TC_GAME_API ChaseMovementGenerator : public TargetedMovementGenerator<T, C
         bool EnableWalking() const { return false;}
         bool _lostTarget(T* u) const { return u->GetVictim() != this->GetTarget(); }
         void _reachTarget(T*);
+    private:
+        bool _restoreWalking; //sunstrider addition
 };
 
 template<class T>
