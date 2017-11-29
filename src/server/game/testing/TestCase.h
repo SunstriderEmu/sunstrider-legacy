@@ -5,7 +5,9 @@ class TestMap;
 class TestThread;
 class TestPlayer;
 
-#define TEST_ASSERT( expr ) Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr)
+//input info for next TEST_ASSERT check
+#define ASSERT_INFO(expr, ...) _AssertInfo(expr, ## __VA_ARGS__)
+#define TEST_ASSERT( expr ) Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr); _ResetAssertInfo()
 
 template<class T>
 bool Between(T value, T from, T to)
@@ -22,9 +24,9 @@ class TC_GAME_API TestCase
     friend class TestMap;
 
 public:
-    //If needMap is specified, test will be done in an instance of the test map (13)
+    //If needMap is specified, test will be done in an instance of the test map (13). 
     TestCase(bool needMap = true);
-    //Use specific position. If only map was specified in location, default coordinates in map may be chosen instead
+    //Use specific position. If only map was specified in location, default coordinates in map may be chosen instead. If you need creatures and objects, use EnableMapObjects in your test constructor
     TestCase(WorldLocation const& specificPosition);
 
     std::string GetName() const { return _testName; }
@@ -97,9 +99,6 @@ public:
     void TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
 
     static uint32 GetTestBotAccountId();
-    void _SetCaller(std::string callerFile, int32 callerLine);
-    void _ResetCaller();
-    void Celebrate();
 
 protected:
 
@@ -114,6 +113,12 @@ protected:
     Difficulty               _diff;
     WorldLocation            _location;
 
+    void _AssertInfo(const char* err, ...) ATTR_PRINTF(2, 3);
+    void _ResetAssertInfo();
+    void _SetCaller(std::string callerFile, int32 callerLine);
+    void _ResetCaller();
+    void Celebrate();
+
 private:
     std::string              _testName;
     std::string              _errMsg;
@@ -123,6 +128,7 @@ private:
     bool                     _enableMapObjects;
     std::string              _callerFile; //used for error output
     int32                    _callerLine; //used for error output
+    std::string              _internalAssertInfo;
     std::string              _assertInfo;
 
     bool _InternalSetup();
@@ -133,8 +139,8 @@ private:
     void _SetThread(TestThread* testThread) { _testThread = testThread; }
     //if callerFile and callerLine are specified, also print them in message
     void _Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, bool increaseTestCount, std::string callerFile = "", int32 callerLine = 0);
-    void _AssertInfo(const char* err, ...) ATTR_PRINTF(2, 3);
-    void _ResetAssertInfo();
+    void _InternalAssertInfo(const char* err, ...) ATTR_PRINTF(2, 3);
+    void _ResetInternalAssertInfo();
 
       std::string _GetCallerFile();
     int32 _GetCallerLine();

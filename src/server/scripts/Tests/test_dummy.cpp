@@ -17,6 +17,9 @@ public:
         {
             Map* m = GetMap();
             TEST_ASSERT(m != nullptr);
+
+            ASSERT_INFO("LOLINFO %u", 4);
+            TEST_ASSERT(false);
             //std::string str(m->GetMapName());
             //sWorld->SendGlobalText("DUMMY BEFORE WAIT");
             Creature* summon = SpawnCreature();

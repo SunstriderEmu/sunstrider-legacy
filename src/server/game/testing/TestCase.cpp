@@ -11,12 +11,12 @@
 #define TEST_CREATURE_ENTRY 8
 
 //same as TEST_ASSERT but will track caller file and line to print it in case of error
-#define INTERNAL_TEST_ASSERT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine()); _ResetAssertInfo();
+#define INTERNAL_TEST_ASSERT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo();
 //same as last but does not increase test count
-#define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetAssertInfo();
+#define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo();
 
 //input info for next check, place this before INTERNAL_TEST_ASSERT
-#define INTERNAL_ASSERT_INFO(expr, ...) _AssertInfo(expr, ## __VA_ARGS__);
+#define INTERNAL_ASSERT_INFO(expr, ...) _InternalAssertInfo(expr, ## __VA_ARGS__);
 
 TestCase::TestCase(bool needMap) :
     _failed(false),
@@ -87,6 +87,8 @@ void TestCase::_FailNoException(std::string msg)
     _errMsg = msg;
     if (!_assertInfo.empty())
         _errMsg = _errMsg + '\n' + _assertInfo;
+    if (!_internalAssertInfo.empty())
+        _errMsg = _errMsg + '\n' + _internalAssertInfo;
 }
 
 void TestCase::_AssertInfo(const char* err, ...)
@@ -100,9 +102,25 @@ void TestCase::_AssertInfo(const char* err, ...)
     _assertInfo = buffer;
 }
 
+void TestCase::_InternalAssertInfo(const char* err, ...)
+{
+    char buffer[256];
+    va_list args;
+    va_start(args, err);
+    vsnprintf(buffer, 256, err, args);
+    va_end(args);
+
+    _internalAssertInfo = buffer;
+}
+
 void TestCase::_ResetAssertInfo()
 {
     _assertInfo = {};
+}
+
+void TestCase::_ResetInternalAssertInfo()
+{
+    _internalAssertInfo = {};
 }
 
 void TestCase::Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition)
