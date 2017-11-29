@@ -4418,9 +4418,10 @@ void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint8 effindex, uint64 caste
 
 void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint64 casterGUID)
 {
-    for(int k = 0; k < 3; ++k)
+    for(uint8 k = 0; k < MAX_SPELL_EFFECTS; ++k)
     {
-        spellEffectPair spair = spellEffectPair(spellId, k);
+        DEBUG_ASSERT(spellId < std::numeric_limits<uint16>::max());
+        spellEffectPair spair = spellEffectPair(uint16(spellId), k);
         for (auto iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
         {
             if (iter->second->GetCasterGUID() == casterGUID)
@@ -4680,7 +4681,7 @@ void Unit::RemoveAurasDueToSpell(uint32 spellId, Aura* except)
 
 void Unit::RemoveAurasDueToItemSpell(Item* castItem,uint32 spellId)
 {
-    for (int k=0; k < 3; ++k)
+    for (uint8 k = 0; k < MAX_SPELL_EFFECTS; ++k)
     {
         spellEffectPair spair = spellEffectPair(spellId, k);
         for (auto iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
@@ -12618,28 +12619,28 @@ void Unit::UpdateStatBuffMod(Stats stat)
 
     modPos += GetTotalAuraModifier(SPELL_AURA_MOD_STAT, [stat](AuraEffect const* aurEff) -> bool
     {
-        if ((aurEff->GetMiscValue() < 0 || aurEff->GetMiscValue() == stat) && aurEff->GetAmount() > 0)
+        if ((aurEff->GetMiscValue() < 0 || aurEff->GetMiscValue() == int32(stat)) && aurEff->GetAmount() > 0)
             return true;
         return false;
     });
 
     modNeg += GetTotalAuraModifier(SPELL_AURA_MOD_STAT, [stat](AuraEffect const* aurEff) -> bool
     {
-        if ((aurEff->GetMiscValue() < 0 || aurEff->GetMiscValue() == stat) && aurEff->GetAmount() < 0)
+        if ((aurEff->GetMiscValue() < 0 || aurEff->GetMiscValue() == int32(stat)) && aurEff->GetAmount() < 0)
             return true;
         return false;
     });
 
     factor = GetTotalAuraMultiplier(SPELL_AURA_MOD_PERCENT_STAT, [stat](AuraEffect const* aurEff) -> bool
     {
-        if (aurEff->GetMiscValue() == -1 || aurEff->GetMiscValue() == stat)
+        if (aurEff->GetMiscValue() == -1 || aurEff->GetMiscValue() == int32(stat))
             return true;
         return false;
     });
 
     factor *= GetTotalAuraMultiplier(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, [stat](AuraEffect const* aurEff) -> bool
     {
-        if (aurEff->GetMiscValue() == -1 || aurEff->GetMiscValue() == stat)
+        if (aurEff->GetMiscValue() == -1 || aurEff->GetMiscValue() == int32(stat))
             return true;
         return false;
     });
@@ -15894,7 +15895,7 @@ public:
     bool operator()(Movement::MoveSpline::UpdateResult result)
     {
         auto motionType = _unit->GetMotionMaster()->GetCurrentMovementGeneratorType();
-        if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived | Movement::MoveSpline::Result_Arrived))
+        if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived))
             && _unit->GetTypeId() == TYPEID_UNIT 
             && (motionType == WAYPOINT_MOTION_TYPE)
             && _unit->movespline->GetId() == _unit->GetMotionMaster()->GetCurrentSplineId())

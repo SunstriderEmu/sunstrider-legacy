@@ -2638,7 +2638,9 @@ void ObjectMgr::LoadPlayerInfo()
                 }
 
                 PlayerInfo* pInfo = _playerInfo[current_race][current_class];
-                pInfo->spell.push_back(CreateSpellPair(fields[2].GetUInt32(), fields[3].GetUInt8()));
+                uint32 spell = fields[2].GetUInt32();
+                DEBUG_ASSERT(spell < std::numeric_limits<uint16>::max());
+                pInfo->spell.push_back(CreateSpellPair(uint16(fields[2].GetUInt32()), fields[3].GetUInt8()));
 
                 ++count;
             }
@@ -5321,7 +5323,7 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
         if(MapId != entry->map_id)
         {
             // if find graveyard at different map from where entrance placed (or no entrance data), use any first
-            if (!mapEntry || mapEntry->entrance_map != entry->map_id ||
+            if (!mapEntry || mapEntry->entrance_map != int32(entry->map_id) ||
                 ((mapEntry->entrance_x == 0) && (mapEntry->entrance_y == 0)))
             {
                 // not have any corrdinates for check distance anyway
@@ -5641,7 +5643,7 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
     if(!mapEntry) return nullptr;
     for (const auto & mAreaTrigger : mAreaTriggers)
     {
-        if(mAreaTrigger.second.target_mapId == mapEntry->entrance_map)
+        if(int32(mAreaTrigger.second.target_mapId) == mapEntry->entrance_map)
         {
             AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(mAreaTrigger.first);
             if(atEntry && atEntry->mapid == Map)

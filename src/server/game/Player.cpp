@@ -7601,9 +7601,10 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
         if(form_change)                                     // check aura active state from other form
         {
             bool found = false;
-            for (int k=0; k < 3; ++k)
+            for (uint8 k=0; k < MAX_SPELL_EFFECTS; ++k)
             {
-                spellEffectPair spair = spellEffectPair(spellInfo->Id, k);
+                DEBUG_ASSERT(spellInfo->Id < std::numeric_limits<uint16>::max());
+                spellEffectPair spair = spellEffectPair(uint16(spellInfo->Id), k);
                 for (auto iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair); ++iter)
                 {
                     if(!item || iter->second->GetCastItemGUID() == item->GetGUID())
