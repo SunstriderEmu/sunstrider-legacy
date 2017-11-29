@@ -800,9 +800,8 @@ void TestCase::Celebrate()
     if (Player* player = _map->GetFirstHumanPlayer())
     {
         //get a position in front of default location
-        Position celebrateLocation = player->GetPosition();
-        celebrateLocation.m_positionX = player->GetPosition().m_positionX + 10.0f * std::cos(player->GetPosition().m_orientation);
-        celebrateLocation.m_positionY = player->GetPosition().m_positionY + 10.0f * std::sin(player->GetPosition().m_orientation);
+        Position celebrateLocation;
+        celebrateLocation.MoveInFront(player->GetPosition(), 10.0f);
 
         if (GameObject* gob = player->SummonGameObject(urand(180860, 180865), celebrateLocation, G3D::Quat(0, 0, 0, 0), 0))
         {
