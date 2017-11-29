@@ -15895,7 +15895,7 @@ public:
     bool operator()(Movement::MoveSpline::UpdateResult result)
     {
         auto motionType = _unit->GetMotionMaster()->GetCurrentMovementGeneratorType();
-        if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived))
+        if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived | Movement::MoveSpline::Result_Arrived))
             && _unit->GetTypeId() == TYPEID_UNIT 
             && (motionType == WAYPOINT_MOTION_TYPE)
             && _unit->movespline->GetId() == _unit->GetMotionMaster()->GetCurrentSplineId())

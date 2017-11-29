@@ -155,7 +155,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         nextNode = skip current node
         Returns false on error getting new point
         */
-        bool StartMove(Creature* c, bool nextNode = false);
+        bool StartMove(Creature* c);
         //meant to be used by StartSplinePath only. Return false if should break in loop
         bool GeneratePathToNextPoint(Position const& from, Creature* creature, WaypointNode const& nextNode, uint32& splineId);
 
@@ -182,14 +182,15 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         uint32 _splineId;
         //true when creature has reached the start node in path (it has to travel from its current position first)
         uint32 reachedFirstNode;
-        bool _stalled;
+        bool _stalled; // Waypoint movement can be switched on/off
+        bool _done;
 
         typedef std::unordered_map<uint32 /*splineId*/, uint32 /*pathNodeId*/> SplineToPathIdMapping;
         //filled at spline path generation. Used to determine which node spline system reached. When spline id is finished, it means we've reached path id.
         SplineToPathIdMapping splineToPathIds;
 
         typedef std::unordered_map<uint32 /*splineId*/, uint32 /*pathNodeId*/> PathIdToPathIndexMapping;
-        //filled at initial path loading. Used to update i_currentNode when a new spline node is reached.
+        //filled at initial path loading. Used to update _currentNode when a new spline node is reached.
         PathIdToPathIndexMapping pathIdsToPathIndexes;
 };
 

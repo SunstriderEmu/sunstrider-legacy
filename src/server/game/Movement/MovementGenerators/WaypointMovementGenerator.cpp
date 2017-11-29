@@ -37,7 +37,8 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id, 
     customPath(nullptr), 
     erasePathAtEnd(false),
     _stalled(false),
-    m_useSmoothSpline(smoothSpline) 
+    m_useSmoothSpline(smoothSpline) ,
+    _done(false)
 { 
 
 }
@@ -134,7 +135,7 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
         pathIdsToPathIndexes[_path->nodes[i].id] = i;
 
     _currentNode = GetFirstMemoryNode();
-
+    _done = false;
     i_nextMoveTime.Reset(1000); //movement will start after 1s
 
     // inform AI
@@ -177,6 +178,7 @@ void WaypointMovementGenerator<Creature>::DoReset(Creature* creature)
 //Must be called at each point reached. MovementInform is done in here.
 void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 arrivedNodeIndex)
 {
+    ASSERT(!_done);
     if (!_path || _path->nodes.size() <= arrivedNodeIndex)
         return;
 
@@ -216,28 +218,26 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 a
     // Inform script
     MovementInform(creature, arrivedNode.id);
 
+    //update _currentNode to next node
+    bool hasNextPoint = GetNextMemoryNode(_currentNode, _currentNode, true);
+    creature->UpdateCurrentWaypointInfo(arrivedNode.id, _path->id);
+
+    _done = !hasNextPoint && creature->movespline->Finalized();
+    if (_done)
+    {
+        //waypoints ended
+        creature->UpdateCurrentWaypointInfo(0, 0);
+        if (creature->AI())
+            creature->AI()->WaypointPathEnded(arrivedNode.id, _path->id);
+        return;
+    }
+
     if (arrivedNode.delay)
     {
         creature->ClearUnitState(UNIT_STATE_ROAMING_MOVE);
         Pause(arrivedNode.delay);
         return;
     }
-
-    //warn path end
-    if (creature->movespline->Finalized())
-    {
-        if (!HasNextMemoryNode(arrivedNodeIndex, true))
-        {
-            //waypoints ended
-            creature->UpdateCurrentWaypointInfo(0, 0);
-            if (creature->AI())
-                creature->AI()->WaypointPathEnded(arrivedNode.id, _path->id);
-            return;
-        }
-    }
-
-
-    creature->UpdateCurrentWaypointInfo(arrivedNode.id, _path->id);
 }
 
 bool WaypointMovementGenerator<Creature>::IsLastMemoryNode(uint32 node)
@@ -347,11 +347,11 @@ There may be more splines than actual path nodes so we're doing some matching in
 */
 void WaypointMovementGenerator<Creature>::SplineFinished(Creature* creature, uint32 splineId)
 {
-    if (!_path || _path->nodes.size() <= _currentNode)
+    if (!_path || _currentNode >= _path->nodes.size())
         return;
 
-    auto itr = splineToPathIds.find(splineId);
-    if (itr == splineToPathIds.end()) //spline not matched to any path id, nothing to do
+    auto splinePathItr = splineToPathIds.find(splineId);
+    if (splinePathItr == splineToPathIds.end()) //spline not matched to any path id, nothing to do
     {
       //  TC_LOG_TRACE("misc", "WaypointMovementGenerator: SplineFinished %u did not match any known path id, nothing to do", splineId);
         return;
@@ -359,25 +359,25 @@ void WaypointMovementGenerator<Creature>::SplineFinished(Creature* creature, uin
 
    
     WaypointNode const& currentNode = _path->nodes.at(_currentNode);
-    uint32 pathNodeDBId = itr->second; //id of db node we just reached
+    uint32 splineNodeDBId = splinePathItr->second; //id of db node we just reached
 
     //warn we reached a new db node if needed
-    if (!reachedFirstNode || currentNode.id != pathNodeDBId)
+    if (!reachedFirstNode || currentNode.id != splineNodeDBId)
     {
         reachedFirstNode = true;
 
         //update next node
         //find _path index corresponding to this path node id
-        auto itr = pathIdsToPathIndexes.find(pathNodeDBId);
+        auto itr = pathIdsToPathIndexes.find(splineNodeDBId);
         if (itr != pathIdsToPathIndexes.end())
             _currentNode = itr->second;
         else
         {
-            TC_LOG_FATAL("misc", "WaypointMovementGenerator::SplineFinished could not find pathNodeId %u in _path %u", pathNodeDBId, path_id);
+            TC_LOG_FATAL("misc", "WaypointMovementGenerator::SplineFinished could not find pathNodeId %u in _path %u", splineNodeDBId, path_id);
             _currentNode = 0;
         }
 
-        TC_LOG_TRACE("misc", "Reached node %u (path %u) (spline id %u) (path index : %u)", pathNodeDBId, path_id, splineId, _currentNode);
+        TC_LOG_TRACE("misc", "Reached node %u (path %u) (spline id %u) (path index : %u)", splineNodeDBId, path_id, splineId, _currentNode);
 
         //this may start a new path if we reached the end of it
         OnArrived(creature, _currentNode);
@@ -411,20 +411,13 @@ bool WaypointMovementGenerator<Creature>::GeneratePathToNextPoint(Position const
     return true;
 }
 
-bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature, bool nextNode /*= false*/)
+bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
 {
     //make sure we don't trigger OnArrived from last path at this point
     _splineId = 0;
 
     if (!_path || _path->nodes.empty())
         return false;
-
-    if (nextNode)
-    {
-        bool result = GetNextMemoryNode(_currentNode, _currentNode, true);
-        if (!result)
-            return false;
-    }
 
     if (_path->nodes.size() <= _currentNode)
     {
@@ -440,6 +433,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature, bool nex
     //final orientation for spline movement. 0.0f mean no final orientation.
     float finalOrientation = 0.0f;
     
+    splineToPathIds.clear();
     m_precomputedPath.clear();
     m_precomputedPath.reserve(_path->nodes.size());
     //insert dummy first position as this will be replaced by MoveSplineInit
@@ -557,7 +551,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature, bool nex
         break;
     }
 
-    /* Strange behavior with this, not sure how to use it.
+    /* kelno: Strange behavior with this, not sure how to use it.
     Not much time right now but if you want to try if you want to enable it : From what I see, MoveSplineInit inserts a first point into the spline that fucks this up, this needs to be changed first (else the creature position at this time will be included in the loop)
     if (path_type == WP_PATH_TYPE_LOOP)
         init.SetCyclic();
@@ -627,9 +621,7 @@ bool WaypointMovementGenerator<Creature>::SetDirection(WaypointPathDirection dir
 
 bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 diff)
 {
-    // Waypoint movement can be switched on/off
-    // This is quite handy for escort quests and other stuff */
-    if (_stalled || !creature->CanFreeMove() || creature->IsMovementPreventedByCasting())
+    if (_done || _stalled || !creature->CanFreeMove() || creature->IsMovementPreventedByCasting())
     {
         creature->ClearUnitState(UNIT_STATE_ROAMING_MOVE); //will be re set at next move
         return true;
@@ -643,18 +635,8 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
     if (IsPaused())
     {
         if (UpdatePause(diff))
-        {
-            TC_LOG_TRACE("misc", "Creature %u resumed from pause (path %u)", creature->GetEntry(), _path->id);
-            if (GetNextMemoryNode(_currentNode, _currentNode, true))
-            {
-                return StartMove(creature, false);
-            }
-            else 
-            {
-                TC_LOG_ERROR("misc", "Creature %u resumed from pause (path %u) but there was no next node", creature->GetEntry(), _path->id);
-                return false;
-            }
-        }
+            return StartMove(creature); //restart movement on _currentNode (was updated just before pause in OnArrived)
+
         else //pause not finished, nothing to do
             return true;
     }
@@ -663,9 +645,7 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
         bool arrived = creature->movespline->Finalized();
 
         if (arrived) 
-        {
-            return StartMove(creature, true);
-        }
+            return StartMove(creature);
         else 
         {
             // Set home position at place on waypoint movement.
