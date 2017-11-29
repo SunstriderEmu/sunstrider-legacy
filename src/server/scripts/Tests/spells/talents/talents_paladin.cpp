@@ -1,5 +1,29 @@
 #include "../../ClassSpellsDamage.h"
 #include "../../ClassSpellsCoeff.h"
+#include "PlayerbotAI.h"
+
+
+class SalvationTest : public TestCaseScript
+{
+public:
+	SalvationTest() : TestCaseScript("talents paladin salvation") { }
+
+	class SalvationTestImpt : public TestCase
+	{
+	public:
+		SalvationTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			// TODO
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<SalvationTestImpt>();
+	}
+};
 
 class DivineStrengthTest : public TestCaseScript
 {
@@ -492,10 +516,11 @@ public:
 			// Holy shield stacks
 			LearnTalent(player, Talents::Paladin::HOLY_SHIELD_RNK_1);
 			LearnTalent(player, Talents::Paladin::IMPROVED_HOLY_SHIELD_RNK_2);
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
+			uint32 res = player->CastSpell(player, ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
 			TEST_ASSERT(res == SPELL_CAST_OK);
-			Aura* aura = player->GetAura(Talents::Paladin::HOLY_SHIELD_RNK_1, EFFECT_0);
-			TEST_ASSERT(aura->GetStackAmount() == 8);
+			Aura* aura = player->GetAura(ClassSpells::Paladin::HOLY_SHIELD_RNK_4, EFFECT_0);
+			TEST_ASSERT(aura != nullptr);
+			TEST_ASSERT(aura->GetCharges() == 8);
 		}
 	};
 
@@ -609,7 +634,7 @@ public:
 
 			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5, expectedSealOfLightMana);
 			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_RIGHTEOUSNESS_RNK_9, expectedSealOfRighteousnessMana);
-			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RANK_1, expectedSealOfVengeanceMana);
+			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RNK_1, expectedSealOfVengeanceMana);
 			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_WISDOM_RNK_4, expectedSealOfWisdomMana);
 			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_JUSTICE_RNK_2, expectedSealOfJusticeMana);
 			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_BLOOD_RNK_1, expectedSealOfBloodMana);
@@ -701,22 +726,108 @@ public:
 			Position spawnPosition(_location);
 			spawnPosition.MoveInFront(_location, 3.0f);
 			Creature* creature = SpawnCreatureWithPosition(spawnPosition, entry);
+			creature->DisableRegeneration(true);
+			creature->SetHealth(creature->GetHealth() - 1); // issue with Hammer of wrath
+
+			player->SetMaxHealth(10000000); // Used for Judgement of Blood and Holy shield
+			player->SetHealth(player->GetMaxHealth());
+
+			// Judgement of Righteousness
+			float const expectedJoRMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9_MIN * 1.03f;
+			float const expectedJoRMax = ClassSpellsDamage::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9_MAX * 1.03f;
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9, expectedJoRMin, expectedJoRMax);
+
 
 			// Consecration
-			// Exorcism (undead + demon)
-			// Holy wrath (undead + demon)
-			// Holy shock
+			uint32 const creatureStartHP = creature->GetHealth();
+			uint32 res = player->CastSpell(player, ClassSpells::Paladin::CONSECRATION_RNK_6);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+			Wait(1500);
+			if (creature->GetHealth() == creatureStartHP) { // wait for second tick
+				Wait(1500);
+				if (creature->GetHealth() == creatureStartHP) // wait for third tick, hopefully it doesnt resist the first 3 ticks ._.
+					Wait(1500);
+			}
+			float const tick = floor(ClassSpellsDamage::Paladin::CONSECRATION_RNK_6_TOTAL * 1.03f / 8.0f);
+			float const expectedHP = creatureStartHP - tick;
+			uint32 const currentHealth = creature->GetHealth();
+			TEST_ASSERT(currentHealth == expectedHP);
+
+			// Exorcism & Holy wrath
+			if (demonOrUndead)
+			{
+				float const expectedExorcismMin = ClassSpellsDamage::Paladin::EXORCISM_RNK_7_MIN * 1.03f;
+				float const expectedExorcismMax = ClassSpellsDamage::Paladin::EXORCISM_RNK_7_MAX * 1.03f;
+				TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::EXORCISM_RNK_7, expectedExorcismMin, expectedExorcismMax);
+
+				float const expectedHolyWrathMin = ClassSpellsDamage::Paladin::HOLY_WRATH_RNK_3_MIN * 1.03f;
+				float const expectedHolyWrathMax = ClassSpellsDamage::Paladin::HOLY_WRATH_RNK_3_MAX * 1.03f;
+				TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HOLY_WRATH_RNK_3, expectedHolyWrathMin, expectedHolyWrathMax);
+			}
+
 			// Hammer of wrath
-			// Every judgement
+			float const expectedHoWMin = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MIN * 1.03f;
+			float const expectedHoWMax = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MAX * 1.03f;
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HAMMER_OF_WRATH_RNK_4, expectedHoWMin, expectedHoWMax);
+
+			// Holy shock
+			float const expectedHolyShockMin = ClassSpellsDamage::Paladin::HOLY_SHOCK_RNK_5_MIN_DAMAGE * 1.03f;
+			float const expectedHolyShockMax = ClassSpellsDamage::Paladin::HOLY_SHOCK_RNK_5_MAX_DAMAGE * 1.03f;
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HOLY_SHOCK_RNK_5_DMG, expectedHolyShockMin, expectedHolyShockMax);
+
+			// Judgement of Blood
+			float const expectedJoBMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_BLOOD_RNK_1_MIN * 1.03f;
+			float const expectedJoBMax = ClassSpellsDamage::Paladin::JUDGEMENT_OF_BLOOD_RNK_1_MAX * 1.03f;
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_BLOOD_RNK_1, expectedJoBMin, expectedJoBMax);
+
+			// Judgement of Vengeance
+			float const expectedJoVMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_VENGEANCE_PER_STACK * 1.03f;
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_VENGEANCE_RNK_1, expectedJoBMin, expectedJoVMin);
+
 			// Crusader Strike
-			// Holy Shield
+			EquipItem(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
+			LearnTalent(player, Talents::Paladin::CRUSADER_STRIKE_RNK_1);
+			float const AP = player->GetTotalAttackPowerValue(BASE_ATTACK);
+			float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
+			float const weaponMinDamage = 404 + (AP / 14 * 3.3f); // 3.3 weapon speed because it's an normalized spell
+			float const weaponMaxDamage = 607 + (AP / 14 * 3.3f);
+			float const crusadeTalentFactor = 1.03;
+			float const expectedCSMin = (weaponMinDamage * 1.1f) * armorFactor * crusadeTalentFactor;
+			float const expectedCSMax = (weaponMaxDamage * 1.1f) * armorFactor * crusadeTalentFactor;
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::CRUSADER_STRIKE_RNK_1, expectedCSMin, expectedCSMax);
+
+			/*
+			// Holy shield
+			EquipItem(player, 34164); // 1H Sword
+			EquipItem(player, 34185); // Shield
+
+			LearnTalent(player, Talents::Paladin::HOLY_SHIELD_RNK_1);
+			res = player->CastSpell(player, ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+
+			TestPlayer* enemy = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN);
+
+			auto AI = player->GetTestingPlayerbotAI();
+			TEST_ASSERT(AI != nullptr);
+
+			// Do some melee attacks
+
+			float expectedDamage = ClassSpellsDamage::Paladin::HOLY_SHIELD_RNK_4_TICK * 8.0f;
+			float avgDamageDealt = GetDamagePerSpellsTo(player, enemy, ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
+			TEST_ASSERT(avgDamageDealt == expectedDamage);
+			*/
+
+			// TODO: Seal of Righteouness: melee attack
+			// Crusader Strike
 			// Avenger's Shield
 			// Melee
 		}
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+
+			LearnTalent(player, Talents::Paladin::CRUSADE_RNK_3);
 
 			// Creatures are training dummys with 20% HP
 			TestCreatureType(player, 18); // Humanoid
@@ -732,9 +843,135 @@ public:
 	}
 };
 
+class SanctifiedJudgementTest : public TestCaseScript
+{
+public:
+	SanctifiedJudgementTest() : TestCaseScript("talents paladin sanctified_judgement") { }
+
+	class SanctifiedJudgementTestImpt : public TestCase
+	{
+	public:
+		SanctifiedJudgementTestImpt() : TestCase(true) { }
+
+		void TestSealMana(TestPlayer* player, Creature* creature, uint32 sealSpellId, uint32 sealManaCost)
+		{
+			player->Regenerate(POWER_MANA);
+			player->RemoveAllSpellCooldown();
+			uint32 const startMana = player->GetPower(POWER_MANA);
+
+			int32 const judgementMana = 147;
+
+			// Seal
+			uint32 res = player->CastSpell(player, sealSpellId);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+			ASSERT_INFO("Player hasnt aura %u", sealSpellId);
+			TEST_ASSERT(player->HasAura(sealSpellId));
+			Wait(1500);
+			// Judgement
+			res = player->CastSpell(creature, ClassSpells::Paladin::JUDGEMENT_RNK_1);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+
+			uint32 expectedMana = startMana - sealManaCost - judgementMana + sealManaCost * 0.8f;
+			ASSERT_INFO("Seal: %u - Current Mana: %u - Expected Mana: %u", sealSpellId, player->GetPower(POWER_MANA), expectedMana);
+			TEST_ASSERT(player->GetPower(POWER_MANA) == expectedMana);
+			Wait(1500);
+		}
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+
+			player->DisableRegeneration(true);
+			LearnTalent(player, Talents::Paladin::SANCTIFIED_JUDGEMENT_RNK_3);
+
+			Position spawnPosition(_location);
+			spawnPosition.MoveInFront(_location, 3.0f);
+			Creature* creature = SpawnCreatureWithPosition(spawnPosition, 18); // Dummy Humanoid 20% HP
+
+			int32 const judgementMana = 147;
+			int32 const sealOfLightMana = 280;
+			int32 const sealOfRighteousnessMana = 260;
+			int32 const sealOfVengeanceMana = 250;
+			int32 const sealOfWisdomMana = 270;
+			int32 const sealOfJusticeMana = 295;
+			int32 const sealOfBloodMana = 210;
+			int32 const sealOfCommandMana = 280;
+			int32 const sealOfCrusaderMana = 210;
+
+			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5, sealOfLightMana);
+			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_RIGHTEOUSNESS_RNK_9, sealOfRighteousnessMana);
+			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RNK_1, sealOfVengeanceMana);
+			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_WISDOM_RNK_4, sealOfWisdomMana);
+			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_JUSTICE_RNK_2, sealOfJusticeMana);
+			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_BLOOD_RNK_1, sealOfBloodMana);
+			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_COMMAND_RNK_6, sealOfCommandMana);
+			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_THE_CRUSADER_RNK_7, sealOfCrusaderMana);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<SanctifiedJudgementTestImpt>();
+	}
+};
+
+class SanctifiedSealsTest : public TestCaseScript
+{
+public:
+	SanctifiedSealsTest() : TestCaseScript("talents paladin sanctified_seals") { }
+
+	class SanctifiedSealsTestImpt : public TestCase
+	{
+	public:
+		SanctifiedSealsTestImpt() : TestCase(true) { }
+
+		void TestDispelSeal(TestPlayer* player, TestPlayer* shaman, uint32 sealSpellId)
+		{
+			// Seal
+			uint32 res = player->CastSpell(player, sealSpellId);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+			ASSERT_INFO("Player hasnt aura %u", sealSpellId);
+			TEST_ASSERT(player->HasAura(sealSpellId));
+
+			// Dispel
+			res = shaman->CastSpell(player, ClassSpells::Shaman::PURGE_RNK_2);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+
+			ASSERT_INFO("Seal %u was dispelled ", sealSpellId);
+			TEST_ASSERT(player->HasAura(sealSpellId));
+			Wait(1500);
+		}
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+			LearnTalent(player, Talents::Paladin::SANCTIFIED_SEALS_RNK_3);
+
+			Position spawnPosition(_location);
+			spawnPosition.MoveInFront(_location, -5.0f);
+			TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, RACE_DRAENEI, 70, spawnPosition); // Spawn behind the paladin
+
+			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5);
+			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_RIGHTEOUSNESS_RNK_9);
+			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RNK_1);
+			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_WISDOM_RNK_4);
+			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_JUSTICE_RNK_2);
+			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_BLOOD_RNK_1);
+			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_COMMAND_RNK_6);
+			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_THE_CRUSADER_RNK_7);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<SanctifiedSealsTestImpt>();
+	}
+};
+
 void AddSC_test_talents_paladin()
 {
-	// Total: 18/62
+	// Total: 21/63
+	new SalvationTest(); // TODO: innate ability
 	// Holy: 6/20
 	new DivineStrengthTest();
 	new DivineIntellectTest();
@@ -751,10 +988,12 @@ void AddSC_test_talents_paladin()
 	new SacredDutyTest();
 	new ImprovedHolyShieldTest();
 	new CombatExpertiseTest();
-	// Retribution: 4/22
+	// Retribution: 7/22
 	new ImprovedBlessingOfMightTest();
 	new BenedictionTest();
 	new ImprovedJudgementTest();
 	new DeflectionTest();
 	new CrusadeTest();
+	new SanctifiedJudgementTest();
+	new SanctifiedSealsTest();
 }
