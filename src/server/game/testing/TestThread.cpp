@@ -67,7 +67,7 @@ void TestThread::WakeUp()
 
 void TestThread::ResumeExecution()
 {
-    //resume execution of wait finished
+    //resume execution if wait finished
     if (_waitTimer == 0)
     {
         _state = STATE_RUNNING;

@@ -1617,7 +1617,11 @@ void ScriptMgr::FillSpellSummary()
 
             //Spell targets aoe friends
             if (Effect.TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_PARTY ||
+#ifdef LICH_KING
                 Effect.TargetA.GetTarget() == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
+#else
+                Effect.TargetA.GetTarget() == TARGET_UNIT_AREA_PARTY ||
+#endif
                 Effect.TargetA.GetTarget() == TARGET_SRC_CASTER)
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_AOE_FRIEND - 1);
 
@@ -1626,7 +1630,11 @@ void ScriptMgr::FillSpellSummary()
                 Effect.TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY ||
                 Effect.TargetA.GetTarget() == TARGET_UNIT_TARGET_PARTY ||
                 Effect.TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_PARTY ||
+#ifdef LICH_KING
                 Effect.TargetA.GetTarget() == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
+#else
+                Effect.TargetA.GetTarget() == TARGET_UNIT_AREA_PARTY ||
+#endif
                 Effect.TargetA.GetTarget() == TARGET_SRC_CASTER)
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_ANY_FRIEND - 1);
 

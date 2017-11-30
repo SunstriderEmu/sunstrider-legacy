@@ -1007,7 +1007,11 @@ enum Targets
     TARGET_UNIT_DEST_AREA_PARTY        = 34, // used in Tranquility
     TARGET_UNIT_TARGET_PARTY           = 35,
     TARGET_DEST_CASTER_UNK_36          = 36, //unknown
+#ifdef LICH_KING
     TARGET_UNIT_LASTTARGET_AREA_PARTY  = 37,
+#else
+    TARGET_UNIT_AREA_PARTY = 37, //spell on BC simply have this target while LK use this as B target and specify target in A
+#endif
     TARGET_UNIT_NEARBY_ENTRY           = 38,
     TARGET_DEST_CASTER_FISHING         = 39,
     TARGET_GAMEOBJECT_NEARBY_ENTRY     = 40,
