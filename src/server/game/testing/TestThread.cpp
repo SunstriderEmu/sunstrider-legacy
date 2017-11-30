@@ -65,6 +65,12 @@ void TestThread::WakeUp()
     _testCV.notify_all();
 }
 
+void TestThread::ResumeExecution()
+{
+    _state = STATE_RUNNING;
+    WakeUp();
+}
+
 void TestThread::UpdateWaitTimer(uint32 const diff)
 {
     if (!_waitTimer)
@@ -79,7 +85,7 @@ void TestThread::UpdateWaitTimer(uint32 const diff)
 void TestThread::WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test)
 {
     std::unique_lock<std::mutex> lk(_testCVMutex);
-    if (_waitTimer > 0 || _state == STATE_FINISHED)
+    if (_state != STATE_RUNNING && (_waitTimer > 0 || _state == STATE_FINISHED))
         return; //no sleep to do
 
     //TC_LOG_TRACE("test.unit_test", "Test tread with test name %s will now WaitUntilDoneOrWaiting", test->GetName().c_str());

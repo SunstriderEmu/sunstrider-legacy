@@ -107,7 +107,7 @@ void TestMgr::Update(uint32 const diff)
         if (!testThread->IsStarted())
             testThread->Start();
 
-        testThread->WakeUp();
+        testThread->ResumeExecution();
         testThread->WaitUntilDoneOrWaiting(test);
         ASSERT(test->IsSetup());
         //from this line only can we be sure that the test thread is not currently running

@@ -23,8 +23,10 @@ public:
     void Start();
     bool IsStarted() const;
 
-    //Resume execution if thread was waiting
+    //Wake up TestMgr if it was waiting
     void WakeUp();
+    //Resume execution after a previous loop
+    void ResumeExecution();
 
     //Main function for thread
     void Run();
