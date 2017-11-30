@@ -77,14 +77,17 @@ public:
     // Testing functions 
     // Test must use macro so that we can store from which line their calling. If calling function does a direct call without using the macro, we just print the internal line */
 
-    //Will cast the spell a bunch of time and test if results match the expected damage. Reason I keep expected min and max separated is because it gives me some data to do some math magic later to reduce iterations 
-    //Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time
+    /* Will cast the spell a bunch of time and test if results match the expected damage.
+     Caster must be a TestPlayer or a pet/summon of him
+     Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time*/
     #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage) _SetCaller(__FILE__, __LINE__); TestDirectSpellDamage(caster, target, spellID, expectedMinDamage, expectedMaxDamage); _ResetCaller()
     void TestDirectSpellDamage(Unit* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
+    //Caster must be a TestPlayer or a pet/summon of him
     #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax) _SetCaller(__FILE__, __LINE__); TestDirectHeal(caster, target, spellID, expectedHealMin, expectedHealMax); _ResetCaller()
-    void TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
+    void TestDirectHeal(Unit* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
+    //Caster must be a TestPlayer or a pet/summon of him
 	#define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) _SetCaller(__FILE__, __LINE__); TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller()
-	void TestMeleeDamage(TestPlayer* player, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit) {}
+    void TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
 
     bool GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage);
     float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);

@@ -568,9 +568,15 @@ void TestCase::TestDirectSpellDamage(Unit* caster, Unit* target, uint32 spellID,
     INTERNAL_TEST_ASSERT(damageDealtMin >= allowedMin);
 }
 
-void TestCase::TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax)
+void TestCase::TestDirectHeal(Unit* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax)
 {
     INTERNAL_ASSERT_INFO("TestDirectHeal NYI");
+    INTERNAL_TEST_ASSERT(false);
+}
+
+void TestCase::TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit)
+{
+    INTERNAL_ASSERT_INFO("TestMeleeDamage NYI");
     INTERNAL_TEST_ASSERT(false);
 }
 
