@@ -80,7 +80,7 @@ public:
     //Will cast the spell a bunch of time and test if results match the expected damage. Reason I keep expected min and max separated is because it gives me some data to do some math magic later to reduce iterations 
     //Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time
     #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage) _SetCaller(__FILE__, __LINE__); TestDirectSpellDamage(caster, target, spellID, expectedMinDamage, expectedMaxDamage); _ResetCaller()
-    void TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
+    void TestDirectSpellDamage(Unit* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
     #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax) _SetCaller(__FILE__, __LINE__); TestDirectHeal(caster, target, spellID, expectedHealMin, expectedHealMax); _ResetCaller()
     void TestDirectHeal(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
 	#define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) _SetCaller(__FILE__, __LINE__); TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller()

@@ -529,9 +529,13 @@ bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
     return false;
 }
 
-void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedMinDamage, uint32 expectedMaxDamage)
+void TestCase::TestDirectSpellDamage(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMinDamage, uint32 expectedMaxDamage)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
+    Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
+    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(_casterOwner);
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
+    INTERNAL_TEST_ASSERT(casterOwner != nullptr);
+    auto AI = caster->ToPlayer()->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
     AI->ResetSpellCounters();
@@ -550,7 +554,7 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     Wait(10 * SECOND * IN_MILLISECONDS);
     uint32 damageDealtMin;
     uint32 damageDealtMax;
-    bool foundData = GetDamagePerSpellsTo(caster, target, spellID, damageDealtMin, damageDealtMax);
+    bool foundData = GetDamagePerSpellsTo(casterOwner, target, spellID, damageDealtMin, damageDealtMax);
     INTERNAL_ASSERT_INFO("No data found for spell: %u", spellID);
     INTERNAL_TEST_ASSERT(foundData);
 	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> minDealt: %u - maxDealt %u - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, damageDealtMin, damageDealtMax, expectedMinDamage, expectedMaxDamage);
