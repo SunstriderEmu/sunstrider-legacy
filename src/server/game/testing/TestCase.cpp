@@ -551,7 +551,7 @@ void TestCase::TestDirectSpellDamage(TestPlayer* caster, Unit* target, uint32 sp
     uint32 damageDealtMin;
     uint32 damageDealtMax;
     bool foundData = GetDamagePerSpellsTo(caster, target, spellID, damageDealtMin, damageDealtMax);
-    INTERNAL_ASSERT_INFO("No data found for spell: %f", spellID);
+    INTERNAL_ASSERT_INFO("No data found for spell: %u", spellID);
     INTERNAL_TEST_ASSERT(foundData);
 	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> minDealt: %u - maxDealt %u - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, damageDealtMin, damageDealtMax, expectedMinDamage, expectedMaxDamage);
 

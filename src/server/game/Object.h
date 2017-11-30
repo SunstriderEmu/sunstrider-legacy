@@ -249,7 +249,7 @@ struct TC_GAME_API Position
     }
 
     //Use negative dist to move behind
-    void MoveInFront(Position& frontOf, float dist)
+    void MoveInFront(Position frontOf, float dist)
     {
         m_positionX = frontOf.m_positionX + dist * std::cos(frontOf.m_orientation);
         m_positionY = frontOf.m_positionY + dist * std::sin(frontOf.m_orientation);
