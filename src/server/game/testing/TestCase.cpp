@@ -469,7 +469,7 @@ TempSummon* TestCase::SpawnCreature(uint32 entry, bool spawnInFront)
 {
     Position spawnPosition(_location);
     if(spawnInFront)
-        spawnPosition.MoveInFront(_location, 10.0f);
+        spawnPosition.MoveInFront(_location, MELEE_RANGE - 1.0f);
 
     return SpawnCreatureWithPosition(spawnPosition, entry);
 }
