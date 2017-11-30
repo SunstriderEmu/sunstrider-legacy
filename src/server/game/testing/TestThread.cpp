@@ -67,8 +67,12 @@ void TestThread::WakeUp()
 
 void TestThread::ResumeExecution()
 {
-    _state = STATE_RUNNING;
-    WakeUp();
+    //resume execution of wait finished
+    if (_waitTimer == 0)
+    {
+        _state = STATE_RUNNING;
+        WakeUp();
+    }
 }
 
 void TestThread::UpdateWaitTimer(uint32 const diff)
