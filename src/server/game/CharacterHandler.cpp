@@ -514,7 +514,6 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     fname.append(fpath);
     PlayerDumpWriter().WriteDump(fname, GUID_LOPART(guid));
 
-
     LogsDatabaseAccessor::CharacterDelete(this, GUID_LOPART(guid), name, level, GetRemoteAddress());
 
 #ifdef LICH_LING
