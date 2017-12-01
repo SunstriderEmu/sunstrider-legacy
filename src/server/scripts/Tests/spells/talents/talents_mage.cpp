@@ -20,11 +20,11 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage, wandMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage, wandMaxDamage);
 
 			//Test improved damage 25%
 			LearnTalent(player, Talents::Mage::WAND_SPECIALIZATION_RNK_2);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f);
 		}
 	};
 
@@ -89,25 +89,28 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
-			TestPlayer* shaman = SpawnRandomPlayer(CLASS_SHAMAN);
+			TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+			TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, RACE_TAUREN);
 
-			float const coeffHW = 85.71f;
+			float const coeffHealinWave = 0.8571f;
 
-			uint32 const minHW = 2134;
-			uint32 const maxHW = 2436;
+			uint32 const minHealingWave = 2134;
+			uint32 const maxHealingWave = 2436;
 
-			uint32 const expectedMinHW = 2134 + 360 * coeffHW;
-			uint32 const expectedMaxHW = 2436 + 360 * coeffHW;
+            float const magicAttunementFactor = 1.5f;
+            uint32 const amplifyMagicPowerBonus = 240 * magicAttunementFactor;
+
+			uint32 const expectedMinHW = minHealingWave + amplifyMagicPowerBonus * coeffHealinWave;
+			uint32 const expectedMaxHW = maxHealingWave + amplifyMagicPowerBonus * coeffHealinWave;
 
 			// Test regular
-			//TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, minHW, maxHW);
+			TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, minHealingWave, maxHealingWave);
 
 			// Test improved
+            LearnTalent(mage, Talents::Mage::MAGIC_ATTUNEMENT_RNK_2);
 			uint32 result = mage->CastSpell(mage, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6);
             TEST_ASSERT(result == SPELL_CAST_OK);
-			LearnTalent(mage, Talents::Mage::MAGIC_ATTUNEMENT_RNK_2);
-			//TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, expectedMinHW, expectedMaxHW);
+			TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, expectedMinHW, expectedMaxHW);
 		}
 	};
 

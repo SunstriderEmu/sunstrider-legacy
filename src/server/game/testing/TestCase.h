@@ -80,26 +80,22 @@ public:
     /* Will cast the spell a bunch of time and test if results match the expected damage.
      Caster must be a TestPlayer or a pet/summon of him
      Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time*/
-    #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage) _SetCaller(__FILE__, __LINE__); TestDirectSpellDamage(caster, target, spellID, expectedMinDamage, expectedMaxDamage); _ResetCaller()
-    void TestDirectSpellDamage(Unit* caster, Unit* target, uint32 spellID, uint32 expectedDamageMin, uint32 expectedDamageMax);
+    #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage) _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, true); _ResetCaller()
     //Caster must be a TestPlayer or a pet/summon of him
-    #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax) _SetCaller(__FILE__, __LINE__); TestDirectHeal(caster, target, spellID, expectedHealMin, expectedHealMax); _ResetCaller()
-    void TestDirectHeal(Unit* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax);
+    #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax) _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, false); _ResetCaller()
     //Caster must be a TestPlayer or a pet/summon of him
-	#define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) _SetCaller(__FILE__, __LINE__); TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller()
-    void TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
+	#define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller()
+  
+    //use expectedAmount negative values for healing
+    #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount) _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedAmount); _ResetCaller()
+  
+    #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedAmount) _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount); _ResetCaller()
+
+    #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller()
 
     bool GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage);
+    bool GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal);
     float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
-    //use expectedAmount negative values for healing
-    #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount) _SetCaller(__FILE__, __LINE__); TestDotDamage(caster, target, spellID, expectedAmount); _ResetCaller()
-    void TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount);
-
-    #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedAmount) _SetCaller(__FILE__, __LINE__); TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount); _ResetCaller()
-    void TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
-
-    #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) _SetCaller(__FILE__, __LINE__); TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller()
-    void TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
 
     static uint32 GetTestBotAccountId();
 
@@ -121,6 +117,12 @@ protected:
     void _SetCaller(std::string callerFile, int32 callerLine);
     void _ResetCaller();
     void Celebrate();
+
+    void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool damage); //if !damage, then use healing
+    void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
+    void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount);
+    void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
+    void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
 
 private:
     std::string              _testName;
@@ -157,7 +159,13 @@ private:
     Races _GetRandomRaceForClass(Classes race);
     static void _RemoveTestBot(Player* player);
 
+    static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);
+   
     TestThread* _testThread;
+
+    //those two just to help avoiding calling SpawnRandomPlayer with the wrong arguments, SpawnPlayer should be called in those case
+    TestPlayer* SpawnRandomPlayer(Races race, Classes cls) { return nullptr; }
+    TestPlayer* SpawnRandomPlayer(Classes cls, Races races) { return nullptr; }
 };
 
 #endif //TESTCASE_H

@@ -181,7 +181,7 @@ void TestCase::EnableMapObjects()
     _enableMapObjects = true;
 }
 
-void TestCase::TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount)
+void TestCase::_TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount)
 {
    /* TODO: cast */
     uint32 auraCount = target->GetAuraCount(testSpell);
@@ -529,8 +529,15 @@ bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
     return false;
 }
 
-void TestCase::TestDirectSpellDamage(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMinDamage, uint32 expectedMaxDamage)
+void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax)
 {
+    //Improve me... we want a 99.9% certainty
+    sampleSize = 500;
+    allowedError = (expectedMax - expectedMin) / 25; //arbitary
+}
+void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool damage) //if !damage, then use healing
+{
+    INTERNAL_TEST_ASSERT(expectedMax >= expectedMin);
     Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
     TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(_casterOwner);
     INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
@@ -540,9 +547,9 @@ void TestCase::TestDirectSpellDamage(Unit* caster, Unit* target, uint32 spellID,
     INTERNAL_TEST_ASSERT(AI != nullptr);
     AI->ResetSpellCounters();
 
-    uint32 maxPredictionError = (expectedMaxDamage - expectedMinDamage) / 25; //arbitary
-    //const float confidenceLevel = 99.9f;
-    uint32 sampleSize = 500;
+    uint32 sampleSize;
+    uint32 maxPredictionError;
+    _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -552,29 +559,28 @@ void TestCase::TestDirectSpellDamage(Unit* caster, Unit* target, uint32 spellID,
     }
 
     Wait(10 * SECOND * IN_MILLISECONDS);
-    uint32 damageDealtMin;
-    uint32 damageDealtMax;
-    bool foundData = GetDamagePerSpellsTo(casterOwner, target, spellID, damageDealtMin, damageDealtMax);
+    uint32 dealtMin;
+    uint32 dealtMax;
+    bool foundData = false;
+    if(damage)
+        foundData = GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax);
+    else 
+        foundData = GetHealingPerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax);
+
     INTERNAL_ASSERT_INFO("No data found for spell: %u", spellID);
     INTERNAL_TEST_ASSERT(foundData);
-	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> minDealt: %u - maxDealt %u - expectedMinDamage: %u - expectedMaxDamage: %u", spellID, damageDealtMin, damageDealtMax, expectedMinDamage, expectedMaxDamage);
+    TC_LOG_DEBUG("test.unit_test", "spellId: %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u", spellID, dealtMin, dealtMax, expectedMin, expectedMax);
 
-    uint32 allowedMin = expectedMinDamage > maxPredictionError ? expectedMinDamage - maxPredictionError : 0; //protect against underflow
-    uint32 allowedMax = expectedMaxDamage + maxPredictionError;
+    uint32 allowedMin = expectedMin > maxPredictionError ? expectedMin - maxPredictionError : 0; //protect against underflow
+    uint32 allowedMax = expectedMax + maxPredictionError;
 
-    INTERNAL_ASSERT_INFO("Enforcing high result for spell %u. allowedMax: %u, damageDealtMax: %u", spellID, allowedMax, damageDealtMax);
-    INTERNAL_TEST_ASSERT(damageDealtMax <= allowedMax);
-    INTERNAL_ASSERT_INFO("Enforcing low result for spell %u. allowedMin: %u, damageDealtMin: %u", spellID, allowedMin, damageDealtMin);
-    INTERNAL_TEST_ASSERT(damageDealtMin >= allowedMin);
+    INTERNAL_ASSERT_INFO("Enforcing high result for spell %u. allowedMax: %u, dealtMax: %u", spellID, allowedMax, dealtMax);
+    INTERNAL_TEST_ASSERT(dealtMax <= allowedMax);
+    INTERNAL_ASSERT_INFO("Enforcing low result for spell %u. allowedMin: %u, dealtMin: %u", spellID, allowedMin, dealtMin);
+    INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
 }
 
-void TestCase::TestDirectHeal(Unit* caster, Unit* target, uint32 spellID, uint32 expectedHealMin, uint32 expectedHealMax)
-{
-    INTERNAL_ASSERT_INFO("TestDirectHeal NYI");
-    INTERNAL_TEST_ASSERT(false);
-}
-
-void TestCase::TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit)
+void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit)
 {
     INTERNAL_ASSERT_INFO("TestMeleeDamage NYI");
     INTERNAL_TEST_ASSERT(false);
@@ -634,6 +640,57 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
     return totalDamage;
 }
 
+bool TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    auto healingToTarget = AI->GetHealingDoneInfo(target);
+    if (!healingToTarget || healingToTarget->empty())
+    {
+        TC_LOG_WARN("test.unit_test", "GetHealingPerSpellsTo found no data for this victim (%s)", target->GetName().c_str());
+        return false;
+    }
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    if (spellInfo == nullptr)
+    {
+        TC_LOG_WARN("test.unit_test", "GetHealingPerSpellsTo was prompted for non existing spell ID %u", spellID);
+        return false;
+    }
+
+    minHeal = std::numeric_limits<uint32>::max();
+    maxHeal = 0;
+
+    uint32 count = 0;
+    for (auto itr : *healingToTarget)
+    {
+        if (itr.spellID != spellID)
+            continue;
+
+        //use only spells that hit target
+        if (itr.missInfo != SPELL_MISS_NONE)
+            continue;
+
+        if (itr.crit)
+            continue; //ignore crit... damage crits are affected by a whole lot of other factors so best just using regulars hit
+        
+        minHeal = std::min(minHeal, itr.healing);
+        maxHeal = std::max(maxHeal, itr.healing);
+
+        count++;
+    }
+
+    if (count == 0)
+    {
+        TC_LOG_WARN("test.unit_test", "GetHealingPerSpellsTo was prompted for a victim (%s) with no valid data for this spell (ID %u)", target->GetName().c_str(), spellID);
+        return false;
+    }
+
+    return true;
+}
+
 bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage)
 {
     auto AI = caster->GetTestingPlayerbotAI();
@@ -641,7 +698,7 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetDamageDoneInfo(victim);
-    if (damageToTarget->empty())
+    if (!damageToTarget || damageToTarget->empty())
     {
         TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
         return false;
@@ -657,7 +714,7 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
     minDamage = std::numeric_limits<uint32>::max();
     maxDamage = 0;
 
-    uint64 totalDamage = 0;
+    //uint64 totalDamage = 0;
     uint32 count = 0;
     for (auto itr : *damageToTarget)
     {
@@ -680,7 +737,7 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
         minDamage = std::min(minDamage, damage);
         maxDamage = std::max(maxDamage, damage);
 
-        totalDamage += damage;
+        //totalDamage += damage;
         count++;
     }
 
@@ -693,7 +750,7 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
     return true;
 }
 
-void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount)
+void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -737,7 +794,7 @@ void TestCase::TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, i
     INTERNAL_TEST_ASSERT((false && "Failed to cast the spell 100 times")); //failed to cast the spell 100 times
 }
 
-void TestCase::TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount)
+void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");

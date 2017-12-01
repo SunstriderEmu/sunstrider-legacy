@@ -430,10 +430,11 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
-			TestPlayer* player2 = SpawnRandomPlayer(CLASS_WARRIOR);
+            TestSpellOfTheWild(player, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8, player);
 
-			TestSpellOfTheWild(player, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8, player);
-			//TODO TestSpellOfTheWild(player, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_3, player2);
+            TestPlayer* player2 = SpawnRandomPlayer(CLASS_DRUID);
+            TestPlayer* target = SpawnRandomPlayer(CLASS_WARRIOR);
+			TestSpellOfTheWild(player2, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_3, target);
 		}
 	};
 

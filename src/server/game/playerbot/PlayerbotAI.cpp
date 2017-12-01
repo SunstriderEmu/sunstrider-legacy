@@ -1481,6 +1481,15 @@ std::vector<PlayerbotTestingAI::DamageDoneInfo> const* PlayerbotTestingAI::GetDa
     return &(*infoForVictimItr).second;
 }
 
+std::vector<PlayerbotTestingAI::HealingDoneInfo> const* PlayerbotTestingAI::GetHealingDoneInfo(Unit* target)
+{
+    auto infoForVictimItr = healingDone.find(target->GetGUID());
+    if (infoForVictimItr == healingDone.end())
+        return nullptr;
+
+    return &(*infoForVictimItr).second;
+}
+
 void PlayerbotTestingAI::ResetSpellCounters()
 {
     TC_LOG_TRACE("test.unit_test", "PlayerbotTestingAI: Counters were reset");

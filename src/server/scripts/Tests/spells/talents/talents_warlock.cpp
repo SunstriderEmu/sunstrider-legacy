@@ -53,7 +53,7 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::IMPROVED_CURSE_OF_AGONY_RNK_2);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage);
 		}
 	};
 
@@ -84,7 +84,7 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::EMPOWERED_CORRUPTION_RNK_3);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage);
 		}
 	};
 
@@ -119,13 +119,13 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::SHADOW_MASTERY_RNK_5);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, codDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, deathCoilDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, drainLifeDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, codDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, deathCoilDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, drainLifeDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.1f);
 		}
 	};
 
@@ -156,9 +156,9 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::SHADOW_MASTERY_RNK_5);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.05f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.05f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.05f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.05f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.05f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.05f);
 		}
 	};
 

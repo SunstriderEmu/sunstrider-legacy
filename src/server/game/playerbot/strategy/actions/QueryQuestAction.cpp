@@ -13,23 +13,22 @@ void QueryQuestAction::TellObjective(std::string _name, int available, int requi
 
 bool QueryQuestAction::Execute(Event event)
 {
-
-    Player *bot = ai->GetBot();
+    Player* _bot = ai->GetBot();
     std::string text = event.getParam();
 
-    PlayerbotChatHandler ch(bot);
+    PlayerbotChatHandler ch(_bot);
     uint32 questId = ch.extractQuestId(text);
     if (!questId)
         return false;
 
     for (uint16 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
     {
-        if(questId != bot->GetQuestSlotQuestId(slot))
+        if(questId != _bot->GetQuestSlotQuestId(slot))
             continue;
 
         std::ostringstream out;
         out << "--- " << chat->formatQuest(sObjectMgr->GetQuestTemplate(questId)) << " ";
-        if (bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
+        if (_bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
         {
             out << "|c0000FF00completed|r ---";
             ai->TellMaster(out);

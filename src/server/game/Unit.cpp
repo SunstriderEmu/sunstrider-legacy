@@ -4309,7 +4309,7 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
                 is_triggered_by_spell = true;
         if (is_triggered_by_spell) continue;
 
-        for(int j = 0; j < 3; ++j)
+        for(uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
             // prevent remove dummy triggered spells at next effect aura add
             switch(spellProto->Effects[j].Effect)                   // main spell auras added added after triggered spell

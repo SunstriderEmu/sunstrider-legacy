@@ -841,7 +841,7 @@ void PlayerbotFactory::EnchantItem(Item* item)
         if (spellLevel && (spellLevel > level || spellLevel < level - 10))
             continue;
 
-        for (int j = 0; j < 3; ++j)
+        for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
             if (entry->Effects[j].Effect != SPELL_EFFECT_ENCHANT_ITEM)
                 continue;

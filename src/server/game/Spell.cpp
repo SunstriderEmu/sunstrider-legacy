@@ -2535,7 +2535,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 #ifdef TESTS
         if (Player* p = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself())
             if (p->GetPlayerbotAI())
-                m_caster->ToPlayer()->GetPlayerbotAI()->CastedHealingSpell(unitTarget, addhealth, gain, m_spellInfo->Id, missInfo);
+                m_caster->ToPlayer()->GetPlayerbotAI()->CastedHealingSpell(unitTarget, addhealth, gain, m_spellInfo->Id, missInfo, crit);
 #endif
     }
     // Do damage and triggers
@@ -2619,7 +2619,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 #ifdef TESTS
         if (Player* p = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself())
             if (p->GetPlayerbotAI())
-                p->GetPlayerbotAI()->CastedDamageSpell(unitTarget, damageInfo, missInfo);
+                p->GetPlayerbotAI()->CastedDamageSpell(unitTarget, damageInfo, missInfo, target->crit);
 #endif
     }
 
@@ -6319,7 +6319,7 @@ bool Spell::CanAutoCast(Unit* target)
     
     uint64 targetguid = target->GetGUID();
 
-    for(uint32 j = 0;j<3;j++)
+    for(uint8 j = 0; j < MAX_SPELL_EFFECTS; j++)
     {
         if(m_spellInfo->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA)
         {
@@ -7038,7 +7038,7 @@ void Spell::DelayedChannel()
         }
     }
 
-    for(int j = 0; j < 3; j++)
+    for(uint8 j = 0; j < MAX_SPELL_EFFECTS; j++)
     {
         // partially interrupt persistent area auras
         DynamicObject* dynObj = m_caster->GetDynObject(m_spellInfo->Id, j);

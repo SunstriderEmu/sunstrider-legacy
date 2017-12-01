@@ -2635,7 +2635,7 @@ void Spell::EffectTriggerSpell(uint32 i)
 
     // some triggered spells must be casted instantly (for example, if next effect case instant kill caster)
     /*bool instant = false;
-    for(uint32 j = i+1; j < 3; ++j)
+    for(uint32 j = i+1; j < MAX_SPELL_EFFECTS; ++j)
     {
         if(m_spellInfo->Effects[j].TargetA.GetTarget()== TARGET_UNIT_CASTER
             && (m_spellInfo->Effects[j].Effect==SPELL_EFFECT_INSTAKILL))
@@ -4830,7 +4830,7 @@ void Spell::EffectWeaponDmg(uint32 i)
                 }
             }
 
-            for (int j = 0; j < 3; j++)
+            for (uint8 j = 0; j < MAX_SPELL_EFFECTS; j++)
             {
                 if (m_spellInfo->Effects[j].Effect == SPELL_EFFECT_NORMALIZED_WEAPON_DMG)
                 {
@@ -4939,7 +4939,7 @@ void Spell::EffectWeaponDmg(uint32 i)
 
     bool normalized = false;
     float weaponDamagePercentMod = 1.0;
-    for (int j = 0; j < 3; ++j)
+    for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
     {
         switch (m_spellInfo->Effects[j].Effect)
         {

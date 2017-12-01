@@ -139,7 +139,8 @@ bool PlayerbotAIConfig::Initialize()
     minGuildTaskRewardTime = config.GetIntDefault("AiPlayerbot.MinGuildTaskRewardTime", 300);
     maxGuildTaskRewardTime = config.GetIntDefault("AiPlayerbot.MaxGuildTaskRewardTime", 1 * 3600);
 
-    RandomPlayerbotFactory::CreateRandomBots();
+    if(randomBotAutologin)
+        RandomPlayerbotFactory::CreateRandomBots();
     sLog->outMessage("playerbot", LOG_LEVEL_INFO, "AI Playerbot configuration loaded");
 
     return true;
