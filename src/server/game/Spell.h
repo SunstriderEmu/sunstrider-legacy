@@ -578,6 +578,7 @@ class TC_GAME_API Spell
         // These vars are used in both delayed spell system and modified immediate spell system
         bool m_referencedFromCurrentSpell;                  // mark as references to prevent deleted and access by dead pointers
         bool m_executedCurrently;                           // mark as executed to prevent deleted and access by dead pointers
+        bool m_needComboPoints;
         bool m_needSpellLog;                                // need to send spell log?
         uint8 m_applyMultiplierMask;                        // by effect: damage multiplier needed?
 

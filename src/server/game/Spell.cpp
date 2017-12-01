@@ -580,6 +580,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     m_triggeringContainer = triggeringContainer;
     m_referencedFromCurrentSpell = false;
     m_executedCurrently = false;
+    m_needComboPoints = m_spellInfo->NeedsComboPoints();
     m_delayStart = 0;
     m_immediateHandled = false;
     m_delayAtDamageCount = 0;
@@ -2487,6 +2488,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             DoSpellHitOnUnit(unit, tempMask);
     }*/
 
+    // Do not take combo points on dodge and miss
+    if (missInfo != SPELL_MISS_NONE && m_needComboPoints && m_targets.GetUnitTargetGUID() == target->targetGUID)
+        m_needComboPoints = false;
+
     CallScriptOnHitHandlers();
 
     // All calculated do it!
@@ -3134,7 +3139,11 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
     LoadScripts();
 
     // Fill cost data
-    m_powerCost = CalculatePowerCost();
+    m_powerCost = CalculatePowerCost(); //TC has:   m_powerCost = m_CastItem ? 0 : m_spellInfo->CalcPowerCost(m_caster, m_spellSchoolMask, this);
+
+    // Set combo point requirement
+    if (m_IsTriggeredSpell || m_CastItem)
+        m_needComboPoints = false;
 
     SpellCastResult result = CheckCast(true);
     //TC_LOG_DEBUG("FIXME","CheckCast for %u : %u", m_spellInfo->Id, result);
@@ -3454,8 +3463,9 @@ void Spell::cast(bool skipCheck)
 
     if(!m_IsTriggeredSpell && m_spellInfo->Effects[0].Effect != SPELL_EFFECT_TRIGGER_SPELL_2)
     {
-        //TakePower();
-        TakeReagents();                                         // we must remove reagents before HandleEffects to allow place crafted item in same slot
+        TakePower();  // combo points should not be taken before SPELL_AURA_ADD_TARGET_TRIGGER auras are handled
+        if(m_spellInfo->Effects[0].Effect != SPELL_EFFECT_TRIGGER_SPELL_2)
+            TakeReagents();   // we must remove reagents before HandleEffects to allow place crafted item in same slot
     }
 
     // CAST SPELL
@@ -3489,6 +3499,12 @@ void Spell::cast(bool skipCheck)
     if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_CHARGE))
         EffectCharge(0);
 
+    // combo points should not be taken before SPELL_AURA_ADD_TARGET_TRIGGER auras are handled
+    if (!m_IsTriggeredSpell)
+    {
+        TakePower();
+    }
+
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
     if (m_spellInfo->Id == 2094 || m_spellInfo->Id == 14181)       // Delay Blind for 150ms to fake retail lag
     {
@@ -3520,11 +3536,6 @@ void Spell::cast(bool skipCheck)
 
     CallScriptAfterCastHandlers();
 
-    // combo points should not be taken before SPELL_AURA_ADD_TARGET_TRIGGER auras are handled
-    if(!m_IsTriggeredSpell)
-    {
-        TakePower();
-    }
 
     if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_LINK_CAST))
     {
@@ -3737,6 +3748,10 @@ void Spell::_handle_immediate_phase()
 
 void Spell::_handle_finish_phase()
 {
+    // Take for real after all targets are processed
+    if (m_needComboPoints && m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->ClearComboPoints();
+
     // spell log
     if(m_needSpellLog)
         SendLogExecute();
@@ -4967,8 +4982,6 @@ void Spell::TakePower()
                             hit = false;
                         break;
                     }
-        if(hit && m_spellInfo->NeedsComboPoints())
-            (m_caster->ToPlayer())->ClearComboPoints(m_spellInfo->Id);
     }
 
     if(!m_powerCost)
@@ -4992,7 +5005,7 @@ void Spell::TakePower()
     if(hit)
         m_caster->ModifyPower(powerType, -m_powerCost);
     else
-      m_caster->ModifyPower(powerType, -m_caster->GetMap()->irand(0, m_powerCost/4));
+        m_caster->ModifyPower(powerType, -m_caster->GetMap()->irand(0, m_powerCost/4));
 
     // Set the five second timer
     if (powerType == POWER_MANA && m_powerCost > 0)
@@ -6170,6 +6183,20 @@ SpellCastResult Spell::CheckCast(bool strict)
 
     }
 
+    // check if caster has at least 1 combo point on target for spells that require combo points
+    if (m_needComboPoints && m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (m_spellInfo->NeedsExplicitUnitTarget())
+        {
+            if (!m_caster->ToPlayer()->GetComboPoints(m_targets.GetUnitTarget()))
+                return SPELL_FAILED_NO_COMBO_POINTS;
+        }
+        else
+        {
+            if (!m_caster->ToPlayer()->GetComboPoints())
+                return SPELL_FAILED_NO_COMBO_POINTS;
+        }
+    }
     // all ok
     return SPELL_CAST_OK;
 }
@@ -6463,7 +6490,7 @@ int32 Spell::CalculatePowerCost()
         // Else drain all power
         if (m_spellInfo->PowerType < MAX_POWERS)
             return m_caster->GetPower(Powers(m_spellInfo->PowerType));
-        TC_LOG_ERROR("FIXME","Spell::CalculateManaCost: Unknown power type '%d' in spell %d", m_spellInfo->PowerType, m_spellInfo->Id);
+        TC_LOG_ERROR("spells","Spell::CalculateManaCost: Unknown power type '%d' in spell %d", m_spellInfo->PowerType, m_spellInfo->Id);
         return 0;
     }
 
