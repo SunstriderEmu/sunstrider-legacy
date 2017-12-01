@@ -322,7 +322,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         if(*iter==sess)
         {
             sess->SetInQueue(false);
-            sess->ResetTimeOutTime();
+            sess->ResetTimeOutTime(false);
             iter = m_QueuedPlayer.erase(iter);
             found = true;                                   // removing queued session
             break;
@@ -560,7 +560,8 @@ void World::LoadConfigSettings(bool reload)
     else
         m_configs[CONFIG_PORT_WORLD] = sConfigMgr->GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
 
-    m_configs[CONFIG_SOCKET_TIMEOUTTIME] = sConfigMgr->GetIntDefault("SocketTimeOutTime", 900000);
+    m_configs[CONFIG_SOCKET_TIMEOUTTIME] = sConfigMgr->GetIntDefault("SocketTimeOutTime", 900000) / 1000;
+    m_configs[CONFIG_SOCKET_TIMEOUTTIME_ACTIVE] = sConfigMgr->GetIntDefault("SocketTimeOutTimeActive", 60000) / 1000;
 
     m_configs[CONFIG_GROUP_XP_DISTANCE] = sConfigMgr->GetIntDefault("MaxGroupXPDistance", 74);
     /// \todo Add MonsterSight and GuarderSight (with meaning) in worldserver.conf or put them as define

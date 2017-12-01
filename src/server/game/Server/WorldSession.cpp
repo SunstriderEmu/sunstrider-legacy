@@ -12,6 +12,7 @@
 #include "WorldSession.h"
 #include "Player.h"
 #include "ObjectMgr.h"
+#include "GameTime.h"
 #include "Group.h"
 #include "Guild.h"
 #include "World.h"
@@ -123,7 +124,7 @@ expireTime(60000)
     if (sock)
     {
         m_Address = sock->GetRemoteIpAddress().to_string();
-        ResetTimeOutTime();
+        ResetTimeOutTime(false);
         LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
     }
 }
@@ -274,9 +275,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     #ifdef PLAYERBOT
     if (GetPlayer() && GetPlayer()->GetPlayerbotAI()) return true;
     #endif
-
-    /// Update Timeout timer.
-    UpdateTimeOutTime(diff);
 
     ///- Before we process anything:
     /// If necessary, kick the player from the game
@@ -486,6 +484,18 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     return true;
 }
 
+void WorldSession::ResetTimeOutTime(bool onlyActive)
+{
+    if (GetPlayer())
+        m_timeOutTime = GameTime::GetGameTime() + time_t(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME_ACTIVE));
+    else if (!onlyActive)
+        m_timeOutTime = GameTime::GetGameTime() + time_t(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME));
+}
+
+bool WorldSession::IsConnectionIdle() const
+{
+    return m_timeOutTime < GameTime::GetGameTime() && !m_inQueue;
+}
 
 void WorldSession::ProcessQueryCallbacks()
 {
@@ -1167,7 +1177,7 @@ void WorldSession::InitializeSessionCallback(SQLQueryHolder* realmHolder)
         SendAuthWaitQue(0);
 
     SetInQueue(false);
-    ResetTimeOutTime();
+    ResetTimeOutTime(false);
 
     SendAddonsInfo();
 #ifdef LICH_KING

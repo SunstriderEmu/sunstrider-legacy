@@ -426,22 +426,11 @@ class TC_GAME_API WorldSession
         std::shared_ptr<ReplayPlayer> GetReplayPlayer() { return m_replayPlayer; }
         std::shared_ptr<ReplayRecorder> GetReplayRecorder() { return m_replayRecorder; }
 
-        std::atomic<int32> m_timeOutTime;
+        std::atomic<time_t> m_timeOutTime;
 
-        void UpdateTimeOutTime(uint32 diff)
-        {
-            m_timeOutTime -= int32(diff);
-        }
+        void ResetTimeOutTime(bool onlyActive);
 
-        void ResetTimeOutTime()
-        {
-            m_timeOutTime = int32(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME));
-        }
-
-        bool IsConnectionIdle() const
-        {
-            return m_timeOutTime <= 0 && !m_inQueue && _player; // don't kick if in queue or if on character selection screen
-        }
+        bool IsConnectionIdle() const;
 
     public:                                                 // opcodes handlers
 
