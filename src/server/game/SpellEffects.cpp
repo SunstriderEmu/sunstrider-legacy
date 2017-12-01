@@ -172,7 +172,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectWeaponDmg,                                //121 SPELL_EFFECT_NORMALIZED_WEAPON_DMG
     &Spell::EffectUnused,                                   //122 SPELL_EFFECT_122                      unused
     &Spell::EffectSendTaxi,                                 //123 SPELL_EFFECT_SEND_TAXI                taxi/flight related (misc value is taxi path id)
-    &Spell::EffectPlayerPull,                               //124 SPELL_EFFECT_PLAYER_PULL              opposite of knockback effect (pulls player twoard caster)
+    &Spell::EffectPullTowards,                              //124 SPELL_EFFECT_PLAYER_PULL              opposite of knockback effect (pulls player twoard caster)
     &Spell::EffectModifyThreatPercent,                      //125 SPELL_EFFECT_MODIFY_THREAT_PERCENT
     &Spell::EffectStealBeneficialBuff,                      //126 SPELL_EFFECT_STEAL_BENEFICIAL_BUFF    spell steal effect?
     &Spell::EffectProspecting,                              //127 SPELL_EFFECT_PROSPECTING              Prospecting spell
@@ -193,7 +193,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectTriggerSpellWithValue,                    //142 SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
     &Spell::EffectApplyAreaAura,                            //143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
     &Spell::EffectKnockBack,                                //144 SPELL_EFFECT_KNOCK_BACK_DEST             Spectral Blast
-    &Spell::EffectPlayerPull,                               //145 SPELL_EFFECT_PULL_TOWARDS_DEST                      Black Hole Effect
+    &Spell::EffectPullTowards,                              //145 SPELL_EFFECT_PULL_TOWARDS_DEST        Black Hole Effect (only 46230 on BC)
     &Spell::EffectUnused,                                   //146 SPELL_EFFECT_146                      unused
     &Spell::EffectQuestFail,                                //147 SPELL_EFFECT_QUEST_FAIL               quest fail
     &Spell::EffectUnused,                                   //148 SPELL_EFFECT_148                      unused
@@ -2059,6 +2059,7 @@ void Spell::EffectDummy(uint32 i)
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
                         
+                    //Todo: use Unit::KnockbackFrom instead
                     WorldPacket data(SMSG_MOVE_KNOCK_BACK, 50);
                     data << m_caster->GetPackGUID();
                     data << GetMSTime();
@@ -6764,7 +6765,7 @@ void Spell::EffectSendTaxi(uint32 i)
     unitTarget->ToPlayer()->ActivateTaxiPathTo(m_spellInfo->Effects[i].MiscValue, m_spellInfo->Id);
 }
 
-void Spell::EffectPlayerPull(uint32 i)
+void Spell::EffectPullTowards(uint32 effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -6772,27 +6773,46 @@ void Spell::EffectPlayerPull(uint32 i)
     if(!unitTarget || !m_caster)
         return;
 
+#ifndef LICH_KING
     // Effect only works on players
     if(unitTarget->GetTypeId()!=TYPEID_PLAYER)
         return;
+#endif
 
     // Hack, effect scripted on black hole's script
     if (m_spellInfo->Id == 46230)
         return;
 
-    float vsin = sin(unitTarget->GetAngle(m_caster));
-    float vcos = cos(unitTarget->GetAngle(m_caster));
+    //sunstrider: fully reworked logic and working for SPELL_EFFECT_PULL_TOWARDS. Not tested with SPELL_EFFECT_PULL_TOWARDS_DEST but since the only spells using it has a heavy logic in boss_muru, make sure to test the boss when removing this hack
 
-    WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
-    data << unitTarget->GetPackGUID();
-    data << uint32(0);                                      // Sequence
-    data << float(vcos);                                    // x direction
-    data << float(vsin);                                    // y direction
-                                                            // Horizontal speed
-    data << float(damage ? damage : unitTarget->GetDistance2d(m_caster));
-    data << float(m_spellInfo->Effects[i].MiscValue)/-10;     // Z Movement speed
+    Position pos;
+    float dist = 0.0f;
+    if (m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_PULL_TOWARDS_DEST)
+    {
+        if (m_targets.HasDst())
+        {
+            pos.Relocate(*destTarget);
+            dist = unitTarget->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
+        } 
+        else
+            return;
+    }
+    else //if (m_spellInfo->Effects[i].Effect == SPELL_EFFECT_PULL_TOWARDS)
+    {
+        pos.Relocate(m_caster);
+        dist = unitTarget->GetDistance2d(m_caster); //this includes combat reaches of both unit
+    }
 
-    (unitTarget->ToPlayer())->SendDirectMessage(&data);
+    if (damage && dist > damage) //=~ do not use damage if they would make player go over pulling unit
+        dist = float(damage);
+    if (dist == 0.0f)
+        return;
+
+    float speedXY = float(m_spellInfo->Effects[effIndex].MiscValue) * 0.1f;
+    float time = dist / speedXY;
+    float speedZ = ((pos.GetPositionZ() - unitTarget->GetPositionZ()) / time + 0.5f * time * Movement::gravity);
+
+    (unitTarget->ToPlayer())->KnockbackFrom(pos.GetPositionX(), pos.GetPositionY(), -speedXY, speedZ);
 }
 
 void Spell::EffectDispelMechanic(uint32 i)
