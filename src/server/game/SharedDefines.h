@@ -800,7 +800,7 @@ enum SpellEffects
     SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE  = 142,
     SPELL_EFFECT_APPLY_AREA_AURA_OWNER     = 143,
     SPELL_EFFECT_KNOCK_BACK_DEST           = 144,
-    SPELL_EFFECT_145                       = 145,
+    SPELL_EFFECT_PULL_TOWARDS_DEST         = 145,
     SPELL_EFFECT_146                       = 146,
     SPELL_EFFECT_QUEST_FAIL                = 147,
     SPELL_EFFECT_148                       = 148, //unused on BC
