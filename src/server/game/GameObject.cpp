@@ -1415,11 +1415,13 @@ void GameObject::Use(Unit* user)
 
             Player* player = user->ToPlayer();
 
-            if(info->camera.cinematicId)
+            if (info->camera.cinematicId)
+                player->SendCinematicStart(info->camera.cinematicId);
+
+            if (info->camera.eventID)
             {
-                WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
-                data << info->camera.cinematicId;
-                player->SendDirectMessage(&data);
+                GetMap()->ScriptsStart(sEventScripts, info->camera.eventID, player, this);
+                EventInform(info->camera.eventID/*, user*/);
             }
 
             if (GetEntry() == 187578)
