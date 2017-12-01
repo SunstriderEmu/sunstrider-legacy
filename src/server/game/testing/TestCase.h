@@ -65,9 +65,10 @@ public:
     //This checks if item exists in loot (but we cannot say if player can actually loot it)
     bool HasLootForMe(Creature*, Player*, uint32 itemID);
     //Create item and equip it to player. Will remove any item already in slot. Fail test on failure
-    void EquipItem(TestPlayer* p, uint32 itemID);
-	void RemoveAllItems(TestPlayer* player) {}
-	void RemoveItem(TestPlayer* player, uint32 itemID, uint32 count) {}
+    #define EQUIP_ITEM(player, itemID) _SetCaller(__FILE__, __LINE__); _EquipItem(player, itemID); _ResetCaller()
+
+    void RemoveAllEquipedItems(TestPlayer* player);
+    void RemoveItem(TestPlayer* player, uint32 itemID, uint32 count);
     void LearnTalent(TestPlayer* p, uint32 spellID);
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     float CalcChance(uint32 iterations, const std::function<bool()>& f);
@@ -123,6 +124,7 @@ protected:
     void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount);
     void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
     void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
+    void _EquipItem(TestPlayer* p, uint32 itemID);
 
 private:
     std::string              _testName;

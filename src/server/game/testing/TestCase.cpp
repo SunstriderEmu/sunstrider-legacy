@@ -487,7 +487,19 @@ TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 e
     return summon;
 }
 
-void TestCase::EquipItem(TestPlayer* player, uint32 itemID)
+void TestCase::RemoveAllEquipedItems(TestPlayer* player)
+{
+    for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
+        if (player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+            player->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
+}
+
+void TestCase::RemoveItem(TestPlayer* player, uint32 itemID, uint32 count)
+{
+    player->DestroyItemCount(itemID, count, true, false);
+}
+
+void TestCase::_EquipItem(TestPlayer* player, uint32 itemID)
 {
     Item* item = player->AddItem(itemID, 1);
     INTERNAL_ASSERT_INFO("Failed to add item %u to player", itemID);

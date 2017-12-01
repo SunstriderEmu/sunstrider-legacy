@@ -349,7 +349,7 @@ public:
 
 			LearnTalent(player, Talents::Druid::WRATH_OF_CENARIUS_RNK_5);
 
-			EquipItem(player, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 SP
 
 			float const starfireFactor	= 5 * 0.04f;
 			float const wrathFactor		= 5 * 0.02f;
