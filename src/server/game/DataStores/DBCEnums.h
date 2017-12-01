@@ -1,6 +1,12 @@
 #ifndef DBCENUMS_H
 #define DBCENUMS_H
 
+struct DBCPosition3D
+{
+    float X;
+    float Y;
+    float Z;
+};
 
 enum LevelLimit
 {

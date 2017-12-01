@@ -9,6 +9,7 @@
 #include "SmartScript.h"
 #include "SmartScriptMgr.h"
 #include "GameObjectAI.h"
+#include "Position.h"
 #include "WaypointDefines.h"
 
 enum SmartEscortState

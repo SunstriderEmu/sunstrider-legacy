@@ -594,15 +594,15 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
     }
 
     auto damageToTarget = AI->GetDamageDoneInfo(victim);
-    if (damageToTarget.empty())
+    if (damageToTarget->empty())
     {
         TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
         return 0.0f;
     }
 
-    decltype(damageToTarget) filteredDamageToTarget;
+    std::vector<PlayerbotTestingAI::DamageDoneInfo> filteredDamageToTarget;
     //Copy only relevent entries
-    for (auto itr : damageToTarget)
+    for (auto itr : *damageToTarget)
         if (itr.spellID == spellID)
             filteredDamageToTarget.push_back(itr);
 
@@ -641,7 +641,7 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetDamageDoneInfo(victim);
-    if (damageToTarget.empty())
+    if (damageToTarget->empty())
     {
         TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
         return false;
@@ -659,7 +659,7 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
 
     uint64 totalDamage = 0;
     uint32 count = 0;
-    for (auto itr : damageToTarget)
+    for (auto itr : *damageToTarget)
     {
         if (itr.spellID != spellID)
             continue;

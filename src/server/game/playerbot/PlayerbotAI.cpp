@@ -1472,13 +1472,13 @@ int32 PlayerbotTestingAI::GetDotDamage(Unit* victim, uint32 spellID)
     return totalAmount;
 }
 
-std::vector<PlayerbotTestingAI::DamageDoneInfo> const& PlayerbotTestingAI::GetDamageDoneInfo(Unit* target)
+std::vector<PlayerbotTestingAI::DamageDoneInfo> const* PlayerbotTestingAI::GetDamageDoneInfo(Unit* target)
 {
-    auto infoForVictim = damageDone.find(target->GetGUID());
-    if (infoForVictim == damageDone.end())
-        return std::vector<PlayerbotTestingAI::DamageDoneInfo>();
+    auto infoForVictimItr = damageDone.find(target->GetGUID());
+    if (infoForVictimItr == damageDone.end())
+        return nullptr;
 
-    return (*infoForVictim).second;
+    return &(*infoForVictimItr).second;
 }
 
 void PlayerbotTestingAI::ResetSpellCounters()

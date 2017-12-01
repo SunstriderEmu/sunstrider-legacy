@@ -12,6 +12,7 @@
 #include "ObjectDefines.h"
 #include "ConditionMgr.h"
 #include "World.h"
+#include "Position.h"
 
 #include <string>
 #include <map>

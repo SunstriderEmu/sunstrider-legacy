@@ -135,7 +135,7 @@ void InventoryAction::TellItems(map<uint32, int> itemMap)
 
     items.sort(compare_items);
 
-    uint32 oldClass = -1;
+    uint32 oldClass = uint32(-1);
     for (list<ItemTemplate const*>::iterator i = items.begin(); i != items.end(); i++)
     {
         ItemTemplate const *proto = *i;

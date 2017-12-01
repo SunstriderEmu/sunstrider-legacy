@@ -27,6 +27,7 @@
 #include "Log.h"
 #include "LogsDatabaseAccessor.h"
 #include "LootMgr.h"
+#include "M2Stores.h"
 #include "Management/MMapFactory.h"
 #include "Management/MMapManager.h"
 #include "Management/VMapFactory.h"
@@ -1256,6 +1257,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Initialize data stores...");
     LoadDBCStores(m_dataPath);
     DetectDBCLang();
+
+    // Load cinematic cameras
+    LoadM2Cameras(m_dataPath);
 
     std::vector<uint32> mapIds;
     for (uint32 mapId = 0; mapId < sMapStore.GetNumRows(); mapId++)

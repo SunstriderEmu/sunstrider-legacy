@@ -34,6 +34,7 @@ enum PetSaveMode : int;
 struct TrainerSpell;
 class SpellCastTargets;
 class PlayerAI;
+class CinematicMgr;
 
 #ifdef PLAYERBOT
 // Playerbot mod
@@ -1413,6 +1414,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void TradeCancel(bool sendback);
         uint16 GetItemPosByTradeSlot(uint32 slot) const { return tradeItems[slot]; }
 
+        CinematicMgr* GetCinematicMgr() const { return _cinematicMgr; }
+
         void UpdateEnchantTime(uint32 time);
         void UpdateItemDuration(uint32 time, bool realtimeonly=false);
         void AddEnchantmentDurations(Item *item);
@@ -2725,6 +2728,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         InventoryResult _CanStoreItem_InBag( uint8 bag, ItemPosCountVec& dest, ItemTemplate const *pProto, uint32& count, bool merge, bool non_specialized, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
         InventoryResult _CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemTemplate const *pProto, uint32& count, bool merge, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
         Item* _StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, bool update );
+
+        CinematicMgr* _cinematicMgr;
 
         int32 m_MirrorTimer[MAX_TIMERS];
         uint8 m_MirrorTimerFlags;

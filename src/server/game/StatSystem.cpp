@@ -519,6 +519,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
     uint16 index_mod = UNIT_FIELD_ATTACK_POWER_MODS;
     uint16 index_mult = UNIT_FIELD_ATTACK_POWER_MULTIPLIER;
 
+    // For -10 and -20 reduction, see http://wowwiki.wikia.com/wiki/Attack_power?oldid=1715193 
     if(ranged)
     {
         index = UNIT_FIELD_RANGED_ATTACK_POWER;
@@ -602,12 +603,12 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
                 switch(m_form)
                 {
                     case FORM_CAT:
-                        val2 = GetLevel()*(mLevelMult+2.0f) + GetStat(STAT_STRENGTH)*2.0f + GetStat(STAT_AGILITY) - 20.0f; break;
+                        val2 = GetLevel()*(mLevelMult+2.0f) + GetStat(STAT_STRENGTH)*2.0f + GetStat(STAT_AGILITY) - 20.0f; break; // http://wowwiki.wikia.com/wiki/Cat_Form?oldid=1572074
                     case FORM_BEAR:
                     case FORM_DIREBEAR:
-                        val2 = GetLevel()*(mLevelMult+3.0f) + GetStat(STAT_STRENGTH)*2.0f - 20.0f; break;
+                        val2 = GetLevel()*(mLevelMult+3.0f) + GetStat(STAT_STRENGTH)*2.0f - 20.0f; break; //http://wowwiki.wikia.com/wiki/Dire_Bear_Form?oldid=1371376
                     case FORM_MOONKIN:
-                        val2 = GetLevel()*(mLevelMult+1.5f) + GetStat(STAT_STRENGTH)*2.0f - 20.0f; break;
+                        val2 = GetLevel()*(mLevelMult+1.5f) + GetStat(STAT_STRENGTH)*2.0f - 20.0f; break; //http://wowwiki.wikia.com/wiki/Moonkin_Form?oldid=1624337
                     default:
                         val2 = GetStat(STAT_STRENGTH)*2.0f - 20.0f; break;
                 }

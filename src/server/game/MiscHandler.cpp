@@ -28,6 +28,7 @@
 #include "GameObjectAI.h"
 #include "WhoListStorage.h"
 #include "GameTime.h"
+#include "CinematicMgr.h"
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
 {
@@ -946,11 +947,13 @@ void WorldSession::HandleCompleteCinematic( WorldPacket & /*recvData*/ )
 {
     //TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_CINEMATIC");
     //SO WHAT? Add a hook in map script if needed
+    GetPlayer()->GetCinematicMgr()->EndCinematic();
 }
 
 void WorldSession::HandleNextCinematicCamera( WorldPacket & /*recvData*/ )
 {
     //TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
+    GetPlayer()->GetCinematicMgr()->BeginCinematic();
 }
 
 void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )

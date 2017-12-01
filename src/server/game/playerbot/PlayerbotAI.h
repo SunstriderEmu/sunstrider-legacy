@@ -239,7 +239,7 @@ public:
 
     //will only use full hit spells
     int32 GetDotDamage(Unit* to, uint32 spellID);
-    std::vector<DamageDoneInfo> const& GetDamageDoneInfo(Unit* target);
+    std::vector<DamageDoneInfo> const* GetDamageDoneInfo(Unit* target);
 
 private:
    

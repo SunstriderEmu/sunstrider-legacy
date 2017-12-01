@@ -58,6 +58,7 @@
 #include "UpdateFieldFlags.h"
 #include "CharacterDatabase.h"
 #include "PlayerTaxi.h"
+#include "CinematicMgr.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -380,6 +381,8 @@ Player::Player(WorldSession *session) :
 
     _lastSpamAlert = 0;
     lastLagReport = 0;
+
+    _cinematicMgr = new CinematicMgr(this);
 }
 
 Player::~Player ()
@@ -429,6 +432,7 @@ Player::~Player ()
             itr.second.save->RemovePlayer(this);
 
     delete m_declinedname;
+    delete _cinematicMgr;
 }
 
 void Player::CleanupsBeforeDelete(bool finalCleanup)
@@ -1062,6 +1066,14 @@ void Player::Update( uint32 p_time )
 
         // It will be recalculate at mailbox open (for unReadMails important non-0 until mailbox open, it also will be recalculated)
         m_nextMailDelivereTime = 0;
+    }
+
+    // Update cinematic location, if 500ms have passed and we're doing a cinematic now.
+    _cinematicMgr->m_cinematicDiff += p_time;
+    if (_cinematicMgr->m_cinematicCamera && _cinematicMgr->m_activeCinematicCameraId && GetMSTimeDiffToNow(_cinematicMgr->m_lastCinematicCheck) > CINEMATIC_UPDATEDIFF)
+    {
+        _cinematicMgr->m_lastCinematicCheck = GameTime::GetGameTimeMS();
+        _cinematicMgr->UpdateCinematicLocation(p_time);
     }
 
     for(auto & m_globalCooldown : m_globalCooldowns)
@@ -5884,10 +5896,8 @@ void Player::SendCinematicStart(uint32 CinematicSequenceId) const
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(CinematicSequenceId);
     SendDirectMessage(&data);
-    /* TODO cinematicMgr
     if (CinematicSequencesEntry const* sequence = sCinematicSequencesStore.LookupEntry(CinematicSequenceId))
         _cinematicMgr->SetActiveCinematicCamera(sequence->cinematicCamera);
-    */
 }
 
 void Player::SendMovieStart(uint32 MovieId) const

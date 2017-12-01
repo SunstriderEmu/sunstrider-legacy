@@ -30,6 +30,7 @@
 #include <G3D/Vector3.h>
 #include "ZoneScript.h"
 #include "OutdoorPvPMgr.h"
+#include "CinematicMgr.h"
 
 #include "TemporarySummon.h"
 #include "DynamicTree.h"
@@ -1434,10 +1435,8 @@ float WorldObject::GetGridActivationRange() const
 {
     if (isActiveObject())
     {
-        /*TC
         if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetCinematicMgr()->IsOnCinematic())
             return std::max(DEFAULT_VISIBILITY_INSTANCE, GetMap()->GetVisibilityRange());
-            */
         return GetMap()->GetVisibilityRange();
     }
 
@@ -1456,10 +1455,8 @@ float WorldObject::GetSightRange(const WorldObject* target) const
         {
             if (target && target->isActiveObject() && !target->ToPlayer())
                 return MAX_VISIBILITY_DISTANCE;
-            /* TC
             else if (ToPlayer()->GetCinematicMgr()->IsOnCinematic())
                 return DEFAULT_VISIBILITY_INSTANCE;
-                */
             else
                 return GetMap()->GetVisibilityRange();
         }

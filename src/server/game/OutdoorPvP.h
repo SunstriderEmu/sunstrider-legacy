@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include "ZoneScript.h"
+#include "Position.h"
 
 #define OPVP_TRIGGER_CREATURE_ENTRY 12999
 

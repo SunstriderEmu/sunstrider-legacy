@@ -6,6 +6,7 @@
 #include "ObjectMgr.h"
 #include "SharedDefines.h"
 #include "SpectatorAddon.h"
+#include "Position.h"
 
 struct PvPDifficultyEntry;
 

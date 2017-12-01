@@ -6,6 +6,7 @@
 #include "SharedDefines.h"
 #include "Object.h"
 #include "Spline/MoveSpline.h"
+#include "Position.h"
 
 class MovementGenerator;
 class Unit;

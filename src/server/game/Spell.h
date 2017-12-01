@@ -4,6 +4,7 @@
 
 #include "GridDefines.h"
 #include "PathGenerator.h"
+#include "Position.h"
 
 class Unit;
 class Player;

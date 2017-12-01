@@ -11,6 +11,18 @@
 
 namespace Trinity
 {
+    template<class T>
+    constexpr inline T* AddressOrSelf(T* ptr)
+    {
+        return ptr;
+    }
+
+    template<class T>
+    constexpr inline T* AddressOrSelf(T& not_ptr)
+    {
+        return std::addressof(not_ptr);
+    }
+
     namespace Containers
     {
         // replace with std::size in C++17
