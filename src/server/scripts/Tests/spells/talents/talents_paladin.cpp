@@ -2,7 +2,6 @@
 #include "../../ClassSpellsCoeff.h"
 #include "PlayerbotAI.h"
 
-
 class SalvationTest : public TestCaseScript
 {
 public:
@@ -968,9 +967,47 @@ public:
 	}
 };
 
+class CrusaderStrikeTest : public TestCaseScript
+{
+public:
+	CrusaderStrikeTest() : TestCaseScript("talents paladin crusader_strike") { }
+
+	class CrusaderStrikeTestImpt : public TestCase
+	{
+	public:
+		CrusaderStrikeTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+			Creature* creature = SpawnCreature();
+
+			LearnTalent(player, Talents::Paladin::CRUSADER_STRIKE_RNK_1);
+
+			// Damage
+			EquipItem(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
+			float const AP = player->GetTotalAttackPowerValue(BASE_ATTACK);
+			TEST_ASSERT(AP == 562);
+			float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
+			uint32 const weaponMinDamage = 404 + (AP / 14 * 3.3f); // 3.3 weapon speed because it's an normalized spell
+			uint32 const weaponMaxDamage = 607 + (AP / 14 * 3.3f);
+			uint32 const expectedCSMin = weaponMinDamage * 1.1f * armorFactor;
+			uint32 const expectedCSMax = weaponMaxDamage * 1.1f * armorFactor;
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::CRUSADER_STRIKE_RNK_1, expectedCSMin, expectedCSMax);
+
+			// TODO: refresh judgements
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<CrusaderStrikeTestImpt>();
+	}
+};
+
 void AddSC_test_talents_paladin()
 {
-	// Total: 21/63
+	// Total: 22/63
 	new SalvationTest(); // TODO: innate ability
 	// Holy: 6/20
 	new DivineStrengthTest();
@@ -988,7 +1025,7 @@ void AddSC_test_talents_paladin()
 	new SacredDutyTest();
 	new ImprovedHolyShieldTest();
 	new CombatExpertiseTest();
-	// Retribution: 7/22
+	// Retribution: 8/22
 	new ImprovedBlessingOfMightTest();
 	new BenedictionTest();
 	new ImprovedJudgementTest();
@@ -996,4 +1033,5 @@ void AddSC_test_talents_paladin()
 	new CrusadeTest();
 	new SanctifiedJudgementTest();
 	new SanctifiedSealsTest();
+	new CrusaderStrikeTest();
 }
