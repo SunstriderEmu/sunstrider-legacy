@@ -860,7 +860,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell)
 
     Unit* oldSel = bot->GetSelectedUnit();
     bot->SetSelection(target->GetGUID());
-    Spell *spell = new Spell(bot, spellInfo, false);
+    Spell *spell = new Spell(bot, spellInfo, TRIGGERED_NONE);
 
     spell->m_targets.SetUnitTarget(target);
     spell->m_CastItem = aiObjectContext->GetValue<Item*>("item for spell", spellid)->Get();
@@ -915,7 +915,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target)
     const SpellInfo* const pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (pet && pet->HasSpell(spellId))
     {
-       //TODO PLAYERBOT pet->GetCharmInfo()->SetSpellAutocast(pSpellInfo, true);
+       //TODO PLAYERBOT pet->GetCharmInfo()->SetSpellAutocast(pSpellInfo, TRIGGERED_FULL_MASK);
         pet->GetCharmInfo()->ToggleCreatureAutocast(pSpellInfo->Id, true);
         TellMaster("My pet will auto-cast this spell");
         return true;
@@ -934,7 +934,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target)
     Unit* oldSel = bot->GetSelectedUnit();
     bot->SetSelection(target->GetGUID());
 
-    Spell *spell = new Spell(bot, pSpellInfo, false);
+    Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE);
     if (bot->isMoving() && spell->GetCastTime())
     {
         delete spell;

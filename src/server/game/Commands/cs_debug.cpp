@@ -105,7 +105,7 @@ bool ChatHandler::HandleDebugBatchAttack(const char* args)
                 p->AttackerStateUpdate(victim, type);
         } else {
             for(uint32 i = 0; i < count; i++)
-                p->CastSpell(victim, 75, true); //shoot
+                p->CastSpell(victim, 75, TRIGGERED_FULL_MASK); //shoot
         }
     } else {
         PSendSysMessage("No victim");

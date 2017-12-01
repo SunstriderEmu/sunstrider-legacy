@@ -40,7 +40,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
 
     bool triggered = (trig_str != nullptr);
 
-    m_session->GetPlayer()->CastSpell(target,spell,triggered);
+    m_session->GetPlayer()->CastSpell(target,spell, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
 
     return true;
 }
@@ -73,7 +73,7 @@ bool ChatHandler::HandleCastBatchCommand(const char* args)
     }
 
     for(int i = 0; i < count; i++)
-        m_session->GetPlayer()->CastSpell(target, spell, true);
+        m_session->GetPlayer()->CastSpell(target, spell, TRIGGERED_FULL_MASK);
 
     return true;
 }
@@ -113,7 +113,7 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
     caster->BuildHeartBeatMsg(&data);
     caster->SendMessageToSet(&data,true);
 
-    caster->CastSpell(m_session->GetPlayer(),spell,triggered);
+    caster->CastSpell(m_session->GetPlayer(),spell, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
 
     return true;
 }
@@ -158,7 +158,7 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
     float x,y,z;
     m_session->GetPlayer()->GetClosePoint(x,y,z,dist);
 
-    m_session->GetPlayer()->CastSpell(x,y,z,spell,triggered);
+    m_session->GetPlayer()->CastSpell(x,y,z,spell, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
     return true;
 }
 
@@ -203,7 +203,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
     caster->BuildHeartBeatMsg(&data);
     caster->SendMessageToSet(&data,true);
 
-    caster->CastSpell(caster->GetVictim(),spell,triggered);
+    caster->CastSpell(caster->GetVictim(),spell, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
 
     return true;
 }
@@ -237,7 +237,7 @@ bool ChatHandler::HandleCastSelfCommand(const char* args)
         return false;
     }
 
-    target->CastSpell(target,spell,false);
+    target->CastSpell(target,spell, TRIGGERED_NONE);
 
     return true;
 }

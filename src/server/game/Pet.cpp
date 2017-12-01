@@ -1734,7 +1734,7 @@ bool Pet::AddSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     m_spells[spell_id] = newspell;
 
     if (spellInfo->IsPassive())
-        CastSpell(this, spell_id, true);
+        CastSpell(this, spell_id, TRIGGERED_FULL_MASK);
     else if(state == PETSPELL_NEW)
     {
         for (uint8 i = 0; i < CREATURE_MAX_SPELLS; i++)
@@ -2069,25 +2069,25 @@ void Pet::InitPetAuras(const uint32 Entry)
     }
 
     if(aura1)
-        CastSpell(this, aura1, true);
+        CastSpell(this, aura1, TRIGGERED_FULL_MASK);
     if(aura2)
-        CastSpell(this, aura2, true);
+        CastSpell(this, aura2, TRIGGERED_FULL_MASK);
     if(aura3)
-        CastSpell(this, aura3, true);
+        CastSpell(this, aura3, TRIGGERED_FULL_MASK);
 
     // Hunter Pets have multiple auras
     if(getPetType() == HUNTER_PET)
     {
-        CastSpell(this, 8875, true);    // Damage
-        CastSpell(this, 19580, true);   // Armor
-        CastSpell(this, 19581, true);   // HP
-        CastSpell(this, 19582, true);   // Speed
-        CastSpell(this, 19589, true);   // Power Regen
-        CastSpell(this, 19591, true);   // Critical Chance
-        CastSpell(this, 20784, true);   // Frenzy Chance
-        CastSpell(this, 34666, true);   // Hit Chance
-        CastSpell(this, 34667, true);   // Dodge Chance
-        CastSpell(this, 34675, true);   // Attack Speed
+        CastSpell(this, 8875, TRIGGERED_FULL_MASK);    // Damage
+        CastSpell(this, 19580, TRIGGERED_FULL_MASK);   // Armor
+        CastSpell(this, 19581, TRIGGERED_FULL_MASK);   // HP
+        CastSpell(this, 19582, TRIGGERED_FULL_MASK);   // Speed
+        CastSpell(this, 19589, TRIGGERED_FULL_MASK);   // Power Regen
+        CastSpell(this, 19591, TRIGGERED_FULL_MASK);   // Critical Chance
+        CastSpell(this, 20784, TRIGGERED_FULL_MASK);   // Frenzy Chance
+        CastSpell(this, 34666, TRIGGERED_FULL_MASK);   // Hit Chance
+        CastSpell(this, 34667, TRIGGERED_FULL_MASK);   // Dodge Chance
+        CastSpell(this, 34675, TRIGGERED_FULL_MASK);   // Attack Speed
     }
 }
 
@@ -2148,10 +2148,10 @@ void Pet::CastPetAura(PetAura const* aura)
     if(auraId == 35696)                                       // Demonic Knowledge
     {
         int32 basePoints = int32(aura->GetDamage() * (GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT)) / 100);
-        CastCustomSpell(this, auraId, &basePoints, nullptr, nullptr, true);
+        CastCustomSpell(this, auraId, &basePoints, nullptr, nullptr, TRIGGERED_FULL_MASK);
     }
     else
-        CastSpell(this, auraId, true);
+        CastSpell(this, auraId, TRIGGERED_FULL_MASK);
 }
 
 Player* Pet::GetOwner() const

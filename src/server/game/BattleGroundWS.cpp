@@ -154,9 +154,9 @@ void BattlegroundWS::Update(time_t diff)
           if(m_FlagDebuffState == 0 && m_FlagSpellForceTimer >= 300000)  //5 minutes (down from 10)
           {
             if(Player * plr = sObjectMgr->GetPlayer(m_FlagKeepers[0]))
-              plr->CastSpell(plr,WS_SPELL_FOCUSED_ASSAULT,true);
+              plr->CastSpell(plr,WS_SPELL_FOCUSED_ASSAULT, TRIGGERED_FULL_MASK);
             if(Player * plr = sObjectMgr->GetPlayer(m_FlagKeepers[1]))
-              plr->CastSpell(plr,WS_SPELL_FOCUSED_ASSAULT,true);
+              plr->CastSpell(plr,WS_SPELL_FOCUSED_ASSAULT, TRIGGERED_FULL_MASK);
             m_FlagDebuffState = 1;
           }
           else if(m_FlagDebuffState == 1 && m_FlagSpellForceTimer >= 600000) //10 minutes (down from 15)
@@ -164,12 +164,12 @@ void BattlegroundWS::Update(time_t diff)
             if(Player * plr = sObjectMgr->GetPlayer(m_FlagKeepers[0]))
             {
               plr->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
-              plr->CastSpell(plr,WS_SPELL_BRUTAL_ASSAULT,true);
+              plr->CastSpell(plr,WS_SPELL_BRUTAL_ASSAULT, TRIGGERED_FULL_MASK);
             }
             if(Player * plr = sObjectMgr->GetPlayer(m_FlagKeepers[1]))
             {
               plr->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
-              plr->CastSpell(plr,WS_SPELL_BRUTAL_ASSAULT,true);
+              plr->CastSpell(plr,WS_SPELL_BRUTAL_ASSAULT, TRIGGERED_FULL_MASK);
             }
             m_FlagDebuffState = 2;
           }
@@ -381,7 +381,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
             m_FlagState[TEAM_HORDE] = BG_WS_FLAG_STATE_ON_GROUND;
             SendMessageToAll(LANG_BG_WS_DROPPED_HF, CHAT_MSG_BG_SYSTEM_HORDE, Source);
 
-            Source->CastSpell(Source, BG_WS_SPELL_WARSONG_FLAG_DROPPED, true);
+            Source->CastSpell(Source, BG_WS_SPELL_WARSONG_FLAG_DROPPED, TRIGGERED_FULL_MASK);
             set = true;
         }
     }
@@ -401,14 +401,14 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
             m_FlagState[TEAM_ALLIANCE] = BG_WS_FLAG_STATE_ON_GROUND;
             SendMessageToAll(LANG_BG_WS_DROPPED_AF, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
 
-            Source->CastSpell(Source, BG_WS_SPELL_SILVERWING_FLAG_DROPPED, true);
+            Source->CastSpell(Source, BG_WS_SPELL_SILVERWING_FLAG_DROPPED, TRIGGERED_FULL_MASK);
             set = true;
         }
     }
 
     if (set)
     {
-        Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, true);
+        Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, TRIGGERED_FULL_MASK);
         UpdateFlagState(Source->GetTeam(), 1);
 
         if(Source->GetTeam() == ALLIANCE)
@@ -437,7 +437,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         //update world state to show correct flag carrier
         UpdateFlagState(HORDE, BG_WS_FLAG_STATE_ON_PLAYER);
         UpdateWorldState(BG_WS_FLAG_UNK_ALLIANCE, 1);
-        Source->CastSpell(Source, BG_WS_SPELL_SILVERWING_FLAG, true);
+        Source->CastSpell(Source, BG_WS_SPELL_SILVERWING_FLAG, TRIGGERED_FULL_MASK);
         if(m_FlagState[1] == BG_WS_FLAG_STATE_ON_PLAYER)
           m_BothFlagsKept = true;
     }
@@ -454,7 +454,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         //update world state to show correct flag carrier
         UpdateFlagState(ALLIANCE, BG_WS_FLAG_STATE_ON_PLAYER);
         UpdateWorldState(BG_WS_FLAG_UNK_HORDE, 1);
-        Source->CastSpell(Source, BG_WS_SPELL_WARSONG_FLAG, true);
+        Source->CastSpell(Source, BG_WS_SPELL_WARSONG_FLAG, TRIGGERED_FULL_MASK);
         if(m_FlagState[0] == BG_WS_FLAG_STATE_ON_PLAYER)
           m_BothFlagsKept = true;
     }
@@ -478,13 +478,13 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
             PlaySoundToAll(BG_WS_SOUND_ALLIANCE_FLAG_PICKED_UP);
             SpawnBGObject(BG_WS_OBJECT_A_FLAG, RESPAWN_ONE_DAY);
             SetAllianceFlagPicker(Source->GetGUID());
-            Source->CastSpell(Source, BG_WS_SPELL_SILVERWING_FLAG, true);
+            Source->CastSpell(Source, BG_WS_SPELL_SILVERWING_FLAG, TRIGGERED_FULL_MASK);
             m_FlagState[TEAM_ALLIANCE] = BG_WS_FLAG_STATE_ON_PLAYER;
             UpdateFlagState(HORDE, BG_WS_FLAG_STATE_ON_PLAYER);
             if(m_FlagDebuffState == 1)
-              Source->CastSpell(Source,WS_SPELL_FOCUSED_ASSAULT,true);
+              Source->CastSpell(Source,WS_SPELL_FOCUSED_ASSAULT, TRIGGERED_FULL_MASK);
             if(m_FlagDebuffState == 2)
-              Source->CastSpell(Source,WS_SPELL_BRUTAL_ASSAULT,true);
+              Source->CastSpell(Source,WS_SPELL_BRUTAL_ASSAULT, TRIGGERED_FULL_MASK);
             UpdateWorldState(BG_WS_FLAG_UNK_ALLIANCE, 1);
         }
         //called in HandleGameObjectUseOpcode:
@@ -510,13 +510,13 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
             PlaySoundToAll(BG_WS_SOUND_HORDE_FLAG_PICKED_UP);
             SpawnBGObject(BG_WS_OBJECT_H_FLAG, RESPAWN_ONE_DAY);
             SetHordeFlagPicker(Source->GetGUID());
-            Source->CastSpell(Source, BG_WS_SPELL_WARSONG_FLAG, true);
+            Source->CastSpell(Source, BG_WS_SPELL_WARSONG_FLAG, TRIGGERED_FULL_MASK);
             m_FlagState[TEAM_HORDE] = BG_WS_FLAG_STATE_ON_PLAYER;
             UpdateFlagState(ALLIANCE, BG_WS_FLAG_STATE_ON_PLAYER);
             if(m_FlagDebuffState == 1)
-              Source->CastSpell(Source,WS_SPELL_FOCUSED_ASSAULT,true);
+              Source->CastSpell(Source,WS_SPELL_FOCUSED_ASSAULT, TRIGGERED_FULL_MASK);
             if(m_FlagDebuffState == 2)
-              Source->CastSpell(Source,WS_SPELL_BRUTAL_ASSAULT,true);
+              Source->CastSpell(Source,WS_SPELL_BRUTAL_ASSAULT, TRIGGERED_FULL_MASK);
             UpdateWorldState(BG_WS_FLAG_UNK_HORDE, 1);
         }
         //called in HandleGameObjectUseOpcode:

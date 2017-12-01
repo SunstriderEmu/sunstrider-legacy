@@ -203,7 +203,7 @@ void WorldSession::HandleMoveWorldportAck()
 
     // honorless target
     if(GetPlayer()->pvpInfo.IsHostile)
-        GetPlayer()->CastSpell(GetPlayer(), 2479, true);
+        GetPlayer()->CastSpell(GetPlayer(), 2479, TRIGGERED_FULL_MASK);
     // in friendly area
     else if (GetPlayer()->IsPvP() && !GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP))
         GetPlayer()->UpdatePvP(false, false);
@@ -255,7 +255,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     {
         // honorless target
         if (plMover->pvpInfo.IsHostile)
-            plMover->CastSpell(plMover, 2479, true);
+            plMover->CastSpell(plMover, 2479, TRIGGERED_FULL_MASK);
 
         // in friendly area
         else if (plMover->IsPvP() && !plMover->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP))

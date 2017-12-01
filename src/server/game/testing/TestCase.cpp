@@ -565,7 +565,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
-        uint32 result = caster->CastSpell(target, spellID, true);
+        uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_MASK);
         INTERNAL_ASSERT_INFO("Spell casting failed with reason %u", result);
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
     }
@@ -776,7 +776,7 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     for (uint32 i = 0; i < 100; i++)
     {
         AI->ResetSpellCounters();
-        uint32 result = caster->CastSpell(target, spellID, true);
+        uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_MASK);
         if (result == SPELL_CAST_OK)
         {
             if (spellHasFlyTime)
@@ -821,7 +821,7 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
     for (uint32 i = 0; i < 100; i++)
     {
         AI->ResetSpellCounters();
-        uint32 result = caster->CastSpell(target, spellID, true);
+        uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_MASK);
         if (result == SPELL_CAST_OK)
         {
             Wait(baseCastTime + baseDurationTime + 1000);

@@ -87,12 +87,12 @@ void OutdoorPvPHP::HandlePlayerEnterZone(Player * plr, uint32 zone)
     if(plr->GetTeam() == ALLIANCE)
     {
         if(m_AllianceTowersControlled >=3)
-            plr->CastSpell(plr,AllianceBuff,true);
+            plr->CastSpell(plr,AllianceBuff, TRIGGERED_FULL_MASK);
     }
     else
     {
         if(m_HordeTowersControlled >=3)
-            plr->CastSpell(plr,HordeBuff,true);
+            plr->CastSpell(plr,HordeBuff, TRIGGERED_FULL_MASK);
     }
     OutdoorPvP::HandlePlayerEnterZone(plr,zone);
 }
@@ -324,7 +324,7 @@ void OutdoorPvPHP::BuffTeam(uint32 team)
         for(uint64 itr : m_players[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,AllianceBuff,true);
+                if(plr->IsInWorld()) plr->CastSpell(plr,AllianceBuff, TRIGGERED_FULL_MASK);
         }
         for(uint64 itr : m_players[1])
         {
@@ -337,7 +337,7 @@ void OutdoorPvPHP::BuffTeam(uint32 team)
         for(uint64 itr : m_players[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,HordeBuff,true);
+                if(plr->IsInWorld()) plr->CastSpell(plr,HordeBuff, TRIGGERED_FULL_MASK);
         }
         for(uint64 itr : m_players[0])
         {
@@ -366,7 +366,7 @@ void OutdoorPvPHP::HandleKillImpl(Player *plr, Unit * killed)
         return;
 
     if(plr->GetTeam() == ALLIANCE && (killed->ToPlayer())->GetTeam() != ALLIANCE)
-        plr->CastSpell(plr,AlliancePlayerKillReward,true);
+        plr->CastSpell(plr,AlliancePlayerKillReward, TRIGGERED_FULL_MASK);
     else if(plr->GetTeam() == HORDE && (killed->ToPlayer())->GetTeam() != HORDE)
-        plr->CastSpell(plr,HordePlayerKillReward,true);
+        plr->CastSpell(plr,HordePlayerKillReward, TRIGGERED_FULL_MASK);
 }

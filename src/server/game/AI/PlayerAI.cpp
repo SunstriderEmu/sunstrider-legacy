@@ -817,7 +817,7 @@ PlayerAI::TargetedSpell PlayerAI::VerifySpellCast(uint32 spellId, Unit* target)
     //TC if (me->GetSpellHistory()->HasGlobalCooldown(spellInfo))
         return {};
 
-    auto  spell = new Spell(me, spellInfo, false);
+    auto spell = new Spell(me, spellInfo, TRIGGERED_NONE);
     if (spell->CanAutoCast(target))
         return{ spell, target };
 
@@ -915,8 +915,7 @@ void PlayerAI::DoRangedAttackIfReady()
     if (!rangedAttackSpell)
         return;
 
-    //TC me->CastSpell(victim, rangedAttackSpell, TRIGGERED_CAST_DIRECTLY);
-    me->CastSpell(victim, rangedAttackSpell, true);
+    me->CastSpell(victim, rangedAttackSpell, TRIGGERED_CAST_DIRECTLY);
     me->ResetAttackTimer(RANGED_ATTACK);
 }
 

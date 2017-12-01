@@ -588,12 +588,12 @@ void OutdoorPvPEP::HandlePlayerEnterZone(Player * plr, uint32 zone)
     if(plr->GetTeam() == ALLIANCE)
     {
         if(m_AllianceTowersControlled && m_AllianceTowersControlled < 5)
-            plr->CastSpell(plr,EP_AllianceBuffs[m_AllianceTowersControlled-1],true);
+            plr->CastSpell(plr,EP_AllianceBuffs[m_AllianceTowersControlled-1], TRIGGERED_FULL_MASK);
     }
     else
     {
         if(m_HordeTowersControlled && m_HordeTowersControlled < 5)
-            plr->CastSpell(plr,EP_HordeBuffs[m_HordeTowersControlled-1],true);
+            plr->CastSpell(plr,EP_HordeBuffs[m_HordeTowersControlled-1], TRIGGERED_FULL_MASK);
     }
     OutdoorPvP::HandlePlayerEnterZone(plr,zone);
 }
@@ -623,7 +623,7 @@ void OutdoorPvPEP::BuffTeams()
             for(uint32 EP_AllianceBuff : EP_AllianceBuffs)
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_AllianceBuff);
             if(m_AllianceTowersControlled && m_AllianceTowersControlled < 5)
-                if(plr->IsInWorld()) plr->CastSpell(plr,EP_AllianceBuffs[m_AllianceTowersControlled-1],true);
+                if(plr->IsInWorld()) plr->CastSpell(plr,EP_AllianceBuffs[m_AllianceTowersControlled-1], TRIGGERED_FULL_MASK);
         }
     }
     for(uint64 itr : m_players[1])
@@ -633,7 +633,7 @@ void OutdoorPvPEP::BuffTeams()
             for(uint32 EP_HordeBuff : EP_HordeBuffs)
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_HordeBuff);
             if(m_HordeTowersControlled && m_HordeTowersControlled < 5)
-                if(plr->IsInWorld()) plr->CastSpell(plr,EP_HordeBuffs[m_HordeTowersControlled-1],true);
+                if(plr->IsInWorld()) plr->CastSpell(plr,EP_HordeBuffs[m_HordeTowersControlled-1], TRIGGERED_FULL_MASK);
         }
     }
 }

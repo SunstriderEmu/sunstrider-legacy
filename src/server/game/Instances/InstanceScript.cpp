@@ -28,7 +28,7 @@ void InstanceScript::CastOnAllPlayers(uint32 spellId)
         for(const auto & player : players)
         {
             if (Player* plr = player.GetSource())
-                plr->CastSpell(plr, spellId, true);                
+                plr->CastSpell(plr, spellId, TRIGGERED_FULL_MASK);                
         }
     }
 }

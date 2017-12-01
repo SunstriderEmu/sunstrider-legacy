@@ -49,7 +49,7 @@ bool TellCastFailedAction::Execute(Event event)
     default:
         out << "cannot cast";
     }
-    Spell *spell = new Spell(bot, pSpellInfo, /*TRIGGERED_NONE*/ false);
+    Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE);
     int32 castTime = spell->GetCastTime();
     delete spell;
 

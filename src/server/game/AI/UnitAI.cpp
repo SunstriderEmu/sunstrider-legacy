@@ -66,7 +66,7 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
     {
         if (me->IsWithinCombatRange(me->GetVictim(), spellInfo->GetMaxRange(false, me)))
         {
-            me->CastSpell(me->GetVictim(), spell, false);
+            me->CastSpell(me->GetVictim(), spell, TRIGGERED_NONE);
             me->ResetAttackTimer();
         }
         else

@@ -175,7 +175,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
         if (!spellId)
             continue;
 
-        if (!ai->CanCastSpell(spellId, bot, false))
+        if (!ai->CanCastSpell(spellId, bot, TRIGGERED_NONE))
             continue;
 
         const SpellInfo* const pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -206,7 +206,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
             }
 
             //Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE, ObjectGuid::Empty, true);
-            Spell *spell = new Spell(bot, pSpellInfo, false, 0, nullptr, true);
+            Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE, 0, nullptr, true);
             ai->WaitForSpellCast(spell);
             delete spell;
         }

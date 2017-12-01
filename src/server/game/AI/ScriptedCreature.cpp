@@ -206,7 +206,7 @@ void ScriptedAI::DoStopAttack()
 
 uint32 ScriptedAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
 {
-    uint32 reason = me->CastSpell(victim, spellId, triggered);
+    uint32 reason = me->CastSpell(victim, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
 
     //restore combat movement on out of mana
     if(reason == SPELL_FAILED_NO_POWER && GetRestoreCombatMovementOnOOM() && !IsCombatMovementAllowed())
@@ -217,12 +217,12 @@ uint32 ScriptedAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
 
 uint32 ScriptedAI::DoCastAOE(uint32 spellId, bool triggered)
 {
-    return DoCast((Unit*)nullptr, spellId, triggered);
+    return DoCast((Unit*)nullptr, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
 }
 
 uint32 ScriptedAI::DoCastSpell(Unit* who,SpellInfo const *spellInfo, bool triggered)
 {
-    return me->CastSpell(who, spellInfo, triggered);
+    return me->CastSpell(who, spellInfo, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
 }
 
 void ScriptedAI::DoPlaySoundToSet(Unit* unit, uint32 sound)

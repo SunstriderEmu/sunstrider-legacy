@@ -1820,7 +1820,7 @@ TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, fl
     {
         if(GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
             pCreature->SetFaction(((Unit*)this)->GetFaction());
-        pCreature->CastSpell(pCreature, pCreature->m_spells[0], false, nullptr, nullptr, GetGUID());
+        pCreature->CastSpell(pCreature, pCreature->m_spells[0], TRIGGERED_NONE, nullptr, nullptr, GetGUID());
     }
 
     // allow summoned creatures to keep grids active for 2 minutes, so that we may use AI summoning creatures far away and coming to them

@@ -1087,7 +1087,7 @@ void PlayerbotFactory::InitSpecialSpells()
     for (list<uint32>::iterator i = sPlayerbotAIConfig.randomBotSpellIds.begin(); i != sPlayerbotAIConfig.randomBotSpellIds.end(); ++i)
     {
         uint32 spellId = *i;
-        bot->LearnSpell(spellId, false);
+        bot->LearnSpell(spellId, TRIGGERED_NONE);
     }
 }
 

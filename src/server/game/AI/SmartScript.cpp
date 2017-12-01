@@ -428,37 +428,47 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (!IsUnit(target))
                     continue;
 
-                if(me) //creature case
-                {
                     if (!(e.action.cast.castFlags & SMARTCAST_AURA_NOT_PRESENT) || !target->ToUnit()->HasAuraEffect(e.action.cast.spell))
                     {
-                        if (e.action.cast.castFlags & SMARTCAST_INTERRUPT_PREVIOUS)
-                            me->InterruptNonMeleeSpells(false);
-
-                        uint32 result = me->CastSpell(target->ToUnit(), e.action.cast.spell, (e.action.cast.castFlags & SMARTCAST_TRIGGERED));
-
-                        if (e.action.cast.castFlags & SMARTCAST_COMBAT_MOVE)
+                        TriggerCastFlags triggerFlag = TRIGGERED_NONE;
+                        if (e.action.cast.castFlags & SMARTCAST_TRIGGERED)
                         {
-                            // If cast flag SMARTCAST_COMBAT_MOVE is set combat movement will not be allowed
-                            // unless target is outside spell range, out of mana, or LOS.
-
-                            bool _allowMove = false;
-                            if(result != SPELL_CAST_OK)
-                                _allowMove = true;
-
-                            CAST_AI(SmartAI, me->AI())->SetCombatMove(_allowMove);
+                            if (e.action.cast.triggerFlags)
+                                triggerFlag = TriggerCastFlags(e.action.cast.triggerFlags);
+                            else
+                                triggerFlag = TRIGGERED_FULL_MASK;
                         }
 
-                        TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_CAST:: Creature %u casts spell %u on target %u with castflags %u with result %u",
-                            me->GetGUIDLow(), e.action.cast.spell, (target)->GetGUIDLow(), e.action.cast.castFlags, result);
+                        if (me) //creature case
+                        {
+                            if (e.action.cast.castFlags & SMARTCAST_INTERRUPT_PREVIOUS)
+                                me->InterruptNonMeleeSpells(false);
+
+                            uint32 result = me->CastSpell(target->ToUnit(), e.action.cast.spell, triggerFlag);
+                            if (e.action.cast.castFlags & SMARTCAST_COMBAT_MOVE)
+                            {
+                                // If cast flag SMARTCAST_COMBAT_MOVE is set combat movement will not be allowed
+                                // unless target is outside spell range, out of mana, or LOS.
+
+                                bool _allowMove = false;
+                                if(result != SPELL_CAST_OK)
+                                    _allowMove = true;
+
+                                CAST_AI(SmartAI, me->AI())->SetCombatMove(_allowMove);
+                            }
+
+                            TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_CAST:: Creature %u casts spell %u on target %u with castflags %u with result %u",
+                                me->GetGUIDLow(), e.action.cast.spell, (target)->GetGUIDLow(), e.action.cast.castFlags, result);
+                        }
+                        else if (go) 
+                        { //gameobject case
+                            uint32 result = go->CastSpell(target->ToUnit(), e.action.cast.spell, triggerFlag);
+                            TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_CAST:: Gameobject %u casts spell %u on target %u with result %u",
+                                go->GetGUIDLow(), e.action.cast.spell, target->GetGUIDLow(), result);
+                        }
                     }
                     else
                         TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: " UI64FMTD " Entry: %u Type: %u) already has the aura", e.action.cast.spell, target->GetGUID(), target->GetEntry(), uint32(target->GetTypeId()));
-                } else if (go) { //gameobject case
-                    uint32 result = go->CastSpell(target->ToUnit(), e.action.cast.spell);
-                    TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_CAST:: Gameobject %u casts spell %u on target %u with result %u",
-                        go->GetGUIDLow(), e.action.cast.spell, target->GetGUIDLow(), result);
-                }
             }
 
             break;
@@ -482,7 +492,16 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (e.action.cast.castFlags & SMARTCAST_INTERRUPT_PREVIOUS)
                         tempLastInvoker->InterruptNonMeleeSpells(false);
 
-                    tempLastInvoker->CastSpell((target)->ToUnit(), e.action.cast.spell, (e.action.cast.castFlags & SMARTCAST_TRIGGERED));
+                    TriggerCastFlags triggerFlag = TRIGGERED_NONE;
+                    if (e.action.cast.castFlags & SMARTCAST_TRIGGERED)
+                    {
+                        if (e.action.cast.triggerFlags)
+                            triggerFlag = TriggerCastFlags(e.action.cast.triggerFlags);
+                        else
+                            triggerFlag = TRIGGERED_FULL_MASK;
+                    }
+
+                    tempLastInvoker->CastSpell((target)->ToUnit(), e.action.cast.spell, triggerFlag);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_INVOKER_CAST: Invoker %u casts spell %u on target %u with castflags %u",
                         tempLastInvoker->GetGUIDLow(), e.action.cast.spell, target->GetGUIDLow(), e.action.cast.castFlags);
                 }
@@ -1408,7 +1427,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
                 if(e.action.teleport.useVisual)
                     if(Unit* u = target->ToUnit())
-                        me->CastSpell(u, 46614, true); //teleport visual
+                        me->CastSpell(u, 46614, TRIGGERED_FULL_MASK); //teleport visual
             }
 
 
@@ -1428,7 +1447,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     u->NearTeleportTo(x, y, z, o);
                     if(e.action.teleportOnMe.useVisual)
-                        me->CastSpell(u, 46614, true); //teleport visual
+                        me->CastSpell(u, 46614, TRIGGERED_FULL_MASK); //teleport visual
                 }
 
             }
@@ -1457,7 +1476,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             me->NearTeleportTo(x, y, z, me->GetOrientation());
             if(e.action.teleportSelfOnTarget.useVisual)
-                me->CastSpell(me, 46614, true); //teleport visual
+                me->CastSpell(me, 46614, TRIGGERED_FULL_MASK); //teleport visual
 
 
             break;
@@ -1892,7 +1911,16 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                             interruptedSpell = true;
                         }
 
-                        casterUnit->CastSpell(target->ToUnit(), e.action.cast.spell, (e.action.cast.castFlags & SMARTCAST_TRIGGERED));
+                        TriggerCastFlags triggerFlag = TRIGGERED_NONE;
+                        if (e.action.cast.castFlags & SMARTCAST_TRIGGERED)
+                        {
+                            if (e.action.cast.triggerFlags)
+                                triggerFlag = TriggerCastFlags(e.action.cast.triggerFlags);
+                            else
+                                triggerFlag = TRIGGERED_FULL_MASK;
+                        }
+
+                        casterUnit->CastSpell(target->ToUnit(), e.action.cast.spell, triggerFlag);
                     }
                     else
                         TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: " UI64FMTD " Entry: %u Type: %u) already has the aura", e.action.cast.spell, target->GetGUID(), target->GetEntry(), uint32(target->GetTypeId()));

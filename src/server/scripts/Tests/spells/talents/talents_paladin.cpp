@@ -246,7 +246,7 @@ public:
 			LearnTalent(player, Talents::Paladin::IMPROVED_BLESSING_OF_WISDOM_RNK_2);
 			const float improvedBlessingRegen = blessingRegen * 1.2f;
 			//re cast spell
-			res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7, true); //triggered has no mana cost
+			res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 
 			newMana = WaitNextManaTick(player);

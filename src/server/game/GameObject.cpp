@@ -639,7 +639,7 @@ void GameObject::Update(uint32 diff)
                     for (; it != end; it++)
                     {
                         Unit* owner = ObjectAccessor::GetUnit(*this, uint64(*it));
-                        if (owner) owner->CastSpell(owner, spellId, false);
+                        if (owner) owner->CastSpell(owner, spellId, TRIGGERED_NONE);
                     }
 
                     m_unique_users.clear();
@@ -1546,7 +1546,7 @@ void GameObject::Use(Unit* user)
             /*if (spellId == 18541) { // Doom guard
                 if (Group* group = caster->ToPlayer()->GetGroup()) {
                     if (Player* plrTarget = group->GetRandomMember())
-                        caster->CastSpell(plrTarget, 20625,true);
+                        caster->CastSpell(plrTarget, 20625, TRIGGERED_FULL_MASK);
                 }
             }*/
 
@@ -1709,7 +1709,7 @@ void GameObject::Use(Unit* user)
         return;
     }
 
-    auto spell = new Spell(spellCaster, spellInfo, false);
+    auto spell = new Spell(spellCaster, spellInfo, TRIGGERED_NONE);
 
     // spell target is user of GO
     SpellCastTargets targets;
@@ -1737,7 +1737,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster
     if (self)
     {
         if (target)
-            return target->CastSpell(target, spellInfo, true);
+            return target->CastSpell(target, spellInfo, TRIGGERED_FULL_MASK);
         return SPELL_FAILED_UNKNOWN;
     }
 
@@ -1757,12 +1757,12 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster
         trigger->SetFaction(owner->GetFaction());
         // needed for GO casts for proper target validation checks
         trigger->SetOwnerGUID(owner->GetGUID());
-        return trigger->CastSpell(target, spellId, true, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
+        return trigger->CastSpell(target, spellId, TRIGGERED_FULL_MASK, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
     }
     else
     {
         trigger->SetFaction(spellInfo->IsPositive() ? FACTION_FRIENDLY : FACTION_MONSTER);
-        return trigger->CastSpell(target, spellId, true, nullptr, nullptr, originalCaster);
+        return trigger->CastSpell(target, spellId, TRIGGERED_FULL_MASK, nullptr, nullptr, originalCaster);
     }
 }
 

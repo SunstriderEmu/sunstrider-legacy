@@ -566,7 +566,7 @@ void SpellCastTargets::OutDebug() const
     TC_LOG_DEBUG("spells", "elevation: %f", m_elevation);
 }
 
-Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck) :
+Spell::Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck) :
     m_spellInfo(info), 
     m_spellValue(new SpellValue(m_spellInfo)),
     m_caster(Caster),
@@ -625,7 +625,9 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
 
     m_castPositionX = m_castPositionY = m_castPositionZ = 0;
     m_TriggerSpells.clear();
-    m_IsTriggeredSpell = triggered;
+    _triggeredCastFlags = triggerFlags;
+    if (info->HasAttribute(SPELL_ATTR4_CAN_CAST_WHILE_CASTING))
+        _triggeredCastFlags = TriggerCastFlags(uint32(_triggeredCastFlags) | TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_CAST_DIRECTLY);
     //m_AreaAura = false;
     m_CastItem = nullptr;
 
@@ -639,10 +641,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     effectHandleMode = SPELL_EFFECT_HANDLE_LAUNCH;
 
     //Auto Shot & Shoot
-    if( m_spellInfo->AttributesEx2 == SPELL_ATTR2_AUTOREPEAT_FLAG && !triggered )
-        m_autoRepeat = true;
-    else
-        m_autoRepeat = false;
+    m_autoRepeat = !IsTriggered() && m_spellInfo->IsAutoRepeatRangedSpell();
 
     m_powerCost = 0;                                        // setup to correct value in Spell::prepare, don't must be used before.
     m_casttime = 0;                                         // setup to correct value in Spell::prepare, don't must be used before.
@@ -2140,7 +2139,7 @@ void Spell::prepareDataForTriggerSystem()
     //==========================================================================================
 
     // Fill flag can spell trigger or not
-    if (!m_IsTriggeredSpell)
+    if (!IsTriggered())
         m_canTrigger = true;          // Normal cast - can trigger
     else if (!m_triggeredByAuraSpell)
         m_canTrigger = true;          // Triggered from SPELL_EFFECT_TRIGGER_SPELL - can trigger
@@ -2573,7 +2572,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             caster != unitTarget && unitTarget->IsAlive())
         {
             // Redirect damage to caster if victim alive
-            m_caster->CastCustomSpell(m_caster, 32409, nullptr, nullptr, nullptr, true);
+            m_caster->CastCustomSpell(m_caster, 32409, nullptr, nullptr, nullptr, TRIGGERED_FULL_MASK);
             if (m_caster->ToPlayer())
                 m_caster->ToPlayer()->m_swdBackfireDmg = m_damage;
             //breakcompile;   // Build damage packet directly here and fake spell damage
@@ -2583,7 +2582,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000800000000LL && m_spellInfo->SpellIconID==153)
         {
             int32 damagePoint  = damageInfo.damage * 33 / 100;
-            m_caster->CastCustomSpell(m_caster, 32220, &damagePoint, nullptr, nullptr, true);
+            m_caster->CastCustomSpell(m_caster, 32220, &damagePoint, nullptr, nullptr, TRIGGERED_FULL_MASK);
         }
         // Bloodthirst
         else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
@@ -2602,7 +2601,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                     break;
             }
             if (BTAura)
-                m_caster->CastSpell(m_caster, BTAura, true);
+                m_caster->CastSpell(m_caster, BTAura, TRIGGERED_FULL_MASK);
         }
 
 #ifdef TESTS
@@ -2641,7 +2640,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     {
         if(m_spellInfo->HasInitialAggro())
         {
-            m_caster->CombatStart(unit,!m_IsTriggeredSpell); //A triggered spell should not be considered as a pvp action
+            m_caster->CombatStart(unit, m_spellInfo->HasInitialAggro() && !IsTriggered()); //sunstrider: A triggered spell should not be considered as a pvp action
         }
         else if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_AURA_CC))
         {
@@ -2655,7 +2654,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     }
     
     // if target is flagged for pvp also flag caster
-    if(unit->IsPvP() && !m_IsTriggeredSpell)
+    if(unit->IsPvP() && !IsTriggered())
     {
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
             (m_caster->ToPlayer())->UpdatePvP(true);
@@ -2906,7 +2905,7 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
         {
             if(i->second == 100 || roll_chance_i(i->second))
             {
-                caster->CastSpell(unit, i->first, true, nullptr, nullptr, 0, true);
+                caster->CastSpell(unit, i->first, TRIGGERED_FULL_MASK, nullptr, nullptr, 0, TRIGGERED_FULL_MASK);
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
                 if (i->first->GetDuration() == -1)
@@ -2939,7 +2938,7 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
                 if(i < 0)
                     unit->RemoveAurasDueToSpell(-i);
                 else
-                    unit->CastSpell(unit, i, true, nullptr, nullptr, caster->GetGUID());
+                    unit->CastSpell(unit, i, TRIGGERED_FULL_MASK, nullptr, nullptr, caster->GetGUID());
             }
         }
     }
@@ -3087,7 +3086,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
     InitExplicitTargets(*targets);
 
     // Fill aura scaling information
-    if (m_caster->IsControlledByPlayer() && !m_spellInfo->IsPassive() && m_spellInfo->SpellLevel && !m_spellInfo->IsChanneled() /* _triggeredCastFlags NYI) /&& !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_SCALING )*/)
+    if (m_caster->IsControlledByPlayer() && !m_spellInfo->IsPassive() && m_spellInfo->SpellLevel && !m_spellInfo->IsChanneled() && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_SCALING))
     {
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
@@ -3122,7 +3121,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
     m_caster->m_Events.AddEvent(_spellEvent, m_caster->m_Events.CalculateTime(1));
 
     //Another spell in progress ?
-    if(m_caster->IsNonMeleeSpellCast(false, true) && m_cast_count && !m_spellInfo->HasAttribute(SPELL_ATTR4_CAN_CAST_WHILE_CASTING))
+    if(m_caster->IsNonMeleeSpellCast(false, true) && m_cast_count && !(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS))
     {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
         finish(false,false);
@@ -3142,7 +3141,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
     m_powerCost = CalculatePowerCost(); //TC has:   m_powerCost = m_CastItem ? 0 : m_spellInfo->CalcPowerCost(m_caster, m_spellSchoolMask, this);
 
     // Set combo point requirement
-    if (m_IsTriggeredSpell || m_CastItem)
+    if ((_triggeredCastFlags & TRIGGERED_IGNORE_COMBO_POINTS) || m_CastItem)
         m_needComboPoints = false;
 
     SpellCastResult result = CheckCast(true);
@@ -3232,16 +3231,21 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
 
     //Containers for channeled spells have to be set
     // Why check duration? 29350: channelled triggers channelled
-    if(m_IsTriggeredSpell && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
+    if((_triggeredCastFlags & TRIGGERED_CAST_DIRECTLY) && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
         cast(true);
     else
     {
         // stealth must be removed at cast starting (at show channel bar)
         // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
-        if(m_spellInfo->IsBreakingStealth())
+        if(!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && m_spellInfo->IsBreakingStealth())
         {
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
-            m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_SPELL_ATTACK);
+            for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                if (m_spellInfo->Effects[i].GetUsedTargetObjectType() == TARGET_OBJECT_TYPE_UNIT)
+                {
+                    m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_SPELL_ATTACK);
+                    break;
+                }
         }
 
         m_caster->SetCurrentCastedSpell( this );
@@ -3249,7 +3253,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
         SendSpellStart();
         
         // set target for proper facing
-        if (m_casttime && !m_IsTriggeredSpell)
+        if (m_casttime && !(_triggeredCastFlags & TRIGGERED_IGNORE_SET_FACING))
             if (uint64 target = m_targets.GetUnitTargetGUID())
                 if(Unit* uTarget = ObjectAccessor::GetUnit(*m_caster,target))
                     if (m_caster->GetGUID() != target && m_caster->GetTypeId() == TYPEID_UNIT)
@@ -3371,7 +3375,7 @@ void Spell::cast(bool skipCheck)
 
     if(Unit *pTarget = m_targets.GetUnitTarget())
     {
-        if(!m_IsTriggeredSpell && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->CanSeeOrDetect(m_caster, false))
+        if(!IsTriggered() && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->CanSeeOrDetect(m_caster, false))
         {
             SendCastResult(SPELL_FAILED_BAD_TARGETS);
             finish(false);
@@ -3408,12 +3412,13 @@ void Spell::cast(bool skipCheck)
         return;
     }
 
-    if(m_caster->GetTypeId() != TYPEID_PLAYER && m_targets.GetUnitTarget() && m_targets.GetUnitTarget() != m_caster)
-        m_caster->SetInFront(m_targets.GetUnitTarget());
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_SET_FACING))
+        if(m_caster->GetTypeId() != TYPEID_PLAYER && m_targets.GetUnitTarget() && m_targets.GetUnitTarget() != m_caster)
+            m_caster->SetInFront(m_targets.GetUnitTarget());
 
     CallScriptBeforeCastHandlers();
 
-    if(!m_IsTriggeredSpell)
+    if(!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
     {
         castResult = CheckPower();
         if(castResult != SPELL_CAST_OK)
@@ -3461,7 +3466,7 @@ void Spell::cast(bool skipCheck)
     // set to real guid to be sent later to the client
     m_targets.UpdateTradeSlotItem();
 
-    if(!m_IsTriggeredSpell && m_spellInfo->Effects[0].Effect != SPELL_EFFECT_TRIGGER_SPELL_2)
+    if(!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
     {
         TakePower();  // combo points should not be taken before SPELL_AURA_ADD_TARGET_TRIGGER auras are handled
         if(m_spellInfo->Effects[0].Effect != SPELL_EFFECT_TRIGGER_SPELL_2)
@@ -3498,12 +3503,6 @@ void Spell::cast(bool skipCheck)
 
     if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_CHARGE))
         EffectCharge(0);
-
-    // combo points should not be taken before SPELL_AURA_ADD_TARGET_TRIGGER auras are handled
-    if (!m_IsTriggeredSpell)
-    {
-        TakePower();
-    }
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
     if (m_spellInfo->Id == 2094 || m_spellInfo->Id == 14181)       // Delay Blind for 150ms to fake retail lag
@@ -3553,10 +3552,10 @@ void Spell::cast(bool skipCheck)
                         {
                             Unit* linkCastTarget = ObjectAccessor::GetUnit(*m_caster, itr.targetGUID);
                             if(linkCastTarget)
-                                m_caster->CastSpell(linkCastTarget, i, true);
+                                m_caster->CastSpell(linkCastTarget, i, TRIGGERED_FULL_MASK);
                         }
                     } else {
-                        m_caster->CastSpell(m_caster, i, true);
+                        m_caster->CastSpell(m_caster, i, TRIGGERED_FULL_MASK);
                     }
                 }
             }
@@ -3886,7 +3885,7 @@ void Spell::update(uint32 difftime)
         (m_spellInfo->Effects[0].Effect != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING_FAR)))
     {
         // don't cancel for melee, autorepeat, triggered and instant spells
-        if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell && !(IsChannelActive() && m_spellInfo->IsMoveAllowedChannel()))
+        if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !IsTriggered() && !(IsChannelActive() && m_spellInfo->IsMoveAllowedChannel()))
         {
             // if charmed by creature, trust the AI not to cheat and allow the cast to proceed
             // @todo this is a hack, "creature" movesplines don't differentiate turning/moving right now
@@ -4081,8 +4080,8 @@ void Spell::finish(bool ok, bool cancelChannel)
     if( m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET )
         m_caster->AttackStop();
         
-    //if (ok && !m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->HasAuraEffect(43983) && m_spellInfo->PowerType == POWER_MANA)
-    //    m_caster->CastSpell(m_caster, 43137, true);
+    //if (ok && !IsTriggered() && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->HasAuraEffect(43983) && m_spellInfo->PowerType == POWER_MANA)
+    //    m_caster->CastSpell(m_caster, 43137, TRIGGERED_FULL_MASK);
 }
 
 
@@ -4274,14 +4273,11 @@ void Spell::SendCastResult(SpellCastResult result, uint32* param1 /*= nullptr*/,
     if((m_caster->ToPlayer())->GetSession()->PlayerLoading())  // don't send cast results at loading time
         return;
 
-/* Sunwell
-    // sunwell: override every possible result, except for gm fail result... breaks many things and goes unnoticed because of this and makes me rage when i find this out
-    if ((_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) && result != SPELL_FAILED_BM_OR_INVISGOD)
-        result = SPELL_FAILED_DONT_REPORT;
-    */
-
     if(result != SPELL_CAST_OK)
     {
+        if (_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR)
+            result = SPELL_FAILED_DONT_REPORT;
+
         WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
         SendCastResult(m_caster->ToPlayer(), m_spellInfo, m_cast_count, result, /*m_customError, */ param1, param2);
     }
@@ -4869,7 +4865,7 @@ void Spell::TakeCastItem()
         return;
 
     // not remove cast item at triggered spell (equipping, weapon damage, etc)
-    if(m_IsTriggeredSpell)
+    if (_triggeredCastFlags & TRIGGERED_IGNORE_CAST_ITEM)
         return;
 
     //Duel area free first aid
@@ -5014,9 +5010,6 @@ void Spell::TakePower()
 
 void Spell::TakeReagents()
 {
-    if(m_IsTriggeredSpell)                                  // reagents used in triggered spell removed by original spell or don't must be removed.
-        return;
-
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
@@ -5121,7 +5114,7 @@ void Spell::TriggerSpell()
 {
     for(auto & m_TriggerSpell : m_TriggerSpells)
     {
-        auto  spell = new Spell(m_caster, m_TriggerSpell, true, m_originalCasterGUID, m_selfContainer, true);
+        auto  spell = new Spell(m_caster, m_TriggerSpell, TRIGGERED_FULL_MASK, m_originalCasterGUID, m_selfContainer, true);
         spell->prepare(&m_targets);                         // use original spell original targets
     }
 }
@@ -5131,25 +5124,39 @@ void Spell::TriggerSpell()
 //return : -1 = ok, everything else : see enum SpellCastResult
 SpellCastResult Spell::CheckCast(bool strict)
 {
-    //TC_LOG_DEBUG("FIXME","Spell %u - CheckCast(%s)",m_spellInfo->Id,(strict ? "true" : "false"));
-
     if (m_spellInfo->Effects[0].Effect == SPELL_EFFECT_STUCK) //skip stuck spell to allow use it in falling case 
         return SPELL_CAST_OK;
 
+    // check death state
+    if (!m_caster->IsAlive() && !m_spellInfo->IsPassive() && !(m_spellInfo->HasAttribute(SPELL_ATTR0_CASTABLE_WHILE_DEAD) || (IsTriggered() && !m_triggeredByAuraSpell)))
+        return SPELL_FAILED_CASTER_DEAD;
+
     // check cooldowns to prevent cheating
-    if(!m_IsTriggeredSpell && m_caster->GetTypeId()==TYPEID_PLAYER && ((m_caster->ToPlayer())->HasSpellCooldown(m_spellInfo->Id) || (strict && (m_caster->ToPlayer())->HasGlobalCooldown(m_spellInfo))))
+    if (!m_spellInfo->IsPassive())
     {
-       //triggered spells shouldn't be casted (cooldown check in handleproctriggerspell)
-       // if(m_triggeredByAuraSpell)
-       //     return SPELL_FAILED_DONT_REPORT;
-       // else
-        return SPELL_FAILED_NOT_READY;
+#ifdef LICH_KING
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        {
+            //can cast triggered (by aura only?) spells while have this flag
+            if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CASTER_AURASTATE) && m_caster->ToPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY))
+                return SPELL_FAILED_SPELL_IN_PROGRESS;
+
+            // check if we are using a potion in combat for the 2nd+ time. Cooldown is added only after caster gets out of combat
+            if (!IsIgnoringCooldowns() && m_caster->ToPlayer()->GetLastPotionId() && m_CastItem && (m_CastItem->IsPotion() || m_spellInfo->IsCooldownStartedOnEvent()))
+                return SPELL_FAILED_NOT_READY;
+        }
+#endif
+
+        if (!IsIgnoringCooldowns() && m_caster->GetTypeId() == TYPEID_PLAYER && ((m_caster->ToPlayer())->HasSpellCooldown(m_spellInfo->Id)))
+            if (m_triggeredByAuraSpell)
+                return SPELL_FAILED_DONT_REPORT;
+            else
+                return SPELL_FAILED_NOT_READY;
     }
 
-     // check death state
-    if (   !m_caster->IsAlive() && !(m_spellInfo->Attributes & SPELL_ATTR0_PASSIVE) 
-        && !((m_spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD) || (m_IsTriggeredSpell && !m_triggeredByAuraSpell)) )
-        return SPELL_FAILED_CASTER_DEAD;
+    // Check global cooldown
+    if (strict && !(_triggeredCastFlags & TRIGGERED_IGNORE_GCD) && HasGlobalCooldown())
+        return !m_spellInfo->HasAttribute(SPELL_ATTR0_DISABLED_WHILE_ACTIVE) ? SPELL_FAILED_NOT_READY : SPELL_FAILED_DONT_REPORT;
 
     Unit *target = m_targets.GetUnitTarget();
     if(!target)
@@ -5235,7 +5242,7 @@ SpellCastResult Spell::CheckCast(bool strict)
 
         // TODO: this check can be applied and for player to prevent cheating when IsPositiveSpell will return always correct result.
         // check target for pet/charmed casts (not self targeted), self targeted cast used for area effects and etc
-        if(m_caster->GetTypeId()==TYPEID_UNIT && m_caster->GetCharmerOrOwnerGUID() && !m_IsTriggeredSpell)
+        if(m_caster->GetTypeId() == TYPEID_UNIT && m_caster->GetCharmerOrOwnerGUID() && !IsTriggered())
         {
             // check correctness positive/negative cast target (pet cast real check and cheating check)
             bool hostileTarget = m_caster->IsHostileTo(target);
@@ -5251,7 +5258,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
         }   
 
-        //Must be behind the target.
+        // Must be behind the target.
         if( (m_spellInfo->HasAttribute(SPELL_ATTR2_BEHIND_TARGET)) && target->HasInArc(M_PI, m_caster))
         {
             SendInterrupted(2);
@@ -5288,10 +5295,23 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_DONT_REPORT;
 
     // only check at first call, Stealth auras are already removed at second call
-    if( strict )
+    if( strict && !(_triggeredCastFlags & TRIGGERED_IGNORE_SHAPESHIFT))
     {
-        // for now (?), ignore triggered spells
-        if(!m_IsTriggeredSpell)
+#ifdef LICH_KING
+        bool checkForm = true;
+        // Ignore form req aura
+        Unit::AuraEffectList const& ignore = m_caster->GetAuraEffectsByType(SPELL_AURA_MOD_IGNORE_SHAPESHIFT);
+        for (AuraEffect const* aurEff : ignore)
+        {
+            if (!aurEff->IsAffectedOnSpell(m_spellInfo))
+                continue;
+
+            checkForm = false;
+            break;
+        }
+
+        if(checkForm)
+#endif
         {
             // Cannot be used in this stance/form
             SpellCastResult shapeError = GetErrorAtShapeshiftedCast(m_spellInfo, m_caster->m_form);
@@ -5304,14 +5324,28 @@ SpellCastResult Spell::CheckCast(bool strict)
     }
     
     // caster state requirements
-    if(m_spellInfo->CasterAuraState && !m_caster->HasAuraState(AuraStateType(m_spellInfo->CasterAuraState)))
-        return SPELL_FAILED_CASTER_AURASTATE;
-    if(m_spellInfo->CasterAuraStateNot && m_caster->HasAuraState(AuraStateType(m_spellInfo->CasterAuraStateNot)))
-        return SPELL_FAILED_CASTER_AURASTATE;
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CASTER_AURASTATE))
+    {
+        if (m_spellInfo->CasterAuraState && !m_caster->HasAuraState(AuraStateType(m_spellInfo->CasterAuraState)))
+            return SPELL_FAILED_CASTER_AURASTATE;
+        if (m_spellInfo->CasterAuraStateNot && m_caster->HasAuraState(AuraStateType(m_spellInfo->CasterAuraStateNot)))
+            return SPELL_FAILED_CASTER_AURASTATE;
+
+        // check combat state
+        if (!m_spellInfo->CanBeUsedInCombat())
+        {
+            if (m_caster->IsInCombat())
+                return SPELL_FAILED_AFFECTING_COMBAT;
+
+            // sunstrider: block non combat spells while we got in air projectiles. This avoid having players casting a spell then directly stealthing. This is retail behavior.
+            if (!IsTriggered() && (m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]))
+                return SPELL_FAILED_DONT_REPORT;
+        }
+    }
 
     // cancel autorepeat spells if cast start when moving
     // (not wand currently autorepeat cast delayed to moving stop anyway in spell update code)
-    if( m_caster->GetTypeId()==TYPEID_PLAYER && (m_caster->ToPlayer())->isMoving() )
+    if( m_caster->GetTypeId()==TYPEID_PLAYER && (m_caster->ToPlayer())->isMoving() && (!m_caster->IsCharmed() || !IS_CREATURE_GUID(m_caster->GetCharmerGUID())))
     {
         // apply spell limitations at movement
         if( (!m_caster->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING)) &&
@@ -5388,7 +5422,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         return SPELL_FAILED_REQUIRES_AREA;
 
     // not let players cast spells at mount (and let do it to creatures)
-    if( m_caster->IsMounted() && m_caster->GetTypeId()==TYPEID_PLAYER && !m_IsTriggeredSpell &&
+    if( m_caster->IsMounted() && m_caster->GetTypeId() == TYPEID_PLAYER && !(_triggeredCastFlags & TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE) &&
         !m_spellInfo->IsPassive() && !m_spellInfo->HasAttribute(SPELL_ATTR0_CASTABLE_WHILE_MOUNTED) )
     {
         if(m_caster->IsInFlight())
@@ -5405,33 +5439,31 @@ SpellCastResult Spell::CheckCast(bool strict)
             return castResult;
     }
 
-    // check combat state
-    if(!m_spellInfo->CanBeUsedInCombat())
-    {
-        if (m_caster->IsInCombat())
-            return SPELL_FAILED_AFFECTING_COMBAT;  
-
-        // block non combat spells while we got in air projectiles
-        if( !m_IsTriggeredSpell && (m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]) )
-            return SPELL_FAILED_DONT_REPORT;
-    }
-
     SpellCastResult castResult = SPELL_CAST_OK;
 
-    if(!m_IsTriggeredSpell)
+    if (!IsTriggered())
     {
         castResult = CheckRange(strict);
-        if(castResult != SPELL_CAST_OK)
+        if (castResult != SPELL_CAST_OK)
             return castResult;
+    }
 
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
+    {
         castResult = CheckPower();
-        if(castResult != SPELL_CAST_OK)
+        if (castResult != SPELL_CAST_OK)
             return castResult;
+    }
 
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CASTER_AURAS))
+    {
         castResult = CheckCasterAuras();
-        if(castResult != SPELL_CAST_OK)
+        if (castResult != SPELL_CAST_OK)
             return castResult;
+    }
 
+    if(!IsTriggered())
+    {
         // check creature prohibited spell school case
         /*if (m_caster->GetTypeId() == TYPEID_UNIT 
             && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE
@@ -5886,7 +5918,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (m_caster->GetTypeId()==TYPEID_PLAYER && m_caster->GetClass()==CLASS_WARLOCK)
                     {
                         if (strict)                         //starting cast, trigger pet stun (cast by pet so it doesn't attack player)
-                            pet->CastSpell(pet, 32752, true, nullptr, nullptr, pet->GetGUID());
+                            pet->CastSpell(pet, 32752, TRIGGERED_FULL_MASK, nullptr, nullptr, pet->GetGUID());
                     }
                     else if (!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET))
                         return SPELL_FAILED_ALREADY_HAVE_SUMMON;
@@ -6055,7 +6087,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
                 // Ignore map check if spell have AreaId. AreaId already checked and this prevent special mount spells
-                if (m_caster->GetTypeId()==TYPEID_PLAYER && !sMapStore.LookupEntry(m_caster->GetMapId())->IsMountAllowed() && !m_IsTriggeredSpell && !m_spellInfo->AreaId)
+                if (m_caster->GetTypeId()==TYPEID_PLAYER && !sMapStore.LookupEntry(m_caster->GetMapId())->IsMountAllowed() && !IsTriggered() && !m_spellInfo->AreaId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
                 if (m_caster->GetAreaId()==35)
@@ -6214,8 +6246,7 @@ SpellCastResult Spell::PetCanCast(Unit* target)
 #endif
             ) 
             return SPELL_FAILED_CASTER_DEAD;
-
-    if(m_caster->IsNonMeleeSpellCast(false) && !m_IsTriggeredSpell && !m_spellInfo->HasAttribute(SPELL_ATTR4_CAN_CAST_WHILE_CASTING))  //prevent spellcast interruption by another spellcast
+    if(m_caster->IsNonMeleeSpellCast(false) && !(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS) && !m_spellInfo->HasAttribute(SPELL_ATTR4_CAN_CAST_WHILE_CASTING))  //prevent spellcast interruption by another spellcast
         return SPELL_FAILED_SPELL_IN_PROGRESS;
     if(m_caster->IsInCombat() && !m_spellInfo->CanBeUsedInCombat())
         return SPELL_FAILED_AFFECTING_COMBAT;
@@ -6686,8 +6717,9 @@ SpellCastResult Spell::CheckItems()
     // if not item target then required item must be equipped
     else
     {
-        if(m_caster->GetTypeId() == TYPEID_PLAYER && !(m_caster->ToPlayer())->HasItemFitToSpellRequirements(m_spellInfo))
-            return SPELL_FAILED_EQUIPPED_ITEM_CLASS;
+        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_EQUIPPED_ITEM_REQUIREMENT))
+            if(m_caster->GetTypeId() == TYPEID_PLAYER && !(m_caster->ToPlayer())->HasItemFitToSpellRequirements(m_spellInfo))
+                return SPELL_FAILED_EQUIPPED_ITEM_CLASS;
     }
 
     if(m_spellInfo->RequiresSpellFocus)
@@ -6783,13 +6815,14 @@ SpellCastResult Spell::CheckItems()
         {
             case SPELL_EFFECT_CREATE_ITEM:
             {
-                if (!m_IsTriggeredSpell && Effect.ItemType)
+                Unit* target = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster;
+                if (target && target->GetTypeId() == TYPEID_PLAYER && !IsTriggered() && Effect.ItemType)
                 {
                     ItemPosCountVec dest;
-                    uint8 msg = p_caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, Effect.ItemType, 1 );
+                    uint8 msg = target->ToPlayer()->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, Effect.ItemType, 1 );
                     if (msg != EQUIP_ERR_OK )
                     {
-                        p_caster->SendEquipError( msg, nullptr, nullptr );
+                        target->ToPlayer()->SendEquipError( msg, nullptr, nullptr );
                         return SPELL_FAILED_DONT_REPORT;
                     }
                 }
@@ -6955,7 +6988,7 @@ SpellCastResult Spell::CheckItems()
     }
     
     // check weapon presence in slots for main/offhand weapons
-    if (/*!(_triggeredCastFlags & TRIGGERED_IGNORE_EQUIPPED_ITEM_REQUIREMENT) && */m_spellInfo->EquippedItemClass >= 0)
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_EQUIPPED_ITEM_REQUIREMENT) && m_spellInfo->EquippedItemClass >= 0)
     {
         auto weaponCheck = [this](WeaponAttackType attackType) -> SpellCastResult
         {
@@ -7341,9 +7374,12 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
             return false;
     }
 
-    //Do not check LOS for triggered spells
-    if( (m_IsTriggeredSpell)
-      || (m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS)) )
+    // check for ignore LOS on the effect itself
+    if (m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) /*|| DisableMgr::IsDisabledFor(DISABLE_TYPE_SPELL, m_spellInfo->Id, nullptr, SPELL_DISABLE_LOS)*/)
+        return true;
+
+    // if spell is triggered, need to check for LOS disable on the aura triggering it and inherit that behaviour
+    if (IsTriggered() && m_triggeredByAuraSpell && (m_triggeredByAuraSpell->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) /*|| DisableMgr::IsDisabledFor(DISABLE_TYPE_SPELL, m_triggeredByAuraSpell->Id, nullptr, SPELL_DISABLE_LOS)*/))
         return true;
 
     //Check targets for LOS visibility (except spells without range limitations )
@@ -7446,7 +7482,7 @@ void Spell::HandleHitTriggerAura()
 bool Spell::IsNeedSendToClient() const
 {
     return m_spellInfo->SpellVisual!=0 || m_spellInfo->IsChanneled() ||
-        m_spellInfo->Speed > 0.0f || (!m_triggeredByAuraSpell && !m_IsTriggeredSpell);
+        m_spellInfo->Speed > 0.0f || (!m_triggeredByAuraSpell && !IsTriggered());
 }
 
 bool Spell::HaveTargetsForEffect( uint8 effect ) const
@@ -7776,7 +7812,7 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier,
 
             basepoints = (targetInfo.crit ? Unit::SpellCriticalDamageBonus(m_caster, m_spellInfo, m_damage, target) : m_damage);
             m_damage = mdmg;
-            m_caster->CastCustomSpell(target, 26654, &basepoints, NULL, NULL, true);
+            m_caster->CastCustomSpell(target, 26654, &basepoints, NULL, NULL, TRIGGERED_FULL_MASK);
 
             if (m_spellInfo->Id != 44949)
                 aur->DropCharge();
@@ -8299,4 +8335,31 @@ bool Spell::CheckScriptEffectImplicitTargets(SpellEffIndex effIndex, SpellEffInd
                 return false;
     }
     return true;
+}
+
+bool Spell::IsAutoActionResetSpell() const
+{
+    /// @todo changed SPELL_INTERRUPT_FLAG_AUTOATTACK -> SPELL_INTERRUPT_FLAG_INTERRUPT to fix compile - is this check correct at all?
+    if (IsTriggered() || !(m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT))
+        return false;
+
+    if (!m_casttime && m_spellInfo->HasAttribute(SPELL_ATTR6_NOT_RESET_SWING_IF_INSTANT))
+        return false;
+
+    return true;
+}
+
+bool Spell::IsTriggered() const
+{
+    return (_triggeredCastFlags & TRIGGERED_FULL_MASK) != 0;
+}
+
+bool Spell::IsIgnoringCooldowns() const
+{
+    return (_triggeredCastFlags & TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD) != 0;
+}
+
+bool Spell::IsProcDisabled() const
+{
+    return (_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS) != 0;
 }

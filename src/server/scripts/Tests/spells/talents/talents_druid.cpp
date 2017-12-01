@@ -63,7 +63,7 @@ public:
 			Wait(5000);
 			ASSERT_INFO("Druid has not Nature's Grasp aura");
 			TEST_ASSERT(player->HasAura(ClassSpells::Druid::NATURES_GRASP_RNK_7));
-			warrior->Attack(player, true);
+			warrior->Attack(player, TRIGGERED_FULL_MASK);
 			Wait(1500);
 			ASSERT_INFO("Druid still has aura");
 			TEST_ASSERT(!player->HasAura(ClassSpells::Druid::NATURES_GRASP_RNK_7));

@@ -606,7 +606,7 @@ void Map::ScriptsProcess()
                 bool triggered = (step.script->CastSpell.Flags != SF_CASTSPELL_SEARCH_CREATURE) ?
                     step.script->CastSpell.CreatureEntry & SF_CASTSPELL_TRIGGERED :
                     step.script->CastSpell.CreatureEntry < 0;
-                uSource->CastSpell(uTarget, step.script->CastSpell.Flags, triggered);
+                uSource->CastSpell(uTarget, step.script->CastSpell.Flags, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
 
                 break;
             }
