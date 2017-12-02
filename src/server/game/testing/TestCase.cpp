@@ -183,9 +183,17 @@ void TestCase::EnableMapObjects()
 
 void TestCase::_TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount)
 {
-   /* TODO: cast */
-    uint32 auraCount = target->GetAuraCount(testSpell);
-    INTERNAL_TEST_ASSERT(auraCount == requireCount);
+	/* TODO: cast */
+	uint32 auraCount = target->GetAuraCount(testSpell);
+	INTERNAL_TEST_ASSERT(auraCount == requireCount);
+}
+
+void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 castTime, Powers powerType, uint32 expectedPowerCost)
+{
+	caster->SetPower(powerType, expectedPowerCost);
+	CastSpell(caster, target, castSpell);
+	Wait(castTime + 500);
+	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == 0);
 }
 
 TestPlayer* TestCase::SpawnRandomPlayer()

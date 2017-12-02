@@ -95,6 +95,8 @@ public:
 
     #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller()
 
+	#define TEST_POWER_COST(caster, target, castSpellID, castTime, powerType, expectedPowerCost) _SetCaller(__FILE__, __LINE__); _TestPowerCost(caster, target, castSpellID, castTime, powerType, expectedPowerCost); _ResetCaller()
+
     bool GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage);
     bool GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal);
     float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
@@ -124,7 +126,8 @@ protected:
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount);
     void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
-    void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
+	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
+	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 castTime, Powers powerType, uint32 expectedPowerCost);
     void _EquipItem(TestPlayer* p, uint32 itemID);
 
 private:
