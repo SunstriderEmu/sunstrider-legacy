@@ -185,7 +185,7 @@ void WorldSession::HandleTalentWipeConfirmOpcode( WorldPacket & recvData )
         return;
     }
 
-    unit->CastSpell(_player, 14867, true);                  //spell: "Untalent Visual Effect"
+    unit->CastSpell(_player, 14867, TRIGGERED_FULL_MASK);                  //spell: "Untalent Visual Effect"
     
     if (_player->HasAuraEffect(28682)) // Bug exploit
         _player->RemoveAurasDueToSpell(28682);

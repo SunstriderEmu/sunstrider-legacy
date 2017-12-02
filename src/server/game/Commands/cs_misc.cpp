@@ -1765,7 +1765,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
 
         //stop movement and disable spells
         uint32 spellID = 9454;
-        //m_session->GetPlayer()->CastSpell(player,spellID,false);
+        //m_session->GetPlayer()->CastSpell(player,spellID, TRIGGERED_NONE);
         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( spellID );
         if(spellInfo) //TODO: Change the duration of the aura to -1 instead of 5000000
         {
@@ -1885,7 +1885,7 @@ bool ChatHandler::HandlePossessCommand(const char* args)
     if(!pUnit)
         return false;
 
-    m_session->GetPlayer()->CastSpell(pUnit, 530, true);
+    m_session->GetPlayer()->CastSpell(pUnit, 530, TRIGGERED_FULL_MASK);
     return true;
 }
 
@@ -1907,7 +1907,7 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
     if (!pUnit)
         return false;
 
-    m_session->GetPlayer()->CastSpell(pUnit, 6277, true);
+    m_session->GetPlayer()->CastSpell(pUnit, 6277, TRIGGERED_FULL_MASK);
     return true;
 }
 

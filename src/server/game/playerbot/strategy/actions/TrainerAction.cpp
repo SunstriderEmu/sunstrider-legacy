@@ -11,7 +11,7 @@ void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostrings
 
     bot->ModifyMoney(-int32(cost));
     /* TC if (tSpell->IsCastable())
-        bot->CastSpell(bot, tSpell->spell, true);
+        bot->CastSpell(bot, tSpell->spell, TRIGGERED_FULL_MASK);
     else */
         bot->LearnSpell(tSpell->spell, false, false);
 

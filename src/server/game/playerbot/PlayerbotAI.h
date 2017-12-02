@@ -163,8 +163,8 @@ public:
     // sunstrider addition for testing: Called at any Damage to any victim (before damage apply)
     //virtual void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) { }
     //virtual void DamageTaken(Unit *done_by, uint32 & /*damage*/, DamageEffectType /*damageType*/) { }
-    virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit = false) { }
-    virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit = false) { }
+    virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) { }
+    virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) { }
     virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) { }
     virtual void SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID) { }
 
@@ -205,8 +205,8 @@ public:
     virtual ~PlayerbotTestingAI() {}
 
     void UpdateAIInternal(uint32 elapsed) override;
-    virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit = false) override;
-    virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit = false) override;
+    virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) override;
+    virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) override;
     virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) override;
     virtual void SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID) override;
 
@@ -240,6 +240,7 @@ public:
     //will only use full hit spells
     int32 GetDotDamage(Unit* to, uint32 spellID);
     std::vector<DamageDoneInfo> const* GetDamageDoneInfo(Unit* target);
+    std::vector<HealingDoneInfo> const* GetHealingDoneInfo(Unit* target);
 
 private:
    

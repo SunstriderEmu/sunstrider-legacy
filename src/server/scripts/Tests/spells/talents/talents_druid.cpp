@@ -114,7 +114,7 @@ public:
 			Wait(5000);
 			ASSERT_INFO("Druid has not Nature's Grasp aura");
 			TEST_ASSERT(player->HasAura(ClassSpells::Druid::NATURES_GRASP_RNK_7));
-			warrior->Attack(player, true);
+			warrior->Attack(player, TRIGGERED_FULL_MASK);
 			Wait(1500);
 			ASSERT_INFO("Druid still has aura");
 			TEST_ASSERT(!player->HasAura(ClassSpells::Druid::NATURES_GRASP_RNK_7));
@@ -400,7 +400,7 @@ public:
 
 			LearnTalent(player, Talents::Druid::WRATH_OF_CENARIUS_RNK_5);
 
-			EquipItem(player, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 SP
 
 			float const starfireFactor	= 5 * 0.04f;
 			float const wrathFactor		= 5 * 0.02f;
@@ -1085,6 +1085,8 @@ public:
 
 		void TestSpellOfTheWild(TestPlayer* player, uint32 spell, TestPlayer* victim)
 		{
+			LearnTalent(player, Talents::Druid::IMPROVED_MARK_OF_THE_WILD_RNK_5);
+
 			uint32 const startArmor = victim->GetArmor();
 			uint32 const startAgi = victim->GetStat(STAT_AGILITY);
 			uint32 const startInt = victim->GetStat(STAT_INTELLECT);
@@ -1131,16 +1133,13 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-			TestPlayer* player2 = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
-
-			player->AddItem(22148, 2); // Wild Quillvine, regeant for Git of the Wild
-			LearnTalent(player, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_3);
-			LearnTalent(player, Talents::Druid::IMPROVED_MARK_OF_THE_WILD_RNK_5);
-
+			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
 			TestSpellOfTheWild(player, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8, player);
-			TestSpellOfTheWild(player, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_3, player);
-			TestSpellOfTheWild(player, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_3, player2);
+
+			TestPlayer* player2 = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+			TestPlayer* target = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+			player2->AddItem(22148, 1); // Wild Quillvine, regeant for Git of the Wild
+			TestSpellOfTheWild(player2, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_3, target);
 		}
 	};
 

@@ -1418,7 +1418,7 @@ void Player::SetDeathState(DeathState s)
 
         // restore default warrior stance
         if(GetClass()== CLASS_WARRIOR)
-            CastSpell(this,SPELL_ID_PASSIVE_BATTLE_STANCE,true);
+            CastSpell(this,SPELL_ID_PASSIVE_BATTLE_STANCE, TRIGGERED_FULL_MASK);
     }
 }
 
@@ -1876,7 +1876,7 @@ void Player::AddToWorld()
 
     //Fog of Corruption
     if (HasAuraEffect(45717))
-        CastSpell(this, 45917, true); //Soul Sever - instakill
+        CastSpell(this, 45917, TRIGGERED_FULL_MASK); //Soul Sever - instakill
 }
 
 void Player::RemoveFromWorld()
@@ -3014,7 +3014,7 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
             if (active)
             {
                 if (spellInfo->IsPassive() && IsNeedCastPassiveSpellAtLearn(spellInfo))
-                    CastSpell(this, spell_id, true);
+                    CastSpell(this, spell_id, TRIGGERED_FULL_MASK);
             }
             else if (IsInWorld())
             {
@@ -3156,7 +3156,7 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
     if(!loading && talentCost > 0 && IsSpellHaveEffect(spellInfo,SPELL_EFFECT_LEARN_SPELL) )
     {
         // ignore stance requirement for talent learn spell (stance set for spell only for client spell description show)
-        CastSpell(this, spell_id, true);
+        CastSpell(this, spell_id, TRIGGERED_FULL_MASK);
     }
     // also cast passive spells (including all talents without SPELL_EFFECT_LEARN_SPELL) with additional checks
     else if (spellInfo->IsPassive())
@@ -3178,11 +3178,11 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
                                                             //Check CasterAuraStates
             if (   (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState)))
                 && HasItemFitToSpellRequirements(spellInfo) )
-                CastSpell(this, spell_id, true);
+                CastSpell(this, spell_id, TRIGGERED_FULL_MASK);
     }
     else if( IsSpellHaveEffect(spellInfo,SPELL_EFFECT_SKILL_STEP) )
     {
-        CastSpell(this, spell_id, true);
+        CastSpell(this, spell_id, TRIGGERED_FULL_MASK);
         return false;
     }
 
@@ -4113,8 +4113,8 @@ void Player::BuildPlayerRepop()
 #endif
 
     if(GetRace() == RACE_NIGHTELF)
-        CastSpell(this, 20584, true);                       // auras SPELL_AURA_INCREASE_SPEED(+speed in wisp form), SPELL_AURA_INCREASE_SWIM_SPEED(+swim speed in wisp form), SPELL_AURA_TRANSFORM (to wisp form)
-    CastSpell(this, 8326, true);                            // auras SPELL_AURA_GHOST, SPELL_AURA_INCREASE_SPEED(why?), SPELL_AURA_INCREASE_SWIM_SPEED(why?)
+        CastSpell(this, 20584, TRIGGERED_FULL_MASK);                       // auras SPELL_AURA_INCREASE_SPEED(+speed in wisp form), SPELL_AURA_INCREASE_SWIM_SPEED(+swim speed in wisp form), SPELL_AURA_TRANSFORM (to wisp form)
+    CastSpell(this, 8326, TRIGGERED_FULL_MASK);                            // auras SPELL_AURA_GHOST, SPELL_AURA_INCREASE_SPEED(why?), SPELL_AURA_INCREASE_SWIM_SPEED(why?)
 
     // there must be SMSG.FORCE_RUN_SPEED_CHANGE, SMSG.FORCE_SWIM_SPEED_CHANGE, SMSG.MOVE_WATER_WALK
     // there must be SMSG.STOP_MIRROR_TIMER
@@ -4240,7 +4240,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     if(int32(GetLevel()) >= startLevel)
     {
         // set resurrection sickness
-        CastSpell(this,SPELL_ID_PASSIVE_RESURRECTION_SICKNESS,true);
+        CastSpell(this,SPELL_ID_PASSIVE_RESURRECTION_SICKNESS, TRIGGERED_FULL_MASK);
 
         // not full duration
         if(int32(GetLevel()) < startLevel+9)
@@ -5935,7 +5935,7 @@ void Player::CheckAreaExploreAndOutdoor()
                 continue;
 
             if (GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
-                CastSpell(this, itr.first, true);
+                CastSpell(this, itr.first, TRIGGERED_FULL_MASK);
         }
     }
 
@@ -7633,7 +7633,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
 
         TC_LOG_DEBUG("entities.player","WORLD: cast %s Equip spellId - %i", (item ? "item" : "itemset"), spellInfo->Id);
 
-        CastSpell(this,spellInfo,true,item);
+        CastSpell(this,spellInfo, TRIGGERED_FULL_MASK,item);
     }
     else
     {
@@ -7764,7 +7764,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             }
 
             if (roll_chance_f(chance))
-                CastSpell(target, spellInfo->Id, true, item);
+                CastSpell(target, spellInfo->Id, TRIGGERED_FULL_MASK, item);
         }
     }
 
@@ -7791,7 +7791,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     case 16313: FTSpellId = 25488; break; // Rank 7
                 }
                 if (FTSpellId)
-                    CastSpell(target, FTSpellId, true, item);
+                    CastSpell(target, FTSpellId, TRIGGERED_FULL_MASK, item);
                 continue;
             }
 
@@ -7843,9 +7843,9 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             if (roll_chance_f(chance))
             {
                 if(spellInfo->IsPositive(!IsFriendlyTo(target)))
-                    CastSpell(this, pEnchant->spellid[s], true, item);
+                    CastSpell(this, pEnchant->spellid[s], TRIGGERED_FULL_MASK, item);
                 else
-                    CastSpell(target, pEnchant->spellid[s], true, item);
+                    CastSpell(target, pEnchant->spellid[s], TRIGGERED_FULL_MASK, item);
             }
         }
     }
@@ -7871,7 +7871,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
             return;
         }
 
-        auto spell = new Spell(this, spellInfo, false);
+        auto spell = new Spell(this, spellInfo, TRIGGERED_NONE);
         spell->m_CastItem = item;
         spell->m_cast_count = cast_count;               //set count of casts
         spell->m_currentBasePoints[0] = learning_spell_id;
@@ -7900,7 +7900,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
             continue;
         }
 
-        auto spell = new Spell(this, spellInfo, (count > 0));
+        auto spell = new Spell(this, spellInfo, (count > 0) ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
         spell->m_CastItem = item;
         spell->m_cast_count = cast_count;               //set count of casts
         spell->InitExplicitTargets(targets);
@@ -12818,9 +12818,9 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         }
                         // Cast custom spell vs all equal basepoints getted from enchant_amount
                         if (basepoints)
-                            CastCustomSpell(this,enchant_spell_id,&basepoints,&basepoints,&basepoints,true,item);
+                            CastCustomSpell(this,enchant_spell_id,&basepoints,&basepoints,&basepoints, TRIGGERED_FULL_MASK,item);
                         else
-                            CastSpell(this,enchant_spell_id,true,item);
+                            CastSpell(this,enchant_spell_id, TRIGGERED_FULL_MASK,item);
                     }
                     else
                         RemoveAurasDueToItemSpell(item,enchant_spell_id);
@@ -13713,9 +13713,9 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     }
 
     if( pQuest->GetRewSpellCast() > 0 )
-        CastSpell( this, pQuest->GetRewSpellCast(), true);
+        CastSpell( this, pQuest->GetRewSpellCast(), TRIGGERED_FULL_MASK);
     else if( pQuest->GetRewSpell() > 0)
-        CastSpell( this, pQuest->GetRewSpell(), true);
+        CastSpell( this, pQuest->GetRewSpell(), TRIGGERED_FULL_MASK);
 
     uint16 log_slot = FindQuestSlot( quest_id );
     if( log_slot < MAX_QUEST_LOG_SIZE)
@@ -14397,7 +14397,7 @@ void Player::SetQuestStatus( uint32 questId, QuestStatus status )
         for (auto itr = saBounds.first; itr != saBounds.second; ++itr)
             if (itr->second->autocast && itr->second->IsFitToRequirements(this, zone, area))
                 if (!HasAura(itr->second->spellId))
-                    CastSpell(this, itr->second->spellId, true);
+                    CastSpell(this, itr->second->spellId, TRIGGERED_FULL_MASK);
     }
 
     saBounds = sSpellMgr->GetSpellAreaForQuestEndMapBounds(questId);
@@ -16091,7 +16091,7 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
     }
 
     if(m_class == CLASS_WARRIOR)
-        CastSpell(this,SPELL_ID_PASSIVE_BATTLE_STANCE,true);
+        CastSpell(this,SPELL_ID_PASSIVE_BATTLE_STANCE, TRIGGERED_FULL_MASK);
 }
 
 void Player::LoadCorpse(PreparedQueryResult result)
@@ -19576,7 +19576,7 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
                 return;
             }
 
-            CastSpell(this, 26013, true);                   // Deserter
+            CastSpell(this, 26013, TRIGGERED_FULL_MASK);                   // Deserter
         }
     }
 }
@@ -19679,7 +19679,7 @@ void Player::ReportedAfkBy(Player* reporter)
         if(m_bgData.bgAfkReporter.size() >= 3)
         {
             // cast 'Idle' spell
-            CastSpell(this, SPELL_AURA_PLAYER_IDLE, true);
+            CastSpell(this, SPELL_AURA_PLAYER_IDLE, TRIGGERED_FULL_MASK);
             m_bgData.bgAfkReporter.clear();
         }
     }
@@ -20390,7 +20390,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     ResetTimeSync();
     SendTimeSync();
 
-    CastSpell(this, 836, true);                             // LOGINEFFECT
+    CastSpell(this, 836, TRIGGERED_FULL_MASK);                             // LOGINEFFECT
 
     // set some aura effects that send packet to player client after add player to map
     // SendMessageToSet not send it to player not it map, only for aura that not changed anything at re-apply
@@ -20686,7 +20686,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
         }
     }
 
-    CastSpell( this, spell_id, true);
+    CastSpell( this, spell_id, TRIGGERED_FULL_MASK);
 }
 
 void Player::learnQuestRewardedSpells()
@@ -20833,7 +20833,7 @@ void Player::LearnAllClassSpells()
             break;
         case CLASS_HUNTER:
         {
-            CastSpell(this,5300,true); //learn some pet related spells
+            CastSpell(this,5300, TRIGGERED_FULL_MASK); //learn some pet related spells
             LearnSpell(883, false); //call pet
             LearnSpell(2641, false);//dismiss pet
             LearnSpell(1515, false); //taming spell
@@ -21817,7 +21817,7 @@ void Player::UpdateZoneDependentAuras( uint32 newZone )
             spellid = GetGender() == GENDER_FEMALE ? 35483 : 35482;
 
         if(spellid && !HasAuraEffect(spellid,0) )
-            CastSpell(this,spellid,true);
+            CastSpell(this,spellid, TRIGGERED_FULL_MASK);
     }
 
     // Some spells applied at enter into zone (with subzones), aura removed in UpdateAreaDependentAuras that called always at zone->area update
@@ -21825,7 +21825,7 @@ void Player::UpdateZoneDependentAuras( uint32 newZone )
     for (auto itr = saBounds.first; itr != saBounds.second; ++itr)
         if (itr->second->autocast && itr->second->IsFitToRequirements(this, newZone, 0))
             if (!HasAura(itr->second->spellId))
-                CastSpell(this, itr->second->spellId, true);
+                CastSpell(this, itr->second->spellId, TRIGGERED_FULL_MASK);
 }
 
 void Player::UpdateAreaDependentAuras( uint32 newArea )
@@ -21852,8 +21852,8 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
         if (GetReputationRank(1015) >= REP_NEUTRAL)
         {
             if( !HasAuraEffect(42016,0) ) {
-                CastSpell(this,42016,true);
-                CastSpell(this,40216,true);
+                CastSpell(this,42016, TRIGGERED_FULL_MASK);
+                CastSpell(this,40216, TRIGGERED_FULL_MASK);
             }
         }
     }
@@ -21863,7 +21863,7 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
     for (auto itr = saBounds.first; itr != saBounds.second; ++itr)
         if (itr->second->autocast && itr->second->IsFitToRequirements(this, m_zoneUpdateId, newArea))
             if (!HasAura(itr->second->spellId))
-                CastSpell(this, itr->second->spellId, true);
+                CastSpell(this, itr->second->spellId, TRIGGERED_FULL_MASK);
 }
 
 uint32 Player::GetCorpseReclaimDelay(bool pvp) const
@@ -23103,13 +23103,13 @@ void Player::ProcessDelayedOperations()
         SaveToDB();
 
     if (m_DelayedOperations & DELAYED_SPELL_CAST_DESERTER)
-        CastSpell(this, 26013, true);               // Deserter
+        CastSpell(this, 26013, TRIGGERED_FULL_MASK);               // Deserter
 
     if (m_DelayedOperations & DELAYED_BG_MOUNT_RESTORE)
     {
         if (m_bgData.mountSpell)
         {
-            CastSpell(this, m_bgData.mountSpell, true);
+            CastSpell(this, m_bgData.mountSpell, TRIGGERED_FULL_MASK);
             m_bgData.mountSpell = 0;
         }
     }
@@ -23557,7 +23557,7 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             break;
         case GOSSIP_OPTION_SPIRITHEALER:
             if (IsDead())
-                source->ToCreature()->CastSpell(source->ToCreature(), 17251, true, nullptr, nullptr, GetGUID());
+                source->ToCreature()->CastSpell(source->ToCreature(), 17251, TRIGGERED_FULL_MASK, nullptr, nullptr, GetGUID());
             break;
         case GOSSIP_OPTION_QUESTGIVER:
             PrepareQuestMenu(guid);
@@ -23578,8 +23578,8 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             {
                 // Cast spells that teach dual spec
                 // Both are also ImplicitTarget self and must be cast by player
-                CastSpell(this, 63680, true, NULL, NULL, GetGUID());
-                CastSpell(this, 63624, true, NULL, NULL, GetGUID());
+                CastSpell(this, 63680, TRIGGERED_FULL_MASK, NULL, NULL, GetGUID());
+                CastSpell(this, 63624, TRIGGERED_FULL_MASK, NULL, NULL, GetGUID());
 
                 // Should show another Gossip text with "Congratulations..."
                 PlayerTalkClass->SendCloseGossip();

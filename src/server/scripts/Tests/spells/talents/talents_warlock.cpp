@@ -53,7 +53,7 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::IMPROVED_CURSE_OF_AGONY_RNK_2);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage);
 		}
 	};
 
@@ -84,7 +84,7 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::EMPOWERED_CORRUPTION_RNK_3);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage);
 		}
 	};
 
@@ -119,13 +119,13 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::SHADOW_MASTERY_RNK_5);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, codDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, deathCoilDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, drainLifeDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulDamage * 1.1f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, codDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, deathCoilDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, drainLifeDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.1f);
 		}
 	};
 
@@ -156,9 +156,9 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::SHADOW_MASTERY_RNK_5);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.05f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.05f);
-			TestDotDamage(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.05f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.05f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.05f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.05f);
 		}
 	};
 
@@ -286,7 +286,7 @@ public:
 
 		float GetPetInt(TestPlayer* player, uint32 summon)
 		{
-			uint32 res = player->CastSpell(player, summon, true);
+			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
 			Wait(1000);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();
@@ -415,7 +415,7 @@ public:
 
 		float GetPetSta(TestPlayer* player, uint32 summon)
 		{
-			uint32 res = player->CastSpell(player, summon, true);
+			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
 			Wait(1000);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();
@@ -603,7 +603,7 @@ public:
 
 		void SacrificePet(TestPlayer* player, uint32 summon, uint32 aura, uint32 previousAura = 0)
 		{
-			uint32 res = player->CastSpell(player, summon, true);
+			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
 			Wait(1 * SECOND * IN_MILLISECONDS);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();
@@ -611,7 +611,7 @@ public:
 			if(previousAura != 0)
 				TEST_ASSERT(!player->HasAura(previousAura));
 
-			res = player->CastSpell(player, ClassSpells::Warlock::DEMONIC_SACRIFICE_RNK_1, true);
+			res = player->CastSpell(player, ClassSpells::Warlock::DEMONIC_SACRIFICE_RNK_1, TRIGGERED_FULL_MASK);
 			Wait(1 * SECOND * IN_MILLISECONDS);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 
@@ -797,7 +797,7 @@ public:
 
 		void AssertManaFeed(TestPlayer* player, TestPlayer* enemy, uint32 summonSpell)
 		{
-			uint32 res = player->CastSpell(player, summonSpell, true);
+			uint32 res = player->CastSpell(player, summonSpell, TRIGGERED_FULL_MASK);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();
 			TEST_ASSERT(pet != nullptr);
@@ -811,7 +811,7 @@ public:
 			// Drain Mana
 			uint32 expectedDrain = ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK + player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * ClassSpellsCoeff::Warlock::DRAIN_MANA;
 			
-			res = player->CastSpell(enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, true);
+			res = player->CastSpell(enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, TRIGGERED_FULL_MASK);
             TEST_ASSERT(res == SPELL_CAST_OK);
 			Wait(5500);
 			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedDrain);
@@ -871,7 +871,7 @@ public:
 
 		void AssertDemonicKnowledge(TestPlayer* player, uint32 summon, float spellPower)
 		{
-			uint32 res = player->CastSpell(player, summon, true);
+			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
 			Wait(1 * SECOND * IN_MILLISECONDS);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();

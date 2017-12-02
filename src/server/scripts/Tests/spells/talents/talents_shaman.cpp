@@ -230,9 +230,9 @@ public:
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 			LearnTalent(player, Talents::Shaman::DUAL_WIELD_RNK_1);
 			player->SetSkill(44, 0, 350, 350); // Axe
-			EquipItem(player, 34331); // Rising Tide MH
+			EQUIP_ITEM(player, 34331); // Rising Tide MH
 			player->SetSkill(473, 0, 350, 350); // Fist weapon
-			EquipItem(player, 34203); // Grip of Mannoroth OH
+			EQUIP_ITEM(player, 34203); // Grip of Mannoroth OH
 
 			uint32 const minOH = 113;
 			uint32 const maxMH = 313;
@@ -377,15 +377,17 @@ public:
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 
-			uint32 const minCH = 826;
-			uint32 const maxCH = 942;
+			uint32 const minChainHeal = 833;
+			uint32 const maxChainHeal = 950;
+
+            float const improvedChainHealFactor = 1.2; //IMPROVED_CHAIN_HEAL_RNK_2
 
 			// Test regular
-            TEST_DIRECT_HEAL(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH, maxCH);
+            TEST_DIRECT_HEAL(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minChainHeal, maxChainHeal);
 
 			// Test improved
 			LearnTalent(player, Talents::Shaman::IMPROVED_CHAIN_HEAL_RNK_2);
-            TEST_DIRECT_HEAL(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minCH * 1.2f, maxCH * 1.2f);
+            TEST_DIRECT_HEAL(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minChainHeal * improvedChainHealFactor, maxChainHeal * improvedChainHealFactor);
 
 			// TODO: test bounces : spawn 2 players, group players, each bounce 50% less
 		}

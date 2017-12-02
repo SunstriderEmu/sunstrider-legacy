@@ -363,7 +363,7 @@ void SpellMgr::LoadSpellAffects()
         if (!spellInfo)
             continue;
 
-        for (int effectId = 0; effectId < 3; ++effectId)
+        for (int effectId = 0; effectId < MAX_SPELL_EFFECTS; ++effectId)
         {
             if( spellInfo->Effects[effectId].Effect != SPELL_EFFECT_APPLY_AURA ||
                 (spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_FLAT_MODIFIER &&
@@ -451,7 +451,7 @@ void SpellMgr::LoadSpellProcEvents()
             continue;
 
         bool found = false;
-        for (int effectId = 0; effectId < 3; ++effectId)
+        for (int effectId = 0; effectId < MAX_SPELL_EFFECTS; ++effectId)
         {
             // at this moment check only SPELL_AURA_PROC_TRIGGER_SPELL
             if( spellInfo->Effects[effectId].ApplyAuraName == SPELL_AURA_PROC_TRIGGER_SPELL )

@@ -100,12 +100,12 @@ void OutdoorPvPZM::HandlePlayerEnterZone(Player * plr, uint32 zone)
     if(plr->GetTeam() == ALLIANCE)
     {
         if(m_GraveYard->m_GraveYardState & ZM_GRAVEYARD_A)
-            plr->CastSpell(plr,ZM_CAPTURE_BUFF,true);
+            plr->CastSpell(plr,ZM_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
     }
     else
     {
         if(m_GraveYard->m_GraveYardState & ZM_GRAVEYARD_H)
-            plr->CastSpell(plr,ZM_CAPTURE_BUFF,true);
+            plr->CastSpell(plr,ZM_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
     }
     OutdoorPvP::HandlePlayerEnterZone(plr,zone);
 }
@@ -154,9 +154,9 @@ void OutdoorPvPZM::HandleKillImpl(Player *plr, Unit * killed)
         return;
 
     if(plr->GetTeam() == ALLIANCE && (killed->ToPlayer())->GetTeam() != ALLIANCE)
-        plr->CastSpell(plr,ZM_AlliancePlayerKillReward,true);
+        plr->CastSpell(plr,ZM_AlliancePlayerKillReward, TRIGGERED_FULL_MASK);
     else if(plr->GetTeam() == HORDE && (killed->ToPlayer())->GetTeam() != HORDE)
-        plr->CastSpell(plr,ZM_HordePlayerKillReward,true);
+        plr->CastSpell(plr,ZM_HordePlayerKillReward, TRIGGERED_FULL_MASK);
 }
 
 void OutdoorPvPZM::BuffTeam(uint32 team)
@@ -166,7 +166,7 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
         for(uint64 itr : m_players[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF,true);
+                if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
         }
         for(uint64 itr : m_players[1])
         {
@@ -179,7 +179,7 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
         for(uint64 itr : m_players[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF,true);
+                if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
         }
         for(uint64 itr : m_players[0])
         {
@@ -360,12 +360,12 @@ bool OPvPCapturePointZM_GraveYard::HandleGossipOption(Player *plr, uint64 guid, 
             return true;
         if(itr->second == ZM_ALLIANCE_FIELD_SCOUT)
         {
-            cr->CastSpell(plr,ZM_BATTLE_STANDARD_A,true);
+            cr->CastSpell(plr,ZM_BATTLE_STANDARD_A, TRIGGERED_FULL_MASK);
             m_FlagCarrierGUID = plr->GetGUID();
         }
         else if(itr->second == ZM_HORDE_FIELD_SCOUT)
         {
-            cr->CastSpell(plr,ZM_BATTLE_STANDARD_H,true);
+            cr->CastSpell(plr,ZM_BATTLE_STANDARD_H, TRIGGERED_FULL_MASK);
             m_FlagCarrierGUID = plr->GetGUID();
         }
         UpdateTowerState();

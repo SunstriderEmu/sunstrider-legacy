@@ -1614,6 +1614,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetSelection(uint64 guid) { SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() { return m_comboPoints; }
+        uint8 GetComboPoints(Unit const* who = nullptr) const { return (who && m_comboTarget != who->GetGUID()) ? 0 : m_comboPoints; }
         uint64 GetComboTarget() { return m_comboTarget; }
 
         void AddComboPoints(Unit* target, int8 count, bool forceCurrent = false);

@@ -213,7 +213,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                 pet->GetCharmInfo()->SetIsFollowing(false);
             }
 
-            auto spell = new Spell(pet, spellInfo, false);
+            auto spell = new Spell(pet, spellInfo, TRIGGERED_NONE);
             int16 result = spell->PetCanCast(unit_target);
 
                                                             //auto turn to target unless possessed
@@ -820,8 +820,9 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     targets.Read(recvPacket, caster);
 
     caster->ClearUnitState(UNIT_STATE_FOLLOW);
+    bool triggered = spellid == 33395; //Freeze
 
-    auto spell = new Spell(caster, spellInfo, spellid == 33395);
+    auto spell = new Spell(caster, spellInfo, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
     spell->m_targets = targets;
 
     SpellCastResult result = spell->PetCanCast(nullptr);

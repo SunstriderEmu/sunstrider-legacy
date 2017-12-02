@@ -75,7 +75,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
 
         // attack
         i_totem.SetInFront(victim);                         // client change orientation by self
-        i_totem.CastSpell(victim, i_totem.GetSpell(), false);
+        i_totem.CastSpell(victim, i_totem.GetSpell(), TRIGGERED_NONE);
     }
     else
         i_victimGuid = 0;

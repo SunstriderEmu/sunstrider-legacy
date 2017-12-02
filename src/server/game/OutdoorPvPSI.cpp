@@ -55,7 +55,7 @@ bool OutdoorPvPSI::Update(uint32 diff)
 void OutdoorPvPSI::HandlePlayerEnterZone(Player * plr, uint32 zone)
 {
     if(plr->GetTeam() == m_LastController)
-        plr->CastSpell(plr,SI_CENARION_FAVOR,true);
+        plr->CastSpell(plr,SI_CENARION_FAVOR, TRIGGERED_FULL_MASK);
     OutdoorPvP::HandlePlayerEnterZone(plr,zone);
 }
 
@@ -73,7 +73,7 @@ void OutdoorPvPSI::BuffTeam(uint32 team)
         for(uint64 itr : m_players[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR,true);
+                if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR, TRIGGERED_FULL_MASK);
         }
         for(uint64 itr : m_players[1])
         {
@@ -86,7 +86,7 @@ void OutdoorPvPSI::BuffTeam(uint32 team)
         for(uint64 itr : m_players[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR,true);
+                if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR, TRIGGERED_FULL_MASK);
         }
         for(uint64 itr : m_players[0])
         {
@@ -129,7 +129,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
             }
             UpdateWorldState();
             // reward player
-            plr->CastSpell(plr,SI_TRACES_OF_SILITHYST,true);
+            plr->CastSpell(plr,SI_TRACES_OF_SILITHYST, TRIGGERED_FULL_MASK);
             // add 19 honor
             // plr->RewardHonor(NULL,1,19);     // Commented out to prevent bug abusing
             // add 20 cenarion circle repu
@@ -154,7 +154,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
             }
             UpdateWorldState();
             // reward player
-            plr->CastSpell(plr,SI_TRACES_OF_SILITHYST,true);
+            plr->CastSpell(plr,SI_TRACES_OF_SILITHYST, TRIGGERED_FULL_MASK);
             // add 19 honor
             // plr->RewardHonor(NULL,1,19);     // Commented out to prevent bug abusing
             // add 20 cenarion circle repu
@@ -244,7 +244,7 @@ bool OutdoorPvPSI::HandleCustomSpell(Player *plr, uint32 spellId, GameObject *go
 {
     if(!go || spellId != SI_SILITHYST_FLAG_GO_SPELL)
         return false;
-    plr->CastSpell(plr,SI_SILITHYST_FLAG,true);
+    plr->CastSpell(plr,SI_SILITHYST_FLAG, TRIGGERED_FULL_MASK);
     if(go->GetGOInfo()->entry == SI_SILITHYST_MOUND)
     {
         // despawn go

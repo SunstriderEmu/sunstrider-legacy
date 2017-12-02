@@ -129,9 +129,9 @@ public:
 			uint32 const startInt = player->GetStat(STAT_INTELLECT);
 			uint32 const expectedInt = startInt * 1.1f;
 
-			RemoveAllItems(player);
+            RemoveAllEquipedItems(player);
 			uint32 const startingArmor = player->GetArmor();
-			EquipItem(player, 34135); // Sword Breaker's Bulwark - 6459 armor
+			EQUIP_ITEM(player, 34185); // Sword Breaker's Bulwark - 6459 armor
 
 			uint32 const shieldArmor = player->GetArmor() - startingArmor;
 			TEST_ASSERT(shieldArmor == 6459);
@@ -145,7 +145,8 @@ public:
 			uint32 const newShieldArmor = player->GetArmor() - startingArmor;
 			uint32 const expectedShieldArmor = shieldArmor * 1.3f;
 			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
-			TEST_ASSERT(player->GetPower(POWER_MANA) == 900);
+            ASSERT_INFO("player mana %u", player->GetPower(POWER_MANA));
+			TEST_ASSERT(player->GetPower(POWER_MANA) == 900); //fails because mana is removed AFTER getting the 900 mana
 
 			// Assert armor not from items is not taken into account
 			player->AddAura(33079, player); // Scroll of Protection V - 300 armor
@@ -245,7 +246,7 @@ public:
 			LearnTalent(player, Talents::Paladin::IMPROVED_BLESSING_OF_WISDOM_RNK_2);
 			const float improvedBlessingRegen = blessingRegen * 1.2f;
 			//re cast spell
-			res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7, true); //triggered has no mana cost
+			res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 
 			newMana = WaitNextManaTick(player);
@@ -381,9 +382,9 @@ public:
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			RemoveAllItems(player);
+            RemoveAllEquipedItems(player);
 			uint32 const startingArmor = player->GetArmor();
-			EquipItem(player, 34135); // Sword Breaker's Bulwark - 6459 armor
+			EQUIP_ITEM(player, 34135); // Sword Breaker's Bulwark - 6459 armor
 
 			uint32 const shieldArmor = player->GetArmor() - startingArmor;
 			TEST_ASSERT(shieldArmor == 6459);
@@ -509,8 +510,8 @@ public:
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			EquipItem(player, 34164); // 1H Sword
-			EquipItem(player, 34185); // Shield
+			EQUIP_ITEM(player, 34164); // 1H Sword
+			EQUIP_ITEM(player, 34185); // Shield
 			
 			// Holy shield stacks
 			LearnTalent(player, Talents::Paladin::HOLY_SHIELD_RNK_1);
@@ -784,7 +785,7 @@ public:
 			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_VENGEANCE_RNK_1, expectedJoBMin, expectedJoVMin);
 
 			// Crusader Strike
-			EquipItem(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
+			EQUIP_ITEM(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
 			LearnTalent(player, Talents::Paladin::CRUSADER_STRIKE_RNK_1);
 			float const AP = player->GetTotalAttackPowerValue(BASE_ATTACK);
 			float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
@@ -797,8 +798,8 @@ public:
 
 			/*
 			// Holy shield
-			EquipItem(player, 34164); // 1H Sword
-			EquipItem(player, 34185); // Shield
+			EQUIP_ITEM(player, 34164); // 1H Sword
+			EQUIP_ITEM(player, 34185); // Shield
 
 			LearnTalent(player, Talents::Paladin::HOLY_SHIELD_RNK_1);
 			res = player->CastSpell(player, ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
@@ -985,7 +986,7 @@ public:
 			LearnTalent(player, Talents::Paladin::CRUSADER_STRIKE_RNK_1);
 
 			// Damage
-			EquipItem(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
+			EQUIP_ITEM(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
 			float const AP = player->GetTotalAttackPowerValue(BASE_ATTACK);
 			TEST_ASSERT(AP == 562);
 			float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));

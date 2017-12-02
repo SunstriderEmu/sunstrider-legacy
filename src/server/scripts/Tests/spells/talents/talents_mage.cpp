@@ -14,17 +14,17 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
-			EquipItem(player, 28783); //Eredar Wand of Obliteration, 177 - 330 Shadow Damage
+			EQUIP_ITEM(player, 28783); //Eredar Wand of Obliteration, 177 - 330 Shadow Damage
 			uint32 const wandMinDamage = 177;
 			uint32 const wandMaxDamage = 330;
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage, wandMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage, wandMaxDamage);
 
 			//Test improved damage 25%
 			LearnTalent(player, Talents::Mage::WAND_SPECIALIZATION_RNK_2);
-			TestDirectSpellDamage(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f);
 		}
 	};
 
@@ -89,25 +89,28 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
-			TestPlayer* shaman = SpawnRandomPlayer(CLASS_SHAMAN);
+			TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+			TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, RACE_TAUREN);
 
-			float const coeffHW = 85.71f;
+			float const coeffHealinWave = 0.8571f;
 
-			uint32 const minHW = 2134;
-			uint32 const maxHW = 2436;
+			uint32 const minHealingWave = 2134;
+			uint32 const maxHealingWave = 2436;
 
-			uint32 const expectedMinHW = 2134 + 360 * coeffHW;
-			uint32 const expectedMaxHW = 2436 + 360 * coeffHW;
+            float const magicAttunementFactor = 1.5f;
+            uint32 const amplifyMagicPowerBonus = 240 * magicAttunementFactor;
+
+			uint32 const expectedMinHW = minHealingWave + amplifyMagicPowerBonus * coeffHealinWave;
+			uint32 const expectedMaxHW = maxHealingWave + amplifyMagicPowerBonus * coeffHealinWave;
 
 			// Test regular
-			//TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, minHW, maxHW);
+			TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, minHealingWave, maxHealingWave);
 
 			// Test improved
+            LearnTalent(mage, Talents::Mage::MAGIC_ATTUNEMENT_RNK_2);
 			uint32 result = mage->CastSpell(mage, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6);
             TEST_ASSERT(result == SPELL_CAST_OK);
-			LearnTalent(mage, Talents::Mage::MAGIC_ATTUNEMENT_RNK_2);
-			//TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, expectedMinHW, expectedMaxHW);
+			TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, expectedMinHW, expectedMaxHW);
 		}
 	};
 
@@ -213,7 +216,7 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
-			EquipItem(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
+			EQUIP_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
 
 			float const startSP = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
 			float const startSC = player->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_FIRE);
@@ -247,7 +250,7 @@ public:
 		{
 			Creature* dummyTarget = SpawnCreature();
 			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
-			EquipItem(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
+			EQUIP_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
             uint32 arcaneSpellPower = player->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_ARCANE);
 			float const startCoeff = 1.429;
 			float const expectedCoeff = startCoeff + (3 * 0.15);

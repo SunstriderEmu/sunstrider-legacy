@@ -51,14 +51,14 @@ TEST_CASE("Aura duration", "[aura]")
 
     SECTION("Sheep duration against players") 
     {
-        caster->CastSpell(targetPlayer, 118, true);
+        caster->CastSpell(targetPlayer, 118, TRIGGERED_FULL_MASK);
         AuraApplication* app = targetPlayer->GetAuraApplication(118);
         CHECK(app->GetAuraDuration() == 10 * SECOND * IN_MILLISECONDS);
     }
 
     SECTION("Sheep duration against creatures")
     {
-        caster->CastSpell(targetCreature, 118, true);
+        caster->CastSpell(targetCreature, 118, TRIGGERED_FULL_MASK);
         AuraApplication* app = targetPlayer->GetAuraApplication(118);
         CHECK(app->GetAuraDuration() == 20 * SECOND * IN_MILLISECONDS);
     }

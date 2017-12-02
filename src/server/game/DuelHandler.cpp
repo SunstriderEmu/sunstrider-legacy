@@ -60,7 +60,7 @@ void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
         if(GetPlayer()->duel->opponent)
             GetPlayer()->duel->opponent->CombatStopWithPets(true);
 
-        GetPlayer()->CastSpell(GetPlayer(), 7267, true);    // beg
+        GetPlayer()->CastSpell(GetPlayer(), 7267, TRIGGERED_FULL_MASK);    // beg
         GetPlayer()->DuelComplete(DUEL_WON);
         return;
     }

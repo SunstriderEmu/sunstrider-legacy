@@ -50,7 +50,7 @@ void CombatAI::JustDied(Unit* killer)
 {
     for (SpellVct::iterator i = spells.begin(); i != spells.end(); ++i)
         if (AISpellInfo[*i].condition == AICOND_DIE)
-            me->CastSpell(killer, *i, true);
+            me->CastSpell(killer, *i, TRIGGERED_FULL_MASK);
 }
 
 void CombatAI::EnterCombat(Unit* who)
@@ -58,7 +58,7 @@ void CombatAI::EnterCombat(Unit* who)
     for (SpellVct::iterator i = spells.begin(); i != spells.end(); ++i)
     {
         if (AISpellInfo[*i].condition == AICOND_AGGRO)
-            me->CastSpell(who, *i, false);
+            me->CastSpell(who, *i, TRIGGERED_NONE);
         else if (AISpellInfo[*i].condition == AICOND_COMBAT)
             events.ScheduleEvent(*i, AISpellInfo[*i].cooldown + rand()%AISpellInfo[*i].cooldown);
     }
@@ -109,7 +109,7 @@ void CasterAI::EnterCombat(Unit* who)
     for (SpellVct::iterator itr = spells.begin(); itr != spells.end(); ++itr, ++count)
     {
         if (AISpellInfo[*itr].condition == AICOND_AGGRO)
-            me->CastSpell(who, *itr, false);
+            me->CastSpell(who, *itr, TRIGGERED_NONE);
         else if (AISpellInfo[*itr].condition == AICOND_COMBAT)
         {
             uint32 cooldown = GetAISpellInfo(*itr)->realCooldown;

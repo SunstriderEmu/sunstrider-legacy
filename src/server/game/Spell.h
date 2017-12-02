@@ -381,7 +381,7 @@ class TC_GAME_API Spell
         void EffectPlayMusic(uint32 i);
         void EffectForceCastWithValue(uint32 i);
 
-        Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = nullptr, bool skipCheck = false);
+        Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID = 0, Spell** triggeringContainer = nullptr, bool skipCheck = false);
         ~Spell();
 
         void InitExplicitTargets(SpellCastTargets const& targets);
@@ -497,9 +497,11 @@ class TC_GAME_API Spell
         {
             return spellInfo && spellInfo->Attributes & (SPELL_ATTR0_ON_NEXT_SWING_1|SPELL_ATTR0_ON_NEXT_SWING_2);
         }
-        bool IsTriggered() const { return /*TC spells _triggeredCastFlags & TRIGGERED_FULL_MASK; */ m_IsTriggeredSpell; };
+        bool IsTriggered() const;
+        bool IsIgnoringCooldowns() const;
+        bool IsProcDisabled() const;
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
-        bool IsAutoActionResetSpell() const { return !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK); }
+        bool IsAutoActionResetSpell() const;
 
         bool IsDeletable() const { return !m_referencedFromCurrentSpell && !m_executedCurrently; }
         void SetReferencedFromCurrent(bool yes) { m_referencedFromCurrentSpell = yes; }
@@ -578,6 +580,7 @@ class TC_GAME_API Spell
         // These vars are used in both delayed spell system and modified immediate spell system
         bool m_referencedFromCurrentSpell;                  // mark as references to prevent deleted and access by dead pointers
         bool m_executedCurrently;                           // mark as executed to prevent deleted and access by dead pointers
+        bool m_needComboPoints;
         bool m_needSpellLog;                                // need to send spell log?
         uint8 m_applyMultiplierMask;                        // by effect: damage multiplier needed?
 
@@ -701,7 +704,7 @@ class TC_GAME_API Spell
         float m_castPositionY;
         float m_castPositionZ;
         float m_castOrientation;
-        bool m_IsTriggeredSpell;
+        TriggerCastFlags _triggeredCastFlags;;
 
         // if need this can be replaced by Aura copy
         // we can't store original aura link to prevent access to deleted auras

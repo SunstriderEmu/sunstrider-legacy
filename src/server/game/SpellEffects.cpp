@@ -268,7 +268,7 @@ void Spell::EffectInstaKill(uint32 /*i*/)
                 return;
         }
 
-        m_caster->CastSpell(m_caster,spellID,true);
+        m_caster->CastSpell(m_caster,spellID, TRIGGERED_FULL_MASK);
     }
 
     if(m_caster==unitTarget)                                // prevent interrupt message
@@ -406,10 +406,10 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                 if (!unitTarget->HasAuraEffect(45345, 0)) {
                     if (unitTarget->HasAuraEffect(45347, 0)) {
                         unitTarget->RemoveAurasDueToSpell(45347);
-                        unitTarget->CastSpell(unitTarget, 45345, true);
+                        unitTarget->CastSpell(unitTarget, 45345, TRIGGERED_FULL_MASK);
                     }
                     else
-                        unitTarget->CastSpell(unitTarget, 45348, true);
+                        unitTarget->CastSpell(unitTarget, 45348, TRIGGERED_FULL_MASK);
                 }
                 break;
             }
@@ -454,7 +454,7 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
             // Arcane Blast
             if (m_spellInfo->SpellFamilyFlags & 0x20000000LL)
             {
-                m_caster->CastSpell(m_caster, 36032, true);
+                m_caster->CastSpell(m_caster, 36032, TRIGGERED_FULL_MASK);
             }
             break;
         }
@@ -789,7 +789,7 @@ void Spell::EffectDummy(uint32 i)
                 // Elune's Candle
                 case 26374:
                 {
-                    m_caster->CastSpell(unitTarget, RAND(26622, 26623, 26624, 26625, 26636, 26649), true);
+                    m_caster->CastSpell(unitTarget, RAND(26622, 26623, 26624, 26625, 26636, 26649), TRIGGERED_FULL_MASK);
                     break;
                 }
                 // Melodious Rapture (quest 6661)
@@ -847,7 +847,7 @@ void Spell::EffectDummy(uint32 i)
                     if (m_caster->GetAreaId() == 3831)
                         if (Creature *druid = m_caster->SummonCreature(22423, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 45000)) {
                             druid->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                            druid->CastSpell(druid, 39158, false);
+                            druid->CastSpell(druid, 39158, TRIGGERED_NONE);
                         }
                     break;
                 }
@@ -895,7 +895,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if (m_caster->GetTypeId() == TYPEID_PLAYER) {
                         (m_caster->ToPlayer())->PlaySound(4654, true);
-                        (m_caster->ToPlayer())->CastSpell(m_caster, 44762, true);
+                        (m_caster->ToPlayer())->CastSpell(m_caster, 44762, TRIGGERED_FULL_MASK);
                     }
                     ((Player*)m_caster)->PlaySound(4654, false);
                     break;
@@ -906,7 +906,7 @@ void Spell::EffectDummy(uint32 i)
                     if (!unitTarget || !unitTarget->IsAlive())
                         return;
 
-                    m_caster->CastSpell(unitTarget, RAND(8401,8408,930,118,1680,10159) ,true);
+                    m_caster->CastSpell(unitTarget, RAND(8401,8408,930,118,1680,10159) , TRIGGERED_FULL_MASK);
                 }break;
                 // Gnomish Shrink Ray
                 case 13006:
@@ -920,17 +920,17 @@ void Spell::EffectDummy(uint32 i)
                     // These rates are hella random; someone feel free to correct them
                     uint32 roll = urand(0, 99);
                     if (roll < 3)                                         // Whole party will grow
-                        m_caster->CastSpell(m_caster, 13004, true);
+                        m_caster->CastSpell(m_caster, 13004, TRIGGERED_FULL_MASK);
                     else if (roll < 6)                                    // Whole party will shrink
-                        m_caster->CastSpell(m_caster, 13010, true);
+                        m_caster->CastSpell(m_caster, 13010, TRIGGERED_FULL_MASK);
                     else if (roll < 9)                                    // Whole enemy 'team' will grow
-                        m_caster->CastSpell(unitTarget, 13004, true);
+                        m_caster->CastSpell(unitTarget, 13004, TRIGGERED_FULL_MASK);
                     else if (roll < 12)                                    // Whole enemy 'team' will shrink
-                        m_caster->CastSpell(unitTarget, 13010, true);
+                        m_caster->CastSpell(unitTarget, 13010, TRIGGERED_FULL_MASK);
                     else if (roll < 24)                                   // Caster will shrink
-                        m_caster->CastSpell(m_caster, 13003, true);
+                        m_caster->CastSpell(m_caster, 13003, TRIGGERED_FULL_MASK);
                     else                                                  // Enemy target will shrink
-                        m_caster->CastSpell(unitTarget, 13003, true);
+                        m_caster->CastSpell(unitTarget, 13003, TRIGGERED_FULL_MASK);
 
                     return;
                 }
@@ -940,9 +940,9 @@ void Spell::EffectDummy(uint32 i)
                     {
                         uint32 roll = urand(0, 9);
                         if (roll == 1 && unitTarget->GetTypeId() == TYPEID_PLAYER)
-                            unitTarget->CastSpell(m_caster, 13181, true, m_CastItem);
+                            unitTarget->CastSpell(m_caster, 13181, TRIGGERED_FULL_MASK, m_CastItem);
                         else if (roll)
-                            m_caster->CastSpell(unitTarget, 13181, true, m_CastItem);
+                            m_caster->CastSpell(unitTarget, 13181, TRIGGERED_FULL_MASK, m_CastItem);
                     }
                         
                     return;
@@ -960,13 +960,13 @@ void Spell::EffectDummy(uint32 i)
                     case 0:
                     case 1:
                     case 2:
-                        m_caster->CastSpell(unitTarget,8345,true,nullptr); //Control the machine 
+                        m_caster->CastSpell(unitTarget,8345, TRIGGERED_FULL_MASK,nullptr); //Control the machine 
                         break;
                     case 3:
-                        m_caster->CastSpell(unitTarget,8346,true,nullptr); //Malfunction the machin
+                        m_caster->CastSpell(unitTarget,8346, TRIGGERED_FULL_MASK,nullptr); //Malfunction the machin
                         break;
                     case 4:
-                        m_caster->CastSpell(unitTarget,8347,true,nullptr); //Taunt
+                        m_caster->CastSpell(unitTarget,8347, TRIGGERED_FULL_MASK,nullptr); //Taunt
                         break;
                     }
                     
@@ -1012,7 +1012,7 @@ void Spell::EffectDummy(uint32 i)
 
                     if (!player) return;
 
-                    player->CastSpell(unitTarget, 43753, true);
+                    player->CastSpell(unitTarget, 43753, TRIGGERED_FULL_MASK);
 
                     if (player->GetQuestStatus(11379) == QUEST_STATUS_INCOMPLETE && unitTarget->GetEntry() == 19973)
                         player->CastedCreatureOrGO(19973, unitTarget->GetGUID(), 43723);
@@ -1033,7 +1033,7 @@ void Spell::EffectDummy(uint32 i)
                         case 4: spell_id = 8067; break;     // Party Time!
                         case 5: spell_id = 8068; break;     // Healthy Spirit
                     }
-                    m_caster->CastSpell(m_caster,spell_id,true,nullptr);
+                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 8213:                                  // Savory Deviate Delight
@@ -1049,7 +1049,7 @@ void Spell::EffectDummy(uint32 i)
                         // Yaaarrrr - pirate
                         case 2: spell_id = (m_caster->GetGender() == GENDER_MALE ? 8221 : 8222); break;
                     }
-                    m_caster->CastSpell(m_caster,spell_id,true,nullptr);
+                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 8593:                                  // Symbol of life (restore creature to life)
@@ -1086,13 +1086,13 @@ void Spell::EffectDummy(uint32 i)
                     };
 
                     int32 deepWoundsDotBasePoints0 = int32(damage / 4);
-                    m_caster->CastCustomSpell(unitTarget, 12721, &deepWoundsDotBasePoints0, nullptr, nullptr, true, nullptr);
+                    m_caster->CastCustomSpell(unitTarget, 12721, &deepWoundsDotBasePoints0, nullptr, nullptr, TRIGGERED_FULL_MASK, nullptr);
                     return;
                 }
                 case 12975:                                 //Last Stand
                 {
                     int32 healthModSpellBasePoints0 = int32(m_caster->GetMaxHealth()*0.3);
-                    m_caster->CastCustomSpell(m_caster, 12976, &healthModSpellBasePoints0, nullptr, nullptr, true, nullptr);
+                    m_caster->CastCustomSpell(m_caster, 12976, &healthModSpellBasePoints0, nullptr, nullptr, TRIGGERED_FULL_MASK, nullptr);
                     return;
                 }
                 case 13120:                                 // net-o-matic
@@ -1111,7 +1111,7 @@ void Spell::EffectDummy(uint32 i)
                     else                                    // normal root
                         spell_id = 13099;
 
-                    m_caster->CastSpell(unitTarget,spell_id,true,nullptr);
+                    m_caster->CastSpell(unitTarget,spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 13280:                                 // Gnomish Death Ray
@@ -1120,9 +1120,9 @@ void Spell::EffectDummy(uint32 i)
                         return;
                         
                     if (urand(0, 99) < 15)
-                        m_caster->CastSpell(m_caster, 13493, true, nullptr);    // failure
+                        m_caster->CastSpell(m_caster, 13493, TRIGGERED_FULL_MASK, nullptr);    // failure
                     else
-                        m_caster->CastSpell(unitTarget, 13279, true, nullptr);
+                        m_caster->CastSpell(unitTarget, 13279, TRIGGERED_FULL_MASK, nullptr);
                         
                     return;
                 }
@@ -1135,7 +1135,7 @@ void Spell::EffectDummy(uint32 i)
                     switch(m_triggeredByAuraSpell->Id)
                     {
                         case 26467:                         // Persistent Shield
-                            m_caster->CastCustomSpell(unitTarget, 26470, &damage, nullptr, nullptr, true);
+                            m_caster->CastCustomSpell(unitTarget, 26470, &damage, nullptr, nullptr, TRIGGERED_FULL_MASK);
                             break;
                         default:
                             TC_LOG_ERROR("FIXME","EffectDummy: Non-handled case for spell 13567 for triggered aura %u",m_triggeredByAuraSpell->Id);
@@ -1192,7 +1192,7 @@ void Spell::EffectDummy(uint32 i)
                         default:spell_id = 16591; break;
                     }
 
-                    m_caster->CastSpell(m_caster,spell_id,true,nullptr);
+                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 17251:                                 // Spirit Healer Res
@@ -1215,7 +1215,7 @@ void Spell::EffectDummy(uint32 i)
 
                     uint32 spell_id = roll_chance_i(50) ? 17269 : 17270;
 
-                    m_caster->CastSpell(m_caster,spell_id,true,nullptr);
+                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 23019:                                 // Crystal Prison Dummy DND
@@ -1240,19 +1240,19 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 23074:                                 // Arc. Dragonling
                     if (!m_CastItem) return;
-                    m_caster->CastSpell(m_caster,19804,true,m_CastItem);
+                    m_caster->CastSpell(m_caster,19804, TRIGGERED_FULL_MASK,m_CastItem);
                     return;
                 case 23075:                                 // Mithril Mechanical Dragonling
                     if (!m_CastItem) return;
-                    m_caster->CastSpell(m_caster,12749,true,m_CastItem);
+                    m_caster->CastSpell(m_caster,12749, TRIGGERED_FULL_MASK,m_CastItem);
                     return;
                 case 23076:                                 // Mechanical Dragonling
                     if (!m_CastItem) return;
-                    m_caster->CastSpell(m_caster,4073,true,m_CastItem);
+                    m_caster->CastSpell(m_caster,4073, TRIGGERED_FULL_MASK,m_CastItem);
                     return;
                 case 23133:                                 // Gnomish Battle Chicken
                     if (!m_CastItem) return;
-                    m_caster->CastSpell(m_caster,13166,true,m_CastItem);
+                    m_caster->CastSpell(m_caster,13166, TRIGGERED_FULL_MASK,m_CastItem);
                     return;
                 case 23138:
                 {
@@ -1265,7 +1265,7 @@ void Spell::EffectDummy(uint32 i)
 
                     m_caster->Relocate(x, y, z);
                     m_caster->MonsterMoveWithSpeed(x, y, z, 0);
-                    m_caster->CastSpell(unitTarget, 19712, false);
+                    m_caster->CastSpell(unitTarget, 19712, TRIGGERED_NONE);
                     if (m_caster->ToCreature())
                         if (m_caster->ToCreature()->AI())
                             m_caster->ToCreature()->GetThreatManager().clearReferences();
@@ -1275,25 +1275,25 @@ void Spell::EffectDummy(uint32 i)
                 {
                   int32 r = m_caster->GetMap()->irand(0, 119);
                     if ( r < 20 )                           // 1/6 polymorph
-                        m_caster->CastSpell(m_caster,23444,true);
+                        m_caster->CastSpell(m_caster,23444, TRIGGERED_FULL_MASK);
                     else if ( r < 100 )                     // 4/6 evil twin
-                        m_caster->CastSpell(m_caster,23445,true);
+                        m_caster->CastSpell(m_caster,23445, TRIGGERED_FULL_MASK);
                     else                                    // 1/6 miss the target
-                        m_caster->CastSpell(m_caster,36902,true);
+                        m_caster->CastSpell(m_caster,36902, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 23453:                                 // Ultrasafe Transporter: Gadgetzan
                     if ( roll_chance_i(50) )                // success
-                        m_caster->CastSpell(m_caster,23441,true);
+                        m_caster->CastSpell(m_caster,23441, TRIGGERED_FULL_MASK);
                     else                                    // failure
-                        m_caster->CastSpell(m_caster,23446,true);
+                        m_caster->CastSpell(m_caster,23446, TRIGGERED_FULL_MASK);
                     return;
                 case 23645:                                 // Hourglass Sand
                     m_caster->RemoveAurasDueToSpell(23170);
                     return;
                 case 23725:                                 // Gift of Life (warrior bwl trinket)
-                    m_caster->CastSpell(m_caster,23782,true);
-                    m_caster->CastSpell(m_caster,23783,true);
+                    m_caster->CastSpell(m_caster,23782, TRIGGERED_FULL_MASK);
+                    m_caster->CastSpell(m_caster,23783, TRIGGERED_FULL_MASK);
                     return;
                 case 24930:                                 // Hallow's End Candy
                     if(m_caster->GetTypeId()!=TYPEID_PLAYER)
@@ -1302,24 +1302,24 @@ void Spell::EffectDummy(uint32 i)
                     switch(m_caster->GetMap()->irand(0,3))
                     {
                     case 0:
-                        m_caster->CastSpell(m_caster,24927,true); // Ghost
+                        m_caster->CastSpell(m_caster,24927, TRIGGERED_FULL_MASK); // Ghost
                         break;
                     case 1:
-                        m_caster->CastSpell(m_caster,24926,true); // Pirate
+                        m_caster->CastSpell(m_caster,24926, TRIGGERED_FULL_MASK); // Pirate
                         if(m_caster->GetGender() == GENDER_MALE)
                         {
-                            m_caster->CastSpell(m_caster,44743,true);
+                            m_caster->CastSpell(m_caster,44743, TRIGGERED_FULL_MASK);
                         }
                         else
                         {
-                            m_caster->CastSpell(m_caster,44742,true);
+                            m_caster->CastSpell(m_caster,44742, TRIGGERED_FULL_MASK);
                         }
                         break;
                     case 2:
-                        m_caster->CastSpell(m_caster,24925,true); // Skeleton
+                        m_caster->CastSpell(m_caster,24925, TRIGGERED_FULL_MASK); // Skeleton
                         break;
                     case 3:
-                        m_caster->CastSpell(m_caster,24924,true); // Huge and Orange
+                        m_caster->CastSpell(m_caster,24924, TRIGGERED_FULL_MASK); // Huge and Orange
                         break;
                     }
                     return;
@@ -1335,15 +1335,15 @@ void Spell::EffectDummy(uint32 i)
 
                     //5 different spells used depending on mounted speed and if mount can fly or not
                     if (flyspeed >= 4.1f)
-                        m_caster->CastSpell(m_caster, 44827, true); //310% flying Reindeer
+                        m_caster->CastSpell(m_caster, 44827, TRIGGERED_FULL_MASK); //310% flying Reindeer
                     else if (flyspeed >= 3.8f)
-                        m_caster->CastSpell(m_caster, 44825, true); //280% flying Reindeer
+                        m_caster->CastSpell(m_caster, 44825, TRIGGERED_FULL_MASK); //280% flying Reindeer
                     else if (flyspeed >= 1.6f)
-                        m_caster->CastSpell(m_caster, 44824, true); //60% flying Reindeer
+                        m_caster->CastSpell(m_caster, 44824, TRIGGERED_FULL_MASK); //60% flying Reindeer
                     else if (speed >= 2.0f)
-                        m_caster->CastSpell(m_caster, 25859, true); //100% ground Reindeer
+                        m_caster->CastSpell(m_caster, 25859, TRIGGERED_FULL_MASK); //100% ground Reindeer
                     else
-                        m_caster->CastSpell(m_caster, 25858, true); //60% ground Reindeer
+                        m_caster->CastSpell(m_caster, 25858, TRIGGERED_FULL_MASK); //60% ground Reindeer
 
                     return;
                 }
@@ -1352,7 +1352,7 @@ void Spell::EffectDummy(uint32 i)
                 case 28006:                                 // Arcane Cloaking
                 {
                     if( unitTarget->GetTypeId() == TYPEID_PLAYER )
-                        m_caster->CastSpell(unitTarget,29294,true);
+                        m_caster->CastSpell(unitTarget,29294, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 28730:                                 // Arcane Torrent (Mana)
@@ -1361,7 +1361,7 @@ void Spell::EffectDummy(uint32 i)
                     if (dummy)
                     {
                         int32 bp = damage * dummy->GetStackAmount();
-                        m_caster->CastCustomSpell(m_caster, 28733, &bp, nullptr, nullptr, true);
+                        m_caster->CastCustomSpell(m_caster, 28733, &bp, nullptr, nullptr, TRIGGERED_FULL_MASK);
                         m_caster->RemoveAurasDueToSpell(28734);
                     }
                     return;
@@ -1374,27 +1374,27 @@ void Spell::EffectDummy(uint32 i)
 
                     uint32 spell_id = roll_chance_i(50) ? 29277 : 29278;
 
-                    m_caster->CastSpell(m_caster,spell_id,true,nullptr);
+                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 29858:                                 // Soulshatter
                     if (unitTarget && unitTarget->CanHaveThreatList()
                         && unitTarget->GetThreatManager().getThreat(m_caster) > 0.0f)
-                        m_caster->CastSpell(unitTarget,32835,true);
+                        m_caster->CastSpell(unitTarget,32835, TRIGGERED_FULL_MASK);
                     return;
                 case 30458:                                 // Nigh Invulnerability
                     if (!m_CastItem) return;
                     if(roll_chance_i(86))                   // success
-                        m_caster->CastSpell(m_caster, 30456, true, m_CastItem);
+                        m_caster->CastSpell(m_caster, 30456, TRIGGERED_FULL_MASK, m_CastItem);
                     else                                    // backfire in 14% casts
-                        m_caster->CastSpell(m_caster, 30457, true, m_CastItem);
+                        m_caster->CastSpell(m_caster, 30457, TRIGGERED_FULL_MASK, m_CastItem);
                     return;
                 case 30507:                                 // Poultryizer
                     if (!m_CastItem) return;
                     if(roll_chance_i(80))                   // success
-                        m_caster->CastSpell(unitTarget, 30501, true, m_CastItem);
+                        m_caster->CastSpell(unitTarget, 30501, TRIGGERED_FULL_MASK, m_CastItem);
                     else                                    // backfire 20%
-                        m_caster->CastSpell(unitTarget, 30504, true, m_CastItem);
+                        m_caster->CastSpell(unitTarget, 30504, TRIGGERED_FULL_MASK, m_CastItem);
                     return;
                 case 33060:                                         // Make a Wish
                 {
@@ -1412,7 +1412,7 @@ void Spell::EffectDummy(uint32 i)
                         case 5: spell_id = 33064; break;
                     }
 
-                    m_caster->CastSpell(m_caster,spell_id,true,nullptr);
+                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 35686:                                 // Electro-Shock (Electro-Shock Goodness!)
@@ -1461,7 +1461,7 @@ void Spell::EffectDummy(uint32 i)
                         default: return;
                     }
 
-                    m_caster->CastSpell(m_caster,spell_id,true);
+                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 37674:                                 // Chaos Blast
@@ -1470,12 +1470,12 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     int32 basepoints0 = 100;
-                    m_caster->CastCustomSpell(unitTarget,37675,&basepoints0,nullptr,nullptr,true);
+                    m_caster->CastCustomSpell(unitTarget,37675,&basepoints0,nullptr,nullptr, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 40109:                                 // Knockdown Fel Cannon: The Bolt
                 {
-                    unitTarget->CastSpell(unitTarget, 40075, true);
+                    unitTarget->CastSpell(unitTarget, 40075, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 40802:                                 // Mingo's Fortune Generator (Mingo's Fortune Giblets)
@@ -1527,7 +1527,7 @@ void Spell::EffectDummy(uint32 i)
                     if(unitTarget->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    m_caster->CastSpell(unitTarget,40932,true);
+                    m_caster->CastSpell(unitTarget,40932, TRIGGERED_FULL_MASK);
                         break;
                 }
                 // Demon Broiled Surprise
@@ -1537,7 +1537,7 @@ void Spell::EffectDummy(uint32 i)
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    (m_caster->ToPlayer())->CastSpell(unitTarget, 43753, true);
+                    (m_caster->ToPlayer())->CastSpell(unitTarget, 43753, TRIGGERED_FULL_MASK);
                     return;
                 }
                 */
@@ -1557,10 +1557,10 @@ void Spell::EffectDummy(uint32 i)
                     for (unsigned char & idx : rands)
                         idx = rand() % 2;
  
-                    m_caster->CastSpell(unitTarget, Disease[rands[0]], true);
-                    m_caster->CastSpell(unitTarget, Curse[rands[1]], true);
-                    m_caster->CastSpell(unitTarget, Magic[rands[2]], true);
-                    m_caster->CastSpell(unitTarget, Poison[rands[3]], true);
+                    m_caster->CastSpell(unitTarget, Disease[rands[0]], TRIGGERED_FULL_MASK);
+                    m_caster->CastSpell(unitTarget, Curse[rands[1]], TRIGGERED_FULL_MASK);
+                    m_caster->CastSpell(unitTarget, Magic[rands[2]], TRIGGERED_FULL_MASK);
+                    m_caster->CastSpell(unitTarget, Poison[rands[3]], TRIGGERED_FULL_MASK);
                    
                     // Flip the 4 previous random numbers
                     for (unsigned char & rand : rands)
@@ -1568,7 +1568,7 @@ void Spell::EffectDummy(uint32 i)
                    
                     // Select one of the non-executed spells
                     uint32 Dispell5[4] = { Disease[rands[0]], Curse[rands[1]], Magic[rands[2]], Poison[rands[3]] };
-                    m_caster->CastSpell(unitTarget, Dispell5[rand() % 4], true);
+                    m_caster->CastSpell(unitTarget, Dispell5[rand() % 4], TRIGGERED_FULL_MASK);
 
                     return;
                 }
@@ -1585,7 +1585,7 @@ void Spell::EffectDummy(uint32 i)
 
                     //cast spell Raptor Capture Credit
                     if(Unit * pCaster = m_originalCaster)
-                        pCaster->CastSpell(pCaster, 42337, true);
+                        pCaster->CastSpell(pCaster, 42337, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 37573:                                 //Temporal Phase Modulator
@@ -1674,7 +1674,7 @@ void Spell::EffectDummy(uint32 i)
                 case 45030:                                 // Impale Emissary
                 {
                     // Emissary of Hate Credit
-                    m_caster->CastSpell(m_caster, 45088, true);
+                    m_caster->CastSpell(m_caster, 45088, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 50243:                                 // Teach Language
@@ -1688,12 +1688,12 @@ void Spell::EffectDummy(uint32 i)
                     if((m_caster->ToPlayer())->GetTeam() == ALLIANCE)
                     {
                         // 1000001 - gnomish binary
-                        m_caster->CastSpell(m_caster, 50242, true);
+                        m_caster->CastSpell(m_caster, 50242, TRIGGERED_FULL_MASK);
                     }
                     else
                     {
                         // 01001000 - goblin binary
-                        m_caster->CastSpell(m_caster, 50246, true);
+                        m_caster->CastSpell(m_caster, 50246, TRIGGERED_FULL_MASK);
                     }
 
                     return;
@@ -1706,7 +1706,7 @@ void Spell::EffectDummy(uint32 i)
                     if(Battleground* bg = (m_caster->ToPlayer())->GetBattleground())
                         bg->EventPlayerDroppedFlag(m_caster->ToPlayer());
 
-                    m_caster->CastSpell(m_caster, 30452, true, nullptr);
+                    m_caster->CastSpell(m_caster, 30452, TRIGGERED_FULL_MASK, nullptr);
                     return;
                 }
                 case 41170:
@@ -1714,7 +1714,7 @@ void Spell::EffectDummy(uint32 i)
                     if(unitTarget->GetTypeId() != TYPEID_PLAYER)
                         return;
                         
-                    unitTarget->CastSpell(unitTarget, 6945, true);
+                    unitTarget->CastSpell(unitTarget, 6945, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 41248:
@@ -1723,7 +1723,7 @@ void Spell::EffectDummy(uint32 i)
                     if (heal <= 0)
                         return;
 
-                    m_caster->CastCustomSpell(m_caster, 41249, &heal, nullptr, nullptr, true, nullptr);
+                    m_caster->CastCustomSpell(m_caster, 41249, &heal, nullptr, nullptr, TRIGGERED_FULL_MASK, nullptr);
                     return;
                 }
                 case 38920:
@@ -1752,7 +1752,7 @@ void Spell::EffectDummy(uint32 i)
                         gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
                         
                     if (m_caster)
-                        m_caster->CastSpell(m_caster, 42288, false);
+                        m_caster->CastSpell(m_caster, 42288, TRIGGERED_NONE);
                         
                     return;
                 }
@@ -1772,7 +1772,7 @@ void Spell::EffectDummy(uint32 i)
                         unitTarget->SetInFront(m_caster);
                         unitTarget->SendMovementFlagUpdate();
                         unitTarget->ToCreature()->SetReactState(REACT_PASSIVE);
-                        unitTarget->CastSpell(unitTarget, 39656, true);
+                        unitTarget->CastSpell(unitTarget, 39656, TRIGGERED_FULL_MASK);
                     }
 
                     return;
@@ -1783,7 +1783,7 @@ void Spell::EffectDummy(uint32 i)
                     if (!unitTarget || !m_caster)
                         return;
                     int32 bp = 45000 - (unitTarget->GetDistance(m_caster) * 2500);
-                    m_caster->CastCustomSpell(unitTarget, 5255, &bp, nullptr, nullptr, true);
+                    m_caster->CastCustomSpell(unitTarget, 5255, &bp, nullptr, nullptr, TRIGGERED_FULL_MASK);
                     
                     return;
                 }
@@ -1811,7 +1811,7 @@ void Spell::EffectDummy(uint32 i)
                     int32 hasteModBasePoints1 = (5-melee_mod);
                     int32 hasteModBasePoints2 = spell_mod;
 
-                    m_caster->CastCustomSpell(m_caster,26635,&hasteModBasePoints0,&hasteModBasePoints1,&hasteModBasePoints2,true,nullptr);
+                    m_caster->CastCustomSpell(m_caster,26635,&hasteModBasePoints0,&hasteModBasePoints1,&hasteModBasePoints2, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
             }
@@ -1854,7 +1854,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         //Polymorph Cast Visual Rank 1
                         const uint32 spell_list[6] = {32813, 32816, 32817, 32818, 32819, 32820};
-                        unitTarget->CastSpell( unitTarget, spell_list[m_caster->GetMap()->urand(0, 5)], true);
+                        unitTarget->CastSpell( unitTarget, spell_list[m_caster->GetMap()->urand(0, 5)], TRIGGERED_FULL_MASK);
                     }
                     return;
                 }
@@ -1863,7 +1863,7 @@ void Spell::EffectDummy(uint32 i)
                     if (!unitTarget)
                         return;
                         
-                    /*unitTarget->CastSpell(unitTarget, RAND(30605, 30606, 30607, 30608, 30609), true);
+                    /*unitTarget->CastSpell(unitTarget, RAND(30605, 30606, 30607, 30608, 30609), TRIGGERED_FULL_MASK);
                     return;*/
                     spell_id = RAND(30605, 30606, 30607, 30608, 30609);
                     break;
@@ -1875,7 +1875,7 @@ void Spell::EffectDummy(uint32 i)
             if(m_spellInfo->SpellFamilyFlags & 0x1 && m_spellInfo->SpellVisual == 867)
             {
                 int32 chargeBasePoints0 = damage;
-                m_caster->CastCustomSpell(m_caster,34846,&chargeBasePoints0,nullptr,nullptr,true);
+                m_caster->CastCustomSpell(m_caster,34846,&chargeBasePoints0,nullptr,nullptr, TRIGGERED_FULL_MASK);
                 return;
             }
             // Execute
@@ -1897,7 +1897,7 @@ void Spell::EffectDummy(uint32 i)
                 if(!unitTarget)
                     return;
 
-                m_caster->CastSpell(unitTarget,21887,true); // spell mod
+                m_caster->CastSpell(unitTarget,21887, TRIGGERED_FULL_MASK); // spell mod
                 return;
             }
             break;
@@ -1928,13 +1928,13 @@ void Spell::EffectDummy(uint32 i)
                             mana = (itr->GetModifier()->m_amount + 100)* mana / 100;
                     }
 
-                    m_caster->CastCustomSpell(m_caster,31818,&mana,nullptr,nullptr,true,nullptr);
+                    m_caster->CastCustomSpell(m_caster,31818,&mana,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr);
 
                     // Mana Feed
                     int32 manaFeedVal = m_caster->CalculateSpellDamage(m_spellInfo,1, m_spellInfo->Effects[1].BasePoints,m_caster);
                     manaFeedVal = manaFeedVal * mana / 100;
                     if(manaFeedVal > 0)
-                        m_caster->CastCustomSpell(m_caster,32553,&manaFeedVal,nullptr,nullptr,true,nullptr);
+                        m_caster->CastCustomSpell(m_caster,32553,&manaFeedVal,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr);
                 }
                 else
                     SendCastResult(SPELL_FAILED_FIZZLE);
@@ -1963,7 +1963,7 @@ void Spell::EffectDummy(uint32 i)
                             TC_LOG_ERROR("FIXME","Spell::EffectDummy: Spell 28598 triggered by unhandled spell %u",m_triggeredByAuraSpell->Id);
                             return;
                     }
-                    m_caster->CastSpell(unitTarget, spellid, true, nullptr);
+                    m_caster->CastSpell(unitTarget, spellid, TRIGGERED_FULL_MASK, nullptr);
                     return;
                 }
             }
@@ -1975,7 +1975,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     // Tree of Life area effect
                     int32 health_mod = int32(m_caster->GetStat(STAT_SPIRIT)/4);
-                    m_caster->CastCustomSpell(m_caster,34123,&health_mod,nullptr,nullptr,true,nullptr);
+                    m_caster->CastCustomSpell(m_caster,34123,&health_mod,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
             }
@@ -1985,7 +1985,7 @@ void Spell::EffectDummy(uint32 i)
             {
                 case 31231:                                 // Cheat Death
                 {
-                    m_caster->CastSpell(m_caster,45182,true);
+                    m_caster->CastSpell(m_caster,45182, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 5938:                                  // Shiv
@@ -2013,13 +2013,13 @@ void Spell::EffectDummy(uint32 i)
                                 if(!combatEntry || combatEntry->Dispel != DISPEL_POISON)
                                     continue;
 
-                                m_caster->CastSpell(unitTarget, combatEntry, true, item);
+                                m_caster->CastSpell(unitTarget, combatEntry, TRIGGERED_FULL_MASK, item);
                             }
                         }
                     }
 
                     //dmg + combo point effect
-                    m_caster->CastSpell(unitTarget, 5940, true);
+                    m_caster->CastSpell(unitTarget, 5940, TRIGGERED_FULL_MASK);
                     return;
                 }
             }
@@ -2048,7 +2048,7 @@ void Spell::EffectDummy(uint32 i)
                     return;
                 }
 
-                pet->CastSpell(pet->GetVictim(), spell_id, true);
+                pet->CastSpell(pet->GetVictim(), spell_id, TRIGGERED_FULL_MASK);
                 return;
             }
 
@@ -2130,9 +2130,9 @@ void Spell::EffectDummy(uint32 i)
                     }
 
                     if(m_caster->IsFriendlyTo(unitTarget))
-                        m_caster->CastSpell(unitTarget, heal, true, nullptr);
+                        m_caster->CastSpell(unitTarget, heal, TRIGGERED_FULL_MASK, nullptr);
                     else
-                        m_caster->CastSpell(unitTarget, hurt, true, nullptr);
+                        m_caster->CastSpell(unitTarget, hurt, TRIGGERED_FULL_MASK, nullptr);
 
                     return;
                 }
@@ -2160,12 +2160,12 @@ void Spell::EffectDummy(uint32 i)
                         mod->charges = 0;
 
                         (m_caster->ToPlayer())->AddSpellMod(mod, true);
-                        m_caster->CastSpell(unitTarget,spell_proto,true,nullptr);
+                        m_caster->CastSpell(unitTarget,spell_proto, TRIGGERED_FULL_MASK,nullptr);
                                                             // mod deleted
                         (m_caster->ToPlayer())->AddSpellMod(mod, false);
                     }
                     else
-                        m_caster->CastSpell(unitTarget,spell_proto,true,nullptr);
+                        m_caster->CastSpell(unitTarget,spell_proto, TRIGGERED_FULL_MASK,nullptr);
 
                     return;
                 }
@@ -2233,7 +2233,7 @@ void Spell::EffectDummy(uint32 i)
                         default: return;                    // ignore for not healing classes
                     }
 
-                    m_caster->CastSpell(m_caster,spell_id,true);
+                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK);
                     return;
                 }
             }
@@ -2276,7 +2276,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         if(item->IsFitToSpellRequirements(m_spellInfo))
                         {
-                            auto spell = new Spell(m_caster, spellInfo, true);
+                            auto spell = new Spell(m_caster, spellInfo, TRIGGERED_FULL_MASK);
 
                             // enchanting spell selected by calculated damage-per-sec in enchanting effect
                             // at calculation applied affect from Elemental Weapons talent
@@ -2299,7 +2299,7 @@ void Spell::EffectDummy(uint32 i)
 
                 // Regenerate 6% of Total Mana Every 3 secs
                 int32 EffectBasePoints0 = unitTarget->GetMaxPower(POWER_MANA)  * damage / 100;
-                m_caster->CastCustomSpell(unitTarget,39609,&EffectBasePoints0,nullptr,nullptr,true,nullptr,nullptr,m_originalCasterGUID);
+                m_caster->CastCustomSpell(unitTarget,39609,&EffectBasePoints0,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr,nullptr,m_originalCasterGUID);
                 return;
             }
 
@@ -2320,7 +2320,7 @@ void Spell::EffectDummy(uint32 i)
                 if (wspeed > 4.0) wspeed = 4.0f;
                 if (wspeed < 1.3) wspeed = 1.3f;
                 int32 EffectBasePoints0 = uint32(damage*wspeed/100.f);
-                m_caster->CastCustomSpell(unitTarget,10444,&EffectBasePoints0,nullptr,nullptr,true);
+                m_caster->CastCustomSpell(unitTarget,10444,&EffectBasePoints0,nullptr,nullptr, TRIGGERED_FULL_MASK);
                 return;
             }
             // Flametongue Totem Proc
@@ -2333,7 +2333,7 @@ void Spell::EffectDummy(uint32 i)
                 if (wspeed > 4.0) wspeed = 4.0f;
                 if (wspeed < 1.3) wspeed = 1.3f;
                 int32 EffectBasePoints0 = uint32(damage*wspeed/100.f);
-                m_caster->CastCustomSpell(unitTarget,16368,&EffectBasePoints0,nullptr,nullptr,true);
+                m_caster->CastCustomSpell(unitTarget,16368,&EffectBasePoints0,nullptr,nullptr, TRIGGERED_FULL_MASK);
                 return;
             }
 
@@ -2351,7 +2351,7 @@ void Spell::EffectDummy(uint32 i)
             return;
         }
 
-        auto  spell = new Spell(m_caster, spellInfo, true, m_originalCasterGUID, nullptr, true);
+        auto  spell = new Spell(m_caster, spellInfo, TRIGGERED_FULL_MASK, m_originalCasterGUID, nullptr, true);
         if(bp) spell->m_currentBasePoints[0] = bp;
         SpellCastTargets targets;
         targets.SetUnitTarget(unitTarget);
@@ -2387,7 +2387,7 @@ void Spell::EffectTriggerSpellWithValue(uint32 i)
     }
 
     int32 bp = damage;
-    m_caster->CastCustomSpell(unitTarget,triggered_spell_id,&bp,&bp,&bp,true,nullptr,nullptr,m_originalCasterGUID);
+    m_caster->CastCustomSpell(unitTarget,triggered_spell_id,&bp,&bp,&bp, TRIGGERED_FULL_MASK,nullptr,nullptr,m_originalCasterGUID);
 }
 
 void Spell::EffectTriggerRitualOfSummoning(uint32 i)
@@ -2404,7 +2404,7 @@ void Spell::EffectTriggerRitualOfSummoning(uint32 i)
     }
 
     finish();
-    auto spell = new Spell(m_caster, spellInfo, true);
+    auto spell = new Spell(m_caster, spellInfo, TRIGGERED_FULL_MASK);
 
     SpellCastTargets targets;
     targets.SetUnitTarget( unitTarget);
@@ -2441,19 +2441,19 @@ void Spell::EffectForceCast(uint32 i)
             if (!m_caster->GetVictim())
                 return;
 
-            m_caster->GetVictim()->CastSpell(m_caster, triggered_spell_id, true, nullptr, nullptr, m_originalCasterGUID);
+            m_caster->GetVictim()->CastSpell(m_caster, triggered_spell_id, TRIGGERED_FULL_MASK, nullptr, nullptr, m_originalCasterGUID);
             break;
         case 45391:
-            unitTarget->CastSpell(m_caster, triggered_spell_id, true, nullptr, nullptr, m_originalCasterGUID);
+            unitTarget->CastSpell(m_caster, triggered_spell_id, TRIGGERED_FULL_MASK, nullptr, nullptr, m_originalCasterGUID);
             break;
         case 45388:
-            unitTarget->CastSpell(m_caster, triggered_spell_id, true, nullptr, nullptr, m_originalCasterGUID);
+            unitTarget->CastSpell(m_caster, triggered_spell_id, TRIGGERED_FULL_MASK, nullptr, nullptr, m_originalCasterGUID);
             break;
         case 45782:
-            unitTarget->CastSpell((Unit*)nullptr, triggered_spell_id, true, nullptr, nullptr, m_originalCasterGUID);
+            unitTarget->CastSpell((Unit*)nullptr, triggered_spell_id, TRIGGERED_FULL_MASK, nullptr, nullptr, m_originalCasterGUID);
             break;
         default:
-            unitTarget->CastSpell(unitTarget,spellInfo,true,nullptr,nullptr,m_originalCasterGUID);
+            unitTarget->CastSpell(unitTarget,spellInfo, TRIGGERED_FULL_MASK,nullptr,nullptr,m_originalCasterGUID);
             break;
     }
 }
@@ -2525,7 +2525,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             }
 
             //also cast dummy aura
-            m_caster->CastSpell(m_caster,18461, true);
+            m_caster->CastSpell(m_caster,18461, TRIGGERED_FULL_MASK);
             return;
         }
         // just skip
@@ -2540,7 +2540,7 @@ void Spell::EffectTriggerSpell(uint32 i)
                 return;
 
             for (int idx=0; idx < spell->StackAmount; ++idx)
-                m_caster->CastSpell(unitTarget,spell->Id, true, m_CastItem, nullptr, m_originalCasterGUID);
+                m_caster->CastSpell(unitTarget,spell->Id, TRIGGERED_FULL_MASK, m_CastItem, nullptr, m_originalCasterGUID);
             return;
         }
         // Mercurial Shield - (need add max stack of 26464 Mercurial Shield)
@@ -2551,13 +2551,13 @@ void Spell::EffectTriggerSpell(uint32 i)
                 return;
 
             for (int idx=0; idx < spell->StackAmount; ++idx)
-                m_caster->CastSpell(unitTarget,spell->Id, true, m_CastItem, nullptr, m_originalCasterGUID);
+                m_caster->CastSpell(unitTarget,spell->Id, TRIGGERED_FULL_MASK, m_CastItem, nullptr, m_originalCasterGUID);
             return;
         }
         // Righteous Defense
         case 31980:
         {
-            m_caster->CastSpell(unitTarget, 31790, true,m_CastItem,nullptr,m_originalCasterGUID);
+            m_caster->CastSpell(unitTarget, 31790, TRIGGERED_FULL_MASK,m_CastItem,nullptr,m_originalCasterGUID);
             return;
         }
         // Cloak of Shadows
@@ -2586,7 +2586,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             if (Unit *pet = m_caster->GetPet()) {
                 if (m_caster->GetVictim())
                     pet->SendMeleeAttackStart(m_caster->GetVictim());
-                pet->CastSpell(pet, 28305, true);
+                pet->CastSpell(pet, 28305, TRIGGERED_FULL_MASK);
             }
             return;
         }
@@ -2635,7 +2635,7 @@ void Spell::EffectTriggerSpell(uint32 i)
 
     // some triggered spells must be casted instantly (for example, if next effect case instant kill caster)
     /*bool instant = false;
-    for(uint32 j = i+1; j < 3; ++j)
+    for(uint32 j = i+1; j < MAX_SPELL_EFFECTS; ++j)
     {
         if(m_spellInfo->Effects[j].TargetA.GetTarget()== TARGET_UNIT_CASTER
             && (m_spellInfo->Effects[j].Effect==SPELL_EFFECT_INSTAKILL))
@@ -2648,7 +2648,7 @@ void Spell::EffectTriggerSpell(uint32 i)
     if(instant)
     {*/
     if (unitTarget)
-        m_caster->CastSpell(unitTarget, spellInfo, true, m_CastItem, nullptr, m_originalCasterGUID);
+        m_caster->CastSpell(unitTarget, spellInfo, TRIGGERED_FULL_MASK, m_CastItem, nullptr, m_originalCasterGUID);
     /*}
     else
         m_TriggerSpells.push_back(spellInfo);
@@ -2714,7 +2714,7 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
         && m_spellInfo->GetCategory() == spellInfo->GetCategory())
         m_caster->ToPlayer()->RemoveSpellCooldown(spellInfo->Id);
 
-    auto spell = new Spell(m_caster, spellInfo, true, m_originalCasterGUID );
+    auto spell = new Spell(m_caster, spellInfo, TRIGGERED_FULL_MASK, m_originalCasterGUID );
 
     SpellCastTargets targets;
     targets.SetDst(m_targets.GetDstPos()->GetPosition());
@@ -2774,9 +2774,9 @@ void Spell::EffectTeleportUnits(uint32 i)
             if ( r >= 70 )                                  // 7/12 success
             {
                 if ( r < 100 )                              // 4/12 evil twin
-                    m_caster->CastSpell(m_caster,23445,true);
+                    m_caster->CastSpell(m_caster,23445, TRIGGERED_FULL_MASK);
                 else                                        // 1/12 fire
-                    m_caster->CastSpell(m_caster,23449,true);
+                    m_caster->CastSpell(m_caster,23449, TRIGGERED_FULL_MASK);
             }
             return;
         }
@@ -2790,36 +2790,36 @@ void Spell::EffectTeleportUnits(uint32 i)
                 {
                     case 1:
                         // soul split - evil
-                        m_caster->CastSpell(m_caster,36900,true);
+                        m_caster->CastSpell(m_caster,36900, TRIGGERED_FULL_MASK);
                         break;
                     case 2:
                         // soul split - good
-                        m_caster->CastSpell(m_caster,36901,true);
+                        m_caster->CastSpell(m_caster,36901, TRIGGERED_FULL_MASK);
                         break;
                     case 3:
                         // Increase the size
-                        m_caster->CastSpell(m_caster,36895,true);
+                        m_caster->CastSpell(m_caster,36895, TRIGGERED_FULL_MASK);
                         break;
                     case 4:
                         // Decrease the size
-                        m_caster->CastSpell(m_caster,36893,true);
+                        m_caster->CastSpell(m_caster,36893, TRIGGERED_FULL_MASK);
                         break;
                     case 5:
                     // Transform
                     {
                         if ((m_caster->ToPlayer())->GetTeam() == ALLIANCE )
-                            m_caster->CastSpell(m_caster,36897,true);
+                            m_caster->CastSpell(m_caster,36897, TRIGGERED_FULL_MASK);
                         else
-                            m_caster->CastSpell(m_caster,36899,true);
+                            m_caster->CastSpell(m_caster,36899, TRIGGERED_FULL_MASK);
                         break;
                     }
                     case 6:
                         // chicken
-                        m_caster->CastSpell(m_caster,36940,true);
+                        m_caster->CastSpell(m_caster,36940, TRIGGERED_FULL_MASK);
                         break;
                     case 7:
                         // evil twin
-                        m_caster->CastSpell(m_caster,23445,true);
+                        m_caster->CastSpell(m_caster,23445, TRIGGERED_FULL_MASK);
                         break;
                 }
             }
@@ -2835,38 +2835,38 @@ void Spell::EffectTeleportUnits(uint32 i)
                 {
                     case 1:
                         // soul split - evil
-                        m_caster->CastSpell(m_caster,36900,true);
+                        m_caster->CastSpell(m_caster,36900, TRIGGERED_FULL_MASK);
                         break;
                     case 2:
                         // soul split - good
-                        m_caster->CastSpell(m_caster,36901,true);
+                        m_caster->CastSpell(m_caster,36901, TRIGGERED_FULL_MASK);
                         break;
                     case 3:
                         // Increase the size
-                        m_caster->CastSpell(m_caster,36895,true);
+                        m_caster->CastSpell(m_caster,36895, TRIGGERED_FULL_MASK);
                         break;
                     case 4:
                     // Transform
                     {
                         if ((m_caster->ToPlayer())->GetTeam() == ALLIANCE )
-                            m_caster->CastSpell(m_caster,36897,true);
+                            m_caster->CastSpell(m_caster,36897, TRIGGERED_FULL_MASK);
                         else
-                            m_caster->CastSpell(m_caster,36899,true);
+                            m_caster->CastSpell(m_caster,36899, TRIGGERED_FULL_MASK);
                         break;
                     }
                     case 5: // Fire
                     {
-                        m_caster->CastSpell(m_caster, 36892, true);
+                        m_caster->CastSpell(m_caster, 36892, TRIGGERED_FULL_MASK);
                         break;
                     }
                     case 6: // Decrease size
                     {
-                        m_caster->CastSpell(m_caster, 36893, true);
+                        m_caster->CastSpell(m_caster, 36893, TRIGGERED_FULL_MASK);
                         break;
                     }
                     case 7: // Chicken
                     {
-                        m_caster->CastSpell(m_caster, 36940, true);
+                        m_caster->CastSpell(m_caster, 36940, TRIGGERED_FULL_MASK);
                         break;
                     }
                 }
@@ -2992,7 +2992,7 @@ void Spell::EffectApplyAura(uint32 i)
 
     // Prayer of Mending (jump animation), we need formal caster instead original for correct animation
     if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
-        m_caster->CastSpell(unitTarget, 41637, true, nullptr, Aur, m_originalCasterGUID);
+        m_caster->CastSpell(unitTarget, 41637, TRIGGERED_FULL_MASK, nullptr, Aur, m_originalCasterGUID);
         
     //remove stealth on hostile targets (need to find the correct rule)
     if (caster->IsHostileTo(unitTarget) 
@@ -3110,8 +3110,8 @@ void Spell::EffectSendEvent(uint32 effIndex)
             cell.Visit(pair, visitor, *m_caster->GetMap());
             
             for (std::list<Creature*>::iterator itr = ogres.begin(); itr != ogres.end(); itr++)
-                (*itr)->CastSpell((*itr), 39914, true);*/
-            m_caster->CastSpell(m_caster, 39914, false);
+                (*itr)->CastSpell((*itr), 39914, TRIGGERED_FULL_MASK);*/
+            m_caster->CastSpell(m_caster, 39914, TRIGGERED_NONE);
         }
         else                   // Summon Soulgrinder
             m_caster->SummonCreature(23019, 3535.181641, 5590.692871, 0.183175, 3.915725, TEMPSUMMON_DEAD_DESPAWN, 0);
@@ -3372,7 +3372,7 @@ void Spell::EffectHealthLeech(uint32 i)
 
     int32 new_damage = int32(damage*multiplier);
     uint32 curHealth = unitTarget->GetHealth();
-    new_damage = m_caster->SpellNonMeleeDamageLog(unitTarget, m_spellInfo->Id, new_damage, m_IsTriggeredSpell, true);
+    new_damage = m_caster->SpellNonMeleeDamageLog(unitTarget, m_spellInfo->Id, new_damage, IsTriggered(), true);
     if(curHealth < new_damage)
         new_damage = curHealth;
 
@@ -3562,7 +3562,7 @@ void Spell::EffectEnergize(uint32 i)
         case 10058:
         case 27103:
             if (m_caster->HasAuraEffect(37447))
-                m_caster->CastSpell(m_caster, 37445, true);
+                m_caster->CastSpell(m_caster, 37445, TRIGGERED_FULL_MASK);
             break;
         //Elune's Touch (30% AP)
         case 33926:
@@ -3625,7 +3625,7 @@ void Spell::EffectEnergize(uint32 i)
         {
             // cast random elixir on target
           uint32 rand_spell = m_caster->GetMap()->urand(0,elixirs.size()-1);
-            m_caster->CastSpell(unitTarget,elixirs[rand_spell],true,m_CastItem);
+            m_caster->CastSpell(unitTarget,elixirs[rand_spell], TRIGGERED_FULL_MASK,m_CastItem);
         }
     }
 }
@@ -4191,7 +4191,7 @@ void Spell::EffectDispel(uint32 i)
                         break;
                 }
                 if (heal_spell)
-                    m_caster->CastSpell(m_caster, heal_spell, true);
+                    m_caster->CastSpell(m_caster, heal_spell, TRIGGERED_FULL_MASK);
             }
         }
         // Send fail log to client
@@ -4830,7 +4830,7 @@ void Spell::EffectWeaponDmg(uint32 i)
                 }
             }
 
-            for (int j = 0; j < 3; j++)
+            for (uint8 j = 0; j < MAX_SPELL_EFFECTS; j++)
             {
                 if (m_spellInfo->Effects[j].Effect == SPELL_EFFECT_NORMALIZED_WEAPON_DMG)
                 {
@@ -4860,7 +4860,7 @@ void Spell::EffectWeaponDmg(uint32 i)
                         && spellInfo->Id != m_spellInfo->Id
                         && spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR)
                     {
-                        m_caster->CastSpell(unitTarget, spellInfo, true);
+                        m_caster->CastSpell(unitTarget, spellInfo, TRIGGERED_FULL_MASK);
                         break;
                     }
                 }
@@ -4918,7 +4918,7 @@ void Spell::EffectWeaponDmg(uint32 i)
                 // Stormstrike AP Buff
                 if (idx->GetModifier()->m_miscvalue == 5634)
                 {
-                    m_caster->CastSpell(m_caster, 38430, true, nullptr, idx);
+                    m_caster->CastSpell(m_caster, 38430, TRIGGERED_FULL_MASK, nullptr, idx);
                     break;
                 }
             }
@@ -4939,7 +4939,7 @@ void Spell::EffectWeaponDmg(uint32 i)
 
     bool normalized = false;
     float weaponDamagePercentMod = 1.0;
-    for (int j = 0; j < 3; ++j)
+    for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
     {
         switch (m_spellInfo->Effects[j].Effect)
         {
@@ -5194,7 +5194,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (!unitTarget)
                 return;
 
-            unitTarget->CastSpell((Unit*)nullptr, 45836, true, nullptr, nullptr, m_caster->GetGUID());
+            unitTarget->CastSpell((Unit*)nullptr, 45836, TRIGGERED_FULL_MASK, nullptr, nullptr, m_caster->GetGUID());
             return;
         // Sinister Reflection
         case 45892:
@@ -5218,9 +5218,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             {
                 // Summon 4 clones of the same player
                 for (uint8 i = 0; i < 4; ++i)
-                    target->CastSpell((Unit*)nullptr, 45891, true, nullptr, nullptr, m_caster->GetGUID());
+                    target->CastSpell((Unit*)nullptr, 45891, TRIGGERED_FULL_MASK, nullptr, nullptr, m_caster->GetGUID());
 
-                target->CastSpell((Unit*)nullptr, 45785, true);
+                target->CastSpell((Unit*)nullptr, 45785, TRIGGERED_FULL_MASK);
             }
             return;
         }
@@ -5292,7 +5292,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     break;
             }
 
-            unitTarget->CastSpell(unitTarget, iTmpSpellId, true);
+            unitTarget->CastSpell(unitTarget, iTmpSpellId, TRIGGERED_FULL_MASK);
 
             return;
         }
@@ -5310,7 +5310,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 default: spell_id = 8855; break;
             }
 
-            m_caster->CastSpell(m_caster,spell_id,true,nullptr);
+            m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
             return;
         }
         /* Disabled: This is currently hardcoded in Nazan script
@@ -5320,7 +5320,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (!unitTarget)
                 return;
 
-            unitTarget->CastSpell(unitTarget, unitTarget->GetMap()->IsRegularDifficulty() ? 23971 : 30928, true, NULL, NULL, m_caster->GetObjectGuid());
+            unitTarget->CastSpell(unitTarget, unitTarget->GetMap()->IsRegularDifficulty() ? 23971 : 30928, TRIGGERED_FULL_MASK, NULL, NULL, m_caster->GetObjectGuid());
             return;
         }
         */
@@ -5410,7 +5410,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     return;
             }
 
-            unitTarget->CastSpell(unitTarget,spellid,false);
+            unitTarget->CastSpell(unitTarget,spellid, TRIGGERED_NONE);
             return;
         }
 
@@ -5437,7 +5437,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 return;
 
             // Shadow Flame
-            m_caster->CastSpell(unitTarget, 22682, true);
+            m_caster->CastSpell(unitTarget, 22682, TRIGGERED_FULL_MASK);
             return;
         }
         break;
@@ -5459,7 +5459,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             case 5: spellId = 24737; break; // Ghost Costume
             case 6: spellId = 24733; break; // Bat Costume
             }
-            m_caster->CastSpell(unitTarget, spellId, true);
+            m_caster->CastSpell(unitTarget, spellId, TRIGGERED_FULL_MASK);
         }
         break;
         // Pirate Costume
@@ -5469,9 +5469,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 return;
 
             if(unitTarget->GetGender() == GENDER_MALE)
-                m_caster->CastSpell(unitTarget,24708,true);
+                m_caster->CastSpell(unitTarget,24708, TRIGGERED_FULL_MASK);
             else
-                m_caster->CastSpell(unitTarget,24709,true);
+                m_caster->CastSpell(unitTarget,24709, TRIGGERED_FULL_MASK);
         }
         break;
         // Ninja Costume
@@ -5481,9 +5481,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 return;
 
             if(unitTarget->GetGender() == GENDER_MALE)
-                m_caster->CastSpell(unitTarget,24711,true);
+                m_caster->CastSpell(unitTarget,24711, TRIGGERED_FULL_MASK);
             else
-                m_caster->CastSpell(unitTarget,24710,true);
+                m_caster->CastSpell(unitTarget,24710, TRIGGERED_FULL_MASK);
         }
         break;
         // Leper Gnome Costume
@@ -5493,9 +5493,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 return;
 
             if(unitTarget->GetGender() == GENDER_MALE)
-                m_caster->CastSpell(unitTarget,24712,true);
+                m_caster->CastSpell(unitTarget,24712, TRIGGERED_FULL_MASK);
             else
-                m_caster->CastSpell(unitTarget,24713,true);
+                m_caster->CastSpell(unitTarget,24713, TRIGGERED_FULL_MASK);
         }
         break;
         // Ghost Costume
@@ -5505,9 +5505,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 return;
 
             if(unitTarget->GetGender() == GENDER_MALE)
-                m_caster->CastSpell(unitTarget,24735,true);
+                m_caster->CastSpell(unitTarget,24735, TRIGGERED_FULL_MASK);
             else
-                m_caster->CastSpell(unitTarget,24736,true);
+                m_caster->CastSpell(unitTarget,24736, TRIGGERED_FULL_MASK);
         }
         break;
         // Summon Black Qiraji Battle Tank
@@ -5527,9 +5527,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             // Two separate mounts depending on area id (allows use both in and out of specific instance)
             if (unitTarget->GetAreaId() == 3428)
-                unitTarget->CastSpell(unitTarget, 25863, false);
+                unitTarget->CastSpell(unitTarget, 25863, TRIGGERED_NONE);
             else
-                unitTarget->CastSpell(unitTarget, 26655, false);
+                unitTarget->CastSpell(unitTarget, 26655, TRIGGERED_NONE);
             break;
         }
         // Piccolo of the Flaming Fire
@@ -5558,7 +5558,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             for(uint8 i=0; i<5; i++)
                 if(unitTarget->HasAuraEffect(spellid+i, 0))
                     return;
-            unitTarget->CastSpell(unitTarget, spellid+m_caster->GetMap()->urand(0, 4), true);
+            unitTarget->CastSpell(unitTarget, spellid+m_caster->GetMap()->urand(0, 4), TRIGGERED_FULL_MASK);
             break;
         }
 
@@ -5570,7 +5570,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             // 25% chance of casting Nightmare Pollen
             if(roll_chance_i(75))
                 return;
-            unitTarget->CastSpell(unitTarget, 28721, true);
+            unitTarget->CastSpell(unitTarget, 28721, TRIGGERED_FULL_MASK);
             break;
         }
 
@@ -5633,7 +5633,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     spellId=46736;
                     break;
             }
-            unitTarget->CastSpell(unitTarget, spellId, true);
+            unitTarget->CastSpell(unitTarget, spellId, TRIGGERED_FULL_MASK);
             break;
         }
         case 48025:                                     // Headless Horseman's Mount
@@ -5645,19 +5645,19 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 {
                     switch((unitTarget->ToPlayer())->GetBaseSkillValue(762))
                     {
-                    case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
-                    case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
+                    case 75: unitTarget->CastSpell(unitTarget, 51621, TRIGGERED_FULL_MASK); break;;
+                    case 150: unitTarget->CastSpell(unitTarget, 48024, TRIGGERED_FULL_MASK); break;
                     case 225: 
                         if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetAreaId()) == 530)
-                            unitTarget->CastSpell(unitTarget, 51617, true);
+                            unitTarget->CastSpell(unitTarget, 51617, TRIGGERED_FULL_MASK);
                         else
-                            unitTarget->CastSpell(unitTarget, 48024, true);
+                            unitTarget->CastSpell(unitTarget, 48024, TRIGGERED_FULL_MASK);
                         break;
                     case 300: 
                         if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetAreaId()) == 530)
-                            unitTarget->CastSpell(unitTarget, 48023, true);
+                            unitTarget->CastSpell(unitTarget, 48023, TRIGGERED_FULL_MASK);
                         else
-                            unitTarget->CastSpell(unitTarget, 48024, true);
+                            unitTarget->CastSpell(unitTarget, 48024, TRIGGERED_FULL_MASK);
                         break;
                     default: break;
                     }
@@ -5673,8 +5673,8 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             {
                 switch((unitTarget->ToPlayer())->GetBaseSkillValue(762))
                 {
-                case 75: unitTarget->CastSpell(unitTarget, 42680, true); break;;
-                case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 42683, true); break;
+                case 75: unitTarget->CastSpell(unitTarget, 42680, TRIGGERED_FULL_MASK); break;;
+                case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 42683, TRIGGERED_FULL_MASK); break;
                 default: break;
                 }
             }
@@ -5683,12 +5683,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Fog of corruption
         case 45714:
         {
-            unitTarget->CastSpell(m_caster, m_spellInfo->Effects[0].BasePoints, true);
+            unitTarget->CastSpell(m_caster, m_spellInfo->Effects[0].BasePoints, TRIGGERED_FULL_MASK);
             return;
         }
         case 45717:
         {
-            m_caster->CastSpell(unitTarget, 45726, true);
+            m_caster->CastSpell(unitTarget, 45726, TRIGGERED_FULL_MASK);
             return;
         }
         // Burn 
@@ -5702,7 +5702,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 return;
 
             if (m_originalCaster)
-                unitTarget->CastSpell(unitTarget, 46394 , true, nullptr, nullptr, m_originalCasterGUID);
+                unitTarget->CastSpell(unitTarget, 46394 , TRIGGERED_FULL_MASK, nullptr, nullptr, m_originalCasterGUID);
             return;
         }
         // Quest 11026 Kill Credit
@@ -5717,13 +5717,13 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 39649:
         {
             for (uint8 i = 0; i < 8; i++)
-                m_caster->CastSpell(unitTarget, 41159, true);
+                m_caster->CastSpell(unitTarget, 41159, TRIGGERED_FULL_MASK);
                 
             return;
         }
         case 41072:
         {
-            m_caster->CastSpell(unitTarget, 41065, true);
+            m_caster->CastSpell(unitTarget, 41065, TRIGGERED_FULL_MASK);
             return;
         }
         case 32580:
@@ -5749,7 +5749,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         case 43723:
         {
-            m_caster->CastSpell(m_caster, 43753, false);
+            m_caster->CastSpell(m_caster, 43753, TRIGGERED_NONE);
             return;
         }
         case 26541:
@@ -5797,14 +5797,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if(old_critter)
                 old_critter->ToTempSummon()->UnSummon();
             
-            m_caster->ToPlayer()->CastSpell(m_caster, triggeredSpellId, false);
+            m_caster->ToPlayer()->CastSpell(m_caster, triggeredSpellId, TRIGGERED_NONE);
 
             return;
         }
         case 26393:
         {
             if (unitTarget)
-                unitTarget->CastSpell(unitTarget, 26394, true);
+                unitTarget->CastSpell(unitTarget, 26394, TRIGGERED_FULL_MASK);
                 
             return;
         }
@@ -5824,12 +5824,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if(m_caster->HasAuraEffect(41469)) //SPELL_SEAL_OF_COMMAND
                 {
                     m_caster->RemoveAurasDueToSpell(41469);
-                    m_caster->CastSpell(unitTarget,41470,false); //SPELL_JUDGEMENT_OF_COMMAND
+                    m_caster->CastSpell(unitTarget,41470, TRIGGERED_NONE); //SPELL_JUDGEMENT_OF_COMMAND
                 }
                 else if (m_caster->HasAuraEffect(41459)) //SPELL_SEAL_OF_BLOOD
                 {
                     m_caster->RemoveAurasDueToSpell(41459);
-                    m_caster->CastSpell(unitTarget,41461,false); //SPELL_JUDGEMENT_OF_BLOOD
+                    m_caster->CastSpell(unitTarget,41461, TRIGGERED_NONE); //SPELL_JUDGEMENT_OF_BLOOD
                 }
             }
             return;
@@ -5845,13 +5845,13 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     switch(m_spellInfo->Id)
     {
         // Dreaming Glory
-        case 28698: unitTarget->CastSpell(unitTarget, 28694, true); break;
+        case 28698: unitTarget->CastSpell(unitTarget, 28694, TRIGGERED_FULL_MASK); break;
         // Needle Spine
-        //case 39835: unitTarget->CastSpell(unitTarget, 39968, true); break;
+        //case 39835: unitTarget->CastSpell(unitTarget, 39968, TRIGGERED_FULL_MASK); break;
         // Draw Soul
-        case 40904: unitTarget->CastSpell(m_caster, 40903, true); break;
+        case 40904: unitTarget->CastSpell(m_caster, 40903, TRIGGERED_FULL_MASK); break;
         // Flame Crash
-        //case 41126: unitTarget->CastSpell(unitTarget, 41131, true); break;
+        //case 41126: unitTarget->CastSpell(unitTarget, 41131, TRIGGERED_FULL_MASK); break;
         case 45151: 
         {
             if (unitTarget->HasAuraEffect(46394, 0))
@@ -5860,7 +5860,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (unitTarget->IsPet())
                 return;
 
-            unitTarget->CastSpell(unitTarget, 46394, true); break;
+            unitTarget->CastSpell(unitTarget, 46394, TRIGGERED_FULL_MASK); break;
         }
         case 41931:
         {
@@ -5884,12 +5884,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if ((m_caster->ToPlayer())->GetItemByPos(bag,slot)->GetCount() == 1) (m_caster->ToPlayer())->RemoveItem(bag,slot,true);
                 else (m_caster->ToPlayer())->GetItemByPos(bag,slot)->SetCount((m_caster->ToPlayer())->GetItemByPos(bag,slot)->GetCount()-1);
                 // Spell 42518 (Braufest - Gratisprobe des Braufest herstellen)
-                m_caster->CastSpell(m_caster,42518,true);
+                m_caster->CastSpell(m_caster,42518, TRIGGERED_FULL_MASK);
                 return;
             }
         }
         // Force Cast - Portal Effect: Sunwell Isle
-        case 44876: unitTarget->CastSpell(unitTarget, 44870, true); break;
+        case 44876: unitTarget->CastSpell(unitTarget, 44870, TRIGGERED_FULL_MASK); break;
         // spell of Brutallus - Stomp
         case 45185:
         {
@@ -5898,7 +5898,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             break;
         }
         // Negative Energy
-        case 46289: m_caster->CastSpell(unitTarget, 46285, true); break;
+        case 46289: m_caster->CastSpell(unitTarget, 46285, TRIGGERED_FULL_MASK); break;
         //5,000 Gold
         case 46642:
         {
@@ -5951,7 +5951,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                                 if ( Player* modOwner = m_caster->GetSpellModOwner() )
                                     modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_COST, mana);
                                 mana = int32(mana* 0.8f);
-                                m_caster->CastCustomSpell(m_caster,31930,&mana,nullptr,nullptr,true,nullptr,m_aura);
+                                m_caster->CastCustomSpell(m_caster,31930,&mana,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr,m_aura);
                             }
                             break;
                         }
@@ -5960,7 +5960,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     break;
                 }
 
-                m_caster->CastSpell(unitTarget,spellId2,true);
+                m_caster->CastSpell(unitTarget,spellId2, TRIGGERED_FULL_MASK);
                 return;
             }
         }
@@ -6156,7 +6156,7 @@ void Spell::EffectStuck(uint32 /*i*/)
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(8690);
     if(!spellInfo)
         return;
-    Spell spell(pTarget,spellInfo,true,0);
+    Spell spell(pTarget, spellInfo, TRIGGERED_FULL_MASK, 0);
     spell.SendSpellCooldown();
     
     pTarget->Kill(pTarget, false);
@@ -6296,7 +6296,7 @@ void Spell::EffectInebriate(uint32 /*i*/)
     {
         currentDrunk = 100;
         if (rand_chance() < 25.0f)
-            player->CastSpell(player, 67468, false);    // Drunken Vomit
+            player->CastSpell(player, 67468, TRIGGERED_NONE);    // Drunken Vomit
     }
     else
         currentDrunk += drunkMod;
@@ -6338,7 +6338,7 @@ void Spell::EffectFeedPet(uint32 i)
     _player->DestroyItemCount(itemTarget,count,true);
     // TODO: fix crash when a spell has two effects, both pointed at the same item target
 
-    m_caster->CastCustomSpell(m_caster,m_spellInfo->Effects[i].TriggerSpell,&benefit,nullptr,nullptr,true);
+    m_caster->CastCustomSpell(m_caster,m_spellInfo->Effects[i].TriggerSpell,&benefit,nullptr,nullptr, TRIGGERED_FULL_MASK);
 }
 
 void Spell::EffectDismissPet(uint32 /*i*/)
@@ -6441,7 +6441,7 @@ void Spell::EffectResurrect(uint32 /*effIndex*/)
         case 8342:
             if (roll_chance_i(67))
             {
-                m_caster->CastSpell(m_caster, 8338, true, m_CastItem);
+                m_caster->CastSpell(m_caster, 8338, TRIGGERED_FULL_MASK, m_CastItem);
                 return;
             }
             break;
@@ -6449,7 +6449,7 @@ void Spell::EffectResurrect(uint32 /*effIndex*/)
         case 22999:
             if (roll_chance_i(50))
             {
-                m_caster->CastSpell(m_caster, 23055, true, m_CastItem);
+                m_caster->CastSpell(m_caster, 23055, TRIGGERED_FULL_MASK, m_CastItem);
                 return;
             }
             break;
@@ -6700,7 +6700,7 @@ void Spell::EffectCharge(uint32 i)
         if (!m_spellInfo->IsPositive() && m_caster->GetTypeId() == TYPEID_PLAYER)
             m_caster->Attack(target, true);
 
-        m_caster->CastSpell(target, triggeredSpellId, true);
+        m_caster->CastSpell(target, triggeredSpellId, TRIGGERED_FULL_MASK);
     }
 }
 
@@ -6938,7 +6938,7 @@ void Spell::EffectDestroyAllTotems(uint32 /*i*/)
 
     ApplyPct(mana, damage);
     if (mana)
-        m_caster->CastCustomSpell(m_caster, 39104, &mana, nullptr, nullptr, true);
+        m_caster->CastCustomSpell(m_caster, 39104, &mana, nullptr, nullptr, TRIGGERED_FULL_MASK);
 
     m_caster->SendEnergizeSpellLog(m_caster, m_spellInfo->Id, mana, POWER_MANA);
 }
@@ -7476,5 +7476,5 @@ void Spell::EffectForceCastWithValue(uint32 i)
     }
     
     int32 bp = damage;
-    unitTarget->CastCustomSpell(m_caster, spellInfo->Id, &bp, &bp, &bp, true);
+    unitTarget->CastCustomSpell(m_caster, spellInfo->Id, &bp, &bp, &bp, TRIGGERED_FULL_MASK);
 }

@@ -239,7 +239,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
     GetPlayer()->CleanupAfterTaxiFlight();
     GetPlayer()->SetFallInformation(0, GetPlayer()->GetPositionZ());
     if (GetPlayer()->pvpInfo.IsHostile)
-        GetPlayer()->CastSpell(GetPlayer(), 2479, true);
+        GetPlayer()->CastSpell(GetPlayer(), 2479, TRIGGERED_FULL_MASK);
 }
 
 void WorldSession::HandleActivateTaxiOpcode(WorldPacket& recvData)

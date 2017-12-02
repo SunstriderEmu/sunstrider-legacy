@@ -595,8 +595,8 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
     Source->RemoveAurasDueToSpell(BG_EY_NETHERSTORM_FLAG_SPELL);
     m_FlagState = BG_EY_FLAG_STATE_ON_GROUND;
     m_FlagsTimer = BG_EY_FLAG_RESPAWN_TIME;
-    Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, true);
-    Source->CastSpell(Source, BG_EY_PLAYER_DROPPED_FLAG_SPELL, true);
+    Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, TRIGGERED_FULL_MASK);
+    Source->CastSpell(Source, BG_EY_PLAYER_DROPPED_FLAG_SPELL, TRIGGERED_FULL_MASK);
     if(Source->GetTeam() == ALLIANCE)
         SendMessageToAll(LANG_BG_EY_DROPPED_FLAG, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
     else
@@ -634,7 +634,7 @@ void BattlegroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     SpawnBGObject(BG_EY_OBJECT_FLAG_NETHERSTORM, RESPAWN_ONE_DAY);
     SetFlagPicker(Source->GetGUID());
     //get flag aura on player
-    Source->CastSpell(Source, BG_EY_NETHERSTORM_FLAG_SPELL, true);
+    Source->CastSpell(Source, BG_EY_NETHERSTORM_FLAG_SPELL, TRIGGERED_FULL_MASK);
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 
     SendMessageToAll(LANG_BG_EY_HAS_TAKEN_FLAG, type, Source);

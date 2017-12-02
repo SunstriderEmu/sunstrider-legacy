@@ -62,8 +62,9 @@ bool QueryItemUsageAction::Execute(Event event)
 
 bool QueryItemUsageAction::QueryItemUsage(ItemTemplate const *item)
 {
-    std::ostringstream out; out << item->ItemId;
-    ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
+    std::ostringstream _out; 
+    _out << item->ItemId;
+    ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", _out.str());
     switch (usage)
     {
     case ITEM_USAGE_EQUIP:

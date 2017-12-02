@@ -45,6 +45,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     char const* buffer = reinterpret_cast<char const*>(header);
     /* sunstrider: This is adapted from TC code for 3.3.5, with the help of https://wowdev.wiki/M2#Cameras
     Note: scry_cam has an interpolationMax of 0 and 0,0,0 in the only position it's got... Is that normal?
+    Also, still not perfect for cam flying really fast such as the draenei intro
     */
 
     uint32 targetInterpolationMin = 0;
