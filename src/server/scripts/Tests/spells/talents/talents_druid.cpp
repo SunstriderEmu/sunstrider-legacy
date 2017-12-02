@@ -1671,6 +1671,13 @@ public:
 			return bonus;
 		}
 
+		float CalculateTranquilityCoeff(int32 tranquilityCastTime)
+		{
+			// http://wowwiki.wikia.com/wiki/Spell_power?oldid=1576621
+			// (castTime / 3.5) / 2 / nbTick;
+			return tranquilityCastTime / 3.5f / 2.0f / 4.0f;
+		}
+
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
@@ -1680,13 +1687,6 @@ public:
 
 			LearnTalent(player, Talents::Druid::EMPOWERED_REJUVENATION_RNK_5);
 
-			// Tranquility
-			uint32 const tranquilityBH = CalculateBH(ClassSpellsCoeff::Druid::TRANQUILITY_LVL_70);
-			uint32 const tranquilityTick = ClassSpellsDamage::Druid::TRANQUILITY_RNK_5_TICK + tranquilityBH;
-			uint32 const expectedTranquilityHealth = 4 * tranquilityTick;
-			TestHeal(player, ClassSpells::Druid::TRANQUILITY_RNK_5, 8000, expectedTranquilityHealth);
-			TEST_ASSERT(false);
-
 			// Lifebloom
 			uint32 const lifebloomTick = floor(ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_TOTAL + CalculateBH(ClassSpellsCoeff::Druid::LIFEBLOOM_HOT) / 7);
 			uint32 const lifebloomBurst = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_BURST + CalculateBH(ClassSpellsCoeff::Druid::LIFEBLOOM);
@@ -1695,6 +1695,13 @@ public:
 			uint32 const expectedLifebloomHealthCrit = 1 + 7 * lifebloomTick + lifebloomBurstCrit;
 			TC_LOG_DEBUG("test.unit_test", "Lifebloom");
 			TestHeal(player, ClassSpells::Druid::LIFEBLOOM_RNK_1, 7000, expectedLifebloomHealth, expectedLifebloomHealthCrit);
+
+			// Tranquility
+			uint32 const tranquilityTickCoeff = CalculateTranquilityCoeff(8);
+			uint32 const tranquilityBH = CalculateBH(tranquilityTickCoeff);
+			uint32 const tranquilityTick = ClassSpellsDamage::Druid::TRANQUILITY_RNK_5_TICK + tranquilityBH;
+			uint32 const expectedTranquilityHealth = 4 * tranquilityTick;
+			TestHeal(player, ClassSpells::Druid::TRANQUILITY_RNK_5, 8000, expectedTranquilityHealth);
 
 			// Regrowth HoT
 			uint32 const regrowthTick = floor(ClassSpellsDamage::Druid::REGROWTH_RNK_10_TOTAL + CalculateBH(ClassSpellsCoeff::Druid::REGROWTH_HOT) / 7);
