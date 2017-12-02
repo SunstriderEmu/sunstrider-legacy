@@ -5,7 +5,8 @@ namespace ClassSpellsCoeff
 {
 	namespace Druid
 	{
-		const float ENTANGLING_ROOTS = 0.1f;
+		// Balance
+		const float ENTANGLING_ROOTS = 1.8f;
 		const float FORCE_OF_NATURE = 0.85f;
 		const float HURRICANE = 0.128f;
 		const float INSECT_SWARM = 0.76f;
