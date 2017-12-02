@@ -20,11 +20,11 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage, wandMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage, wandMaxDamage, false);
 
 			//Test improved damage 25%
 			LearnTalent(player, Talents::Mage::WAND_SPECIALIZATION_RNK_2);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f, false);
 		}
 	};
 
@@ -104,13 +104,13 @@ public:
 			uint32 const expectedMaxHW = maxHealingWave + amplifyMagicPowerBonus * coeffHealinWave;
 
 			// Test regular
-			TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, minHealingWave, maxHealingWave);
+			TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, minHealingWave, maxHealingWave, false);
 
 			// Test improved
             LearnTalent(mage, Talents::Mage::MAGIC_ATTUNEMENT_RNK_2);
 			uint32 result = mage->CastSpell(mage, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6);
             TEST_ASSERT(result == SPELL_CAST_OK);
-			TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, expectedMinHW, expectedMaxHW);
+			TEST_DIRECT_HEAL(shaman, mage, ClassSpells::Shaman::HEALING_WAVE_RNK_12, expectedMinHW, expectedMaxHW, false);
 		}
 	};
 
@@ -366,19 +366,13 @@ public:
 			uint32 const scorchMaxDamage = 361;
 
 			Creature* dummyTarget = SpawnCreature();
-			//Test regular damage
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FIRE_BLAST_RNK_9, fireblastMinDamage, fireblastMaxDamage);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage, fireballMaxDamage);
-			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FLAMESTRIKE_RNK_7, flamestrikeMinDamage, flamestrikeMaxDamage);
-			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::MOLTEN_ARMOR_RNK_1, moltenArmorDamage);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::SCORCH_RNK_9, scorchMinDamage, scorchMaxDamage);
 
 			//Test improved damage 10%
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FIRE_BLAST_RNK_9, fireblastMinDamage * 1.1f, fireblastMaxDamage * 1.1f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage * 1.1f, fireballMaxDamage * 1.1f);
-			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FLAMESTRIKE_RNK_7, flamestrikeMinDamage * 1.1f, flamestrikeMaxDamage * 1.1f);
-			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::MOLTEN_ARMOR_RNK_1, moltenArmorDamage * 1.1f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::SCORCH_RNK_9, scorchMinDamage * 1.1f, scorchMaxDamage * 1.1f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FIRE_BLAST_RNK_9, fireblastMinDamage * 1.1f, fireblastMaxDamage * 1.1f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage * 1.1f, fireballMaxDamage * 1.1f, false);
+			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FLAMESTRIKE_RNK_7, flamestrikeMinDamage * 1.1f, flamestrikeMaxDamage * 1.1f, false);
+			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::MOLTEN_ARMOR_RNK_1, moltenArmorDamage * 1.1f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::SCORCH_RNK_9, scorchMinDamage * 1.1f, scorchMaxDamage * 1.1f, false);
 		}
 	};
 
@@ -410,7 +404,7 @@ public:
 
             Creature* dummyTarget = SpawnCreature();
             LearnTalent(player, Talents::Mage::EMPOWERED_FIREBALL_RNK_5);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage, fireballMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage, fireballMaxDamage, false);
         }
     };
 
@@ -495,11 +489,11 @@ public:
 			LearnTalent(player, Talents::Mage::PIERCING_ICE_RNK_3);
 
 			//Test improved damage 6%
-			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::BLIZZARD_RNK_7, blizzardMinDamage * 1.06f, blizzardMaxDamage * 1.06f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::CONE_OF_COLD_RNK_6, coneMinDamage * 1.06f, coneMaxDamage * 1.06f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROST_NOVA_RNK_5, novaMinDamage * 1.06f, novaMaxDamage * 1.06f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage * 1.06f, frostboltMaxDamage * 1.06f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::ICE_LANCE_RNK_1, lanceMinDamage * 1.06f, lanceMaxDamage * 1.06f);
+			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::BLIZZARD_RNK_7, blizzardMinDamage * 1.06f, blizzardMaxDamage * 1.06f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::CONE_OF_COLD_RNK_6, coneMinDamage * 1.06f, coneMaxDamage * 1.06f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROST_NOVA_RNK_5, novaMinDamage * 1.06f, novaMaxDamage * 1.06f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage * 1.06f, frostboltMaxDamage * 1.06f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::ICE_LANCE_RNK_1, lanceMinDamage * 1.06f, lanceMaxDamage * 1.06f, false);
 		}
 	};
 
@@ -534,7 +528,7 @@ public:
 			LearnTalent(player, Talents::Mage::IMPROVED_CONE_OF_COLD_RNK_3);
 
 			//Test improved damage 6%
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::CONE_OF_COLD_RNK_6, coneMinDamage * 1.35f, coneMaxDamage * 1.35f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::CONE_OF_COLD_RNK_6, coneMinDamage * 1.35f, coneMaxDamage * 1.35f, false);
 		}
 	};
 
@@ -582,11 +576,11 @@ public:
 			LearnTalent(player, Talents::Mage::ARCTIC_WINDS_RNK_5);
 
 			//Test improved damage 6%
-			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::BLIZZARD_RNK_7, blizzardMinDamage * 1.06f, blizzardMaxDamage * 1.06f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::CONE_OF_COLD_RNK_6, coneMinDamage * 1.05f, coneMaxDamage * 1.05f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROST_NOVA_RNK_5, novaMinDamage * 1.05f, novaMaxDamage * 1.05f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage * 1.05f, frostboltMaxDamage * 1.05f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::ICE_LANCE_RNK_1, lanceMinDamage * 1.05f, lanceMaxDamage * 1.05f);
+			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::BLIZZARD_RNK_7, blizzardMinDamage * 1.06f, blizzardMaxDamage * 1.06f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::CONE_OF_COLD_RNK_6, coneMinDamage * 1.05f, coneMaxDamage * 1.05f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROST_NOVA_RNK_5, novaMinDamage * 1.05f, novaMaxDamage * 1.05f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage * 1.05f, frostboltMaxDamage * 1.05f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::ICE_LANCE_RNK_1, lanceMinDamage * 1.05f, lanceMaxDamage * 1.05f, false);
 
             // TODO: test hit rating from melee and ranged attackers is reduced
 		}
@@ -621,7 +615,7 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Mage::IMPROVED_FROSTBOLT_RNK_5);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage, frostboltMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Mage::FROSTBOLT_RNK_13, frostboltMinDamage, frostboltMaxDamage, false);
 		}
 	};
 

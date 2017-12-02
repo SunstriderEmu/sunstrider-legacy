@@ -625,7 +625,7 @@ public:
 			// Immolate
 			uint32 expectedDirectImmolate = floor(ClassSpellsDamage::Warlock::IMMOLATE_RNK_9 * 1.15f + sp * ClassSpellsCoeff::Warlock::IMMOLATE);
 			uint32 expectedDotImmolate = floor(ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_DOT * 1.15f + sp * ClassSpellsCoeff::Warlock::IMMOLATE_DOT);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDirectImmolate, expectedDirectImmolate);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDirectImmolate, expectedDirectImmolate, false);
 			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDotImmolate);
 
 			// Rain of Fire
@@ -635,17 +635,17 @@ public:
 			// Incinerate
 			uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * 1.15f + sp * ClassSpellsCoeff::Warlock::INCINERATE;
 			uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * 1.15f + sp * ClassSpellsCoeff::Warlock::INCINERATE;
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax, false);
 
 			// Searing Pain
 			uint32 expectedSearingPainMin = ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MIN * 1.15f + sp * ClassSpellsCoeff::Warlock::SEARING_PAIN;
 			uint32 expectedSearingPainMax = ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MAX * 1.15f + sp * ClassSpellsCoeff::Warlock::SEARING_PAIN;
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSearingPainMin, expectedSearingPainMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSearingPainMin, expectedSearingPainMax, false);
 
 			// Soul Fire
 			uint32 expectedSoulFireMin = ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MIN * 1.15f + sp * ClassSpellsCoeff::Warlock::SOUL_FIRE;
 			uint32 expectedSoulFireMax = ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MAX * 1.15f + sp * ClassSpellsCoeff::Warlock::SOUL_FIRE;
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SOUL_FIRE_RNK_4, expectedSoulFireMin, expectedSoulFireMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SOUL_FIRE_RNK_4, expectedSoulFireMin, expectedSoulFireMax, false);
 
 			// Hellfire
 			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
@@ -687,17 +687,17 @@ public:
 
 			// Death Coil
 			uint32 expectedDeathCoil = floor(ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4 * percentage + sp * ClassSpellsCoeff::Warlock::DEATH_COIL);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoil, expectedDeathCoil);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoil, expectedDeathCoil, false);
 
 			// Shadow Bolt
 			uint32 expectedShadowBoltMin = floor(ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SHADOW_BOLT);
 			uint32 expectedShadowBoltMax = floor(ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SHADOW_BOLT);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax, false);
 
 			// TODO: Shadowburn (takes 1 soul shard per cast)
 			uint32 expectedShadowburnMin = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
 			uint32 expectedShadowburnMax = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
-			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin, expectedShadowburnMax);
+			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin, expectedShadowburnMax, false);
 
 			// Corruption
 			uint32 expectedCorruption = floor(ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::CORRUPTION);

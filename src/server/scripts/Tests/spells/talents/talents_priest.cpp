@@ -20,15 +20,15 @@ public:
 
             Creature* dummyTarget = SpawnCreature();
             //Test regular damage
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage, wandMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage, wandMaxDamage, false);
 
             //Test improved damage 5%
             LearnTalent(player, Talents::Priest::WAND_SPECIALIZATION_RNK_1);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.05f, wandMaxDamage * 1.05f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.05f, wandMaxDamage * 1.05f, false);
 
             //Test improved damage 25%
             LearnTalent(player, Talents::Priest::WAND_SPECIALIZATION_RNK_5);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::WAND, wandMinDamage * 1.25f, wandMaxDamage * 1.25f, false);
         }
     };
 
@@ -64,20 +64,20 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage, smiteMaxDamage);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage, holyFireMaxDamage);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage, smiteMaxDamage, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage, holyFireMaxDamage, false);
             TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDotDamage);
 
 			//Test improved damage 5%
 			LearnTalent(player, Talents::Priest::SEARING_LIGHT_RNK_1);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage * 1.05f, smiteMaxDamage * 1.05f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.05f, holyFireMaxDamage * 1.05f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage * 1.05f, smiteMaxDamage * 1.05f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.05f, holyFireMaxDamage * 1.05f, false);
             TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDotDamage * 1.05f);
 
 			//Test improved damage 10%
 			LearnTalent(player, Talents::Priest::SEARING_LIGHT_RNK_2);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage * 1.1f, smiteMaxDamage * 1.1f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.1f, holyFireMaxDamage * 1.1f);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage * 1.1f, smiteMaxDamage * 1.1f, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.1f, holyFireMaxDamage * 1.1f, false);
             TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDotDamage * 1.1f);
 		}
 	};

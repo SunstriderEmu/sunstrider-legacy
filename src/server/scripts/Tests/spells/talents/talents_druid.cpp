@@ -307,17 +307,12 @@ public:
 			uint32 const wrathMaxDamage = 432;
 
 			Creature* dummyTarget = SpawnCreature();
-			//Test regular damage
-
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, starfireMinDamage, starfireMaxDamage);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::MOONFIRE_RNK_12, moonfireMinDamage, moonfireMaxDamage);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, wrathMinDamage, wrathMaxDamage);
 
 			//Test improved damage 5%
 			LearnTalent(player, Talents::Druid::MOONFURY_RNK_5);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, starfireMinDamage * 1.1f, starfireMaxDamage * 1.1f);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::MOONFIRE_RNK_12, moonfireMinDamage * 1.1f, moonfireMaxDamage * 1.1f);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, wrathMinDamage * 1.1f, wrathMaxDamage * 1.1f);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, starfireMinDamage * 1.1f, starfireMaxDamage * 1.1f, false);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::MOONFIRE_RNK_12, moonfireMinDamage * 1.1f, moonfireMaxDamage * 1.1f, false);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, wrathMinDamage * 1.1f, wrathMaxDamage * 1.1f, false);
 		}
 	};
 
@@ -414,8 +409,8 @@ public:
 			uint32 const expectedWrathMinDamage = ClassSpellsDamage::Druid::WRATH_RNK_10_MIN + natureSP * (ClassSpellsCoeff::Druid::WRATH + wrathFactor);
 			uint32 const expectedWrathMaxDamage = ClassSpellsDamage::Druid::WRATH_RNK_10_MAX + natureSP * (ClassSpellsCoeff::Druid::WRATH + wrathFactor);
 
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, expectedStarfireMinDamage, expectedStarfireMaxDamage);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, expectedWrathMinDamage, expectedWrathMaxDamage);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::STARFIRE_RNK_8, expectedStarfireMinDamage, expectedStarfireMaxDamage, false);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Druid::WRATH_RNK_10, expectedWrathMinDamage, expectedWrathMaxDamage, false);
 		}
 	};
 
@@ -737,7 +732,7 @@ public:
 			// Mangle (Cat)
 			uint32 const expectedMangleMinDmg = (weaponMinDamage * 1.6f + 264) * armorFactor * savageFuryFactor;
 			uint32 const expectedMangleMaxDmg = (weaponMaxDamage * 1.6f + 264) * armorFactor * savageFuryFactor;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Druid::MANGLE_CAT_RNK_3, expectedMangleMinDmg, expectedMangleMaxDmg);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Druid::MANGLE_CAT_RNK_3, expectedMangleMinDmg, expectedMangleMaxDmg, false);
 
 			// Rake bleed
 			uint32 const expectedRakeBleed = floor(AP * 0.06f + 108) * savageFuryFactor;
@@ -745,12 +740,12 @@ public:
 
 			// Rake initial damage
 			uint32 const expectedRakeDmg = floor(AP / 100 + 78) * savageFuryFactor;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Druid::RAKE_RNK_5, expectedRakeDmg, expectedRakeDmg);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Druid::RAKE_RNK_5, expectedRakeDmg, expectedRakeDmg, false);
 
 			// Claw
 			uint32 const expectedClawMin = ClassSpellsDamage::Druid::CLAW_RNK_6 + weaponMinDamage * armorFactor * savageFuryFactor;
 			uint32 const expectedClawMax = ClassSpellsDamage::Druid::CLAW_RNK_6 + weaponMaxDamage * armorFactor * savageFuryFactor;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Druid::CLAW_RNK_6, expectedClawMin, expectedClawMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Druid::CLAW_RNK_6, expectedClawMin, expectedClawMax, false);
 		}
 	};
 
@@ -1007,19 +1002,19 @@ public:
 			// Shred
 			float const expectedShredMinDmg = (weaponMinDamage * 2.25f + 405) * armorFactor * mangleFactor;
 			float const expectedShredMaxDmg = (weaponMaxDamage * 2.25f + 405) * armorFactor * mangleFactor;
-			TEST_DIRECT_SPELL_DAMAGE(druidTestDamage, creature, ClassSpells::Druid::SHRED_RNK_7, expectedShredMinDmg, expectedShredMaxDmg);
+			TEST_DIRECT_SPELL_DAMAGE(druidTestDamage, creature, ClassSpells::Druid::SHRED_RNK_7, expectedShredMinDmg, expectedShredMaxDmg, false);
 
 			// Mangle (Cat)
 			float const expectedMangleMinDmg = weaponMinDamage * 1.6f * armorFactor + 264;
 			float const expectedMangleMaxDmg = weaponMaxDamage * 1.6f * armorFactor + 264;
-			TEST_DIRECT_SPELL_DAMAGE(druidTestDamage, creature, mangleSpellId, expectedMangleMinDmg, expectedMangleMaxDmg);
+			TEST_DIRECT_SPELL_DAMAGE(druidTestDamage, creature, mangleSpellId, expectedMangleMinDmg, expectedMangleMaxDmg, false);
 
 
 			// Bleed: Rake
 			//	Initial damage
 			CastSpell(druidWithMangle, creature, mangleSpellId);
 			float const expectedRakeDmg = (AP / 100 + 78) * mangleFactor;
-			TEST_DIRECT_SPELL_DAMAGE(druidTestDamage, creature, ClassSpells::Druid::RAKE_RNK_5, expectedRakeDmg, expectedRakeDmg);
+			TEST_DIRECT_SPELL_DAMAGE(druidTestDamage, creature, ClassSpells::Druid::RAKE_RNK_5, expectedRakeDmg, expectedRakeDmg, false);
 
 			//	Rake bleed
 			CastSpell(druidWithMangle, creature, mangleSpellId);

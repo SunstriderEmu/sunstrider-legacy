@@ -101,8 +101,8 @@ public:
 			uint32 const expectedHLMax = ClassSpellsDamage::Paladin::HOLY_LIGHT_RNK_11_MAX * 1.12f + bh * ClassSpellsCoeff::Paladin::HOLY_LIGHT;
 
 			LearnTalent(player, Talents::Paladin::HEALING_LIGHT_RNK_3);
-			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::FLASH_OF_LIGHT_RNK_7, expectedFoLMin, expectedFoLMax);
-			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::HOLY_LIGHT_RNK_11, expectedHLMin, expectedHLMax);
+			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::FLASH_OF_LIGHT_RNK_7, expectedFoLMin, expectedFoLMax, false);
+			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::HOLY_LIGHT_RNK_11, expectedHLMin, expectedHLMax, false);
 		}
 	};
 
@@ -156,7 +156,7 @@ public:
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
 
-			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4, player->GetHealth(), player->GetHealth());
+			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4, player->GetHealth(), player->GetHealth(), false);
 		}
 	};
 
@@ -735,7 +735,7 @@ public:
 			// Judgement of Righteousness
 			float const expectedJoRMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9_MIN * 1.03f;
 			float const expectedJoRMax = ClassSpellsDamage::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9_MAX * 1.03f;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9, expectedJoRMin, expectedJoRMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9, expectedJoRMin, expectedJoRMax, false);
 
 
 			// Consecration
@@ -758,31 +758,31 @@ public:
 			{
 				float const expectedExorcismMin = ClassSpellsDamage::Paladin::EXORCISM_RNK_7_MIN * 1.03f;
 				float const expectedExorcismMax = ClassSpellsDamage::Paladin::EXORCISM_RNK_7_MAX * 1.03f;
-				TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::EXORCISM_RNK_7, expectedExorcismMin, expectedExorcismMax);
+				TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::EXORCISM_RNK_7, expectedExorcismMin, expectedExorcismMax, false);
 
 				float const expectedHolyWrathMin = ClassSpellsDamage::Paladin::HOLY_WRATH_RNK_3_MIN * 1.03f;
 				float const expectedHolyWrathMax = ClassSpellsDamage::Paladin::HOLY_WRATH_RNK_3_MAX * 1.03f;
-				TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HOLY_WRATH_RNK_3, expectedHolyWrathMin, expectedHolyWrathMax);
+				TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HOLY_WRATH_RNK_3, expectedHolyWrathMin, expectedHolyWrathMax, false);
 			}
 
 			// Hammer of wrath
 			float const expectedHoWMin = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MIN * 1.03f;
 			float const expectedHoWMax = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MAX * 1.03f;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HAMMER_OF_WRATH_RNK_4, expectedHoWMin, expectedHoWMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HAMMER_OF_WRATH_RNK_4, expectedHoWMin, expectedHoWMax, false);
 
 			// Holy shock
 			float const expectedHolyShockMin = ClassSpellsDamage::Paladin::HOLY_SHOCK_RNK_5_MIN_DAMAGE * 1.03f;
 			float const expectedHolyShockMax = ClassSpellsDamage::Paladin::HOLY_SHOCK_RNK_5_MAX_DAMAGE * 1.03f;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HOLY_SHOCK_RNK_5_DMG, expectedHolyShockMin, expectedHolyShockMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HOLY_SHOCK_RNK_5_DMG, expectedHolyShockMin, expectedHolyShockMax, false);
 
 			// Judgement of Blood
 			float const expectedJoBMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_BLOOD_RNK_1_MIN * 1.03f;
 			float const expectedJoBMax = ClassSpellsDamage::Paladin::JUDGEMENT_OF_BLOOD_RNK_1_MAX * 1.03f;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_BLOOD_RNK_1, expectedJoBMin, expectedJoBMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_BLOOD_RNK_1, expectedJoBMin, expectedJoBMax, false);
 
 			// Judgement of Vengeance
 			float const expectedJoVMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_VENGEANCE_PER_STACK * 1.03f;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_VENGEANCE_RNK_1, expectedJoBMin, expectedJoVMin);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_VENGEANCE_RNK_1, expectedJoBMin, expectedJoVMin, false);
 
 			// Crusader Strike
 			EQUIP_ITEM(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
@@ -794,7 +794,7 @@ public:
 			float const crusadeTalentFactor = 1.03;
 			float const expectedCSMin = (weaponMinDamage * 1.1f) * armorFactor * crusadeTalentFactor;
 			float const expectedCSMax = (weaponMaxDamage * 1.1f) * armorFactor * crusadeTalentFactor;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::CRUSADER_STRIKE_RNK_1, expectedCSMin, expectedCSMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::CRUSADER_STRIKE_RNK_1, expectedCSMin, expectedCSMax, false);
 
 			/*
 			// Holy shield
@@ -994,7 +994,7 @@ public:
 			uint32 const weaponMaxDamage = 607 + (AP / 14 * 3.3f);
 			uint32 const expectedCSMin = weaponMinDamage * 1.1f * armorFactor;
 			uint32 const expectedCSMax = weaponMaxDamage * 1.1f * armorFactor;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::CRUSADER_STRIKE_RNK_1, expectedCSMin, expectedCSMax);
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::CRUSADER_STRIKE_RNK_1, expectedCSMin, expectedCSMax, false);
 
 			// TODO: refresh judgements
 		}

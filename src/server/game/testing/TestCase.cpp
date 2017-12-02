@@ -562,7 +562,7 @@ void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError,
     sampleSize = 500;
     allowedError = (expectedMax - expectedMin) / 25; //arbitary
 }
-void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool damage) //if !damage, then use healing
+void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage) //if !damage, then use healing
 {
     INTERNAL_TEST_ASSERT(expectedMax >= expectedMin);
     Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -577,6 +577,13 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     uint32 sampleSize;
     uint32 maxPredictionError;
     _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
+
+	float critChance = 0.0f;
+	if (crit)
+		critChance = 100.0f;
+
+	for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
+		caster->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, critChance);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -699,9 +706,6 @@ bool TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 sp
         //use only spells that hit target
         if (itr.missInfo != SPELL_MISS_NONE)
             continue;
-
-        if (itr.crit)
-            continue; //ignore crit... damage crits are affected by a whole lot of other factors so best just using regulars hit
         
         minHeal = std::min(minHeal, itr.healing);
         maxHeal = std::max(maxHeal, itr.healing);
@@ -751,9 +755,6 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
         //use only spells that hit target
         if (itr.missInfo != SPELL_MISS_NONE)
             continue;
-
-        if (itr.crit)
-            continue; //ignore crit... damage crits are affected by a whole lot of other factors so best just using regulars hit
 
         uint32 damage = itr.damageInfo.damage;
         damage += itr.damageInfo.resist;
