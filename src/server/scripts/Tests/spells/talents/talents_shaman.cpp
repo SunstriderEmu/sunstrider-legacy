@@ -1,29 +1,50 @@
 #include "../../ClassSpellsDamage.h"
 #include "../../ClassSpellsCoeff.h"
 
-class AncestralKnowledgeTest : public TestCaseScript
+class ConvectionTest : public TestCaseScript
 {
 public:
-	AncestralKnowledgeTest() : TestCaseScript("talents shaman ancestral_knowledge") { }
 
-	class AncestralKnowledgeTestImpt : public TestCase
+	ConvectionTest() : TestCaseScript("talents shaman convection") { }
+
+	class ConvectionTestImpt : public TestCase
 	{
 	public:
-		AncestralKnowledgeTestImpt() : TestCase(true) { }
+		ConvectionTestImpt() : TestCase(true) { }
+
+		void TestMana(TestPlayer* player, Unit* victim, uint32 spellId, uint32 expectedMana)
+		{
+			player->SetPower(POWER_MANA, expectedMana);
+			uint32 res = player->CastSpell(victim, spellId);
+			ASSERT_INFO("Shaman couldnt cast %u, result: %u", spellId, res);
+			TEST_ASSERT(res == SPELL_CAST_OK);
+			ASSERT_INFO("Shaman had some remaining mana after %u", spellId);
+			TEST_ASSERT(player->GetPower(POWER_MANA) == 0);
+			Wait(2000); // GCD
+		}
 
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
-			uint32 const startMana = player->GetMaxPower(POWER_MANA);
-			LearnTalent(player, Talents::Shaman::ANCESTRAL_KNOWLEDGE_RNK_5);
-			uint32 const expectedMana = startMana * 1.05f;
-			TEST_ASSERT(Between<float>(player->GetMaxPower(POWER_MANA), expectedMana - 1, expectedMana + 1));
+			Creature* creature = SpawnCreature();
+
+			uint32 const lightningBoltMana = 300;
+			uint32 const chainLightningMana = 760;
+			uint32 const earthShocMana = 535;
+			uint32 const flameShockMana = 500;
+			uint32 const frostShockMana = 525;
+
+			TestMana(player, creature, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMana);
+			TestMana(player, creature, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMana);
+			TestMana(player, creature, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShocMana);
+			TestMana(player, creature, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMana);
+			TestMana(player, creature, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMana);
 		}
 	};
 
 	std::shared_ptr<TestCase> GetTest() const override
 	{
-		return std::make_shared<AncestralKnowledgeTestImpt>();
+		return std::make_shared<ConvectionTestImpt>();
 	}
 };
 
@@ -57,30 +78,56 @@ public:
 			uint32 const flameShockMinDamage = 377;
 			uint32 const flameShockMinDoT = 420; //blazeit
 
-			// Frost Shock rank 5
+												 // Frost Shock rank 5
 			uint32 const frostShockMinDamage = 640;
 			uint32 const frostShockMaxDamage = 676;
 
 			Creature* dummyTarget = SpawnCreature();
 			//Test regular damage
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage, lightningBoltMaxDamage);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage, chainLightningMaxDamage);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage, earthShockMaxDamage);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage, flameShockMinDoT);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage, frostShockMaxDamage);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage, lightningBoltMaxDamage);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage, chainLightningMaxDamage);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage, earthShockMaxDamage);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage, flameShockMinDoT);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage, frostShockMaxDamage);
 
 			//Test improved damage 5%
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage * 1.05f, lightningBoltMaxDamage * 1.05f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage * 1.05f, chainLightningMaxDamage * 1.05f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage * 1.05f, earthShockMaxDamage * 1.05f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage * 1.05f, flameShockMinDoT * 1.05f);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage * 1.05f, frostShockMaxDamage * 1.05f);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage * 1.05f, lightningBoltMaxDamage * 1.05f);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage * 1.05f, chainLightningMaxDamage * 1.05f);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage * 1.05f, earthShockMaxDamage * 1.05f);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage * 1.05f, flameShockMinDoT * 1.05f);
+			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage * 1.05f, frostShockMaxDamage * 1.05f);
 		}
 	};
 
 	std::shared_ptr<TestCase> GetTest() const override
 	{
 		return std::make_shared<ConcussionTestImpt>();
+	}
+};
+
+class AncestralKnowledgeTest : public TestCaseScript
+{
+public:
+	AncestralKnowledgeTest() : TestCaseScript("talents shaman ancestral_knowledge") { }
+
+	class AncestralKnowledgeTestImpt : public TestCase
+	{
+	public:
+		AncestralKnowledgeTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+			uint32 const startMana = player->GetMaxPower(POWER_MANA);
+			LearnTalent(player, Talents::Shaman::ANCESTRAL_KNOWLEDGE_RNK_5);
+			uint32 const expectedMana = startMana * 1.05f;
+			TEST_ASSERT(Between<float>(player->GetMaxPower(POWER_MANA), expectedMana - 1, expectedMana + 1));
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<AncestralKnowledgeTestImpt>();
 	}
 };
 
@@ -352,11 +399,16 @@ public:
 
 void AddSC_test_talents_shaman()
 {
-	new AncestralKnowledgeTest();
+	// Total: 10/61
+	// Elemental: 2/20
+	new ConvectionTest();
 	new ConcussionTest();
+	// Enhancement: 4/21
+	new AncestralKnowledgeTest();
 	new EnhancingTotemsTest();
 	new ToughnessTest();
 	new WeaponMasteryTest();
+	// Restoration: 4/20
 	new ImprovedHealingWaveTest();
 	new TidalFocusTest();
 	new NaturesBlessingTest();
