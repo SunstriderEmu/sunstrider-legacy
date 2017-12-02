@@ -70,7 +70,7 @@ public:
     void RemoveAllEquipedItems(TestPlayer* player);
     void RemoveItem(TestPlayer* player, uint32 itemID, uint32 count);
     void LearnTalent(TestPlayer* p, uint32 spellID);
-	void CastSpell(Unit* caster, Unit* victim, uint32 spellID, uint32 expectedCode = SPELL_CAST_OK, const char* errorMsg = "Caster couldn't cast %u, error %u");
+	void CastSpell(Unit* caster, Unit* victim, uint32 spellID, uint32 expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE, const char* errorMsg = "Caster couldn't cast %u, error %u");
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     float CalcChance(uint32 iterations, const std::function<bool()>& f);
     ///!\ This is VERY slow, do not abuse of this function. Randomize talents, spells, stuff for this player

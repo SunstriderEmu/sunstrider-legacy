@@ -114,7 +114,7 @@ public:
 			Wait(5000);
 			ASSERT_INFO("Druid has not Nature's Grasp aura");
 			TEST_ASSERT(player->HasAura(ClassSpells::Druid::NATURES_GRASP_RNK_7));
-			warrior->Attack(player, TRIGGERED_FULL_MASK);
+			warrior->Attack(player, true);
 			Wait(1500);
 			ASSERT_INFO("Druid still has aura");
 			TEST_ASSERT(!player->HasAura(ClassSpells::Druid::NATURES_GRASP_RNK_7));
@@ -568,12 +568,12 @@ public:
 		{
 			TestPlayer* player = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
-			RemoveAllItems(player);
+			RemoveAllEquipedItems(player);
 
 			uint32 const startingArmorViaAgi = player->GetStat(STAT_AGILITY) * 2;
 			uint32 const startingArmor = player->GetArmor() - startingArmorViaAgi;
 
-			EquipItem(player, 34392); // Demontooth Shoulderpads - 514 Armor (140 hidden) - 38 Agi
+			EQUIP_ITEM(player, 34392); // Demontooth Shoulderpads - 514 Armor (140 hidden) - 38 Agi
 
 			uint32 const itemArmor = 514 + 140;
 			uint32 const itemAgi = 38 * 2;
@@ -721,7 +721,7 @@ public:
 			Creature* creature = SpawnCreature();
 			creature->DisableRegeneration(true);
 
-			EquipItem(player, 30883); // Stanchion of Primal Instinct - 136-293 damage
+			EQUIP_ITEM(player, 30883); // Stanchion of Primal Instinct - 136-293 damage
 			LearnTalent(player, Talents::Druid::SAVAGE_FURY_RNK_2);
 
 			uint32 res = player->CastSpell(player, ClassSpells::Druid::CAT_FORM_RNK_1);
@@ -780,7 +780,7 @@ public:
 			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawnPosition);
 			TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawnPosition);
 
-			EquipItem(rogue, 34211); // S4 Chest
+			EQUIP_ITEM(rogue, 34211); // S4 Chest
 			int32 const expectedRogueArmor = rogue->GetArmor() - 610;
 
 			// Only cast in Bear or Cat form
@@ -949,7 +949,7 @@ public:
 
 			for (uint32 i = 0; i < sampleSize; i++)
 			{
-				uint32 result = caster->CastSpell(target, spellID, true);
+				uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_MASK);
 				ASSERT_INFO("Spell casting failed with reason %u", result);
 				TEST_ASSERT(result == SPELL_CAST_OK);
 				Aura* aura = target->GetAura(spellID, EFFECT_1);
@@ -1043,8 +1043,8 @@ public:
 			spawnPosition.MoveInFront(_location, 3.0f);
 			Creature* creature = SpawnCreatureWithPosition(spawnPosition, 17); // 0 armor
 
-			EquipItem(druidWithMangle, 30883); // Pillar of Ferocity - 136-293 damage
-			EquipItem(druidTestDamage, 30883); // Pillar of Ferocity - 136-293 damage
+			EQUIP_ITEM(druidWithMangle, 30883); // Pillar of Ferocity - 136-293 damage
+			EQUIP_ITEM(druidTestDamage, 30883); // Pillar of Ferocity - 136-293 damage
 
 			LearnTalent(druidWithMangle, Talents::Druid::MANGLE_RNK_1);
 			TEST_ASSERT(druidWithMangle->HasSpell(ClassSpells::Druid::MANGLE_BEAR_RNK_1));
@@ -1676,7 +1676,7 @@ public:
 			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
 			player->DisableRegeneration(true);
 
-			EquipItem(player, 34335); // Hammer of Sanctification - 550 SP
+			EQUIP_ITEM(player, 34335); // Hammer of Sanctification - 550 SP
 
 			LearnTalent(player, Talents::Druid::EMPOWERED_REJUVENATION_RNK_5);
 

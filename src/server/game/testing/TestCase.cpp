@@ -526,9 +526,9 @@ void TestCase::LearnTalent(TestPlayer* p, uint32 spellID)
     p->LearnSpell(spellID, false);
 }
 
-void TestCase::CastSpell(Unit* caster, Unit* victim, uint32 spellID, uint32 expectedCode, const char* errorMsg)
+void TestCase::CastSpell(Unit* caster, Unit* victim, uint32 spellID, uint32 expectedCode, TriggerCastFlags triggeredFlags, const char* errorMsg)
 {
-	uint32 res = caster->CastSpell(victim, spellID);
+	uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
 	INTERNAL_ASSERT_INFO(errorMsg, spellID, res);
 	INTERNAL_TEST_ASSERT(res == expectedCode);
 }
