@@ -191,8 +191,10 @@ void TestCase::_TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpe
 void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 castTime, Powers powerType, uint32 expectedPowerCost)
 {
 	caster->SetPower(powerType, expectedPowerCost);
+	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
 	CastSpell(caster, target, castSpell);
-	Wait(castTime + 500);
+	Wait(castTime + 100);
+	INTERNAL_ASSERT_INFO("Caster has %u power remaining after spell %u", caster->GetPower(powerType), castSpell);
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == 0);
 }
 

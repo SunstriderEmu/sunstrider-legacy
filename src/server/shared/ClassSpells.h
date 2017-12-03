@@ -1885,6 +1885,7 @@ namespace ClassSpells
             HURRICANE_RNK_2 = 17401,
             HURRICANE_RNK_3 = 17402,
             HURRICANE_RNK_4 = 27012,
+			HURRICANE_RNK_4_PROC = 42230,
             INNERVATE_RNK_1 = 29166,
             INSECT_SWARM_RNK_1 = 5570,
             INSECT_SWARM_RNK_2 = 24974,

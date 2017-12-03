@@ -357,6 +357,138 @@ public:
 	}
 };
 
+class HurricaneTest : public TestCaseScript
+{
+public:
+	HurricaneTest() : TestCaseScript("spells druid hurricane") { }
+
+	class HurricaneTestImpt : public TestCase
+	{
+	public:
+		HurricaneTestImpt() : TestCase(true) { }
+
+		void CastHurricane(TestPlayer* druid, Unit* target)
+		{
+			druid->RemoveAllSpellCooldown();
+			CastSpell(druid, target, ClassSpells::Druid::HURRICANE_RNK_4, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+		}
+
+		void Test() override
+		{
+			// Init barkskin druid
+			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+
+			// Init rogue
+			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+
+			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			uint32 staffSP = 266;
+			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
+
+			druid->DisableRegeneration(true);
+
+			// Mana cost
+			uint32 const expectedHurricaneMana = 1905;
+			TEST_POWER_COST(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, 1500, POWER_MANA, expectedHurricaneMana);
+
+			// Duration & CD & +25% melee speed
+
+			uint32 rogueAttackSpeed = rogue->GetAttackTimer(BASE_ATTACK);
+			CastHurricane(druid, rogue);
+			SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(ClassSpells::Druid::HURRICANE_RNK_4);
+			TEST_ASSERT(spellInfo != nullptr);
+			ASSERT_INFO("Duration: %i", spellInfo->GetDuration());
+			Wait(100);
+			TEST_ASSERT(spellInfo->GetDuration() == 10 * SECOND *  IN_MILLISECONDS);
+			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::HURRICANE_RNK_4) == 1 * MINUTE);
+			uint32 expectedAttackSpeed = rogueAttackSpeed * 1.25f;
+			ASSERT_INFO("WS: %u, expected:%u", rogue->GetAttackTimer(BASE_ATTACK), expectedAttackSpeed);
+			TEST_ASSERT(rogue->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
+
+			// Damage
+			float const hurricaneSpellCoeff = 10 / 3.5 / 2 / 10;
+			uint32 const hurricaneBonusSP = hurricaneSpellCoeff * staffSP;
+			uint32 const expectedHurricaneDmg = ClassSpellsDamage::Druid::HURRICANE_RNK_4_TICK + hurricaneBonusSP;
+			TEST_CHANNEL_DAMAGE(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, ClassSpells::Druid::HURRICANE_RNK_4_PROC, 10, expectedHurricaneDmg);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<HurricaneTestImpt>();
+	}
+};
+
+class InnervateTest : public TestCaseScript
+{
+public:
+	InnervateTest() : TestCaseScript("spells druid innervate") { }
+
+	class InnervateTestImpt : public TestCase
+	{
+	public:
+		InnervateTestImpt() : TestCase(true) { }
+
+		float CalculateInnervateSpiritRegen(TestPlayer* player)
+		{
+			uint32 level = player->GetLevel();
+			uint32 pclass = player->GetClass();
+
+			if (level>GT_MAX_LEVEL)
+				level = GT_MAX_LEVEL;
+
+			GtRegenMPPerSptEntry const *moreRatio = sGtRegenMPPerSptStore.LookupEntry((pclass - 1)*GT_MAX_LEVEL + level - 1);
+			TEST_ASSERT(moreRatio != nullptr);
+
+			float const innervateFactor = 5.0f;
+			float const spirit = player->GetStat(STAT_SPIRIT) * innervateFactor;
+			float const regen = spirit * moreRatio->ratio;
+			return regen;
+		}
+
+		void Test() override
+		{
+			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+
+			uint32 totalMana = 10000;
+			druid->SetMaxPower(POWER_MANA, totalMana);
+
+			uint32 const regenTick = 2.0f * sqrt(druid->GetStat(STAT_INTELLECT)) * druid->OCTRegenMPPerSpirit();
+			uint32 const expectedInnervateRegenTick = 2.0f * sqrt(druid->GetStat(STAT_INTELLECT)) * CalculateInnervateSpiritRegen(druid);
+
+			// Power cost
+			uint32 expectedInnervateMana = 94;
+			druid->SetPower(POWER_MANA, expectedInnervateMana);
+			CastSpell(druid, druid, ClassSpells::Druid::INNERVATE_RNK_1);
+			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
+
+			// Duration & CD
+			TEST_ASSERT(druid->HasAura(ClassSpells::Druid::INNERVATE_RNK_1));
+			Aura* aura = druid->GetAura(ClassSpells::Druid::INNERVATE_RNK_1, EFFECT_0);
+			TEST_ASSERT(aura != nullptr);
+			TEST_ASSERT(aura->GetAuraDuration() == 20 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::INNERVATE_RNK_1) == 6 * MINUTE);
+
+			// Mana regen
+			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
+			Wait(18500);
+			uint32 expectedMana = 10 * expectedInnervateRegenTick;
+			ASSERT_INFO("Mana: %u, expected: %u", druid->GetPower(POWER_MANA), expectedMana);
+			TEST_ASSERT(druid->GetPower(POWER_MANA) == expectedMana);
+			Wait(2000);
+			TEST_ASSERT(!druid->HasAura(ClassSpells::Druid::INNERVATE_RNK_1));
+			expectedMana = 10 * expectedInnervateRegenTick + regenTick;
+			ASSERT_INFO("Mana: %u, expected: %u", druid->GetPower(POWER_MANA), expectedMana);
+			TEST_ASSERT(druid->GetPower(POWER_MANA) == expectedMana);
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<InnervateTestImpt>();
+	}
+};
+
 class StarfireTest : public TestCaseScript
 {
 public:
@@ -460,6 +592,8 @@ void AddSC_test_spells_druid()
 	new EntanglingRootsTest();
 	new FaerieFireTest();
 	new HibernateTest();
+	new HurricaneTest();
+	new InnervateTest();
 	new StarfireTest();
 	new WrathTest();
 }
