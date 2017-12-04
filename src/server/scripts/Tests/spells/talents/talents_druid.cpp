@@ -129,6 +129,49 @@ public:
 	}
 };
 
+class InsectSwarmTest : public TestCaseScript
+{
+public:
+	InsectSwarmTest() : TestCaseScript("talents druid insect_swarm") { }
+
+	class InsectSwarmTestImpt : public TestCase
+	{
+	public:
+		InsectSwarmTestImpt() : TestCase(true) { }
+
+		void Test() override
+		{
+			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+			Creature* creature = SpawnCreature();
+
+			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			druid->DisableRegeneration(true);
+
+			uint32 staffSP = 266;
+			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
+
+			// Mana cost
+			uint32 const expectedInsectSwarmMana = 175;
+			TEST_POWER_COST(druid, creature, ClassSpells::Druid::INSECT_SWARM_RNK_6, 1500, POWER_MANA, expectedInsectSwarmMana);
+
+			// Spell coefficient
+			float const wrathSpellCoeff = 12.0f / 15.0f;
+			uint32 const wrathBonusSP = wrathSpellCoeff * staffSP;
+
+			// Damage
+			uint32 const expectedInsectSwarmTotalDmg = ClassSpellsDamage::Druid::INSECT_SWARM_RNK_6_TOTAL + wrathBonusSP;
+			TEST_DOT_DAMAGE(druid, creature, ClassSpells::Druid::INSECT_SWARM_RNK_6, expectedInsectSwarmTotalDmg);
+
+			// TODO: -2% hit chance
+		}
+	};
+
+	std::shared_ptr<TestCase> GetTest() const override
+	{
+		return std::make_shared<InsectSwarmTestImpt>();
+	}
+};
+
 class NaturesReachTest : public TestCaseScript
 {
 public:
@@ -1733,10 +1776,11 @@ public:
 
 void AddSC_test_talents_druid()
 {
-	// Total: 29/62
-	// Balance: 8/21
+	// Total: 30/62
+	// Balance: 9/21
 	new StarlightWrathTest();
 	new ImprovedNaturesGraspTest();
+	new InsectSwarmTest();
 	new NaturesReachTest();
 	new LunarGuidanceTest();
 	new MoonglowTest();
