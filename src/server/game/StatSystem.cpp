@@ -729,12 +729,22 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
 
     if (IsInFeralForm()) // check if player is druid and in cat or bear forms
     {
-        uint8 lvl = GetLevel();
-        if (lvl > 60)
-            lvl = 60;
+        uint8 lvl = std::min(GetLevel(), uint32(60)); //not 100% sure about this but it seems feral damage from vanilla to wotlk has not changed
+        //sunstrider formula:
+        //exact for cat lvl 70 at least, regeverse engeneered from videos and screenshots, https://docs.google.com/spreadsheets/d/1zcB4S_1186JVIaJhPU0tPiJF8Bjje5BJm5lPMtwHkMc
+        //some data from here: https://www.youtube.com/watch?v=uK8Ufk9wsc4 (mind the halaa +5% buff)
+        //Also needs more data for level scaling
+        float const baseDps = 14 + lvl * 0.5f; //This is an out of hat formula to match the correct cat 44 base damage at lvl 60/70 and ~24 bear at lvl 18.
+        float const variance = 0.5f;
+        weaponMinDamage = baseDps * attackPowerMod;
+        weaponMaxDamage = baseDps * (1.0f + variance) * attackPowerMod;
 
+        //Needs more data for bear, I'm using the same formula as for cat for now
+        //from https://www.youtube.com/watch?v=U6lVRkJlTzI&feature=youtu.be&t=31s : lvl 18 druid, has 92 ap, 40 min, 53 max
+        /* Old TC formula // Proven to be wrong by data
         weaponMinDamage = lvl * 0.85f * attackPowerMod;
         weaponMaxDamage = lvl * 1.25f * attackPowerMod;
+        */
     }
     else if (!CanUseAttackType(attType)) // check if player not in form but still can't use (disarm case)
     {
