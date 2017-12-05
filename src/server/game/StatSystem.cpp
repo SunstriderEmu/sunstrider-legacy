@@ -734,7 +734,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
         //exact for cat lvl 70 at least, regeverse engeneered from videos and screenshots, https://docs.google.com/spreadsheets/d/1zcB4S_1186JVIaJhPU0tPiJF8Bjje5BJm5lPMtwHkMc
         //some data from here: https://www.youtube.com/watch?v=uK8Ufk9wsc4 (mind the halaa +5% buff)
         //Also needs more data for level scaling
-        float const baseDps = 14 + lvl * 0.5f; //This is an out of hat formula to match the correct cat 44 base damage at lvl 60/70 and ~24 bear at lvl 18.
+        float const baseDps = 14 + lvl * 0.5f; //This is an out of hat formula to match the correct cat 44 base dps at lvl 60/70 and ~24 bear dps at lvl 18.
         float const variance = 0.5f;
         weaponMinDamage = baseDps * attackPowerMod;
         weaponMaxDamage = baseDps * (1.0f + variance) * attackPowerMod;
