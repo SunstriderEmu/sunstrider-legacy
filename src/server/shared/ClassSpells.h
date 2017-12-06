@@ -2048,6 +2048,7 @@ namespace ClassSpells
 
             // Restoration
             ABOLISH_POISON_RNK_1 = 2893,
+            CURE_POISON_RNK_1 = 8946,
             GIFT_OF_THE_WILD_RNK_1 = 21849,
 			GIFT_OF_THE_WILD_RNK_2 = 21850,
 			GIFT_OF_THE_WILD_RNK_3 = 26991,

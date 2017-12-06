@@ -114,6 +114,8 @@ namespace ClassSpellsDamage
 			RAKE_RNK_5 = 78,
 			RAKE_RNK_5_BLEED = 108,
 			RAVAGE_RNK_5 = 514,
+            SHRED_RNK_7 = 405,
+            SWIPE_RNK_6 = 84,
 
 			// Restoration
 			HEALING_TOUCH_RNK_1_MIN = 40,

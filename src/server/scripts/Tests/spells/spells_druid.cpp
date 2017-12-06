@@ -1483,6 +1483,485 @@ public:
 	}
 };
 
+class ShredTest : public TestCaseScript
+{
+public:
+
+    ShredTest() : TestCaseScript("spells druid shred") { }
+
+    class ShredTestImpt : public TestCase
+    {
+    public:
+        ShredTestImpt() : TestCase(true) { }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            Creature* inFront = SpawnCreature();
+
+            Position spawnPosition(_location);
+            spawnPosition.MoveInFront(_location, 3.0f);
+            Creature* creature = SpawnCreatureWithPosition(spawnPosition);
+
+            EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+
+            // Must be behind & in cat form
+            CastSpell(druid, inFront, ClassSpells::Druid::SHRED_RNK_7, SPELL_FAILED_NOT_BEHIND);
+            CastSpell(druid, creature, ClassSpells::Druid::SHRED_RNK_7, SPELL_FAILED_ONLY_SHAPESHIFT);
+
+            // Cat form
+            CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+
+            // Energy cost
+            uint32 const expectedShredEnergy = 60;
+            TEST_POWER_COST(druid, creature, ClassSpells::Druid::SHRED_RNK_7, POWER_ENERGY, expectedShredEnergy);
+
+            // Combo
+            TEST_ASSERT(druid->GetComboPoints(creature) == 1);
+
+            // Damage
+            uint32 const level = 60;
+            float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
+            float const catAttackSpeed = 1.0f;
+            uint32 const catMinBaseDamage = 14 + level * 0.5f;
+            uint32 const catMaxBaseDamage = catMinBaseDamage * 1.5f;
+            float const shredFactor = 2.25f;
+            uint32 const weaponMinDamage = ((catMinBaseDamage + AP / 14) * shredFactor + ClassSpellsDamage::Druid::SHRED_RNK_7) * catAttackSpeed;
+            uint32 const weaponMaxDamage = ((catMaxBaseDamage + AP / 14) * shredFactor + ClassSpellsDamage::Druid::SHRED_RNK_7) * catAttackSpeed;
+            uint32 const expectedShredMin = weaponMinDamage * armorFactor;
+            uint32 const expectedShredMax = weaponMaxDamage * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::SHRED_RNK_7, expectedShredMin, expectedShredMax, false);
+
+            uint32 const expectedShredCritMin = weaponMinDamage * 2.0f * armorFactor;
+            uint32 const expectedShredCritMax = weaponMaxDamage * 2.0f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::SHRED_RNK_7, expectedShredCritMin, expectedShredCritMax, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShredTestImpt>();
+    }
+};
+
+class SwipeTest : public TestCaseScript
+{
+public:
+
+    SwipeTest() : TestCaseScript("spells druid swipe") { }
+
+    class SwipeTestImpt : public TestCase
+    {
+    public:
+        SwipeTestImpt() : TestCase(true) { }
+
+        void Test() override
+        {
+            /*
+                Bugged: hack in SpellEffects.cpp with 0.08f factor on AP
+            */
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+
+            Position spawn3m(_location);
+            spawn3m.MoveInFront(_location, 3.0f);
+            Creature* creature1 = SpawnCreatureWithPosition(spawn3m);
+            Creature* creature2 = SpawnCreatureWithPosition(spawn3m);
+            Creature* creature3 = SpawnCreatureWithPosition(spawn3m);
+
+            uint32 const startHealth = creature1->GetHealth();
+            TEST_ASSERT(creature2->GetHealth() == startHealth);
+            TEST_ASSERT(creature3->GetHealth() == startHealth);
+
+            uint32 const armor = creature1->GetArmor();
+            TEST_ASSERT(creature2->GetArmor() == armor);
+            TEST_ASSERT(creature3->GetArmor() == armor);
+
+
+            EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+            CastSpell(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+
+            // Rage cost
+            uint32 const expectedSwipeRage = 20 * 10;
+            TEST_POWER_COST(druid, creature1, ClassSpells::Druid::SWIPE_RNK_6, POWER_RAGE, expectedSwipeRage);
+
+            // Shapeshift
+            druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
+            CastSpell(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+
+            // Damage
+            uint32 const level = 60;
+            float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (armor / (armor + 10557.5));
+            float const swipeFactor = 0.07f;
+            uint32 const weaponDamage = ClassSpellsDamage::Druid::SWIPE_RNK_6 + AP * swipeFactor;
+            uint32 const expectedSwipe = weaponDamage * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(druid, creature1, ClassSpells::Druid::SWIPE_RNK_6, expectedSwipe, expectedSwipe, false);
+
+            uint32 const expectedSwipeCrit = weaponDamage * 1.5f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(druid, creature1, ClassSpells::Druid::SWIPE_RNK_6, expectedSwipeCrit, expectedSwipeCrit, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SwipeTestImpt>();
+    }
+};
+
+class TigersFuryTest : public TestCaseScript
+{
+public:
+
+    TigersFuryTest() : TestCaseScript("spells druid tigers_fury") { }
+
+    class TigersFuryTestImpt : public TestCase
+    {
+    public:
+        TigersFuryTestImpt() : TestCase(true) { }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            Creature* inFront = SpawnCreature();
+
+            Position spawnPosition(_location);
+            spawnPosition.MoveInFront(_location, 3.0f);
+            Creature* creature = SpawnCreatureWithPosition(spawnPosition);
+
+            EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+
+            // Must be in cat form
+            CastSpell(druid, creature, ClassSpells::Druid::TIGERS_FURY_RNK_4, SPELL_FAILED_ONLY_SHAPESHIFT);
+
+            // Cat form
+            CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+
+            // Energy cost
+            uint32 const expectedTigersFuryEnergy = 30;
+            TEST_POWER_COST(druid, creature, ClassSpells::Druid::TIGERS_FURY_RNK_4, POWER_ENERGY, expectedTigersFuryEnergy);
+
+            // Cooldown
+            TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::TIGERS_FURY_RNK_4) == 1 * SECOND);
+
+            // Aura
+            Aura* aura = druid->GetAura(ClassSpells::Druid::TIGERS_FURY_RNK_4, EFFECT_0);
+            TEST_ASSERT(aura != nullptr);
+            TEST_ASSERT(aura->GetAuraDuration() == 6 * SECOND * IN_MILLISECONDS);
+
+            // Damage
+            uint32 const level = 60;
+            float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
+            float const catAttackSpeed = 1.0f;
+            uint32 const tigersFuryBonus = 40;
+            uint32 const catMinBaseDamage = 14 + level * 0.5f + tigersFuryBonus;
+            uint32 const catMaxBaseDamage = catMinBaseDamage * 1.5f;
+            float const shredFactor = 2.25f;
+            uint32 const weaponMinDamage = ((catMinBaseDamage + AP / 14) * shredFactor + ClassSpellsDamage::Druid::SHRED_RNK_7) * catAttackSpeed;
+            uint32 const weaponMaxDamage = ((catMaxBaseDamage + AP / 14) * shredFactor + ClassSpellsDamage::Druid::SHRED_RNK_7) * catAttackSpeed;
+            uint32 const expectedTigersFuryMin = weaponMinDamage * armorFactor;
+            uint32 const expectedTigersFuryMax = weaponMaxDamage * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::SHRED_RNK_7, expectedTigersFuryMin, expectedTigersFuryMax, false);
+
+            uint32 const expectedTigersFuryCritMin = weaponMinDamage * 2.0f * armorFactor;
+            uint32 const expectedTigersFuryCritMax = weaponMaxDamage * 2.0f * armorFactor;
+            CastSpell(druid, druid, ClassSpells::Druid::TIGERS_FURY_RNK_4, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::SHRED_RNK_7, expectedTigersFuryCritMin, expectedTigersFuryCritMax, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<TigersFuryTestImpt>();
+    }
+};
+
+class AbolishPoisonTest : public TestCaseScript
+{
+public:
+    AbolishPoisonTest() : TestCaseScript("spells druid abolish_poison") { }
+
+    class AbolishPoisonTestImpt : public TestCase
+    {
+    public:
+        AbolishPoisonTestImpt() : TestCase(true) { }
+
+        void TestDispelPoison(TestPlayer* victim, uint32 poison1, uint32 poison2, uint32 poison3, int8 count)
+        {
+            ASSERT_INFO("TestDispelPoison maximum trials reached");
+            TEST_ASSERT(count < 10);
+            count++;
+
+            /*
+            http://wowwiki.wikia.com/wiki/Abolish_Poison?oldid=1431643
+            Poisons are last in, first out
+            It should be dispelled poison3 > poison2 > poison1
+            */
+            ASSERT_INFO("Test fail: wasnt able to dispel 3 debuffs within 8secs");
+            TEST_ASSERT(!victim->HasAura(ClassSpells::Druid::ABOLISH_POISON_RNK_1));
+
+            if (victim->HasAura(poison3))
+            {
+                TEST_ASSERT(victim->HasAura(poison2));
+                TEST_ASSERT(victim->HasAura(poison1));
+                Wait(2000); // wait for next tick
+                TestDispelPoison(victim, poison1, poison2, poison3, count);
+            }
+            else
+            {
+                if (victim->HasAura(poison2))
+                {
+                    TEST_ASSERT(victim->HasAura(poison1));
+                    Wait(2000); // wait for next tick
+                    TestDispelPoison(victim, poison1, poison2, poison3, count);
+                }
+                else
+                {
+                    if (victim->HasAura(poison1))
+                    {
+                        Wait(2000); // wait for next tick
+                        TestDispelPoison(victim, poison1, poison2, poison3, count);
+                    }
+                }
+            }
+        }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            // setup
+            druid->DisableRegeneration(true);
+            uint32 const WOUND_POISON_V = 27189; // 15s
+            uint32 const MIND_NUMBING_POISON_III = 11398; // 14s
+            uint32 const DEADLY_POISON_VII = 27187; // 12s
+            warrior->AddAura(WOUND_POISON_V, warrior);
+            Wait(1);
+            warrior->AddAura(MIND_NUMBING_POISON_III, warrior);
+            Wait(1);
+            warrior->AddAura(DEADLY_POISON_VII, warrior);
+            Wait(1);
+
+            // Mana cost
+            uint32 const expectedAbolishPoisonMana = 308;
+            TEST_POWER_COST(druid, warrior, ClassSpells::Druid::ABOLISH_POISON_RNK_1, POWER_MANA, expectedAbolishPoisonMana);
+
+            // Aura duration
+            Aura* aura = warrior->GetAura(ClassSpells::Druid::ABOLISH_POISON_RNK_1, EFFECT_0);
+            TEST_ASSERT(aura != nullptr);
+            TEST_ASSERT(aura->GetAuraDuration() == 8 * SECOND * IN_MILLISECONDS);
+
+            Wait(500);
+            int8 count = 0;
+            TestDispelPoison(warrior, WOUND_POISON_V, MIND_NUMBING_POISON_III, DEADLY_POISON_VII, count);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<AbolishPoisonTestImpt>();
+    }
+};
+
+class CurePoisonTest : public TestCaseScript
+{
+public:
+    CurePoisonTest() : TestCaseScript("spells druid cure_poison") { }
+
+    class CurePoisonTestImpt : public TestCase
+    {
+    public:
+        CurePoisonTestImpt() : TestCase(true) { }
+
+        void TestDispelPoison(TestPlayer* victim, uint32 poison1, uint32 poison2, uint32 poison3, int8 count)
+        {
+            ASSERT_INFO("TestDispelPoison maximum trials reached");
+            TEST_ASSERT(count < 20);
+            count++;
+
+            /*
+                http://wowwiki.wikia.com/wiki/Abolish_Poison?oldid=1431643
+                Poisons are last in, first out
+                It should be dispelled poison3 > poison2 > poison1
+            */
+            CastSpell(victim, victim, ClassSpells::Druid::CURE_POISON_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+
+            if (victim->HasAura(poison3))
+            {
+                TEST_ASSERT(victim->HasAura(poison2));
+                TEST_ASSERT(victim->HasAura(poison1));
+                TestDispelPoison(victim, poison1, poison2, poison3, count);
+            }
+            else
+            {
+                if (victim->HasAura(poison2))
+                {
+                    TEST_ASSERT(victim->HasAura(poison1));
+                    TestDispelPoison(victim, poison1, poison2, poison3, count);
+                }
+                else
+                {
+                    if (victim->HasAura(poison1))
+                        TestDispelPoison(victim, poison1, poison2, poison3, count);
+                }
+            }
+        }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            // setup
+            druid->DisableRegeneration(true);
+            uint32 const WOUND_POISON_V = 27189; // 15s
+            uint32 const MIND_NUMBING_POISON_III = 11398; // 14s
+            uint32 const DEADLY_POISON_VII = 27187; // 12s
+            warrior->AddAura(WOUND_POISON_V, warrior);
+            Wait(1);
+            warrior->AddAura(MIND_NUMBING_POISON_III, warrior);
+            Wait(1);
+            warrior->AddAura(DEADLY_POISON_VII, warrior);
+            Wait(1);
+
+            // Mana cost
+            uint32 const expectedCurePoisonMana = 308;
+            TEST_POWER_COST(druid, warrior, ClassSpells::Druid::CURE_POISON_RNK_1, POWER_MANA, expectedCurePoisonMana);
+
+            int8 count = 0;
+            TestDispelPoison(warrior, WOUND_POISON_V, MIND_NUMBING_POISON_III, DEADLY_POISON_VII, count);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CurePoisonTestImpt>();
+    }
+};
+
+class GiftOfTheWildTest : public TestCaseScript
+{
+public:
+    GiftOfTheWildTest() : TestCaseScript("spells druid gift_of_the_wild") { }
+
+    class GiftOfTheWildTestImpt : public TestCase
+    {
+    public:
+        GiftOfTheWildTestImpt() : TestCase(true) { }
+
+        void TestOfTheWild(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint8 statBonus, uint8 resistanceBonus, uint16 armorBonus, uint32 reagentId)
+        {
+            uint32 const expectedArmor      = victim->GetArmor() + armorBonus + statBonus * 2; //also add armor related to agility increase
+            uint32 const expectedAgi        = victim->GetStat(STAT_AGILITY) + statBonus;
+            uint32 const expectedInt        = victim->GetStat(STAT_INTELLECT) + statBonus;
+            uint32 const expectedSpi        = victim->GetStat(STAT_SPIRIT) + statBonus;
+            uint32 const expectedSta        = victim->GetStat(STAT_STAMINA) + statBonus;
+            uint32 const expectedStr        = victim->GetStat(STAT_STRENGTH) + statBonus;
+            uint32 const expectedResArcane  = victim->GetResistance(SPELL_SCHOOL_ARCANE) + resistanceBonus;
+            uint32 const expectedResFire    = victim->GetResistance(SPELL_SCHOOL_FIRE) + resistanceBonus;
+            uint32 const expectedResFrost   = victim->GetResistance(SPELL_SCHOOL_FROST) + resistanceBonus;
+            uint32 const expectedResNature  = victim->GetResistance(SPELL_SCHOOL_NATURE) + resistanceBonus;
+            uint32 const expectedResShadow  = victim->GetResistance(SPELL_SCHOOL_SHADOW) + resistanceBonus;
+
+            // Reagent & mana cost
+            caster->AddItem(reagentId, 1);
+            TEST_ASSERT(caster->HasItemCount(reagentId, 1, false));
+            TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
+            TEST_ASSERT(caster->GetItemCount(reagentId, false) == 0);
+
+            // Aura duration
+            ASSERT_INFO("Victim doesnt have aura %u", spellId);
+            TEST_ASSERT(victim->HasAura(spellId));
+            Aura* aura = victim->GetAura(spellId, EFFECT_0);
+            TEST_ASSERT(aura != nullptr);
+            TEST_ASSERT(aura->GetAuraDuration() == 1 * HOUR * IN_MILLISECONDS);
+
+            // Stats, resistances & armor
+            TEST_ASSERT(Between<uint32>(victim->GetArmor(), expectedArmor - 1, expectedArmor + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetStat(STAT_AGILITY), expectedAgi - 1, expectedAgi + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetStat(STAT_INTELLECT), expectedInt - 1, expectedInt + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetStat(STAT_SPIRIT), expectedSpi - 1, expectedSpi + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetStat(STAT_STAMINA), expectedSta - 1, expectedSta + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetStat(STAT_STRENGTH), expectedStr - 1, expectedStr + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetResistance(SPELL_SCHOOL_ARCANE), expectedResArcane - 1, expectedResArcane + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetResistance(SPELL_SCHOOL_FIRE), expectedResFire - 1, expectedResFire + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetResistance(SPELL_SCHOOL_FROST), expectedResFrost - 1, expectedResFrost + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetResistance(SPELL_SCHOOL_NATURE), expectedResNature - 1, expectedResNature + 1));
+            TEST_ASSERT(Between<uint32>(victim->GetResistance(SPELL_SCHOOL_SHADOW), expectedResShadow - 1, expectedResShadow + 1));
+
+            // Reset for next test
+            victim->RemoveAurasDueToSpell(spellId);
+        }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+
+            // Reagents
+            uint32 const WILD_BERRIES   = 17021;
+            uint32 const WILD_THONROOT  = 17026;
+            uint32 const WILD_QUILLVINE = 22148;
+
+            TestOfTheWild(druid, druid, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_1, 900, 10, 15, 240, WILD_BERRIES);
+            TestOfTheWild(druid, druid, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_2, 1200, 12, 20, 285, WILD_THONROOT);
+            TestOfTheWild(druid, druid, ClassSpells::Druid::GIFT_OF_THE_WILD_RNK_3, 1515, 14, 25, 340, WILD_QUILLVINE);
+
+            // TODO: group
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<GiftOfTheWildTestImpt>();
+    }
+};
+
+class HealingTouchTest : public TestCaseScript
+{
+public:
+    HealingTouchTest() : TestCaseScript("spells druid healing_touch") { }
+
+    class HealingTouchTestImpt : public TestCase
+    {
+    public:
+        HealingTouchTestImpt() : TestCase(true) { }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+
+            EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
+            druid->DisableRegeneration(true);
+
+            uint32 maceBH = 550;
+            TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
+
+            // Mana cost
+            uint32 const expectedHealingTouchMana = 935;
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, POWER_MANA, expectedHealingTouchMana);
+
+            // Spell coefficient
+            float const healingTouchCastTIme = 3.5f;
+            float const healingTouchSpellCoeff = healingTouchCastTIme / 3.5f;
+            uint32 const healingTouchBHBonus = maceBH * healingTouchSpellCoeff;
+            uint32 const healingTouchMinHeal = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN + healingTouchBHBonus;
+            uint32 const healingTouchMaxHeal = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX + healingTouchBHBonus;
+            TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, healingTouchMinHeal, healingTouchMaxHeal, false);
+
+            uint32 const healingTouchMinCritHeal = healingTouchMinHeal * 1.5f;
+            uint32 const healingTouchMaxCritHeal = healingTouchMaxHeal * 1.5f;
+            TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, healingTouchMinCritHeal, healingTouchMaxCritHeal, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<HealingTouchTestImpt>();
+    }
+};
+
 class RejuvenationTest : public TestCaseScript
 {
 public:
@@ -1526,7 +2005,7 @@ public:
 void AddSC_test_spells_druid()
 {
 	// Total:
-	// Balance: 11/12
+	// Balance: 11/12 - Soothe Animal
 	new BarkskinTest();
 	new CycloneTest();
 	new EntanglingRootsTest();
@@ -1538,7 +2017,7 @@ void AddSC_test_spells_druid()
 	new StarfireTest();
 	new ThornsTest();
 	new WrathTest();
-	// Feral: 3/
+	// Feral: 17/23 - Dash, Feline Grace, Ferocious Bite, Maim, Rip, Track Humanoids
 	new BashTest();
 	new ChallengingRoarTest();
 	new ClawTest();
@@ -1553,6 +2032,13 @@ void AddSC_test_spells_druid()
 	new ProwlTest();
 	new RakeTest();
 	new RavageTest();
-	// Restoration: 1/
+    new ShredTest();
+    new SwipeTest();
+    new TigersFuryTest();
+	// Restoration: 1/11
+    new AbolishPoisonTest();
+    new CurePoisonTest();
+    new GiftOfTheWildTest();
+    new HealingTouchTest();
 	new RejuvenationTest();
 }
