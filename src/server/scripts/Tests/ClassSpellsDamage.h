@@ -107,8 +107,13 @@ namespace ClassSpellsDamage
 
 			// Feral
 			CLAW_RNK_6 = 190,
-			RAKE_RNK_5 = 79,
-			RAKE_RNK_5_BLEED = 117,
+			LACERATE_RNK_1 = 31,
+			LACERATE_RNK_1_BLEED = 155,
+			MAUL_RNK_8 = 176,
+			POUNCE_RNK_4_TOTAL = 600,
+			RAKE_RNK_5 = 78,
+			RAKE_RNK_5_BLEED = 108,
+			RAVAGE_RNK_5 = 514,
 
 			// Restoration
 			HEALING_TOUCH_RNK_1_MIN = 40,

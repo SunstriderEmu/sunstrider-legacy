@@ -188,12 +188,11 @@ void TestCase::_TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpe
 	INTERNAL_TEST_ASSERT(auraCount == requireCount);
 }
 
-void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 castTime, Powers powerType, uint32 expectedPowerCost)
+void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, Powers powerType, uint32 expectedPowerCost)
 {
 	caster->SetPower(powerType, expectedPowerCost);
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
-	CastSpell(caster, target, castSpell);
-	Wait(castTime + 100);
+	CastSpell(caster, target, castSpell, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 	INTERNAL_ASSERT_INFO("Caster has %u power remaining after spell %u", caster->GetPower(powerType), castSpell);
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == 0);
 }
@@ -580,12 +579,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     uint32 maxPredictionError;
     _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
 
-	float critChance = 0.0f;
-	if (crit)
-		critChance = 100.0f;
-
-	for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
-		caster->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, critChance);
+	_SetCriticalChances(caster, crit);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -780,7 +774,7 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
     return true;
 }
 
-void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount)
+void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -790,6 +784,8 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
     bool spellHasFlyTime = spellInfo->Speed != 0.0f;
+
+	_SetCriticalChances(caster, crit);
 
     for (uint32 i = 0; i < 100; i++)
     {
@@ -857,6 +853,20 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
     }
     INTERNAL_ASSERT_INFO("Failed to cast spell (%u) 100 times", spellID);
     INTERNAL_TEST_ASSERT(false); //failed to cast the spell 100 times
+}
+
+void TestCase::_SetCriticalChances(Unit* caster, bool crit)
+{
+	float critChance = 0.0f;
+	if (crit)
+		critChance = 100.0f;
+
+	for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
+		caster->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, critChance);
+
+	caster->SetFloatValue(PLAYER_CRIT_PERCENTAGE, critChance); // BASE_ATTACK
+	caster->SetFloatValue(PLAYER_OFFHAND_CRIT_PERCENTAGE, critChance); // OFF_ATTACK
+	caster->SetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE, critChance); // RANGED_ATTACK
 }
 
 float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)

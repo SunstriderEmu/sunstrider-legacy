@@ -152,7 +152,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedInsectSwarmMana = 175;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::INSECT_SWARM_RNK_6, 1500, POWER_MANA, expectedInsectSwarmMana);
+			TEST_POWER_COST(druid, creature, ClassSpells::Druid::INSECT_SWARM_RNK_6, POWER_MANA, expectedInsectSwarmMana);
 
 			// Spell coefficient
 			float const wrathSpellCoeff = 12.0f / 15.0f;
@@ -160,7 +160,7 @@ public:
 
 			// Damage
 			uint32 const expectedInsectSwarmTotalDmg = ClassSpellsDamage::Druid::INSECT_SWARM_RNK_6_TOTAL + wrathBonusSP;
-			TEST_DOT_DAMAGE(druid, creature, ClassSpells::Druid::INSECT_SWARM_RNK_6, expectedInsectSwarmTotalDmg);
+			TEST_DOT_DAMAGE(druid, creature, ClassSpells::Druid::INSECT_SWARM_RNK_6, expectedInsectSwarmTotalDmg, false);
 
 			// TODO: -2% hit chance
 		}
@@ -779,7 +779,7 @@ public:
 
 			// Rake bleed
 			uint32 const expectedRakeBleed = floor(AP * 0.06f + 108) * savageFuryFactor;
-			TEST_DOT_DAMAGE(player, creature, ClassSpells::Druid::RAKE_RNK_5, expectedRakeBleed);
+			TEST_DOT_DAMAGE(player, creature, ClassSpells::Druid::RAKE_RNK_5, expectedRakeBleed, false);
 
 			// Rake initial damage
 			uint32 const expectedRakeDmg = floor(AP / 100 + 78) * savageFuryFactor;

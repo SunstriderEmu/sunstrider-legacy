@@ -53,7 +53,7 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::IMPROVED_CURSE_OF_AGONY_RNK_2);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, false);
 		}
 	};
 
@@ -84,7 +84,7 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::EMPOWERED_CORRUPTION_RNK_3);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage, false);
 		}
 	};
 
@@ -119,13 +119,13 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::SHADOW_MASTERY_RNK_5);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.1f);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.1f);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, codDamage * 1.1f);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, deathCoilDamage * 1.1f);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, drainLifeDamage * 1.1f);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulDamage * 1.1f);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.1f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.1f, false);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.1f, false);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, codDamage * 1.1f, false);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, deathCoilDamage * 1.1f, false);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, drainLifeDamage * 1.1f, false);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulDamage * 1.1f, false);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.1f, false);
 		}
 	};
 
@@ -156,9 +156,9 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 			LearnTalent(player, Talents::Warlock::SHADOW_MASTERY_RNK_5);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.05f);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.05f);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.05f);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.05f, false);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.05f, false);
+            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.05f, false);
 		}
 	};
 
@@ -626,7 +626,7 @@ public:
 			uint32 expectedDirectImmolate = floor(ClassSpellsDamage::Warlock::IMMOLATE_RNK_9 * 1.15f + sp * ClassSpellsCoeff::Warlock::IMMOLATE);
 			uint32 expectedDotImmolate = floor(ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_DOT * 1.15f + sp * ClassSpellsCoeff::Warlock::IMMOLATE_DOT);
 			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDirectImmolate, expectedDirectImmolate, false);
-			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDotImmolate);
+			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDotImmolate, false);
 
 			// Rain of Fire
 			uint32 expectedRoFTick = floor((ClassSpellsDamage::Warlock::RAIN_OF_FIRE_RNK_5_TOTAL * 1.15f + sp * ClassSpellsCoeff::Warlock::RAIN_OF_FIRE) * 0.25f);
@@ -701,15 +701,15 @@ public:
 
 			// Corruption
 			uint32 expectedCorruption = floor(ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::CORRUPTION);
-			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruption);
+			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruption, false);
 
 			// Curse of Agony
 			uint32 expectedCoA = floor(ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::CURSE_OF_AGONY);
-			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoA);
+			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoA, false);
 
 			// Curse of Doom
 			uint32 expectedCoD = floor(ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 * percentage + sp * ClassSpellsCoeff::Warlock::CURSE_OF_DOOM);
-			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoD);
+			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoD, false);
 
 			// TODO: Seed of Corruption test DoT + end damage
 			uint32 expectedDot = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION_DOT);
