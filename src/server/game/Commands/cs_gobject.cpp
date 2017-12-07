@@ -396,7 +396,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
     obj->SaveToDB();
     obj->Refresh();
 
-    PSendSysMessage(LANG_COMMAND_MOVEOBJMESSAGE, obj->GetGUIDLow());
+    PSendSysMessage(LANG_COMMAND_MOVEOBJMESSAGE, obj->GetSpawnId());
 
     return true;
 }
