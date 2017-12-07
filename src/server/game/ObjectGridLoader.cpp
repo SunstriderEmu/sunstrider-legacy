@@ -149,7 +149,9 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<Gam
             continue;
 
         GameObjectData const* godata = sObjectMgr->GetGameObjectData(guid);
-        ASSERT(godata, "Tried to load gameobject with spawnId %u, but no such object exists.", guid);
+        DEBUG_ASSERT(godata, "Tried to load gameobject with spawnId %u, but no such object exists.", guid);
+        if (!godata)
+            continue;
         if (!(godata->spawnGroupData->flags & SPAWNGROUP_FLAG_SYSTEM))
             if (!map->IsSpawnGroupActive(godata->spawnGroupData->groupId))
                 continue;

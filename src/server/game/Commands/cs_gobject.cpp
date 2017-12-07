@@ -217,50 +217,45 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
 
 
 //delete object by selection or guid
-bool ChatHandler::HandleDelObjectCommand(const char* args)
+bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
 {
     // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hgameobject");
     if(!cId)
         return false;
 
-    uint32 lowguid = atoi(cId);
-    if(!lowguid)
+    uint32 guidLow = atoi(cId);
+    if(!guidLow)
         return false;
 
-    GameObject* obj = nullptr;
-
     // by DB guid
-    if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(lowguid))
-        obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
-
-    if(!obj)
+    GameObject* object = GetObjectFromPlayerMapByDbGuid(guidLow);
+    if(!object)
     {
-        PSendSysMessage(LANG_COMMAND_OBJNOTFOUND, lowguid);
+        PSendSysMessage(LANG_COMMAND_OBJNOTFOUND, guidLow);
         SetSentErrorMessage(true);
         return false;
     }
 
-    uint64 owner_guid = obj->GetOwnerGUID();
-    if(owner_guid)
+    uint64 ownerGuid = object->GetOwnerGUID();
+    if(ownerGuid)
     {
-        Unit* owner = ObjectAccessor::GetUnit(*m_session->GetPlayer(),owner_guid);
-        if(!owner && !IS_PLAYER_GUID(owner_guid))
+        Unit* owner = ObjectAccessor::GetUnit(*m_session->GetPlayer(), ownerGuid);
+        if(!owner || !IS_PLAYER_GUID(ownerGuid))
         {
-            PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, GUID_LOPART(owner_guid), obj->GetGUIDLow());
+            PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, GUID_LOPART(ownerGuid), object->GetSpawnId());
             SetSentErrorMessage(true);
             return false;
         }
 
-        if(owner)
-            owner->RemoveGameObject(obj,false);
+        owner->RemoveGameObject(object, false);
     }
 
-    obj->SetRespawnTime(0);                                 // not save respawn time
-    obj->Delete();
-    obj->DeleteFromDB();
+    object->SetRespawnTime(0);                                 // not save respawn time
+    object->Delete();
+    object->DeleteFromDB();
 
-    PSendSysMessage(LANG_COMMAND_DELOBJMESSAGE, obj->GetGUIDLow());
+    PSendSysMessage(LANG_COMMAND_DELOBJMESSAGE, object->GetSpawnId());
 
     return true;
 }
@@ -282,7 +277,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(lowguid))
-        obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
+        obj = GetObjectFromPlayerMapByDbGuid(lowguid);
 
     if(!obj)
     {
@@ -342,7 +337,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(lowguid))
-        obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
+        obj = GetObjectFromPlayerMapByDbGuid(lowguid);
 
     if(!obj)
     {
@@ -464,7 +459,7 @@ bool ChatHandler::HandleActivateObjectCommand(const char *args)
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(lowguid))
-        obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
+        obj = GetObjectFromPlayerMapByDbGuid(lowguid);
 
     if(!obj)
     {
@@ -625,7 +620,7 @@ bool ChatHandler::HandleGobGetValueCommand(const char * args)
      GameObject* target = nullptr;
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(guid))
-        target = GetObjectGlobalyWithGuidOrNearWithSpawnId(guid,go_data->id);
+        target = GetObjectFromPlayerMapByDbGuid(guid);
 
     if(!target)
     {
@@ -691,7 +686,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
      GameObject* target = nullptr;
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(guid))
-        target = GetObjectGlobalyWithGuidOrNearWithSpawnId(guid, go_data->id);
+        target = GetObjectFromPlayerMapByDbGuid(guid);
 
     if(!target)
     {

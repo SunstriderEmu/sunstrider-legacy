@@ -570,7 +570,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
     static std::vector<ChatCommand> gobjectCommandTable =
     {
         { "add",            SEC_GAMEMASTER3,     false, &ChatHandler::HandleGameObjectAddCommand,       "" },
-        { "delete",         SEC_GAMEMASTER3,     false, &ChatHandler::HandleDelObjectCommand,           "" },
+        { "delete",         SEC_GAMEMASTER3,     false, &ChatHandler::HandleGameObjectDeleteCommand,    "" },
         { "target",         SEC_GAMEMASTER2,     false, &ChatHandler::HandleTargetObjectCommand,        "" },
         { "turn",           SEC_GAMEMASTER3,     false, &ChatHandler::HandleTurnObjectCommand,          "" },
         { "move",           SEC_GAMEMASTER3,     false, &ChatHandler::HandleMoveObjectCommand,          "" },
@@ -1527,15 +1527,43 @@ char const *fmtstring( char const *format, ... )
     return buf;
 }
 
-GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithSpawnId(uint32 lowguid,uint32 entry)
+GameObject* ChatHandler::GetNearbyGameObject()
 {
-    if(!m_session)
+    if (!m_session)
         return nullptr;
 
+    Player* pl = m_session->GetPlayer();
+    GameObject* obj = nullptr;
+    Trinity::NearestGameObjectCheck check(*pl);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectCheck> searcher(pl, obj, check);
+    Cell::VisitGridObjects(pl, searcher, SIZE_OF_GRIDS);
+    return obj;
+}
+
+GameObject* ChatHandler::GetObjectFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid)
+{
+    if (!m_session)
+        return nullptr;
     auto bounds = m_session->GetPlayer()->GetMap()->GetGameObjectBySpawnIdStore().equal_range(lowguid);
     if (bounds.first != bounds.second)
         return bounds.first->second;
     return nullptr;
+}
+
+Creature* ChatHandler::GetCreatureFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid)
+{
+    if (!m_session)
+        return nullptr;
+    // Select the first alive creature or a dead one if not found
+    Creature* creature = nullptr;
+    auto bounds = m_session->GetPlayer()->GetMap()->GetCreatureBySpawnIdStore().equal_range(lowguid);
+    for (auto it = bounds.first; it != bounds.second; ++it)
+    {
+        creature = it->second;
+        if (it->second->IsAlive())
+            break;
+    }
+    return creature;
 }
 
 static char const* const spellTalentKeys[] = {

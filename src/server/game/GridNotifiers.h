@@ -1006,6 +1006,29 @@ namespace Trinity
             NearestGameObjectFishingHole(NearestGameObjectFishingHole const&);
     };
 
+    class NearestGameObjectCheck
+    {
+    public:
+        NearestGameObjectCheck(WorldObject const& obj) : i_obj(obj), i_range(999.f) { }
+
+        bool operator()(GameObject* go)
+        {
+            if (i_obj.IsWithinDistInMap(go, i_range))
+            {
+                i_range = i_obj.GetDistance(go);        // use found GO range as new range limit for next check
+                return true;
+            }
+            return false;
+        }
+
+    private:
+        WorldObject const& i_obj;
+        float i_range;
+
+        // prevent clone this object
+        NearestGameObjectCheck(NearestGameObjectCheck const&) = delete;
+    };
+
     class TC_GAME_API AllGameObjectsWithEntryInGrid
     {
     public:

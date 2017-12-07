@@ -386,7 +386,7 @@ class TC_GAME_API ChatHandler
         bool HandleGoTriggerCommand(const char* args);
         bool HandleGoGraveyardCommand(const char* args);
         bool HandleTargetObjectCommand(const char* args);
-        bool HandleDelObjectCommand(const char* args);
+        bool HandleGameObjectDeleteCommand(const char* args);
         bool HandleMoveObjectCommand(const char* args);
         bool HandleNpcGotoCommand(const char* args);
         bool HandleNpcNearCommand(const char* args);
@@ -658,7 +658,9 @@ class TC_GAME_API ChatHandler
         GameTele const* extractGameTeleFromLink(char* text);
         bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, uint64 &guid, bool offline = false);
 
-        GameObject* GetObjectGlobalyWithGuidOrNearWithSpawnId(uint32 lowguid,uint32 entry);
+        GameObject* GetNearbyGameObject();
+        GameObject* GetObjectFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid);
+        Creature* GetCreatureFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid);
 
         // Utility methods for commands
         bool LookupPlayerSearchCommand(QueryResult result, int32 limit);
