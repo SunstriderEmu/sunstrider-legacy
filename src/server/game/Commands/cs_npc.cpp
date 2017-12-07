@@ -6,6 +6,7 @@
 #include "WaypointMovementGenerator.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
+#include "PoolMgr.h"
 
 bool ChatHandler::HandleNpcGuidCommand(const char* args)
 {
@@ -135,10 +136,10 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
             uint32 guid = sObjectMgr->GenerateCreatureSpawnId();
             CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
             data.id = id;
-            data.posX = chr->GetTransOffsetX();
-            data.posY = chr->GetTransOffsetY();
-            data.posZ = chr->GetTransOffsetZ();
-            data.orientation = chr->GetTransOffsetO();
+            data.spawnPoint.m_positionX = chr->GetTransOffsetX();
+            data.spawnPoint.m_positionY = chr->GetTransOffsetY();
+            data.spawnPoint.m_positionZ = chr->GetTransOffsetZ();
+            data.spawnPoint.m_orientation = chr->GetTransOffsetO();
             data.displayid = 0;
             data.equipmentId = 0;
             data.spawntimesecs = 300;
@@ -161,8 +162,8 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
             return true;
         }
 
-    auto  pCreature = new Creature;
-    if (!pCreature->Create(sObjectMgr->GenerateCreatureSpawnId(), map, chr->GetPhaseMask(), id, x, y, z, o))
+    auto pCreature = new Creature;
+    if (!pCreature->Create(sObjectMgr->GenerateCreatureSpawnId(), map, chr->GetPhaseMask(), id, { x, y, z, o }))
     {
         delete pCreature;
         return false;
@@ -180,9 +181,8 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     uint32 db_guid = pCreature->GetSpawnId();
 
     // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
-    pCreature->LoadFromDB(db_guid, map);
+    pCreature->LoadFromDB(db_guid, map, true, false);
 
-    map->AddToMap<Creature>(pCreature);
     sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
     return true;
 }
@@ -256,9 +256,9 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
                 return false;
             }
 
-            uint32 map_id = data->mapid;
+            uint32 map_id = data->spawnPoint.GetMapId();
 
-            if(m_session->GetPlayer()->GetMapId()!=map_id)
+            if(m_session->GetPlayer()->GetMapId() != map_id)
             {
                 PSendSysMessage(LANG_COMMAND_CREATUREATSAMEMAP, lowguid);
                 SetSentErrorMessage(true);
@@ -292,12 +292,8 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
     if (pCreature)
     {
         if(CreatureData const* data = sObjectMgr->GetCreatureData(pCreature->GetSpawnId()))
-        {
-            const_cast<CreatureData*>(data)->posX = x;
-            const_cast<CreatureData*>(data)->posY = y;
-            const_cast<CreatureData*>(data)->posZ = z;
-            const_cast<CreatureData*>(data)->orientation = o;
-        }
+            const_cast<CreatureData*>(data)->spawnPoint.Relocate(x, y, z, o);
+
         pCreature->UpdatePosition(x, y, z, o);
         pCreature->InitCreatureAddon(true);
         pCreature->GetMotionMaster()->Initialize();
@@ -668,7 +664,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     std::string curRespawnDelayStr = secsToTimeString(curRespawnDelay,true);
     std::string defRespawnDelayStr = secsToTimeString(target->GetRespawnDelay(),true);
 
-    PSendSysMessage(LANG_NPCINFO_CHAR,  target->GetSpawnId(), faction, npcflags, Entry, displayid, nativeid);
+    PSendSysMessage(LANG_NPCINFO_CHAR, target->GetSpawnId(), faction, npcflags, Entry, displayid, nativeid);
     if(cInfo->difficulty_entry_1)
         PSendSysMessage("Heroic Entry: %u", cInfo->difficulty_entry_1);
     else if (target->GetMap()->IsHeroic() && Entry != cInfo->Entry)
@@ -688,21 +684,25 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
         if(CreatureTemplate const *master = sObjectMgr->GetCreatureTemplate(linked->id))
             PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(target->GetSpawnId()), linked->id, master->Name.c_str());
-
     PSendSysMessage("Movement flag: %u", target->GetUnitMovementFlags());
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
-    {
         SendSysMessage(LANG_NPCINFO_VENDOR);
-    }
+
     if ((npcflags & UNIT_NPC_FLAG_TRAINER) )
-    {
         SendSysMessage(LANG_NPCINFO_TRAINER);
-    }
+
     if(target->GetWaypointPath())
         PSendSysMessage("PathID : %u", target->GetWaypointPath());
 
     if(target->GetFormation())
-        PSendSysMessage("Creature is member of group %u", target->GetFormation()->GetId());
+        PSendSysMessage("Member of formation %u", target->GetFormation()->GetId());
+
+    SpawnData const* data = sObjectMgr->GetSpawnData(SPAWN_TYPE_CREATURE, target->GetSpawnId());
+    if (data && data->spawnGroupData)
+        PSendSysMessage("Member of spawn group %u", data->spawnGroupData->groupId);
+
+    if(uint32 poolid = sPoolMgr->IsPartOfAPool<Creature>(target->GetSpawnId()))
+        PSendSysMessage("Part of pool %u", poolid);
 
     return true;
 }
@@ -859,7 +859,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
 
     Creature* leader;
     if (pCreature->GetMap()->Instanceable())
-        leader = pCreature->GetMap()->GetCreatureWithSpawnId(leaderGUID);
+        leader = pCreature->GetMap()->GetCreatureBySpawnId(leaderGUID);
     else
         leader = pCreature->GetMap()->GetCreature(MAKE_NEW_GUID(leaderGUID, data->id, HighGuid::Unit));
 

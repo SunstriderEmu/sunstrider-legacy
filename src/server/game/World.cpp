@@ -39,6 +39,7 @@
 #include "OutdoorPvPMgr.h"
 #include "Player.h"
 #include "Pet.h"
+#include "PoolMgr.h"
 #include "QueryCallback.h"
 #include "ScriptMgr.h"
 #include "ScriptReloadMgr.h"
@@ -107,6 +108,11 @@ World::World()
     m_availableDbcLocaleMask = 0;
 
     m_isClosed = false;
+
+    _guidWarn = false;
+    _guidAlert = false;
+    _warnDiff = 0;
+    _warnShutdownTime = time(nullptr);
 }
 
 /// World destructor
@@ -166,6 +172,59 @@ void World::SetClosed(bool val)
 
     // Invert the value, for simplicity for scripters.
     //    sScriptMgr->OnOpenStateChange(!val);
+}
+
+void World::TriggerGuidWarning()
+{
+    // Lock this only to prevent multiple maps triggering at the same time
+    std::lock_guard<std::mutex> lock(_guidAlertLock);
+
+    time_t gameTime = GameTime::GetGameTime();
+    time_t today = (gameTime / DAY) * DAY;
+
+    // Check if our window to restart today has passed. 5 mins until quiet time
+    while (gameTime >= (today + (getIntConfig(CONFIG_RESPAWN_RESTARTQUIETTIME) * HOUR) - 1810))
+        today += DAY;
+
+    // Schedule restart for 30 minutes before quiet time, or as long as we have
+    _warnShutdownTime = today + (getIntConfig(CONFIG_RESPAWN_RESTARTQUIETTIME) * HOUR) - 1800;
+
+    _guidWarn = true;
+    SendGuidWarning();
+}
+
+void World::TriggerGuidAlert()
+{
+    // Lock this only to prevent multiple maps triggering at the same time
+    std::lock_guard<std::mutex> lock(_guidAlertLock);
+
+    DoGuidAlertRestart();
+    _guidAlert = true;
+    _guidWarn = false;
+}
+
+void World::DoGuidWarningRestart()
+{
+    if (m_ShutdownTimer)
+        return;
+
+    ShutdownServ(1800, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
+    _warnShutdownTime += HOUR;
+}
+
+void World::DoGuidAlertRestart()
+{
+    if (m_ShutdownTimer)
+        return;
+
+    ShutdownServ(300, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE, _alertRestartReason);
+}
+
+void World::SendGuidWarning()
+{
+    if (!m_ShutdownTimer && _guidWarn && getIntConfig(CONFIG_RESPAWN_GUIDWARNING_FREQUENCY) > 0)
+        SendServerMessage(SERVER_MSG_STRING, _guidWarningMsg.c_str());
+    _warnDiff = 0;
 }
 
 /// Find a session by its id
@@ -893,7 +952,6 @@ void World::LoadConfigSettings(bool reload)
         m_configs[CONFIG_MAX_OVERSPEED_PINGS] = 2;
     }
 
-    m_configs[CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY] = sConfigMgr->GetBoolDefault("SaveRespawnTimeImmediately",true);
     m_configs[CONFIG_WEATHER] = sConfigMgr->GetBoolDefault("ActivateWeather",true);
 
     m_configs[CONFIG_ALWAYS_MAX_SKILL_FOR_LEVEL] = sConfigMgr->GetBoolDefault("AlwaysMaxSkillForLevel", false);
@@ -932,6 +990,57 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_TALENTS_INSPECTING] = sConfigMgr->GetBoolDefault("TalentsInspecting", true);
     m_configs[CONFIG_CHAT_FAKE_MESSAGE_PREVENTING] = sConfigMgr->GetBoolDefault("ChatFakeMessagePreventing", true);
+
+    // Respawn Settings
+    m_configs[CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY] = sConfigMgr->GetBoolDefault("SaveRespawnTimeImmediately", true);
+    if (!m_configs[CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY])
+    {
+        TC_LOG_WARN("server.loading", "SaveRespawnTimeImmediately triggers assertions when disabled, overridden to Enabled");
+        m_configs[CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY] = true;
+    }
+    m_configs[CONFIG_RESPAWN_MINCHECKINTERVALMS] = sConfigMgr->GetIntDefault("Respawn.MinCheckIntervalMS", 5000);
+    m_configs[CONFIG_RESPAWN_DYNAMIC_ESCORTNPC] = sConfigMgr->GetBoolDefault("Respawn.DynamicEscortNPC", true);
+    m_configs[CONFIG_RESPAWN_DYNAMICMODE] = sConfigMgr->GetIntDefault("Respawn.DynamicMode", 1);
+    if (m_configs[CONFIG_RESPAWN_DYNAMICMODE] > 1)
+    {
+        TC_LOG_ERROR("server.loading", "Invalid value for Respawn.DynamicMode (%u). Set to 1.", m_configs[CONFIG_RESPAWN_DYNAMICMODE]);
+        m_configs[CONFIG_RESPAWN_DYNAMICMODE] = 1;
+    }
+    m_configs[CONFIG_RESPAWN_GUIDWARNLEVEL] = sConfigMgr->GetIntDefault("Respawn.GuidWarnLevel", 12000000);
+    if (m_configs[CONFIG_RESPAWN_GUIDWARNLEVEL] > 16777215)
+    {
+        TC_LOG_ERROR("server.loading", "Respawn.GuidWarnLevel (%u) cannot be greater than maximum GUID (16777215). Set to 12000000.", m_configs[CONFIG_RESPAWN_GUIDWARNLEVEL]);
+        m_configs[CONFIG_RESPAWN_GUIDWARNLEVEL] = 12000000;
+    }
+    m_configs[CONFIG_RESPAWN_GUIDALERTLEVEL] = sConfigMgr->GetIntDefault("Respawn.GuidAlertLevel", 16000000);
+    if (m_configs[CONFIG_RESPAWN_GUIDALERTLEVEL] > 16777215)
+    {
+        TC_LOG_ERROR("server.loading", "Respawn.GuidWarnLevel (%u) cannot be greater than maximum GUID (16777215). Set to 16000000.", m_configs[CONFIG_RESPAWN_GUIDALERTLEVEL]);
+        m_configs[CONFIG_RESPAWN_GUIDALERTLEVEL] = 16000000;
+    }
+    m_configs[CONFIG_RESPAWN_RESTARTQUIETTIME] = sConfigMgr->GetIntDefault("Respawn.RestartQuietTime", 3);
+    if (m_configs[CONFIG_RESPAWN_RESTARTQUIETTIME] > 23)
+    {
+        TC_LOG_ERROR("server.loading", "Respawn.RestartQuietTime (%u) must be an hour, between 0 and 23. Set to 3.", m_configs[CONFIG_RESPAWN_RESTARTQUIETTIME]);
+        m_configs[CONFIG_RESPAWN_RESTARTQUIETTIME] = 3;
+    }
+    m_configs[CONFIG_RESPAWN_DYNAMICRATE_CREATURE] = sConfigMgr->GetFloatDefault("Respawn.DynamicRateCreature", 15.0f);
+    if (m_configs[CONFIG_RESPAWN_DYNAMICRATE_CREATURE] < 0.0f)
+    {
+        TC_LOG_ERROR("server.loading", "Respawn.DynamicRateCreature (%u) must be positive. Set to 20.", m_configs[CONFIG_RESPAWN_DYNAMICRATE_CREATURE]);
+        m_configs[CONFIG_RESPAWN_DYNAMICRATE_CREATURE] = 20.0f;
+    }
+    m_configs[CONFIG_RESPAWN_DYNAMICMINIMUM_CREATURE] = sConfigMgr->GetIntDefault("Respawn.DynamicMinimumCreature", 30);
+    m_configs[CONFIG_RESPAWN_DYNAMICRATE_GAMEOBJECT] = sConfigMgr->GetFloatDefault("Respawn.DynamicRateGameObject", 15.0f);
+    if (m_configs[CONFIG_RESPAWN_DYNAMICRATE_GAMEOBJECT] < 0.0f)
+    {
+        TC_LOG_ERROR("server.loading", "Respawn.DynamicRateGameObject (%i) must be positive. Set to 10.", m_configs[CONFIG_RESPAWN_DYNAMICRATE_GAMEOBJECT]);
+        m_configs[CONFIG_RESPAWN_DYNAMICRATE_GAMEOBJECT] = 10.0f;
+    }
+    m_configs[CONFIG_RESPAWN_DYNAMICMINIMUM_GAMEOBJECT] = sConfigMgr->GetIntDefault("Respawn.DynamicMinimumGameObject", 10);
+    _guidWarningMsg = sConfigMgr->GetStringDefault("Respawn.WarningMessage", "There will be an unscheduled server restart at 03:00. The server will be available again shortly after.");
+    _alertRestartReason = sConfigMgr->GetStringDefault("Respawn.AlertRestartReason", "Urgent Maintenance");
+    m_configs[CONFIG_RESPAWN_GUIDWARNING_FREQUENCY] = sConfigMgr->GetIntDefault("Respawn.WarningFrequency", 1800);
 
     m_configs[CONFIG_CORPSE_DECAY_NORMAL] = sConfigMgr->GetIntDefault("Corpse.Decay.NORMAL", 60);
     m_configs[CONFIG_CORPSE_DECAY_RARE] = sConfigMgr->GetIntDefault("Corpse.Decay.RARE", 300);
@@ -1238,6 +1347,9 @@ void World::SetInitialWorldSettings()
         exit(1);
     }
 
+    ///- Initialize pool manager
+    sPoolMgr->Initialize();
+
     ///- Loading strings. Getting no records means core load has to be canceled because no error message can be output.
     TC_LOG_INFO("server.loading", "Loading Trinity strings..." );
     if (!sObjectMgr->LoadTrinityStrings())
@@ -1389,32 +1501,38 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Creature Base Stats...");
     sObjectMgr->LoadCreatureClassLevelStats();
 
+    TC_LOG_INFO("server.loading", "Loading Spawn Group Templates...");
+    sObjectMgr->LoadSpawnGroupTemplates();
+
+    TC_LOG_INFO("server.loading", "Loading instance spawn groups...");
+    sObjectMgr->LoadInstanceSpawnGroups();
+
     if(!getConfig(CONFIG_DEBUG_DISABLE_CREATURES_LOADING))
     {
         TC_LOG_INFO("server.loading", "Loading Creature Data..." );
         sObjectMgr->LoadCreatures();
 
-        TC_LOG_INFO("server.loading", "Loading Creature Linked Respawn..." );
-        sObjectMgr->LoadCreatureLinkedRespawn();                     // must be after LoadCreatures()
-
         TC_LOG_INFO("server.loading", "Loading Creature Addon Data..." );
         sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
-
-        TC_LOG_INFO("server.loading", "Loading Creature Respawn Data..." );   // must be after PackInstances()
-        sObjectMgr->LoadCreatureRespawnTimes();
     }
 
     if (!getConfig(CONFIG_DEBUG_DISABLE_GAMEOBJECTS_LOADING))
     {
         TC_LOG_INFO("server.loading", "Loading Gameobject Data...");
-        sObjectMgr->LoadGameobjects();
-
-        TC_LOG_INFO("server.loading", "Loading Gameobject Respawn Data..."); // must be after PackInstances()
-        sObjectMgr->LoadGameobjectRespawnTimes();
+        sObjectMgr->LoadGameObjects();
     }
+
+    TC_LOG_INFO("server.loading", "Loading Spawn Group Data...");
+    sObjectMgr->LoadSpawnGroups();
+
+    TC_LOG_INFO("server.loading", "Loading Linked Respawn...");
+    sObjectMgr->LoadLinkedRespawn();                     // must be after LoadCreatures(), LoadGameObjects()
 
     TC_LOG_INFO("server.loading","Loading Transport templates...");
     sTransportMgr->LoadTransportTemplates();
+
+    TC_LOG_INFO("server.loading", "Loading Objects Pooling Data...");
+    sPoolMgr->LoadFromDB();
 
     TC_LOG_INFO("server.loading", "Loading Game Event Data...");
     sGameEventMgr->LoadFromDB();
@@ -2011,6 +2129,16 @@ void World::Update(time_t diff)
     // update the instance reset times
     sInstanceSaveMgr->Update();
 
+    // Check for shutdown warning
+    if (_guidWarn && !_guidAlert)
+    {
+        _warnDiff += diff;
+        if (GameTime::GetGameTime() >= _warnShutdownTime)
+            DoGuidWarningRestart();
+        else if (_warnDiff > getIntConfig(CONFIG_RESPAWN_GUIDWARNING_FREQUENCY) * IN_MILLISECONDS)
+            SendGuidWarning();
+    }
+
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
 
@@ -2391,14 +2519,13 @@ void World::_UpdateGameTime()
         else
         {
             m_ShutdownTimer -= elapsed;
-
             ShutdownMsg(false, nullptr, m_ShutdownReason);
         }
     }
 }
 
 /// Shutdown the server
-void World::ShutdownServ(uint32 time, uint32 options, const char* reason)
+void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode, const std::string& reason)
 {
     // ignore if server shutdown at next tick
     if(m_stopEvent)
@@ -2406,11 +2533,12 @@ void World::ShutdownServ(uint32 time, uint32 options, const char* reason)
 
     m_ShutdownMask = options;
     m_ShutdownReason = reason;
+    m_ExitCode = exitcode;
 
     ///- If the shutdown time is 0, set m_stopEvent (except if shutdown is 'idle' with remaining sessions)
     if(time==0)
     {
-        if(!(options & SHUTDOWN_MASK_IDLE) || GetActiveAndQueuedSessionCount()==0)
+        if(!(options & SHUTDOWN_MASK_IDLE) || GetActiveAndQueuedSessionCount() == 0)
             m_stopEvent = true;                             // exist code already set
         else
             m_ShutdownTimer = 1;                            //So that the session count is re-evaluated at next world tick
@@ -2430,7 +2558,7 @@ void World::ShutdownServ(uint32 time, uint32 options, const char* reason)
 }
 
 /// Display a shutdown message to the user(s)
-void World::ShutdownMsg(bool show, Player* player, std::string reason)
+void World::ShutdownMsg(bool show, Player* player, const std::string& reason)
 {
     // not show messages for idle shutdown mode
     if(m_ShutdownMask & SHUTDOWN_MASK_IDLE)
@@ -2698,6 +2826,9 @@ void World::ResetDailyQuests()
             }
         }
     }
+
+    // change available dailies
+    //TC sPoolMgr->ChangeDailyQuests();
 }
 
 void World::InitNewDataForQuestPools()

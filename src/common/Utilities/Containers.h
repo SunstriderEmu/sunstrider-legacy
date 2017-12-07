@@ -23,6 +23,25 @@ namespace Trinity
         return std::addressof(not_ptr);
     }
 
+    /**
+    * @class IteratorPair
+    *
+    * @brief Utility class to enable range for loop syntax for multimap.equal_range uses
+    */
+    template<class iterator>
+    class IteratorPair
+    {
+    public:
+        IteratorPair() : _iterators() { }
+        IteratorPair(std::pair<iterator, iterator> iterators) : _iterators(iterators) { }
+
+        iterator begin() const { return _iterators.first; }
+        iterator end() const { return _iterators.second; }
+
+    private:
+        std::pair<iterator, iterator> _iterators;
+    };
+
     namespace Containers
     {
         // replace with std::size in C++17
@@ -170,25 +189,6 @@ namespace Trinity
             auto itr = map.find(key);
             return itr != map.end() ? AddressOrSelf(itr->second) : nullptr;
         }
-
-        /**
-        * @class IteratorPair
-        *
-        * @brief Utility class to enable range for loop syntax for multimap.equal_range uses
-        */
-        template<class iterator>
-        class IteratorPair
-        {
-        public:
-            IteratorPair() : _iterators() { }
-            IteratorPair(std::pair<iterator, iterator> iterators) : _iterators(iterators) { }
-
-            iterator begin() const { return _iterators.first; }
-            iterator end() const { return _iterators.second; }
-
-        private:
-            std::pair<iterator, iterator> _iterators;
-        };
 
         template<class M>
         inline auto MapEqualRange(M& map, typename M::key_type const& key) -> IteratorPair<decltype(map.begin())>

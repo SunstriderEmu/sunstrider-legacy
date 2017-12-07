@@ -47,7 +47,7 @@ void WhoListStorageMgr::Update()
         }
 
         // Conversion uint32 to uint8 here
-        _whoListStorage.emplace_back(itr->second->GetGUID(), itr->second->GetTeam(), itr->second->GetSession()->GetSecurity(), itr->second->GetLevel(), 
+        _whoListStorage.emplace_back(itr->second->GetGUID(), itr->second->GetTeam(), itr->second->GetSession()->GetSecurity(), uint8(itr->second->GetLevel()), 
             itr->second->GetClass(), itr->second->GetRace(), playerZoneId, itr->second->GetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER), itr->second->IsVisible(),
             widePlayerName, wideGuildName, playerName, guildName);
     }

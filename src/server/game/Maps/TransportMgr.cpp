@@ -378,7 +378,7 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
     }
 
     // create transport...
-    auto  trans = new MotionTransport();
+    auto trans = new MotionTransport();
 
     // ...at first waypoint
     TaxiPathNodeEntry const* startNode = tInfo->keyFrames.begin()->Node;
@@ -414,15 +414,12 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
     // Passengers will be loaded once a player is near
 
     // update in loaded data (changing data only in this place)
-    GameObjectData& data = sObjectMgr->NewGOData(guidLow);
+    GameObjectData& data = sObjectMgr->NewOrExistGameObjectData(guidLow);
 
     // data->guid = guid don't must be update at save
     data.id = trans->GetEntry();
-    data.mapid = trans->GetMapId();
-    data.posX = trans->GetFloatValue(GAMEOBJECT_POS_X);
-    data.posY = trans->GetFloatValue(GAMEOBJECT_POS_Y);
-    data.posZ = trans->GetFloatValue(GAMEOBJECT_POS_Z);
-    data.orientation = trans->GetFloatValue(GAMEOBJECT_FACING);
+    data.spawnPoint.Relocate(trans->GetFloatValue(GAMEOBJECT_POS_X), trans->GetFloatValue(GAMEOBJECT_POS_Y), trans->GetFloatValue(GAMEOBJECT_POS_Z), trans->GetFloatValue(GAMEOBJECT_FACING));
+    data.spawnPoint.m_mapId = trans->GetMapId();
     data.rotation = G3D::Quat(
         trans->GetFloatValue(GAMEOBJECT_PARENTROTATION + 0), 
         trans->GetFloatValue(GAMEOBJECT_PARENTROTATION + 1), 

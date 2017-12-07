@@ -42,7 +42,7 @@ void OPvPCapturePoint::HandlePlayerLeave(Player* player)
 
 bool OPvPCapturePoint::AddObject(uint32 type, uint32 entry, uint32 map, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3)
 {
-    if (ObjectGuid::LowType guid = sObjectMgr->AddGOData(entry, map, x, y, z, o, 0, rotation0, rotation1, rotation2, rotation3))
+    if (ObjectGuid::LowType guid = sObjectMgr->AddGameObjectData(entry, map, x, y, z, o, 0, rotation0, rotation1, rotation2, rotation3))
     {
         AddGO(type, guid, entry);
         return true;
@@ -55,7 +55,7 @@ void OPvPCapturePoint::AddGO(uint32 type, ObjectGuid::LowType guid, uint32 entry
 {
     if (!entry)
     {
-        GameObjectData const* data = sObjectMgr->GetGOData(guid);
+        GameObjectData const* data = sObjectMgr->GetGameObjectData(guid);
         if (!data)
             return;
         entry = data->id;
@@ -114,7 +114,7 @@ bool OPvPCapturePoint::SetCapturePointData(uint32 entry, uint32 map, float x, fl
     }
 
     // create capture point go
-    m_capturePointSpawnId = sObjectMgr->AddGOData(entry, map, x, y, z, o, 0, rotation0, rotation1, rotation2, rotation3);
+    m_capturePointSpawnId = sObjectMgr->AddGameObjectData(entry, map, x, y, z, o, 0, rotation0, rotation1, rotation2, rotation3);
     if (m_capturePointSpawnId == 0)
         return false;
 
@@ -129,12 +129,24 @@ bool OPvPCapturePoint::SetCapturePointData(uint32 entry, uint32 map, float x, fl
 
 bool OPvPCapturePoint::DelCreature(uint32 type)
 {
+    uint32 spawnId = m_Creatures[type];
     if(!m_Creatures[type])
     {
         TC_LOG_ERROR("FIXME","opvp creature type %u was already deleted",type);
         return false;
     }
     
+    auto bounds = m_PvP->GetMap()->GetCreatureBySpawnIdStore().equal_range(spawnId);
+    for (auto itr = bounds.first; itr != bounds.second;)
+    {
+        Creature* c = itr->second;
+        ++itr;
+        // Don't save respawn time
+        c->SetRespawnTime(0);
+        c->DespawnOrUnsummon();
+        c->AddObjectToRemoveList();
+    }
+
     Creature *cr = m_PvP->GetMap()->GetCreature(m_Creatures[type]);
     if(!cr)
     {
@@ -143,19 +155,20 @@ bool OPvPCapturePoint::DelCreature(uint32 type)
         return false;
     }
 
-    uint32 guid = cr->GetSpawnId();
-    // Don't save respawn time
-    cr->SetRespawnTime(0);
-    cr->RemoveCorpse();
+    TC_LOG_DEBUG("outdoorpvp", "deleting opvp creature type %u", type);
     // explicit removal from map
     // beats me why this is needed, but with the recent removal "cleanup" some creatures stay in the map if "properly" deleted
     // so this is a big fat workaround, if AddObjectToRemoveList and DoDelayedMovesAndRemoves worked correctly, this wouldn't be needed
-    if(Map * map = sMapMgr->FindBaseNonInstanceMap(cr->GetMapId()))
-        map->RemoveFromMap(cr,false);
+    //if (Map* map = sMapMgr->FindMap(cr->GetMapId()))
+    //    map->Remove(cr, false);
     // delete respawn time for this creature
-    CharacterDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);
-    cr->AddObjectToRemoveList();
-    sObjectMgr->DeleteCreatureData(guid);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CREATURE_RESPAWN);
+    stmt->setUInt32(0, spawnId);
+    stmt->setUInt16(1, m_PvP->GetMap()->GetId());
+    stmt->setUInt32(2, 0);  // instance id, always 0 for world maps
+    CharacterDatabase.Execute(stmt);
+
+    sObjectMgr->DeleteCreatureData(spawnId);
     m_CreatureTypes[m_Creatures[type]] = 0;
     m_Creatures[type] = 0;
     return true;
@@ -175,7 +188,7 @@ bool OPvPCapturePoint::DelObject(uint32 type)
     uint32 guid = obj->GetSpawnId();
     obj->SetRespawnTime(0);                                 // not save respawn time
     obj->Delete();
-    sObjectMgr->DeleteGOData(guid);
+    sObjectMgr->DeleteGameObjectData(guid);
     m_ObjectTypes[m_Objects[type]] = 0;
     m_Objects[type] = 0;
     return true;
@@ -183,7 +196,7 @@ bool OPvPCapturePoint::DelObject(uint32 type)
 
 bool OPvPCapturePoint::DelCapturePoint()
 {
-    sObjectMgr->DeleteGOData(m_capturePointSpawnId);
+    sObjectMgr->DeleteGameObjectData(m_capturePointSpawnId);
     m_capturePointSpawnId = 0;
 
     if (m_capturePoint)

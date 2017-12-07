@@ -196,11 +196,11 @@ bool ChatHandler::HandleReloadCreatureQuestStartersCommand(const char*)
     return true;
 }
 
-bool ChatHandler::HandleReloadCreatureLinkedRespawnCommand(const char* args)
+bool ChatHandler::HandleLinkedRespawnCommand(const char* args)
 {
-    TC_LOG_INFO("command", "Loading Linked Respawns... (`creature_linked_respawn`)" );
-    sObjectMgr->LoadCreatureLinkedRespawn();
-    SendGlobalGMSysMessage("DB table `creature_linked_respawn` (creature linked respawns) reloaded.");
+    TC_LOG_INFO("command", "Loading Linked Respawns... (`linked_respawn`)" );
+    sObjectMgr->LoadLinkedRespawn();
+    SendGlobalGMSysMessage("DB table `linked_respawn` (linked respawns) reloaded.");
     return true;
 }
 

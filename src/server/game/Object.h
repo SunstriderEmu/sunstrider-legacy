@@ -555,8 +555,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         void SendObjectDeSpawnAnim(uint64 guid);
 
-        virtual void SaveRespawnTime() {}
-
+        virtual void SaveRespawnTime(uint32 /*forceDelay*/ = 0, bool /*saveToDB*/ = true) { }
         void AddObjectToRemoveList();
 
 		float GetGridActivationRange() const;

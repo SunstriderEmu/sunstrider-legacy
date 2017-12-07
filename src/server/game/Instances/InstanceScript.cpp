@@ -7,7 +7,7 @@
 #include "Language.h"
 #include "ScriptMgr.h"
 
-InstanceScript::InstanceScript(Map *map) : instance(map)
+InstanceScript::InstanceScript(Map *map) : instance(map), _instanceSpawnGroups(sObjectMgr->GetSpawnGroupsForInstance(map->GetId()))
 {
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
     uint32 scriptId = sObjectMgr->GetInstanceTemplate(map->GetId())->ScriptId;
@@ -17,20 +17,6 @@ InstanceScript::InstanceScript(Map *map) : instance(map)
     // to keep it loaded until this object is destroyed.
     module_reference = sScriptMgr->AcquireModuleReferenceOfScriptName(scriptname);
 #endif // #ifndef TRINITY_API_USE_DYNAMIC_LINKING
-}
-
-void InstanceScript::CastOnAllPlayers(uint32 spellId)
-{
-    Map::PlayerList const& players = instance->GetPlayers();
-
-    if (!players.isEmpty())
-    {
-        for(const auto & player : players)
-        {
-            if (Player* plr = player.GetSource())
-                plr->CastSpell(plr, spellId, TRIGGERED_FULL_MASK);                
-        }
-    }
 }
 
 void InstanceScript::RemoveAuraOnAllPlayers(uint32 spellId)
@@ -47,16 +33,6 @@ void InstanceScript::RemoveAuraOnAllPlayers(uint32 spellId)
     }
 }
 
-void InstanceScript::MonsterPulled(Creature* creature, Unit* puller)
-{
-    
-}
-
-void InstanceScript::PlayerDied(Player* player)
-{
-    
-}
-
 void InstanceScript::SendScriptInTestNoLootMessageToAll()
 {
     Map::PlayerList const& players = instance->GetPlayers();
@@ -67,6 +43,13 @@ void InstanceScript::SendScriptInTestNoLootMessageToAll()
                 ChatHandler(plr).SendSysMessage(LANG_SCRIPT_IN_TEST_NO_LOOT);
         }
     }
+}
+
+void InstanceScript::Create()
+{
+    for (size_t i = 0; i < bosses.size(); ++i)
+        SetBossState(i, NOT_STARTED);
+    UpdateSpawnGroups();
 }
 
 bool InstanceScript::IsEncounterInProgress() const
@@ -168,6 +151,38 @@ void InstanceScript::AddDoor(GameObject* door, bool add)
         UpdateDoorState(door);
 }
 
+void InstanceScript::UpdateSpawnGroups()
+{
+    if (!_instanceSpawnGroups)
+        return;
+    enum states { BLOCK, SPAWN, FORCEBLOCK };
+    std::unordered_map<uint32, states> newStates;
+    for (auto it = _instanceSpawnGroups->begin(), end = _instanceSpawnGroups->end(); it != end; ++it)
+    {
+        InstanceSpawnGroupInfo const& info = *it;
+        states& curValue = newStates[info.SpawnGroupId]; // makes sure there's a BLOCK value in the map
+        if (curValue == FORCEBLOCK) // nothing will change this
+            continue;
+        if (!((1 << GetBossState(info.BossStateId)) & info.BossStates))
+            continue;
+        if (info.Flags & InstanceSpawnGroupInfo::FLAG_BLOCK_SPAWN)
+            curValue = FORCEBLOCK;
+        else if (info.Flags & InstanceSpawnGroupInfo::FLAG_ACTIVATE_SPAWN)
+            curValue = SPAWN;
+    }
+    for (auto const& pair : newStates)
+    {
+        uint32 const groupId = pair.first;
+        bool const doSpawn = (pair.second == SPAWN);
+        if (instance->IsSpawnGroupActive(groupId) == doSpawn)
+            continue; // nothing to do here
+                      // if we should spawn group, then spawn it...
+        if (doSpawn)
+            instance->SpawnGroupSpawn(groupId);
+        else // otherwise, set it as inactive so it no longer respawns (but don't despawn it)
+            instance->SetSpawnGroupActive(groupId, false);
+    }
+}
 
 bool InstanceScript::SetBossState(uint32 id, EncounterState state)
 {
@@ -208,6 +223,7 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
             UpdateMinionState(*i, state);
             */
 
+        UpdateSpawnGroups();
         return true;
     }
     return false;
@@ -252,18 +268,28 @@ void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject *go)
 
 void InstanceScript::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
 {
-    if (GameObject* pGo = instance->GetGameObject(uiGuid))
+    if (GameObject* go = instance->GetGameObject(uiGuid))
     {
-        //not expect any of these should ever be handled
-        if (pGo->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE || pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR ||
-            pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON || pGo->GetGoType() == GAMEOBJECT_TYPE_TRAP)
+        switch (go->GetGoType())
+        {
+        case GAMEOBJECT_TYPE_DOOR:
+        case GAMEOBJECT_TYPE_BUTTON:
+        case GAMEOBJECT_TYPE_TRAP:
+        case GAMEOBJECT_TYPE_FISHINGNODE:
+            // not expect any of these should ever be handled
+            TC_LOG_ERROR("scripts", "InstanceScript: DoRespawnGameObject can't respawn gameobject entry %u, because type is %u.", go->GetEntry(), go->GetGoType());
+            return;
+        default:
+            break;
+        }
+
+        if (go->isSpawned())
             return;
 
-        if (pGo->isSpawned())
-            return;
-
-        pGo->SetRespawnTime(uiTimeToDespawn);
+        go->SetRespawnTime(uiTimeToDespawn);
     }
+    else
+        TC_LOG_DEBUG("scripts", "InstanceScript: DoRespawnGameObject failed");
 }
 
 void InstanceScript::DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime, bool bUseAlternativeState)

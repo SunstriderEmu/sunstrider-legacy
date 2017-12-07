@@ -166,20 +166,15 @@ Battleground::~Battleground()
 {
     // remove objects and creatures
     // (this is done automatically in mapmanager update, when the instance is reset after the reset time)
-    int size = BgCreatures.size();
+    uint32 size = BgCreatures.size();
     for(int i = 0; i < size; ++i)
-    {
         DelCreature(i);
-    }
+
     size = BgObjects.size();
     for(int i = 0; i < size; ++i)
-    {
         DelObject(i);
-    }
 
-    // delete creature and go respawn times
-    CharacterDatabase.PExecute("DELETE FROM creature_respawn WHERE instanceId = '%u'", GetInstanceID());
-    CharacterDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instanceId = '%u'", GetInstanceID());
+
     // delete instance from db
     CharacterDatabase.PExecute("DELETE FROM instance WHERE id = '%u'", GetInstanceID());
 
@@ -187,6 +182,7 @@ Battleground::~Battleground()
     // unload map
     if (m_Map)
     {
+        m_Map->DeleteRespawnTimes();
         m_Map->SetUnload();
         //unlink to prevent crash, always unlink all pointer reference before destruction
         m_Map->SetBG(nullptr);
@@ -1601,7 +1597,7 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y,
         return nullptr;
 
     auto  pCreature = new Creature();
-    if (!pCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL, entry, x, y, z, o))
+    if (!pCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL, entry, { x, y, z, o }))
     {
         TC_LOG_ERROR("battleground","Can't create creature entry: %u",entry);
         delete pCreature;

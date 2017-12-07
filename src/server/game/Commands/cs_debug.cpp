@@ -1473,7 +1473,7 @@ bool ChatHandler::HandleSpawnBatchObjects(const char* args)
     }
 
     //Check validity for each. Also remove from the object list the one we already have on our server
-    auto goDataMap = sObjectMgr->GetGODataMap();
+    auto goDataMap = sObjectMgr->GetGameObjectDataMap();
     for (std::vector<FileGameObject>::iterator itr2 = fileObjects.begin(); itr2 != fileObjects.end(); )
     {
         FileGameObject& fileObject = *itr2;
@@ -1491,12 +1491,11 @@ bool ChatHandler::HandleSpawnBatchObjects(const char* args)
         {
             auto const& sunstriderObject = itr.second;
             uint32 sunstriderGUID = itr.first;
-            if (sunstriderObject.mapid != mapId)
+            if (sunstriderObject.spawnPoint.GetMapId() != mapId)
                 continue;
 
-            Position sunPosition(sunstriderObject.posX, sunstriderObject.posY, sunstriderObject.posZ);
             //same id and very close position, consider it the same object
-            bool sameObject = sunstriderObject.id == objectEntry && sunstriderObject.spawnMask & fileObject.spawnMask && fileObject.position.GetExactDist(sunPosition) < 5.0f;
+            bool sameObject = sunstriderObject.id == objectEntry && sunstriderObject.spawnMask & fileObject.spawnMask && fileObject.position.GetExactDist(sunstriderObject.spawnPoint) < 5.0f;
             if (sameObject)
             {
                 if (sunstriderObject.spawnMask & fileObject.spawnMask && sunstriderObject.spawnMask != fileObject.spawnMask)

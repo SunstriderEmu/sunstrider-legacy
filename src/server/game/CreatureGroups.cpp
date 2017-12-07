@@ -159,7 +159,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         // check data correctness
         const CreatureData* leader = sObjectMgr->GetCreatureData(group_member->leaderGUID);
         const CreatureData* member = sObjectMgr->GetCreatureData(memberGUID);
-        if(!leader || !member || leader->mapid != member->mapid)
+        if(!leader || !member || leader->spawnPoint.GetMapId() != member->spawnPoint.GetMapId())
         {
             TC_LOG_ERROR("sql.sql","Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
             delete group_member;

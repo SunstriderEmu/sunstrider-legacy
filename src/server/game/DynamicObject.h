@@ -60,8 +60,6 @@ class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicO
 		DynamicObjectType m_type;
 
 		bool _isViewpoint;
-    private:
-        GridReference<DynamicObject> m_gridRef;
 };
 #endif
 

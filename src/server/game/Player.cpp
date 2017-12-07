@@ -178,7 +178,7 @@ Player::Player(WorldSession *session) :
     m_usedTalentCount(0),
     m_regenTimer(0),
     m_weaponChangeTimer(0),
-    m_zoneUpdateId(0),
+    m_zoneUpdateId(MAP_INVALID_ZONE),
     m_zoneUpdateTimer(0),
     m_areaUpdateId(0)
 {
@@ -7000,6 +7000,8 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     m_zoneUpdateId = newZone;
     m_zoneUpdateTimer = ZONE_UPDATE_INTERVAL;
 
+    GetMap()->UpdatePlayerZoneStats(oldZoneId, newZone);
+
     // inform outdoor pvp
     if (oldZoneId != m_zoneUpdateId)
     {
@@ -9668,6 +9670,9 @@ bool Player::IsValidPos( uint8 bag, uint8 slot ) const
 
 bool Player::HasItemCount( uint32 item, uint32 count, bool inBankAlso ) const
 {
+    if (count == 0)
+        return true;
+
     uint32 tempcount = 0;
     for(int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; i++)
     {
@@ -14360,8 +14365,14 @@ bool Player::CanShareQuest(uint32 quest_id) const
         auto itr = m_QuestStatus.find( quest_id );
         if( itr != m_QuestStatus.end() )
         {
-            //TODO TC:  in pool and not currently available (wintergrasp weekly, dalaran weekly) - can't share
-            // ...
+            // in pool and not currently available (wintergrasp weekly, dalaran weekly) - can't share
+            /*
+            if (sPoolMgr->IsPartOfAPool<Quest>(quest_id) && !sPoolMgr->IsSpawnedObject<Quest>(quest_id))
+            {
+                SendPushToPartyResponse(this, QUEST_PARTY_MSG_CANT_BE_SHARED_TODAY);
+                return false;
+            }
+            TC */
 
             return true;
         }

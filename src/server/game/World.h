@@ -158,7 +158,6 @@ enum WorldConfigs
     CONFIG_SKILL_GAIN_GATHERING,
     CONFIG_SKILL_GAIN_WEAPON,
     CONFIG_MAX_OVERSPEED_PINGS,
-    CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY,
     CONFIG_ALWAYS_MAX_SKILL_FOR_LEVEL,
     CONFIG_WEATHER,
     CONFIG_EXPANSION,
@@ -179,6 +178,20 @@ enum WorldConfigs
     CONFIG_RESTRICTED_LFG_CHANNEL,
     CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL,
     CONFIG_TALENTS_INSPECTING,
+
+    CONFIG_RESPAWN_MINCHECKINTERVALMS,
+    CONFIG_RESPAWN_DYNAMIC_ESCORTNPC,
+    CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY,
+    CONFIG_RESPAWN_DYNAMICMODE,
+    CONFIG_RESPAWN_GUIDWARNLEVEL,
+    CONFIG_RESPAWN_GUIDALERTLEVEL,
+    CONFIG_RESPAWN_RESTARTQUIETTIME,
+    CONFIG_RESPAWN_DYNAMICMINIMUM_CREATURE,
+    CONFIG_RESPAWN_DYNAMICMINIMUM_GAMEOBJECT,
+    CONFIG_RESPAWN_GUIDWARNING_FREQUENCY,
+    CONFIG_RESPAWN_DYNAMICRATE_CREATURE,
+    CONFIG_RESPAWN_DYNAMICRATE_GAMEOBJECT,
+
     CONFIG_CHAT_FAKE_MESSAGE_PREVENTING,
     CONFIG_CORPSE_DECAY_NORMAL,
     CONFIG_CORPSE_DECAY_RARE,
@@ -607,9 +620,9 @@ class TC_GAME_API World
         /// Are we in the middle of a shutdown?
         bool IsShuttingDown() const { return IsStopped() || m_ShutdownTimer > 0; }
         uint32 const GetShutDownTimeLeft() { return m_ShutdownTimer; }
-        void ShutdownServ(uint32 time, uint32 options, /*uint8 exitcode*/ const char* reason);
+        void ShutdownServ(uint32 time, uint32 options, uint8 exitcode, const std::string& reason = std::string());
         void ShutdownCancel();
-        void ShutdownMsg(bool show = false, Player* player = nullptr, std::string reason = "");
+        void ShutdownMsg(bool show = false, Player* player = nullptr, const std::string& reason = std::string());
         std::string GetShutdownReason() { return m_ShutdownReason; }
         static uint8 GetExitCode() { return m_ExitCode; }
         static void StopNow(uint8 exitcode) { m_stopEvent = true; m_ExitCode = exitcode; }
@@ -726,6 +739,11 @@ class TC_GAME_API World
         CharTitlesEntry const* getArenaLeaderTitle(uint8 rank);
         CharTitlesEntry const* getGladiatorTitle(uint8 rank);
 
+        void TriggerGuidWarning();
+        void TriggerGuidAlert();
+        bool IsGuidWarning() { return _guidWarn; }
+        bool IsGuidAlert() { return _guidAlert; }
+
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -830,8 +848,22 @@ class TC_GAME_API World
 
         std::vector<ArenaTeam*> firstArenaTeams;
 
+        void SendGuidWarning();
+        void DoGuidWarningRestart();
+        void DoGuidAlertRestart();
+
         void ProcessQueryCallbacks();
         QueryCallbackProcessor _queryProcessor;
+
+        std::string _guidWarningMsg;
+        std::string _alertRestartReason;
+
+        std::mutex _guidAlertLock;
+
+        bool _guidWarn;
+        bool _guidAlert;
+        uint32 _warnDiff;
+        time_t _warnShutdownTime;
 };
 
 TC_GAME_API extern Realm realm;

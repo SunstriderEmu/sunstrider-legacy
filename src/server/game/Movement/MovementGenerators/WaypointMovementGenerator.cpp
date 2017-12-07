@@ -907,7 +907,7 @@ void FlightPathMovementGenerator::InitEndGridInfo()
 void FlightPathMovementGenerator::PreloadEndGrid()
 {
     // used to preload the final grid where the flightmaster is
-    Map* endMap = sMapMgr->FindBaseNonInstanceMap(_endMapId); //Why should we exclude instances ? Makes no differences in our case anyway
+    Map* endMap = sMapMgr->FindBaseNonInstanceMap(_endMapId); //Why should we exclude instances ? Makes no differences in BC case anyway
 
     // Load the grid
     if (endMap)

@@ -87,10 +87,10 @@ bool ChatHandler::HandleServerShutDownCommand(const char* args)
 
         sWorld->ShutdownServ (time, 0, exitcode);*/
         
-        sWorld->ShutdownServ (time, 0, reason);
+        sWorld->ShutdownServ(time, 0, SHUTDOWN_EXIT_CODE, reason);
     }
     else
-        sWorld->ShutdownServ(time,0,"");
+        sWorld->ShutdownServ(time, 0, SHUTDOWN_EXIT_CODE, "");
     return true;
 }
 
@@ -108,9 +108,9 @@ bool ChatHandler::HandleServerRestartCommand(const char* args)
         return false;
 
     if (reason)
-        sWorld->ShutdownServ (time, SHUTDOWN_MASK_RESTART, reason);
+        sWorld->ShutdownServ(time, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE, reason);
     else
-        sWorld->ShutdownServ(time, SHUTDOWN_MASK_RESTART, "");
+        sWorld->ShutdownServ(time, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE, "");
         
     return true;
 }
@@ -129,9 +129,9 @@ bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
         return false;
 
     if (reason)
-        sWorld->ShutdownServ(time, SHUTDOWN_MASK_RESTART, reason);
+        sWorld->ShutdownServ(time, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE, reason);
     else
-        sWorld->ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE,"");
+        sWorld->ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE, RESTART_EXIT_CODE, "");
         
     return true;
 }
@@ -150,9 +150,9 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
         return false;
 
     if (reason)
-        sWorld->ShutdownServ(time, SHUTDOWN_MASK_IDLE, reason);
+        sWorld->ShutdownServ(time, SHUTDOWN_MASK_IDLE, SHUTDOWN_EXIT_CODE, reason);
     else
-        sWorld->ShutdownServ(time,SHUTDOWN_MASK_IDLE,"");
+        sWorld->ShutdownServ(time, SHUTDOWN_MASK_IDLE, SHUTDOWN_EXIT_CODE, "");
         
     return true;
 }

@@ -21,12 +21,6 @@ class TC_GAME_API ZoneScript
 
 		virtual void OnUnitDeath(Unit*) { }
 
-        //On creation, NOT load.
-        virtual void Initialize() {}
-
-        //On load
-        virtual void Load(const char* /*data*/) {}
-
         //Called when a player successfully enters the instance.
         virtual void OnPlayerEnter(Player *) {}
 

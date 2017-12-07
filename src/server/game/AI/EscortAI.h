@@ -82,6 +82,10 @@ struct TC_GAME_API EscortAI : public ScriptedAI
         bool GetAttack() const { return _activeAttacker; } // used in EnterEvadeMode override
         void SetCanAttack(bool attack) { _activeAttacker = attack; }
 
+        uint64 GetEventStarterGUID() const { return _playerGUID; }
+
+        virtual bool IsEscortNPC(bool isEscorting) const override;
+
     // EscortAI variables
     protected:
         uint64 _playerGUID;

@@ -197,11 +197,8 @@ class TC_GAME_API WorldLocation : public Position
 		WorldLocation(WorldLocation const& loc)
 			: Position(loc), m_mapId(loc.GetMapId()) { }
 
-        void WorldRelocate(const WorldLocation &loc)
-        { 
-			m_mapId = loc.GetMapId(); 
-			Relocate(loc); 
-		}
+        void WorldRelocate(WorldLocation const& loc) { m_mapId = loc.GetMapId(); Relocate(loc); }
+        void WorldRelocate(WorldLocation const* loc) { m_mapId = loc->GetMapId(); Relocate(loc); }
 
 		void WorldRelocate(uint32 _mapId = MAPID_INVALID, float _x = 0.f, float _y = 0.f, float _z = 0.f, float _o = 0.f)
 		{

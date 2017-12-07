@@ -83,13 +83,10 @@ bool ChatHandler::HandleGoObjectCommand(const char* args)
         if (!guid)
             return false;
 
-        if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
+        if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(guid))
         {
-            x = go_data->posX;
-            y = go_data->posY;
-            z = go_data->posZ;
-            ort = go_data->orientation;
-            mapid = go_data->mapid;
+            go_data->spawnPoint.GetPosition(x, y, z, ort);
+            mapid = go_data->spawnPoint.GetMapId();
         }
         else
         {

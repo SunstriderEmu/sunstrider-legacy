@@ -333,16 +333,14 @@ Creature* MotionTransport::CreateNPCPassenger(uint32 guid, CreatureData const* d
     Map* map = GetMap();
     auto  creature = new Creature();
 
-    if (!creature->LoadFromDB(guid, map)) //do not add to map yet
+    if (!creature->LoadFromDB(guid, map, false, true)) //do not add to map yet
     {
         delete creature;
         return nullptr;
     }
 
-    float x = data->posX;
-    float y = data->posY;
-    float z = data->posZ;
-    float o = data->orientation;
+    float x, y, z, o;
+    data->spawnPoint.GetPosition(x, y, z, o);
 
     creature->SetTransport(this);
     creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
@@ -447,7 +445,7 @@ void MotionTransport::LoadStaticPassengers()
             // GameObjects on transport
             guidEnd = cell.second.gameobjects.end();
             for (auto guidItr = cell.second.gameobjects.begin(); guidItr != guidEnd; ++guidItr)
-                CreateGOPassenger(*guidItr, sObjectMgr->GetGOData(*guidItr));
+                CreateGOPassenger(*guidItr, sObjectMgr->GetGameObjectData(*guidItr));
         }
     }
 }
@@ -711,7 +709,7 @@ StaticTransport::~StaticTransport()
     ASSERT(_passengers.empty());
 }
 
-bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit, uint32 spawnid)
+bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit, bool dynamic, uint32 spawnid)
 {
     ASSERT(map);
     SetMap(map);

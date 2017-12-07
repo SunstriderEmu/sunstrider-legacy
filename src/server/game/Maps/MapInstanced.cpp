@@ -246,7 +246,7 @@ TestMap* MapInstanced::CreateTestInsteance(uint32 instanceId, Difficulty difficu
 
     TestMap* map = new TestMap(GetId(), instanceId, difficulty, this, enableMapObjects);
 
-    map->CreateInstanceScript(false);
+    map->CreateInstanceData(false);
 
     m_InstancedMaps[instanceId] = map;
     return map;
@@ -280,11 +280,11 @@ InstanceMap* MapInstanced::CreateInstance(uint32 instanceId, InstanceSave* save,
 
     assert(map->IsDungeon());
 
-    //TC  map->LoadRespawnTimes();
+    map->LoadRespawnTimes();
     map->LoadCorpseData();
 
     bool load_data = save != nullptr;
-    map->CreateInstanceScript(load_data);
+    map->CreateInstanceData(load_data);
 
     m_InstancedMaps[instanceId] = map;
     return map;

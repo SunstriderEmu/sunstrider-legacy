@@ -721,6 +721,18 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         CreatureDisplayInfoEntry const* ScaleEntry = sCreatureDisplayInfoStore.LookupEntry(modelid);
         const_cast<CreatureTemplate*>(cInfo)->scale = ScaleEntry ? ScaleEntry->scale : 1.0f;
     }
+
+    if (cInfo->expansion > (MAX_EXPANSIONS - 1))
+    {
+        TC_LOG_ERROR("sql.sql", "Table `creature_template` lists creature (Entry: %u) with expansion %u. Ignored and set to 0.", cInfo->Entry, cInfo->expansion);
+        const_cast<CreatureTemplate*>(cInfo)->expansion = 0;
+    }
+
+    if (uint32 badFlags = (cInfo->flags_extra & ~CREATURE_FLAG_EXTRA_DB_ALLOWED))
+    {
+        TC_LOG_ERROR("sql.sql", "Table `creature_template` lists creature (Entry: %u) with disallowed `flags_extra` %u, removing incorrect flag.", cInfo->Entry, badFlags);
+        const_cast<CreatureTemplate*>(cInfo)->flags_extra &= CREATURE_FLAG_EXTRA_DB_ALLOWED;
+    }
 }
 
 void ObjectMgr::LoadCreatureAddons()
@@ -798,7 +810,7 @@ void ObjectMgr::LoadCreatureAddons()
             creatureAddon.emote = 0;
         }
 
-        if(mCreatureDataMap.find(guid)==mCreatureDataMap.end())
+        if(_creatureDataStore.find(guid)==_creatureDataStore.end())
             TC_LOG_ERROR("sql.sql","Creature (GUID: %u) does not exist but has a record in `creature_addon`",guid);
 
         ++count;
@@ -1171,81 +1183,235 @@ void ObjectMgr::LoadCreatureModelInfo()
     TC_LOG_INFO("server.loading", ">> Loaded %u creature model based info in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
+void ObjectMgr::LoadLinkedRespawn()
 {
-    const CreatureData* const slave = GetCreatureData(guid);
-    const CreatureData* const master = GetCreatureData(linkedGuid);
-    
-    if(!slave || !master) // they must have a corresponding entry in db
+    uint32 oldMSTime = GetMSTime();
+
+    _linkedRespawnStore.clear();
+    //                                                 0        1          2
+    QueryResult result = WorldDatabase.Query("SELECT guid, linkedGuid, linkType FROM linked_respawn ORDER BY guid ASC");
+
+    if (!result)
     {
-        TC_LOG_ERROR("sql.sql","LinkedRespawn: Creature '%u' linking to '%u' which doesn't exist",guid,linkedGuid);
-        return false;
-    }
-
-    const MapEntry* const map = sMapStore.LookupEntry(master->mapid);
-        
-    if(master->mapid != slave->mapid        // link only to same map
-        && (!map || map->Instanceable()))   // or to unistanced world
-    {
-        TC_LOG_ERROR("sql.sql","LinkedRespawn: Creature '%u' linking to '%u' on an unpermitted map",guid,linkedGuid);
-        return false;
-    }
-
-    if(!(master->spawnMask & slave->spawnMask)  // they must have a possibility to meet (normal/heroic difficulty)
-        && (!map || map->Instanceable()))
-    {
-        TC_LOG_ERROR("sql.sql","LinkedRespawn: Creature '%u' linking to '%u' with not corresponding spawnMask",guid,linkedGuid);
-        return false;
-    }
-
-    return true;
-}
-
-void ObjectMgr::LoadCreatureLinkedRespawn()
-{
-    mCreatureLinkedRespawnMap.clear();
-    QueryResult result = WorldDatabase.Query("SELECT guid, linkedGuid FROM creature_linked_respawn ORDER BY guid ASC");
-
-    if(!result)
-    {
-        TC_LOG_ERROR("sql.sql",">> Loaded 0 linked respawns. DB table `creature_linked_respawn` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 linked respawns. DB table `linked_respawn` is empty.");
         return;
     }
 
     do
     {
-        Field *fields = result->Fetch();
+        Field* fields = result->Fetch();
 
-        uint32 guid = fields[0].GetUInt32();
-        uint32 linkedGuid = fields[1].GetUInt32();
+        ObjectGuid::LowType guidLow = fields[0].GetUInt32();
+        ObjectGuid::LowType linkedGuidLow = fields[1].GetUInt32();
+        uint8  linkType = fields[2].GetUInt8();
 
-        if(CheckCreatureLinkedRespawn(guid,linkedGuid))
-            mCreatureLinkedRespawnMap[guid] = linkedGuid;
+        ObjectGuid guid, linkedGuid;
+        bool error = false;
+        switch (linkType)
+        {
+        case CREATURE_TO_CREATURE:
+        {
+            CreatureData const* slave = GetCreatureData(guidLow);
+            if (!slave)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature (guid) '%u' not found in creature table", guidLow);
+                error = true;
+                break;
+            }
 
+            CreatureData const* master = GetCreatureData(linkedGuidLow);
+            if (!master)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature (linkedGuid) '%u' not found in creature table", linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            MapEntry const* const map = sMapStore.LookupEntry(master->spawnPoint.GetMapId());
+            if (!map || !map->Instanceable() || (master->spawnPoint.GetMapId() != slave->spawnPoint.GetMapId()))
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature '%u' linking to Creature '%u' on an unpermitted map.", guidLow, linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            if (!(master->spawnMask & slave->spawnMask))  // they must have a possibility to meet (normal/heroic difficulty)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature '%u' linking to Creature '%u' with not corresponding spawnMask", guidLow, linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            guid = ObjectGuid(HighGuid::Unit, slave->id, guidLow);
+            linkedGuid = ObjectGuid(HighGuid::Unit, master->id, linkedGuidLow);
+            break;
+        }
+        case CREATURE_TO_GO:
+        {
+            CreatureData const* slave = GetCreatureData(guidLow);
+            if (!slave)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature (guid) '%u' not found in creature table", guidLow);
+                error = true;
+                break;
+            }
+
+            GameObjectData const* master = GetGameObjectData(linkedGuidLow);
+            if (!master)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Gameobject (linkedGuid) '%u' not found in gameobject table", linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            MapEntry const* const map = sMapStore.LookupEntry(master->spawnPoint.GetMapId());
+            if (!map || !map->Instanceable() || (master->spawnPoint.GetMapId() != slave->spawnPoint.GetMapId()))
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature '%u' linking to Gameobject '%u' on an unpermitted map.", guidLow, linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            if (!(master->spawnMask & slave->spawnMask))  // they must have a possibility to meet (normal/heroic difficulty)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature '%u' linking to Gameobject '%u' with not corresponding spawnMask", guidLow, linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            guid = ObjectGuid(HighGuid::Unit, slave->id, guidLow);
+            linkedGuid = ObjectGuid(HighGuid::GameObject, master->id, linkedGuidLow);
+            break;
+        }
+        case GO_TO_GO:
+        {
+            GameObjectData const* slave = GetGameObjectData(guidLow);
+            if (!slave)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Gameobject (guid) '%u' not found in gameobject table", guidLow);
+                error = true;
+                break;
+            }
+
+            GameObjectData const* master = GetGameObjectData(linkedGuidLow);
+            if (!master)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Gameobject (linkedGuid) '%u' not found in gameobject table", linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            MapEntry const* const map = sMapStore.LookupEntry(master->spawnPoint.GetMapId());
+            if (!map || !map->Instanceable() || (master->spawnPoint.GetMapId() != slave->spawnPoint.GetMapId()))
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Gameobject '%u' linking to Gameobject '%u' on an unpermitted map.", guidLow, linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            if (!(master->spawnMask & slave->spawnMask))  // they must have a possibility to meet (normal/heroic difficulty)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Gameobject '%u' linking to Gameobject '%u' with not corresponding spawnMask", guidLow, linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            guid = ObjectGuid(HighGuid::GameObject, slave->id, guidLow);
+            linkedGuid = ObjectGuid(HighGuid::GameObject, master->id, linkedGuidLow);
+            break;
+        }
+        case GO_TO_CREATURE:
+        {
+            GameObjectData const* slave = GetGameObjectData(guidLow);
+            if (!slave)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Gameobject (guid) '%u' not found in gameobject table", guidLow);
+                error = true;
+                break;
+            }
+
+            CreatureData const* master = GetCreatureData(linkedGuidLow);
+            if (!master)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature (linkedGuid) '%u' not found in creature table", linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            MapEntry const* const map = sMapStore.LookupEntry(master->spawnPoint.GetMapId());
+            if (!map || !map->Instanceable() || (master->spawnPoint.GetMapId() != slave->spawnPoint.GetMapId()))
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Gameobject '%u' linking to Creature '%u' on an unpermitted map.", guidLow, linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            if (!(master->spawnMask & slave->spawnMask))  // they must have a possibility to meet (normal/heroic difficulty)
+            {
+                TC_LOG_ERROR("sql.sql", "LinkedRespawn: Gameobject '%u' linking to Creature '%u' with not corresponding spawnMask", guidLow, linkedGuidLow);
+                error = true;
+                break;
+            }
+
+            guid = ObjectGuid(HighGuid::GameObject, slave->id, guidLow);
+            linkedGuid = ObjectGuid(HighGuid::Unit, master->id, linkedGuidLow);
+            break;
+        }
+        }
+
+        if (!error)
+            _linkedRespawnStore[guid] = linkedGuid;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " linked respawns", mCreatureLinkedRespawnMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " linked respawns in %u ms", uint64(_linkedRespawnStore.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
-bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
+bool ObjectMgr::SetCreatureLinkedRespawn(ObjectGuid::LowType guidLow, ObjectGuid::LowType linkedGuidLow)
 {
-    if(!guid)
+    if (!guidLow)
         return false;
 
-    if(!linkedGuid) // we're removing the linking
+    CreatureData const* master = GetCreatureData(guidLow);
+    ASSERT(master);
+    ObjectGuid guid(HighGuid::Unit, master->id, guidLow);
+
+    if (!linkedGuidLow) // we're removing the linking
     {
-        mCreatureLinkedRespawnMap.erase(guid);
-        WorldDatabase.DirectPExecute("DELETE FROM `creature_linked_respawn` WHERE `guid` = '%u'",guid);
+        _linkedRespawnStore.erase(guid);
+        PreparedStatement *stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CRELINKED_RESPAWN);
+        stmt->setUInt32(0, guidLow);
+        WorldDatabase.Execute(stmt);
         return true;
     }
 
-    if(CheckCreatureLinkedRespawn(guid,linkedGuid)) // we add/change linking
+    CreatureData const* slave = GetCreatureData(linkedGuidLow);
+    if (!slave)
     {
-        mCreatureLinkedRespawnMap[guid] = linkedGuid;
-        WorldDatabase.DirectPExecute("REPLACE INTO `creature_linked_respawn`(`guid`,`linkedGuid`) VALUES ('%u','%u')",guid,linkedGuid);
-        return true;
+        TC_LOG_ERROR("sql.sql", "Creature '%u' linking to non-existent creature '%u'.", guidLow, linkedGuidLow);
+        return false;
     }
-    return false;
+
+    MapEntry const* map = sMapStore.LookupEntry(master->spawnPoint.GetMapId());
+    if (!map || !map->Instanceable() || (master->spawnPoint.GetMapId() != slave->spawnPoint.GetMapId()))
+    {
+        TC_LOG_ERROR("sql.sql", "Creature '%u' linking to '%u' on an unpermitted map.", guidLow, linkedGuidLow);
+        return false;
+    }
+
+    if (!(master->spawnMask & slave->spawnMask))  // they must have a possibility to meet (normal/heroic difficulty)
+    {
+        TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature '%u' linking to '%u' with not corresponding spawnMask", guidLow, linkedGuidLow);
+        return false;
+    }
+
+    ObjectGuid linkedGuid(HighGuid::Unit, slave->id, linkedGuidLow);
+
+    _linkedRespawnStore[guid] = linkedGuid;
+    PreparedStatement *stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_LINKED_RESPAWN);
+    stmt->setUInt32(0, guidLow);
+    stmt->setUInt32(1, linkedGuidLow);
+    WorldDatabase.Execute(stmt);
+    return true;
 }
 
 void ObjectMgr::LoadCreatures()
@@ -1255,10 +1421,12 @@ void ObjectMgr::LoadCreatures()
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13           14            15       16      17                   18                                        19           
-        "curhealth, curmana, MovementType, spawnMask, event, pool_id, COALESCE(creature_encounter_respawn.eventid, -1), creature.ScriptName "
-        "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
+    //   12         13           14            15       16      17                   18                                        19                20
+        "curhealth, curmana, MovementType, spawnMask, event, pool_id, COALESCE(creature_encounter_respawn.eventid, -1), creature.ScriptName, pool_entry "
+        "FROM creature "
+        "LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN creature_encounter_respawn ON creature.guid = creature_encounter_respawn.guid "
+        "LEFT OUTER JOIN pool_creature ON creature.guid = pool_creature.guid "
         );
 
     if(!result)
@@ -1281,7 +1449,7 @@ void ObjectMgr::LoadCreatures()
 
         uint32 guid = fields[0].GetUInt32();
 
-        CreatureData& data = mCreatureDataMap[guid];
+        CreatureData& data = _creatureDataStore[guid];
 
         data.id             = fields[ 1].GetUInt32();
 
@@ -1292,13 +1460,9 @@ void ObjectMgr::LoadCreatures()
             continue;
         }
 
-        data.mapid          = fields[ 2].GetUInt16();
+        data.spawnPoint.WorldRelocate(fields[2].GetUInt16(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat(), fields[8].GetFloat());
         data.displayid      = fields[ 3].GetUInt32();
         data.equipmentId    = fields[ 4].GetUInt32();
-        data.posX           = fields[ 5].GetFloat();
-        data.posY           = fields[ 6].GetFloat();
-        data.posZ           = fields[ 7].GetFloat();
-        data.orientation    = fields[ 8].GetFloat();
         data.spawntimesecs  = fields[ 9].GetUInt32();
         data.spawndist      = fields[10].GetFloat();
         data.currentwaypoint= fields[11].GetUInt32();
@@ -1307,7 +1471,7 @@ void ObjectMgr::LoadCreatures()
         data.movementType   = fields[14].GetUInt8();
         data.spawnMask      = fields[15].GetUInt8();
         int32 gameEvent     = fields[16].GetInt32();
-        data.poolId         = fields[17].GetUInt32();
+        data.poolId         = fields[17].GetUInt32(); //Old WR pool system
 //Not sure this is a correct general rule, correct it if needed. My windows MariaDB returns a NEWDECIMAL while our Debian MariaDB returns a LONGLONG
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_UNIX
         data.instanceEventId = fields[18].GetUInt64();
@@ -1315,6 +1479,8 @@ void ObjectMgr::LoadCreatures()
         data.instanceEventId = fields[18].GetDouble();
 #endif
         data.scriptId = GetScriptId(fields[19].GetString());
+        data.spawnGroupData = &_spawnGroupDataStore[0];
+        uint32 PoolId = fields[20].GetUInt32();
 
         if(heroicCreatures.find(data.id)!=heroicCreatures.end())
         {
@@ -1360,7 +1526,8 @@ void ObjectMgr::LoadCreatures()
             }
         }
 
-        if (gameEvent==0)                                   // if not this is to be managed by GameEventMgr System or transports themselves
+        // Add to grid if not managed by the game event or pool system
+        if (gameEvent == 0 && PoolId == 0)
             AddCreatureToGrid(guid, &data);
 
         ++count;
@@ -1369,7 +1536,20 @@ void ObjectMgr::LoadCreatures()
 
     DeleteCreatureData(0);
 
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " creatures", mCreatureDataMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " creatures", _creatureDataStore.size());
+}
+
+void ObjectMgr::DeleteCreatureData(ObjectGuid::LowType guid)
+{
+    // remove mapid*cellid -> guid_set map
+    CreatureData const* data = GetCreatureData(guid);
+    if (data)
+    {
+        RemoveCreatureFromGrid(guid, data);
+        OnDeleteSpawnData(data);
+    }
+
+    _creatureDataStore.erase(guid);
 }
 
 void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
@@ -1379,10 +1559,10 @@ void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
     {
         if(mask & 1)
         {
-            CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
+            CellCoord cell_pair = Trinity::ComputeCellCoord(data->spawnPoint.GetPositionX(), data->spawnPoint.GetPositionY());
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->spawnPoint.GetMapId(), i)][cell_id];
             cell_guids.creatures.insert(guid);
         }
     }
@@ -1395,24 +1575,27 @@ void ObjectMgr::RemoveCreatureFromGrid(uint32 guid, CreatureData const* data)
     {
         if(mask & 1)
         {
-            CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
+            CellCoord cell_pair = Trinity::ComputeCellCoord(data->spawnPoint.GetPositionX(), data->spawnPoint.GetPositionY());
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->spawnPoint.GetMapId(),i)][cell_id];
             cell_guids.creatures.erase(guid);
         }
     }
 }
 
-void ObjectMgr::LoadGameobjects()
+void ObjectMgr::LoadGameObjects()
 {
     uint32 count = 0;
 
     //                                                0                1   2    3           4           5           6
     QueryResult result = WorldDatabase.Query("SELECT gameobject.guid, id, map, position_x, position_y, position_z, orientation,"
-    //   7          8          9          10         11             12            13     14         15         16
-        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, event, ScriptName "
-        "FROM gameobject LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid");
+    //   7          8          9          10         11             12            13     14         15         16         17
+        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, event, ScriptName, pool_entry "
+        "FROM gameobject "
+        "LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid "
+        "LEFT OUTER JOIN pool_gameobject ON gameobject.guid = pool_gameobject.guid "
+    );
 
     if(!result)
     {
@@ -1453,14 +1636,10 @@ void ObjectMgr::LoadGameobjects()
             continue;
         }
 
-        GameObjectData& data = mGameObjectDataMap[guid];
+        GameObjectData& data = _gameObjectDataStore[guid];
 
         data.id             = entry;
-        data.mapid          = fields[ 2].GetUInt16();
-        data.posX           = fields[ 3].GetFloat();
-        data.posY           = fields[ 4].GetFloat();
-        data.posZ           = fields[ 5].GetFloat();
-        data.orientation    = fields[ 6].GetFloat();
+        data.spawnPoint.WorldRelocate(fields[2].GetUInt16(), fields[3].GetFloat(), fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat());
         data.rotation       = G3D::Quat(fields[ 7].GetFloat(), fields[ 8].GetFloat(), fields[ 9].GetFloat(), fields[10].GetFloat());
         data.spawntimesecs  = fields[11].GetInt32();
         data.animprogress   = fields[12].GetUInt8();
@@ -1469,11 +1648,13 @@ void ObjectMgr::LoadGameobjects()
         data.spawnMask      = fields[14].GetUInt8();
         int16 gameEvent     = fields[15].GetInt16();
         data.ScriptId = GetScriptId(fields[16].GetString());
+        data.spawnGroupData = &_spawnGroupDataStore[0];
+        uint32 PoolId = fields[17].GetUInt32();
 
-        MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
+        MapEntry const* mapEntry = sMapStore.LookupEntry(data.spawnPoint.GetMapId());
         if (!mapEntry)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) spawned on a non-existed map (Id: %u), skip", guid, data.id, data.mapid);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) spawned on a non-existed map (Id: %u), skip", guid, data.id, data.spawnPoint.GetMapId());
             continue;
         }
 
@@ -1488,10 +1669,10 @@ void ObjectMgr::LoadGameobjects()
             continue;
         }
 
-        if (std::abs(data.orientation) > 2 * float(M_PI))
+        if (std::abs(data.spawnPoint.GetOrientation()) > 2 * float(M_PI))
         {
             TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with abs(`orientation`) > 2*PI (orientation is expressed in radians), normalized.", guid, data.id);
-            data.orientation = Position::NormalizeOrientation(data.orientation);
+            data.spawnPoint.m_orientation = Position::NormalizeOrientation(data.spawnPoint.GetOrientation());
         }
 
         if (data.rotation.x < -1.0f || data.rotation.x > 1.0f)
@@ -1526,14 +1707,215 @@ void ObjectMgr::LoadGameobjects()
         }
 #endif
 
-        if (gameEvent==0)                                   // if not this is to be managed by GameEventMgr System
+        if (gameEvent == 0 && PoolId == 0)                      // if not this is to be managed by GameEvent System or Pool system
             AddGameobjectToGrid(guid, &data);
 
         ++count;
 
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobjects", mGameObjectDataMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobjects", _gameObjectDataStore.size());
+}
+
+void ObjectMgr::LoadSpawnGroupTemplates()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    //                                               0        1          2
+    QueryResult result = WorldDatabase.Query("SELECT groupId, groupName, groupFlags FROM spawn_group_template");
+
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            uint32 groupId = fields[0].GetUInt32();
+            SpawnGroupTemplateData& group = _spawnGroupDataStore[groupId];
+            group.groupId = groupId;
+            group.name = fields[1].GetString();
+            group.mapId = SPAWNGROUP_MAP_UNSET;
+            uint32 flags = fields[2].GetUInt32();
+            if (flags & ~SPAWNGROUP_FLAGS_ALL)
+            {
+                flags &= SPAWNGROUP_FLAGS_ALL;
+                TC_LOG_ERROR("sql.sql", "Invalid spawn group flag %u on group ID %u (%s), reduced to valid flag %u.", flags, groupId, group.name.c_str(), uint32(group.flags));
+            }
+            if (flags & SPAWNGROUP_FLAG_SYSTEM && flags & SPAWNGROUP_FLAG_MANUAL_SPAWN)
+            {
+                flags &= ~SPAWNGROUP_FLAG_MANUAL_SPAWN;
+                TC_LOG_ERROR("sql.sql", "System spawn group %u (%s) has invalid manual spawn flag. Ignored.", groupId, group.name.c_str());
+            }
+            group.flags = SpawnGroupFlags(flags);
+        } while (result->NextRow());
+    }
+
+    if (_spawnGroupDataStore.find(0) == _spawnGroupDataStore.end())
+    {
+        TC_LOG_ERROR("sql.sql", "Default spawn group (index 0) is missing from DB! Manually inserted.");
+        SpawnGroupTemplateData& data = _spawnGroupDataStore[0];
+        data.groupId = 0;
+        data.name = "Default Group";
+        data.mapId = 0;
+        data.flags = SPAWNGROUP_FLAG_SYSTEM;
+    }
+    if (_spawnGroupDataStore.find(1) == _spawnGroupDataStore.end())
+    {
+        TC_LOG_ERROR("sql.sql", "Default legacy spawn group (index 1) is missing from DB! Manually inserted.");
+        SpawnGroupTemplateData&data = _spawnGroupDataStore[1];
+        data.groupId = 1;
+        data.name = "Legacy Group";
+        data.mapId = 0;
+        data.flags = SpawnGroupFlags(SPAWNGROUP_FLAG_SYSTEM | SPAWNGROUP_FLAG_COMPATIBILITY_MODE);
+    }
+
+    if (result)
+        TC_LOG_INFO("server.loading", ">> Loaded " SZFMTD " spawn group templates in %u ms", _spawnGroupDataStore.size(), GetMSTimeDiffToNow(oldMSTime));
+    else
+        TC_LOG_INFO("server.loading", ">> Loaded 0 spawn group templates. DB table `spawn_group_template` is empty.");
+
+    return;
+}
+
+void ObjectMgr::LoadSpawnGroups()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    //                                               0        1          2
+    QueryResult result = WorldDatabase.Query("SELECT groupId, spawnType, spawnId FROM spawn_group");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 spawn group members. DB table `spawn_group` is empty.");
+        return;
+    }
+
+    uint32 numMembers = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+        uint32 groupId = fields[0].GetUInt32();
+        SpawnObjectType spawnType;
+        {
+            uint32 type = fields[1].GetUInt8();
+            if (type >= SPAWN_TYPE_MAX)
+            {
+                TC_LOG_ERROR("sql.sql", "Spawn data with invalid type %u listed for spawn group %u. Skipped.", type, groupId);
+                continue;
+            }
+            spawnType = SpawnObjectType(type);
+        }
+        ObjectGuid::LowType spawnId = fields[2].GetUInt32();
+
+        SpawnData const* data = GetSpawnData(spawnType, spawnId);
+        if (!data)
+        {
+            TC_LOG_ERROR("sql.sql", "Spawn data with ID (%u,%u) not found, but is listed as a member of spawn group %u!", uint32(spawnType), spawnId, groupId);
+            continue;
+        }
+        else if (data->spawnGroupData->groupId)
+        {
+            TC_LOG_ERROR("sql.sql", "Spawn with ID (%u,%u) is listed as a member of spawn group %u, but is already a member of spawn group %u. Skipping.", uint32(spawnType), spawnId, groupId, data->spawnGroupData->groupId);
+            continue;
+        }
+        auto it = _spawnGroupDataStore.find(groupId);
+        if (it == _spawnGroupDataStore.end())
+        {
+            TC_LOG_ERROR("sql.sql", "Spawn group %u assigned to spawn ID (%u,%u), but group is found!", groupId, uint32(spawnType), spawnId);
+            continue;
+        }
+        else
+        {
+            SpawnGroupTemplateData& groupTemplate = it->second;
+            if (groupTemplate.mapId == SPAWNGROUP_MAP_UNSET)
+                groupTemplate.mapId = data->spawnPoint.GetMapId();
+            else if (groupTemplate.mapId != data->spawnPoint.GetMapId() && !(groupTemplate.flags & SPAWNGROUP_FLAG_SYSTEM))
+            {
+                TC_LOG_ERROR("sql.sql", "Spawn group %u has map ID %u, but spawn (%u,%u) has map id %u - spawn NOT added to group!", groupId, groupTemplate.mapId, uint32(spawnType), spawnId, data->spawnPoint.GetMapId());
+                continue;
+            }
+            const_cast<SpawnData*>(data)->spawnGroupData = &groupTemplate;
+            if (!(groupTemplate.flags & SPAWNGROUP_FLAG_SYSTEM))
+                _spawnGroupMapStore.emplace(groupId, data);
+            ++numMembers;
+        }
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u spawn group members in %u ms", numMembers, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::LoadInstanceSpawnGroups()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    //                                               0              1            2           3             4
+    QueryResult result = WorldDatabase.Query("SELECT instanceMapId, bossStateId, bossStates, spawnGroupId, flags FROM instance_spawn_groups");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 instance spawn groups. DB table `instance_spawn_groups` is empty.");
+        return;
+    }
+
+    uint32 n = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+        uint32 const spawnGroupId = fields[3].GetUInt32();
+        auto it = _spawnGroupDataStore.find(spawnGroupId);
+        if (it == _spawnGroupDataStore.end() || (it->second.flags & SPAWNGROUP_FLAG_SYSTEM))
+        {
+            TC_LOG_ERROR("sql.sql", "Invalid spawn group %u specified for instance %u. Skipped.", spawnGroupId, fields[0].GetUInt16());
+            continue;
+        }
+
+        uint16 const instanceMapId = fields[0].GetUInt16();
+        auto& vector = _instanceSpawnGroupStore[instanceMapId];
+        vector.emplace_back();
+        InstanceSpawnGroupInfo& info = vector.back();
+        info.SpawnGroupId = spawnGroupId;
+        info.BossStateId = fields[1].GetUInt8();
+
+        uint8 const ALL_STATES = (1 << TO_BE_DECIDED) - 1;
+        uint8 const states = fields[2].GetUInt8();
+        if (states & ~ALL_STATES)
+        {
+            info.BossStates = states & ALL_STATES;
+            TC_LOG_ERROR("sql.sql", "Instance spawn group (%u,%u) had invalid boss state mask %u - truncated to %u.", instanceMapId, spawnGroupId, states, info.BossStates);
+        }
+        else
+            info.BossStates = states;
+
+        uint8 const flags = fields[4].GetUInt8();
+        if (flags & ~InstanceSpawnGroupInfo::FLAG_ALL)
+        {
+            info.Flags = flags & InstanceSpawnGroupInfo::FLAG_ALL;
+            TC_LOG_ERROR("sql.sql", "Instance spawn group (%u,%u) had invalid flags %u - truncated to %u.", instanceMapId, spawnGroupId, flags, info.Flags);
+        }
+        else
+            info.Flags = flags;
+
+        ++n;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u instance spawn groups in %u ms", n, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::OnDeleteSpawnData(SpawnData const* data)
+{
+    auto templateIt = _spawnGroupDataStore.find(data->spawnGroupData->groupId);
+    ASSERT(templateIt != _spawnGroupDataStore.end(), "Creature data for (%u,%u) is being deleted and has invalid spawn group index %u!", uint32(data->type), data->spawnId, data->spawnGroupData->groupId);
+    if (templateIt->second.flags & SPAWNGROUP_FLAG_SYSTEM) // system groups don't store their members in the map
+        return;
+
+    auto pair = _spawnGroupMapStore.equal_range(data->spawnGroupData->groupId);
+    for (auto it = pair.first; it != pair.second; ++it)
+    {
+        if (it->second != data)
+            continue;
+        _spawnGroupMapStore.erase(it);
+        return;
+    }
+    ASSERT(false, "Spawn data (%u,%u) being removed is member of spawn group %u, but not actually listed in the lookup table for that group!", uint32(data->type), data->spawnId, data->spawnGroupData->groupId);
 }
 
 void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
@@ -1545,10 +1927,10 @@ void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
     {
         if(mask & 1)
         {
-            CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
+            CellCoord cell_pair = Trinity::ComputeCellCoord(data->spawnPoint.GetPositionX(), data->spawnPoint.GetPositionY());
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->spawnPoint.GetMapId(),i)][cell_id];
             cell_guids.gameobjects.insert(guid);
         }
     }
@@ -1561,16 +1943,16 @@ void ObjectMgr::RemoveGameobjectFromGrid(uint32 guid, GameObjectData const* data
     {
         if(mask & 1)
         {
-            CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
+            CellCoord cell_pair = Trinity::ComputeCellCoord(data->spawnPoint.GetPositionX(), data->spawnPoint.GetPositionY());
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->spawnPoint.GetMapId(),i)][cell_id];
             cell_guids.gameobjects.erase(guid);
         }
     }
 }
 
-ObjectGuid::LowType ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, float y, float z, float o, uint32 spawntimedelay, float rotation0, float rotation1, float rotation2, float rotation3)
+ObjectGuid::LowType ObjectMgr::AddGameObjectData(uint32 entry, uint32 mapId, float x, float y, float z, float o, uint32 spawntimedelay, float rotation0, float rotation1, float rotation2, float rotation3)
 {
     GameObjectTemplate const* goinfo = GetGameObjectTemplate(entry);
     if (!goinfo)
@@ -1582,13 +1964,9 @@ ObjectGuid::LowType ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, fl
 
     ObjectGuid::LowType guid = GenerateGameObjectSpawnId();
 
-    GameObjectData& data = NewGOData(guid);
+    GameObjectData& data = NewOrExistGameObjectData(guid);
     data.id = entry;
-    data.mapid = mapId;
-    data.posX = x;
-    data.posY = y;
-    data.posZ = z;
-    data.orientation = o;
+    data.spawnPoint.WorldRelocate(mapId, x, y, z, o);
     data.rotation = G3D::Quat(rotation0, rotation1, rotation2, rotation3);
     data.spawntimesecs = spawntimedelay;
     data.animprogress = 100;
@@ -1597,6 +1975,7 @@ ObjectGuid::LowType ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, fl
     //data.phaseMask = PHASEMASK_NORMAL;
     //data.artKit = goinfo->type == GAMEOBJECT_TYPE_CAPTURE_POINT ? 21 : 0;
     //data.dbData = false;
+    data.spawnGroupData = GetLegacySpawnGroup();
 
     AddGameobjectToGrid(guid, &data);
 
@@ -1605,15 +1984,15 @@ ObjectGuid::LowType ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, fl
     if (!map->Instanceable() && map->IsGridLoaded(x, y))
     {
         GameObject* go = new GameObject;
-        if (!go->LoadFromDB(guid, map))
+        if (!go->LoadFromDB(guid, map, true))
         {
-            TC_LOG_ERROR("misc", "AddGOData: cannot add gameobject entry %u to map", entry);
+            TC_LOG_ERROR("misc", "AddGameObjectData: cannot add gameobject entry %u to map", entry);
             delete go;
             return 0;
         }
     }
 
-    TC_LOG_DEBUG("maps", "AddGOData: dbguid %u entry %u map %u x %f y %f z %f o %f", guid, entry, mapId, x, y, z, o);
+    TC_LOG_DEBUG("maps", "AddGameObjectData: dbguid %u entry %u map %u x %f y %f z %f o %f", guid, entry, mapId, x, y, z, o);
 
     return guid;
 }
@@ -1632,37 +2011,33 @@ ObjectGuid::LowType ObjectMgr::AddCreatureData(uint32 entry, uint32 mapId, float
     if (!map)
         return 0;
 
-    ObjectGuid::LowType guid = GenerateCreatureSpawnId();
+    ObjectGuid::LowType spawnId = GenerateCreatureSpawnId();
 
-    CreatureData& data = NewOrExistCreatureData(guid);
+    CreatureData& data = NewOrExistCreatureData(spawnId);
     data.id = entry;
-    data.mapid = mapId;
     data.displayid = 0;
     data.equipmentId = 0;
-    data.posX = x;
-    data.posY = y;
-    data.posZ = z;
-    data.orientation = o;
+    data.spawnPoint.WorldRelocate(mapId, x, y, z, o);
     data.spawntimesecs = spawntimedelay;
     data.spawndist = 0;
     data.currentwaypoint = 0;
     data.curhealth = stats->GenerateHealth(cInfo);
     data.curmana = stats->GenerateMana(cInfo);
     data.movementType = cInfo->MovementType;
-    data.spawnMask = 1;
-    //data.phaseMask = PHASEMASK_NORMAL;
+    data.spawnMask = PHASEMASK_NORMAL;
     //data.dbData = false;
     //data.npcflag = cInfo->npcflag;
     //data.unit_flags = cInfo->unit_flags;
     //data.dynamicflags = cInfo->dynamicflags;
+    data.spawnGroupData = GetLegacySpawnGroup();
 
-    AddCreatureToGrid(guid, &data);
+    AddCreatureToGrid(spawnId, &data);
 
     // We use spawn coords to spawn
-    if (!map->Instanceable() && !map->IsRemovalGrid(x, y))
+    if (!map->Instanceable() && !map->IsRemovalGrid(data.spawnPoint))
     {
         Creature* creature = new Creature();
-        if (!creature->LoadCreatureFromDB(guid, map))
+        if (!creature->LoadFromDB(spawnId, map, true, true))
         {
             TC_LOG_ERROR("misc", "AddCreature: Cannot add creature entry %u to map", entry);
             delete creature;
@@ -1670,67 +2045,7 @@ ObjectGuid::LowType ObjectMgr::AddCreatureData(uint32 entry, uint32 mapId, float
         }
     }
 
-    return guid;
-}
-
-void ObjectMgr::LoadCreatureRespawnTimes()
-{
-    uint32 count = 0;
-
-    QueryResult result = CharacterDatabase.Query("SELECT guid,respawntime,instanceId FROM creature_respawn");
-
-    if(!result)
-    {
-        TC_LOG_INFO("sql.sql",">> Loaded 0 creature respawn time.");
-        return;
-    }
-
-    do
-    {
-        Field *fields = result->Fetch();
-
-        uint32 loguid       = fields[0].GetUInt32();
-        uint64 respawn_time = fields[1].GetUInt32();
-        uint32 instance     = fields[2].GetUInt32();
-
-        mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = time_t(respawn_time);
-
-        ++count;
-    } while (result->NextRow());
-
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " creature respawn times", mCreatureRespawnTimes.size());
-}
-
-void ObjectMgr::LoadGameobjectRespawnTimes()
-{
-    // remove outdated data
-    CharacterDatabase.DirectExecute("DELETE FROM gameobject_respawn WHERE respawntime <= UNIX_TIMESTAMP(NOW())");
-
-    uint32 count = 0;
-
-    QueryResult result = CharacterDatabase.Query("SELECT guid,respawntime,instanceId FROM gameobject_respawn");
-
-    if(!result)
-    {
-        TC_LOG_INFO("sql.sql",">> Loaded 0 gameobject respawn time.");
-        TC_LOG_INFO("sql.sql"," ");
-        return;
-    }
-
-    do
-    {
-        Field *fields = result->Fetch();
-
-        uint32 loguid       = fields[0].GetUInt32();
-        uint64 respawn_time = fields[1].GetUInt32();
-        uint32 instance     = fields[2].GetUInt32();
-
-        mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = time_t(respawn_time);
-
-        ++count;
-    } while (result->NextRow());
-
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobject respawn times", mGORespawnTimes.size());
+    return spawnId;
 }
 
 void ObjectMgr::LoadItemLocales()
@@ -4096,7 +4411,7 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
 
             case SCRIPT_COMMAND_RESPAWN_GAMEOBJECT:
             {
-                GameObjectData const* data = GetGOData(tmp.RespawnGameobject.GOGuid);
+                GameObjectData const* data = GetGameObjectData(tmp.RespawnGameobject.GOGuid);
                 if(!data)
                 {
                     TC_LOG_ERROR("sql.sql","Table `%s` has invalid gameobject (GUID: %u) in SCRIPT_COMMAND_RESPAWN_GAMEOBJECT for script id %u", tablename, tmp.RespawnGameobject.GOGuid, tmp.id);
@@ -4124,7 +4439,7 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
             case SCRIPT_COMMAND_OPEN_DOOR:
             case SCRIPT_COMMAND_CLOSE_DOOR:
             {
-                GameObjectData const* data = GetGOData(tmp.ToggleDoor.GOGuid);
+                GameObjectData const* data = GetGameObjectData(tmp.ToggleDoor.GOGuid);
                 if(!data)
                 {
                     TC_LOG_ERROR("sql.sql","Table `%s` has invalid gameobject (GUID: %u) in %s for script id %u",tablename, tmp.ToggleDoor.GOGuid,(tmp.command==SCRIPT_COMMAND_OPEN_DOOR ? "SCRIPT_COMMAND_OPEN_DOOR" : "SCRIPT_COMMAND_CLOSE_DOOR"),tmp.id);
@@ -4256,7 +4571,7 @@ void ObjectMgr::LoadGameObjectScripts()
     // check ids
     for(ScriptMapMap::const_iterator itr = sGameObjectScripts.begin(); itr != sGameObjectScripts.end(); ++itr)
     {
-        if(!GetGOData(itr->first))
+        if(!GetGameObjectData(itr->first))
             TC_LOG_ERROR("sql.sql","Table `gameobject_scripts` has not existing gameobject (GUID: %u) as script id",itr->first);
     }
 }
@@ -5854,7 +6169,7 @@ uint32 ObjectMgr::CreateItemText(std::string const& text)
 
 void ObjectMgr::LoadGameObjectLocales()
 {
-    mGameObjectLocaleMap.clear();                           // need for reload case
+    _gameObjectLocaleStore.clear();                           // need for reload case
 
     QueryResult result = WorldDatabase.Query("SELECT entry,"
         "name_loc1,name_loc2,name_loc3,name_loc4,name_loc5,name_loc6,name_loc7,name_loc8,"
@@ -5873,7 +6188,7 @@ void ObjectMgr::LoadGameObjectLocales()
 
         uint32 entry = fields[0].GetUInt32();
 
-        GameObjectLocale& data = mGameObjectLocaleMap[entry];
+        GameObjectLocale& data = _gameObjectLocaleStore[entry];
 
         for (uint8 i = TOTAL_LOCALES - 1; i > 0; --i)
         {
@@ -5882,7 +6197,7 @@ void ObjectMgr::LoadGameObjectLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobject locale strings", mGameObjectLocaleMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobject locale strings", _gameObjectLocaleStore.size());
     
 }
 
@@ -6403,106 +6718,20 @@ void ObjectMgr::LoadWeatherZoneChances()
     TC_LOG_INFO("server.loading",">> Loaded %u weather definitions", count);
 }
 
-void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 mapId, uint32 instanceId, time_t t)
-{
-    _creatureRespawnTimeLock.lock();
-    mCreatureRespawnTimes[MAKE_PAIR64(loguid, instanceId)] = t;
-    _creatureRespawnTimeLock.unlock();
-
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM creature_respawn WHERE guid = '%u' AND instanceId = '%u'", loguid, instanceId);
-    if (t)
-        trans->PAppend("INSERT INTO creature_respawn (guid, respawnTime, mapId, instanceId) VALUES ( '%u', '" UI64FMTD "', '%u', '%u' )", loguid, uint64(t), mapId, instanceId);
-    CharacterDatabase.CommitTransaction(trans);
-}
-
-time_t ObjectMgr::GetCreatureRespawnTime(uint32 loguid, uint32 instance) 
-{ 
-    auto itr = mCreatureRespawnTimes.find(MAKE_PAIR64(loguid, instance));
-    if (itr != mCreatureRespawnTimes.end())
-        return itr->second;
-
-    return time_t(0);
-}
-
-time_t ObjectMgr::GetGORespawnTime(uint32 loguid, uint32 instance) 
-{ 
-    auto itr = mGORespawnTimes.find(MAKE_PAIR64(loguid, instance));
-    if (itr != mGORespawnTimes.end())
-        return itr->second;
-
-    return time_t(0);
-}
-
-void ObjectMgr::DeleteCreatureData(uint32 guid)
+void ObjectMgr::DeleteGameObjectData(ObjectGuid::LowType guid)
 {
     // remove mapid*cellid -> guid_set map
-    CreatureData const* data = GetCreatureData(guid);
+    GameObjectData const* data = GetGameObjectData(guid);
     if (data)
-        RemoveCreatureFromGrid(guid, data);
-
-    mCreatureDataMap.erase(guid);
-}
-
-void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 mapId, uint32 instance, time_t t)
-{
-    if(!loguid) 
-        return;
-
-    _goRespawnTimeLock.lock();
-    mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
-    _goRespawnTimeLock.unlock();
-
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instanceId = '%u'", loguid, instance);
-    if (t)
-        trans->PAppend("INSERT INTO gameobject_respawn (guid, respawnTime, mapId, instanceId) VALUES ( '%u', '" UI64FMTD "', '%u', '%u' )", loguid, uint64(t), mapId, instance);
-    CharacterDatabase.CommitTransaction(trans);
-}
-
-void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
-{
-    RespawnTimes::iterator next;
-
-    _goRespawnTimeLock.lock();
-    for(auto itr = mGORespawnTimes.begin(); itr != mGORespawnTimes.end(); itr = next)
     {
-        next = itr;
-        ++next;
-
-        if(GUID_HIPART(itr->first)==instance)
-            mGORespawnTimes.erase(itr);
-    }
-    _goRespawnTimeLock.unlock();
-
-    _creatureRespawnTimeLock.lock();
-    for(auto itr = mCreatureRespawnTimes.begin(); itr != mCreatureRespawnTimes.end(); itr = next)
-    {
-        next = itr;
-        ++next;
-
-        if(GUID_HIPART(itr->first)==instance)
-            mCreatureRespawnTimes.erase(itr);
-    }
-    _creatureRespawnTimeLock.unlock();
-
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM creature_respawn WHERE instanceId = '%u'", instance);
-    trans->PAppend("DELETE FROM gameobject_respawn WHERE instanceId = '%u'", instance);
-    CharacterDatabase.CommitTransaction(trans);
-}
-
-void ObjectMgr::DeleteGOData(uint32 guid)
-{
-    // remove mapid*cellid -> guid_set map
-    GameObjectData const* data = GetGOData(guid);
-    if(data)
         RemoveGameobjectFromGrid(guid, data);
+        OnDeleteSpawnData(data);
+    }
 
-    mGameObjectDataMap.erase(guid);
+    _gameObjectDataStore.erase(guid);
 }
 
-void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
+void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, char const* table)
 {
     map.clear();                                            // need for reload case
 

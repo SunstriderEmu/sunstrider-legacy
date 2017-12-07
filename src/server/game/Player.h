@@ -2736,7 +2736,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint8 m_MirrorTimerFlags;
         uint8 m_MirrorTimerFlagsLast;
 
-        GridReference<Player> m_gridRef;
         MapReference m_mapRef;
 
         UnitAI *i_AI;

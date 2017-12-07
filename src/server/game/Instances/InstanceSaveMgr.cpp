@@ -579,8 +579,6 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
     if (iMap && iMap->IsDungeon())
         ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
 
-    sObjectMgr->DeleteRespawnTimeForInstance(instanceId);
-    /* TK
     if (iMap)
     {
         iMap->DeleteRespawnTimes();
@@ -588,7 +586,7 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
     }
     else
         Map::DeleteRespawnTimesInDB(mapid, instanceId);
-    */
+
     // Free up the instance id and allow it to be reused
     sMapMgr->FreeInstanceId(instanceId);
 }

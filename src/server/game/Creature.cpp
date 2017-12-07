@@ -34,6 +34,7 @@
 #include "Spell.h"
 #include "InstanceScript.h"
 #include "Transport.h"
+#include "PoolMgr.h"
 
 void TrainerSpellData::Clear()
 {
@@ -200,7 +201,9 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_canFly(false),
     m_stealthAlertCooldown(0), 
     m_keepActiveTimer(0), 
-    m_homeless(false)
+    m_homeless(false), 
+    m_respawnCompatibilityMode(false),
+    m_triggerJustAppeared(false)
 {
     m_valuesCount = UNIT_END;
 
@@ -214,7 +217,6 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_CreatureCategoryCooldowns.clear();
     m_GlobalCooldown = 0;
     DisableReputationGain = false;
-    TriggerJustAppeared = false;
 }
 
 Creature::~Creature()
@@ -317,43 +319,64 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
     if( GetDeathState() != CORPSE )
         return;
 
-    m_corpseRemoveTime = time(nullptr);
-    SetDeathState(DEAD);
-    RemoveAllAuras();
-    loot.clear();
-
-    if (IsAIEnabled)
-        AI()->CorpseRemoved(m_respawnDelay);
-
-    if (destroyForNearbyPlayers)
-        DestroyForNearbyPlayers();
-
-    // Should get removed later, just keep "compatibility" with scripts
-    if(setSpawnTime)
-        m_respawnTime = std::max<time_t>(time(NULL) + m_respawnDelay, m_respawnTime);
-
-    // if corpse was removed during falling, the falling will continue and override relocation to respawn position
-    if (IsFalling())
-        StopMoving();
-
-    float x,y,z,o;
-    GetRespawnPosition(x, y, z, &o);
-
-    // We were spawned on transport, calculate real position
-    if (IsSpawnedOnTransport())
+    if (m_respawnCompatibilityMode)
     {
-        Position& pos = m_movementInfo.transport.pos;
-        pos.m_positionX = x;
-        pos.m_positionY = y;
-        pos.m_positionZ = z;
-        pos.SetOrientation(o);
+        m_corpseRemoveTime = time(nullptr);
+        SetDeathState(DEAD);
+        RemoveAllAuras();
+        loot.clear();
 
-        if (Transport* transport = GetTransport())
-            transport->CalculatePassengerPosition(x, y, z, &o);
+        if (IsAIEnabled)
+            AI()->CorpseRemoved(m_respawnDelay);
+
+        if (destroyForNearbyPlayers)
+            DestroyForNearbyPlayers();
+
+        // Should get removed later, just keep "compatibility" with scripts
+        if (setSpawnTime)
+            m_respawnTime = std::max<time_t>(time(NULL) + m_respawnDelay, m_respawnTime);
+
+        // if corpse was removed during falling, the falling will continue and override relocation to respawn position
+        if (IsFalling())
+            StopMoving();
+
+        float x, y, z, o;
+        GetRespawnPosition(x, y, z, &o);
+
+        // We were spawned on transport, calculate real position
+        if (IsSpawnedOnTransport())
+        {
+            Position& pos = m_movementInfo.transport.pos;
+            pos.m_positionX = x;
+            pos.m_positionY = y;
+            pos.m_positionZ = z;
+            pos.SetOrientation(o);
+
+            if (Transport* transport = GetTransport())
+                transport->CalculatePassengerPosition(x, y, z, &o);
+        }
+
+        SetHomePosition(x, y, z, o);
+        GetMap()->CreatureRelocation(this, x, y, z, o);
     }
+    else
+    {
+        // In case this is called directly and normal respawn timer not set
+        // Since this timer will be longer than the already present time it
+        // will be ignored if the correct place added a respawn timer
+        if (setSpawnTime)
+        {
+            uint32 respawnDelay = m_respawnDelay;
+            m_respawnTime = std::max<time_t>(time(NULL) + respawnDelay, m_respawnTime);
 
-    SetHomePosition(x,y,z,o);
-    GetMap()->CreatureRelocation(this,x,y,z,o);
+            SaveRespawnTime(0, false);
+        }
+
+        if (TempSummon* summon = ToTempSummon())
+            summon->UnSummon();
+        else
+            AddObjectToRemoveList();
+    }
 }
 
 /**
@@ -549,9 +572,13 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
 
 void Creature::Update(uint32 diff)
 {
-    if (IsAIEnabled && TriggerJustAppeared)
+    if (IsAIEnabled && m_triggerJustAppeared)
     {
-        TriggerJustAppeared = false;
+#ifdef LICH_KING
+        if (m_respawnCompatibilityMode && m_vehicleKit)
+            m_vehicleKit->Reset();
+#endif
+        m_triggerJustAppeared = false;
         AI()->JustAppeared();
             
         Map *map = FindMap();
@@ -571,30 +598,57 @@ void Creature::Update(uint32 diff)
             break;
         case DEAD:
         {
-            if( m_respawnTime <= time(nullptr) )
+            time_t now = time(nullptr);
+            if( m_respawnTime <= now )
             {
+                // First check if there are any scripts that object to us respawning
+                if (!sScriptMgr->CanSpawn(GetSpawnId(), GetEntry(), GetCreatureData(), GetMap()))
+                {
+                    m_respawnTime = now + urand(4, 7);
+                    break; // Will be rechecked on next Update call after delay expires
+                }
+
+                //old windrunner code, still in use
                 Map* map = FindMap();
                 uint32 eventId = getInstanceEventId();
-                if (eventId != -1 && map && map->IsRaid() && ((InstanceMap*)map)->GetInstanceScript()) {
+                if (eventId != uint32(-1) && map && map->IsRaid() && ((InstanceMap*)map)->GetInstanceScript()) {
                     if ((((InstanceMap*)map)->GetInstanceScript())->GetData(eventId) == NOT_STARTED)
-                        Respawn(); // Respawn immediately
+                        ; //respawn is allowed by instanceEventId system, continue with usual logic
                     else if ((((InstanceMap*)map)->GetInstanceScript())->GetData(eventId) == IN_PROGRESS)
-                        SetRespawnTime(5*MINUTE); // Delay next respawn check (5 minutes)
-                    else // event is DONE or SPECIAL, don't respawn until tag reset
-                        SetRespawnTime(7*DAY);
-                }
-                else if (!GetLinkedCreatureRespawnTime()) // Can respawn
-                    Respawn();
-                else { // the master is dead
-                    if(uint32 targetGuid = sObjectMgr->GetLinkedRespawnGuid(m_spawnId)) {
-                        if(targetGuid == m_spawnId) // if linking self, never respawn (check delayed to next day)
-                            SetRespawnTime(DAY);
-                        else
-                            m_respawnTime = (time(nullptr)>GetLinkedCreatureRespawnTime()? time(nullptr):GetLinkedCreatureRespawnTime())+urand(5,MINUTE); // else copy time from master and add a little
-                        SaveRespawnTime(); // also save to DB immediately
+                    {
+                        SetRespawnTime(5 * MINUTE); // Delay next respawn check (5 minutes)
+                        break;
                     }
+                    else // event is DONE or SPECIAL, don't respawn until tag reset
+                    {
+                        SetRespawnTime(7 * DAY); SaveRespawnTime(); // also save to DB immediately
+                        break;
+                    }
+                }
+
+                ObjectGuid dbtableHighGuid(HighGuid::Unit, GetEntry(), m_spawnId);
+                time_t linkedRespawnTime = GetMap()->GetLinkedRespawnTime(dbtableHighGuid);
+                if (!linkedRespawnTime)             // Can respawn
+                    Respawn();
+                else  // the master is dead
+                { 
+                    ObjectGuid targetGuid = sObjectMgr->GetLinkedRespawnGuid(dbtableHighGuid);
+                    if (targetGuid == dbtableHighGuid) // if linking self, never respawn
+                        SetRespawnTime(WEEK);
                     else
-                        Respawn();
+                    {
+                        // else copy time from master and add a little
+                        time_t baseRespawnTime = std::max(linkedRespawnTime, now);
+                        time_t const offset = urand(5, MINUTE);
+
+                        // linked guid can be a boss, uses std::numeric_limits<time_t>::max to never respawn in that instance
+                        // we shall inherit it instead of adding and causing an overflow
+                        if (baseRespawnTime <= std::numeric_limits<time_t>::max() - offset)
+                            m_respawnTime = baseRespawnTime + offset;
+                        else
+                            m_respawnTime = std::numeric_limits<time_t>::max();
+                    }
+                    SaveRespawnTime(); // also save to DB immediately
                 }
             }
             break;
@@ -924,13 +978,15 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     return true;
 }
 
-bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, float x, float y, float z, float ang, const CreatureData *data)
+bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData *data, bool dynamic)
 {
     ASSERT(map);
     SetMap(map);
     SetPhaseMask(phaseMask, false);
 
-    //m_spawnId = guidlow;
+    // Set if this creature can handle dynamic spawns
+    if (!dynamic)
+        SetRespawnCompatibilityMode();
 
     CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(entry);
     if (!cinfo)
@@ -941,13 +997,13 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, 
 
     //! Relocate before CreateFromProto, to initialize coords and allow
     //! returning correct zone id for selecting OutdoorPvP/Battlefield script
-    Relocate(x, y, z, ang);
+    Relocate(pos);
 
     // Check if the position is valid before calling CreateFromProto(), otherwise we might add Auras to Creatures at
     // invalid position, triggering a crash about Auras not removed in the destructor
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.unit", "Creature::Create(): given coordinates for creature (guidlow %d, entry %d) are not valid (X: %f, Y: %f, Z: %f, O: %f)", guidlow, entry, x, y, z, ang);
+        TC_LOG_ERROR("entities.unit", "Creature::Create(): given coordinates for creature (guidlow %d, entry %d) are not valid (X: %f, Y: %f, Z: %f, O: %f)", guidlow, entry, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
         return false;
     }
 
@@ -961,10 +1017,8 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, 
     if (cinfo->type_flags & CREATURE_TYPE_FLAG_GHOST_VISIBLE)
         m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
 
-    /* TC, would be nice to have
     if (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS && map->IsDungeon())
         m_respawnDelay = 0; // special value, prevents respawn for dungeon bosses unless overridden
-        */
 
     switch (GetCreatureTemplate()->rank)
     {
@@ -1246,17 +1300,12 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 
     // data->guid = guid must not be update at save
     data.id = GetEntry();
-    data.mapid = mapid;
     data.displayid = displayId;
     data.equipmentId = GetEquipmentId();
-    if(!GetTransport())
-        GetPosition(data.posX,data.posY,data.posZ,data.orientation);
-    else {
-        data.posX = GetTransOffsetX();
-        data.posY = GetTransOffsetY();
-        data.posZ = GetTransOffsetZ();
-        data.orientation = GetTransOffsetO();
-    }
+    if (!GetTransport())
+        data.spawnPoint.WorldRelocate(this);
+    else
+        data.spawnPoint.WorldRelocate(mapid, GetTransOffsetX(), GetTransOffsetY(), GetTransOffsetZ(), GetTransOffsetO());
     data.spawntimesecs = m_respawnDelay;
     // prevent add data integrity problems
     data.spawndist = GetDefaultMovementType()==IDLE_MOTION_TYPE ? 0 : m_respawnradius;
@@ -1268,6 +1317,8 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         ? IDLE_MOTION_TYPE : GetDefaultMovementType();
     data.spawnMask = spawnMask;
     data.poolId = m_creaturePoolId;
+    if (!data.spawnGroupData)
+        data.spawnGroupData = sObjectMgr->GetDefaultSpawnGroup();
 
     // updated in DB
     SQLTransaction trans = WorldDatabase.BeginTransaction();
@@ -1282,10 +1333,10 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         << (uint32)spawnMask << ","
         << displayId <<","
         << GetEquipmentId() <<","
-        << data.posX << ","
-        << data.posY << ","
-        << data.posZ << ","
-        << data.orientation << ","
+        << data.spawnPoint.GetPositionX() << ","
+        << data.spawnPoint.GetPositionY() << ","
+        << data.spawnPoint.GetPositionZ() << ","
+        << data.spawnPoint.GetOrientation() << ","
         << m_respawnDelay << ","                            //respawn time
         << (float) m_respawnradius << ","                   //spawn distance (float)
         << (uint32) (0) << ","                              //currentwaypoint
@@ -1385,16 +1436,16 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData 
     Map *map = FindMap();
     if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
     {
-        // Workaround, I need position_x in OnCreatureCreate for Felmyst. I'll rewrite the hook with data as third parameter later
+        // TODO: Need position_x in OnCreatureCreate for Felmyst
         if (data)
-            m_positionX = data->posX;
+            m_positionX = data->spawnPoint.GetPositionX();
         ((InstanceMap*)map)->GetInstanceScript()->OnCreatureCreate(this);
     }
 
     return true;
 }
 
-bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDuplicate)
+bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDuplicate)
 {
     if (!allowDuplicate)
     {
@@ -1428,7 +1479,7 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
 
     if(!data)
     {
-        TC_LOG_ERROR("FIXME","Creature (GUID: %u) not found in table `creature`, can't load. ", spawnId);
+        TC_LOG_ERROR("sql.sql","Creature (GUID: %u) not found in table `creature`, can't load. ", spawnId);
         return false;
     }
     
@@ -1440,11 +1491,20 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
     }
 
     m_spawnId = spawnId;
-    m_creatureData = data;
 
+    m_respawnCompatibilityMode = ((data->spawnGroupData->flags & SPAWNGROUP_FLAG_COMPATIBILITY_MODE) != 0);
+    m_creatureData = data;
     m_respawnradius = data->spawndist;
     m_respawnDelay = data->spawntimesecs;
-    if(!Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL /*data->phaseMask*/, data->id, data->posX, data->posY, data->posZ, data->orientation, data))
+
+    // Is the creature script objecting to us spawning? If yes, delay by a little bit (then re-check in ::Update)
+    if (!m_respawnCompatibilityMode && !m_respawnTime && !sScriptMgr->CanSpawn(spawnId, data->id, data, map))
+    {
+        SaveRespawnTime(urand(4, 7));
+        return false;
+    }
+
+    if(!Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL /*data->phaseMask*/, data->id, data->spawnPoint, data, !m_respawnCompatibilityMode))
         return false;
 
     if(!IsPositionValid())
@@ -1453,19 +1513,24 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
         return false;
     }
     //We should set first home position, because then AI calls home movement
-    SetHomePosition(data->posX,data->posY,data->posZ,data->orientation);
+    SetHomePosition(data->spawnPoint);
 
     m_deathState = ALIVE;
 
-    m_respawnTime  = sObjectMgr->GetCreatureRespawnTime(m_spawnId,GetInstanceId());
-    if(m_respawnTime)                          // respawn on Update
+    m_respawnTime = GetMap()->GetCreatureRespawnTime(m_spawnId);
+
+    // Is the creature script objecting to us spawning? If yes, delay by a little bit (then re-check in ::Update)
+    if (m_respawnCompatibilityMode && !m_respawnTime && !sScriptMgr->CanSpawn(spawnId, GetEntry(), GetCreatureData(), map))
+        m_respawnTime = time(nullptr) + urand(4, 7);
+
+    if (m_respawnTime)                          // respawn on Update
     {
         m_deathState = DEAD;
-        if(CanFly())
+        if (CanFly())
         {
-            float tz = GetMap()->GetHeight(data->posX,data->posY,data->posZ,false);
-            if(data->posZ - tz > 0.1)
-                Relocate(data->posX,data->posY,tz);
+            float tz = map->GetHeight(GetPhaseMask(), data->spawnPoint, true, MAX_FALL_DISTANCE);
+            if (data->spawnPoint.GetPositionZ() - tz > 0.1f && Trinity::IsValidMapCoord(tz))
+                Relocate(data->spawnPoint.GetPositionX(), data->spawnPoint.GetPositionY(), tz);
         }
     }
 
@@ -1473,6 +1538,9 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
 
     // checked at creature_template loading
     m_defaultMovementType = MovementGeneratorType(data->movementType);
+
+    if (addToMap && !GetMap()->AddToMap(this))
+        return false;
 
     return true;
 }
@@ -1582,13 +1650,24 @@ bool Creature::HasInvolvedQuest(uint32 quest_id) const
 void Creature::DeleteFromDB()
 {
     if (!m_spawnId)
+    {
+        TC_LOG_ERROR("entities.unit", "Trying to delete not saved creature! LowGUID: %u, Entry: %u", GetGUIDLow(), GetEntry());
         return;
+    }
 
-    sObjectMgr->SaveCreatureRespawnTime(m_spawnId, GetMapId(), GetInstanceId(),0);
+    // remove any scheduled respawns
+    GetMap()->RemoveRespawnTime(SPAWN_TYPE_CREATURE, m_spawnId);
+
     sObjectMgr->DeleteCreatureData(m_spawnId);
 
     SQLTransaction trans = WorldDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_spawnId);
+
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_SPAWNGROUP_MEMBER);
+    stmt->setUInt8(0, uint8(SPAWN_TYPE_CREATURE));
+    stmt->setUInt32(1, m_spawnId);
+    trans->Append(stmt);
+
     trans->PAppend("DELETE FROM creature_addon WHERE guid = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_creature WHERE guid = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_spawnId);
@@ -1871,28 +1950,43 @@ void Creature::SetDeathState(DeathState s)
     if (s == JUST_DIED)
     {
         m_corpseRemoveTime = time(nullptr) + m_corpseDelay;
-        m_respawnTime = time(nullptr) + m_respawnDelay + m_corpseDelay;
-        /* TC
-        if (IsDungeonBoss() && !m_respawnDelay)
-            m_respawnTime = std::numeric_limits<time_t>::max(); // never respawn in this instance
+
+        uint32 respawnDelay = m_respawnDelay;
+        if (uint32 scalingMode = sWorld->getIntConfig(CONFIG_RESPAWN_DYNAMICMODE))
+            GetMap()->ApplyDynamicModeRespawnScaling(this, m_spawnId, respawnDelay, scalingMode);
+        // @todo remove the boss respawn time hack in a dynspawn follow-up once we have creature groups in instances
+        if (m_respawnCompatibilityMode)
+        {
+            if (IsDungeonBoss() && !m_respawnDelay)
+                m_respawnTime = std::numeric_limits<time_t>::max(); // never respawn in this instance
+            else
+                m_respawnTime = time(nullptr) + respawnDelay + m_corpseDelay;
+        }
         else
-            m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
-        */
+        {
+            if (IsDungeonBoss() && !m_respawnDelay)
+                m_respawnTime = std::numeric_limits<time_t>::max(); // never respawn in this instance
+            else
+                m_respawnTime = time(nullptr) + respawnDelay;
+        }
+
         // always save boss respawn time at death to prevent crash cheating
-        if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || IsWorldBoss())
+        if (sWorld->getBoolConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || IsWorldBoss())
             SaveRespawnTime();
-            
+        else if (!m_respawnCompatibilityMode)
+            SaveRespawnTime(0, false);
+
         Map *map = FindMap();
         if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
             ((InstanceMap*)map)->GetInstanceScript()->OnCreatureDeath(this);
 
-        SetUInt64Value (UNIT_FIELD_TARGET,0);               // remove target selection in any cases (can be set at aura remove in Unit::setDeathState)
+        ReleaseFocus(nullptr); // remove spellcast focus
+        SetTarget(0); // drop target - dead mobs shouldn't ever target things
         SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
 
         SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);       // if creature is mounted on a virtual mount, remove it at death
 
-        //if(!IsPet())
-            SetKeepActive(false);
+        SetKeepActive(false);
 
         if(!IsPet() && GetCreatureTemplate()->SkinLootId)
             if ( LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId) )
@@ -1920,26 +2014,25 @@ void Creature::SetDeathState(DeathState s)
         SetCannotReachTarget(false);
         UpdateMovementFlags();
 
-        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
-        AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
-        SetUInt32Value(UNIT_NPC_FLAGS, GetCreatureTemplate()->npcflag);
-        ClearUnitState(uint32(UNIT_STATE_ALL_STATE & ~UNIT_STATE_IGNORE_PATHFINDING));
+        ClearUnitState(UNIT_STATE_ALL_ERASABLE);
+
+        if (!IsPet())
+        {
+            RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
+            SetUInt32Value(UNIT_NPC_FLAGS, GetCreatureTemplate()->npcflag);
+            AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+
+            SetMeleeDamageSchool(SpellSchools(GetCreatureTemplate()->dmgschool));
+        }
+
         Motion_Initialize();
-        SetMeleeDamageSchool(SpellSchools(GetCreatureTemplate()->dmgschool));
         Unit::SetDeathState(ALIVE);
         InitCreatureAddon(true);
-
-        /* TC
-        if (creatureData && GetPhaseMask() != creatureData->phaseMask)
-            SetPhaseMask(creatureData->phaseMask, false);
-            */
     }
 }
 
 void Creature::Respawn(bool force /* = false */)
 {
-    DestroyForNearbyPlayers();
-
     if (force)
     {
         if (IsAlive())
@@ -1947,59 +2040,73 @@ void Creature::Respawn(bool force /* = false */)
         else if (GetDeathState() != CORPSE)
             SetDeathState(CORPSE);
     }
+    if (m_respawnCompatibilityMode)
+    {
+        DestroyForNearbyPlayers();
+        RemoveCorpse(false, false);
 
-    RemoveCorpse(false, false);
+        if (!IsInWorld())
+            AddToWorld();
 
-    if(!IsInWorld())
-        AddToWorld();
+        this->loot.ClearRemovedItemsList();
 
-    this->loot.ClearRemovedItemsList();
+        if (GetDeathState() == DEAD)
+        {
+            if (m_spawnId)
+                GetMap()->RemoveRespawnTime(SPAWN_TYPE_CREATURE, m_spawnId);
 
-    if(GetDeathState() == DEAD)
+            TC_LOG_DEBUG("entities.creature", "Respawning...");
+            m_respawnTime = 0;
+            lootForPickPocketed = false;
+            lootForBody = false;
+
+            if (m_originalEntry != GetEntry())
+                UpdateEntry(m_originalEntry);
+
+            SelectLevel();
+
+            SetDeathState(JUST_RESPAWNED);
+
+            GetMotionMaster()->InitDefault();
+
+            //re rand level & model
+            SelectLevel();
+
+            uint32 displayID = GetNativeDisplayId();
+            CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelRandomGender(displayID);
+            if (minfo && !IsTotem())                               // Cancel load if no model defined or if totem
+            {
+                SetNativeDisplayId(displayID);
+
+                Unit::AuraEffectList const& transformAuras = GetAuraEffectsByType(SPELL_AURA_TRANSFORM);
+                Unit::AuraEffectList const& shapeshiftAuras = GetAuraEffectsByType(SPELL_AURA_MOD_SHAPESHIFT);
+                if (transformAuras.empty() && shapeshiftAuras.empty())
+                    SetDisplayId(displayID);
+            }
+
+            uint32 poolid = GetSpawnId() ? sPoolMgr->IsPartOfAPool<Creature>(GetSpawnId()) : 0;
+            if (poolid)
+                sPoolMgr->UpdatePool<Creature>(poolid, GetSpawnId());
+
+            //Call AI respawn virtual function
+            if (IsAIEnabled)
+                m_triggerJustAppeared = true;//delay event to next tick so all creatures are created on the map before processing
+        }
+        m_timeSinceSpawn = 0;
+
+        UpdateObjectVisibility();
+    }
+    else
     {
         if (m_spawnId)
-            sObjectMgr->SaveCreatureRespawnTime(m_spawnId, GetMapId(), GetInstanceId(),0);
-
-        TC_LOG_DEBUG("entities.creature","Respawning...");
-        m_respawnTime = 0;
-        lootForPickPocketed = false;
-        lootForBody         = false;
-
-        if(m_originalEntry != GetEntry())
-            UpdateEntry(m_originalEntry);
-
-        SelectLevel();
-
-        SetDeathState( JUST_RESPAWNED );
-
-        GetMotionMaster()->InitDefault();
-
-        //re rand level & model
-        SelectLevel();
-
-        uint32 displayID = GetNativeDisplayId();
-        CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelRandomGender(displayID);
-        if (minfo && !IsTotem())                               // Cancel load if no model defined or if totem
-        {
-            SetNativeDisplayId(displayID);
-
-            Unit::AuraEffectList const& transformAuras = GetAuraEffectsByType(SPELL_AURA_TRANSFORM);
-            Unit::AuraEffectList const& shapeshiftAuras = GetAuraEffectsByType(SPELL_AURA_MOD_SHAPESHIFT);
-            if (transformAuras.empty() && shapeshiftAuras.empty())
-                SetDisplayId(displayID);
-        }
+            GetMap()->RemoveRespawnTime(SPAWN_TYPE_CREATURE, m_spawnId, true);
     }
 
-    //Call AI respawn virtual function
-    if (IsAIEnabled)
-        TriggerJustAppeared = true;//delay event to next tick so all creatures are created on the map before processing
-
-    m_timeSinceSpawn = 0;
-
-    UpdateObjectVisibility();
+    TC_LOG_DEBUG("entities.unit", "Respawning creature %s (%u)",
+        GetName().c_str(), GetGUIDLow());
 }
 
-void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/, uint32 forceRespawnTimer)
+void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/, Seconds const& forceRespawnTimer /*= 0*/)
 {
     if (TempSummon* summon = this->ToTempSummon())
         summon->UnSummon(msTimeToDespawn); 
@@ -2007,7 +2114,7 @@ void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/, uint32 forceRes
         ForcedDespawn(msTimeToDespawn, forceRespawnTimer);
 }
 
-void Creature::ForcedDespawn(uint32 timeMSToDespawn, uint32 forceRespawnTimer)
+void Creature::ForcedDespawn(uint32 timeMSToDespawn, Seconds const& forceRespawnTimer)
 {
     if (timeMSToDespawn)
     {
@@ -2016,13 +2123,48 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn, uint32 forceRespawnTimer)
         return;
     }
 
-    // do it before killing creature
-    DestroyForNearbyPlayers();
+    if (m_respawnCompatibilityMode)
+    {
+        uint32 corpseDelay = GetCorpseDelay();
+        uint32 respawnDelay = GetRespawnDelay();
 
-    if (IsAlive())
-        SetDeathState(JUST_DIED);
+        // do it before killing creature
+        DestroyForNearbyPlayers();
 
-    RemoveCorpse(false, false);
+        bool overrideRespawnTime = false;
+        if (IsAlive())
+        {
+            if (forceRespawnTimer > Seconds::zero())
+            {
+                SetCorpseDelay(0);
+                SetRespawnDelay(forceRespawnTimer.count());
+                overrideRespawnTime = true;
+            }
+
+            SetDeathState(JUST_DIED);
+        }
+
+        // Skip corpse decay time
+        RemoveCorpse(!overrideRespawnTime, false);
+
+        SetCorpseDelay(corpseDelay);
+        SetRespawnDelay(respawnDelay);
+    }
+    else 
+    {
+        if (forceRespawnTimer > Seconds::zero())
+            SaveRespawnTime(forceRespawnTimer.count());
+        else
+        {
+            uint32 respawnDelay = m_respawnDelay;
+            if (uint32 scalingMode = sWorld->getIntConfig(CONFIG_RESPAWN_DYNAMICMODE))
+                GetMap()->ApplyDynamicModeRespawnScaling(this, m_spawnId, respawnDelay, scalingMode);
+            m_respawnTime = time(NULL) + respawnDelay;
+            SaveRespawnTime();
+        }
+
+        AddObjectToRemoveList();
+    }
 }
 
 bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster)
@@ -2442,12 +2584,19 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction /
     return true;
 }
 
-void Creature::SaveRespawnTime()
+void Creature::SaveRespawnTime(uint32 forceDelay, bool savetodb)
 {
-    if(IsPet() || !m_spawnId)
+    if(IsSummon() || !m_spawnId || (m_creatureData && !m_creatureData->dbData))
         return;
 
-    sObjectMgr->SaveCreatureRespawnTime(m_spawnId, GetMapId(), GetInstanceId(), m_respawnTime);
+    if (m_respawnCompatibilityMode)
+    {
+        GetMap()->SaveRespawnTimeDB(SPAWN_TYPE_CREATURE, m_spawnId, m_respawnTime);
+        return;
+    }
+
+    time_t thisRespawnTime = forceDelay ? time(NULL) + forceDelay : m_respawnTime;
+    GetMap()->SaveRespawnTime(SPAWN_TYPE_CREATURE, m_spawnId, GetEntry(), thisRespawnTime, GetMap()->GetZoneId(GetHomePosition()), Trinity::ComputeGridCoord(GetHomePosition().GetPositionX(), GetHomePosition().GetPositionY()).GetId(), savetodb && m_creatureData && m_creatureData->dbData);
 }
 
 void Creature::LoadCreatureAddon()
@@ -2586,36 +2735,31 @@ time_t Creature::GetRespawnTimeEx() const
 
 bool Creature::IsSpawnedOnTransport() const 
 {
-    return m_creatureData && m_creatureData->mapid != GetMapId();
+    return m_creatureData && m_creatureData->spawnPoint.GetMapId() != GetMapId();
 }
 
 void Creature::GetRespawnPosition( float &x, float &y, float &z, float* ori, float* dist ) const
 {
-    if (m_spawnId)
+    if (m_creatureData)
     {
-        // for npcs on transport, this will return transport offset
-        if (CreatureData const* data = sObjectMgr->GetCreatureData(GetSpawnId()))
-        {
-            x = data->posX;
-            y = data->posY;
-            z = data->posZ;
-            if(ori)
-                *ori = data->orientation;
-            if(dist)
-                *dist = data->spawndist;
+        if (ori)
+            m_creatureData->spawnPoint.GetPosition(x, y, z, *ori);
+        else
+            m_creatureData->spawnPoint.GetPosition(x, y, z);
 
-            return;
-        }
+        if (dist)
+            *dist = m_creatureData->spawndist;
     }
-
-    Position homePos = GetHomePosition();
-    x = homePos.GetPositionX();
-    y = homePos.GetPositionY();
-    z = homePos.GetPositionZ();
-    if(ori)
-        *ori = homePos.GetOrientation();
-    if(dist)
-        *dist = 0;
+    else
+    {
+        Position const& homePos = GetHomePosition();
+        if (ori)
+            homePos.GetPosition(x, y, z, *ori);
+        else
+            homePos.GetPosition(x, y, z);
+        if (dist)
+            *dist = 0;
+    }
 }
 
 void Creature::AllLootRemovedFromCorpse()
@@ -2788,29 +2932,6 @@ const CreatureData* Creature::GetLinkedRespawnCreatureData() const
     return nullptr;
 }
 
-// returns master's remaining respawn time if any
-time_t Creature::GetLinkedCreatureRespawnTime() const
-{
-    if(!m_spawnId) // only hard-spawned creatures from DB can have a linked master
-        return 0;
-
-    if(uint32 targetGuid = sObjectMgr->GetLinkedRespawnGuid(m_spawnId))
-    {
-        Map* targetMap = nullptr;
-        if(const CreatureData* data = sObjectMgr->GetCreatureData(targetGuid))
-        {
-            if(data->mapid == GetMapId())   // look up on the same map
-                targetMap = GetMap();
-            else                            // it shouldn't be instanceable map here
-                targetMap = sMapMgr->FindBaseNonInstanceMap(data->mapid);
-        }
-        if(targetMap)
-            return sObjectMgr->GetCreatureRespawnTime(targetGuid,targetMap->GetInstanceId());
-    }
-
-    return 0;
-}
-
 void Creature::AreaCombat()
 {
     if(Map* map = GetMap())
@@ -2924,7 +3045,7 @@ void Creature::FocusTarget(Spell const* focusSpell, WorldObject const* target)
     _focusSpell = focusSpell;
     SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
     if (focusSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
-        AddUnitState(UNIT_STATE_ROTATING);
+        AddUnitState(UNIT_STATE_CANNOT_TURN);
 
     // Set serverside orientation if needed (needs to be after attribute check)
     SetInFront(target);
@@ -2932,18 +3053,22 @@ void Creature::FocusTarget(Spell const* focusSpell, WorldObject const* target)
 
 void Creature::ReleaseFocus(Spell const* focusSpell)
 {
-    // focused to something else
-    if (focusSpell != _focusSpell)
+    if (!_focusSpell)
         return;
 
-    _focusSpell = nullptr;
+    // focused to something else
+    if (focusSpell && focusSpell != _focusSpell)
+        return;
+
     if (Unit* victim = GetVictim())
         SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
     else
         SetUInt64Value(UNIT_FIELD_TARGET, 0);
 
-    if (focusSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
-        ClearUnitState(UNIT_STATE_ROTATING);
+    if (_focusSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
+        ClearUnitState(UNIT_STATE_CANNOT_TURN);
+
+    _focusSpell = nullptr;
 }
 
 
@@ -3311,4 +3436,12 @@ void Creature::SetDisplayId(uint32 modelId)
         }
     }
 
+}
+
+bool Creature::IsEscortNPC(bool onlyIfActive)
+{
+    if (!IsAIEnabled)
+        return false;
+
+    return AI()->IsEscortNPC(onlyIfActive);
 }

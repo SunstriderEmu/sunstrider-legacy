@@ -7,6 +7,7 @@
 #include "ItemPrototype.h"
 #include "LootMgr.h"
 #include "CreatureGroups.h"
+#include "Duration.h"
 
 #include <list>
 #include <string>
@@ -129,6 +130,12 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_CRUSH             = 0x00000020,       // creature can't do crush attacks
     CREATURE_FLAG_EXTRA_NO_XP_AT_KILL        = 0x00000040,       // creature kill not provide XP
     CREATURE_FLAG_EXTRA_TRIGGER              = 0x00000080,       // trigger creature
+    CREATURE_FLAG_EXTRA_DUNGEON_BOSS         = 0x00000100,       // (NYI, need instance_encounter system) creature is a dungeon boss (SET DYNAMICALLY, DO NOT ADD IN DB)
+    //0x200
+    //0x400
+    //0x800
+    //0x1000
+    //0x2000
     CREATURE_FLAG_EXTRA_WORLDEVENT           = 0x00004000,       // custom flag for world event creatures (left room for merging)
     CREATURE_FLAG_EXTRA_NO_SPELL_SLOW        = 0x00008000,       // cannot have spell casting slowed down
     CREATURE_FLAG_EXTRA_NO_TAUNT             = 0x00010000,       // cannot be taunted
@@ -140,6 +147,9 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_PLAYER_DAMAGE_REQ = 0x00400000,       // creature does not need to take player damage for kill credit
     CREATURE_FLAG_EXTRA_NO_HEALTH_RESET      = 0x00800000,       // creature does not refill its health at reset
     CREATURE_FLAG_EXTRA_GUARD                = 0x01000000,       // Creature is guard
+
+
+    CREATURE_FLAG_EXTRA_DB_ALLOWED = (0xFFFFFFFF & ~(CREATURE_FLAG_EXTRA_DUNGEON_BOSS))
 };
 
 static const uint32 CREATURE_REGEN_INTERVAL = 2 * SECOND * IN_MILLISECONDS;
@@ -318,26 +328,20 @@ typedef std::unordered_map<uint8, EquipmentInfo> EquipmentInfoContainerInternal;
 typedef std::unordered_map<uint32, EquipmentInfo> EquipmentInfoContainer;
 
 // from `creature` table
-struct CreatureData
+struct CreatureData : public SpawnData
 {
-    uint32 id;                                              // entry in creature_template
-    uint16 mapid;
+    CreatureData() : SpawnData(SPAWN_TYPE_CREATURE) { }
+
     uint32 displayid;
     int32 equipmentId;
-    float posX;
-    float posY;
-    float posZ;
-    float orientation;
-    uint32 spawntimesecs;
     float spawndist;
     uint32 currentwaypoint;
     uint32 curhealth;
     uint32 curmana;
     uint8 movementType;
-    uint8 spawnMask;
-    uint32 poolId;
+    uint32 poolId; //old windrunner link system
     uint32 scriptId;
-    uint32 instanceEventId; // If spawned in raid, don't respawn if corresponding instance event is != NOT_STARTED
+    uint32 instanceEventId; // If spawned in raid, don't respawn if corresponding instance event is != NOT_STARTED (creature_encounter_respawn table)
 };
 
 // from `creature_addon` table
@@ -495,7 +499,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void DisappearAndDie();
 
-        bool Create (uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, float x, float y, float z, float ang, const CreatureData *data = nullptr);
+        bool Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData *data = nullptr, bool dynamic = false);
         //get data from SQL storage
         void LoadCreatureAddon();
         //reapply creature addon data to creature
@@ -523,6 +527,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool isRacialLeader() const { return GetCreatureTemplate()->RacialLeader; }
         bool IsCivilian() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
         bool IsTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
+        bool IsDungeonBoss() const { return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS) != 0; }
+
         void SetReactState(ReactStates st);
         ReactStates GetReactState() { return m_reactState; }
         bool HasReactState(ReactStates state) const { return (m_reactState == state); }
@@ -626,8 +632,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void SetDeathState(DeathState s) override;                   // overwrite virtual Unit::setDeathState
 
-        bool LoadFromDB(uint32 spawnId, Map* map) { return LoadCreatureFromDB(spawnId, map, false); }
-        bool LoadCreatureFromDB(uint32 spawnId, Map* map, bool addToMap = true, bool allowDuplicate = false);
+        bool LoadFromDB(uint32 spawnId, Map* map, bool addToMap, bool allowDuplicate);
         void SaveToDB();
                                                             // overwrited in Pet
         virtual void SaveToDB(uint32 mapid, uint8 spawnMask);
@@ -685,16 +690,14 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void RemoveCorpse(bool setSpawnTime = true, bool destroyForNearbyPlayers = true);
 
-        //forceRespawnTime NYI
-        void DespawnOrUnsummon(uint32 msTimeToDespawn = 0, uint32 forceRespawnTime = 0);
-        //forceRespawnTime NYI
-        void ForcedDespawn(uint32 timeMSToDespawn = 0, uint32 forceRespawnTime = 0);
+        void DespawnOrUnsummon(uint32 msTimeToDespawn = 0, Seconds const& forceRespawnTime = Seconds(0));
+        void DespawnOrUnsummon(Milliseconds const& time, Seconds const& forceRespawnTime = Seconds(0)) { DespawnOrUnsummon(uint32(time.count()), forceRespawnTime); }
 
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;
         void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? time(nullptr) + respawn : 0; }
         void Respawn(bool force = false);
-        void SaveRespawnTime() override;
+        void SaveRespawnTime(uint32 forceDelay = 0, bool savetodb = true) override;
 
         uint32 GetRespawnDelay() const { return m_respawnDelay; }
         void SetRespawnDelay(uint32 delay) { m_respawnDelay = delay; }
@@ -703,7 +706,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetRespawnRadius(float dist) { m_respawnradius = dist; }
 
         // Linked Creature Respawning System
-        time_t GetLinkedCreatureRespawnTime() const;
         const CreatureData* GetLinkedRespawnCreatureData() const;
 
         void SendZoneUnderAttackMessage(Player* attacker);
@@ -797,6 +799,10 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
 		float m_SightDistance, m_CombatDistance;
 
+        // There's many places not ready for dynamic spawns. This allows them to live on for now.
+        void SetRespawnCompatibilityMode(bool mode = true) { m_respawnCompatibilityMode = mode; }
+        bool GetRespawnCompatibilityMode() { return m_respawnCompatibilityMode; }
+
         // Handling caster facing during spellcast
         void SetTarget(uint64 guid) override;
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
@@ -821,6 +827,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetHomeless(bool set = true) { m_homeless = set; }
         bool IsHomeless() const { return m_homeless; }
 
+        bool IsEscortNPC(bool onlyIfActive = true);
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
         bool InitEntry(uint32 entry, const CreatureData* data = nullptr);
@@ -894,15 +901,17 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 m_keepActiveTimer;
 
     private:
+        void ForcedDespawn(uint32 timeMSToDespawn = 0, Seconds const& forceRespawnTimer = Seconds(0));
+
         // Waypoint path
         uint32 _waypointPathId;
         std::pair<uint32/*nodeId*/, uint32/*pathId*/> _currentWaypointNodeInfo;
 
         //Formation var
         CreatureGroup *m_formation;
-        bool TriggerJustAppeared;
+        bool m_triggerJustAppeared;
+        bool m_respawnCompatibilityMode;
 
-        GridReference<Creature> m_gridRef;
         CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjectMgr::GetCreatureTemplate(GetEntry())
         CreatureData const* m_creatureData;
         CreatureAddon const* m_creatureInfoAddon;
@@ -930,12 +939,12 @@ class TC_GAME_API AssistDelayEvent : public BasicEvent
 class TC_GAME_API ForcedDespawnDelayEvent : public BasicEvent
 {
     public:
-        ForcedDespawnDelayEvent(Creature& owner, uint32 respawnTimer) : BasicEvent(), m_owner(owner), m_respawnTimer(respawnTimer) { }
+        ForcedDespawnDelayEvent(Creature& owner, Seconds const& respawnTimer) : BasicEvent(), m_owner(owner), m_respawnTimer(respawnTimer) { }
         bool Execute(uint64 e_time, uint32 p_time) override;
 
     private:
         Creature& m_owner;
-        uint32 m_respawnTimer;
+        Seconds const m_respawnTimer;
 };
 
 class TC_GAME_API AIMessageEvent : public BasicEvent

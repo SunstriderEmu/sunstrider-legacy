@@ -522,6 +522,12 @@ union GameObjectValue
         TransportAnimation const* AnimationInfo;
         uint32 CurrentSeg;
     } Transport;
+
+    //25 GAMEOBJECT_TYPE_FISHINGHOLE
+    struct
+    {
+        uint32 MaxOpens;
+    } FishingHole;
 };
 
 struct GameObjectLocale
@@ -541,19 +547,12 @@ enum GOState: uint32
 };
 
 // from `gameobject`
-struct GameObjectData
+struct GameObjectData : public SpawnData
 {
-    uint32 id;                                              // entry in gamobject_template
-    uint32 mapid;
-    float posX;
-    float posY;
-    float posZ;
-    float orientation;
+    GameObjectData() : SpawnData(SPAWN_TYPE_GAMEOBJECT) { }
     G3D::Quat rotation;
-    int32  spawntimesecs;
     uint32 animprogress;
     uint32 go_state;
-    uint8 spawnMask;
     uint32 ArtKit;
     uint32 ScriptId;
 };
@@ -597,11 +596,11 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void RemoveFromWorld() override;
 		void CleanupsBeforeDelete(bool finalCleanup = true) override;
 
-        virtual bool Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit = 0, uint32 spawnid = 0);
+        virtual bool Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit = 0, bool dynamic = false, uint32 spawnid = 0);
         void Update(uint32 diff) override;
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
         GameObjectTemplate const* GetGOInfo() const;
-        GameObjectData const* GetGOData() const { return m_goData; }
+        GameObjectData const* GetGameObjectData() const { return m_goData; }
         GameObjectValue const* GetGOValue() const { return &m_goValue; }
 
         bool IsTransport() const;
@@ -623,7 +622,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void SaveToDB();
         void SaveToDB(uint32 mapid, uint8 spawnMask);
-        bool LoadFromDB(uint32 guid, Map *map);
+        bool LoadFromDB(uint32 spawnId, Map* map, bool addToMap, bool = true); // arg4 is unused, only present to match the signature on Creature
         void DeleteFromDB();
         void SetLootState(LootState state, Unit* unit = nullptr);
         uint32 GetLockId() const
@@ -709,7 +708,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         uint32 GetUseCount() const { return m_usetimes; }
         uint32 GetUniqueUseCount() const { return m_unique_users.size(); }
 
-        void SaveRespawnTime() override;
+        void SaveRespawnTime(uint32 forceDelay = 0, bool savetodb = true) override;
 
         Loot        loot;
 
@@ -779,6 +778,10 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void EventInform(uint32 eventId);
 
+        // There's many places not ready for dynamic spawns. This allows them to live on for now.
+        void SetRespawnCompatibilityMode(bool mode = true) { m_respawnCompatibilityMode = mode; }
+        bool GetRespawnCompatibilityMode() { return m_respawnCompatibilityMode; }
+
         uint32 GetScriptId() const;
         GameObjectAI* AI() const { return m_AI; }
 
@@ -831,7 +834,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 		void RemoveFromOwner();
 
         GameObjectAI* m_AI;
-        GridReference<GameObject> m_gridRef;
+        bool m_respawnCompatibilityMode;
 };
 #endif
 

@@ -1187,11 +1187,11 @@ bool ChatHandler::HandleChangeWeather(const char* args)
 
 bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
 {
-    Player* pl = m_session->GetPlayer();
+    Player* player = m_session->GetPlayer();
 
     // accept only explicitly selected target (not implicitly self targeting case)
     Unit* target = GetSelectedUnit();
-    if(pl->GetTarget() && target)
+    if(player->GetTarget() && target)
     {
         if(target->GetTypeId()!=TYPEID_UNIT)
         {
@@ -1201,18 +1201,25 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
         }
 
         if(target->IsDead())
-            (target->ToCreature())->Respawn();
+            (target->ToCreature())->Respawn(true);
         return true;
     }
 
-    CellCoord p(Trinity::ComputeCellCoord(pl->GetPositionX(), pl->GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
+    // First handle any creatures that still have a corpse around
     Trinity::RespawnDo u_do;
-    Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(pl, u_do);
-    Cell::VisitGridObjects(pl, worker, pl->GetGridActivationRange());
+    Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(player, u_do);
+    Cell::VisitGridObjects(player, worker, player->GetGridActivationRange());
+
+    // Now handle any that had despawned, but had respawn time logged.
+    RespawnVector data;
+    player->GetMap()->GetRespawnInfo(data, SPAWN_TYPEMASK_ALL, 0);
+    if (!data.empty())
+    {
+        uint32 const gridId = Trinity::ComputeGridCoord(player->GetPositionX(), player->GetPositionY()).GetId();
+        for (RespawnInfo* info : data)
+            if (info->gridId == gridId)
+                player->GetMap()->RemoveRespawnTime(info, true);
+    }
 
     return true;
 }

@@ -303,7 +303,7 @@ void MonitorAutoReboot::Update(uint32 diff)
     if (avgDiff >= thresholdDiff && !sWorld->IsShuttingDown())
     {
         // Trigger restart
-        sWorld->ShutdownServ(15 * MINUTE, SHUTDOWN_MASK_RESTART, "Auto-restart triggered due to abnormal server load.");
+        sWorld->ShutdownServ(15 * MINUTE, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE, "Auto-restart triggered due to abnormal server load.");
     }
 }
 

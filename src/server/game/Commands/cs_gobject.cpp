@@ -2,6 +2,37 @@
 #include "Language.h"
 #include "GameEventMgr.h"
 #include "Transport.h"
+#include "PoolMgr.h"
+
+void SendInfoAbout(uint32 spawnId, uint32 entry, WorldLocation loc, ChatHandler* chatHandler)
+{
+    Player* pl = chatHandler->GetSession()->GetPlayer();
+    GameObjectTemplate const* gInfo = sObjectMgr->GetGameObjectTemplate(entry);
+    if (!gInfo || !pl)
+        return;
+
+    //orientation now shown here
+    chatHandler->PSendSysMessage(LANG_GO_LIST_CHAT, spawnId, entry, spawnId, gInfo->name.c_str(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetMapId());
+    GameObject* target = pl->GetMap()->GetGameObjectBySpawnId(spawnId);
+    if (target)
+    {
+        int32 curRespawnDelay = target->GetRespawnTimeEx() - time(nullptr);
+        if (curRespawnDelay < 0)
+            curRespawnDelay = 0;
+
+        std::string curRespawnDelayStr = secsToTimeString(curRespawnDelay, true);
+        std::string defRespawnDelayStr = secsToTimeString(target->GetRespawnDelay(), true);
+
+        chatHandler->PSendSysMessage(LANG_COMMAND_RAWPAWNTIMES, defRespawnDelayStr.c_str(), curRespawnDelayStr.c_str());
+    }
+
+    SpawnData const* data = sObjectMgr->GetSpawnData(SPAWN_TYPE_GAMEOBJECT, spawnId);
+    if (data && data->spawnGroupData)
+        chatHandler->PSendSysMessage("Member of spawn group %u", data->spawnGroupData->groupId);
+
+    if (uint32 poolid = sPoolMgr->IsPartOfAPool<GameObject>(spawnId))
+        chatHandler->PSendSysMessage("Part of pool %u", poolid);
+}
 
 bool ChatHandler::HandleTargetObjectCommand(const char* args)
 {
@@ -46,9 +77,9 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
         else
             eventFilter << ")";
 
-        result = WorldDatabase.PQuery("SELECT gameobject.guid, id, position_x, position_y, position_z, orientation, map, "
+        result = WorldDatabase.PQuery("SELECT gameobject.guid, id, position_x, position_y, position_z, orientation, map, geg.event "
             "(POW(position_x - %f, 2) + POW(position_y - %f, 2) + POW(position_z - %f, 2)) AS order_ FROM gameobject "
-            "LEFT OUTER JOIN game_event_gameobject on gameobject.guid=game_event_gameobject.guid WHERE map = '%i' %s ORDER BY order_ ASC LIMIT 1",
+            "LEFT OUTER JOIN game_event_gameobject geg ON gameobject.guid=geg.guid WHERE map = '%i' %s ORDER BY order_ ASC LIMIT 1",
             m_session->GetPlayer()->GetPositionX(), m_session->GetPlayer()->GetPositionY(), m_session->GetPlayer()->GetPositionZ(), m_session->GetPlayer()->GetMapId(),eventFilter.str().c_str());
     }
 
@@ -59,37 +90,18 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
     }
 
     Field *fields = result->Fetch();
-    uint32 lowguid = fields[0].GetUInt32();
-    uint32 id = fields[1].GetUInt32();
+    uint32 spawnId = fields[0].GetUInt32();
+    uint32 entry = fields[1].GetUInt32();
     float x = fields[2].GetFloat();
     float y = fields[3].GetFloat();
     float z = fields[4].GetFloat();
     float o = fields[5].GetFloat();
     int mapid = fields[6].GetUInt16();
+    int linked_event = fields[7].GetInt16();
 
-    GameObjectTemplate const* goI = sObjectMgr->GetGameObjectTemplate(id);
-
-    if (!goI)
-    {
-        PSendSysMessage(LANG_GAMEOBJECT_NOT_EXIST,id);
-        return false;
-    }
-
-    GameObject* target = ObjectAccessor::GetGameObject(*m_session->GetPlayer(),MAKE_NEW_GUID(lowguid,id,HighGuid::GameObject));
-
-    PSendSysMessage(LANG_GAMEOBJECT_DETAIL, lowguid, goI->name.c_str(), lowguid, id, x, y, z, mapid, o);
-
-    if(target)
-    {
-        int32 curRespawnDelay = target->GetRespawnTimeEx()-time(nullptr);
-        if(curRespawnDelay < 0)
-            curRespawnDelay = 0;
-
-        std::string curRespawnDelayStr = secsToTimeString(curRespawnDelay,true);
-        std::string defRespawnDelayStr = secsToTimeString(target->GetRespawnDelay(),true);
-
-        PSendSysMessage(LANG_COMMAND_RAWPAWNTIMES, defRespawnDelayStr.c_str(),curRespawnDelayStr.c_str());
-    }
+    SendInfoAbout(spawnId, entry, WorldLocation(mapid, x, y, z, o) , this);
+    if (linked_event)
+        PSendSysMessage("Linked game_event: %i", linked_event);
     return true;
 }
 
@@ -117,7 +129,7 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
         return false;
     }
 
-    Player *chr = m_session->GetPlayer();
+    Player* chr = m_session->GetPlayer();
     float x = float(chr->GetPositionX());
     float y = float(chr->GetPositionY());
     float z = float(chr->GetPositionZ());
@@ -132,7 +144,7 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     {
 #ifdef LICH_KING
         uint32 guid = sObjectMgr->GenerateGameObjectSpawnId();
-        GameObjectData& data = sObjectMgr->NewGOData(guid);
+        GameObjectData& data = sObjectMgr->NewOrExistGameObjectData(guid);
         data.id = id;
         data.posX = chr->GetTransOffsetX();
         data.posY = chr->GetTransOffsetY();
@@ -166,10 +178,10 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     }
 
     auto pGameObj = new GameObject;
-    uint32 db_lowGUID = sObjectMgr->GenerateGameObjectSpawnId();
-    //use AddGOData instead? Then how do we spawn them in instance?
+    ObjectGuid::LowType guidLow = map->GenerateLowGuid<HighGuid::GameObject>();
+    //use AddGameObjectData instead? Then how do we spawn them in instance?
 
-    if(!pGameObj->Create(db_lowGUID, goI->entry, map, chr->GetPhaseMask(), Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY, 0, db_lowGUID))
+    if (!pGameObj->Create(guidLow, goI->entry, map, chr->GetPhaseMask(), { x, y, z, o }, G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
     {
         delete pGameObj;
         return false;
@@ -184,23 +196,22 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
      
     // fill the gameobject data and save to the db
     pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
+    guidLow = pGameObj->GetSpawnId();
 
     delete pGameObj;
     pGameObj = sObjectMgr->IsGameObjectStaticTransport(goI->entry) ? new StaticTransport() : new GameObject();
 
     // this will generate a new guid if the object is in an instance
-    if(!pGameObj->LoadFromDB(db_lowGUID, map))
+    if(!pGameObj->LoadFromDB(guidLow, map, true))
     {
         delete pGameObj;
         SendSysMessage("Failed to create object");
         return true;
     }
 
-    map->AddToMap(pGameObj);
+    sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGameObjectData(guidLow));
 
-    sObjectMgr->AddGameobjectToGrid(db_lowGUID, sObjectMgr->GetGOData(db_lowGUID));
-
-    PSendSysMessage(LANG_GAMEOBJECT_ADD, id, goI->name.c_str(), db_lowGUID, x, y, z);
+    PSendSysMessage(LANG_GAMEOBJECT_ADD, id, goI->name.c_str(), guidLow, x, y, z);
     return true;
 }
 
@@ -220,7 +231,7 @@ bool ChatHandler::HandleDelObjectCommand(const char* args)
     GameObject* obj = nullptr;
 
     // by DB guid
-    if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
+    if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(lowguid))
         obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
 
     if(!obj)
@@ -270,7 +281,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
     Player *chr = m_session->GetPlayer();
 
     // by DB guid
-    if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
+    if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(lowguid))
         obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
 
     if(!obj)
@@ -330,7 +341,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
     Player* player = m_session->GetPlayer();
 
     // by DB guid
-    if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
+    if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(lowguid))
         obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
 
     if(!obj)
@@ -401,7 +412,7 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
     uint32 count = 0;
 
     Player* pl = m_session->GetPlayer();
-    QueryResult result = WorldDatabase.PQuery("SELECT g.guid, id, position_x, position_y, position_z, map, geg.event, "
+    QueryResult result = WorldDatabase.PQuery("SELECT g.guid, id, position_x, position_y, position_z, orientation, map, geg.event, "
         "(POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ "
         "FROM gameobject g "
         "LEFT JOIN game_event_gameobject geg ON g.guid = geg.guid "
@@ -414,23 +425,19 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
     {
         do
         {
-            Field *fields = result->Fetch();
-            uint32 guid = fields[0].GetUInt32();
+            Field* fields = result->Fetch();
+            uint32 spawnId = fields[0].GetUInt32();
             uint32 entry = fields[1].GetUInt32();
             float x = fields[2].GetFloat();
             float y = fields[3].GetFloat();
             float z = fields[4].GetFloat();
-            int mapid = fields[5].GetUInt16();
-            int linked_event = fields[6].GetInt16();
+            float o = fields[5].GetFloat();
+            int mapid = fields[6].GetUInt16();
+            int linked_event = fields[7].GetInt16();
 
-            GameObjectTemplate const * gInfo = sObjectMgr->GetGameObjectTemplate(entry);
-
-            if(!gInfo)
-                continue;
-
-            PSendSysMessage(LANG_GO_LIST_CHAT, guid, entry, guid, gInfo->name.c_str(), x, y, z, mapid);
+            SendInfoAbout(spawnId, entry, WorldLocation(mapid, x,y,z,o), this);
             if (linked_event)
-                PSendSysMessage("Linked event: %i", linked_event);
+                PSendSysMessage("Linked game_event: %i", linked_event);
 
             ++count;
         } while (result->NextRow());
@@ -456,7 +463,7 @@ bool ChatHandler::HandleActivateObjectCommand(const char *args)
     GameObject* obj = nullptr;
 
     // by DB guid
-    if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
+    if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(lowguid))
         obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
 
     if(!obj)
@@ -531,7 +538,7 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
         return false;
     }
 
-    data = sObjectMgr->GetGOData(gobGUID);
+    data = sObjectMgr->GetGameObjectData(gobGUID);
     if(!data)
     {
         //PSendSysMessage("Gobject (guid : %u) introuvable.",gobGUID);
@@ -571,7 +578,7 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
 
     gobGUID = atoi(cGobGUID);
 
-    data = sObjectMgr->GetGOData(gobGUID);
+    data = sObjectMgr->GetGameObjectData(gobGUID);
     if(!data)
     {
         //PSendSysMessage("Gobject avec le guid %u introuvable.",gobGUID);
@@ -617,7 +624,7 @@ bool ChatHandler::HandleGobGetValueCommand(const char * args)
 
      GameObject* target = nullptr;
     // by DB guid
-    if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
+    if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(guid))
         target = GetObjectGlobalyWithGuidOrNearWithSpawnId(guid,go_data->id);
 
     if(!target)
@@ -683,7 +690,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
 
      GameObject* target = nullptr;
     // by DB guid
-    if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
+    if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(guid))
         target = GetObjectGlobalyWithGuidOrNearWithSpawnId(guid, go_data->id);
 
     if(!target)

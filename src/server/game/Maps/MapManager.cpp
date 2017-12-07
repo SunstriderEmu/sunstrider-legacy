@@ -60,7 +60,7 @@ Map* MapManager::CreateBaseMap(uint32 id, bool testing)
         else
         {
             m = new Map(MAP_TYPE_MAP, id, i_gridCleanUpDelay, 0, REGULAR_DIFFICULTY);
-            //TC map->LoadRespawnTimes();
+            m->LoadRespawnTimes();
             m->LoadCorpseData();
         }
         uint32 internal_id = testing ? id + TEST_MAP_STARTING_ID : id;

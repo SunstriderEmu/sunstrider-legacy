@@ -167,16 +167,13 @@ void EscortAI::UpdateAI(uint32 diff)
                 TC_LOG_DEBUG("scripts", "EscortAI::UpdateAI: failed because player/group was to far away or not found");
 
                 bool isEscort = false;
-                /* TC 
                 if (CreatureData const* creatureData = me->GetCreatureData())
                     isEscort = (sWorld->getBoolConfig(CONFIG_RESPAWN_DYNAMIC_ESCORTNPC) && (creatureData->spawnGroupData->flags & SPAWNGROUP_FLAG_ESCORTQUESTNPC));
-                    */
 
                 if (_instantRespawn && !isEscort)
-                    me->DespawnOrUnsummon(0, 1000);
-                /*TC else if (_instantRespawn && isEscort)
+                    me->DespawnOrUnsummon(0, Seconds(1));
+                else if (_instantRespawn && isEscort)
                     me->GetMap()->RemoveRespawnTime(SPAWN_TYPE_CREATURE, me->GetSpawnId(), true);
-                    */
                 else
                     me->DespawnOrUnsummon();
 
@@ -348,8 +345,6 @@ bool EscortAI::IsPlayerOrGroupInRange()
 
 void EscortAI::Start(bool isActiveAttacker /* = true*/, bool run /* = false */, uint64 playerGUID /* = 0 */, Quest const* quest /* = nullptr */, bool instantRespawn /* = false */, bool canLoopPath /* = false */, bool resetWaypoints /* = true */)
 {
-/* TC 
- // Queue respawn from the point it starts
     if (Map* map = me->GetMap())
     {
         if (CreatureData const* cdata = me->GetCreatureData())
@@ -364,7 +359,7 @@ void EscortAI::Start(bool isActiveAttacker /* = true*/, bool run /* = false */, 
             }
         }
     }
-*/
+
     if (me->GetVictim())
     {
         TC_LOG_ERROR("scripts", "EscortAI::Start: (script: %s, creature entry: %u) attempts to Start while in combat", me->GetScriptName().c_str(), me->GetEntry());
@@ -477,6 +472,17 @@ bool EscortAI::AssistPlayerInCombatAgainst(Unit* who)
         me->EngageWithTarget(who);
         return true;
     }
+
+    return false;
+}
+
+bool EscortAI::IsEscortNPC(bool onlyIfActive) const
+{
+    if (!onlyIfActive)
+        return true;
+
+    if (GetEventStarterGUID())
+        return true;
 
     return false;
 }

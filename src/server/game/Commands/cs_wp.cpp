@@ -753,8 +753,8 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
                 wpCreature->DeleteFromDB();
                 wpCreature->AddObjectToRemoveList();
                 // re-create
-                auto  wpCreature2 = new Creature;
-                if (!wpCreature2->Create(sObjectMgr->GenerateCreatureSpawnId(), map, chr->GetPhaseMask(), VISUAL_WAYPOINT, chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetOrientation()))
+                auto wpCreature2 = new Creature;
+                if (!wpCreature2->Create(sObjectMgr->GenerateCreatureSpawnId(), map, chr->GetPhaseMask(), VISUAL_WAYPOINT, { chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetOrientation() }))
                 {
                     PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, VISUAL_WAYPOINT);
                     delete wpCreature2;
@@ -770,9 +770,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
                 wpCreature2->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
                 // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
-                wpCreature2->LoadFromDB(wpCreature2->GetSpawnId(), map);
-                map->AddToMap(wpCreature2);
-                //sMapMgr->CreateMap(npcCreature->GetMapId())->Add(wpCreature2);
+                wpCreature2->LoadFromDB(wpCreature2->GetSpawnId(), map, true, false);
             }
 
             WorldDatabase.PExecute("UPDATE waypoint_data SET position_x = '%f',position_y = '%f',position_z = '%f' where id = '%u' AND point='%u'",

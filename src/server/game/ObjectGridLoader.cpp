@@ -9,6 +9,7 @@
 #include "World.h"
 #include "CellImpl.h"
 #include "Transport.h"
+#include "ScriptMgr.h"
 
 void ObjectGridEvacuator::Visit(CreatureMapType &m)
 {
@@ -100,23 +101,36 @@ void AddObjectHelper(CellCoord &cell, CreatureMapType &m, uint32 &count, Map* ma
 template <class T>
 void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> &m, uint32 &count, Map* map)
 {
+    //useful?
+}
+
+void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<Creature> &m, uint32 &count, Map* map)
+{
     for(uint32 guid : guid_set)
     {
-        //ugly hackkk
-        T* obj = nullptr;
-        
-        if (std::is_same<T, GameObject>::value)
+        // Don't spawn at all if there's a respawn time
+        if (map->GetCreatureRespawnTime(guid))
+            continue;
+
+        CreatureData const* cdata = sObjectMgr->GetCreatureData(guid);
+        ASSERT(cdata, "Tried to load creature with spawnId %u, but no such creature exists.", guid);
+        SpawnGroupTemplateData const* const group = cdata->spawnGroupData;
+        // If creature in manual spawn group, don't spawn here, unless group is already active.
+        if (!(group->flags & SPAWNGROUP_FLAG_SYSTEM))
+            if (!map->IsSpawnGroupActive(group->groupId))
+                continue;
+
+        // If script is blocking spawn, don't spawn but queue for a re-check in a little bit
+        if (!(group->flags & SPAWNGROUP_FLAG_COMPATIBILITY_MODE) && !sScriptMgr->CanSpawn(guid, cdata->id, cdata, map))
         {
-            if (GameObjectData const *data = sObjectMgr->GetGOData(guid))
-                if (sObjectMgr->IsGameObjectStaticTransport(data->id))
-                    obj = (T*)(new StaticTransport());
+            map->SaveRespawnTime(SPAWN_TYPE_CREATURE, guid, cdata->id, time(nullptr) + urand(4, 7), map->GetZoneId(cdata->spawnPoint), Trinity::ComputeGridCoord(cdata->spawnPoint.GetPositionX(), cdata->spawnPoint.GetPositionY()).GetId(), false);
+            continue;
         }
 
-        if(!obj)
-            obj = new T;
-
+        Creature* obj = new Creature;
+        
         //TC_LOG_INFO("FIXME","DEBUG: LoadHelper from table: %s for (guid: %u) Loading",table,guid);
-        if(!obj->LoadFromDB(guid, map))
+        if(!obj->LoadFromDB(guid, map, false, false))
         {
             delete obj;
             continue;
@@ -125,6 +139,38 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> 
         AddObjectHelper(cell, m, count, map, obj);
     }
 }
+
+void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<GameObject> &m, uint32 &count, Map* map)
+{
+    for (uint32 guid : guid_set)
+    {
+        // Don't spawn at all if there's a respawn time
+        if (map->GetGORespawnTime(guid))
+            continue;
+
+        GameObjectData const* godata = sObjectMgr->GetGameObjectData(guid);
+        ASSERT(godata, "Tried to load gameobject with spawnId %u, but no such object exists.", guid);
+        if (!(godata->spawnGroupData->flags & SPAWNGROUP_FLAG_SYSTEM))
+            if (!map->IsSpawnGroupActive(godata->spawnGroupData->groupId))
+                continue;
+      
+        GameObject* obj = nullptr;
+        if (sObjectMgr->IsGameObjectStaticTransport(godata->id))   //ugly hack :/
+            obj = (GameObject*)(new StaticTransport()); 
+
+        if (!obj)
+            obj = new GameObject;
+
+        if (!obj->LoadFromDB(guid, map, false, false))
+        {
+            delete obj;
+            continue;
+        }
+
+        AddObjectHelper(cell, m, count, map, obj);
+    }
+}
+
 
 void ObjectGridLoader::Visit(GameObjectMapType &m)
 {

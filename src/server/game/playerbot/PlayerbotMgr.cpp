@@ -355,7 +355,7 @@ list<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Play
         }
         else if (!master)
         {
-            out << ProcessBotCommand(cmdStr, member, true, -1, -1);
+            out << ProcessBotCommand(cmdStr, member, true, uint32(-1), uint32(-1));
         }
 
         messages.push_back(out.str());

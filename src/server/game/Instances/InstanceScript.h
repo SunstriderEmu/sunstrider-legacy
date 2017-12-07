@@ -98,25 +98,34 @@ class TC_GAME_API InstanceScript : public ZoneScript
         InstanceScript(Map *map);
         ~InstanceScript() override = default;
 
-	Map* instance;
-			
+	    Map* instance;
+
+        // On creation, NOT load.
+        // PLEASE INITIALIZE FIELDS IN THE CONSTRUCTOR INSTEAD !!!
+        // KEEPING THIS METHOD ONLY FOR BACKWARD COMPATIBILITY !!!
+        virtual void Initialize() { }
 
         //Used by the map's CannotEnter function.
         //This is to prevent players from entering during boss encounters.
         virtual bool IsEncounterInProgress() const;
 
-	//Called every map update
-	virtual void Update(uint32 /*diff*/) {}
+	    //Called every map update
+	    virtual void Update(uint32 /*diff*/) {}
 
         // Save and Load instance data to the database
         virtual std::string GetSaveData() { return ""; } //TC has a more advanced system here but this would need a lot more work to transform actual scripts
-        void Load(const char* in) override { }
+
+        
+        // On instance load, exactly ONE of these methods will ALWAYS be called:
+        // if we're starting without any saved instance data
+        virtual void Create();
+        // if we're loading existing instance save data
+        virtual void Load(char const* data) {}
         
         // Misc
-        void CastOnAllPlayers(uint32 spellId);  // TODO: Add Unit* caster as parameter?
         void RemoveAuraOnAllPlayers(uint32 spellId);
-        virtual void MonsterPulled(Creature* creature, Unit* puller); // puller can be a pet, thus use a Unit ptr
-        virtual void PlayerDied(Player* player);
+        virtual void MonsterPulled(Creature* creature, Unit* puller) {} // puller can be a pet, thus use a Unit ptr
+        virtual void PlayerDied(Player* player) {}
         
         void SendScriptInTestNoLootMessageToAll();
 
@@ -159,8 +168,13 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void UpdateDoorState(GameObject* door);
         //NYI void UpdateMinionState(Creature* minion, EncounterState state);
 
+        void UpdateSpawnGroups();
+
+    private:
         std::vector<BossInfo> bosses;
         DoorInfoMap doors;
+        std::vector<InstanceSpawnGroupInfo> const* const _instanceSpawnGroups;
+
         //NYI MinionInfoMap minions;
 
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING

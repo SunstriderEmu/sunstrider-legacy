@@ -61,11 +61,7 @@ class TC_GAME_API Corpse : public WorldObject, public GridObject<Corpse>
 
 		bool IsExpired(time_t t) const;
 
-		//bool IsInGrid() const { return m_gridRef.isValid(); }
-
     private:
-        GridReference<Corpse> m_gridRef;
-
         CorpseType m_type;
         time_t m_time;
 		CellCoord _cellCoord;

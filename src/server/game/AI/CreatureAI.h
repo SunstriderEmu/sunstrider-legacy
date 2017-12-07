@@ -165,6 +165,10 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Object destruction is handled by Unit::RemoveCharmedBy
         virtual PlayerAI* GetAIForCharmedPlayer(Player* /*who*/) { return nullptr; }
 
+        // Should return true if the NPC is target of an escort quest
+        // If onlyIfActive is set, should return true only if the escort quest is currently active
+        virtual bool IsEscortNPC(bool /*onlyIfActive*/) const { return false; }
+
     protected:
 		// Called at each *who move, AND if creature is aggressive
 		virtual void MoveInLineOfSight(Unit *);
