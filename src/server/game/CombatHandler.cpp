@@ -74,19 +74,19 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAttackStopOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     GetPlayer()->AttackStop();
 }
 
 void WorldSession::HandleSetSheathedOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint32 sheathed;
     recvData >> sheathed;
+
+    if (sheathed >= MAX_SHEATH_STATE)
+    {
+        TC_LOG_ERROR("network", "Unknown sheath state %u ?", sheathed);
+        return;
+    }
 
     //TC_LOG_DEBUG("network.opcode", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed );
 
