@@ -58,10 +58,10 @@ namespace Movement
         splineflags.enter_cycle = move_spline.isCyclic();
 
 #ifdef LICH_KING
-         // add fake Walkmode flag - client has strange issues without that flag
-        data << uint32(splineflags & ~MoveSplineFlag::Mask_No_Monster_Move | MoveSplineFlag::Walkmode);
-#else
         data << uint32(splineflags & uint32(~MoveSplineFlag::Mask_No_Monster_Move));
+#else
+        // add fake Runmode flag - client has strange issues without that flag (only needed for players?)
+        data << uint32((splineflags & uint32(~MoveSplineFlag::Mask_No_Monster_Move)) | MoveSplineFlag::Runmode);
 #endif
 
 #ifdef LICH_KING

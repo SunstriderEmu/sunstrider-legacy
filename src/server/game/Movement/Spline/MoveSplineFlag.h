@@ -67,7 +67,7 @@ namespace Movement
             Unknown6            = 0x00000020,
             Unknown7            = 0x00000040,
             Unknown8            = 0x00000080,
-            Walkmode            = 0x00000100,
+            Runmode             = 0x00000100,
             Flying              = 0x00000200,           // Smooth movement(Catmullrom interpolation mode), flying animation
             No_Spline           = 0x00000400,
             Unknown12           = 0x00000800,
