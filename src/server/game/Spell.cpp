@@ -3500,10 +3500,7 @@ void Spell::cast(bool skipCheck)
             }
         }
     }
-
-    if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_CHARGE))
-        EffectCharge(0);
-
+    
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
     if (m_spellInfo->Id == 2094 || m_spellInfo->Id == 14181)       // Delay Blind for 150ms to fake retail lag
     {

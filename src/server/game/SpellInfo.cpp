@@ -1997,7 +1997,6 @@ void SpellInfo::LoadCustomAttributes()
             case SPELL_EFFECT_CHARGE:
                 if(!Speed && !SpellFamilyName)
                     Speed = SPEED_CHARGE;
-                AttributesCu |= SPELL_ATTR_CU_CHARGE;
                 break;
         }
     }
