@@ -2113,6 +2113,7 @@ namespace ClassSpells
             TRANQUILITY_RNK_3 = 9862,
             TRANQUILITY_RNK_4 = 9863,
             TRANQUILITY_RNK_5 = 26983,
+            TRANQUILITY_RNK_5_PROC = 44208,
         };
     };
 

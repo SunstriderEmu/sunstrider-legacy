@@ -963,13 +963,13 @@ void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 c
     INTERNAL_TEST_ASSERT(cooldown == cooldownSecond);
 }
 
-void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS)
+void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 durationMS)
 {
-    Aura* aura = target->GetAura(spellID, EFFECT_0);
+    Aura* aura = target->GetAura(spellID, effect);
     INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
-    uint32 auraDuration = aura->GetAuraDuration();
+    uint32 auraDuration = aura->GetAuraMaxDuration();
     INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with duration %u instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraDuration, durationMS);
     INTERNAL_TEST_ASSERT(auraDuration == durationMS);
 }

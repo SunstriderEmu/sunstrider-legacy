@@ -91,7 +91,7 @@ public:
     #define TEST_HAS_NOT_AURA( ... ) _SetCaller(__FILE__, __LINE__); _EnsureHasNotAura(__VA_ARGS__); _ResetCaller()
  
     //check if target has aura and if duration match given duration. Only checks effect0
-    #define TEST_AURA_MAX_DURATION(target, spellID, durationMS) _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, durationMS); _ResetCaller()
+    #define TEST_AURA_MAX_DURATION(target, spellID, effect, durationMS) _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, effect, durationMS); _ResetCaller()
 
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     float CalcChance(uint32 iterations, const std::function<bool()>& f);
@@ -162,7 +162,7 @@ protected:
     void _EnsureHasNotAura(Unit* target, int32 spellID) { _EnsureHasAura(target, -spellID); }
     void _EnsureHasNotAura(Unit* target, int32 spellID, uint8 effectIndex) { _EnsureHasAura(target, -spellID, effectIndex);  }
     void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond);
-    void _TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS);
+    void _TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 durationMS);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
 
 private:

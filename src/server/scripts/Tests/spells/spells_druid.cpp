@@ -148,7 +148,7 @@ public:
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
 			uint32 const startHealth = druid2->GetHealth();
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 6 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, EFFECT_0, 6 * SECOND * IN_MILLISECONDS);
             TEST_CAST(druid, druid2, ClassSpells::Druid::WRATH_RNK_10);
 			Wait(500); // wrath hit
 			TEST_ASSERT(druid2->GetHealth() == startHealth);
@@ -165,13 +165,13 @@ public:
 			// 3s
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 3 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, EFFECT_0, 3 * SECOND * IN_MILLISECONDS);
 			druid2->RemoveAurasDueToSpell(ClassSpells::Druid::CYCLONE_RNK_1);
 
 			// 1.5s
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 1500);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, EFFECT_0, 1500);
 
 			// Immune
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
@@ -309,7 +309,7 @@ public:
                     break;
             }
             TEST_ASSERT(hasAura);
-            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Druid::HIBERNATE_RNK_3, durationSeconds * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Druid::HIBERNATE_RNK_3, EFFECT_0, durationSeconds * IN_MILLISECONDS);
 			enemy->RemoveAurasDueToSpell(ClassSpells::Druid::HIBERNATE_RNK_3);
 		}
 
@@ -458,7 +458,7 @@ public:
 			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
 
 			// Duration & CD
-            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::INNERVATE_RNK_1, 20 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::INNERVATE_RNK_1, EFFECT_0, 20 * SECOND * IN_MILLISECONDS);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::INNERVATE_RNK_1, 6 * MINUTE);
 
 			// Mana regen
@@ -1303,10 +1303,10 @@ public:
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
 
 			// Stun
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4, 3 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4, EFFECT_0, 3 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
 
 			// Damage
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4_PROC, 18 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4_PROC, EFFECT_0, 18 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
 			float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
 			float const pounceBleedCoeff = 0.18f;
 			uint32 const pounceBleedTotal = ClassSpellsDamage::Druid::POUNCE_RNK_4_TOTAL + AP * pounceBleedCoeff;
@@ -1814,6 +1814,9 @@ public:
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
 
+            // No poison
+            TEST_CAST(druid, warrior, ClassSpells::Druid::CURE_POISON_RNK_1, SPELL_FAILED_NOTHING_TO_DISPEL);
+
             // setup
             druid->DisableRegeneration(true);
             uint32 const WOUND_POISON_V = 27189; // 15s
@@ -1872,7 +1875,7 @@ public:
             TEST_ASSERT(caster->GetItemCount(reagentId, false) == 0);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(victim, spellId, 1 * HOUR * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(victim, spellId, EFFECT_0, 1 * HOUR * IN_MILLISECONDS);
 
             // Stats, resistances & armor
             TEST_ASSERT(Between<uint32>(victim->GetArmor(), expectedArmor - 1, expectedArmor + 1));
@@ -1974,7 +1977,7 @@ public:
             uint32 startHealth = 1;
             druid->SetHealth(startHealth);
             _SetCriticalChances(druid, crit);
-            CastSpell(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
             Wait(8000);
             uint32 expectedHealth = druid->GetHealth() - (startHealth + tickTotal);
             TEST_ASSERT(druid->GetHealth() == expectedBloom);
@@ -1993,8 +1996,11 @@ public:
             // Mana cost
             uint32 const expectedLifebloomMana = 220;
             TEST_POWER_COST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, POWER_MANA, expectedLifebloomMana);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, EFFECT_0, 7 * SECOND * IN_MILLISECONDS);
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
-            
+
             // Spell coeffs
             float const lifebloomDuration = 7.0f;
             float const lifebloomCastTime = 1.5f;
@@ -2016,6 +2022,126 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<LifebloomTestImpt>();
+    }
+};
+
+class MarkOfTheWildTest : public TestCaseScript
+{
+public:
+    MarkOfTheWildTest() : TestCaseScript("spells druid mark_of_the_wild") { }
+
+    class MarkOfTheWildTestImpt : public TestCase
+    {
+    public:
+        MarkOfTheWildTestImpt() : TestCase(true) { }
+
+        void TestOfTheWild(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint8 statBonus, uint8 resistanceBonus, uint16 armorBonus)
+        {
+            uint32 const expectedArmor = victim->GetArmor() + armorBonus + statBonus * 2; //also add armor related to agility increase
+            uint32 const expectedAgi = victim->GetStat(STAT_AGILITY) + statBonus;
+            uint32 const expectedInt = victim->GetStat(STAT_INTELLECT) + statBonus;
+            uint32 const expectedSpi = victim->GetStat(STAT_SPIRIT) + statBonus;
+            uint32 const expectedSta = victim->GetStat(STAT_STAMINA) + statBonus;
+            uint32 const expectedStr = victim->GetStat(STAT_STRENGTH) + statBonus;
+            uint32 const expectedResArcane = victim->GetResistance(SPELL_SCHOOL_ARCANE) + resistanceBonus;
+            uint32 const expectedResFire = victim->GetResistance(SPELL_SCHOOL_FIRE) + resistanceBonus;
+            uint32 const expectedResFrost = victim->GetResistance(SPELL_SCHOOL_FROST) + resistanceBonus;
+            uint32 const expectedResNature = victim->GetResistance(SPELL_SCHOOL_NATURE) + resistanceBonus;
+            uint32 const expectedResShadow = victim->GetResistance(SPELL_SCHOOL_SHADOW) + resistanceBonus;
+
+            // Mana cost
+            TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
+
+            // Aura duration
+            TEST_AURA_MAX_DURATION(victim, spellId, EFFECT_0, 30 * MINUTE * IN_MILLISECONDS);
+
+            // Stats, resistances & armor
+            TEST_ASSERT(victim->GetArmor() == expectedArmor);
+            TEST_ASSERT(victim->GetStat(STAT_AGILITY) ==  expectedAgi);
+            TEST_ASSERT(victim->GetStat(STAT_INTELLECT) == expectedInt);
+            TEST_ASSERT(victim->GetStat(STAT_SPIRIT) == expectedSpi);
+            TEST_ASSERT(victim->GetStat(STAT_STAMINA) == expectedSta);
+            TEST_ASSERT(victim->GetStat(STAT_STRENGTH) == expectedStr);
+            TEST_ASSERT(victim->GetResistance(SPELL_SCHOOL_ARCANE) == expectedResArcane);
+            TEST_ASSERT(victim->GetResistance(SPELL_SCHOOL_FIRE) == expectedResFire);
+            TEST_ASSERT(victim->GetResistance(SPELL_SCHOOL_FROST) == expectedResFrost);
+            TEST_ASSERT(victim->GetResistance(SPELL_SCHOOL_NATURE) == expectedResNature);
+            TEST_ASSERT(victim->GetResistance(SPELL_SCHOOL_SHADOW) == expectedResShadow);
+
+            // Reset for next test
+            victim->RemoveAurasDueToSpell(spellId);
+        }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+
+            TestOfTheWild(druid, druid, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_1, 20, 0, 0, 25);
+            TestOfTheWild(druid, druid, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_2, 50, 2, 0, 65);
+            TestOfTheWild(druid, druid, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_3, 100, 4, 0, 105);
+            TestOfTheWild(druid, druid, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_4, 160, 6, 5, 150);
+            TestOfTheWild(druid, druid, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_5, 240, 8, 10, 195);
+            TestOfTheWild(druid, druid, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_6, 340, 10, 15, 240);
+            TestOfTheWild(druid, druid, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_7, 445, 12, 20, 285);
+            TestOfTheWild(druid, druid, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8, 565, 14, 25, 340);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<MarkOfTheWildTestImpt>();
+    }
+};
+
+class RebirthTest : public TestCaseScript
+{
+public:
+    RebirthTest() : TestCaseScript("spells druid rebirth") { }
+
+    class RebirthTestImpt : public TestCase
+    {
+    public:
+        RebirthTestImpt() : TestCase(true) { }
+
+        void TestRebirth(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 reagentId, uint32 expectedHealth, uint32 expectedMana)
+        {
+            victim->KillSelf(true);
+            caster->RemoveAllSpellCooldown();
+            caster->AddItem(reagentId, 1);
+            TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
+            //victim->AcceptRessurectRequest();
+            TEST_ASSERT(caster->GetSpellCooldownDelay(spellId) == 20 * MINUTE);
+            TEST_ASSERT(victim->GetHealth() == expectedHealth);
+            TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
+        }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            TestPlayer* ally  = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            TestPlayer* enemy = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+
+            uint32 manaCost = 1611;
+
+            uint32 const MAPLE_SEED         = 17034;
+            uint32 const STRANGLETHRON_SEED = 17035;
+            uint32 const ASHWOOD_SEED       = 17036;
+            uint32 const HORNBEAM_SEED      = 17037;
+            uint32 const IRONWOOD_SEED      = 17038;
+            uint32 const FLINTWEED_SEED     = 22147;
+
+            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_1, MAPLE_SEED, manaCost, 400, 700);
+            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_2, STRANGLETHRON_SEED, manaCost, 750, 1200);
+            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_3, ASHWOOD_SEED, manaCost, 1100, 1700);
+            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_4, HORNBEAM_SEED, manaCost, 1600, 2200);
+            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_5, IRONWOOD_SEED, manaCost, 2200, 2800);
+            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_6, FLINTWEED_SEED, manaCost, 3200, 3200);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<RebirthTestImpt>();
     }
 };
 
@@ -2059,9 +2185,199 @@ public:
 	}
 };
 
+class RegrowthTest : public TestCaseScript
+{
+public:
+    RegrowthTest() : TestCaseScript("spells druid regrowth") { }
+
+    class RegrowthTestImpt : public TestCase
+    {
+    public:
+        RegrowthTestImpt() : TestCase(true) { }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+
+            EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
+            druid->DisableRegeneration(true);
+
+            uint32 maceBH = 550;
+            TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
+
+            // Mana cost
+            uint32 const expectedRegrowthMana = 675;
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, POWER_MANA, expectedRegrowthMana);
+            Wait(2000);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::REGROWTH_RNK_10, EFFECT_1, 21 * SECOND * IN_MILLISECONDS);
+            druid->RemoveAurasDueToSpell(ClassSpells::Druid::REGROWTH_RNK_10);
+
+            // Spell coeffs
+            float const regrowthDuration = 21.0f;
+            float const regrowthCastTime = 2.0f;
+            float const regrowthHoTCoeff = (regrowthDuration / 15.0f) / ((regrowthDuration / 15.0f) + (regrowthCastTime / 3.5f));
+            float const regrowthDirectCoeff = 1 - regrowthHoTCoeff;
+            uint32 const regrowthTickBHBonus = maceBH * regrowthHoTCoeff;
+            uint32 const regrowthDirectBHBonus = maceBH * regrowthDirectCoeff;
+
+            // Tick
+            uint32 const expectedRegrowthTick = floor((ClassSpellsDamage::Druid::REGROWTH_RNK_10_TOTAL + regrowthTickBHBonus) / 7.0f);
+            uint32 const expectedRegrowthTotal = 7 * expectedRegrowthTick;
+            //TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, expectedRegrowthTotal, false);
+            // Direct no crit
+            uint32 const expectedRegrowthMin = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MIN + regrowthDirectBHBonus;
+            uint32 const expectedRegrowthMax = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MAX + regrowthDirectBHBonus;
+            TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, expectedRegrowthMin, expectedRegrowthMax, false);
+            // Direct crit
+            uint32 const expectedRegrowthMinCrit = expectedRegrowthMin * 1.5f;
+            uint32 const expectedRegrowthMaxCrit = expectedRegrowthMax * 1.5f;
+            TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, expectedRegrowthMinCrit, expectedRegrowthMaxCrit, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<RegrowthTestImpt>();
+    }
+};
+
+class RemoveCurseTest : public TestCaseScript
+{
+public:
+    RemoveCurseTest() : TestCaseScript("spells druid remove_curse") { }
+
+    class RemoveCurseTestImpt : public TestCase
+    {
+    public:
+        RemoveCurseTestImpt() : TestCase(true) { }
+
+        void TestRemoveCurse(TestPlayer* victim, uint32 curse1, uint32 curse2, uint32 curse3, int8 count)
+        {
+            ASSERT_INFO("TestRemoveCurse maximum trials reached");
+            TEST_ASSERT(count < 20);
+            count++;
+
+            /*
+                curses are last in, first out
+                It should be dispelled curse3 > curse2 > curse1
+            */
+            TEST_CAST(victim, victim, ClassSpells::Druid::REMOVE_CURSE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+
+            if (victim->HasAura(curse3))
+            {
+                TEST_ASSERT(victim->HasAura(curse2));
+                TEST_ASSERT(victim->HasAura(curse1));
+                TestRemoveCurse(victim, curse1, curse2, curse3, count);
+            }
+            else
+            {
+                if (victim->HasAura(curse2))
+                {
+                    TEST_ASSERT(victim->HasAura(curse1));
+                    TestRemoveCurse(victim, curse1, curse2, curse3, count);
+                }
+                else
+                {
+                    if (victim->HasAura(curse1))
+                        TestRemoveCurse(victim, curse1, curse2, curse3, count);
+                }
+            }
+        }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            TestPlayer* ally  = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            TestPlayer* enemy = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+
+            // Setup
+            druid->DisableRegeneration(true);
+            uint32 const CURSE_OF_THE_ELEMENTS  = ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4;
+            uint32 const CURSE_OF_WEAKNESS      = ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8;
+            uint32 const CURSE_OF_RECKLESSNESS  = ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5;
+
+            // Wrong target
+            enemy->AddAura(CURSE_OF_THE_ELEMENTS, enemy);
+            TEST_HAS_AURA(enemy, CURSE_OF_THE_ELEMENTS);
+            TEST_CAST(druid, enemy, ClassSpells::Druid::REMOVE_CURSE_RNK_1, SPELL_FAILED_BAD_TARGETS);
+
+            // No curse
+            TEST_CAST(druid, ally, ClassSpells::Druid::REMOVE_CURSE_RNK_1, SPELL_FAILED_NOTHING_TO_DISPEL);
+            
+            // Removal order
+            ally->AddAura(CURSE_OF_THE_ELEMENTS, ally);
+            Wait(1);
+            ally->AddAura(CURSE_OF_WEAKNESS, ally);
+            Wait(1);
+            ally->AddAura(CURSE_OF_RECKLESSNESS, ally);
+            Wait(1);
+
+            // Mana cost
+            uint32 const expectedRemoveCurseMana = 189;
+            druid->AddAura(CURSE_OF_THE_ELEMENTS, druid);
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::REMOVE_CURSE_RNK_1, POWER_MANA, expectedRemoveCurseMana);
+
+            int8 count = 0;
+            TestRemoveCurse(ally, CURSE_OF_THE_ELEMENTS, CURSE_OF_WEAKNESS, CURSE_OF_RECKLESSNESS, count);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<RemoveCurseTestImpt>();
+    }
+};
+
+class TranquilityTest : public TestCaseScript
+{
+public:
+    TranquilityTest() : TestCaseScript("spells druid tranquility") { }
+
+    class TranquilityTestImpt : public TestCase
+    {
+    public:
+        TranquilityTestImpt() : TestCase(true) { }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+
+            EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
+            druid->DisableRegeneration(true);
+
+            uint32 maceBH = 550;
+            TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
+
+            // Mana cost
+            uint32 const expectedTranquilityMana = 1650;
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, POWER_MANA, expectedTranquilityMana);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, EFFECT_0, 8 * SECOND * IN_MILLISECONDS);
+
+            // Spell coeffs
+            float const TranquilityCastTime = 8.0f;
+            float const TranquilityCoeff = (TranquilityCastTime / 3.5f) / 2.0f;
+            uint32 const TranquilityBHBonus = maceBH * TranquilityCoeff;
+            uint32 const TranquilityTickBHBonus = floor(TranquilityBHBonus / 4.0f);
+
+            uint32 const expectedTranquilityTick = ClassSpellsDamage::Druid::TRANQUILITY_RNK_5_TICK + TranquilityTickBHBonus;
+            uint32 const expectedTranquilityTotal = 4 * expectedTranquilityTick;
+            TEST_CHANNEL_DAMAGE(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, ClassSpells::Druid::TRANQUILITY_RNK_5_PROC, 4, expectedTranquilityTotal);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<TranquilityTestImpt>();
+    }
+};
+
 void AddSC_test_spells_druid()
 {
-	// Total:
+	// Total: 39/46
 	// Balance: 11/12 - Soothe Animal
 	new BarkskinTest();
 	new CycloneTest();
@@ -2092,11 +2408,16 @@ void AddSC_test_spells_druid()
     new ShredTest();
     new SwipeTest();
     new TigersFuryTest();
-	// Restoration: 1/11
+	// Restoration: 11/11
     new AbolishPoisonTest();
     new CurePoisonTest();
     new GiftOfTheWildTest();
     new HealingTouchTest();
     new LifebloomTest();
+    new MarkOfTheWildTest();
+    new RebirthTest();
+    new RegrowthTest();
 	new RejuvenationTest();
+    new RemoveCurseTest();
+    new TranquilityTest();
 }
