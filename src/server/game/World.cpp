@@ -1406,8 +1406,8 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." ); //must be after SpellInfo
     sSpellMgr->LoadSpellElixirs();
 
-    TC_LOG_INFO("server.loading", "Loading Spell Chain Data..." ); //must be after LoadSkillLineAbilityMap and after SpellInfo
-    sSpellMgr->LoadSpellChains();
+    TC_LOG_INFO("server.loading", "Loading Spell Rank Data...." ); //must be after LoadSkillLineAbilityMap and after SpellInfo
+    sSpellMgr->LoadSpellRanks();
 
     TC_LOG_INFO("server.loading", "Loading Spell Learn Skills..." );
     sSpellMgr->LoadSpellLearnSkills();                        // must be after LoadSpellChains and after SpellInfo

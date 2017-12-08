@@ -901,8 +901,9 @@ class TC_GAME_API SpellMgr
         static SpellMgr& Instance();
 
         // Loading data at server startup
-        void LoadSpellChains();
         void UnloadSpellInfoChains();
+        void LoadSpellRanks();
+        void LoadSpellTalentRanks();
         void LoadSpellRequired();
         void LoadSpellLearnSkills();
         void LoadSpellLearnSpells();

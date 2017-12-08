@@ -1099,242 +1099,179 @@ void SpellMgr::UnloadSpellInfoChains()
     mSpellChains.clear();
 }
 
-void SpellMgr::LoadSpellChains()
+void SpellMgr::LoadSpellTalentRanks()
 {
+    // cleanup core data before reload - remove reference to ChainNode from SpellInfo
     UnloadSpellInfoChains();
 
-    std::vector<uint32> ChainedSpells;
-    for (uint32 ability_id=0;ability_id<sSkillLineAbilityStore.GetNumRows();ability_id++)
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
-        SkillLineAbilityEntry const *AbilityInfo=sSkillLineAbilityStore.LookupEntry(ability_id);
-        if (!AbilityInfo)
-            continue;
-        if (AbilityInfo->spellId==20154) //exception to these rules (not needed in 3.0.3)
-            continue;
-        if (AbilityInfo->skillId == 756)
-            continue;
-        if (AbilityInfo->skillId == 125)
-            continue;
-        if (!AbilityInfo->forward_spellid)
-            continue;
-        /*if (AbilityInfo->forward_spellid == 20575 || AbilityInfo->forward_spellid == 20576 || AbilityInfo->forward_spellid == 21563)
-            continue;*/
-        ChainedSpells.push_back(AbilityInfo->forward_spellid);
-    }
-
-    std::multimap<SpellRankEntry, SpellRankValue, SpellRankEntry> RankMap;
-
-    for (uint32 ability_id=0;ability_id<sSkillLineAbilityStore.GetNumRows();ability_id++)
-    {
-        SkillLineAbilityEntry const *AbilityInfo=sSkillLineAbilityStore.LookupEntry(ability_id);
-        if (!AbilityInfo)
+        TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
+        if (!talentInfo)
             continue;
 
-        //get only spell with lowest ability_id to prevent doubles
-        uint32 spell_id=AbilityInfo->spellId;
-        if (spell_id==20154) //exception to these rules (not needed in 3.0.3)
-            continue;
-        if (AbilityInfo->skillId == 125)
-            continue;
-        bool found=false;
-        for (uint32 ChainedSpell : ChainedSpells)
+        SpellInfo const* lastSpell = nullptr;
+        for (uint8 rank = MAX_TALENT_RANK - 1; rank > 0; --rank)
         {
-           if (ChainedSpell==spell_id)
-               found=true;
-        }
-        if (found)
-            continue;
-
-        if(mSkillLineAbilityMap.lower_bound(spell_id)->second->id!=ability_id)
-            continue;
-        SpellInfo const *SpellInfo=sSpellMgr->GetSpellInfo(spell_id);
-        if (!SpellInfo)
-            continue;
-        /* Disable this as this will break spell ranks if rank locale is not properly loaded
-        std::string sRank = SpellInfo->Rank[sWorld->GetDefaultDbcLocale()];
-        if(sRank.empty())
-            continue;*/
-        
-        //exception to polymorph spells-make pig and turtle other chain than sheep
-        if ((SpellInfo->SpellFamilyName==SPELLFAMILY_MAGE) && (SpellInfo->SpellFamilyFlags & 0x1000000) && (SpellInfo->SpellIconID!=82))
-            continue;
-            
-        switch (SpellInfo->Id) 
-        {
-            case 13819:
-            case 34769:
-            case 25046:
-            case 28730:
-                continue;
-            default:
+            if (talentInfo->RankID[rank])
+            {
+                lastSpell = GetSpellInfo(talentInfo->RankID[rank]);
                 break;
-        }
-
-        SpellRankEntry entry;
-        SpellRankValue value;
-        entry.SkillId=AbilityInfo->skillId;
-        entry.SpellName=SpellInfo->SpellName[sWorld->GetDefaultDbcLocale()];
-        entry.DurationIndex= SpellInfo->DurationEntry ? SpellInfo->DurationEntry->ID : 0;
-        entry.RangeIndex=SpellInfo->RangeEntry->ID;
-        entry.ProcFlags=SpellInfo->ProcFlags;
-        entry.SpellFamilyFlags=SpellInfo->SpellFamilyFlags;
-        entry.TargetAuraState=SpellInfo->TargetAuraState;
-        entry.SpellVisual=SpellInfo->SpellVisual;
-        entry.ManaCost=SpellInfo->ManaCost;
-
-        for (;;)
-        {
-            AbilityInfo = mSkillLineAbilityMap.lower_bound(spell_id)->second;
-            value.Id = spell_id;
-            value.Rank = SpellInfo->Rank[sWorld->GetDefaultDbcLocale()];
-            RankMap.insert(std::pair<SpellRankEntry, SpellRankValue>(entry,value));
-            spell_id=AbilityInfo->forward_spellid;
-            SpellInfo = sSpellMgr->GetSpellInfo(spell_id);
-            if (!SpellInfo)
-                break;
-        }
-    }
-
-    uint32 count=0;
-
-    for (auto itr = RankMap.begin();itr!=RankMap.end();)
-    {
-        SpellRankEntry entry = itr->first;
-        //trac errors in extracted data
-        std::multimap<char const *, std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator> RankErrorMap;
-        for (auto itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
-        {
-            RankErrorMap.insert(std::pair<char const *, std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator>(itr2->second.Rank,itr2));
-        }
-        for (auto itr2 = RankErrorMap.begin();itr2!=RankErrorMap.end();)
-        {
-            char const * err_entry=itr2->first;
-            uint32 rank_count=RankErrorMap.count(itr2->first);
-            if (rank_count>1)
-            for (itr2 = RankErrorMap.lower_bound(err_entry);itr2!=RankErrorMap.upper_bound(err_entry);itr2++)
-            {
-                TC_LOG_ERROR("There is a duplicate rank entry (%s) for spell: %u",itr2->first,itr2->second->second.Id);
-                TC_LOG_ERROR("sql.sql","Spell %u removed from chain data.",itr2->second->second.Id);
-                RankMap.erase(itr2->second);
-                itr=RankMap.lower_bound(entry);
             }
-            else
-                itr2++;
         }
-        //do not proceed for spells with less than 2 ranks
-        uint32 spell_max_rank=RankMap.count(entry);
-        if (spell_max_rank<2)
+
+        if (!lastSpell)
+            continue;
+
+        SpellInfo const* firstSpell = GetSpellInfo(talentInfo->RankID[0]);
+        if (!firstSpell)
         {
-            itr=RankMap.upper_bound(entry);
+            TC_LOG_ERROR("spells", "SpellMgr::LoadSpellTalentRanks: First Rank Spell %u for TalentEntry %u does not exist.", talentInfo->RankID[0], i);
             continue;
         }
-
-        itr=RankMap.upper_bound(entry);
-
-        //order spells by spells by SpellLevel
-        std::list<uint32> RankedSpells;
-        uint32 min_spell_lvl=0;
-        std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator min_itr;
-        for (;RankMap.count(entry);)
-        {
-            for (auto itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
-            {
-                SpellInfo const *SpellInfo=sSpellMgr->GetSpellInfo(itr2->second.Id);
-                if (SpellInfo->SpellLevel<min_spell_lvl || itr2==RankMap.lower_bound(entry))
-                {
-                    min_spell_lvl=SpellInfo->SpellLevel;
-                    min_itr=itr2;
-                }
-            }
-            RankedSpells.push_back(min_itr->second.Id);
-            RankMap.erase(min_itr);
-        }
-
-        //use data from talent.dbc
-        uint16 talent_id=0;
-        for(auto itr2 = RankedSpells.begin();itr2!=RankedSpells.end();)
-        {
-            if (TalentSpellPos const* TalentPos=GetTalentSpellPos(*itr2))
-            {
-                talent_id=TalentPos->talent_id;
-                RankedSpells.erase(itr2);
-                itr2 = RankedSpells.begin();
-            }
-            else
-                itr2++;
-        }
-        if (talent_id)
-        {
-            TalentEntry const *TalentInfo = sTalentStore.LookupEntry(talent_id);
-            for (uint8 rank=5;rank;rank--)
-            {
-                if (TalentInfo->RankID[rank-1])
-                    RankedSpells.push_front(TalentInfo->RankID[rank-1]);
-            }
-        }
-
-        count++;
 
         SpellInfo const* prevSpell = nullptr;
-        itr=RankMap.upper_bound(entry);
-        uint32 spell_rank=1;
-        for(auto itr2 = RankedSpells.begin();itr2!=RankedSpells.end();spell_rank++)
+        for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
         {
-            uint32 spell_id=*itr2;
+            uint32 spellId = talentInfo->RankID[rank];
+            if (!spellId)
+                break;
 
-            SpellInfo const* currentSpell = GetSpellInfo(spell_id);
+            SpellInfo const* currentSpell = GetSpellInfo(spellId);
             if (!currentSpell)
             {
-                TC_LOG_ERROR("sql.sql", "SpellMgr::LoadSpellChains: Spell %u (Rank: %u) does not exist.", spell_rank, spell_rank);
+                TC_LOG_ERROR("spells", "SpellMgr::LoadSpellTalentRanks: Spell %u (Rank: %u) for TalentEntry %u does not exist.", spellId, rank + 1, i);
                 break;
             }
 
-            SpellInfo const* firstSpell = GetSpellInfo(RankedSpells.front());
-            if (!firstSpell)
-            {
-                TC_LOG_ERROR("sql.sql", "SpellMgr::LoadSpellChains: First Rank Spell %u for Spell %u does not exist.", RankedSpells.front(), spell_id);
-                continue;
-            }
+            SpellChainNode node;
+            node.first = firstSpell;
+            node.last = lastSpell;
+            node.rank = rank + 1;
 
-            SpellInfo const* lastSpell = GetSpellInfo(RankedSpells.back());
-            if (!lastSpell)
-            {
-                TC_LOG_ERROR("sql.sql", "SpellMgr::LoadSpellChains: Last Rank Spell %u for Spell %u does not exist.", RankedSpells.back(), spell_id);
-                continue;
-            }
+            node.prev = prevSpell;
+            node.next = node.rank < MAX_TALENT_RANK ? GetSpellInfo(talentInfo->RankID[node.rank]) : nullptr;
 
-            mSpellChains[spell_id].rank = spell_rank;
-            mSpellChains[spell_id].first = firstSpell;
-            mSpellChains[spell_id].last = lastSpell;
-            mSpellChains[spell_id].prev = prevSpell;
-            itr2++;
-
-            if (spell_id==RankedSpells.back())
-                mSpellChains[spell_id].next=nullptr;
-            else
-            {
-                //Scare Beast rank 2 hack
-                if ((*itr2) == 14326) {
-                    mSpellChains[*itr2].prev = GetSpellInfo(1513); //rank 1
-                    mSpellChains[1513].next = GetSpellInfo(*itr2);
-                }
-                else {
-                    mSpellChains[*itr2].prev = currentSpell;
-                    mSpellChains[spell_id].next = GetSpellInfo(*itr2);
-                }
-            }
-
-            mSpellInfoMap[spell_id]->ChainEntry = &mSpellChains[spell_id];
+            mSpellChains[spellId] = node;
+            mSpellInfoMap[spellId]->ChainEntry = &mSpellChains[spellId];
 
             prevSpell = currentSpell;
         }
     }
+}
 
-//uncomment these two lines to print yourself list of spell_chains on startup
-//    for (std::unordered_map<uint32, SpellChainNode>::iterator itr=mSpellChains.begin();itr!=mSpellChains.end();itr++)
-//       TC_LOG_INFO( "Id: %u, Rank: %d , %s",itr->first,itr->second.rank, sSpellMgr->GetSpellInfo(itr->first)->Rank[sWorld->GetDefaultDbcLocale()]);
+void SpellMgr::LoadSpellRanks()
+{
+    // cleanup data and load spell ranks for talents from dbc
+    LoadSpellTalentRanks();
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u spell chains",count);
+    uint32 oldMSTime = GetMSTime();
+
+    //                                                     0             1      2
+    QueryResult result = WorldDatabase.Query("SELECT first_spell_id, spell_id, rank from spell_ranks ORDER BY first_spell_id, rank");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 spell rank records. DB table `spell_ranks` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    bool finished = false;
+
+    do
+    {
+        // spellid, rank
+        std::list < std::pair < int32, int32 > > rankChain;
+        int32 currentSpell = -1;
+        int32 lastSpell = -1;
+
+        // fill one chain
+        while (currentSpell == lastSpell && !finished)
+        {
+            Field* fields = result->Fetch();
+
+            currentSpell = fields[0].GetUInt32();
+            if (lastSpell == -1)
+                lastSpell = currentSpell;
+            uint32 spell_id = fields[1].GetUInt32();
+            uint32 rank = fields[2].GetUInt8();
+
+            // don't drop the row if we're moving to the next rank
+            if (currentSpell == lastSpell)
+            {
+                rankChain.push_back(std::make_pair(spell_id, rank));
+                if (!result->NextRow())
+                    finished = true;
+            }
+            else
+                break;
+        }
+        // check if chain is made with valid first spell
+        SpellInfo const* first = GetSpellInfo(lastSpell);
+        if (!first)
+        {
+            TC_LOG_ERROR("sql.sql", "The spell rank identifier(first_spell_id) %u listed in `spell_ranks` does not exist!", lastSpell);
+            continue;
+        }
+        // check if chain is long enough
+        if (rankChain.size() < 2)
+        {
+            TC_LOG_ERROR("sql.sql", "There is only 1 spell rank for identifier(first_spell_id) %u in `spell_ranks`, entry is not needed!", lastSpell);
+            continue;
+        }
+        int32 curRank = 0;
+        bool valid = true;
+        // check spells in chain
+        for (std::list<std::pair<int32, int32> >::iterator itr = rankChain.begin(); itr != rankChain.end(); ++itr)
+        {
+            SpellInfo const* spell = GetSpellInfo(itr->first);
+            if (!spell)
+            {
+                TC_LOG_ERROR("sql.sql", "The spell %u (rank %u) listed in `spell_ranks` for chain %u does not exist!", itr->first, itr->second, lastSpell);
+                valid = false;
+                break;
+            }
+            ++curRank;
+            if (itr->second != curRank)
+            {
+                TC_LOG_ERROR("sql.sql", "The spell %u (rank %u) listed in `spell_ranks` for chain %u does not have a proper rank value (should be %u)!", itr->first, itr->second, lastSpell, curRank);
+                valid = false;
+                break;
+            }
+        }
+        if (!valid)
+            continue;
+        int32 prevRank = 0;
+        // insert the chain
+        std::list<std::pair<int32, int32> >::iterator itr = rankChain.begin();
+        do
+        {
+            ++count;
+            int32 addedSpell = itr->first;
+
+            if (mSpellInfoMap[addedSpell]->ChainEntry)
+                TC_LOG_ERROR("sql.sql", "The spell %u (rank: %u, first: %u) listed in `spell_ranks` already has ChainEntry from dbc.", addedSpell, itr->second, lastSpell);
+
+            mSpellChains[addedSpell].first = GetSpellInfo(lastSpell);
+            mSpellChains[addedSpell].last = GetSpellInfo(rankChain.back().first);
+            mSpellChains[addedSpell].rank = itr->second;
+            mSpellChains[addedSpell].prev = GetSpellInfo(prevRank);
+            mSpellInfoMap[addedSpell]->ChainEntry = &mSpellChains[addedSpell];
+            prevRank = addedSpell;
+            ++itr;
+
+            if (itr == rankChain.end())
+            {
+                mSpellChains[addedSpell].next = nullptr;
+                break;
+            }
+            else
+                mSpellChains[addedSpell].next = GetSpellInfo(itr->first);
+        } while (true);
+    } while (!finished);
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u spell rank records in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SpellMgr::LoadSpellLearnSkills()
