@@ -567,7 +567,21 @@ void Unit::UpdateInterruptMask()
 uint32 Unit::GetAuraCount(uint32 spellId) const
 {
     uint32 count = 0;
-    for (auto itr = m_Auras.lower_bound(spellEffectPair(spellId, uint8(0))); itr != m_Auras.upper_bound(spellEffectPair(spellId, uint8(0))); ++itr)
+    for (auto itr = m_Auras.lower_bound(spellEffectPair(spellId, uint8(EFFECT_0))); itr != m_Auras.upper_bound(spellEffectPair(spellId, uint8(EFFECT_0))); ++itr)
+    {
+        if (!itr->second->GetStackAmount())
+            count++;
+        else
+            count += (uint32)itr->second->GetStackAmount();
+    }
+    for (auto itr = m_Auras.lower_bound(spellEffectPair(spellId, uint8(EFFECT_1))); itr != m_Auras.upper_bound(spellEffectPair(spellId, uint8(EFFECT_1))); ++itr)
+    {
+        if (!itr->second->GetStackAmount())
+            count++;
+        else
+            count += (uint32)itr->second->GetStackAmount();
+    }
+    for (auto itr = m_Auras.lower_bound(spellEffectPair(spellId, uint8(EFFECT_2))); itr != m_Auras.upper_bound(spellEffectPair(spellId, uint8(EFFECT_2))); ++itr)
     {
         if (!itr->second->GetStackAmount())
             count++;

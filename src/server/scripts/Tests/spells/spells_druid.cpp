@@ -14,7 +14,7 @@ public:
 		void CastBarkskin(TestPlayer* druid)
 		{
 			druid->RemoveAllSpellCooldown();
-			CastSpell(druid, druid, ClassSpells::Druid::BARKSKIN_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            TEST_CAST(druid, druid, ClassSpells::Druid::BARKSKIN_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 		}
 
 		void TestState(TestPlayer* druid, uint32 spellId, bool shapeshifted = false)
@@ -37,7 +37,7 @@ public:
 			spawnPosition.MoveInFront(_location, -3.0f);
 			TestPlayer* druid2 = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF, 70, spawnPosition);
 			EQUIP_ITEM(druid2, 34182); // Grand Magister's Staff of Torrents - 266 SP
-			uint32 staffSP = 266;
+            int32 staffSP = 266;
 			TEST_ASSERT(druid2->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			druid->DisableRegeneration(true);
@@ -52,14 +52,14 @@ public:
 			Aura* aura = druid->GetAura(ClassSpells::Druid::BARKSKIN_RNK_1, EFFECT_0);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetAuraDuration() == 12 * SECOND * IN_MILLISECONDS);
-			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::BARKSKIN_RNK_1) == 1 * MINUTE);
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::BARKSKIN_RNK_1, 1 * MINUTE);
 
 			// Pushback
 			uint32 startHealth = 2500;
 			druid->SetHealth(startHealth);
-			CastSpell(druid2, druid2, ClassSpells::Druid::CAT_FORM_RNK_1);
+            TEST_CAST(druid2, druid2, ClassSpells::Druid::CAT_FORM_RNK_1);
 			druid2->Attack(druid, true);
-			CastSpell(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            TEST_CAST(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 			Wait(3400);
 			TEST_ASSERT(druid->GetHealth() < startHealth);
 			Wait(100);
@@ -94,7 +94,7 @@ public:
 			// Feared
 			TestState(druid, ClassSpells::Warlock::FEAR_RNK_3);
 			// Asleep
-			CastSpell(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 			TestState(druid, ClassSpells::Druid::HIBERNATE_RNK_3, true);
 
 			// Melee damage
@@ -140,49 +140,43 @@ public:
 			TestPlayer* druid4 = SpawnPlayer(CLASS_DRUID, RACE_TAUREN, 70, spawnPosition3);
 
 			// Fail on friendly
-			CastSpell(druid, druid4, ClassSpells::Druid::CYCLONE_RNK_1, SPELL_FAILED_BAD_TARGETS);
+            TEST_CAST(druid, druid4, ClassSpells::Druid::CYCLONE_RNK_1, SPELL_FAILED_BAD_TARGETS);
 
 			// Cooldown & invulnerable to damage & heals
-			CastSpell(druid2, druid2, ClassSpells::Druid::LIFEBLOOM_RNK_1);
+            TEST_CAST(druid2, druid2, ClassSpells::Druid::LIFEBLOOM_RNK_1);
 			Wait(3500);
-			CastSpell(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
+            TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
 			uint32 const startHealth = druid2->GetHealth();
-			Aura* aura = druid2->GetAura(ClassSpells::Druid::CYCLONE_RNK_1, EFFECT_0);
-			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetAuraDuration() == 6 * SECOND * IN_MILLISECONDS);
-			CastSpell(druid, druid2, ClassSpells::Druid::WRATH_RNK_10);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 6 * SECOND * IN_MILLISECONDS);
+            TEST_CAST(druid, druid2, ClassSpells::Druid::WRATH_RNK_10);
 			Wait(500); // wrath hit
 			TEST_ASSERT(druid2->GetHealth() == startHealth);
 			Wait(2000); // no more lifebloom
 			TEST_ASSERT(druid2->GetHealth() == startHealth);
 
 			// Only one target can be affected
-			CastSpell(druid, druid3, ClassSpells::Druid::CYCLONE_RNK_1);
+            TEST_CAST(druid, druid3, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-			TEST_ASSERT(!druid2->HasAura(ClassSpells::Druid::CYCLONE_RNK_1));
-			TEST_ASSERT(druid3->HasAura(ClassSpells::Druid::CYCLONE_RNK_1));
+            TEST_HAS_NOT_AURA(druid2, ClassSpells::Druid::CYCLONE_RNK_1);
+            TEST_HAS_AURA(druid3, ClassSpells::Druid::CYCLONE_RNK_1);
 
 			// Diminishing returns
 			// 3s
-			CastSpell(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
+            TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-			aura = druid2->GetAura(ClassSpells::Druid::CYCLONE_RNK_1, EFFECT_0);
-			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetAuraDuration() == 3 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 3 * SECOND * IN_MILLISECONDS);
 			druid2->RemoveAurasDueToSpell(ClassSpells::Druid::CYCLONE_RNK_1);
 
 			// 1.5s
-			CastSpell(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
+            TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-			aura = druid2->GetAura(ClassSpells::Druid::CYCLONE_RNK_1, EFFECT_0);
-			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetAuraDuration() == 1500);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 1500);
 
 			// Immune
-			CastSpell(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
+            TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-			TEST_ASSERT(!druid2->HasAura(ClassSpells::Druid::CYCLONE_RNK_1));
+            TEST_HAS_NOT_AURA(druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 
 			// Mana cost
 			uint32 const expectedCycloneMana = 189;
@@ -214,7 +208,7 @@ public:
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
-			uint32 staffSP = 266;
+			int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			// Mana cost
@@ -269,21 +263,21 @@ public:
 			int32 const expectedRogueArmor = rogue->GetArmor() - 610;
 
 			// Faerie Fire 
-			CastSpell(player, rogue, ClassSpells::Druid::FAERIE_FIRE_RNK_5);
+            TEST_CAST(player, rogue, ClassSpells::Druid::FAERIE_FIRE_RNK_5);
 			Aura* aura = rogue->GetAura(ClassSpells::Druid::FAERIE_FIRE_RNK_5, EFFECT_0);
 			TEST_ASSERT(aura != nullptr);
 			ASSERT_INFO("Rogue has %u armor, expected: %i", rogue->GetArmor(), expectedRogueArmor);
-			TEST_ASSERT(rogue->GetArmor() == expectedRogueArmor);
+			TEST_ASSERT(int32(rogue->GetArmor()) == expectedRogueArmor);
 			TEST_ASSERT(aura->GetAuraDuration() == 40 * SECOND * IN_MILLISECONDS);
 			Wait(2000);
 
 			// Rogue can't stealth
-			CastSpell(rogue, rogue, ClassSpells::Rogue::STEALTH_RNK_4, SPELL_FAILED_CASTER_AURASTATE);
+            TEST_CAST(rogue, rogue, ClassSpells::Rogue::STEALTH_RNK_4, SPELL_FAILED_CASTER_AURASTATE);
 
 			// Mage can't invisible
 			uint32 expectedFaerieFireMana = 145;
 			TEST_POWER_COST(player, mage, ClassSpells::Druid::FAERIE_FIRE_RNK_5, POWER_MANA, expectedFaerieFireMana);
-			CastSpell(mage, mage, ClassSpells::Mage::INVISIBILITY_RNK_1, SPELL_FAILED_CASTER_AURASTATE);
+            TEST_CAST(mage, mage, ClassSpells::Mage::INVISIBILITY_RNK_1, SPELL_FAILED_CASTER_AURASTATE);
 		}
 	};
 
@@ -304,17 +298,18 @@ public:
 	public:
 		HibernateTestImpt() : TestCase(true) { }
 
-		void TestDuration(TestPlayer* druid, Unit* enemy, float duration)
+		void TestDuration(TestPlayer* druid, Unit* enemy, float durationSeconds)
 		{
-			while (!enemy->HasAura(ClassSpells::Druid::HIBERNATE_RNK_3))
-				CastSpell(druid, enemy, ClassSpells::Druid::HIBERNATE_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-
-			TEST_ASSERT(enemy->HasAura(ClassSpells::Druid::HIBERNATE_RNK_3));
-			Aura* aura = enemy->GetAura(ClassSpells::Druid::HIBERNATE_RNK_3, EFFECT_0);
-			TEST_ASSERT(aura != nullptr);
-			uint32 expectedAuraDuration = duration * SECOND * IN_MILLISECONDS;
-			ASSERT_INFO("Hibernate lasts %i, expected %us", aura->GetAuraDuration(), expectedAuraDuration);
-			TEST_ASSERT(aura->GetAuraDuration() == expectedAuraDuration);
+            bool hasAura = false;
+            for (uint32 retry = 0; retry < 10; retry++)
+            {
+                TEST_CAST(druid, enemy, ClassSpells::Druid::HIBERNATE_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+                hasAura = enemy->HasAura(ClassSpells::Druid::HIBERNATE_RNK_3);
+                if(hasAura)
+                    break;
+            }
+            TEST_ASSERT(hasAura);
+            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Druid::HIBERNATE_RNK_3, durationSeconds * IN_MILLISECONDS);
 			enemy->RemoveAurasDueToSpell(ClassSpells::Druid::HIBERNATE_RNK_3);
 		}
 
@@ -338,7 +333,7 @@ public:
 
 			// PvP
 			TestPlayer* enemy = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF, 70, spawnPosition);
-			CastSpell(enemy, enemy, ClassSpells::Druid::CAT_FORM_RNK_1);
+			TEST_CAST(enemy, enemy, ClassSpells::Druid::CAT_FORM_RNK_1);
 			Wait(1000);
 			// Diminishing return
 			TestDuration(druid, enemy, 10.0f); // 10s
@@ -370,7 +365,7 @@ public:
 		void CastHurricane(TestPlayer* druid, Unit* target)
 		{
 			druid->RemoveAllSpellCooldown();
-			CastSpell(druid, target, ClassSpells::Druid::HURRICANE_RNK_4, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            TEST_CAST(druid, target, ClassSpells::Druid::HURRICANE_RNK_4, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 		}
 
 		void Test() override
@@ -382,7 +377,7 @@ public:
 			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
 
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
-			uint32 staffSP = 266;
+            int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			druid->DisableRegeneration(true);
@@ -400,7 +395,7 @@ public:
 			ASSERT_INFO("Duration: %i", spellInfo->GetDuration());
 			Wait(100);
 			TEST_ASSERT(spellInfo->GetDuration() == 10 * SECOND *  IN_MILLISECONDS);
-			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::HURRICANE_RNK_4) == 1 * MINUTE);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::HURRICANE_RNK_4, 1 * MINUTE);
 			uint32 expectedAttackSpeed = rogueAttackSpeed * 1.25f;
 			ASSERT_INFO("WS: %u, expected:%u", rogue->GetAttackTimer(BASE_ATTACK), expectedAttackSpeed);
 			TEST_ASSERT(rogue->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
@@ -459,15 +454,12 @@ public:
 			// Power cost
 			uint32 expectedInnervateMana = 94;
 			druid->SetPower(POWER_MANA, expectedInnervateMana);
-			CastSpell(druid, druid, ClassSpells::Druid::INNERVATE_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::INNERVATE_RNK_1);
 			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
 
 			// Duration & CD
-			TEST_ASSERT(druid->HasAura(ClassSpells::Druid::INNERVATE_RNK_1));
-			Aura* aura = druid->GetAura(ClassSpells::Druid::INNERVATE_RNK_1, EFFECT_0);
-			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetAuraDuration() == 20 * SECOND * IN_MILLISECONDS);
-			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::INNERVATE_RNK_1) == 6 * MINUTE);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::INNERVATE_RNK_1, 20 * SECOND * IN_MILLISECONDS);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::INNERVATE_RNK_1, 6 * MINUTE);
 
 			// Mana regen
 			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
@@ -476,7 +468,7 @@ public:
 			ASSERT_INFO("Mana: %u, expected: %u", druid->GetPower(POWER_MANA), expectedMana);
 			TEST_ASSERT(druid->GetPower(POWER_MANA) == expectedMana);
 			Wait(2000);
-			TEST_ASSERT(!druid->HasAura(ClassSpells::Druid::INNERVATE_RNK_1));
+            TEST_HAS_NOT_AURA(druid, ClassSpells::Druid::INNERVATE_RNK_1);
 			expectedMana = 10 * expectedInnervateRegenTick + regenTick;
 			ASSERT_INFO("Mana: %u, expected: %u", druid->GetPower(POWER_MANA), expectedMana);
 			TEST_ASSERT(druid->GetPower(POWER_MANA) == expectedMana);
@@ -507,7 +499,7 @@ public:
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
-			uint32 staffSP = 266;
+			int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			// Mana cost
@@ -563,7 +555,7 @@ public:
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
-			uint32 staffSP = 266;
+            int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			// Mana cost
@@ -610,7 +602,7 @@ public:
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
-			uint32 staffSP = 266;
+			int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			// Mana cost
@@ -651,7 +643,7 @@ public:
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
-			uint32 staffSP = 266;
+            int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			// Mana cost
@@ -699,16 +691,21 @@ public:
 			spawnPosition.MoveInFront(_location, 3.0f);
 			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawnPosition);
 
-			CastSpell(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			Wait(1500); // GCD
 
 			// Rage & aura duration
 			uint32 const expectedBashRage = 10 * 10;
-			while (!rogue->HasAura(ClassSpells::Druid::BASH_RNK_3))
+            bool hasAura = false;
+            for(uint32 retry = 0; retry < 10; retry++)
 			{
 				druid->SetPower(POWER_RAGE, expectedBashRage);
-				CastSpell(druid, rogue, ClassSpells::Druid::BASH_RNK_3);
+                TEST_CAST(druid, rogue, ClassSpells::Druid::BASH_RNK_3);
+                hasAura = rogue->HasAura(ClassSpells::Druid::BASH_RNK_3);
+                if (hasAura)
+                    break;
 			}
+            TEST_ASSERT(hasAura);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
 			Aura* aura = rogue->GetAura(ClassSpells::Druid::BASH_RNK_3, EFFECT_0);
 			TEST_ASSERT(aura != nullptr);
@@ -757,17 +754,17 @@ public:
 			player6m->Attack(creature6m, true);
 			player11m->Attack(creature11m, true);
 
-			CastSpell(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
+			TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			Wait(5000);
 
 			// Rage cost
 			uint32 const expectedChallengingRoarRage = 15 * 10;
 			druid->SetPower(POWER_RAGE, expectedChallengingRoarRage);
-			CastSpell(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
 
 			// Cooldown
-			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1) == 10 * MINUTE);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, 10 * MINUTE);
 
 			// Aura
 			Aura* aura3m = creature3m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, EFFECT_0);
@@ -815,7 +812,7 @@ public:
 			Creature* creature = SpawnCreature();
 
 			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
-			CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
 			Wait(1500); // GCD
 
 			// Energy cost
@@ -866,7 +863,7 @@ public:
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 			Creature* creature = SpawnCreature();
 
-			CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
 			druid->Attack(creature, true);
 			Wait(10000);
 			druid->AttackStop();
@@ -877,11 +874,11 @@ public:
 			uint32 expectedCowerEnergy = 20;
 
 			druid->SetPower(POWER_ENERGY, expectedCowerEnergy);
-			CastSpell(druid, creature, ClassSpells::Druid::COWER_RNK_5);
+            TEST_CAST(druid, creature, ClassSpells::Druid::COWER_RNK_5);
 			TEST_ASSERT(druid->GetPower(POWER_ENERGY) == 0);
 			ASSERT_INFO("Before: %f, current: %f, expected: %f", threat, creature->GetThreat(druid), expectedThreat);
 			TEST_ASSERT(creature->GetThreat(druid) == expectedThreat);
-			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::COWER_RNK_5) == 10 * SECOND * IN_MILLISECONDS);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::COWER_RNK_5, 10 * SECOND * IN_MILLISECONDS);
 		}
 	};
 
@@ -923,13 +920,13 @@ public:
 			int32 expectedAP3m = (startAP3m - 240 > 0) ? startAP3m - 240 : 0;
 			int32 expectedAP6m = (startAP6m - 240 > 0) ? startAP6m - 240 : 0;
 
-			CastSpell(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			Wait(5000);
 
 			// Rage cost
 			uint32 const expectedDemoralizingRoarRage = 10 * 10;
 			druid->SetPower(POWER_RAGE, expectedDemoralizingRoarRage);
-			CastSpell(druid, druid, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
+            TEST_CAST(druid, druid, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
 
 			// Aura
@@ -975,9 +972,9 @@ public:
 		void TestEnrage(TestPlayer* druid, uint32 spellFormId, float armorReduction)
 		{
 			druid->RemoveAllSpellCooldown();
-			CastSpell(druid, druid, spellFormId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, spellFormId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			uint32 expectedArmor = druid->GetArmor() * (1 - armorReduction);
-			CastSpell(druid, druid, ClassSpells::Druid::ENRAGE_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::ENRAGE_RNK_1);
 			ASSERT_INFO("Form: %u, armor: %u, expected: %u", spellFormId, druid->GetArmor(), expectedArmor);
 			TEST_ASSERT(druid->GetArmor() == expectedArmor);
 			Aura* aura = druid->GetAura(ClassSpells::Druid::ENRAGE_RNK_1, EFFECT_0);
@@ -1029,7 +1026,7 @@ public:
 		{
 			druid->RemoveAllSpellCooldown();
 
-			CastSpell(druid, druid, spellFormId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, spellFormId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			uint32 health = 1;
 			uint32 rage = 100 * 10;
 			InitTest(druid, health, rage);
@@ -1040,11 +1037,11 @@ public:
 			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, expectedFRHeal, false);
 			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, expectedFRCritHeal, true);
 
-			CastSpell(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4);
+            TEST_CAST(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4);
 			Aura* aura = druid->GetAura(ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, EFFECT_0);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetAuraDuration() == 10 * SECOND * IN_MILLISECONDS);
-			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4) == 3 * MINUTE);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, 3 * MINUTE);
 			Wait(1000);
 			uint32 expectedRage = rage - 10 * 10;
 			ASSERT_INFO("Rage: %u, expected: %u", druid->GetPower(POWER_RAGE), expectedRage);
@@ -1101,24 +1098,24 @@ public:
 			// Setup
 			creature->SetMaxHealth(10000);
 			creature->SetHealth(10000);
-			CastSpell(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			Wait(500);
 			uint32 warlockThreat = creature->GetThreat(warlock);
 			TEST_ASSERT(warlockThreat > 0);
 			TEST_ASSERT(creature->GetTarget() == warlock->GetGUID());
 
 			// Acquire threat, aura duration, cooldown
-			CastSpell(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-			CastSpell(druid, creature, ClassSpells::Druid::GROWL_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, creature, ClassSpells::Druid::GROWL_RNK_1);
 			Aura* aura = creature->GetAura(ClassSpells::Druid::GROWL_RNK_1, EFFECT_1);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetAuraDuration() == 3 * SECOND * IN_MILLISECONDS);
-			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::GROWL_RNK_1) == 10 * SECOND);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::GROWL_RNK_1, 10 * SECOND);
 			TEST_ASSERT(creature->GetThreat(druid) == warlockThreat);
 
 			// Keep aggro
 			Wait(1000);
-			CastSpell(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			Wait(500);
 			warlockThreat = creature->GetThreat(warlock);
 			TEST_ASSERT(warlockThreat > creature->GetThreat(druid));
@@ -1157,13 +1154,13 @@ public:
 			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
 			// Rage cost
-			CastSpell(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			uint32 const expectedLacerateRage = 15 * 10;
 			TEST_POWER_COST(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, POWER_RAGE, expectedLacerateRage);
 			druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
 
 			// Damage
-			CastSpell(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, ClassSpellsDamage::Druid::LACERATE_RNK_1, ClassSpellsDamage::Druid::LACERATE_RNK_1, false);
 
 			// Bleed
@@ -1178,16 +1175,26 @@ public:
 			for (int8 lacerateStack = 1; lacerateStack < 6; lacerateStack++)
 			{
 				// Make sure it has one aura for start
-				while (!creature->HasAura(ClassSpells::Druid::LACERATE_RNK_1))
-					CastSpell(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
-				TEST_ASSERT(creature->HasAura(ClassSpells::Druid::LACERATE_RNK_1));
+                bool hasAura = false;
+                for (uint32 retry = 0; retry < 10; retry++)
+                {
+                    TEST_CAST(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+                    hasAura = creature->HasAura(ClassSpells::Druid::LACERATE_RNK_1);
+                    if (hasAura)
+                        break;
+                }
+                TEST_ASSERT(hasAura);
 				Aura* aura = creature->GetAura(ClassSpells::Druid::LACERATE_RNK_1, EFFECT_0);
 				TEST_ASSERT(aura != nullptr);
 				// add lacerate stack
+                uint32 retry = 0;
 				while (lacerateStack > aura->GetStackAmount()) {
-					CastSpell(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                    TEST_CAST(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
 					aura = creature->GetAura(ClassSpells::Druid::LACERATE_RNK_1, EFFECT_0);
 					TEST_ASSERT(aura != nullptr);
+                    retry++;
+                    ASSERT_INFO("Max retries reached");
+                    TEST_ASSERT(retry < 20);
 				}
 				Wait(3500); // 1 tick
 				// calculate health
@@ -1223,7 +1230,7 @@ public:
 			Creature* creature = SpawnCreature();
 
 			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
-			CastSpell(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
+            TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			Wait(1500); // GCD
 
 			// Rage cost
@@ -1234,7 +1241,7 @@ public:
 
 			// Shapeshift
 			druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
-			CastSpell(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2);
+            TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2);
 			Wait(1500); // GCD
 
 			// Damage
@@ -1281,12 +1288,12 @@ public:
 			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
 			// Must be in Cat Form
-			CastSpell(druid, creature, ClassSpells::Druid::POUNCE_RNK_1, SPELL_FAILED_ONLY_SHAPESHIFT);
+            TEST_CAST(druid, creature, ClassSpells::Druid::POUNCE_RNK_1, SPELL_FAILED_ONLY_SHAPESHIFT);
 
 			// Only castable stealthed
-			CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-			CastSpell(druid, creature, ClassSpells::Druid::POUNCE_RNK_1, SPELL_FAILED_ONLY_STEALTHED);
-			CastSpell(druid, druid, ClassSpells::Druid::PROWL_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, creature, ClassSpells::Druid::POUNCE_RNK_1, SPELL_FAILED_ONLY_STEALTHED);
+            TEST_CAST(druid, druid, ClassSpells::Druid::PROWL_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			
 			// Energy cost
 			uint32 const expectedPounceEnergy = 50;
@@ -1296,16 +1303,10 @@ public:
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
 
 			// Stun
-			TEST_ASSERT(creature->HasAura(ClassSpells::Druid::POUNCE_RNK_4));
-			Aura* stun = creature->GetAura(ClassSpells::Druid::POUNCE_RNK_4, EFFECT_0);
-			TEST_ASSERT(stun != nullptr);
-			TEST_ASSERT(stun->GetAuraDuration() == 3 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4, 3 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
 
 			// Damage
-			TEST_ASSERT(creature->HasAura(ClassSpells::Druid::POUNCE_RNK_4_PROC));
-			Aura* damage = creature->GetAura(ClassSpells::Druid::POUNCE_RNK_4_PROC, EFFECT_0);
-			TEST_ASSERT(damage != nullptr);
-			TEST_ASSERT(damage->GetAuraDuration() == 18 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4_PROC, 18 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
 			float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
 			float const pounceBleedCoeff = 0.18f;
 			uint32 const pounceBleedTotal = ClassSpellsDamage::Druid::POUNCE_RNK_4_TOTAL + AP * pounceBleedCoeff;
@@ -1339,11 +1340,11 @@ public:
 			float const expectedRunSpeed = druid->GetSpeed(MOVE_RUN) * 0.7f;
 
 			// Must be in Cat Form
-			CastSpell(druid, creature, ClassSpells::Druid::PROWL_RNK_3, SPELL_FAILED_ONLY_SHAPESHIFT);
+            TEST_CAST(druid, creature, ClassSpells::Druid::PROWL_RNK_3, SPELL_FAILED_ONLY_SHAPESHIFT);
 
 			// Only castable stealthed
-			CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-			CastSpell(druid, druid, ClassSpells::Druid::PROWL_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::PROWL_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
 			// Aura
 			TEST_ASSERT(druid->HasAura(ClassSpells::Druid::PROWL_RNK_3));
@@ -1354,10 +1355,10 @@ public:
 			// Remove
 			druid->Attack(creature, true);
 			Wait(100);
-			TEST_ASSERT(!druid->HasAura(ClassSpells::Druid::PROWL_RNK_3));
+            TEST_HAS_NOT_AURA(druid, ClassSpells::Druid::PROWL_RNK_3);
 
 			// Cooldown
-			TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::PROWL_RNK_3) == 10 * SECOND);
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::PROWL_RNK_3, 10 * SECOND);
 		}
 	};
 
@@ -1386,8 +1387,8 @@ public:
 			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
 			// Must be in Cat Form
-			CastSpell(druid, creature, ClassSpells::Druid::RAKE_RNK_5, SPELL_FAILED_ONLY_SHAPESHIFT);
-			CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, creature, ClassSpells::Druid::RAKE_RNK_5, SPELL_FAILED_ONLY_SHAPESHIFT);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
 			// Energy cost
 			uint32 const expectedRakeEnergy = 40;
@@ -1442,13 +1443,13 @@ public:
 			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
 			// Must be behind & in cat form
-			CastSpell(druid, inFront, ClassSpells::Druid::RAVAGE_RNK_5, SPELL_FAILED_NOT_BEHIND);
-			CastSpell(druid, creature, ClassSpells::Druid::RAVAGE_RNK_5, SPELL_FAILED_ONLY_SHAPESHIFT);
+            TEST_CAST(druid, inFront, ClassSpells::Druid::RAVAGE_RNK_5, SPELL_FAILED_NOT_BEHIND);
+            TEST_CAST(druid, creature, ClassSpells::Druid::RAVAGE_RNK_5, SPELL_FAILED_ONLY_SHAPESHIFT);
 
 			// Only castable stealthed
-			CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-			CastSpell(druid, creature, ClassSpells::Druid::RAVAGE_RNK_5, SPELL_FAILED_ONLY_STEALTHED);
-			CastSpell(druid, druid, ClassSpells::Druid::PROWL_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, creature, ClassSpells::Druid::RAVAGE_RNK_5, SPELL_FAILED_ONLY_STEALTHED);
+            TEST_CAST(druid, druid, ClassSpells::Druid::PROWL_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
 			// Energy cost
 			uint32 const expectedRavageEnergy = 60;
@@ -1506,11 +1507,11 @@ public:
             EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
             // Must be behind & in cat form
-            CastSpell(druid, inFront, ClassSpells::Druid::SHRED_RNK_7, SPELL_FAILED_NOT_BEHIND);
-            CastSpell(druid, creature, ClassSpells::Druid::SHRED_RNK_7, SPELL_FAILED_ONLY_SHAPESHIFT);
+            TEST_CAST(druid, inFront, ClassSpells::Druid::SHRED_RNK_7, SPELL_FAILED_NOT_BEHIND);
+            TEST_CAST(druid, creature, ClassSpells::Druid::SHRED_RNK_7, SPELL_FAILED_ONLY_SHAPESHIFT);
 
             // Cat form
-            CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
             // Energy cost
             uint32 const expectedShredEnergy = 60;
@@ -1578,7 +1579,7 @@ public:
             TEST_ASSERT(creature3->GetArmor() == armor);
 
             EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
-            CastSpell(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
             // Rage cost
             uint32 const expectedSwipeRage = 20 * 10;
@@ -1586,7 +1587,7 @@ public:
 
             // Shapeshift
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
-            CastSpell(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
             // Damage
             uint32 const level = 60;
@@ -1631,17 +1632,17 @@ public:
             EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
             // Must be in cat form
-            CastSpell(druid, creature, ClassSpells::Druid::TIGERS_FURY_RNK_4, SPELL_FAILED_ONLY_SHAPESHIFT);
+            TEST_CAST(druid, creature, ClassSpells::Druid::TIGERS_FURY_RNK_4, SPELL_FAILED_ONLY_SHAPESHIFT);
 
             // Cat form
-            CastSpell(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
             // Energy cost
             uint32 const expectedTigersFuryEnergy = 30;
             TEST_POWER_COST(druid, creature, ClassSpells::Druid::TIGERS_FURY_RNK_4, POWER_ENERGY, expectedTigersFuryEnergy);
 
             // Cooldown
-            TEST_ASSERT(druid->GetSpellCooldownDelay(ClassSpells::Druid::TIGERS_FURY_RNK_4) == 1 * SECOND);
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::TIGERS_FURY_RNK_4, 1 * SECOND);
 
             // Aura
             Aura* aura = druid->GetAura(ClassSpells::Druid::TIGERS_FURY_RNK_4, EFFECT_0);
@@ -1665,7 +1666,7 @@ public:
 
             uint32 const expectedTigersFuryCritMin = weaponMinDamage * 2.0f * armorFactor;
             uint32 const expectedTigersFuryCritMax = weaponMaxDamage * 2.0f * armorFactor;
-            CastSpell(druid, druid, ClassSpells::Druid::TIGERS_FURY_RNK_4, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_CAST(druid, druid, ClassSpells::Druid::TIGERS_FURY_RNK_4, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::SHRED_RNK_7, expectedTigersFuryCritMin, expectedTigersFuryCritMax, true);
         }
     };
@@ -1785,7 +1786,7 @@ public:
                 Poisons are last in, first out
                 It should be dispelled poison3 > poison2 > poison1
             */
-            CastSpell(victim, victim, ClassSpells::Druid::CURE_POISON_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            TEST_CAST(victim, victim, ClassSpells::Druid::CURE_POISON_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
 
             if (victim->HasAura(poison3))
             {
@@ -1871,11 +1872,7 @@ public:
             TEST_ASSERT(caster->GetItemCount(reagentId, false) == 0);
 
             // Aura duration
-            ASSERT_INFO("Victim doesnt have aura %u", spellId);
-            TEST_ASSERT(victim->HasAura(spellId));
-            Aura* aura = victim->GetAura(spellId, EFFECT_0);
-            TEST_ASSERT(aura != nullptr);
-            TEST_ASSERT(aura->GetAuraDuration() == 1 * HOUR * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(victim, spellId, 1 * HOUR * IN_MILLISECONDS);
 
             // Stats, resistances & armor
             TEST_ASSERT(Between<uint32>(victim->GetArmor(), expectedArmor - 1, expectedArmor + 1));
@@ -1934,7 +1931,7 @@ public:
             EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
             druid->DisableRegeneration(true);
 
-            uint32 maceBH = 550;
+            int32 maceBH = 550;
             TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
 
             // Mana cost
@@ -2039,7 +2036,7 @@ public:
 			EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
 			druid->DisableRegeneration(true);
 
-			uint32 maceBH = 550;
+            int32 maceBH = 550;
 			TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
 
 			// Mana cost
