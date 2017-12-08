@@ -181,20 +181,21 @@ void TestCase::EnableMapObjects()
     _enableMapObjects = true;
 }
 
-void TestCase::_TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount)
+void TestCase::_TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount)
 {
 	/* TODO: cast */
 	uint32 auraCount = target->GetAuraCount(testSpell);
 	INTERNAL_TEST_ASSERT(auraCount == requireCount);
 }
 
-void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, Powers powerType, uint32 expectedPowerCost)
+void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost)
 {
 	caster->SetPower(powerType, expectedPowerCost);
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
-	CastSpell(caster, target, castSpell, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-	INTERNAL_ASSERT_INFO("Caster has %u power remaining after spell %u", caster->GetPower(powerType), castSpell);
-	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == 0);
+    _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+    uint32 remainingPower = caster->GetPower(powerType);
+	INTERNAL_ASSERT_INFO("Caster has %u power remaining after spell %u", remainingPower, castSpellID);
+	INTERNAL_TEST_ASSERT(remainingPower == 0);
 }
 
 TestPlayer* TestCase::SpawnRandomPlayer()
@@ -535,11 +536,11 @@ void TestCase::LearnTalent(TestPlayer* p, uint32 spellID)
     p->LearnSpell(spellID, false);
 }
 
-void TestCase::CastSpell(Unit* caster, Unit* victim, uint32 spellID, uint32 expectedCode, TriggerCastFlags triggeredFlags, const char* errorMsg)
+void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode, TriggerCastFlags triggeredFlags)
 {
-	uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
-	INTERNAL_ASSERT_INFO(errorMsg, spellID, res);
-	INTERNAL_TEST_ASSERT(res == expectedCode);
+    uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
+	INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %u", spellID, res);
+	INTERNAL_TEST_ASSERT(res == uint32(expectedCode));
 }
 
 bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
@@ -563,6 +564,7 @@ void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError,
     sampleSize = 500;
     allowedError = (expectedMax - expectedMin) / 25; //arbitary
 }
+
 void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage) //if !damage, then use healing
 {
     INTERNAL_TEST_ASSERT(expectedMax >= expectedMin);
@@ -857,9 +859,9 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
 
 void TestCase::_SetCriticalChances(Unit* caster, bool crit)
 {
-	float critChance = 0.0f;
+    float critChance = -100.0f;
 	if (crit)
-		critChance = 100.0f;
+		critChance = 200.0f;
 
 	for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
 		caster->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, critChance);
@@ -922,4 +924,52 @@ void TestCase::Celebrate()
             Wait(5 * SECOND * IN_MILLISECONDS);
         }
     }
+}
+
+void TestCase::_EnsureHasAura(Unit* target, int32 spellID)
+{
+    bool hasAura = target->HasAura(spellID);
+    if (spellID > 0)
+    {
+        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+        INTERNAL_TEST_ASSERT(hasAura);
+    }
+    else 
+    {
+        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+        INTERNAL_TEST_ASSERT(!hasAura);
+    }
+}
+
+void TestCase::_EnsureHasAura(Unit* target, int32 spellID, uint8 effectIndex)
+{
+    bool hasAura = target->HasAuraEffect(spellID, effectIndex);
+    if (spellID > 0)
+    {
+        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+        INTERNAL_TEST_ASSERT(hasAura);
+    }
+    else 
+    {
+        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+        INTERNAL_TEST_ASSERT(!hasAura);
+    }
+}
+
+void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond)
+{
+    uint32 cooldown = caster->GetSpellCooldownDelay(castSpellID);
+    INTERNAL_ASSERT_INFO("Caster %u has cooldown %u for spell %u instead of expected %u", caster->GetGUIDLow(), cooldown, castSpellID, cooldownSecond);
+    INTERNAL_TEST_ASSERT(cooldown == cooldownSecond);
+}
+
+void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS)
+{
+    Aura* aura = target->GetAura(spellID, EFFECT_0);
+    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+    INTERNAL_TEST_ASSERT(aura != nullptr);
+
+    uint32 auraDuration = aura->GetAuraDuration();
+    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with duration %u instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraDuration, durationMS);
+    INTERNAL_TEST_ASSERT(auraDuration == durationMS);
 }

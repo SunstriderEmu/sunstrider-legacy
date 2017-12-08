@@ -514,7 +514,7 @@ public:
 			result = player->CastSpell(player, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
 			Wait(1000);
 			TEST_ASSERT(result == SPELL_CAST_OK);
-			TEST_ASSERT(!player->HasAura(ClassSpells::Warlock::DEMON_ARMOR_RNK_6));
+            TEST_HAS_NOT_AURA(player, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
 			TEST_ASSERT(Between<float>(player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW), expectedSP - 1, expectedSP + 1));
 			// TODO: test healing done on warlock
 		}
@@ -609,13 +609,13 @@ public:
 			Pet* pet = player->GetPet();
 			TEST_ASSERT(pet != nullptr);
 			if(previousAura != 0)
-				TEST_ASSERT(!player->HasAura(previousAura));
+                TEST_HAS_NOT_AURA(player, previousAura);
 
 			res = player->CastSpell(player, ClassSpells::Warlock::DEMONIC_SACRIFICE_RNK_1, TRIGGERED_FULL_MASK);
 			Wait(1 * SECOND * IN_MILLISECONDS);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 
-			TEST_ASSERT(player->HasAura(aura));
+            TEST_HAS_AURA(player, aura);
 		}
 
 		void TestImpSacrifice(TestPlayer* player, Creature* dummyTarget)

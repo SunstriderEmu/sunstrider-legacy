@@ -113,13 +113,13 @@ public:
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Wait(5000);
 			ASSERT_INFO("Druid has not Nature's Grasp aura");
-			TEST_ASSERT(player->HasAura(ClassSpells::Druid::NATURES_GRASP_RNK_7));
+            TEST_HAS_AURA(player, ClassSpells::Druid::NATURES_GRASP_RNK_7);
 			warrior->Attack(player, true);
 			Wait(1500);
 			ASSERT_INFO("Druid still has aura");
-			TEST_ASSERT(!player->HasAura(ClassSpells::Druid::NATURES_GRASP_RNK_7));
+            TEST_HAS_NOT_AURA(player, ClassSpells::Druid::NATURES_GRASP_RNK_7);
 			ASSERT_INFO("Warrior isnt root");
-			TEST_ASSERT(warrior->HasAura(ClassSpells::Druid::NATURES_GRASP_RNK_7_PROC));
+            TEST_HAS_AURA(warrior, ClassSpells::Druid::NATURES_GRASP_RNK_7_PROC);
 		}
 	};
 
@@ -147,7 +147,7 @@ public:
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
-			uint32 staffSP = 266;
+			int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			// Mana cost
@@ -822,35 +822,34 @@ public:
 			int32 const expectedRogueArmor = rogue->GetArmor() - 610;
 
 			// Only cast in Bear or Cat form
-			CastSpell(player, player, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5, SPELL_FAILED_ONLY_SHAPESHIFT);
+            TEST_CAST(player, player, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5, SPELL_FAILED_ONLY_SHAPESHIFT);
 
 			// Bear Form
-			CastSpell(player, player, ClassSpells::Druid::BEAR_FORM_RNK_1);
+            TEST_CAST(player, player, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			Wait(2000); // GCD
 
 			// Faerie Fire Feral
-			CastSpell(player, rogue, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5);
+            TEST_CAST(player, rogue, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5);
 			Aura* aura = rogue->GetAura(ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5, EFFECT_0);
 			TEST_ASSERT(aura != nullptr);
 			ASSERT_INFO("Rogue has %u armor, expected: %i", rogue->GetArmor(), expectedRogueArmor);
-			TEST_ASSERT(rogue->GetArmor() == expectedRogueArmor);
+			TEST_ASSERT(int32(rogue->GetArmor()) == expectedRogueArmor);
 			TEST_ASSERT(aura->GetAuraDuration() == 40 * SECOND * IN_MILLISECONDS);
-			ASSERT_INFO("Druid has %u ms cooldown on Faerie Fire Feral, expected: %u", player->GetSpellCooldownDelay(ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5), 6 * SECOND);
-			TEST_ASSERT(player->GetSpellCooldownDelay(ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5) == 6 * SECOND);
+            TEST_HAS_COOLDOWN(player, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5, 6 * SECOND);
 			Wait(2000);
 
 			// Rogue can't stealth
-			CastSpell(rogue, rogue, ClassSpells::Rogue::STEALTH_RNK_4, SPELL_FAILED_CASTER_AURASTATE);
+            TEST_CAST(rogue, rogue, ClassSpells::Rogue::STEALTH_RNK_4, SPELL_FAILED_CASTER_AURASTATE);
 
 			// Cat form
 			player->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
-			CastSpell(player, player, ClassSpells::Druid::CAT_FORM_RNK_1);
+            TEST_CAST(player, player, ClassSpells::Druid::CAT_FORM_RNK_1);
 			Wait(2000); // GCD
 
 			// Mage can't invisible
 			player->RemoveAllSpellCooldown();
-			CastSpell(player, mage, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5);
-			CastSpell(mage, mage, ClassSpells::Mage::INVISIBILITY_RNK_1, SPELL_FAILED_CASTER_AURASTATE);
+            TEST_CAST(player, mage, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5);
+            TEST_CAST(mage, mage, ClassSpells::Mage::INVISIBILITY_RNK_1, SPELL_FAILED_CASTER_AURASTATE);
 		}
 	};
 
@@ -872,7 +871,7 @@ public:
 
 		void TestStat(TestPlayer* player, uint32 formSpellId, uint32 expectedStat, uint32 stat = 0)
 		{
-			CastSpell(player, player, formSpellId);
+            TEST_CAST(player, player, formSpellId);
 			if (stat == STAT_STAMINA)
 			{
 				TEST_ASSERT(player->GetStat(STAT_STAMINA) == expectedStat);
@@ -1055,16 +1054,16 @@ public:
 
 			// Bleed: Rake
 			//	Initial damage
-			CastSpell(druidWithMangle, creature, mangleSpellId);
+            TEST_CAST(druidWithMangle, creature, mangleSpellId);
 			float const expectedRakeDmg = (AP / 100 + 78) * mangleFactor;
 			TEST_DIRECT_SPELL_DAMAGE(druidTestDamage, creature, ClassSpells::Druid::RAKE_RNK_5, expectedRakeDmg, expectedRakeDmg, false);
 
 			//	Rake bleed
-			CastSpell(druidWithMangle, creature, mangleSpellId);
+            TEST_CAST(druidWithMangle, creature, mangleSpellId);
 			float const expectedRakeBleed = (AP * 0.06f + 108) * mangleFactor;
-			CastSpell(druidTestDamage, creature, ClassSpells::Druid::RAKE_RNK_5);
+            TEST_CAST(druidTestDamage, creature, ClassSpells::Druid::RAKE_RNK_5);
 			Wait(500);
-			TEST_ASSERT(creature->HasAura(ClassSpells::Druid::RAKE_RNK_5));
+            TEST_HAS_AURA(creature, ClassSpells::Druid::RAKE_RNK_5);
 			uint32 const startHealth = creature->GetHealth();
 			Wait(9500);
 			TEST_ASSERT(creature->GetHealth() == startHealth - expectedRakeBleed);
@@ -1149,11 +1148,8 @@ public:
 			uint32 const expectedResNature = startResNature + 25 * 1.35f;
 			uint32 const expectedResShadow = startResShadow + 25 * 1.35f;
 
-			uint32 result = player->CastSpell(victim, spell);
-			ASSERT_INFO("Druid couldnt cast %u, spell result: %u", spell, result);
-            TEST_ASSERT(result == SPELL_CAST_OK);
-			ASSERT_INFO("Victim doesnt have aura %u", spell);
-			TEST_ASSERT(victim->HasAura(spell));
+            TEST_CAST(player, victim, spell);
+            TEST_HAS_AURA(victim, spell);
 
 			TEST_ASSERT(Between<uint32>(victim->GetArmor(), expectedArmor - 1, expectedArmor + 1));
 			TEST_ASSERT(Between<uint32>(victim->GetStat(STAT_AGILITY), expectedAgi - 1, expectedAgi + 1));
@@ -1202,15 +1198,13 @@ public:
 			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
 
 			LearnTalent(player, Talents::Druid::FUROR_RNK_5);
-            uint32 result = player->CastSpell(player, ClassSpells::Druid::BEAR_FORM_RNK_1);
-            TEST_ASSERT(result == SPELL_CAST_OK);
-            TEST_ASSERT(player->HasAura(ClassSpells::Druid::BEAR_FORM_RNK_1));
+            TEST_CAST(player, player, ClassSpells::Druid::BEAR_FORM_RNK_1);
+            TEST_HAS_AURA(player, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			TEST_ASSERT(player->GetPower(POWER_RAGE) == 100); // = 10 rage
             player->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1); //we need to dispell it manually, clients send CMSG_CANCEL_AURA when switching form
             Wait(2000); //Wait GCD
-			result = player->CastSpell(player, ClassSpells::Druid::CAT_FORM_RNK_1);
-            TEST_ASSERT(result == SPELL_CAST_OK);
-            TEST_ASSERT(player->HasAura(ClassSpells::Druid::CAT_FORM_RNK_1));
+            TEST_CAST(player, player, ClassSpells::Druid::CAT_FORM_RNK_1);
+            TEST_HAS_AURA(player, ClassSpells::Druid::CAT_FORM_RNK_1);
 			TEST_ASSERT(player->GetPower(POWER_ENERGY) == 40);
 		}
 	};
@@ -1269,11 +1263,8 @@ public:
 		void TestMana(TestPlayer* player, uint32 spellId, uint32 expectedMana)
 		{
 			player->SetPower(POWER_MANA, expectedMana);
-			uint32 res = player->CastSpell(player, spellId);
-			ASSERT_INFO("Druid couldnt cast %u, result: %u", spellId, res);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			ASSERT_INFO("Druid didnt have aura %u", spellId);
-			TEST_ASSERT(player->HasAura(spellId));
+            TEST_CAST(player, player, spellId);
+            TEST_HAS_AURA(player, spellId);
 			ASSERT_INFO("Druid had some remaining mana after %u", spellId);
 			TEST_ASSERT(player->GetPower(POWER_MANA) == 0);
 			player->RemoveAurasDueToSpell(spellId); // we need to dispell it manually, clients send CMSG_CANCEL_AURA when switching form
@@ -1651,7 +1642,7 @@ public:
 			player->SetHealth(1);
 			player->SetMaxHealth(10000);
 			uint32 startHealth = player->GetHealth();
-			CastSpell(player, player, spellId);
+            TEST_CAST(player, player, spellId);
 			Wait(HotTime + 1000);
 			uint32 currentHealth = player->GetHealth();
 				TC_LOG_DEBUG("test.unit_test", "health: %u, expected: %u", currentHealth, startHealth + expectedHealth);
