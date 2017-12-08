@@ -6700,7 +6700,8 @@ void Spell::EffectCharge(uint32 i)
         if (!m_spellInfo->IsPositive() && m_caster->GetTypeId() == TYPEID_PLAYER)
             m_caster->Attack(target, true);
 
-        m_caster->CastSpell(target, triggeredSpellId, TRIGGERED_FULL_MASK);
+        if(triggeredSpellId)
+            m_caster->CastSpell(target, triggeredSpellId, TRIGGERED_FULL_MASK);
     }
 }
 
