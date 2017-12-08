@@ -1577,7 +1577,6 @@ public:
             TEST_ASSERT(creature2->GetArmor() == armor);
             TEST_ASSERT(creature3->GetArmor() == armor);
 
-
             EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
             CastSpell(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
@@ -1962,6 +1961,67 @@ public:
     }
 };
 
+class LifebloomTest : public TestCaseScript
+{
+public:
+    LifebloomTest() : TestCaseScript("spells druid lifebloom") { }
+
+    class LifebloomTestImpt : public TestCase
+    {
+    public:
+        LifebloomTestImpt() : TestCase(true) { }
+
+        void TestLifebloom(TestPlayer* druid, uint32 tickTotal, uint32 expectedBloom, bool crit)
+        {
+            druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
+            uint32 startHealth = 1;
+            druid->SetHealth(startHealth);
+            _SetCriticalChances(druid, crit);
+            CastSpell(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
+            Wait(8000);
+            uint32 expectedHealth = druid->GetHealth() - (startHealth + tickTotal);
+            TEST_ASSERT(druid->GetHealth() == expectedBloom);
+        }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+
+            EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
+            druid->DisableRegeneration(true);
+
+            uint32 maceBH = 550;
+            TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
+
+            // Mana cost
+            uint32 const expectedLifebloomMana = 220;
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, POWER_MANA, expectedLifebloomMana);
+            druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
+            
+            // Spell coeffs
+            float const lifebloomDuration = 7.0f;
+            float const lifebloomCastTime = 1.5f;
+            float const lifebloomTotalCoeff = (lifebloomDuration / 15.0f) / ((lifebloomDuration / 15.0f) + (lifebloomCastTime / 3.5f));
+            uint32 const lifebloomTotalBHBonus = maceBH * lifebloomTotalCoeff;
+            uint32 const lifebloomBurstBHBonus = maceBH * ClassSpellsCoeff::Druid::LIFEBLOOM;
+
+            // Tick
+            uint32 const expectedLifebloomTick = floor((ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_TOTAL + lifebloomTotalBHBonus) / 7.0f);
+            uint32 const expectedLifebloomTotal = 7 * expectedLifebloomTick;
+            uint32 const expectedBloom = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_BURST + lifebloomBurstBHBonus;
+            TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, expectedLifebloomTotal, false);
+            // Bloom
+            TestLifebloom(druid, expectedLifebloomTotal, expectedBloom, false);
+            TestLifebloom(druid, expectedLifebloomTotal * 1.5f, expectedBloom, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<LifebloomTestImpt>();
+    }
+};
+
 class RejuvenationTest : public TestCaseScript
 {
 public:
@@ -2040,5 +2100,6 @@ void AddSC_test_spells_druid()
     new CurePoisonTest();
     new GiftOfTheWildTest();
     new HealingTouchTest();
+    new LifebloomTest();
 	new RejuvenationTest();
 }
