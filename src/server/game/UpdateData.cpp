@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "Common.h"
 #include "ByteBuffer.h"
@@ -27,9 +8,7 @@
 #include "World.h"
 #include "zlib.h"
 
-UpdateData::UpdateData() : m_blockCount(0)
-{
-}
+UpdateData::UpdateData() : m_blockCount(0) { }
 
 void UpdateData::AddOutOfRangeGUID(std::set<uint64>& guids)
 {
@@ -59,7 +38,7 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
     int z_res = deflateInit(&c_stream, sWorld->getConfig(CONFIG_COMPRESSION));
     if (z_res != Z_OK)
     {
-        TC_LOG_ERROR("FIXME","Can't compress update packet (zlib: deflateInit) Error code: %i (%s)",z_res,zError(z_res));
+        TC_LOG_ERROR("misc","Can't compress update packet (zlib: deflateInit) Error code: %i (%s)",z_res,zError(z_res));
         *dst_size = 0;
         return;
     }
@@ -72,14 +51,14 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
     z_res = deflate(&c_stream, Z_NO_FLUSH);
     if (z_res != Z_OK)
     {
-        TC_LOG_ERROR("FIXME","Can't compress update packet (zlib: deflate) Error code: %i (%s)",z_res,zError(z_res));
+        TC_LOG_ERROR("misc","Can't compress update packet (zlib: deflate) Error code: %i (%s)",z_res,zError(z_res));
         *dst_size = 0;
         return;
     }
 
     if (c_stream.avail_in != 0)
     {
-        TC_LOG_ERROR("FIXME","Can't compress update packet (zlib: deflate not greedy)");
+        TC_LOG_ERROR("misc","Can't compress update packet (zlib: deflate not greedy)");
         *dst_size = 0;
         return;
     }
@@ -87,7 +66,7 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
     z_res = deflate(&c_stream, Z_FINISH);
     if (z_res != Z_STREAM_END)
     {
-        TC_LOG_ERROR("FIXME","Can't compress update packet (zlib: deflate should report Z_STREAM_END instead %i (%s)",z_res,zError(z_res));
+        TC_LOG_ERROR("misc","Can't compress update packet (zlib: deflate should report Z_STREAM_END instead %i (%s)",z_res,zError(z_res));
         *dst_size = 0;
         return;
     }
@@ -95,7 +74,7 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
     z_res = deflateEnd(&c_stream);
     if (z_res != Z_OK)
     {
-        TC_LOG_ERROR("FIXME","Can't compress update packet (zlib: deflateEnd) Error code: %i (%s)",z_res,zError(z_res));
+        TC_LOG_ERROR("misc","Can't compress update packet (zlib: deflateEnd) Error code: %i (%s)",z_res,zError(z_res));
         *dst_size = 0;
         return;
     }
@@ -105,13 +84,12 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
 
 bool UpdateData::BuildPacket(WorldPacket *packet, ClientBuild build, bool hasTransport)
 {
-    ByteBuffer buf(m_data.size() + 10 + m_outOfRangeGUIDs.size()*8);
+    ByteBuffer buf(m_data.size() + 10 + m_outOfRangeGUIDs.size()*9);
 
     buf << (uint32) (!m_outOfRangeGUIDs.empty() ? m_blockCount + 1 : m_blockCount);
-#ifdef BUILD_335_SUPPORT
-    if(build == BUILD_243)
+#ifndef LICH_KING
+    buf << (uint8) (hasTransport ? true : false);
 #endif
-        buf << (uint8) (hasTransport ? true : false);
 
     if(!m_outOfRangeGUIDs.empty())
     {
@@ -119,35 +97,20 @@ bool UpdateData::BuildPacket(WorldPacket *packet, ClientBuild build, bool hasTra
         buf << (uint32) m_outOfRangeGUIDs.size();
 
         for (auto i : m_outOfRangeGUIDs)
-        {
-#ifdef BUILD_335_SUPPORT
-            if(build == BUILD_335)
-            {
-                buf << PackedGuid(i);
-            } else
-#endif
-            {
-                buf << (uint8)0xFF;
-                buf << (uint64)i;
-            }
-        }
+            buf << PackedGuid(i);
     }
 
     buf.append(m_data);
 
-    packet->clear();
+    size_t pSize = buf.wpos();                              // use real used data size
 
-    if (m_data.size() > 50 )
+    if (m_data.size() > 100 )
     {
-        uint32 destsize = buf.size() + buf.size()/10 + 16;
-        packet->resize( destsize );
+        uint32 destsize = compressBound(pSize);
+        packet->resize(destsize + sizeof(uint32));
 
         packet->put(0, (uint32)buf.size());
-
-        Compress(const_cast<uint8*>(packet->contents()) + sizeof(uint32),
-            &destsize,
-            (void*)buf.contents(),
-            buf.size());
+        Compress(const_cast<uint8*>(packet->contents()) + sizeof(uint32), &destsize, (void*)buf.contents(), pSize);
         if (destsize == 0)
             return false;
 
@@ -156,7 +119,7 @@ bool UpdateData::BuildPacket(WorldPacket *packet, ClientBuild build, bool hasTra
     }
     else
     {
-        packet->append( buf );
+        packet->append(buf);
         packet->SetOpcode( SMSG_UPDATE_OBJECT );
     }
 
