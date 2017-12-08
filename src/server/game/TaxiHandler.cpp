@@ -189,7 +189,7 @@ void WorldSession::HandleActivateTaxiExpressOpcode (WorldPacket& recvData)
 
 void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_SPLINE_DONE");
+    TC_LOG_TRACE("network", "WORLD: Received CMSG_MOVE_SPLINE_DONE");
 
 #ifdef LICH_KING
     uint64 guid; // used only for proper packet read
@@ -201,7 +201,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
 
     GetPlayer()->m_anti_lastmovetime = movementInfo.time;
 
-   //LK? recvData.read_skip<uint32>();                          // spline id
+    recvData.read_skip<uint32>();                          // spline id
 
     // in taxi flight packet received in 2 case:
     // 1) end taxi path in far (multi-node) flight

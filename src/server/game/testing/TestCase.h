@@ -90,7 +90,7 @@ public:
     */
     #define TEST_HAS_NOT_AURA( ... ) _SetCaller(__FILE__, __LINE__); _EnsureHasNotAura(__VA_ARGS__); _ResetCaller()
  
-    //check if target has aura and if duration match given duration. Only checks effect0
+    //check if target has aura and if duration match given duration
     #define TEST_AURA_MAX_DURATION(target, spellID, effect, durationMS) _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, effect, durationMS); _ResetCaller()
 
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
