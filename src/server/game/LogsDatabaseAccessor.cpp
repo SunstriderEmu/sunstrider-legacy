@@ -558,7 +558,6 @@ void LogsDatabaseAccessor::BuyOrSellItemToVendor(BuyTransactionType type, Player
 
 void LogsDatabaseAccessor::CleanupOldLogs()
 {
-    //0 means keep forever
     TC_LOG_DEBUG("sql.sql", "Cleaning old logs");
 
     time_t now = time(nullptr);
@@ -583,6 +582,7 @@ void LogsDatabaseAccessor::CleanupOldLogs()
         }
     };
 
+    //delete two tables at once, joining them on joinColumn1 = joinColumn2. Needed for table with foreign keys.
     auto deleteOldLogsCombined = [&](const char* table1, const char* table2, const char* joinColumn1, const char* joinColumn2, WorldConfigs configIndex, WorldConfigs configGMIndex)
     {
         uint32 keepDuration;
@@ -601,15 +601,17 @@ void LogsDatabaseAccessor::CleanupOldLogs()
         }
     };
 
+    deleteOldLogs("account_ip", CONFIG_LOG_CONNECTION_IP, CONFIG_GM_LOG_CONNECTION_IP);
+    deleteOldLogs("char_auction_create", CONFIG_LOG_CHAR_ITEM_AUCTION, CONFIG_GM_LOG_CHAR_ITEM_AUCTION);
+    deleteOldLogs("char_auction_won", CONFIG_LOG_CHAR_ITEM_AUCTION, CONFIG_GM_LOG_CHAR_ITEM_AUCTION);
     deleteOldLogs("char_chat", CONFIG_LOG_CHAR_CHAT, CONFIG_GM_LOG_CHAR_CHAT);
+    deleteOldLogs("char_delete", CONFIG_LOG_CHAR_DELETE, CONFIG_GM_LOG_CHAR_DELETE);
     deleteOldLogs("char_enchant", CONFIG_LOG_CHAR_ITEM_ENCHANT, CONFIG_GM_LOG_CHAR_ITEM_ENCHANT);
     deleteOldLogs("char_guild_money_deposit", CONFIG_LOG_CHAR_GUILD_MONEY, CONFIG_GM_LOG_CHAR_GUILD_MONEY);
     deleteOldLogs("char_item_delete", CONFIG_LOG_CHAR_ITEM_DELETE, CONFIG_GM_LOG_CHAR_ITEM_DELETE);
     deleteOldLogs("char_item_guild_bank", CONFIG_LOG_CHAR_ITEM_GUILD_BANK, CONFIG_GM_LOG_CHAR_ITEM_GUILD_BANK);
     deleteOldLogs("char_item_vendor", CONFIG_LOG_CHAR_ITEM_VENDOR, CONFIG_GM_LOG_CHAR_ITEM_VENDOR);
     deleteOldLogs("char_rename", CONFIG_LOG_CHAR_RENAME, CONFIG_GM_LOG_CHAR_RENAME);
-    deleteOldLogs("account_ip", CONFIG_LOG_CONNECTION_IP, CONFIG_GM_LOG_CONNECTION_IP);
-
     deleteOldLogsCombined("char_trade", "char_trade_items", "id", "trade_id", CONFIG_LOG_CHAR_ITEM_TRADE, CONFIG_GM_LOG_CHAR_ITEM_TRADE);
     deleteOldLogsCombined("mail", "mail_items", "id", "mail_id", CONFIG_LOG_CHAR_MAIL, CONFIG_GM_LOG_CHAR_MAIL);
 
