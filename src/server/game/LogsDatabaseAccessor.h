@@ -61,7 +61,7 @@ public:
 
     void CharacterTrade(Player const* p1, Player const* p2, std::vector<Item*> const& p1Items, std::vector<Item*> const& p2Items, uint32 p1Gold, uint32 p2Gold);
 private:
-    static bool ShouldLog(uint32 configIndex, uint32 configIndexGM, bool gmInvolved);
+    static bool ShouldLog(WorldConfigs configIndex, WorldConfigs configIndexGM, bool gmInvolved);
 
     uint32 max_trade_id;
 };

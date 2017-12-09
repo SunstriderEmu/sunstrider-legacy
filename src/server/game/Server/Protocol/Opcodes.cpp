@@ -110,7 +110,6 @@ void OpcodeTable::Initialize()
                         BC OPCODES
     ############################################### */
 
-    /*0x000*/ DEFINE_HANDLER(MSG_NULL_ACTION,                               STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     /*0x001*/ DEFINE_HANDLER(CMSG_BOOTME,                                   STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     /*0x002*/ DEFINE_HANDLER(CMSG_DBLOOKUP,                                 STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     /*0x003*/ DEFINE_SERVER_OPCODE_HANDLER(SMSG_DBLOOKUP,                   STATUS_NEVER);

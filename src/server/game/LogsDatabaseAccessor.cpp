@@ -20,7 +20,7 @@ LogsDatabaseAccessor::LogsDatabaseAccessor() : max_trade_id(0)
     }
 }
 
-bool LogsDatabaseAccessor::ShouldLog(uint32 configIndex, uint32 configIndexGM, bool gmInvolved)
+bool LogsDatabaseAccessor::ShouldLog(WorldConfigs configIndex, WorldConfigs configIndexGM, bool gmInvolved)
 {
     uint32 duration = sWorld->getConfig(configIndex);
     uint32 gmDuration = configIndexGM ? sWorld->getConfig(configIndexGM) : 0;
@@ -51,7 +51,7 @@ void LogsDatabaseAccessor::Enchantment(Player const* caster, Player const* targe
 
 void LogsDatabaseAccessor::BattlegroundStats(uint32 mapId, time_t start, time_t end, Team winner, uint32 scoreAlliance, uint32 scoreHorde)
 {
-    if (!ShouldLog(CONFIG_LOG_BG_STATS, 0, false))
+    if (!ShouldLog(CONFIG_LOG_BG_STATS, WorldConfigs(0), false))
         return;
 
     //PrepareStatement(LOGS_INS_BG_STATS, "INSERT INTO bg_stats (mapid, start_time, end_time, winner, score_alliance, score_horde) VALUES (?,?,UNIX_TIMESTAMP(),?,?,?)", CONNECTION_ASYNC);
@@ -80,7 +80,7 @@ void LogsDatabaseAccessor::BattlegroundStats(uint32 mapId, time_t start, time_t 
 
 void LogsDatabaseAccessor::BossDown(Creature const* victim, std::string const& bossName, std::string const& bossNameFr, uint32 downByGuildId, std::string const& guildName, uint32 guildPercentage, uint32 leaderGuid)
 {
-    if (!ShouldLog(CONFIG_LOG_BOSS_DOWNS, 0, false))
+    if (!ShouldLog(CONFIG_LOG_BOSS_DOWNS, WorldConfigs(0), false))
         return;
 
     //"INSERT INTO (boss_entry, boss_name, boss_name_fr, guild_id, guild_name, time, guild_percentage, leaderGuid) VALUES ( ? , ? , ? , ? , ? , UNIX_TIMESTAMP(), ? , ? )", CONNECTION_ASYNC);
@@ -136,7 +136,7 @@ void LogsDatabaseAccessor::CharacterRename(WorldSession const* session, uint32 p
 
 void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* target, std::string const& fullcmd)
 {
-    if (!ShouldLog(LOGS_INS_GM_COMMAND, 0, false))
+    if (!ShouldLog(CONFIG_LOG_GM_COMMANDS, WorldConfigs(0), false))
         return;
 
     Player* player = m_session ? m_session->GetPlayer() : nullptr;
@@ -295,7 +295,7 @@ void LogsDatabaseAccessor::CharacterItemDelete(Player const* player, Item const*
 
 void LogsDatabaseAccessor::Sanction(WorldSession const* authorSession, uint32 targetAccount, uint32 targetGUID, SanctionType type, uint32 durationSecs, std::string const& reason)
 {
-    if (!ShouldLog(CONFIG_LOG_SANCTIONS, 0, false))
+    if (!ShouldLog(CONFIG_LOG_SANCTIONS, WorldConfigs(0), false))
         return;
 
     std::string targetIP = NO_SESSION_STRING;
@@ -323,7 +323,7 @@ void LogsDatabaseAccessor::Sanction(WorldSession const* authorSession, uint32 ta
 
 void LogsDatabaseAccessor::RemoveSanction(WorldSession const* authorSession, uint32 targetAccount, uint32 targetGUID, std::string const& targetIP, SanctionType type)
 {
-    if (!ShouldLog(CONFIG_LOG_SANCTIONS, 0, false))
+    if (!ShouldLog(CONFIG_LOG_SANCTIONS, WorldConfigs(0), false))
         return;
 
     //PrepareStatement(LOGS_INS_SANCTION_REMOVE, "INSERT INTO gm_sanction_remove  (author_account, author_guid, target_account, target_guid, target_IP, type, time, IP) VALUES (?,?,?,?,?,?,UNIX_TIMESTAMP(),?)", CONNECTION_ASYNC);
@@ -565,7 +565,7 @@ void LogsDatabaseAccessor::CleanupOldLogs()
 
     SQLTransaction trans = LogsDatabase.BeginTransaction();
 
-    auto deleteOldLogs = [&](const char* table, uint32 configIndex, uint32 configGMIndex)
+    auto deleteOldLogs = [&](const char* table, WorldConfigs configIndex, WorldConfigs configGMIndex)
     {
         uint32 keepDuration;
         time_t limit;
@@ -583,7 +583,7 @@ void LogsDatabaseAccessor::CleanupOldLogs()
         }
     };
 
-    auto deleteOldLogsCombined = [&](const char* table1, const char* table2, const char* joinColumn1, const char* joinColumn2, uint32 configIndex, uint32 configGMIndex)
+    auto deleteOldLogsCombined = [&](const char* table1, const char* table2, const char* joinColumn1, const char* joinColumn2, WorldConfigs configIndex, WorldConfigs configGMIndex)
     {
         uint32 keepDuration;
         time_t limit;
@@ -606,6 +606,7 @@ void LogsDatabaseAccessor::CleanupOldLogs()
     deleteOldLogs("char_guild_money_deposit", CONFIG_LOG_CHAR_GUILD_MONEY, CONFIG_GM_LOG_CHAR_GUILD_MONEY);
     deleteOldLogs("char_item_delete", CONFIG_LOG_CHAR_ITEM_DELETE, CONFIG_GM_LOG_CHAR_ITEM_DELETE);
     deleteOldLogs("char_item_guild_bank", CONFIG_LOG_CHAR_ITEM_GUILD_BANK, CONFIG_GM_LOG_CHAR_ITEM_GUILD_BANK);
+    deleteOldLogs("char_item_vendor", CONFIG_LOG_CHAR_ITEM_VENDOR, CONFIG_GM_LOG_CHAR_ITEM_VENDOR);
     deleteOldLogs("char_rename", CONFIG_LOG_CHAR_RENAME, CONFIG_GM_LOG_CHAR_RENAME);
     deleteOldLogs("account_ip", CONFIG_LOG_CONNECTION_IP, CONFIG_GM_LOG_CONNECTION_IP);
 

@@ -1552,7 +1552,7 @@ ForbiddenMaps = ""
 # BETA SERVER
 #
 #	BetaServer.Enabled
-#		Enable Beta server features
+#		Enable Beta server features, such as the custom spawning zone.
 
 BetaServer.Enabled = 0
 
@@ -1780,43 +1780,6 @@ Logger.sql.driver=3,Console Server
 Logger.test.unit_test=1,Console Tests
 Logger.vmap=3,Console Server
 Logger.playerbot=3, Console Playerbot
-
-#
-#	DBLog.*
-#		Description: Duration in days for various database logs.
-#		Default:		0  - (Disable)
-#						x  - (Enabled and keep for x days)
-#						-1 - (Enabled and keep forever)
-#	DBLog.gm.*
-#		Description: This overrides the base variant for gm's only. If base variant is already enabled for a longer time, this has no effect.
-#
-
-DBLog.bgstats = -1
-DBLog.BossDowns = -1
-DBLog.char.Delete = -1
-DBLog.gm.char.Delete = -1
-DBLog.char.Chat = 30
-DBLog.gm.char.Chat = -1
-DBLog.char.GuildMoney = 30
-DBLog.gm.char.GuildMoney = -1
-DBLog.char.item.Delete = 30
-DBLog.gm.char.item.Delete = -1
-DBLog.char.item.GuildBank = 30
-DBLog.gm.char.item.GuildBank = -1
-DBLog.char.item.vendor = 30
-DBLog.gm.char.item.vendor = -1
-DBLog.char.item.auction = 30
-DBLog.gm.char.item.auction = -1
-DBLog.char.item.trade = 30
-DBLog.gm.char.item.trade = -1
-DBLog.char.item.enchant = 30
-DBLog.gm.char.item.enchant = -1
-DBLog.char.mail = 30
-DBLog.gm.char.mail = -1
-DBLog.char.rename = 30
-DBLog.gm.char.rename = -1
-DBLog.GMCommands = -1
-DBLog.sanctions = -1
 
 #
 #    Allow.IP.Based.Action.Logging
@@ -2307,6 +2270,52 @@ Respawn.DynamicMinimumGameObject = 10
 #                 0 (save creature/gameobject respawn time at grid unload)
 
 SaveRespawnTimeImmediately = 1
+
+#
+###################################################################################################
+
+
+###################################################################################################
+# LOGGING SETTINGS
+#
+# Extra logging in logs database.
+#
+#	DBLog.*
+#		Description: Duration in days for various database logs.
+#		Default:		0  - (Disable)
+#						x  - (Enabled and keep for x days)
+#						-1 - (Enabled and keep forever)
+#	DBLog.gm.*
+#		Description: This overrides the base variant for gm's only. If base variant is already enabled for a longer time, this has no effect.
+#
+
+DBLog.bgstats = -1
+DBLog.BossDowns = -1
+DBLog.char.Delete = -1
+DBLog.gm.char.Delete = -1
+DBLog.char.Chat = 30
+DBLog.gm.char.Chat = -1
+DBLog.char.GuildMoney = 30
+DBLog.gm.char.GuildMoney = -1
+DBLog.char.item.Delete = 30
+DBLog.gm.char.item.Delete = -1
+DBLog.char.item.GuildBank = 30
+DBLog.gm.char.item.GuildBank = -1
+DBLog.char.item.vendor = 30
+DBLog.gm.char.item.vendor = -1
+DBLog.char.item.auction = 30
+DBLog.gm.char.item.auction = -1
+DBLog.char.item.trade = 30
+DBLog.gm.char.item.trade = -1
+DBLog.char.item.enchant = 30
+DBLog.gm.char.item.enchant = -1
+DBLog.char.mail = 30
+DBLog.gm.char.mail = -1
+DBLog.char.rename = 30
+DBLog.gm.char.rename = -1
+DBLog.GMCommands = -1
+DBLog.sanctions = -1
+
 
 #
 ###################################################################################################
