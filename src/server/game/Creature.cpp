@@ -487,10 +487,8 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     CreatureTemplate const* cInfo = GetCreatureTemplate();
     m_regenHealth = GetCreatureTemplate()->RegenHealth;
 
-    if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN)
-        SetSheath(SHEATH_STATE_UNARMED);
-    else
-        SetSheath(SHEATH_STATE_MELEE);
+    // creatures always have melee weapon ready if any unless specified otherwise
+    SetSheath(SHEATH_STATE_MELEE);
 
     SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_AURAS );
 
