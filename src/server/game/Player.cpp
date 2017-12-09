@@ -19134,7 +19134,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
 
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
 
-            //TODO logs LogsDatabaseAccessor::BuyOrSellItemToVendor(LogsDatabaseAccessor::TRANSACTION_BUY, this, pItem, pCreature);
+            LogsDatabaseAccessor::BuyOrSellItemToVendor(LogsDatabaseAccessor::TRANSACTION_BUY, this, it, pCreature);
         }
     }
     else if( IsEquipmentPos( bag, slot ) )
@@ -19180,6 +19180,8 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             SendDirectMessage(&data);
 
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
+
+            LogsDatabaseAccessor::BuyOrSellItemToVendor(LogsDatabaseAccessor::TRANSACTION_BUY, this, it, pCreature);
 
             AutoUnequipOffhandIfNeed();
         }

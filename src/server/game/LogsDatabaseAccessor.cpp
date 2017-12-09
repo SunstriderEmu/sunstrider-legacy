@@ -20,10 +20,10 @@ LogsDatabaseAccessor::LogsDatabaseAccessor() : max_trade_id(0)
     }
 }
 
-bool LogsDatabaseAccessor::ShouldLog(uint32 configDuration, uint32 configDurationGM, bool gmInvolved)
+bool LogsDatabaseAccessor::ShouldLog(uint32 configIndex, uint32 configIndexGM, bool gmInvolved)
 {
-    uint32 duration = sWorld->getConfig(configDuration);
-    uint32 gmDuration = configDurationGM ? sWorld->getConfig(configDurationGM) : 0;
+    uint32 duration = sWorld->getConfig(configIndex);
+    uint32 gmDuration = configIndexGM ? sWorld->getConfig(configIndexGM) : 0;
 
     return (duration != 0 || (gmInvolved && (gmDuration != 0)));
 }
