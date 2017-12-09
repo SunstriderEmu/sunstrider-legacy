@@ -574,11 +574,13 @@ void GameEventMgr::LoadFromDB()
 
             if(newModelEquipSet.equipment_id > 0)
             {
+                /* TODO
                 if(!sObjectMgr->GetEquipmentInfo(newModelEquipSet.equipment_id))
                 {
                     TC_LOG_ERROR("gameevent","Table `game_event_model_equip` have creature (Guid: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", guid, newModelEquipSet.equipment_id);
                     continue;
                 }
+                */
             }
 
             equiplist.push_back(std::pair<uint32, ModelEquip>(guid, newModelEquipSet));
@@ -1268,19 +1270,19 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
         });
 
         // now last step: put in data
-                                                            // just to have write access to it
+        // just to have write access to it
         CreatureData& data2 = sObjectMgr->NewOrExistCreatureData(itr.first);
         if (activate)
         {
             itr.second.modelid_prev = data2.displayid;
-            itr.second.equipement_id_prev = data2.equipmentId;
+            //todo itr.second.equipement_id_prev = data2.equipmentId;
             data2.displayid = itr.second.modelid;
-            data2.equipmentId = itr.second.equipment_id;
+            //todo data2.equipmentId = itr.second.equipment_id;
         }
         else
         {
             data2.displayid = itr.second.modelid_prev;
-            data2.equipmentId = itr.second.equipement_id_prev;
+            //todo data2.equipmentId = itr.second.equipement_id_prev;
         }
     }
 }

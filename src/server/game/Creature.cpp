@@ -178,6 +178,7 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_regenTimer(2000),
     m_defaultMovementType(IDLE_MOTION_TYPE), 
     m_equipmentId(0), 
+    m_originalEquipmentId(0),
     m_areaCombatTimer(0), 
     m_relocateTimer(60000),
     m_AlreadyCallAssistance(false), 
@@ -444,11 +445,10 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
 
     // Load creature equipment
     if(!data || data->equipmentId == 0)
-    {                                                       // use default from the template
-        LoadEquipment(cinfo->equipmentId);
-    }
-    else if(data && data->equipmentId != -1)
-    {                                                       // override, -1 means no equipment
+        LoadEquipment(-1); //sunstrider: load random equipment
+    else if(data && data->equipmentId != 0) // override
+    {                                                       
+        m_originalEquipmentId = data->equipmentId;
         LoadEquipment(data->equipmentId);
     }
 
@@ -471,7 +471,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
     if(!m_respawnradius && m_defaultMovementType==RANDOM_MOTION_TYPE)
         m_defaultMovementType = IDLE_MOTION_TYPE;
 
-    for (uint8 i=0; i < CREATURE_MAX_SPELLS; ++i)
+    for (uint8 i=0; i < MAX_CREATURE_SPELLS; ++i)
         m_spells[i] = GetCreatureTemplate()->spells[i];
 
     SetQuestPoolId(normalInfo->QuestPoolId);
@@ -1301,7 +1301,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     // data->guid = guid must not be update at save
     data.id = GetEntry();
     data.displayid = displayId;
-    data.equipmentId = GetEquipmentId();
+    data.equipmentId = GetCurrentEquipmentId();
     if (!GetTransport())
         data.spawnPoint.WorldRelocate(this);
     else
@@ -1321,6 +1321,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         data.spawnGroupData = sObjectMgr->GetDefaultSpawnGroup();
 
     // updated in DB
+    //TODO: only save relevant fields? This seems dangerous for no benefit...
     SQLTransaction trans = WorldDatabase.BeginTransaction();
 
     trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_spawnId);
@@ -1332,7 +1333,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         << mapid <<","
         << (uint32)spawnMask << ","
         << displayId <<","
-        << GetEquipmentId() <<","
+        << GetCurrentEquipmentId() <<","
         << data.spawnPoint.GetPositionX() << ","
         << data.spawnPoint.GetPositionY() << ","
         << data.spawnPoint.GetPositionZ() << ","
@@ -1546,9 +1547,9 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
 }
 
 
-void Creature::LoadEquipment(uint32 equip_entry, bool force)
+void Creature::LoadEquipment(int8 id, bool force)
 {
-    if(equip_entry == 0)
+    if(id == 0)
     {
         if (force)
         {
@@ -1563,11 +1564,11 @@ void Creature::LoadEquipment(uint32 equip_entry, bool force)
         return;
     }
 
-    EquipmentInfo const *einfo = sObjectMgr->GetEquipmentInfo(equip_entry);
+    EquipmentInfo const *einfo = sObjectMgr->GetEquipmentInfo(GetEntry(), id);
     if (!einfo)
         return;
 
-    m_equipmentId = equip_entry;
+    m_equipmentId = id;
     for (uint8 i = WEAPON_SLOT_MAINHAND; i <= WEAPON_SLOT_RANGED; i++)
     {
         SetUInt32Value( UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + i, einfo->equipmodel[i]);
@@ -2718,10 +2719,10 @@ bool Creature::HasSpellCooldown(uint32 spell_id) const
 bool Creature::HasSpell(uint32 spellID) const
 {
     uint8 i;
-    for(i = 0; i < CREATURE_MAX_SPELLS; ++i)
+    for(i = 0; i < MAX_CREATURE_SPELLS; ++i)
         if(spellID == m_spells[i])
             break;
-    return i < CREATURE_MAX_SPELLS;                         //broke before end of iteration of known spells
+    return i < MAX_CREATURE_SPELLS;                         //broke before end of iteration of known spells
 }
 
 time_t Creature::GetRespawnTimeEx() const
@@ -3121,7 +3122,7 @@ bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)
 
 uint32 Creature::GetPetAutoSpellOnPos(uint8 pos) const
 {
-    if (pos >= CREATURE_MAX_SPELLS || m_charmInfo->GetCharmSpell(pos)->active != ACT_ENABLED)
+    if (pos >= MAX_CREATURE_SPELLS || m_charmInfo->GetCharmSpell(pos)->active != ACT_ENABLED)
         return 0;
     else
         return m_charmInfo->GetCharmSpell(pos)->spellId;

@@ -18321,7 +18321,7 @@ void Player::CharmSpellInitialize()
 
         if(cinfo && cinfo->type == CREATURE_TYPE_DEMON && GetClass() == CLASS_WARLOCK)
         {
-            for(uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)
+            for(uint32 i = 0; i < MAX_CREATURE_SPELLS; ++i)
             {
                 if(charmInfo->GetCharmSpell(i)->spellId)
                     ++addlist;
@@ -18349,7 +18349,7 @@ void Player::CharmSpellInitialize()
 
     if(addlist)
     {
-        for(uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)
+        for(uint32 i = 0; i < MAX_CREATURE_SPELLS; ++i)
         {
             CharmSpellEntry *cspell = charmInfo->GetCharmSpell(i);
             if(cspell->spellId)

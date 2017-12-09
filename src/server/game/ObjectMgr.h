@@ -674,9 +674,9 @@ class TC_GAME_API ObjectMgr
         CreatureModelInfo const* GetCreatureModelSameGenderAndRaceAs(uint32& displayID, uint32 baseDisplayId);
         CreatureModelInfo const* GetCreatureModelRandomGender(uint32& displayID);
         static uint32 ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureData *data = nullptr);
-        EquipmentInfo const* GetEquipmentInfo( uint32 entry );
-        CreatureAddon const *GetCreatureAddon( uint32 lowguid );
-        CreatureAddon const *GetCreatureTemplateAddon( uint32 entry );
+        EquipmentInfo const* GetEquipmentInfo(uint32 entry, int8& id) const;
+        CreatureAddon const* GetCreatureAddon(uint32 lowguid) const;
+        CreatureAddon const* GetCreatureTemplateAddon(uint32 entry) const;
 
         ItemTemplate const* GetItemTemplate(uint32 id);
         ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }

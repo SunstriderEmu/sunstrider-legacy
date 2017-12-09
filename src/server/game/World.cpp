@@ -1480,11 +1480,11 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Creature Model Based Info Data..." );
     sObjectMgr->LoadCreatureModelInfo();
 
-    TC_LOG_INFO("server.loading", "Loading Equipment templates...");
-    sObjectMgr->LoadEquipmentTemplates();
-
     TC_LOG_INFO("server.loading", "Loading Creature templates..." );
     sObjectMgr->LoadCreatureTemplates(false);
+
+    TC_LOG_INFO("server.loading", "Loading Equipment templates...");
+    sObjectMgr->LoadEquipmentTemplates();
 
     TC_LOG_INFO("server.loading", "Loading Creature template addons...");
     sObjectMgr->LoadCreatureTemplateAddons();

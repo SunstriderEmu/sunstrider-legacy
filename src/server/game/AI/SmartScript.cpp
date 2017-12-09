@@ -1785,6 +1785,49 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 if (Creature* npc = target->ToCreature())
                 {
+#ifdef LICH_KING
+                    std::array<uint32, MAX_EQUIPMENT_ITEMS> slot;
+#endif
+                    if (int8 equipId = static_cast<int8>(e.action.equip.entry))
+                    {
+                        EquipmentInfo const* eInfo = sObjectMgr->GetEquipmentInfo(npc->GetEntry(), equipId);
+                        if (!eInfo)
+                        {
+                            TC_LOG_ERROR("sql.sql", "SmartScript: SMART_ACTION_EQUIP uses non-existent equipment info id %u for creature %u", equipId, npc->GetEntry());
+                            break;
+                        }
+
+#ifdef LICH_KING
+                        npc->SetCurrentEquipmentId(equipId);
+                        std::copy(std::begin(eInfo->ItemEntry), std::end(eInfo->ItemEntry), std::begin(slot));
+#else
+                        //to improve: mask not taken into account...
+                        npc->LoadEquipment(equipId, true);
+#endif
+                    }
+                    else
+                    {
+#ifdef LICH_KING
+                        slot[0] = e.action.equip.slot1;
+                        slot[1] = e.action.equip.slot2;
+                        slot[2] = e.action.equip.slot3;
+#else
+                        TC_LOG_ERROR("sql.sql", "SmartScript: SMART_ACTION_EQUIP cannot be used with weapon IDs on 2.4.3, use creature_equip_template ids instead", equipId, npc->GetEntry());
+#endif
+                    }
+
+#ifdef LICH_KING
+                    for (uint32 i = 0; i < MAX_EQUIPMENT_ITEMS; ++i)
+                        if (!e.action.equip.mask || (e.action.equip.mask & (1 << i)))
+                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + i, slot[i]);
+#endif
+                }
+            }
+
+            for (WorldObject* target : targets)
+            {
+                if (Creature* npc = target->ToCreature())
+                {
                     
                     uint32 slot[3];
                    /* int8 equipId = (int8)e.action.equip.entry;
@@ -1808,7 +1851,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         slot[1] = e.action.equip.slot2;
                         slot[2] = e.action.equip.slot3;
                     //}
-#ifdef dLICH_KING
+#ifdef LICH_KING
                     if (!e.action.equip.mask || (e.action.equip.mask & 1))
                         npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, slot[0]);
                     if (!e.action.equip.mask || (e.action.equip.mask & 2))

@@ -204,7 +204,7 @@ struct CreatureTemplate
     uint32  pickpocketLootId;
     uint32  SkinLootId;
     int32   resistance[MAX_SPELL_SCHOOL-1]; //-1 because no resistance to SPELL_SCHOOL_NORMAL
-    uint32  spells[CREATURE_MAX_SPELLS];
+    uint32  spells[MAX_CREATURE_SPELLS];
     uint32  PetSpellDataId;
     uint32  mingold;
     uint32  maxgold;
@@ -218,7 +218,6 @@ struct CreatureTemplate
     float   ModDamage;
     float   ModExperience;
     bool    RegenHealth;
-    uint32  equipmentId;
     uint32  MechanicImmuneMask;
     uint32  flags_extra;
     uint32  ScriptID;
@@ -325,7 +324,7 @@ struct EquipmentInfo
 };
 
 typedef std::unordered_map<uint8, EquipmentInfo> EquipmentInfoContainerInternal;
-typedef std::unordered_map<uint32, EquipmentInfo> EquipmentInfoContainer;
+typedef std::unordered_map<uint32, EquipmentInfoContainerInternal> EquipmentInfoContainer;
 
 // from `creature` table
 struct CreatureData : public SpawnData
@@ -333,7 +332,7 @@ struct CreatureData : public SpawnData
     CreatureData() : SpawnData(SPAWN_TYPE_CREATURE) { }
 
     uint32 displayid;
-    int32 equipmentId;
+    int8 equipmentId;
     float spawndist;
     uint32 currentwaypoint;
     uint32 curhealth;
@@ -506,7 +505,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool InitCreatureAddon(bool reload = false);
         void SelectLevel();
         void UpdateLevelDependantStats();
-        void LoadEquipment(uint32 equip_entry, bool force = false);
+        void LoadEquipment(int8 id = 1, bool force = false);
         void SetSpawnHealth();
         //Set creature visual weapon (prefer creating values in creature_equip_template in db and loading them with LoadEquipment)
         void SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon subclass, InventoryType inventoryType);
@@ -520,8 +519,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void Update( uint32 time ) override;
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr, float* dist =nullptr) const;
         bool IsSpawnedOnTransport() const;
-
-        uint32 GetEquipmentId() const { return m_equipmentId; }
 
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
         bool isRacialLeader() const { return GetCreatureTemplate()->RacialLeader; }
@@ -608,7 +605,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
         void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) override;
 
+        int8 GetOriginalEquipmentId() const { return m_originalEquipmentId; }
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }
+        void SetCurrentEquipmentId(uint8 id) { m_equipmentId = id; }
 
         VendorItemData const* GetVendorItems() const;
         uint32 GetVendorItemCurrentCount(VendorItem const* vItem);
@@ -652,7 +651,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         SpellInfo const* reachWithSpellAttack(Unit *pVictim);
         SpellInfo const* reachWithSpellCure(Unit *pVictim);
 
-        uint32 m_spells[CREATURE_MAX_SPELLS];
+        uint32 m_spells[MAX_CREATURE_SPELLS];
         CreatureSpellCooldowns m_CreatureSpellCooldowns;
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
         uint32 m_GlobalCooldown;
@@ -715,7 +714,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool isRegeneratingHealth() { return m_regenHealth; }
         void setRegeneratingHealth(bool regenHealth) { m_regenHealth = regenHealth; }
-        virtual uint8 GetPetAutoSpellSize() const { return CREATURE_MAX_SPELLS; }
+        virtual uint8 GetPetAutoSpellSize() const { return MAX_CREATURE_SPELLS; }
 		virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const;
 		float GetPetChaseDistance() const;
 
@@ -864,6 +863,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         MovementGeneratorType m_defaultMovementType;
         uint32 m_spawnId;                               ///< For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;
+        int8 m_originalEquipmentId; // can be -1
 
         bool m_AlreadyCallAssistance;
         bool m_regenHealth;

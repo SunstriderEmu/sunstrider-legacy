@@ -269,7 +269,7 @@ enum UnitRename
     UNIT_RENAME_ALLOWED     = 0x03
 };
 
-#define CREATURE_MAX_SPELLS     8
+#define MAX_CREATURE_SPELLS     8
 
 enum VictimState
 {
@@ -1060,7 +1060,7 @@ class TC_GAME_API CharmInfo
     private:
         Unit* m_unit;
         UnitActionBarEntry PetActionBar[10];
-        CharmSpellEntry m_charmspells[CREATURE_MAX_SPELLS];
+        CharmSpellEntry m_charmspells[MAX_CREATURE_SPELLS];
         CommandStates   m_CommandState;
         uint32          m_petnumber;
         bool            m_barInit;

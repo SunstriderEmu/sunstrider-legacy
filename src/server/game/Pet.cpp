@@ -1737,7 +1737,7 @@ bool Pet::AddSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
         CastSpell(this, spell_id, TRIGGERED_FULL_MASK);
     else if(state == PETSPELL_NEW)
     {
-        for (uint8 i = 0; i < CREATURE_MAX_SPELLS; i++)
+        for (uint8 i = 0; i < MAX_CREATURE_SPELLS; i++)
         {
             if (m_charmInfo->AddSpellToActionBar(oldspell_id, spell_id, i, (ActiveStates)active))
                 break;

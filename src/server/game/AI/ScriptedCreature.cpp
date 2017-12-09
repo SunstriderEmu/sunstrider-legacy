@@ -349,12 +349,12 @@ bool ScriptedAI::CanCast(Unit* Target, SpellInfo const *Spell, bool Triggered)
     return true;
 }
 
-void ScriptedAI::SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand, int32 uiOffHand, int32 uiRanged)
+void ScriptedAI::SetEquipmentSlots(bool loadDefault, int32 uiMainHand, int32 uiOffHand, int32 uiRanged)
 {
-    if (bLoadDefault)
+    if (loadDefault)
     {
         if (CreatureTemplate const* pInfo = sObjectMgr->GetCreatureTemplate(me->GetEntry()))
-            me->LoadEquipment(pInfo->equipmentId,true);
+            me->LoadEquipment(me->GetOriginalEquipmentId(), true);
 
         return;
     }

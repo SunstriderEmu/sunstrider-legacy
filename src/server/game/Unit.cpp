@@ -12936,7 +12936,7 @@ void CharmInfo::InitPossessCreateSpells()
 
     if(m_unit->GetTypeId() == TYPEID_UNIT)
     {
-        for(uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)
+        for(uint32 i = 0; i < MAX_CREATURE_SPELLS; ++i)
         {
             uint32 spellid = (m_unit->ToCreature())->m_spells[i];
             if(IsPassiveSpell(spellid))
@@ -12957,7 +12957,7 @@ void CharmInfo::InitCharmCreateSpells()
 
     InitEmptyActionBar(false);
 
-    for(uint32 x = 0; x < CREATURE_MAX_SPELLS; ++x)
+    for(uint32 x = 0; x < MAX_CREATURE_SPELLS; ++x)
     {
         uint32 spellId = (m_unit->ToCreature())->m_spells[x];
         m_charmspells[x].spellId = spellId;
