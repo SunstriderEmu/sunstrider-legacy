@@ -1459,7 +1459,7 @@ void ObjectMgr::LoadCreatures()
 
         data.spawnPoint.WorldRelocate(fields[2].GetUInt16(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat(), fields[8].GetFloat());
         data.displayid      = fields[ 3].GetUInt32();
-        data.equipmentId    = fields[ 4].GetUInt32();
+        data.equipmentId    = fields[ 4].GetInt8();
         data.spawntimesecs  = fields[ 9].GetUInt32();
         data.spawndist      = fields[10].GetFloat();
         data.currentwaypoint= fields[11].GetUInt32();

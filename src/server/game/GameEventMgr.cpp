@@ -537,10 +537,10 @@ void GameEventMgr::LoadFromDB()
     }
 
     mGameEventModelEquip.resize(mGameEvent.size());
-    //                                   0              1                             2
+    //                                        0              1                             2
     result = WorldDatabase.Query("SELECT creature.guid, game_event_model_equip.event, game_event_model_equip.modelid,"
-    //   3
-        "game_event_model_equip.equipment_id "
+    //               3                            4
+        "game_event_model_equip.equipment_id, creature.id "
         "FROM creature JOIN game_event_model_equip ON creature.guid=game_event_model_equip.guid");
 
     count = 0;
@@ -557,6 +557,7 @@ void GameEventMgr::LoadFromDB()
 
             uint32 guid     = fields[0].GetUInt32();
             uint16 event_id = fields[1].GetUInt16();
+            uint32 creatureID = fields[4].GetUInt32();
 
             if(event_id >= mGameEventModelEquip.size())
             {
@@ -568,19 +569,18 @@ void GameEventMgr::LoadFromDB()
             ModelEquipList& equiplist = mGameEventModelEquip[event_id];
             ModelEquip newModelEquipSet;
             newModelEquipSet.modelid = fields[2].GetUInt32();
-            newModelEquipSet.equipment_id = fields[3].GetUInt32();
+            newModelEquipSet.equipment_id = fields[3].GetUInt8();
             newModelEquipSet.equipement_id_prev = 0;
             newModelEquipSet.modelid_prev = 0;
 
             if(newModelEquipSet.equipment_id > 0)
             {
-                /* TODO
-                if(!sObjectMgr->GetEquipmentInfo(newModelEquipSet.equipment_id))
+                int8 equipId = newModelEquipSet.equipment_id;
+                if(!sObjectMgr->GetEquipmentInfo(creatureID, equipId))
                 {
                     TC_LOG_ERROR("gameevent","Table `game_event_model_equip` have creature (Guid: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", guid, newModelEquipSet.equipment_id);
                     continue;
                 }
-                */
             }
 
             equiplist.push_back(std::pair<uint32, ModelEquip>(guid, newModelEquipSet));
@@ -1275,14 +1275,14 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
         if (activate)
         {
             itr.second.modelid_prev = data2.displayid;
-            //todo itr.second.equipement_id_prev = data2.equipmentId;
+            itr.second.equipement_id_prev = data2.equipmentId;
             data2.displayid = itr.second.modelid;
-            //todo data2.equipmentId = itr.second.equipment_id;
+            data2.equipmentId = itr.second.equipment_id;
         }
         else
         {
             data2.displayid = itr.second.modelid_prev;
-            //todo data2.equipmentId = itr.second.equipement_id_prev;
+            data2.equipmentId = itr.second.equipement_id_prev;
         }
     }
 }
