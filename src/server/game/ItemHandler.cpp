@@ -542,7 +542,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
-        TC_LOG_ERROR( "FIXME","WORLD: HandleSellItemOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
+        TC_LOG_ERROR( "network","WORLD: HandleSellItemOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
         _player->SendSellError( SELL_ERR_CANT_FIND_VENDOR, nullptr, itemguid, 0);
         return;
     }
@@ -648,7 +648,7 @@ void WorldSession::HandleBuybackItem(WorldPacket & recvData)
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
-        TC_LOG_ERROR("FIXME", "WORLD: HandleBuybackItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
+        TC_LOG_ERROR("network", "WORLD: HandleBuybackItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
         _player->SendSellError( SELL_ERR_CANT_FIND_VENDOR, nullptr, 0, 0);
         return;
     }
@@ -726,7 +726,7 @@ void WorldSession::SendListInventory( uint64 vendorguid )
     Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
-        TC_LOG_ERROR("FIXME", "WORLD: SendListInventory - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
+        TC_LOG_ERROR("network", "WORLD: SendListInventory - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
         _player->SendSellError( SELL_ERR_CANT_FIND_VENDOR, nullptr, 0, 0);
         return;
     }
@@ -930,7 +930,7 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
     
     if(_player->IsBankPos(src))
     {
-        TC_LOG_ERROR("FIXME","POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::HandleAutoBankItemOpcode - Tried to autobank an item already in bank (slot %u) !", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), srcslot);
+        TC_LOG_ERROR("network","POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::HandleAutoBankItemOpcode - Tried to autobank an item already in bank (slot %u) !", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), srcslot);
         return;
     }
 
@@ -1059,7 +1059,7 @@ void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recvData)
         return;
     }
     else
-        TC_LOG_ERROR("FIXME","WORLD: CMSG_ITEM_NAME_QUERY for item %u failed (unknown item)", itemid);
+        TC_LOG_ERROR("network","WORLD: CMSG_ITEM_NAME_QUERY for item %u failed (unknown item)", itemid);
 }
 
 void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
