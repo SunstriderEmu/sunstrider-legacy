@@ -2439,12 +2439,6 @@ public:
     SessionStatus Status;
 };
 
-//start storing LK handler after the BC ones
-#define OPCODE_LK_INTERNAL_OFFSET NUM_MSG_TYPES
-//opcodes are offsetted by one from this point between LK and BC
-#define OPCODE_START_EXTRA_OFFSET_AT SMSG_VOICE_PARENTAL_CONTROLS
-
-
 class ClientOpcodeHandler : public OpcodeHandler
 {
 public:
@@ -2484,14 +2478,10 @@ public:
 
     void Initialize();
 
-    /* Trinity function, use function below instead 
     ClientOpcodeHandler const* operator[](Opcodes index) const
     {
         return _internalTableClient[index];
     }
-    */
-
-    ClientOpcodeHandler const* GetHandler(Opcodes index, ClientBuild build) const;
 
 private:
     template<typename Handler, Handler HandlerFunction>
@@ -2518,7 +2508,7 @@ inline std::string GetOpcodeNameForLogging(T id)
 
     if (static_cast<uint16>(id) < NUM_OPCODE_HANDLERS)
     {
-        if (OpcodeHandler const* handler = opcodeTable.GetHandler(static_cast<Opcodes>(id), BUILD_243)) //TODO
+        if (OpcodeHandler const* handler = opcodeTable[id])
             ss << handler->Name;
         else
             ss << "UNKNOWN OPCODE";

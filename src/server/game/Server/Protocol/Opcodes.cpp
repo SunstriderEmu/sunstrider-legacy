@@ -1175,10 +1175,10 @@ void OpcodeTable::Initialize()
        ############################################### */
 
 #define DEFINE_HANDLER_LK(opcode, status, processing, handler) \
-    DEFINE_HANDLER(OpcodeClient(opcode + OPCODE_LK_INTERNAL_OFFSET), status, processing, handler)
+    DEFINE_HANDLER(OpcodeClient(opcode), status, processing, handler)
 
 #define DEFINE_SERVER_OPCODE_HANDLER_LK(opcode, status) \
-    DEFINE_SERVER_OPCODE_HANDLER(OpcodeClient(opcode + OPCODE_LK_INTERNAL_OFFSET), status)
+    DEFINE_SERVER_OPCODE_HANDLER(OpcodeClient(opcode), status)
 
     /*0x000*/ DEFINE_HANDLER_LK(LK_MSG_NULL_ACTION,                               STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                      );
     /*0x001*/ DEFINE_HANDLER_LK(LK_CMSG_BOOTME,                                   STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                      );
@@ -2501,13 +2501,8 @@ void OpcodeTable::Initialize()
 #undef DEFINE_SERVER_OPCODE_HANDLER
 }
 
-ClientOpcodeHandler const* OpcodeTable::GetHandler(Opcodes index, ClientBuild build) const
+ClientOpcodeHandler const* OpcodeTable::GetHandler(Opcodes index) const
 {
     uint16 _opcode = index;
-#ifdef BUILD_335_SUPPORT
-    if (build == BUILD_335)
-        _opcode += OPCODE_LK_INTERNAL_OFFSET;
-#endif
-
     return _internalTableClient[_opcode];
 }

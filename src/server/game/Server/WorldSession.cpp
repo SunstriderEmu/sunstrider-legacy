@@ -49,7 +49,7 @@ std::string const DefaultPlayerName = "<none>";
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
-    ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), m_pSession->GetClientBuild());
+    ClientOpcodeHandler const* opHandle = opcodeTable[static_cast<OpcodeClient>(packet->GetOpcode())];
 
     //let's check if our opcode can be really processed in Map::Update()
     if(opHandle->ProcessingPlace == PROCESS_INPLACE)
@@ -73,7 +73,7 @@ bool MapSessionFilter::Process(WorldPacket * packet)
 //OR packet handler is not thread-safe!
 bool WorldSessionFilter::Process(WorldPacket* packet)
 {
-    ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), m_pSession->GetClientBuild());
+    ClientOpcodeHandler const* opHandle = opcodeTable[static_cast<OpcodeClient>(packet->GetOpcode())];
 
     //check if packet handler is supposed to be safe
     if(opHandle->ProcessingPlace == PROCESS_INPLACE)
@@ -168,10 +168,6 @@ std::string const& WorldSession::GetPlayerName() const
     return GetPlayer() ? GetPlayer()->GetName() : DefaultPlayerName;
 }
 
-/** Send a packet to the client
-When sending a packet for a LK client: You can either use the BC or the LK enum. LK opcodes have offsetted opcode nums starting at OPCODE_START_EXTRA_OFFSET_AT,
-but this is handled in this function and you can safely ignore it.
-*/
 void WorldSession::SendPacket(WorldPacket* packet)
 {
     ASSERT(packet->GetOpcode() != NULL_OPCODE);
@@ -225,17 +221,6 @@ void WorldSession::SendPacket(WorldPacket* packet)
     }
 
     #endif                                                  // !TRINITY_DEBUG
-
-#ifdef BUILD_335_SUPPORT
-    if(GetClientBuild() == BUILD_335)
-    {
-        uint16 opcode = packet->GetOpcode();
-        uint32 maxOpcodeBC = NUM_MSG_TYPES;
-        //a BC offset was given, offset it by one if needed
-        if(opcode < maxOpcodeBC && opcode >= OPCODE_START_EXTRA_OFFSET_AT)
-            packet->SetOpcode(opcode + 1);
-    }
-#endif
 
     //    sScriptMgr->OnPacketSend(this, *packet);
 
@@ -327,7 +312,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                 continue;
             }
 
-        ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), GetClientBuild());
+        ClientOpcodeHandler const* opHandle = opcodeTable[static_cast<OpcodeClient>(packet->GetOpcode())];
 
         try
         {
@@ -1821,7 +1806,7 @@ void WorldSession::HandleBotPackets()
     WorldPacket* packet;
     while (_recvQueue.next(packet))
     {
-        ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), BUILD_243);
+        ClientOpcodeHandler const* opHandle = opcodeTable[static_cast<OpcodeClient>(packet->GetOpcode())];
         opHandle->Call(this, *packet);
         delete packet;
     }
