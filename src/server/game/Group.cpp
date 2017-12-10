@@ -302,6 +302,7 @@ bool Group::AddMember(const uint64 &guid, std::string name, SQLTransaction trans
         player->UpdateForQuestWorldObjects();
 
     {
+        //sunstrider: ... Not sure this is BC, those UF_FLAG_PARTY_MEMBER are only quest fields, why are those shared to party members?
         // Broadcast new player group member fields to rest of the group
         player->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
 
@@ -316,6 +317,7 @@ bool Group::AddMember(const uint64 &guid, std::string name, SQLTransaction trans
 
             if (Player* existingMember = itr->GetSource())
             {
+                //send group members fields to new player
                 if (player->HaveAtClient(existingMember))
                 {
                     existingMember->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
@@ -323,11 +325,12 @@ bool Group::AddMember(const uint64 &guid, std::string name, SQLTransaction trans
                     existingMember->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
                 }
 
+                //send new player fields to existing member
                 if (existingMember->HaveAtClient(player))
                 {
                     UpdateData newData;
                     WorldPacket newDataPacket;
-                    player->BuildValuesUpdateBlockForPlayer(&newData, existingMember);
+                    player->BuildValuesUpdateBlockForPlayer(&newData, existingMember); //will build UF_FLAG_PARTY_MEMBER, see notify before loop
                     if (newData.HasData())
                     {
                         newData.BuildPacket(&newDataPacket, false);
