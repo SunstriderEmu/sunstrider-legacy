@@ -59,6 +59,8 @@ bool MapSessionFilter::Process(WorldPacket * packet)
     if(opHandle->ProcessingPlace == PROCESS_THREADUNSAFE)
         return false;
 
+    //PROCESS_THREADSAFE can be processed here
+
     Player * plr = m_pSession->GetPlayer();
     if(!plr)
         return false;
@@ -97,7 +99,7 @@ LookingForGroup_auto_join(false),
 LookingForGroup_auto_add(false),
 AntiDOS(this),
 m_muteTime(mute_time),
-_player(NULL),
+_player(nullptr),
 m_Socket(sock),
 _security(sec),
 _accountId(id),
@@ -114,10 +116,10 @@ m_playerSave(false),
 m_latency(0),
 m_clientTimeDelay(0),
 m_TutorialsChanged(false),
-_warden(NULL),
-lastCheatWarn(time(NULL)),
+_warden(nullptr),
+lastCheatWarn(time(nullptr)),
 forceExit(false),
-expireTime(60000)
+expireTime(60000) // 1 min after socket loss, session is deleted
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 

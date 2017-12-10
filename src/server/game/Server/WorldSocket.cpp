@@ -132,7 +132,7 @@ bool WorldSocket::Update()
 void WorldSocket::HandleSendAuthSession(ClientBuild build)
 {
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 4);
-    //at this point, realm knows client build but we don't
+    //at this point, authserver knows client build but we don't
 #ifdef BUILD_335_SUPPORT
     if(build == BUILD_335)
     {
