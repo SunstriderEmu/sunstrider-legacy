@@ -106,3 +106,23 @@ bool ReplayPlayer::ReadFromFile(std::string const& file, WorldLocation& startLoc
 
     return true;
 }
+
+bool ReplayPlayer::OpcodeAllowedWhileReplaying(Opcodes op)
+{
+    switch (op)
+    {
+    case CMSG_MESSAGECHAT:
+    case MSG_MOVE_STOP:
+    case MSG_MOVE_HEARTBEAT:
+    case CMSG_ITEM_TEXT_QUERY:
+    case CMSG_ITEM_NAME_QUERY:
+    case CMSG_NAME_QUERY:
+    case CMSG_PET_NAME_QUERY:
+    case CMSG_ITEM_QUERY_SINGLE:
+    case CMSG_ITEM_QUERY_MULTIPLE:
+        return true;
+    default:
+        // Otherwise we simply ignore
+        return false;
+    }
+}

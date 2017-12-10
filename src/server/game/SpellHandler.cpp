@@ -20,8 +20,6 @@
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
     // TODO: add targets.read() check
-    
-
     Player* pUser = _player;
     uint8 bagIndex, slot;
     uint8 spell_count;                                      // number of spells at item, not used
@@ -123,7 +121,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 {
-    TC_LOG_DEBUG("network","WORLD: CMSG_OPEN_ITEM packet, data length = %u", (uint32)recvPacket.size());
+    //TC_LOG_DEBUG("network","WORLD: CMSG_OPEN_ITEM packet, data length = %u", (uint32)recvPacket.size());
 
     Player* pUser = _player;
     uint8 bagIndex, slot;
@@ -134,7 +132,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
     recvPacket >> bagIndex >> slot;
 
-    TC_LOG_DEBUG("network","bagIndex: %u, slot: %u",bagIndex,slot);
+    //TC_LOG_DEBUG("network","bagIndex: %u, slot: %u",bagIndex,slot);
 
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
     if(!pItem)
@@ -216,7 +214,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         }
         else
         {
-            TC_LOG_ERROR("FIXME","Wrapped item %u don't have record in character_gifts table and will deleted", pItem->GetGUIDLow());
+            TC_LOG_ERROR("network","Wrapped item %u don't have record in character_gifts table and will deleted", pItem->GetGUIDLow());
             pUser->DestroyItem(pItem->GetBagSlot(), pItem->GetSlot(), true);
             return;
         }

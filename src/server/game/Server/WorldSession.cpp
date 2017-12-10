@@ -317,6 +317,14 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     while (m_Socket && _recvQueue.next(packet, updater))
     {
+        //if replaying record, skip most packets
+        if (m_replayPlayer)
+            if (!m_replayPlayer->OpcodeAllowedWhileReplaying(Opcodes(packet->GetOpcode())))
+            {
+                delete packet;
+                continue;
+            }
+
         ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), GetClientBuild());
 
         try

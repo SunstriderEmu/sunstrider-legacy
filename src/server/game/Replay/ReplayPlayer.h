@@ -17,6 +17,7 @@ public:
 
     //return false if ended and ReplayPlayer can be deleted
     bool UpdateReplay();
+    static bool OpcodeAllowedWhileReplaying(Opcodes op);
 
 	uint32 GetRecorderGuid() const { return _recorderGuid; }
 	void SkipTime(int32 delay) { _pcktReadTimer += delay; }
