@@ -1538,9 +1538,11 @@ class TC_GAME_API Unit : public WorldObject
         void SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Powers powertype);
         uint32 SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool IsTriggeredSpell = false, bool useSpellDamage = true);
         //returns SpellCastResult
-        uint32 CastSpell(Unit* Victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0 );
-        uint32 CastSpell(Unit* Victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0, bool skipHit = false);
-        uint32 CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, TriggerCastFlags triggerFlags, Item *castItem= nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
+        uint32 CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0 );
+        uint32 CastSpell(Unit* victim, uint32 spellId, bool triggered = false, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
+        uint32 CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0, bool skipHit = false);
+        uint32 CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0, bool skipHit = false);
+        uint32 CastCustomSpell(Unit* victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, TriggerCastFlags triggerFlags, Item *castItem= nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
         uint32 CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit* Victim = nullptr, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
         uint32 CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = nullptr, TriggerCastFlags triggerFlags = TRIGGERED_FULL_MASK, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
         uint32 CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);

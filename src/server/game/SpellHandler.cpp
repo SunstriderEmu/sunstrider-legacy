@@ -327,10 +327,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    
-
     uint32 spellId;
     recvPacket >> spellId;
 
@@ -463,7 +459,7 @@ void WorldSession::HandleSelfResOpcode( WorldPacket & /* recvData */)
     {
         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
         if(spellInfo)
-            _player->CastSpell(_player,spellInfo, TRIGGERED_NONE,nullptr);
+            _player->CastSpell(_player,spellInfo, false, nullptr);
 
         _player->SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
     }
