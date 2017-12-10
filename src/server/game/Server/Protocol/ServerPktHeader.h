@@ -46,6 +46,9 @@ struct ServerPktHeader
     */
     ServerPktHeader(uint32 size, uint16 cmd)
     {
+        if (size > 0x7FFF)
+            TC_LOG_ERROR("network", "Sending LARGE packet with size %u, BC client may or may not be able to parse it", size); //In some case it seems to freeze the client. Ex: Just entering karazhan with very long view distance
+
         DEBUG_ASSERT(size < std::numeric_limits<uint16>::max());
         header[0] = 0xFF & (size >> 8);
         header[1] = 0xFF & size;
