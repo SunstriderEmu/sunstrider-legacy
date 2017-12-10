@@ -1023,9 +1023,9 @@ void Unit::CastStop(uint32 except_spellid)
         if (m_currentSpells[i] && m_currentSpells[i]->m_spellInfo->Id!=except_spellid)
             InterruptSpell(i,false, false);
 }
-uint32 Unit::CastSpell(Unit* victim, uint32 spellId, bool triggered = false, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0)
+uint32 Unit::CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    return CastSpell(victim, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castitem, triggeredByAura, originalCaster);
+    return CastSpell(victim, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
 }
 
 uint32 Unit::CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)

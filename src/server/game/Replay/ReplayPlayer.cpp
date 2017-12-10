@@ -49,7 +49,7 @@ bool ReplayPlayer::UpdateReplay()
                 if (data.size() >= size && readValue != 256)
                 {
                     if (_player)
-                        ChatHandler(_player).PSendSysMessage("[Replay] Invalid packet size [opcode %s|size %u|time %u]", GetOpcodeNameForLogging(opcode).c_str(), size, nextTime);
+                        ChatHandler(_player).PSendSysMessage("[Replay] Invalid packet size [opcode %s|size %u|time %u]", GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(), size, nextTime);
                     return false;
                 }
                 if (readValue == 256)
@@ -59,7 +59,7 @@ bool ReplayPlayer::UpdateReplay()
                 if (!readCount)
                 {
                     if (_player)
-                        ChatHandler(_player).PSendSysMessage("[Replay] Invalid packet (truncated) [opcode %s|size %u|time %u]", GetOpcodeNameForLogging(opcode).c_str(), size, nextTime);
+                        ChatHandler(_player).PSendSysMessage("[Replay] Invalid packet (truncated) [opcode %s|size %u|time %u]", GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(), size, nextTime);
                     return false;
                 }
             }

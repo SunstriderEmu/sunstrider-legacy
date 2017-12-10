@@ -24,7 +24,7 @@ public:
             Wait(10 * SECOND * IN_MILLISECONDS);
             TestPlayer* p = SpawnRandomPlayer();
             Wait(5 * SECOND * IN_MILLISECONDS);
-            p->CastSpell(summon, 133);
+            p->CastSpell(summon, 133, false);
             p->Say("YOLO!", LANG_UNIVERSAL);
             Wait(3 * SECOND * IN_MILLISECONDS);
             summon->Say("lol");

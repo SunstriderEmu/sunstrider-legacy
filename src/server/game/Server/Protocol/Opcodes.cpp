@@ -2500,9 +2500,3 @@ void OpcodeTable::Initialize()
 #undef DEFINE_HANDLER
 #undef DEFINE_SERVER_OPCODE_HANDLER
 }
-
-ClientOpcodeHandler const* OpcodeTable::GetHandler(Opcodes index) const
-{
-    uint16 _opcode = index;
-    return _internalTableClient[_opcode];
-}

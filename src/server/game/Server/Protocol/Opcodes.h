@@ -2497,7 +2497,6 @@ extern OpcodeHandler LK_opcodeTable;
 
 #pragma pack(pop)
 
-//TODO: adapt for LK too
 /// Lookup opcode name for human understandable logging (T = OpcodeClient|OpcodeServer)
 template<typename T>
 inline std::string GetOpcodeNameForLogging(T id)

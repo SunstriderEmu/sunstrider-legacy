@@ -138,7 +138,7 @@ void PacketLog::DumpPacket(LogLevel const level, Direction const dir, WorldPacke
     TC_LOG_MESSAGE_BODY("network.opcode",level,"%s", dir == SERVER_TO_CLIENT ? "SERVER -> CLIENT" : "CLIENT -> SERVER");
     if(!comment.empty())
         TC_LOG_MESSAGE_BODY("network.opcode", level,"%s", comment.c_str());
-    TC_LOG_MESSAGE_BODY("network.opcode", level, "Opcode: %s", GetOpcodeNameForLogging(packet.GetOpcode()).c_str());
+    TC_LOG_MESSAGE_BODY("network.opcode", level, "Opcode: %s", GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet.GetOpcode())).c_str());
     uint32 p = 0;
 
     std::stringstream ss;
