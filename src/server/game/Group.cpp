@@ -15,6 +15,7 @@
 #include "Util.h"
 #include "Containers.h"
 #include "CharacterCache.h"
+#include "UpdateFieldFlags.h"
 
 Group::Group() :
     m_masterLooterGuid(0),
@@ -279,68 +280,70 @@ bool Group::AddMember(const uint64 &guid, std::string name, SQLTransaction trans
     SendUpdate();
 
     Player *player = sObjectMgr->GetPlayer(guid);
-    if(player)
+    if (!player)
+        return false;
+     
+    if(!IsLeader(player->GetGUID()) && !isBGGroup())
     {
-        if(!IsLeader(player->GetGUID()) && !isBGGroup())
+        // reset the new member's instances, unless he is currently in one of them
+        // including raid/heroic instances that they are not permanently bound to!
+        player->ResetInstances(INSTANCE_RESET_GROUP_JOIN);
+
+        if(player->GetLevel() >= LEVELREQUIREMENT_HEROIC && player->GetDifficulty() != GetDifficulty() )
         {
-            // reset the new member's instances, unless he is currently in one of them
-            // including raid/heroic instances that they are not permanently bound to!
-            player->ResetInstances(INSTANCE_RESET_GROUP_JOIN);
-
-            if(player->GetLevel() >= LEVELREQUIREMENT_HEROIC && player->GetDifficulty() != GetDifficulty() )
-            {
-                player->SetDifficulty(m_dungeonDifficulty, true, true);
-            }
+            player->SetDifficulty(m_dungeonDifficulty, true, true);
         }
-        player->SetGroupUpdateFlag(GROUP_UPDATE_FULL);
-        UpdatePlayerOutOfRange(player);
+    }
+    player->SetGroupUpdateFlag(GROUP_UPDATE_FULL);
+    UpdatePlayerOutOfRange(player);
 
-       /*  TrinityCore
-         {
-            // Broadcast new player group member fields to rest of the group
-            player->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
+    // quest related GO state dependent from raid membership
+    if (isRaidGroup())
+        player->UpdateForQuestWorldObjects();
 
-            UpdateData groupData;
-            WorldPacket groupDataPacket;
+    {
+        // Broadcast new player group member fields to rest of the group
+        player->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
 
-            // Broadcast group members' fields to player
-            for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
+        UpdateData groupData;
+        WorldPacket groupDataPacket;
+
+        // Broadcast group members' fields to player
+        for (GroupReference* itr = GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            if (itr->GetSource() == player)
+                continue;
+
+            if (Player* existingMember = itr->GetSource())
             {
-                if (itr->GetSource() == player)
-                    continue;
-
-                if (Player* member = itr->GetSource())
+                if (player->HaveAtClient(existingMember))
                 {
-                    if (player->HaveAtClient(member))
-                    {
-                        member->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
-                        member->BuildValuesUpdateBlockForPlayer(&groupData, player);
-                        member->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
-                    }
+                    existingMember->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
+                    existingMember->BuildValuesUpdateBlockForPlayer(&groupData, player);
+                    existingMember->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
+                }
 
-                    if (member->HaveAtClient(player))
+                if (existingMember->HaveAtClient(player))
+                {
+                    UpdateData newData;
+                    WorldPacket newDataPacket;
+                    player->BuildValuesUpdateBlockForPlayer(&newData, existingMember);
+                    if (newData.HasData())
                     {
-                        UpdateData newData;
-                        WorldPacket newDataPacket;
-                        player->BuildValuesUpdateBlockForPlayer(&newData, member);
-                        if (newData.HasData())
-                        {
-                            newData.BuildPacket(&newDataPacket);
-                            member->SendDirectMessage(&newDataPacket);
-                        }
+                        newData.BuildPacket(&newDataPacket, BUILD_243, false);
+                        existingMember->SendDirectMessage(&newDataPacket);
                     }
                 }
             }
-
-            if (groupData.HasData())
-            {
-                groupData.BuildPacket(&groupDataPacket);
-                player->SendDirectMessage(&groupDataPacket);
-            }
-
-            player->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
         }
-        */
+
+        if (groupData.HasData())
+        {
+            groupData.BuildPacket(&groupDataPacket, BUILD_243, false);
+            player->SendDirectMessage(&groupDataPacket);
+        }
+
+        player->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
     }
 
     return true;
