@@ -57,7 +57,7 @@ class UpdateData
         /** Build a WorldPacket from this update data 
             @packet an unitialized WorldPacket
         */
-        bool BuildPacket(WorldPacket* packet, ClientBuild build, bool hasTransport = false);
+        bool BuildPacket(WorldPacket* packet, bool hasTransport);
         bool HasData() { return m_blockCount > 0 || !m_outOfRangeGUIDs.empty(); }
         void Clear();
 

@@ -82,7 +82,7 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
     *dst_size = c_stream.total_out;
 }
 
-bool UpdateData::BuildPacket(WorldPacket *packet, ClientBuild build, bool hasTransport)
+bool UpdateData::BuildPacket(WorldPacket *packet, bool hasTransport)
 {
     ByteBuffer buf(m_data.size() + 10 + m_outOfRangeGUIDs.size()*9);
 

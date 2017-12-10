@@ -146,7 +146,7 @@ void Object::SendUpdateToPlayer(Player* player)
     WorldPacket packet;
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
-    upd.BuildPacket(&packet, player->GetSession()->GetClientBuild());
+    upd.BuildPacket(&packet, false);
     player->SendDirectMessage(&packet);
 }
 

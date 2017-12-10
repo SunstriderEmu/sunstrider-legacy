@@ -330,7 +330,7 @@ bool Group::AddMember(const uint64 &guid, std::string name, SQLTransaction trans
                     player->BuildValuesUpdateBlockForPlayer(&newData, existingMember);
                     if (newData.HasData())
                     {
-                        newData.BuildPacket(&newDataPacket, BUILD_243, false);
+                        newData.BuildPacket(&newDataPacket, false);
                         existingMember->SendDirectMessage(&newDataPacket);
                     }
                 }
@@ -339,7 +339,7 @@ bool Group::AddMember(const uint64 &guid, std::string name, SQLTransaction trans
 
         if (groupData.HasData())
         {
-            groupData.BuildPacket(&groupDataPacket, BUILD_243, false);
+            groupData.BuildPacket(&groupDataPacket, false);
             player->SendDirectMessage(&groupDataPacket);
         }
 

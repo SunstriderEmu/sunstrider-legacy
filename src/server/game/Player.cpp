@@ -20039,7 +20039,7 @@ void Player::UpdateTriggerVisibility()
     if (!udata.HasData())
         return;
 
-    udata.BuildPacket(&packet, GetSession()->GetClientBuild());
+    udata.BuildPacket(&packet, false);
     GetSession()->SendPacket(&packet);
 }
 
@@ -21392,7 +21392,7 @@ void Player::UpdateForQuestWorldObjects()
         }
 #endif
     }
-    udata.BuildPacket(&packet, GetSession()->GetClientBuild());
+    udata.BuildPacket(&packet, false);
     SendDirectMessage(&packet);
 }
 

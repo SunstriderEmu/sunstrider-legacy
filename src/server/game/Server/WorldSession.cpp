@@ -1805,38 +1805,6 @@ void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
         *data << mi->splineElevation;
 }
 
-
-// send update packet with apropriate version for session. Will build packets for version only if needed.
-// /!\ You'll need to destroy them yourself by calling this
-void WorldSession::SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket*& packetBC, WorldPacket*& packetLK, WorldSession* session, bool hasTransport)
-{
-    switch(session->GetClientBuild())
-    {
-#ifdef LICH_KING
-    case BUILD_335:
-        if(!packetLK)
-        {
-            packetLK = new WorldPacket();
-            data.BuildPacket(packetLK, BUILD_335, hasTransport);
-        }
-
-        session->SendPacket(packetLK);
-        break;
-#endif
-    case BUILD_243:
-    default:
-        if(!packetBC)
-        {
-            packetBC = new WorldPacket();
-            data.BuildPacket(packetBC, BUILD_243, hasTransport);
-        }
-
-        session->SendPacket(packetBC);
-        break;
-    }
-}
-
-
 #ifdef PLAYERBOT
 void WorldSession::HandleBotPackets()
 {

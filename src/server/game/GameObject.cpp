@@ -420,7 +420,7 @@ void GameObject::Update(uint32 diff)
                             UpdateData udata;
                             WorldPacket packet;
                             BuildValuesUpdateBlockForPlayer(&udata,(caster->ToPlayer()));
-                            udata.BuildPacket(&packet, casterPlayer->GetSession()->GetClientBuild());
+                            udata.BuildPacket(&packet, false);
                             casterPlayer->SendDirectMessage(&packet);
 
                             SendCustomAnim(GetGoAnimProgress());

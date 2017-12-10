@@ -608,17 +608,15 @@ bool Map::AddToMap(MotionTransport* obj, bool /* checkTransport */)
     // Broadcast creation to players
     if (!GetPlayers().isEmpty())
     {
-        for (const auto & itr : GetPlayers())
+        for (Map::PlayerList::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
         {
-            if (itr.GetSource()->GetTransport() != obj)
+            if (itr->GetSource()->GetTransport() != obj)
             {
                 UpdateData data;
-                obj->BuildCreateUpdateBlockForPlayer(&data, itr.GetSource());
-                WorldPacket* packetBC = nullptr;
-                WorldPacket* packetLK = nullptr;
-                WorldSession::SendUpdateDataPacketForBuild(data, packetBC, packetLK, itr.GetSource()->GetSession(), true);
-                delete packetBC;
-                delete packetLK;
+                obj->BuildCreateUpdateBlockForPlayer(&data, itr->GetSource());
+                WorldPacket packet;
+                data.BuildPacket(&packet, true);
+                itr->GetSource()->SendDirectMessage(&packet);
             }
         }
     }
@@ -945,14 +943,11 @@ void Map::RemoveFromMap(MotionTransport* obj, bool remove)
     {
         UpdateData data;
         obj->BuildOutOfRangeUpdateBlock(&data);
-        WorldPacket* packetBC = nullptr;
-        WorldPacket* packetLK = nullptr;
+        WorldPacket packet;
+        data.BuildPacket(&packet, false);
         for (const auto & player : players)
             if (player.GetSource()->GetTransport() != obj)
-                WorldSession::SendUpdateDataPacketForBuild(data, packetBC, packetLK, player.GetSource()->GetSession());
-
-        delete packetBC;
-        delete packetLK;
+                player.GetSource()->GetSession()->SendPacket(&packet);
     }
 
     if (_transportsUpdateIter != _transports.end())
@@ -2210,7 +2205,7 @@ void Map::SendInitSelf( Player * player)
             }
 
     WorldPacket packet;
-    data.BuildPacket(&packet, player->GetSession()->GetClientBuild(), hasTransport);
+    data.BuildPacket(&packet, hasTransport);
     player->SendDirectMessage(&packet);
 }
 
@@ -2227,7 +2222,7 @@ void Map::SendInitTransports( Player * player)
             }
 
     WorldPacket packet;
-    transData.BuildPacket(&packet, player->GetSession()->GetClientBuild(), hasTransport);
+    transData.BuildPacket(&packet, hasTransport);
     player->SendDirectMessage(&packet);
 }
 
@@ -2252,7 +2247,7 @@ void Map::SendRemoveTransports(Player* player)
     }
 
     WorldPacket packet;
-    transData.BuildPacket(&packet, player->GetSession()->GetClientBuild());
+    transData.BuildPacket(&packet, false);
     player->SendDirectMessage(&packet);
 }
 
@@ -2285,7 +2280,7 @@ void Map::SendObjectUpdates()
     WorldPacket packet;                                     // here we allocate a std::vector with a size of 0x10000
     for (auto & update_player : update_players)
     {
-        update_player.second.BuildPacket(&packet, update_player.first->GetSession()->GetClientBuild());
+        update_player.second.BuildPacket(&packet, false);
         update_player.first->GetSession()->SendPacket(&packet);
         packet.clear();                                     // clean the string
     }
