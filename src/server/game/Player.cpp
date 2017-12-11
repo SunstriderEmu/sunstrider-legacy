@@ -1930,27 +1930,31 @@ void Player::RewardRage( uint32 damage, uint32 weaponSpeedHitFactor, bool attack
 
     float addRage;
 
-    float rageconversion = ((0.0091107836 * GetLevel()*GetLevel())+3.225598133*GetLevel())+4.2652911;
-
+    float rageconversion = ((0.0091107836f * GetLevel() * GetLevel()) + 3.225598133f * GetLevel()) + 4.2652911f;
+#ifdef LICH_KING
+    // Unknown if correct, but lineary adjust rage conversion above level 70
+    if (GetLevel() > 70)
+        rageconversion += 13.27f * (GetLevel() - 70);
+#endif
     if(attacker)
     {
-        addRage = ((damage/rageconversion*7.5 + weaponSpeedHitFactor)/2);
+        addRage = (damage / rageconversion * 7.5f + weaponSpeedHitFactor) / 2.0f;
 
-        // talent who gave more rage on attack
-        addRage *= 1.0f + GetTotalAuraModifier(SPELL_AURA_MOD_RAGE_FROM_DAMAGE_DEALT) / 100.0f;
+        // talent giving more rage on attack
+        AddPct(addRage, GetTotalAuraModifier(SPELL_AURA_MOD_RAGE_FROM_DAMAGE_DEALT));
     }
     else
     {
-        addRage = damage/rageconversion*2.5;
+        addRage = damage / rageconversion * 2.5f;
 
         // Berserker Rage effect
         if(HasAuraEffect(18499,0))
-            addRage *= 1.3;
+            addRage *= 2.0f;
     }
 
     addRage *= sWorld->GetRate(RATE_POWER_RAGE_INCOME);
 
-    ModifyPower(POWER_RAGE, uint32(addRage*10));
+    ModifyPower(POWER_RAGE, uint32(addRage * 10));
 }
 
 void Player::RegenerateAll()

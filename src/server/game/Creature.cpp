@@ -296,7 +296,7 @@ void Creature::RemoveFromWorld()
 
 void Creature::DisappearAndDie()
 {
-    ForcedDespawn(0);
+    DespawnOrUnsummon();
 }
 
 void Creature::SearchFormation()

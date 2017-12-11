@@ -1192,13 +1192,38 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MONITORING_ABNORMAL_MAP_UPDATE_DIFF] = sConfigMgr->GetIntDefault("Monitor.AbnormalDiff.Map", 400);
     m_configs[CONFIG_MONITORING_ALERT_THRESHOLD_COUNT] = sConfigMgr->GetIntDefault("Monitor.LagAlertThreshold.Count", 10);
     m_configs[CONFIG_MONITORING_LAG_AUTO_REBOOT_COUNT] = sConfigMgr->GetIntDefault("Monitor.LagAutoReboot.Count", 8000);
-    m_configs[CONFIG_MONITORING_DYNAMIC_LOS] = sConfigMgr->GetBoolDefault("Monitor.DynamicLoS.Enable", 0);
-    m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] = sConfigMgr->GetIntDefault("Monitor.DynamicLoS.MinDistance", 60);
-    if (m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] < 60)
+    m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST] = sConfigMgr->GetBoolDefault("Monitor.DynamicViewDist.Enable", 0);
+    m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_MINDIST] = sConfigMgr->GetIntDefault("Monitor.DynamicViewDist.MinDistance", 60);
+    if (m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_MINDIST] < 60)
     {
-        TC_LOG_ERROR("server.loading", "DynamicLoS.MinDistance must be at least 60 yards, setting it to 60");
-        m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] = 60;
+        TC_LOG_ERROR("server.loading", "Monitor.DynamicLoS.MinDistance must be at least 60 yards, setting it to 60");
+        m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_MINDIST] = 60;
     }
+    m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_IDEAL_DIFF] = sConfigMgr->GetIntDefault("Monitor.DynamicViewDist.IdealDiff", 200);
+    if (m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_IDEAL_DIFF] < 100)
+    {
+        TC_LOG_ERROR("server.loading", "Monitor.DynamicLoS.IdealDiff must be at least 100, setting it to default value (200)");
+        m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_IDEAL_DIFF] = 200;
+    }
+    m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_TRIGGER_DIFF] = sConfigMgr->GetIntDefault("Monitor.DynamicViewDist.TriggerDiff", 400);
+    if (m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_TRIGGER_DIFF] <= m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_IDEAL_DIFF])
+    {
+        TC_LOG_ERROR("server.loading", "Monitor.DynamicViewDist.TriggerDiff must be greater than DynamicLoS.IdealDiff. Disabling CONFIG_MONITORING_DYNAMIC_LOS");
+        m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST] = false;
+    }
+    if (m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_TRIGGER_DIFF] < 150)
+    {
+        TC_LOG_ERROR("server.loading", "Monitor.DynamicViewDist.TriggerDiff must be greater than 150. Setting it to default value (400)");
+        m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_TRIGGER_DIFF] = 400;
+    }
+    m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_CHECK_INTERVAL] = sConfigMgr->GetIntDefault("Monitor.DynamicViewDist.CheckInterval", 60);
+    m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_AVERAGE_COUNT] = sConfigMgr->GetIntDefault("Monitor.DynamicViewDist.AverageCount", 500);
+    if (m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_AVERAGE_COUNT] < 1)
+    {
+        TC_LOG_ERROR("server.loading", "Monitor.DynamicViewDist.AverageCount must be greater than 0. Setting it to default value (500)");
+        m_configs[CONFIG_MONITORING_DYNAMIC_VIEWDIST_AVERAGE_COUNT] = 500;
+    }
+
 
     std::string forbiddenmaps = sConfigMgr->GetStringDefault("ForbiddenMaps", "");
     auto  forbiddenMaps = new char[forbiddenmaps.length() + 1];

@@ -52,13 +52,9 @@ struct CheckTimer //this is used to get a default value on first unordered_map a
 	uint32 timer = 0;
 };
 
-class MonitorDynamicLoS
+class MonitorDynamicViewDistance
 {
-	const uint32 IDEAL_DIFF = 200;
-	const uint32 CHECK_INTERVAL = 10 * MINUTE * IN_MILLISECONDS;
-
 public:
-	const uint32 SEARCH_COUNT = 4500; // 15 minutes at 20 updates per seconds
 	void UpdateForMap(Map& map, uint32 diff);
 
 private:
@@ -149,7 +145,7 @@ private:
 	uint32 _generalInfoTimer;
 
 	MonitorAutoReboot _monitAutoReboot;
-	MonitorDynamicLoS _monitDynamicLoS;
+	MonitorDynamicViewDistance _monitDynamicLoS;
 	MonitorAlert      _monitAlert;
 
 	SmoothedTimeDiff smoothTD;
