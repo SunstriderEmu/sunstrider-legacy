@@ -1500,6 +1500,8 @@ void SpellMgr::OverrideSpellItemEnchantment()
 // set data in core for now
 void SpellMgr::LoadSpellCustomAttr()
 {
+    //TODO, migrate most of this to spell_override in DB
+
     SpellEntry* spellInfo;
     for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
     {
@@ -1553,12 +1555,6 @@ void SpellMgr::LoadSpellCustomAttr()
         */
         switch (i)
         {
-        case 6495: // Sentry totem
-            spellInfo->EffectRadiusIndex[0] = 0; //remove radius, this spell has 100.0f and we don't want to to be summoned 100 yards away
-        case 37540: // Fireball Barrage
-        case 37632: // Toxic Barrage
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
-            break;
 #ifdef LICH_KING
         // Arcane Overload
         case 56430:
@@ -1713,13 +1709,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             spellInfo->MaxAffectedTargets = 5;
             break;
-        case 40243: //Crushing Shadows
-            spellInfo->MaxAffectedTargets = 5;
-            break;
-        case 46292: // Cataclysm Breath
-        case 46480: // Fel Lightning
-            spellInfo->MaxAffectedTargets = 8;
-            break;
         case 40827: //Sinful Beam
         case 40859: //Sinister Beam
         case 40860: //Vile Beam
@@ -1772,9 +1761,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 6358: // Sedduction - remove immunity ignoring attributes
             spellInfo->Attributes &= ~SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE;
             break;
-        case 27066:
-            spellInfo->Dispel = 0;
-            break;
         case 40611: // Blaze Effect
             spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_2_YARDS;
             break;
@@ -1808,27 +1794,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 20184:
             spellInfo->Mechanic = MECHANIC_SNARE;
             break;
-        case 23575:
-        case 33737:
-            spellInfo->SpellFamilyFlags = 1056;
-            break;
         case 38157:
             spellInfo->AreaId = 3522;
             break;
         case 46411:
             spellInfo->DurationIndex = 21;
-            break;
-        case 38429:
-            spellInfo->SpellFamilyFlags = 2416967680;
-            break;
-        case 38397:
-            spellInfo->SpellFamilyFlags = 1574945;
-            break;
-        case 37384:
-            spellInfo->SpellFamilyFlags = 6;
-            break;
-        case 38393:
-            spellInfo->SpellFamilyFlags = 429496729601LL;
             break;
         case 32747:
             spellInfo->InterruptFlags = 8;
@@ -2077,12 +2047,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 6774: //Slice and Dice rank 2
             spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
             //spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH; // Check if it wasn't changed later (in 3.x)
-            break;
-        case 35460: // Fureur des anciens crapuches
-            spellInfo->EffectImplicitTargetA[1] = TARGET_TYPE_UNIT_TARGET;
-            break;
-        case 20625:
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER_AREA_PARTY;
             break;
         case 1978:
         case 13549:
