@@ -1924,6 +1924,10 @@ void Player::RemoveFromWorld()
 
 void Player::RewardRage( uint32 damage, uint32 weaponSpeedHitFactor, bool attacker )
 {
+    // Testing purposes
+    if (m_disabledRegen)
+        return;
+
     float addRage;
 
     float rageconversion = ((0.0091107836 * GetLevel()*GetLevel())+3.225598133*GetLevel())+4.2652911;
