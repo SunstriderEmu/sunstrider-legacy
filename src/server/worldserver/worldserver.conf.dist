@@ -2130,16 +2130,40 @@ Monitor.KeepDays = 90
 Monitor.LagAlertThreshold.Count = 10
 
 #
-#    Monitor.DynamicLoS.Enable
+#    Monitor.DynamicViewDist.Enable
 #        Description: Automatically adapt view distance for each map to reduce lag if update time for this map is higher than LagAlertThreshold.Diff for some time
 #        Default: 1 (enabled)
-Monitor.DynamicLoS.Enable = 1
+Monitor.DynamicViewDist.Enable = 1
 
 #
-#    Monitor.DynamicLoS.MinDistance
+#    Monitor.DynamicViewDist.MinDistance
 #        Description: Visibility reduction can go as low as this value
 #        Default: 60 (yards)
-Monitor.DynamicLoS.MinDistance = 60
+Monitor.DynamicViewDist.MinDistance = 60
+
+#
+#    Monitor.DynamicViewDist.IdealDiff
+#        Description: Value used to calculate by how much we should reduce visibility
+#        Default: 200 (ms)
+Monitor.DynamicViewDist.IdealDiff = 200
+
+#
+#    Monitor.DynamicViewDist.TriggerDiff
+#        Description: Start reducing visibility if diff is consistently higher than this value
+#        Default: 400 (ms)
+Monitor.DynamicViewDist.TriggerDiff = 400
+
+#
+#    Monitor.DynamicViewDist.CheckInterval
+#        Description: Check timediff and reduce LoS if necessary every X
+#        Default: 60 (seconds)
+Monitor.DynamicViewDist.CheckInterval = 60
+
+#
+#    Monitor.DynamicViewDist.AverageCount
+#        Description: Base calculation on average diff of last AverageCount updates
+#        Default: 500
+Monitor.DynamicViewDist.AverageCount = 500
 
 #
 #    Monitor.LagAutoReboot.Count

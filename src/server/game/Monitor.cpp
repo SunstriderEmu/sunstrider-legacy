@@ -307,40 +307,43 @@ void MonitorAutoReboot::Update(uint32 diff)
     }
 }
 
-void MonitorDynamicLoS::UpdateForMap(Map& map, uint32 diff)
+void MonitorDynamicViewDistance::UpdateForMap(Map& map, uint32 diff)
 {
-    if (!sWorld->getConfig(CONFIG_MONITORING_DYNAMIC_LOS))
+    if (!sWorld->getConfig(CONFIG_MONITORING_DYNAMIC_VIEWDIST))
         return;
+
+    uint32 const checkInterval = sWorld->getConfig(CONFIG_MONITORING_DYNAMIC_VIEWDIST_CHECK_INTERVAL) * SECOND * IN_MILLISECONDS;
 
     //is it time to check?
     _mapCheckTimersLock.lock();
     auto& timer = _mapCheckTimers[uint64(&map)].timer;
     timer += diff;
 
-    if (timer < CHECK_INTERVAL) {
-    _mapCheckTimersLock.unlock();
-    return;
+    if (timer < checkInterval) {
+        _mapCheckTimersLock.unlock();
+        return;
     }
 
     timer = 0;
     _mapCheckTimersLock.unlock();
 
-    uint32 abnormalDiff = sWorld->getConfig(CONFIG_MONITORING_ABNORMAL_MAP_UPDATE_DIFF);
+    uint32 const abnormalDiff = sWorld->getConfig(CONFIG_MONITORING_DYNAMIC_VIEWDIST_TRIGGER_DIFF);
     if (!abnormalDiff)
         return;
 
     //do we have enough data?
-    uint32 avgTD = sMonitor->GetAverageDiffForMap(map, SEARCH_COUNT);
+    uint32 const avgTD = sMonitor->GetAverageDiffForMap(map, sWorld->getConfig(CONFIG_MONITORING_DYNAMIC_VIEWDIST_AVERAGE_COUNT));
     if (!avgTD)
         return; //not enough data atm
 
     //is it laggy?
-    float baseVisibilityRange = map.GetDefaultVisibilityDistance();
-    float currentVisibilityRange = map.GetVisibilityRange();
+    float const baseVisibilityRange = map.GetDefaultVisibilityDistance();
+    float const currentVisibilityRange = map.GetVisibilityRange();
+    float const IDEAL_DIFF = sWorld->getConfig(CONFIG_MONITORING_DYNAMIC_VIEWDIST_IDEAL_DIFF);
     if (avgTD >= abnormalDiff)
     {
         // Map is laggy, update visibility distance
-        float minDist = float(sWorld->getConfig(CONFIG_MONITORING_DYNAMIC_LOS_MINDIST));
+        float const minDist = float(sWorld->getConfig(CONFIG_MONITORING_DYNAMIC_VIEWDIST_MINDIST));
 
         /* New visibility distance calculation. This is a first draft, don't hesitate to tweak it.
         Example with: IDEAL_DIFF = 200; avgTD = 420; currentVisib = 120 :
