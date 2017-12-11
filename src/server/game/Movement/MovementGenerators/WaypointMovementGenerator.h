@@ -97,7 +97,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         explicit WaypointMovementGenerator(Movement::PointsArray& points, bool repeating = false, bool smoothSpline = false);
         explicit WaypointMovementGenerator(WaypointPath& path, bool repeating = true, bool smoothSpline = false);
         // If path_id is left at 0, will try to get path id from Creature::GetWaypointPathId()
-        explicit  WaypointMovementGenerator(uint32 _path_id = 0, bool repeating = true, bool smoothSpline = false);
+        explicit WaypointMovementGenerator(uint32 _path_id = 0, bool repeating = true, bool smoothSpline = false);
         ~WaypointMovementGenerator() override;
         bool DoInitialize(Creature*);
         void DoFinalize(Creature*);
