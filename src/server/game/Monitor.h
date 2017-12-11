@@ -58,7 +58,7 @@ class MonitorDynamicLoS
 	const uint32 CHECK_INTERVAL = 10 * MINUTE * IN_MILLISECONDS;
 
 public:
-	const uint32 SEARCH_COUNT = 4500; // 15 minutes at 20 updates per seconds
+	const uint32 SEARCH_COUNT = 500; // ~25 seconds at 20 updates per seconds
 	void UpdateForMap(Map& map, uint32 diff);
 
 private:
