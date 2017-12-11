@@ -309,6 +309,9 @@ void MonitorAutoReboot::Update(uint32 diff)
 
 void MonitorDynamicLoS::UpdateForMap(Map& map, uint32 diff)
 {
+    if (!sWorld->getConfig(CONFIG_MONITORING_DYNAMIC_LOS))
+        return;
+
     //is it time to check?
     _mapCheckTimersLock.lock();
     auto& timer = _mapCheckTimers[uint64(&map)].timer;
