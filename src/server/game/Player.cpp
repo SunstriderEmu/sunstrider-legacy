@@ -3021,7 +3021,7 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
 
             if (active)
             {
-                if (spellInfo->IsPassive() && IsNeedCastPassiveSpellAtLearn(spellInfo))
+                if (spellInfo->IsPassive() && HandlePassiveSpellLearn(spellInfo))
                     CastSpell(this, spell_id, TRIGGERED_FULL_MASK);
             }
             else if (IsInWorld())
@@ -3169,24 +3169,8 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
     // also cast passive spells (including all talents without SPELL_EFFECT_LEARN_SPELL) with additional checks
     else if (spellInfo->IsPassive())
     {
-        // if spell doesn't require a stance or the player is in the required stance
-        if( ( !spellInfo->Stances &&
-            spell_id != 5420 && spell_id != 5419 && spell_id != 7376 &&
-            spell_id != 7381 && spell_id != 21156 && spell_id != 21009 &&
-            spell_id != 21178 && spell_id != 33948 && spell_id != 40121 ) ||
-            (m_form != 0 && (spellInfo->Stances & (1<<(m_form-1)))) ||
-            (spell_id ==  5420 && m_form == FORM_TREE) ||
-            (spell_id ==  5419 && m_form == FORM_TRAVEL) ||
-            (spell_id ==  7376 && m_form == FORM_DEFENSIVESTANCE) ||
-            (spell_id ==  7381 && m_form == FORM_BERSERKERSTANCE) ||
-            (spell_id == 21156 && m_form == FORM_BATTLESTANCE)||
-            (spell_id == 21178 && (m_form == FORM_BEAR || m_form == FORM_DIREBEAR) ) ||
-            (spell_id == 33948 && m_form == FORM_FLIGHT) ||
-            (spell_id == 40121 && m_form == FORM_FLIGHT_EPIC) )
-                                                            //Check CasterAuraStates
-            if (   (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState)))
-                && HasItemFitToSpellRequirements(spellInfo) )
-                CastSpell(this, spell_id, TRIGGERED_FULL_MASK);
+        if (HandlePassiveSpellLearn(spellInfo))
+            CastSpell(this, spell_id, true);
     }
     else if( IsSpellHaveEffect(spellInfo,SPELL_EFFECT_SKILL_STEP) )
     {
@@ -11378,7 +11362,7 @@ Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update, ItemTemplate c
 
 Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
 {
-    if( pItem )
+    if(pItem)
     {
         AddEnchantmentDurations(pItem);
         AddItemDurations(pItem);
@@ -11386,11 +11370,11 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
         uint8 bag = pos >> 8;
         uint8 slot = pos & 255;
 
-        Item *pItem2 = GetItemByPos( bag, slot );
+        Item*pItem2 = GetItemByPos( bag, slot );
 
-        if( !pItem2 )
+        if(!pItem2)
         {
-            VisualizeItem( slot, pItem);
+            VisualizeItem(slot, pItem);
 
             if(IsAlive())
             {
@@ -11439,6 +11423,18 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                 UpdateExpertise(BASE_ATTACK);
             else if( slot == EQUIPMENT_SLOT_OFFHAND )
                 UpdateExpertise(OFF_ATTACK);
+
+#ifdef LICH_KING
+            switch (slot)
+            {
+            case EQUIPMENT_SLOT_MAINHAND:
+            case EQUIPMENT_SLOT_OFFHAND:
+            case EQUIPMENT_SLOT_RANGED:
+                RecalculateRating(CR_ARMOR_PENETRATION);
+            default:
+                break;
+            }
+#endif
         }
         else
         {
@@ -11467,6 +11463,15 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
         }
     }
 
+#ifdef LICH_KING
+    if (slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND)
+        CheckTitanGripPenalty();
+
+    // only for full equip instead adding to stack
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_ITEM, pItem->GetEntry());
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM, slot, pItem->GetEntry());
+#endif
+
     return pItem;
 }
 
@@ -11485,6 +11490,13 @@ void Player::QuickEquipItem( uint16 pos, Item *pItem)
             pItem->AddToWorld();
             pItem->SendUpdateToPlayer( this );
         }
+#ifdef LICH_KING
+        if (slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND)
+            CheckTitanGripPenalty();
+
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_ITEM, pItem->GetEntry());
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM, slot, pItem->GetEntry());
+#endif
     }
 }
 
@@ -11503,11 +11515,11 @@ void Player::SetVisibleItemSlot(uint8 slot, Item *pItem)
     {
         SetUInt64Value(PLAYER_VISIBLE_ITEM_1_CREATOR + (slot * MAX_VISIBLE_ITEM_OFFSET), pItem->GetUInt64Value(ITEM_FIELD_CREATOR));
 
-        int VisibleBase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
-        SetUInt32Value(VisibleBase + 0, pItem->GetEntry());
+        int visibleBase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
+        SetUInt32Value(visibleBase + 0, pItem->GetEntry());
 
         for(int i = 0; i < MAX_INSPECTED_ENCHANTMENT_SLOT; ++i)
-            SetUInt32Value(VisibleBase + 1 + i, pItem->GetEnchantmentId(EnchantmentSlot(i)));
+            SetUInt32Value(visibleBase + 1 + i, pItem->GetEnchantmentId(EnchantmentSlot(i)));
 
         // Use SetInt16Value to prevent set high part to FFFF for negative value
         SetInt16Value( PLAYER_VISIBLE_ITEM_1_PROPERTIES + (slot * MAX_VISIBLE_ITEM_OFFSET), 0, pItem->GetItemRandomPropertyId());
@@ -11534,17 +11546,17 @@ void Player::VisualizeItem( uint8 slot, Item *pItem)
         return;
 
     // check also  BIND_WHEN_PICKED_UP and BIND_QUEST_ITEM for .additem or .additemset case by GM (not binded at adding to inventory)
-    if( pItem->GetTemplate()->Bonding == BIND_WHEN_EQUIPED || pItem->GetTemplate()->Bonding == BIND_WHEN_PICKED_UP || pItem->GetTemplate()->Bonding == BIND_QUEST_ITEM )
+    if(pItem->GetTemplate()->Bonding == BIND_WHEN_EQUIPED || pItem->GetTemplate()->Bonding == BIND_WHEN_PICKED_UP || pItem->GetTemplate()->Bonding == BIND_QUEST_ITEM)
         pItem->SetBinding( true );
 
     m_items[slot] = pItem;
-    SetUInt64Value( (uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2) ), pItem->GetGUID() );
+    SetUInt64Value((uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2)), pItem->GetGUID() );
     pItem->SetUInt64Value( ITEM_FIELD_CONTAINED, GetGUID() );
     pItem->SetUInt64Value( ITEM_FIELD_OWNER, GetGUID() );
-    pItem->SetSlot( slot );
-    pItem->SetContainer( nullptr );
+    pItem->SetSlot(slot);
+    pItem->SetContainer(nullptr);
 
-    if( slot < EQUIPMENT_SLOT_END )
+    if(slot < EQUIPMENT_SLOT_END)
         SetVisibleItemSlot(slot,pItem);
 
     pItem->SetState(ITEM_CHANGED, this);
@@ -15788,7 +15800,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // after spell load
     InitTalentForLevel();
-    LearnSkillRewardedSpells();
 
     // after spell load, learn rewarded spell if need also
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
@@ -20767,19 +20778,6 @@ void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue )
     }
 }
 
-void Player::LearnSkillRewardedSpells()
-{
-    for (uint16 i=0; i < PLAYER_MAX_SKILLS; i++)
-    {
-        if(!GetUInt32Value(PLAYER_SKILL_INDEX(i)))
-            continue;
-
-        uint32 pskill = GetUInt32Value(PLAYER_SKILL_INDEX(i)) & 0x0000FFFF;
-
-        LearnSkillRewardedSpells(pskill, GetPureMaxSkillValue(pskill));
-    }
-}
-
 void Player::LearnAllClassProficiencies()
 {
     std::vector<uint32> weaponAndArmorSkillsList = { 196,197,198,199,200,201,202,227,264,266,1180,2567,5011,15590, //weapons
@@ -21290,13 +21288,47 @@ float Player::GetReputationPriceDiscount(FactionTemplateEntry const* factionTemp
     return 1.0f - 0.05f* (rank - REP_NEUTRAL);
 }
 
-bool Player::IsNeedCastPassiveSpellAtLearn(SpellInfo const* spellInfo) const
+/*
+// if spell doesn't require a stance or the player is in the required stance
+if( ( !spellInfo->Stances &&
+spell_id != 5420 && spell_id != 5419 && spell_id != 7376 &&
+spell_id != 7381 && spell_id != 21156 && spell_id != 21009 &&
+spell_id != 21178 && spell_id != 33948 && spell_id != 40121 ) ||
+(m_form != 0 && (spellInfo->Stances & (1<<(m_form-1)))) ||
+(spell_id ==  5420 && m_form == FORM_TREE) ||
+(spell_id ==  5419 && m_form == FORM_TRAVEL) ||
+(spell_id ==  7376 && m_form == FORM_DEFENSIVESTANCE) ||
+(spell_id ==  7381 && m_form == FORM_BERSERKERSTANCE) ||
+(spell_id == 21156 && m_form == FORM_BATTLESTANCE)||
+(spell_id == 21178 && (m_form == FORM_BEAR || m_form == FORM_DIREBEAR) ) ||
+(spell_id == 33948 && m_form == FORM_FLIGHT) ||
+(spell_id == 40121 && m_form == FORM_FLIGHT_EPIC) )
+//Check CasterAuraStates
+if (   (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState)))
+&& HasItemFitToSpellRequirements(spellInfo) )
+*/
+bool Player::HandlePassiveSpellLearn(SpellInfo const* spellInfo)
 {
     // note: form passives activated with shapeshift spells be implemented by HandleShapeshiftBoosts instead of spell_learn_spell
     // talent dependent passives activated at form apply have proper stance data
     ShapeshiftForm form = GetShapeshiftForm();
     bool need_cast = (!spellInfo->Stances || (form && (spellInfo->Stances & (UI64LIT(1) << (form - 1)))) ||
         (!form && spellInfo->HasAttribute(SPELL_ATTR2_NOT_NEED_SHAPESHIFT)));
+
+    // Check EquippedItemClass
+    // passive spells which apply aura and have an item requirement are to be added manually, instead of casted
+    if (spellInfo->EquippedItemClass >= 0)
+    {
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (spellInfo->Effects[i].IsAura())
+            {
+                if (!HasAura(spellInfo->Id) && HasItemFitToSpellRequirements(spellInfo))
+                    AddAura(spellInfo->Id, this);
+                return false;
+            }
+        }
+    }
 
     //Check CasterAuraStates
     return need_cast && (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState)));
@@ -21483,7 +21515,7 @@ OutdoorPvP * Player::GetOutdoorPvP() const
     return sOutdoorPvPMgr->GetOutdoorPvPToZoneId(GetZoneId());
 }
 
-bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem)
+bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem) const
 {
     if(spellInfo->EquippedItemClass < 0)
         return true;
@@ -22107,7 +22139,7 @@ void Player::ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidDat
 
 void Player::SetCanParry( bool value )
 {
-    if(m_canParry==value)
+    if(m_canParry == value)
         return;
 
     m_canParry = value;
@@ -22351,6 +22383,7 @@ void Player::_LoadSkills(QueryResult result)
     // SetPQuery(PLAYER_LOGIN_QUERY_LOADSKILLS,          "SELECT skill, value, max FROM character_skills WHERE guid = '%u'", GUID_LOPART(m_guid));
 
     uint32 count = 0;
+    std::unordered_map<uint32, uint32> loadedSkillValues;
     if (result)
     {
         do
@@ -22407,8 +22440,7 @@ void Player::_LoadSkills(QueryResult result)
             SetUInt32Value(PLAYER_SKILL_BONUS_INDEX(count),0);
 
             mSkillStatus.insert(SkillStatusMap::value_type(skill, SkillStatusData(count, SKILL_UNCHANGED)));
-
-            LearnSkillRewardedSpells(skill, value);
+            loadedSkillValues[skill] = value;
 
             ++count;
 
@@ -22419,6 +22451,10 @@ void Player::_LoadSkills(QueryResult result)
             }
         } while (result->NextRow());
     }
+
+    // Learn skill rewarded spells after all skills have been loaded to prevent learning a skill from them before its loaded with proper value from DB
+    for (auto& skill : loadedSkillValues)
+        LearnSkillRewardedSpells(skill.first, skill.second);
 
     //fill the rest with 0's
     for (; count < PLAYER_MAX_SKILLS; ++count)

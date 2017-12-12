@@ -1321,7 +1321,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HasBankBagSlot( uint8 slot ) const;
         bool HasItemCount( uint32 item, uint32 count, bool inBankAlso = false ) const;
         uint32 GetEmptyBagSlotsCount() const;
-        bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = nullptr);
+        bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = nullptr) const;
         Item* GetItemOrItemWithGemEquipped( uint32 item ) const;
         InventoryResult CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
         InventoryResult CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,nullptr); }
@@ -1682,7 +1682,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HasSpellButDisabled(uint32 spell) const;
         TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;
         bool IsSpellFitByClassAndRace( uint32 spell_id ) const;
-        bool IsNeedCastPassiveSpellAtLearn(SpellInfo const* spellInfo) const;
+        bool HandlePassiveSpellLearn(SpellInfo const* spellInfo);
 
         void SendProficiency(uint8 pr1, uint32 pr2);
         void SendInitialSpells();
@@ -2013,7 +2013,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         int16 GetSkillTempBonusValue(uint32 skill) const;
         bool HasSkill(uint32 skill) const;
         void LearnSkillRewardedSpells( uint32 skillId, uint32 skillValue);
-        void LearnSkillRewardedSpells();
 
         void CheckAreaExploreAndOutdoor(void);
 
