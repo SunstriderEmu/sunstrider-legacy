@@ -1076,7 +1076,7 @@ void PlayerbotFactory::InitAvailableSpells()
         }
     }
     */
-    //my code instead
+    //sunstrider code instead. Previous code is horribly slow
     bot->LearnDefaultSpells();
     bot->LearnAllClassProficiencies();
     bot->LearnAllClassSpells();

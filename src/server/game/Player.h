@@ -179,6 +179,12 @@ struct PlayerCreateInfoItem
 };
 
 typedef std::list<PlayerCreateInfoItem> PlayerCreateInfoItems;
+struct PlayerCreateInfoSkill
+{
+    uint16 SkillId;
+    uint16 Rank;
+};
+typedef std::vector<PlayerCreateInfoSkill> PlayerCreateInfoSkills;
 
 struct PlayerClassLevelInfo
 {
@@ -222,6 +228,7 @@ struct PlayerInfo
     uint16 displayId_f;
     PlayerCreateInfoItems item;
     std::list<CreateSpellPair> spell;
+    PlayerCreateInfoSkills skills;
     std::list<uint16> action[4];
 
     PlayerLevelInfo* levelInfo;                             //[level-1] 0..MaxPlayerLevel-1
@@ -1692,7 +1699,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void resetSpells();
         void LearnDefaultSkills();
         void LearnDefaultSkill(uint32 skillId, uint16 rank);
-        void LearnDefaultSpells(bool loading = false);
+        //Old mangos/windrunner logic. Replaced by LearnDefaultSkills except for some rare spells (16 at time of writing). We'll keep this function for now
+        void LearnDefaultSpells(bool loading = false); 
         void learnQuestRewardedSpells();
         void learnQuestRewardedSpells(Quest const* quest);
         void LearnAllClassSpells();

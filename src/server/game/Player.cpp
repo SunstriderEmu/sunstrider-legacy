@@ -15804,6 +15804,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     InitTalentForLevel();
     LearnSkillRewardedSpells();
     LearnDefaultSkills();
+    LearnDefaultSpells();
 
     // after spell load, learn rewarded spell if need also
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
@@ -20570,15 +20571,13 @@ void Player::resetSpells()
     for(PlayerSpellMap::const_iterator iter = smap.begin();iter != smap.end(); ++iter)
         RemoveSpell(iter->first);                           // only iter->first can be accessed, object by iter->second can be deleted already
 
+    LearnDefaultSkills();
     LearnDefaultSpells();
     learnQuestRewardedSpells();
 }
 
 void Player::LearnDefaultSkills()
 {
-    //TC Function
-    // for now we use playercreateinfo_spell instead of playercreateinfo_skill
-#ifdef LICH_KING
     // learn default race/class skills
     PlayerInfo const* info = sObjectMgr->GetPlayerInfo(GetRace(), GetClass());
     for (PlayerCreateInfoSkills::const_iterator itr = info->skills.begin(); itr != info->skills.end(); ++itr)
@@ -20589,7 +20588,6 @@ void Player::LearnDefaultSkills()
 
         LearnDefaultSkill(skillId, itr->Rank);
     }
-#endif
 }
 
 void Player::LearnDefaultSkill(uint32 skillId, uint16 rank)
@@ -20802,6 +20800,7 @@ void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue)
 
 void Player::LearnSkillRewardedSpells()
 {
+    /*
     for (uint16 i=0; i < PLAYER_MAX_SKILLS; i++)
     {
         if(!GetUInt32Value(PLAYER_SKILL_INDEX(i)))
@@ -20811,6 +20810,7 @@ void Player::LearnSkillRewardedSpells()
 
         LearnSkillRewardedSpells(pskill, GetPureMaxSkillValue(pskill));
     }
+    */
 }
 
 void Player::LearnAllClassProficiencies()
