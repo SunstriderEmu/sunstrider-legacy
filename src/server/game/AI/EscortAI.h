@@ -79,8 +79,8 @@ struct TC_GAME_API EscortAI : public ScriptedAI
         void SetDespawnAtEnd(bool despawn) { _despawnAtEnd = despawn; }
         void SetDespawnAtFar(bool despawn) { _despawnAtFar = despawn; }
        
-        bool GetAttack() const { return _activeAttacker; } // used in EnterEvadeMode override
-        void SetCanAttack(bool attack) { _activeAttacker = attack; }
+        bool IsActiveAttacker() const { return _activeAttacker; } // used in EnterEvadeMode override
+        void SetActiveAttacker(bool attack) { _activeAttacker = attack; }
 
         uint64 GetEventStarterGUID() const { return _playerGUID; }
 
