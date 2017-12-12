@@ -600,6 +600,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     }
 
     // original spells
+    LearnDefaultSkills();
     LearnDefaultSpells(true);
 
     // original action bar
@@ -15758,6 +15759,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetUInt32Value(PLAYER_TRACK_RESOURCES, 0 );
 
     _LoadSkills(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
+    UpdateSkillsForLevel(); //update skills after load, to make sure they are correctly update at player load
 
     // make sure the unit is considered out of combat for proper loading
     ClearInCombat();
@@ -15800,6 +15802,8 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // after spell load
     InitTalentForLevel();
+    LearnSkillRewardedSpells();
+    LearnDefaultSkills();
 
     // after spell load, learn rewarded spell if need also
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
@@ -20570,6 +20574,24 @@ void Player::resetSpells()
     learnQuestRewardedSpells();
 }
 
+void Player::LearnDefaultSkills()
+{
+    //TC Function
+    // for now we use playercreateinfo_spell instead of playercreateinfo_skill
+#ifdef LICH_KING
+    // learn default race/class skills
+    PlayerInfo const* info = sObjectMgr->GetPlayerInfo(GetRace(), GetClass());
+    for (PlayerCreateInfoSkills::const_iterator itr = info->skills.begin(); itr != info->skills.end(); ++itr)
+    {
+        uint32 skillId = itr->SkillId;
+        if (HasSkill(skillId))
+            continue;
+
+        LearnDefaultSkill(skillId, itr->Rank);
+    }
+#endif
+}
+
 void Player::LearnDefaultSkill(uint32 skillId, uint16 rank)
 {
     SkillRaceClassInfoEntry const* rcInfo = GetSkillRaceClassInfo(skillId, GetRace(), GetClass());
@@ -20738,7 +20760,7 @@ void Player::learnQuestRewardedSpells()
     }
 }
 
-void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue )
+void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue)
 {
     uint32 raceMask  = GetRaceMask();
     uint32 classMask = GetClassMask();
@@ -20775,6 +20797,19 @@ void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue )
             AddSpell(ability->spellId, true, true, true, false, false, ability->skillId);
         else
             LearnSpell(ability->spellId, true, ability->skillId);
+    }
+}
+
+void Player::LearnSkillRewardedSpells()
+{
+    for (uint16 i=0; i < PLAYER_MAX_SKILLS; i++)
+    {
+        if(!GetUInt32Value(PLAYER_SKILL_INDEX(i)))
+            continue;
+
+        uint32 pskill = GetUInt32Value(PLAYER_SKILL_INDEX(i)) & 0x0000FFFF;
+
+        LearnSkillRewardedSpells(pskill, GetPureMaxSkillValue(pskill));
     }
 }
 

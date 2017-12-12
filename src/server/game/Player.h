@@ -1690,6 +1690,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void LearnSpell(uint32 spell_id, bool dependent, uint32 fromSkill = 0);
         void RemoveSpell(uint32 spell_id, bool disabled = false);
         void resetSpells();
+        void LearnDefaultSkills();
         void LearnDefaultSkill(uint32 skillId, uint16 rank);
         void LearnDefaultSpells(bool loading = false);
         void learnQuestRewardedSpells();
@@ -2013,6 +2014,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         int16 GetSkillTempBonusValue(uint32 skill) const;
         bool HasSkill(uint32 skill) const;
         void LearnSkillRewardedSpells( uint32 skillId, uint32 skillValue);
+        void LearnSkillRewardedSpells();
 
         void CheckAreaExploreAndOutdoor(void);
 
