@@ -1427,6 +1427,11 @@ void PlayerbotTestingAI::CastedDamageSpell(Unit* target, SpellNonMeleeDamage dam
     SpellDamageDoneInfo info(damageInfo.SpellID, damageInfo, missInfo, crit);
     spellDamageDone[target->GetGUID()].push_back(std::move(info));
 }
+
+void PlayerbotTestingAI::DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo, SpellSchoolMask schoolmask)
+{
+    WhiteDamageDoneInfo info(damageInfo, schoolmask);
+    whiteDamageDone[target->GetGUID()].push_back(std::move(info));
 }
 
 void PlayerbotTestingAI::CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit)
@@ -1481,9 +1486,10 @@ std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> const* PlayerbotTestingAI::
     return &(*infoForVictimItr).second;
 }
 
+std::vector<PlayerbotTestingAI::WhiteDamageDoneInfo> const* PlayerbotTestingAI::GetWhiteDamageDoneInfo(Unit* target)
 {
-    auto infoForVictimItr = damageDone.find(target->GetGUID());
-    if (infoForVictimItr == damageDone.end())
+    auto infoForVictimItr = whiteDamageDone.find(target->GetGUID());
+    if (infoForVictimItr == whiteDamageDone.end())
         return nullptr;
 
     return &(*infoForVictimItr).second;
@@ -1502,6 +1508,7 @@ void PlayerbotTestingAI::ResetSpellCounters()
 {
     TC_LOG_TRACE("test.unit_test", "PlayerbotTestingAI: Counters were reset");
     spellDamageDone.clear();
+    whiteDamageDone.clear();
     healingDone.clear();
     ticksDone.clear();
 }

@@ -1587,6 +1587,11 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
     // Call default DealDamage
     CleanDamage cleanDamage(damageInfo->cleanDamage,damageInfo->attackType,damageInfo->hitOutCome);
     DealDamage(pVictim, damageInfo->damage, &cleanDamage, DIRECT_DAMAGE, SpellSchoolMask(damageInfo->damageSchoolMask), nullptr, durabilityLoss);
+#ifdef TESTS
+    if (Player* p = GetCharmerOrOwnerPlayerOrPlayerItself())
+        if (p->GetPlayerbotAI())
+            p->GetPlayerbotAI()->DoneWhiteDamage(pVictim, damageInfo, SpellSchoolMask(damageInfo->damageSchoolMask));
+#endif
 
     // If this is a creature and it attacks from behind it has a probability to daze it's victim
     if( (damageInfo->hitOutCome == MELEE_HIT_CRIT || damageInfo->hitOutCome == MELEE_HIT_CRUSHING || damageInfo->hitOutCome == MELEE_HIT_NORMAL || damageInfo->hitOutCome == MELEE_HIT_GLANCING) &&

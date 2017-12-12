@@ -615,8 +615,45 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
 void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit)
 {
-    INTERNAL_ASSERT_INFO("TestMeleeDamage NYI");
-    INTERNAL_TEST_ASSERT(false);
+    Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
+    INTERNAL_ASSERT_INFO("Caster is not a player or a pet/summon of him");
+    INTERNAL_TEST_ASSERT(_casterOwner != nullptr);
+    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(_casterOwner);
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
+    INTERNAL_TEST_ASSERT(casterOwner != nullptr);
+
+    auto AI = casterOwner->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+    AI->ResetSpellCounters();
+
+    uint32 sampleSize;
+    uint32 maxPredictionError;
+    _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
+
+    for (uint32 i = 0; i < sampleSize; i++)
+    if (attackType != RANGED_ATTACK)
+        caster->AttackerStateUpdate(target, attackType);
+    else
+        caster->CastSpell(target, 75, TRIGGERED_FULL_MASK); //shoot
+
+    Wait(5 * SECOND * IN_MILLISECONDS);
+    uint32 dealtMin;
+    uint32 dealtMax;
+    bool foundData = GetWhiteDamageDoneTo(casterOwner, target, attackType, crit, dealtMin, dealtMax);
+
+    INTERNAL_ASSERT_INFO("No white melee damage data found for attack type: %u", uint32(attackType));
+    INTERNAL_TEST_ASSERT(foundData);
+    TC_LOG_DEBUG("test.unit_test", "attackType: %u - crit %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u", uint32(attackType), uint32(crit), dealtMin, dealtMax, expectedMin, expectedMax);
+
+    uint32 allowedMin = expectedMin > maxPredictionError ? expectedMin - maxPredictionError : 0; //protect against underflow
+    uint32 allowedMax = expectedMax + maxPredictionError;
+
+    INTERNAL_ASSERT_INFO("Enforcing high result for attackType: %u - crit %u. allowedMax: %u, dealtMax: %u", uint32(attackType), uint32(crit), allowedMax, dealtMax);
+    INTERNAL_TEST_ASSERT(dealtMax <= allowedMax);
+    INTERNAL_ASSERT_INFO("Enforcing low result for attackType: %u - crit %u. allowedMin: %u, dealtMin: %u", uint32(attackType), uint32(crit), allowedMin, dealtMin);
+    INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
+
 }
 
 float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32 tickCount, bool& mustRetry)
@@ -639,7 +676,7 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
         return 0.0f;
     }
 
-    std::vector<PlayerbotTestingAI::DamageDoneInfo> filteredDamageToTarget;
+    std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> filteredDamageToTarget;
     //Copy only relevent entries
     for (auto itr : *damageToTarget)
         if (itr.spellID == spellID)
@@ -715,6 +752,61 @@ bool TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 sp
     if (count == 0)
     {
         TC_LOG_WARN("test.unit_test", "GetHealingPerSpellsTo was prompted for a victim (%s) with no valid data for this spell (ID %u)", target->GetName().c_str(), spellID);
+        return false;
+    }
+
+    return true;
+}
+
+bool TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAttackType attackType, bool critical, uint32& minDamage, uint32& maxDamage)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    auto damageToTarget = AI->GetWhiteDamageDoneInfo(victim);
+    if (!damageToTarget || damageToTarget->empty())
+    {
+        TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
+        return false;
+    }
+
+    minDamage = std::numeric_limits<uint32>::max();
+    maxDamage = 0;
+
+    //uint64 totalDamage = 0;
+    uint32 count = 0;
+    for (auto itr : *damageToTarget)
+    {
+        if (itr.damageInfo.attackType != attackType)
+            continue;
+
+        //only use full hits
+        if (critical)
+        {
+            if (itr.damageInfo.HitInfo != HITINFO_CRITICALHIT)
+                continue;
+        } else {
+            if (itr.damageInfo.HitInfo != HITINFO_NORMALSWING && itr.damageInfo.HitInfo != HITINFO_NORMALSWING2)
+                continue;
+        }
+
+        uint32 damage = itr.damageInfo.damage;
+        damage += itr.damageInfo.resist;
+        damage += itr.damageInfo.blocked_amount;
+        damage += itr.damageInfo.absorb;
+        //resilience not taken into account...
+
+        minDamage = std::min(minDamage, damage);
+        maxDamage = std::max(maxDamage, damage);
+
+        //totalDamage += damage;
+        count++;
+    }
+
+    if (count == 0)
+    {
+        TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo was prompted for a victim (%s) with no valid data for white damage (attackType %u)", victim->GetName().c_str(), attackType);
         return false;
     }
 

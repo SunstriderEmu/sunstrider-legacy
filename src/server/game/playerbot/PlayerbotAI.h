@@ -167,6 +167,7 @@ public:
     virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) { }
     virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) { }
     virtual void SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID) { }
+    virtual void DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo, SpellSchoolMask schoolmask) { }
 
 private:
     void _fillGearScoreData(Player *player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore);
@@ -209,6 +210,7 @@ public:
     virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) override;
     virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) override;
     virtual void SpellDamageDealt(Unit* target, uint32 damage, uint32 spellID) override;
+    virtual void DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo, SpellSchoolMask schoolmask) override;
 
     void ResetSpellCounters();
 
@@ -222,6 +224,15 @@ public:
         SpellNonMeleeDamage damageInfo;
         SpellMissInfo missInfo;
         bool crit;
+    };
+    struct WhiteDamageDoneInfo
+    {
+        WhiteDamageDoneInfo(CalcDamageInfo* damageInfo, SpellSchoolMask schoolmask) :
+            damageInfo(*damageInfo), schoolmask(schoolmask)
+        {}
+
+        CalcDamageInfo damageInfo;
+        SpellSchoolMask schoolmask;
     };
     struct HealingDoneInfo
     {
@@ -241,10 +252,12 @@ public:
     int32 GetDotDamage(Unit* to, uint32 spellID);
     std::vector<SpellDamageDoneInfo> const* GetDamageDoneInfo(Unit* target);
     std::vector<HealingDoneInfo> const* GetHealingDoneInfo(Unit* target);
+    std::vector<WhiteDamageDoneInfo> const* GetWhiteDamageDoneInfo(Unit* target);
 
 private:
    
     std::unordered_map<uint64 /*targetGUID*/, std::vector<SpellDamageDoneInfo>> spellDamageDone;
+    std::unordered_map<uint64 /*targetGUID*/, std::vector<WhiteDamageDoneInfo>> whiteDamageDone;
     std::unordered_map<uint64 /*targetGUID*/, std::vector<HealingDoneInfo>> healingDone;
     std::unordered_map<uint64 /*targetGUID*/, std::vector<TickInfo>> ticksDone;
 

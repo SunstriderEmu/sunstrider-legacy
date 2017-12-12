@@ -125,6 +125,7 @@ public:
 
     bool GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage);
     bool GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal);
+    bool GetWhiteDamageDoneTo(TestPlayer* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt);
     float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
 
     static uint32 GetTestBotAccountId();

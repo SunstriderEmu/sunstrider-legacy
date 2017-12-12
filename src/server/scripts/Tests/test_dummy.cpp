@@ -24,11 +24,15 @@ public:
             Wait(10 * SECOND * IN_MILLISECONDS);
             TestPlayer* p = SpawnRandomPlayer();
             Wait(5 * SECOND * IN_MILLISECONDS);
+            TEST_MELEE_DAMAGE(p, summon, BASE_ATTACK, 1, 2, false);
+
+
+/*
             p->CastSpell(summon, 133, false);
             p->Say("YOLO!", LANG_UNIVERSAL);
             Wait(3 * SECOND * IN_MILLISECONDS);
             summon->Say("lol");
-            Wait(2 * SECOND * IN_MILLISECONDS);
+            Wait(2 * SECOND * IN_MILLISECONDS);*/
             //sWorld->SendGlobalText("DUMMY AFTER WAIT");
             //sWorld->SendGlobalText(str.c_str());
             //TEST_ASSERT(urand(0, 1) == 1);
