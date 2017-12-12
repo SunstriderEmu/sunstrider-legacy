@@ -7290,10 +7290,6 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply, bool updateItemAu
     if( slot==EQUIPMENT_SLOT_RANGED )
         _ApplyAmmoBonuses();
 
-    //apply case is handled by spell 107 ("Block")
-    if (!apply && slot==EQUIPMENT_SLOT_OFFHAND && item->GetTemplate()->Block)
-        SetCanBlock(false);
-
     ApplyItemEquipSpell(item,apply);
     if (updateItemAuras)
     {
