@@ -1387,12 +1387,6 @@ CharDelete.KeepDays = 30
 #        Players will start with most of the high level reputations that are needed for items, mounts etc.
 #        If there are any reputation faction you want to be added, just tell me.
 #
-#    PlayerStart.AllSpells
-#        If enabled, players will start with all their class spells (not talents). Useful for instant 70 servers.
-#        You must import playercreateinfo_spell_custom.sql, it's included in the SQL folder.
-#        Default: 0 - off
-#                 1 - on
-#
 #    PlayerStart.MapsExplored
 #        Players will start with all maps explored if enabled
 #
@@ -1520,7 +1514,6 @@ CharDelete.KeepDays = 30
 ###################################################################################################################
 
 PlayerStart.AllReputation = 0
-PlayerStart.AllSpells = 0
 PlayerStart.MapsExplored = 0
 AlwaysMaxWeaponSkill = 0
 PvPToken.Enable = 0

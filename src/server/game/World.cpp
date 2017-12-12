@@ -1166,7 +1166,6 @@ void World::LoadConfigSettings(bool reload)
     TC_LOG_INFO("server.loading", "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
 
     m_configs[CONFIG_PREMATURE_BG_REWARD] = sConfigMgr->GetBoolDefault("Battleground.PrematureReward", true);
-    m_configs[CONFIG_START_ALL_SPELLS] = sConfigMgr->GetBoolDefault("PlayerStart.AllSpells", false);
     m_configs[CONFIG_START_ALL_EXPLORED] = sConfigMgr->GetBoolDefault("PlayerStart.MapsExplored", false);
     m_configs[CONFIG_START_ALL_REP] = sConfigMgr->GetBoolDefault("PlayerStart.AllReputation", false);
     m_configs[CONFIG_ALWAYS_MAXSKILL] = sConfigMgr->GetBoolDefault("AlwaysMaxWeaponSkill", false);
