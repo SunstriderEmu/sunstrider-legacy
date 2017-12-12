@@ -1566,9 +1566,11 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
         damageInfo->damage = 0;
 }
 
-void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
+void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
 {
-    if (!damageInfo) return;
+    if (!damageInfo) 
+        return;
+
     Unit *pVictim = damageInfo->target;
 
     if(!pVictim)
@@ -1596,19 +1598,19 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
         float Probability = 20;
 
         //there is a newbie protection, at level 10 just 7% base chance; assuming linear function
-        if( pVictim->GetLevel() < 30 )
-            Probability = 0.65f*pVictim->GetLevel()+0.5;
+        if(pVictim->GetLevel() < 30)
+            Probability = 0.65f*pVictim->GetLevel() + 0.5f;
 
-        uint32 VictimDefense=pVictim->GetDefenseSkillValue();
+        uint32 VictimDefense = pVictim->GetDefenseSkillValue();
         uint32 AttackerMeleeSkill = GetMaxSkillValueForLevel(pVictim);
 
-        Probability *= AttackerMeleeSkill/(float)VictimDefense;
+        Probability *= AttackerMeleeSkill / (float)VictimDefense;
 
         if(Probability > 40)
             Probability = 40;
 
         if(roll_chance_f(Probability))
-            CastSpell(pVictim, 1604, TRIGGERED_FULL_MASK);
+            CastSpell(pVictim, 1604, true);
     }
 
     // update at damage Judgement aura duration that applied by attacker at victim

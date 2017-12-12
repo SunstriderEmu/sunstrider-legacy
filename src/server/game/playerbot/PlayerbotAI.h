@@ -208,13 +208,13 @@ public:
     virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) override;
     virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) override;
     virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) override;
-    virtual void SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID) override;
+    virtual void SpellDamageDealt(Unit* target, uint32 damage, uint32 spellID) override;
 
     void ResetSpellCounters();
 
-    struct DamageDoneInfo
+    struct SpellDamageDoneInfo
     {
-        DamageDoneInfo(uint32 spellID, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) :
+        SpellDamageDoneInfo(uint32 spellID, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) :
             spellID(spellID), damageInfo(std::move(damageInfo)), missInfo(missInfo), crit(crit)
         {}
 
@@ -239,12 +239,12 @@ public:
 
     //will only use full hit spells
     int32 GetDotDamage(Unit* to, uint32 spellID);
-    std::vector<DamageDoneInfo> const* GetDamageDoneInfo(Unit* target);
+    std::vector<SpellDamageDoneInfo> const* GetDamageDoneInfo(Unit* target);
     std::vector<HealingDoneInfo> const* GetHealingDoneInfo(Unit* target);
 
 private:
    
-    std::unordered_map<uint64 /*targetGUID*/, std::vector<DamageDoneInfo>> damageDone;
+    std::unordered_map<uint64 /*targetGUID*/, std::vector<SpellDamageDoneInfo>> spellDamageDone;
     std::unordered_map<uint64 /*targetGUID*/, std::vector<HealingDoneInfo>> healingDone;
     std::unordered_map<uint64 /*targetGUID*/, std::vector<TickInfo>> ticksDone;
 

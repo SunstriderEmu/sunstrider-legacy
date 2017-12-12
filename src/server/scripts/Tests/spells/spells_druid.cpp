@@ -1976,7 +1976,7 @@ public:
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
             uint32 startHealth = 1;
             druid->SetHealth(startHealth);
-            _SetCriticalChances(druid, crit);
+            EnableCriticals(druid, crit);
             TEST_CAST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
             Wait(8000);
             uint32 expectedHealth = druid->GetHealth() - (startHealth + tickTotal);

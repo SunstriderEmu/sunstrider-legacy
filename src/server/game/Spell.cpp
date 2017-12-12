@@ -4902,7 +4902,7 @@ void Spell::TakeCastItem()
     {
         // This code is to avoid a crash
         // I'm not sure, if this is really an error, but I guess every item needs a prototype
-        TC_LOG_ERROR("FIXME","Cast item has no item prototype highId=%d, lowId=%d",m_CastItem->GetGUIDHigh(), m_CastItem->GetGUIDLow());
+        TC_LOG_ERROR("spells","Cast item has no item prototype highId=%d, lowId=%d",m_CastItem->GetGUIDHigh(), m_CastItem->GetGUIDLow());
         return;
     }
 
@@ -4942,7 +4942,7 @@ void Spell::TakeCastItem()
         (m_caster->ToPlayer())->DestroyItemCount(m_CastItem, count, true);
 
         // prevent crash at access to deleted m_targets.getItemTarget
-        if(m_CastItem==m_targets.GetItemTarget())
+        if(m_CastItem == m_targets.GetItemTarget())
             m_targets.SetItemTarget(nullptr);
 
         m_CastItem = nullptr;
@@ -5016,7 +5016,7 @@ void Spell::TakePower()
 
     if(m_spellInfo->PowerType >= MAX_POWERS)
     {
-        TC_LOG_ERROR("FIXME","Spell::TakePower: Unknown power type '%d'", m_spellInfo->PowerType);
+        TC_LOG_ERROR("spells","Spell::TakePower: Unknown power type '%d'", m_spellInfo->PowerType);
         return;
     }
 
@@ -5025,7 +5025,7 @@ void Spell::TakePower()
     if(hit)
         m_caster->ModifyPower(powerType, -m_powerCost);
     else
-        m_caster->ModifyPower(powerType, -m_caster->GetMap()->irand(0, m_powerCost/4));
+        m_caster->ModifyPower(powerType, -irand(0, m_powerCost/4));
 
     // Set the five second timer
     if (powerType == POWER_MANA && m_powerCost > 0)

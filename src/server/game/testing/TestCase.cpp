@@ -563,6 +563,7 @@ void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError,
     //Improve me... we want a 99.9% certainty
     sampleSize = 500;
     allowedError = (expectedMax - expectedMin) / 25; //arbitary
+    allowedError = std::max(allowedError, uint32(1)); //min 1
 }
 
 void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage) //if !damage, then use healing
@@ -581,7 +582,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     uint32 maxPredictionError;
     _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
 
-	_SetCriticalChances(caster, crit);
+	EnableCriticals(caster, crit);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -787,7 +788,7 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
     bool spellHasFlyTime = spellInfo->Speed != 0.0f;
 
-	_SetCriticalChances(caster, crit);
+	EnableCriticals(caster, crit);
 
     for (uint32 i = 0; i < 100; i++)
     {
@@ -857,7 +858,7 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
     INTERNAL_TEST_ASSERT(false); //failed to cast the spell 100 times
 }
 
-void TestCase::_SetCriticalChances(Unit* caster, bool crit)
+void TestCase::EnableCriticals(Unit* caster, bool crit)
 {
     float critChance = -100.0f;
 	if (crit)

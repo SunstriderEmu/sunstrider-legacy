@@ -46,7 +46,7 @@ public:
     void SetDifficulty(Difficulty diff) { _diff = diff; }
     TestMap* GetMap() const { return _map; }
     void EnableMapObjects();
-    
+
     //Spawn player. Fail test on failure
     TestPlayer* SpawnRandomPlayer();
     //Spawn player. Fail test on failure
@@ -65,33 +65,34 @@ public:
     //This checks if item exists in loot (but we cannot say if player can actually loot it)
     bool HasLootForMe(Creature*, Player*, uint32 itemID);
     //Create item and equip it to player. Will remove any item already in slot. Fail test on failure
-    #define EQUIP_ITEM(player, itemID) _SetCaller(__FILE__, __LINE__); _EquipItem(player, itemID); _ResetCaller()
+    #define EQUIP_ITEM(player, itemID) { _SetCaller(__FILE__, __LINE__); _EquipItem(player, itemID); _ResetCaller(); }
 
     void RemoveAllEquipedItems(TestPlayer* player);
     void RemoveItem(TestPlayer* player, uint32 itemID, uint32 count);
     void LearnTalent(TestPlayer* p, uint32 spellID);
+    void EnableCriticals(Unit* caster, bool crit);
 
     /* Cast a spell and check for spell start return value
     Usage:
-    #define TEST_CAST(caster, victim, spellID) 
-    #define TEST_CAST(caster, victim, spellID, expectedCode) 
-    #define TEST_CAST(caster, victim, spellID, expectedCode, triggeredFlags) 
+    #define TEST_CAST(caster, victim, spellID)
+    #define TEST_CAST(caster, victim, spellID, expectedCode)
+    #define TEST_CAST(caster, victim, spellID, expectedCode, triggeredFlags)
     */
-    #define TEST_CAST( ... ) _SetCaller(__FILE__, __LINE__);  _TestCast(__VA_ARGS__); _ResetCaller()
+    #define TEST_CAST( ... ) { _SetCaller(__FILE__, __LINE__);  _TestCast(__VA_ARGS__); _ResetCaller(); }
 
-    /* Usage 
+    /* Usage
     TEST_HAS_AURA(target, spellID)
     TEST_HAS_AURA(target, spellID, effectIndex)
     */
-    #define TEST_HAS_AURA( ... ) _SetCaller(__FILE__, __LINE__); _EnsureHasAura(__VA_ARGS__); _ResetCaller()
+    #define TEST_HAS_AURA( ... ) { _SetCaller(__FILE__, __LINE__); _EnsureHasAura(__VA_ARGS__); _ResetCaller(); }
     /* Usage
     TEST_HAS_NOT_AURA(target, spellID)
     TEST_HAS_NOT_AURA(target, spellID, effectIndex)
     */
-    #define TEST_HAS_NOT_AURA( ... ) _SetCaller(__FILE__, __LINE__); _EnsureHasNotAura(__VA_ARGS__); _ResetCaller()
- 
+    #define TEST_HAS_NOT_AURA( ... ) { _SetCaller(__FILE__, __LINE__); _EnsureHasNotAura(__VA_ARGS__); _ResetCaller(); }
+
     //check if target has aura and if duration match given duration
-    #define TEST_AURA_MAX_DURATION(target, spellID, effect, durationMS) _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, effect, durationMS); _ResetCaller()
+    #define TEST_AURA_MAX_DURATION(target, spellID, effect, durationMS) { _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, effect, durationMS); _ResetCaller(); }
 
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     float CalcChance(uint32 iterations, const std::function<bool()>& f);
@@ -104,23 +105,23 @@ public:
     /* Will cast the spell a bunch of time and test if results match the expected damage.
      Caster must be a TestPlayer or a pet/summon of him
      Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time*/
-    #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit) _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true); _ResetCaller()
+    #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true); _ResetCaller(); }
+     //Caster must be a TestPlayer or a pet/summon of him
+    #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax, crit) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, crit, false); _ResetCaller(); }
     //Caster must be a TestPlayer or a pet/summon of him
-    #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax, crit) _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, crit, false); _ResetCaller()
-    //Caster must be a TestPlayer or a pet/summon of him
-	#define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller()
+    #define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller(); }
   
     //use expectedAmount negative values for healing
-    #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount, crit) _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedAmount, crit); _ResetCaller()
+    #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount, crit) { _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedAmount, crit); _ResetCaller(); }
   
-    #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedAmount) _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount); _ResetCaller()
-
-    #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller()
+    #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount); _ResetCaller(); }
+    
+    #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) { _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller(); }
 
     //Cast given spell and check its power cost
-	#define TEST_POWER_COST(caster, target, castSpellID, powerType, expectedPowerCost) _SetCaller(__FILE__, __LINE__); _TestPowerCost(caster, target, castSpellID, powerType, expectedPowerCost); _ResetCaller()
+    #define TEST_POWER_COST(caster, target, castSpellID, powerType, expectedPowerCost) { _SetCaller(__FILE__, __LINE__); _TestPowerCost(caster, target, castSpellID, powerType, expectedPowerCost); _ResetCaller(); }
 
-    #define TEST_HAS_COOLDOWN(caster, spellID, cooldownSecond) _SetCaller(__FILE__, __LINE__); _TestHasCooldown(caster, spellID, cooldownSecond); _ResetCaller()
+    #define TEST_HAS_COOLDOWN(caster, spellID, cooldownSecond) { _SetCaller(__FILE__, __LINE__); _TestHasCooldown(caster, spellID, cooldownSecond); _ResetCaller(); }
 
     bool GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage);
     bool GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal);
@@ -150,7 +151,6 @@ protected:
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage); //if !damage, then use healing
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit);
-	void _SetCriticalChances(Unit* caster, bool crit);
     void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, Powers powerType, uint32 expectedPowerCost);
