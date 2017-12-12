@@ -252,8 +252,6 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
-    
-
     // ignore for remote control state (for player case)
     Unit* mover = _player->m_unitMovedByMe;
     if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)

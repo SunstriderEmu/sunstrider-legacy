@@ -15802,7 +15802,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // after spell load
     InitTalentForLevel();
-    LearnSkillRewardedSpells();
     LearnDefaultSkills();
     LearnDefaultSpells();
 
@@ -16619,12 +16618,7 @@ void Player::_LoadReputation(QueryResult result)
 
 void Player::_LoadSpells(QueryResult result)
 {
-    for (auto & m_spell : m_spells)
-        delete m_spell.second;
-    m_spells.clear();
-
     //QueryResult result = CharacterDatabase.PQuery("SELECT spell, active, disabled FROM character_spell WHERE guid = '%u'",GetGUIDLow());
-
     if(result)
     {
         do
@@ -20791,26 +20785,39 @@ void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue)
         if (skillValue < ability->req_skill_value && ability->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_VALUE)
             RemoveSpell(ability->spellId);
         // need learn spell
-        else if (!IsInWorld())
-            AddSpell(ability->spellId, true, true, true, false, false, ability->skillId);
         else
-            LearnSpell(ability->spellId, true, ability->skillId);
+        {
+            uint32 addSpellID = ability->spellId;
+#ifdef LICH_KING
+            // sunstrider: Apparently this has changed since BC... Our 21084 is not learned by default (AutolearnType is 0)
+            // used to avoid double Seal of Righteousness on paladins, it's the only player spell which has both spell and forward spell in auto learn
+            if (ability->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN && ability->forward_spellid)
+            {
+                bool skipCurrent = false;
+                auto bounds = sSpellMgr->GetSkillLineAbilityMapBounds(ability->forward_spellid);
+                for (auto itr = bounds.first; itr != bounds.second; ++itr)
+                {
+                    if (itr->second->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN && skillValue >= itr->second->req_skill_value)
+                    {
+                        skipCurrent = true;
+                        break;
+                    }
+                }
+
+                if (skipCurrent)
+                    continue;
+            }
+#else
+            if (ability->spellId == 20154) // The second Seal of Righteousness that shouldn't be added
+                addSpellID = ability->forward_spellid;
+#endif
+
+            if (!IsInWorld())
+                AddSpell(addSpellID, true, true, true, false, false, ability->skillId);
+            else
+                LearnSpell(addSpellID, true, ability->skillId);
+        }
     }
-}
-
-void Player::LearnSkillRewardedSpells()
-{
-    /*
-    for (uint16 i=0; i < PLAYER_MAX_SKILLS; i++)
-    {
-        if(!GetUInt32Value(PLAYER_SKILL_INDEX(i)))
-            continue;
-
-        uint32 pskill = GetUInt32Value(PLAYER_SKILL_INDEX(i)) & 0x0000FFFF;
-
-        LearnSkillRewardedSpells(pskill, GetPureMaxSkillValue(pskill));
-    }
-    */
 }
 
 void Player::LearnAllClassProficiencies()

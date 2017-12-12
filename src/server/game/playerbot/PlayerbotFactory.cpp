@@ -1034,7 +1034,6 @@ void PlayerbotFactory::SetRandomSkill(uint16 id)
 void PlayerbotFactory::InitAvailableSpells()
 {
     /* old code
-    bot->LearnDefaultSkills();
 
     CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin(); i != creatureTemplateContainer->end(); ++i)
@@ -1077,6 +1076,7 @@ void PlayerbotFactory::InitAvailableSpells()
     }
     */
     //sunstrider code instead. Previous code is horribly slow
+    bot->LearnDefaultSkills();
     bot->LearnDefaultSpells();
     bot->LearnAllClassProficiencies();
     bot->LearnAllClassSpells();

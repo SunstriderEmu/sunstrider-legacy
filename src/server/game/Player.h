@@ -2022,7 +2022,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         int16 GetSkillTempBonusValue(uint32 skill) const;
         bool HasSkill(uint32 skill) const;
         void LearnSkillRewardedSpells( uint32 skillId, uint32 skillValue);
-        void LearnSkillRewardedSpells();
 
         void CheckAreaExploreAndOutdoor(void);
 
