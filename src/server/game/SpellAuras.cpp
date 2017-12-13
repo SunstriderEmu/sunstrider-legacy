@@ -5020,14 +5020,14 @@ void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
 
 void  Aura::HandleAuraModIncreaseMaxHealth(bool apply, bool Real)
 {
-    double healthPercentage = m_target->GetHealthPct();
+    float healthPercentage = m_target->GetHealthPct();
 
     m_target->HandleStatFlatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(GetAmount()), apply);
 
     // Unit will keep hp% after MaxHealth being modified if unit is alive.
     if(m_target->GetHealth() > 0)
     {
-        uint32 newHealth = std::max<uint32>(m_target->CountPctFromMaxHealth(int32(healthPercentage)), 1);
+        uint32 newHealth = std::max<uint32>(std::round(m_target->CountPctFromMaxHealth(healthPercentage)), 1);
         m_target->SetHealth(newHealth);
     }
 }

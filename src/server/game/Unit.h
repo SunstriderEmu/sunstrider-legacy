@@ -1303,8 +1303,10 @@ class TC_GAME_API Unit : public WorldObject
         bool HealthAbovePctHealed(int32 pct, uint32 heal) const { return uint64(GetHealth()) + uint64(heal) > CountPctFromMaxHealth(pct); }
         float GetHealthPct() const { return GetMaxHealth() ? 100.f * GetHealth() / GetMaxHealth() : 0.0f; }
         //get X% heath from max value
-        uint32 CountPctFromMaxHealth(int32 pct) const { return CalculatePct(GetMaxHealth(), pct); }
-        uint32 CountPctFromCurHealth(int32 pct) const { return CalculatePct(GetHealth(), pct); }
+        float CountPctFromMaxHealth(float pct) const;
+        uint32 CountPctFromMaxHealth(int32 pct) const;
+        float CountPctFromCurHealth(float pct) const;
+        uint32 CountPctFromCurHealth(int32 pct) const;
 
         void SetHealth(   uint32 val);
         void SetMaxHealth(uint32 val);

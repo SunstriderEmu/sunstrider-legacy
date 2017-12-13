@@ -1069,7 +1069,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         continue;
 
                     if (e.action.invincHP.percent)
-                        ai->SetInvincibilityHpLevel(target->ToCreature()->CountPctFromMaxHealth(e.action.invincHP.percent));
+                        ai->SetInvincibilityHpLevel(target->ToCreature()->CountPctFromMaxHealth(int32(e.action.invincHP.percent)));
                     else
                         ai->SetInvincibilityHpLevel(e.action.invincHP.minHP);
                 }

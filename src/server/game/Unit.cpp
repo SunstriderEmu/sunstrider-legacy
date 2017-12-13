@@ -12404,6 +12404,26 @@ void Unit::SetHealth(uint32 val)
     }
 }
 
+float Unit::CountPctFromMaxHealth(float pct) const
+{ 
+    return CalculatePct<float, float>(GetMaxHealth(), pct);
+}
+
+uint32 Unit::CountPctFromMaxHealth(int32 pct) const 
+{ 
+    return CalculatePct<uint32, int32>(GetMaxHealth(), pct);
+}
+
+float Unit::CountPctFromCurHealth(float pct) const
+{ 
+    return CalculatePct<float, float>(GetHealth(), pct);
+}
+
+uint32 Unit::CountPctFromCurHealth(int32 pct) const 
+{ 
+    return CalculatePct<uint32, int32>(GetHealth(), pct);
+}
+
 void Unit::SetMaxHealth(uint32 val)
 {
     uint32 health = GetHealth();
