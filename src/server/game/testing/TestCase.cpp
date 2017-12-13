@@ -141,6 +141,16 @@ void TestCase::_Assert(std::string file, int32 line, std::string function, bool 
     }
 }
 
+void TestCase::Wait(Seconds seconds)
+{
+    Wait(uint32(seconds.count()*IN_MILLISECONDS));
+}
+
+void TestCase::Wait(Milliseconds ms)
+{
+    Wait(uint32(ms.count()));
+}
+
 void TestCase::Wait(uint32 ms) 
 { 
     if (ms == 0)
