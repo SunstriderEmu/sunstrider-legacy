@@ -2667,7 +2667,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
         case MELEE_HIT_DODGE:
             canDodge = false;
             break;
-        case MELEE_HIT_BLOCK:
+        case MELEE_HIT_BLOCK: //spell 44452 has this ("Devastate"), but this misses a spell_affect to work, but I'm not sure if this is used on retail.
             canBlock = false;
             break;
         case MELEE_HIT_PARRY:

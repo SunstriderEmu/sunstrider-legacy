@@ -6398,9 +6398,9 @@ void ObjectMgr::LoadGameObjectTemplate()
                 {
                     if(GameObjectTemplate const* trapInfo = GetGameObjectTemplate(got.spellFocus.linkedTrapId))
                     {
-                        if(trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
+                        if(trapInfo->type != GAMEOBJECT_TYPE_TRAP)
                             TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data2=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
-                                entry,got.type,got.spellFocus.linkedTrapId,got.spellFocus.linkedTrapId,GAMEOBJECT_TYPE_TRAP);
+                                entry,got.type,got.spellFocus.linkedTrapId,got.spellFocus.linkedTrapId, GAMEOBJECT_TYPE_TRAP);
                     }
                     /* disable check for while
                     else
@@ -6432,7 +6432,7 @@ void ObjectMgr::LoadGameObjectTemplate()
                     {
                         if(trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
                             TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data12=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
-                                entry,got.type,got.goober.linkedTrapId,got.goober.linkedTrapId,GAMEOBJECT_TYPE_TRAP);
+                                entry,got.type,got.goober.linkedTrapId, got.goober.linkedTrapId, GAMEOBJECT_TYPE_TRAP);
                     }
                     /* disable check for while
                     else

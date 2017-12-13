@@ -582,7 +582,7 @@ void GameObject::Update(uint32 diff)
                     m_despawnTime = 1; //trigger despawn
                 }
                 else // environmental trap
-                {   
+                {
                     // environmental damage spells already have around enemies targeting but this not help in case not existed GO casting support
 
                     // affect only players
@@ -591,11 +591,17 @@ void GameObject::Update(uint32 diff)
                     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> checker(this, p_ok, p_check);
                     Cell::VisitWorldObjects(this, checker, radius);
                     trapTarget = p_ok;
+                    if (trapTarget)
+                    {
+                        CastSpell(trapTarget, goInfo->trap.spellId, trapTarget->GetGUID());
+                        m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
+                    }
+                    break;
                 }
 
                 if (trapTarget)
                 {
-                    CastSpell(trapTarget, goInfo->trap.spellId,GetOwnerGUID());
+                    CastSpell(trapTarget, goInfo->trap.spellId, GetOwnerGUID());
                     if(owner)
                         if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
                             owner->ProcDamageAndSpell(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
