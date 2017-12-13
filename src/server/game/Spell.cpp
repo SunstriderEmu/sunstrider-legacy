@@ -6159,7 +6159,10 @@ SpellCastResult Spell::CheckCast(bool strict)
                 break;
             }
             case SPELL_AURA_WATER_WALK:
-            {
+            { 
+                if (m_spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER)
+                    break;
+
                 if (!m_targets.GetUnitTarget())
                     return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
