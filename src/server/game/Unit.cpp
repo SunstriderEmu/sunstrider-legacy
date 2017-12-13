@@ -2878,6 +2878,10 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, I
 //   Resist
 SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const* spellInfo, bool canReflect, Item* castItem)
 {
+#ifdef TESTS
+    if (_forceHitResult < SPELL_MISS_TOTAL)
+        return _forceHitResult;
+#endif
     if (ToCreature() && ToCreature()->IsTotem())
         if (Unit *owner = GetOwner())
             return owner->SpellHitResult(pVictim, spellInfo, canReflect, castItem);

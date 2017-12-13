@@ -1412,6 +1412,11 @@ class TC_GAME_API Unit : public WorldObject
         SpellMissInfo MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell);
         SpellMissInfo MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, Item* castItem = nullptr);
         SpellMissInfo SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool canReflect = false, Item* castItem = nullptr);
+#ifdef TESTS
+        SpellMissInfo _forceHitResult = SPELL_MISS_TOTAL;
+        void ForceSpellHitResult(SpellMissInfo missInfo) { _forceHitResult = missInfo; }
+        void ResetForceSpellHitResult(SpellMissInfo missInfo) { _forceHitResult = SpellMissInfo(-1); }
+#endif
 
         float GetUnitDodgeChance()    const;
         float GetUnitParryChance()    const;
