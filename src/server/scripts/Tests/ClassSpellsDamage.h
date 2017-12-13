@@ -288,6 +288,13 @@ namespace ClassSpellsDamage
 	{
 		enum Warrior
 		{
+            // Arms
+            HAMSTRING_RNK_4 = 63,
+            HEROIC_STRIKE_RNK_10 = 176,
+            MOCKING_BLOW_RNK_6 = 114,
+            OVERPOWER_RNK_4 = 35,
+            REND_RNK_8 = 182,
+            THUNDER_CLAP_RNK_7 = 123,
 		};
 	};
 };

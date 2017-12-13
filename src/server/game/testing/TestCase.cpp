@@ -964,6 +964,12 @@ void TestCase::EnableCriticals(Unit* caster, bool crit)
 	caster->SetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE, critChance); // RANGED_ATTACK
 }
 
+void TestCase::GroupPlayer(TestPlayer* leader, TestPlayer* player)
+{
+    INTERNAL_ASSERT_INFO("GroupPlayer NYI");
+    INTERNAL_TEST_ASSERT(false);
+}
+
 float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)
 {
 	uint32 success = 0;

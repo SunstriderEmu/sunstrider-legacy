@@ -71,6 +71,7 @@ public:
     void RemoveItem(TestPlayer* player, uint32 itemID, uint32 count);
     void LearnTalent(TestPlayer* p, uint32 spellID);
     void EnableCriticals(Unit* caster, bool crit);
+    void GroupPlayer(TestPlayer* leader, TestPlayer* player);
 
     /* Cast a spell and check for spell start return value
     Usage:

@@ -3652,9 +3652,11 @@ namespace ClassSpells
             PLATE_MAIL = 750,
 
             // Arms
+            BATTLE_STANCE_RNK_1 = 2457,
             CHARGE_RNK_1 = 100,
             CHARGE_RNK_2 = 6178,
             CHARGE_RNK_3 = 11578,
+            CHARGE_RNK_3_STUN = 7922,
             HAMSTRING_RNK_1 = 1715,
             HAMSTRING_RNK_2 = 7372,
             HAMSTRING_RNK_3 = 7373,
@@ -3694,6 +3696,7 @@ namespace ClassSpells
             REND_RNK_7 = 11574,
             REND_RNK_8 = 25208,
             RETALIATION_RNK_1 = 20230,
+            RETALIATION_RNK_1_PROC = 22858,
             SLAM_RNK_1 = 1464,
             SLAM_RNK_2 = 8820,
             SLAM_RNK_3 = 11604,
