@@ -1834,7 +1834,8 @@ uint32 Unit::CalcSpellResistedDamage(Unit* victim, uint32 damage, SpellSchoolMas
         if (roll < (probabilitySum += discreteResistProbability[resistance]))
             break;
 
-    float damageResisted = uint32(damage * (resistance - 1) / 4.0f);
+    resistance = std::min(resistance, uint8(3)); //why can this reach 4? slightly wrong discreteResistProbability values?
+    float damageResisted = uint32(damage * resistance / 4.0f);
 
     DEBUG_ASSERT(damageResisted < damage);
 
