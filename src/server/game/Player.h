@@ -1311,6 +1311,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Item* GetItemByGuid( uint64 guid ) const;
         Item* GetItemByPos( uint16 pos ) const;
         Item* GetItemByPos( uint8 bag, uint8 slot ) const;
+        //Does additional check for disarmed weapons
+        Item* GetUseableItemByPos(uint8 bag, uint8 slot) const;
         Item* GetWeaponForAttack(WeaponAttackType attackType, bool useable = false) const;
         bool HasMainWeapon() const override;
         Item* GetShield(bool useable = false) const;

@@ -697,10 +697,10 @@ public:
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			float const expectedParry = player->GetUnitParryChance() + 5;
+			float const expectedParry = player->GetUnitParryChance(BASE_ATTACK, player) + 5.0f;
 
 			LearnTalent(player, Talents::Paladin::DEFLECTION_RNK_5);
-			TEST_ASSERT(player->GetUnitParryChance() == expectedParry);
+			TEST_ASSERT(player->GetUnitParryChance(BASE_ATTACK, player) == expectedParry);
 		}
 	};
 

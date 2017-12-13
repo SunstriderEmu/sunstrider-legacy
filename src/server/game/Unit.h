@@ -823,7 +823,7 @@ enum MeleeHitOutcome : int
     MELEE_HIT_CRIT,
     MELEE_HIT_CRUSHING,
     MELEE_HIT_NORMAL,
-    MELEE_HIT_BLOCK_CRIT
+    MELEE_HIT_BLOCK_CRIT, //not used in the game?
 };
 
 struct CleanDamage
@@ -1404,6 +1404,7 @@ class TC_GAME_API Unit : public WorldObject
         void AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType = BASE_ATTACK, bool extra = false );
         //float MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) const;
 
+        //used for white damage calculation
         void CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *damageInfo, WeaponAttackType attackType = BASE_ATTACK);
         void DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss);
 
@@ -1420,10 +1421,10 @@ class TC_GAME_API Unit : public WorldObject
         void ResetForceSpellHitResult(SpellMissInfo missInfo) { _forceHitResult = SpellMissInfo(-1); }
 #endif
 
-        float GetUnitDodgeChance()    const;
-        float GetUnitParryChance()    const;
-        float GetUnitBlockChance()    const;
-        float GetUnitCriticalChance(WeaponAttackType attackType, const Unit *pVictim) const;
+        float GetUnitDodgeChance(WeaponAttackType attType, Unit const* victim) const;
+        float GetUnitParryChance(WeaponAttackType attType, Unit const* victim) const;
+        float GetUnitBlockChance(WeaponAttackType attType, Unit const* victim) const;
+        float GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victim) const;
         int32 GetMechanicResistChance(const SpellInfo *spell);
         bool CanUseAttackType(uint8 attacktype) const;
 
@@ -1433,8 +1434,8 @@ class TC_GAME_API Unit : public WorldObject
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM) const;
 
-        MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType, SpellSchoolMask schoolMask) const;
-        MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance, bool SpellCasted ) const;
+        //used to check white attack outcome
+        MeleeHitOutcome RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackType attType) const;
 
         bool IsVendor()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR ); }
         bool IsTrainer()      const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER ); }

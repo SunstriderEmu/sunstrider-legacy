@@ -5066,7 +5066,7 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
     float RatingChange = 0.0f;
 
     bool affectStats = CanModifyStats();
-
+    
     switch (cr)
     {
         case CR_WEAPON_SKILL:                               // Implemented in Unit::RollMeleeOutcomeAgainst
@@ -9478,6 +9478,14 @@ Item* Player::GetItemByPos( uint8 bag, uint8 slot ) const
     return nullptr;
 }
 
+//Does additional check for disarmed weapons
+Item* Player::GetUseableItemByPos(uint8 bag, uint8 slot) const
+{
+    if (!CanUseAttackType(GetAttackBySlot(slot)))
+        return nullptr;
+    return GetItemByPos(bag, slot);
+}
+
 Item* Player::GetWeaponForAttack(WeaponAttackType attackType, bool useable) const
 {
     uint16 slot;
@@ -9489,14 +9497,18 @@ Item* Player::GetWeaponForAttack(WeaponAttackType attackType, bool useable) cons
         default: return nullptr;
     }
 
-    Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+    Item* item;
+    if (useable)
+        item = GetUseableItemByPos(INVENTORY_SLOT_BAG_0, slot);
+    else
+        item = GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
     if (!item || item->GetTemplate()->Class != ITEM_CLASS_WEAPON)
         return nullptr;
 
     if(!useable)
         return item;
 
-    if( item->IsBroken() || !IsUseEquipedWeapon(attackType==BASE_ATTACK) )
+    if( item->IsBroken() || !IsUseEquipedWeapon(attackType==BASE_ATTACK) ) //TC IsInFeralForm())
         return nullptr;
 
     return item;
@@ -9509,7 +9521,12 @@ bool Player::HasMainWeapon() const
 
 Item* Player::GetShield(bool useable) const
 {
-    Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    Item* item;
+    if (useable)
+        item = GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    else
+        item = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
     if (!item || item->GetTemplate()->Class != ITEM_CLASS_ARMOR)
         return nullptr;
 
@@ -9816,13 +9833,13 @@ bool Player::HasItemTotemCategory( uint32 TotemCategory ) const
 {
     Item *pItem;
     for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i) {
-        pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        pItem = GetUseableItemByPos(INVENTORY_SLOT_BAG_0, i);
         if (pItem && IsTotemCategoryCompatibleWith(pItem->GetTemplate()->TotemCategory,TotemCategory, pItem))
             return true;
     }
 
     for (uint8 i = KEYRING_SLOT_START; i < KEYRING_SLOT_END; ++i) {
-        pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        pItem = GetUseableItemByPos(INVENTORY_SLOT_BAG_0, i);
         if (pItem && IsTotemCategoryCompatibleWith(pItem->GetTemplate()->TotemCategory,TotemCategory, pItem))
             return true;
     }
@@ -9830,7 +9847,7 @@ bool Player::HasItemTotemCategory( uint32 TotemCategory ) const
     for(uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i) {
         if (Bag *pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, i)) {
             for (uint32 j = 0; j < pBag->GetBagSize(); ++j) {
-                pItem = GetItemByPos(i, j);
+                pItem = GetUseableItemByPos(i, j);
                 if (pItem && IsTotemCategoryCompatibleWith(pItem->GetTemplate()->TotemCategory,TotemCategory, pItem))
                     return true;
             }
@@ -21570,7 +21587,7 @@ bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item cons
         case ITEM_CLASS_WEAPON:
         {
             for(int i= EQUIPMENT_SLOT_MAINHAND; i < EQUIPMENT_SLOT_TABARD; ++i)
-                if(Item *item = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+                if(Item *item = GetUseableItemByPos( INVENTORY_SLOT_BAG_0, i ))
                     if(item != ignoreItem && item->IsFitToSpellRequirements(spellInfo))
                         return true;
             break;
@@ -21579,17 +21596,17 @@ bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item cons
         {
             // tabard not have dependent spells
             for(int i= EQUIPMENT_SLOT_START; i< EQUIPMENT_SLOT_MAINHAND; ++i)
-                if(Item *item = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+                if(Item *item = GetUseableItemByPos( INVENTORY_SLOT_BAG_0, i ))
                     if(item != ignoreItem && item->IsFitToSpellRequirements(spellInfo))
                         return true;
 
             // shields can be equipped to offhand slot
-            if(Item *item = GetItemByPos( INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+            if(Item *item = GetUseableItemByPos( INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
                 if(item != ignoreItem && item->IsFitToSpellRequirements(spellInfo))
                     return true;
 
             // ranged slot can have some armor subclasses
-            if(Item *item = GetItemByPos( INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
+            if(Item *item = GetUseableItemByPos( INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
                 if(item != ignoreItem && item->IsFitToSpellRequirements(spellInfo))
                     return true;
 

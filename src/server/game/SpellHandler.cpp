@@ -26,13 +26,17 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     uint8 cast_count;                                       // next cast if exists (single or not)
     uint64 item_guid;
 
+#ifdef LICH_KING
+    recvPacket >> bagIndex >> slot >> castCount >> spellId >> itemGUID >> glyphIndex >> castFlags;
+#else
     recvPacket >> bagIndex >> slot >> spell_count >> cast_count >> item_guid;
+#endif;
 
     // ignore for remote control state
     if (pUser->m_unitMovedByMe != pUser)
         return;
 
-    Item *pItem = pUser->GetItemByPos(bagIndex, slot);
+    Item *pItem = pUser->GetUseableItemByPos(bagIndex, slot);
     if(!pItem)
     {
         pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr );
