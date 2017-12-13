@@ -3454,7 +3454,7 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
         else
         {
             // if not created by another reason from full inventory or unique items amount limitation
-            player->SendEquipError( msg, nullptr, nullptr );
+            player->SendEquipError(msg, nullptr, nullptr);
             return;
         }
     }
@@ -4610,15 +4610,13 @@ void Spell::EffectSummonPet(uint32 i)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    Unit* owner = nullptr;
+    Player* owner = nullptr;
     if(m_originalCaster)
     {
         if (m_originalCaster->GetTypeId() == TYPEID_PLAYER)
             owner = m_originalCaster->ToPlayer();
         else if ((m_originalCaster->ToCreature())->IsTotem())
             owner = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself();
-        else if (m_originalCaster->ToCreature())
-            owner = m_originalCaster;
     }
 
     uint32 petentry = m_spellInfo->Effects[i].MiscValue;
@@ -4639,24 +4637,27 @@ void Spell::EffectSummonPet(uint32 i)
         if(petentry == 0 || OldSummon->GetEntry() == petentry)
         {
             // pet in corpse state can't be summoned
-            if( OldSummon->IsDead() )
+            if(OldSummon->IsDead())
                 return;
 
-            OldSummon->GetMap()->RemoveFromMap(OldSummon->ToCreature(),false);
-            OldSummon->SetMap(owner->GetMap());
+            if (OldSummon->GetMap() != owner->GetMap())
+            {
+                DEBUG_ASSERT(false);
+                return;
+            }
 
             float px, py, pz;
             owner->GetClosePoint(px, py, pz, OldSummon->GetCombatReach());
 
-            OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
-            owner->GetMap()->AddToMap(OldSummon->ToCreature(), true);
-            if(m_spellInfo->Id == 688 /*imp*/ || m_spellInfo->Id == 697 /*void walker*/ || m_spellInfo->Id == 691 /*felhunter*/ || m_spellInfo->Id == 712 /*succubus*/)
+            OldSummon->NearTeleportTo(px, py, pz, OldSummon->GetOrientation());
+            if (OldSummon->getPetType() == SUMMON_PET)
+            {
                 OldSummon->SetHealth(OldSummon->GetMaxHealth());
+                OldSummon->SetPower(OldSummon->GetPowerType(), OldSummon->GetMaxPower(OldSummon->GetPowerType()));
+            }
 
             if(owner->GetTypeId() == TYPEID_PLAYER && OldSummon->isControlled() )
-            {
                 (owner->ToPlayer())->PetSpellInitialize();
-            }
             return;
         }
 
@@ -4668,13 +4669,8 @@ void Spell::EffectSummonPet(uint32 i)
 
     float x, y, z;
     owner->GetClosePoint(x, y, z, owner->GetCombatReach());
-    Pet* pet = nullptr;
-    if (owner->GetTypeId() == TYPEID_PLAYER)
-        pet = owner->ToPlayer()->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
-    else
-        return; //pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), 0); // FIXME: Check if duration should always be 0 for creatures
-
-    if(!pet)
+    Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
+    if (!pet)
         return;
 
     if(m_caster->GetTypeId() == TYPEID_UNIT)
@@ -4695,7 +4691,7 @@ void Spell::EffectSummonPet(uint32 i)
     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
 
     // this enables popup window (pet dismiss, cancel), hunter pet additional flags set later
-    pet->SetUInt32Value(UNIT_FIELD_FLAGS,UNIT_FLAG_PVP_ATTACKABLE);
+    pet->SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
     pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(nullptr));
 
     // generate new name for summon pet
