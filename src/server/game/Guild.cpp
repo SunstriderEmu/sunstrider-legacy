@@ -26,6 +26,7 @@ Guild::Guild()
     BorderColor = 0;
     BackgroundColor = 0;
     m_accountsNumber = 0;
+    GuildEventlogMaxGuid = 0;
 
     CreatedYear = 0;
     CreatedMonth = 0;

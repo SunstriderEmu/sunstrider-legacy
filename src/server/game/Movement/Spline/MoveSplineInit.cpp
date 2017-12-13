@@ -158,7 +158,7 @@ namespace Movement
                 moveFlagsForSpeed &= ~MOVEMENTFLAG_WALKING;
 
             args.velocity = unit->GetSpeed(SelectSpeedType(moveFlagsForSpeed));
-            DEBUG_ASSERT(args.velocity);
+            //DEBUG_ASSERT(args.velocity);
         }
 
         if (!args.Validate(unit))

@@ -15,14 +15,14 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
 
     CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creatureTarget->GetEntry());
     // Creatures with family 0 crashes the server
-    if(cInfo->family == 0)
+    if(cInfo->family == CREATURE_FAMILY_NONE)
     {
         PSendSysMessage("This creature cannot be tamed. (family id: 0).");
         SetSentErrorMessage(true);
         return false;
     }
 
-    if(player->GetMinionGUID())
+    if(player->GetPetGUID())
     {
         PSendSysMessage("You already have a pet.");
         SetSentErrorMessage(true);
@@ -31,10 +31,6 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
 
     // Everything looks OK, create new pet
     Pet* pet = new Pet(player, HUNTER_PET);
-
-    if(!pet)
-      return false;
-    
     if(!pet->CreateBaseAtCreature(creatureTarget))
     {
         delete pet;
@@ -42,13 +38,12 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
         return false;
     }
 
-    creatureTarget->SetDeathState(JUST_DIED);
-    creatureTarget->RemoveCorpse();
+    creatureTarget->DespawnOrUnsummon();
     creatureTarget->SetHealth(0); // just for nice GM-mode view
 
-    pet->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
+    pet->SetGuidValue(UNIT_FIELD_CREATEDBY, player->GetGUID());
     pet->SetCreatorGUID(player->GetGUID());
-    pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, player->GetFaction());
+    pet->SetFaction(player->GetFaction());
 
     if(!pet->InitStatsForLevel(creatureTarget->GetLevel()))
     {
@@ -61,20 +56,20 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
     // prepare visual effect for levelup
     pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel()-1);
 
-     pet->GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
-     // this enables pet details window (Shift+P)
-     pet->AIM_Initialize();
-     pet->InitPetCreateSpells();
-     pet->SetHealth(pet->GetMaxHealth());
+    pet->GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
+    // this enables pet details window (Shift+P)
+    pet->AIM_Initialize();
+    pet->InitPetCreateSpells();
+    pet->SetHealth(pet->GetMaxHealth());
 
-     player->GetMap()->AddToMap(pet->ToCreature(), true);
+    player->GetMap()->AddToMap(pet->ToCreature(), true);
 
-     // visual effect for levelup
-     pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel());
+    // visual effect for levelup
+    pet->SetUInt32Value(UNIT_FIELD_LEVEL, creatureTarget->GetLevel());
 
-     player->SetMinion(pet, true);
-     pet->SavePetToDB(PET_SAVE_AS_CURRENT);
-     player->PetSpellInitialize();
+    player->SetMinion(pet, true);
+    pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+    player->PetSpellInitialize();
 
     return true;
 }

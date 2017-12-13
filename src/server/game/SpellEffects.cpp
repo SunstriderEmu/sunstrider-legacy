@@ -4587,8 +4587,9 @@ void Spell::EffectTameCreature(uint32 /*i*/)
     //SendChannelUpdate(0);
     finish();
 
-    Pet* pet = m_caster->CreateTamedPetFrom(creatureTarget,m_spellInfo->Id);
-    if(!pet) return;
+    Pet* pet = m_caster->CreateTamedPetFrom(creatureTarget, m_spellInfo->Id);
+    if(!pet) 
+        return;
 
     // kill original creature
     creatureTarget->DespawnOrUnsummon();

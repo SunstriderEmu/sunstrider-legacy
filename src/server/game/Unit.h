@@ -1692,7 +1692,9 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveBindSightAuras();
         void RemoveCharmAuras();
 
-        Pet* CreateTamedPetFrom(Creature* creatureTarget,uint32 spell_id = 0);
+        Pet* CreateTamedPetFrom(Creature* creatureTarget, uint32 spell_id = 0);
+        Pet* CreateTamedPetFrom(uint32 creatureEntry, uint32 spell_id = 0);
+        bool InitTamedPet(Pet* pet, uint8 level, uint32 spell_id);
 
         bool AddAura(Aura *aur);
 

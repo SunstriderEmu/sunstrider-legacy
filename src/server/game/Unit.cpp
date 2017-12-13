@@ -2241,7 +2241,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackT
     return RollMeleeOutcomeAgainst(pVictim, attType, int32(crit_chance*100), int32(miss_chance*100), int32(dodge_chance*100),int32(parry_chance*100),int32(block_chance*100), false);
 }
 
-MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance, bool SpellCasted ) const
+MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance, bool SpellCasted ) const
 {
     if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsEvadingAttacks())
         return MELEE_HIT_EVADE;
@@ -13924,7 +13924,7 @@ void Unit::RemovePetAura(PetAura const* petSpell)
         pet->RemoveAurasDueToSpell(petSpell->GetAura(pet->GetEntry()));
 }
 
-Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget,uint32 spell_id)
+Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget, uint32 spell_id)
 {
     if (GetTypeId() != TYPEID_PLAYER)
         return NULL;
@@ -13937,25 +13937,52 @@ Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget,uint32 spell_id)
         return nullptr;
     }
 
-    pet->SetOwnerGUID(GetGUID());
+    InitTamedPet(pet, creatureTarget->GetLevel(), spell_id);
+
+    return pet;
+}
+
+Pet* Unit::CreateTamedPetFrom(uint32 creatureEntry, uint32 spell_id)
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return nullptr;
+
+    CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creatureEntry);
+    if (!creatureInfo)
+        return nullptr;
+
+    Pet* pet = new Pet(ToPlayer(), HUNTER_PET);
+
+    if (!pet->CreateBaseAtCreatureInfo(creatureInfo, this) || !InitTamedPet(pet, GetLevel(), spell_id))
+    {
+        delete pet;
+        return nullptr;
+    }
+
+    return pet;
+}
+
+bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
+{
     pet->SetCreatorGUID(GetGUID());
     pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, GetFaction());
     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spell_id);
 
-    if(!pet->InitStatsForLevel(creatureTarget->GetLevel()))
+    if (GetTypeId() == TYPEID_PLAYER)
+        pet->SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+
+    if (!pet->InitStatsForLevel(level))
     {
-        TC_LOG_ERROR("entities.pet","ERROR: InitStatsForLevel() failed for creature (Entry: %u)!",creatureTarget->GetEntry());
-        delete pet;
-        return nullptr;
+        TC_LOG_ERROR("entities.pet", "ERROR: InitStatsForLevel() failed for creature (Entry: %u)!", pet->GetEntry());
+        return false;
     }
 
     pet->GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
     // this enables pet details window (Shift+P)
     pet->AIM_Initialize();
     pet->InitPetCreateSpells();
-    pet->SetHealth(pet->GetMaxHealth());
-
-    return pet;
+    pet->SetFullHealth();
+    return true;
 }
 
 bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent )
