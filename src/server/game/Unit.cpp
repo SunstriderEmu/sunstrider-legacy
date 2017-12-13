@@ -1828,17 +1828,13 @@ uint32 Unit::CalcSpellResistedDamage(Unit* victim, uint32 damage, SpellSchoolMas
         discreteResistProbability[i] = 2400 * (powf(averageResist, i) * powf((1 - averageResist), (4 - i))) / faq[i];
 
     float roll = float(rand_norm()) * 100.0f;
-    uint8 resistance = 0; //resistance range (from 0 to 4)
+    uint8 resistance = 0; //resistance range (from 1 to 4)
     float probabilitySum = 0.0f;
     for (; resistance < discreteResistProbability.size(); ++resistance)
         if (roll < (probabilitySum += discreteResistProbability[resistance]))
             break;
 
-    float damageResisted = 0;
-    if (damagetype == DOT && resistance == 4)
-        damageResisted = uint32(damage - 1);
-    else
-        damageResisted = uint32(damage * resistance / 4);
+    float damageResisted = uint32(damage * (resistance - 1) / 4.0f);
 
     DEBUG_ASSERT(damageResisted < damage);
 
