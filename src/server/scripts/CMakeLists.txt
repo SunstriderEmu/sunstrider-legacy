@@ -1,5 +1,5 @@
 message("")
-  
+   
 # Make the script module list available in the current scope
 GetScriptModuleList(SCRIPT_MODULE_LIST)
 if(NOT TESTS)

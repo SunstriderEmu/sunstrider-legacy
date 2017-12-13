@@ -1221,9 +1221,14 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                         SetCreateMana(28 + 10 * petlevel);
                         SetCreateHealth(28 + 30 * petlevel);
                     }
-                    int32 bonus_dmg = (int32(owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW)* 0.3f));
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel * 4 - petlevel) + bonus_dmg));
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 4 + petlevel) + bonus_dmg));
+                    int32 bonus_dmg = (int32(owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW)* 0.0657f));  // shadowfiend 65.7% per 10 hits so 6.57 per hit
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel) + bonus_dmg)); //correct value unknown
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 3.0f / 2.0f) + bonus_dmg)); //correct value unknown
+                    SetAttackTime(BASE_ATTACK, 1500); // Approximately hits for 111 dmg @ 1.5 speed = 74dps = 1110 shadow damage
+
+                    // 2 parts T4 DPS Bonus: should be handled in future table spell_dbc
+                    if (owner->HasAuraEffect(37570))
+                        SetStat(STAT_STAMINA, GetStat(STAT_STAMINA) + 75);
                     break;
                 }
                 case ENTRY_SNAKE_TRAP_VENOMOUS: //Snake Trap - Venomous Snake

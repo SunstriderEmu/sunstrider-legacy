@@ -5606,8 +5606,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if(!target)
                         return false;
 
-                    basepoints0 = int32(damage * 2.5f);     // manaregen
-                    triggered_spell_id = 34650;
+                    basepoints0 = int32(damage * 2.5f); // The mana gained from Shadowfiends' attack is 250% of the damage dealt by the fiend. (Making the formula [Dmg dealt*2.5])
+                    triggered_spell_id = 34650; // Mana Leech (energize)
                     break;
                 }
                 // Mark of Malice

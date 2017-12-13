@@ -1473,19 +1473,6 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
                     bonusDamage = spellDmg * 0.4f;
             }
         }
-        // shadowfiend 65.7% per 10 hits so 6.57 per hit
-        else if(GetEntry() == ENTRY_SHADOWFIEND)
-        {
-            if(Unit *owner = GetOwner())
-            {
-                int32 sDamage = int32(owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW));
-                if(sDamage > 0)
-                    bonusDamage = sDamage * 0.0657f;
-                // 2 parts T4 DPS Bonus: should be handled in future table spell_dbc
-                if (owner->HasAuraEffect(37570))
-                    SetStat(STAT_STAMINA, GetStat(STAT_STAMINA)+75);
-            }
-        }
     }
 
     UnitMods unitMod = UNIT_MOD_DAMAGE_MAINHAND;
