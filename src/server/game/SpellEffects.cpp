@@ -2889,7 +2889,7 @@ void Spell::EffectApplyAura(uint32 i)
 
     // allow apply any auras at player loading in ghost mode (will be cleanup after load)
     if (!IsValidDeadOrAliveTarget(unitTarget) &&
-        (unitTarget->GetTypeId()!=TYPEID_PLAYER || !(unitTarget->ToPlayer())->GetSession()->PlayerLoading()) )
+        (unitTarget->GetTypeId() != TYPEID_PLAYER || !(unitTarget->ToPlayer())->GetSession()->PlayerLoading()) )
         return;
 
     //no auras on totem if not cast by totem itself

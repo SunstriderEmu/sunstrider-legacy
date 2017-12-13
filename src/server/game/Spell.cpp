@@ -5112,7 +5112,7 @@ void Spell::HandleFlatThreat()
     }
 }
 
-void Spell::HandleEffects(Unit* pUnitTarget,Item* pItemTarget,GameObject* pGOTarget, uint32 i, SpellEffectHandleMode mode)
+void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOTarget, uint32 i, SpellEffectHandleMode mode)
 {
     effectHandleMode = mode;
     unitTarget = pUnitTarget;
@@ -5131,7 +5131,7 @@ void Spell::HandleEffects(Unit* pUnitTarget,Item* pItemTarget,GameObject* pGOTar
 
     uint8 eff = m_spellInfo->Effects[i].Effect;
     if(!preventDefault && eff < TOTAL_SPELL_EFFECTS)
-        (*this.*SpellEffects[eff])(i);
+        (*this.*SpellEffects[eff])((SpellEffIndex)i);
 }
 
 void Spell::TriggerSpell()

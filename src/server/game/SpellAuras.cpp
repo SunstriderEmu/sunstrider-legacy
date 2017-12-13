@@ -803,7 +803,7 @@ void AreaAura::Update(uint32 diff)
     }
 }
 
-void Aura::ApplyModifier(bool apply, bool Real)
+void Aura::ApplyModifier(bool apply, bool real)
 {
     if ( IsRemoved() )
         return;
@@ -818,8 +818,8 @@ void Aura::ApplyModifier(bool apply, bool Real)
     //TC_LOG_INFO("FIXME","Aura %u, AuraType %u", GetId(), aura);
 
     m_in_use = true;
-    if(aura<TOTAL_AURAS)
-        (*this.*AuraHandler [aura])(apply,Real);
+    if(aura < TOTAL_AURAS)
+        (*this.*AuraHandler[aura])(apply, real);
     m_in_use = false;
 }
 
@@ -3449,7 +3449,8 @@ void Aura::HandleModCharm(bool apply, bool Real)
         if(int32(m_target->GetLevel()) > m_modifier.m_amount)
             return;
             
-        if (GetId() == 1098 || GetId() == 11725 || GetId() == 11726) {
+        if (GetId() == 1098 || GetId() == 11725 || GetId() == 11726) 
+        {
             if (m_target->ToCreature()->IsPet())
                 return;
         }

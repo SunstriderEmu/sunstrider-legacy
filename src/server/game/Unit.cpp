@@ -469,39 +469,42 @@ void Unit::AutoRotate(uint32 time)
     }else RotateTimer -= time;
 }
 
-void Unit::RemoveAurasByType(AuraType auraType)
-{
-    if (auraType >= TOTAL_AURAS) return;
-    AuraList::iterator iter, next;
-    for (iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); iter = next)
-    {
-        next = iter;
-        ++next;
+/* 
 
-        if (*iter)
-        {
-            RemoveAurasDueToSpell((*iter)->GetId());
-            if (!m_modAuras[auraType].empty())
-                next = m_modAuras[auraType].begin();
-            else
-                return;
-        }
-    }
-}
-
-void Unit::RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID)
+void Unit::RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID, Aura* except, bool negative, bool positive)
 {
     if (auraType >= TOTAL_AURAS) return;
 
     for(auto iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); )
     {
-        Aura *aur = *iter;
+        Aura* aura = *iter;
         ++iter;
 
-        if (aur)
+        if (aura != except && (!casterGUID || aura->GetCasterGUID() == casterGUID)
+            && ((negative && !aura->IsPositive()) || (positive && aura->IsPositive())))
         {
             uint32 removedAuras = m_removedAurasCount;
-            RemoveAurasByCasterSpell(aur->GetId(), casterGUID);
+            RemoveAurasByCasterSpell(aura->GetId(), casterGUID);
+            if (m_removedAurasCount > removedAuras + 1)
+                iter = m_modAuras[auraType].begin();
+        }
+    }
+}
+*/
+void Unit::RemoveAurasByType(AuraType auraType, ObjectGuid casterGUID, Aura* except, bool negative, bool positive)
+{
+    if (auraType >= TOTAL_AURAS) return;
+    AuraList::iterator iter, next;
+    for (iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); iter = next)
+    {
+        Aura* aura = *iter;
+        ++iter;
+
+        if (aura != except && (!casterGUID || aura->GetCasterGUID() == casterGUID)
+            && ((negative && !aura->IsPositive()) || (positive && aura->IsPositive())))
+        {
+            uint32 removedAuras = m_removedAurasCount;
+            RemoveAurasByCasterSpell(aura->GetId(), casterGUID); //TC RemoveAura(aurApp);
             if (m_removedAurasCount > removedAuras + 1)
                 iter = m_modAuras[auraType].begin();
         }
@@ -4872,7 +4875,6 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
             }
         }
     }
-
     assert(!Aur->IsInUse());
     Aur->ApplyModifier(false,true);
 

@@ -1725,8 +1725,7 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveMovementImpairingAuras(bool withRoot);
         void RemoveAurasByShapeShift();
 
-        void RemoveAurasByType(AuraType auraType);
-        void RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID);
+        void RemoveAurasByType(AuraType auraType, ObjectGuid casterGUID = ObjectGuid::Empty, Aura* except = nullptr, bool negative = true, bool positive = true);
         void RemoveRankAurasDueToSpell(uint32 spellId);
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0, bool withChanneled = false);
