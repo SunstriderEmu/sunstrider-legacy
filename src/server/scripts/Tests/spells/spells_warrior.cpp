@@ -574,7 +574,7 @@ public:
             TEST_AURA_MAX_DURATION(hunter, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8, EFFECT_0, 2 * MINUTE * IN_MILLISECONDS);
 
             // Range
-            TEST_ASSERT(ally2->HasAura(ClassSpells::Warrior::BATTLE_SHOUT_RNK_8));
+            TEST_ASSERT(!ally2->HasAura(ClassSpells::Warrior::BATTLE_SHOUT_RNK_8));
 
             // AP
             TEST_ASSERT(warrior->GetTotalAttackPowerValue(BASE_ATTACK) == warriorExpectedAP);
@@ -677,6 +677,321 @@ public:
     }
 };
 
+class ChallengingShoutTest : public TestCaseScript
+{
+public:
+
+    ChallengingShoutTest() : TestCaseScript("spells warrior challenging_shout") { }
+
+    class ChallengingShoutTestImpt : public TestCase
+    {
+    public:
+        ChallengingShoutTestImpt() : TestCase(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn3m(_location);
+            spawn3m.MoveInFront(_location, 3.0f);
+            TestPlayer* player3m = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 1, spawn3m);
+            Creature* creature3m = SpawnCreatureWithPosition(spawn3m, 6);
+
+            Position spawn6m(_location);
+            spawn6m.MoveInFront(_location, 6.0f);
+            TestPlayer* player6m = SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 1, spawn6m);
+            Creature* creature6m = SpawnCreatureWithPosition(spawn6m, 6);
+
+            Position spawn11m(_location);
+            spawn11m.MoveInFront(_location, 15.0f);
+            TestPlayer* player11m = SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 1, spawn11m);
+            Creature* creature11m = SpawnCreatureWithPosition(spawn11m, 6);
+
+            // Setup
+            player3m->Attack(creature3m, true);
+            player6m->Attack(creature6m, true);
+            player11m->Attack(creature11m, true);
+
+            Wait(3000);
+
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+
+            // Rage cost
+            uint32 const expectedChallengingShoutRage = 5 * 10;
+            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, POWER_RAGE, expectedChallengingShoutRage);
+
+            // Cooldown
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, 10 * MINUTE);
+
+            // Aura
+            Aura* aura3m = creature3m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, EFFECT_0);
+            TEST_ASSERT(aura3m != nullptr);
+            Aura* aura6m = creature6m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, EFFECT_0);
+            TEST_ASSERT(aura6m != nullptr);
+            Aura* aura11m = creature11m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, EFFECT_0);
+            TEST_ASSERT(aura11m == nullptr);
+
+            // Aura duration
+            TEST_ASSERT(aura3m->GetAuraDuration() == 6 * SECOND * IN_MILLISECONDS);
+            TEST_ASSERT(aura6m->GetAuraDuration() == 6 * SECOND * IN_MILLISECONDS);
+
+            // Target changed
+            TEST_ASSERT(creature3m->GetTarget() == warrior->GetGUID());
+            TEST_ASSERT(creature6m->GetTarget() == warrior->GetGUID());
+
+            // Back to original target
+            Wait(6500);
+            TEST_ASSERT(creature3m->GetTarget() == player3m->GetGUID());
+            TEST_ASSERT(creature6m->GetTarget() == player6m->GetGUID());
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ChallengingShoutTestImpt>();
+    }
+};
+
+class CleaveTest : public TestCaseScript
+{
+public:
+    CleaveTest() : TestCaseScript("spells warrior cleave") { }
+
+    class CleaveTestImpt : public TestCaseWarrior
+    {
+    public:
+        CleaveTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            Creature* creature1 = SpawnCreature(8, true);
+            Creature* creature2 = SpawnCreature(8, true);
+            Creature* creature3 = SpawnCreature(8, true);
+
+            warrior->DisableRegeneration(true);
+
+            TestRequiresMeleeWeapon(warrior, creature1, ClassSpells::Warrior::CLEAVE_RNK_6, true);
+
+            // Setup
+            uint32 startHealth = creature1->GetHealth();
+            TEST_ASSERT(creature2->GetHealth() == startHealth);
+            TEST_ASSERT(creature3->GetHealth() == startHealth);
+
+            // Rage cost
+            uint32 const expectedCleaveRage = 20 * 10;
+            warrior->Attack(creature1, true);
+            TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::CLEAVE_RNK_6, POWER_RAGE, expectedCleaveRage);
+            warrior->AttackStop();
+
+
+            // Damage -- Apolyon, the Soul-Render - 404-607 damage
+            float const apolyonSpeed = 3.4f;
+            float const AP = warrior->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (creature1->GetArmor() / (creature1->GetArmor() + 10557.5));
+            uint32 const weaponMinDamage = 404 + (AP / 14 * apolyonSpeed) + ClassSpellsDamage::Warrior::CLEAVE_RNK_6;
+            uint32 const weaponMaxDamage = 607 + (AP / 14 * apolyonSpeed) + ClassSpellsDamage::Warrior::CLEAVE_RNK_6;
+            uint32 const expectedCleaveMin = weaponMinDamage * armorFactor;
+            uint32 const expectedCleaveMax = weaponMaxDamage * armorFactor;
+            uint32 const expectedCleaveCritMin = weaponMinDamage * 2.0f * armorFactor;
+            uint32 const expectedCleaveCritMax = weaponMaxDamage * 2.0f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::CLEAVE_RNK_6, expectedCleaveMin, expectedCleaveMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::CLEAVE_RNK_6, expectedCleaveCritMin, expectedCleaveCritMax, true);
+
+            // Cleave
+            TEST_ASSERT(creature1->GetHealth() < startHealth);
+            TEST_ASSERT(creature2->GetHealth() < startHealth);
+            TEST_ASSERT(creature3->GetHealth() < startHealth);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CleaveTestImpt>();
+    }
+};
+
+class CommandingShoutTest : public TestCaseScript
+{
+public:
+    CommandingShoutTest() : TestCaseScript("spells warrior commanding_shout") { }
+
+    class CommandingShoutTestImpt : public TestCaseWarrior
+    {
+    public:
+        CommandingShoutTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 10.0f);
+            TestPlayer* hunter = SpawnPlayer(CLASS_HUNTER, RACE_TAUREN, 70, spawn);
+            spawn.MoveInFront(spawn, 30.0f);
+            TestPlayer* ally2 = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN, 70, spawn);
+
+            warrior->DisableRegeneration(true);
+
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1);
+
+            // Setup
+            GroupPlayer(warrior, hunter);
+            GroupPlayer(warrior, ally2);
+            uint32 commandingShoutBonus = 1080;
+            uint32 warriorExpectedHealth = warrior->GetHealth() + commandingShoutBonus;
+            uint32 hunterExpectedHealth = hunter->GetHealth() + commandingShoutBonus;
+
+            // Rage cost
+            uint32 const expectedCommandingShoutRage = 10 * 10;
+            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, POWER_RAGE, expectedCommandingShoutRage);
+
+            // Aura duration
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, EFFECT_0, 2 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(hunter, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, EFFECT_0, 2 * MINUTE * IN_MILLISECONDS);
+
+            // Range
+            TEST_ASSERT(!ally2->HasAura(ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1));
+
+            // Health
+            TEST_ASSERT(warrior->GetHealth() == warriorExpectedHealth);
+            TEST_ASSERT(hunter->GetHealth() == hunterExpectedHealth);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CommandingShoutTestImpt>();
+    }
+};
+
+class DemoralizingShoutTest : public TestCaseScript
+{
+public:
+
+    DemoralizingShoutTest() : TestCaseScript("spells warrior demoralizing_shout") { }
+
+    class DemoralizingShoutTestImpt : public TestCase
+    {
+    public:
+        DemoralizingShoutTestImpt() : TestCase(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn3m(_location);
+            spawn3m.MoveInFront(_location, 3.0f);
+            TestPlayer* player3m = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 1, spawn3m);
+
+            Position spawn6m(_location);
+            spawn6m.MoveInFront(_location, 6.0f);
+            Creature* creature6m = SpawnCreatureWithPosition(spawn6m, 6);
+
+            Position spawn15m(_location);
+            spawn15m.MoveInFront(_location, 15.0f);
+            Creature* creature15m = SpawnCreatureWithPosition(spawn15m, 6);
+
+            int32 demoralizingShoutMalus = 300;
+            int32 startAP3m = player3m->GetTotalAttackPowerValue(BASE_ATTACK);
+            int32 startAP6m = creature6m->GetTotalAttackPowerValue(BASE_ATTACK);
+            int32 expectedAP3m = (startAP3m - demoralizingShoutMalus > 0) ? startAP3m - demoralizingShoutMalus : 0;
+            int32 expectedAP6m = (startAP6m - demoralizingShoutMalus > 0) ? startAP6m - demoralizingShoutMalus : 0;
+
+            // Rage cost
+            uint32 const expectedDemoralizingShoutRage = 10 * 10;
+            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, POWER_RAGE, expectedDemoralizingShoutRage);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(player3m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, EFFECT_0, 30 * SECOND  * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, EFFECT_0, 30 * SECOND  * IN_MILLISECONDS);
+
+            // Range
+            TEST_ASSERT(!creature15m->HasAura(ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7));
+
+            // AP loss
+            TEST_ASSERT(player3m->GetTotalAttackPowerValue(BASE_ATTACK) == expectedAP3m);
+            TEST_ASSERT(creature6m->GetTotalAttackPowerValue(BASE_ATTACK) == expectedAP6m);
+
+            // Back to original target
+            Wait(31000);
+            TEST_ASSERT(player3m->GetTotalAttackPowerValue(BASE_ATTACK) == startAP3m);
+            TEST_ASSERT(creature6m->GetTotalAttackPowerValue(BASE_ATTACK) == startAP6m);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<DemoralizingShoutTestImpt>();
+    }
+};
+
+class ExecuteTest : public TestCaseScript
+{
+public:
+    ExecuteTest() : TestCaseScript("spells warrior execute") { }
+
+    class ExecuteTestImpt : public TestCaseWarrior
+    {
+    public:
+        ExecuteTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            Creature* creature = SpawnCreature(8, true);
+
+            warrior->DisableRegeneration(true);
+            creature->DisableRegeneration(true);
+
+            // Needs target below 20%
+            TEST_CAST(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7, SPELL_FAILED_TARGET_AURASTATE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            creature->SetHealth(20000);
+            Wait(500);
+
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::EXECUTE_RNK_7);
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::EXECUTE_RNK_7, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature, true, ClassSpells::Warrior::EXECUTE_RNK_7, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature, true, ClassSpells::Warrior::EXECUTE_RNK_7, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresMeleeWeapon(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7, true);
+
+            Wait(2000);
+            // Rage cost
+            uint32 const expectedExecuteRage = 15 * 10;
+            TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7, POWER_RAGE, expectedExecuteRage);
+
+            // Full rage
+            uint32 const fullRage = 100 * 10;
+            warrior->SetPower(POWER_RAGE, fullRage);
+
+            float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
+
+            creature->SetHealth(20000);
+            Wait(500);
+            uint32 const expectedExecute = ClassSpellsDamage::Warrior::EXECUTE_RNK_7 + (fullRage - expectedExecuteRage) * 0.1f * ClassSpellsDamage::Warrior::EXECUTE_RNK_7_RAGE;
+            uint32 expectedHealth = creature->GetHealth() - expectedExecute * armorFactor;
+            TEST_CAST(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7);
+            Wait(500);
+            ASSERT_INFO("Health: %u, Expected: %u", creature->GetHealth(), expectedHealth);
+            TEST_ASSERT(creature->GetHealth() == expectedHealth);
+
+            creature->SetHealth(20000);
+            Wait(500);
+            warrior->SetPower(POWER_RAGE, fullRage);
+            uint32 const expectedExecuteCrit = (ClassSpellsDamage::Warrior::EXECUTE_RNK_7 + (fullRage - expectedExecuteRage) * ClassSpellsDamage::Warrior::EXECUTE_RNK_7_RAGE) * 2.0f;
+            expectedHealth = creature->GetHealth() - expectedExecuteCrit * armorFactor;
+            Wait(500);
+            TEST_CAST(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7);
+            TEST_ASSERT(creature->GetHealth() == expectedHealth);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ExecuteTestImpt>();
+    }
+};
+
 void AddSC_test_spells_warrior()
 {
     // Arms: 8/8
@@ -688,7 +1003,12 @@ void AddSC_test_spells_warrior()
     new RendTest();
     new RetaliationTest();
     new ThunderClapTest();
-    // Fury:
+    // Fury: 7/14
     new BattleShoutTest();
     new BerserkerRageTest();
+    new ChallengingShoutTest();
+    new CleaveTest();
+    new CommandingShoutTest();
+    new DemoralizingShoutTest();
+    new ExecuteTest();
 }

@@ -295,6 +295,10 @@ namespace ClassSpellsDamage
             OVERPOWER_RNK_4 = 35,
             REND_RNK_8 = 182,
             THUNDER_CLAP_RNK_7 = 123,
+            // Fury
+            CLEAVE_RNK_6 = 70,
+            EXECUTE_RNK_7 = 925,
+            EXECUTE_RNK_7_RAGE = 21,
 		};
 	};
 };
