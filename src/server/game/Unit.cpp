@@ -2641,8 +2641,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
 
     }
     // Ignore combat result aura
-    AuraEffectList const& ignore = GetAuraEffectsByType(SPELL_AURA_IGNORE_COMBAT_RESULT);
-    for (AuraEffect const* aurEff : ignore)
+    AuraEffectList const& _ignore = GetAuraEffectsByType(SPELL_AURA_IGNORE_COMBAT_RESULT);
+    for (AuraEffect const* aurEff : _ignore)
     {
         // -- sunstrider: added hack, not sure these spells have the proper spell affect in DB
         if (aurEff->GetModifier()->m_miscvalue == VICTIMSTATE_DODGE)       // can't be dodged rogue finishing move

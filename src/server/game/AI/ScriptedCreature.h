@@ -13,6 +13,7 @@
 #include "CreatureAIImpl.h"
 #include "InstanceScript.h"
 #include "EventMap.h"
+#include "TaskScheduler.h"
 
 #define CAST_AI(a,b)    (dynamic_cast<a*>(b))
 #define ENSURE_AI(a,b)  (EnsureAI<a>(b))
@@ -140,6 +141,7 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
 
     //Cast spell by Id, return SpellCastResult
     uint32 DoCast(Unit* victim, uint32 spellId, bool triggered = false);
+    uint32 DoCastSelf(uint32 spellId, bool triggered = false) { return DoCast(me, spellId, triggered); }
     uint32 DoCastAOE(uint32 spellId, bool triggered = false);
 
     //Cast spell by spell info
@@ -196,7 +198,6 @@ public:
     ~BossAI() override {}
 
     InstanceScript* const instance;
-    BossBoundaryMap const* GetBoundary() const { return _boundary; }
 
     void JustSummoned(Creature* summon) override;
     void SummonedCreatureDespawn(Creature* summon) override;
@@ -209,6 +210,8 @@ public:
     // is supposed to run more than once
     virtual void ExecuteEvent(uint32 /*eventId*/) { }
 
+    virtual void ScheduleTasks() { }
+
     void Reset() override { _Reset(); }
     void EnterCombat(Unit* /*who*/) override { _EnterCombat(); }
     void JustDied(Unit* /*killer*/) override { _JustDied(); }
@@ -220,32 +223,49 @@ protected:
     void _Reset();
     void _EnterCombat();
     void _JustDied();
-    void _JustReachedHome() { me->SetKeepActive(false); }
+    void _JustReachedHome();
+    void _DespawnAtEvade(Seconds delayToRespawn, Creature* who = nullptr);
+    void _DespawnAtEvade(uint32 delayToRespawn = 30, Creature* who = nullptr) { _DespawnAtEvade(Seconds(delayToRespawn), who); }
 
-    bool CheckInRoom()
-    {
-        if (CheckBoundary(me))
-            return true;
-
-        EnterEvadeMode(EVADE_REASON_BOUNDARY);
-        return false;
-    }
-
-    bool CheckBoundary(Unit* who);
     //teleport players out of boundaries on boss
     void TeleportCheaters();
 
     EventMap events;
     SummonList summons;
+    TaskScheduler scheduler;
 
 private:
-    BossBoundaryMap const* const _boundary;
     uint32 const _bossId;
 };
 
 // SD2 grid searchers.
-TC_GAME_API Creature* GetClosestCreatureWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange, bool alive = true);
-TC_GAME_API GameObject* GetClosestGameObjectWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange);
+inline Creature* GetClosestCreatureWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange, bool alive = true)
+{
+    return source->FindNearestCreature(entry, maxSearchRange, alive);
+}
+
+inline GameObject* GetClosestGameObjectWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange)
+{
+    return source->FindNearestGameObject(entry, maxSearchRange);
+}
+
+template <typename Container>
+inline void GetCreatureListWithEntryInGrid(Container& container, WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    source->GetCreatureListWithEntryInGrid(container, entry, maxSearchRange);
+}
+
+template <typename Container>
+inline void GetGameObjectListWithEntryInGrid(Container& container, WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    source->GetGameObjectListWithEntryInGrid(container, entry, maxSearchRange);
+}
+
+template <typename Container>
+inline void GetPlayerListInGrid(Container& container, WorldObject* source, float maxSearchRange)
+{
+    source->GetPlayerListInGrid(container, maxSearchRange);
+}
 
 #endif
 

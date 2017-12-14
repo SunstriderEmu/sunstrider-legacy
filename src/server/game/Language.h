@@ -917,7 +917,10 @@ enum TrinityStrings
     LANG_GPS_WMO_DATA                    = 11604,
 
     LANG_SWAG                            = 11606, //ROFLCOPTER?
-
+        
+    LANG_CREATURE_NO_INTERIOR_POINT_FOUND         = 11011,
+    LANG_CREATURE_MOVEMENT_NOT_BOUNDED            = 11012,
+    LANG_CREATURE_MOVEMENT_MAYBE_UNBOUNDED        = 11013,
 };
 #endif
 

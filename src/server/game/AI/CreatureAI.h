@@ -5,6 +5,7 @@
 #include "Define.h"
 #include "UnitAI.h"
 
+class AreaBoundary;
 class Unit;
 class Creature;
 class Player;
@@ -12,6 +13,8 @@ class GameObject;
 class GameObjectAI;
 class SpellInfo;
 class PlayerAI;
+
+typedef std::vector<AreaBoundary const*> CreatureBoundary;
 
 #define TIME_INTERVAL_LOOK   5000
 #define VISIBILITY_RANGE    10000
@@ -53,6 +56,9 @@ class TC_GAME_API CreatureAI : public UnitAI
         Creature *me;
 
         bool UpdateVictim(bool evade = true);
+
+        bool CheckBoundary(Position const* who = nullptr) const;
+
     public:
         enum EvadeReason
         {
@@ -169,6 +175,15 @@ class TC_GAME_API CreatureAI : public UnitAI
         // If onlyIfActive is set, should return true only if the escort quest is currently active
         virtual bool IsEscortNPC(bool /*onlyIfActive*/) const { return false; }
 
+
+        // intended for encounter design/debugging. do not use for other purposes. expensive.
+        int32 VisualizeBoundary(uint32 duration, Unit* owner = nullptr, bool fill = false) const;
+        virtual bool CheckInRoom();
+        CreatureBoundary const* GetBoundary() const { return _boundary; }
+        void SetBoundary(CreatureBoundary const* boundary, bool negativeBoundaries = false);
+
+        static bool IsInBounds(CreatureBoundary const& boundary, Position const* who);
+
     protected:
 		// Called at each *who move, AND if creature is aggressive
 		virtual void MoveInLineOfSight(Unit *);
@@ -177,6 +192,9 @@ class TC_GAME_API CreatureAI : public UnitAI
 		virtual void MoveInLineOfSight2(Unit *) {}
 
         bool _EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);  
+
+        CreatureBoundary const* _boundary;
+        bool _negateBoundary;
 
 	private:
 		bool m_MoveInLineOfSight_locked;

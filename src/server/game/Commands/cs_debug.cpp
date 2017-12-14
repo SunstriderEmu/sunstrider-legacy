@@ -1368,6 +1368,34 @@ bool ChatHandler::HandleDebugUnloadGrid(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleDebugBoundaryCommand(char const* args)
+{
+    Player* player = GetSession()->GetPlayer();
+    if (!player)
+        return false;
+    Creature* target = GetSelectedCreature();
+    if (!target || !target->IsAIEnabled || !target->AI())
+    {
+        return false;
+    }
+
+    char* fill_str = args ? strtok((char*)args, " ") : nullptr;
+    char* duration_str = args ? strtok(nullptr, " ") : nullptr;
+
+    int duration = duration_str ? atoi(duration_str) : -1;
+    if (duration <= 0 || duration >= 30 * MINUTE) // arbitary upper limit
+        duration = 3 * MINUTE;
+
+    bool doFill = fill_str ? (stricmp(fill_str, "FILL") == 0) : false;
+
+    int32 errMsg = target->AI()->VisualizeBoundary(duration, player, doFill);
+    if (errMsg > 0)
+        PSendSysMessage(errMsg);
+
+    return true;
+}
+
+
 /* Spawn a bunch of gameobjects objects from given file. This command will check wheter a close object is found on this server and ignore the new one if one is found.
 A preview gobject is spawned.
 Syntax: .debug spawnbatchobjects <filename> [permanent(0|1)]

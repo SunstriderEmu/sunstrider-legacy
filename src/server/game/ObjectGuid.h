@@ -184,6 +184,8 @@ class TC_GAME_API ObjectGuid
 
         bool operator!() const { return IsEmpty(); }
         bool operator== (ObjectGuid const& guid) const { return GetRawValue() == guid.GetRawValue(); }
+        bool operator== (uint64 guid) const { return GetRawValue() == guid; }
+        bool operator== (uint32 guid) const { return GetRawValue() == guid; }
         bool operator!= (ObjectGuid const& guid) const { return GetRawValue() != guid.GetRawValue(); }
         bool operator< (ObjectGuid const& guid) const { return GetRawValue() < guid.GetRawValue(); }
 

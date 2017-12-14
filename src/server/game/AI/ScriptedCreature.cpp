@@ -451,9 +451,14 @@ void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
 BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature),
 instance(creature->GetInstanceScript()),
 summons(creature),
-_boundary(instance ? instance->GetBossBoundary(bossId) : nullptr),
 _bossId(bossId)
 {
+    if (instance)
+        SetBoundary(instance->GetBossBoundary(bossId));
+    scheduler.SetValidator([this]
+    {
+        return !me->HasUnitState(UNIT_STATE_CASTING);
+    });
 }
 
 void BossAI::_Reset()
@@ -461,18 +466,13 @@ void BossAI::_Reset()
     if (!me->IsAlive())
         return;
 
-    //sunwell me->ResetLootMode();
+    me->SetCombatPulseDelay(0);
+    //TC me->ResetLootMode();
     events.Reset();
     summons.DespawnAll();
-    if (instance)
-//NYI       instance->SetBossState(_bossId, NOT_STARTED);
-        instance->SetData(_bossId, NOT_STARTED);
-}
-
-bool BossAI::CanAIAttack(Unit const* target) const
-{
- //TC   return CheckBoundary(target);
-    return true;
+    scheduler.CancelAll();
+    if (instance && instance->GetBossState(_bossId) != DONE)
+        instance->SetBossState(_bossId, NOT_STARTED);
 }
 
 void BossAI::_JustDied()
@@ -486,20 +486,27 @@ void BossAI::_JustDied()
     }
 }
 
+void BossAI::_JustReachedHome()
+{
+    me->SetKeepActive(false);
+}
+
 void BossAI::_EnterCombat()
 {
-    me->SetKeepActive(true);
-    DoZoneInCombat();
     if (instance)
     {
         // bosses do not respawn, check only on enter combat
         if (!instance->CheckRequiredBosses(_bossId))
         {
-            EnterEvadeMode();
+            EnterEvadeMode(EVADE_REASON_SEQUENCE_BREAK);
             return;
         }
         instance->SetBossState(_bossId, IN_PROGRESS);
     }
+    me->SetCombatPulseDelay(5);
+    me->SetKeepActive(true);
+    DoZoneInCombat();
+    ScheduleTasks();
 }
 
 void BossAI::TeleportCheaters()
@@ -512,55 +519,6 @@ void BossAI::TeleportCheaters()
         if (Unit* target = (*itr)->getTarget())
             if (target->GetTypeId() == TYPEID_PLAYER && !CheckBoundary(target))
                 target->NearTeleportTo(x, y, z, 0);
-}
-
-bool BossAI::CheckBoundary(Unit* who)
-{
-    if (!GetBoundary() || !who)
-        return true;
-
-    for (const auto & itr : *GetBoundary())
-    {
-        switch (itr.first)
-        {
-        case BOUNDARY_N:
-            if (who->GetPositionX() > itr.second)
-                return false;
-            break;
-        case BOUNDARY_S:
-            if (who->GetPositionX() < itr.second)
-                return false;
-            break;
-        case BOUNDARY_E:
-            if (who->GetPositionY() < itr.second)
-                return false;
-            break;
-        case BOUNDARY_W:
-            if (who->GetPositionY() > itr.second)
-                return false;
-            break;
-        case BOUNDARY_NW:
-            if (who->GetPositionX() + who->GetPositionY() > itr.second)
-                return false;
-            break;
-        case BOUNDARY_SE:
-            if (who->GetPositionX() + who->GetPositionY() < itr.second)
-                return false;
-            break;
-        case BOUNDARY_NE:
-            if (who->GetPositionX() - who->GetPositionY() > itr.second)
-                return false;
-            break;
-        case BOUNDARY_SW:
-            if (who->GetPositionX() - who->GetPositionY() < itr.second)
-                return false;
-            break;
-        default:
-            break;
-        }
-    }
-
-    return true;
 }
 
 void BossAI::JustSummoned(Creature* summon)
@@ -586,53 +544,50 @@ void BossAI::UpdateAI(uint32 diff)
         return;
 
     while (uint32 eventId = events.ExecuteEvent())
+    {
         ExecuteEvent(eventId);
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+    }
 
     DoMeleeAttackIfReady();
 }
 
-/* remove this block if you don't know why it's commented out
-
-Creature* FindCreature(uint32 entry, float range, Unit* Finder)
+bool BossAI::CanAIAttack(Unit const* target) const
 {
-    if(!Finder)
-        return nullptr;
-    Creature* target = nullptr;
-
-
-    Trinity::AllCreaturesOfEntryInRange check(Finder, entry, range);
-    Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(target, check);
-    Finder->VisitNearbyGridObject(range, searcher);
-    
-    return target;
+    return CheckBoundary(target);
 }
 
-void FindCreatures(std::list<Creature*>& list, uint32 entry, float range, Unit* Finder)
+void BossAI::_DespawnAtEvade(Seconds delayToRespawn, Creature* who)
 {
-    Trinity::AllCreaturesOfEntryInRange check(Finder, entry, range);
-    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(Finder, list, check);
-    Finder->VisitNearbyGridObject(range, searcher);
-}
+    if (delayToRespawn < Seconds(2))
+    {
+        TC_LOG_ERROR("scripts", "_DespawnAtEvade called with delay of %ld seconds, defaulting to 2.", delayToRespawn.count());
+        delayToRespawn = Seconds(2);
+    }
 
-GameObject* FindGameObject(uint32 entry, float range, Unit* Finder)
-{
-    if(!Finder)
-        return nullptr;
-    GameObject* target = nullptr;
+    if (!who)
+        who = me;
 
-    Trinity::AllGameObjectsWithEntryInGrid go_check(entry);
-    Trinity::GameObjectSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
-    Finder->VisitNearbyGridObject(range, searcher);
-    return target;
+    if (TempSummon* whoSummon = who->ToTempSummon())
+    {
+        TC_LOG_WARN("scripts", "_DespawnAtEvade called on a temporary summon.");
+        whoSummon->UnSummon();
+        return;
+    }
+
+    who->DespawnOrUnsummon(0, Seconds(delayToRespawn));
+
+    if (instance && who == me)
+        instance->SetBossState(_bossId, FAIL);
 }
-*/
 
 Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 {
     Unit* pUnit = nullptr;
     Trinity::MostHPMissingInRange u_check(me, range, MinHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, pUnit, u_check);
-    Cell::VisitAllObjects(me, searcher, range);
+    Cell::VisitGridObjects(me, searcher, range);
     return pUnit;
 }
 
@@ -641,7 +596,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
     std::list<Creature*> pList;
     Trinity::FriendlyCCedInRange u_check(me, range);
     Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(me, pList, u_check);
-    Cell::VisitAllObjects(me, searcher, range);
+    Cell::VisitGridObjects(me, searcher, range);
     return pList;
 }
 
@@ -650,21 +605,10 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     std::list<Creature*> pList;
     Trinity::FriendlyMissingBuffInRange u_check(me, range, spellid);
     Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(me, pList, u_check);
-    Cell::VisitAllObjects(me, searcher, range);
+    Cell::VisitGridObjects(me, searcher, range);
     return pList;
 }
 
-
-// SD2 grid searchers.
-Creature* GetClosestCreatureWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange, bool alive /*= true*/)
-{
-    return source->FindNearestCreature(entry, maxSearchRange, alive);
-}
-
-GameObject* GetClosestGameObjectWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange)
-{
-    return source->FindNearestGameObject(entry, maxSearchRange);
-}
 
 void LoadOverridenSQLData()
 {

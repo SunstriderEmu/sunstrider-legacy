@@ -6,6 +6,13 @@
 #include "Chat.h"
 #include "Language.h"
 #include "ScriptMgr.h"
+#include "AreaBoundary.h"
+
+BossBoundaryData::~BossBoundaryData()
+{
+    for (const_iterator it = begin(); it != end(); ++it)
+        delete it->Boundary;
+}
 
 InstanceScript::InstanceScript(Map *map) : instance(map), _instanceSpawnGroups(sObjectMgr->GetSpawnGroupsForInstance(map->GetId()))
 {
@@ -19,18 +26,112 @@ InstanceScript::InstanceScript(Map *map) : instance(map), _instanceSpawnGroups(s
 #endif // #ifndef TRINITY_API_USE_DYNAMIC_LINKING
 }
 
-void InstanceScript::RemoveAuraOnAllPlayers(uint32 spellId)
+void InstanceScript::SaveToDB()
+{
+    std::string data = GetSaveData();
+    if (data.empty())
+        return;
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_INSTANCE_DATA);
+#ifdef LICH_KING
+    stmt->setUInt32(0, GetCompletedEncounterMask());
+#else
+    stmt->setUInt32(0, 0);
+#endif
+    stmt->setString(1, data);
+    stmt->setUInt32(2, instance->GetInstanceId());
+    CharacterDatabase.Execute(stmt);
+}
+
+bool InstanceScript::IsEncounterInProgress() const
+{
+    for (std::vector<BossInfo>::const_iterator itr = bosses.begin(); itr != bosses.end(); ++itr)
+        if (itr->state == IN_PROGRESS)
+            return true;
+
+    return false;
+}
+
+void InstanceScript::OnCreatureCreate(Creature* creature)
+{
+    AddObject(creature, true);
+    //AddMinion(creature, true);
+}
+
+void InstanceScript::OnCreatureRemove(Creature* creature)
+{
+    AddObject(creature, false);
+    //AddMinion(creature, false);
+}
+
+void InstanceScript::OnGameObjectCreate(GameObject* go)
+{
+    AddObject(go, true);
+    AddDoor(go, true);
+}
+
+void InstanceScript::OnGameObjectRemove(GameObject* go)
+{
+    AddObject(go, false);
+    AddDoor(go, false);
+}
+
+ObjectGuid InstanceScript::GetObjectGuid(uint32 type) const
+{
+    ObjectGuidMap::const_iterator i = _objectGuids.find(type);
+    if (i != _objectGuids.end())
+        return i->second;
+    return ObjectGuid::Empty;
+}
+
+ObjectGuid InstanceScript::GetGuidData(uint32 type) const
+{
+    return GetObjectGuid(type);
+}
+
+Creature* InstanceScript::GetCreature(uint32 type)
+{
+    return instance->GetCreature(GetObjectGuid(type));
+}
+
+GameObject* InstanceScript::GetGameObject(uint32 type)
+{
+    return instance->GetGameObject(GetObjectGuid(type));
+}
+
+void InstanceScript::SetHeaders(std::string const& dataHeaders)
+{
+    for (char header : dataHeaders)
+        if (isalpha(header))
+            headers.push_back(header);
+}
+
+void InstanceScript::DoRemoveAurasDueToSpellOnPlayers(uint32 spellId)
 {
     Map::PlayerList const& players = instance->GetPlayers();
-
     if (!players.isEmpty())
     {
-        for(const auto & player : players)
+        for(const auto& itr : players)
         {
-            if (Player* plr = player.GetSource())
-                plr->RemoveAurasDueToSpell(spellId);
+            if (Player* player = itr.GetSource())
+            {
+                player->RemoveAurasDueToSpell(spellId);
+                if (Pet* pet = player->GetPet())
+                    pet->RemoveAurasDueToSpell(spellId);
+            }
         }
     }
+}
+
+// Cast spell on all players in instance
+void InstanceScript::DoCastSpellOnPlayers(uint32 spell)
+{
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->CastSpell(player, spell, true);
 }
 
 void InstanceScript::SendScriptInTestNoLootMessageToAll()
@@ -45,34 +146,61 @@ void InstanceScript::SendScriptInTestNoLootMessageToAll()
     }
 }
 
-void InstanceScript::Create()
+void InstanceScript::LoadBossBoundaries(BossBoundaryData const& data)
 {
-    for (size_t i = 0; i < bosses.size(); ++i)
-        SetBossState(i, NOT_STARTED);
-    UpdateSpawnGroups();
+    for (BossBoundaryEntry const& entry : data)
+        if (entry.BossId < bosses.size())
+            bosses[entry.BossId].boundary.push_back(entry.Boundary);
 }
 
-bool InstanceScript::IsEncounterInProgress() const
-{
-    for (const auto & bosse : bosses)
-        //if (itr->state == IN_PROGRESS)
-        if (GetData(bosse.bossId) == IN_PROGRESS)
-            return true;
-
-    return false;
-}
-
-void InstanceScript::LoadDoorData(const DoorData* data)
+/* NYI
+void InstanceScript::LoadMinionData(MinionData const* data)
 {
     while (data->entry)
     {
         if (data->bossId < bosses.size())
-            doors.insert(std::make_pair(data->entry, DoorInfo(&bosses[data->bossId], data->type, BoundaryType(data->boundary))));
+            minions.insert(std::make_pair(data->entry, MinionInfo(&bosses[data->bossId])));
 
         ++data;
     }
-    ;//sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::LoadDoorData: " UI64FMTD " doors loaded.", uint64(doors.size()));
+    TC_LOG_DEBUG("scripts", "InstanceScript::LoadMinionData: " UI64FMTD " minions loaded.", uint64(minions.size()));
 }
+*/
+
+void InstanceScript::LoadDoorData(DoorData const* data)
+{
+    while (data->entry)
+    {
+        if (data->bossId < bosses.size())
+            doors.insert(std::make_pair(data->entry, DoorInfo(&bosses[data->bossId], data->type)));
+
+        ++data;
+    }
+    TC_LOG_DEBUG("scripts", "InstanceScript::LoadDoorData: " UI64FMTD " doors loaded.", uint64(doors.size()));
+}
+
+/*NYI
+void InstanceScript::LoadObjectData(ObjectData const* creatureData, ObjectData const* gameObjectData)
+{
+    if (creatureData)
+        LoadObjectData(creatureData, _creatureInfo);
+
+    if (gameObjectData)
+        LoadObjectData(gameObjectData, _gameObjectInfo);
+
+    TC_LOG_DEBUG("scripts", "InstanceScript::LoadObjectData: " SZFMTD " objects loaded.", _creatureInfo.size() + _gameObjectInfo.size());
+}
+
+void InstanceScript::LoadObjectData(ObjectData const* data, ObjectInfoMap& objectInfo)
+{
+    while (data->entry)
+    {
+        ASSERT(objectInfo.find(data->entry) == objectInfo.end());
+        objectInfo[data->entry] = data->type;
+        ++data;
+    }
+}
+*/
 
 void InstanceScript::UpdateDoorState(GameObject* door)
 {
@@ -80,24 +208,20 @@ void InstanceScript::UpdateDoorState(GameObject* door)
     if (range.first == range.second)
         return;
 
-    // sunwell: doors can be assigned to few bosses, if any of them demands doors closed - they should be closed (added & operator for assigment)
     bool open = true;
     for (; range.first != range.second && open; ++range.first)
     {
         DoorInfo const& info = range.first->second;
-
-        //EncounterState state = info.bossInfo->state;
-        EncounterState state = EncounterState(GetData(info.bossInfo->bossId));
         switch (info.type)
         {
         case DOOR_TYPE_ROOM:
-            open &= (state != IN_PROGRESS) ? true : false;
+            open = (info.bossInfo->state != IN_PROGRESS);
             break;
         case DOOR_TYPE_PASSAGE:
-            open &= (state == DONE) ? true : false;
+            open = (info.bossInfo->state == DONE);
             break;
         case DOOR_TYPE_SPAWN_HOLE:
-            open &= (state == IN_PROGRESS) ? true : false;
+            open = (info.bossInfo->state == IN_PROGRESS);
             break;
         default:
             break;
@@ -107,49 +231,28 @@ void InstanceScript::UpdateDoorState(GameObject* door)
     door->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
 }
 
-void InstanceScript::AddDoor(GameObject* door, bool add)
+/* NYI
+void InstanceScript::UpdateMinionState(Creature* minion, EncounterState state)
 {
-    DoorInfoMapBounds range = doors.equal_range(door->GetEntry());
-    if (range.first == range.second)
-        return;
-
-    for (; range.first != range.second; ++range.first)
+    switch (state)
     {
-        DoorInfo const& data = range.first->second;
-
-        if (add)
-        {
-            data.bossInfo->door[data.type].insert(door);
-            switch (data.boundary)
-            {
-            default:
-            case BOUNDARY_NONE:
-                break;
-            case BOUNDARY_N:
-            case BOUNDARY_S:
-                data.bossInfo->boundary[data.boundary] = door->GetPositionX();
-                break;
-            case BOUNDARY_E:
-            case BOUNDARY_W:
-                data.bossInfo->boundary[data.boundary] = door->GetPositionY();
-                break;
-            case BOUNDARY_NW:
-            case BOUNDARY_SE:
-                data.bossInfo->boundary[data.boundary] = door->GetPositionX() + door->GetPositionY();
-                break;
-            case BOUNDARY_NE:
-            case BOUNDARY_SW:
-                data.bossInfo->boundary[data.boundary] = door->GetPositionX() - door->GetPositionY();
-                break;
-            }
-        }
-        else
-            data.bossInfo->door[data.type].erase(door);
+        case NOT_STARTED:
+            if (!minion->IsAlive())
+                minion->Respawn();
+            else if (minion->IsInCombat())
+                minion->AI()->EnterEvadeMode();
+            break;
+        case IN_PROGRESS:
+            if (!minion->IsAlive())
+                minion->Respawn();
+            else if (!minion->GetVictim())
+                minion->AI()->DoZoneInCombat();
+            break;
+        default:
+            break;
     }
-
-    if (add)
-        UpdateDoorState(door);
 }
+*/
 
 void InstanceScript::UpdateSpawnGroups()
 {
@@ -184,51 +287,188 @@ void InstanceScript::UpdateSpawnGroups()
     }
 }
 
+BossInfo* InstanceScript::GetBossInfo(uint32 id)
+{
+    ASSERT(id < bosses.size());
+    return &bosses[id];
+}
+
+void InstanceScript::AddObject(Creature* obj, bool add)
+{
+    ObjectInfoMap::const_iterator j = _creatureInfo.find(obj->GetEntry());
+    if (j != _creatureInfo.end())
+        AddObject(obj, j->second, add);
+}
+
+void InstanceScript::AddObject(GameObject* obj, bool add)
+{
+    ObjectInfoMap::const_iterator j = _gameObjectInfo.find(obj->GetEntry());
+    if (j != _gameObjectInfo.end())
+        AddObject(obj, j->second, add);
+}
+
+void InstanceScript::AddObject(WorldObject* obj, uint32 type, bool add)
+{
+    if (add)
+        _objectGuids[type] = obj->GetGUID();
+    else
+    {
+        ObjectGuidMap::iterator i = _objectGuids.find(type);
+        if (i != _objectGuids.end() && i->second == obj->GetGUID())
+            _objectGuids.erase(i);
+    }
+}
+
+void InstanceScript::AddDoor(GameObject* door, bool add)
+{
+    DoorInfoMapBounds range = doors.equal_range(door->GetEntry());
+    if (range.first == range.second)
+        return;
+
+    for (; range.first != range.second; ++range.first)
+    {
+        DoorInfo const& data = range.first->second;
+
+        if (add)
+        {
+            data.bossInfo->door[data.type].insert(door->GetGUID());
+        }
+        else
+            data.bossInfo->door[data.type].erase(door->GetGUID());
+    }
+
+    if (add)
+        UpdateDoorState(door);
+}
+
+/*NYI
+void InstanceScript::AddMinion(Creature* minion, bool add)
+{
+    MinionInfoMap::iterator itr = minions.find(minion->GetEntry());
+    if (itr == minions.end())
+        return;
+
+    if (add)
+        itr->second.bossInfo->minion.insert(minion->GetGUID());
+    else
+        itr->second.bossInfo->minion.erase(minion->GetGUID());
+}
+*/
+
 bool InstanceScript::SetBossState(uint32 id, EncounterState state)
 {
     if (id < bosses.size())
     {
         BossInfo* bossInfo = &bosses[id];
-        //if (bossInfo->state == TO_BE_DECIDED) // loading
-        if (GetData(id) == TO_BE_DECIDED) // loading
+        if (bossInfo->state == TO_BE_DECIDED) // loading
         {
-            //bossInfo->state = state;
-            SetData(id, state);
-            //sLog->outError("Inialize boss %u state as %u.", id, (uint32)state);
+            bossInfo->state = state;
+            TC_LOG_DEBUG("scripts", "InstanceScript: Initialize boss %u state as %s (map %u, %u).", id, GetBossStateName(state), instance->GetId(), instance->GetInstanceId());
             return false;
         }
         else
         {
-            if (GetData(id) == state)
-            //if (bossInfo->state == state)
+            if (bossInfo->state == state)
                 return false;
 
-            /* NYI
+            if (bossInfo->state == DONE)
+            {
+                TC_LOG_ERROR("map", "InstanceScript: Tried to set instance state from %s back to %s for map %u, instance id %u. Blocked!", GetBossStateName(bossInfo->state), GetBossStateName(state), instance->GetId(), instance->GetInstanceId());
+                return false;
+            }
+
+            /*NYI
             if (state == DONE)
-                for (MinionSet::iterator i = bossInfo->minion.begin(); i != bossInfo->minion.end(); ++i)
-                    if ((*i)->isWorldBoss() && (*i)->IsAlive())
-                        return false;
-                        */
-            //bossInfo->state = state;
-            SetData(id, state);
+                for (GuidSet::iterator i = bossInfo->minion.begin(); i != bossInfo->minion.end(); ++i)
+                    if (Creature* minion = instance->GetCreature(*i))
+                        if (minion->isWorldBoss() && minion->IsAlive())
+                            return false;
+                            */
+
+            bossInfo->state = state;
             SaveToDB();
         }
 
-        for (auto & type : bossInfo->door)
-            for (auto i = type.begin(); i != type.end(); ++i)
-                UpdateDoorState(*i);
-
-        /* NYI
-        for (MinionSet::iterator i = bossInfo->minion.begin(); i != bossInfo->minion.end(); ++i)
-            UpdateMinionState(*i, state);
-            */
-
+        for (uint32 type = 0; type < MAX_DOOR_TYPES; ++type)
+            for (GuidSet::iterator i = bossInfo->door[type].begin(); i != bossInfo->door[type].end(); ++i)
+                if (GameObject* door = instance->GetGameObject(*i))
+                    UpdateDoorState(door);
+        /*NYI
+        for (GuidSet::iterator i = bossInfo->minion.begin(); i != bossInfo->minion.end(); ++i)
+            if (Creature* minion = instance->GetCreature(*i))
+                UpdateMinionState(minion, state);
+        */
         UpdateSpawnGroups();
         return true;
     }
     return false;
 }
 
+bool InstanceScript::_SkipCheckRequiredBosses(Player const* player /*= nullptr*/) const
+{
+    //return player && player->GetSession()->HasPermission(rbac::RBAC_PERM_SKIP_CHECK_INSTANCE_REQUIRED_BOSSES);
+    return player->IsGameMaster();
+}
+
+void InstanceScript::Create()
+{
+    for (size_t i = 0; i < bosses.size(); ++i)
+        SetBossState(i, NOT_STARTED);
+    UpdateSpawnGroups();
+}
+
+void InstanceScript::Load(char const* data)
+{
+    if (!data)
+    {
+        OUT_LOAD_INST_DATA_FAIL;
+        return;
+    }
+
+    OUT_LOAD_INST_DATA(data);
+
+    std::istringstream loadStream(data);
+
+    if (ReadSaveDataHeaders(loadStream))
+    {
+        ReadSaveDataBossStates(loadStream);
+        ReadSaveDataMore(loadStream);
+    }
+    else
+        OUT_LOAD_INST_DATA_FAIL;
+
+    OUT_LOAD_INST_DATA_COMPLETE;
+}
+
+bool InstanceScript::ReadSaveDataHeaders(std::istringstream& data)
+{
+    for (char header : headers)
+    {
+        char buff;
+        data >> buff;
+
+        if (header != buff)
+            return false;
+    }
+
+    return true;
+}
+
+void InstanceScript::ReadSaveDataBossStates(std::istringstream& data)
+{
+    uint32 bossId = 0;
+    for (std::vector<BossInfo>::iterator i = bosses.begin(); i != bosses.end(); ++i, ++bossId)
+    {
+        uint32 buff;
+        data >> buff;
+        if (buff == IN_PROGRESS || buff == FAIL || buff == SPECIAL)
+            buff = NOT_STARTED;
+
+        if (buff < TO_BE_DECIDED)
+            SetBossState(bossId, EncounterState(buff));
+    }
+    UpdateSpawnGroups();
+}
 
 Player* InstanceScript::GetPlayer() const
 {
@@ -242,18 +482,35 @@ Player* InstanceScript::GetPlayer() const
         }
     }
 
-    TC_LOG_ERROR("scripts","InstanceScript: GetPlayerInMap (map: %u) called, and no player found!", (instance ? instance->GetId() : 0));
+    TC_LOG_ERROR("scripts", "InstanceScript: GetPlayerInMap (map: %u) called, and no player found!", (instance ? instance->GetId() : 0));
     return nullptr;
 }
 
-void InstanceScript::SaveToDB()
+std::string InstanceScript::GetSaveData()
 {
-    if (!Save()) 
-        return;
+    OUT_SAVE_INST_DATA;
 
-    std::string data = Save();
-    CharacterDatabase.EscapeString(data);
-    CharacterDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
+    std::ostringstream saveStream;
+
+    WriteSaveDataHeaders(saveStream);
+    WriteSaveDataBossStates(saveStream);
+    WriteSaveDataMore(saveStream);
+
+    OUT_SAVE_INST_DATA_COMPLETE;
+
+    return saveStream.str();
+}
+
+void InstanceScript::WriteSaveDataHeaders(std::ostringstream& data)
+{
+    for (char header : headers)
+        data << header << ' ';
+}
+
+void InstanceScript::WriteSaveDataBossStates(std::ostringstream& data)
+{
+    for (BossInfo const& bossInfo : bosses)
+        data << uint32(bossInfo.state) << ' ';
 }
 
 void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject *go)
@@ -261,14 +518,54 @@ void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject *go)
     if (!go)
         go = instance->GetGameObject(GUID);
     if (go)
-        go->SetGoState(GOState(open ? 0 : 1));
+        go->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
     else
-        TC_LOG_ERROR("scripts", "ZoneScript: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
+        TC_LOG_DEBUG("scripts", "ZoneScript: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
 }
 
-void InstanceScript::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
+void InstanceScript::DoUseDoorOrButton(ObjectGuid guid, uint32 withRestoreTime /*= 0*/, bool useAlternativeState /*= false*/)
 {
-    if (GameObject* go = instance->GetGameObject(uiGuid))
+    if (!guid)
+        return;
+
+    if (GameObject* go = instance->GetGameObject(guid))
+    {
+        if (go->GetGoType() == GAMEOBJECT_TYPE_DOOR || go->GetGoType() == GAMEOBJECT_TYPE_BUTTON)
+        {
+            if (go->getLootState() == GO_READY)
+                go->UseDoorOrButton(withRestoreTime, useAlternativeState);
+            else if (go->getLootState() == GO_ACTIVATED)
+                go->ResetDoorOrButton();
+        }
+        else
+            TC_LOG_ERROR("scripts", "InstanceScript: DoUseDoorOrButton can't use gameobject entry %u, because type is %u.", go->GetEntry(), go->GetGoType());
+    }
+    else
+        TC_LOG_DEBUG("scripts", "InstanceScript: DoUseDoorOrButton failed");
+}
+
+void InstanceScript::DoCloseDoorOrButton(ObjectGuid guid)
+{
+    if (!guid)
+        return;
+
+    if (GameObject* go = instance->GetGameObject(guid))
+    {
+        if (go->GetGoType() == GAMEOBJECT_TYPE_DOOR || go->GetGoType() == GAMEOBJECT_TYPE_BUTTON)
+        {
+            if (go->getLootState() == GO_ACTIVATED)
+                go->ResetDoorOrButton();
+        }
+        else
+            TC_LOG_ERROR("scripts", "InstanceScript: DoCloseDoorOrButton can't use gameobject entry %u, because type is %u.", go->GetEntry(), go->GetGoType());
+    }
+    else
+        TC_LOG_DEBUG("scripts", "InstanceScript: DoCloseDoorOrButton failed");
+}
+
+void InstanceScript::DoRespawnGameObject(ObjectGuid guid, uint32 timeToDespawn /*= MINUTE*/)
+{
+    if (GameObject* go = instance->GetGameObject(guid))
     {
         switch (go->GetGoType())
         {
@@ -286,30 +583,100 @@ void InstanceScript::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
         if (go->isSpawned())
             return;
 
-        go->SetRespawnTime(uiTimeToDespawn);
+        go->SetRespawnTime(timeToDespawn);
     }
     else
         TC_LOG_DEBUG("scripts", "InstanceScript: DoRespawnGameObject failed");
 }
 
-void InstanceScript::DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime, bool bUseAlternativeState)
+void InstanceScript::DoUpdateWorldState(uint32 uiStateId, uint32 uiStateData)
 {
-    if (!uiGuid)
-        return;
+    Map::PlayerList const& lPlayers = instance->GetPlayers();
 
-    GameObject* pGo = instance->GetGameObject(uiGuid);
-
-    if (pGo)
+    if (!lPlayers.isEmpty())
     {
-        if (pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR || pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON)
-        {
-            if (pGo->getLootState() == GO_READY)
-                pGo->UseDoorOrButton(uiWithRestoreTime);
-            else if (pGo->getLootState() == GO_ACTIVATED)
-                pGo->ResetDoorOrButton();
-        }
-        else
-            error_log("OSCR: Script call DoUseDoorOrButton, but gameobject entry %u is type %u.", pGo->GetEntry(), pGo->GetGoType());
+        for (Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
+            if (Player* player = itr->GetSource())
+                player->SendUpdateWorldState(uiStateId, uiStateData);
+    }
+    else
+        TC_LOG_DEBUG("scripts", "DoUpdateWorldState attempt send data but no players in map.");
+}
+
+// Send Notify to all players in instance
+void InstanceScript::DoSendNotifyToInstance(char const* format, ...)
+{
+    InstanceMap::PlayerList const& players = instance->GetPlayers();
+
+    if (!players.isEmpty())
+    {
+        va_list ap;
+        va_start(ap, format);
+        char buff[1024];
+        vsnprintf(buff, 1024, format, ap);
+        va_end(ap);
+        for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+            if (Player* player = i->GetSource())
+                if (WorldSession* session = player->GetSession())
+                    session->SendNotification("%s", buff);
+    }
+}
+
+#ifdef LICH_KING
+// Update Achievement Criteria for all players in instance
+void InstanceScript::DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit* unit /*= nullptr*/)
+{
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->UpdateAchievementCriteria(type, miscValue1, miscValue2, unit);
+}
+
+// Start timed achievement for all players in instance
+void InstanceScript::DoStartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry)
+{
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->StartTimedAchievement(type, entry);
+}
+
+// Stop timed achievement for all players in instance
+void InstanceScript::DoStopTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry)
+{
+    Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->GetSource())
+                player->RemoveTimedAchievement(type, entry);
+}
+
+#endif
+
+/*static*/ char const* InstanceScript::GetBossStateName(uint8 state)
+{
+    // See enum EncounterState in InstanceScript.h
+    switch (state)
+    {
+    case NOT_STARTED:
+        return "NOT_STARTED";
+    case IN_PROGRESS:
+        return "IN_PROGRESS";
+    case FAIL:
+        return "FAIL";
+    case DONE:
+        return "DONE";
+    case SPECIAL:
+        return "SPECIAL";
+    case TO_BE_DECIDED:
+        return "TO_BE_DECIDED";
+    default:
+        return "INVALID";
     }
 }
 

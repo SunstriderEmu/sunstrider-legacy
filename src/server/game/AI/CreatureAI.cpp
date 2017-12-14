@@ -8,8 +8,10 @@
 #include "CreatureTextMgr.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "Language.h"
+#include "AreaBoundary.h"
 
-CreatureAI::CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c), m_MoveInLineOfSight_locked(false)
+CreatureAI::CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c), m_MoveInLineOfSight_locked(false), _boundary(nullptr), _negateBoundary(false)
 {
 
 }
@@ -276,4 +278,120 @@ void CreatureAI::AttackStartIfCan(Unit* victim)
     //Merge conflict : set CanStartAttack
     if(me->CanCreatureAttack(victim) == CAN_ATTACK_RESULT_OK)
         AttackStart(victim);
+}
+
+
+static const uint32 BOUNDARY_VISUALIZE_CREATURE = 15425;
+static const float BOUNDARY_VISUALIZE_CREATURE_SCALE = 0.25f;
+static const int8 BOUNDARY_VISUALIZE_STEP_SIZE = 1;
+static const int32 BOUNDARY_VISUALIZE_FAILSAFE_LIMIT = 750;
+static const float BOUNDARY_VISUALIZE_SPAWN_HEIGHT = 5.0f;
+int32 CreatureAI::VisualizeBoundary(uint32 duration, Unit* owner, bool fill) const
+{
+    typedef std::pair<int32, int32> coordinate;
+
+    if (!owner)
+        return -1;
+    
+    if (!_boundary || _boundary->empty())
+        return LANG_CREATURE_MOVEMENT_NOT_BOUNDED;
+
+    std::queue<coordinate> Q;
+    std::unordered_set<coordinate> alreadyChecked;
+    std::unordered_set<coordinate> outOfBounds;
+
+    Position startPosition = owner->GetPosition();
+    if (!CheckBoundary(&startPosition))
+    { // fall back to creature position
+        startPosition = me->GetPosition();
+        if (!CheckBoundary(&startPosition))
+        { // fall back to creature home position
+            startPosition = me->GetHomePosition();
+            if (!CheckBoundary(&startPosition))
+                return LANG_CREATURE_NO_INTERIOR_POINT_FOUND;
+        }
+    }
+    float spawnZ = startPosition.GetPositionZ() + BOUNDARY_VISUALIZE_SPAWN_HEIGHT;
+
+    bool boundsWarning = false;
+    Q.push({ 0,0 });
+    while (!Q.empty())
+    {
+        coordinate front = Q.front();
+        bool hasOutOfBoundsNeighbor = false;
+        for (coordinate off : std::initializer_list<coordinate>{ { 1,0 },{ 0,1 },{ -1,0 },{ 0,-1 } })
+        {
+            coordinate next(front.first + off.first, front.second + off.second);
+            if (next.first > BOUNDARY_VISUALIZE_FAILSAFE_LIMIT || next.first < -BOUNDARY_VISUALIZE_FAILSAFE_LIMIT || next.second > BOUNDARY_VISUALIZE_FAILSAFE_LIMIT || next.second < -BOUNDARY_VISUALIZE_FAILSAFE_LIMIT)
+            {
+                boundsWarning = true;
+                continue;
+            }
+            if (alreadyChecked.find(next) == alreadyChecked.end()) // never check a coordinate twice
+            {
+                Position nextPos(startPosition.GetPositionX() + next.first*BOUNDARY_VISUALIZE_STEP_SIZE, startPosition.GetPositionY() + next.second*BOUNDARY_VISUALIZE_STEP_SIZE, startPosition.GetPositionZ());
+                if (CheckBoundary(&nextPos))
+                    Q.push(next);
+                else
+                {
+                    outOfBounds.insert(next);
+                    hasOutOfBoundsNeighbor = true;
+                }
+                alreadyChecked.insert(next);
+            }
+            else
+                if (outOfBounds.find(next) != outOfBounds.end())
+                    hasOutOfBoundsNeighbor = true;
+        }
+        if (fill || hasOutOfBoundsNeighbor)
+            if (TempSummon* point = owner->SummonCreature(BOUNDARY_VISUALIZE_CREATURE, Position(startPosition.GetPositionX() + front.first*BOUNDARY_VISUALIZE_STEP_SIZE, startPosition.GetPositionY() + front.second*BOUNDARY_VISUALIZE_STEP_SIZE, spawnZ), TEMPSUMMON_TIMED_DESPAWN, duration * IN_MILLISECONDS))
+            {
+                point->SetDisableGravity(true);
+                point->SetObjectScale(BOUNDARY_VISUALIZE_CREATURE_SCALE);
+                point->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
+                point->SetImmuneToAll(true);
+                if (!hasOutOfBoundsNeighbor)
+                    point->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            }
+        Q.pop();
+    }
+    return boundsWarning ? LANG_CREATURE_MOVEMENT_MAYBE_UNBOUNDED : 0;
+}
+
+bool CreatureAI::CheckBoundary(Position const* who) const
+{
+    if (!_boundary)
+        return true;
+
+    if (!who)
+        who = me;
+
+    return (CreatureAI::IsInBounds(*_boundary, who) != _negateBoundary);
+}
+
+bool CreatureAI::IsInBounds(CreatureBoundary const& boundary, Position const* pos)
+{
+    for (AreaBoundary const* areaBoundary : boundary)
+        if (!areaBoundary->IsWithinBoundary(pos))
+            return false;
+
+    return true;
+}
+
+bool CreatureAI::CheckInRoom()
+{
+    if (CheckBoundary())
+        return true;
+    else
+    {
+        EnterEvadeMode(EVADE_REASON_BOUNDARY);
+        return false;
+    }
+}
+
+void CreatureAI::SetBoundary(CreatureBoundary const* boundary, bool negateBoundaries /*= false*/)
+{
+    _boundary = boundary;
+    _negateBoundary = negateBoundaries;
+    me->DoImmediateBoundaryCheck();
 }

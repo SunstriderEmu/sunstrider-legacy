@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #include "ByteBuffer.h"
 #include "TargetedMovementGenerator.h"
@@ -30,11 +13,11 @@
 template<class T, typename D>
 void TargetedMovementGenerator<T, D>::SetOffset(float offset)
 {
-    this->i_offset = offset;
+    this->_offset = offset;
 }
 
 template<class T, typename D>
-void TargetedMovementGenerator<T, D>::_setTargetLocation(T* owner)
+void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
 {
     if (!i_target.isValid() || !i_target->IsInWorld())
         return;
@@ -51,7 +34,7 @@ void TargetedMovementGenerator<T, D>::_setTargetLocation(T* owner)
     lastOwnerXYZ.Relocate(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ());
     lastTargetXYZ.Relocate(i_target->GetPositionX(), i_target->GetPositionY(), i_target->GetPositionZ());
 
-    if (!i_offset)
+    if (!_offset)
     {
         // to nearest contact position
         i_target->GetContactPoint(owner, x, y, z);
@@ -63,8 +46,8 @@ void TargetedMovementGenerator<T, D>::_setTargetLocation(T* owner)
         }
     }
     else
-        // to at i_offset distance from target and i_angle from target facing
-        i_target->GetClosePoint(x, y, z, owner->GetCombatReach(), i_offset, i_angle);
+        // to at _offset distance from target and _angle from target facing
+        i_target->GetClosePoint(x, y, z, owner->GetCombatReach(), _offset, _angle);
 
     if (!i_path)
         i_path = new PathGenerator(owner);
@@ -94,7 +77,7 @@ void TargetedMovementGenerator<T, D>::_setTargetLocation(T* owner)
     D::_addUnitStateMove(owner);
     i_targetReached = false;
     i_recalculatePath = false;
-    i_speedChanged = false;
+    _speedChanged = false;
     owner->AddUnitState(UNIT_STATE_CHASE);
 
     Movement::MoveSplineInit init(owner);
@@ -102,7 +85,7 @@ void TargetedMovementGenerator<T, D>::_setTargetLocation(T* owner)
     init.SetWalk(((D*)this)->EnableWalking());
     // Using the same condition for facing target as the one that is used for SetInFront on movement end
     // - applies to ChaseMovementGenerator mostly
-    if (i_angle == 0.f)
+    if (_angle == 0.f)
         init.SetFacing(i_target.getTarget());
 
     // use player orientation if player pet
@@ -133,7 +116,7 @@ float TargetedMovementGenerator<T, D>::GetAllowedDist(T* owner)
     if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)
         combatReach /= 2; //Divide CombatReach by 2.0f, chasing creature relocation should be triggered long before being at max range
 
-    return combatReach + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE) + i_offset;
+    return combatReach + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE) + _offset;
 }
 
 template<class T, typename D>
@@ -145,9 +128,17 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
     if (!owner || !owner->IsAlive())
         return false;
 
-    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE))
+    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || HasLostTarget(owner))
     {
         D::_clearUnitStateMove(owner);
+        return true;
+    }
+
+    // prevent movement while casting spells with cast time or channel time
+    if (owner->IsMovementPreventedByCasting() )
+    {
+        if (!owner->IsStopped())
+            owner->StopMoving();
         return true;
     }
 
@@ -162,25 +153,10 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
         }
     }
 
-    // prevent movement while casting spells with cast time or channel time
-    if (owner->IsMovementPreventedByCasting())
+    _timer.Update(time_diff);
+    if (!i_recalculatePath && _timer.Passed())
     {
-        if (!owner->IsStopped())
-            owner->StopMoving();
-        return true;
-    }
-
-    // prevent crash after creature killed pet
-    if (static_cast<D*>(this)->_lostTarget(owner))
-    {
-        D::_clearUnitStateMove(owner);
-        return true;
-    }
-
-    i_recheckDistance.Update(time_diff);
-    if (!i_recalculatePath && i_recheckDistance.Passed())
-    {
-        i_recheckDistance.Reset(100);
+        _timer.Reset(100);
         G3D::Vector3 dest = owner->movespline->FinalDestination();
 
         if (owner->movespline->onTransport)
@@ -194,13 +170,13 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
     }
 
     bool someoneMoved = (owner->GetExactDistSq(&lastOwnerXYZ) >= 0.1f*0.1f) || (i_target->GetExactDistSq(&lastTargetXYZ) >= 0.1f*0.1f);
-    if (i_speedChanged || (i_recalculatePath && someoneMoved))
-        _setTargetLocation(owner);
+    if (_speedChanged || (i_recalculatePath && someoneMoved))
+        SetTargetLocation(owner);
 
     if (owner->movespline->Finalized())
     {
         static_cast<D*>(this)->MovementInform(owner);
-        if (i_angle == 0.f && !owner->HasInArc(0.01f, i_target.getTarget()))
+        if (_angle == 0.f && !owner->HasInArc(0.01f, i_target.getTarget()))
             owner->SetInFront(i_target.getTarget());
 
         if (!i_targetReached)
@@ -227,7 +203,7 @@ template<>
 bool ChaseMovementGenerator<Player>::DoInitialize(Player* owner)
 {
     owner->AddUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
-    _setTargetLocation(owner);
+    SetTargetLocation(owner);
     return true;
 }
 
@@ -237,7 +213,7 @@ bool ChaseMovementGenerator<Creature>::DoInitialize(Creature* owner)
     _restoreWalking = owner->IsWalking();
     owner->SetWalk(false);
     owner->AddUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
-    _setTargetLocation(owner);
+    SetTargetLocation(owner);
     return true;
 }
 
@@ -266,6 +242,12 @@ void ChaseMovementGenerator<Creature>::MovementInform(Creature* unit)
     // Pass back the GUIDLow of the target. If it is pet's owner then PetAI will handle
     if (unit->AI())
         unit->AI()->MovementInform(CHASE_MOTION_TYPE, i_target.getTarget()->GetGUIDLow());
+}
+
+template<class T>
+bool ChaseMovementGenerator<T>::HasLostTarget(T* owner) const
+{
+    return owner->GetVictim() != TargetedMovementGeneratorBase::GetTarget();
 }
 
 //-----------------------------------------------//
@@ -305,7 +287,7 @@ bool FollowMovementGenerator<Player>::DoInitialize(Player* owner)
 {
     owner->AddUnitState(UNIT_STATE_FOLLOW | UNIT_STATE_FOLLOW_MOVE);
     _updateSpeed(owner);
-    _setTargetLocation(owner);
+    SetTargetLocation(owner);
     return true;
 }
 
@@ -314,7 +296,7 @@ bool FollowMovementGenerator<Creature>::DoInitialize(Creature* owner)
 {
     owner->AddUnitState(UNIT_STATE_FOLLOW | UNIT_STATE_FOLLOW_MOVE);
     _updateSpeed(owner);
-    _setTargetLocation(owner);
+    SetTargetLocation(owner);
     return true;
 }
 
@@ -343,10 +325,10 @@ void FollowMovementGenerator<Creature>::MovementInform(Creature* unit)
 }
 
 //-----------------------------------------------//
-template void TargetedMovementGenerator<Player, ChaseMovementGenerator<Player> >::_setTargetLocation(Player*);
-template void TargetedMovementGenerator<Player, FollowMovementGenerator<Player> >::_setTargetLocation(Player*);
-template void TargetedMovementGenerator<Creature, ChaseMovementGenerator<Creature> >::_setTargetLocation(Creature*);
-template void TargetedMovementGenerator<Creature, FollowMovementGenerator<Creature> >::_setTargetLocation(Creature*);
+template void TargetedMovementGenerator<Player, ChaseMovementGenerator<Player> >::SetTargetLocation(Player*);
+template void TargetedMovementGenerator<Player, FollowMovementGenerator<Player> >::SetTargetLocation(Player*);
+template void TargetedMovementGenerator<Creature, ChaseMovementGenerator<Creature> >::SetTargetLocation(Creature*);
+template void TargetedMovementGenerator<Creature, FollowMovementGenerator<Creature> >::SetTargetLocation(Creature*);
 template bool TargetedMovementGenerator<Player, ChaseMovementGenerator<Player> >::DoUpdate(Player*, uint32);
 template bool TargetedMovementGenerator<Player, FollowMovementGenerator<Player> >::DoUpdate(Player*, uint32);
 template bool TargetedMovementGenerator<Creature, ChaseMovementGenerator<Creature> >::DoUpdate(Creature*, uint32);
@@ -359,6 +341,8 @@ template void ChaseMovementGenerator<Creature>::DoFinalize(Creature*);
 template void ChaseMovementGenerator<Player>::DoReset(Player*);
 template void ChaseMovementGenerator<Creature>::DoReset(Creature*);
 template void ChaseMovementGenerator<Player>::MovementInform(Player*);
+template bool ChaseMovementGenerator<Player>::HasLostTarget(Player*) const;
+template bool ChaseMovementGenerator<Creature>::HasLostTarget(Creature*) const;
 
 template void FollowMovementGenerator<Player>::DoFinalize(Player*);
 template void FollowMovementGenerator<Creature>::DoFinalize(Creature*);

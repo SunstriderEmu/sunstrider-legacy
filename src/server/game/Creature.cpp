@@ -204,7 +204,10 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_keepActiveTimer(0), 
     m_homeless(false), 
     m_respawnCompatibilityMode(false),
-    m_triggerJustAppeared(false)
+    m_triggerJustAppeared(false),
+    m_boundaryCheckTime(2500), 
+    m_combatPulseTime(0), 
+    m_combatPulseDelay(0)
 {
     m_valuesCount = UNIT_END;
 
@@ -736,6 +739,46 @@ void Creature::Update(uint32 diff)
 
                 // sunwell: update combat state, if npc is not in combat - return to spawn correctly by calling EnterEvadeMode
                 SelectVictim();
+            }
+
+            // periodic check to see if the creature has passed an evade boundary
+            if (IsAIEnabled && !IsInEvadeMode() && IsEngaged())
+            {
+                if (diff >= m_boundaryCheckTime)
+                {
+                    AI()->CheckInRoom();
+                    m_boundaryCheckTime = 2500;
+                }
+                else
+                    m_boundaryCheckTime -= diff;
+            }
+
+            // if periodic combat pulse is enabled and we are both in combat and in a dungeon, do this now
+            if (m_combatPulseDelay > 0 && IsEngaged() && GetMap()->IsDungeon())
+            {
+                if (diff > m_combatPulseTime)
+                    m_combatPulseTime = 0;
+                else
+                    m_combatPulseTime -= diff;
+
+                if (m_combatPulseTime == 0)
+                {
+                    Map::PlayerList const& players = GetMap()->GetPlayers();
+                    if (!players.isEmpty())
+                        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+                        {
+                            if (Player* player = it->GetSource())
+                            {
+                                if (player->IsGameMaster())
+                                    continue;
+
+                                if (player->IsAlive() && IsHostileTo(player))
+                                    EngageWithTarget(player);
+                            }
+                        }
+
+                    m_combatPulseTime = m_combatPulseDelay * IN_MILLISECONDS;
+                }
             }
 
             if(IsAIEnabled)

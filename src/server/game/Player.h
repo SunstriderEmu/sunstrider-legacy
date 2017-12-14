@@ -1288,6 +1288,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         int GetTimeInnEnter() const { return time_inn_enter; };
         void UpdateInnerTime (int time) { time_inn_enter = time; };
 
+        Pet* GetPet() const;
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime);
         void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false, RemovePetReason reason = REMOVE_PET_REASON_OTHER);
 

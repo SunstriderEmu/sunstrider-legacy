@@ -29,6 +29,7 @@ class TC_GAME_API TargetedMovementGeneratorBase
 {
     public:
         TargetedMovementGeneratorBase(Unit* target) { i_target.link(target, this); }
+        Unit* GetTarget() const { return i_target.getTarget(); }
         void stopFollowing() { }
     protected:
         FollowerReference i_target;
@@ -43,8 +44,8 @@ class TC_GAME_API TargetedMovementGenerator : public MovementGeneratorMedium< T,
         */
         explicit TargetedMovementGenerator(Unit* target, float offset, float angle) :
             TargetedMovementGeneratorBase(target), i_path(nullptr),
-            i_recheckDistance(0), i_offset(offset), i_angle(angle),
-            i_recalculatePath(false), i_targetReached(false), i_speedChanged(false),
+            _timer(0), _offset(offset), _angle(angle),
+            i_recalculatePath(false), i_targetReached(false), _speedChanged(false),
             lastTargetXYZ(0.0f, 0.0f, 0.0f), lastOwnerXYZ(0.0f, 0.0f, 0.0f)
         {
         }
@@ -57,23 +58,23 @@ class TC_GAME_API TargetedMovementGenerator : public MovementGeneratorMedium< T,
         bool DoUpdate(T*, uint32);
         Unit* GetTarget() const { return i_target.getTarget(); }
 
-        void UnitSpeedChanged() { i_speedChanged = true; }
-        bool IsReachable() const { return (i_path) ? (i_path->GetPathType() & PATHFIND_NORMAL) : true; }
+        void UnitSpeedChanged() { _speedChanged = true; }
+        virtual bool HasLostTarget(T*) const { return false; }
         /** return true target position is within allowed distance of the owner */
         bool IsWithinAllowedDist(T* owner, float x, float y, float z);
         float GetAllowedDist(T* owner);
-        float GetOffset() { return i_offset; }
+        float GetOffset() { return _offset; }
         void SetOffset(float offset);
-    protected:
-        /* Update target locaton */
-        void _setTargetLocation(T* owner);
 
+        /* Update target locaton */
+        void SetTargetLocation(T* owner);
+    protected:
         PathGenerator* i_path;
-        TimeTrackerSmall i_recheckDistance;
-        float i_offset;
-        float i_angle;
+        TimeTrackerSmall _timer;
+        float _offset;
+        float _angle;
         bool i_recalculatePath : 1;
-        bool i_speedChanged : 1;
+        bool _speedChanged : 1;
         bool i_targetReached : 1;
 
         Position lastOwnerXYZ;
@@ -98,10 +99,10 @@ class TC_GAME_API ChaseMovementGenerator : public TargetedMovementGenerator<T, C
         void DoReset(T*);
         void MovementInform(T*);
 
+        bool HasLostTarget(T*) const override;
         static void _clearUnitStateMove(T* u) { u->ClearUnitState(UNIT_STATE_CHASE_MOVE); }
         static void _addUnitStateMove(T* u)  { u->AddUnitState(UNIT_STATE_CHASE_MOVE); }
         bool EnableWalking() const { return false;}
-        bool _lostTarget(T* u) const { return u->GetVictim() != this->GetTarget(); }
         void _reachTarget(T*);
     private:
         bool _restoreWalking; //sunstrider addition
@@ -127,7 +128,6 @@ class TC_GAME_API FollowMovementGenerator : public TargetedMovementGenerator<T, 
         static void _clearUnitStateMove(T* u) { u->ClearUnitState(UNIT_STATE_FOLLOW_MOVE); }
         static void _addUnitStateMove(T* u)  { u->AddUnitState(UNIT_STATE_FOLLOW_MOVE); }
         bool EnableWalking() const;
-        bool _lostTarget(T*) const { return false; }
         void _reachTarget(T*) { }
     private:
         void _updateSpeed(T* owner);

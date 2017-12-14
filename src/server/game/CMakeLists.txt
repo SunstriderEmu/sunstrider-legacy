@@ -40,7 +40,7 @@ target_include_directories(game-interface
   INTERFACE
     ${PUBLIC_INCLUDES})
 
-    
+   
 target_link_libraries(game-interface
   INTERFACE
     shared

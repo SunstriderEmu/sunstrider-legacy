@@ -619,6 +619,7 @@ class TC_GAME_API ChatHandler
         bool HandleDebugRemoveLootItem(const char* args);
         bool HandleDebugPvPAnnounce(const char* args);
         bool HandleSpawnBatchObjects(const char* args);
+        bool HandleDebugBoundaryCommand(const char* args);
 
         bool HandleNpcSetCombatDistanceCommand(const char* args);
         bool HandleNpcAllowCombatMovementCommand(const char* args);

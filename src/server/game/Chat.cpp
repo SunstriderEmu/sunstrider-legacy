@@ -286,6 +286,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "setarmor",       SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugSetArmorCommand,         "" },
         { "getarmor",       SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugGetArmorCommand,         "" },
         { "spawnbatchobjects",SEC_SUPERADMIN, false, &ChatHandler::HandleSpawnBatchObjects,            "" },
+        { "boundary",      SEC_GAMEMASTER3,   false, &ChatHandler::HandleDebugBoundaryCommand,         "" },
     };
 
     static std::vector<ChatCommand> eventCommandTable =

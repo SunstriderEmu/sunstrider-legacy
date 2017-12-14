@@ -1831,6 +1831,29 @@ TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, fl
     */
 }
 
+Pet* Player::GetPet() const
+{
+    if (ObjectGuid pet_guid = GetPetGUID())
+    {
+        if (!pet_guid.IsPet())
+            return nullptr;
+
+        Pet* pet = ObjectAccessor::GetPet(*this, pet_guid);
+
+        if (!pet)
+            return nullptr;
+
+        if (IsInWorld())
+            return pet;
+
+        // there may be a guardian in this slot
+        //TC_LOG_ERROR("entities.player", "Player::GetPet: Pet %u does not exist.", GUID_LOPART(pet_guid));
+        //const_cast<Player*>(this)->SetPetGUID(0);
+    }
+
+    return nullptr;
+}
+
 Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
 {
     auto pet = new Pet(this, petType);
