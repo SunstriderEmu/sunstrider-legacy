@@ -956,24 +956,26 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_ALWAYS_MAX_SKILL_FOR_LEVEL] = sConfigMgr->GetBoolDefault("AlwaysMaxSkillForLevel", false);
 
+    m_configs[CONFIG_TRANSPORT_DOCKING_SOUNDS] = sConfigMgr->GetBoolDefault("Transports.DockingSounds", false);
+
     if(reload)
     {
-        int32 val = sConfigMgr->GetIntDefault("Expansion",1);
+        int32 val = sConfigMgr->GetIntDefault("Expansion", 1);
         if(val!=m_configs[CONFIG_EXPANSION])
-            TC_LOG_ERROR("server.loading","Expansion option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[CONFIG_EXPANSION]);
+            TC_LOG_ERROR("server.loading","Expansion option can't be changed at worldserver.conf reload, using current value (%u).", m_configs[CONFIG_EXPANSION]);
     }
     else
         m_configs[CONFIG_EXPANSION] = sConfigMgr->GetIntDefault("Expansion",1);
 
-    m_configs[CONFIG_CHATFLOOD_MESSAGE_COUNT] = sConfigMgr->GetIntDefault("ChatFlood.MessageCount",10);
-    m_configs[CONFIG_CHATFLOOD_MESSAGE_DELAY] = sConfigMgr->GetIntDefault("ChatFlood.MessageDelay",1);
-    m_configs[CONFIG_CHATFLOOD_MUTE_TIME]     = sConfigMgr->GetIntDefault("ChatFlood.MuteTime",10);
+    m_configs[CONFIG_CHATFLOOD_MESSAGE_COUNT] = sConfigMgr->GetIntDefault("ChatFlood.MessageCount", 10);
+    m_configs[CONFIG_CHATFLOOD_MESSAGE_DELAY] = sConfigMgr->GetIntDefault("ChatFlood.MessageDelay", 1);
+    m_configs[CONFIG_CHATFLOOD_MUTE_TIME]     = sConfigMgr->GetIntDefault("ChatFlood.MuteTime", 10);
 
-    m_configs[CONFIG_EVENT_ANNOUNCE] = sConfigMgr->GetIntDefault("Event.Announce",0);
+    m_configs[CONFIG_EVENT_ANNOUNCE] = sConfigMgr->GetIntDefault("Event.Announce", 0);
 
-    m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS] = sConfigMgr->GetIntDefault("CreatureFamilyAssistanceRadius",10);
-    m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY]  = sConfigMgr->GetIntDefault("CreatureFamilyAssistanceDelay",1500);
-    m_configs[CONFIG_CREATURE_FAMILY_FLEE_DELAY] = sConfigMgr->GetIntDefault("CreatureFamilyFleeDelay",7000);
+    m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS] = sConfigMgr->GetIntDefault("CreatureFamilyAssistanceRadius", 10);
+    m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY]  = sConfigMgr->GetIntDefault("CreatureFamilyAssistanceDelay", 1500);
+    m_configs[CONFIG_CREATURE_FAMILY_FLEE_DELAY] = sConfigMgr->GetIntDefault("CreatureFamilyFleeDelay", 7000);
     m_configs[CONFIG_CREATURE_UNREACHABLE_TARGET_EVADE_TIME] = sConfigMgr->GetIntDefault("CreatureUnreachableTarget.EvadeHomeTimer", 10000);
     m_configs[CONFIG_CREATURE_UNREACHABLE_TARGET_EVADE_ATTACKS_TIME] = sConfigMgr->GetIntDefault("CreatureUnreachableTarget.EvadeAttacksTimer", 3000);
     m_configs[CONFIG_CREATURE_STOP_FOR_PLAYER] = sConfigMgr->GetIntDefault("Creature.MovingStopTimeForPlayer", 1 * MINUTE * IN_MILLISECONDS);

@@ -1388,7 +1388,7 @@ void WorldObject::SendMessageToSetInRange(WorldPacket *data, float dist, bool se
 {
     dist += GetCombatReach();
     if (includeMargin)
-        dist += VISIBILITY_COMPENSATION; // pussywizard: to ensure everyone receives all important packets
+        dist += VISIBILITY_COMPENSATION; // sunwell: to ensure everyone receives all important packets
     Trinity::MessageDistDeliverer notifier(this, data, dist, false, skipped_rcvr);
     Cell::VisitWorldObjects(this, notifier, dist);
 }
