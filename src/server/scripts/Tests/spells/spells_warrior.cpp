@@ -936,6 +936,39 @@ public:
     public:
         ExecuteTestImpt() : TestCaseWarrior(true) { }
 
+        void TestExecuteDamage(TestPlayer* warrior, Unit* victim, bool crit)
+        {
+            uint32 startHealth = 20000;
+            victim->SetHealth(startHealth);
+            warrior->SetPower(POWER_RAGE, 1000); // full rage
+            EnableCriticals(warrior, crit);
+
+            uint32 const remainingRage = (1000 - 150) * 0.1f; // full rage - execute cost
+            float const armorFactor = 1 - (victim->GetArmor() / (victim->GetArmor() + 10557.5));
+
+            uint32 expectedExecute = ClassSpellsDamage::Warrior::EXECUTE_RNK_7 + remainingRage * ClassSpellsDamage::Warrior::EXECUTE_RNK_7_RAGE;
+            if (crit)
+                expectedExecute *= 2.0f;
+            uint32 expectedHealth = victim->GetHealth() - floor(expectedExecute * armorFactor);
+
+            Wait(500);
+            TEST_ASSERT(victim->GetHealth() == startHealth);
+            int32 count = 0;
+            while (victim->GetHealth() == startHealth)
+            {
+                TEST_CAST(warrior, victim, ClassSpells::Warrior::EXECUTE_RNK_7);
+                if (count > 20)
+                {
+                    ASSERT_INFO("Execute couldnt hit 20 times in a row.");
+                    TEST_ASSERT(false);
+                }
+                Wait(500);
+                count++;
+            }
+            ASSERT_INFO("Health: %u, Expected: %u", victim->GetHealth(), expectedHealth);
+            TEST_ASSERT(victim->GetHealth() == expectedHealth);
+        }
+
         void Test() override
         {
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
@@ -955,34 +988,13 @@ public:
             TestRequiresStance(warrior, creature, true, ClassSpells::Warrior::EXECUTE_RNK_7, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
             TestRequiresMeleeWeapon(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7, true);
 
-            Wait(2000);
             // Rage cost
             uint32 const expectedExecuteRage = 15 * 10;
             TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7, POWER_RAGE, expectedExecuteRage);
 
-            // Full rage
-            uint32 const fullRage = 100 * 10;
-            warrior->SetPower(POWER_RAGE, fullRage);
-
-            float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
-
-            creature->SetHealth(20000);
-            Wait(500);
-            uint32 const expectedExecute = ClassSpellsDamage::Warrior::EXECUTE_RNK_7 + (fullRage - expectedExecuteRage) * 0.1f * ClassSpellsDamage::Warrior::EXECUTE_RNK_7_RAGE;
-            uint32 expectedHealth = creature->GetHealth() - expectedExecute * armorFactor;
-            TEST_CAST(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7);
-            Wait(500);
-            ASSERT_INFO("Health: %u, Expected: %u", creature->GetHealth(), expectedHealth);
-            TEST_ASSERT(creature->GetHealth() == expectedHealth);
-
-            creature->SetHealth(20000);
-            Wait(500);
-            warrior->SetPower(POWER_RAGE, fullRage);
-            uint32 const expectedExecuteCrit = (ClassSpellsDamage::Warrior::EXECUTE_RNK_7 + (fullRage - expectedExecuteRage) * ClassSpellsDamage::Warrior::EXECUTE_RNK_7_RAGE) * 2.0f;
-            expectedHealth = creature->GetHealth() - expectedExecuteCrit * armorFactor;
-            Wait(500);
-            TEST_CAST(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7);
-            TEST_ASSERT(creature->GetHealth() == expectedHealth);
+            // Damage
+            TestExecuteDamage(warrior, creature, false);
+            TestExecuteDamage(warrior, creature, true);
         }
     };
 
