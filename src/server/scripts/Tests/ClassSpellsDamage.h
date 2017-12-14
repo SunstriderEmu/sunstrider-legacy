@@ -299,6 +299,13 @@ namespace ClassSpellsDamage
             CLEAVE_RNK_6 = 70,
             EXECUTE_RNK_7 = 925,
             EXECUTE_RNK_7_RAGE = 21,
+            INTERCEPT_RNK_5 = 105,
+            PUMMEL_RNK_2 = 50,
+            SLAM_RNK_6 = 140,
+            // Protection
+            REVENGE_RNK_8_MIN = 414,
+            REVENGE_RNK_8_MAX = 506,
+            SHIELD_BASH_RNK_4 = 63,
 		};
 	};
 };

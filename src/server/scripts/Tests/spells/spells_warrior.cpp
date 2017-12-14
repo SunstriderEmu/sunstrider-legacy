@@ -17,14 +17,16 @@ public:
     
         SpellCastResult res = success ? SPELL_CAST_OK : SPELL_FAILED_ONLY_SHAPESHIFT;
 
-        TEST_CAST(warrior, victim, testSpellId, res, TriggerCastFlags(TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
+        ASSERT_INFO("Stance %u", stanceSpellId);
+        TEST_CAST(warrior, victim, testSpellId, res, TriggerCastFlags(TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_CASTER_AURASTATE));
+        warrior->RemoveAllSpellCooldown();
     }
 
-    void TestCaseWarrior::TestRequiresMeleeWeapon(TestPlayer* warrior, Unit* victim, uint32 testSpellId, bool twoHand)
+    void TestCaseWarrior::TestRequiresMeleeWeapon(TestPlayer* warrior, Unit* victim, uint32 testSpellId, bool twoHand, SpellCastResult result = SPELL_FAILED_EQUIPPED_ITEM_CLASS)
     {
         RemoveAllEquipedItems(warrior);
         warrior->RemoveAllSpellCooldown();
-        TEST_CAST(warrior, victim, testSpellId, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
+        TEST_CAST(warrior, victim, testSpellId, result);
 
         if (twoHand)
         {
@@ -33,6 +35,8 @@ public:
         else
         {
             EQUIP_ITEM(warrior, 32837); // Warglaive of Azzinoth MH
+            Wait(1500);
+            EQUIP_ITEM(warrior, 32838); // Warglaive of Azzinoth OH
         }
     }
 };
@@ -1004,6 +1008,766 @@ public:
     }
 };
 
+class InterceptTest : public TestCaseScript
+{
+public:
+    InterceptTest() : TestCaseScript("spells warrior intercept") { }
+
+    class InterceptTestImpt : public TestCaseWarrior
+    {
+    public:
+        InterceptTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn(_location);
+            spawn.MoveInFront(_location, 7.0f);
+            TestPlayer* priest1 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN, 70, spawn);
+            spawn.MoveInFront(_location, 15.0f);
+            TestPlayer* priest2 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN, 70, spawn);
+            Creature* creature = SpawnCreatureWithPosition(spawn);
+            spawn.MoveInFront(_location, 30.0f);
+            TestPlayer* priest3 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN, 70, spawn);
+
+            warrior->DisableRegeneration(true);
+            warrior->SetWalk(false); // run
+
+            Wait(5000);
+
+            // Stances
+            TestRequiresStance(warrior, priest2, false, ClassSpells::Warrior::INTERCEPT_RNK_5);
+            TestRequiresStance(warrior, priest2, false, ClassSpells::Warrior::INTERCEPT_RNK_5, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, priest2, false, ClassSpells::Warrior::INTERCEPT_RNK_5, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            TestRequiresStance(warrior, priest2, true, ClassSpells::Warrior::INTERCEPT_RNK_5, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+
+            // Range
+            TEST_CAST(warrior, priest1, ClassSpells::Warrior::INTERCEPT_RNK_5, SPELL_FAILED_OUT_OF_RANGE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+            warrior->Relocate(_location);
+            TEST_CAST(warrior, priest3, ClassSpells::Warrior::INTERCEPT_RNK_5, SPELL_FAILED_OUT_OF_RANGE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+            warrior->Relocate(_location);
+            Wait(1500);
+
+            // Rage cost
+            uint32 expectedInterceptRageCost = 10 * 10;
+            TEST_POWER_COST(warrior, priest2, ClassSpells::Warrior::INTERCEPT_RNK_5, POWER_RAGE, expectedInterceptRageCost);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::INTERCEPT_RNK_5) == 30 * SECOND);
+
+            // Stun
+            Wait(250);
+            TEST_AURA_MAX_DURATION(priest2, ClassSpells::Warrior::INTERCEPT_RNK_5_TRIGGER, EFFECT_0, 3 * SECOND * IN_MILLISECONDS);
+
+            Wait(1000);
+            // Warrior still running after Intercept
+            TEST_ASSERT(!warrior->IsWalking());
+
+            // Damage
+            float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
+            uint32 const expectedIntercept = ClassSpellsDamage::Warrior::INTERCEPT_RNK_5 * armorFactor;
+            uint32 const expectedInterceptCrit = ClassSpellsDamage::Warrior::INTERCEPT_RNK_5 * 2.0f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature, ClassSpells::Warrior::INTERCEPT_RNK_5_TRIGGER, expectedIntercept, expectedIntercept, false);
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature, ClassSpells::Warrior::INTERCEPT_RNK_5_TRIGGER, expectedInterceptCrit, expectedInterceptCrit, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<InterceptTestImpt>();
+    }
+};
+
+class IntidimidatingShoutTest : public TestCaseScript
+{
+public:
+    IntidimidatingShoutTest() : TestCaseScript("spells warrior intimidating_shout") { }
+
+    class IntidimidatingShoutTestImpt : public TestCaseWarrior
+    {
+    public:
+        IntidimidatingShoutTestImpt() : TestCaseWarrior(true) { }
+        
+        void TestAuraCount(TestPlayer* priest, int count)
+        {
+            if (priest->HasAura(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1))
+            {
+                TEST_HAS_NOT_AURA(priest, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER, EFFECT_0);
+                TEST_AURA_MAX_DURATION(priest, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, EFFECT_1, 8 * SECOND * IN_MILLISECONDS);
+                count++;
+            }
+        }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn(_location);
+            spawn.MoveInFront(_location, 9.0f);
+            TestPlayer* priest1 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN, 70, spawn);
+            TestPlayer* priest2 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            TestPlayer* priest3 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            TestPlayer* priest4 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            TestPlayer* priest5 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            TestPlayer* priest6 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            TestPlayer* priest7 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+
+            warrior->DisableRegeneration(true);
+
+            // Rage cost
+            uint32 expectedIntidimidatingShoutRageCost = 25 * 10;
+            TEST_POWER_COST(warrior, priest1, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, POWER_RAGE, expectedIntidimidatingShoutRageCost);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1) == 3 * MINUTE);
+
+            // Trigger on target
+            TEST_AURA_MAX_DURATION(priest1, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER, EFFECT_0, 8 * SECOND * IN_MILLISECONDS);
+            // https://youtu.be/9DA10SgPsj4?t=1m14s
+            // Target should have only one debuff
+            TEST_ASSERT(!priest1->HasAura(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1));
+
+            // Fear on nearby enemies
+            int count = 0;
+            TestAuraCount(priest2, count);
+            TestAuraCount(priest3, count);
+            TestAuraCount(priest4, count);
+            TestAuraCount(priest5, count);
+            TestAuraCount(priest6, count);
+            TestAuraCount(priest7, count);
+            TEST_ASSERT(count <= 5);
+
+            // Target effect should break on damage
+            warrior->DealDamage(priest1, 1);
+            Wait(500);
+            TEST_ASSERT(!priest1->HasAura(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<IntidimidatingShoutTestImpt>();
+    }
+};
+
+class PummelTest : public TestCaseScript
+{
+public:
+    PummelTest() : TestCaseScript("spells warrior pummel") { }
+
+    class PummelTestImpt : public TestCaseWarrior
+    {
+    public:
+        PummelTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            warrior->DisableRegeneration(true);
+
+            // Stances
+            TestRequiresStance(warrior, priest, false, ClassSpells::Warrior::PUMMEL_RNK_2);
+            TestRequiresStance(warrior, priest, false, ClassSpells::Warrior::PUMMEL_RNK_2, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, priest, false, ClassSpells::Warrior::PUMMEL_RNK_2, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            TestRequiresStance(warrior, priest, true, ClassSpells::Warrior::PUMMEL_RNK_2, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7);
+            Wait(500);
+
+            // Rage cost
+            uint32 expectedPummelRageCost = 10 * 10;
+            TEST_POWER_COST(warrior, priest, ClassSpells::Warrior::PUMMEL_RNK_2, POWER_RAGE, expectedPummelRageCost);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::PUMMEL_RNK_2) == 10 * SECOND);
+
+            Wait(100);
+            // Make sure it hits
+            uint32 startHealth = priest->GetHealth();
+            for (int i = 0; i < 30; i++)
+            {
+                TC_LOG_DEBUG("test.unit_test", "Count: %i", i);
+                TEST_CAST(warrior, priest, ClassSpells::Warrior::PUMMEL_RNK_2, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+            }
+            TEST_ASSERT(priest->GetHealth() < startHealth);
+
+            // Prevent holy cast
+            Wait(500);
+            TEST_CAST(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, SPELL_FAILED_SILENCED);
+            TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_FAILED_SILENCED);
+            TEST_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10);
+            Wait(4000);
+            TEST_CAST(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9);
+
+            // Damage
+            float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5));
+            uint32 const expectedPummel = ClassSpellsDamage::Warrior::PUMMEL_RNK_2 * armorFactor;
+            uint32 const expectedPummelCrit = ClassSpellsDamage::Warrior::PUMMEL_RNK_2 * 2.0f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warrior, dummy, ClassSpells::Warrior::PUMMEL_RNK_2, expectedPummel, expectedPummel, false);
+            TEST_DIRECT_SPELL_DAMAGE(warrior, dummy, ClassSpells::Warrior::PUMMEL_RNK_2, expectedPummelCrit, expectedPummelCrit, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<PummelTestImpt>();
+    }
+};
+
+class RecklessnessTest : public TestCaseScript
+{
+public:
+    RecklessnessTest() : TestCaseScript("spells warrior recklessness") { }
+
+    class RecklessnessTestImpt : public TestCaseWarrior
+    {
+    public:
+        RecklessnessTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* creature = SpawnCreature(8, true);
+
+            warrior->DisableRegeneration(true);
+            creature->DisableRegeneration(true);
+
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::RECKLESSNESS_RNK_1);
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::RECKLESSNESS_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::RECKLESSNESS_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature, true, ClassSpells::Warrior::RECKLESSNESS_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::RECKLESSNESS_RNK_1);
+
+            // Aura duration
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::RECKLESSNESS_RNK_1, EFFECT_0, 15 * SECOND * IN_MILLISECONDS);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::RECKLESSNESS_RNK_1) == 30 * MINUTE);
+
+            // Damage taken increase
+            warrior->SetMaxHealth(5000000);
+            warrior->SetFullHealth();
+            Wait(200);
+            float const reckelessnessFactor = 1.2f;
+            uint32 const expectedShadowBoltMin = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * reckelessnessFactor;
+            uint32 const expectedShadowBoltMax = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * reckelessnessFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, warrior, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax, false);
+
+            // Fear immune
+            TEST_CAST(warlock, warrior, ClassSpells::Warlock::FEAR_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            TEST_ASSERT(!warrior->HasAura(ClassSpells::Warlock::FEAR_RNK_3));
+
+            // Damage
+            auto AI = warrior->GetTestingPlayerbotAI();
+            for (uint32 i = 0; i < 500; i++)
+            {
+                TEST_ASSERT(warrior->HasAura(ClassSpells::Warrior::RECKLESSNESS_RNK_1));
+                TEST_CAST(warrior, creature, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                auto damageToTarget = AI->GetDamageDoneInfo(creature);
+                auto& data = damageToTarget->back();
+                if (data.spellID != ClassSpells::Warrior::HEROIC_STRIKE_RNK_10)
+                    continue;
+                //use only spells that hit target
+                if (data.missInfo != SPELL_MISS_NONE)
+                    continue;
+                ASSERT_INFO("Heroic Strike %i/499: didn't crit", i);
+                TEST_ASSERT(data.crit);
+            }
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<RecklessnessTestImpt>();
+    }
+};
+
+class SlamTest : public TestCaseScript
+{
+public:
+    SlamTest() : TestCaseScript("spells warrior slam") { }
+
+    class SlamTestImpt : public TestCaseWarrior
+    {
+    public:
+        SlamTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            Creature* creature = SpawnCreature();
+
+            warrior->DisableRegeneration(true);
+
+            TestRequiresMeleeWeapon(warrior, creature, ClassSpells::Warrior::SLAM_RNK_6, true);
+
+            // Rage cost & reset swing
+            warrior->Attack(creature, true);
+            Wait(250);
+            uint32 currentAttackTimer = warrior->GetAttackTimer(BASE_ATTACK);
+
+            uint32 const expectedSlamRage = 15 * 10;
+            TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::SLAM_RNK_6, POWER_RAGE, expectedSlamRage);
+            Wait(1750); // Cast
+            ASSERT_INFO("AttackTime: %u, AttackTimer: %u, Current: %u", warrior->GetAttackTime(BASE_ATTACK), warrior->GetAttackTimer(BASE_ATTACK), currentAttackTimer);
+            TEST_ASSERT(warrior->GetAttackTimer(BASE_ATTACK) > currentAttackTimer);
+
+            // Damage -- Apolyon, the Soul-Render - 404-607 damage
+            float const apolyonSpeed = 3.4f;
+            float const AP = warrior->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
+            uint32 const weaponMinDamage = 404 + (AP / 14 * apolyonSpeed) + ClassSpellsDamage::Warrior::SLAM_RNK_6;
+            uint32 const weaponMaxDamage = 607 + (AP / 14 * apolyonSpeed) + ClassSpellsDamage::Warrior::SLAM_RNK_6;
+            uint32 const expectedSlamMin = weaponMinDamage * armorFactor;
+            uint32 const expectedSlamMax = weaponMaxDamage * armorFactor;
+            uint32 const expectedSlamCritMin = weaponMinDamage * 2.0f * armorFactor;
+            uint32 const expectedSlamCritMax = weaponMaxDamage * 2.0f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature, ClassSpells::Warrior::SLAM_RNK_6, expectedSlamMin, expectedSlamMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature, ClassSpells::Warrior::SLAM_RNK_6, expectedSlamCritMin, expectedSlamCritMax, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SlamTestImpt>();
+    }
+};
+
+class VictoryRushTest : public TestCaseScript
+{
+public:
+    VictoryRushTest() : TestCaseScript("spells warrior victory_rush") { }
+
+    class VictoryRushTestImpt : public TestCaseWarrior
+    {
+    public:
+        VictoryRushTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            TestPlayer* enemy1 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 1);
+            TestPlayer* enemy70 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            Creature* creature = SpawnCreature();
+
+            enemy1->SetHealth(1);
+            enemy70->SetHealth(1);
+            Wait(100); // Needed
+
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::VICTORY_RUSH_RNK_1);
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::VICTORY_RUSH_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature, true, ClassSpells::Warrior::VICTORY_RUSH_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature, true, ClassSpells::Warrior::VICTORY_RUSH_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+
+            // Kill level 1
+            for (uint32 i = 0; i < 50; i++)
+                warrior->AttackerStateUpdate(enemy1, BASE_ATTACK);
+            Wait(100); // Needed
+            TEST_ASSERT(enemy1->IsDead());
+            TEST_ASSERT(!warrior->HasAura(ClassSpells::Warrior::VICTORY_RUSH_RNK_1));
+
+            // Kill level 70
+            for (uint32 i = 0; i < 50; i++)
+                warrior->AttackerStateUpdate(enemy70, BASE_ATTACK);
+            Wait(100); // Needed
+            TEST_ASSERT(enemy70->IsDead());
+
+            // Aura
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::VICTORY_RUSH_RNK_1, EFFECT_0, 20 * SECOND * IN_MILLISECONDS);
+            TEST_CAST(warrior, creature, ClassSpells::Warrior::VICTORY_RUSH_RNK_1);
+            TEST_ASSERT(!warrior->HasAura(ClassSpells::Warrior::VICTORY_RUSH_RNK_1));
+
+            // Damage
+            float const victoryRushAPFactor = 0.45f;
+            float const AP = warrior->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
+            uint32 const expectedVictoryRush = AP * victoryRushAPFactor * armorFactor;
+            uint32 const expectedVictoryRushCrit = AP * victoryRushAPFactor * 2.0f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature, ClassSpells::Warrior::VICTORY_RUSH_RNK_1, expectedVictoryRush, expectedVictoryRush, false);
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature, ClassSpells::Warrior::VICTORY_RUSH_RNK_1, expectedVictoryRushCrit, expectedVictoryRushCrit, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<VictoryRushTestImpt>();
+    }
+};
+
+class WhirlwindTest : public TestCaseScript
+{
+public:
+    WhirlwindTest() : TestCaseScript("spells warrior whirlwind") { }
+
+    class WhirlwindTestImpt : public TestCaseWarrior
+    {
+    public:
+        WhirlwindTestImpt() : TestCaseWarrior(true) { }
+
+        void TestCount(Unit* victim, uint32 startHealth, int count)
+        {
+            if (victim->GetHealth() < startHealth)
+                count++;
+        }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            Creature* creature1 = SpawnCreature(8, true);
+
+            // Stances & weapon
+            TestRequiresStance(warrior, creature1, false, ClassSpells::Warrior::WHIRLWIND_RNK_1);
+            TestRequiresStance(warrior, creature1, false, ClassSpells::Warrior::WHIRLWIND_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature1, false, ClassSpells::Warrior::WHIRLWIND_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature1, true, ClassSpells::Warrior::WHIRLWIND_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresMeleeWeapon(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, false);
+
+            // Range
+            creature1->SetFullHealth();
+            Creature* creature2 = SpawnCreature(8, true);
+            Creature* creature3 = SpawnCreature(8, true);
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 12.0f);
+            Creature* creature4 = SpawnCreatureWithPosition(spawn);
+
+            uint32 const startHealth1 = creature1->GetHealth();
+            uint32 const startHealth2 = creature2->GetHealth();
+            uint32 const startHealth3 = creature3->GetHealth();
+            uint32 const startHealth4 = creature4->GetHealth();
+
+            for (uint32 i = 0; i < 50; i++)
+                TEST_CAST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+            TEST_ASSERT(creature1->GetHealth() < startHealth1);
+            TEST_ASSERT(creature2->GetHealth() < startHealth2);
+            TEST_ASSERT(creature3->GetHealth() < startHealth3);
+            TEST_ASSERT(creature4->GetHealth() == startHealth4);
+
+            // Max 4, rage cost & cooldown
+            warrior->RemoveAllSpellCooldown();
+            Creature* creature5 = SpawnCreature(8, true);
+            Creature* creature6 = SpawnCreature(8, true);
+            uint32 const startHealth5 = creature5->GetHealth();
+            uint32 const startHealth6 = creature6->GetHealth();
+
+            creature1->SetFullHealth();
+            creature2->SetFullHealth();
+            creature3->SetFullHealth();
+
+            int count = 0;
+            uint32 const expectedWhirldwindRage = 25 * 10;
+            TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, POWER_RAGE, expectedWhirldwindRage);
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::WHIRLWIND_RNK_1) == 10 * SECOND);
+            TestCount(creature1, startHealth1, count);
+            TestCount(creature2, startHealth2, count);
+            TestCount(creature3, startHealth3, count);
+            TestCount(creature5, startHealth5, count);
+            TestCount(creature6, startHealth6, count);
+            TEST_ASSERT(count <= 4);
+
+            // Damage
+            float const normalizedSwordSpeed = 2.4f;
+            float const AP = warrior->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (creature1->GetArmor() / (creature1->GetArmor() + 10557.5));
+            // MH -- 214 - 398
+            uint32 const expectedWhirlwindMHMin = (214 + AP / 14 * normalizedSwordSpeed) * armorFactor;
+            uint32 const expectedWhirlwindMHMax = (398 + AP / 14 * normalizedSwordSpeed) * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, expectedWhirlwindMHMin, expectedWhirlwindMHMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, expectedWhirlwindMHMin * 2.0f, expectedWhirlwindMHMax * 2.0f, true);
+            // OH -- 107 - 199
+            uint32 const expectedWhirlwindOHMin = (107 + AP / 14 * normalizedSwordSpeed) / 2 * armorFactor;
+            uint32 const expectedWhirlwindOHMax = (199 + AP / 14 * normalizedSwordSpeed) / 2 * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1_TRIGGER, expectedWhirlwindOHMin, expectedWhirlwindOHMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1_TRIGGER, expectedWhirlwindOHMin * 2.0f, expectedWhirlwindOHMax * 2.0f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<WhirlwindTestImpt>();
+    }
+};
+
+class BloodrageTest : public TestCaseScript
+{
+public:
+    BloodrageTest() : TestCaseScript("spells warrior bloodrage") { }
+
+    class BloodrageTestImpt : public TestCaseWarrior
+    {
+    public:
+        BloodrageTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+
+            warrior->DisableRegeneration(true);
+
+            // Health cost
+            float const bloodrageFactor = 0.16f;
+            uint32 const baseHealth = warrior->GetMaxHealth() - (20 + (warrior->GetStat(STAT_STAMINA) - 20) * 10.0f);
+            uint32 const healthCost = baseHealth * bloodrageFactor;
+            uint32 const expectedHealth = warrior->GetHealth() - healthCost;
+
+            // Health
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::BLOODRAGE_RNK_1);
+            ASSERT_INFO("Max: %u, Health: %u, Expected: %u", warrior->GetMaxHealth(), warrior->GetHealth(), expectedHealth);
+            TEST_ASSERT(warrior->GetHealth() == expectedHealth);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::BLOODRAGE_RNK_1) == 1 * MINUTE);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BLOODRAGE_RNK_1_TRIGGER, EFFECT_0, 10 * SECOND * IN_MILLISECONDS);
+
+            // Rage gain
+            TEST_ASSERT(warrior->GetPower(POWER_RAGE) == 10 * 10);
+            Wait(10000);
+            TEST_ASSERT(Between<uint32>(warrior->GetPower(POWER_RAGE), 20 * 10 - 3, 20 * 10)); // might have lower because out of combat
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<BloodrageTestImpt>();
+    }
+};
+
+class InterveneTest : public TestCaseScript
+{
+public:
+    InterveneTest() : TestCaseScript("spells warrior intervene") { }
+
+    class InterveneTestImpt : public TestCaseWarrior
+    {
+    public:
+        InterveneTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_GNOME);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 15.0f);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_NIGHTELF, 70, spawn);
+            TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, RACE_TAUREN, 70, spawn);
+
+            spawn.MoveInFront(spawn, 5.0f);
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+            spawn.MoveInFront(spawn, 30.0f);
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN, 70, spawn);
+
+            // Group
+            GroupPlayer(warrior, shaman);
+
+            // Stances
+            TestRequiresStance(warrior, shaman, false, ClassSpells::Warrior::INTERVENE_RNK_1);
+            TestRequiresStance(warrior, shaman, false, ClassSpells::Warrior::INTERVENE_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, shaman, false, ClassSpells::Warrior::INTERVENE_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresStance(warrior, shaman, true, ClassSpells::Warrior::INTERVENE_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            warrior->Relocate(_location);
+
+            // Range
+            TEST_CAST(warrior, priest, ClassSpells::Warrior::INTERVENE_RNK_1, SPELL_FAILED_TOO_CLOSE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            TEST_CAST(warrior, druid, ClassSpells::Warrior::INTERVENE_RNK_1, SPELL_FAILED_OUT_OF_RANGE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+
+            // Setup
+            warrior->DisableRegeneration(true);
+            warrior->Attack(mage, true);
+            Wait(2000);
+
+            // Rage cost
+            uint32 expectedInterveneRage = 10 * 10;
+            TEST_POWER_COST(warrior, shaman, ClassSpells::Warrior::INTERVENE_RNK_1, POWER_RAGE, expectedInterveneRage);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::INTERVENE_RNK_1) == 30 * SECOND);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(shaman, ClassSpells::Warrior::INTERVENE_RNK_1, EFFECT_1, 10 * SECOND * IN_MILLISECONDS);
+
+            // Take an attack
+            Wait(3000);
+            TEST_CAST(rogue, shaman, ClassSpells::Rogue::SAP_RNK_3);
+            Wait(100);
+            TEST_ASSERT(!shaman->HasAura(ClassSpells::Rogue::SAP_RNK_3));
+            TEST_ASSERT(warrior->HasAura(ClassSpells::Rogue::SAP_RNK_3));
+            TEST_ASSERT(!shaman->HasAura(ClassSpells::Warrior::INTERVENE_RNK_1));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<InterveneTestImpt>();
+    }
+};
+
+class RevengeTest : public TestCaseScript
+{
+public:
+    RevengeTest() : TestCaseScript("spells warrior revenge") { }
+
+    class RevengeTestImpt : public TestCaseWarrior
+    {
+    public:
+        RevengeTestImpt() : TestCaseWarrior(true) { }
+
+        void TestRevengeTrigger(TestPlayer* warrior, TestPlayer* rogue)
+        {
+            bool dodge = false;
+            bool parry = false;
+            bool block = false;
+
+            auto AI = rogue->GetTestingPlayerbotAI();
+            for (uint32 i = 0; i < 500; i++)
+            {
+                rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
+                auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
+                ASSERT_INFO("After 500 hits: dodge: %i, parry: %i, block: %i", int(dodge), int(parry), int(block));
+                TEST_ASSERT(i != 499);
+                TEST_ASSERT(damageToTarget->size() == i + 1);
+                auto& data = damageToTarget->back();
+
+                switch (data.damageInfo.hitOutCome)
+                {
+                    case MELEE_HIT_DODGE: 
+                        TEST_CAST(warrior, rogue, ClassSpells::Warrior::REVENGE_RNK_8, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+                        dodge = true;
+                        break;
+                    case MELEE_HIT_PARRY:
+                        TEST_CAST(warrior, rogue, ClassSpells::Warrior::REVENGE_RNK_8, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+                        parry = true;
+                        break;
+                    case MELEE_HIT_BLOCK:
+                        TEST_CAST(warrior, rogue, ClassSpells::Warrior::REVENGE_RNK_8, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+                        block = true;
+                        break;
+                    default: break;
+                }
+
+                warrior->SetFullHealth();
+
+                if (dodge && parry && block)
+                    break;
+            }
+        }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 3.0f);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
+            Creature* dummy = SpawnCreature(8, true);
+
+            // Stances & weapon
+            TestRequiresStance(warrior, dummy, false, ClassSpells::Warrior::REVENGE_RNK_8);
+            TestRequiresStance(warrior, dummy, false, ClassSpells::Warrior::REVENGE_RNK_8, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, dummy, false, ClassSpells::Warrior::REVENGE_RNK_8, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresStance(warrior, dummy, true, ClassSpells::Warrior::REVENGE_RNK_8, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            TestRequiresMeleeWeapon(warrior, dummy, ClassSpells::Warrior::REVENGE_RNK_8, false, SPELL_FAILED_CASTER_AURASTATE);
+            EQUIP_ITEM(warrior, 34185); // Shield
+
+            // Triggers
+            Wait(5200);
+            TestRevengeTrigger(warrior, rogue);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::REVENGE_RNK_8) == 5 * SECOND);
+
+            // Damage
+            float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5));
+            uint32 const expectedRevengeMin = ClassSpellsDamage::Warrior::REVENGE_RNK_8_MIN * armorFactor;
+            uint32 const expectedRevengeMax = ClassSpellsDamage::Warrior::REVENGE_RNK_8_MAX * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warrior, dummy, ClassSpells::Warrior::REVENGE_RNK_8, expectedRevengeMin, expectedRevengeMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(warrior, dummy, ClassSpells::Warrior::REVENGE_RNK_8, expectedRevengeMin * 2.0f, expectedRevengeMax * 2.0f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<RevengeTestImpt>();
+    }
+};
+
+class ShieldBashTest : public TestCaseScript
+{
+public:
+    ShieldBashTest() : TestCaseScript("spells warrior shield_bash") { }
+
+    class ShieldBashTestImpt : public TestCaseWarrior
+    {
+    public:
+        ShieldBashTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            warrior->DisableRegeneration(true);
+            EQUIP_ITEM(warrior, 34185); // Shield
+
+            // Stances
+            TestRequiresStance(warrior, priest, false, ClassSpells::Warrior::SHIELD_BASH_RNK_4);
+            TestRequiresStance(warrior, priest, false, ClassSpells::Warrior::SHIELD_BASH_RNK_4, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresStance(warrior, priest, true, ClassSpells::Warrior::SHIELD_BASH_RNK_4, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            TestRequiresStance(warrior, priest, true, ClassSpells::Warrior::SHIELD_BASH_RNK_4, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7);
+            Wait(500);
+
+            // Rage cost
+            uint32 expectedShieldBashRageCost = 10 * 10;
+            TEST_POWER_COST(warrior, priest, ClassSpells::Warrior::SHIELD_BASH_RNK_4, POWER_RAGE, expectedShieldBashRageCost);
+
+            // TODO: dazes target
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SHIELD_BASH_RNK_4) == 12 * SECOND);
+
+            Wait(100);
+            // Make sure it hits
+            uint32 startHealth = priest->GetHealth();
+            for (int i = 0; i < 30; i++)
+            {
+                TC_LOG_DEBUG("test.unit_test", "Count: %i", i);
+                TEST_CAST(warrior, priest, ClassSpells::Warrior::SHIELD_BASH_RNK_4, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+            }
+            TEST_ASSERT(priest->GetHealth() < startHealth);
+
+            // Prevent holy cast
+            Wait(500);
+            TEST_CAST(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, SPELL_FAILED_SILENCED);
+            TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_FAILED_SILENCED);
+            TEST_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10);
+            Wait(6000);
+            TEST_CAST(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9);
+
+            // Damage
+            float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5));
+            uint32 const expectedShieldBash = ClassSpellsDamage::Warrior::SHIELD_BASH_RNK_4 * armorFactor;
+            uint32 const expectedShieldBashCrit = ClassSpellsDamage::Warrior::SHIELD_BASH_RNK_4 * 2.0f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warrior, dummy, ClassSpells::Warrior::SHIELD_BASH_RNK_4, expectedShieldBash, expectedShieldBash, false);
+            TEST_DIRECT_SPELL_DAMAGE(warrior, dummy, ClassSpells::Warrior::SHIELD_BASH_RNK_4, expectedShieldBashCrit, expectedShieldBashCrit, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShieldBashTestImpt>();
+    }
+};
+
 void AddSC_test_spells_warrior()
 {
     // Arms: 8/8
@@ -1015,7 +1779,7 @@ void AddSC_test_spells_warrior()
     new RendTest();
     new RetaliationTest();
     new ThunderClapTest();
-    // Fury: 7/14
+    // Fury: 14/14
     new BattleShoutTest();
     new BerserkerRageTest();
     new ChallengingShoutTest();
@@ -1023,4 +1787,16 @@ void AddSC_test_spells_warrior()
     new CommandingShoutTest();
     new DemoralizingShoutTest();
     new ExecuteTest();
+    new InterceptTest();
+    new IntidimidatingShoutTest();
+    new PummelTest();
+    new RecklessnessTest();
+    new SlamTest();
+    new VictoryRushTest();
+    new WhirlwindTest();
+    // Protection: 4/11
+    new BloodrageTest();
+    new InterveneTest();
+    new RevengeTest();
+    new ShieldBashTest();
 }

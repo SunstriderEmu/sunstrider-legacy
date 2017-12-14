@@ -3755,7 +3755,9 @@ namespace ClassSpells
             INTERCEPT_RNK_3 = 20617,
             INTERCEPT_RNK_4 = 25272,
             INTERCEPT_RNK_5 = 25275,
+            INTERCEPT_RNK_5_TRIGGER = 25274,
             INTIMIDATING_SHOUT_RNK_1 = 5246,
+            INTIMIDATING_SHOUT_RNK_1_TRIGGER = 20511,
             PUMMEL_RNK_1 = 6552,
             PUMMEL_RNK_2 = 6554,
             RAMPAGE_RNK_1 = 29801,
@@ -3763,10 +3765,12 @@ namespace ClassSpells
             RAMPAGE_RNK_3 = 30033,
             RECKLESSNESS_RNK_1 = 1719,
             VICTORY_RUSH_RNK_1 = 34428,
-            WHIRLWIND_RNK_1 = 1680,
+            WHIRLWIND_RNK_1 = 1680, // MH dmg
+            WHIRLWIND_RNK_1_TRIGGER = 44949, // OH dmg
 
             // Protection
             BLOODRAGE_RNK_1 = 2687,
+            BLOODRAGE_RNK_1_TRIGGER = 29131,
             DEFENSIVE_STANCE_RNK_1 = 71,
             DEVASTATE_RNK_1 = 20243,
             DEVASTATE_RNK_2 = 30016,
