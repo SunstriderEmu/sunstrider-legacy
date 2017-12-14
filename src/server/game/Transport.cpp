@@ -688,6 +688,28 @@ void MotionTransport::UpdatePassengerPositions(PassengerSet& passengers)
 
 void MotionTransport::DoEventIfAny(KeyFrame const& node, bool departure)
 {
+    /* disabled for now, position is not yet properly updated when we get to this point...
+    if (sWorld->getConfig(CONFIG_TRANSPORT_DOCKING_SOUNDS) && !departure && node.DepartureTime != node.ArriveTime) //arrival
+    {
+        switch (GetEntry())
+        {
+        case 176495:
+        case 164871:
+        case 175080:
+            PlayDirectSound(11804); break;		// ZeppelinDocked
+        case 20808:
+        case 181646:
+        case 176231:
+        case 176244:
+        case 176310:
+        case 177233:
+            PlayDirectSound(5154); break;		// ShipDocked
+        default:
+            PlayDirectSound(5495); break;		// BoatDockingWarning
+        }
+    }
+    */
+
     if (uint32 eventid = departure ? node.Node->departureEventID : node.Node->arrivalEventID)
     {
         //TC_LOG_DEBUG("maps.script", "Taxi %s event %u of node %u of %s path", departure ? "departure" : "arrival", eventid, node.Node->index, GetName().c_str());

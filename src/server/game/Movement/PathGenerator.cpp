@@ -601,7 +601,10 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
 void PathGenerator::NormalizePath()
 {
     for (uint32 i = 0; i < _pathPoints.size(); ++i)
-        WorldObject::UpdateAllowedPositionZ(_sourceUnit ? _sourceUnit->GetPhaseMask() : PHASEMASK_NORMAL, _sourceMapId,_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, SourceCanSwim(), SourceCanFly() || SourceIgnorePathfinding(), SourceCanWaterwalk());
+    {
+        float searchDist = (_forceDestination && i == (_pathPoints.size() - 1)) ? 5.0f : 20.0f; //sunstrider: do not normalize last point as much if destination is forced
+        WorldObject::UpdateAllowedPositionZ(_sourceUnit ? _sourceUnit->GetPhaseMask() : PHASEMASK_NORMAL, _sourceMapId, _pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, SourceCanSwim(), SourceCanFly() || SourceIgnorePathfinding(), SourceCanWaterwalk(), searchDist);
+    }
 }
 
 void PathGenerator::BuildShortcut()

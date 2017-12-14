@@ -40,8 +40,8 @@ class TC_GAME_API ZoneScript
         virtual void OnCreatureKill(Creature*) {}
 
 		//All-purpose data storage 64 bit
-		//TC virtual ObjectGuid GetGuidData(uint32 /*DataId*/) const { return ObjectGuid::Empty; }
-		//TC virtual void SetGuidData(uint32 /*DataId*/, ObjectGuid /*Value*/) { }
+		virtual ObjectGuid GetGuidData(uint32 /*DataId*/) const { return ObjectGuid::Empty; }
+		virtual void SetGuidData(uint32 /*DataId*/, ObjectGuid /*Value*/) { }
 
 		virtual uint64 GetData64(uint32 /*DataId*/) const { return 0; }
 		virtual void SetData64(uint32 /*DataId*/, uint64 /*Value*/) { }

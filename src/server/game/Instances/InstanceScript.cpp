@@ -313,7 +313,7 @@ void InstanceScript::DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime, 
     }
 }
 
-bool InstanceHasScript(WorldObject const* obj, char const* scriptName)
+bool InstanceScript::InstanceHasScript(WorldObject const* obj, char const* scriptName)
 {
     if (InstanceMap* instance = obj->GetMap()->ToInstanceMap())
         return instance->GetScriptName() == scriptName;

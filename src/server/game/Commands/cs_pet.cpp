@@ -67,6 +67,9 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
     // visual effect for levelup
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, creatureTarget->GetLevel());
 
+    pet->SetLoyaltyLevel(BEST_FRIEND);
+    pet->SetPower(POWER_HAPPINESS, 1050000); //maxed
+
     player->SetMinion(pet, true);
     pet->SavePetToDB(PET_SAVE_AS_CURRENT);
     player->PetSpellInitialize();

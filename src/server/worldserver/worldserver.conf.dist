@@ -1511,6 +1511,11 @@ CharDelete.KeepDays = 30
 #        List of forbidden maps, delimited with a comma
 #        Default: (none)
 #
+#   Transports.DockingSounds
+#       Enable some sounds when boats and zeppelins dock
+#       Default: 0 (Disabled)
+#                1 (Enabled)
+#
 ###################################################################################################################
 
 PlayerStart.AllReputation = 0
@@ -1540,6 +1545,7 @@ ArenaServer.Enabled = 0
 ArenaServer.UseCloseSchedule = 1
 ArenaServer.RepartitionThreshold = 0
 ForbiddenMaps = ""
+Transports.DockingSounds = 0
 
 ###################################################################################################################
 # BETA SERVER
