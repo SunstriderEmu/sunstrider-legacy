@@ -156,6 +156,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
 	    //When save is needed, this function generates the data
 	    virtual const char* Save() { return ""; }
 
+        static bool InstanceHasScript(WorldObject const* obj, char const* scriptName);
 
     protected:
         void SetBossNumber(uint32 number) { bosses.resize(number); }
