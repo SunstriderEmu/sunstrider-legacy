@@ -2174,6 +2174,13 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
+void WorldObject::GetChasePoint(float &x, float &y, float &z, float searcherSize, float distance2d, float angle) const
+{
+    //NYI implemented, use regular GetClosePoint for now
+    //Maybe look for Nost or Sunwell impl
+    GetClosePoint(x, y, z, searcherSize, distance2d, angle);
+}
+
 void WorldObject::GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d, float angle) const
 {
     // angle calculated from current orientation

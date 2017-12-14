@@ -43,16 +43,16 @@ class TC_GAME_API TargetedMovementGenerator : public MovementGeneratorMedium< T,
         offset: Base distance between unit and target
         */
         explicit TargetedMovementGenerator(Unit* target, float offset, float angle) :
-            TargetedMovementGeneratorBase(target), i_path(nullptr),
+            TargetedMovementGeneratorBase(target), _path(nullptr),
             _timer(0), _offset(offset), _angle(angle),
-            i_recalculatePath(false), i_targetReached(false), _speedChanged(false),
+            _recalculateTravel(false), _targetReached(false), _speedChanged(false),
             lastTargetXYZ(0.0f, 0.0f, 0.0f), lastOwnerXYZ(0.0f, 0.0f, 0.0f)
         {
         }
 
         ~TargetedMovementGenerator()
 		{
-			delete i_path;
+			delete _path;
 		}
 
         bool DoUpdate(T*, uint32);
@@ -69,13 +69,13 @@ class TC_GAME_API TargetedMovementGenerator : public MovementGeneratorMedium< T,
         /* Update target locaton */
         void SetTargetLocation(T* owner);
     protected:
-        PathGenerator* i_path;
+        PathGenerator* _path;
         TimeTrackerSmall _timer;
         float _offset;
         float _angle;
-        bool i_recalculatePath : 1;
+        bool _recalculateTravel : 1;
         bool _speedChanged : 1;
-        bool i_targetReached : 1;
+        bool _targetReached : 1;
 
         Position lastOwnerXYZ;
         Position lastTargetXYZ;

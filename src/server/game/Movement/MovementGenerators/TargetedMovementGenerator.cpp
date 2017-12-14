@@ -49,10 +49,10 @@ void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
         // to at _offset distance from target and _angle from target facing
         i_target->GetClosePoint(x, y, z, owner->GetCombatReach(), _offset, _angle);
 
-    if (!i_path)
-        i_path = new PathGenerator(owner);
+    if (!_path)
+        _path = new PathGenerator(owner);
     else
-        i_path->UpdateOptions();
+        _path->UpdateOptions();
 
     bool isPlayerPet = owner->IsPet() && IS_PLAYER_GUID(owner->GetOwnerGUID());
 #ifdef LICH_KING
@@ -66,22 +66,22 @@ void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
         ///|| (owner->FindMap() && owner->FindMap()->IsDungeon() && !isPlayerPet) // force in instances to prevent exploiting //disabled, evade mode when target is not accessible should help with this in a better way. Maybe disable for bosses too ?
         ;
 
-    bool result = i_path->CalculatePath(x, y, z, forceDest);
-    if (!result || (i_path->GetPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE)))
+    bool result = _path->CalculatePath(x, y, z, forceDest);
+    if (!result || (_path->GetPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE)))
     {
         // Cant reach target, try again at next update
-        i_recalculatePath = true;
+        _recalculateTravel = true;
         return;
     }
 
     D::_addUnitStateMove(owner);
-    i_targetReached = false;
-    i_recalculatePath = false;
+    _targetReached = false;
+    _recalculateTravel = false;
     _speedChanged = false;
     owner->AddUnitState(UNIT_STATE_CHASE);
 
     Movement::MoveSplineInit init(owner);
-    init.MovebyPath(i_path->GetPath());
+    init.MovebyPath(_path->GetPath());
     init.SetWalk(((D*)this)->EnableWalking());
     // Using the same condition for facing target as the one that is used for SetInFront on movement end
     // - applies to ChaseMovementGenerator mostly
@@ -144,7 +144,7 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
 
     if (owner->GetTypeId() == TYPEID_UNIT)
     {
-        if (i_path && i_path->GetPathType() & (PATHFIND_INCOMPLETE | PATHFIND_NOPATH))
+        if (_path && _path->GetPathType() & (PATHFIND_INCOMPLETE | PATHFIND_NOPATH))
         {
             owner->ToCreature()->SetCannotReachTarget(true);
         }
@@ -154,7 +154,7 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
     }
 
     _timer.Update(time_diff);
-    if (!i_recalculatePath && _timer.Passed())
+    if (!_recalculateTravel && _timer.Passed())
     {
         _timer.Reset(100);
         G3D::Vector3 dest = owner->movespline->FinalDestination();
@@ -163,14 +163,14 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
             if (TransportBase* transport = owner->GetTransport())
                 transport->CalculatePassengerPosition(dest.x, dest.y, dest.z);
         
-        i_recalculatePath = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
+        _recalculateTravel = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
         // then, if the target is in range, check also Line of Sight. Consider target has moved if out of sight.
-        if (!i_recalculatePath)
-            i_recalculatePath = !i_target->IsWithinLOSInMap(owner, VMAP::ModelIgnoreFlags::M2);
+        if (!_recalculateTravel)
+            _recalculateTravel = !i_target->IsWithinLOSInMap(owner, VMAP::ModelIgnoreFlags::M2);
     }
 
     bool someoneMoved = (owner->GetExactDistSq(&lastOwnerXYZ) >= 0.1f*0.1f) || (i_target->GetExactDistSq(&lastTargetXYZ) >= 0.1f*0.1f);
-    if (_speedChanged || (i_recalculatePath && someoneMoved))
+    if (_speedChanged || (_recalculateTravel && someoneMoved))
         SetTargetLocation(owner);
 
     if (owner->movespline->Finalized())
@@ -179,9 +179,9 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
         if (_angle == 0.f && !owner->HasInArc(0.01f, i_target.getTarget()))
             owner->SetInFront(i_target.getTarget());
 
-        if (!i_targetReached)
+        if (!_targetReached)
         {
-            i_targetReached = true;
+            _targetReached = true;
             static_cast<D*>(this)->_reachTarget(owner);
         }
     }

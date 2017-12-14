@@ -74,7 +74,7 @@ class PathMovementBase
 
     protected:
         P _path;
-        //The node we're currently going to. Index for i_path. /!\ not always equal to path id in db (db path may not start at 0 or all points be contiguous)
+        //The node we're currently going to. Index for _path. /!\ not always equal to path id in db (db path may not start at 0 or all points be contiguous)
         uint32 _currentNode;
 };
 
@@ -104,7 +104,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         void DoReset(Creature*);
         bool DoUpdate(Creature*, uint32 diff);
 
-        void UnitSpeedChanged() override { i_recalculatePath = true; }
+        void UnitSpeedChanged() override { _recalculateTravel = true; }
         void Pause(uint32 timer = 0) override;
         void Resume(uint32 overrideTimer = 0) override;
 
@@ -147,11 +147,11 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         void Pause(int32 time);
 
         /* Handle point relative stuff (memory inform, script, delay)
-        arrivedNodeIndex = index in i_path
+        arrivedNodeIndex = index in _path
         */
         void OnArrived(Creature*, uint32 arrivedNodeIndex);
 
-        /* Fill m_precomputedPath with data from i_path according to current node (that is, points until next stop), then start spline path
+        /* Fill m_precomputedPath with data from _path according to current node (that is, points until next stop), then start spline path
         nextNode = skip current node
         Returns false on error getting new point
         */
@@ -177,7 +177,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
 
         Movement::PointsArray m_precomputedPath;
         uint32 m_useSmoothSpline; //calculate path to further points to allow using smooth splines
-        bool i_recalculatePath;
+        bool _recalculateTravel;
 
         uint32 _splineId;
         //true when creature has reached the start node in path (it has to travel from its current position first)

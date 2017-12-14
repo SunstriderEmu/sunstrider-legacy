@@ -32,7 +32,7 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id, 
     path_type(repeating ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE),
     direction(WP_PATH_DIRECTION_NORMAL),
     i_nextMoveTime(0), 
-    i_recalculatePath(false),
+    _recalculateTravel(false),
     reachedFirstNode(false),
     customPath(nullptr), 
     erasePathAtEnd(false),
@@ -48,7 +48,7 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(WaypointPath& pat
     path_type(repeating ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE),
     direction(WP_PATH_DIRECTION_NORMAL),
     i_nextMoveTime(0),
-    i_recalculatePath(false),
+    _recalculateTravel(false),
     reachedFirstNode(false),
     customPath(&path),
     erasePathAtEnd(false),
@@ -324,7 +324,7 @@ void WaypointMovementGenerator<Creature>::Pause(int32 time)
 { 
     TC_LOG_TRACE("misc", "Paused waypoint movement (path %u)", _path->id);
     i_nextMoveTime.Reset(time); 
-    i_recalculatePath = false; //no need to recalc if we stop anyway
+    _recalculateTravel = false; //no need to recalc if we stop anyway
 }
 
 bool WaypointMovementGenerator<Creature>::IsPaused()
@@ -565,7 +565,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     init.Launch();
     _splineId = creature->movespline->GetId(); //used by SplineHandler class to do movement inform's
     reachedFirstNode = false;
-    i_recalculatePath = false;
+    _recalculateTravel = false;
     creature->AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
 
     //Call for creature group update
@@ -604,7 +604,7 @@ bool WaypointMovementGenerator<Creature>::SetPathType(WaypointPathType type)
 
     path_type = type;
     //trigger creation of a new spline
-    i_recalculatePath = true;
+    _recalculateTravel = true;
     return true;
 }
 
@@ -615,7 +615,7 @@ bool WaypointMovementGenerator<Creature>::SetDirection(WaypointPathDirection dir
 
     direction = dir;
     //trigger creation a new spline
-    i_recalculatePath = true;
+    _recalculateTravel = true;
     return true;
 }
 
@@ -652,7 +652,7 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
             if (!creature->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) || creature->GetTransGUID())
                 creature->SetHomePosition(creature->GetPosition());
 
-            if (i_recalculatePath)
+            if (_recalculateTravel)
                 return StartMove(creature); //relaunch spline to current dest
         }
     }
