@@ -2701,8 +2701,8 @@ InstanceMap::~InstanceMap()
 float InstanceMap::GetDefaultVisibilityDistance() const
 {
     float maxDist = World::GetMaxVisibleDistanceInInstances();
-    if (GetId() == 532) //sunstrider: karazhan has A LOT of objects in range and having a big range like 300 may cause the client to freeze (too big object update packet)
-        maxDist = std::min(maxDist, 150.0f);
+    if (GetId() == 532) //sunstrider: karazhan has A LOT of objects in range and having a big range like 300.0f may cause the client to freeze (too big object update packet)
+        maxDist = std::min(maxDist, 120.0f);
     return maxDist;
 }
 
