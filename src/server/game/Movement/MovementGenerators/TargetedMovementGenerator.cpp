@@ -34,6 +34,7 @@ void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
     lastOwnerXYZ.Relocate(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ());
     lastTargetXYZ.Relocate(_target->GetPositionX(), _target->GetPositionY(), _target->GetPositionZ());
 
+    bool isPlayerPet = owner->IsPet() && IS_PLAYER_GUID(owner->GetOwnerGUID());
     if (!_offset)
     {
         // to nearest contact position
