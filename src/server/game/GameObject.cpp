@@ -333,9 +333,9 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMa
 
     SetDisplayId(goinfo->displayId);
 
+    SetGoType(GameobjectTypes(goinfo->type));
     m_model = CreateModel();
     
-    SetGoType(GameobjectTypes(goinfo->type));
     m_prevGoState = go_state;
     SetGoState(GOState(go_state));
 

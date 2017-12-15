@@ -484,12 +484,11 @@ bool Map::AddPlayerToMap(Player *player)
     player->SetMap(this);
     player->AddToWorld();
 
-    player->m_clientGUIDs.clear();
-
     SendInitSelf(player);
     SendInitTransports(player);
     SendZoneDynamicInfo(player);
 
+    player->m_clientGUIDs.clear();
     player->UpdateObjectVisibility(false);
 
     if (player->IsAlive())
@@ -2217,7 +2216,6 @@ void Map::SendInitTransports( Player * player)
     for (auto _transport : _transports)
         if (_transport != player->GetTransport())
             {
-                player->m_clientGUIDs.insert(_transport->GetGUID());
                 _transport->BuildCreateUpdateBlockForPlayer(&transData, player);
                 hasTransport = true;
             }
