@@ -28,11 +28,11 @@
 class TC_GAME_API TargetedMovementGeneratorBase
 {
     public:
-        TargetedMovementGeneratorBase(Unit* target) { i_target.link(target, this); }
-        Unit* GetTarget() const { return i_target.getTarget(); }
+        TargetedMovementGeneratorBase(Unit* target) { _target.link(target, this); }
+        Unit* GetTarget() const { return _target.getTarget(); }
         void stopFollowing() { }
     protected:
-        FollowerReference i_target;
+        FollowerReference _target;
 };
 
 template<class T, typename D>
@@ -56,7 +56,7 @@ class TC_GAME_API TargetedMovementGenerator : public MovementGeneratorMedium< T,
 		}
 
         bool DoUpdate(T*, uint32);
-        Unit* GetTarget() const { return i_target.getTarget(); }
+        Unit* GetTarget() const { return _target.getTarget(); }
 
         void UnitSpeedChanged() { _speedChanged = true; }
         virtual bool HasLostTarget(T*) const { return false; }

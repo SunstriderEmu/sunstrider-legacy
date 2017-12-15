@@ -19,45 +19,48 @@ void TargetedMovementGenerator<T, D>::SetOffset(float offset)
 template<class T, typename D>
 void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
 {
-    if (!i_target.isValid() || !i_target->IsInWorld())
+    if (!_target.isValid() || !_target->IsInWorld())
         return;
 
     if (owner->HasUnitState(UNIT_STATE_NOT_MOVE))
         return;
 
-    if (owner->GetTypeId() == TYPEID_UNIT && !i_target->isInAccessiblePlaceFor(owner->ToCreature()))
+    if (owner->GetTypeId() == TYPEID_UNIT && !_target->isInAccessiblePlaceFor(owner->ToCreature()))
         return;
 
     float x, y, z;
-    bool transportImplied = owner->GetTransport() || i_target->GetTransport();
+    bool transportImplied = owner->GetTransport() || _target->GetTransport();
 
     lastOwnerXYZ.Relocate(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ());
-    lastTargetXYZ.Relocate(i_target->GetPositionX(), i_target->GetPositionY(), i_target->GetPositionZ());
+    lastTargetXYZ.Relocate(_target->GetPositionX(), _target->GetPositionY(), _target->GetPositionZ());
 
     if (!_offset)
     {
         // to nearest contact position
-        i_target->GetContactPoint(owner, x, y, z);
+        _target->GetContactPoint(owner, x, y, z);
         if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)
         {
             //kelno: for chase movement, check if target point is in LoS with target. If not, force moving on target instead so that we can still melee it.
-            if (!i_target->IsWithinLOS(x, y, z))
-                i_target->GetPosition(x, y, z);
+            if (!_target->IsWithinLOS(x, y, z))
+                _target->GetPosition(x, y, z);
         }
     }
-    else
+    else if (transportImplied)
+    {
+        _target->GetNearPoint2D(x, y, owner->GetCombatReach() + _offset, _angle);
+        z = _target->GetPositionZ();
+    } else
         // to at _offset distance from target and _angle from target facing
-        i_target->GetClosePoint(x, y, z, owner->GetCombatReach(), _offset, _angle);
+        _target->GetClosePoint(x, y, z, owner->GetCombatReach(), _offset, _angle);
 
     if (!_path)
         _path = new PathGenerator(owner);
     else
         _path->UpdateOptions();
 
-    bool isPlayerPet = owner->IsPet() && IS_PLAYER_GUID(owner->GetOwnerGUID());
 #ifdef LICH_KING
-    if (owner->GetMapId() == 631 && owner->GetTransport() && owner->GetTransport()->IsMotionTransport() && i_target->GetTransport() && i_target->GetTransport()->IsMotionTransport()) // for ICC, if both on a motion transport => don't use mmaps
-        sameTransport = owner->GetTypeId() == TYPEID_UNIT && i_target->isInAccessiblePlaceFor(owner->ToCreature());
+    if (owner->GetMapId() == 631 && owner->GetTransport() && owner->GetTransport()->IsMotionTransport() && _target->GetTransport() && _target->GetTransport()->IsMotionTransport()) // for ICC, if both on a motion transport => don't use mmaps
+        sameTransport = owner->GetTypeId() == TYPEID_UNIT && _target->isInAccessiblePlaceFor(owner->ToCreature());
 #endif
     bool forceDest = 
            (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsPet() && owner->HasUnitState(UNIT_STATE_FOLLOW)) // allow pets to use shortcut if no path found when following their master
@@ -86,7 +89,7 @@ void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
     // Using the same condition for facing target as the one that is used for SetInFront on movement end
     // - applies to ChaseMovementGenerator mostly
     if (_angle == 0.f)
-        init.SetFacing(i_target.getTarget());
+        init.SetFacing(_target.getTarget());
 
     // use player orientation if player pet
     if (owner->HasUnitState(UNIT_STATE_FOLLOW) && isPlayerPet)
@@ -103,9 +106,9 @@ bool TargetedMovementGenerator<T, D>::IsWithinAllowedDist(T* owner, float x, flo
     float allowedDist = GetAllowedDist(owner);
 
     if (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->CanFly())
-        return i_target->IsWithinDist3d(x, y, z, allowedDist);
+        return _target->IsWithinDist3d(x, y, z, allowedDist);
     else
-        return i_target->IsWithinDist2d(x, y, allowedDist);
+        return _target->IsWithinDist2d(x, y, allowedDist);
 }
 
 template<class T, typename D>
@@ -122,7 +125,7 @@ float TargetedMovementGenerator<T, D>::GetAllowedDist(T* owner)
 template<class T, typename D>
 bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
 {
-    if (!i_target.isValid() || !i_target->IsInWorld() || i_target->GetMap() != owner->GetMap())
+    if (!_target.isValid() || !_target->IsInWorld() || _target->GetMap() != owner->GetMap())
         return false;
 
     if (!owner || !owner->IsAlive())
@@ -166,18 +169,18 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
         _recalculateTravel = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
         // then, if the target is in range, check also Line of Sight. Consider target has moved if out of sight.
         if (!_recalculateTravel)
-            _recalculateTravel = !i_target->IsWithinLOSInMap(owner, VMAP::ModelIgnoreFlags::M2);
+            _recalculateTravel = !_target->IsWithinLOSInMap(owner, VMAP::ModelIgnoreFlags::M2);
     }
 
-    bool someoneMoved = (owner->GetExactDistSq(&lastOwnerXYZ) >= 0.1f*0.1f) || (i_target->GetExactDistSq(&lastTargetXYZ) >= 0.1f*0.1f);
+    bool someoneMoved = (owner->GetExactDistSq(&lastOwnerXYZ) >= 0.1f*0.1f) || (_target->GetExactDistSq(&lastTargetXYZ) >= 0.1f*0.1f);
     if (_speedChanged || (_recalculateTravel && someoneMoved))
         SetTargetLocation(owner);
 
     if (owner->movespline->Finalized())
     {
         static_cast<D*>(this)->MovementInform(owner);
-        if (_angle == 0.f && !owner->HasInArc(0.01f, i_target.getTarget()))
-            owner->SetInFront(i_target.getTarget());
+        if (_angle == 0.f && !owner->HasInArc(0.01f, _target.getTarget()))
+            owner->SetInFront(_target.getTarget());
 
         if (!_targetReached)
         {
@@ -193,8 +196,8 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
 template<class T>
 void ChaseMovementGenerator<T>::_reachTarget(T* owner)
 {
-    if (owner->IsWithinMeleeRange(this->i_target.getTarget()))
-        owner->Attack(this->i_target.getTarget(), true);
+    if (owner->IsWithinMeleeRange(this->_target.getTarget()))
+        owner->Attack(this->_target.getTarget(), true);
     if (owner->GetTypeId() == TYPEID_UNIT)
         owner->ToCreature()->SetCannotReachTarget(false);
 }
@@ -241,7 +244,7 @@ void ChaseMovementGenerator<Creature>::MovementInform(Creature* unit)
 {
     // Pass back the GUIDLow of the target. If it is pet's owner then PetAI will handle
     if (unit->AI())
-        unit->AI()->MovementInform(CHASE_MOTION_TYPE, i_target.getTarget()->GetGUIDLow());
+        unit->AI()->MovementInform(CHASE_MOTION_TYPE, _target.getTarget()->GetGUIDLow());
 }
 
 template<class T>
@@ -254,7 +257,7 @@ bool ChaseMovementGenerator<T>::HasLostTarget(T* owner) const
 template<>
 bool FollowMovementGenerator<Creature>::EnableWalking() const
 {
-    return i_target.isValid() && i_target->IsWalking();
+    return _target.isValid() && _target->IsWalking();
 }
 
 template<>
@@ -274,7 +277,7 @@ void FollowMovementGenerator<Creature>::_updateSpeed(Creature* owner)
 {
     // pet only sync speed with owner
     /// Make sure we are not in the process of a map change (IsInWorld)
-    if (!owner->IsPet() || !owner->IsInWorld() || !i_target.isValid() || i_target->GetGUID() != owner->GetOwnerGUID())
+    if (!owner->IsPet() || !owner->IsInWorld() || !_target.isValid() || _target->GetGUID() != owner->GetOwnerGUID())
         return;
 
     owner->UpdateSpeed(MOVE_RUN);
@@ -321,7 +324,7 @@ void FollowMovementGenerator<Creature>::MovementInform(Creature* unit)
 {
     // Pass back the GUIDLow of the target. If it is pet's owner then PetAI will handle
     if (unit->AI())
-        unit->AI()->MovementInform(FOLLOW_MOTION_TYPE, i_target.getTarget()->GetGUIDLow());
+        unit->AI()->MovementInform(FOLLOW_MOTION_TYPE, _target.getTarget()->GetGUIDLow());
 }
 
 //-----------------------------------------------//

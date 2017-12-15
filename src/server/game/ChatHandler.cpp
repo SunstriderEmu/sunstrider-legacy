@@ -538,10 +538,10 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
     recvData >> emoteNum;
     recvData >> guid;
 
-    Unit* i_target = ObjectAccessor::GetUnit(*_player, guid);
+    Unit* _target = ObjectAccessor::GetUnit(*_player, guid);
 
     LocaleConstant loc_idx = _player->GetSession()->GetSessionDbcLocale();
-    std::string const name(i_target ? i_target->GetNameForLocaleIdx(loc_idx) : "");
+    std::string const name(_target ? _target->GetNameForLocaleIdx(loc_idx) : "");
     uint32 namlen = name.size();
 
     EmotesTextEntry const *em = sEmotesTextStore.LookupEntry(text_emote);
@@ -579,8 +579,8 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
         }
 
         //Send scripted event call
-        if(i_target)
-            if (Creature *pCreature = i_target->ToCreature()) {
+        if(_target)
+            if (Creature *pCreature = _target->ToCreature()) {
                 pCreature->AI()->ReceiveEmote(GetPlayer(), text_emote);
             }
     }
