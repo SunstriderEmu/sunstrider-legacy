@@ -237,7 +237,11 @@ struct CreatureModelDataEntry
     //float CollisionWidth;
     float CollisionHeight;
     float MountHeight;                                       // Used in calculation of unit collision data when mounted
+#ifdef LICH_KING
     //float Unks[11]
+#else
+    //float Unks[7]
+#endif
 };
 
 struct CreatureFamilyEntry

@@ -19,15 +19,20 @@ char const CinematicSequencesEntryfmt[] = "nxixxxxxxx";
 char const CreatureDisplayInfofmt[]="nixifxxxxxxxxx";
 char const CreatureDisplayInfoExtrafmt[]="diixxxxxxxxxxxxxxxxxx";
 char const CreatureFamilyfmt[]="nfifiiiissssssssssssssssxx";
+#ifdef LICH_KING
 char const CreatureModelDatafmt[] ="nixxfxxxxxxxxxxffxxxxxxxxxxx";
+char const Emotesfmt[] = "nxxiiixx";
+char const LiquidTypefmt[] = "nxxixixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+char const LightEntryfmt[] = "nifffxxxxxxxxxx";
+#else
+char const CreatureModelDatafmt[] = "nixxfxxxxxxxxxxffxxxxxxx";
+char const Emotesfmt[] = "nxxiiix";
+char const LiquidTypefmt[] = "nxii";
+char const LightEntryfmt[] = "nifffxxxxxxx";
+#endif
 char const CreatureSpellDatafmt[]="nxxxxxxxx";
 char const DurabilityCostsfmt[]="niiiiiiiiiiiiiiiiiiiiiiiiiiiii";
 char const DurabilityQualityfmt[]="nf";
-#ifdef LICH_KING
-char const Emotesfmt[] = "nxxiiixx";
-#else
-char const Emotesfmt[] = "nxxiiix";
-#endif
 char const EmoteEntryfmt[]="nxixxxxxxxxxxxxxxxx";
 char const FactionEntryfmt[]="niiiiiiiiiiiiiiiiiissssssssssssssssxxxxxxxxxxxxxxxxxx";
 char const FactionTemplateEntryfmt[]="niiiiiiiiiiiii";
@@ -49,13 +54,6 @@ char const ItemExtendedCostEntryfmt[]="niiiiiiiiiiiii";
 char const ItemRandomPropertiesfmt[]="nxiiixxxxxxxxxxxxxxxxxxx";
 char const ItemRandomSuffixfmt[]="nxxxxxxxxxxxxxxxxxxiiiiii";
 char const ItemSetEntryfmt[]="dssssssssssssssssxxxxxxxxxxxxxxxxxxiiiiiiiiiiiiiiiiii";
-#ifdef LICH_KING
-char const LiquidTypefmt[] = "nxxixixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-char const LightEntryfmt[] = "nifffxxxxxxxxxx";
-#else
-char const LiquidTypefmt[] = "nxii";
-char const LightEntryfmt[] = "nifffxxxxxxx";
-#endif
 char const LockEntryfmt[]="niiiiiiiiiiiiiiiiiixxxxxxxxxxxxxx";
 char const MailTemplateEntryfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 char const MapEntryfmt[]="nxixssssssssssssssssxxxxxxxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxiffiixxi";
