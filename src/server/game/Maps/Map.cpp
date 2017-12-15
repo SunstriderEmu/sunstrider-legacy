@@ -209,7 +209,6 @@ float Map::GetVisibilityNotifierPeriod() const
 
 void Map::InitVisibilityDistance()
 {
-    //init visibility for continents
     m_VisibleDistance = GetDefaultVisibilityDistance();
     m_VisibilityNotifyPeriod = GetVisibilityNotifierPeriod();
 }

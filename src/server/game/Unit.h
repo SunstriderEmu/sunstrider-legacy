@@ -2225,6 +2225,8 @@ class TC_GAME_API Unit : public WorldObject
         void old_TextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false);
         void old_Whisper(int32 textId, uint64 receiver, bool IsBossWhisper = false);
 
+        float GetCollisionHeight() const override;
+
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
     protected:

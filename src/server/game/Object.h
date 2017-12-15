@@ -637,6 +637,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         void UpdatePositionData();
         float GetFloorZ() const;
+        virtual float GetCollisionHeight() const { return 0.0f; }
+        float GetMidsectionHeight() const { return GetCollisionHeight() / 2.0f; }
 
         void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet& player_set) override;
 

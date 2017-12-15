@@ -7337,16 +7337,16 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
             caster = m_caster;
         if (target != caster)
         {
-            float x = caster->GetPositionX(), y = caster->GetPositionY(), z = caster->GetPositionZ();
             if (m_targets.HasDst())
             {
-                x = m_targets.GetDstPos()->GetPositionX();
-                y = m_targets.GetDstPos()->GetPositionY();
-                z = m_targets.GetDstPos()->GetPositionZ();
+                if (!target->IsWithinLOS(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY(), m_targets.GetDstPos()->GetPositionZ()))
+                    return false;
             }
-
-            if (!target->IsInMap(caster) || !target->IsWithinLOS(x, y, z))
-                return false;
+            else 
+            {
+                if (target != m_caster && !target->IsWithinLOSInMap(caster))
+                    return false;
+            }
         }
         break;
     }
