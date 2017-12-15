@@ -2008,7 +2008,7 @@ GameObjectModel* GameObject::CreateModel()
 {
     //extra sunstrider condition, avoid creating a lot of useless models
     if (!CanHaveModel(GetGoType()))
-        return;
+        return nullptr;
     return GameObjectModel::Create(Trinity::make_unique<GameObjectModelOwnerImpl>(this), sWorld->GetDataPath());
 }
 

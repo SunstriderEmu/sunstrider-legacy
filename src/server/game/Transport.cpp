@@ -275,13 +275,10 @@ void MotionTransport::UpdatePosition(float x, float y, float z, float o)
 {
     bool newActive = GetMap()->IsGridLoaded(x, y);
     Cell oldCell(GetPositionX(), GetPositionY());
-    /*
-    if (!GetMap()->IsGridLoaded(x, y)) // sunwell: should not happen, but just in case
-        GetMap()->LoadGrid(x, y);
-        */
+
     Relocate(x, y, z, o);
     UpdateModelPosition();
-
+    
     UpdatePassengerPositions(_passengers);
 
     /* There are four possible scenarios that trigger loading/unloading passengers:
@@ -317,7 +314,7 @@ void MotionTransport::AddPassenger(WorldObject* passenger, bool withAll)
             CalculatePassengerOffset(x, y, z, &o);
 
             passenger->SetTransport(this);
-            passenger->m_movementInfo.flags |= MOVEMENTFLAG_ONTRANSPORT;
+            passenger->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
             passenger->m_movementInfo.transport.guid = GetGUID();
             passenger->m_movementInfo.transport.pos.Relocate(x, y, z, o);
         }
