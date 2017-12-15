@@ -28,7 +28,16 @@ uint32 Transport::GetPathProgress() const
     return GetGOValue()->Transport.PathProgress;
 }
 
-MotionTransport::MotionTransport() : Transport(), _transportInfo(nullptr), _isMoving(true), _pendingStop(false), _triggeredArrivalEvent(false), _triggeredDepartureEvent(false), _passengersLoaded(false), _delayedTeleport(false)
+MotionTransport::MotionTransport() : 
+    Transport(), 
+    _transportInfo(nullptr), 
+    _isMoving(true), 
+    _pendingStop(false), 
+    _triggeredArrivalEvent(false), 
+    _triggeredDepartureEvent(false), 
+    _passengersLoaded(false),
+    _delayedTeleport(false), 
+    _delayedAddModel(false)
 {
     m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION;
     m_updateFlagLK = LK_UPDATEFLAG_TRANSPORT | LK_UPDATEFLAG_LOWGUID | LK_UPDATEFLAG_STATIONARY_POSITION | LK_UPDATEFLAG_ROTATION;
@@ -209,6 +218,14 @@ void MotionTransport::Update(uint32 diff)
         if (_currentFrame->IsTeleportFrame())
             if (TeleportTransport(_nextFrame->Node->MapID, _nextFrame->Node->LocX, _nextFrame->Node->LocY, _nextFrame->Node->LocZ, _nextFrame->InitialOrientation))
                 return; // Update more in new map thread
+    }
+
+    // Add model to map after we are fully done with moving maps
+    if (_delayedAddModel)
+    {
+        _delayedAddModel = false;
+        if (m_model)
+            GetMap()->InsertGameObjectModel(*m_model);
     }
 
     // Set position

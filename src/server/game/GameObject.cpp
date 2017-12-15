@@ -224,8 +224,13 @@ void GameObject::AddToWorld()
         bool toggledState = GetGoType() == GAMEOBJECT_TYPE_CHEST ? getLootState() == GO_READY : (GetGoState() == GO_STATE_READY || IsTransport());
         if (m_model)
         {
-            m_model->UpdatePosition();
-            GetMap()->InsertGameObjectModel(*m_model);
+            if (MotionTransport* trans = ToMotionTransport())
+            {
+                m_model->UpdatePosition();
+                trans->SetDelayedAddModelToMap();
+            } 
+            else
+                GetMap()->InsertGameObjectModel(*m_model);
         }
 
         EnableCollision(toggledState);

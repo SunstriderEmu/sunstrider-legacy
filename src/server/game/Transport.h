@@ -53,12 +53,13 @@ public:
     void SetPassengersLoaded(bool loaded) { _passengersLoaded = loaded; }
     bool PassengersLoaded() const { return _passengersLoaded; }
 
-    KeyFrameVec const& GetKeyFrames() const { return _transportInfo->keyFrames; }
-    void EnableMovement(bool enabled);
-    TransportTemplate const* GetTransportTemplate() const { return _transportInfo; }
-
     uint32 GetPeriod() const { return GetUInt32Value(GAMEOBJECT_LEVEL); }
     void SetPeriod(uint32 period) { SetUInt32Value(GAMEOBJECT_LEVEL, period); }
+    KeyFrameVec const& GetKeyFrames() const { return _transportInfo->keyFrames; }
+    void EnableMovement(bool enabled);
+    void SetDelayedAddModelToMap() { _delayedAddModel = true; }
+
+    TransportTemplate const* GetTransportTemplate() const { return _transportInfo; }
 
 private:
     void MoveToNextWaypoint();
@@ -86,6 +87,7 @@ private:
     PassengerSet _staticPassengers;
     std::mutex Lock;
     bool _passengersLoaded;
+    bool _delayedAddModel;
     bool _delayedTeleport;
 };
 
