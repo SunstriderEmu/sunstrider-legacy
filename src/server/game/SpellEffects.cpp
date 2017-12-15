@@ -6063,7 +6063,7 @@ void Spell::EffectDuel(uint32 i)
         return;
     }
 
-    //ENSURE TARGET CAN SEE CASTER (else he won't have any duel demands on client (hackyyyy)
+    //ENSURE TARGET CAN SEE CASTER (else he won't have any duel demands on client (hackyyyy))
     if(!target->HaveAtClient(caster))
     {
          caster->SendUpdateToPlayer(target); 

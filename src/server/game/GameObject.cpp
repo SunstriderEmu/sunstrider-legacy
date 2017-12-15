@@ -225,10 +225,7 @@ void GameObject::AddToWorld()
         if (m_model)
         {
             if (MotionTransport* trans = ToMotionTransport())
-            {
-                m_model->UpdatePosition();
                 trans->SetDelayedAddModelToMap();
-            } 
             else
                 GetMap()->InsertGameObjectModel(*m_model);
         }

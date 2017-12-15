@@ -709,6 +709,8 @@ void MotionTransport::UpdatePassengerPositions(PassengerSet& passengers)
 
 void MotionTransport::JustStopped()
 {
+    //not working for now... Player does not received sound packet because of check player->HaveAtClient in MessageDistDeliverer::SendPacket
+    /*
     if (sWorld->getConfig(CONFIG_TRANSPORT_DOCKING_SOUNDS))
     {
         switch (GetEntry())
@@ -728,6 +730,7 @@ void MotionTransport::JustStopped()
             PlayDirectSound(5495); break;		// BoatDockingWarning
         }
     }
+    */
 }
 
 void MotionTransport::DoEventIfAny(KeyFrame const& node, bool departure)
