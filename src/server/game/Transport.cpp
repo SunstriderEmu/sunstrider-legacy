@@ -159,6 +159,7 @@ void MotionTransport::Update(uint32 diff)
         SetPathProgress(GetPathProgress() + diff);
 
     uint32 timer = GetPathProgress() % GetPeriod();
+    bool justStopped = false;
 
     // Set current waypoint
     // Desired outcome: _currentFrame->DepartureTime < timer < _nextFrame->ArriveTime
@@ -176,6 +177,7 @@ void MotionTransport::Update(uint32 diff)
 
             if (timer < _currentFrame->DepartureTime)
             {
+                justStopped = IsMoving();
                 SetMoving(false);
 #ifdef LICH_KING
                 if (_pendingStop && GetGoState() != GO_STATE_READY)
@@ -235,11 +237,16 @@ void MotionTransport::Update(uint32 diff)
         _positionChangeTimer.Reset(positionUpdateDelay);
         if (IsMoving())
         {
-            float t = CalculateSegmentPos(float(timer) * 0.001f);
+            float t = !justStopped ? CalculateSegmentPos(float(timer) * 0.001f) : 1.0f;
             G3D::Vector3 pos, dir;
             _currentFrame->Spline->evaluate_percent(_currentFrame->Index, t, pos);
             _currentFrame->Spline->evaluate_derivative(_currentFrame->Index, t, dir);
             UpdatePosition(pos.x, pos.y, pos.z, NormalizeOrientation(atan2(dir.y, dir.x) + M_PI));
+        }
+        else if (justStopped)
+        {
+            UpdatePosition(_currentFrame->Node->LocX, _currentFrame->Node->LocY, _currentFrame->Node->LocZ, _currentFrame->InitialOrientation);
+            JustStopped();
         }
         else
         {
@@ -700,10 +707,9 @@ void MotionTransport::UpdatePassengerPositions(PassengerSet& passengers)
     }
 }
 
-void MotionTransport::DoEventIfAny(KeyFrame const& node, bool departure)
+void MotionTransport::JustStopped()
 {
-    /* disabled for now, position is not yet properly updated when we get to this point...
-    if (sWorld->getConfig(CONFIG_TRANSPORT_DOCKING_SOUNDS) && !departure && node.DepartureTime != node.ArriveTime) //arrival
+    if (sWorld->getConfig(CONFIG_TRANSPORT_DOCKING_SOUNDS))
     {
         switch (GetEntry())
         {
@@ -722,8 +728,10 @@ void MotionTransport::DoEventIfAny(KeyFrame const& node, bool departure)
             PlayDirectSound(5495); break;		// BoatDockingWarning
         }
     }
-    */
+}
 
+void MotionTransport::DoEventIfAny(KeyFrame const& node, bool departure)
+{
     if (uint32 eventid = departure ? node.Node->departureEventID : node.Node->arrivalEventID)
     {
         //TC_LOG_DEBUG("maps.script", "Taxi %s event %u of node %u of %s path", departure ? "departure" : "arrival", eventid, node.Node->index, GetName().c_str());

@@ -59,6 +59,8 @@ public:
     void EnableMovement(bool enabled);
     void SetDelayedAddModelToMap() { _delayedAddModel = true; }
 
+    void JustStopped();
+
     TransportTemplate const* GetTransportTemplate() const { return _transportInfo; }
 
 private:
