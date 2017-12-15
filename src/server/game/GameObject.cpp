@@ -1990,8 +1990,25 @@ private:
     GameObject const* _owner;
 };
 
+bool GameObject::CanHaveModel(GameobjectTypes type)
+{
+    switch (type)
+    {
+    case GAMEOBJECT_TYPE_DOOR:
+    case GAMEOBJECT_TYPE_TRANSPORT:
+    case GAMEOBJECT_TYPE_MO_TRANSPORT:
+    case GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING:
+        return true;
+    default:
+        return false;
+    }
+}
+
 GameObjectModel* GameObject::CreateModel()
 {
+    //extra sunstrider condition, avoid creating a lot of useless models
+    if (!CanHaveModel(GetGoType()))
+        return;
     return GameObjectModel::Create(Trinity::make_unique<GameObjectModelOwnerImpl>(this), sWorld->GetDataPath());
 }
 

@@ -827,6 +827,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         bool manual_unlock;
         
         GameObjectModel* CreateModel();
+        static bool CanHaveModel(GameobjectTypes);
         void UpdateModel();                                 // updates model in case displayId were changed
 
         Position m_stationaryPosition;
