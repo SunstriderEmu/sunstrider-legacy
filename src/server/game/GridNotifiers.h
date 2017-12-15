@@ -257,35 +257,47 @@ namespace Trinity
     template<class Do>
     struct WorldObjectWorker
     {
+        uint32 i_mapTypeMask;
         Do const& i_do;
 
-        explicit WorldObjectWorker(WorldObject const* searcher, Do const& _do) : i_do(_do) {}
+        explicit WorldObjectWorker(WorldObject const* searcher, Do const& _do, uint32 mapTypeMask = GRID_MAP_TYPE_MASK_ALL) : 
+            i_do(_do), i_mapTypeMask(mapTypeMask) {}
 
         void Visit(GameObjectMapType &m)
         {
+            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_GAMEOBJECT))
+                return;
             for(auto & itr : m)
                 i_do(itr.GetSource());
         }
 
         void Visit(PlayerMapType &m)
         {
+            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
+                return;
             for(auto & itr : m)
                 i_do(itr.GetSource());
         }
         void Visit(CreatureMapType &m)
         {
+            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CREATURE))
+                return;
             for(auto & itr : m)
                 i_do(itr.GetSource());
         }
 
         void Visit(CorpseMapType &m)
         {
+            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CORPSE))
+                return;
             for(auto & itr : m)
                 i_do(itr.GetSource());
         }
 
         void Visit(DynamicObjectMapType &m)
         {
+            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
+                return;
             for(auto & itr : m)
                 i_do(itr.GetSource());
         }
