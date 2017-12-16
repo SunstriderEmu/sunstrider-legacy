@@ -2636,7 +2636,7 @@ bool Creature::_IsTargetAcceptable(Unit const* target) const
 
     // if the target cannot be attacked, the target is not acceptable
     if (IsFriendlyTo(target)
-        || !target->isTargetableForAttack(false)
+        || !target->IsTargetableForAttack(false)
 #ifdef LICH_KING
         || (m_vehicle && (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target)))
 #endif
