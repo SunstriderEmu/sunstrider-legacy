@@ -443,14 +443,14 @@ void BattlegroundAV::Update(time_t diff)
                     CastSpellOnTeam(AV_BUFF_A_CAPTAIN,ALLIANCE);
                     Creature* creature = GetBGCreature(AV_CPLACE_MAX + 61);
                     if(creature)
-                        creature->YellToMap(LANG_BG_AV_A_CAPTAIN_BUFF,LANG_COMMON);
+                        creature->AI()->DoAction(ACTION_BUFF_YELL);
                 }
                 else
                 {
                     CastSpellOnTeam(AV_BUFF_H_CAPTAIN,HORDE);
                     Creature* creature = GetBGCreature(AV_CPLACE_MAX + 59); //TODO: make the captains a dynamic creature
                     if(creature)
-                        creature->YellToMap(LANG_BG_AV_H_CAPTAIN_BUFF,LANG_ORCISH);
+                        creature->AI()->DoAction(ACTION_BUFF_YELL);
                 }
                 m_CaptainBuffTimer[i] = 2 * MINUTE * IN_MILLISECONDS + urand(0,4) * MINUTE * IN_MILLISECONDS; //as far as i could see, the buff is randomly so i make 2minutes (thats the duration of the buff itself) + 0-4minutes TODO get the right times
             }
@@ -852,7 +852,7 @@ void BattlegroundAV::ChangeMineOwner(uint8 mine, uint32 team, bool initial)
     if(team == ALLIANCE || team == HORDE)
     {
         m_Mine_Reclaim_Timer[mine]=AV_MINE_RECLAIM_TIMER;
-    char buf[256];
+        char buf[256];
         sprintf(buf, GetTrinityString(LANG_BG_AV_MINE_TAKEN), GetTrinityString(( mine == AV_NORTH_MINE ) ? LANG_BG_AV_MINE_NORTH : LANG_BG_AV_MINE_SOUTH), ( team == ALLIANCE ) ?  GetTrinityString(LANG_BG_AV_ALLY) : GetTrinityString(LANG_BG_AV_HORDE));
         if(Creature* creature = GetBGCreature(AV_CPLACE_HERALD))
             creature->YellToMap(buf,LANG_UNIVERSAL);
@@ -862,7 +862,7 @@ void BattlegroundAV::ChangeMineOwner(uint8 mine, uint32 team, bool initial)
         if(mine==AV_SOUTH_MINE) //i think this gets called all the time
         {
             if(Creature* creature = GetBGCreature(AV_CPLACE_MINE_S_3))
-                creature->YellToMap(LANG_BG_AV_S_MINE_BOSS_CLAIMS,LANG_UNIVERSAL);
+                creature->AI()->Talk(TEXT_SNIVVLE_RANDOM);
         }
     }
     return;

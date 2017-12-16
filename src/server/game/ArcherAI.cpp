@@ -30,8 +30,8 @@ ArcherAI::ArcherAI(Creature *c) : CreatureAI(c)
     m_minRange = spell0->GetMinRange();
     if (!m_minRange)
         m_minRange = MELEE_RANGE;
-    me->m_CombatDistance = spell0->GetMaxRange(false, me->GetSpellModOwner());
-    me->m_SightDistance = me->m_CombatDistance;
+    me->SetCombatDistance(spell0->GetMaxRange(false, me->GetSpellModOwner()));
+    me->m_SightDistance = me->GetCombatDistance();
 }
 
 void ArcherAI::AttackStart(Unit *who)
@@ -47,7 +47,7 @@ void ArcherAI::AttackStart(Unit *who)
     else
     {
         if (me->Attack(who, false) && !who->IsFlying())
-            me->GetMotionMaster()->MoveChase(who, me->m_CombatDistance);
+            me->GetMotionMaster()->MoveChase(who, me->GetCombatDistance());
     }
 
     if (who->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))

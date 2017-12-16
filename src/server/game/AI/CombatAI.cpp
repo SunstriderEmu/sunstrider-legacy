@@ -158,14 +158,14 @@ TurretAI::TurretAI(Creature* c) : CreatureAI(c)
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->m_spells[0]);
     m_minRange = spellInfo ? spellInfo->GetMinRange(false) : 0;
-    me->m_CombatDistance = spellInfo ? spellInfo->GetMaxRange(false) : 0;
-    me->m_SightDistance = me->m_CombatDistance;
+    me->SetCombatDistance(spellInfo ? spellInfo->GetMaxRange(false) : 0);
+    me->m_SightDistance = me->GetCombatDistance();
 }
 
 bool TurretAI::CanAIAttack(const Unit* /*who*/) const
 {
     // TODO: use one function to replace it
-    if (!me->IsWithinCombatRange(me->GetVictim(), me->m_CombatDistance)
+    if (!me->IsWithinCombatRange(me->GetVictim(), me->GetCombatDistance())
         || (m_minRange && me->IsWithinCombatRange(me->GetVictim(), m_minRange)))
         return false;
     return true;

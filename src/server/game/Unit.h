@@ -1785,7 +1785,10 @@ class TC_GAME_API Unit : public WorldObject
         
         bool IsCombatStationary();
         bool CanReachWithMeleeAttack(Unit* pVictim, float flat_mod = 0.0f) const;
-        
+
+        float GetCombatDistance() const { return m_CombatDistance; };
+        void SetCombatDistance(float dist);
+
         bool IsCCed() const;
 
         inline Spell* GetCurrentSpell(CurrentSpellTypes spellType) const { return m_currentSpells[spellType]; }
@@ -2305,6 +2308,8 @@ class TC_GAME_API Unit : public WorldObject
         
         // Testing
         bool m_disabledRegen;
+
+        float m_CombatDistance;
     private:
         bool IsTriggeredAtSpellProcEvent( Aura* aura, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent );
         bool HandleDummyAuraProc(   Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);

@@ -4,10 +4,16 @@
 
 #include "BattleGround.h"
 
-//TODO translate
-#define LANG_BG_AV_A_CAPTAIN_BUFF       "Partez, racaille inférieure ! L'Alliance prévaudra dans la Vallée d'Alterac !"
-#define LANG_BG_AV_H_CAPTAIN_BUFF       "It is time to attack! For the Horde!" //"Il est temps d'attaquer ! Pour la Horde !"
-#define LANG_BG_AV_S_MINE_BOSS_CLAIMS   "Snivvle est là ! Snivvle s'empare de la mine de Froidedent !"
+enum SharedActions
+{
+    ACTION_BUFF_YELL = -30001
+};
+
+enum Texts
+{
+    // Taskmaster Snivvle
+    TEXT_SNIVVLE_RANDOM           = 0,
+};
 
 #define BG_AV_CAPTIME                    240000  //4:00
 #define BG_AV_SNOWFALL_FIRSTCAP          240000  //5:00 but i also have seen 4:05
@@ -81,8 +87,6 @@ horde:
 
     AV_SOUND_ALLIANCE_CAPTAIN               = 8232, //gets called when someone attacks them and at the beginning after 3min+rand(x)*10sec (maybe buff)
     AV_SOUND_HORDE_CAPTAIN                  = 8333,
-
-
 };
 
 enum BG_AV_OTHER_VALUES

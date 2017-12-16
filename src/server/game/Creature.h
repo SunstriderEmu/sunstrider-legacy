@@ -805,7 +805,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool SetFeatherFall(bool enable, bool packetOnly = false) override;
         bool SetHover(bool enable, bool packetOnly = false) override;
 
-		float m_SightDistance, m_CombatDistance;
+        float m_SightDistance;
 
         // There's many places not ready for dynamic spawns. This allows them to live on for now.
         void SetRespawnCompatibilityMode(bool mode = true) { m_respawnCompatibilityMode = mode; }

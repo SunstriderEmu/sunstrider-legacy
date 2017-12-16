@@ -5,7 +5,7 @@ void UnitAI::AttackStart(Unit *victim)
     if(!victim)
         return;
         
-    bool melee = (m_combatDistance > ATTACK_DISTANCE) ? me->GetDistance(victim) <= ATTACK_DISTANCE : true; //visual part
+    bool melee = (me->GetCombatDistance() > ATTACK_DISTANCE) ? me->GetDistance(victim) <= ATTACK_DISTANCE : true; //visual part
     if(me->Attack(victim, melee))
     {
         if(m_allowCombatMovement)
@@ -26,7 +26,7 @@ void UnitAI::AttackStart(Unit *victim)
 
 void UnitAI::AttackStartCaster(Unit* victim, float dist)
 {
-    SetCombatDistance(dist);
+    me->SetCombatDistance(dist);
     AttackStart(victim);
 }
 
@@ -75,18 +75,6 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
     
     return true;
 }
-
-void UnitAI::SetCombatDistance(float dist)
-{ 
-    bool changed = m_combatDistance != dist;
-    m_combatDistance = dist;
-     //create new targeted movement gen
-    if(changed && me->GetVictim())
-    {
-        me->AttackStop();
-        AttackStart(me->GetVictim()); 
-    }
-};
 
 void UnitAI::SetCombatMovementAllowed(bool allow)
 {
@@ -394,4 +382,42 @@ bool FarthestTargetSelector::operator()(Unit const* target) const
         return false;
 
     return true;
+}
+
+uint32 UnitAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
+{
+    if (!victim || (me->HasUnitState(UNIT_STATE_CASTING) && !triggered))
+        return SPELL_FAILED_UNKNOWN;
+
+    uint32 reason = me->CastSpell(victim, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
+
+    //restore combat movement on out of mana
+    if (reason == SPELL_FAILED_NO_POWER && GetRestoreCombatMovementOnOOM() && !IsCombatMovementAllowed())
+        SetCombatMovementAllowed(true);
+
+    return reason;
+}
+
+uint32 UnitAI::DoCastAOE(uint32 spellId, bool triggered)
+{
+    if (!triggered && me->HasUnitState(UNIT_STATE_CASTING))
+        return SPELL_FAILED_UNKNOWN;
+
+    return DoCast((Unit*)nullptr, spellId, triggered);
+}
+
+uint32 UnitAI::DoCastSpell(Unit* who, SpellInfo const *spellInfo, bool triggered)
+{
+    if (!triggered && me->HasUnitState(UNIT_STATE_CASTING))
+        return SPELL_FAILED_UNKNOWN;
+
+    return me->CastSpell(who, spellInfo, triggered);
+}
+
+uint32 UnitAI::DoCastVictim(uint32 spellId, bool triggered)
+{
+    if (!me->GetVictim() || (me->HasUnitState(UNIT_STATE_CASTING) && !triggered))
+        return SPELL_FAILED_UNKNOWN;
+
+    return me->CastSpell(me->GetVictim(), spellId, triggered);
 }

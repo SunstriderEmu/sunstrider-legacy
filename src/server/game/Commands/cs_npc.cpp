@@ -1161,7 +1161,7 @@ bool ChatHandler::HandleNpcSetCombatDistanceCommand(const char* args)
 
     if(pCreature->AI())
     {
-        pCreature->AI()->SetCombatDistance(distance);
+        pCreature->SetCombatDistance(distance);
         PSendSysMessage("m_combatDistance set to %f", distance);
     }
 

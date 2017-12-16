@@ -215,7 +215,6 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
         m_spell = 0;
 
     m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
-    m_CombatDistance = 0;//MELEE_RANGE;
 
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();

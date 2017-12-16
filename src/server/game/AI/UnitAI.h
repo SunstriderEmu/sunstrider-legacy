@@ -52,20 +52,16 @@ class TC_GAME_API UnitAI
     protected:
         Unit *me;
         //combat movement part not yet implemented. Creatures with m_combatDistance and target distance > 5.0f wont show melee weapons.
-        float m_combatDistance;         
         bool m_allowCombatMovement;
         bool m_restoreCombatMovementOnOOM;
     public:
-        UnitAI(Unit *u) : me(u), m_combatDistance(0.5f), m_allowCombatMovement(true), m_restoreCombatMovementOnOOM(false) {}
+        UnitAI(Unit *u) : me(u), m_allowCombatMovement(true), m_restoreCombatMovementOnOOM(false) {}
         virtual ~UnitAI() = default;
 
         virtual bool CanAIAttack(Unit const* /*target*/) const { return true; }
         virtual void AttackStart(Unit *);
         void AttackStartCaster(Unit* victim, float dist);
         virtual void UpdateAI(const uint32 diff) { }
-
-        float GetCombatDistance() { return m_combatDistance; };
-        void SetCombatDistance(float dist);
 
         bool IsCombatMovementAllowed() { return m_allowCombatMovement; };
         void SetCombatMovementAllowed(bool allow);
@@ -98,6 +94,14 @@ class TC_GAME_API UnitAI
 
         // Called when the unit heals
         virtual void HealDone(Unit* /*done_to*/, uint32& /*addhealth*/) { }
+
+        //Cast spell by Id, return SpellCastResult
+        uint32 DoCast(Unit* victim, uint32 spellId, bool triggered = false);
+        uint32 DoCastSelf(uint32 spellId, bool triggered = false) { return DoCast(me, spellId, triggered); }
+        uint32 DoCastAOE(uint32 spellId, bool triggered = false);
+        uint32 DoCastVictim(uint32 spellId, bool triggered = false);
+        //Cast spell by spell info
+        uint32 DoCastSpell(Unit* who, SpellInfo const *spellInfo, bool triggered = false);
 
         //Do melee swing of current victim if in rnage and ready and not casting
         virtual void DoMeleeAttackIfReady();

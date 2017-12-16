@@ -250,6 +250,7 @@ m_disabledRegen(false)
     m_attackVictimOnEnd = false;
     
     _targetLocked = false;
+    m_CombatDistance = 0;//MELEE_RANGE;
 
     _lastLiquid = nullptr;
 
@@ -16758,3 +16759,15 @@ void Unit::SetShapeshiftForm(ShapeshiftForm form)
 {
     SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, form);
 }
+
+void Unit::SetCombatDistance(float dist)
+{
+    bool changed = m_CombatDistance != dist;
+    m_CombatDistance = dist;
+    //create new targeted movement gen
+    if (i_AI && changed && GetVictim())
+    {
+        AttackStop();
+        i_AI->AttackStart(GetVictim());
+    }
+};

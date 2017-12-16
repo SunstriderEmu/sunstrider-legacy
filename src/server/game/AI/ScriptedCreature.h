@@ -139,14 +139,6 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     //Stop attack of current victim
     void DoStopAttack();
 
-    //Cast spell by Id, return SpellCastResult
-    uint32 DoCast(Unit* victim, uint32 spellId, bool triggered = false);
-    uint32 DoCastSelf(uint32 spellId, bool triggered = false) { return DoCast(me, spellId, triggered); }
-    uint32 DoCastAOE(uint32 spellId, bool triggered = false);
-
-    //Cast spell by spell info
-    uint32 DoCastSpell(Unit* who, SpellInfo const *spellInfo, bool triggered = false);
-
     //Plays a sound to all nearby players
     void DoPlaySoundToSet(Unit* unit, uint32 sound);
 
