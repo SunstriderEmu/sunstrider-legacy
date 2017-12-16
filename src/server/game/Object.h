@@ -290,7 +290,7 @@ class TC_GAME_API Object
         virtual bool HasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool HasInvolvedQuest(uint32 /* quest_id */) const { return false; }
 
-
+        void SetIsNewObject(bool enable) { m_isNewObject = enable; }
         /** 
             Visits cells around the object, fill players UpdateData with updates from this object if needed
 			player_set is there for performance only, since this function is called a lot, this helps avoiding recreating it at each call. Content is not important and is cleared at each call.
@@ -371,6 +371,7 @@ class TC_GAME_API Object
 
     private:
         bool m_inWorld;
+        bool m_isNewObject;
 
         PackedGuid m_PackGUID;
 

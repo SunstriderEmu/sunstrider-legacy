@@ -526,7 +526,7 @@ void Map::InitializeObject(GameObject* obj)
 }
 
 template<class T>
-bool Map::AddToMap(T *obj, bool checkTransport)
+bool Map::AddToMap(T* obj, bool checkTransport)
 {
     static_assert(!std::is_same<Player, T>::value, "Players must use AddPlayerToMap function");
 
@@ -574,7 +574,9 @@ bool Map::AddToMap(T *obj, bool checkTransport)
 
     //TC_LOG_DEBUG("maps","Object %u enters grid[%u,%u]", GUID_LOPART(obj->GetGUID()), cell.GridX(), cell.GridY());
 
+    obj->SetIsNewObject(true);
     obj->UpdateObjectVisibilityOnCreate();
+    obj->SetIsNewObject(false);
     return true;
 }
 

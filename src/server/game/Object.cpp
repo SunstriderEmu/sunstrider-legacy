@@ -66,6 +66,7 @@ Object::Object() :
     _fieldNotifyFlags   = UF_FLAG_DYNAMIC;
 
     m_inWorld           = false;
+    m_isNewObject       = false;
     m_objectUpdated     = false;
 }
 
@@ -157,23 +158,44 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
 
     ClientBuild targetBuild = target->GetSession()->GetClientBuild();
 
-    uint8  updatetype = UPDATETYPE_CREATE_OBJECT;
+    uint8  updateType = UPDATETYPE_CREATE_OBJECT;
     uint8  flags      = targetBuild == BUILD_335 ? m_updateFlagLK : m_updateFlag;
 
     // lower flag1
     if(target == this)                                      // building packet for oneself
         flags |=  targetBuild == BUILD_335 ? LK_UPDATEFLAG_SELF : UPDATEFLAG_SELF;
 
+
+    if (m_isNewObject)
+    {
+        switch (ObjectGuid(GetGUID()).GetHigh())
+        {
+        case HighGuid::Player:
+        case HighGuid::Pet:
+        case HighGuid::Corpse:
+        case HighGuid::DynamicObject:
+            updateType = UPDATETYPE_CREATE_OBJECT2;
+            break;
+        case HighGuid::Unit:
+        case HighGuid::Vehicle:
+        {
+            if (ToUnit()->IsSummon())
+                updateType = UPDATETYPE_CREATE_OBJECT2;
+            break;
+        }
+        case HighGuid::GameObject:
+        {
+            if (IS_PLAYER_GUID(ToGameObject()->GetOwnerGUID()))
+                updateType = UPDATETYPE_CREATE_OBJECT2;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
     if(flags & (targetBuild == BUILD_335 ? LK_UPDATEFLAG_STATIONARY_POSITION : UPDATEFLAG_STATIONARY_POSITION))
     {
-        // UPDATETYPE_CREATE_OBJECT2 dynamic objects, corpses...
-        if(isType(TYPEMASK_DYNAMICOBJECT) || isType(TYPEMASK_CORPSE) || isType(TYPEMASK_PLAYER))
-            updatetype = UPDATETYPE_CREATE_OBJECT2;
-
-        // UPDATETYPE_CREATE_OBJECT2 for pets...
-        if(target->GetMinionGUID() == GetGUID())
-            updatetype = UPDATETYPE_CREATE_OBJECT2;
-
         // UPDATETYPE_CREATE_OBJECT2 for some gameobject types...
         if(isType(TYPEMASK_GAMEOBJECT))
         {
@@ -183,11 +205,11 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
                 case GAMEOBJECT_TYPE_DUEL_ARBITER:
                 case GAMEOBJECT_TYPE_FLAGSTAND:
                 case GAMEOBJECT_TYPE_FLAGDROP:
-                    updatetype = UPDATETYPE_CREATE_OBJECT2;
+                    updateType = UPDATETYPE_CREATE_OBJECT2;
                     break;
                 case GAMEOBJECT_TYPE_TRANSPORT:
                     if(targetBuild == BUILD_243)
-                        updatetype |= UPDATEFLAG_TRANSPORT;
+                        updateType |= UPDATEFLAG_TRANSPORT;
                     break;
                 default:
                     break;
@@ -204,7 +226,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
     //TC_LOG_DEBUG("misc","BuildCreateUpdate: update-type: %u, object-type: %u got flags: %X, flags2: %X", updatetype, m_objectTypeId, flags, flags2);
 
     ByteBuffer buf(500);
-    buf << (uint8)updatetype;
+    buf << (uint8)updateType;
     if(targetBuild == BUILD_335)
         buf << GetPackGUID();
     else
@@ -213,7 +235,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
     buf << (uint8)m_objectTypeId;
 
     BuildMovementUpdate(&buf, flags, targetBuild);
-    BuildValuesUpdate(updatetype, &buf, target );
+    BuildValuesUpdate(updateType, &buf, target );
     data->AddUpdateBlock(buf);
 }
 
