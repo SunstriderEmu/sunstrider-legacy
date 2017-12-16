@@ -7672,6 +7672,42 @@ ReputationRank Unit::GetFactionReactionTo(FactionTemplateEntry const* factionTem
     return REP_NEUTRAL;
 }
 
+void  Unit::_addAttacker(Unit *pAttacker)
+{
+    auto itr = m_attackers.find(pAttacker);
+    if (itr == m_attackers.end())
+        m_attackers.insert(pAttacker);
+}
+void  Unit::_removeAttacker(Unit *pAttacker)    
+{
+    auto itr = m_attackers.find(pAttacker);
+    if (itr != m_attackers.end())
+        m_attackers.erase(itr);
+}
+
+Unit* Unit::GetAttackerForHelper() const
+{
+    if (!IsEngaged())
+        return nullptr;
+
+    if (Unit* victim = GetVictim())
+        if ((!IsPet() && !GetPlayerMovingMe()) || IsInCombatWith(victim) || victim->IsInCombatWith(this))
+            return victim;
+
+    if (!m_attackers.empty())
+        return *(m_attackers.begin());
+
+    if (Player* owner = GetCharmerOrOwnerPlayerOrPlayerItself())
+    {
+        HostileRefManager& refs = owner->GetHostileRefManager();
+        for (Reference<Unit, ThreatManager> const& ref : refs)
+            if (Unit* hostile = ref.GetSource()->GetOwner())
+                return hostile;
+    }
+
+    return nullptr;
+}
+
 /* return true if we started attacking a new target */
 bool Unit::Attack(Unit *victim, bool meleeAttack)
 {

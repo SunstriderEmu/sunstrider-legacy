@@ -1219,28 +1219,10 @@ class TC_GAME_API Unit : public WorldObject
         void AutoRotate(uint32 time);
         bool IsUnitRotating() {return IsRotating;}
 
-        void _addAttacker(Unit *pAttacker)                  // must be called only from Unit::Attack(Unit*)
-        {
-            auto itr = m_attackers.find(pAttacker);
-            if(itr == m_attackers.end())
-                m_attackers.insert(pAttacker);
-        }
-        void _removeAttacker(Unit *pAttacker)               // must be called only from Unit::AttackStop()
-        {
-            auto itr = m_attackers.find(pAttacker);
-            if(itr != m_attackers.end())
-                m_attackers.erase(itr);
-        }
-        Unit* GetAttackerForHelper()                       // If someone wants to help, who to give them
-        {
-            if (GetVictim() != nullptr)
-                return GetVictim();
+        void _addAttacker(Unit* pAttacker);                  // must be called only from Unit::Attack(Unit*)
+        void _removeAttacker(Unit* pAttacker);               // must be called only from Unit::AttackStop()
+        Unit* GetAttackerForHelper() const;                 // If someone wants to help, who to give them
 
-            if (!m_attackers.empty())
-                return *(m_attackers.begin());
-
-            return nullptr;
-        }
         bool Attack(Unit *victim, bool meleeAttack);
         void CastStop(uint32 except_spellid = 0);
         bool AttackStop();
@@ -1525,7 +1507,7 @@ class TC_GAME_API Unit : public WorldObject
         */
         bool IsAttackableByAOE() const;
 
-        bool isTargetableForAttack(bool checkFakeDeath = true) const;
+        bool IsTargetableForAttack(bool checkFakeDeath = true) const;
 
         bool IsValidAttackTarget(Unit const* target) const;
         bool _IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, WorldObject const* obj = nullptr) const;
