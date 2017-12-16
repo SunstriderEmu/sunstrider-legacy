@@ -338,7 +338,7 @@ class TC_GAME_API Object
 
         uint32 GetUpdateFieldData(Player const* target, uint32*& flags) const;
 
-        void BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild build) const;
+        void BuildMovementUpdate(ByteBuffer* data, uint16 flags) const;
         /**
             Second step of filling updateData ByteBuffer with data from this object, for given target
         */
@@ -348,7 +348,6 @@ class TC_GAME_API Object
 
         uint8 m_objectTypeId;
         uint8 m_updateFlag;
-        uint16 m_updateFlagLK; //used for 335 support
 
         union
         {

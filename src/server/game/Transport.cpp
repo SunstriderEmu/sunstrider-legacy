@@ -39,8 +39,11 @@ MotionTransport::MotionTransport() :
     _delayedTeleport(false), 
     _delayedAddModel(false)
 {
+#ifdef LICH_KING
+    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_ROTATION;
+#else
     m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION;
-    m_updateFlagLK = LK_UPDATEFLAG_TRANSPORT | LK_UPDATEFLAG_LOWGUID | LK_UPDATEFLAG_STATIONARY_POSITION | LK_UPDATEFLAG_ROTATION;
+#endif
 }
 
 MotionTransport::~MotionTransport()
@@ -747,8 +750,11 @@ void MotionTransport::DoEventIfAny(KeyFrame const& node, bool departure)
 
 StaticTransport::StaticTransport() : Transport(), _needDoInitialRelocation(false)
 {
+#ifdef LICH_KING
+    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_ROTATION;
+#else
     m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION;
-    m_updateFlagLK = LK_UPDATEFLAG_TRANSPORT | LK_UPDATEFLAG_LOWGUID | LK_UPDATEFLAG_STATIONARY_POSITION | LK_UPDATEFLAG_ROTATION;
+#endif
 }
 
 StaticTransport::~StaticTransport()

@@ -22,25 +22,20 @@ enum OBJECT_UPDATE_FLAGS
     UPDATEFLAG_SELF                    = 0x001,
     UPDATEFLAG_TRANSPORT               = 0x002,
     UPDATEFLAG_HAS_TARGET              = 0x004,
+#ifdef LICH_KING
+    UPDATEFLAG_UNKNOWN                 = 0x008,
+    UPDATEFLAG_LOWGUID                 = 0x010,
+    UPDATEFLAG_LIVING                  = 0x020,
+    UPDATEFLAG_STATIONARY_POSITION     = 0x040,
+    UPDATEFLAG_VEHICLE                 = 0x080,
+    UPDATEFLAG_POSITION                = 0x100,
+    UPDATEFLAG_ROTATION                = 0x200;
+#else
     UPDATEFLAG_LOWGUID                 = 0x008,
     UPDATEFLAG_HIGHGUID                = 0x010,
     UPDATEFLAG_LIVING                  = 0x020,
-    UPDATEFLAG_STATIONARY_POSITION     = 0x040
-};
-
-enum LK_OBJECT_UPDATE_FLAGS
-{
-    LK_UPDATEFLAG_NONE                 = 0x000,
-    LK_UPDATEFLAG_SELF                 = 0x001,
-    LK_UPDATEFLAG_TRANSPORT            = 0x002,
-    LK_UPDATEFLAG_HAS_TARGET           = 0x004,
-    LK_UPDATEFLAG_UNKNOWN              = 0x008,
-    LK_UPDATEFLAG_LOWGUID              = 0x010,
-    LK_UPDATEFLAG_LIVING               = 0x020,
-    LK_UPDATEFLAG_STATIONARY_POSITION  = 0x040,
-    LK_UPDATEFLAG_VEHICLE              = 0x080,
-    LK_UPDATEFLAG_POSITION             = 0x100,
-    LK_UPDATEFLAG_ROTATION             = 0x200
+    UPDATEFLAG_STATIONARY_POSITION     = 0x040,
+#endif
 };
 
 /**

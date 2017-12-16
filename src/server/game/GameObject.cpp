@@ -58,8 +58,11 @@ GameObject::GameObject() : WorldObject(false), MapObject(),
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
 
+#ifdef LICH_KING
+    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_POSITION | UPDATEFLAG_ROTATION);
+#else
     m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION); // 2.3.2 - 0x58
-    m_updateFlagLK = (LK_UPDATEFLAG_LOWGUID | LK_UPDATEFLAG_STATIONARY_POSITION | LK_UPDATEFLAG_POSITION | LK_UPDATEFLAG_ROTATION);
+#endif
 
     m_valuesCount = GAMEOBJECT_END;
 
@@ -299,8 +302,11 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMa
 
     if (goinfo->type == GAMEOBJECT_TYPE_TRANSPORT)
     {
+#ifdef LICH_KING
+        m_updateFlag = (m_updateFlag | UPDATEFLAG_TRANSPORT) & ~UPDATEFLAG_POSITION;
+#else
         m_updateFlag = (m_updateFlag | UPDATEFLAG_TRANSPORT);
-        m_updateFlagLK = (m_updateFlagLK | LK_UPDATEFLAG_TRANSPORT) & ~LK_UPDATEFLAG_POSITION;
+#endif
     }
 
     Object::_Create(guidlow, goinfo->entry, HighGuid::GameObject);

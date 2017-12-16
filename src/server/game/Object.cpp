@@ -59,7 +59,6 @@ Object::Object() :
     m_objectTypeId      = TYPEID_OBJECT;
     m_objectType        = TYPEMASK_OBJECT;
     m_updateFlag        = UPDATEFLAG_NONE;
-    m_updateFlagLK      = LK_UPDATEFLAG_NONE;
 
     m_uint32Values      = nullptr;
     m_valuesCount       = 0;
@@ -156,14 +155,12 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
     if(!target)
         return;
 
-    ClientBuild targetBuild = target->GetSession()->GetClientBuild();
-
     uint8  updateType = UPDATETYPE_CREATE_OBJECT;
-    uint8  flags      = targetBuild == BUILD_335 ? m_updateFlagLK : m_updateFlag;
+    uint8  flags = m_updateFlag;
 
     // lower flag1
     if(target == this)                                      // building packet for oneself
-        flags |=  targetBuild == BUILD_335 ? LK_UPDATEFLAG_SELF : UPDATEFLAG_SELF;
+        flags |=  UPDATEFLAG_SELF;
 
 
     if (m_isNewObject)
@@ -194,7 +191,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
         }
     }
 
-    if(flags & (targetBuild == BUILD_335 ? LK_UPDATEFLAG_STATIONARY_POSITION : UPDATEFLAG_STATIONARY_POSITION))
+    if(flags & UPDATEFLAG_STATIONARY_POSITION)
     {
         // UPDATETYPE_CREATE_OBJECT2 for some gameobject types...
         if(isType(TYPEMASK_GAMEOBJECT))
@@ -208,8 +205,9 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
                     updateType = UPDATETYPE_CREATE_OBJECT2;
                     break;
                 case GAMEOBJECT_TYPE_TRANSPORT:
-                    if(targetBuild == BUILD_243)
-                        updateType |= UPDATEFLAG_TRANSPORT;
+#ifndef LICH_KING
+                    updateType |= UPDATEFLAG_TRANSPORT;
+#endif
                     break;
                 default:
                     break;
@@ -219,7 +217,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
         if (isType(TYPEMASK_UNIT))
         {
             if (ToUnit()->GetVictim())
-                flags |= (targetBuild == BUILD_335 ? LK_UPDATEFLAG_HAS_TARGET : UPDATEFLAG_HAS_TARGET);
+                flags |= UPDATEFLAG_HAS_TARGET;
         }
     }
 
@@ -227,14 +225,15 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
 
     ByteBuffer buf(500);
     buf << (uint8)updateType;
-    if(targetBuild == BUILD_335)
-        buf << GetPackGUID();
-    else
-        buf << (uint8)0xFF << GetGUID();
+#ifdef LICH_KING
+    buf << GetPackGUID();
+#else
+    buf << (uint8)0xFF << GetGUID();
+#endif
 
     buf << (uint8)m_objectTypeId;
 
-    BuildMovementUpdate(&buf, flags, targetBuild);
+    BuildMovementUpdate(&buf, flags);
     BuildValuesUpdate(updateType, &buf, target );
     data->AddUpdateBlock(buf);
 }
@@ -2582,7 +2581,7 @@ void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList
     cell.Visit(pair, visitor, *(this->GetMap()), *this, fMaxSearchRange);
 }
 
-void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild build) const
+void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 {
     Unit const* unit = nullptr;
     WorldObject const* object = nullptr;
@@ -2592,13 +2591,14 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild bui
     else
         object = ((WorldObject*)this);
 
-    if(build == BUILD_335)
-        *data << uint16(flags);                                  // update flags
-    else
-        *data << uint8(flags);                                  // update flags
+#ifdef LICH_KING
+    *data << uint16(flags);                                  // update flags
+#else
+    *data << uint8(flags);                                  // update flags
+#endif
 
     // 0x20
-    if (flags & (build == BUILD_335 ? LK_UPDATEFLAG_LIVING : UPDATEFLAG_LIVING))
+    if (flags & UPDATEFLAG_LIVING)
     {
         ASSERT(unit);
         unit->BuildMovementPacket(data);
@@ -2611,23 +2611,20 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild bui
               << unit->GetSpeed(MOVE_FLIGHT)
               << unit->GetSpeed(MOVE_FLIGHT_BACK)
               << unit->GetSpeed(MOVE_TURN_RATE);
-        if(build == BUILD_335)
 #ifdef LICH_KING
-            *data << unit->GetSpeed(MOVE_PITCH_RATE);
-#else
-            *data << 3.14f; //default pitch rate
+        *data << unit->GetSpeed(MOVE_PITCH_RATE);
 #endif
 
         // 0x08000000
         if (unit->m_movementInfo.GetMovementFlags() & MOVEMENTFLAG_SPLINE_ENABLED)
-            Movement::PacketBuilder::WriteCreate(*unit->movespline, *data, build);
+            Movement::PacketBuilder::WriteCreate(*unit->movespline, *data);
     }
     else
     {
+#ifdef LICH_KING
         bool LK_has_position = false;
-        if(build == BUILD_335)
         {
-            if (flags & LK_UPDATEFLAG_POSITION)
+            if (flags & UPDATEFLAG_POSITION)
             {
                 LK_has_position = true;
 
@@ -2663,10 +2660,14 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild bui
                     *data << float(0);
             }
         }
+#endif
         
         // 0x40
-        if ((build != BUILD_335 || LK_has_position == false) //LK wont send LK_UPDATEFLAG_STATIONARY_POSITION if LK_UPDATEFLAG_POSITION was present
-            && flags & (build == BUILD_335 ? LK_UPDATEFLAG_STATIONARY_POSITION : UPDATEFLAG_STATIONARY_POSITION))
+        if (flags & UPDATEFLAG_STATIONARY_POSITION
+#ifdef LICH_KING
+            && LK_has_position == false //LK wont send UPDATEFLAG_STATIONARY_POSITION if UPDATEFLAG_POSITION was present
+#endif
+           )
         {
             ASSERT(object);
             // 0x02
@@ -2679,13 +2680,15 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild bui
     }
 
     // 0x8
-    if ((build == BUILD_335) && flags & LK_UPDATEFLAG_UNKNOWN)
+#ifdef LICH_KING
+    if (flags & UPDATEFLAG_UNKNOWN)
     {
         *data << uint32(0);
     }
+#endif
 
     // 0x08
-    if (flags & (build == BUILD_335 ? LK_UPDATEFLAG_LOWGUID : UPDATEFLAG_LOWGUID))
+    if (flags & UPDATEFLAG_LOWGUID)
     {
         switch (GetTypeId())
         {
@@ -2705,10 +2708,11 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild bui
             case TYPEID_PLAYER:
                 if (flags & UPDATEFLAG_SELF)
                 {
-                    if(build == BUILD_335) //not sure this change is needed (since we dunno what it does)
-                        *data << uint32(0x0000002F);            // unk
-                    else
-                        *data << uint32(0x00000015);            // unk, can be 0x15 or 0x22
+#ifdef LICH_KING
+                    *data << uint32(0x0000002F);            // unk
+#else
+                    *data << uint32(0x00000015);            // unk, can be 0x15 or 0x22
+#endif
                 } else
                     *data << uint32(0x00000008);            // unk
                 break;
@@ -2719,7 +2723,8 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild bui
     }
 
     // 0x10
-    if((build == BUILD_243) && flags & UPDATEFLAG_HIGHGUID)
+#ifndef LICH_KING
+    if(flags & UPDATEFLAG_HIGHGUID)
     {
         switch(GetTypeId())
         {
@@ -2737,9 +2742,10 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild bui
                 break;
         }
     }
+#endif
 
     // 0x4
-    if (flags & (build == BUILD_335 ? LK_UPDATEFLAG_HAS_TARGET : UPDATEFLAG_HAS_TARGET))
+    if (flags & UPDATEFLAG_HAS_TARGET)
     {
         ASSERT(unit);
         if (Unit* victim = unit->GetVictim())
@@ -2749,7 +2755,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild bui
     }
 
     // 0x2
-    if (flags & (build == BUILD_335 ? LK_UPDATEFLAG_TRANSPORT : UPDATEFLAG_TRANSPORT))
+    if (flags & UPDATEFLAG_TRANSPORT)
     {
         GameObject const* go = ToGameObject();
         if (go && go->ToTransport())
@@ -2759,23 +2765,21 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild bui
     }
 
     // 0x80
-    if ((build == BUILD_335) && flags & LK_UPDATEFLAG_VEHICLE)
-    {
 #ifdef LICH_KING
+    if ((build == BUILD_335) && flags & UPDATEFLAG_VEHICLE)
+    {
         /// @todo Allow players to aquire this updateflag.
         *data << uint32(unit->GetVehicleKit()->GetVehicleInfo()->m_ID);
         if (unit->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
             *data << float(unit->GetTransOffsetO());
         else
             *data << float(unit->GetOrientation());
-#else
-        DEBUG_ASSERT(false); //this flag not supposed to be set in BC
-#endif
     }
 
     // 0x200
-    if ((build == BUILD_335) && flags & LK_UPDATEFLAG_ROTATION)
+    if (flags & UPDATEFLAG_ROTATION)
         *data << int64(0 /*ToGameObject()->GetPackedWorldRotation()*/); //TODO
+#endif
 }
 
 void WorldObject::MovePosition(Position &pos, float dist, float angle)

@@ -55,34 +55,6 @@ namespace Movement
         return MOVE_RUN;
     }
 
-    // Prepare spline move packet with opcode, unit guid & transport seat
-    WorldPacket* PrepareMovePacketForVersion(ClientBuild build, Unit const* unit, bool transport)
-    {
-        WorldPacket* packet = new WorldPacket(SMSG_MONSTER_MOVE, 64);
-        if (transport)
-        {
-            packet->SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
-            packet->appendPackGUID(unit->GetTransGUID());
-
-#ifdef LICH_KING
-            packet << int8(unit->GetTransSeat());
-#endif
-
-        }
-        return packet;
-    }
-
-    // will build packet if needed
-    void SendLaunchPacketForVersion(WorldPacket*& packet, WorldSession* session, ClientBuild build, Unit const* unit, bool transport)
-    {
-        if(packet == nullptr)
-        {
-            packet = PrepareMovePacketForVersion(build, unit, transport);
-            PacketBuilder::WriteMonsterMove(*(unit->movespline), *packet, build);
-        }
-        session->SendPacket(packet);
-    }
-
     // send to player having this unit in sight, according to their client version. Will build packet for version only if needed
     void SendLaunchToSet(Unit* unit, bool transport)
     {
@@ -92,9 +64,12 @@ namespace Movement
         {
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
             data.appendPackGUID(unit->GetTransGUID());
+#ifdef LICH_KING
+            packet << int8(unit->GetTransSeat());
+#endif
         }
 
-        PacketBuilder::WriteMonsterMove(*(unit->movespline), data, BUILD_243);
+        PacketBuilder::WriteMonsterMove(*(unit->movespline), data);
         unit->SendMessageToSet(&data, true);
     }
 
@@ -221,7 +196,7 @@ namespace Movement
         // sunwell: increase z position in packet
         loc.z += unit->GetHoverHeight();
 
-        PacketBuilder::WriteStopMovement(loc, args.splineId, data, BUILD_243);
+        PacketBuilder::WriteStopMovement(loc, args.splineId, data);
         unit->SendMessageToSet(&data, true);
         //SendStopToSet(unit, transport, loc, args.splineId);
     }

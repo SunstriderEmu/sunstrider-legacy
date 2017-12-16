@@ -236,9 +236,12 @@ Item::Item( )
 {
     m_objectType |= TYPEMASK_ITEM;
     m_objectTypeId = TYPEID_ITEM;
-                                                            // 2.3.2 - 0x18
-    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID);
-    m_updateFlagLK = UPDATEFLAG_LOWGUID;
+                                                           
+#ifdef LICH_KING
+    m_updateFlag = UPDATEFLAG_LOWGUID;
+#else
+    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID);  // 2.3.2 - 0x18
+#endif
 
     m_valuesCount = ITEM_END;
     m_slot = 0;
