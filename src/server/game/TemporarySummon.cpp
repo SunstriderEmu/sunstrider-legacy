@@ -167,7 +167,7 @@ void TempSummon::UnSummon(uint32 msTime)
     }
 
     Unit* owner = GetSummoner();
-    if (owner  && owner->GetTypeId() == TYPEID_UNIT && (owner->ToCreature())->IsAIEnabled)
+    if (owner && owner->GetTypeId() == TYPEID_UNIT && (owner->ToCreature())->IsAIEnabled)
         (owner->ToCreature())->AI()->SummonedCreatureDespawn(this);
 
     AddObjectToRemoveList();

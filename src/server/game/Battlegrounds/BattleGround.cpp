@@ -129,14 +129,14 @@ Battleground::Battleground()
 
     m_MapId             = 0;
     m_Map               = nullptr;
-    m_StartMaxDist = 0.0f;
-    ScriptId = 0;
+    m_StartMaxDist      = 0.0f;
+    ScriptId            = 0;
 
     _arenaTeamIds[TEAM_ALLIANCE]   = 0;
     _arenaTeamIds[TEAM_HORDE]      = 0;
 
     m_ArenaTeamMMR[TEAM_ALLIANCE] = 0;
-    m_ArenaTeamMMR[TEAM_HORDE] = 0;
+    m_ArenaTeamMMR[TEAM_HORDE]    = 0;
 
     m_ArenaTeamRatingChanges[TEAM_ALLIANCE]   = 0;
     m_ArenaTeamRatingChanges[TEAM_HORDE]      = 0;
@@ -146,6 +146,9 @@ Battleground::Battleground()
 
     m_PlayersCount[TEAM_ALLIANCE]    = 0;
     m_PlayersCount[TEAM_HORDE]       = 0;
+
+    m_score[TEAM_ALLIANCE] = 0;
+    m_score[TEAM_HORDE]    = 0;
 
     m_PrematureCountDown = false;
     m_PrematureCountDown = 0;

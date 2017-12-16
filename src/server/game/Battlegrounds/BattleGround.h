@@ -511,7 +511,7 @@ class TC_GAME_API Battleground
         uint8 m_Events;
 
         bool   m_BuffChange;
-    uint32 m_score[2];                    //array that keeps general team scores, used to determine who gets most marks when bg ends prematurely
+        uint32 m_score[2];                    //array that keeps general team scores, used to determine who gets most marks when bg ends prematurely
 
         BGHonorMode m_HonorMode;
     private:
