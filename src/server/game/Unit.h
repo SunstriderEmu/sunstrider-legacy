@@ -1525,10 +1525,8 @@ class TC_GAME_API Unit : public WorldObject
         */
         bool IsAttackableByAOE() const;
 
-/* TC
-        bool isTargetableForAttack(bool checkFakeDeath = true, Unit const* byWho = NULL) const;
+        bool isTargetableForAttack(bool checkFakeDeath = true) const;
 
-        */
         bool IsValidAttackTarget(Unit const* target) const;
         bool _IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, WorldObject const* obj = nullptr) const;
 

@@ -2628,6 +2628,44 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction /
     return true;
 }
 
+// use this function to avoid having hostile creatures attack
+// friendlies and other mobs they shouldn't attack
+bool Creature::_IsTargetAcceptable(Unit const* target) const
+{
+    ASSERT(target);
+
+    // if the target cannot be attacked, the target is not acceptable
+    if (IsFriendlyTo(target)
+        || !target->isTargetableForAttack(false)
+#ifdef LICH_KING
+        || (m_vehicle && (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target)))
+#endif
+        )
+        return false;
+
+    if (target->HasUnitState(UNIT_STATE_DIED))
+    {
+        // guards can detect fake death
+        if (IsGuard() && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH))
+            return true;
+        else
+            return false;
+    }
+
+    Unit const* targetVictim = target->GetAttackerForHelper();
+
+    // if I'm already fighting target, or I'm hostile towards the target, the target is acceptable
+    if (IsEngagedBy(target) || IsHostileTo(target))
+        return true;
+
+    // if the target's victim is friendly, and the target is neutral, the target is acceptable
+    if (targetVictim && IsFriendlyTo(targetVictim))
+        return true;
+
+    // if the target's victim is not friendly, or the target is friendly, the target is not acceptable
+    return false;
+}
+
 void Creature::SaveRespawnTime(uint32 forceDelay, bool savetodb)
 {
     if(IsSummon() || !m_spawnId || (m_creatureData && !m_creatureData->dbData))

@@ -681,6 +681,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
         bool CanCallAssistance() { return !m_AlreadyCallAssistance; }
         bool CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction = true) const;
+        bool _IsTargetAcceptable(Unit const* target) const;
         void DoFleeToGetAssistance(float radius = 50);
 
 

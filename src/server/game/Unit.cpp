@@ -10639,6 +10639,20 @@ bool Unit::IsAttackableByAOE() const
     return true;
 }
 
+bool Unit::IsTargetableForAttack(bool checkFakeDeath) const
+{
+    if (!IsAlive())
+        return false;
+
+    if (HasFlag(UNIT_FIELD_FLAGS,
+        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE))
+        return false;
+
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->IsGameMaster())
+        return false;
+
+    return !HasUnitState(UNIT_STATE_UNATTACKABLE) && (!checkFakeDeath || !HasUnitState(UNIT_STATE_DIED));
+}
 
 bool Unit::IsValidAttackTarget(Unit const* target) const
 {
@@ -11744,7 +11758,7 @@ Unit* Creature::SelectVictim(bool evade)
     else
         return nullptr;
 
-    if (target /*&& _IsTargetAcceptable(target)*/ && CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
+    if (target && _IsTargetAcceptable(target) && CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
     {
         //TC_LOG_INFO("%s SelectVictim3", GetName());
         if (!IsFocusing(nullptr, true))
@@ -11784,7 +11798,7 @@ Unit* Creature::SelectVictim(bool evade)
     {
         //TC_LOG_INFO("%s SelectVictim6", GetName());
         target = SelectNearestTargetInAttackDistance(m_CombatDistance ? m_CombatDistance : ATTACK_DISTANCE);
-        if (target && /*_IsTargetAcceptable(target) &&*/ CanAggro(target))
+        if (target && _IsTargetAcceptable(target) && CanAggro(target) == CAN_ATTACK_RESULT_OK)
             return target;
     }
 
