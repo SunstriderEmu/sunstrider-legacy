@@ -2012,7 +2012,7 @@ void Player::Regenerate(Powers power)
             if (!IsInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
             {
                 float RageDecreaseRate = sWorld->GetRate(RATE_POWER_RAGE_LOSS);
-                addvalue = 30 * RageDecreaseRate;               // 3 rage by tick
+                addvalue = -30.0f * RageDecreaseRate;               // 3 rage by tick (TC has 2, it this blizzlike?)
             }
         }   break;
         case POWER_ENERGY:                                  // Regenerate energy (rogue)
@@ -2028,10 +2028,13 @@ void Player::Regenerate(Powers power)
     // Exist only for POWER_MANA, POWER_ENERGY, POWER_FOCUS auras
     if(power != POWER_MANA)
     {
-        AuraList const& ModPowerRegenPCTAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-        for(auto ModPowerRegenPCTAura : ModPowerRegenPCTAuras)
-            if (ModPowerRegenPCTAura->GetModifier()->m_miscvalue == power)
-                addvalue *= (ModPowerRegenPCTAura->GetModifierValue() + 100) / 100.0f;
+        addvalue *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, power);
+
+        // Butchery requires combat for this effect
+        /*TC 
+        if (power != POWER_RUNIC_POWER || IsInCombat())
+            addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * ((power != POWER_ENERGY) ? m_regenTimerCount : m_regenTimer) / (5 * IN_MILLISECONDS);
+            */
     }
 
     if (addvalue < 0.0f)
@@ -2045,19 +2048,20 @@ void Player::Regenerate(Powers power)
             return;
     }
 
-    if (power != POWER_RAGE)
+    if (addvalue < 0.0f)
+    {
+        if (std::fabs(addvalue) > curValue)
+            curValue = 0;
+        else
+            curValue += addvalue;
+    }
+    else 
     {
         curValue += uint32(addvalue);
         if (curValue > maxValue)
             curValue = maxValue;
     }
-    else
-    {
-        if(curValue <= uint32(addvalue))
-            curValue = 0;
-        else
-            curValue -= uint32(addvalue);
-    }
+
     SetPower(power, curValue);
 }
 
