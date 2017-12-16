@@ -38,6 +38,7 @@ void SmoothedTimeDiff::Update(uint32 diff)
 
 
 #ifdef TRINITY_DEBUG
+    //make sure there is only one thread updating each map at a time
     std::map<std::pair<uint32 /*mapId*/, uint32 /*instanceId*/>, bool> _currentlyUpdating;
 #endif
 

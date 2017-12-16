@@ -5064,6 +5064,8 @@ void ObjectMgr::LoadInstanceTemplate()
     }
     while (result->NextRow());
 
+#ifndef LICH_KING
+    //fake sMapDifficultyMap data, this dbc does not exists for BC
     for(auto i : _instanceTemplateStore)
     {
         InstanceTemplate* temp = &(i.second);
@@ -5079,32 +5081,29 @@ void ObjectMgr::LoadInstanceTemplate()
             // use defaults from the DBC
             if (entry->resetTimeHeroic)
             {
-                temp->reset_delay = entry->resetTimeHeroic / DAY;
+                temp->reset_delay = entry->resetTimeHeroic;
             }
             else if (entry->resetTimeRaid && entry->map_type == MAP_RAID)
             {
-                temp->reset_delay = entry->resetTimeRaid / DAY;
+                temp->reset_delay = entry->resetTimeRaid;
             }
             //defaults
             else if (entry->IsRaid())
             {
-                temp->reset_delay = 7;
+                temp->reset_delay = 7 * DAY;
             }
             else
-                temp->reset_delay = 1;
+                temp->reset_delay = 1 * DAY;
         }
 
-        temp->reset_delay *= sWorld->GetRate(RATE_INSTANCE_RESET_TIME);
-
-#ifndef LICH_KING
         sMapDifficultyMap[MAKE_PAIR32(i.first, REGULAR_DIFFICULTY)] = MapDifficulty(temp->reset_delay, temp->maxPlayers, false);
         if (MapEntry const* entry = sMapStore.LookupEntry(i.first))
         {
             if (entry->resetTimeHeroic || temp->heroicForced)
                 sMapDifficultyMap[MAKE_PAIR32(entry->MapID, DUNGEON_DIFFICULTY_HEROIC)] = MapDifficulty(entry->resetTimeHeroic / DAY,temp->maxPlayers, false);;
         }
-#endif
     }
+#endif
 
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " Instance Template definitions in %u ms", _instanceTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
