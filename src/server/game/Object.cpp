@@ -171,18 +171,13 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
         case HighGuid::Pet:
         case HighGuid::Corpse:
         case HighGuid::DynamicObject:
+        case HighGuid::GameObject: //sun: diff with TC, we send this for all gobjects, not just player ones
             updateType = UPDATETYPE_CREATE_OBJECT2;
             break;
         case HighGuid::Unit:
         case HighGuid::Vehicle:
         {
             if (ToUnit()->IsSummon())
-                updateType = UPDATETYPE_CREATE_OBJECT2;
-            break;
-        }
-        case HighGuid::GameObject:
-        {
-            if (IS_PLAYER_GUID(ToGameObject()->GetOwnerGUID()))
                 updateType = UPDATETYPE_CREATE_OBJECT2;
             break;
         }
