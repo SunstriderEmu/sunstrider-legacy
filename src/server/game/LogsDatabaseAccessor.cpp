@@ -173,6 +173,10 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
         }
     }
 
+    std::string targetNameLog = (player && player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetName() : "";
+    if (targetNameLog.size() > 25) //max db lenght
+        targetNameLog.resize(25);
+
     /*PrepareStatement(LOGS_INS_GM_COMMAND, "INSERT INTO gm_command (account, guid, gmlevel, time, map, x, y, z, area_name, zone_name, selection_type, selection_guid,
     selection_name, selection_map, selection_x, selection_y, selection_z, command, IP) VALUES (?,?,?,UNIX_TIMESTAMP(),?,?,?,??,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC); */
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_GM_COMMAND);
@@ -187,7 +191,7 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
     stmt->setString(8, zoneName);
     stmt->setString(9, GetLogNameForGuid(targetGUID));
     stmt->setUInt32(10, GUID_LOPART(targetGUID));
-    stmt->setString(11, (player && player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetName() : "");
+    stmt->setString(11, targetNameLog);
     stmt->setUInt32(12, (player && player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetMapId() : 0);
     stmt->setFloat(13, (player && player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetPositionX() : 0);
     stmt->setFloat(14, (player && player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetPositionY() : 0);
