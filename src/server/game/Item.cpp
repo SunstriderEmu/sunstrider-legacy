@@ -449,9 +449,9 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
     }
 
     // update duration if need, and remove if not need
-    if((proto->Duration==0) != (GetUInt32Value(ITEM_FIELD_DURATION)==0))
+    if((proto->Duration == 0) != (GetUInt32Value(ITEM_FIELD_DURATION) == 0))
     {
-        SetUInt32Value(ITEM_FIELD_DURATION,abs(proto->Duration));
+        SetUInt32Value(ITEM_FIELD_DURATION,proto->Duration);
         need_save = true;
     }
 
