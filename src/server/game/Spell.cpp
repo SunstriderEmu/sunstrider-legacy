@@ -3328,14 +3328,9 @@ void Spell::cancel()
         case SPELL_STATE_CASTING:
         {
             for(auto & ihit : m_UniqueTargetInfo)
-            {
                 if( ihit.missCondition == SPELL_MISS_NONE )
-                {
-                    Unit* unit = m_caster->GetGUID()==ihit.targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, ihit.targetGUID);
-                    if( unit && unit->IsAlive() )
+                    if(Unit* unit = m_caster->GetGUID()==ihit.targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, ihit.targetGUID))
                         unit->RemoveAurasByCasterSpell(m_spellInfo->Id, m_caster->GetGUID());
-                }
-            }
 
             m_caster->RemoveAurasByCasterSpell(m_spellInfo->Id, m_caster->GetGUID());
             SendChannelUpdate(0,m_spellInfo->Id);
@@ -3355,7 +3350,6 @@ void Spell::cancel()
                     }
                 }
             }
-            //ABORT();
         } break;
 
         default:

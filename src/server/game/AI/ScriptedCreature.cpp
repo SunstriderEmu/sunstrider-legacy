@@ -152,29 +152,6 @@ void ScriptedAI::UpdateAI(const uint32 diff)
     }
 }
 
-void ScriptedAI::EnterEvadeMode(EvadeReason why)
-{
-    //me->InterruptNonMeleeSpells(true);
-    me->RemoveAllAuras();
-    me->GetThreatManager().ClearAllThreat();
-    me->CombatStop();
-    me->InitCreatureAddon();
-    me->SetLootRecipient(nullptr);
-
-    if(me->IsAlive())
-    {
-        if(Unit* owner = me->GetOwner())
-        {
-            if(owner->IsAlive())
-                me->GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,me->GetFollowAngle());
-        }
-        else
-            me->GetMotionMaster()->MoveTargetedHome();
-    }
-
-    Reset();
-}
-
 void ScriptedAI::JustAppeared()
 {
     Reset();

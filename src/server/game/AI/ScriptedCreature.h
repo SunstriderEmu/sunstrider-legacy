@@ -75,9 +75,6 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     void AttackStart(Unit *, bool melee);
     void AttackStartNoMove(Unit *pTarget);
 
-    //Called at stoping attack by any attacker
-    void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) override;
-
     // Called at any Damage from any attacker (before damage apply)
     void DamageTaken(Unit *done_by, uint32 &damage) override {}
     

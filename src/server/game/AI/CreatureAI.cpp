@@ -199,7 +199,7 @@ bool CreatureAI::_EnterEvadeMode(EvadeReason /*why*/)
 {
     me->RemoveAurasOnEvade();
     me->GetThreatManager().ClearAllThreat();
-    me->CombatStop();
+    me->CombatStop(true);
     me->InitCreatureAddon();
     me->SetLootRecipient(nullptr);
     me->ResetPlayerDamageReq();
