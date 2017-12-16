@@ -1,4 +1,4 @@
-
+    
 #ifndef TRINITYCORE_COMMON_H
 #define TRINITYCORE_COMMON_H
 
