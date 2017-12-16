@@ -166,9 +166,9 @@ void TempSummon::UnSummon(uint32 msTime)
         return;
     }
 
-    Unit* sum = m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : nullptr;
-    if (sum  && sum->GetTypeId() == TYPEID_UNIT && (sum->ToCreature())->IsAIEnabled)
-        (sum->ToCreature())->AI()->SummonedCreatureDespawn(this);
+    Unit* owner = GetSummoner();
+    if (owner  && owner->GetTypeId() == TYPEID_UNIT && (owner->ToCreature())->IsAIEnabled)
+        (owner->ToCreature())->AI()->SummonedCreatureDespawn(this);
 
     AddObjectToRemoveList();
 }
