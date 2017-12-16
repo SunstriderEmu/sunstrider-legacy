@@ -7410,22 +7410,26 @@ void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
             case ITEM_MOD_HIT_RATING:
                 ApplyRatingMod(CR_HIT_MELEE, int32(val), apply);
                 ApplyRatingMod(CR_HIT_RANGED, int32(val), apply);
+#ifdef LICH_KING
+                //Patch 3.0.2 : Hit Rating, Critical Strike Rating, and Haste Rating now modify both melee attacks and spells.
                 ApplyRatingMod(CR_HIT_SPELL, int32(val), apply);
+#endif
                 break;
             case ITEM_MOD_CRIT_RATING:
                 ApplyRatingMod(CR_CRIT_MELEE, int32(val), apply);
                 ApplyRatingMod(CR_CRIT_RANGED, int32(val), apply);
+#ifdef LICH_KING
+                //Patch 3.0.2 : Hit Rating, Critical Strike Rating, and Haste Rating now modify both melee attacks and spells.
                 ApplyRatingMod(CR_CRIT_SPELL, int32(val), apply);
+#endif
                 break;
             case ITEM_MOD_HIT_TAKEN_RATING:
                 ApplyRatingMod(CR_HIT_TAKEN_MELEE, int32(val), apply);
                 ApplyRatingMod(CR_HIT_TAKEN_RANGED, int32(val), apply);
-                ApplyRatingMod(CR_HIT_TAKEN_SPELL, int32(val), apply);
                 break;
             case ITEM_MOD_CRIT_TAKEN_RATING:
                 ApplyRatingMod(CR_CRIT_TAKEN_MELEE, int32(val), apply);
                 ApplyRatingMod(CR_CRIT_TAKEN_RANGED, int32(val), apply);
-                ApplyRatingMod(CR_CRIT_TAKEN_SPELL, int32(val), apply);
                 break;
             case ITEM_MOD_RESILIENCE_RATING:
                 ApplyRatingMod(CR_CRIT_TAKEN_MELEE, int32(val), apply);
@@ -7435,7 +7439,10 @@ void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
             case ITEM_MOD_HASTE_RATING:
                 ApplyRatingMod(CR_HASTE_MELEE, int32(val), apply);
                 ApplyRatingMod(CR_HASTE_RANGED, int32(val), apply);
+#ifdef LICH_KING
+                //Patch 3.0.2 : Hit Rating, Critical Strike Rating, and Haste Rating now modify both melee attacks and spells.
                 ApplyRatingMod(CR_HASTE_SPELL, int32(val), apply);
+#endif
                 break;
             case ITEM_MOD_EXPERTISE_RATING:
                 ApplyRatingMod(CR_EXPERTISE, int32(val), apply);
