@@ -171,7 +171,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
         case HighGuid::Pet:
         case HighGuid::Corpse:
         case HighGuid::DynamicObject:
-        case HighGuid::GameObject: //sun: diff with TC, we send this for all gobjects, not just player ones
+        case HighGuid::GameObject: //sun: diff with TC, we send this for all gobjects, not just player ones. Not 100% sure about this but this seems to make more sense
             updateType = UPDATETYPE_CREATE_OBJECT2;
             break;
         case HighGuid::Unit:
@@ -1126,12 +1126,9 @@ bool WorldObject::IsWithinLOSInMap(const WorldObject* obj, VMAP::ModelIgnoreFlag
 
     float x, y, z;
     if (obj->GetTypeId() == TYPEID_PLAYER)
-    {
         obj->GetPosition(x, y, z);
-        z += GetMidsectionHeight();
-    }
     else
-        obj->GetHitSpherePointFor({ GetPositionX(), GetPositionY(), GetPositionZ() + GetMidsectionHeight() }, x, y, z);
+        obj->GetHitSpherePointFor(GetPosition(), x, y, z);
     
     return IsWithinLOS(x, y, z, ignoreFlags);
 }
@@ -1142,14 +1139,11 @@ bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz, VM
     {
         float x, y, z;
         if (GetTypeId() == TYPEID_PLAYER)
-        {
             GetPosition(x, y, z);
-            z += GetMidsectionHeight();
-        } 
         else
             GetHitSpherePointFor({ ox, oy, oz }, x, y, z);
         
-        return GetMap()->isInLineOfSight(x, y, z, ox, oy, oz, GetPhaseMask(), ignoreFlags);
+        return GetMap()->isInLineOfSight(x, y, z + 2.0f, ox, oy, oz + 2.0f, GetPhaseMask(), ignoreFlags);
    }
     
     return true;
@@ -1157,7 +1151,7 @@ bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz, VM
 
 Position WorldObject::GetHitSpherePointFor(Position const& dest) const
 {
-    G3D::Vector3 vThis(GetPositionX(), GetPositionY(), GetPositionZ() + GetMidsectionHeight());
+    G3D::Vector3 vThis(GetPositionX(), GetPositionY(), GetPositionZ());
     G3D::Vector3 vObj(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
     G3D::Vector3 contactPoint = vThis + (vObj - vThis).directionOrZero() * std::min(dest.GetExactDist(GetPosition()), GetCombatReach());
     
