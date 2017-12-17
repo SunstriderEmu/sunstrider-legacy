@@ -2150,7 +2150,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 1;
             break;
         case 45866:
-        case 45855:
+        case 45855: //felmyst gas nova
         case 47002:
         case 46931:
         case 45402:
