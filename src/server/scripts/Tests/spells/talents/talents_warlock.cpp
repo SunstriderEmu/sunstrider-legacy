@@ -9,7 +9,7 @@ public:
 	class ImprovedLifeTapTestImpt : public TestCase
 	{
 	public:
-		ImprovedLifeTapTestImpt() : TestCase(true) { }
+		ImprovedLifeTapTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -40,7 +40,7 @@ public:
 	class ImprovedCurseOfAgonyTestImpt : public TestCase
 	{
 	public:
-		ImprovedCurseOfAgonyTestImpt() : TestCase(true) { }
+		ImprovedCurseOfAgonyTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -72,7 +72,7 @@ public:
 	class EmpoweredCorruptionTestImpt : public TestCase
 	{
 	public:
-		EmpoweredCorruptionTestImpt() : TestCase(true) { }
+		EmpoweredCorruptionTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -103,7 +103,7 @@ public:
 	class ShadowMasteryTestImpt : public TestCase
 	{
 	public:
-		ShadowMasteryTestImpt() : TestCase(true) { }
+		ShadowMasteryTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -144,7 +144,7 @@ public:
 	class ContagionTestImpt : public TestCase
 	{
 	public:
-		ContagionTestImpt() : TestCase(true) { }
+		ContagionTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -176,7 +176,7 @@ public:
 	class ImprovedHealthstoneTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealthstoneTestImpt() : TestCase(true) { }
+		ImprovedHealthstoneTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -208,7 +208,7 @@ public:
 	class DemonicEmbraceTestImpt : public TestCase
 	{
 	public:
-		DemonicEmbraceTestImpt() : TestCase(true) { }
+		DemonicEmbraceTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -239,7 +239,7 @@ public:
 	class ImprovedHealthFunnelTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealthFunnelTestImpt() : TestCase(true) { }
+		ImprovedHealthFunnelTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -282,7 +282,7 @@ public:
 	class FelIntellectTestImpt : public TestCase
 	{
 	public:
-		FelIntellectTestImpt() : TestCase(true) { }
+		FelIntellectTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		float GetPetInt(TestPlayer* player, uint32 summon)
 		{
@@ -347,7 +347,7 @@ public:
 	class FelDominationTestImpt : public TestCase
 	{
 	public:
-		FelDominationTestImpt() : TestCase(true) { }
+		FelDominationTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		uint32 GetRemainingMana(TestPlayer* player, uint32 summon, uint32 startMana, uint32 manaCost)
 		{
@@ -411,7 +411,7 @@ public:
 	class FelStaminaTestImpt : public TestCase
 	{
 	public:
-		FelStaminaTestImpt() : TestCase(true) { }
+		FelStaminaTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		float GetPetSta(TestPlayer* player, uint32 summon)
 		{
@@ -477,7 +477,7 @@ public:
 	class DemonicAegisTestImpt : public TestCase
 	{
 	public:
-		DemonicAegisTestImpt() : TestCase(true) { }
+		DemonicAegisTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -534,7 +534,7 @@ public:
 	class MasterSummonerTestImpt : public TestCase
 	{
 	public:
-		MasterSummonerTestImpt() : TestCase(true) { }
+		MasterSummonerTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		uint32 GetRemainingMana(TestPlayer* player, uint32 summon, uint32 startMana, uint32 manaCost)
 		{
@@ -599,7 +599,7 @@ public:
 	class DemonicSacrificeTestImpt : public TestCase
 	{
 	public:
-		DemonicSacrificeTestImpt() : TestCase(true) { }
+		DemonicSacrificeTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void SacrificePet(TestPlayer* player, uint32 summon, uint32 aura, uint32 previousAura = 0)
 		{
@@ -791,7 +791,7 @@ public:
 	class ManaFeedTestImpt : public TestCase
 	{
 	public:
-		ManaFeedTestImpt() : TestCase(true) { }
+		ManaFeedTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		// drain mana + life tap 100% to pet
 
@@ -822,7 +822,7 @@ public:
 			player->CastSpell(player, ClassSpells::Warlock::LIFE_TAP_RNK_7);
 			Wait(1500);
 			uint32 expectedLT = ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7;
-			TC_LOG_DEBUG("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedLT);
+            TC_LOG_TRACE("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedLT);
 			Wait(500);
 			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedLT);
 
@@ -867,7 +867,7 @@ public:
 	class DemonicKnowledgeTestImpt : public TestCase
 	{
 	public:
-		DemonicKnowledgeTestImpt() : TestCase(true) { }
+		DemonicKnowledgeTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void AssertDemonicKnowledge(TestPlayer* player, uint32 summon, float spellPower)
 		{
@@ -878,7 +878,7 @@ public:
 			TEST_ASSERT(pet != nullptr);
 
 			float expectedSP = spellPower + (pet->GetStat(STAT_STAMINA) + pet->GetStat(STAT_INTELLECT)) * 0.12;
-			TC_LOG_DEBUG("test.unit_test", "current: %f, start: %f, expected: %f", player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW), spellPower, expectedSP);
+            TC_LOG_TRACE("test.unit_test", "current: %f, start: %f, expected: %f", player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW), spellPower, expectedSP);
 			TEST_ASSERT(player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == expectedSP);
 		}
 

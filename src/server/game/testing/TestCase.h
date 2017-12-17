@@ -19,6 +19,16 @@ bool Between(T value, T from, T to)
     return value >= from && value <= to;
 }
 
+enum TestStatus
+{
+    //Test is working and should pass. A failure means a regression.
+    STATUS_PASSING,
+    //Test is working, but failure is expected.
+    STATUS_KNOWN_BUG,
+    //Test is not yet finished and will be ignored unless directly called
+    STATUS_INCOMPLETE,
+};
+
 class TC_GAME_API TestCase
 {
     friend class TestMgr;
@@ -27,9 +37,9 @@ class TC_GAME_API TestCase
 
 public:
     //If needMap is specified, test will be done in an instance of the test map (13). 
-    TestCase(bool needMap = true);
+    TestCase(TestStatus status, bool needMap = true);
     //Use specific position. If only map was specified in location, default coordinates in map may be chosen instead. If you need creatures and objects, use EnableMapObjects in your test constructor
-    TestCase(WorldLocation const& specificPosition);
+    TestCase(TestStatus status, WorldLocation const& specificPosition);
 
     std::string GetName() const { return _testName; }
     bool Failed() const { return _failed; }
@@ -139,6 +149,7 @@ public:
     float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
 
     static uint32 GetTestBotAccountId();
+    TestStatus GetTestStatus() const { return _testStatus; }
 
 protected:
 
@@ -196,6 +207,7 @@ private:
     int32                    _callerLine; //used for error output
     std::string              _internalAssertInfo;
     std::string              _assertInfo;
+    TestStatus               _testStatus;
 
     bool _InternalSetup();
     void _Cleanup();

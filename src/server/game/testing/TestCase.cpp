@@ -18,22 +18,23 @@
 //input info for next check, place this before INTERNAL_TEST_ASSERT
 #define INTERNAL_ASSERT_INFO(expr, ...) _InternalAssertInfo(expr, ## __VA_ARGS__);
 
-TestCase::TestCase(bool needMap) :
+TestCase::TestCase(TestStatus status, bool needMap) :
     _failed(false),
     _testsCount(0),
     _testMapInstanceId(0),
     _diff(REGULAR_DIFFICULTY),
     _map(nullptr),
     _enableMapObjects(false),
-    _setup(false)
+    _setup(false),
+    _testStatus(status)
 {
     //default pos:
     if (needMap && _location.GetMapId() == MAPID_INVALID) //not yet defined by the other constructor
         _location = std::move(WorldLocation(MAP_TESTING_ID, TestCase::GetDefaultPositionForMap(MAP_TESTING_ID)));
 }
 
-TestCase::TestCase(WorldLocation const& specificPosition)
-    : TestCase()
+TestCase::TestCase(TestStatus status, WorldLocation const& specificPosition)
+    : TestCase(status, true)
 {
     bool hasDefaultPos = specificPosition.GetPositionX() == 0.0f && specificPosition.GetPositionY() == 0.0f && specificPosition.GetPositionZ() == 0.0f;
     _location = specificPosition;
@@ -292,7 +293,7 @@ void TestCase::_RemoveTestBot(Player* player)
 TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint32 level)
 {
     INTERNAL_TEST_ASSERT_NOCOUNT(cls != CLASS_NONE && race != RACE_NONE);
-    TC_LOG_ERROR("test.unit_test", "Creating new random bot for class %d", cls);
+    TC_LOG_TRACE("test.unit_test", "Creating new random bot for class %d", cls);
 
     if (!_map)
         return nullptr;
@@ -327,7 +328,7 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
         return nullptr;
     }
 
-    TC_LOG_DEBUG("test.unit_test", "Test bot created for account %d - name: \"%s\"; race: %u; class: %u; gender: %u; skin: %u; face: %u; hairStyle: %u; hairColor: %u; facialHair: %u; outfitId: %u",
+    TC_LOG_TRACE("test.unit_test", "Test bot created for account %d - name: \"%s\"; race: %u; class: %u; gender: %u; skin: %u; face: %u; hairStyle: %u; hairColor: %u; facialHair: %u; outfitId: %u",
         testAccountId, name.c_str(), race, cls, cci.Gender, cci.Skin, cci.Face, cci.HairStyle, cci.HairColor, cci.FacialHair, cci.OutfitId);
 
     PlayerbotAI* ai = new PlayerbotTestingAI(player);

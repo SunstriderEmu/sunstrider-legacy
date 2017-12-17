@@ -9,7 +9,7 @@ public:
     class WandSpecializationTestImpt : public TestCase
     {
     public:
-        WandSpecializationTestImpt() : TestCase(true) { }
+        WandSpecializationTestImpt() : TestCase(STATUS_PASSING, true) { }
 
         void Test() override
         {
@@ -47,7 +47,7 @@ public:
 	class SearingLightTestImpt : public TestCase
 	{
 	public:
-		SearingLightTestImpt() : TestCase(true) { }
+		SearingLightTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{

@@ -149,7 +149,7 @@ std::string RandomPlayerbotFactory::CreateTestBotName()
         QueryResult results = CharacterDatabase.PQuery("SELECT n.name FROM ai_playerbot_names n ORDER BY RAND() LIMIT 100");
         if (!results)
         {
-            sLog->outMessage("playerbot", LOG_LEVEL_FATAL, "No names in ai_playerbot_name table");
+            TC_LOG_ERROR("test.unit_test", "Could not get name for test bot, no names in ai_playerbot_name table");
             return "";
         }
         do
@@ -160,6 +160,17 @@ std::string RandomPlayerbotFactory::CreateTestBotName()
     }
     std::string name = botNames.front();
     botNames.pop_front();
+    while (ObjectAccessor::FindConnectedPlayerByName(name.c_str()))
+    {
+        if (botNames.empty())
+        {
+            TC_LOG_ERROR("test.unit_test", "Could not get name for test bot, none free found");
+            return "";
+        }
+        name = botNames.front();
+        botNames.pop_front();
+    }
+
     return name;
 }
 

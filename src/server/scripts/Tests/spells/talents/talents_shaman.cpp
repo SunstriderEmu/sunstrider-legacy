@@ -10,7 +10,7 @@ public:
 	class ConvectionTestImpt : public TestCase
 	{
 	public:
-		ConvectionTestImpt() : TestCase(true) { }
+		ConvectionTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestMana(TestPlayer* player, Unit* victim, uint32 spellId, uint32 expectedMana)
 		{
@@ -57,7 +57,7 @@ public:
 	class ConcussionTestImpt : public TestCase
 	{
 	public:
-		ConcussionTestImpt() : TestCase(true) { }
+		ConcussionTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -107,7 +107,7 @@ public:
 	class AncestralKnowledgeTestImpt : public TestCase
 	{
 	public:
-		AncestralKnowledgeTestImpt() : TestCase(true) { }
+		AncestralKnowledgeTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -133,7 +133,7 @@ public:
 	class EnhancingTotemsTestImpt : public TestCase
 	{
 	public:
-		EnhancingTotemsTestImpt() : TestCase(true) { }
+		EnhancingTotemsTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -166,7 +166,7 @@ public:
 	class ToughnessTestImpt : public TestCase
 	{
 	public:
-		ToughnessTestImpt() : TestCase(true) { }
+		ToughnessTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -217,7 +217,7 @@ public:
 	class WeaponMasteryTestImpt : public TestCase
 	{
 	public:
-		WeaponMasteryTestImpt() : TestCase(true) { }
+		WeaponMasteryTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -255,7 +255,7 @@ public:
 	class ImprovedHealingWaveTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealingWaveTestImpt() : TestCase(true) { }
+		ImprovedHealingWaveTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -284,7 +284,7 @@ public:
 	class TidalFocusTestImpt : public TestCase
 	{
 	public:
-		TidalFocusTestImpt() : TestCase(true) { }
+		TidalFocusTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -331,7 +331,7 @@ public:
 	class NaturesBlessingTestImpt : public TestCase
 	{
 	public:
-		NaturesBlessingTestImpt() : TestCase(true) { }
+		NaturesBlessingTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -365,7 +365,7 @@ public:
 	class ImprovedChainHealTestImpt : public TestCase
 	{
 	public:
-		ImprovedChainHealTestImpt() : TestCase(true) { }
+		ImprovedChainHealTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{

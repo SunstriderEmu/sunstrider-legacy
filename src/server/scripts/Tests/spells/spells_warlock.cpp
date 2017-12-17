@@ -9,7 +9,7 @@ public:
     class ShadowBoltTestImpt : public TestCase
     {
     public:
-        ShadowBoltTestImpt() : TestCase(true) { }
+        ShadowBoltTestImpt() : TestCase(STATUS_PASSING, true) { }
 
         void Test() override
         {

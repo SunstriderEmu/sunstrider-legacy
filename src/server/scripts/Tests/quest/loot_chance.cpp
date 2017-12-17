@@ -17,7 +17,7 @@ public:
     class QuestLootChanceTestImpl : public TestCase
     {
     public:
-        QuestLootChanceTestImpl() : TestCase(true) { }
+        QuestLootChanceTestImpl() : TestCase(STATUS_PASSING, true) { }
 
         void Test() override
         {

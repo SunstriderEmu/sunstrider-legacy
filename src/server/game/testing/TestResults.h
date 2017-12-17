@@ -2,21 +2,28 @@
 #define TESTRESULTS_H
 
 class TestCase;
+enum TestStatus;
 
-class FailedTestResult
+class TestResult
 {
 public:
-    FailedTestResult(std::string name, std::string errorMsg);
+    TestResult(std::string name, bool success, TestStatus status, std::string errorMsg = "");
 
-    std::string ToString();
+    std::string ToString() const;
+    TestStatus GetStatus() const;
+
 private:
+    bool _success;
     std::string _name;
     std::string _errorMsg;
+    TestStatus _testStatus;
 };
 
 class TestResults
 {
 public:
+    typedef std::list<TestResult> TestResultList;
+
     TestResults();
 
     std::string ToString();
@@ -29,7 +36,12 @@ private:
     uint32 _totalTestsRan;
     uint32 _ignored;
     std::string _usedPattern;
-    std::vector<FailedTestResult> _failedResults;
+
+    TestResultList GetFilteredResult(bool success, TestStatus status) const;
+    static void HandlePrintResults(std::stringstream& ss, std::string desc, TestResultList container);
+
+    TestResultList _successes;
+    TestResultList _failures;
 };
 
 #endif // TESTRESULTS_H

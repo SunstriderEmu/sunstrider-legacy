@@ -48,6 +48,10 @@ bool TestMgr::_TestMatchPattern(std::shared_ptr<TestCase> test, std::string cons
     if (pattern == "")
         return true;
 
+    //special case, only run incomplete tests if directly called
+    if (test->GetTestStatus() == STATUS_INCOMPLETE)
+        return test->GetName() == pattern;
+
     std::regex regex_pattern;
     try
     {
@@ -131,14 +135,12 @@ void TestMgr::Update(uint32 const diff)
         else
             results = _results.ToString();
 
-        sWorld->SendGlobalText("\nTests finished. Results:");
-        TC_LOG_INFO("test.unit_test", "Test finished. Results:");
         //print it line by line, messages too long may not be displayed
         std::istringstream iss(results);
         for (std::string line; std::getline(iss, line); )
         {
             sWorld->SendGlobalText(line.c_str());
-            TC_LOG_INFO("test.unit_test", "*%s", line.c_str());
+            TC_LOG_INFO("test.unit_test", "%s", line.c_str());
         }
 
         _running = false;

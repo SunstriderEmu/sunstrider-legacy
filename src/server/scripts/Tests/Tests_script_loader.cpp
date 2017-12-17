@@ -1,4 +1,3 @@
-// List all touches here
 
 void AddSC_test_dummy();
 void AddSC_test_auras_stacking();
@@ -12,6 +11,7 @@ void AddSC_test_spells_rogue();
 void AddSC_test_spells_shaman();
 void AddSC_test_spells_warlock();
 void AddSC_test_spells_warrior();
+void AddSC_test_spells_misc();
 void AddSC_test_talents_druid();
 void AddSC_test_talents_hunter();
 void AddSC_test_talents_mage();
@@ -36,6 +36,7 @@ void AddTestsScripts()
 	AddSC_test_spells_shaman();
 	AddSC_test_spells_warlock();
 	AddSC_test_spells_warrior();
+    AddSC_test_spells_misc();
 	AddSC_test_talents_druid();
 	AddSC_test_talents_hunter();
 	AddSC_test_talents_mage();

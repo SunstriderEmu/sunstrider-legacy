@@ -61,7 +61,7 @@ public:
 	class StarlightWrathTestImpt : public TestCase
 	{
 	public:
-		StarlightWrathTestImpt() : TestCase(true) { }
+		StarlightWrathTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -94,7 +94,7 @@ public:
 	class ImprovedNaturesGraspTestImpt : public TestCase
 	{
 	public:
-		ImprovedNaturesGraspTestImpt() : TestCase(true) { }
+		ImprovedNaturesGraspTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -137,7 +137,7 @@ public:
 	class InsectSwarmTestImpt : public TestCase
 	{
 	public:
-		InsectSwarmTestImpt() : TestCase(true) { }
+		InsectSwarmTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -181,7 +181,7 @@ public:
 	class NaturesReachTestImpt : public TestCase
 	{
 	public:
-		NaturesReachTestImpt() : TestCase(true) { }
+		NaturesReachTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestSpell(TestPlayer* player, Unit* target, uint32 spellId, uint32 castTime = 1500)
 		{
@@ -243,7 +243,7 @@ public:
 	class LunarGuidanceTestImpt : public TestCase
 	{
 	public:
-		LunarGuidanceTestImpt() : TestCase(true) { }
+		LunarGuidanceTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -277,7 +277,7 @@ public:
 	class MoonglowTestImpt : public TestCase
 	{
 	public:
-		MoonglowTestImpt() : TestCase(true) { }
+		MoonglowTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestMana(TestPlayer* player, Unit* target, uint32 spellId, uint32 expectedManaCost, uint32 castTime = 1500)
 		{
@@ -332,7 +332,7 @@ public:
 	class MoonfuryTestImpt : public TestCase
 	{
 	public:
-		MoonfuryTestImpt() : TestCase(true) { }
+		MoonfuryTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -373,7 +373,7 @@ public:
 	class DreamstateTestImpt : public TestCase
 	{
 	public:
-		DreamstateTestImpt() : TestCase(true) { }
+		DreamstateTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestRegen(TestPlayer* player, uint32 expectedMana)
 		{
@@ -429,7 +429,7 @@ public:
 	class WrathOfCenariusTestImpt : public TestCase
 	{
 	public:
-		WrathOfCenariusTestImpt() : TestCase(true) { }
+		WrathOfCenariusTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -472,7 +472,7 @@ public:
 	class FerocityTestImpt : public TestCase
 	{
 	public:
-		FerocityTestImpt() : TestCase(true) { }
+		FerocityTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestPower(TestPlayer* player, Unit* victim, uint32 spellId, uint32 expectedPower, Powers power)
 		{
@@ -510,7 +510,7 @@ public:
 			uint32 res = player->CastSpell(player, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Wait(2000); // GCD
-			TC_LOG_DEBUG("test.unit_test", "power: %u", player->GetPower(POWER_RAGE));
+            TC_LOG_TRACE("test.unit_test", "power: %u", player->GetPower(POWER_RAGE));
 			TestPower(player, creature, ClassSpells::Druid::MAUL_RNK_8, expectedMaulRage, POWER_RAGE);
 			TestPower(player, creature, ClassSpells::Druid::SWIPE_RNK_6, expectedSwipeRage, POWER_RAGE);
 			TestPower(player, creature, ClassSpells::Druid::MANGLE_BEAR_RNK_3, expectedMangleRage, POWER_RAGE);
@@ -539,7 +539,7 @@ public:
 	class BrutalImpactTestImpt : public TestCase
 	{
 	public:
-		BrutalImpactTestImpt() : TestCase(true) { }
+		BrutalImpactTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestPower(TestPlayer* player, Unit* target, uint32 spellId, int32 auraTime, Powers power)
 		{
@@ -600,7 +600,7 @@ public:
 	class ThickHideTestImpt : public TestCase
 	{
 	public:
-		ThickHideTestImpt() : TestCase(true) { }
+		ThickHideTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -645,7 +645,7 @@ public:
 	class ShreddingAttacksTestImpt : public TestCase
 	{
 	public:
-		ShreddingAttacksTestImpt() : TestCase(true) { }
+		ShreddingAttacksTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestPower(TestPlayer* player, Unit* victim, uint32 spellId, uint32 expectedPower, Powers power)
 		{
@@ -701,7 +701,7 @@ public:
 	class PredatoryStrikesTestImpt : public TestCase
 	{
 	public:
-		PredatoryStrikesTestImpt() : TestCase(true) { }
+		PredatoryStrikesTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestAP(TestPlayer* player, uint32 spellId, uint32 expectedAP)
 		{
@@ -751,7 +751,7 @@ public:
 	class SavageFuryTestImpt : public TestCase
 	{
 	public:
-		SavageFuryTestImpt() : TestCase(true) { }
+		SavageFuryTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -807,7 +807,7 @@ public:
 	class FaerieFireFeralTestImpt : public TestCase
 	{
 	public:
-		FaerieFireFeralTestImpt() : TestCase(true) { }
+		FaerieFireFeralTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -867,7 +867,7 @@ public:
 	class HeartOfTheWildTestImpt : public TestCase
 	{
 	public:
-		HeartOfTheWildTestImpt() : TestCase(true) { }
+		HeartOfTheWildTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestStat(TestPlayer* player, uint32 formSpellId, uint32 expectedStat, uint32 stat = 0)
 		{
@@ -915,7 +915,7 @@ public:
 	class SurvivalOfTheFittestTestImpt : public TestCase
 	{
 	public:
-		SurvivalOfTheFittestTestImpt() : TestCase(true) { }
+		SurvivalOfTheFittestTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestStat(TestPlayer* player, Stats stat, uint32 expectedStat)
 		{
@@ -953,13 +953,12 @@ public:
 class MangleTest : public TestCaseScript
 {
 public:
-
 	MangleTest() : TestCaseScript("talents druid mangle") { }
 
 	class MangleTestImpt : public TestCase
 	{
 	public:
-		MangleTestImpt() : TestCase(true) { }
+		MangleTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void MorphTo(TestPlayer* druid, uint32 formSpellId)
 		{
@@ -1019,7 +1018,7 @@ public:
 
 					totalDamage += damage;
 				}
-				TC_LOG_DEBUG("test.unit_test", "damage:" UI64FMTD, totalDamage);
+                TC_LOG_TRACE("test.unit_test", "damage:" UI64FMTD, totalDamage);
 				TEST_ASSERT(totalDamage != 0);
 				break;
 			}
@@ -1118,7 +1117,7 @@ public:
 	class ImprovedMarkOfTheWildTestImpt : public TestCase
 	{
 	public:
-		ImprovedMarkOfTheWildTestImpt() : TestCase(true) { }
+		ImprovedMarkOfTheWildTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestSpellOfTheWild(TestPlayer* player, uint32 spell, TestPlayer* victim)
 		{
@@ -1191,7 +1190,7 @@ public:
 	class FurorTestImpt : public TestCase
 	{
 	public:
-		FurorTestImpt() : TestCase(true) { }
+		FurorTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -1218,13 +1217,12 @@ public:
 class NaturalistTest : public TestCaseScript
 {
 public:
-
 	NaturalistTest() : TestCaseScript("talents druid naturalist") { }
 
 	class NaturalistTestImpt : public TestCase
 	{
 	public:
-		NaturalistTestImpt() : TestCase(true) { }
+		NaturalistTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -1252,13 +1250,12 @@ public:
 class NaturalShapeshifterTest : public TestCaseScript
 {
 public:
-
 	NaturalShapeshifterTest() : TestCaseScript("talents druid natural_shapeshifter") { }
 
 	class NaturalShapeshifterTestImpt : public TestCase
 	{
 	public:
-		NaturalShapeshifterTestImpt() : TestCase(true) { }
+		NaturalShapeshifterTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestMana(TestPlayer* player, uint32 spellId, uint32 expectedMana)
 		{
@@ -1309,7 +1306,7 @@ public:
 	class IntensityTestImpt : public TestCase
 	{
 	public:
-		IntensityTestImpt() : TestCase(true) { }
+		IntensityTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestRegen(TestPlayer* player, uint32 expectedMana)
 		{
@@ -1373,13 +1370,12 @@ public:
 class TranquilSpiritTest : public TestCaseScript
 {
 public:
-
 	TranquilSpiritTest() : TestCaseScript("talents druid tranquil_spirit") { }
 
 	class TranquilSpiritTestImpt : public TestCase
 	{
 	public:
-		TranquilSpiritTestImpt() : TestCase(true) { }
+		TranquilSpiritTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestMana(TestPlayer* player, uint32 spellId, uint32 expectedMana, uint32 castingTime)
 		{
@@ -1416,13 +1412,12 @@ public:
 class ImprovedRejuvenationTest : public TestCaseScript
 {
 public:
-
 	ImprovedRejuvenationTest() : TestCaseScript("talents druid improved_rejuvenation") { }
 
 	class ImprovedRejuvenationTestImpt : public TestCase
 	{
 	public:
-		ImprovedRejuvenationTestImpt() : TestCase(true) { }
+		ImprovedRejuvenationTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -1452,13 +1447,12 @@ public:
 class GiftOfNatureTest : public TestCaseScript
 {
 public:
-
 	GiftOfNatureTest() : TestCaseScript("talents druid gift_of_nature") { }
 
 	class GiftOfNatureTestImpt : public TestCase
 	{
 	public:
-		GiftOfNatureTestImpt() : TestCase(true) { }
+		GiftOfNatureTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestHeal(TestPlayer* player, uint32 spellId, uint32 HotTime, uint32 expectedHealth, uint32 crit = 0)
 		{
@@ -1468,7 +1462,7 @@ public:
 			Wait(HotTime + 1000);
 			if (crit > 0)
 			{
-				TC_LOG_DEBUG("test.unit_test", "health: %u, expected: %u", player->GetHealth(), expectedHealth);
+                TC_LOG_TRACE("test.unit_test", "health: %u, expected: %u", player->GetHealth(), expectedHealth);
 				if (player->GetHealth() == expectedHealth)
 				{
 					ASSERT_INFO("After spell %u, druid doesnt have health %u but %u", spellId, expectedHealth, player->GetHealth());
@@ -1567,13 +1561,12 @@ public:
 class EmpoweredTouchTest : public TestCaseScript
 {
 public:
-
 	EmpoweredTouchTest() : TestCaseScript("talents druid empowered_touch") { }
 
 	class EmpoweredTouchTestImpt : public TestCase
 	{
 	public:
-		EmpoweredTouchTestImpt() : TestCase(true) { }
+		EmpoweredTouchTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -1606,7 +1599,7 @@ public:
 	class LivingSpiritTestImpt : public TestCase
 	{
 	public:
-		LivingSpiritTestImpt() : TestCase(true) { }
+		LivingSpiritTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -1629,13 +1622,12 @@ public:
 class EmpoweredRejuvenationTest : public TestCaseScript
 {
 public:
-
 	EmpoweredRejuvenationTest() : TestCaseScript("talents druid empowered_rejuvenation") { }
 
 	class EmpoweredRejuvenationTestImpt : public TestCase
 	{
 	public:
-		EmpoweredRejuvenationTestImpt() : TestCase(true) { }
+		EmpoweredRejuvenationTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void TestHeal(TestPlayer* player, uint32 spellId, uint32 HotTime, uint32 expectedHealth, uint32 crit = 0)
 		{
@@ -1645,7 +1637,7 @@ public:
             TEST_CAST(player, player, spellId);
 			Wait(HotTime + 1000);
 			uint32 currentHealth = player->GetHealth();
-				TC_LOG_DEBUG("test.unit_test", "health: %u, expected: %u", currentHealth, startHealth + expectedHealth);
+            TC_LOG_TRACE("test.unit_test", "health: %u, expected: %u", currentHealth, startHealth + expectedHealth);
 			if (crit > 0)
 			{
 				if (player->GetHealth() == expectedHealth)
@@ -1722,7 +1714,7 @@ public:
 			uint32 const lifebloomBurstCrit = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_BURST + CalculateBH(ClassSpellsCoeff::Druid::LIFEBLOOM) * 1.5f;
 			uint32 const expectedLifebloomHealth = 1 + 7 * lifebloomTick + lifebloomBurst;
 			uint32 const expectedLifebloomHealthCrit = 1 + 7 * lifebloomTick + lifebloomBurstCrit;
-			TC_LOG_DEBUG("test.unit_test", "Lifebloom");
+			TC_LOG_TRACE("test.unit_test", "Lifebloom");
 			TestHeal(player, ClassSpells::Druid::LIFEBLOOM_RNK_1, 7000, expectedLifebloomHealth, expectedLifebloomHealthCrit);
 
 			// Tranquility
@@ -1735,7 +1727,7 @@ public:
 			// Regrowth HoT
 			uint32 const regrowthTick = floor(ClassSpellsDamage::Druid::REGROWTH_RNK_10_TOTAL + CalculateBH(ClassSpellsCoeff::Druid::REGROWTH_HOT) / 7);
 			uint32 const expectedRegrowthHealth = 7 * regrowthTick;
-			TC_LOG_DEBUG("test.unit_test", "Regrowth HoT");
+            TC_LOG_TRACE("test.unit_test", "Regrowth HoT");
 			TestRegrowth(player, ClassSpells::Druid::REGROWTH_RNK_10, 21000, expectedRegrowthHealth);
 			// Regrowth Direct
 			uint32 const regrowthMin = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MIN + CalculateBH(ClassSpellsCoeff::Druid::REGROWTH);
@@ -1745,9 +1737,9 @@ public:
 			// Swiftmend
 			uint32 const rejuvenationTotal = 4 * floor(ClassSpellsDamage::Druid::REJUVENATION_RNK_13_TOTAL + CalculateBH(ClassSpellsCoeff::Druid::REJUVENATION) / 4);
 			uint32 const regrowthTotal = 6 * floor(ClassSpellsDamage::Druid::REGROWTH_RNK_10_TOTAL + CalculateBH(ClassSpellsCoeff::Druid::REGROWTH_HOT) / 7);
-			TC_LOG_DEBUG("test.unit_test", "Rejuvenation Swift");
+            TC_LOG_TRACE("test.unit_test", "Rejuvenation Swift");
 			TestSwiftmend(player, ClassSpells::Druid::REJUVENATION_RNK_13, rejuvenationTotal);
-			TC_LOG_DEBUG("test.unit_test", "Regrowth Swift");
+            TC_LOG_TRACE("test.unit_test", "Regrowth Swift");
 			TestSwiftmend(player, ClassSpells::Druid::REGROWTH_RNK_10, regrowthTotal);
 
 			// Rejuvenation
