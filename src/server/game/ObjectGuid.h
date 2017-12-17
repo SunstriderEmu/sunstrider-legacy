@@ -281,11 +281,8 @@ public:
 		if (_nextGuid >= ObjectGuid::GetMaxCounter(high) - 1)
 			HandleCounterOverflow(high);
 
-        __pragma(warning(push))
-        __pragma(warning(disable:4127)) //disable "conditional expression is constant" warning, the following code is correct and will be correctly optimized by compiler. https://stackoverflow.com/questions/25573996/c4127-conditional-expression-is-constant
         if (high == HighGuid::Unit || high == HighGuid::GameObject)
             CheckGuidTrigger(_nextGuid);
-        __pragma(warning(pop))
 
 		return _nextGuid++;
 	}

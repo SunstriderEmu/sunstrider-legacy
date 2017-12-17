@@ -88,8 +88,9 @@ message(STATUS "MSVC: Enabled C++14")
 # C4100: unreferenced formal parameter
 # C4577: 'noexcept' used with no exception handling mode specified
 # C4505: unreferenced local function has been removed
-# C4456 : declaration of 'itr' hides previous local declaration
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4351 /wd4091 /wd4820 /wd4706 /wd4100 /wd4577 /wd4505 /wd4456 ")
+# C4456: declaration of 'itr' hides previous local declaration
+# C4127: "conditional expression is constant" -> incorrect warning in ObjectGuid. Code is correct and will be correctly optimized by compiler. https://stackoverflow.com/questions/25573996/c4127-conditional-expression-is-constant
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4351 /wd4091 /wd4820 /wd4706 /wd4100 /wd4577 /wd4505 /wd4456 /wd4127")
 if(DO_WARN)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   message(STATUS "MSVC: Enabled level 4 warnings")
