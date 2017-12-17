@@ -167,11 +167,12 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
 void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recvData*/ )
 {
     Group *group = GetPlayer()->GetGroupInvite();
-    if (!group) return;
+    if (!group) 
+        return;
 
     if(group->GetLeaderGUID() == GetPlayer()->GetGUID())
     {
-        TC_LOG_ERROR("FIXME","HandleGroupAcceptOpcode: player %s(%d) tried to accept an invite to his own group", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("network","HandleGroupAcceptOpcode: player %s(%d) tried to accept an invite to his own group", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
         return;
     }
 

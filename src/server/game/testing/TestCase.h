@@ -73,13 +73,14 @@ public:
     void RemoveItem(TestPlayer* player, uint32 itemID, uint32 count);
     void LearnTalent(TestPlayer* p, uint32 spellID);
     void EnableCriticals(Unit* caster, bool crit);
+    //Invite player into leader group. Group is created if not yet existing.
     void GroupPlayer(TestPlayer* leader, TestPlayer* player);
 
     /* Cast a spell and check for spell start return value
     Usage:
-    #define TEST_CAST(caster, victim, spellID)
-    #define TEST_CAST(caster, victim, spellID, expectedCode)
-    #define TEST_CAST(caster, victim, spellID, expectedCode, triggeredFlags)
+    TEST_CAST(caster, victim, spellID)
+    TEST_CAST(caster, victim, spellID, expectedCode)
+    TEST_CAST(caster, victim, spellID, expectedCode, triggeredFlags)
     */
     #define TEST_CAST( ... ) { _SetCaller(__FILE__, __LINE__);  _TestCast(__VA_ARGS__); _ResetCaller(); }
 
@@ -121,7 +122,7 @@ public:
     // Test the percentage of a melee hit outcome
     #define TEST_MELEE_OUTCOME_PERCENTAGE(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestMeleeOutcomePercentage(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError);  _ResetCaller(); }
     // Test the percentage of a spell hit outcome
-    #define TEST_SPELL_OUTCOME_PERCENTAGE(attacker, victim, spellId, hitInfo, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestSpellOutcomePercentage(attacker, victim, spellId, hitInfo, expectedResult, allowedError);  _ResetCaller(); }
+    #define TEST_SPELL_OUTCOME_PERCENTAGE(attacker, victim, spellId, missType, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestSpellOutcomePercentage(attacker, victim, spellId, missType, expectedResult, allowedError);  _ResetCaller(); }
 
     #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) { _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller(); }
 
@@ -163,7 +164,7 @@ protected:
     void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit);
     void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
     void _TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError);
-    void _TestSpellOutcomePercentage(TestPlayer* attacker, Unit* victim, uint32 spellId, HitInfo hitInfo, float expectedResult, float allowedError);
+    void _TestSpellOutcomePercentage(TestPlayer* attacker, Unit* victim, uint32 spellId, SpellMissInfo hitInfo, float expectedResult, float allowedError);
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, Powers powerType, uint32 expectedPowerCost);
     void _EquipItem(TestPlayer* p, uint32 itemID);
@@ -177,7 +178,9 @@ protected:
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 durationMS);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
 
+    //Return how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
     static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);
+    //Return how much iterations you should do to be within allowedError of a precise percentage (with 99.9% certainty)
     static uint32 _GetPercentApproximationParams(float const allowedError);
 
 private:

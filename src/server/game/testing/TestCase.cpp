@@ -578,8 +578,7 @@ uint32 TestCase::_GetPercentApproximationParams(float const allowedError)
 
 void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax)
 {
-
-    double probability = 0.999; // Corresponds to 99.9%
+    double targetProbability = 0.999; // Corresponds to 99.9%
     allowedError = (expectedMax - expectedMin) / 25; //arbitary
     allowedError = std::max(allowedError, uint32(1)); //min 1
 
@@ -609,8 +608,8 @@ void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError,
     double ratio_min = (double)(UB_max - UB_min) / (double)(UB_max - LB_min);
     double ratio_max = (double)(LB_max - LB_min) / (double)(UB_max - LB_min);
 
-    uint32 sampleSize_min = std::ceil(std::log(1.0 - probability) / std::log(ratio_min));
-    uint32 sampleSize_max = std::ceil(std::log(1.0 - probability) / std::log(ratio_max));
+    uint32 sampleSize_min = std::ceil(std::log(1.0 - targetProbability) / std::log(ratio_min));
+    uint32 sampleSize_max = std::ceil(std::log(1.0 - targetProbability) / std::log(ratio_max));
     sampleSize = std::max(sampleSize_min, sampleSize_max);
 
 }
@@ -1015,8 +1014,16 @@ void TestCase::EnableCriticals(Unit* caster, bool crit)
 
 void TestCase::GroupPlayer(TestPlayer* leader, TestPlayer* player)
 {
-    INTERNAL_ASSERT_INFO("GroupPlayer NYI");
-    INTERNAL_TEST_ASSERT(false);
+    //use fake packets to avoid duplicating logic
+    WorldPacket invitePacket(CMSG_GROUP_INVITE);
+    invitePacket << player->GetName();
+    leader->GetSession()->HandleGroupInviteOpcode(invitePacket);
+
+    WorldPacket acceptPacket;
+    player->GetSession()->HandleGroupAcceptOpcode(acceptPacket);
+
+    INTERNAL_ASSERT_INFO("Failed to add player to group");
+    INTERNAL_TEST_ASSERT(player->IsInSameGroupWith(leader));
 }
 
 void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError)
@@ -1049,7 +1056,7 @@ void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, W
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
-void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, HitInfo hitInfo, float expectedResult, float allowedError)
+void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, SpellMissInfo missInfo, float expectedResult, float allowedError)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -1072,7 +1079,7 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
         if (itr.damageInfo.SpellID != spellId)
             continue;
 
-        if (itr.damageInfo.HitInfo != hitInfo)
+        if (itr.missInfo != missInfo)
             continue;
 
         count++;
