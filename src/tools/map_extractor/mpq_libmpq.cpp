@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
 * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
 
 ArchiveSet gOpenArchives;
 
-MPQArchive::MPQArchive(const char* filename)
+MPQArchive::MPQArchive(char const* filename)
 {
     int result = libmpq__archive_open(&mpq_a, filename, -1);
     printf("Opening %s\n", filename);
@@ -52,19 +52,13 @@ MPQArchive::MPQArchive(const char* filename)
     gOpenArchives.push_front(this);
 }
 
-bool MPQArchive::isOpened() const
-{
-    return std::find(gOpenArchives.begin(), gOpenArchives.end(), this) != gOpenArchives.end();
-}
-
-
 void MPQArchive::close()
 {
     //gOpenArchives.erase(erase(&mpq_a);
     libmpq__archive_close(mpq_a);
 }
 
-MPQFile::MPQFile(const char* filename) :
+MPQFile::MPQFile(char const* filename) :
     eof(false),
     buffer(0),
     pointer(0),

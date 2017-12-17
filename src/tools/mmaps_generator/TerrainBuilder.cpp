@@ -143,7 +143,7 @@ namespace MMAP
         }
 
         // data used later
-        uint32 holes[16][16]; //sunstrider change: was uint16, this is wrong since the map extractor write them as uint32
+        uint16 holes[16][16];
         memset(holes, 0, sizeof(holes));
         uint8 liquid_type[16][16];
         memset(liquid_type, 0, sizeof(liquid_type));
@@ -579,7 +579,7 @@ namespace MMAP
     static uint16 holetab_v[4] = {0x000F, 0x00F0, 0x0F00, 0xF000};
 
     /**************************************************************************/
-    bool TerrainBuilder::isHole(int square, const uint32 holes[16][16])
+    bool TerrainBuilder::isHole(int square, const uint16 holes[16][16])
     {
         int row = square / 128;
         int col = square % 128;

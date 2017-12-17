@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
 * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -16,8 +16,6 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define _CRT_SECURE_NO_DEPRECATE
-
 #include <stdio.h>
 #include <deque>
 #include <set>
@@ -25,6 +23,7 @@
 #include <fstream>
 
 #include "dbcfile.h"
+#include "Banner.h"
 #include "mpq_libmpq04.h"
 #include "StringFormat.h"
 
@@ -88,7 +87,7 @@ const char *CONF_mpq_list[] = {
     "patch-5.MPQ",
 };
 
-static const char* const langs[] = { "enGB", "enUS", "deDE", "esES", "frFR", "koKR", "zhCN", "zhTW", "enCN", "enTW", "esMX", "ruRU" };
+static char const* const langs[] = { "enGB", "enUS", "deDE", "esES", "frFR", "koKR", "zhCN", "zhTW", "enCN", "enTW", "esMX", "ruRU" };
 #define LANG_COUNT 12
 
 void CreateDir(boost::filesystem::path const& path)
@@ -184,7 +183,7 @@ uint32 ReadBuild(int locale)
 
     size_t pos = text.find("version=\"");
     size_t pos1 = pos + strlen("version=\"");
-    size_t pos2 = text.find("\"", pos1);
+    size_t pos2 = text.find('"', pos1);
     if (pos == text.npos || pos2 == text.npos || pos1 >= pos2)
     {
         printf("Fatal error: Invalid  %s file format!\n", filename.c_str());
@@ -220,7 +219,7 @@ uint32 ReadMapDBC()
     {
         map_ids[x].id = dbc.getRecord(x).getUInt(0);
 
-        const char* map_name = dbc.getRecord(x).getString(1);
+        char const* map_name = dbc.getRecord(x).getString(1);
         size_t max_map_name_length = sizeof(map_ids[x].name);
         if (strlen(map_name) >= max_map_name_length)
         {
@@ -330,7 +329,7 @@ float selectUInt16StepStore(float maxDiff)
     return 65535 / maxDiff;
 }
 // Temporary grid data store
-uint32 area_ids[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
+uint16 area_ids[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
 
 float V8[ADT_GRID_SIZE][ADT_GRID_SIZE];
 float V9[ADT_GRID_SIZE + 1][ADT_GRID_SIZE + 1];
@@ -374,7 +373,7 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
     // Get area flags data
     for (int i = 0; i < ADT_CELLS_PER_GRID; i++)
         for (int j = 0; j < ADT_CELLS_PER_GRID; j++)
-            area_ids[i][j] = cells->getMCNK(i, j)->areaid;
+            area_ids[i][j] = uint16(cells->getMCNK(i, j)->areaid);
 
     //============================================
     // Try pack area data
@@ -565,7 +564,7 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
                 heightHeader.flags |= MAP_HEIGHT_AS_INT8;
                 step = selectUInt8StepStore(diff);
             }
-            else if (diff<CONF_float_to_int16_limit)  // As uint16 (max accuracy = CONF_float_to_int16_limit/65536)
+            else if (diff < CONF_float_to_int16_limit)  // As uint16 (max accuracy = CONF_float_to_int16_limit/65536)
             {
                 heightHeader.flags |= MAP_HEIGHT_AS_INT16;
                 step = selectUInt16StepStore(diff);
@@ -794,8 +793,8 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
         liquidHeader.liquidType = 0;
         liquidHeader.offsetX = minX;
         liquidHeader.offsetY = minY;
-        liquidHeader.width = (maxX - minX) + 1 + 1;
-        liquidHeader.height = (maxY - minY) + 1 + 1;
+        liquidHeader.width = maxX - minX + 1 + 1;
+        liquidHeader.height = maxY - minY + 1 + 1;
         liquidHeader.liquidLevel = minHeight;
 
         if (maxHeight == minHeight)
@@ -818,7 +817,7 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
     }
 
     // map hole info
-    uint32 holes[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID]; //sunstrider: changed this to uint32, as it's uint32 in the adt. Probably won't change anything. (also changed mmaps extractor to handle this change)
+    uint16 holes[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
 
     if (map.liquidMapOffset)
         map.holesOffset = map.liquidMapOffset + map.liquidMapSize;
@@ -835,7 +834,7 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
             adt_MCNK * cell = cells->getMCNK(i, j);
             if (!cell)
                 continue;
-            holes[i][j] = cell->holes;
+            holes[i][j] = uint16(cell->holes);
             if (!hasHoles && cell->holes != 0)
                 hasHoles = true;
         }
@@ -855,30 +854,30 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
         return false;
     }
 
-    outFile.write(reinterpret_cast<const char*>(&map), sizeof(map));
+    outFile.write(reinterpret_cast<char const*>(&map), sizeof(map));
     // Store area data
-    outFile.write(reinterpret_cast<const char*>(&areaHeader), sizeof(areaHeader));
+    outFile.write(reinterpret_cast<char const*>(&areaHeader), sizeof(areaHeader));
     if (!(areaHeader.flags & MAP_AREA_NO_AREA))
-        outFile.write(reinterpret_cast<const char*>(area_ids), sizeof(area_ids));
+        outFile.write(reinterpret_cast<char const*>(area_ids), sizeof(area_ids));
 
     // Store height data
-    outFile.write(reinterpret_cast<const char*>(&heightHeader), sizeof(heightHeader));
+    outFile.write(reinterpret_cast<char const*>(&heightHeader), sizeof(heightHeader));
     if (!(heightHeader.flags & MAP_HEIGHT_NO_HEIGHT))
     {
         if (heightHeader.flags & MAP_HEIGHT_AS_INT16)
         {
-            outFile.write(reinterpret_cast<const char*>(uint16_V9), sizeof(uint16_V9));
-            outFile.write(reinterpret_cast<const char*>(uint16_V8), sizeof(uint16_V8));
+            outFile.write(reinterpret_cast<char const*>(uint16_V9), sizeof(uint16_V9));
+            outFile.write(reinterpret_cast<char const*>(uint16_V8), sizeof(uint16_V8));
         }
         else if (heightHeader.flags & MAP_HEIGHT_AS_INT8)
         {
-            outFile.write(reinterpret_cast<const char*>(uint8_V9), sizeof(uint8_V9));
-            outFile.write(reinterpret_cast<const char*>(uint8_V8), sizeof(uint8_V8));
+            outFile.write(reinterpret_cast<char const*>(uint8_V9), sizeof(uint8_V9));
+            outFile.write(reinterpret_cast<char const*>(uint8_V8), sizeof(uint8_V8));
         }
         else
         {
-            outFile.write(reinterpret_cast<const char*>(V9), sizeof(V9));
-            outFile.write(reinterpret_cast<const char*>(V8), sizeof(V8));
+            outFile.write(reinterpret_cast<char const*>(V9), sizeof(V9));
+            outFile.write(reinterpret_cast<char const*>(V8), sizeof(V8));
         }
     }
 
@@ -891,24 +890,24 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
     // Store liquid data if need
     if (map.liquidMapOffset)
     {
-        outFile.write(reinterpret_cast<const char*>(&liquidHeader), sizeof(liquidHeader));
+        outFile.write(reinterpret_cast<char const*>(&liquidHeader), sizeof(liquidHeader));
 
         if (!(liquidHeader.flags&MAP_LIQUID_NO_TYPE))
         {
-            outFile.write(reinterpret_cast<const char*>(liquid_entry), sizeof(liquid_entry));
-            outFile.write(reinterpret_cast<const char*>(liquid_flags), sizeof(liquid_flags));
+            outFile.write(reinterpret_cast<char const*>(liquid_entry), sizeof(liquid_entry));
+            outFile.write(reinterpret_cast<char const*>(liquid_flags), sizeof(liquid_flags));
         }
 
         if (!(liquidHeader.flags&MAP_LIQUID_NO_HEIGHT))
         {
             for (int y = 0; y < liquidHeader.height; y++)
-                outFile.write(reinterpret_cast<const char*>(&liquid_height[y + liquidHeader.offsetY][liquidHeader.offsetX]), sizeof(float) * liquidHeader.width);
+                outFile.write(reinterpret_cast<char const*>(&liquid_height[y + liquidHeader.offsetY][liquidHeader.offsetX]), sizeof(float) * liquidHeader.width);
         }
     }
 
     // store hole data
     if (hasHoles)
-        outFile.write(reinterpret_cast<const char*>(holes), map.holesSize);
+        outFile.write(reinterpret_cast<char const*>(holes), map.holesSize);
 
     outFile.close();
     return true;
@@ -1033,7 +1032,6 @@ void ExtractDBCFiles(int locale, bool basicLocale)
     printf("Extracted %u DBC files\n\n", count);
 }
 
-
 void ExtractCameraFiles(int locale, bool basicLocale)
 {
     printf("Extracting camera files...\n");
@@ -1049,7 +1047,7 @@ void ExtractCameraFiles(int locale, bool basicLocale)
     std::vector<std::string> camerafiles;
     size_t cam_count = camdbc.getRecordCount();
 
-    for (uint32 i = 0; i < cam_count; ++i)
+    for (size_t i = 0; i < cam_count; ++i)
     {
         std::string camFile(camdbc.getRecord(i).getString(1));
         size_t loc = camFile.find(".mdx");
@@ -1117,13 +1115,12 @@ void LoadCommonMPQFiles()
 inline void CloseMPQFiles()
 {
     for (ArchiveSet::iterator j = gOpenArchives.begin(); j != gOpenArchives.end(); ++j) (*j)->close();
-        gOpenArchives.clear();
+    gOpenArchives.clear();
 }
 
 int main(int argc, char * arg[])
 {
-    printf("Map & DBC Extractor\n");
-    printf("===================\n\n");
+    Trinity::Banner::Show("Map & DBC Extractor", [](char const* text) { printf("%s\n", text); }, nullptr);
 
     HandleArgs(argc, arg);
 

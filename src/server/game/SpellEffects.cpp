@@ -7116,6 +7116,9 @@ void Spell::EffectTransmitted(uint32 effIndex)
     pGameObj->SetRespawnTime(duration > 0 ? duration/1000 : 0);
 
     pGameObj->SetOwnerGUID(m_caster->GetGUID() );
+    if(TempSummon* summonCaster = m_caster->ToTempSummon())
+        if(Unit* owner = summonCaster->GetSummoner())
+            pGameObj->SetOwnerGUID(owner->GetGUID());
 
     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->GetLevel() );
     pGameObj->SetSpellId(m_spellInfo->Id);
