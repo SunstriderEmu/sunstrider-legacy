@@ -571,7 +571,7 @@ bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
 uint32 TestCase::_GetPercentApproximationParams(float const allowedError)
 {
     //Improve me... we want a 99.9% certainty
-    uint32 sampleSize = 10000;
+    uint32 sampleSize = 1000;
     //todo: calc sample size depending on given allowedError
     return sampleSize;
 }
@@ -634,23 +634,22 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
-        uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_MASK);
-        INTERNAL_ASSERT_INFO("Spell casting failed with reason %u", result);
+        caster->ForceSpellHitResult(SPELL_MISS_NONE);
+        uint32 result = caster->CastSpell(target, spellID, true);
+        caster->ResetForceSpellHitResult();
+        INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
     }
 
     Wait(10 * SECOND * IN_MILLISECONDS);
     uint32 dealtMin;
     uint32 dealtMax;
-    bool foundData = false;
     if(damage)
-        foundData = GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax);
+        GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, sampleSize);
     else 
-        foundData = GetHealingPerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax);
+        GetHealingPerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, sampleSize);
 
-    INTERNAL_ASSERT_INFO("No data found for spell: %u", spellID);
-    INTERNAL_TEST_ASSERT(foundData);
-    TC_LOG_DEBUG("test.unit_test", "spellId: %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u", spellID, dealtMin, dealtMax, expectedMin, expectedMax);
+    TC_LOG_DEBUG("test.unit_test", "spellId: %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", spellID, dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
 
     uint32 allowedMin = expectedMin > maxPredictionError ? expectedMin - maxPredictionError : 0; //protect against underflow
     uint32 allowedMax = expectedMax + maxPredictionError;
@@ -679,20 +678,20 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     uint32 maxPredictionError;
     _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
 
+    caster->ForceSpellHitResult(SPELL_MISS_NONE);
     for (uint32 i = 0; i < sampleSize; i++)
     if (attackType != RANGED_ATTACK)
         caster->AttackerStateUpdate(target, attackType);
     else
-        caster->CastSpell(target, 75, TRIGGERED_FULL_MASK); //shoot
+        caster->CastSpell(target, 75, true); //shoot
+    caster->ResetForceSpellHitResult();
 
-    Wait(5 * SECOND * IN_MILLISECONDS);
+    Wait(3 * SECOND * IN_MILLISECONDS);
     uint32 dealtMin;
     uint32 dealtMax;
-    bool foundData = GetWhiteDamageDoneTo(casterOwner, target, attackType, crit, dealtMin, dealtMax);
+    GetWhiteDamageDoneTo(casterOwner, target, attackType, crit, dealtMin, dealtMax, sampleSize);
 
-    INTERNAL_ASSERT_INFO("No white melee damage data found for attack type: %u", uint32(attackType));
-    INTERNAL_TEST_ASSERT(foundData);
-    TC_LOG_DEBUG("test.unit_test", "attackType: %u - crit %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u", uint32(attackType), uint32(crit), dealtMin, dealtMax, expectedMin, expectedMax);
+    TC_LOG_DEBUG("test.unit_test", "attackType: %u - crit %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", uint32(attackType), uint32(crit), dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
 
     uint32 allowedMin = expectedMin > maxPredictionError ? expectedMin - maxPredictionError : 0; //protect against underflow
     uint32 allowedMax = expectedMax + maxPredictionError;
@@ -711,18 +710,12 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    if (spellInfo == nullptr)
-    {
-        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellID);
-        return 0.0f;
-    }
+    INTERNAL_ASSERT_INFO("GetChannelDamageTo was prompted for non existing spell ID %u", spellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
     auto damageToTarget = AI->GetDamageDoneInfo(victim);
-    if (damageToTarget->empty())
-    {
-        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
-        return 0.0f;
-    }
+    INTERNAL_ASSERT_INFO("GetChannelDamageTo found no data for this victim (%s)", victim->GetName().c_str());
+    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
     std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> filteredDamageToTarget;
     //Copy only relevent entries
@@ -737,6 +730,7 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
     }
 
     uint64 totalDamage = 0;
+    uint32 count = 0;
     for (auto itr : filteredDamageToTarget)
     {
         //some spells were resisted or did crit... cannot use this data
@@ -753,30 +747,28 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
         //resilience not taken into account...
 
         totalDamage += damage;
+        count++;
     }
+
+    INTERNAL_ASSERT_INFO("GetChannelDamageTo was prompted for a victim(%s) with no valid data for this spell(ID %u)", victim->GetName().c_str(), spellID);
+    INTERNAL_TEST_ASSERT(count != 0);
 
     return totalDamage;
 }
 
-bool TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal)
+void TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, uint32 expectedCount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto healingToTarget = AI->GetHealingDoneInfo(target);
-    if (!healingToTarget || healingToTarget->empty())
-    {
-        TC_LOG_WARN("test.unit_test", "GetHealingPerSpellsTo found no data for this victim (%s)", target->GetName().c_str());
-        return false;
-    }
+    INTERNAL_ASSERT_INFO("GetHealingPerSpellsTo found no data for this victim (%s)", target->GetName().c_str());
+    INTERNAL_TEST_ASSERT(healingToTarget && !healingToTarget->empty());
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    if (spellInfo == nullptr)
-    {
-        TC_LOG_WARN("test.unit_test", "GetHealingPerSpellsTo was prompted for non existing spell ID %u", spellID);
-        return false;
-    }
+    INTERNAL_ASSERT_INFO("GetHealingPerSpellsTo was prompted for non existing spell ID %u", spellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
     minHeal = std::numeric_limits<uint32>::max();
     maxHeal = 0;
@@ -790,34 +782,32 @@ bool TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 sp
         //use only spells that hit target
         if (itr.missInfo != SPELL_MISS_NONE)
             continue;
-        
+
         minHeal = std::min(minHeal, itr.healing);
         maxHeal = std::max(maxHeal, itr.healing);
 
         count++;
     }
 
-    if (count == 0)
-    {
-        TC_LOG_WARN("test.unit_test", "GetHealingPerSpellsTo was prompted for a victim (%s) with no valid data for this spell (ID %u)", target->GetName().c_str(), spellID);
-        return false;
-    }
+    INTERNAL_ASSERT_INFO("GetHealingPerSpellsTo was prompted for a target (%s) with no valid data for this spell(ID %u)", target->GetName().c_str(), spellID);
+    INTERNAL_TEST_ASSERT(count != 0);
 
-    return true;
+    if (expectedCount)
+    {
+        INTERNAL_ASSERT_INFO("GetHealingPerSpellsTo did find data for spell %u and target %s, but not expected count (%u instead of %u)", spellID, target->GetName().c_str(), count, expectedCount);
+        INTERNAL_TEST_ASSERT(count == expectedCount);
+    }
 }
 
-bool TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAttackType attackType, bool critical, uint32& minDamage, uint32& maxDamage)
+void TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAttackType attackType, bool critical, uint32& minDamage, uint32& maxDamage, uint32 expectedCount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetWhiteDamageDoneInfo(victim);
-    if (!damageToTarget || damageToTarget->empty())
-    {
-        TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
-        return false;
-    }
+    INTERNAL_ASSERT_INFO("GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
+    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
     minDamage = std::numeric_limits<uint32>::max();
     maxDamage = 0;
@@ -852,34 +842,29 @@ bool TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAtta
         count++;
     }
 
-    if (count == 0)
-    {
-        TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo was prompted for a victim (%s) with no valid data for white damage (attackType %u)", victim->GetName().c_str(), attackType);
-        return false;
-    }
+    INTERNAL_ASSERT_INFO("GetWhiteDamageDoneTo was prompted for a victim (%s) with no valid data for white damage (attackType %u)", victim->GetName().c_str(), attackType);
+    INTERNAL_TEST_ASSERT(count != 0);
 
-    return true;
+    if (expectedCount)
+    {
+        INTERNAL_ASSERT_INFO("GetWhiteDamageDoneTo did find data for target %s, but not expected count (%u instead of %u)", victim->GetName().c_str(), count, expectedCount);
+        INTERNAL_TEST_ASSERT(count == expectedCount);
+    }
 }
 
-bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage)
+void TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage, uint32 expectedCount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetDamageDoneInfo(victim);
-    if (!damageToTarget || damageToTarget->empty())
-    {
-        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
-        return false;
-    }
+    INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
+    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    if (spellInfo == nullptr)
-    {
-        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellID);
-        return false;
-    }
+    INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
     minDamage = std::numeric_limits<uint32>::max();
     maxDamage = 0;
@@ -908,13 +893,14 @@ bool TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
         count++;
     }
 
-    if (count == 0) 
-    {
-        TC_LOG_WARN("test.unit_test", "GetDamagePerSpellsTo was prompted for a victim (%s) with no valid data for this spell (ID %u)", victim->GetName().c_str(), spellID);
-        return false;
-    }
+    INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo was prompted for a victim(%s) with no valid data for this spell(ID %u)", victim->GetName().c_str(), spellID);
+    INTERNAL_TEST_ASSERT(count != 0);
 
-    return true;
+    if (expectedCount)
+    {
+        INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo did find data for spell %u and target %s, but not expected count (%u instead of %u)", spellID, victim->GetName().c_str(), count, expectedCount);
+        INTERNAL_TEST_ASSERT(count == expectedCount);
+    }
 }
 
 void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit)
@@ -930,37 +916,37 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
 
 	EnableCriticals(caster, crit);
 
-    for (uint32 i = 0; i < 100; i++)
+    AI->ResetSpellCounters();
+    caster->ForceSpellHitResult(SPELL_MISS_NONE);
+    uint32 result = caster->CastSpell(target, spellID, true);
+    if (result != SPELL_CAST_OK)
     {
-        AI->ResetSpellCounters();
-        uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_MASK);
-        if (result == SPELL_CAST_OK)
-        {
-            if (spellHasFlyTime)
-                Wait(5 * SECOND*IN_MILLISECONDS);
-
-            Wait(1);
-            Aura* aura = target->GetAuraWithCaster(spellID, caster->GetGUID());
-            if (!aura)
-                continue; //aura could have been resisted
-
-            //spell did hit, let's wait for dot duration
-            uint32 waitTime = aura->GetAuraDuration() + 1 * SECOND * IN_MILLISECONDS;
-            Wait(waitTime);
-            //aura may be deleted at this point, do not use anymore
-
-            //make sure aura expired
-            INTERNAL_ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
-            INTERNAL_TEST_ASSERT(!target->HasAuraWithCaster(spellID, 0, caster->GetGUID()));
-
-            int32 dotDamageToTarget = AI->GetDotDamage(target, spellID);
-			TC_LOG_DEBUG("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedAmount: %i", spellID, dotDamageToTarget, expectedAmount);
-            INTERNAL_ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedAmount: %i", dotDamageToTarget, expectedAmount);
-            TEST_ASSERT(dotDamageToTarget >= (expectedAmount - 6) && dotDamageToTarget <= (expectedAmount + 6)); //dots have greater error since they got their damage divided in several ticks
-            return;
-        }
+        caster->ResetForceSpellHitResult();
+        INTERNAL_ASSERT_INFO("_TestDotDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
+        INTERNAL_TEST_ASSERT(false);
     }
-    INTERNAL_TEST_ASSERT((false && "Failed to cast the spell 100 times")); //failed to cast the spell 100 times
+    if (spellHasFlyTime)
+        Wait(5 * SECOND*IN_MILLISECONDS);
+
+    Wait(1);
+    Aura* aura = target->GetAuraWithCaster(spellID, caster->GetGUID());
+    INTERNAL_ASSERT_INFO("Target has not %u aura with caster %u after spell successfully casted", spellID, caster->GetGUIDLow());
+    INTERNAL_TEST_ASSERT(aura != nullptr);
+
+    //spell did hit, let's wait for dot duration
+    uint32 waitTime = aura->GetAuraDuration() + 1 * SECOND * IN_MILLISECONDS;
+    Wait(waitTime);
+    caster->ResetForceSpellHitResult();
+    //aura may be deleted at this point, do not use anymore
+
+    //make sure aura expired
+    INTERNAL_ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
+    INTERNAL_TEST_ASSERT(!target->HasAuraWithCaster(spellID, 0, caster->GetGUID()));
+
+    int32 dotDamageToTarget = AI->GetDotDamage(target, spellID);
+	TC_LOG_DEBUG("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedAmount: %i", spellID, dotDamageToTarget, expectedAmount);
+    INTERNAL_ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedAmount: %i", dotDamageToTarget, expectedAmount);
+    TEST_ASSERT(dotDamageToTarget >= (expectedAmount - 6) && dotDamageToTarget <= (expectedAmount + 6)); //dots have greater error since they got their damage divided in several ticks
 }
 
 void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount)
@@ -978,22 +964,28 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
     for (uint32 i = 0; i < 100; i++)
     {
         AI->ResetSpellCounters();
-        uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_MASK);
-        if (result == SPELL_CAST_OK)
+        caster->ForceSpellHitResult(SPELL_MISS_NONE);
+        uint32 result = caster->CastSpell(target, spellID, true);
+        if (result != SPELL_CAST_OK)
         {
-            Wait(baseCastTime + baseDurationTime + 1000);
-            bool mustRetry = false;
-            float totalChannelDmg = GetChannelDamageTo(caster, target, testedSpell, tickCount, mustRetry);
-            if (mustRetry)
-                continue;
-            INTERNAL_ASSERT_INFO("Check if totalChannelDmg (%f) is round", totalChannelDmg);
-            INTERNAL_TEST_ASSERT(totalChannelDmg == std::floor(totalChannelDmg));
-            uint32 resultTickAmount = totalChannelDmg / tickCount;
-            INTERNAL_ASSERT_INFO("Enforcing channel damage. resultTickAmount: %i, expectedTickAmount: %i", resultTickAmount, expectedTickAmount);
-            INTERNAL_TEST_ASSERT(resultTickAmount >= (expectedTickAmount - 2) && resultTickAmount <= (expectedTickAmount + 2)); //channels have greater error since they got their damage divided in several ticks
-            return;
+            caster->ResetForceSpellHitResult();
+            INTERNAL_ASSERT_INFO("_TestDotDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
+            INTERNAL_TEST_ASSERT(false);
         }
+        Wait(baseCastTime + baseDurationTime + 1000);
+        caster->ResetForceSpellHitResult();
+        bool mustRetry = false;
+        float totalChannelDmg = GetChannelDamageTo(caster, target, testedSpell, tickCount, mustRetry);
+        if (mustRetry)
+            continue;
+        INTERNAL_ASSERT_INFO("Check if totalChannelDmg (%f) is round", totalChannelDmg);
+        INTERNAL_TEST_ASSERT(totalChannelDmg == std::floor(totalChannelDmg));
+        uint32 resultTickAmount = totalChannelDmg / tickCount;
+        INTERNAL_ASSERT_INFO("Enforcing channel damage. resultTickAmount: %i, expectedTickAmount: %i", resultTickAmount, expectedTickAmount);
+        INTERNAL_TEST_ASSERT(resultTickAmount >= (expectedTickAmount - 2) && resultTickAmount <= (expectedTickAmount + 2)); //channels have greater error since they got their damage divided in several ticks
+        return;
     }
+    caster->ResetForceSpellHitResult();
     INTERNAL_ASSERT_INFO("Failed to cast spell (%u) 100 times", spellID);
     INTERNAL_TEST_ASSERT(false); //failed to cast the spell 100 times
 }
@@ -1189,4 +1181,186 @@ void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex 
     uint32 auraDuration = aura->GetAuraMaxDuration();
     INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with duration %u instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraDuration, durationMS);
     INTERNAL_TEST_ASSERT(auraDuration == durationMS);
+}
+
+std::string TestCase::StringifySpellCastResult(SpellCastResult result)
+{
+    std::string str;
+    switch(result)
+    {
+    case SPELL_CAST_OK: str = "SPELL_CAST_OK"; break;
+    case SPELL_FAILED_AFFECTING_COMBAT: str = "SPELL_FAILED_AFFECTING_COMBAT"; break;
+    case SPELL_FAILED_ALREADY_AT_FULL_HEALTH: str = "SPELL_FAILED_ALREADY_AT_FULL_HEALTH"; break;
+    case SPELL_FAILED_ALREADY_AT_FULL_MANA: str = "SPELL_FAILED_ALREADY_AT_FULL_MANA"; break;
+    case SPELL_FAILED_ALREADY_AT_FULL_POWER: str = "SPELL_FAILED_ALREADY_AT_FULL_POWER"; break;
+    case SPELL_FAILED_ALREADY_BEING_TAMED: str = "SPELL_FAILED_ALREADY_BEING_TAMED"; break;
+    case SPELL_FAILED_ALREADY_HAVE_CHARM: str = "SPELL_FAILED_ALREADY_HAVE_CHARM"; break;
+    case SPELL_FAILED_ALREADY_HAVE_SUMMON: str = "SPELL_FAILED_ALREADY_HAVE_SUMMON"; break;
+    case SPELL_FAILED_ALREADY_OPEN: str = "SPELL_FAILED_ALREADY_OPEN"; break;
+    case SPELL_FAILED_MORE_POWERFUL_SPELL_ACTIVE: str = "SPELL_FAILED_MORE_POWERFUL_SPELL_ACTIVE"; break;
+    case SPELL_FAILED_AUTOTRACK_INTERRUPTED: str = "SPELL_FAILED_AUTOTRACK_INTERRUPTED"; break;
+    case SPELL_FAILED_BAD_IMPLICIT_TARGETS: str = "SPELL_FAILED_BAD_IMPLICIT_TARGETS"; break;
+    case SPELL_FAILED_BAD_TARGETS: str = "SPELL_FAILED_BAD_TARGETS"; break;
+    case SPELL_FAILED_CANT_BE_CHARMED: str = "SPELL_FAILED_CANT_BE_CHARMED"; break;
+    case SPELL_FAILED_CANT_BE_DISENCHANTED: str = "SPELL_FAILED_CANT_BE_DISENCHANTED"; break;
+    case SPELL_FAILED_CANT_BE_DISENCHANTED_SKILL: str = "SPELL_FAILED_CANT_BE_DISENCHANTED_SKILL"; break;
+    case SPELL_FAILED_CANT_BE_PROSPECTED: str = "SPELL_FAILED_CANT_BE_PROSPECTED"; break;
+    case SPELL_FAILED_CANT_CAST_ON_TAPPED: str = "SPELL_FAILED_CANT_CAST_ON_TAPPED"; break;
+    case SPELL_FAILED_CANT_DUEL_WHILE_INVISIBLE: str = "SPELL_FAILED_CANT_DUEL_WHILE_INVISIBLE"; break;
+    case SPELL_FAILED_CANT_DUEL_WHILE_STEALTHED: str = "SPELL_FAILED_CANT_DUEL_WHILE_STEALTHED"; break;
+    case SPELL_FAILED_CANT_STEALTH: str = "SPELL_FAILED_CANT_STEALTH"; break;
+    case SPELL_FAILED_CASTER_AURASTATE: str = "SPELL_FAILED_CASTER_AURASTATE"; break;
+    case SPELL_FAILED_CASTER_DEAD: str = "SPELL_FAILED_CASTER_DEAD"; break;
+    case SPELL_FAILED_CHARMED: str = "SPELL_FAILED_CHARMED"; break;
+    case SPELL_FAILED_CHEST_IN_USE: str = "SPELL_FAILED_CHEST_IN_USE"; break;
+    case SPELL_FAILED_CONFUSED: str = "SPELL_FAILED_CONFUSED"; break;
+    case SPELL_FAILED_DONT_REPORT: str = "SPELL_FAILED_DONT_REPORT"; break;
+    case SPELL_FAILED_EQUIPPED_ITEM: str = "SPELL_FAILED_EQUIPPED_ITEM"; break;
+    case SPELL_FAILED_EQUIPPED_ITEM_CLASS: str = "SPELL_FAILED_EQUIPPED_ITEM_CLASS"; break;
+    case SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND: str = "SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND"; break;
+    case SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND: str = "SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND"; break;
+    case SPELL_FAILED_ERROR: str = "SPELL_FAILED_ERROR"; break;
+    case SPELL_FAILED_FIZZLE: str = "SPELL_FAILED_FIZZLE"; break;
+    case SPELL_FAILED_FLEEING: str = "SPELL_FAILED_FLEEING"; break;
+    case SPELL_FAILED_FOOD_LOWLEVEL: str = "SPELL_FAILED_FOOD_LOWLEVEL"; break;
+    case SPELL_FAILED_HIGHLEVEL: str = "SPELL_FAILED_HIGHLEVEL"; break;
+    case SPELL_FAILED_HUNGER_SATIATED: str = "SPELL_FAILED_HUNGER_SATIATED"; break;
+    case SPELL_FAILED_IMMUNE: str = "SPELL_FAILED_IMMUNE"; break;
+    case SPELL_FAILED_INTERRUPTED: str = "SPELL_FAILED_INTERRUPTED"; break;
+    case SPELL_FAILED_INTERRUPTED_COMBAT: str = "SPELL_FAILED_INTERRUPTED_COMBAT"; break;
+    case SPELL_FAILED_ITEM_ALREADY_ENCHANTED: str = "SPELL_FAILED_ITEM_ALREADY_ENCHANTED"; break;
+    case SPELL_FAILED_ITEM_GONE: str = "SPELL_FAILED_ITEM_GONE"; break;
+    case SPELL_FAILED_ITEM_NOT_FOUND: str = "SPELL_FAILED_ITEM_NOT_FOUND"; break;
+    case SPELL_FAILED_ITEM_NOT_READY: str = "SPELL_FAILED_ITEM_NOT_READY"; break;
+    case SPELL_FAILED_LEVEL_REQUIREMENT: str = "SPELL_FAILED_LEVEL_REQUIREMENT"; break;
+    case SPELL_FAILED_LINE_OF_SIGHT: str = "SPELL_FAILED_LINE_OF_SIGHT"; break;
+    case SPELL_FAILED_LOWLEVEL: str = "SPELL_FAILED_LOWLEVEL"; break;
+    case SPELL_FAILED_LOW_CASTLEVEL: str = "SPELL_FAILED_LOW_CASTLEVEL"; break;
+    case SPELL_FAILED_MAINHAND_EMPTY: str = "SPELL_FAILED_MAINHAND_EMPTY"; break;
+    case SPELL_FAILED_MOVING: str = "SPELL_FAILED_MOVING"; break;
+    case SPELL_FAILED_NEED_AMMO: str = "SPELL_FAILED_NEED_AMMO"; break;
+    case SPELL_FAILED_NEED_AMMO_POUCH: str = "SPELL_FAILED_NEED_AMMO_POUCH"; break;
+    case SPELL_FAILED_NEED_EXOTIC_AMMO: str = "SPELL_FAILED_NEED_EXOTIC_AMMO"; break;
+    case SPELL_FAILED_NOPATH: str = "SPELL_FAILED_NOPATH"; break;
+    case SPELL_FAILED_NOT_BEHIND: str = "SPELL_FAILED_NOT_BEHIND"; break;
+    case SPELL_FAILED_NOT_FISHABLE: str = "SPELL_FAILED_NOT_FISHABLE"; break;
+    case SPELL_FAILED_NOT_FLYING: str = "SPELL_FAILED_NOT_FLYING"; break;
+    case SPELL_FAILED_NOT_HERE: str = "SPELL_FAILED_NOT_HERE"; break;
+    case SPELL_FAILED_NOT_INFRONT: str = "SPELL_FAILED_NOT_INFRONT"; break;
+    case SPELL_FAILED_NOT_IN_CONTROL: str = "SPELL_FAILED_NOT_IN_CONTROL"; break;
+    case SPELL_FAILED_NOT_KNOWN: str = "SPELL_FAILED_NOT_KNOWN"; break;
+    case SPELL_FAILED_NOT_MOUNTED: str = "SPELL_FAILED_NOT_MOUNTED"; break;
+    case SPELL_FAILED_NOT_ON_TAXI: str = "SPELL_FAILED_NOT_ON_TAXI"; break;
+    case SPELL_FAILED_NOT_ON_TRANSPORT: str = "SPELL_FAILED_NOT_ON_TRANSPORT"; break;
+    case SPELL_FAILED_NOT_READY: str = "SPELL_FAILED_NOT_READY"; break;
+    case SPELL_FAILED_NOT_SHAPESHIFT: str = "SPELL_FAILED_NOT_SHAPESHIFT"; break;
+    case SPELL_FAILED_NOT_STANDING: str = "SPELL_FAILED_NOT_STANDING"; break;
+    case SPELL_FAILED_NOT_TRADEABLE: str = "SPELL_FAILED_NOT_TRADEABLE"; break;
+    case SPELL_FAILED_NOT_TRADING: str = "SPELL_FAILED_NOT_TRADING"; break;
+    case SPELL_FAILED_NOT_UNSHEATHED: str = "SPELL_FAILED_NOT_UNSHEATHED"; break;
+    case SPELL_FAILED_NOT_WHILE_GHOST: str = "SPELL_FAILED_NOT_WHILE_GHOST"; break;
+    case SPELL_FAILED_NO_AMMO: str = "SPELL_FAILED_NO_AMMO"; break;
+    case SPELL_FAILED_NO_CHARGES_REMAIN: str = "SPELL_FAILED_NO_CHARGES_REMAIN"; break;
+    case SPELL_FAILED_NO_CHAMPION: str = "SPELL_FAILED_NO_CHAMPION"; break;
+    case SPELL_FAILED_NO_COMBO_POINTS: str = "SPELL_FAILED_NO_COMBO_POINTS"; break;
+    case SPELL_FAILED_NO_DUELING: str = "SPELL_FAILED_NO_DUELING"; break;
+    case SPELL_FAILED_NO_ENDURANCE: str = "SPELL_FAILED_NO_ENDURANCE"; break;
+    case SPELL_FAILED_NO_FISH: str = "SPELL_FAILED_NO_FISH"; break;
+    case SPELL_FAILED_NO_ITEMS_WHILE_SHAPESHIFTED: str = "SPELL_FAILED_NO_ITEMS_WHILE_SHAPESHIFTED"; break;
+    case SPELL_FAILED_NO_MOUNTS_ALLOWED: str = "SPELL_FAILED_NO_MOUNTS_ALLOWED"; break;
+    case SPELL_FAILED_NO_PET: str = "SPELL_FAILED_NO_PET"; break;
+    case SPELL_FAILED_NO_POWER: str = "SPELL_FAILED_NO_POWER"; break;
+    case SPELL_FAILED_NOTHING_TO_DISPEL: str = "SPELL_FAILED_NOTHING_TO_DISPEL"; break;
+    case SPELL_FAILED_NOTHING_TO_STEAL: str = "SPELL_FAILED_NOTHING_TO_STEAL"; break;
+    case SPELL_FAILED_ONLY_ABOVEWATER: str = "SPELL_FAILED_ONLY_ABOVEWATER"; break;
+    case SPELL_FAILED_ONLY_DAYTIME: str = "SPELL_FAILED_ONLY_DAYTIME"; break;
+    case SPELL_FAILED_ONLY_INDOORS: str = "SPELL_FAILED_ONLY_INDOORS"; break;
+    case SPELL_FAILED_ONLY_MOUNTED: str = "SPELL_FAILED_ONLY_MOUNTED"; break;
+    case SPELL_FAILED_ONLY_NIGHTTIME: str = "SPELL_FAILED_ONLY_NIGHTTIME"; break;
+    case SPELL_FAILED_ONLY_OUTDOORS: str = "SPELL_FAILED_ONLY_OUTDOORS"; break;
+    case SPELL_FAILED_ONLY_SHAPESHIFT: str = "SPELL_FAILED_ONLY_SHAPESHIFT"; break;
+    case SPELL_FAILED_ONLY_STEALTHED: str = "SPELL_FAILED_ONLY_STEALTHED"; break;
+    case SPELL_FAILED_ONLY_UNDERWATER: str = "SPELL_FAILED_ONLY_UNDERWATER"; break;
+    case SPELL_FAILED_OUT_OF_RANGE: str = "SPELL_FAILED_OUT_OF_RANGE"; break;
+    case SPELL_FAILED_PACIFIED: str = "SPELL_FAILED_PACIFIED"; break;
+    case SPELL_FAILED_POSSESSED: str = "SPELL_FAILED_POSSESSED"; break;
+    case SPELL_FAILED_REAGENTS: str = "SPELL_FAILED_REAGENTS"; break;
+    case SPELL_FAILED_REQUIRES_AREA: str = "SPELL_FAILED_REQUIRES_AREA"; break;
+    case SPELL_FAILED_REQUIRES_SPELL_FOCUS: str = "SPELL_FAILED_REQUIRES_SPELL_FOCUS"; break;
+    case SPELL_FAILED_ROOTED: str = "SPELL_FAILED_ROOTED"; break;
+    case SPELL_FAILED_SILENCED: str = "SPELL_FAILED_SILENCED"; break;
+    case SPELL_FAILED_SPELL_IN_PROGRESS: str = "SPELL_FAILED_SPELL_IN_PROGRESS"; break;
+    case SPELL_FAILED_SPELL_LEARNED: str = "SPELL_FAILED_SPELL_LEARNED"; break;
+    case SPELL_FAILED_SPELL_UNAVAILABLE: str = "SPELL_FAILED_SPELL_UNAVAILABLE"; break;
+    case SPELL_FAILED_STUNNED: str = "SPELL_FAILED_STUNNED"; break;
+    case SPELL_FAILED_TARGETS_DEAD: str = "SPELL_FAILED_TARGETS_DEAD"; break;
+    case SPELL_FAILED_TARGET_AFFECTING_COMBAT: str = "SPELL_FAILED_TARGET_AFFECTING_COMBAT"; break;
+    case SPELL_FAILED_TARGET_AURASTATE: str = "SPELL_FAILED_TARGET_AURASTATE"; break;
+    case SPELL_FAILED_TARGET_DUELING: str = "SPELL_FAILED_TARGET_DUELING"; break;
+    case SPELL_FAILED_TARGET_ENEMY: str = "SPELL_FAILED_TARGET_ENEMY"; break;
+    case SPELL_FAILED_TARGET_ENRAGED: str = "SPELL_FAILED_TARGET_ENRAGED"; break;
+    case SPELL_FAILED_TARGET_FRIENDLY: str = "SPELL_FAILED_TARGET_FRIENDLY"; break;
+    case SPELL_FAILED_TARGET_IN_COMBAT: str = "SPELL_FAILED_TARGET_IN_COMBAT"; break;
+    case SPELL_FAILED_TARGET_IS_PLAYER: str = "SPELL_FAILED_TARGET_IS_PLAYER"; break;
+    case SPELL_FAILED_TARGET_IS_PLAYER_CONTROLLED: str = "SPELL_FAILED_TARGET_IS_PLAYER_CONTROLLED"; break;
+    case SPELL_FAILED_TARGET_NOT_DEAD: str = "SPELL_FAILED_TARGET_NOT_DEAD"; break;
+    case SPELL_FAILED_TARGET_NOT_IN_PARTY: str = "SPELL_FAILED_TARGET_NOT_IN_PARTY"; break;
+    case SPELL_FAILED_TARGET_NOT_LOOTED: str = "SPELL_FAILED_TARGET_NOT_LOOTED"; break;
+    case SPELL_FAILED_TARGET_NOT_PLAYER: str = "SPELL_FAILED_TARGET_NOT_PLAYER"; break;
+    case SPELL_FAILED_TARGET_NO_POCKETS: str = "SPELL_FAILED_TARGET_NO_POCKETS"; break;
+    case SPELL_FAILED_TARGET_NO_WEAPONS: str = "SPELL_FAILED_TARGET_NO_WEAPONS"; break;
+    case SPELL_FAILED_TARGET_UNSKINNABLE: str = "SPELL_FAILED_TARGET_UNSKINNABLE"; break;
+    case SPELL_FAILED_THIRST_SATIATED: str = "SPELL_FAILED_THIRST_SATIATED"; break;
+    case SPELL_FAILED_TOO_CLOSE: str = "SPELL_FAILED_TOO_CLOSE"; break;
+    case SPELL_FAILED_TOO_MANY_OF_ITEM: str = "SPELL_FAILED_TOO_MANY_OF_ITEM"; break;
+    case SPELL_FAILED_TOTEM_CATEGORY: str = "SPELL_FAILED_TOTEM_CATEGORY"; break;
+    case SPELL_FAILED_TOTEMS: str = "SPELL_FAILED_TOTEMS"; break;
+    case SPELL_FAILED_TRAINING_POINTS: str = "SPELL_FAILED_TRAINING_POINTS"; break;
+    case SPELL_FAILED_TRY_AGAIN: str = "SPELL_FAILED_TRY_AGAIN"; break;
+    case SPELL_FAILED_UNIT_NOT_BEHIND: str = "SPELL_FAILED_UNIT_NOT_BEHIND"; break;
+    case SPELL_FAILED_UNIT_NOT_INFRONT: str = "SPELL_FAILED_UNIT_NOT_INFRONT"; break;
+    case SPELL_FAILED_WRONG_PET_FOOD: str = "SPELL_FAILED_WRONG_PET_FOOD"; break;
+    case SPELL_FAILED_NOT_WHILE_FATIGUED: str = "SPELL_FAILED_NOT_WHILE_FATIGUED"; break;
+    case SPELL_FAILED_TARGET_NOT_IN_INSTANCE: str = "SPELL_FAILED_TARGET_NOT_IN_INSTANCE"; break;
+    case SPELL_FAILED_NOT_WHILE_TRADING: str = "SPELL_FAILED_NOT_WHILE_TRADING"; break;
+    case SPELL_FAILED_TARGET_NOT_IN_RAID: str = "SPELL_FAILED_TARGET_NOT_IN_RAID"; break;
+    case SPELL_FAILED_DISENCHANT_WHILE_LOOTING: str = "SPELL_FAILED_DISENCHANT_WHILE_LOOTING"; break;
+    case SPELL_FAILED_PROSPECT_WHILE_LOOTING: str = "SPELL_FAILED_PROSPECT_WHILE_LOOTING"; break;
+    case SPELL_FAILED_PROSPECT_NEED_MORE: str = "SPELL_FAILED_PROSPECT_NEED_MORE"; break;
+    case SPELL_FAILED_TARGET_FREEFORALL: str = "SPELL_FAILED_TARGET_FREEFORALL"; break;
+    case SPELL_FAILED_NO_EDIBLE_CORPSES: str = "SPELL_FAILED_NO_EDIBLE_CORPSES"; break;
+    case SPELL_FAILED_ONLY_BATTLEGROUNDS: str = "SPELL_FAILED_ONLY_BATTLEGROUNDS"; break;
+    case SPELL_FAILED_TARGET_NOT_GHOST: str = "SPELL_FAILED_TARGET_NOT_GHOST"; break;
+    case SPELL_FAILED_TOO_MANY_SKILLS: str = "SPELL_FAILED_TOO_MANY_SKILLS"; break;
+    case SPELL_FAILED_TRANSFORM_UNUSABLE: str = "SPELL_FAILED_TRANSFORM_UNUSABLE"; break;
+    case SPELL_FAILED_WRONG_WEATHER: str = "SPELL_FAILED_WRONG_WEATHER"; break;
+    case SPELL_FAILED_DAMAGE_IMMUNE: str = "SPELL_FAILED_DAMAGE_IMMUNE"; break;
+    case SPELL_FAILED_PREVENTED_BY_MECHANIC: str = "SPELL_FAILED_PREVENTED_BY_MECHANIC"; break;
+    case SPELL_FAILED_PLAY_TIME: str = "SPELL_FAILED_PLAY_TIME"; break;
+    case SPELL_FAILED_REPUTATION: str = "SPELL_FAILED_REPUTATION"; break;
+    case SPELL_FAILED_MIN_SKILL: str = "SPELL_FAILED_MIN_SKILL"; break;
+    case SPELL_FAILED_NOT_IN_ARENA: str = "SPELL_FAILED_NOT_IN_ARENA"; break;
+    case SPELL_FAILED_NOT_ON_SHAPESHIFT: str = "SPELL_FAILED_NOT_ON_SHAPESHIFT"; break;
+    case SPELL_FAILED_NOT_ON_STEALTHED: str = "SPELL_FAILED_NOT_ON_STEALTHED"; break;
+    case SPELL_FAILED_NOT_ON_DAMAGE_IMMUNE: str = "SPELL_FAILED_NOT_ON_DAMAGE_IMMUNE"; break;
+    case SPELL_FAILED_NOT_ON_MOUNTED: str = "SPELL_FAILED_NOT_ON_MOUNTED"; break;
+    case SPELL_FAILED_TOO_SHALLOW: str = "SPELL_FAILED_TOO_SHALLOW"; break;
+    case SPELL_FAILED_TARGET_NOT_IN_SANCTUARY: str = "SPELL_FAILED_TARGET_NOT_IN_SANCTUARY"; break;
+    case SPELL_FAILED_TARGET_IS_TRIVIAL: str = "SPELL_FAILED_TARGET_IS_TRIVIAL"; break;
+    case SPELL_FAILED_BM_OR_INVISGOD: str = "SPELL_FAILED_BM_OR_INVISGOD"; break;
+    case SPELL_FAILED_EXPERT_RIDING_REQUIREMENT: str = "SPELL_FAILED_EXPERT_RIDING_REQUIREMENT"; break;
+    case SPELL_FAILED_ARTISAN_RIDING_REQUIREMENT: str = "SPELL_FAILED_ARTISAN_RIDING_REQUIREMENT"; break;
+    case SPELL_FAILED_NOT_IDLE: str = "SPELL_FAILED_NOT_IDLE"; break;
+    case SPELL_FAILED_NOT_INACTIVE: str = "SPELL_FAILED_NOT_INACTIVE"; break;
+    case SPELL_FAILED_PARTIAL_PLAYTIME: str = "SPELL_FAILED_PARTIAL_PLAYTIME"; break;
+    case SPELL_FAILED_NO_PLAYTIME: str = "SPELL_FAILED_NO_PLAYTIME"; break;
+    case SPELL_FAILED_NOT_IN_BATTLEGROUND: str = "SPELL_FAILED_NOT_IN_BATTLEGROUND"; break;
+    case SPELL_FAILED_ONLY_IN_ARENA: str = "SPELL_FAILED_ONLY_IN_ARENA"; break;
+    case SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE: str = "SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE"; break;
+    case SPELL_FAILED_UNKNOWN: str = "SPELL_FAILED_UNKNOWN"; break;
+    default:
+        str = "Unknown spell result" + result;
+        break;
+    }
+    return str;
 }

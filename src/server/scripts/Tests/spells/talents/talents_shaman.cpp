@@ -16,7 +16,7 @@ public:
 		{
 			player->SetPower(POWER_MANA, expectedMana);
 			uint32 res = player->CastSpell(victim, spellId);
-			ASSERT_INFO("Shaman couldnt cast %u, result: %u", spellId, res);
+			ASSERT_INFO("Shaman couldnt cast %u, result: %u", spellId, StringifySpellCastResult(res).c_str());
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			ASSERT_INFO("Shaman had some remaining mana after %u", spellId);
 			TEST_ASSERT(player->GetPower(POWER_MANA) == 0);

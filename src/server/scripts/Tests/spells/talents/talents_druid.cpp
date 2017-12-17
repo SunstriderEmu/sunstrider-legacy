@@ -479,7 +479,7 @@ public:
 			player->SetPower(power, expectedPower);
 			Wait(500);
 			uint32 res = player->CastSpell(victim, spellId);
-			ASSERT_INFO("Druid couldnt cast %u, result: %u", spellId, res);
+			ASSERT_INFO("Druid couldnt cast %u, result: %u", spellId, StringifySpellCastResult(res).c_str());
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			ASSERT_INFO("Druid had some %u remaining power after %u", player->GetPower(power), spellId);
 			TEST_ASSERT(player->GetPower(power) == 0);

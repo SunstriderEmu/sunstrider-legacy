@@ -1400,7 +1400,7 @@ class TC_GAME_API Unit : public WorldObject
 #ifdef TESTS
         SpellMissInfo _forceHitResult = SPELL_MISS_TOTAL;
         void ForceSpellHitResult(SpellMissInfo missInfo) { _forceHitResult = missInfo; }
-        void ResetForceSpellHitResult(SpellMissInfo missInfo) { _forceHitResult = SpellMissInfo(-1); }
+        void ResetForceSpellHitResult() { _forceHitResult = SpellMissInfo(-1); }
 #endif
 
         float GetUnitDodgeChance(WeaponAttackType attType, Unit const* victim) const;

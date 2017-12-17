@@ -248,8 +248,9 @@ public:
         int32 amount;
     };
 
-    //will only use full hit spells
+    //Get DoT damage, resists and absorbs ignored
     int32 GetDotDamage(Unit* to, uint32 spellID);
+    //These will always return the non crit damages
     std::vector<SpellDamageDoneInfo> const* GetDamageDoneInfo(Unit* target);
     std::vector<HealingDoneInfo> const* GetHealingDoneInfo(Unit* target);
     std::vector<WhiteDamageDoneInfo> const* GetWhiteDamageDoneInfo(Unit* target);

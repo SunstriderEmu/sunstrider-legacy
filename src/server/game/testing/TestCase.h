@@ -75,6 +75,8 @@ public:
     void EnableCriticals(Unit* caster, bool crit);
     //Invite player into leader group. Group is created if not yet existing.
     void GroupPlayer(TestPlayer* leader, TestPlayer* player);
+    static std::string StringifySpellCastResult(uint32 result) { return StringifySpellCastResult(SpellCastResult(result)); }
+    static std::string StringifySpellCastResult(SpellCastResult result);
 
     /* Cast a spell and check for spell start return value
     Usage:
@@ -131,9 +133,9 @@ public:
 
     #define TEST_HAS_COOLDOWN(caster, spellID, cooldownSecond) { _SetCaller(__FILE__, __LINE__); _TestHasCooldown(caster, spellID, cooldownSecond); _ResetCaller(); }
 
-    bool GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage);
-    bool GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal);
-    bool GetWhiteDamageDoneTo(TestPlayer* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt);
+    void GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage, uint32 expectedCount = 0);
+    void GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, uint32 expectedCount = 0);
+    void GetWhiteDamageDoneTo(TestPlayer* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt, uint32 expectedCount = 0);
     float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
 
     static uint32 GetTestBotAccountId();

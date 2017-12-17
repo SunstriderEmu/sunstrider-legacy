@@ -448,7 +448,7 @@ public:
 
             uint32 givenMin;
             uint32 givenMax;
-            bool foundData = GetDamagePerSpellsTo(warrior, enemy, ClassSpells::Warrior::RETALIATION_RNK_1_PROC, givenMin, givenMax);
+            GetDamagePerSpellsTo(warrior, enemy, ClassSpells::Warrior::RETALIATION_RNK_1_PROC, givenMin, givenMax);
             TC_LOG_DEBUG("test.unit_test", "givenMin: %u, givenMax: %u, expectedMin: %u, expectedMax: %u", givenMin, givenMax, expectedMin, expectedMax);
             TEST_ASSERT(givenMin < expectedMax);
             TEST_ASSERT(givenMax > expectedMin);
