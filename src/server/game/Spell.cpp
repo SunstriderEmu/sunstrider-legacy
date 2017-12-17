@@ -6749,8 +6749,8 @@ SpellCastResult Spell::CheckItems()
         Cell cell(p);
 
         GameObject* ok = nullptr;
-        Trinity::GameObjectFocusCheck go_check(m_caster,m_spellInfo->RequiresSpellFocus);
-        Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck> checker(ok,go_check);
+        Trinity::GameObjectFocusCheck go_check(m_caster, m_spellInfo->RequiresSpellFocus);
+        Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck> checker(m_caster, ok, go_check);
 
         TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck>, GridTypeMapContainer > object_checker(checker);
         Map& map = *m_caster->GetMap();

@@ -375,14 +375,17 @@ template<class Check>
 void Trinity::GameObjectSearcher<Check>::Visit(GameObjectMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(auto & itr : m)
+    for (GameObjectMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr.GetSource()))
+        if (!itr->GetSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->GetSource()))
         {
-            i_object = itr.GetSource();
+            i_object = itr->GetSource();
             return;
         }
     }
@@ -401,9 +404,10 @@ void Trinity::GameObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
 template<class Check>
 void Trinity::GameObjectListSearcher<Check>::Visit(GameObjectMapType &m)
 {
-    for(auto & itr : m)
-        if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+    for (GameObjectMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+        if (itr->GetSource()->InSamePhase(i_phaseMask))
+            if (i_check(itr->GetSource()))
+                Insert(itr->GetSource());
 }
 
 // Unit searchers
@@ -412,31 +416,38 @@ template<class Check>
 void Trinity::UnitSearcher<Check>::Visit(CreatureMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(auto & itr : m)
+    for (CreatureMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr.GetSource()))
+        if (!itr->GetSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->GetSource()))
         {
-            i_object = itr.GetSource();
+            i_object = itr->GetSource();
             return;
         }
     }
 }
 
+
 template<class Check>
 void Trinity::UnitSearcher<Check>::Visit(PlayerMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(auto & itr : m)
+    for (PlayerMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr.GetSource()))
+        if (!itr->GetSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->GetSource()))
         {
-            i_object = itr.GetSource();
+            i_object = itr->GetSource();
             return;
         }
     }
@@ -445,45 +456,45 @@ void Trinity::UnitSearcher<Check>::Visit(PlayerMapType &m)
 template<class Check>
 void Trinity::UnitLastSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for(auto & itr : m)
+    for (CreatureMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr.GetSource()))
-            i_object = itr.GetSource();
+        if (!itr->GetSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->GetSource()))
+            i_object = itr->GetSource();
     }
 }
 
 template<class Check>
 void Trinity::UnitLastSearcher<Check>::Visit(PlayerMapType &m)
 {
-    for(auto & itr : m)
+    for (PlayerMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr.GetSource()))
-            i_object = itr.GetSource();
+        if (!itr->GetSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->GetSource()))
+            i_object = itr->GetSource();
     }
 }
 
 template<class Check>
 void Trinity::UnitListSearcher<Check>::Visit(PlayerMapType &m)
 {
-    for(auto & itr : m)
-        if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+    for (PlayerMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+        if (itr->GetSource()->InSamePhase(i_phaseMask))
+            if (i_check(itr->GetSource()))
+                Insert(itr->GetSource());
 }
 
 template<class Check>
 void Trinity::UnitListSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for(auto & itr : m)
-        if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
-}
-
-template<class Check>
-void Trinity::PlayerListSearcher<Check>::Visit(PlayerMapType &m)
-{
-    for(auto & itr : m)
-        if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+    for (CreatureMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+        if (itr->GetSource()->InSamePhase(i_phaseMask))
+            if (i_check(itr->GetSource()))
+                Insert(itr->GetSource());
 }
 
 // Creature searchers
@@ -492,14 +503,17 @@ template<class Check>
 void Trinity::CreatureSearcher<Check>::Visit(CreatureMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(auto & itr : m)
+    for (CreatureMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr.GetSource()))
+        if (!itr->GetSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->GetSource()))
         {
-            i_object = itr.GetSource();
+            i_object = itr->GetSource();
             return;
         }
     }
@@ -508,19 +522,33 @@ void Trinity::CreatureSearcher<Check>::Visit(CreatureMapType &m)
 template<class Check>
 void Trinity::CreatureLastSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for(auto & itr : m)
+    for (CreatureMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr.GetSource()))
-            i_object = itr.GetSource();
+        if (!itr->GetSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->GetSource()))
+            i_object = itr->GetSource();
     }
 }
+
 
 template<class Check>
 void Trinity::CreatureListSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for(auto & itr : m)
-        if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+    for (CreatureMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+        if (itr->GetSource()->InSamePhase(i_phaseMask))
+            if (i_check(itr->GetSource()))
+                Insert(itr->GetSource());
+}
+
+template<class Check>
+void Trinity::PlayerListSearcher<Check>::Visit(PlayerMapType &m)
+{
+    for (PlayerMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+        if (itr->GetSource()->InSamePhase(i_phaseMask))
+            if (i_check(itr->GetSource()))
+                Insert(itr->GetSource());
 }
 
 template<class Check>
@@ -539,14 +567,17 @@ template<class Check>
 void Trinity::PlayerSearcher<Check>::Visit(PlayerMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(auto & itr : m)
+    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr.GetSource()))
+        if (!itr->GetSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->GetSource()))
         {
-            i_object = itr.GetSource();
+            i_object = itr->GetSource();
             return;
         }
     }

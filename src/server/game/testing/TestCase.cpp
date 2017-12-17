@@ -1171,7 +1171,7 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID, uint8 effectIndex)
 void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond)
 {
     uint32 cooldown = caster->GetSpellCooldownDelay(castSpellID);
-    INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName(), cooldown, castSpellID, cooldownSecond);
+    INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName().c_str(), cooldown, castSpellID, cooldownSecond);
     INTERNAL_TEST_ASSERT(cooldown == cooldownSecond);
 }
 

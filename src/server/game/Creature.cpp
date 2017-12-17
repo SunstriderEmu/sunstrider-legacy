@@ -2436,7 +2436,7 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
     Creature* pCreature = nullptr;
 
     Trinity::NearestAssistCreatureInCreatureRangeCheck u_check(this,GetVictim(),radius);
-    Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
+    Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck> searcher(this, pCreature, u_check);
     Cell::VisitGridObjects(this, searcher, radius);
 
     if(!pCreature)

@@ -558,9 +558,9 @@ bool NearestHostileUnitInAggroRangeCheck::operator()(Unit* u)
     return true;
 }
 
-bool AllWorldObjectsInRange::operator() (WorldObject* pGo)
+bool AllWorldObjectsInRange::operator() (WorldObject* go)
 {
-    return m_pObject->IsWithinDistInMap(pGo, m_fRange, false);
+    return m_pObject->IsWithinDist(go, m_fRange, false) && m_pObject->InSamePhase(go);
 }
 
 bool MostHPMissingInRange::operator()(Unit* u)
@@ -639,9 +639,9 @@ bool NearestCreatureEntryWithLiveStateInObjectRangeCheck::operator()(Creature* u
     return false;
 }
 
-bool AllCreaturesOfEntryInRange::operator() (Creature* u)
+bool AllCreaturesOfEntryInRange::operator() (Unit* unit) const
 {
-    if (u->GetEntry() == entry && pUnit->IsWithinDistInMap(u, range))
+    if ((!m_uiEntry || unit->GetEntry() == m_uiEntry) && m_pObject->IsWithinDist(unit, m_fRange, false))
         return true;
 
     return false;

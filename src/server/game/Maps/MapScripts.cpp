@@ -401,7 +401,7 @@ void Map::ScriptsProcess()
                 Cell cell(p);
 
                 Trinity::GameObjectWithSpawnIdCheck go_check(*summoner,step.script->RespawnGameobject.GOGuid);
-                Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(go,go_check);
+                Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(summoner, go, go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
                 cell.Visit(p, object_checker, *summoner->GetMap(), *summoner, summoner->GetGridActivationRange());

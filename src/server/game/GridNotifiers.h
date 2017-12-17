@@ -310,48 +310,55 @@ namespace Trinity
     template<class Check>
     struct GameObjectSearcher
     {
+        uint32 i_phaseMask;
         GameObject* &i_object;
         Check &i_check;
 
-        GameObjectSearcher(GameObject* & result, Check& check) : i_object(result),i_check(check) {}
+        GameObjectSearcher(WorldObject const* searcher, GameObject* & result, Check& check)
+            : i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check) { }
 
         void Visit(GameObjectMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     // Last accepted by Check GO if any (Check can change requirements at each call)
     template<class Check>
-        struct GameObjectLastSearcher
+    struct GameObjectLastSearcher
     {
+        uint32 i_phaseMask;
         GameObject* &i_object;
         Check& i_check;
 
-        GameObjectLastSearcher(WorldObject const* /*searcher*/, GameObject* & result, Check& check) : i_object(result),i_check(check) {}
+        GameObjectLastSearcher(WorldObject const* searcher, GameObject* & result, Check& check)
+            : i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check) { }
 
         void Visit(GameObjectMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     template<class Check>
-        struct GameObjectListSearcher
+    struct GameObjectListSearcher : ContainerInserter<GameObject*>
     {
-        std::list<GameObject*> &i_objects;
+        uint32 i_phaseMask;
         Check& i_check;
 
-        GameObjectListSearcher(WorldObject const* /*searcher*/, std::list<GameObject*> &objects, Check & check) : i_objects(objects),i_check(check) {}
+        template<typename Container>
+        GameObjectListSearcher(WorldObject const* searcher, Container& container, Check & check)
+            : ContainerInserter<GameObject*>(container),
+            i_phaseMask(searcher->GetPhaseMask()), i_check(check) { }
 
         void Visit(GameObjectMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     // Unit searchers
 
     // First accepted by Check Unit if any
     template<class Check>
-        struct UnitSearcher
+    struct UnitSearcher
     {
 		uint32 i_phaseMask;
         Unit* &i_object;
@@ -367,87 +374,107 @@ namespace Trinity
 
     // Last accepted by Check Unit if any (Check can change requirements at each call)
     template<class Check>
-        struct UnitLastSearcher
+    struct UnitLastSearcher
     {
+        uint32 i_phaseMask;
         Unit* &i_object;
         Check & i_check;
 
-        UnitLastSearcher(WorldObject const* /*searcher*/, Unit* & result, Check & check) : i_object(result),i_check(check) {}
+        UnitLastSearcher(WorldObject const* searcher, Unit* & result, Check & check)
+            : i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check) { }
 
         void Visit(CreatureMapType &m);
         void Visit(PlayerMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     // All accepted by Check units if any
     template<class Check>
-        struct UnitListSearcher
+    struct UnitListSearcher : ContainerInserter<Unit*>
     {
-        std::list<Unit*> &i_objects;
+        uint32 i_phaseMask;
         Check& i_check;
 
-        UnitListSearcher(WorldObject const* /*searcher*/, std::list<Unit*> &objects, Check & check) : i_objects(objects),i_check(check) {}
+        template<typename Container>
+        UnitListSearcher(WorldObject const* searcher, Container& container, Check& check)
+            : ContainerInserter<Unit*>(container),
+              i_phaseMask(searcher->GetPhaseMask()), i_check(check) { }
 
         void Visit(PlayerMapType &m);
         void Visit(CreatureMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
     
     template<class Check>
-        struct PlayerListSearcher
+    struct PlayerListSearcher : ContainerInserter<Player*>
     {
-        std::list<Player*> &i_objects;
+        uint32 i_phaseMask;
         Check& i_check;
-        
-        PlayerListSearcher(WorldObject const* searcher, std::list<Player*> &objects, Check& check) : i_objects(objects), i_check(check) {}
-        
+
+        template<typename Container>
+        PlayerListSearcher(WorldObject const* searcher, Container& container, Check & check)
+            : ContainerInserter<Player*>(container),
+            i_phaseMask(searcher->GetPhaseMask()), i_check(check) { }
+
+        template<typename Container>
+        PlayerListSearcher(uint32 phaseMask, Container& container, Check & check)
+            : ContainerInserter<Player*>(container),
+            i_phaseMask(phaseMask), i_check(check) { }
+
         void Visit(PlayerMapType &m);
-        
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     // Creature searchers
 
     template<class Check>
-        struct CreatureSearcher
+    struct CreatureSearcher
     {
+        uint32 i_phaseMask;
         Creature* &i_object;
         Check & i_check;
 
-        CreatureSearcher(Creature* & result, Check & check) : i_object(result),i_check(check) {}
+        CreatureSearcher(WorldObject const* searcher, Creature* & result, Check & check)
+            : i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check) { }
 
         void Visit(CreatureMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     // Last accepted by Check Creature if any (Check can change requirements at each call)
     template<class Check>
-        struct CreatureLastSearcher
+    struct CreatureLastSearcher
     {
+        uint32 i_phaseMask;
         Creature* &i_object;
         Check & i_check;
 
-        CreatureLastSearcher(Creature* & result, Check & check) : i_object(result),i_check(check) {}
+        CreatureLastSearcher(WorldObject const* searcher, Creature* & result, Check & check)
+            : i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check) { }
 
         void Visit(CreatureMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     template<class Check>
-        struct CreatureListSearcher
+    struct CreatureListSearcher : ContainerInserter<Creature*>
     {
-        std::list<Creature*> &i_objects;
+        uint32 i_phaseMask;
         Check& i_check;
 
-        CreatureListSearcher(WorldObject const* /* searcher */, std::list<Creature*> &objects, Check & check) : i_objects(objects),i_check(check) {}
+        template<typename Container>
+        CreatureListSearcher(WorldObject const* searcher, Container& container, Check & check)
+            : ContainerInserter<Creature*>(container),
+              i_phaseMask(searcher->GetPhaseMask()), i_check(check) { }
 
         void Visit(CreatureMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     //checker must have argument : Creature*, float& range
@@ -469,14 +496,16 @@ namespace Trinity
     template<class Check>
     struct PlayerSearcher
     {
+        uint32 i_phaseMask;
         Player* &i_object;
         Check & i_check;
 
-        PlayerSearcher(WorldObject const* /* searcher */, Player* & result, Check & check) : i_object(result),i_check(check) {}
+        PlayerSearcher(WorldObject const* searcher, Player* & result, Check & check)
+            : i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check) { }
 
         void Visit(PlayerMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     template<class Check>
@@ -911,12 +940,14 @@ namespace Trinity
     class TC_GAME_API AllCreaturesOfEntryInRange
     {
     public:
-        AllCreaturesOfEntryInRange(Unit const* obj, uint32 ent, float ran) : pUnit(obj), entry(ent), range(ran) {}
-        bool operator() (Creature* u);
+        AllCreaturesOfEntryInRange(WorldObject const* object, uint32 entry, float maxRange) : m_pObject(object), m_uiEntry(entry), m_fRange(maxRange) { }
+
+        bool operator()(Unit* unit) const;
+
     private:
-        Unit const* pUnit;
-        uint32 entry;
-        float range;
+        WorldObject const* m_pObject;
+        uint32 m_uiEntry;
+        float m_fRange;
     };
 
     class TC_GAME_API AllCreaturesInRange

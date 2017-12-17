@@ -1249,7 +1249,7 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
     GameObject* ok = nullptr;
 
     Trinity::NearestGameObjectFishingHole u_check(*this, range);
-    Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole> checker(ok, u_check);
+    Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole> checker(this, ok, u_check);
     Cell::VisitGridObjects(this, checker, range);
 
     return ok;

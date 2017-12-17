@@ -2129,7 +2129,7 @@ Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive
 {
        Creature *creature = nullptr;
        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck checker(*this, entry, alive, range);
-       Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(creature, checker);
+       Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(this, creature, checker);
        Cell::VisitAllObjects(this, searcher, range);
        return creature;
 }
@@ -2993,6 +2993,30 @@ void Object::SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY, entry);
 
 float Object::GetObjectScale() const { return GetFloatValue(OBJECT_FIELD_SCALE_X); }
 void Object::SetObjectScale(float scale) { SetFloatValue(OBJECT_FIELD_SCALE_X, scale); }
+
+template <typename Container>
+void WorldObject::GetGameObjectListWithEntryInGrid(Container& gameObjectContainer, uint32 entry, float maxSearchRange /*= 250.0f*/) const
+{
+    Trinity::AllGameObjectsWithEntryInRange check(this, entry, maxSearchRange);
+    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange> searcher(this, gameObjectContainer, check);
+    Cell::VisitGridObjects(this, searcher, maxSearchRange);
+}
+
+template <typename Container>
+void WorldObject::GetCreatureListWithEntryInGrid(Container& creatureContainer, uint32 entry, float maxSearchRange /*= 250.0f*/) const
+{
+    Trinity::AllCreaturesOfEntryInRange check(this, entry, maxSearchRange);
+    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(this, creatureContainer, check);
+    Cell::VisitGridObjects(this, searcher, maxSearchRange);
+}
+
+template <typename Container>
+void WorldObject::GetPlayerListInGrid(Container& playerContainer, float maxSearchRange) const
+{
+    Trinity::AnyPlayerInObjectRangeCheck checker(this, maxSearchRange);
+    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, playerContainer, checker);
+    Cell::VisitWorldObjects(this, searcher, maxSearchRange);
+}
 
 template TC_GAME_API void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>&, uint32, float) const;
 template TC_GAME_API void WorldObject::GetGameObjectListWithEntryInGrid(std::deque<GameObject*>&, uint32, float) const;
