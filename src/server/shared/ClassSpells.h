@@ -2815,6 +2815,7 @@ namespace ClassSpells
             POWER_WORD_SHIELD_RNK_12 = 25218,
             PRAYER_OF_FORTITUDE_RNK_1 = 21562,
             PRAYER_OF_FORTITUDE_RNK_2 = 21564,
+            PRAYER_OF_FORTITUDE_RNK_3 = 25392,
             PRAYER_OF_SPIRIT_RNK_1 = 27681,
             PRAYER_OF_SPIRIT_RNK_2 = 32999,
             SHACKLE_UNDEAD_RNK_1 = 9484,

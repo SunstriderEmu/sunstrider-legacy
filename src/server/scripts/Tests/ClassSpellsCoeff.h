@@ -87,6 +87,7 @@ namespace ClassSpellsCoeff
 		// Discipline
 		const float FEEDBACK = 0.f;
 		const float MANA_BURN = 0.f;
+        const float POWER_WORD_SHIELD = 0.3f;
 		const float STARSHARDS = 0.835f;
 
 		// Holy

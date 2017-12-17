@@ -232,6 +232,7 @@ namespace ClassSpellsDamage
             // Discipline
             MANA_BURN_RNK_7_MIN = 1021,
             MANA_BURN_RNK_7_MAX = 1079,
+            POWER_WORD_SHIELD_RNK_12 = 1265,
 		};
 	};
 
