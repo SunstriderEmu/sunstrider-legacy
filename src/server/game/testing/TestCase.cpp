@@ -570,10 +570,41 @@ bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
 
 void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax)
 {
-    //Improve me... we want a 99.9% certainty
-    sampleSize = 500;
+
+    double probability = 0.999; // Corresponds to 99.9%
     allowedError = (expectedMax - expectedMin) / 25; //arbitary
     allowedError = std::max(allowedError, uint32(1)); //min 1
+
+    uint32 LB_max = expectedMax - allowedError; // lower bound on the maximum
+    uint32 UB_max = expectedMax + allowedError; // upper bound on the maximum
+
+    uint32 LB_min = std::max(expectedMin, allowedError) - allowedError ; // lower bound on the minimum, and try to avoid negative numbers
+    uint32 UB_min = expectedMin + allowedError; // upper bound on the minimum
+
+    // The probability of having the estimation of the maximum between LB_max and UB_max is
+    // 1 - [(y-LB_min)/(UB_max-LB_min)]^n
+    // where y is the estimation, and n the number of samples. In our case, y = LB_max.
+    //
+    // If we want x% of probability of being correct, then
+    // x = 1 - [(y-LB_min)/(UB_max-LB_min)]^n
+    //
+    // So, n should follow
+    // n = log(1-x) / log( (y-LB_min)/(UB_max-LB_min) )
+    //
+    // For the minimum, the same reasoning applies by multiplying all values by -1. We end with the formula
+    // n = log(1-x) / log( (y-UB_max)/(UB_max-LB_min) ) with y = UB_min.
+    //
+    // Reference: 
+    // (probability distribution of maximum of uniform distribution) 
+    // https://stats.stackexchange.com/questions/18433/how-do-you-calculate-the-probability-density-function-of-the-maximum-of-a-sample
+
+    double ratio_min = (double)(UB_max - UB_min) / (double)(UB_max - LB_min);
+    double ratio_max = (double)(LB_max - LB_min) / (double)(UB_max - LB_min);
+
+    uint32 sampleSize_min = std::ceil(std::log(1.0 - probability) / std::log(ratio_min));
+    uint32 sampleSize_max = std::ceil(std::log(1.0 - probability) / std::log(ratio_max));
+    sampleSize = std::max(sampleSize_min, sampleSize_max);
+
 }
 
 void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage) //if !damage, then use healing

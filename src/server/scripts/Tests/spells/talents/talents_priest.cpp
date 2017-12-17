@@ -52,7 +52,6 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_PRIEST);
-
 			// Smite rank 10
 			uint32 const smiteMinDamage = 549;
 			uint32 const smiteMaxDamage = 616;
