@@ -177,7 +177,7 @@ enum SMART_EVENT
     //Custom sunstrider
     SMART_EVENT_FRIENDLY_KILLED          = 100,      // maxRange, entry(0 any), guid(0 any)
     SMART_EVENT_VICTIM_NOT_IN_LOS        = 101,      // checkInterval, NOT (event triggers if can see instead)
-    SMART_EVENT_ATTACKED_UNIT_DIED       = 102,      // none
+    SMART_EVENT_VICTIM_DIED              = 102,      // none
     SMART_EVENT_ENTER_PHASE              = 103,      // phase
     SMART_EVENT_GO_LOOT_STATE_CHANGED    = 104,      // stateMask (LootState)
     SMART_EVENT_AFFECTED_BY_MECHANIC     = 105,      // checkTimer, mechanicMask
@@ -1585,7 +1585,7 @@ const std::unordered_map<uint32, uint32> SmartAIEventMask =
     { SMART_EVENT_COUNTER_SET,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
     { SMART_EVENT_FRIENDLY_KILLED,           SMART_SCRIPT_TYPE_MASK_CREATURE },
     { SMART_EVENT_VICTIM_NOT_IN_LOS,         SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_ATTACKED_UNIT_DIED,        SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_VICTIM_DIED,               SMART_SCRIPT_TYPE_MASK_CREATURE },
     { SMART_EVENT_ENTER_PHASE,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
     { SMART_EVENT_GO_LOOT_STATE_CHANGED,     SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
     { SMART_EVENT_AFFECTED_BY_MECHANIC,      SMART_SCRIPT_TYPE_MASK_CREATURE }

@@ -217,7 +217,6 @@ struct CreatureDisplayInfoExtraEntry
     //char const* Texture;                                  // 20
 };
 
-//TODOMOV confirm BC format
 struct CreatureModelDataEntry
 {
     uint32 Id;
@@ -228,7 +227,7 @@ struct CreatureModelDataEntry
     //int32 Unk2
     //int32 Unk3
     //uint32 Unk4
-    //uint32 Unk5
+    //uint32 Unk5f
     //float Unk6
     //uint32 Unk7
     //float Unk8

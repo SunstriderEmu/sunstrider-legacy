@@ -14441,7 +14441,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             {
                 if(Creature* c = attacker->ToCreature())
                     if(c->IsAIEnabled)
-                        c->AI()->AttackedUnitDied(pVictim);
+                        c->AI()->VictimDied(pVictim);
             }
         }
             

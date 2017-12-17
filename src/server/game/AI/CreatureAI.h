@@ -108,7 +108,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual void SpellHitTarget(Unit* target, const SpellInfo*) {}
 
         virtual bool IsEscorted() const { return false; }
-        virtual void AttackedUnitDied(Unit* /* attacked */) { }
+        virtual void VictimDied(Unit* /* attacked */) { }
 
         // Called when vitim entered water and creature can not enter water
         virtual bool canReachByRangeAttack(Unit*) { return false; }
