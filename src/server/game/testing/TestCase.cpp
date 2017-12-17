@@ -1014,12 +1014,10 @@ void TestCase::EnableCriticals(Unit* caster, bool crit)
 
 void TestCase::GroupPlayer(TestPlayer* leader, TestPlayer* player)
 {
-    //use fake packets to avoid duplicating logic
-    WorldPacket invitePacket(CMSG_GROUP_INVITE);
-    invitePacket << player->GetName();
-    leader->GetSession()->HandleGroupInviteOpcode(invitePacket);
+    //use WorldSession function to avoid duplicating logic
+    leader->GetSession()->_HandleGroupInviteOpcode(player, player->GetName());
 
-    WorldPacket acceptPacket;
+    WorldPacket acceptPacket(CMSG_GROUP_ACCEPT);
     player->GetSession()->HandleGroupAcceptOpcode(acceptPacket);
 
     INTERNAL_ASSERT_INFO("Failed to add player to group");

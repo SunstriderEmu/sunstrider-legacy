@@ -36,6 +36,114 @@ void WorldSession::SendPartyResult(PartyOperation operation, const std::string& 
     SendPacket( &data );
 }
 
+void WorldSession::_HandleGroupInviteOpcode(Player* player, std::string membername)
+{
+
+    // player trying to invite himself (most likely cheating)
+    if (player == GetPlayer())
+    {
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_CANT_FIND_TARGET);
+        return;
+    }
+
+    // restrict invite to GMs
+    if (!sWorld->getConfig(CONFIG_ALLOW_GM_GROUP) && !GetPlayer()->IsGameMaster() && player->IsGameMaster())
+    {
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_CANT_FIND_TARGET);
+        return;
+    }
+
+    // can't group with
+    if (!GetPlayer()->IsGameMaster() && !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && GetPlayer()->GetTeam() != player->GetTeam())
+    {
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_TARGET_UNFRIENDLY);
+        return;
+    }
+    if (GetPlayer()->GetInstanceId() != 0 && player->GetInstanceId() != 0 && GetPlayer()->GetInstanceId() != player->GetInstanceId() && GetPlayer()->GetMapId() == player->GetMapId())
+    {
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_NOT_IN_YOUR_INSTANCE);
+        return;
+    }
+    // just ignore us
+    if (player->GetInstanceId() != 0 && player->GetDifficulty() != GetPlayer()->GetDifficulty())
+    {
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_ALREADY_IN_GROUP);
+        return;
+    }
+
+    if (player->GetSocial()->HasIgnore(GetPlayer()->GetGUIDLow()))
+    {
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_TARGET_IGNORE_YOU);
+        return;
+    }
+
+    Group *group = GetPlayer()->GetGroup();
+    if (group && group->isBGGroup())
+        group = GetPlayer()->GetOriginalGroup();
+
+    Group *group2 = player->GetGroup();
+    if (group2 && group2->isBGGroup())
+        group2 = player->GetOriginalGroup();
+
+    // player already in another group or invited
+    if (group2 || player->GetGroupInvite())
+    {
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_ALREADY_IN_GROUP);
+        return;
+    }
+
+    if (group)
+    {
+        // not have permissions for invite
+        if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
+        {
+            SendPartyResult(PARTY_OP_INVITE, "", PARTY_RESULT_YOU_NOT_LEADER);
+            return;
+        }
+        // not have place
+        if (group->IsFull())
+        {
+            SendPartyResult(PARTY_OP_INVITE, "", PARTY_RESULT_PARTY_FULL);
+            return;
+        }
+    }
+
+    // ok, but group not exist, start a new group
+    // but don't create and save the group to the DB until
+    // at least one person joins
+    if (!group)
+    {
+        group = new Group;
+        // new group: if can't add then delete
+        if (!group->AddLeaderInvite(GetPlayer()))
+        {
+            delete group;
+            return;
+        }
+        if (!group->AddInvite(player))
+        {
+            group->RemoveAllInvites();
+            delete group;
+            return;
+        }
+    }
+    else
+    {
+        // already existed group: if can't add then just leave
+        if (!group->AddInvite(player))
+        {
+            return;
+        }
+    }
+
+    // ok, we do it
+    WorldPacket data(SMSG_GROUP_INVITE, 10);                // guess size
+    data << GetPlayer()->GetName();
+    player->SendDirectMessage(&data);
+
+    SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_OK);
+}
+
 void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
 {
     std::string membername;
@@ -59,109 +167,7 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
         return;
     }
 
-    // player trying to invite himself (most likely cheating)
-    if (player == GetPlayer())
-    {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_CANT_FIND_TARGET);
-        return;
-    }
-
-    // restrict invite to GMs
-    if (!sWorld->getConfig(CONFIG_ALLOW_GM_GROUP) && !GetPlayer()->IsGameMaster() && player->IsGameMaster())
-    {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_CANT_FIND_TARGET);
-        return;
-    }
-
-    // can't group with
-    if(!GetPlayer()->IsGameMaster() && !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && GetPlayer()->GetTeam() != player->GetTeam())
-    {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_TARGET_UNFRIENDLY);
-        return;
-    }
-    if(GetPlayer()->GetInstanceId() != 0 && player->GetInstanceId() != 0 && GetPlayer()->GetInstanceId() != player->GetInstanceId() && GetPlayer()->GetMapId() == player->GetMapId())
-    {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_NOT_IN_YOUR_INSTANCE);
-        return;
-    }
-    // just ignore us
-    if(player->GetInstanceId() != 0 && player->GetDifficulty() != GetPlayer()->GetDifficulty())
-    {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_ALREADY_IN_GROUP);
-        return;
-    }
-
-    if(player->GetSocial()->HasIgnore(GetPlayer()->GetGUIDLow()))
-    {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_TARGET_IGNORE_YOU);
-        return;
-    }
-    
-    Group *group = GetPlayer()->GetGroup();
-    if (group && group->isBGGroup())
-        group = GetPlayer()->GetOriginalGroup();
-        
-    Group *group2 = player->GetGroup();
-    if (group2 && group2->isBGGroup())
-        group2 = player->GetOriginalGroup();
-
-    // player already in another group or invited
-    if(group2 || player->GetGroupInvite() )
-    {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_ALREADY_IN_GROUP);
-        return;
-    }
-
-    if(group)
-    {
-        // not have permissions for invite
-        if(!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
-        {
-            SendPartyResult(PARTY_OP_INVITE, "", PARTY_RESULT_YOU_NOT_LEADER);
-            return;
-        }
-        // not have place
-        if(group->IsFull())
-        {
-            SendPartyResult(PARTY_OP_INVITE, "", PARTY_RESULT_PARTY_FULL);
-            return;
-        }
-    }
-
-    // ok, but group not exist, start a new group
-    // but don't create and save the group to the DB until
-    // at least one person joins
-    if(!group)
-    {
-        group = new Group;
-        // new group: if can't add then delete
-        if(!group->AddLeaderInvite(GetPlayer()))
-        {
-            delete group;
-            return;
-        }
-        if(!group->AddInvite(player))
-        {
-            group->RemoveAllInvites();
-            delete group;
-            return;
-        }
-    }
-    else
-    {
-        // already existed group: if can't add then just leave
-        if(!group->AddInvite(player))
-        {
-            return;
-        }
-    }
-
-    // ok, we do it
-    WorldPacket data(SMSG_GROUP_INVITE, 10);                // guess size
-    data << GetPlayer()->GetName();
-    player->SendDirectMessage(&data);
-
-    SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_OK);
+    _HandleGroupInviteOpcode(player, membername);
 }
 
 void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recvData*/ )

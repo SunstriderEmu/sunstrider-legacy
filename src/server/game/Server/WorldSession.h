@@ -559,6 +559,7 @@ class TC_GAME_API WorldSession
         void HandleBattlefieldStatusOpcode(WorldPacket &recvData);
 
         void HandleGroupInviteOpcode(WorldPacket& recvPacket);
+        void _HandleGroupInviteOpcode(Player* player, std::string membername);
         //void HandleGroupCancelOpcode(WorldPacket& recvPacket);
         void HandleGroupAcceptOpcode(WorldPacket& recvPacket);
         void HandleGroupDeclineOpcode(WorldPacket& recvPacket);
