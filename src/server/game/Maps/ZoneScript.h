@@ -7,7 +7,7 @@ class Unit;
 class Player;
 class GameObject;
 class Creature;
-class CreatureData;
+struct CreatureData;
 class ObjectGuid;
 class WorldObject;
 

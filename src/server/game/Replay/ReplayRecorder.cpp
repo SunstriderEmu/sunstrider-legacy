@@ -36,5 +36,5 @@ void ReplayRecorder::AddPacket(WorldPacket const* packet)
     for (size_t i = 0; i < packet->size(); ++i)
         oss << uint32(packet->read<uint8>(i)) << " ";
     oss << "256\n";
-    fprintf("%s", _pcktWriting, oss.str().c_str());
+    fprintf(_pcktWriting, "%s", oss.str().c_str());
 }
