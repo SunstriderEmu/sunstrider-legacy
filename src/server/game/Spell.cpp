@@ -5729,12 +5729,13 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (ReqValue > skillValue)
                     return SPELL_FAILED_LOW_CASTLEVEL;
 
+#ifndef LICH_KING
                 // chance for fail at orange skinning attempt
                 if( (m_selfContainer && (*m_selfContainer) == this) &&
                     skillValue < sWorld->GetConfigMaxSkillValue() &&
                     (ReqValue < 0 ? 0 : ReqValue) > m_caster->GetMap()->irand(skillValue-25, skillValue+37) )
                     return SPELL_FAILED_TRY_AGAIN;
-
+#endif
                 break;
             }
             case SPELL_EFFECT_OPEN_LOCK_ITEM:
@@ -5918,7 +5919,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_EFFECT_SUMMON_PHANTASM:
             case SPELL_EFFECT_SUMMON_DEMON:
             {
-                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetMinionGUID())
+                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetPetGUID())
                     return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                 if(m_caster->GetCharmGUID())
@@ -5965,8 +5966,17 @@ SpellCastResult Spell::CheckCast(bool strict)
 #endif
 
                 // check if our map is dungeon
-                if( sMapStore.LookupEntry(m_caster->GetMapId())->IsDungeon() )
+                MapEntry const* map = sMapStore.LookupEntry(m_caster->GetMapId());
+                if(map->IsDungeon())
                 {
+                    uint32 mapId = m_caster->GetMap()->GetId();
+                    Difficulty difficulty = m_caster->GetMap()->GetDifficulty();
+                    if (map->IsRaid())
+                        if (InstancePlayerBind* targetBind = target->GetBoundInstance(mapId, difficulty))
+                            if (InstancePlayerBind* casterBind = m_caster->ToPlayer()->GetBoundInstance(mapId, difficulty))
+                                if (targetBind->perm && targetBind->save != casterBind->save)
+                                    return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
+
                     InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(m_caster->GetMapId());
                     if(!instance)
                         return SPELL_FAILED_TARGET_NOT_IN_INSTANCE;
@@ -5997,10 +6007,63 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
             case SPELL_EFFECT_STEAL_BENEFICIAL_BUFF:
             {
-                if (m_targets.GetUnitTarget()==m_caster)
+                if (m_targets.GetUnitTarget() == m_caster)
                     return SPELL_FAILED_BAD_TARGETS;
+
+                /* TC
+                uint32 dispelMask = SpellInfo::GetDispelMask(DispelType(m_spellInfo->Effects[i].MiscValue));
+                bool hasStealableAura = false;
+                Unit::VisibleAuraMap const* visibleAuras = m_targets.GetUnitTarget()->GetVisibleAuras();
+                for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
+                {
+                    if (!itr->second->IsPositive())
+                        continue;
+
+                    Aura const* aura = itr->second->GetBase();
+                    if (!(aura->GetSpellInfo()->GetDispelMask() & dispelMask))
+                        continue;
+
+                    if (aura->IsPassive() || aura->GetSpellInfo()->HasAttribute(SPELL_ATTR4_NOT_STEALABLE))
+                        continue;
+
+                    hasStealableAura = true;
+                    break;
+                }
+
+                if (!hasStealableAura)
+                    return SPELL_FAILED_NOTHING_TO_STEAL;
+
+                */
+
                 break;
             }
+#ifdef LICH_KING
+            case SPELL_EFFECT_LEAP_BACK:
+            {
+                if (m_caster->HasUnitState(UNIT_STATE_ROOT))
+                {
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                        return SPELL_FAILED_ROOTED;
+                    else
+                        return SPELL_FAILED_DONT_REPORT;
+                }
+                break;
+            }
+            case SPELL_EFFECT_JUMP:
+            case SPELL_EFFECT_JUMP_DEST:
+            {
+                if (m_caster->HasUnitState(UNIT_STATE_ROOT))
+                    return SPELL_FAILED_ROOTED;
+                break;
+            }
+            case SPELL_EFFECT_TALENT_SPEC_SELECT:
+                // can't change during already started arena/battleground
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    if (Battleground const* bg = m_caster->ToPlayer()->GetBattleground())
+                        if (bg->GetStatus() == STATUS_IN_PROGRESS)
+                            return SPELL_FAILED_NOT_IN_BATTLEGROUND;
+                break;
+#endif
             case SPELL_EFFECT_ENCHANT_ITEM:
             {
                 
@@ -6026,6 +6089,19 @@ SpellCastResult Spell::CheckCast(bool strict)
     {
         switch(m_spellInfo->Effects[i].ApplyAuraName)
         {
+            case SPELL_AURA_MOD_POSSESS_PET:
+            {
+                if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                    return SPELL_FAILED_NO_PET;
+
+                Pet* pet = m_caster->ToPlayer()->GetPet();
+                if (!pet)
+                    return SPELL_FAILED_NO_PET;
+
+                if (pet->GetCharmerGUID())
+                    return SPELL_FAILED_CHARMED;
+                break;
+            }
             case SPELL_AURA_DUMMY:
             {
                 if(m_spellInfo->Id == 1515)
@@ -6051,14 +6127,21 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_AURA_MOD_CHARM:
             case SPELL_AURA_AOE_CHARM:
             {
-                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetMinionGUID())
-                    return SPELL_FAILED_ALREADY_HAVE_SUMMON;
-
                 if(m_caster->GetCharmGUID())
                     return SPELL_FAILED_ALREADY_HAVE_CHARM;
 
                 if(m_caster->GetCharmerGUID())
                     return SPELL_FAILED_CHARMED;
+
+                if (m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_CHARM
+                    || m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_POSSESS)
+                {
+                    if (!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetPetGUID())
+                        return SPELL_FAILED_ALREADY_HAVE_SUMMON;
+
+                    if (m_caster->GetCharmGUID())
+                        return SPELL_FAILED_ALREADY_HAVE_CHARM;
+                }
 
                 // hack SelectSpellTargets is call after this so...
                 if (m_spellInfo->Id == 34630) {
@@ -6098,17 +6181,27 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_AURA_MOUNTED:
             {
-                if (m_caster->IsInWater())
+                if (m_caster->IsInWater()
+#ifdef LICH_KING
+                    //BC remove mount in water, while LK only disallow flying mounts
+                    && m_spellInfo->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)
+#endif
+                    )
                     return SPELL_FAILED_ONLY_ABOVEWATER;
 
-                if (m_caster->GetTypeId()==TYPEID_PLAYER && (m_caster->ToPlayer())->GetTransport())
+                if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetTransport())
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
                 // Ignore map check if spell have AreaId. AreaId already checked and this prevent special mount spells
-                if (m_caster->GetTypeId()==TYPEID_PLAYER && !sMapStore.LookupEntry(m_caster->GetMapId())->IsMountAllowed() && !IsTriggered() && !m_spellInfo->AreaId)
+                bool allowMount = !m_caster->GetMap()->IsDungeon() || m_caster->GetMap()->IsBattlegroundOrArena();
+                MapEntry const* mapEntry = sMapStore.LookupEntry(m_caster->GetMapId());
+                if (mapEntry)
+                    allowMount = mapEntry->IsMountAllowed();
+
+                if (m_caster->GetTypeId() == TYPEID_PLAYER && !allowMount && !m_spellInfo->AreaId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
-                if (m_caster->GetAreaId()==35)
+                if (m_caster->GetAreaId() == 35) //hack
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
                 if (m_caster->IsInDisallowedMountForm())
