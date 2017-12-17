@@ -110,6 +110,9 @@ public:
     //check if target has aura and if duration match given duration
     #define TEST_AURA_MAX_DURATION(target, spellID, effect, durationMS) { _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, effect, durationMS); _ResetCaller(); }
 
+    #define TEST_AURA_STACK(target, spellID, effect, stacks) { _SetCaller(__FILE__, __LINE__); _TestAuraStack(target, spellID, effect, stacks, true); _ResetCaller(); }
+    #define TEST_AURA_CHARGE(target, spellID, effect, stacks) { _SetCaller(__FILE__, __LINE__); _TestAuraStack(target, spellID, effect, stacks, false); _ResetCaller(); }
+
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     float CalcChance(uint32 iterations, const std::function<bool()>& f);
     ///!\ This is VERY slow, do not abuse of this function. Randomize talents, spells, stuff for this player
@@ -189,6 +192,7 @@ protected:
     void _EnsureHasNotAura(Unit* target, int32 spellID, uint8 effectIndex) { _EnsureHasAura(target, -spellID, effectIndex);  }
     void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond);
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 durationMS);
+    void _TestAuraStack(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 stacks, bool stack);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
 
     //Return how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)

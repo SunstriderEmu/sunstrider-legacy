@@ -550,7 +550,7 @@ void TestCase::LearnTalent(TestPlayer* p, uint32 spellID)
 void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode, TriggerCastFlags triggeredFlags)
 {
     uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
-	INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %u", spellID, res);
+	INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %s", spellID, StringifySpellCastResult(res).c_str());
 	INTERNAL_TEST_ASSERT(res == uint32(expectedCode));
 }
 
@@ -1182,6 +1182,25 @@ void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex 
     uint32 auraDuration = aura->GetAuraMaxDuration();
     INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with duration %u instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraDuration, durationMS);
     INTERNAL_TEST_ASSERT(auraDuration == durationMS);
+}
+
+void TestCase::_TestAuraStack(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 stacks, bool stack)
+{
+    Aura* aura = target->GetAura(spellID, effect);
+    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+    INTERNAL_TEST_ASSERT(aura != nullptr);
+
+    uint32 auraStacks = 0;
+    std::string type = "stacks";
+    if (stack)
+        auraStacks = aura->GetStackAmount();
+    else
+    {
+        auraStacks = aura->GetCharges();
+        type = "charges";
+    }
+    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with %u %s instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraStacks, type, stacks);
+    INTERNAL_TEST_ASSERT(auraStacks == stacks);
 }
 
 std::string TestCase::StringifySpellCastResult(SpellCastResult result)
