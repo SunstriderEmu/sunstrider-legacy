@@ -91,7 +91,7 @@ std::string TestResults::ToString()
     std::stringstream ss;
     ss << "===============================================================================" << std::endl;
     ss << "Tests results for input pattern: " << (_usedPattern == "" ? "(empty pattern)" : _usedPattern) << std::endl;
-    ss << std::endl;
+    ss << " " << std::endl; //empty line are ignored by core
     if (_totalTestsRan > 0)
     {
         ss << " " << _totalTestsRan << " | Total tests ran (" << _ignored << " ignored)" << std::endl;
@@ -119,6 +119,7 @@ std::string TestResults::ToString()
     else {
         ss << "No test found with this pattern" << std::endl;
     }
+    ss << " " << std::endl; //empty line are ignored by core
     ss << "===============================================================================" << std::endl;
     return ss.str();
 }
