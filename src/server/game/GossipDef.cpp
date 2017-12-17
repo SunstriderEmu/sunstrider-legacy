@@ -589,9 +589,8 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << uint32(quest->GetQuestId());                    // quest id
     data << uint32(quest->GetQuestMethod());                // Accepted values: 0, 1 or 2. 0 == IsAutoComplete() (skip objectives/details)
     data << uint32(quest->GetQuestLevel());                 // may be -1, static data, in other cases must be used dynamic level: Player::GetQuestLevel (0 is not known, but assuming this is no longer valid for quest intended for client)
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-        data << uint32(quest->GetMinLevel());                   // min level
+#ifdef LICH_KING
+    data << uint32(quest->GetMinLevel());                   // min level
 #endif
 
     data << uint32(quest->GetZoneOrSort());                 // zone or sort to display in quest log
@@ -612,12 +611,9 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
 
     data << uint32(quest->GetNextQuestInChain());           // client will request this quest from NPC, if not 0
 
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-    {
-       // data << uint32(quest->GetXPId());                       // used for calculating rewarded experience
-        data << uint32(0);
-    }
+#ifdef LICH_KING
+    // data << uint32(quest->GetXPId());                       // used for calculating rewarded experience
+    data << uint32(0);
 #endif
 
     if (quest->HasFlag(QUEST_FLAGS_HIDDEN_REWARDS))
@@ -674,10 +670,8 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
         }
     }
 
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-    {
- /*   for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)        // reward factions ids
+#ifdef LICH_KING
+    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)        // reward factions ids
         data << uint32(quest->RewardFactionId[i]);
 
     for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)        // columnid+1 QuestFactionReward.dbc?
@@ -685,10 +679,6 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
 
     for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)        // unk (0)
         data << int32(quest->RewardFactionValueIdOverride[i]);
-        */
-        for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT*3; ++i)        // unk (0)
-            data << int32(0);
-    }
 #endif
 
     data << uint32(quest->GetPointMapId());
@@ -705,13 +695,8 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << questObjectives;
     data << questDetails;
     data << questEndText;
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
 #ifdef LICH_KING
-        data << questCompletedText;                                 // display in quest objectives window once all objectives are completed
-#else
-        data << "";
-#endif
+    data << questCompletedText;                                 // display in quest objectives window once all objectives are completed
 #endif
 
     for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
@@ -768,16 +753,14 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGUID, b
     data << questTitle;
     data << questOfferRewardText;
 
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-        data << uint8(enableNext ? 1 : 0);                      // Auto Finish
-    else
+#ifdef LICH_KING
+    data << uint8(enableNext ? 1 : 0);                      // Auto Finish
+#else
+    data << uint32(enableNext);   
 #endif
-        data << uint32(enableNext);   
 
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-        data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
+#ifdef LICH_KING
+    data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
 #endif
 
     data << uint32(quest->GetSuggestedPlayers());           // SuggestedGroupNum
@@ -823,46 +806,40 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGUID, b
 
     data << uint32(quest->GetRewOrReqMoney());
 
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-        data << uint32(quest->XPValue(_session->GetPlayer()) * sWorld->GetRate(RATE_XP_QUEST));
+#ifdef LICH_KING
+    data << uint32(quest->XPValue(_session->GetPlayer()) * sWorld->GetRate(RATE_XP_QUEST));
 #endif
 
     // rewarded honor points. Multiply with 10 to satisfy client
    // data << uint32(10 * quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));
     data << uint32(10*Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->GetLevel(), quest->GetRewHonorableKills()));
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-        data << float(0.0f);                                    // unk, honor multiplier?
+#ifdef LICH_KING
+    data << float(0.0f);                                    // unk, honor multiplier?
 #endif
 
     data << uint32(0x08);                                   // unused by client?
     data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if RewardSpellCast == 0)
     data << uint32(quest->GetRewSpellCast());                // cast spell
     data << uint32(0);                                        // unknown
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-    {
-        /*
-        data << uint32(quest->GetBonusTalents());               // bonus talents
-        data << uint32(quest->GetRewArenaPoints());             // arena points
-        data << uint32(0);
+#ifdef LICH_KING
+    data << uint32(quest->GetBonusTalents());               // bonus talents
+    data << uint32(quest->GetRewArenaPoints());             // arena points
+    data << uint32(0);
 
-        for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)    // reward factions ids
-            data << uint32(quest->RewardFactionId[i]);
+    for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)    // reward factions ids
+        data << uint32(quest->RewardFactionId[i]);
 
-        for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)    // columnid in QuestFactionReward.dbc (zero based)?
-            data << int32(quest->RewardFactionValueId[i]);
+    for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)    // columnid in QuestFactionReward.dbc (zero based)?
+        data << int32(quest->RewardFactionValueId[i]);
 
-        for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)    // reward reputation override?
-            data << uint32(quest->RewardFactionValueIdOverride[i]);
-            */
+    for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)    // reward reputation override?
+        data << uint32(quest->RewardFactionValueIdOverride[i]);
+
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT*3; ++i)
         data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT*3; ++i)
-            data << uint32(0);
-    }
 #endif
 
     _session->SendPacket(&data);
@@ -912,9 +889,8 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGUID, 
     // Close Window after cancel
     data << uint32(closeOnCancel);
     
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-        data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
+#ifdef LICH_KING
+    data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
 #endif
 
     data << uint32(quest->GetSuggestedPlayers());           // SuggestedGroupNum ? Not sure

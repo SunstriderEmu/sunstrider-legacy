@@ -133,26 +133,22 @@ void WorldSocket::HandleSendAuthSession(ClientBuild build)
 {
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 4);
     //at this point, authserver knows client build but we don't
-#ifdef BUILD_335_SUPPORT
-    if(build == BUILD_335)
-    {
-        packet.reserve(37);
+#ifdef LICH_KING
+    packet.reserve(37);
 
-        packet << uint32(1);                                    // 1...31
-        packet << uint32(_authSeed);
+    packet << uint32(1);                                    // 1...31
+    packet << uint32(_authSeed);
 
-        BigNumber seed1;
-        seed1.SetRand(16 * 8);
-        packet.append(seed1.AsByteArray(16).get(), 16);               // new encryption seeds
+    BigNumber seed1;
+    seed1.SetRand(16 * 8);
+    packet.append(seed1.AsByteArray(16).get(), 16);               // new encryption seeds
 
-        BigNumber seed2;
-        seed2.SetRand(16 * 8);
-        packet.append(seed2.AsByteArray(16).get(), 16);               // new encryption seeds
-    } else 
+    BigNumber seed2;
+    seed2.SetRand(16 * 8);
+    packet.append(seed2.AsByteArray(16).get(), 16);               // new encryption seeds
+#else
+    packet << uint32(_authSeed);
 #endif
-    {
-        packet << uint32(_authSeed);
-    }
 
     SendPacketAndLogOpcode(packet);
 }
@@ -450,23 +446,17 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     recvPacket >> authSession->LoginServerID;
     recvPacket >> authSession->Account;
 
-    switch (authSession->Build)
-    {
-#ifdef BUILD_335_SUPPORT
-    case BUILD_335:
-        recvPacket >> authSession->LoginServerType;
-        recvPacket >> authSession->LocalChallenge;
-        recvPacket >> authSession->RegionID;
-        recvPacket >> authSession->BattlegroupID;
-        recvPacket >> authSession->RealmID;               // realmId from auth_database.realmlist table
-        recvPacket >> authSession->DosResponse;
-        break;
+#ifdef LICH_KING
+    recvPacket >> authSession->LoginServerType;
+    recvPacket >> authSession->LocalChallenge;
+    recvPacket >> authSession->RegionID;
+    recvPacket >> authSession->BattlegroupID;
+    recvPacket >> authSession->RealmID;               // realmId from auth_database.realmlist table
+    recvPacket >> authSession->DosResponse;
+#else
+    recvPacket >> authSession->LocalChallenge;
+    authSession->RealmID = 0;
 #endif
-    case BUILD_243:
-        recvPacket >> authSession->LocalChallenge;
-        authSession->RealmID = 0;
-        break;
-    }
     recvPacket.read(authSession->Digest, 20);    
     authSession->AddonInfo.append(recvPacket.contents() + recvPacket.rpos(), recvPacket.size() - recvPacket.rpos());
 

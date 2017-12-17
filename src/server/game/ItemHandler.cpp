@@ -353,9 +353,8 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 #else
         uint32 statCount = MAX_ITEM_PROTO_STATS;
 #endif
-#ifdef BUILD_335_SUPPORT
-        if (GetClientBuild() == BUILD_335)
-            data << statCount;                         // item stats count
+#ifdef LICH_KING
+        data << statCount;                         // item stats count
 #endif
 
         for(int i = 0; i < statCount; i++)
@@ -461,19 +460,9 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->ArmorDamageModifier;
         data << pProto->Duration;                                 // added in 2.4.2.8209, duration (seconds)
 
-#ifdef BUILD_335_SUPPORT
-    #ifdef LICH_KING
-        uint32 itemLimitCategory = pProto->ItemLimitCategory;
-        uint32 holidayId = pProto->HolidayId;
-    #else
-        uint32 itemLimitCategory = 0;
-        uint32 holidayId = 0;
-    #endif
-        if (GetClientBuild() == BUILD_335)
-        {
-            data << itemLimitCategory;                  // WotLK, ItemLimitCategory
-            data << holidayId;                          // Holiday.dbc?
-        }
+#ifdef LICH_KING
+        data << pProto->ItemLimitCategory;                  // WotLK, ItemLimitCategory
+        data << pProto->HolidayId;                          // Holiday.dbc?
 #endif
         SendPacket( &data );
     }
@@ -1014,17 +1003,13 @@ void WorldSession::HandleSetAmmoOpcode(WorldPacket & recvData)
 void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster, uint32 ItemID, uint32 SpellID)
 {
     WorldPacket data(SMSG_ENCHANTMENTLOG, (8 + 8 + 4 + 4 + 1));     // last check 2.0.10
-#ifdef BUILD_335_SUPPORT
-    if (GetClientBuild() == BUILD_335)
-    {
-        data << PackedGuid(Target);
-        data << PackedGuid(Caster);
-    } else 
+#ifdef LICH_KING
+    data << PackedGuid(Target);
+    data << PackedGuid(Caster);
+#else 
+    data << Target;
+    data << Caster;
 #endif
-    {
-        data << Target;
-        data << Caster;
-    }
     data << ItemID;
     data << SpellID;
     data << uint8(0);

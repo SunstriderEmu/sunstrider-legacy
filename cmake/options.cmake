@@ -24,7 +24,6 @@ if(UNIX)
 	option(USE_GPERFTOOLS "Include profiling capabilities from gperftools" 0)
 endif()
 option(LICH_KING "NYI Lich King realm" 0)
-option(BUILD_335_SUPPORT "NYI Realm supports 3.3.5 client" 0)
 #more clang options 
 if(DO_DEBUG AND CLANG_COMPILER)
 option(CLANG_ADDRESS_SANITIZER "Enable clang AddressSanitizer (~2x slowdown)" 0)

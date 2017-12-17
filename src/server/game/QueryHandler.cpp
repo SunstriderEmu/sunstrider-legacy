@@ -13,27 +13,23 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     CharacterCacheEntry const* nameData = sCharacterCache->GetCharacterCacheByGuid(GUID_LOPART(guid));
 
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8 + 1 + 4 + 4 + 4 + 1));
-#ifdef BUILD_335_SUPPORT
-    if (GetClientBuild() == BUILD_335)
+#ifdef LICH_KING
+    data.appendPackGUID(guid);
+    if (!nameData)
     {
-        data.appendPackGUID(guid);
-        if (!nameData)
-        {
-            data << uint8(1);                           // name unknown
-            SendPacket(&data);
-            return;
-        }
-
-        data << uint8(0);                               // name known
-    } else
-#endif
-    {
-        if (!nameData)
-            return; //simply ignore request
-                    // guess size
-
-        data << guid;
+        data << uint8(1);                           // name unknown
+        SendPacket(&data);
+        return;
     }
+
+    data << uint8(0);                               // name known
+#else 
+    if (!nameData)
+        return; //simply ignore request
+            // guess size
+
+    data << guid;
+#endif
 
     data << nameData->name;
     data << uint8(0);                               // realm name - only set for cross realm interaction (such as Battlegrounds)
@@ -114,22 +110,13 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         data << (uint32)ci->type;
         data << (uint32)ci->family;                         // family         wdbFeild9
         data << (uint32)ci->rank;                           // rank           wdbFeild10
-#ifdef BUILD_335_SUPPORT
-        if(GetClientBuild() == BUILD_335)
-        {
 #ifdef LICH_KING
-            data << uint32(ci->KillCredit[0]);              // new in 3.1, kill credit
-            data << uint32(ci->KillCredit[1]);              // new in 3.1, kill credit
+        data << uint32(ci->KillCredit[0]);                  // new in 3.1, kill credit
+        data << uint32(ci->KillCredit[1]);                  // new in 3.1, kill credit
 #else
-            data << uint32(0);
-            data << uint32(0);
+        data << (uint32)0;                                  // unknown        wdbFeild11
+        data << (uint32)ci->PetSpellDataId;                 // Id from CreatureSpellData.dbc    wdbField12
 #endif
-        } else 
-#endif
-        {
-            data << (uint32)0;                              // unknown        wdbFeild11
-            data << (uint32)ci->PetSpellDataId;             // Id from CreatureSpellData.dbc    wdbField12
-        }
         data << (uint32)ci->Modelid1;                       // Modelid1
         data << (uint32)ci->Modelid2;                       // Modelid2
         data << (uint32)ci->Modelid3;                       // Modelid3
@@ -138,26 +125,16 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         data << float(ci->ModMana);                         // dmg/mana modifier
         data << (uint8)ci->RacialLeader;
 
-#ifdef BUILD_335_SUPPORT
-        if(GetClientBuild() == BUILD_335)
-        {
 #ifdef LICH_KING
-            CreatureQuestItemList const* items = sObjectMgr->GetCreatureQuestItemList(entry);
-            if (items)
-                for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
-                    data << (i < items->size() ? uint32((*items)[i]) : uint32(0));
-            else
-                for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
-                    data << uint32(0);
-
-            data << uint32(ci->movementId);                     // CreatureMovementInfo.dbc
-#else
-            for (uint32 i = 0; i < 6; ++i)
+        CreatureQuestItemList const* items = sObjectMgr->GetCreatureQuestItemList(entry);
+        if (items)
+            for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
+                data << (i < items->size() ? uint32((*items)[i]) : uint32(0));
+        else
+            for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
                 data << uint32(0);
 
-            data << uint32(0);
-#endif
-        }
+        data << uint32(ci->movementId);                     // CreatureMovementInfo.dbc
 #endif
 
         SendPacket( &data );
@@ -222,17 +199,9 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
         data << uint8(0);                                   // 2.0.3, probably string
         data.append(info->raw.data, MAX_GAMEOBJECT_DATA);
 
-#ifdef BUILD_335_SUPPORT
-        if (GetClientBuild() == BUILD_335)
-        {
 #ifdef LICH_KING
-            for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
-                data << uint32(info->questItems[i]);              // itemId[6], quest drop
-#else
-            for (uint32 i = 0; i < 6; ++i)
-                data << uint32(0);
-#endif
-        }
+        for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
+            data << uint32(info->questItems[i]);              // itemId[6], quest drop
 #endif
 
         SendPacket( &data );

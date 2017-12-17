@@ -962,12 +962,11 @@ void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )
 
     uint64 guid;
     uint32 time_skipped;
-#ifdef BUILD_335_SUPPORT
-    if(GetClientBuild() == BUILD_335)
-        recvData.readPackGUID(guid);
-    else
+#ifdef LICH_KING
+    recvData.readPackGUID(guid);
+#else
+    recvData >> guid;
 #endif
-        recvData >> guid;
 
     recvData >> time_skipped;
 
@@ -976,12 +975,11 @@ void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )
         return;
 
     WorldPacket data(MSG_MOVE_TIME_SKIPPED, 12);
-#ifdef BUILD_335_SUPPORT
-    if(GetClientBuild() == BUILD_335)
-        data << _player->GetPackGUID();
-    else
+#ifdef LICH_KING
+    data << _player->GetPackGUID();
+#else
+    data << guid;
 #endif
-        data << guid;
 
     data << time_skipped;
 
