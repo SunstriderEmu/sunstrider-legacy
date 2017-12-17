@@ -577,9 +577,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void PlayDistanceSound(uint32 sound_id, Player* target = nullptr);
         void PlayDirectSound(uint32 Sound, Player* target = nullptr);
         
-        void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
-        void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
-
         template <typename Container>
         void GetGameObjectListWithEntryInGrid(Container& gameObjectContainer, uint32 entry, float maxSearchRange = 250.0f) const;
 

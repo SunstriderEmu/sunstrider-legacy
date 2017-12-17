@@ -2544,32 +2544,6 @@ bool Position::IsPositionValid() const
     return Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ, m_orientation);
 }
 
-void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const
-{
-    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
-    Cell cell(pair);
-    cell.SetNoCreate();
-
-    Trinity::AllCreaturesOfEntryInRange check((Unit const*)this, uiEntry, fMaxSearchRange);
-    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(this, lList, check);
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
-
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, fMaxSearchRange);
-}
-
-void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const
-{
-    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
-    Cell cell(pair);
-    cell.SetNoCreate();
-
-    Trinity::AllGameObjectsWithEntryInRange check(this, uiEntry, fMaxSearchRange);
-    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange> searcher(this, lList, check);
-    TypeContainerVisitor<Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange>, GridTypeMapContainer> visitor(searcher);
-
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, fMaxSearchRange);
-}
-
 void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 {
     Unit const* unit = nullptr;
