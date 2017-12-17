@@ -612,7 +612,6 @@ void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError,
     uint32 sampleSize_min = std::ceil(std::log(1.0 - targetProbability) / std::log(ratio_min));
     uint32 sampleSize_max = std::ceil(std::log(1.0 - targetProbability) / std::log(ratio_max));
     sampleSize = std::max(sampleSize_min, sampleSize_max);
-
 }
 
 void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage) //if !damage, then use healing

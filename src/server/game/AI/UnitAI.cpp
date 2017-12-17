@@ -403,7 +403,7 @@ uint32 UnitAI::DoCastAOE(uint32 spellId, bool triggered)
     if (!triggered && me->HasUnitState(UNIT_STATE_CASTING))
         return SPELL_FAILED_UNKNOWN;
 
-    return DoCast((Unit*)nullptr, spellId, triggered);
+    return me->CastSpell(nullptr, spellId, triggered);
 }
 
 uint32 UnitAI::DoCastSpell(Unit* who, SpellInfo const *spellInfo, bool triggered)
