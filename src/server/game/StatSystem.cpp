@@ -282,8 +282,8 @@ void Unit::UpdateDamagePctDoneMods(WeaponAttackType attackType)
     SetStatPctModifier(unitMod, TOTAL_PCT, factor);
 
     /* Old sun
-            // apply generic physical damage bonuses including wand case
-        /* import me 
+        // apply generic physical damage bonuses including wand case
+        // import me 
 
         // For show in client
         if(m_target->GetTypeId() == TYPEID_PLAYER)

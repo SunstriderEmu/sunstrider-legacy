@@ -74,7 +74,7 @@ public:
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Spell* spell = player->GetCurrentSpell(CURRENT_GENERIC_SPELL);
 			TEST_ASSERT(spell != nullptr);
-			ASSERT_INFO("Spell %u has a cast time > 1.5s");
+			ASSERT_INFO("Spell %u has a cast time > 1.5s", spell->GetSpellInfo()->Id);
 			TEST_ASSERT(spell->GetCastTime() == 1500);
 		}
 	};
@@ -919,7 +919,7 @@ public:
 
 		void TestStat(TestPlayer* player, Stats stat, uint32 expectedStat)
 		{
-			ASSERT_INFO("Druid stat %u is: %u, expected: %u", stat, player->GetStat(stat), expectedStat);
+			ASSERT_INFO("Druid stat %u is: %f, expected: %u", stat, player->GetStat(stat), expectedStat);
 			TEST_ASSERT(player->GetStat(stat) == expectedStat);
 		}
 
@@ -1019,7 +1019,7 @@ public:
 
 					totalDamage += damage;
 				}
-				TC_LOG_DEBUG("test.unit_test", "damage: %u", totalDamage);
+				TC_LOG_DEBUG("test.unit_test", "damage:" UI64FMTD, totalDamage);
 				TEST_ASSERT(totalDamage != 0);
 				break;
 			}
@@ -1236,7 +1236,7 @@ public:
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Spell* spell = player->GetCurrentSpell(CURRENT_GENERIC_SPELL);
 			TEST_ASSERT(spell != nullptr);
-			ASSERT_INFO("Spell %u has a cast time > 3s");
+			ASSERT_INFO("Spell %u has a cast time > 3s", spell->GetSpellInfo()->Id);
 			TEST_ASSERT(spell->GetCastTime() == 3 * SECOND * IN_MILLISECONDS);
 
 			// TODO: increases physical damage dealt in all forms by 10%

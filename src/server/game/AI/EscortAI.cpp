@@ -403,7 +403,7 @@ void EscortAI::Start(bool isActiveAttacker /* = true*/, bool run /* = false */, 
         me->SetImmuneToNPC(false);
     }
 
-    TC_LOG_DEBUG("scripts", "EscortAI::Start: (script: %s, creature entry: %u) started with %u waypoints. ActiveAttacker = %d, Run = %d, Player = %u", me->GetScriptName().c_str(), me->GetEntry(), uint32(_path.nodes.size()), _activeAttacker, _running, _playerGUID);
+    TC_LOG_DEBUG("scripts", "EscortAI::Start: (script: %s, creature entry: %u) started with %u waypoints. ActiveAttacker = %d, Run = %d, Player = %u", me->GetScriptName().c_str(), me->GetEntry(), uint32(_path.nodes.size()), _activeAttacker, _running, GUID_LOPART(_playerGUID));
 
     // set initial speed
     me->SetWalk(!_running);

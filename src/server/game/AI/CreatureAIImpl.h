@@ -3,6 +3,7 @@
 
 #include "Random.h"
 #include "Define.h"
+#include "InstanceScript.h"
 
 class WorldObject;
 

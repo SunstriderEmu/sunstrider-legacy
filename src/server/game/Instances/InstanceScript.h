@@ -5,7 +5,10 @@
 #include "ZoneScript.h"
 #include "Map.h"
 
+struct InstanceSpawnGroupInfo;
+struct InstanceClassGroupInfo;
 class ModuleReference;
+class AreaBoundary;
 
 #define OUT_SAVE_INST_DATA             
 #define OUT_SAVE_INST_DATA_COMPLETE    
@@ -62,13 +65,15 @@ struct MinionData
 {
     uint32 entry, bossId;
 };
+*/
 
 struct ObjectData
 {
     uint32 entry;
     uint32 type;
 };
-*/ 
+
+typedef std::vector<AreaBoundary const*> CreatureBoundary;
 
 struct BossInfo
 {
@@ -149,7 +154,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         GameObject* GetGameObject(uint32 type);
 
         // Called when a player successfully enters the instance.
-        virtual void OnPlayerEnter(Player* /*player*/) { }
+        virtual void OnPlayerEnter(Player* /*player*/) override { }
 
         //Handle open / close objects
         //use HandleGameObject(NULL,boolen,GO); in OnGameObjectCreate in instance scripts

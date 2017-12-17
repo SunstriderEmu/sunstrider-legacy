@@ -1812,7 +1812,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         slot[1] = e.action.equip.slot2;
                         slot[2] = e.action.equip.slot3;
 #else
-                        TC_LOG_ERROR("sql.sql", "SmartScript: SMART_ACTION_EQUIP cannot be used with weapon IDs on 2.4.3, use creature_equip_template ids instead", equipId, npc->GetEntry());
+                        TC_LOG_ERROR("sql.sql", "SmartScript: SMART_ACTION_EQUIP cannot be used with weapon IDs on 2.4.3, use creature_equip_template ids instead (npc = %u)", npc->GetEntry());
 #endif
                     }
 

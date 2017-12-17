@@ -8,7 +8,7 @@ public:
     TestCaseWarrior(bool needMap = true) : TestCase(true) {}
     TestCaseWarrior(WorldLocation const& loc) : TestCase(loc) {}
 
-    void TestCaseWarrior::TestRequiresStance(TestPlayer* warrior, Unit* victim, bool success, uint32 testSpellId, uint32 stanceSpellId = 0, SpellCastResult result = SPELL_FAILED_ONLY_SHAPESHIFT)
+    void TestRequiresStance(TestPlayer* warrior, Unit* victim, bool success, uint32 testSpellId, uint32 stanceSpellId = 0, SpellCastResult result = SPELL_FAILED_ONLY_SHAPESHIFT)
     {
         if (stanceSpellId > 0)
         {
@@ -22,7 +22,7 @@ public:
         warrior->RemoveAllSpellCooldown();
     }
 
-    void TestCaseWarrior::TestRequiresMeleeWeapon(TestPlayer* warrior, Unit* victim, uint32 testSpellId, bool twoHand, SpellCastResult result = SPELL_FAILED_EQUIPPED_ITEM_CLASS)
+    void TestRequiresMeleeWeapon(TestPlayer* warrior, Unit* victim, uint32 testSpellId, bool twoHand, SpellCastResult result = SPELL_FAILED_EQUIPPED_ITEM_CLASS)
     {
         RemoveAllEquipedItems(warrior);
         warrior->RemoveAllSpellCooldown();

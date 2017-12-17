@@ -92,7 +92,7 @@ class TC_GAME_API ChaseMovementGenerator : public TargetedMovementGenerator<T, C
             : TargetedMovementGenerator<T, ChaseMovementGenerator<T> >(target, offset, angle), _restoreWalking(false) { }
         ~ChaseMovementGenerator() { }
 
-        MovementGeneratorType GetMovementGeneratorType() { return CHASE_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() override { return CHASE_MOTION_TYPE; }
 
         bool DoInitialize(T*);
         void DoFinalize(T*);

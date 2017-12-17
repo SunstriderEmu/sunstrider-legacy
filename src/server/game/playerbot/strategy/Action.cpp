@@ -51,7 +51,7 @@ NextAction** NextAction::merge(NextAction** left, NextAction** right)
 NextAction** NextAction::array(uint8 nil, ...)
 {
     va_list vl;
-    va_start(vl, nil);
+    va_star(vl, nil);
     
     int size = 0;
     NextAction* cur = NULL;

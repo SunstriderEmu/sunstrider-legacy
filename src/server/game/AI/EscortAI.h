@@ -38,7 +38,7 @@ struct TC_GAME_API EscortAI : public ScriptedAI
     public:
 
         // Pure Virtual Functions
-        virtual void WaypointReached(uint32, uint32) = 0;
+        virtual void WaypointReached(uint32, uint32) override = 0;
 
         void EnterCombat(Unit*) override = 0;
 
@@ -93,7 +93,7 @@ struct TC_GAME_API EscortAI : public ScriptedAI
         Player* GetPlayerForEscort();
     private:
 
-        bool AssistPlayerInCombatAgainst(Unit* who);
+        bool AssistPlayerInCombatAgainst(Unit* who) override;
         bool IsPlayerOrGroupInRange();
         void FillPointMovementListForCreature();
 
