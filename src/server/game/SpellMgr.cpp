@@ -1620,9 +1620,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = 1;
             spellInfo->EffectImplicitTargetB[0] = 0;
             break;
-        case 44869: //kalecgos SPELL_SPECTRAL_BLAST
-            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
-            break;
         case 30541: //Maghteridon SPELL_BLAZE_TARGET
             spellInfo->EffectImplicitTargetA[0] = 6; // target 7, random target with certain entry spell, need core fix
             spellInfo->EffectImplicitTargetB[0] = 0;

@@ -790,6 +790,12 @@ class TC_GAME_API SpellMgr
             return nullptr;
         }
 
+        //TC function, fake function for compat, this does not exists on BC
+        SpellInfo const* GetSpellForDifficultyFromSpell(SpellInfo const* spell, Unit const* caster) const
+        {
+            return spell;
+        }
+
         // Spell ranks chains
         SpellChainNode const* GetSpellChainNode(uint32 spell_id) const
         {

@@ -90,5 +90,5 @@ bool AttackersValue::hasRealThreat(Unit *attacker)
         !attacker->IsPolymorphed() &&
         !attacker->IsInRoots() &&
         !attacker->IsFriendlyTo(bot) &&
-        (attacker->GetThreatManager().GetCurrentVictim() || dynamic_cast<Player*>(attacker));
+        (attacker->GetThreatManager().getCurrentVictim() || dynamic_cast<Player*>(attacker));
 }

@@ -515,9 +515,9 @@ void ThreatManager::modifyThreatPercent(Unit *pVictim, int32 pPercent)
 Unit* ThreatManager::getHostilTarget()
 {
     iThreatContainer.update();
-    HostileReference* nextVictim = iThreatContainer.selectNextVictim(GetOwner()->ToCreature(), GetCurrentVictim());
+    HostileReference* nextVictim = iThreatContainer.selectNextVictim(GetOwner()->ToCreature(), getCurrentVictim());
     setCurrentVictim(nextVictim);
-    return GetCurrentVictim() != nullptr ? GetCurrentVictim()->getTarget() : nullptr;
+    return getCurrentVictim() != nullptr ? getCurrentVictim()->getTarget() : nullptr;
 }
 
 //============================================================
@@ -538,11 +538,11 @@ float ThreatManager::getThreat(Unit *pVictim, bool pAlsoSearchOfflineList) const
 void ThreatManager::tauntApply(Unit* pTaunter)
 {
     HostileReference* ref = iThreatContainer.getReferenceByTarget(pTaunter);
-    if(GetCurrentVictim() && ref && (ref->getThreat() < GetCurrentVictim()->getThreat()))
+    if(getCurrentVictim() && ref && (ref->getThreat() < getCurrentVictim()->getThreat()))
     {
         if(ref->getTempThreatModifier() == 0.0f)
                                                             // Ok, temp threat is unused
-            ref->setTempThreat(GetCurrentVictim()->getThreat());
+            ref->setTempThreat(getCurrentVictim()->getThreat());
     }
 }
 
@@ -607,14 +607,14 @@ bool ThreatManager::processThreatEvent(const UnitBaseEvent* pUnitBaseEvent)
     switch(pUnitBaseEvent->getType())
     {
         case UEV_THREAT_REF_THREAT_CHANGE:
-            if((GetCurrentVictim() == hostilReference && threatRefStatusChangeEvent->getFValue()<0.0f) ||
-                (GetCurrentVictim() != hostilReference && threatRefStatusChangeEvent->getFValue()>0.0f))
+            if((getCurrentVictim() == hostilReference && threatRefStatusChangeEvent->getFValue()<0.0f) ||
+                (getCurrentVictim() != hostilReference && threatRefStatusChangeEvent->getFValue()>0.0f))
                 setDirty(true);                             // the order in the threat list might have changed
             break;
         case UEV_THREAT_REF_ONLINE_STATUS:
             if(!hostilReference->isOnline())
             {
-                if (hostilReference == GetCurrentVictim())
+                if (hostilReference == getCurrentVictim())
                 {
                     setCurrentVictim(nullptr);
                     setDirty(true);
@@ -624,14 +624,14 @@ bool ThreatManager::processThreatEvent(const UnitBaseEvent* pUnitBaseEvent)
             }
             else
             {
-                if(GetCurrentVictim() && hostilReference->getThreat() > (1.1f * GetCurrentVictim()->getThreat()))
+                if(getCurrentVictim() && hostilReference->getThreat() > (1.1f * getCurrentVictim()->getThreat()))
                     setDirty(true);
                 iThreatContainer.addReference(hostilReference);
                 iThreatOfflineContainer.remove(hostilReference);
             }
             break;
         case UEV_THREAT_REF_REMOVE_FROM_LIST:
-            if (hostilReference == GetCurrentVictim())
+            if (hostilReference == getCurrentVictim())
             {
                 setCurrentVictim(nullptr);
                 setDirty(true);

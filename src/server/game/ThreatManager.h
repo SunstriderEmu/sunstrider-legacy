@@ -39,8 +39,10 @@ class TC_GAME_API HostileReference : public Reference<Unit, ThreatManager>
         void fireStatusChanged(const ThreatRefStatusChangeEvent& pThreatRefStatusChangeEvent);
 
     public:
-        Unit* getSourceUnit();
         HostileReference(Unit* pUnit, ThreatManager *pThreatManager, float pThreat);
+
+        Unit* getSourceUnit();
+        Unit* GetVictim() const { return getTarget(); }
 
         //=================================================
         void addThreat(float pMod);
@@ -163,6 +165,7 @@ class TC_GAME_API ThreatContainer
 
 //=================================================
 
+typedef HostileReference ThreatReference;
 class TC_GAME_API ThreatManager
 {
     private:
@@ -178,6 +181,7 @@ public:
     void AddThreat(Unit* victim, float amount, SpellInfo const* spell = nullptr, bool ignoreModifiers = false, bool ignoreRedirection = false);
     bool IsThreatenedBy(Unit const* who, bool includeOffline = false) const { return (FindReference(who, includeOffline) != nullptr); }
     void ClearAllThreat();
+    Unit* GetCurrentVictim() const { if (ThreatReference* ref = getCurrentVictim()) return ref->GetVictim(); else return nullptr; }
 
 private:
     HostileReference* FindReference(Unit const* who, bool includeOffline) const { if (auto* ref = iThreatContainer.getReferenceByTarget(who)) return ref; if (includeOffline) if (auto* ref = iThreatOfflineContainer.getReferenceByTarget(who)) return ref; return nullptr; }
@@ -207,7 +211,7 @@ public:
 
         bool processThreatEvent(const UnitBaseEvent* pUnitBaseEvent);
 
-        HostileReference* GetCurrentVictim() const { return iCurrentVictim; }
+        HostileReference* getCurrentVictim() const { return iCurrentVictim; }
 
         Unit*  GetOwner() { return iOwner; }
 

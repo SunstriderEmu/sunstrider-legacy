@@ -416,14 +416,14 @@ bool CreatureTextMgr::TextExist(uint32 sourceEntry, uint8 textGroup)
     CreatureTextMap::const_iterator sList = mTextMap.find(sourceEntry);
     if (sList == mTextMap.end())
     {
-        TC_LOG_ERROR("FIXME","CreatureTextMgr::TextExist: Could not find Text for Creature (entry %u) in 'creature_text' table.", sourceEntry);
+        TC_LOG_ERROR("sql.sql","CreatureTextMgr::TextExist: Could not find Text for Creature (entry %u) in 'creature_text' table.", sourceEntry);
         return false;
     }
     CreatureTextHolder TextHolder = (*sList).second;
     CreatureTextHolder::const_iterator itr = TextHolder.find(textGroup);
     if (itr == TextHolder.end())
     {
-        TC_LOG_ERROR("FIXME","CreatureTextMgr::TextExist: Could not find TextGroup %u for Creature (entry %u).",uint32(textGroup), sourceEntry);
+        TC_LOG_ERROR("sql.sql","CreatureTextMgr::TextExist: Could not find TextGroup %u for Creature (entry %u).",uint32(textGroup), sourceEntry);
         return false;
     }
     return true;
