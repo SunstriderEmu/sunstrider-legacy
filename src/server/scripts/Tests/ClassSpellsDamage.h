@@ -229,6 +229,9 @@ namespace ClassSpellsDamage
 	{
 		enum Priest
 		{
+            // Discipline
+            MANA_BURN_RNK_7_MIN = 1021,
+            MANA_BURN_RNK_7_MAX = 1079,
 		};
 	};
 
