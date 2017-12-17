@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,43 +15,17 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOAD_LIB_H
-#define LOAD_LIB_H
+#ifndef TrinityCore_Banner_h__
+#define TrinityCore_Banner_h__
 
 #include "Define.h"
 
-#define FILE_FORMAT_VERSION    18
-
-#pragma pack(push, 1)
-
-//
-// File version chunk
-//
-struct file_MVER
+namespace Trinity
 {
-    union{
-        uint32 fcc;
-        char   fcc_txt[4];
-    };
-    uint32 size;
-    uint32 ver;
-};
+    namespace Banner
+    {
+        TC_COMMON_API void Show(char const* applicationName, void(*log)(char const* text), void(*logExtraInfo)());
+    }
+}
 
-class FileLoader{
-    uint8  *data;
-    uint32  data_size;
-public:
-    virtual bool prepareLoadedData();
-    uint8 *GetData()     {return data;}
-    uint32 GetDataSize() {return data_size;}
-
-    file_MVER *version;
-    FileLoader();
-    ~FileLoader();
-    bool loadFile(char *filename, bool log = true);
-    virtual void free();
-};
-
-#pragma pack(pop)
-
-#endif
+#endif // TrinityCore_Banner_h__

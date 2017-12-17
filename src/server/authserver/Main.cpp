@@ -7,6 +7,7 @@
 */
 
 #include "AuthSocketMgr.h"
+#include "Banner.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
 #include "DatabaseLoader.h"
@@ -89,11 +90,18 @@ int main(int argc, char** argv)
     sLog->RegisterAppender<AppenderDB>();
     sLog->Initialize(nullptr);
 
-    TC_LOG_INFO("server.authserver", "%s (authserver)", GitRevision::GetFullVersion());
-    TC_LOG_INFO("server.authserver", "<Ctrl-C> to stop.\n");
-    TC_LOG_INFO("server.authserver", "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
-    TC_LOG_INFO("server.authserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
-    TC_LOG_INFO("server.authserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
+   Trinity::Banner::Show("authserver",
+        [](char const* text)
+        {
+            TC_LOG_INFO("server.authserver", "%s", text);
+        },
+        []()
+        {
+            TC_LOG_INFO("server.authserver", "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
+            TC_LOG_INFO("server.authserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
+            TC_LOG_INFO("server.authserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
+        }
+    );
 
     // authserver PID file creation
     std::string pidFile = sConfigMgr->GetStringDefault("PidFile", "");

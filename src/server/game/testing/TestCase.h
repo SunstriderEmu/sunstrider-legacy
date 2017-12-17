@@ -118,7 +118,11 @@ public:
     #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount, crit) { _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedAmount, crit); _ResetCaller(); }
   
     #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount); _ResetCaller(); }
-    
+    // Test the percentage of a melee hit outcome
+    #define TEST_MELEE_OUTCOME_PERCENTAGE(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestMeleeOutcomePercentage(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError);  _ResetCaller(); }
+    // Test the percentage of a spell hit outcome
+    #define TEST_SPELL_OUTCOME_PERCENTAGE(attacker, victim, spellId, hitInfo, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestSpellOutcomePercentage(attacker, victim, spellId, hitInfo, expectedResult, allowedError);  _ResetCaller(); }
+
     #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) { _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller(); }
 
     //Cast given spell and check its power cost
@@ -158,6 +162,8 @@ protected:
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit);
     void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
+    void _TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError);
+    void _TestSpellOutcomePercentage(TestPlayer* attacker, Unit* victim, uint32 spellId, HitInfo hitInfo, float expectedResult, float allowedError);
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, Powers powerType, uint32 expectedPowerCost);
     void _EquipItem(TestPlayer* p, uint32 itemID);
@@ -170,6 +176,9 @@ protected:
     void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond);
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 durationMS);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
+
+    static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);
+    static uint32 _GetPercentApproximationParams(float const allowedError);
 
 private:
     std::string              _testName;
@@ -205,8 +214,6 @@ private:
     Classes _GetRandomClassForRace(Races race);
     Races _GetRandomRaceForClass(Classes race);
     static void _RemoveTestBot(Player* player);
-
-    static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);
    
     TestThread* _testThread;
 

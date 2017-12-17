@@ -1,6 +1,10 @@
+
+#include <boost/filesystem.hpp>
+
 #include "PathCommon.h"
 #include "MapBuilder.h"
 #include "Timer.h"
+#include "Banner.h"
 
 using namespace MMAP;
 
@@ -223,6 +227,8 @@ int finish(const char* message, int returnValue)
 
 int main(int argc, char** argv)
 {
+    Trinity::Banner::Show("MMAP generator", [](char const* text) { printf("%s\n", text); }, nullptr);
+
     unsigned int threads = std::thread::hardware_concurrency();
     int mapnum = -1;
     float maxAngle = 70.0f;

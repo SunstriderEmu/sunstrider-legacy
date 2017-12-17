@@ -568,6 +568,14 @@ bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
     return false;
 }
 
+uint32 TestCase::_GetPercentApproximationParams(float const allowedError)
+{
+    //Improve me... we want a 99.9% certainty
+    uint32 sampleSize = 10000;
+    //todo: calc sample size depending on given allowedError
+    return sampleSize;
+}
+
 void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax)
 {
 
@@ -825,10 +833,10 @@ bool TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAtta
         //only use full hits
         if (critical)
         {
-            if (itr.damageInfo.HitInfo != HITINFO_CRITICALHIT)
+            if (itr.damageInfo.HitInfo != HITINFO_CRITICALHIT && itr.damageInfo.hitOutCome != MELEE_HIT_CRIT)
                 continue;
         } else {
-            if (itr.damageInfo.HitInfo != HITINFO_NORMALSWING && itr.damageInfo.HitInfo != HITINFO_NORMALSWING2)
+            if ((itr.damageInfo.HitInfo != HITINFO_NORMALSWING || itr.damageInfo.HitInfo != HITINFO_NORMALSWING2) && itr.damageInfo.hitOutCome != MELEE_HIT_NORMAL)
                 continue;
         }
 
@@ -1011,6 +1019,70 @@ void TestCase::GroupPlayer(TestPlayer* leader, TestPlayer* player)
     INTERNAL_TEST_ASSERT(false);
 }
 
+void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError)
+{
+    auto AI = attacker->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    auto damageToTarget = AI->GetWhiteDamageDoneInfo(victim);
+    if (!damageToTarget || damageToTarget->empty())
+    {
+        TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
+        return;
+    }
+
+    uint32 count = 0;
+    for (auto itr : *damageToTarget)
+    {
+        if (itr.damageInfo.attackType != weaponAttackType)
+            continue;
+
+        if (itr.damageInfo.hitOutCome != meleeHitOutcome)
+            continue;
+
+        count++;
+    }
+
+    float const result = count / float(damageToTarget->size()) * 100.0f;
+    INTERNAL_ASSERT_INFO("TestMeleeOutcomePercentage: expected result: %f, result: %f", expectedResult, result);
+    INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
+}
+
+void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, HitInfo hitInfo, float expectedResult, float allowedError)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    auto damageToTarget = AI->GetDamageDoneInfo(victim);
+    if (!damageToTarget || damageToTarget->empty())
+    {
+        TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
+        return;
+    }
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellId);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+
+    uint32 count = 0;
+    for (auto itr : *damageToTarget)
+    {
+        if (itr.damageInfo.SpellID != spellId)
+            continue;
+
+        if (itr.damageInfo.HitInfo != hitInfo)
+            continue;
+
+        count++;
+    }
+
+    float const result = count / float(damageToTarget->size() * 100.0f);
+    INTERNAL_ASSERT_INFO("TestSpellOutcomePercentage on spell %u: expected result: %f, result: %f", spellId, expectedResult, result);
+    INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
+}
+
 float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)
 {
 	uint32 success = 0;
@@ -1099,7 +1171,7 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID, uint8 effectIndex)
 void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond)
 {
     uint32 cooldown = caster->GetSpellCooldownDelay(castSpellID);
-    INTERNAL_ASSERT_INFO("Caster %u has cooldown %u for spell %u instead of expected %u", caster->GetGUIDLow(), cooldown, castSpellID, cooldownSecond);
+    INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName(), cooldown, castSpellID, cooldownSecond);
     INTERNAL_TEST_ASSERT(cooldown == cooldownSecond);
 }
 

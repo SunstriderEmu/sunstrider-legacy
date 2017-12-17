@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
 * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -26,7 +26,6 @@
 #include <vector>
 #include <iostream>
 #include <deque>
-#include <algorithm>
 
 class MPQArchive
 {
@@ -34,8 +33,8 @@ class MPQArchive
 public:
     mpq_archive_s *mpq_a;
 
-    MPQArchive(const char* filename);
-    ~MPQArchive() { if (isOpened()) close(); }
+    MPQArchive(char const* filename);
+    ~MPQArchive() { close(); }
     void close();
 
     void GetFileListTo(std::vector<std::string>& filelist) {
@@ -53,20 +52,18 @@ public:
         char *token;
 
         token = strtok(buffer, seps);
-        uint32_t counter = 0;
-        while ((token != NULL) && (counter < size)) {
+        uint32 counter = 0;
+        while ((token != nullptr) && (counter < size)) {
             //cout << token << endl;
             token[strlen(token) - 1] = 0;
             std::string s = token;
             filelist.push_back(s);
             counter += strlen(token) + 2;
-            token = strtok(NULL, seps);
+            token = strtok(nullptr, seps);
         }
 
         delete[] buffer;
     }
-private:
-    bool isOpened() const;
 };
 typedef std::deque<MPQArchive*> ArchiveSet;
 
@@ -78,11 +75,11 @@ class MPQFile
     libmpq__off_t pointer, size;
 
     // disable copying
-    MPQFile(const MPQFile& /*f*/) {}
-    void operator=(const MPQFile& /*f*/) {}
+    MPQFile(MPQFile const& /*f*/) = delete;
+    void operator=(MPQFile const& /*f*/) = delete;
 
 public:
-    MPQFile(const char* filename);    // filenames are not case sensitive
+    MPQFile(char const* filename);    // filenames are not case sensitive
     ~MPQFile() { close(); }
     size_t read(void* dest, size_t bytes);
     size_t getSize() { return size; }
