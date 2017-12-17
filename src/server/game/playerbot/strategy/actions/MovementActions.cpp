@@ -82,23 +82,25 @@ bool MovementAction::MoveTo(Unit* target, float distance)
 
     float bx = bot->GetPositionX();
     float by = bot->GetPositionY();
-//    float bz = bot->GetPositionZ();
+    float bz = bot->GetPositionZ();
 
-    /*
     float tx = target->GetPositionX();
     float ty = target->GetPositionY();
-    */
     float tz = target->GetPositionZ();
 
     float distanceToTarget = bot->GetDistance(target);
     float angle = bot->GetAngle(target);
     float needToGo = distanceToTarget - distance;
 
-    float maxDistance = sPlayerbotAIConfig.spellDistance;
+    float maxDistance = 2 * bot->GetSpeed(MOVE_RUN);
     if (needToGo > 0 && needToGo > maxDistance)
         needToGo = maxDistance;
     else if (needToGo < 0 && needToGo < -maxDistance)
         needToGo = -maxDistance;
+
+    MotionMaster &mm = *bot->GetMotionMaster();
+    if (abs(needToGo) <= sPlayerbotAIConfig.meleeDistance)
+        return true;
 
     float dx = cos(angle) * needToGo + bx;
     float dy = sin(angle) * needToGo + by;
