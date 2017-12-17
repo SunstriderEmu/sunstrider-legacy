@@ -8,14 +8,14 @@ public:
     TestCaseWarrior(bool needMap = true) : TestCase(true) {}
     TestCaseWarrior(WorldLocation const& loc) : TestCase(loc) {}
 
-    void TestCaseWarrior::TestRequiresStance(TestPlayer* warrior, Unit* victim, bool success, uint32 testSpellId, uint32 stanceSpellId = 0)
+    void TestCaseWarrior::TestRequiresStance(TestPlayer* warrior, Unit* victim, bool success, uint32 testSpellId, uint32 stanceSpellId = 0, SpellCastResult result = SPELL_FAILED_ONLY_SHAPESHIFT)
     {
         if (stanceSpellId > 0)
         {
             TEST_CAST(warrior, warrior, stanceSpellId);
         }
     
-        SpellCastResult res = success ? SPELL_CAST_OK : SPELL_FAILED_ONLY_SHAPESHIFT;
+        SpellCastResult res = success ? SPELL_CAST_OK : result;
 
         ASSERT_INFO("Stance %u", stanceSpellId);
         TEST_CAST(warrior, victim, testSpellId, res, TriggerCastFlags(TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_CASTER_AURASTATE));
@@ -1539,6 +1539,86 @@ public:
     }
 };
 
+class DisarmTest : public TestCaseScript
+{
+public:
+    DisarmTest() : TestCaseScript("spells warrior disarm") { }
+
+    class DisarmTestImpt : public TestCaseWarrior
+    {
+    public:
+        DisarmTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 3.0f);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
+            TestPlayer* rogue2 = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
+            EQUIP_ITEM(rogue2, 32837); // Warglaive of Azzinoth MH
+            Creature* dummy = SpawnCreature();
+
+            // Rogue setup
+            RemoveAllEquipedItems(rogue);
+            float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5));
+            float const startAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const startDmgMin = rogue->GetFloatValue(UNIT_FIELD_MINDAMAGE);
+            float const startDmgMax = rogue->GetFloatValue(UNIT_FIELD_MAXDAMAGE);
+            uint32 const expectedStartMinDmg = startDmgMin * armorFactor;
+            uint32 const expectedStartMaxDmg = startDmgMax * armorFactor;
+            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedStartMinDmg, expectedStartMaxDmg, false);
+
+            EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+            Wait(1500);
+            EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+
+            float const rogueMHSpeed = 2.8f;
+            float const rogueOHSpeed = 1.4f;
+            float const rogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
+            uint32 const expectedMHMinDmg = (214 + (rogueAP / 14 * rogueMHSpeed)) * armorFactor;
+            uint32 const expectedMHMaxDmg = (398 + (rogueAP / 14 * rogueMHSpeed)) * armorFactor;
+            uint32 const expectedOHMinDmg = (107 + (rogueAP / 14 * rogueOHSpeed)) / 2.0f * armorFactor;
+            uint32 const expectedOHMaxDmg = (199 + (rogueAP / 14 * rogueOHSpeed)) / 2.0f * armorFactor;
+            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMinDmg, expectedMHMaxDmg, false);
+            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMinDmg, expectedOHMaxDmg, false);
+
+            // Stances & weapon
+            TestRequiresStance(warrior, rogue2, false, ClassSpells::Warrior::DISARM_RNK_1);
+            TestRequiresStance(warrior, rogue2, false, ClassSpells::Warrior::DISARM_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, rogue2, false, ClassSpells::Warrior::DISARM_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresStance(warrior, rogue2, true, ClassSpells::Warrior::DISARM_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+
+            // Power cost
+            uint32 expectedDisarmRage = 20 * 10;
+            TEST_POWER_COST(warrior, rogue, ClassSpells::Warrior::DISARM_RNK_1, POWER_RAGE, expectedDisarmRage);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warrior::DISARM_RNK_1, EFFECT_0, 10 * SECOND * IN_MILLISECONDS);
+
+            // Cooldown
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::DISARM_RNK_1, 1 * MINUTE);
+
+            // Flag
+            TEST_ASSERT(rogue->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED));
+
+            // Damage under disarmed effect
+            uint32 gainedAP = rogueAP - startAP;
+            uint32 const disarmedMin = (startDmgMin + gainedAP / 14 * 2.0f) * armorFactor;
+            uint32 const disarmedMax = (startDmgMax + gainedAP / 14 * 2.0f) * armorFactor;
+            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, disarmedMin, disarmedMax, false);
+            rogue->AddAura(ClassSpells::Warrior::DISARM_RNK_1, rogue);
+            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMinDmg, expectedOHMaxDmg, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<DisarmTestImpt>();
+    }
+};
+
 class InterveneTest : public TestCaseScript
 {
 public:
@@ -1768,6 +1848,357 @@ public:
     }
 };
 
+class ShieldBlockTest : public TestCaseScript
+{
+public:
+    ShieldBlockTest() : TestCaseScript("spells warrior shield_block") { }
+
+    class ShieldBlockTestImpt : public TestCaseWarrior
+    {
+    public:
+        ShieldBlockTestImpt() : TestCaseWarrior(true) { }
+
+        void TestShieldBlock(TestPlayer* warrior, TestPlayer* rogue, float expectedResult, bool block = false)
+        {
+            float const allowedError = 0.01f;
+            uint32 sampeSize = _GetPercentApproximationParams(allowedError);
+            auto AI = rogue->GetTestingPlayerbotAI();
+            for (uint32 i = 0; i < sampeSize; i++)
+            {
+                rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
+                if (block && !warrior->HasAura(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1))
+                    warrior->AddAura(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, warrior);
+                warrior->SetFullHealth();
+            }
+            TEST_MELEE_OUTCOME_PERCENTAGE(rogue, warrior, BASE_ATTACK, MELEE_HIT_BLOCK, expectedResult, allowedError);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 3.0f);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
+
+            // Stances & weapon
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1);
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
+            TestRequiresMeleeWeapon(warrior, warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, false, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
+            EQUIP_ITEM(warrior, 34185); // Shield
+
+            // Triggers
+            float const startBlock = warrior->GetUnitBlockChance(BASE_ATTACK, warrior);
+            float const expectedBlock = startBlock + 75.0f;
+            TestShieldBlock(warrior, rogue, startBlock);
+            TestShieldBlock(warrior, rogue, expectedBlock, true);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, EFFECT_0, 5 * SECOND * IN_MILLISECONDS);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1) == 5 * SECOND);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShieldBlockTestImpt>();
+    }
+};
+
+class ShieldWallTest : public TestCaseScript
+{
+public:
+    ShieldWallTest() : TestCaseScript("spells warrior shield_wall") { }
+
+    class ShieldWallTestImpt : public TestCaseWarrior
+    {
+    public:
+        ShieldWallTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            TestPlayer* hunter = SpawnPlayer(CLASS_HUNTER, RACE_DWARF);
+            EQUIP_ITEM(hunter, 32336); // Black Bow of the Betrayer
+
+            // Stances & weapon
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_WALL_RNK_1);
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_WALL_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_WALL_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_WALL_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
+            TestRequiresMeleeWeapon(warrior, warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, false, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
+            EQUIP_ITEM(warrior, 34185); // Shield
+
+            // Aura
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, EFFECT_0, 10 * SECOND * IN_MILLISECONDS);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SHIELD_WALL_RNK_1) == 30 * MINUTE);
+
+            // 75% less damage
+            float const shieldWallFactor = 1 - 0.75f;
+            float const defensiveStanceFactor = 1 - 0.1f;
+            float const armorFactor = 1 - (warrior->GetArmor() / (warrior->GetArmor() + 10557.5));
+            // Spell
+            uint32 const expectedSBMin = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * defensiveStanceFactor * shieldWallFactor;
+            uint32 const expectedSBMax = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * defensiveStanceFactor * shieldWallFactor;
+            warrior->SetMaxHealth(999999999);
+            warrior->SetFullHealth();
+            TEST_DIRECT_SPELL_DAMAGE(warlock, warrior, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedSBMin, expectedSBMax, false);
+            // Melee
+            float const rogueWeaponSpeed = 2.8f;
+            float const rogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
+            uint32 const weaponMinDamage = 214 + (rogueAP / 14 * rogueWeaponSpeed);
+            uint32 const weaponMaxDamage = 398 + (rogueAP / 14 * rogueWeaponSpeed);
+            uint32 const expectedMHMin = weaponMinDamage * armorFactor * defensiveStanceFactor * shieldWallFactor;
+            uint32 const expectedMHMax = weaponMaxDamage * armorFactor * defensiveStanceFactor * shieldWallFactor;
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD);
+            warrior->SetMaxHealth(999999999);
+            warrior->SetFullHealth();
+            TEST_MELEE_DAMAGE(rogue, warrior, BASE_ATTACK, expectedMHMin, expectedMHMax, false);
+            // Ranged
+            float const hunterWeaponSpeed = 3.0f;
+            float const hunterAP = hunter->GetTotalAttackPowerValue(RANGED_ATTACK);
+            uint32 const bowMinDamage = 201 + (hunterAP / 14 * hunterWeaponSpeed);
+            uint32 const bowMaxDamage = 374 + (hunterAP / 14 * hunterWeaponSpeed);
+            uint32 const expectedRangedMin = bowMinDamage * armorFactor * defensiveStanceFactor * shieldWallFactor;
+            uint32 const expectedRangedMax = bowMaxDamage * armorFactor * defensiveStanceFactor * shieldWallFactor;
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD);
+            warrior->SetMaxHealth(999999999);
+            warrior->SetFullHealth();
+            TEST_MELEE_DAMAGE(hunter, warrior, RANGED_ATTACK, expectedRangedMin, expectedRangedMax, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShieldWallTestImpt>();
+    }
+};
+
+class SpellReflectionTest : public TestCaseScript
+{
+public:
+    SpellReflectionTest() : TestCaseScript("spells warrior spell_reflection") { }
+
+    class SpellReflectionTestImpt : public TestCaseWarrior
+    {
+    public:
+        SpellReflectionTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 15.0f);
+            TestPlayer* fire = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
+            TestPlayer* frost = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
+
+            // Stances & weapon
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
+            TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
+            TestRequiresMeleeWeapon(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, false, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
+            EQUIP_ITEM(warrior, 34185); // Shield
+
+            // Rage cost
+            uint32 expectedSpellReflectionRage = 25 * 10;
+            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, POWER_RAGE, expectedSpellReflectionRage);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, EFFECT_0, 5 * SECOND * IN_MILLISECONDS);
+
+            // Cooldown
+            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SPELL_REFLECTION_RNK_1) == 10 * SECOND);
+
+            // Reflect
+            warrior->SetFullHealth();
+            fire->SetFullHealth();
+            frost->SetFullHealth();
+            Wait(100);
+            for (int i = 0; i < 3; i++)
+            {
+                TEST_CAST(fire, warrior, ClassSpells::Mage::FIREBALL_RNK_13, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                TEST_CAST(frost, warrior, ClassSpells::Mage::FROSTBOLT_RNK_13, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            }
+            Wait(1000);
+            TEST_ASSERT(warrior->GetHealth() == warrior->GetMaxHealth());
+            TEST_ASSERT(fire->GetHealth() < fire->GetMaxHealth());
+            TEST_ASSERT(frost->GetHealth() < frost->GetMaxHealth());
+            // https://youtu.be/ohnzL-deZDM?t=1m24s
+            // Spell reflection should be removed as soon as the spell is reflected not when the reflected spells hits its caster
+            TEST_ASSERT(!warrior->HasAura(ClassSpells::Warrior::SPELL_REFLECTION_RNK_1));
+
+            // Aura removed when no shield
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            EQUIP_ITEM(warrior, 34247); // Apolyon -- 2 Hands
+            TEST_ASSERT(!warrior->HasAura(ClassSpells::Warrior::SPELL_REFLECTION_RNK_1));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SpellReflectionTestImpt>();
+    }
+};
+
+class StanceMasteryTest : public TestCaseScript
+{
+public:
+    StanceMasteryTest() : TestCaseScript("spells warrior stance_mastery") { }
+
+    class StanceMasteryTestImpt : public TestCaseWarrior
+    {
+    public:
+        StanceMasteryTestImpt() : TestCaseWarrior(true) { }
+
+        void TestStanceRage(TestPlayer* warrior, uint32 stanceSpellId)
+        {
+            warrior->SetPower(POWER_RAGE, 1000); // 100 rage
+            ASSERT_INFO("Initialize with 1000 rage failed. Rage: %u", warrior->GetPower(POWER_RAGE));
+            TEST_ASSERT(warrior->GetPower(POWER_RAGE) == 1000); // 10 rage
+            TEST_CAST(warrior, warrior, stanceSpellId);
+            ASSERT_INFO("Stance %u, should have 100 rage. Rage: %u", stanceSpellId, warrior->GetPower(POWER_RAGE));
+            TEST_ASSERT(warrior->GetPower(POWER_RAGE) == 100); // 10 rage
+        }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            LearnTalent(warrior, ClassSpells::Warrior::STANCE_MASTERY_RNK_1);
+            TestStanceRage(warrior, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestStanceRage(warrior, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestStanceRage(warrior, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<StanceMasteryTestImpt>();
+    }
+};
+
+class SunderArmorTest : public TestCaseScript
+{
+public:
+    SunderArmorTest() : TestCaseScript("spells warrior sunder_armor") { }
+
+    class SunderArmorTestImpt : public TestCaseWarrior
+    {
+    public:
+        SunderArmorTestImpt() : TestCaseWarrior(true) { }
+
+        void TestSunderArmor(TestPlayer* warrior, Unit* victim, uint32 startArmor, int sunderArmorStack, uint32 armorReduced)
+        {
+            uint32 const expectedSunderArmorRage = 15 * 10;
+            uint32 const expectedArmor = startArmor - sunderArmorStack * armorReduced;
+            TEST_POWER_COST(warrior, victim, ClassSpells::Warrior::SUNDER_ARMOR_RNK_6, POWER_RAGE, expectedSunderArmorRage);
+            ASSERT_INFO("Sunder Armor %i stacks -> start armor: %u, current armor: %u, expected: %u", sunderArmorStack, startArmor, victim->GetArmor(), expectedArmor);
+            TEST_ASSERT(victim->GetArmor() == expectedArmor);
+            Aura* aura = victim->GetAura(ClassSpells::Warrior::SUNDER_ARMOR_RNK_6, EFFECT_0);
+            TEST_ASSERT(aura != nullptr);
+            TEST_ASSERT(aura->GetStackAmount() == sunderArmorStack);
+            TEST_ASSERT(aura->GetAuraMaxDuration() == 30 * SECOND * IN_MILLISECONDS);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            Creature* dummy = SpawnCreature(8, true);
+            uint32 startArmor = dummy->GetArmor();
+
+            // Weapon required
+            TestRequiresMeleeWeapon(warrior, dummy, ClassSpells::Warrior::SUNDER_ARMOR_RNK_6, false);
+            dummy->RemoveAurasDueToSpell(ClassSpells::Warrior::SUNDER_ARMOR_RNK_6);
+
+            // Stack, aura duration, armor reduction
+            TestSunderArmor(warrior, dummy, startArmor, 1, 520);
+            TestSunderArmor(warrior, dummy, startArmor, 2, 520);
+            TestSunderArmor(warrior, dummy, startArmor, 3, 520);
+            TestSunderArmor(warrior, dummy, startArmor, 4, 520);
+            TestSunderArmor(warrior, dummy, startArmor, 5, 520);
+            TestSunderArmor(warrior, dummy, startArmor, 5, 520);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SunderArmorTestImpt>();
+    }
+};
+
+class TauntTest : public TestCaseScript
+{
+public:
+
+    TauntTest() : TestCaseScript("spells warrior taunt") { }
+
+    class TauntTestImpt : public TestCaseWarrior
+    {
+    public:
+        TauntTestImpt() : TestCaseWarrior(true) { }
+
+        void Test() override
+        {
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            Position spawn3m(_location);
+            spawn3m.MoveInFront(_location, 3.0f);
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawn3m);
+            Creature* creature = SpawnCreatureWithPosition(spawn3m, 6);
+
+            // Setup
+            creature->SetMaxHealth(10000);
+            creature->SetHealth(10000);
+            TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            Wait(500);
+            uint32 warlockThreat = creature->GetThreat(warlock);
+            TEST_ASSERT(warlockThreat > 0);
+            TEST_ASSERT(creature->GetTarget() == warlock->GetGUID());
+
+            // Stances & creature
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::TAUNT_RNK_1);
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::TAUNT_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature, false, ClassSpells::Warrior::TAUNT_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
+            TestRequiresStance(warrior, creature, true, ClassSpells::Warrior::TAUNT_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+
+            // Acquire threat, aura duration, cooldown
+            TEST_CAST(warrior, creature, ClassSpells::Warrior::TAUNT_RNK_1);
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::TAUNT_RNK_1, EFFECT_1, 3 * SECOND  * IN_MILLISECONDS);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::TAUNT_RNK_1, 10 * SECOND);
+            TEST_ASSERT(creature->GetThreat(warrior) == warlockThreat);
+
+            // Keep aggro
+            Wait(1000);
+            TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            Wait(500);
+            warlockThreat = creature->GetThreat(warlock);
+            TEST_ASSERT(warlockThreat > creature->GetThreat(warrior));
+            TEST_ASSERT(creature->GetTarget() == warrior->GetGUID());
+
+            // Lose aggro
+            Wait(2000);
+            TEST_ASSERT(creature->GetTarget() == warlock->GetGUID());
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<TauntTestImpt>();
+    }
+};
+
 void AddSC_test_spells_warrior()
 {
     // Arms: 8/8
@@ -1796,7 +2227,14 @@ void AddSC_test_spells_warrior()
     new WhirlwindTest();
     // Protection: 4/11
     new BloodrageTest();
+    new DisarmTest();
     new InterveneTest();
     new RevengeTest();
     new ShieldBashTest();
+    new ShieldBlockTest();
+    new ShieldWallTest();
+    new SpellReflectionTest();
+    new StanceMasteryTest();
+    new SunderArmorTest();
+    new TauntTest();
 }
