@@ -1831,7 +1831,7 @@ void Group::ResetInstances(uint8 method, bool isRaid, Player* SendMsgTo)
     for(auto itr = m_boundInstances[dif].begin(); itr != m_boundInstances[dif].end();)
     {
         InstanceSave* instanceSave = itr->second.save;
-        const MapEntry *entry = sMapStore.LookupEntry(itr->first);
+        const MapEntry* entry = sMapStore.LookupEntry(itr->first);
         if (!entry || entry->IsRaid() != isRaid || (!instanceSave->CanReset() && method != INSTANCE_RESET_GROUP_DISBAND) || entry->MapID == 580) //HACK
         {
             ++itr;
