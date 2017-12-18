@@ -167,6 +167,9 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
         // 4. player's current bind
         if (!pBind || !pBind->perm)
         {
+            Group* group = player->GetGroup();
+            InstanceGroupBind* groupBind = group ? group->GetBoundInstance(this) : nullptr;
+
             if (loginInstanceId) // if the player has a saved instance id on login, we either use this instance or relocate him out (return null)
             {
                 //sunstrider: logic changed a bit here: we don't want to relocate player out of instance after a crash
@@ -175,22 +178,18 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
                     return map->GetId() == GetId() ? map : nullptr;
                 else if (pSave && pSave->GetInstanceId() == loginInstanceId) //else create map if a save exists
                     return CreateInstance(loginInstanceId, pSave, pSave->GetDifficulty());
+                else if (groupBind && groupBind->save && groupBind->save->GetInstanceId() == loginInstanceId) //sunstrider added condition: first player to reconnect with no permanent bind but should still go to his group instance
+                    return CreateInstance(loginInstanceId, groupBind->save, groupBind->save->GetDifficulty());
                 else
                     return nullptr; //relocate him out
             }
 
-            InstanceGroupBind* groupBind = nullptr;
-            Group* group = player->GetGroup();
             // use the player's difficulty setting (it may not be the same as the group's)
-            if (group)
+            if (groupBind)
             {
-                groupBind = group->GetBoundInstance(this);
-                if (groupBind)
-                {
-                    // solo saves should be reset when entering a group's instance
-                    player->UnbindInstance(GetId(), player->GetDifficulty(IsRaid()));
-                    pSave = groupBind->save;
-                }
+                // solo saves should be reset when entering a group's instance
+                player->UnbindInstance(GetId(), player->GetDifficulty(IsRaid()));
+                pSave = groupBind->save;
             }
         }
         if (pSave)
