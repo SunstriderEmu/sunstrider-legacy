@@ -13,8 +13,12 @@
 
 int PetAI::Permissible(const Creature *creature)
 {
-    if( creature->IsPet())
-        return PERMIT_BASE_SPECIAL;
+    if (creature->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+    {
+        if (reinterpret_cast<Guardian const*>(creature)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+            return PERMIT_BASE_PROACTIVE;
+        return PERMIT_BASE_REACTIVE;
+    }
 
     return PERMIT_BASE_NO;
 }
