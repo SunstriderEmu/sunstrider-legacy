@@ -201,7 +201,7 @@ void DynamicObject::Remove()
 
 void DynamicObject::AddAffected(Unit *unit)
 {
-    m_affected.insert(unit);
+    m_affected.insert(unit->GetGUID());
 
     // Hacky way
     switch (GetSpellId())
@@ -217,8 +217,8 @@ void DynamicObject::Delay(int32 delaytime)
 {
     m_aliveDuration -= delaytime;
     for (auto iunit : m_affected)
-        if (iunit)
-            iunit->DelayAura(GetSpellId(), m_effIndex, delaytime);
+        if(Unit* u = ObjectAccessor::GetUnit(*this, iunit))
+            u->DelayAura(GetSpellId(), m_effIndex, delaytime);
 }
 
 void DynamicObject::SetCasterViewpoint()

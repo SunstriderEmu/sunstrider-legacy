@@ -498,8 +498,9 @@ PersistentAreaAura::PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, 
 PersistentAreaAura::~PersistentAreaAura()
 {
     for (auto itr : sourceDynObjects)
-        if (DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*m_target, itr))
-            dynObj->RemoveAffected(m_target);
+        if(Map* map = m_target->FindMap())
+            if (DynamicObject* dynObj = map->GetDynamicObject(itr))
+                dynObj->RemoveAffected(m_target);
 }
 
 void PersistentAreaAura::AddSource(DynamicObject* dynObj)

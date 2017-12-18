@@ -16,7 +16,7 @@ enum DynamicObjectType
 class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicObject>, public MapObject
 {
     public:
-        typedef std::set<Unit*> AffectedSet;
+        typedef std::set<uint64> AffectedSet;
         explicit DynamicObject(bool isWorldObject);
 		~DynamicObject();
 
@@ -33,30 +33,20 @@ class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicO
 		uint64 GetCasterGUID() const { return GetGuidValue(DYNAMICOBJECT_CASTER); }
 		Unit* GetCaster() const;
 		float GetRadius() const { return GetFloatValue(DYNAMICOBJECT_RADIUS); }
-        bool IsAffecting(Unit *unit) const { return m_affected.find(unit) != m_affected.end(); }
+        bool IsAffecting(Unit *unit) const { return m_affected.find(unit->GetGUID()) != m_affected.end(); }
         void AddAffected(Unit *unit);
-        void RemoveAffected(Unit *unit) { m_affected.erase(unit); }
+        void RemoveAffected(Unit *unit) { m_affected.erase(unit->GetGUID()); }
         void Delay(int32 delaytime);
-		/*void SetAura(Aura* aura);
-		void RemoveAura();*/
-
-		/*void BindToCaster();
-		void UnbindFromCaster();*/
 
 		void SetCasterViewpoint();
 		void RemoveCasterViewpoint();
 
     protected:
-		/*Aura* _aura;
-		Aura* _removedAura;*/
-
 		uint32 m_effIndex;
 		int32  m_aliveDuration;
 		uint32 m_updateTimer;
 		int32 _duration; // for non-aura dynobjects
-//        float m_radius; //we use this instead of DYNAMICOBJECT_RADIUS because we're altering DYNAMICOBJECT_RADIUS to change visual size
         AffectedSet m_affected;
-		//Unit* _caster;
 		DynamicObjectType m_type;
 
 		bool _isViewpoint;
