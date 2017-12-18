@@ -92,8 +92,6 @@ bool ChatHandler::HandleInstanceStatsCommand(const char* /*args*/)
 
 bool ChatHandler::HandleInstanceSaveDataCommand(const char * /*args*/)
 {
-    
-
     Player* pl = m_session->GetPlayer();
 
     Map* map = pl->GetMap();
@@ -162,5 +160,76 @@ bool ChatHandler::HandleInstanceGetDataCommand(const char* args)
         return false;
     }
     
+    return true;
+}
+
+bool ChatHandler::HandleInstanceSetBossStateCommand(const char* args)
+{
+    ARGS_CHECK
+
+        char *chrDataId = strtok((char *)args, " ");
+    if (!chrDataId)
+        return false;
+
+    uint32 encounterId = uint32(atoi(chrDataId));
+    char *chrDataValue = strtok(nullptr, " ");
+    if (!chrDataValue)
+        return false;
+    uint32 state = uint32(atoi(chrDataValue));
+
+    Player *plr = m_session->GetPlayer();
+
+    if (InstanceScript* pInstance = ((InstanceScript*)plr->GetInstanceScript()))
+    {
+        if (encounterId > pInstance->GetEncounterCount())
+        {
+            //PSendSysMessage(LANG_BAD_VALUE);
+            SendSysMessage("Too high");
+            SetSentErrorMessage(true);
+            return false;
+        }
+        pInstance->SetBossState(encounterId, EncounterState(state));
+        PSendSysMessage("Set instance boss state %u = %u (%s).", encounterId, state, InstanceScript::GetBossStateName(encounterId));
+    }
+    else
+    {
+        PSendSysMessage("You are not in an instance.");
+        return false;
+    }
+
+    return true;
+}
+
+
+bool ChatHandler::HandleInstanceGetBossStateCommand(const char* args)
+{
+    ARGS_CHECK
+
+        char *chrDataId = strtok((char *)args, " ");
+    if (!chrDataId)
+        return false;
+
+    uint32 encounterId = uint32(atoi(chrDataId));
+
+    Player *plr = m_session->GetPlayer();
+
+    if (InstanceScript* pInstance = ((InstanceScript*)plr->GetInstanceScript()))
+    {
+        if (encounterId > pInstance->GetEncounterCount())
+        {
+            //PSendSysMessage(LANG_BAD_VALUE);
+            SendSysMessage("Too high");
+            SetSentErrorMessage(true);
+            return false;
+        }
+        uint32 state = pInstance->GetBossState(encounterId);
+        PSendSysMessage("Instance boss state %u = %u (%s).", encounterId, state, InstanceScript::GetBossStateName(encounterId));
+    }
+    else 
+    {
+        PSendSysMessage("You are not in an instance.");
+        return false;
+    }
+
     return true;
 }

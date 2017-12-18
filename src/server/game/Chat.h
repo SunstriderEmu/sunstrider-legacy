@@ -313,6 +313,8 @@ class TC_GAME_API ChatHandler
         bool HandleInstanceSaveDataCommand(const char * args);
         bool HandleInstanceSetDataCommand(const char* args);
         bool HandleInstanceGetDataCommand(const char* args);
+        bool HandleInstanceSetBossStateCommand(const char* args);
+        bool HandleInstanceGetBossStateCommand(const char* args);
 
         bool HandleServerCorpsesCommand(const char* args);
         bool HandleServerExitCommand(const char* args);

@@ -613,6 +613,8 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "savedata",       SEC_GAMEMASTER1,      false, &ChatHandler::HandleInstanceSaveDataCommand,    "" },
         { "setdata",        SEC_GAMEMASTER1,      false, &ChatHandler::HandleInstanceSetDataCommand,     "" },
         { "getdata",        SEC_GAMEMASTER1,      false, &ChatHandler::HandleInstanceGetDataCommand,     "" },
+        { "setbossstate",   SEC_GAMEMASTER1,      false, &ChatHandler::HandleInstanceSetBossStateCommand, "" },
+        { "getbossstate",   SEC_GAMEMASTER1,      false, &ChatHandler::HandleInstanceGetBossStateCommand, "" },
     };
 
     static std::vector<ChatCommand> replayCommandTable =
