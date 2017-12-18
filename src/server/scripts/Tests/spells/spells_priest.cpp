@@ -348,20 +348,125 @@ public:
             spawn.MoveInFront(spawn, 3.0f);
             TestPlayer* rogueA = SpawnPlayer(CLASS_ROGUE, RACE_NIGHTELF, 70, spawn);
             TestPlayer* rogueH = SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 70, spawn);
+            // RIP
+            spawn.MoveInFront(spawn, 3.0f);
+            TestPlayer* ripA = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
+            TestPlayer* ripH = SpawnPlayer(CLASS_ROGUE, RACE_ORC, 70, spawn);
 
-            Wait(5000);
+            float const dist = 35.0f;
+            uint32 const GAS_NOVA = 45855;
 
-            creature->Attack(priestA, true);
-            TEST_CAST(creature, creature, 45855, SPELL_CAST_OK, TRIGGERED_FULL_MASK); // Gas Nova, Felmyst spell
-            //TEST_HAS_AURA(priestH, 45855);
-            TEST_HAS_AURA(priestA, 45855);
-            TEST_HAS_AURA(shamanA, 45855);
+            // Get all the units
+            std::vector<WorldObject*> targets;
+            Trinity::AllWorldObjectsInRange u_check(creature, dist);
+            Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(creature, targets, u_check);
+            Cell::VisitAllObjects(creature, searcher, dist);
 
-            // from the center
-            // affects pets, not totems
-            // 1 dispel per target
-            // up to 10 friendly player and 10 enemy
+            // Group raid the players
+            for (WorldObject* object : targets)
+            {
+                if (Player* player = object->ToPlayer())
+                {                  
+                    if (player == priestA || player == priestH)
+                        continue;
+
+                    if (player->GetTeam() == Team::ALLIANCE)
+                        GroupPlayer(priestA, player);
+                    else
+                        GroupPlayer(priestH, player);
+                }
+            }
+
+            // Buff horde raid
+            uint32 const SACRED_CANDLE = 17029;
+            priestH->AddItem(17029, 2);
+            TEST_CAST(priestH, priestH, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
+            TEST_CAST(priestH, hunterH, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
+            TEST_CAST(priestH, ripH, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
+
+            // Gas Nova for all
+            TEST_CAST(creature, creature, GAS_NOVA, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            // Everybody has the aura except Totems and creature
+            for (WorldObject* object : targets)
+            {
+                if (Unit* unit = object->ToUnit())
+                {
+                    if(unit->IsTotem() || unit == creature)
+                        TEST_HAS_NOT_AURA(unit, GAS_NOVA)
+                    else
+                        TEST_HAS_AURA(unit, GAS_NOVA)
+
+                    // Buff priest on horde players & pets
+                    if (Player* player = object->ToPlayer())
+                    {
+                        if (player->GetTeam() == Team::HORDE)
+                        {   
+                            TEST_HAS_AURA(player, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
+                            if (Pet* pet = player->GetPet())
+                                TEST_HAS_AURA(pet, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
+                        }
+                    }
+                }
+            }
+
+            // Mass dispell
+            // Alliance: no more gas nova except ripA
+            // Horde: gas nova but no more priest buff expect ripH
+            TEST_CAST(priestA, shamanA, ClassSpells::Priest::MASS_DISPEL_RNK_1);
+            for (WorldObject* object : targets)
+            {
+                if (Player* player = object->ToPlayer())
+                {
+                    if (player->GetTeam() == Team::ALLIANCE)
+                    {
+                        // 10 allies were already dispelled
+                        if (player == ripA)
+                        {
+                            TEST_HAS_AURA(player, GAS_NOVA);
+                            continue;
+                        }
+                        TEST_HAS_NOT_AURA(player, GAS_NOVA)
+                        if (Pet* pet = player->ToPet())
+                            TEST_HAS_NOT_AURA(pet, GAS_NOVA)
+                    }
+                    else
+                    {
+                        // 10 enemies were already dispelled
+                        if (player == ripH)
+                        {
+                            TEST_HAS_AURA(player, GAS_NOVA);
+                            TEST_HAS_AURA(player, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
+                            continue;
+                        }
+                        TEST_HAS_AURA(player, GAS_NOVA)
+                        TEST_HAS_NOT_AURA(player, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
+                        if (Pet* pet = player->ToPet())
+                        {
+                            TEST_HAS_AURA(pet, GAS_NOVA)
+                            TEST_HAS_NOT_AURA(pet, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
+
+                        }
+                    }
+                }
+            }
+
             // Remove Ice Block, Divine Shield, some banish?
+            TEST_CAST(mageH, mageH, ClassSpells::Mage::ICE_BLOCK_RNK_1);
+            TEST_CAST(paladinH, paladinH, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
+            TEST_CAST(mageA, mageA, ClassSpells::Mage::SUMMON_WATER_ELEMENTAL_RNK_1);
+            Pet* elem = mageA->GetPet();
+            TEST_ASSERT(elem != nullptr);
+            TEST_CAST(warlockH, elem, ClassSpells::Warlock::BANISH_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+
+            TEST_HAS_AURA(mageH, ClassSpells::Mage::ICE_BLOCK_RNK_1);
+            TEST_HAS_AURA(paladinH, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
+            TEST_HAS_AURA(elem, ClassSpells::Warlock::BANISH_RNK_2);
+
+            TEST_CAST(priestA, mageH, ClassSpells::Priest::MASS_DISPEL_RNK_1);
+
+            TEST_HAS_NOT_AURA(mageH, ClassSpells::Mage::ICE_BLOCK_RNK_1);
+            TEST_HAS_NOT_AURA(paladinH, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
+            TEST_HAS_NOT_AURA(elem, ClassSpells::Warlock::BANISH_RNK_2);
         }
     };
 
@@ -585,6 +690,381 @@ public:
     }
 };
 
+class AbolishDiseaseTest : public TestCaseScript
+{
+public:
+    AbolishDiseaseTest() : TestCaseScript("spells priest abolish_disease") { }
+
+    class AbolishDiseaseTestImpt : public TestCase
+    {
+    public:
+        AbolishDiseaseTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void TestDispelDisease(TestPlayer* victim, uint32 Disease1, uint32 Disease2, uint32 Disease3, uint32 Disease4, uint32 Disease5, int8 count)
+        {
+            victim->SetFullHealth();
+            ASSERT_INFO("TestDispelDisease maximum trials reached");
+            TEST_ASSERT(count < 10);
+            count++;
+
+            uint32 tickTime = 5 * SECOND * IN_MILLISECONDS;
+
+            if (victim->HasAura(Disease5))
+            {
+                TEST_ASSERT(victim->HasAura(Disease4));
+                TEST_ASSERT(victim->HasAura(Disease3));
+                TEST_ASSERT(victim->HasAura(Disease2));
+                TEST_ASSERT(victim->HasAura(Disease1));
+                Wait(tickTime); // wait for next tick
+                TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+            }
+            else
+            {
+                if (victim->HasAura(Disease4))
+                {
+                    TEST_ASSERT(victim->HasAura(Disease3));
+                    TEST_ASSERT(victim->HasAura(Disease2));
+                    TEST_ASSERT(victim->HasAura(Disease1));
+                    Wait(tickTime); // wait for next tick
+                    TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+                }
+                else
+                {
+                    if (victim->HasAura(Disease3))
+                    {
+                        TEST_ASSERT(victim->HasAura(Disease2));
+                        TEST_ASSERT(victim->HasAura(Disease1));
+                        Wait(tickTime); // wait for next tick
+                        TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+                    }
+                    else
+                    {
+                        if (victim->HasAura(Disease2))
+                        {
+                            TEST_ASSERT(victim->HasAura(Disease1));
+                            Wait(tickTime); // wait for next tick
+                            TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+                        }
+                        else
+                        {
+                            if (victim->HasAura(Disease1))
+                            {
+                                Wait(tickTime); // wait for next tick
+                                TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            // setup
+            priest->DisableRegeneration(true);
+
+            uint32 const WEAKENING_DISEASE = 18633;
+            uint32 const SPORE_DISEASE     = 31423;
+            uint32 const FEVERED_DISEASE   = 34363;
+            uint32 const DISEASE_BUFFET    = 46481;
+            uint32 const VOLATILE_DISEASE  = 46483;
+
+            // Apply
+            warrior->AddAura(WEAKENING_DISEASE, warrior);
+            Wait(1);
+            warrior->AddAura(SPORE_DISEASE, warrior);
+            Wait(1);
+            warrior->AddAura(FEVERED_DISEASE, warrior);
+            Wait(1);
+            warrior->AddAura(DISEASE_BUFFET, warrior);
+            Wait(1);
+            warrior->AddAura(VOLATILE_DISEASE, warrior);
+            Wait(1);
+
+            // Mana cost
+            uint32 const expectedAbolishDiseaseMana = 314;
+            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, POWER_MANA, expectedAbolishDiseaseMana);
+
+            // Aura duration
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, EFFECT_0, 20 * SECOND * IN_MILLISECONDS);
+
+            Wait(500);
+            int8 count = 0;
+            TestDispelDisease(warrior, WEAKENING_DISEASE, SPORE_DISEASE, FEVERED_DISEASE, DISEASE_BUFFET, VOLATILE_DISEASE, count);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<AbolishDiseaseTestImpt>();
+    }
+};
+
+class BindingHealTest : public TestCaseScript
+{
+public:
+    BindingHealTest() : TestCaseScript("spells priest binding_heal") { }
+
+    class BindingHealTestImpt : public TestCase
+    {
+    public:
+        BindingHealTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF);
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+
+            // Mana cost
+            uint32 const expectedBindingHealMana = 705;
+            TEST_POWER_COST(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, POWER_MANA, expectedBindingHealMana);
+            
+            // Heal
+            float const bindingHealCastTime = 1.5f;
+            float const bindingHealCoeff = bindingHealCastTime / 3.5f;
+            uint32 const bonusHeal = 550 * bindingHealCoeff;
+            uint32 const bindingHealMin = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MIN + bonusHeal;
+            uint32 const bindingHealMax = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MAX + bonusHeal;
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin, bindingHealMax, false);
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin * 1.5f, bindingHealMax * 1.5f, true);
+            TEST_DIRECT_HEAL(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin, bindingHealMax, false);
+            TEST_DIRECT_HEAL(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin * 1.5f, bindingHealMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<BindingHealTestImpt>();
+    }
+};
+
+class CureDiseaseTest : public TestCaseScript
+{
+public:
+    CureDiseaseTest() : TestCaseScript("spells priest cure_disease") { }
+
+    class CureDiseaseTestImpt : public TestCase
+    {
+    public:
+        CureDiseaseTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void TestDispelDisease(TestPlayer* victim, uint32 Disease1, uint32 Disease2, uint32 Disease3, uint32 Disease4, uint32 Disease5, int8 count)
+        {
+            victim->SetFullHealth();
+            ASSERT_INFO("TestDispelDisease maximum trials reached");
+            TEST_ASSERT(count < 10);
+            count++;
+
+            TEST_CAST(victim, victim, ClassSpells::Priest::CURE_DISEASE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+
+            if (victim->HasAura(Disease5))
+            {
+                TEST_ASSERT(victim->HasAura(Disease4));
+                TEST_ASSERT(victim->HasAura(Disease3));
+                TEST_ASSERT(victim->HasAura(Disease2));
+                TEST_ASSERT(victim->HasAura(Disease1));
+                TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+            }
+            else
+            {
+                if (victim->HasAura(Disease4))
+                {
+                    TEST_ASSERT(victim->HasAura(Disease3));
+                    TEST_ASSERT(victim->HasAura(Disease2));
+                    TEST_ASSERT(victim->HasAura(Disease1));
+                    TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+                }
+                else
+                {
+                    if (victim->HasAura(Disease3))
+                    {
+                        TEST_ASSERT(victim->HasAura(Disease2));
+                        TEST_ASSERT(victim->HasAura(Disease1));
+                        TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+                    }
+                    else
+                    {
+                        if (victim->HasAura(Disease2))
+                        {
+                            TEST_ASSERT(victim->HasAura(Disease1));
+                            TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+                        }
+                        else
+                        {
+                            if (victim->HasAura(Disease1))
+                            {
+                                TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+
+            // setup
+            priest->DisableRegeneration(true);
+
+            uint32 const WEAKENING_DISEASE = 18633;
+            uint32 const SPORE_DISEASE = 31423;
+            uint32 const FEVERED_DISEASE = 34363;
+            uint32 const DISEASE_BUFFET = 46481;
+            uint32 const VOLATILE_DISEASE = 46483;
+
+            // Apply
+            warrior->AddAura(WEAKENING_DISEASE, warrior);
+            Wait(1);
+            warrior->AddAura(SPORE_DISEASE, warrior);
+            Wait(1);
+            warrior->AddAura(FEVERED_DISEASE, warrior);
+            Wait(1);
+            warrior->AddAura(DISEASE_BUFFET, warrior);
+            Wait(1);
+            warrior->AddAura(VOLATILE_DISEASE, warrior);
+            Wait(1);
+
+            // Mana cost
+            uint32 const expectedCureDiseaseMana = 314;
+            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::CURE_DISEASE_RNK_1, POWER_MANA, expectedCureDiseaseMana);
+
+            Wait(500);
+            int8 count = 0;
+            TestDispelDisease(warrior, WEAKENING_DISEASE, SPORE_DISEASE, FEVERED_DISEASE, DISEASE_BUFFET, VOLATILE_DISEASE, count);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CureDiseaseTestImpt>();
+    }
+};
+
+class FlashHealTest : public TestCaseScript
+{
+public:
+    FlashHealTest() : TestCaseScript("spells priest greater_heal") { }
+
+    class FlashHealTestImpt : public TestCase
+    {
+    public:
+        FlashHealTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+
+            // Mana cost
+            uint32 const expectedFlashHealMana = 470;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, POWER_MANA, expectedFlashHealMana);
+
+            // Heal
+            float const greaterHealCastTime = 1.5f;
+            float const greaterHealCoeff = greaterHealCastTime / 3.5f;
+            uint32 const bonusHeal = 550 * greaterHealCoeff;
+            uint32 const greaterHealMin = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MIN + bonusHeal;
+            uint32 const greaterHealMax = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MAX + bonusHeal;
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, greaterHealMin, greaterHealMax, false);
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, greaterHealMin * 1.5f, greaterHealMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<FlashHealTestImpt>();
+    }
+};
+
+class GreaterHealTest : public TestCaseScript
+{
+public:
+    GreaterHealTest() : TestCaseScript("spells priest greater_heal") { }
+
+    class GreaterHealTestImpt : public TestCase
+    {
+    public:
+        GreaterHealTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+
+            // Mana cost
+            uint32 const expectedGreaterHealMana = 825;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, POWER_MANA, expectedGreaterHealMana);
+
+            // Heal
+            float const greaterHealCastTime = 3.0f;
+            float const greaterHealCoeff = greaterHealCastTime / 3.5f;
+            uint32 const bonusHeal = 550 * greaterHealCoeff;
+            uint32 const greaterHealMin = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN + bonusHeal;
+            uint32 const greaterHealMax = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX + bonusHeal;
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, greaterHealMin, greaterHealMax, false);
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, greaterHealMin * 1.5f, greaterHealMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<GreaterHealTestImpt>();
+    }
+};
+
+class HealTest : public TestCaseScript
+{
+public:
+    HealTest() : TestCaseScript("spells priest heal") { }
+
+    class HealTestImpt : public TestCase
+    {
+    public:
+        HealTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+
+            // Mana cost
+            uint32 const expectedHealMana = 305;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::HEAL_RNK_4, POWER_MANA, expectedHealMana);
+
+            // Heal
+            int const spellMaxLevel = 39;
+            int const spellBaseLevel = 34;
+            float const spellRealPointsPerLevel = 4.5;
+            float const downrankingCoeff = (spellBaseLevel + 6) / 70.0f; //  (spellMaxLevel + 5) / playerLevel <- downranking coeff formula
+            uint32 const bonusPoints = (spellMaxLevel - spellBaseLevel) * spellRealPointsPerLevel;
+            uint32 const bonusMaxPoints = 93; // effectDieSides1
+            float const healCastTime = 3.0f;
+            float const healCoeff = healCastTime / 3.5f;
+            uint32 const bonusHeal = 550 * healCoeff * downrankingCoeff;
+            uint32 const healMin = ClassSpellsDamage::Priest::HEAL_RNK_4_MIN + bonusPoints + bonusHeal;
+            uint32 const healMax = ClassSpellsDamage::Priest::HEAL_RNK_4_MIN + bonusPoints + bonusMaxPoints + bonusHeal;
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::HEAL_RNK_4, healMin, healMax, false);
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::HEAL_RNK_4, healMin * 1.5f, healMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<HealTestImpt>();
+    }
+};
+
 void AddSC_test_spells_priest()
 {
     // Discipline: 10/10
@@ -598,4 +1078,11 @@ void AddSC_test_spells_priest()
     new PowerWordShieldTest();
     new PrayerOfFortitudeTest();
     new ShackleUndeadTest();
+    // Holy: /
+    new AbolishDiseaseTest();
+    new BindingHealTest();
+    new CureDiseaseTest();
+    new FlashHealTest();
+    new GreaterHealTest();
+    new HealTest();
 }

@@ -1004,16 +1004,28 @@ void TestCase::EnableCriticals(Unit* caster, bool crit)
 	caster->SetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE, critChance); // RANGED_ATTACK
 }
 
-void TestCase::GroupPlayer(TestPlayer* leader, TestPlayer* player)
+void TestCase::GroupPlayer(TestPlayer* leader, Player* player)
 {
+    Group* group = leader->GetGroup();
+    if (group != nullptr && group->IsFull())
+        group->ConvertToRaid();
+
     //use WorldSession function to avoid duplicating logic
     leader->GetSession()->_HandleGroupInviteOpcode(player, player->GetName());
 
     WorldPacket acceptPacket(CMSG_GROUP_ACCEPT);
     player->GetSession()->HandleGroupAcceptOpcode(acceptPacket);
 
-    INTERNAL_ASSERT_INFO("Failed to add player to group");
-    INTERNAL_TEST_ASSERT(player->IsInSameGroupWith(leader));
+    if (group != nullptr && group->isRaidGroup())
+    {
+        INTERNAL_ASSERT_INFO("Failed to add %s(R%uC%u) to %s(R%uC%u)'s raid", player->GetName().c_str(), player->GetRace(), player->GetClass(), leader->GetName().c_str(), leader->GetRace(), leader->GetClass());
+        INTERNAL_TEST_ASSERT(player->IsInSameRaidWith(leader));
+    }
+    else
+    {
+        INTERNAL_ASSERT_INFO("Failed to add %s(R%uC%u) to %s(R%uC%u)'s group", player->GetName().c_str(), player->GetRace(), player->GetClass(), leader->GetName().c_str(), leader->GetRace(), leader->GetClass());
+        INTERNAL_TEST_ASSERT(player->IsInSameGroupWith(leader));
+    }
 }
 
 void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError)

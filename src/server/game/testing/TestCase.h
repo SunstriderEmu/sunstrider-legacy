@@ -84,7 +84,7 @@ public:
     void LearnTalent(TestPlayer* p, uint32 spellID);
     void EnableCriticals(Unit* caster, bool crit);
     //Invite player into leader group. Group is created if not yet existing.
-    void GroupPlayer(TestPlayer* leader, TestPlayer* player);
+    void GroupPlayer(TestPlayer* leader, Player* player);
     static std::string StringifySpellCastResult(uint32 result) { return StringifySpellCastResult(SpellCastResult(result)); }
     static std::string StringifySpellCastResult(SpellCastResult result);
 
