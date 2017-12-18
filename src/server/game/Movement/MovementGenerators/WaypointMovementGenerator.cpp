@@ -58,8 +58,16 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(WaypointPath& pat
 
 }
 
+#ifdef TRINITY_DEBUG
+std::atomic<bool> onArrivedProcessing = false;
+#endif
+
 WaypointMovementGenerator<Creature>::~WaypointMovementGenerator()
 {
+#ifdef TRINITY_DEBUG
+    ASSERT(!onArrivedProcessing);
+#endif
+
     if (erasePathAtEnd && customPath)
         delete customPath;
 }
@@ -662,12 +670,19 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
 
 void WaypointMovementGenerator<Creature>::MovementInform(Creature* creature, uint32 DBNodeId)
 {
+#ifdef TRINITY_DEBUG
+    onArrivedProcessing = true;
+#endif
+
     if (creature->AI())
     {
         creature->AI()->MovementInform(WAYPOINT_MOTION_TYPE, DBNodeId);
         if(_path)
             creature->AI()->WaypointReached(DBNodeId, _path->id);
     }
+#ifdef TRINITY_DEBUG
+    onArrivedProcessing = false;
+#endif
 }
 
 bool WaypointMovementGenerator<Creature>::GetResetPos(Creature*, float& x, float& y, float& z) const

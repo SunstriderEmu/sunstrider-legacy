@@ -12,6 +12,7 @@ class MovementGenerator;
 class Unit;
 class PathGenerator;
 struct WaypointPath;
+class SplineHandler;
 
 // Creature Entry ID used for waypoints show, visible only for GMs
 #define VISUAL_WAYPOINT 1
@@ -66,8 +67,9 @@ enum RotateDirection
 // assume it is 25 yard per 0.6 second
 #define SPEED_CHARGE    42.0f
 
-class TC_GAME_API MotionMaster //: private std::stack<MovementGenerator *>
+class TC_GAME_API MotionMaster
 {
+    friend SplineHandler;
     private:
         //typedef std::stack<MovementGenerator *> Impl;
         typedef MovementGenerator* _Ty;

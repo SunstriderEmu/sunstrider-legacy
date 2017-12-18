@@ -16092,6 +16092,7 @@ public:
             Creature* creature = _unit->ToCreature();
             if (creature)
             {
+                _unit->GetMotionMaster()->_cleanFlag |= MMCF_UPDATE;
                 auto moveGenerator = static_cast<WaypointMovementGenerator<Creature>*>(creature->GetMotionMaster()->top());
                 moveGenerator->SplineFinished(creature, creature->movespline->currentPathIdx());
 
@@ -16105,6 +16106,7 @@ public:
                             creature->GetFormation()->LeaderMoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), !creature->IsWalking());
                     }
                 }
+                _unit->GetMotionMaster()->_cleanFlag &= ~MMCF_UPDATE;
             }
         }
 
