@@ -1348,7 +1348,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
             SpellInfo const *spellInfo = vAura.second->GetSpellInfo();
             if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
             {
-                vAura.second->SetAuraDuration(vAura.second->GetAuraMaxDuration());
+                vAura.second->SetDuration(vAura.second->GetAuraMaxDuration());
                 vAura.second->UpdateAuraDuration();
             }
         }
@@ -1634,7 +1634,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
             SpellInfo const *spellInfo = vAura.second->GetSpellInfo();
             if( spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT) && spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && (vAura.second->GetCasterGUID() == GetGUID()) && spellInfo->Id != 41461) //Gathios judgement of blood (can't seem to find a general rule to avoid this hack)
             {
-                vAura.second->SetAuraDuration(vAura.second->GetAuraMaxDuration());
+                vAura.second->SetDuration(vAura.second->GetAuraMaxDuration());
                 vAura.second->UpdateAuraDuration();
             }
         }
@@ -1953,7 +1953,7 @@ void Unit::CalcAbsorbResist(Unit* pVictim, SpellSchoolMask schoolMask, DamageEff
             {
                 RemainingDamage = 0;
                 // Will be cleared next update
-                (*i)->SetAuraDuration(0);
+                (*i)->SetDuration(0);
             }
             continue;
         }
@@ -4532,7 +4532,7 @@ void Unit::SetAurasDurationByCasterSpell(uint32 spellId, uint64 casterGUID, int3
         {
             if(itr->second->GetCasterGUID()==casterGUID)
             {
-                itr->second->SetAuraDuration(duration);
+                itr->second->SetDuration(duration);
                 break;
             }
         }
@@ -4614,7 +4614,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
             int32 dur = aur->GetAuraDuration();
             const int32 max_dur = 2*MINUTE*1000;
             new_aur->SetAuraMaxDuration( max_dur > dur ? dur : max_dur );
-            new_aur->SetAuraDuration( max_dur > dur ? dur : max_dur );
+            new_aur->SetDuration( max_dur > dur ? dur : max_dur );
 
             // Unregister _before_ adding to stealer
             aur->UnregisterSingleCastAura();
@@ -5090,9 +5090,9 @@ void Unit::DelayAura(uint32 spellId, uint8 effindex, int32 delaytime)
     if (iter != m_Auras.end())
     {
         if (iter->second->GetAuraDuration() < delaytime)
-            iter->second->SetAuraDuration(0);
+            iter->second->SetDuration(0);
         else
-            iter->second->SetAuraDuration(iter->second->GetAuraDuration() - delaytime);
+            iter->second->SetDuration(iter->second->GetAuraDuration() - delaytime);
         iter->second->UpdateAuraDuration();
     }
 }
@@ -15275,18 +15275,19 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
     }
 }
 
-void Unit::AddAura(uint32 spellId, Unit* target)
+Aura* Unit::AddAura(uint32 spellId, Unit* target)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if(!spellInfo)
-        return;
+    if (!spellInfo)
+        return nullptr;
         
-    if(!target || (!target->IsAlive() && !(spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD)))
-        return;
+    if(!target || (!target->IsAlive() && !spellInfo->HasAttribute(SPELL_ATTR0_CASTABLE_WHILE_DEAD) && !spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_DEAD)))
+        return nullptr;
 
     if (target->IsImmunedToSpell(spellInfo, this))
-        return;
+        return nullptr;
         
+    Aura* firstAura = nullptr;
     for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
@@ -15301,11 +15302,14 @@ void Unit::AddAura(uint32 spellId, Unit* target)
             }
             else*/
             {
-                Aura *Aur = CreateAura(spellInfo, i, nullptr, target, this);
-                target->AddAura(Aur);
+                Aura* aur = CreateAura(spellInfo, i, nullptr, target, this);
+                target->AddAura(aur);
+                if (!firstAura)
+                    firstAura = aur;
             }
         }
     }
+    return firstAura;
 }
 
 Unit* Unit::GetRedirectThreatTarget() 

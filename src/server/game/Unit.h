@@ -1536,7 +1536,7 @@ class TC_GAME_API Unit : public WorldObject
         uint32 CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
         uint32 CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags triggerFlags, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
         uint32 CastSpell(GameObject *go, uint32 spellId, TriggerCastFlags triggerFlags, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
-        void AddAura(uint32 spellId, Unit *target);
+        Aura* AddAura(uint32 spellId, Unit *target);
 
         void LogBossDown(Creature* victim);
 

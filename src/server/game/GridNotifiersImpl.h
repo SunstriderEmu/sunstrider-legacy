@@ -107,7 +107,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         auto  aura = new PersistentAreaAura(spellInfo, eff_index, nullptr, target, i_check);
         aura->AddSource(&i_dynobject);
         //also refresh aura duration
-        aura->SetAuraDuration(i_dynobject.GetDuration());
+        aura->SetDuration(i_dynobject.GetDuration());
         if(target->AddAura(aura))
             i_dynobject.AddAffected(target);
     }

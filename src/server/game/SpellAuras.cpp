@@ -2170,7 +2170,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }
             case 32014: //archimonde bump
             {
-                SetAuraDuration(GetAuraDuration()*3);
+                SetDuration(GetAuraDuration()*3);
                 if (m_target->HasAuraEffect(31970))       // Archimonde fear, remove Fear before bump
                     m_target->RemoveAurasDueToSpell(31970);
                 return;
@@ -6489,7 +6489,7 @@ void Aura::PeriodicTick()
             {
                 m_target->CastSpell(m_target, 31463, TRIGGERED_FULL_MASK, nullptr, this);
                 // Remove aura
-                SetAuraDuration(0);
+                SetDuration(0);
             }
 
             // Mark of Kazzak
@@ -6502,7 +6502,7 @@ void Aura::PeriodicTick()
                 {
                     m_target->CastSpell(m_target, 32961, TRIGGERED_FULL_MASK, nullptr, this);
                     // Remove aura
-                    SetAuraDuration(0);
+                    SetDuration(0);
                 }
             }
 

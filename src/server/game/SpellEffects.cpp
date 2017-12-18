@@ -2942,7 +2942,7 @@ void Spell::EffectApplyAura(uint32 i)
     if(duration != Aur->GetAuraMaxDuration())
     {
         Aur->SetAuraMaxDuration(duration);
-        Aur->SetAuraDuration(duration);
+        Aur->SetDuration(duration);
     }
 
     bool added = unitTarget->AddAura(Aur);
@@ -4810,7 +4810,7 @@ void Spell::EffectWeaponDmg(uint32 i)
                     && proto->SpellFamilyFlags == SPELLFAMILYFLAG_WARRIOR_SUNDERARMOR)
                 {
                     int32 duration = proto->GetDuration();
-                    itr->SetAuraDuration(duration);
+                    itr->SetDuration(duration);
                     itr->UpdateAuraDuration();
                     stack = itr->GetStackAmount();
                     break;

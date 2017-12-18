@@ -228,7 +228,7 @@ class TC_GAME_API Aura
         int32 GetAuraMaxDuration() const { return m_maxduration; }
         void SetAuraMaxDuration(int32 duration) { m_maxduration = duration; }
         int32 GetAuraDuration() const { return m_duration; }
-        void SetAuraDuration(int32 duration)
+        void SetDuration(int32 duration)
         {
             m_duration = duration;
             if (duration<0)

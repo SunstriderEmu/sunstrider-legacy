@@ -3176,7 +3176,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
     if(result != SPELL_CAST_OK && !IsAutoRepeat()) //always cast autorepeat dummy for triggering
     {
         if(triggeredByAura)
-            triggeredByAura->SetAuraDuration(0);
+            triggeredByAura->SetDuration(0);
 
         SendCastResult(result);
         finish(false,false);
