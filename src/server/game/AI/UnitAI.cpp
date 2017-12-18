@@ -513,7 +513,7 @@ uint32 UnitAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
     if (!victim || (me->HasUnitState(UNIT_STATE_CASTING) && !triggered))
         return SPELL_FAILED_UNKNOWN;
 
-    uint32 reason = me->CastSpell(victim, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
+    uint32 reason = me->CastSpell(victim, spellId, triggered);
 
     //restore combat movement on out of mana
     if (reason == SPELL_FAILED_NO_POWER && GetRestoreCombatMovementOnOOM() && !IsCombatMovementAllowed())
