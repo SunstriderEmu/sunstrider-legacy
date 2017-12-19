@@ -1698,6 +1698,7 @@ class TC_GAME_API Unit : public WorldObject
         bool AddAura(Aura *aur);
 
         void RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
+        void RemoveAura(uint32 spellId);
         void RemoveAura(uint32 spellId, uint8 effindex, Aura* except = nullptr);
         void RemoveSingleAuraFromStackByDispel(uint32 spellId);
         void RemoveSingleAuraFromStack(uint32 spellId, uint8 effindex);

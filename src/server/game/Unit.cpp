@@ -510,8 +510,8 @@ void Unit::RemoveAurasByType(AuraType auraType, ObjectGuid casterGUID, Aura* exc
             && ((negative && !aura->IsPositive()) || (positive && aura->IsPositive())))
         {
             uint32 removedAuras = m_removedAurasCount;
-            RemoveAurasByCasterSpell(aura->GetId(), casterGUID); //TC RemoveAura(aurApp);
-            if (m_removedAurasCount > removedAuras + 1)
+            RemoveAura(aura->GetId()); //TC RemoveAura(aurApp);
+            if (m_removedAurasCount > removedAuras + 1) //if aura was effectively removed
                 iter = m_modAuras[auraType].begin();
         }
     }
@@ -4504,6 +4504,20 @@ void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint8 effindex, uint64 caste
         else
             ++iter;
     }
+}
+
+void Unit::RemoveAura(uint32 spellId)
+{
+    for (uint8 k = 0; k < MAX_SPELL_EFFECTS; ++k)
+    {
+        DEBUG_ASSERT(spellId < std::numeric_limits<uint16>::max());
+        spellEffectPair spair = spellEffectPair(uint16(spellId), k);
+        for (auto iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
+    {
+            RemoveAura(iter);
+            iter = m_Auras.upper_bound(spair);          // overwrite by more appropriate
+        }
+    }   
 }
 
 void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint64 casterGUID)
