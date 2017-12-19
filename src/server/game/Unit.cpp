@@ -500,8 +500,8 @@ void Unit::RemoveAurasByType(AuraType auraType, ObjectGuid casterGUID, Aura* exc
     if (auraType >= TOTAL_AURAS) 
         return;
 
-    AuraList::iterator iter, next;
-    for (iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); iter = next)
+    AuraList::iterator iter;
+    for (iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end();)
     {
         Aura* aura = *iter;
         ++iter;
