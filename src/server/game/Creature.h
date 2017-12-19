@@ -793,9 +793,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         //Play message for current creature when given time is elapsed. /!\ These events are udpated only if creature is alive
         void AddMessageEvent(uint64 timer, uint32 messageId, uint64 data = 0);
 
-        bool CanWalk() const override { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }
-        bool CanSwim() const override { return GetCreatureTemplate()->InhabitType & INHABIT_WATER || IsPet(); }
-        bool CanFly() const override { return m_canFly; }
+        virtual bool CanWalk() const override { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }
+        virtual bool CanSwim() const override { return GetCreatureTemplate()->InhabitType & INHABIT_WATER; }
+        virtual bool CanFly() const override { return m_canFly; }
 
         bool SetWalk(bool enable) override;
         bool SetDisableGravity(bool disable, bool packetOnly = false) override;

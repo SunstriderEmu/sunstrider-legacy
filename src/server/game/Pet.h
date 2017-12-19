@@ -10,7 +10,7 @@
 extern const uint32 LevelUpLoyalty[6];
 extern const uint32 LevelStartLoyalty[6];
 
-typedef std::unordered_map<uint16, PetSpell*> PetSpellMap;
+typedef std::unordered_map<uint32, PetSpell> PetSpellMap;
 typedef std::map<uint32, uint32> TeachSpellMap;
 typedef std::vector<uint32> AutoSpellList;
 
@@ -40,6 +40,7 @@ class TC_GAME_API Pet : public Guardian
         bool CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner);
         bool CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask);
         bool LoadPetFromDB(Player* owner,uint32 petentry = 0,uint32 petnumber = 0, bool current = false );
+        bool IsLoading() const override { return m_loading; }
         void SavePetToDB(PetSaveMode mode);
         void Remove(PetSaveMode mode, bool returnreagent = false);
         static void DeleteFromDB(uint32 guidlow);
@@ -72,12 +73,13 @@ class TC_GAME_API Pet : public Guardian
         bool HaveInDiet(ItemTemplate const* item) const;
         uint32 GetCurrentFoodBenefitLevel(uint32 itemlevel);
         void SetDuration(int32 dur) { m_duration = dur; }
+        int32 GetDuration() const { return m_duration; }
 
         int32 GetBonusDamage() { return m_bonusdamage; }
         void SetBonusDamage(int32 damage) { m_bonusdamage = damage; }
 
         bool   CanTakeMoreActiveSpells(uint32 SpellIconID);
-        void   ToggleAutocast(uint32 spellid, bool apply);
+        void   ToggleAutocast(SpellInfo const* spellInfo, bool apply);
         bool   HasTPForSpell(uint32 spellid);
         int32  GetTPForSpell(uint32 spellid);
 
@@ -91,14 +93,16 @@ class TC_GAME_API Pet : public Guardian
         void _LoadSpellCooldowns();
         void _SaveSpellCooldowns();
         void _LoadAuras(uint32 timediff);
-        void _SaveAuras();
+        void _SaveAuras(SQLTransaction& trans);
         void _LoadSpells();
-        void _SaveSpells();
+        void _SaveSpells(SQLTransaction& trans);
 
-        bool AddSpell(uint16 spell_id,uint16 active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, uint16 slot_id=0xffff, PetSpellType type = PETSPELL_NORMAL);
-        bool LearnSpell(uint16 spell_id);
-        void RemoveSpell(uint16 spell_id);
-        bool _removeSpell(uint16 spell_id);
+        bool AddSpell(uint32 spell_id, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
+        bool LearnSpell(uint32 spell_id);
+        bool RemoveSpell(uint32 spell_id, bool learn_prev, bool clear_ab = true);
+        bool UnlearnSpell(uint32 spell_id, bool learn_prev, bool clear_ab = true);
+        void CleanupActionBar();
+        std::string GenerateActionBarData() const;
 
         PetSpellMap     m_spells;
         TeachSpellMap   m_teachspells;
@@ -107,6 +111,9 @@ class TC_GAME_API Pet : public Guardian
         void InitPetCreateSpells();
         void CheckLearning(uint32 spellid);
         uint32 ResetTalentsCost() const;
+
+        bool CanWalk() const override { return true; }
+        bool CanSwim() const override { return true; }
 
         void  SetTP(int32 TP);
         int32 GetDispTP();
@@ -135,6 +142,7 @@ class TC_GAME_API Pet : public Guardian
         int32   m_loyaltyPoints;
         int32   m_bonusdamage;
         uint64  m_auraUpdateMask;
+        bool    m_loading;
 
         DeclinedName *m_declinedname;
 

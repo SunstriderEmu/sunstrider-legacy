@@ -421,6 +421,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "unlearn",        SEC_GAMEMASTER2,     false, &ChatHandler::HandlePetUnlearnCommand,          "" },
         { "tp",             SEC_GAMEMASTER2,     false, &ChatHandler::HandlePetTpCommand,               "" },
         { "rename",         SEC_GAMEMASTER2,     false, &ChatHandler::HandlePetRenameCommand,           "" },
+        { "happy",          SEC_GAMEMASTER1,     false, &ChatHandler::HandlePetHappyCommand,           "" },
     };
 
 

@@ -1210,7 +1210,7 @@ void TestCase::_TestAuraStack(Unit* target, uint32 spellID, SpellEffIndex effect
         auraStacks = aura->GetCharges();
         type = "charges";
     }
-    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with %u %s instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraStacks, type, stacks);
+    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with %u %s instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraStacks, type.c_str(), stacks);
     INTERNAL_TEST_ASSERT(auraStacks == stacks);
 }
 

@@ -144,6 +144,11 @@ enum SpellFacingFlags
 #define BASE_MAXDAMAGE 2.0f
 #define BASE_ATTACK_TIME 2000
 
+#define MAX_SPELL_CHARM         4
+#define MAX_SPELL_VEHICLE       6
+#define MAX_SPELL_POSSESS       8
+#define MAX_SPELL_CONTROL_BAR   10
+
 #define MAX_AGGRO_RESET_TIME 10 // in seconds
 #define MAX_AGGRO_RADIUS 45.0f  // yards
 
@@ -892,10 +897,51 @@ struct SpellPeriodicAuraLogInfo
 
 uint32 createProcExtendMask(SpellNonMeleeDamage *damageInfo, SpellMissInfo missCondition);
 
+#define UNIT_ACTION_BUTTON_ACTION(X) (uint32(X) & 0x00FFFFFF)
+#define UNIT_ACTION_BUTTON_TYPE(X)   ((uint32(X) & 0xFF000000) >> 24)
+#define MAKE_UNIT_ACTION_BUTTON(A, T) (uint32(A) | (uint32(T) << 24))
+
+enum ActiveStates
+{
+    ACT_PASSIVE  = 0x01,                                    // 0x01 - passive
+    ACT_DISABLED = 0x81,                                    // 0x80 - castable
+    ACT_ENABLED  = 0xC1,                                    // 0x40 | 0x80 - auto cast + castable
+    ACT_COMMAND  = 0x07,                                    // 0x01 | 0x02 | 0x04
+    ACT_REACTION = 0x06,                                    // 0x02 | 0x04
+    ACT_DECIDE   = 0x00                                     // custom
+};
+
+enum ReactStates
+{
+    REACT_PASSIVE = 0,
+    REACT_DEFENSIVE = 1,
+    REACT_AGGRESSIVE = 2
+};
+
+enum CommandStates
+{
+    COMMAND_STAY = 0,
+    COMMAND_FOLLOW = 1,
+    COMMAND_ATTACK = 2,
+    COMMAND_ABANDON = 3
+};
+
 struct UnitActionBarEntry
 {
-    uint32 Type;
-    uint32 SpellOrAction;
+    UnitActionBarEntry();
+
+    uint32 packedData;
+
+    // helper
+    ActiveStates GetType() const;
+    uint32 GetAction() const;
+    bool IsActionBarForSpell() const;
+
+    void SetActionAndType(uint32 action, ActiveStates type);
+
+    void SetType(ActiveStates type);
+
+    void SetAction(uint32 action);
 };
 
 #define MAX_DECLINED_NAME_CASES 5
@@ -939,47 +985,7 @@ class GlobalCooldownMgr                                     // Shared by Player 
         GlobalCooldownList m_GlobalCooldowns;
 };
 
-enum ActiveStates
-{
-    ACT_ENABLED  = 0xC100,
-    ACT_DISABLED = 0x8100,
-    ACT_COMMAND  = 0x0700,
-    ACT_REACTION = 0x0600,
-    ACT_CAST     = 0x0100,
-    ACT_PASSIVE  = 0x0000,
-    ACT_DECIDE   = 0x0001
-};
-
-enum ReactStates
-{
-    REACT_PASSIVE    = 0,
-    REACT_DEFENSIVE  = 1,
-    REACT_AGGRESSIVE = 2
-};
-
-enum CommandStates
-{
-    COMMAND_STAY    = 0,
-    COMMAND_FOLLOW  = 1,
-    COMMAND_ATTACK  = 2,
-    COMMAND_ABANDON = 3
-};
-
-#ifdef LICH_KING
-#define UNIT_ACTION_BUTTON_ACTION(X) (uint32(X) & 0x00FFFFFF)
-#define UNIT_ACTION_BUTTON_TYPE(X)   ((uint32(X) & 0xFF000000) >> 24)
-#define MAKE_UNIT_ACTION_BUTTON(A, T) (uint32(A) | (uint32(T) << 24))
-#else
-#define UNIT_ACTION_BUTTON_ACTION(X) (uint32(X) & 0x0000FFFF)
-#define UNIT_ACTION_BUTTON_TYPE(X)   ((uint32(X) & 0xFFFF0000) >> 16)
-#define MAKE_UNIT_ACTION_BUTTON(A, T) (uint32(A) | (uint32(T) << 16))
-#endif
-
-struct CharmSpellEntry
-{
-    uint16 spellId;
-    uint16 active;
-};
+typedef UnitActionBarEntry CharmSpellInfo;
 
 enum Rotation
 {
@@ -1022,12 +1028,12 @@ class TC_GAME_API CharmInfo
     public:
         explicit CharmInfo(Unit* unit);
         ~CharmInfo();
-        uint32 GetPetNumber() const { return m_petnumber; }
+        uint32 GetPetNumber() const { return _petnumber; }
         void SetPetNumber(uint32 petnumber, bool statwindow);
 
-        void SetCommandState(CommandStates st) { m_CommandState = st; }
-        CommandStates GetCommandState() { return m_CommandState; }
-        bool HasCommandState(CommandStates state) { return (m_CommandState == state); }
+        void SetCommandState(CommandStates st) { _CommandState = st; }
+        CommandStates GetCommandState() { return _CommandState; }
+        bool HasCommandState(CommandStates state) { return (_CommandState == state); }
 
         void InitPossessCreateSpells();
         void InitCharmCreateSpells();
@@ -1035,13 +1041,19 @@ class TC_GAME_API CharmInfo
         void InitEmptyActionBar(bool withAttack = true);
 
                                                             //return true if successful
-        bool AddSpellToActionBar(uint32 oldid, uint32 newid, uint8 index, ActiveStates newstate = ACT_DECIDE);
+        bool AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate = ACT_DECIDE, uint8 preferredSlot = 0);
+        bool RemoveSpellFromActionBar(uint32 spell_id);
 		void LoadPetActionBar(const std::string& data);
-        void ToggleCreatureAutocast(uint32 spellid, bool apply);
+        void BuildActionBar(WorldPacket* data);
+        void SetSpellAutocast(SpellInfo const* spellInfo, bool state);
+        void SetActionBar(uint8 index, uint32 spellOrAction, ActiveStates type)
+        {
+            PetActionBar[index].SetActionAndType(spellOrAction, type);
+        }
+        UnitActionBarEntry const* GetActionBarEntry(uint8 index) const { return &(PetActionBar[index]); }
+        void ToggleCreatureAutocast(SpellInfo const* spellInfo, bool apply);
+        CharmSpellInfo* GetCharmSpell(uint8 index) { return &(_charmspells[index]); }
 
-        UnitActionBarEntry* GetActionBarEntry(uint8 index) { return &(PetActionBar[index]); }
-        CharmSpellEntry* GetCharmSpell(uint8 index) { return &(m_charmspells[index]); }
-        
         GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
 
 		void SetIsCommandAttack(bool val);
@@ -1058,15 +1070,14 @@ class TC_GAME_API CharmInfo
 		void GetStayPosition(float &x, float &y, float &z);
 
     private:
-        Unit* m_unit;
-        UnitActionBarEntry PetActionBar[10];
-        CharmSpellEntry m_charmspells[MAX_CREATURE_SPELLS];
-        CommandStates   m_CommandState;
-        uint32          m_petnumber;
-        bool            m_barInit;
+        Unit* _unit;
+        UnitActionBarEntry PetActionBar[MAX_UNIT_ACTION_BAR_INDEX];
+        CharmSpellInfo _charmspells[4];
+        CommandStates   _CommandState;
+        uint32          _petnumber;
 
         //for restoration after charmed
-		ReactStates     m_oldReactState;
+		ReactStates     _oldReactState;
 			
 		bool _isCommandAttack;
 		bool _isCommandFollow;
@@ -2161,7 +2172,8 @@ class TC_GAME_API Unit : public WorldObject
         Unit *GetLastRedirectTarget();
 
         bool IsAIEnabled, NeedChangeAI;
-             
+
+        virtual bool IsLoading() const { return false; }
 		bool IsDuringRemoveFromWorld() const { return m_duringRemoveFromWorld; }
 
         Pet* ToPet() { if(IsPet()) return reinterpret_cast<Pet*>(this); else return nullptr; } 

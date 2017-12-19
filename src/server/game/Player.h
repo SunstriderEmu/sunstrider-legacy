@@ -550,6 +550,14 @@ enum PlayerBytes3Offsets : uint8
     //BC OK ? PLAYER_BYTES_3_OFFSET_ARENA_FACTION = 3
 };
 
+enum PlayerFieldBytesOffsets
+{
+    //BC OK ? PLAYER_FIELD_BYTES_OFFSET_FLAGS                 = 0,
+    //BC OK ? PLAYER_FIELD_BYTES_OFFSET_RAF_GRANTABLE_LEVEL   = 1,
+    PLAYER_FIELD_BYTES_OFFSET_ACTION_BAR_TOGGLES    = 2,
+    //BC OK ? PLAYER_FIELD_BYTES_OFFSET_LIFETIME_MAX_PVP_RANK = 3
+};
+
 enum PlayerFieldBytes2Offsets
 {
 #ifdef LICH_KING

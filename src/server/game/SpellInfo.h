@@ -461,6 +461,7 @@ public:
     bool HasVisual(uint32 visual) const;
     bool CanBeUsedInCombat() const;
     bool IsPassive() const;
+    bool IsAutocastable() const;
     bool IsStackableWithRanks() const;
     bool IsPassiveStackableWithRanks() const;
 	bool IsCooldownStartedOnEvent() const;

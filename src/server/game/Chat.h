@@ -87,6 +87,14 @@ class TC_GAME_API ChatHandler
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player
         bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = nullptr, std::string* player_name = nullptr);
+        char*     extractKeyFromLink(char* text, char const* const* linkTypes, int* found_idx, char** something1 = nullptr);
+        uint32    extractSpellIdFromLink(char* text);
+        GameTele const* extractGameTeleFromLink(char* text);
+
+        Player*   GetSelectedPlayer() const;
+        Creature* GetSelectedCreature() const;
+        Unit*     GetSelectedUnit() const;
+        Player*   GetSelectedPlayerOrSelf() const;
 
         bool HasSentErrorMessage() const { return sentErrorMessage; }
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
@@ -469,6 +477,7 @@ class TC_GAME_API ChatHandler
         bool HandlePetLearnCommand(const char* args);
         bool HandleCreatePetCommand(const char* args);
         bool HandlePetRenameCommand(const char* args);
+        bool HandlePetHappyCommand(const char* args);
 
         bool HandleGroupLeaderCommand(const char* args);
         bool HandleGroupDisbandCommand(const char* args);
@@ -652,13 +661,6 @@ class TC_GAME_API ChatHandler
         bool HandleWaterwalkCheatCommand(const char* args);
         bool HandleTaxiCheatCommand(const char* args);
 
-        Player*   GetSelectedPlayer() const;
-        Creature* GetSelectedCreature() const;
-        Unit*     GetSelectedUnit() const;
-        Player*   GetSelectedPlayerOrSelf() const;
-        char*     extractKeyFromLink(char* text, char const* const* linkTypes, int* found_idx, char** something1 = nullptr);
-        uint32    extractSpellIdFromLink(char* text);
-        GameTele const* extractGameTeleFromLink(char* text);
         bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, uint64 &guid, bool offline = false);
 
         GameObject* GetNearbyGameObject();

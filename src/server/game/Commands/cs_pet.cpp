@@ -1,6 +1,20 @@
 #include "Chat.h"
 #include "Language.h"
 
+inline Pet* GetSelectedPlayerPetOrOwn(ChatHandler* handler)
+{
+    if (Unit* target = handler->GetSelectedUnit())
+    {
+        if (target->GetTypeId() == TYPEID_PLAYER)
+            return target->ToPlayer()->GetPet();
+        if (target->IsPet())
+            return target->ToPet();
+        return nullptr;
+    }
+    Player* player = handler->GetSession()->GetPlayer();
+    return player ? player->GetPet() : nullptr;
+}
+
 bool ChatHandler::HandleCreatePetCommand(const char* args)
 {
     Player *player = m_session->GetPlayer();
@@ -81,9 +95,7 @@ bool ChatHandler::HandlePetLearnCommand(const char* args)
 {
     ARGS_CHECK
 
-    Player *plr = m_session->GetPlayer();
-    Pet *pet = plr->GetPet();
-
+    Pet* pet = GetSelectedPlayerPetOrOwn(this);
     if(!pet)
     {
         PSendSysMessage("You have no pet");
@@ -119,15 +131,14 @@ bool ChatHandler::HandlePetLearnCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandlePetUnlearnCommand(const char *args)
+bool ChatHandler::HandlePetUnlearnCommand(const char* args)
 {
     ARGS_CHECK
 
-    Player *plr = m_session->GetPlayer();
-    Pet *pet = plr->GetPet();
-
+    Pet* pet = GetSelectedPlayerPetOrOwn(this);
     if(!pet)
     {
+        //SendSysMessage(LANG_SELECT_PLAYER_OR_PET);
         PSendSysMessage("You have no pet.");
         SetSentErrorMessage(true);
         return false;
@@ -136,7 +147,7 @@ bool ChatHandler::HandlePetUnlearnCommand(const char *args)
     uint32 spellId = extractSpellIdFromLink((char*)args);
 
     if(pet->HasSpell(spellId))
-        pet->RemoveSpell(spellId);
+        pet->RemoveSpell(spellId, false);
     else
         PSendSysMessage("Pet doesn't have that spell.");
 
@@ -147,9 +158,7 @@ bool ChatHandler::HandlePetTpCommand(const char *args)
 {
     ARGS_CHECK
 
-    Player *plr = m_session->GetPlayer();
-    Pet *pet = plr->GetPet();
-
+    Pet* pet = GetSelectedPlayerPetOrOwn(this);
     if(!pet)
     {
         PSendSysMessage("You have no pet.");
@@ -165,19 +174,35 @@ bool ChatHandler::HandlePetTpCommand(const char *args)
     return true;
 }
 
+bool ChatHandler::HandlePetHappyCommand(const char* args)
+{
+    Pet* pet = GetSelectedPlayerPetOrOwn(this);
+    if (!pet)
+    {
+        //SendSysMessage(LANG_SELECT_PLAYER_OR_PET);
+        PSendSysMessage("You have no pet.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    pet->SetLoyaltyLevel(BEST_FRIEND);
+    pet->SetPower(POWER_HAPPINESS, 1050000); //maxed
+    return true;
+}
+
 bool ChatHandler::HandlePetRenameCommand(const char* args)
 {
     ARGS_CHECK
-    Creature* target = GetSelectedCreature();
-    
-    if (!target || !target->IsPet())
+
+    Pet* targetPet = GetSelectedPlayerPetOrOwn(this);
+    if (!targetPet)
     {
-        SendSysMessage(LANG_SELECT_CREATURE);
-        return true;
-    }
-        
-    Pet* targetPet = target->ToPet();
-        
+        //SendSysMessage(LANG_SELECT_PLAYER_OR_PET);
+        PSendSysMessage("Select a pet or pet owner.");
+        SetSentErrorMessage(true);
+        return false;
+    }        
+
     if (targetPet->getPetType() != HUNTER_PET)
     {
         SendSysMessage("Must select a hunter pet");

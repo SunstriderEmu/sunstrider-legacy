@@ -915,8 +915,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target)
     const SpellInfo* const pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (pet && pet->HasSpell(spellId))
     {
-       //TODO PLAYERBOT pet->GetCharmInfo()->SetSpellAutocast(pSpellInfo, TRIGGERED_FULL_MASK);
-        pet->GetCharmInfo()->ToggleCreatureAutocast(pSpellInfo->Id, true);
+        pet->GetCharmInfo()->SetSpellAutocast(pSpellInfo, true);
         TellMaster("My pet will auto-cast this spell");
         return true;
     }

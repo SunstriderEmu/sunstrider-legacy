@@ -18221,77 +18221,53 @@ void Player::Whisper(std::string const& text, Language language, Player* target,
 void Player::PetSpellInitialize()
 {
     Pet* pet = GetPet();
+    if (!pet)
+        return;
 
-    if(pet)
+    // first line + actionbar + spellcount + spells + last adds
+    WorldPacket data(SMSG_PET_SPELLS, 8+4+1+1+2+1+4*MAX_UNIT_ACTION_BAR_INDEX+1);
+
+    CharmInfo* charmInfo = pet->GetCharmInfo();
+    if (!charmInfo)
     {
-        uint8 addlist = 0;
-
-        CreatureTemplate const *cinfo = pet->GetCreatureTemplate();
-
-        if(pet->isControlled() && (pet->getPetType() == HUNTER_PET || (cinfo && cinfo->type == CREATURE_TYPE_DEMON && GetClass() == CLASS_WARLOCK)))
-        {
-            for(auto & m_spell : pet->m_spells)
-            {
-                if(m_spell.second->state == PETSPELL_REMOVED)
-                    continue;
-                ++addlist;
-            }
-        }
-
-        // first line + actionbar + spellcount + spells + last adds
-        WorldPacket data(SMSG_PET_SPELLS, 16+40+1+4*addlist+25);
-
-        CharmInfo* charmInfo = pet->GetCharmInfo();
-        if (!charmInfo)
-        {
-            TC_LOG_ERROR("entities.pet", "Pet has not charmInfo at PetSpellInitialize time, this should never happen!");
-            return;
-        }
-                                                            //16
-        data << (uint64)pet->GetGUID();
-#ifdef LICH_KING
-        data << uint16(pet->GetCreatureTemplate()->family);         // creature family (required for pet talents)
-        data << uint32(pet->GetDuration());
-#else
-        data << uint32(0x00000000); // Maybe duration?
-#endif
-        data << uint8(pet->GetReactState());
-        data << uint8(charmInfo->GetCommandState());
-        data << uint16(0); // Flags, mostly unknown
-
-        for(uint32 i = 0; i < 10; i++)                      //40
-        {
-            data << uint16(charmInfo->GetActionBarEntry(i)->SpellOrAction) << uint16(charmInfo->GetActionBarEntry(i)->Type);
-        }
-
-        data << uint8(addlist);                             //1
-
-        if(addlist && pet->isControlled())
-        {
-            for (auto & m_spell : pet->m_spells)
-            {
-                if(m_spell.second->state == PETSPELL_REMOVED)
-                    continue;
-
-                data << uint16(m_spell.first);
-                data << uint16(m_spell.second->active);        // pet spell active state isn't boolean
-            }
-        }
-
-        //data << uint8(0x01) << uint32(0x6010) << uint32(0x01) << uint32(0x05) << uint16(0x00);    //15
-        uint8 count = 3;                                    //1+8+8+8=25
-
-        // if count = 0, then end of packet...
-        data << count;
-        // uint32 value is spell id...
-        // uint64 value is constant 0, unknown...
-        data << uint32(0x6010) << uint64(0);                // if count = 1, 2 or 3
-        //data << uint32(0x5fd1) << uint64(0);  // if count = 2
-        data << uint32(0x8e8c) << uint64(0);                // if count = 3
-        data << uint32(0x8e8b) << uint64(0);                // if count = 3
-
-        SendDirectMessage(&data);
+        TC_LOG_ERROR("entities.pet", "Pet has not charmInfo at PetSpellInitialize time, this should never happen!");
+        return;
     }
+                                                        //16
+    data << (uint64)pet->GetGUID();
+#ifdef LICH_KING
+    data << uint16(pet->GetCreatureTemplate()->family);         // creature family (required for pet talents)
+#endif
+    data << uint32(pet->GetDuration());
+    data << uint8(pet->GetReactState());
+    data << uint8(charmInfo->GetCommandState());
+    data << uint16(0); // Flags, mostly unknown
+
+    charmInfo->BuildActionBar(&data);
+
+    // spells count
+    size_t spellsCountPos = data.wpos();
+    uint8 addlist = 0;
+    data << uint8(addlist);                             //placeholder
+
+    if (pet->IsPermanentPetFor(this))
+    {
+        for (auto& m_spell : pet->m_spells)
+        {
+            if(m_spell.second.state == PETSPELL_REMOVED)
+                continue;
+
+            data << uint32(MAKE_UNIT_ACTION_BUTTON(m_spell.first, m_spell.second.active));
+            ++addlist;
+        }
+    }
+    data.put<uint8>(spellsCountPos, addlist);
+
+
+    data << uint8(0);                                       // cooldowns count
+    //data << uint32(0x6010) << uint64(0);                    // for each cooldown (bc format, dunno about LK)
+
+    SendDirectMessage(&data);
 }
 
 void Player::SendRemoveControlBar() const
@@ -18317,24 +18293,22 @@ void Player::PossessSpellInitialize()
         return;
     }
 
-    uint8 addlist = 0;
-    WorldPacket data(SMSG_PET_SPELLS, 16+40+1+4*addlist+25);// first line + actionbar + spellcount + spells + last adds
-
+    WorldPacket data(SMSG_PET_SPELLS, 8+4+1+1+2+1+4*MAX_UNIT_ACTION_BAR_INDEX+1+1);
                                                             //16
-    data << (uint64)charm->GetGUID() << uint32(0x00000000) << uint8(0) << uint8(0) << uint16(0);
+    data << (uint64)charm->GetGUID();
+#ifdef LICH_KING
+    data << uint16(0); //Family
+#endif
+    data << uint32(0); //duration
+    data << uint8(0); //react state
+    data << uint8(0); //command state
+    data << uint16(0); //flags
 
-    for(uint32 i = 0; i < 10; i++)                          //40
-    {
-        data << uint16(charmInfo->GetActionBarEntry(i)->SpellOrAction) << uint16(charmInfo->GetActionBarEntry(i)->Type);
-    }
+    charmInfo->BuildActionBar(&data);
 
-    data << uint8(addlist);                                 //1
-
-    uint8 count = 3;
-    data << count;
-    data << uint32(0x6010) << uint64(0);                    // if count = 1, 2 or 3
-    data << uint32(0x8e8c) << uint64(0);                    // if count = 3
-    data << uint32(0x8e8b) << uint64(0);                    // if count = 3
+    data << uint8(0); // spells count
+    data << uint8(0);                                       // cooldowns count
+    //data << uint32(0x6010) << uint64(0);                    // for each cooldown (bc format, dunno about LK)
 
     SendDirectMessage(&data);
 }
@@ -18352,58 +18326,39 @@ void Player::CharmSpellInitialize()
         return;
     }
 
-    uint8 addlist = 0;
+    WorldPacket data(SMSG_PET_SPELLS, 8+4+1+1+2+1+4*MAX_UNIT_ACTION_BAR_INDEX+1);
 
-    if(charm->GetTypeId() != TYPEID_PLAYER)
-    {
-        CreatureTemplate const *cinfo = (charm->ToCreature())->GetCreatureTemplate();
+    data << (uint64)charm->GetGUID();
+#ifdef LICH_KING
+    data << uint16(0); //pet family
+#endif
+    data << uint32(0); //duration
 
-        if(cinfo && cinfo->type == CREATURE_TYPE_DEMON && GetClass() == CLASS_WARLOCK)
-        {
-            for(uint32 i = 0; i < MAX_CREATURE_SPELLS; ++i)
-            {
-                if(charmInfo->GetCharmSpell(i)->spellId)
-                    ++addlist;
-            }
-        }
-    }
-
-    WorldPacket data(SMSG_PET_SPELLS, 16+40+1+4*addlist+25);// first line + actionbar + spellcount + spells + last adds
-
-    data << (uint64)charm->GetGUID() << uint32(0x00000000);
-
-    if(charm->GetTypeId() != TYPEID_PLAYER)
+    if (charm->GetTypeId() != TYPEID_PLAYER)
         data << uint8((charm->ToCreature())->GetReactState()) << uint8(charmInfo->GetCommandState());
     else
         data << uint8(0) << uint8(0);
 
-    data << uint16(0);
+    data << uint16(0); //flags
 
-    for(uint32 i = 0; i < 10; i++)                          //40
+    charmInfo->BuildActionBar(&data);
+
+    size_t spellsCountPos = data.wpos();
+    uint8 addlist = 0;
+    data << uint8(addlist);                             //placeholder
+    for(uint32 i = 0; i < MAX_CREATURE_SPELLS; ++i)
     {
-        data << uint16(charmInfo->GetActionBarEntry(i)->SpellOrAction) << uint16(charmInfo->GetActionBarEntry(i)->Type);
-    }
-
-    data << uint8(addlist);                                 //1
-
-    if(addlist)
-    {
-        for(uint32 i = 0; i < MAX_CREATURE_SPELLS; ++i)
+        CharmSpellInfo* cspell = charmInfo->GetCharmSpell(i);
+        if (cspell->GetAction())
         {
-            CharmSpellEntry *cspell = charmInfo->GetCharmSpell(i);
-            if(cspell->spellId)
-            {
-                data << uint16(cspell->spellId);
-                data << uint16(cspell->active);
-            }
+            data << uint32(cspell->packedData);
+            addlist++;
         }
     }
+    data.put<uint8>(spellsCountPos, addlist);
 
-    uint8 count = 3;
-    data << count;
-    data << uint32(0x6010) << uint64(0);                    // if count = 1, 2 or 3
-    data << uint32(0x8e8c) << uint64(0);                    // if count = 3
-    data << uint32(0x8e8b) << uint64(0);                    // if count = 3
+    data << uint8(0);                                       // cooldowns count
+    //data << uint32(0x6010) << uint64(0);                    // for each cooldown (bc format, dunno about LK)
 
     SendDirectMessage(&data);
 }

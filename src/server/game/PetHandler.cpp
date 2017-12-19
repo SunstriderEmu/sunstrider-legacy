@@ -27,7 +27,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
 
     switch(flag)
     {
-        case ACT_COMMAND:                                   //0x0700
+        case ACT_COMMAND:                                   //0x07
             // Possessed or shared vision pets are only able to attack
             if ((pet->IsPossessed() || pet->HasAuraType(SPELL_AURA_BIND_SIGHT)) && spellid != COMMAND_ATTACK && spellid != COMMAND_ABANDON)
                 return;
@@ -156,7 +156,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     TC_LOG_ERROR("network","WORLD: unknown PET flag Action %i and spellid %i.\n", flag, spellid);
             }
             break;
-        case ACT_REACTION:                                  // 0x600
+        case ACT_REACTION:                                  // 0x6
             switch(spellid)
             {
                 case REACT_PASSIVE:                         //passive
@@ -172,9 +172,9 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     break;
             }
             break;
-        case ACT_DISABLED:                                  //0x8100    spell (disabled), ignore
-        case ACT_CAST:                                      //0x0100
-        case ACT_ENABLED:                                   //0xc100    spell
+        case ACT_DISABLED:                                  //0x81    spell (disabled), ignore
+        case ACT_PASSIVE:                                   //0x01
+        case ACT_ENABLED:                                   //0xc1    spell
         {
             Unit* unit_target;
             if(guid2)
@@ -305,27 +305,19 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
 void WorldSession::HandlePetAction( WorldPacket & recvData )
 {
     uint64 guid1;
-    uint64 guid2;
+    uint32 data;
+    uint64 targetGuid;
 
     recvData >> guid1;          //pet guid
-#ifdef LICH_KING
-    uint32 data;
     recvData >> data;
-    recvData >> guid2;                                     //tag guid
+    recvData >> targetGuid;     //tag guid
 
     uint32 spellid = UNIT_ACTION_BUTTON_ACTION(data);
     uint8 flag = UNIT_ACTION_BUTTON_TYPE(data);
-#else
-    uint16 spellid;
-    uint16 flag;
-    recvData >> spellid;
-    recvData >> flag;                                      //delete = 0x0700 CastSpell = C100
-    recvData >> guid2;                                     //tag guid
-#endif
 
     // used also for charmed creature
     Unit* pet= ObjectAccessor::GetUnit(*_player, guid1);
-    TC_LOG_DEBUG("network","HandlePetAction.Pet %u flag is %u, spellid is %u, target %u.\n", uint32(GUID_LOPART(guid1)), flag, spellid, uint32(GUID_LOPART(guid2)) );
+    TC_LOG_DEBUG("network","HandlePetAction.Pet %u flag is %u, spellid is %u, target %u.\n", uint32(GUID_LOPART(guid1)), flag, spellid, uint32(GUID_LOPART(targetGuid)) );
     if(!pet)
     {
         TC_LOG_ERROR( "network","Pet %u not exist.\n", uint32(GUID_LOPART(guid1)) );
@@ -359,7 +351,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
     }
 
     if (GetPlayer()->m_Controlled.size() == 1)
-        HandlePetActionHelper(pet, guid1, spellid, flag, guid2);
+        HandlePetActionHelper(pet, guid1, spellid, flag, targetGuid);
     else
     {
         //If a pet is dismissed, m_Controlled will change
@@ -368,7 +360,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
             if ((*itr)->GetEntry() == pet->GetEntry() && (*itr)->IsAlive())
                 controlled.push_back(*itr);
         for (std::vector<Unit*>::iterator itr = controlled.begin(); itr != controlled.end(); ++itr)
-            HandlePetActionHelper(*itr, guid1, spellid, flag, guid2);
+            HandlePetActionHelper(*itr, guid1, spellid, flag, targetGuid);
     }
 
 }
@@ -484,9 +476,6 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
  //   TC_LOG_DEBUG("network", "HandlePetSetAction. CMSG_PET_SET_ACTION\n" );
 
     uint64 petguid;
-    uint32 position;
-    uint16 spell_id;
-    uint16 act_state;
     uint8  count;
 
     recvData >> petguid;
@@ -512,16 +501,69 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
     }
 
     count = (recvData.size() == 24) ? 2 : 1;
-    for(uint8 i = 0; i < count; i++)
+
+    uint32 position[2];
+    uint32 data[2];
+    bool move_command = false;
+
+    for (uint8 i = 0; i < count; i++)
     {
-        recvData >> position;
-        recvData >> spell_id;
-        recvData >> act_state;
+        recvData >> position[i];
+        recvData >> data[i];
 
-        TC_LOG_DEBUG("network", "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X\n", _player->GetName().c_str(), position, spell_id, act_state);
+        uint8 act_state = UNIT_ACTION_BUTTON_TYPE(data[i]);
 
-                                                            //if it's act for spell (en/disable/cast) and there is a spell given (0 = remove spell) which pet doesn't know, don't add
-        if(!((act_state == ACT_ENABLED || act_state == ACT_DISABLED || act_state == ACT_CAST) && spell_id && !pet->HasSpell(spell_id)))
+        //ignore invalid position
+        if (position[i] >= MAX_UNIT_ACTION_BAR_INDEX)
+            return;
+
+        // in the normal case, command and reaction buttons can only be moved, not removed
+        // at moving count == 2, at removing count == 1
+        // ignore attempt to remove command|reaction buttons (not possible at normal case)
+        if (act_state == ACT_COMMAND || act_state == ACT_REACTION)
+        {
+            if (count == 1)
+                return;
+
+            move_command = true;
+            //TC_LOG_DEBUG("network", "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X\n", _player->GetName().c_str(), position, spell_id, act_state);
+        }
+    }
+
+    // check swap (at command->spell swap client remove spell first in another packet, so check only command move correctness)
+    if (move_command)
+    {
+        uint8 act_state_0 = UNIT_ACTION_BUTTON_TYPE(data[0]);
+        if (act_state_0 == ACT_COMMAND || act_state_0 == ACT_REACTION)
+        {
+            uint32 spell_id_0 = UNIT_ACTION_BUTTON_ACTION(data[0]);
+            UnitActionBarEntry const* actionEntry_1 = charmInfo->GetActionBarEntry(position[1]);
+            if (!actionEntry_1 || spell_id_0 != actionEntry_1->GetAction() ||
+                act_state_0 != actionEntry_1->GetType())
+                return;
+        }
+
+        uint8 act_state_1 = UNIT_ACTION_BUTTON_TYPE(data[1]);
+        if (act_state_1 == ACT_COMMAND || act_state_1 == ACT_REACTION)
+        {
+            uint32 spell_id_1 = UNIT_ACTION_BUTTON_ACTION(data[1]);
+            UnitActionBarEntry const* actionEntry_0 = charmInfo->GetActionBarEntry(position[0]);
+            if (!actionEntry_0 || spell_id_1 != actionEntry_0->GetAction() ||
+                act_state_1 != actionEntry_0->GetType())
+                return;
+        }
+    }
+
+    for (uint8 i = 0; i < count; ++i)
+    {
+        uint32 spell_id = UNIT_ACTION_BUTTON_ACTION(data[i]);
+        uint8 act_state = UNIT_ACTION_BUTTON_TYPE(data[i]);
+
+        TC_LOG_DEBUG("entities.pet", "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X",
+            _player->GetName().c_str(), position[i], spell_id, uint32(act_state));
+
+        //if it's act for spell (en/disable/cast) and there is a spell given (0 = remove spell) which pet doesn't know, don't add
+        if (!((act_state == ACT_ENABLED || act_state == ACT_DISABLED || act_state == ACT_PASSIVE) && spell_id && !pet->HasSpell(spell_id)))
         {
             if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id))
             {
@@ -529,26 +571,25 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
                 if (act_state == ACT_ENABLED)
                 {
                     if (pet->GetTypeId() == TYPEID_UNIT && pet->IsPet())
-                        ((Pet*)pet)->ToggleAutocast(spell_id, true);
+                        ((Pet*)pet)->ToggleAutocast(spellInfo, true);
                     else
                         for (Unit::ControlList::iterator itr = GetPlayer()->m_Controlled.begin(); itr != GetPlayer()->m_Controlled.end(); ++itr)
                             if ((*itr)->GetEntry() == pet->GetEntry())
-                                (*itr)->GetCharmInfo()->ToggleCreatureAutocast(spell_id, true);
+                                (*itr)->GetCharmInfo()->ToggleCreatureAutocast(spellInfo, true);
                 }
                 //sign for no/turn off autocast
                 else if (act_state == ACT_DISABLED)
                 {
                     if (pet->GetTypeId() == TYPEID_UNIT && pet->IsPet())
-                        ((Pet*)pet)->ToggleAutocast(spell_id, false);
+                        ((Pet*)pet)->ToggleAutocast(spellInfo, false);
                     else
                         for (Unit::ControlList::iterator itr = GetPlayer()->m_Controlled.begin(); itr != GetPlayer()->m_Controlled.end(); ++itr)
                             if ((*itr)->GetEntry() == pet->GetEntry())
-                                (*itr)->GetCharmInfo()->ToggleCreatureAutocast(spell_id, false);
+                                (*itr)->GetCharmInfo()->ToggleCreatureAutocast(spellInfo, false);
                 }
-
-                charmInfo->GetActionBarEntry(position)->Type = act_state;
-                charmInfo->GetActionBarEntry(position)->SpellOrAction = spell_id;
             }
+
+            charmInfo->SetActionBar(position[i], spell_id, ActiveStates(act_state));
         }
     }
 }
@@ -698,16 +739,10 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
     {
         uint32 spell_id = itr->first;                       // Pet::removeSpell can invalidate iterator at erase NEW spell
         ++itr;
-        pet->RemoveSpell(spell_id);
+        pet->RemoveSpell(spell_id, false, true);
     }
 
     pet->SetTP(pet->GetLevel() * (pet->GetLoyaltyLevel() - 1));
-
-    for(uint8 i = 0; i < 10; i++)
-    {
-        if((charmInfo->GetActionBarEntry(i)->SpellOrAction && charmInfo->GetActionBarEntry(i)->Type == ACT_ENABLED) || charmInfo->GetActionBarEntry(i)->Type == ACT_DISABLED)
-            charmInfo->GetActionBarEntry(i)->SpellOrAction = 0;
-    }
 
     // relearn pet passives
     pet->LearnPetPassives();
@@ -726,7 +761,13 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
     uint16 spellid;
     uint16 spellid2;                                        //maybe second spell, automatically toggled off when first toggled on?
     uint8  state;                                           //1 for on, 0 for off
-    recvPacket >> guid >> spellid >> spellid2 >> state;
+
+    recvPacket >> guid;
+    recvPacket >> spellid;
+#ifndef LICH_KING
+    recvPacket >> spellid2;
+#endif
+    recvPacket >> state;
 
     if (!_player->GetGuardianPet() && !_player->GetCharm())
         return;
@@ -750,7 +791,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
     }
 
     // do not add not learned spells/ passive spells
-    if(!pet->HasSpell(spellid) || spellInfo->IsPassive())
+    if (!pet->HasSpell(spellid) || !spellInfo->IsAutocastable())
         return;
 
     CharmInfo *charmInfo = pet->GetCharmInfo();
@@ -760,17 +801,12 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
         return;
     }
 
-    if(pet->IsCharmed())
-                                                            //state can be used as boolean
-        pet->GetCharmInfo()->ToggleCreatureAutocast(spellid, state);
+    if (pet->IsPet())
+        ((Pet*)pet)->ToggleAutocast(spellInfo, state != 0);
     else
-        ((Pet*)pet)->ToggleAutocast(spellid, state);
+        pet->GetCharmInfo()->ToggleCreatureAutocast(spellInfo, state != 0);
 
-    for(uint8 i = 0; i < 10; ++i)
-    {
-        if((charmInfo->GetActionBarEntry(i)->Type == ACT_ENABLED || charmInfo->GetActionBarEntry(i)->Type == ACT_DISABLED) && spellid == charmInfo->GetActionBarEntry(i)->SpellOrAction)
-            charmInfo->GetActionBarEntry(i)->Type = state ? ACT_ENABLED : ACT_DISABLED;
-    }
+    charmInfo->SetSpellAutocast(spellInfo, state != 0);
 }
 
 void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )

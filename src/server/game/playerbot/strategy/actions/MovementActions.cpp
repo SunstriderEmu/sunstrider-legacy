@@ -82,10 +82,10 @@ bool MovementAction::MoveTo(Unit* target, float distance)
 
     float bx = bot->GetPositionX();
     float by = bot->GetPositionY();
-    float bz = bot->GetPositionZ();
+    //float bz = bot->GetPositionZ();
 
-    float tx = target->GetPositionX();
-    float ty = target->GetPositionY();
+    //float tx = target->GetPositionX();
+    //float ty = target->GetPositionY();
     float tz = target->GetPositionZ();
 
     float distanceToTarget = bot->GetDistance(target);
@@ -98,7 +98,6 @@ bool MovementAction::MoveTo(Unit* target, float distance)
     else if (needToGo < 0 && needToGo < -maxDistance)
         needToGo = -maxDistance;
 
-    MotionMaster &mm = *bot->GetMotionMaster();
     if (abs(needToGo) <= sPlayerbotAIConfig.meleeDistance)
         return true;
 

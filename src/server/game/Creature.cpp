@@ -456,18 +456,21 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
 
     SetName(normalInfo->Name);                              // at normal entry always
 
-    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS,minfo->bounding_radius);
-    SetFloatValue(UNIT_FIELD_COMBATREACH,minfo->combat_reach );
-
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
 
     SetSpeedRate(MOVE_WALK,     cinfo->speed );
     SetSpeedRate(MOVE_RUN,      cinfo->speed );
     SetSpeedRate(MOVE_SWIM,     cinfo->speed );
 
-    SetFloatValue(OBJECT_FIELD_SCALE_X, cinfo->scale);
+    // Will set UNIT_FIELD_BOUNDINGRADIUS and UNIT_FIELD_COMBATREACH
+    SetObjectScale(cinfo->scale);
+#ifdef LICH_KING
+    SetFloatValue(UNIT_FIELD_HOVERHEIGHT, cinfo->HoverHeight);
+#endif
 
-    SetCanFly(GetCreatureTemplate()->InhabitType & INHABIT_AIR);
+    if(!IsPet())
+        SetCanFly(GetCreatureTemplate()->InhabitType & INHABIT_AIR);
+
     // checked at loading
     m_defaultMovementType = MovementGeneratorType(cinfo->MovementType);
     if(!m_respawnradius && m_defaultMovementType==RANDOM_MOTION_TYPE)
@@ -3237,10 +3240,10 @@ bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)
 
 uint32 Creature::GetPetAutoSpellOnPos(uint8 pos) const
 {
-    if (pos >= MAX_CREATURE_SPELLS || m_charmInfo->GetCharmSpell(pos)->active != ACT_ENABLED)
+    if (pos >= MAX_SPELL_CHARM || m_charmInfo->GetCharmSpell(pos)->GetType() != ACT_ENABLED)
         return 0;
     else
-        return m_charmInfo->GetCharmSpell(pos)->spellId;
+        return m_charmInfo->GetCharmSpell(pos)->GetAction();
 }
 
 float Creature::GetPetChaseDistance() const

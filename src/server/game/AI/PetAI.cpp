@@ -58,15 +58,12 @@ bool PetAI::_needToStop() const
     if (i_pet.GetOwner() && i_pet.GetOwner()->ToPlayer() && i_pet.ToPet() && i_pet.ToPet()->isControlled() && i_pet.GetVictim()->IsJustCCed() && i_pet.GetVictim()->GetEntry() != 10) // Training dummy exception
         return true;
 
-    if (i_pet.IsNonMeleeSpellCast(false))
-        return true;
-
     // dont allow pets to follow targets far away from owner
     if (Unit* owner = me->GetCharmerOrOwner())
         if (owner->GetExactDist(me) >= (owner->GetVisibilityRange() - 10.0f))
             return true;
 
-    return i_pet.CanCreatureAttack(i_pet.GetVictim()) != CAN_ATTACK_RESULT_OK;
+    return !me->IsValidAttackTarget(me->GetVictim());
 }
 
 void PetAI::ResetMovement()
@@ -158,7 +155,7 @@ void PetAI::HandleReturnMovement()
 
     // Prevent activating movement when under control of spells
     // such as "Eyes of the Beast"
-    if (me->IsCharmed())
+    if (me->IsCharmed() || !me->IsAlive())
         return;
 
     if (me->GetCharmInfo()->HasCommandState(COMMAND_STAY))

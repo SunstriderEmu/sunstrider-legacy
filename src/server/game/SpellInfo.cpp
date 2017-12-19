@@ -1486,6 +1486,15 @@ bool SpellInfo::IsChannelCategorySpell() const
     return false;
 }
 
+bool SpellInfo::IsAutocastable() const
+{
+    if (IsPassive())
+        return false;
+    if (HasAttribute(SPELL_ATTR1_UNAUTOCASTABLE_BY_PET))
+        return false;
+    return true;
+}
+
 bool SpellInfo::IsPassive() const
 {
     return HasAttribute(SPELL_ATTR0_PASSIVE);

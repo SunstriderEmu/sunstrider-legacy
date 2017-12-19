@@ -348,7 +348,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
     bool instantLogout = canLogoutInCombat ||
         GetPlayer()->IsInFlight() || GetSecurity() >= sWorld->getConfig(CONFIG_INSTANT_LOGOUT);
 
-    uint8 reason = 0;
+    uint8 reason = 0; //reason but... seems at least on BC, they all show "You can't logout now."
     if (GetPlayer()->IsInCombat() && !canLogoutInCombat)
         reason = 1;
     else if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR)) // is jumping or falling
@@ -1057,35 +1057,41 @@ void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
 
 void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
 {
-    uint8 ActionBar;
-    recvData >> ActionBar;
+    uint8 actionBar;
+    recvData >> actionBar;
 
     if(!GetPlayer())                                        // ignore until not logged (check needed because STATUS_AUTHED)
     {
-        if(ActionBar!=0)
-            TC_LOG_ERROR("network","WorldSession::HandleSetActionBar in not logged state with value: %u, ignored",uint32(ActionBar));
+        if(actionBar != 0)
+            TC_LOG_ERROR("network","WorldSession::HandleSetActionBar in not logged state with value: %u, ignored",uint32(actionBar));
         return;
     }
 
-    GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, 2, ActionBar);
+    GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_ACTION_BAR_TOGGLES, actionBar);
 }
 
-void WorldSession::HandlePlayedTime(WorldPacket& /*recvData*/)
+void WorldSession::HandlePlayedTime(WorldPacket& recvData)
 {
+#ifdef LICH_KING
+    uint8 unk1;
+    recvData >> unk1;                                      // 0 or 1 expected
+#endif
+
     uint32 TotalTimePlayed = GetPlayer()->GetTotalPlayedTime();
     uint32 LevelPlayedTime = GetPlayer()->GetLevelPlayedTime();
 
+    //LK OK
     WorldPacket data(SMSG_PLAYED_TIME, 8);
     data << TotalTimePlayed;
     data << LevelPlayedTime;
+#ifdef LICH_KING
+    data << uint8(unk1);                                    // 0 - will not show in chat frame (not so unknown then?)
+#endif
     SendPacket(&data);
 }
 
 void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 {
-    if (GetClientBuild() == BUILD_335)
-        return;  //no support yet
-
     uint64 guid;
     recvData >> guid;
 
