@@ -1414,10 +1414,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (Creature* summon = GetBaseObject()->SummonCreature(e.action.summonCreature.creature, x, y, z, o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
                 {
                     if (e.action.summonCreature.attackInvoker)
-                        summon->AI()->AttackStart(target->ToUnit());
+                        summon->EngageWithTarget(target->ToUnit());
                     if (e.action.summonCreature.attackVictim)
                         if(Unit* victim = target->ToUnit()->GetVictim())
-                            summon->AI()->AttackStartIfCan(victim);
+                            summon->EngageWithTarget(victim);
                 }
             }
 
@@ -1427,10 +1427,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (Creature* summon = GetBaseObject()->SummonCreature(e.action.summonCreature.creature, e.target.x, e.target.y, e.target.z, e.target.o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
             {
                 if (me && e.action.summonCreature.attackInvoker)
-                    summon->AI()->AttackStart(me);
+                    summon->EngageWithTarget(me);
                 if (e.action.summonCreature.attackVictim)
                     if(Unit* victim = me->ToUnit()->GetVictim())
-                        summon->AI()->AttackStartIfCan(victim);
+                        summon->EngageWithTarget(victim);
             }
             break;
         }

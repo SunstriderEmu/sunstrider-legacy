@@ -133,7 +133,7 @@ void CreatureAI::_OnOwnerCombatInteraction(Unit* target)
     if (!target || !me->IsAlive())
         return;
 
-    if (!me->HasReactState(REACT_PASSIVE) && /*me->CanStartAttack(target, true)*/ me->CanCreatureAttack(target, true))
+    if (!me->HasReactState(REACT_PASSIVE) && me->CanAggro(target, true) == CAN_ATTACK_RESULT_OK && me->CanCreatureAttack(target, true))
     {
         me->EngageWithTarget(target);
     }
@@ -269,17 +269,6 @@ void CreatureAI::DoZoneInCombat(Unit* pUnit, bool force)
             }
     }
 }
-
-void CreatureAI::AttackStartIfCan(Unit* victim)
-{
-    if(!victim)
-        return;
-
-    //Merge conflict : set CanStartAttack
-    if(me->CanCreatureAttack(victim) == CAN_ATTACK_RESULT_OK)
-        AttackStart(victim);
-}
-
 
 static const uint32 BOUNDARY_VISUALIZE_CREATURE = 15425;
 static const float BOUNDARY_VISUALIZE_CREATURE_SCALE = 0.25f;

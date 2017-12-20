@@ -1827,7 +1827,7 @@ bool Creature::CanAlwaysSee(WorldObject const* obj) const
     return false;
 }
 
-CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false */) const
+CanAttackResult Creature::CanAggro(Unit const* who, bool force /* = false */) const
 {
     if(IsCivilian())
         return CAN_ATTACK_RESULT_CIVILIAN;
@@ -1842,26 +1842,28 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false 
     if(!CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE + m_CombatDistance)
         return CAN_ATTACK_RESULT_TOO_FAR_Z;
 
-    if(assistAggro)
+    if(force)
     {
         if(!IsWithinSightDist(who))
             return CAN_ATTACK_RESULT_TOO_FAR;
     } else {
+        if (!_IsTargetAcceptable(who))
+            return CAN_ATTACK_RESULT_OTHERS;
+
         if(!IsWithinDistInMap(who, GetAggroRange(who) + m_CombatDistance + GetCombatReach() + who->GetCombatReach())) //m_CombatDistance is usually 0 for melee. Ranged creatures will aggro from further, is this correct?
             return CAN_ATTACK_RESULT_TOO_FAR;
+
+        //ignore LoS for assist
+        if (!IsWithinLOSInMap(who))
+            return CAN_ATTACK_RESULT_NOT_IN_LOS;
     }
-
-    //ignore LoS for assist
-    if (!assistAggro && !IsWithinLOSInMap(who))
-        return CAN_ATTACK_RESULT_NOT_IN_LOS;
-
-    if (!who->isInAccessiblePlaceFor(this))
-        return CAN_ATTACK_RESULT_NOT_ACCESSIBLE;
 
     CanAttackResult result = CanCreatureAttack(who, false);
     if(result != CAN_ATTACK_RESULT_OK)
         return result;
 
+    if (!who->isInAccessiblePlaceFor(this))
+        return CAN_ATTACK_RESULT_NOT_ACCESSIBLE;
 
     return CAN_ATTACK_RESULT_OK;
 }

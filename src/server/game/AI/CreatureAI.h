@@ -73,7 +73,6 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         ~CreatureAI() override = default;
 
-        void AttackStartIfCan(Unit* victim);
         void Talk(uint8 id, WorldObject const* whisperTarget = nullptr);
         //Places the entire map into combat with creature
         void DoZoneInCombat(Unit* pUnit = nullptr, bool force = false);
