@@ -5,7 +5,7 @@
 #include "DetourNavMesh.h"
 
 const uint32 MMAP_MAGIC = 0x4d4d4150; // 'MMAP'
-#define MMAP_VERSION 7
+#define MMAP_VERSION 71 //+second number is sunstrider subversion
 
 struct MmapTileHeader
 {
@@ -17,7 +17,8 @@ struct MmapTileHeader
     char padding[3];
 
     MmapTileHeader() : mmapMagic(MMAP_MAGIC), dtVersion(DT_NAVMESH_VERSION),
-        mmapVersion(MMAP_VERSION), size(0), usesLiquids(true), padding() { }
+        mmapVersion(MMAP_VERSION), size(0), usesLiquids(true), padding()
+    {  }
 };
 
 // All padding fields must be handled and initialized to ensure mmaps_generator will produce binary-identical *.mmtile files
@@ -39,7 +40,7 @@ enum NavTerrain
     NAV_UNUSED1 = 0x10,
     NAV_UNUSED2 = 0x20,
     NAV_UNUSED3 = 0x40,
-    NAV_UNUSED4 = 0x80
+    NAV_STEEP_SLOPES = 0x80, //sunstrider
     // we only have 8 bits
 };
 

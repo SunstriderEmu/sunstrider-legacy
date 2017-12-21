@@ -3,7 +3,7 @@
 #include "Management/MMapFactory.h"
 #include "PathGenerator.h"
 
-bool ChatHandler::HandleMmapTestArea(const char* args)
+bool ChatHandler::HandleMmapTestAreaCommand(const char* args)
 {
     return true;
 }
@@ -32,8 +32,14 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
     char* para = strtok((char*)args, " ");
 
     bool useStraightPath = false;
-    if (para && strcmp(para, "true") == 0)
-        useStraightPath = true;
+    bool excludeSteep = false;
+    if (para)
+    {
+        if (strcmp(para, "straigth") == 0)
+            useStraightPath = true;
+        else if (strcmp(para, "nonsteep") == 0)
+            excludeSteep = true;
+    }
 
     // unit locations
     float x, y, z;
@@ -42,6 +48,8 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
     // path
     PathGenerator path(target);
     path.SetUseStraightPath(useStraightPath);
+    if (excludeSteep)
+        path.ExcludeSteepSlopes();
     bool result = path.CalculatePath(x, y, z);
 
     Movement::PointsArray const& pointPath = path.GetPath();
@@ -66,8 +74,16 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleMmapLocCommand(const char* /*args*/)
+bool ChatHandler::HandleMmapLocCommand(const char* args)
 {
+    bool playerWalkableOnly = false;
+    if (args)
+    {
+        std::string _args(args);
+        if (_args == "player")
+            playerWalkableOnly = true;
+    }
+
     PSendSysMessage("mmap tileloc:");
 
     // grid tile location
@@ -102,6 +118,8 @@ bool ChatHandler::HandleMmapLocCommand(const char* /*args*/)
 
     // navmesh poly -> navmesh tile location
     dtQueryFilter filter = dtQueryFilter();
+    if(playerWalkableOnly)
+        filter.setExcludeFlags(NAV_STEEP_SLOPES);
     dtPolyRef polyRef = INVALID_POLYREF;
     navmeshquery->findNearestPoly(location, extents, &filter, &polyRef, nullptr);
 
@@ -123,8 +141,6 @@ bool ChatHandler::HandleMmapLocCommand(const char* /*args*/)
 
 bool ChatHandler::HandleMmapLoadedTilesCommand(const char* /*args*/)
 {
-    
-
     uint32 mapid = m_session->GetPlayer()->GetMapId();
 
     const dtNavMesh* navmesh = MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(mapid);

@@ -76,7 +76,7 @@ namespace MMAP
     class MapBuilder
     {
         public:
-            MapBuilder(float maxWalkableAngle   = 70.f,
+            MapBuilder(
                 bool skipLiquid          = false,
                 bool skipContinents      = false,
                 bool skipJunkMaps        = true,
@@ -104,6 +104,8 @@ namespace MMAP
             // detect maps and tiles
             void discoverTiles();
             std::set<uint32>* getTileList(uint32 mapID);
+
+            void markWalkableTriangles(MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount);
 
             void buildNavMesh(uint32 mapID, dtNavMesh* &navMesh);
 
@@ -139,7 +141,6 @@ namespace MMAP
             bool m_skipJunkMaps;
             bool m_skipBattlegrounds;
 
-            float m_maxWalkableAngle;
             bool m_bigBaseUnit;
 
             int32 m_mapid;

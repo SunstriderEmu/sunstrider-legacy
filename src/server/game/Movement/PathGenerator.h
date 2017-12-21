@@ -71,6 +71,8 @@ class TC_GAME_API PathGenerator
 
         PathType GetPathType() const { return _type; }
 
+        void ExcludeSteepSlopes() { _filter.setExcludeFlags(NAV_STEEP_SLOPES); }
+
         uint32 GetOptions() { return _options; }
         /** Update fly/walk/swim options from the generator owner */
         void UpdateOptions();

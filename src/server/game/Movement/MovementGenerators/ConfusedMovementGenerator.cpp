@@ -78,7 +78,8 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T* owner, uint32 diff)
         if (!_path)
             _path = new PathGenerator(owner);
 
-        _path->SetPathLengthLimit(30.0f);
+        _path->SetPathLengthLimit(10.0f);
+        _path->ExcludeSteepSlopes();
         bool result = _path->CalculatePath(destination.m_positionX, destination.m_positionY, destination.m_positionZ);
         if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
         {

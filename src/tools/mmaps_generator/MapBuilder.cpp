@@ -14,7 +14,7 @@
 
 namespace MMAP
 {
-    MapBuilder::MapBuilder(float maxWalkableAngle, bool skipLiquid,
+    MapBuilder::MapBuilder(bool skipLiquid,
         bool skipContinents, bool skipJunkMaps, bool skipBattlegrounds,
         bool debugOutput, bool bigBaseUnit, int mapid, const char* offMeshFilePath) :
         m_terrainBuilder     (NULL),
@@ -23,7 +23,6 @@ namespace MMAP
         m_skipContinents     (skipContinents),
         m_skipJunkMaps       (skipJunkMaps),
         m_skipBattlegrounds  (skipBattlegrounds),
-        m_maxWalkableAngle   (maxWalkableAngle),
         m_bigBaseUnit        (bigBaseUnit),
         m_mapid              (mapid),
         m_totalTiles         (0u),
@@ -506,6 +505,68 @@ namespace MMAP
         fclose(file);
     }
 
+    inline void calcTriNormal(const float* v0, const float* v1, const float* v2, float* norm)
+    {
+        float e0[3], e1[3];
+        rcVsub(e0, v1, v0);
+        rcVsub(e1, v2, v0);
+        rcVcross(norm, e0, e1);
+        rcVnormalize(norm);
+    }
+
+    void MapBuilder::markWalkableTriangles(MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount)
+    {
+        float norm[3];
+        const float playerClimbLimit = cosf(52.0f / 180.0f*RC_PI);
+        const float climbHardLimit = cosf(70.0f / 180.0f*RC_PI);
+
+        for (int i = 0; i < tTriCount; ++i)
+        {
+            const int* tri = &tTris[i * 3];
+            calcTriNormal(&tVerts[tri[0] * 3], &tVerts[tri[1] * 3], &tVerts[tri[2] * 3], norm);
+            // Check if the face is walkable: different angle for different type of triangle
+            // NPCs, charges, ... can climb up to the HardLimit
+            // blinks, randomPosGenerator ... can climb up to playerClimbLimit
+            // With playerClimbLimit < HardLimit
+            if (norm[1] > playerClimbLimit)
+                triFlags[i] = NAV_GROUND;
+            else if (norm[1] > climbHardLimit)
+                triFlags[i] = NAV_GROUND | NAV_STEEP_SLOPES;
+            else
+                triFlags[i] = NAV_EMPTY;
+        }
+    }
+
+    void filterWalkableLowHeightSpansWith(rcHeightfield& filter, rcHeightfield& out, int min, int max)
+    {
+        const int w = out.width;
+        const int h = out.height;
+
+        // Remove walkable flag from spans which do not have enough
+        // space above them for the agent to stand there.
+        for (int y = 0; y < h; ++y)
+        {
+            for (int x = 0; x < w; ++x)
+            {
+                for (rcSpan* spanOut = out.spans[x + y*w]; spanOut; spanOut = spanOut->next)
+                    for (rcSpan* spanFilter = filter.spans[x + y*w]; spanFilter; spanFilter = spanFilter->next)
+                        if (!(spanOut->area & NAV_STEEP_SLOPES)) // No steep slopes here.
+                        {
+                            const int bot = (int)(spanOut->smax);
+                            const int top = (int)(spanFilter->smin);
+                            if ((top - bot) <= max && (top - bot) >= 0)
+                            {
+                                if ((top - bot) >= min)
+                                    spanOut->area = spanFilter->area;
+                                else if (spanFilter->area & NAV_WATER)
+                                    spanOut->area &= NAV_WATER;
+                            }
+                        }
+            }
+        }
+    }
+
+
     /**************************************************************************/
     void MapBuilder::buildMoveMapTile(uint32 mapID, uint32 tileX, uint32 tileY,
         MeshData &meshData, float bmin[3], float bmax[3],
@@ -548,7 +609,7 @@ namespace MMAP
         config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
         config.cs = BASE_UNIT_DIM;
         config.ch = BASE_UNIT_DIM;
-        config.walkableSlopeAngle = m_maxWalkableAngle;
+        //config.walkableSlopeAngle = maxClimbLimitTerrain;
         config.tileSize = VERTEX_PER_TILE;
         config.walkableRadius = m_bigBaseUnit ? 1 : 2;
         config.borderSize = config.walkableRadius + 3;
@@ -562,6 +623,8 @@ namespace MMAP
         config.maxSimplificationError = 1.8f;           // eliminates most jagged edges (tiny polygons)
         config.detailSampleDist = config.cs * 16;
         config.detailSampleMaxError = config.ch * 1;
+        int inWaterGround = config.walkableHeight;
+        int stepForGroundInheriteWater = (int)ceilf(30.0f / config.ch);
 
         // this sets the dimensions of the heightfield - should maybe happen before border padding
         rcCalcGridSize(config.bmin, config.bmax, config.cs, &config.width, &config.height);
@@ -584,6 +647,7 @@ namespace MMAP
             for (int x = 0; x < TILES_PER_MAP; ++x)
             {
                 Tile& tile = tiles[x + y * TILES_PER_MAP];
+                Tile liquidsTile;
 
                 // Calculate the per tile bounding box.
                 tileCfg.bmin[0] = config.bmin[0] + float(x*config.tileSize - config.borderSize)*config.cs;
@@ -599,18 +663,32 @@ namespace MMAP
                     continue;
                 }
 
+                // We need to build liquid heighfield to set poly swim flag under.
+                liquidsTile.solid = rcAllocHeightfield();
+                if (!liquidsTile.solid || !rcCreateHeightfield(m_rcContext, *liquidsTile.solid, tileCfg.width, tileCfg.height, tileCfg.bmin, tileCfg.bmax, tileCfg.cs, tileCfg.ch))
+                {
+                    printf("%sFailed building liquids heightfield!            \n", tileString);
+                    continue;
+                }
+                rcRasterizeTriangles(m_rcContext, lVerts, lVertCount, lTris, lTriFlags, lTriCount, *liquidsTile.solid, 0);
+
                 // mark all walkable tiles, both liquids and solids
                 unsigned char* triFlags = new unsigned char[tTriCount];
-                memset(triFlags, NAV_GROUND, tTriCount*sizeof(unsigned char));
-                rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
+                memset(triFlags, NAV_EMPTY, tTriCount*sizeof(unsigned char)); //start empty instead of NAV_GROUND
+                //rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
+                markWalkableTriangles(meshData, triFlags, tVerts, tTris, tTriCount); // sun addition (adapted from nost)
                 rcRasterizeTriangles(m_rcContext, tVerts, tVertCount, tTris, triFlags, tTriCount, *tile.solid, config.walkableClimb);
                 delete[] triFlags;
 
                 rcFilterLowHangingWalkableObstacles(m_rcContext, config.walkableClimb, *tile.solid);
                 rcFilterLedgeSpans(m_rcContext, tileCfg.walkableHeight, tileCfg.walkableClimb, *tile.solid);
                 rcFilterWalkableLowHeightSpans(m_rcContext, tileCfg.walkableHeight, *tile.solid);
-
-                rcRasterizeTriangles(m_rcContext, lVerts, lVertCount, lTris, lTriFlags, lTriCount, *tile.solid, config.walkableClimb);
+                
+                // sun addition (adapted from nost)
+                // When water is not deep, we have a transition area (AREA_WATER_TRANSITION)
+                // Both ground and water creatures can be there.
+                // Otherwise, the terrain in deeper waters is considered as actual swim/water terrain.
+                filterWalkableLowHeightSpansWith(*liquidsTile.solid, *tile.solid, inWaterGround, stepForGroundInheriteWater);
 
                 // compact heightfield spans
                 tile.chf = rcAllocCompactHeightfield();
@@ -707,7 +785,7 @@ namespace MMAP
         // set polygons as walkable
         // TODO: special flags for DYNAMIC polygons, ie surfaces that can be turned on and off
         for (int i = 0; i < iv.polyMesh->npolys; ++i)
-            if (iv.polyMesh->areas[i] & RC_WALKABLE_AREA)
+            //if (iv.polyMesh->areas[i] & RC_WALKABLE_AREA) //sun: we use NavTerrain as flags... makes no sense to compare to RC_WALKABLE_AREA. + This has actually no effect
                 iv.polyMesh->flags[i] = iv.polyMesh->areas[i];
 
         // setup mesh parameters
