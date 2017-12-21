@@ -659,7 +659,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags,
        && !m_spellInfo->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
        && !m_spellInfo->HasAttribute(SPELL_ATTR0_ABILITY)
        && !m_spellInfo->IsPassive()
-       && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL))
+       && (!IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL))
       )
         m_canReflect = true;
 
@@ -795,7 +795,7 @@ void Spell::SelectExplicitTargets()
         // check for explicit target redirection, for Grounding Totem for example
         if (m_spellInfo->GetExplicitTargetMask() & TARGET_FLAG_UNIT_ENEMY
             || (m_spellInfo->GetExplicitTargetMask() & TARGET_FLAG_UNIT
-                && (!m_spellInfo->IsPositive() || (!m_caster->IsFriendlyTo(target) && m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))))
+                && (!IsPositive() || (!m_caster->IsFriendlyTo(target) && m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))))
         {
             Unit* redirect;
             switch (m_spellInfo->DmgClass)
@@ -1169,7 +1169,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
         break;
     case TARGET_CHECK_ENTRY:
     case TARGET_CHECK_DEFAULT:
-        range = m_spellInfo->GetMaxRange(m_spellInfo->IsPositive(), m_caster, this);
+        range = m_spellInfo->GetMaxRange(IsPositive(), m_caster, this);
         break;
     default:
         ASSERT(false && "Spell::SelectImplicitNearbyTargets: received not implemented selection check type");
@@ -2138,7 +2138,7 @@ void Spell::prepareHitProcData(uint32& procAttacker, uint32& procVictim, bool ho
             procVictim   = PROC_FLAG_TAKEN_RANGED_SPELL_HIT;
             break;
         default:
-            if(m_spellInfo->IsPositive(hostileTarget))          // Check for positive spell
+            if(IsPositive(hostileTarget))          // Check for positive spell
             {
                 procAttacker = PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL;
                 procVictim   = PROC_FLAG_TAKEN_POSITIVE_SPELL;
@@ -2663,7 +2663,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
     }
 
-    if( missInfo != SPELL_MISS_EVADE && !m_caster->IsFriendlyTo(unit) && !m_spellInfo->IsPositive(hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
+    if( missInfo != SPELL_MISS_EVADE && !m_caster->IsFriendlyTo(unit) && !IsPositive(hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
     {
         if(m_spellInfo->HasInitialAggro())
         {
@@ -2707,7 +2707,7 @@ bool Spell::UpdateChanneledTargetList()
     float range = 0;
     if (channelAuraMask)
     {
-        range = m_spellInfo->GetMaxRange(m_spellInfo->IsPositive());
+        range = m_spellInfo->GetMaxRange(IsPositive());
         if (range == 0)
             for (int i = EFFECT_0; i <= EFFECT_2; ++i)
                 if (channelAuraMask & (1 << i) && m_spellInfo->Effects[i].RadiusEntry)
@@ -2860,7 +2860,7 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
         {
             // for delayed spells ignore negative spells (after duel end) for friendly targets
             // TODO: this cause soul transfer bugged
-            if(m_spellInfo->Speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !m_spellInfo->IsPositive() && m_spellInfo->Id != 45034) // FIXME: Hack for Boundless Agony (Kalecgos)
+            if(m_spellInfo->Speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositive() && m_spellInfo->Id != 45034) // FIXME: Hack for Boundless Agony (Kalecgos)
             {
                 caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
@@ -5099,7 +5099,7 @@ void Spell::HandleFlatThreat()
         float threat = flatMod / targetListSize;;
 
         //apply threat to every negative targets
-        if(!m_spellInfo->IsPositive(!m_caster->IsFriendlyTo(targetUnit)))
+        if(!IsPositive(!m_caster->IsFriendlyTo(targetUnit)))
             targetUnit->GetThreatManager().AddThreat(m_caster, threat, m_spellInfo);
         else //or assist threat if friendly target
             m_caster->GetHostileRefManager().threatAssist(targetUnit, threat, m_spellInfo);
@@ -5264,7 +5264,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         {
             // check correctness positive/negative cast target (pet cast real check and cheating check)
             bool hostileTarget = m_caster->IsHostileTo(target);
-            if(m_spellInfo->IsPositive(hostileTarget))
+            if(IsPositive(hostileTarget))
             {
                 if(hostileTarget)
                     return SPELL_FAILED_BAD_TARGETS;
@@ -5410,7 +5410,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     }
 
     // prevent casting at immune friendly target
-    if(m_spellInfo->IsPositive(!m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo, m_caster))
+    if(IsPositive(!m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo, m_caster))
         return SPELL_FAILED_TARGET_AURASTATE;
 
     // target state requirements (not allowed state)
@@ -7363,7 +7363,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
 
         // Ignore LoS for totems with positive effects, check it in all other cases
         bool casterIsTotem = (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->IsTotem());
-        if ((!casterIsTotem || !m_spellInfo->IsPositive()) && !target->IsWithinLOS(x, y, z))
+        if ((!casterIsTotem || !IsPositive()) && !target->IsWithinLOS(x, y, z))
             return false;
 
         return true;
@@ -7487,7 +7487,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
         if(!(target->ToPlayer())->IsVisible())
             return false;
 
-        if((target->ToPlayer())->IsGameMaster() && !m_spellInfo->IsPositive())
+        if((target->ToPlayer())->IsGameMaster() && !IsPositive())
             return false;
     }
 
@@ -8464,6 +8464,11 @@ bool Spell::IsAutoActionResetSpell() const
         return false;
 
     return true;
+}
+
+bool Spell::IsPositive(bool hostileTarget = false) const
+{
+    return m_spellInfo->IsPositive(hostileTarget) && (!m_triggeredByAuraSpell || m_triggeredByAuraSpell->IsPositive(hostileTarget));
 }
 
 bool Spell::IsTriggered() const
