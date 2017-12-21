@@ -1957,7 +1957,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false) override;
 		bool UpdatePosition(const Position &pos, bool teleport = false) override { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
-        void ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData) override;
+        void ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData, bool updateCreatureLiquid ) override;
 
         void SendMessageToSet(WorldPacket *data, bool self) override;
         void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin = false, Player const* skipped_rcvr = nullptr) override;

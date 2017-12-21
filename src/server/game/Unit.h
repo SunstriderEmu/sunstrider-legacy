@@ -1582,8 +1582,8 @@ class TC_GAME_API Unit : public WorldObject
         void UpdateSplinePosition();
         void DisableSpline();
 
-        void ProcessPositionDataChanged(PositionFullTerrainStatus const& data) override;
-        virtual void ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData);
+        void ProcessPositionDataChanged(PositionFullTerrainStatus const& data, bool updateCreatureLiquid = false) override;
+        virtual void ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData, bool forceCreature = false);
 
 		bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
 		bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
@@ -2234,8 +2234,9 @@ class TC_GAME_API Unit : public WorldObject
         UnitAI* i_AI;
         UnitAI* i_disabledAI;
 
-        bool _is_in_water_status;
-        bool m_last_isunderwater_status;
+        bool _last_in_water_status;
+        Position _lastInWaterCheckPosition;
+        bool _last_isunderwater_status;
 
         void _UpdateSpells(uint32 time);
         void _DeleteAuras();

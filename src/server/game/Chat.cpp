@@ -147,7 +147,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "loc",            SEC_GAMEMASTER3,     false, &ChatHandler::HandleMmapLocCommand,             "" },
         { "loadedtiles",    SEC_GAMEMASTER3,     false, &ChatHandler::HandleMmapLoadedTilesCommand,     "" },
         { "stats",          SEC_GAMEMASTER3,     false, &ChatHandler::HandleMmapStatsCommand,           "" },
-        { "testarea",       SEC_GAMEMASTER3,     false, &ChatHandler::HandleMmapTestArea,               "" },
+        { "testarea",       SEC_GAMEMASTER3,     false, &ChatHandler::HandleMmapTestAreaCommand,        "" },
     };
 
     static std::vector<ChatCommand> modifyCommandTable =

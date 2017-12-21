@@ -908,14 +908,14 @@ WorldObject::~WorldObject()
 }
 
 
-void WorldObject::UpdatePositionData()
+void WorldObject::UpdatePositionData(bool updateCreatureLiquid)
 {
     PositionFullTerrainStatus data;
     GetMap()->GetFullTerrainStatusForPosition(GetPositionX(), GetPositionY(), GetPositionZ(), data);
-    ProcessPositionDataChanged(data);
+    ProcessPositionDataChanged(data, updateCreatureLiquid);
 }
 
-void WorldObject::ProcessPositionDataChanged(PositionFullTerrainStatus const& data)
+void WorldObject::ProcessPositionDataChanged(PositionFullTerrainStatus const& data, bool /*updateCreatureLiquid*/)
 {
     m_zoneId = m_areaId = data.areaId;
     if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(m_areaId))

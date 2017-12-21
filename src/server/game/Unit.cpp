@@ -149,8 +149,8 @@ Unit::Unit(bool isWorldObject)
 IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()),
 i_AI(nullptr), i_disabledAI(nullptr), m_removedAurasCount(0), m_procDeep(0), m_unitTypeMask(UNIT_MASK_NONE),
 _lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_miniPet(0), 
-_is_in_water_status(false),
-m_last_isunderwater_status(false),
+_last_in_water_status(false),
+_last_isunderwater_status(false),
 m_duringRemoveFromWorld(false),
 m_disabledRegen(false)
 {
@@ -3762,23 +3762,31 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 
 bool Unit::IsInWater() const
 {
-    return _is_in_water_status;
+    //for creatures, we only update water position when IsInWater in queried
+    if (GetExactDistSq(&_lastInWaterCheckPosition) > 2.5f*2.5f)
+        const_cast<Unit*>(this)->UpdatePositionData(true);
+
+    return _last_in_water_status;
 }
 
 bool Unit::IsUnderWater() const
 {
-    return m_last_isunderwater_status;
+    //for creatures, we only update water position when IsUnderWater in queried
+    if (GetExactDistSq(&_lastInWaterCheckPosition) > 2.5f*2.5f)
+        const_cast<Unit*>(this)->UpdatePositionData(true);
+
+    return _last_isunderwater_status;
 }
 
-void Unit::ProcessPositionDataChanged(PositionFullTerrainStatus const& data)
+void Unit::ProcessPositionDataChanged(PositionFullTerrainStatus const& data, bool updateCreatureLiquid)
 {
     WorldObject::ProcessPositionDataChanged(data);
-    ProcessTerrainStatusUpdate(data.liquidStatus, data.liquidInfo);
+    ProcessTerrainStatusUpdate(data.liquidStatus, data.liquidInfo, updateCreatureLiquid);
 }
 
-void Unit::ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData)
+void Unit::ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData, bool updateCreatureLiquid)
 {
-    if (IsFlying() || (!IsControlledByPlayer()))
+    if (IsFlying() || (!updateCreatureLiquid && !IsControlledByPlayer()))
         return;
 
     // remove appropriate auras if we are swimming/not swimming respectively
@@ -3804,13 +3812,14 @@ void Unit::ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData>
     if(liquidData)
     {
         bool enoughWater = (liquidData->level > INVALID_HEIGHT && liquidData->level > liquidData->depth_level && liquidData->level - liquidData->depth_level >= 1.5f); // also check if theres enough water - at least 2yd
-        _is_in_water_status = status >= LIQUID_MAP_IN_WATER && enoughWater;
-        m_last_isunderwater_status = status == LIQUID_MAP_UNDER_WATER && enoughWater;
+        _last_in_water_status = status >= LIQUID_MAP_IN_WATER && enoughWater;
+        _last_isunderwater_status = status == LIQUID_MAP_UNDER_WATER && enoughWater;
     }
     else {
-        _is_in_water_status = false;
-        m_last_isunderwater_status = false;
+        _last_in_water_status = false;
+        _last_isunderwater_status = false;
     }
+    _lastInWaterCheckPosition = GetPosition();
 }
 
 void Unit::DeMorph()

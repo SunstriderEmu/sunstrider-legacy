@@ -465,7 +465,7 @@ class TC_GAME_API ChatHandler
         bool HandleMmapLocCommand(const char* args);
         bool HandleMmapLoadedTilesCommand(const char* args);
         bool HandleMmapStatsCommand(const char* args);
-        bool HandleMmapTestArea(const char* args);
+        bool HandleMmapTestAreaCommand(const char* args);
 
         bool HandleLevelUpCommand(const char* args);
         bool HandleShowAreaCommand(const char* args);

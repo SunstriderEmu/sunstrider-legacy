@@ -641,7 +641,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual float GetStationaryZ() const { return GetPositionZ(); }
         virtual float GetStationaryO() const { return GetOrientation(); }
 
-        void UpdatePositionData();
+        void UpdatePositionData(bool updateCreatureLiquid = false);
         float GetFloorZ() const;
         virtual float GetCollisionHeight() const { return 0.0f; }
         float GetMidsectionHeight() const { return GetCollisionHeight() / 2.0f; }
@@ -681,7 +681,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         // transports
         Transport* m_transport;
 
-        virtual void ProcessPositionDataChanged(PositionFullTerrainStatus const& data);
+        virtual void ProcessPositionDataChanged(PositionFullTerrainStatus const& data, bool updateCreatureLiquid = false);
         uint32 m_zoneId;
         uint32 m_areaId;
         float m_staticFloorZ;
