@@ -164,6 +164,9 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     //Spawns a creature relative to m_creature
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);
 
+    // return true for heroic mode. i.e.
+    bool IsHeroic() const { return _isHeroic; }
+
     //Returns spells that meet the specified criteria from the creatures spell list
     SpellInfo const* SelectSpell(Unit* Target, SpellSchoolMask School, Mechanics Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
 
@@ -177,6 +180,7 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
 
 private:
     uint32 _evadeCheckCooldown;
+    bool _isHeroic;
 
 };
 

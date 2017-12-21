@@ -108,7 +108,9 @@ bool BumpHelper::AddCooldown(Unit* p, uint32 customValue)
 
 ScriptedAI::ScriptedAI(Creature* creature) : CreatureAI(creature),
     _evadeCheckCooldown(2500)
-{}
+{
+    _isHeroic = me->GetMap()->IsHeroic();
+}
 
 void ScriptedAI::AttackStart(Unit* who, bool melee)
 {
