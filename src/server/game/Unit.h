@@ -1761,6 +1761,7 @@ class TC_GAME_API Unit : public WorldObject
         void SetCurrentCastedSpell(Spell * pSpell);
         virtual void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/ ) { }
         void InterruptSpell(uint32 spellType, bool withDelayed = true, bool withInstant = true);
+        void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
 
         bool HasDelayedSpell();
 

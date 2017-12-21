@@ -1640,8 +1640,7 @@ void GameObject::Use(Unit* user)
             }*/
 
             // finish spell
-            caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->SendChannelUpdate(0);
-            caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->finish();
+            caster->FinishSpell(CURRENT_CHANNELED_SPELL);
 
             // can be deleted now
             SetLootState(GO_JUST_DEACTIVATED);

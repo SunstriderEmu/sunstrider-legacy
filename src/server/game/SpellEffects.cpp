@@ -2387,7 +2387,7 @@ void Spell::EffectTriggerSpellWithValue(uint32 i)
     }
 
     int32 bp = damage;
-    m_caster->CastCustomSpell(unitTarget,triggered_spell_id,&bp,&bp,&bp, TRIGGERED_FULL_MASK,nullptr,nullptr,m_originalCasterGUID);
+    m_caster->CastCustomSpell(unitTarget,triggered_spell_id,&bp,&bp,&bp, TRIGGERED_FULL_MASK, nullptr,nullptr,m_originalCasterGUID);
 }
 
 void Spell::EffectTriggerRitualOfSummoning(uint32 i)
@@ -2403,17 +2403,7 @@ void Spell::EffectTriggerRitualOfSummoning(uint32 i)
         return;
     }
 
-    finish();
-    auto spell = new Spell(m_caster, spellInfo, TRIGGERED_FULL_MASK);
-
-    SpellCastTargets targets;
-    targets.SetUnitTarget( unitTarget);
-    spell->prepare(&targets);
-
-    m_caster->SetCurrentCastedSpell(spell);
-    spell->m_selfContainer = &(m_caster->m_currentSpells[spell->GetCurrentContainer()]);
-
-    TakeReagents();
+    m_caster->CastSpell(unitTarget, spellInfo, TRIGGERED_CAST_DIRECTLY);
 }
 
 void Spell::EffectForceCast(uint32 i)
