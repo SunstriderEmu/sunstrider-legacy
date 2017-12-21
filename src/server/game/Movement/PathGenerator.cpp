@@ -218,14 +218,14 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
     }
 
     // we may need a better number here
-    bool farFromPoly = (distToStartPoly > 7.0f || distToEndPoly > 7.0f);
+    bool farFromPoly = (distToStartPoly > 7.0f || distToEndPoly > 4.0f); //sun: reduced max dist to end poly from 7 to 4
     if (farFromPoly)
     {
         TC_LOG_DEBUG("maps", "++ BuildPolyPath :: farFromPoly distToStartPoly=%.3f distToEndPoly=%.3f\n", distToStartPoly, distToEndPoly);
 
         bool buildShortcut = false;
         G3D::Vector3 const& p = (distToStartPoly > 7.0f) ? startPos : endPos;
-        if (_sourceUnit->GetBaseMap()->IsUnderWater(p.x, p.y, p.z))
+        if (_sourceUnit->GetBaseMap()->IsInWater(p.x, p.y, p.z)) //sun: replaced IsUnderWater by IsInWater
         {
             TC_LOG_DEBUG("maps", "++ BuildPolyPath :: underWater case\n");
             if (SourceCanSwim())

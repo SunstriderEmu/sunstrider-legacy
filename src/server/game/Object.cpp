@@ -1305,17 +1305,17 @@ void WorldObject::UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x
     if (!canFly)
     {
         float ground_z = z;
-        if(canSwim || waterWalk)
-            baseMap->GetWaterOrGroundLevel(x, y, z, &ground_z, true);
-        else
-            ground_z = baseMap->GetHeight(phaseMask, x, y, z, true, DEFAULT_HEIGHT_SEARCH);
-
-        if (ground_z == INVALID_HEIGHT)
-            return;
-
-        if (fabs(z - ground_z) < maxDist) //if difference is within max dist
-            z = ground_z;
-        //else, no ground found, keep the z position as is
+        float max_z = canSwim
+            ? baseMap->GetWaterOrGroundLevel(phaseMask, x, y, z, &ground_z, !waterWalk)
+            : ((ground_z = baseMap->GetHeight(phaseMask, x, y, z, true)));
+        if (max_z > INVALID_HEIGHT)
+        {
+            if (z > max_z && fabs(z - max_z) < maxDist)
+                z = max_z;
+            else if (z < ground_z && fabs(z - ground_z) < maxDist)
+                z = ground_z;
+            //else, no ground found, keep the z position as is
+        }
     }
     else
     {
