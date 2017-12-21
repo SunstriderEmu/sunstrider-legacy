@@ -10440,8 +10440,10 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
     if (IsAIEnabled)
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
 
-    SetInCombatWith(target);
+    EngageWithTarget(target); //sunstrider: same as below but also add to threat list. Else we may have creature entering combat then resetting immediately after if player in not in aggro range
     target->SetInCombatWith(this);
+    //SetInCombatWith(target);
+    //target->SetInCombatWith(this);
   
     Unit *who = target->GetCharmerOrOwnerOrSelf();
     if(who->GetTypeId() == TYPEID_PLAYER)
