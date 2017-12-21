@@ -1631,9 +1631,11 @@ bool WorldObject::CanDetectInvisibilityOf(WorldObject const* obj) const
     // It isn't possible in invisibility to detect something that can't detect the invisible object
     // (it's at least true for spell: 66)
     // It seems like that only Units are affected by this check (couldn't see arena doors with preparation invisibility)
+    /* Sunstrider: Disabled. This is wrong in some cases such as creature 20882 which should aggro players even though then cant detect her
     if (obj->ToUnit())
         if ((m_invisibility.GetFlags() & obj->m_invisibilityDetect.GetFlags()) != m_invisibility.GetFlags())
             return false;
+            */
 
     for (uint32 i = 0; i < TOTAL_INVISIBILITY_TYPES; ++i)
     {
