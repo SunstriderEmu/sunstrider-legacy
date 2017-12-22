@@ -214,12 +214,7 @@ using Optional = boost::optional<T>;
 
 namespace Trinity
 {
-    //! std::make_unique implementation (TODO: remove this once C++14 is supported)
-    template<typename T, typename ...Args>
-    std::unique_ptr<T> make_unique(Args&& ...args)
-    {
-        return std::make_unique<T>(std::forward<Args>(args)...);
-    }
+    using std::make_unique;
 }
 
 //! Hash implementation for std::pair to allow using pairs in unordered_set or as key for unordered_map
