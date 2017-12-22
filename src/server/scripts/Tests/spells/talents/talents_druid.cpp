@@ -549,8 +549,8 @@ public:
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Aura* aura = target->GetAura(spellId, EFFECT_0);
 			TEST_ASSERT(aura != nullptr);
-			ASSERT_INFO("Victim doesnt have aura with duration %u, but: %u", auraTime, aura->GetAuraDuration());
-			TEST_ASSERT(aura->GetAuraDuration() == auraTime);
+			ASSERT_INFO("Victim doesnt have aura with duration %u, but: %u", auraTime, aura->GetDuration());
+			TEST_ASSERT(aura->GetDuration() == auraTime);
 			Wait(2000); // GCD
 		}
 
@@ -834,7 +834,7 @@ public:
 			TEST_ASSERT(aura != nullptr);
 			ASSERT_INFO("Rogue has %u armor, expected: %i", rogue->GetArmor(), expectedRogueArmor);
 			TEST_ASSERT(int32(rogue->GetArmor()) == expectedRogueArmor);
-			TEST_ASSERT(aura->GetAuraDuration() == 40 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura->GetDuration() == 40 * SECOND * IN_MILLISECONDS);
             TEST_HAS_COOLDOWN(player, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5, 6 * SECOND);
 			Wait(2000);
 
@@ -990,7 +990,7 @@ public:
 				TEST_ASSERT(result == SPELL_CAST_OK);
 				Aura* aura = target->GetAura(spellID, EFFECT_1);
 				TEST_ASSERT(aura != nullptr);
-				TEST_ASSERT(aura->GetAuraDuration() == 12 * SECOND * IN_MILLISECONDS);
+				TEST_ASSERT(aura->GetDuration() == 12 * SECOND * IN_MILLISECONDS);
 				Wait(1000);
 				auto damageToTarget = AI->GetDamageDoneInfo(target);
 

@@ -2351,15 +2351,23 @@ enum DiminishingReturnsType : uint32
     DRTYPE_ALL          = 2                                 // this spell is diminished in every case
 };
 
+enum DiminishingLevels : uint32
+{
+    DIMINISHING_LEVEL_1             = 0,
+    DIMINISHING_LEVEL_2             = 1,
+    DIMINISHING_LEVEL_3             = 2,
+    DIMINISHING_LEVEL_IMMUNE        = 3
+};
+
 // Diminishing Return Groups
 enum DiminishingGroup : uint32
 {
     // Common Groups
-    DIMINISHING_NONE,
-    DIMINISHING_CONTROL_STUN,                               // Player Controlled stuns
+    DIMINISHING_NONE                                  = 0,
+    DIMINISHING_CONTROLLED_STUN,                            // Player Controlled stuns
     DIMINISHING_TRIGGER_STUN,                               // By aura proced stuns, usualy chance on hit talents
     DIMINISHING_SLEEP,
-    DIMINISHING_CONTROL_ROOT,                               // Immobilizing effects from casted spells
+    DIMINISHING_CONTROLLED_ROOT,                            // Immobilizing effects from casted spells
     DIMINISHING_TRIGGER_ROOT,                               // Immobilizing effects from triggered spells like Frostbite
     DIMINISHING_FEAR,                                       // Non-warlock fears
     DIMINISHING_CHARM,
@@ -2379,7 +2387,9 @@ enum DiminishingGroup : uint32
     DIMINISHING_BANISH,
     // Other
     // Don't Diminish, but limit duration to 10s
-    DIMINISHING_LIMITONLY
+    DIMINISHING_LIMITONLY,
+
+    DIMINISHING_MAX,
 };
 
 enum SummonCategory : uint32

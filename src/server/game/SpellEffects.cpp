@@ -2910,12 +2910,15 @@ void Spell::EffectApplyAura(uint32 i)
     Aura* Aur = CreateAura(m_spellInfo, i, &damage, unitTarget, caster, m_CastItem);
 
     // Now Reduce spell duration using data received at spell hit
-    int32 duration = Aur->GetAuraMaxDuration();
-    
-    if(!Aur->IsPositive())
+    int32 duration = Aur->GetMaxDuration();
+
+    bool const triggered = m_triggeredByAuraSpell != nullptr;
+    DiminishingGroup const diminishGroup = m_spellInfo->GetDiminishingReturnsGroupForSpell(triggered);
+    if(diminishGroup && !Aur->IsPositive())
     {
-        unitTarget->ApplyDiminishingToDuration(m_diminishGroup, duration, caster, m_diminishLevel);
-        Aur->setDiminishGroup(m_diminishGroup);
+        DiminishingLevels diminishLevel = m_diminishLevel; //unitTarget->GetDiminishing(diminishGroup);
+        unitTarget->ApplyDiminishingToDuration(m_spellInfo, triggered, duration, caster, diminishLevel);
+        Aur->setDiminishGroup(diminishGroup);
     }
 
     //mod duration of channeled aura by spell haste
@@ -2929,9 +2932,9 @@ void Spell::EffectApplyAura(uint32 i)
         return;
     }
 
-    if(duration != Aur->GetAuraMaxDuration())
+    if(duration != Aur->GetMaxDuration())
     {
-        Aur->SetAuraMaxDuration(duration);
+        Aur->SetMaxDuration(duration);
         Aur->SetDuration(duration);
     }
 
@@ -3241,7 +3244,7 @@ void Spell::EffectHeal( uint32 /*i*/ )
                 if (i->GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID
                     && (i->GetSpellInfo()->SpellFamilyFlags == 0x40 || i->GetSpellInfo()->SpellFamilyFlags == 0x10))
                 {
-                    if (!targetAura || i->GetAuraDuration() < targetAura->GetAuraDuration())
+                    if (!targetAura || i->GetDuration() < targetAura->GetDuration())
                         targetAura = i;
                 }
             }
@@ -6696,7 +6699,7 @@ void Spell::EffectKnockBack(uint32 i)
             return;
 #else
     // Effect only works on players
-    if(unitTarget->GetTypeId()!=TYPEID_PLAYER)
+    if(unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 #endif
 

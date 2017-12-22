@@ -357,7 +357,7 @@ public:
 			res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_FREEDOM_RNK_1);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Aura* aura = player->GetAura(ClassSpells::Paladin::BLESSING_OF_FREEDOM_RNK_1, EFFECT_0);
-			TEST_ASSERT(aura->GetAuraDuration() == 14 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura->GetDuration() == 14 * SECOND * IN_MILLISECONDS);
 		}
 	};
 

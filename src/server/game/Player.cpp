@@ -7215,7 +7215,7 @@ void Player::DuelComplete(DuelCompleteType type)
     AuraMap const& vAuras = duel->opponent->GetAuras();
     for (const auto & vAura : vAuras)
     {
-        if (!vAura.second->IsPositive() && vAura.second->GetCasterGUID() == GetGUID() && vAura.second->GetAuraApplyTime() >= duel->startTime)
+        if (!vAura.second->IsPositive() && vAura.second->GetCasterGUID() == GetGUID() && vAura.second->GetApplyTime() >= duel->startTime)
             auras2remove.push_back(vAura.second->GetId());
     }
 
@@ -7226,7 +7226,7 @@ void Player::DuelComplete(DuelCompleteType type)
     AuraMap const& auras = GetAuras();
     for (const auto & aura : auras)
     {
-        if (!aura.second->IsPositive() && aura.second->GetCasterGUID() == duel->opponent->GetGUID() && aura.second->GetAuraApplyTime() >= duel->startTime)
+        if (!aura.second->IsPositive() && aura.second->GetCasterGUID() == duel->opponent->GetGUID() && aura.second->GetApplyTime() >= duel->startTime)
             auras2remove.push_back(aura.second->GetId());
     }
     for(uint32 i : auras2remove)
@@ -17356,8 +17356,8 @@ void Player::_SaveAuras(SQLTransaction trans)
                 stmt->setUInt8(index++, itr2->second->GetEffIndex());
                 stmt->setUInt8(index++, itr2->second->GetStackAmount());
                 stmt->setInt32(index++, itr2->second->GetModifier()->m_amount);
-                stmt->setInt32(index++, itr2->second->GetAuraMaxDuration());
-                stmt->setInt32(index++, itr2->second->GetAuraDuration());
+                stmt->setInt32(index++, itr2->second->GetMaxDuration());
+                stmt->setInt32(index++, itr2->second->GetDuration());
                 stmt->setUInt8(index, itr2->second->m_procCharges);
                 trans->Append(stmt);
             }
@@ -20070,7 +20070,7 @@ void Player::SendInitialVisiblePackets(Unit* target)
                                 msg.SetPlayer(stream->GetName());
                                 msg.CreateAura(casterID, aura->GetSpellInfo()->Id,
                                     aura->IsPositive(), aura->GetSpellInfo()->Dispel,
-                                    aura->GetAuraDuration(), aura->GetAuraMaxDuration(),
+                                    aura->GetDuration(), aura->GetMaxDuration(),
                                     aura->GetStackAmount(), false);
                                 msg.SendPacket(GetGUID());
                             }

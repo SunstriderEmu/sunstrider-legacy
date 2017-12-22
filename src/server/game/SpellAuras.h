@@ -225,9 +225,9 @@ class TC_GAME_API Aura
         int32 GetBasePoints() const { return m_currentBasePoints; }
         void SetBasePoints(uint32 basePoints) { m_currentBasePoints = basePoints; }
 
-        int32 GetAuraMaxDuration() const { return m_maxduration; }
-        void SetAuraMaxDuration(int32 duration) { m_maxduration = duration; }
-        int32 GetAuraDuration() const { return m_duration; }
+        int32 GetMaxDuration() const { return m_maxduration; }
+        void SetMaxDuration(int32 duration) { m_maxduration = duration; }
+        int32 GetDuration() const { return m_duration; }
         void SetDuration(int32 duration)
         {
             m_duration = duration;
@@ -236,10 +236,10 @@ class TC_GAME_API Aura
             else
                 m_permanent=false;
         }
-        time_t GetAuraApplyTime() { return m_applyTime; }
+        time_t GetApplyTime() { return m_applyTime; }
 
         bool IsActive() { return m_active; }
-        bool IsExpired() const { return !GetAuraDuration() && !(IsPermanent() || IsPassive()); }
+        bool IsExpired() const { return !GetDuration() && !(IsPermanent() || IsPassive()); }
         void UpdateAuraDuration();
         void SendAuraDurationForCaster(Player* caster);
         void UpdateSlotCounterAndDuration();

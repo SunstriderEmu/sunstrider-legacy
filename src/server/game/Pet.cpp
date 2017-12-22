@@ -1616,8 +1616,8 @@ void Pet::_SaveAuras(SQLTransaction& trans)
         trans->PAppend("INSERT INTO pet_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges)"
             "VALUES ('%u', '" UI64FMTD "', '%u', '%u', '%u', '%d', '%d', '%d', '%d')",
             m_charmInfo->GetPetNumber(), casterGUID,(uint32)aura->GetId(), (uint32)aura->GetEffIndex(),
-            (uint32)aura->GetStackAmount(), aura->GetModifier()->m_amount,int(aura->GetAuraMaxDuration()),
-            int(aura->GetAuraDuration()),int(aura->m_procCharges));
+            (uint32)aura->GetStackAmount(), aura->GetModifier()->m_amount,int(aura->GetMaxDuration()),
+            int(aura->GetDuration()),int(aura->m_procCharges));
     }
 }
 

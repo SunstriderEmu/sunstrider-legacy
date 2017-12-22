@@ -371,7 +371,7 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
     {
         bool talent = GetTalentSpellCost(itr->second->GetId()) > 0;
         PSendSysMessage(LANG_COMMAND_TARGET_AURADETAIL, itr->second->GetId(), itr->second->GetEffIndex(),
-            itr->second->GetModifier()->m_auraname, itr->second->GetAuraDuration(), itr->second->GetAuraMaxDuration(),
+            itr->second->GetModifier()->m_auraname, itr->second->GetDuration(), itr->second->GetMaxDuration(),
             itr->second->GetSpellInfo()->SpellName[GetSessionDbcLocale()],
             (itr->second->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
             IS_PLAYER_GUID(itr->second->GetCasterGUID()) ? "player" : "creature",GUID_LOPART(itr->second->GetCasterGUID()));

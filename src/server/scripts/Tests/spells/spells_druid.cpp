@@ -51,7 +51,7 @@ public:
 			CastBarkskin(druid);
 			Aura* aura = druid->GetAura(ClassSpells::Druid::BARKSKIN_RNK_1, EFFECT_0);
 			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetAuraDuration() == 12 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura->GetDuration() == 12 * SECOND * IN_MILLISECONDS);
             TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::BARKSKIN_RNK_1, 1 * MINUTE);
 
 			// Pushback
@@ -268,7 +268,7 @@ public:
 			TEST_ASSERT(aura != nullptr);
 			ASSERT_INFO("Rogue has %u armor, expected: %i", rogue->GetArmor(), expectedRogueArmor);
 			TEST_ASSERT(int32(rogue->GetArmor()) == expectedRogueArmor);
-			TEST_ASSERT(aura->GetAuraDuration() == 40 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura->GetDuration() == 40 * SECOND * IN_MILLISECONDS);
 			Wait(2000);
 
 			// Rogue can't stealth
@@ -709,7 +709,7 @@ public:
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
 			Aura* aura = rogue->GetAura(ClassSpells::Druid::BASH_RNK_3, EFFECT_0);
 			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetAuraDuration() == 4 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura->GetDuration() == 4 * SECOND * IN_MILLISECONDS);
 		}
 	};
 
@@ -775,8 +775,8 @@ public:
 			TEST_ASSERT(aura11m == nullptr);
 
 			// Aura duration
-			TEST_ASSERT(aura3m->GetAuraDuration() == 6 * SECOND * IN_MILLISECONDS);
-			TEST_ASSERT(aura6m->GetAuraDuration() == 6 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura3m->GetDuration() == 6 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura6m->GetDuration() == 6 * SECOND * IN_MILLISECONDS);
 		
 			// Target changed
 			TEST_ASSERT(creature3m->GetTarget() == druid->GetGUID());
@@ -938,8 +938,8 @@ public:
 			TEST_ASSERT(aura15m == nullptr);
 
 			// Aura duration
-			TEST_ASSERT(aura3m->GetAuraDuration() == 30 * SECOND * IN_MILLISECONDS);
-			TEST_ASSERT(aura6m->GetAuraDuration() == 30 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura3m->GetDuration() == 30 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura6m->GetDuration() == 30 * SECOND * IN_MILLISECONDS);
 
 			// AP loss
 			TEST_ASSERT(player3m->GetTotalAttackPowerValue(BASE_ATTACK) == expectedAP3m);
@@ -978,7 +978,7 @@ public:
 			ASSERT_INFO("Form: %u, armor: %u, expected: %u", spellFormId, druid->GetArmor(), expectedArmor);
 			TEST_ASSERT(druid->GetArmor() == expectedArmor);
 			Aura* aura = druid->GetAura(ClassSpells::Druid::ENRAGE_RNK_1, EFFECT_0);
-			TEST_ASSERT(aura->GetAuraDuration() == 10 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura->GetDuration() == 10 * SECOND * IN_MILLISECONDS);
 			Wait(2000);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 4 * 10);
 			Wait(2000);
@@ -1040,7 +1040,7 @@ public:
             TEST_CAST(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4);
 			Aura* aura = druid->GetAura(ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, EFFECT_0);
 			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetAuraDuration() == 10 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura->GetDuration() == 10 * SECOND * IN_MILLISECONDS);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, 3 * MINUTE);
 			Wait(1000);
 			uint32 expectedRage = rage - 10 * 10;
@@ -1109,7 +1109,7 @@ public:
             TEST_CAST(druid, creature, ClassSpells::Druid::GROWL_RNK_1);
 			Aura* aura = creature->GetAura(ClassSpells::Druid::GROWL_RNK_1, EFFECT_1);
 			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetAuraDuration() == 3 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura->GetDuration() == 3 * SECOND * IN_MILLISECONDS);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::GROWL_RNK_1, 10 * SECOND);
 			TEST_ASSERT(creature->GetThreat(druid) == warlockThreat);
 
@@ -1397,7 +1397,7 @@ public:
 			// Aura
 			Aura* aura = creature->GetAura(ClassSpells::Druid::RAKE_RNK_5, EFFECT_1);
 			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetAuraDuration() == 9 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(aura->GetDuration() == 9 * SECOND * IN_MILLISECONDS);
 
 			// Combo
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
@@ -1647,7 +1647,7 @@ public:
             // Aura
             Aura* aura = druid->GetAura(ClassSpells::Druid::TIGERS_FURY_RNK_4, EFFECT_0);
             TEST_ASSERT(aura != nullptr);
-            TEST_ASSERT(aura->GetAuraDuration() == 6 * SECOND * IN_MILLISECONDS);
+            TEST_ASSERT(aura->GetDuration() == 6 * SECOND * IN_MILLISECONDS);
 
             // Damage
             uint32 const level = 60;
@@ -1751,7 +1751,7 @@ public:
             // Aura duration
             Aura* aura = warrior->GetAura(ClassSpells::Druid::ABOLISH_POISON_RNK_1, EFFECT_0);
             TEST_ASSERT(aura != nullptr);
-            TEST_ASSERT(aura->GetAuraDuration() == 8 * SECOND * IN_MILLISECONDS);
+            TEST_ASSERT(aura->GetDuration() == 8 * SECOND * IN_MILLISECONDS);
 
             Wait(500);
             int8 count = 0;

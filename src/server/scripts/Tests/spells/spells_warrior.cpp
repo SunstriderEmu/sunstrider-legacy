@@ -410,7 +410,7 @@ public:
             // Aura
             Aura* aura = warrior->GetAura(ClassSpells::Warrior::RETALIATION_RNK_1, EFFECT_0);
             TEST_ASSERT(aura != nullptr);
-            TEST_ASSERT(aura->GetAuraMaxDuration() == 15 * SECOND * IN_MILLISECONDS);
+            TEST_ASSERT(aura->GetMaxDuration() == 15 * SECOND * IN_MILLISECONDS);
             TEST_ASSERT(aura->GetCharges() == 30);
 
             // Cannot counterattack from behind
@@ -736,8 +736,8 @@ public:
             TEST_ASSERT(aura11m == nullptr);
 
             // Aura duration
-            TEST_ASSERT(aura3m->GetAuraDuration() == 6 * SECOND * IN_MILLISECONDS);
-            TEST_ASSERT(aura6m->GetAuraDuration() == 6 * SECOND * IN_MILLISECONDS);
+            TEST_ASSERT(aura3m->GetDuration() == 6 * SECOND * IN_MILLISECONDS);
+            TEST_ASSERT(aura6m->GetDuration() == 6 * SECOND * IN_MILLISECONDS);
 
             // Target changed
             TEST_ASSERT(creature3m->GetTarget() == warrior->GetGUID());
@@ -2109,7 +2109,7 @@ public:
             Aura* aura = victim->GetAura(ClassSpells::Warrior::SUNDER_ARMOR_RNK_6, EFFECT_0);
             TEST_ASSERT(aura != nullptr);
             TEST_ASSERT(aura->GetStackAmount() == sunderArmorStack);
-            TEST_ASSERT(aura->GetAuraMaxDuration() == 30 * SECOND * IN_MILLISECONDS);
+            TEST_ASSERT(aura->GetMaxDuration() == 30 * SECOND * IN_MILLISECONDS);
         }
 
         void Test() override

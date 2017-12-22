@@ -313,6 +313,16 @@ private:
     static StaticData _data[TOTAL_SPELL_EFFECTS];
 };
 
+struct TC_GAME_API SpellDiminishInfo
+{
+    DiminishingGroup DiminishGroup = DIMINISHING_NONE;
+    DiminishingReturnsType DiminishReturnType = DRTYPE_NONE;
+#ifdef LICH_KING
+    DiminishingLevels DiminishMaxLevel = DIMINISHING_LEVEL_IMMUNE;
+#endif
+    int32 DiminishDurationLimit = 0;
+};
+
 struct TC_GAME_API ImmunityInfo
 {
     uint32 SchoolImmuneMask = 0;
@@ -490,6 +500,12 @@ public:
     bool IsDifferentRankOf(SpellInfo const* spellInfo) const;
     bool IsHighRankOf(SpellInfo const* spellInfo) const;
 
+    // Diminishing Returns interaction with spells
+    DiminishingGroup GetDiminishingReturnsGroupForSpell(bool triggered) const;
+    int32 GetDiminishingReturnsLimitDuration(bool triggered) const;
+    DiminishingLevels GetDiminishingReturnsMaxLevel(bool triggered) const;
+    DiminishingReturnsType GetDiminishingReturnsGroupType(bool triggered) const;
+
     bool CanDispelAura(SpellInfo const* auraSpellInfo) const;
     bool CanPierceImmuneAura(SpellInfo const* auraSpellInfo) const;
 
@@ -544,6 +560,7 @@ private:
     //apply SpellCustomAttributes. Some custom attributes are also added in SpellMgr::LoadSpellLinked()
     void LoadCustomAttributes();
     void _LoadImmunityInfo();
+    void _LoadSpellDiminishInfo();
 
     static bool _IsPositiveTarget(uint32 targetA, uint32 targetB);
     uint32 _GetExplicitTargetMask() const;
@@ -556,6 +573,9 @@ private:
 
     // unloading helpers
     void _UnloadImplicitTargetConditionLists();
+
+    SpellDiminishInfo _diminishInfoNonTriggered;
+    SpellDiminishInfo _diminishInfoTriggered;
 
     uint32 _allowedMechanicMask;
 

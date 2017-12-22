@@ -2586,181 +2586,6 @@ void SpellMgr::LoadSkillLineAbilityMap()
     TC_LOG_INFO("server.loading",">> Loaded %u SkillLineAbility MultiMap", count);
 }
 
-DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto, bool triggered)
-{
-    // Explicit Diminishing Groups
-    switch(spellproto->SpellFamilyName)
-    {
-        case SPELLFAMILY_GENERIC:
-        {
-            switch (spellproto->Id) {
-            case 30529: // Recently In Game - Karazhan Chess Event
-            case 44799: // Frost Breath (Kalecgos)
-            case 46562: // Mind Flay
-            case 6945: // Chest Pains
-                return DIMINISHING_NONE;
-            case 12494: // Frostbite
-                return DIMINISHING_TRIGGER_ROOT;
-            }
-        }
-        case SPELLFAMILY_MAGE:
-        {
-            // Polymorph
-            if ((spellproto->SpellFamilyFlags & 0x00001000000LL) && spellproto->Effects[0].ApplyAuraName==SPELL_AURA_MOD_CONFUSE)
-                return DIMINISHING_POLYMORPH;
-            if (spellproto->Id == 33395) // Elemental's freeze
-                return DIMINISHING_CONTROL_ROOT;
-            break;
-        }
-        case SPELLFAMILY_ROGUE:
-        {
-            // Kidney Shot
-            if (spellproto->SpellFamilyFlags & 0x00000200000LL)
-                return DIMINISHING_KIDNEYSHOT;
-            // Sap
-            else if (spellproto->SpellFamilyFlags & 0x00000000080LL)
-                return DIMINISHING_POLYMORPH;
-            // Gouge
-            else if (spellproto->SpellFamilyFlags & 0x00000000008LL)
-                return DIMINISHING_POLYMORPH;
-            // Blind
-            else if (spellproto->SpellFamilyFlags & 0x00001000000LL)
-                return DIMINISHING_BLIND_CYCLONE;
-            break;
-        }
-        case SPELLFAMILY_HUNTER:
-        {
-            // Freezing trap
-            if (spellproto->SpellFamilyFlags & 0x00000000008LL)
-                return DIMINISHING_FREEZE;
-            break;
-        }
-        case SPELLFAMILY_WARLOCK:
-        {
-            // Death Coil
-            if (spellproto->SpellFamilyFlags & 0x00000080000LL)
-                return DIMINISHING_DEATHCOIL;
-            // Seduction
-            if (spellproto->SpellFamilyFlags & 0x00040000000LL)
-                return DIMINISHING_FEAR;
-            // Fear
-            //else if (spellproto->SpellFamilyFlags & 0x40840000000LL)
-            //    return DIMINISHING_WARLOCK_FEAR;
-            // Curses/etc
-            if (spellproto->SpellVisual == 339 && spellproto->SpellIconID == 692) // Curse of Languages
-                return DIMINISHING_LIMITONLY;
-            else if (spellproto->SpellFamilyFlags & 0x00080000000LL) {
-                if (spellproto->SpellVisual == 1265 && spellproto->SpellIconID == 93)   // Curse of Recklessness
-                    return DIMINISHING_NONE;
-                else
-                    return DIMINISHING_LIMITONLY;
-            }
-            break;
-        }
-        case SPELLFAMILY_DRUID:
-        {
-            // Cyclone
-            if (spellproto->SpellFamilyFlags & 0x02000000000LL)
-                return DIMINISHING_BLIND_CYCLONE;
-            // Nature's Grasp trigger
-            if (spellproto->SpellFamilyFlags & 0x00000000200LL && spellproto->Attributes == 0x49010000)
-                return DIMINISHING_CONTROL_ROOT;
-            break;
-        }
-        case SPELLFAMILY_WARRIOR:
-        {
-            // Hamstring - limit duration to 10s in PvP
-            if (spellproto->SpellFamilyFlags & 0x00000000002LL)
-                return DIMINISHING_LIMITONLY;
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
-
-    // Get by mechanic
-    for (const auto & Effect : spellproto->Effects)
-    {
-        if (spellproto->Mechanic      == MECHANIC_STUN    || Effect.Mechanic == MECHANIC_STUN)
-            return triggered ? DIMINISHING_TRIGGER_STUN : DIMINISHING_CONTROL_STUN;
-        else if (spellproto->Mechanic == MECHANIC_SLEEP   || Effect.Mechanic == MECHANIC_SLEEP)
-            return DIMINISHING_SLEEP;
-        else if (spellproto->Mechanic == MECHANIC_ROOT    || Effect.Mechanic == MECHANIC_ROOT)
-            return triggered ? DIMINISHING_TRIGGER_ROOT : DIMINISHING_CONTROL_ROOT;
-        else if (spellproto->Mechanic == MECHANIC_FEAR    || Effect.Mechanic == MECHANIC_FEAR)
-            return DIMINISHING_FEAR;
-        else if (spellproto->Mechanic == MECHANIC_CHARM   || Effect.Mechanic == MECHANIC_CHARM)
-            return DIMINISHING_CHARM;
-     /*   else if (spellproto->Mechanic == MECHANIC_SILENCE || spellproto->Effects[i].Mechanic == MECHANIC_SILENCE)
-            return DIMINISHING_SILENCE; */
-        else if (spellproto->Mechanic == MECHANIC_DISARM  || Effect.Mechanic == MECHANIC_DISARM)
-            return DIMINISHING_DISARM;
-        else if (spellproto->Mechanic == MECHANIC_FREEZE  || Effect.Mechanic == MECHANIC_FREEZE)
-            return DIMINISHING_FREEZE;
-        else if (spellproto->Mechanic == MECHANIC_KNOCKOUT|| Effect.Mechanic == MECHANIC_KNOCKOUT ||
-                 spellproto->Mechanic == MECHANIC_SAPPED  || Effect.Mechanic == MECHANIC_SAPPED)
-            return DIMINISHING_KNOCKOUT;
-        else if (spellproto->Mechanic == MECHANIC_BANISH  || Effect.Mechanic == MECHANIC_BANISH)
-            return DIMINISHING_BANISH;
-    }
-
-    return DIMINISHING_NONE;
-}
-
-bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
-{
-    switch(group)
-    {
-        case DIMINISHING_CONTROL_STUN:
-        case DIMINISHING_TRIGGER_STUN:
-        case DIMINISHING_KIDNEYSHOT:
-        case DIMINISHING_SLEEP:
-        case DIMINISHING_CONTROL_ROOT:
-        case DIMINISHING_TRIGGER_ROOT:
-        case DIMINISHING_FEAR:
-        case DIMINISHING_WARLOCK_FEAR:
-        case DIMINISHING_CHARM:
-        case DIMINISHING_POLYMORPH:
-        case DIMINISHING_FREEZE:
-        case DIMINISHING_KNOCKOUT:
-        case DIMINISHING_BLIND_CYCLONE:
-        case DIMINISHING_BANISH:
-        case DIMINISHING_LIMITONLY:
-            return true;
-    }
-    return false;
-}
-
-DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
-{
-    switch(group)
-    {
-        case DIMINISHING_BLIND_CYCLONE:
-        case DIMINISHING_CONTROL_STUN:
-        case DIMINISHING_TRIGGER_STUN:
-        case DIMINISHING_KIDNEYSHOT:
-            return DRTYPE_ALL;
-        case DIMINISHING_SLEEP:
-        case DIMINISHING_CONTROL_ROOT:
-        case DIMINISHING_TRIGGER_ROOT:
-        case DIMINISHING_FEAR:
-        case DIMINISHING_CHARM:
-        case DIMINISHING_POLYMORPH:
-        case DIMINISHING_SILENCE:
-        case DIMINISHING_DISARM:
-        case DIMINISHING_DEATHCOIL:
-        case DIMINISHING_FREEZE:
-        case DIMINISHING_BANISH:
-        case DIMINISHING_WARLOCK_FEAR:
-        case DIMINISHING_KNOCKOUT:
-            return DRTYPE_PLAYER;
-    }
-
-    return DRTYPE_NONE;
-}
-
 float SpellMgr::GetSpellThreatModPercent(SpellInfo const* spellInfo) const
 {
     if(spellInfo)
@@ -3349,6 +3174,21 @@ uint8 SpellMgr::IsHighRankOfSpell(uint32 spell1, uint32 spell2) const
             return true;
 
     return false;
+}
+
+void SpellMgr::LoadSpellInfoDiminishing()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    for (SpellInfo* spellInfo : mSpellInfoMap)
+    {
+        if (!spellInfo)
+            continue;
+
+        spellInfo->_LoadSpellDiminishInfo();
+    }
+
+    TC_LOG_INFO("server.loading", ">> Loaded SpellInfo diminishing infos in %u ms", GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SpellMgr::LoadSpellInfoImmunities()

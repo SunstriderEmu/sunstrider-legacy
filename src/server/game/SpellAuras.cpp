@@ -839,8 +839,8 @@ void Aura::UpdateAuraDuration()
         data << m_target->GetPackGUID();
         data << uint8(m_auraSlot);
         data << uint32(GetId());
-        data << uint32(GetAuraMaxDuration());
-        data << uint32(GetAuraDuration());
+        data << uint32(GetMaxDuration());
+        data << uint32(GetDuration());
         (m_target->ToPlayer())->SendDirectMessage(&data);
     }
 
@@ -876,8 +876,8 @@ void Aura::SendAuraDurationForCaster(Player* caster)
     data << m_target->GetPackGUID();
     data << uint8(m_auraSlot);
     data << uint32(GetId());
-    data << uint32(GetAuraMaxDuration());                   // full
-    data << uint32(GetAuraDuration());                      // remain
+    data << uint32(GetMaxDuration());                   // full
+    data << uint32(GetDuration());                      // remain
     caster->SendDirectMessage(&data);
 }
 
@@ -989,7 +989,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
                         msg.SetPlayer(player->GetName());
                         msg.CreateAura(casterID, GetSpellInfo()->Id,
                                        IsPositive(), GetSpellInfo()->Dispel,
-                                       GetAuraDuration(), GetAuraMaxDuration(),
+                                       GetDuration(), GetMaxDuration(),
                                        GetStackAmount(), false);
                         player->SendSpectatorAddonMsgToBG(msg);
                     }
@@ -1073,7 +1073,7 @@ void Aura::_RemoveAura()
                 msg.SetPlayer(player->GetName());
                 msg.CreateAura(casterID, GetSpellInfo()->Id,
                                IsPositive(), GetSpellInfo()->Dispel,
-                               GetAuraDuration(), GetAuraMaxDuration(),
+                               GetDuration(), GetMaxDuration(),
                                GetStackAmount(), true);
                 player->SendSpectatorAddonMsgToBG(msg);
             }
@@ -2170,7 +2170,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }
             case 32014: //archimonde bump
             {
-                SetDuration(GetAuraDuration()*3);
+                SetDuration(GetDuration()*3);
                 if (m_target->HasAuraEffect(31970))       // Archimonde fear, remove Fear before bump
                     m_target->RemoveAurasDueToSpell(31970);
                 return;
@@ -2537,7 +2537,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 // Do final heal for real !apply
                 if (!apply && Real)
                 {
-                    if (GetAuraDuration() <= 0 || m_removeMode==AURA_REMOVE_BY_DISPEL)
+                    if (GetDuration() <= 0 || m_removeMode==AURA_REMOVE_BY_DISPEL)
                     {
                         // final heal
                         if(m_target->IsInWorld())

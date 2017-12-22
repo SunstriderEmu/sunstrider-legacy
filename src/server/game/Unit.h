@@ -799,19 +799,17 @@ namespace Movement{
     class MoveSpline;
 }
 
-enum DiminishingLevels : int
-{
-    DIMINISHING_LEVEL_1             = 0,
-    DIMINISHING_LEVEL_2             = 1,
-    DIMINISHING_LEVEL_3             = 2,
-    DIMINISHING_LEVEL_IMMUNE        = 3
-};
-
 struct DiminishingReturn
 {
-    DiminishingReturn(DiminishingGroup group, uint32 t, uint32 count) : DRGroup(group), hitTime(t), hitCount(count), stack(0) {}
+    DiminishingReturn() : stack(0), hitTime(0), hitCount(DIMINISHING_LEVEL_1) { }
 
-    DiminishingGroup        DRGroup:16;
+    void Clear()
+    {
+        stack = 0;
+        hitTime = 0;
+        hitCount = DIMINISHING_LEVEL_1;
+    }
+
     uint16                  stack:16;
     uint32                  hitTime;
     uint32                  hitCount;
@@ -1199,11 +1197,12 @@ class TC_GAME_API Unit : public WorldObject
 
         UnitAI* GetAI() { return i_AI; }
 
-        DiminishingLevels GetDiminishing(DiminishingGroup  group);
-        void IncrDiminishing(DiminishingGroup group);
-        void ApplyDiminishingToDuration(DiminishingGroup  group, int32 &duration,Unit* caster, DiminishingLevels Level);
+        virtual bool IsAffectedByDiminishingReturns() const { return (GetCharmerOrOwnerPlayerOrPlayerItself() != nullptr); }
+        DiminishingLevels GetDiminishing(DiminishingGroup group) const;
+        void IncrDiminishing(SpellInfo const* auraSpellInfo, bool triggered);
+        void ApplyDiminishingToDuration(SpellInfo const* auraSpellInfo, bool triggered, int32 &duration, Unit* caster, DiminishingLevels previousLevel) const;
         void ApplyDiminishingAura(DiminishingGroup  group, bool apply);
-        void ClearDiminishings() { m_Diminishing.clear(); }
+        void ClearDiminishings();
 
         // target dependent range checks
         float GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
@@ -1491,11 +1490,11 @@ class TC_GAME_API Unit : public WorldObject
 		bool HasAuraTypeWithMiscvalue(AuraType auratype, int32 miscvalue) const;
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
         bool HasAuraTypeWithCaster(AuraType auraType, uint64 caster) const;
-        bool HasAuraEffect(uint32 spellId, uint8 effIndex = 0) const
-            { return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end(); }
+        bool HasAuraEffect(uint32 spellId, uint8 effIndex = 0) const;
         bool HasAuraWithMechanic(Mechanics mechanic) const;
         bool HasAuraWithCaster(uint32 spellId, uint8 effIndex, uint64 owner) const;
         bool HasAuraWithCasterNot(uint32 spellId, uint8 effIndex, uint64 owner) const;
+        bool HasStrongerAuraWithDR(SpellInfo const* auraSpellInfo, Unit* caster, bool triggered) const;
 
         bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
         bool HasBreakableByDamageAuraType(AuraType type, uint32 excludeAura = 0) const;
@@ -2318,7 +2317,7 @@ class TC_GAME_API Unit : public WorldObject
         uint32 m_lastManaUse;                               // msecs
         TimeTrackerSmall m_movesplineTimer;
 
-        Diminishing m_Diminishing;
+        DiminishingReturn m_Diminishing[DIMINISHING_MAX];
         // Manage all Units threatening us
 //        ThreatManager m_ThreatManager;
         // Manage all Units that are threatened by us

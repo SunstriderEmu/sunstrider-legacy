@@ -934,7 +934,7 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
     //spell did hit, let's wait for dot duration
-    uint32 waitTime = aura->GetAuraDuration() + 1 * SECOND * IN_MILLISECONDS;
+    uint32 waitTime = aura->GetDuration() + 1 * SECOND * IN_MILLISECONDS;
     Wait(waitTime);
     caster->ResetForceSpellHitResult();
     //aura may be deleted at this point, do not use anymore
@@ -1190,7 +1190,7 @@ void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex 
     INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
-    uint32 auraDuration = aura->GetAuraMaxDuration();
+    uint32 auraDuration = aura->GetMaxDuration();
     INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with duration %u instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraDuration, durationMS);
     INTERNAL_TEST_ASSERT(auraDuration == durationMS);
 }

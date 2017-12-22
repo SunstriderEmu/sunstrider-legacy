@@ -2882,21 +2882,31 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
         }
     }
 
+    uint8 aura_effmask = 0;
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (effectMask & (1 << i) && m_spellInfo->Effects[i].IsUnitOwnedAuraEffect())
+            aura_effmask |= 1 << i;
+
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
-    if((m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell)))
+    bool const triggered = m_triggeredByAuraSpell != nullptr;
+    DiminishingGroup const diminishGroup = m_spellInfo->GetDiminishingReturnsGroupForSpell(triggered);
+
+    DiminishingLevels diminishLevel = DIMINISHING_LEVEL_1;
+    if(diminishGroup && aura_effmask)
     {
-        m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
+        diminishLevel = unit->GetDiminishing(diminishGroup);
+        m_diminishLevel = diminishLevel; //for later use in aura application
         // send immunity message if target is immune
-        if(m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
+        if(diminishLevel == DIMINISHING_LEVEL_IMMUNE)
         {
             caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_IMMUNE);
             return;
         }
 
-        DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
+        DiminishingReturnsType type = m_spellInfo->GetDiminishingReturnsGroupType(triggered);
         // Increase Diminishing on unit, current informations for actually casts will use values above
-        if((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || (unit->ToCreature())->IsPet() || (unit->ToCreature())->IsPossessedByPlayer())) || type == DRTYPE_ALL)
-            unit->IncrDiminishing(m_diminishGroup);
+        if (type == DRTYPE_ALL || (type == DRTYPE_PLAYER && unit->IsAffectedByDiminishingReturns()))
+            unit->IncrDiminishing(m_spellInfo, triggered);
     }
 
     int8 sanct_effect = -1;
@@ -2941,7 +2951,7 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
                     if (!_duration)
                     {
                         Aura * aur = unit->GetAuraByCasterSpell(m_spellInfo->Id, caster->GetGUID());
-                        _duration = aur ? aur->GetAuraDuration() : -1;
+                        _duration = aur ? aur->GetDuration() : -1;
                     }
                     unit->SetAurasDurationByCasterSpell(i->first->Id, caster->GetGUID(), _duration);
                 }
@@ -3454,14 +3464,48 @@ void Spell::cast(bool skipCheck)
     // triggered cast called from Spell::prepare where it was already checked
     if(!skipCheck)
     {
+        auto cleanupSpell = [this](SpellCastResult res, uint32* p1 = nullptr, uint32* p2 = nullptr)
+        {
+            SendCastResult(res, p1, p2);
+            SendInterrupted(0);
+            finish(false);
+            SetExecutedCurrently(false);
+        };
+
+        uint32 param1 = 0, param2 = 0;
         castResult = CheckCast(false);
         //TC_LOG_DEBUG("FIXME","CheckCast for %u : %u", m_spellInfo->Id, castResult);
         if(castResult != SPELL_CAST_OK)
         {
-            SendCastResult(castResult);
-            finish(false);
-            SetExecutedCurrently(false);
+            cleanupSpell(castResult, &param1, &param2);
             return;
+        }
+
+        // check diminishing returns (again, only after finish cast bar, tested on retail)
+        if (Unit* target = m_targets.GetUnitTarget())
+        {
+            uint8 aura_effmask = 0;
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                if (m_spellInfo->Effects[i].IsUnitOwnedAuraEffect())
+                    aura_effmask |= 1 << i;
+
+            if (aura_effmask)
+            {
+                bool const triggered = m_triggeredByAuraSpell != nullptr;
+                if (DiminishingGroup diminishGroup = m_spellInfo->GetDiminishingReturnsGroupForSpell(triggered))
+                {
+                    DiminishingReturnsType type = m_spellInfo->GetDiminishingReturnsGroupType(triggered);
+                    if (type == DRTYPE_ALL || (type == DRTYPE_PLAYER && target->IsAffectedByDiminishingReturns()))
+                    {
+                        Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
+                        if (target->HasStrongerAuraWithDR(m_spellInfo, caster, triggered))
+                        {
+                            cleanupSpell(SPELL_FAILED_MORE_POWERFUL_SPELL_ACTIVE);
+                            return;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -3737,8 +3781,6 @@ void Spell::_handle_immediate_phase()
 {
     // initialize Diminishing Returns Data
     m_diminishLevel = DIMINISHING_LEVEL_1;
-    m_diminishGroup = DIMINISHING_NONE;
-
     HandleFlatThreat();
 
     PrepareScriptHitHandlers();
@@ -8466,7 +8508,7 @@ bool Spell::IsAutoActionResetSpell() const
     return true;
 }
 
-bool Spell::IsPositive(bool hostileTarget = false) const
+bool Spell::IsPositive(bool hostileTarget) const
 {
     return m_spellInfo->IsPositive(hostileTarget) && (!m_triggeredByAuraSpell || m_triggeredByAuraSpell->IsPositive(hostileTarget));
 }

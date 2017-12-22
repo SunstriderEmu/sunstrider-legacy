@@ -835,6 +835,296 @@ bool SpellInfo::IsHighRankOf(SpellInfo const* spellInfo) const
     return false;
 }
 
+void SpellInfo::_LoadSpellDiminishInfo()
+{
+    auto diminishingGroupCompute = [this](bool triggered) -> DiminishingGroup
+    {
+        // Explicit Diminishing Groups
+        switch (SpellFamilyName)
+        {
+        case SPELLFAMILY_GENERIC:
+        {
+            switch (Id) {
+            case 30529: // Recently In Game - Karazhan Chess Event
+            case 44799: // Frost Breath (Kalecgos)
+            case 46562: // Mind Flay
+            case 6945: // Chest Pains
+                return DIMINISHING_NONE;
+            case 12494: // Frostbite
+                return DIMINISHING_TRIGGER_ROOT;
+            }
+        }
+        case SPELLFAMILY_MAGE:
+        {
+            // Polymorph
+            if ((SpellFamilyFlags & 0x00001000000LL) && Effects[0].ApplyAuraName == SPELL_AURA_MOD_CONFUSE)
+                return DIMINISHING_POLYMORPH;
+            if (Id == 33395) // Elemental's freeze
+                return DIMINISHING_CONTROLLED_ROOT;
+            break;
+        }
+        case SPELLFAMILY_ROGUE:
+        {
+            // Kidney Shot
+            if (SpellFamilyFlags & 0x00000200000LL)
+                return DIMINISHING_KIDNEYSHOT;
+            // Sap
+            else if (SpellFamilyFlags & 0x00000000080LL)
+                return DIMINISHING_POLYMORPH;
+            // Gouge
+            else if (SpellFamilyFlags & 0x00000000008LL)
+                return DIMINISHING_POLYMORPH;
+            // Blind
+            else if (SpellFamilyFlags & 0x00001000000LL)
+                return DIMINISHING_BLIND_CYCLONE;
+            break;
+        }
+        case SPELLFAMILY_HUNTER:
+        {
+            // Freezing trap
+            if (SpellFamilyFlags & 0x00000000008LL)
+                return DIMINISHING_FREEZE;
+            break;
+        }
+        case SPELLFAMILY_WARLOCK:
+        {
+            // Death Coil
+            if (SpellFamilyFlags & 0x00000080000LL)
+                return DIMINISHING_DEATHCOIL;
+            // Seduction
+            if (SpellFamilyFlags & 0x00040000000LL)
+                return DIMINISHING_FEAR;
+            // Fear
+            //else if (SpellFamilyFlags & 0x40840000000LL)
+            //    return DIMINISHING_WARLOCK_FEAR;
+            // Curses/etc
+            if (SpellVisual == 339 && SpellIconID == 692) // Curse of Languages
+                return DIMINISHING_LIMITONLY;
+            else if (SpellFamilyFlags & 0x00080000000LL) {
+                if (SpellVisual == 1265 && SpellIconID == 93)   // Curse of Recklessness
+                    return DIMINISHING_NONE;
+                else
+                    return DIMINISHING_LIMITONLY;
+            }
+            break;
+        }
+        case SPELLFAMILY_DRUID:
+        {
+            // Cyclone
+            if (SpellFamilyFlags & 0x02000000000LL)
+                return DIMINISHING_BLIND_CYCLONE;
+            // Nature's Grasp trigger
+            if (SpellFamilyFlags & 0x00000000200LL && Attributes == 0x49010000)
+                return DIMINISHING_CONTROLLED_ROOT;
+            break;
+        }
+        case SPELLFAMILY_WARRIOR:
+        {
+            // Hamstring - limit duration to 10s in PvP
+            if (SpellFamilyFlags & 0x00000000002LL)
+                return DIMINISHING_LIMITONLY;
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
+
+        // Get by mechanic
+        for (const auto & Effect : Effects)
+        {
+            if (Mechanic == MECHANIC_STUN || Effect.Mechanic == MECHANIC_STUN)
+                return triggered ? DIMINISHING_TRIGGER_STUN : DIMINISHING_CONTROLLED_STUN;
+            else if (Mechanic == MECHANIC_SLEEP || Effect.Mechanic == MECHANIC_SLEEP)
+                return DIMINISHING_SLEEP;
+            else if (Mechanic == MECHANIC_ROOT || Effect.Mechanic == MECHANIC_ROOT)
+                return triggered ? DIMINISHING_TRIGGER_ROOT : DIMINISHING_CONTROLLED_ROOT;
+            else if (Mechanic == MECHANIC_FEAR || Effect.Mechanic == MECHANIC_FEAR)
+                return DIMINISHING_FEAR;
+            else if (Mechanic == MECHANIC_CHARM || Effect.Mechanic == MECHANIC_CHARM)
+                return DIMINISHING_CHARM;
+            /*   else if (Mechanic == MECHANIC_SILENCE || Effects[i].Mechanic == MECHANIC_SILENCE)
+            return DIMINISHING_SILENCE; */
+            else if (Mechanic == MECHANIC_DISARM || Effect.Mechanic == MECHANIC_DISARM)
+                return DIMINISHING_DISARM;
+            else if (Mechanic == MECHANIC_FREEZE || Effect.Mechanic == MECHANIC_FREEZE)
+                return DIMINISHING_FREEZE;
+            else if (Mechanic == MECHANIC_KNOCKOUT || Effect.Mechanic == MECHANIC_KNOCKOUT ||
+                Mechanic == MECHANIC_SAPPED || Effect.Mechanic == MECHANIC_SAPPED)
+                return DIMINISHING_KNOCKOUT;
+            else if (Mechanic == MECHANIC_BANISH || Effect.Mechanic == MECHANIC_BANISH)
+                return DIMINISHING_BANISH;
+        }
+
+        return DIMINISHING_NONE;
+    };
+
+    auto diminishingTypeCompute = [](DiminishingGroup group) -> DiminishingReturnsType
+    {
+        switch (group)
+        {
+        case DIMINISHING_BLIND_CYCLONE:
+        case DIMINISHING_CONTROLLED_STUN:
+        case DIMINISHING_TRIGGER_STUN:
+        case DIMINISHING_KIDNEYSHOT:
+            return DRTYPE_ALL;
+        case DIMINISHING_SLEEP:
+        case DIMINISHING_CONTROLLED_ROOT:
+        case DIMINISHING_TRIGGER_ROOT:
+        case DIMINISHING_FEAR:
+        case DIMINISHING_CHARM:
+        case DIMINISHING_POLYMORPH:
+        case DIMINISHING_SILENCE:
+        case DIMINISHING_DISARM:
+        case DIMINISHING_DEATHCOIL:
+        case DIMINISHING_FREEZE:
+        case DIMINISHING_BANISH:
+        case DIMINISHING_WARLOCK_FEAR:
+        case DIMINISHING_KNOCKOUT:
+            return DRTYPE_PLAYER;
+        }
+
+        return DRTYPE_NONE;
+    };
+
+#ifdef LICH_KING
+    auto diminishingMaxLevelCompute = [](DiminishingGroup group) -> DiminishingLevels
+    {
+        switch (group)
+        {
+        case DIMINISHING_TAUNT:
+            return DIMINISHING_LEVEL_TAUNT_IMMUNE;
+        default:
+            return DIMINISHING_LEVEL_IMMUNE;
+        }
+    };
+#endif
+
+    auto diminishingLimitDurationCompute = [this](DiminishingGroup group) -> int32
+    {
+        auto isGroupDurationLimited = [group]() -> bool
+        {
+            switch (group)
+            {
+            //groups are different on LK... not done here
+            case DIMINISHING_CONTROLLED_STUN:
+            case DIMINISHING_TRIGGER_STUN:
+            case DIMINISHING_KIDNEYSHOT:
+            case DIMINISHING_SLEEP:
+            case DIMINISHING_CONTROLLED_ROOT:
+            case DIMINISHING_TRIGGER_ROOT:
+            case DIMINISHING_FEAR:
+            case DIMINISHING_WARLOCK_FEAR:
+            case DIMINISHING_CHARM:
+            case DIMINISHING_POLYMORPH:
+            case DIMINISHING_FREEZE:
+            case DIMINISHING_KNOCKOUT:
+            case DIMINISHING_BLIND_CYCLONE:
+            case DIMINISHING_BANISH:
+            case DIMINISHING_LIMITONLY:
+                return true;
+            default:
+                return false;
+            }
+        };
+
+        if (!isGroupDurationLimited())
+            return 0;
+
+#ifdef LICH_KING
+        //not sure none of these are BC but I see no mention of this
+        // Explicit diminishing duration
+        switch (SpellFamilyName)
+        {
+        case SPELLFAMILY_DRUID:
+        {
+            // Faerie Fire - limit to 40 seconds in PvP (3.1)
+            if (SpellFamilyFlags[0] & 0x400)
+                return 40 * IN_MILLISECONDS;
+            break;
+        }
+        case SPELLFAMILY_HUNTER:
+        {
+            // Wyvern Sting
+            if (SpellFamilyFlags[1] & 0x1000)
+                return 6 * IN_MILLISECONDS;
+            // Hunter's Mark
+            if (SpellFamilyFlags[0] & 0x400)
+                return 120 * IN_MILLISECONDS;
+            break;
+        }
+        case SPELLFAMILY_PALADIN:
+        {
+            // Repentance - limit to 6 seconds in PvP
+            if (SpellFamilyFlags[0] & 0x4)
+                return 6 * IN_MILLISECONDS;
+            break;
+        }
+        case SPELLFAMILY_WARLOCK:
+        {
+            // Banish - limit to 6 seconds in PvP
+            if (SpellFamilyFlags[1] & 0x8000000)
+                return 6 * IN_MILLISECONDS;
+            // Curse of Tongues - limit to 12 seconds in PvP
+            else if (SpellFamilyFlags[2] & 0x800)
+                return 12 * IN_MILLISECONDS;
+            // Curse of Elements - limit to 120 seconds in PvP
+            else if (SpellFamilyFlags[1] & 0x200)
+                return 120 * IN_MILLISECONDS;
+            break;
+        }
+        default:
+            break;
+        }
+
+#endif
+        return 10 * IN_MILLISECONDS;
+    };
+
+    SpellDiminishInfo triggeredInfo, normalInfo;
+    triggeredInfo.DiminishGroup = diminishingGroupCompute(true);
+    triggeredInfo.DiminishReturnType = diminishingTypeCompute(triggeredInfo.DiminishGroup);
+#ifdef LICH_KING
+    triggeredInfo.DiminishMaxLevel = diminishingMaxLevelCompute(triggeredInfo.DiminishGroup);
+#endif
+    triggeredInfo.DiminishDurationLimit = diminishingLimitDurationCompute(triggeredInfo.DiminishGroup);
+
+    normalInfo.DiminishGroup = diminishingGroupCompute(false);
+    normalInfo.DiminishReturnType = diminishingTypeCompute(normalInfo.DiminishGroup);
+#ifdef LICH_KING
+    normalInfo.DiminishMaxLevel = diminishingMaxLevelCompute(normalInfo.DiminishGroup);
+#endif
+    normalInfo.DiminishDurationLimit = diminishingLimitDurationCompute(normalInfo.DiminishGroup);
+
+    _diminishInfoTriggered = triggeredInfo;
+    _diminishInfoNonTriggered = normalInfo;
+}
+
+DiminishingGroup SpellInfo::GetDiminishingReturnsGroupForSpell(bool triggered) const
+{
+    return triggered ? _diminishInfoTriggered.DiminishGroup : _diminishInfoNonTriggered.DiminishGroup;
+}
+
+DiminishingReturnsType SpellInfo::GetDiminishingReturnsGroupType(bool triggered) const
+{
+    return triggered ? _diminishInfoTriggered.DiminishReturnType : _diminishInfoNonTriggered.DiminishReturnType;
+}
+
+DiminishingLevels SpellInfo::GetDiminishingReturnsMaxLevel(bool triggered) const
+{
+#ifdef LICH_KING
+    return triggered ? _diminishInfoTriggered.DiminishMaxLevel : _diminishInfoNonTriggered.DiminishMaxLevel;
+#else
+    return DIMINISHING_LEVEL_IMMUNE;
+#endif
+}
+
+int32 SpellInfo::GetDiminishingReturnsLimitDuration(bool triggered) const
+{
+    return triggered ? _diminishInfoTriggered.DiminishDurationLimit : _diminishInfoNonTriggered.DiminishDurationLimit;
+}
+
 int32 SpellInfo::GetDuration() const
 {
     if (!DurationEntry)

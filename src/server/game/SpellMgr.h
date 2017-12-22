@@ -383,11 +383,6 @@ inline bool isRoguePoison(SpellInfo const* spell)
     return spell->SpellFamilyName == SPELLFAMILY_ROGUE && (spell->HasVisual(19) || spell->HasVisual(5100));
 }
 
-// Diminishing Returns interaction with spells
-DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto, bool triggered);
-bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
-DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group);
-
 // Spell affects related declarations (accessed using SpellMgr functions)
 typedef std::map<uint32, uint64> SpellAffectMap;
 
@@ -935,6 +930,7 @@ class TC_GAME_API SpellMgr
         void UnloadSpellInfoImplicitTargetConditionLists();
         void LoadSpellAreas();
         void LoadSpellInfoImmunities();
+        void LoadSpellInfoDiminishing();
 
         // SpellInfo object management
         SpellInfo const* GetSpellInfo(uint32 spellId) const { return spellId < GetSpellInfoStoreSize() ? mSpellInfoMap[spellId] : nullptr; }
