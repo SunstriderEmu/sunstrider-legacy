@@ -263,6 +263,7 @@ public:
 	virtual void Set(ObjectGuid::LowType val) { _nextGuid = val; }
 	virtual ObjectGuid::LowType Generate() = 0;
 	ObjectGuid::LowType GetNextAfterMaxUsed() const { return _nextGuid; }
+    virtual ~ObjectGuidGeneratorBase() { }
 
 protected:
 	static void HandleCounterOverflow(HighGuid high);
