@@ -199,11 +199,12 @@ if (NOT Boost_NO_BOOST_CMAKE)
       set(ENV{Boost_DIR} $ENV{BOOSTROOT})
     endif()
   endif()
-
+  
   # Do the same find_package call but look specifically for the CMake version.
   # Note that args are passed in the Boost_FIND_xxxxx variables, so there is no
   # need to delegate them to this find_package call.
   find_package(Boost QUIET NO_MODULE)
+  
   mark_as_advanced(Boost_DIR)
 
   # If we found boost-cmake, then we're done.  Print out what we found.
@@ -217,7 +218,6 @@ if (NOT Boost_NO_BOOST_CMAKE)
     return()
   endif()
 endif()
-
 
 #-------------------------------------------------------------------------------
 #  FindBoost functions & macros
@@ -1036,7 +1036,7 @@ foreach(COMPONENT ${Boost_FIND_COMPONENTS})
       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${COMPONENT}${compiler}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG}-${Boost_LIB_VERSION}
       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${COMPONENT}${compiler}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG} )
   endforeach()
-    list(APPEND
+    list(APPEND _boost_DEBUG_NAMES
       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${COMPONENT}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG}-${Boost_LIB_VERSION}
       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${COMPONENT}${_boost_MULTITHREADED}${_boost_DEBUG_ABI_TAG}
       ${Boost_LIB_PREFIX}${Boost_NAMESPACE}_${COMPONENT}${_boost_MULTITHREADED}

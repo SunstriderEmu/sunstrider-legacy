@@ -15,14 +15,12 @@ list(APPEND PRIVATE_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/Debugging/Errors.h)
 
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/commonPCH.h)
-set(PRIVATE_PCH_SOURCE PrecompiledHeaders/commonPCH.cpp)
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_definitions(-DTRINITY_API_EXPORT_COMMON)
 
 add_library(common
-  ${PRIVATE_PCH_SOURCE}
   ${PRIVATE_SOURCES}
 )
 
@@ -52,6 +50,7 @@ target_include_directories(common
 target_link_libraries(common
   PRIVATE
     process
+    trinity-core-interface
   PUBLIC
     boost
     fmt
@@ -85,4 +84,4 @@ if( BUILD_SHARED_LIBS )
 endif()
 
 # Generate precompiled header
-add_cxx_pch(common ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
+add_cxx_pch(common ${PRIVATE_PCH_HEADER})

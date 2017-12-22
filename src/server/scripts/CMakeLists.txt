@@ -84,7 +84,6 @@ endforeach()
 
 
 set(PRIVATE_PCH_HEADER ScriptPCH.h)
-set(PRIVATE_PCH_SOURCE ScriptPCH.cpp)
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -156,15 +155,15 @@ foreach(SCRIPT_MODULE ${SCRIPT_MODULE_LIST})
     list(APPEND DYNAMIC_SCRIPT_MODULE_PROJECTS ${SCRIPT_MODULE_PROJECT_NAME})
     # Create the script module project
     add_library(${SCRIPT_MODULE_PROJECT_NAME} SHARED
-      ${PRIVATE_PCH_SOURCE}
       ${SCRIPT_MODULE_PRIVATE_SOURCES}
       ${SCRIPT_MODULE_PRIVATE_SCRIPTLOADER})
     target_link_libraries(${SCRIPT_MODULE_PROJECT_NAME}
-      PUBLIC
-        game
       PRIVATE
 		#sunstrider: Added dependency to scripts library, so that we include pch directory. Dunno why it is needed for intellisense to work properly
-		scripts
+		#scripts
+		trinity-core-interface
+      PUBLIC
+        game
     )
     set_target_properties(${SCRIPT_MODULE_PROJECT_NAME}
       PROPERTIES
@@ -200,12 +199,13 @@ ConfigureScriptLoader("static" SCRIPT_MODULE_PRIVATE_SCRIPTLOADER OFF ${STATIC_S
 
 add_library(scripts STATIC 
   ScriptLoader.h
-  ${PRIVATE_PCH_SOURCE}
   ${SCRIPT_MODULE_PRIVATE_SCRIPTLOADER}
   ${PRIVATE_SOURCES}
 )
 
 target_link_libraries(scripts
+  PRIVATE
+    trinity-core-interface
   PUBLIC
     game-interface
     database
@@ -222,7 +222,7 @@ set_target_properties(scripts
 	  
 # Generate precompiled header
 list(APPEND ALL_SCRIPT_PROJECTS scripts ${DYNAMIC_SCRIPT_MODULE_PROJECTS})
-add_cxx_pch("${ALL_SCRIPT_PROJECTS}" ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
+add_cxx_pch("${ALL_SCRIPT_PROJECTS}" ${PRIVATE_PCH_HEADER})
 
 # Remove all shared libraries in the installl directory which
 # are contained in the static library already.

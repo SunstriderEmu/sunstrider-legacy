@@ -60,8 +60,10 @@ add_library(g3dlib STATIC ${g3dlib_STAT_SRCS})
 target_include_directories(g3dlib
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
+ 
 target_link_libraries(g3dlib
+  PRIVATE
+	trinity-dependency-interface
   PUBLIC
     zlib
     threads)

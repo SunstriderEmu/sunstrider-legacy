@@ -20,7 +20,6 @@ CollectSourceFiles(
 )
 
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/gamePCH.h)
-set(PRIVATE_PCH_SOURCE PrecompiledHeaders/gamePCH.cpp)
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -63,12 +62,12 @@ if(USE_GPERFTOOLS)
 endif(USE_GPERFTOOLS)
 
 target_link_libraries(game
-  PUBLIC
-    game-interface
   PRIVATE
     ${gperftools_lib}
     efsw
-)
+	trinity-core-interface
+  PUBLIC
+    game-interface)
 
 set_target_properties(game
     PROPERTIES
@@ -88,7 +87,7 @@ if( BUILD_SHARED_LIBS )
 endif()
 
 # Generate precompiled header
-add_cxx_pch(game ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
+add_cxx_pch(game ${PRIVATE_PCH_HEADER})
 
 if(PLAYERBOT)
     if ( UNIX )

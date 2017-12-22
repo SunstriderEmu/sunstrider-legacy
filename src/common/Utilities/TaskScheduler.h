@@ -1,23 +1,26 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef _TASK_SCHEDULER_H_
 #define _TASK_SCHEDULER_H_
 
+#include "Duration.h"
+#include "Optional.h"
+#include "Random.h"
 #include <algorithm>
 #include <chrono>
 #include <vector>
@@ -25,11 +28,6 @@
 #include <memory>
 #include <utility>
 #include <set>
-
-#include <boost/optional.hpp>
-
-#include "Util.h"
-#include "Duration.h"
 
 class TaskContext;
 
@@ -73,15 +71,15 @@ class TC_COMMON_API TaskScheduler
 
         timepoint_t _end;
         duration_t _duration;
-        boost::optional<group_t> _group;
+        Optional<group_t> _group;
         repeated_t _repeated;
         task_handler_t _task;
 
     public:
         // All Argument construct
-        Task(timepoint_t const& end, duration_t const& duration, boost::optional<group_t> const& group,
+        Task(timepoint_t const& end, duration_t const& duration, Optional<group_t> const& group,
             repeated_t const repeated, task_handler_t const& task)
-                : _end(end), _duration(duration), _group(group), _repeated(repeated), _task(task) { }
+            : _end(end), _duration(duration), _group(group), _repeated(repeated), _task(task) { }
 
         // Minimal Argument construct
         Task(timepoint_t const& end, duration_t const& duration, task_handler_t const& task)
@@ -181,11 +179,11 @@ class TC_COMMON_API TaskScheduler
 
 public:
     TaskScheduler()
-        : self_reference(this, [](TaskScheduler const*) { }), _now(clock_t::now()), _predicate(EmptyValidator) { }
+        : self_reference(this, [](TaskScheduler const*) {}), _now(clock_t::now()), _predicate(EmptyValidator) { }
 
     template<typename P>
     TaskScheduler(P&& predicate)
-        : self_reference(this, [](TaskScheduler const*) { }), _now(clock_t::now()), _predicate(std::forward<P>(predicate)) { }
+        : self_reference(this, [](TaskScheduler const*) {}), _now(clock_t::now()), _predicate(std::forward<P>(predicate)) { }
 
     TaskScheduler(TaskScheduler const&) = delete;
     TaskScheduler(TaskScheduler&&) = delete;
@@ -347,7 +345,7 @@ public:
     TaskScheduler& RescheduleGroup(group_t const group, std::chrono::duration<_Rep, _Period> const& duration)
     {
         auto const end = _now + duration;
-       _task_holder.ModifyIf([end, group](TaskContainer const& task) -> bool
+        _task_holder.ModifyIf([end, group](TaskContainer const& task) -> bool
         {
             if (task->IsInGroup(group))
             {
@@ -394,7 +392,7 @@ private:
     // Returns a random duration between min and max
     template<class _RepLeft, class _PeriodLeft, class _RepRight, class _PeriodRight>
     static std::chrono::milliseconds
-    RandomDurationBetween(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
+        RandomDurationBetween(std::chrono::duration<_RepLeft, _PeriodLeft> const& min,
             std::chrono::duration<_RepRight, _PeriodRight> const& max)
     {
         auto const milli_min = std::chrono::duration_cast<std::chrono::milliseconds>(min);

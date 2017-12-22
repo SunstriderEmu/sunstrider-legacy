@@ -5,7 +5,6 @@ CollectSourceFiles(
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders)
 
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/databasePCH.h)
-set(PRIVATE_PCH_SOURCE PrecompiledHeaders/databasePCH.cpp)
 
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
@@ -39,6 +38,8 @@ target_include_directories(database
 add_definitions(-DTRINITY_API_EXPORT_DATABASE)
 
 target_link_libraries(database
+  PRIVATE
+    trinity-core-interface
   PUBLIC
     common
     mysql)
@@ -61,5 +62,5 @@ if( BUILD_SHARED_LIBS )
 endif()
 
 # Generate precompiled header
-add_cxx_pch(database ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
+add_cxx_pch(database ${PRIVATE_PCH_HEADER})
 

@@ -16,8 +16,7 @@ if (BUILD_SHARED_LIBS)
     src/efsw/System.cpp
     src/efsw/Thread.cpp
     src/efsw/Watcher.cpp
-    src/efsw/WatcherGeneric.cpp
-    )
+    src/efsw/WatcherGeneric.cpp)
 
   if(WIN32)
     list(APPEND SRCS
@@ -74,6 +73,8 @@ if (BUILD_SHARED_LIBS)
       ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
   target_link_libraries(efsw
+    PRIVATE
+      trinity-dependency-interface
     PUBLIC
       threads
       ${OPTIONAL_MAC_LINK_LIBRARIES})

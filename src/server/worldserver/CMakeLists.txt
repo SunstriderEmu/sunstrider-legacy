@@ -12,13 +12,11 @@ if( WIN32 )
 endif()
 
 #set(PRIVATE_PCH_HEADER PrecompiledHeaders/worldPCH.h)
-#set(PRIVATE_PCH_SOURCE PrecompiledHeaders/worldPCH.cpp)
 
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(worldserver
-  ${PRIVATE_PCH_SOURCE}
   ${PRIVATE_SOURCES}
   ${CMAKE_CURRENT_SOURCE_DIR}/worldserver.conf.dist
 )
@@ -44,6 +42,8 @@ endif()
 set_target_properties(game scripts PROPERTIES LINK_INTERFACE_MULTIPLICITY 5)
 
 target_link_libraries(worldserver
+  PRIVATE
+    trinity-core-interface
   PUBLIC
     scripts
     game
@@ -94,4 +94,4 @@ elseif( WIN32 )
 endif()
 
 # Generate precompiled header
-#add_cxx_pch(worldserver ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
+#add_cxx_pch(worldserver ${PRIVATE_PCH_HEADER})

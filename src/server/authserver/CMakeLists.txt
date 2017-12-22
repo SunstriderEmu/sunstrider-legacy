@@ -15,12 +15,10 @@ if( WIN32 )
 endif()
 
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/authPCH.h)
-set(PRIVATE_PCH_SOURCE PrecompiledHeaders/authPCH.cpp)
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(authserver
-  ${PRIVATE_PCH_SOURCE}
   ${PRIVATE_SOURCES}
   ${CMAKE_CURRENT_SOURCE_DIR}/authserver.conf.dist
 )
@@ -32,6 +30,8 @@ if( NOT WIN32 )
 endif()
 
 target_link_libraries(authserver
+  PRIVATE
+    trinity-core-interface
   PUBLIC
     shared
 	boost
@@ -77,4 +77,4 @@ elseif( WIN32 )
 endif()
 
 # Generate precompiled header
-add_cxx_pch(authserver ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
+add_cxx_pch(authserver ${PRIVATE_PCH_HEADER})

@@ -39,6 +39,10 @@ else()
   add_library(zlib STATIC
     ${zlib_STAT_SRCS})
 
+  target_link_libraries(zlib
+    PRIVATE
+	  trinity-dependency-interface)
+	  
   target_include_directories(zlib
     PUBLIC
       ${CMAKE_CURRENT_SOURCE_DIR})

@@ -6,7 +6,6 @@ CollectSourceFiles(
 )
 
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/sharedPCH.h)
-set(PRIVATE_PCH_SOURCE PrecompiledHeaders/sharedPCH.cpp)
 
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
@@ -14,7 +13,6 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 add_definitions(-DTRINITY_API_EXPORT_SHARED)
 
 add_library(shared
-  ${PRIVATE_PCH_SOURCE}
   ${PRIVATE_SOURCES}
 )
 
@@ -32,6 +30,8 @@ target_include_directories(shared
     ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(shared
+  PRIVATE
+    trinity-core-interface
   PUBLIC
     database)
 	
@@ -53,7 +53,7 @@ if( BUILD_SHARED_LIBS )
 endif()
 
 # Generate precompiled header
-add_cxx_pch(shared ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
+add_cxx_pch(shared ${PRIVATE_PCH_HEADER})
 
 
 if(WIN32 AND MSVC)

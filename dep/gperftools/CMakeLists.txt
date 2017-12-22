@@ -31,6 +31,8 @@ if (WIN32)
     endif()
 	
 	target_link_libraries(gperftools
+	    PRIVATE
+	      trinity-dependency-interface
 		INTERFACE
 		  ${TCMALLOC_LIB_WIN}
     )

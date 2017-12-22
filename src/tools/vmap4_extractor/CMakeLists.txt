@@ -6,8 +6,11 @@ CollectSourceFiles(
 add_executable(vmap4extractor ${PRIVATE_SOURCES})
 
 target_link_libraries(vmap4extractor
-  common
-  mpq)
+  PRIVATE
+    trinity-core-interface
+  PUBLIC
+    common
+    mpq)
 
 CollectIncludeDirectories(
   ${CMAKE_CURRENT_SOURCE_DIR}
