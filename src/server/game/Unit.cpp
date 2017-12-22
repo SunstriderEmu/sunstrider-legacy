@@ -5024,8 +5024,8 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                 for(int itr : *spell_triggered)
                     if(itr < 0)
                         RemoveAurasDueToSpell(-itr);
-                    else if(Unit* caster = Aur->GetCaster())
-                        CastSpell(this, itr, TRIGGERED_FULL_MASK, nullptr, nullptr, caster->GetGUID());
+                    else if(Unit* _caster = Aur->GetCaster())
+                        CastSpell(this, itr, TRIGGERED_FULL_MASK, nullptr, nullptr, _caster->GetGUID());
             }
         }
         if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_LINK_AURA))
@@ -7686,7 +7686,6 @@ ReputationRank Unit::GetFactionReactionTo(FactionTemplateEntry const* factionTem
     if (Player const* selfPlayerOwner = GetAffectingPlayer())
     {
         //if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(target->GetFactionTemplateEntry()))
-        if (auto targetFactionTemplateEntry = target->GetFactionTemplateEntry())
         {
             auto forceItr = selfPlayerOwner->m_forcedReactions.find(targetFactionTemplateEntry->faction);
             if (forceItr != selfPlayerOwner->m_forcedReactions.end())
@@ -16728,11 +16727,12 @@ bool _IsLeapAccessibleByPath(Unit* unit, Position& targetPos)
     float distToTarget = unit->GetExactDistance(targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
 
     PathGenerator path(unit);
-    //here we'd want to allow just a bit longer than a straight line
-    path.SetPathLengthLimit(std::min(distToTarget - 6.0f, distToTarget)); //this is a hack to help with the imprecision of this check into the path generator
+    path.ExcludeSteepSlopes();
+    //here we'd want to allow just a bit longer than a straight line, but SetPathLengthLimit is really imprecise so we just set limit to distToTarget and it'll allow some minor detours
+    path.SetPathLengthLimit(distToTarget);
     if (path.CalculatePath(targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ(), false, false)
-        && ((path.GetPathType() & (PATHFIND_SHORT | PATHFIND_NOPATH | PATHFIND_INCOMPLETE)) == 0)
-        )
+        && ((path.GetPathType() & (PATHFIND_SHORT | PATHFIND_NOPATH | PATHFIND_INCOMPLETE | PATHFIND_NOT_USING_PATH)) == 0)
+        ) 
     {
         //additional internal validity hack to compensate for mmap imprecision. Check if path last two points and two first points are in Los
         Movement::PointsArray points = path.GetPath();
@@ -16800,18 +16800,13 @@ Position Unit::GetLeapPosition(float dist)
             float mapHeight = GetMap()->GetHeight(PHASEMASK_NORMAL, destx, desty, destz + j * maxSearchDist / 2, true, maxSearchDist, true);
             if (mapHeight != INVALID_HEIGHT)
             {
-                //if no collision
-                if (!GetCollisionPosition(currentPos, destx, desty, mapHeight, targetPos, GetCombatReach()))
-                {
-                    //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPositionFound valid target point, %f %f %f was in LoS", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
-                    //GetCollisionPosition already set targetPos to destx, desty, destz
-                    goto exitloopfounddest;
-                }
-
-                //if is accessible by path (don't check for shorter distance)
+                //if is accessible by path
                 targetPos.Relocate(destx, desty, mapHeight);
                 float distToTarget = GetExactDistance(targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
-                if (distToTarget > 8.0f && _IsLeapAccessibleByPath(this, targetPos))
+                if (distToTarget < 4.0f)
+                    continue; //dont even check for very short distance
+
+                if (_IsLeapAccessibleByPath(this, targetPos)) 
                 {
                     targetPos.Relocate(destx, desty, mapHeight + 1.0f);
                     //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());

@@ -136,6 +136,11 @@ bool ChatHandler::HandleMmapLocCommand(const char* args)
             PSendSysMessage("Dt     [??,??] (no tile loaded)");
     }
 
+    if (player->GetMap()->IsPlayerWalkable(player->GetPosition()))
+        PSendSysMessage("Map::IsPlayerWalkable -> true");
+    else
+        PSendSysMessage("Map::IsPlayerWalkable -> false");
+
     return true;
 }
 

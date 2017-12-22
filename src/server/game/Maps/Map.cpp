@@ -1624,6 +1624,45 @@ bool Map::getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float 
     return result;
 }
 
+bool Map::IsPlayerWalkable(Position pos) const
+{
+    MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
+    const dtNavMeshQuery* m_navMeshQuery = mmap->GetNavMeshQuery(GetId(), GetInstanceId());
+    if (!m_navMeshQuery)
+    {
+        //  No nav mesh loaded !
+        return false;
+    }
+
+    // WARNING : Nav mesh coords are Y, Z, X (and not X, Y, Z)
+    static float extents[VERTEX_SIZE] = { 0.1f, 3.0f, 0.1f };
+    //int polyCount = 0;
+    dtPolyRef polyRef;
+
+    dtQueryFilter filter;
+    filter.setIncludeFlags(NAV_GROUND | NAV_WATER);
+    filter.setExcludeFlags(NAV_STEEP_SLOPES);
+
+    float pointYZX[VERTEX_SIZE] = { pos.GetPositionY() , pos.GetPositionZ(), pos.GetPositionX() };
+    float closestPointYZX[VERTEX_SIZE] = { 0.0f, 0.0f, 0.0f };
+
+    // Default recastnavigation method
+    if (dtStatusFailed(m_navMeshQuery->findNearestPoly(pointYZX, extents, &filter, &polyRef, closestPointYZX)))
+        return false;
+
+    //did find a close point?
+    if (closestPointYZX[0] == 0.0f && closestPointYZX[1] == 0.0f && closestPointYZX[2] == 0.0f)
+        return false;
+
+    DEBUG_ASSERT(pos.GetExactDist(closestPointYZX[2], closestPointYZX[0], closestPointYZX[1]) < 8.0f); //making sure found point is indeed close to query point
+
+    // Do not select points over player pos
+    if (closestPointYZX[1] > pointYZX[1] + 3.0f)
+        return false;
+
+    return true;
+}
+
 float Map::GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/) const
 {
     if (const_cast<Map*>(this)->GetGrid(x, y))
@@ -2606,11 +2645,11 @@ void Map::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
     auto itr = m_cpmembers.find(poolId);
     if (itr != m_cpmembers.end()) {
         std::set<uint64> membersSet = itr->second;
-        auto itr = membersSet.find(cre->GetGUID());
-        if(itr != membersSet.end())
+        auto itr2 = membersSet.find(cre->GetGUID());
+        if(itr2 != membersSet.end())
         {
             cre->SetCreaturePoolId(0);
-            membersSet.erase(itr);
+            membersSet.erase(itr2);
             return;
         }
         TC_LOG_ERROR("maps","Creature %u could not be removed from pool %u", cre->GetSpawnId(), poolId);
