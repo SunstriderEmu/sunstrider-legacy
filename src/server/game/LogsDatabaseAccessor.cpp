@@ -176,6 +176,10 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
     std::string targetNameLog = (player && player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetName() : "";
     if (targetNameLog.size() > 25) //max db lenght
         targetNameLog.resize(25);
+    if (areaName.size() > 20) //max db lenght
+        areaName.resize(20);
+    if (zoneName.size() > 20) //max db lenght
+        zoneName.resize(20);
 
     /*PrepareStatement(LOGS_INS_GM_COMMAND, "INSERT INTO gm_command (account, guid, gmlevel, time, map, x, y, z, area_name, zone_name, selection_type, selection_guid,
     selection_name, selection_map, selection_x, selection_y, selection_z, command, IP) VALUES (?,?,?,UNIX_TIMESTAMP(),?,?,?,??,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC); */
