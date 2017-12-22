@@ -2425,6 +2425,10 @@ BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uin
     std::string safe_author=author;
     LoginDatabase.EscapeString(safe_author);
 
+    // Prevent banning an already banned account
+    if (mode == SANCTION_BAN_ACCOUNT && AccountMgr::IsBannedAccount(nameOrIP))
+        return BAN_EXISTS;
+
     //AccountTypes authorSecurity = author_session ? AccountTypes(author_session->GetSecurity()) : SEC_ADMINISTRATOR;
 
     QueryResult resultAccounts = nullptr;                     //used for kicking

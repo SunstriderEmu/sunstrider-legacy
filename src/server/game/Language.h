@@ -757,13 +757,14 @@ enum TrinityStrings
     LANG_YOU_CHANGE_GENDER              = 1120,
     LANG_YOUR_GENDER_CHANGED            = 1121,
 
-
     LANG_INSTANCE_CRASHED               = 1143,
 
     LANG_MOVEGENS_FOLLOW_PLAYER         = 1139,
     LANG_MOVEGENS_FOLLOW_CREATURE       = 1140,
     LANG_MOVEGENS_FOLLOW_NULL           = 1141,
     LANG_MOVEGENS_EFFECT                = 1142,
+
+    LANG_BAN_EXISTS                     = 1188,
 
     // Ticket Strings 2000-2029
     LANG_COMMAND_TICKETNEW              = 2000,

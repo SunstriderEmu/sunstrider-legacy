@@ -2584,7 +2584,8 @@ enum BanReturn : uint32
 {
     BAN_SUCCESS,
     BAN_SYNTAX_ERROR,
-    BAN_NOTFOUND
+    BAN_NOTFOUND,
+    BAN_EXISTS,
 };
 
 enum ScriptType : uint32

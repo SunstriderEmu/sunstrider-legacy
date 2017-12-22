@@ -62,6 +62,7 @@ class TC_GAME_API AccountMgr
 
         static std::string CalculateShaPassHash(std::string const& name, std::string const& password);
         static bool normalizeString(std::string& utf8String);
+        static bool IsBannedAccount(std::string const& name);
         static bool IsPlayerAccount(uint32 gmlevel);
         static bool IsAdminAccount(uint32 gmlevel);
         static bool IsConsoleAccount(uint32 gmlevel);

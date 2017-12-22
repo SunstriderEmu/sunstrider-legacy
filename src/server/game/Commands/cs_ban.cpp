@@ -296,6 +296,9 @@ bool ChatHandler::HandleBanHelper(SanctionType mode, const char* args)
             }
             SetSentErrorMessage(true);
             return false;
+        case BAN_EXISTS:
+            PSendSysMessage(LANG_BAN_EXISTS);
+            return false;
     }
 
     return true;
