@@ -59,7 +59,7 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(WaypointPath& pat
 }
 
 #ifdef TRINITY_DEBUG
-std::atomic<bool> onArrivedProcessing = false;
+std::atomic<bool> onArrivedProcessing(false);
 #endif
 
 WaypointMovementGenerator<Creature>::~WaypointMovementGenerator()

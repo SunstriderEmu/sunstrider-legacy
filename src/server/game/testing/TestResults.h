@@ -1,8 +1,9 @@
 #ifndef TESTRESULTS_H
 #define TESTRESULTS_H
 
+#include "TestCase.h"
+
 class TestCase;
-enum TestStatus;
 
 class TestResult
 {

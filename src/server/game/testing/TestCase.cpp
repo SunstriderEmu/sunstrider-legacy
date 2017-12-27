@@ -1390,7 +1390,7 @@ std::string TestCase::StringifySpellCastResult(SpellCastResult result)
     case SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE: str = "SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE"; break;
     case SPELL_FAILED_UNKNOWN: str = "SPELL_FAILED_UNKNOWN"; break;
     default:
-        str = "Unknown spell result" + result;
+        str = "Unknown spell result" + std::to_string(result);
         break;
     }
     return str;
