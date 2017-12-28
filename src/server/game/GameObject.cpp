@@ -589,7 +589,7 @@ void GameObject::Update(uint32 diff)
                 { // We got a owner but it was not found? Possible case: Hunter traps from disconnected players
                     m_despawnTime = 1; //trigger despawn
                 }
-                else // environmental trap
+                else // environmental & bg traps
                 {
                     // environmental damage spells already have around enemies targeting but this not help in case not existed GO casting support
 
@@ -599,12 +599,15 @@ void GameObject::Update(uint32 diff)
                     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> checker(this, p_ok, p_check);
                     Cell::VisitWorldObjects(this, checker, radius);
                     trapTarget = p_ok;
-                    if (trapTarget)
+                    if (!IsBattlegroundTrap) //environmental case only
                     {
-                        CastSpell(trapTarget, goInfo->trap.spellId, trapTarget->GetGUID());
-                        m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
+                        if (trapTarget)
+                        {
+                            CastSpell(trapTarget, goInfo->trap.spellId, trapTarget->GetGUID());
+                            m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
+                        }
+                        break;
                     }
-                    break;
                 }
 
                 if (trapTarget)
