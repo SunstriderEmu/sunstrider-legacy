@@ -35,6 +35,9 @@ class TC_GAME_API PetAI : public CreatureAI
 		void ForceAttackBreakable(Unit const* target);
 		void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) override;
 
+        void MoveInLineOfSight(Unit* /*who*/) override { } // CreatureAI interferes with returning pets
+        void MoveInLineOfSight_Safe(Unit* /*who*/) { } // CreatureAI interferes with returning pets
+
     protected:
         void Minipet_DistanceCheck(uint32 diff);
     private:

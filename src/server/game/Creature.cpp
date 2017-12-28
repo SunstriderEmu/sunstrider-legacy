@@ -2458,8 +2458,8 @@ Unit* Creature::SelectNearestTarget(float dist, bool playerOnly /* = false */, b
         if (dist == 0.0f)
             dist = MAX_SEARCHER_DISTANCE;
 
-        Trinity::NearestHostileUnitInAggroRangeCheck u_check(this, dist, playerOnly, furthest);
-        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAggroRangeCheck> searcher(this, target, u_check);
+        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, playerOnly, furthest);
+        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(this, target, u_check);
         Cell::VisitAllObjects(this, searcher, dist);
     }
 
@@ -2482,11 +2482,11 @@ Unit* Creature::SelectNearestTargetInAttackDistance(float dist) const
         dist = MAX_SEARCHER_DISTANCE;
 
     {
-        Trinity::NearestHostileUnitInAggroRangeCheck u_check(this, dist);
-        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAggroRangeCheck> searcher(this, target, u_check);
+        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this);
+        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(this, target, u_check);
 
-        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAggroRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAggroRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
         cell.Visit(p, world_unit_searcher, *GetMap(), *this, dist);
         cell.Visit(p, grid_unit_searcher, *GetMap(), *this, dist);
@@ -2506,7 +2506,7 @@ Unit* Creature::SelectNearestHostileUnitInAggroRange(bool useLOS) const
         Trinity::NearestHostileUnitInAggroRangeCheck u_check(this, useLOS);
         Trinity::UnitSearcher<Trinity::NearestHostileUnitInAggroRangeCheck> searcher(this, target, u_check);
 
-        Cell::VisitGridObjects(this, searcher, MAX_AGGRO_RADIUS);
+        Cell::VisitAllObjects(this, searcher, MAX_AGGRO_RADIUS); //sun: replaced VisitGridObjects with VisitAllObjects, else we wont get enemy players or pets
     }
 
     return target;

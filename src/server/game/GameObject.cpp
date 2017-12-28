@@ -577,13 +577,7 @@ void GameObject::Update(uint32 diff)
                     Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck u_check(this, owner, radius);
                     Trinity::UnitSearcher<Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck> checker(this, trapTarget, u_check);
 
-                    Cell::VisitGridObjects(this, checker, radius);
-
-                    // or unfriendly player/pet
-                    if(!trapTarget)
-                    {
-                        Cell::VisitWorldObjects(this, checker, radius);
-                    }
+                    Cell::VisitAllObjects(this, checker, radius);
                 }
                 else if (GetOwnerGUID())
                 { // We got a owner but it was not found? Possible case: Hunter traps from disconnected players

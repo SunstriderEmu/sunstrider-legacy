@@ -523,7 +523,7 @@ void CallOfHelpCreatureInRangeDo::operator()(Creature* u)
 
 bool AnyDeadUnitCheck::operator()(Unit* u) { return !u->IsAlive(); }
 
-bool NearestHostileUnitInAggroRangeCheck::operator()(Unit* u)
+bool NearestHostileUnitInAttackDistanceCheck::operator()(Unit* u)
 {
     //is in range
     if (!m_creature->IsWithinDistInMap(u, m_range))

@@ -372,11 +372,10 @@ void PetAI::UpdateAI(const uint32 diff)
     else
         m_updateAlliesTimer -= diff;
 
-    // i_pet.GetVictim() can't be used for check in case stop fighting, i_pet.GetVictim() clear at Unit death etc.
-    if( Unit const* victim = i_pet.GetVictim() )
+    if (me->GetVictim() && me->EnsureVictim()->IsAlive())
     {
         // is only necessary to stop casting, the pet must not exit combat
-        if (_forceAttackBreakable != victim
+        if (_forceAttackBreakable != me->EnsureVictim()
             && !me->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && // ignore channeled spells (Pin, Seduction)
             me->EnsureVictim()->HasBreakableByDamageCrowdControlAura(me)
             )

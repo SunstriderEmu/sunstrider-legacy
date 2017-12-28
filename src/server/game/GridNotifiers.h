@@ -740,10 +740,10 @@ namespace Trinity
 
     // Creature checks
 
-    class TC_GAME_API NearestHostileUnitInAggroRangeCheck
+    class TC_GAME_API NearestHostileUnitInAttackDistanceCheck
     {
         public:
-            explicit NearestHostileUnitInAggroRangeCheck(Creature const* creature, float dist = 0, bool playerOnly = false, bool furthest = false) : m_creature(creature), i_playerOnly(playerOnly), m_minRange(0), i_furthest(furthest)
+            explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0, bool playerOnly = false, bool furthest = false) : m_creature(creature), i_playerOnly(playerOnly), m_minRange(0), i_furthest(furthest)
             {
                 m_range = (dist == 0 ? 9999 : dist);
                 m_force = (dist == 0 ? false : true);
@@ -756,7 +756,35 @@ namespace Trinity
             bool m_force;
             bool i_playerOnly;
             bool i_furthest;
-            NearestHostileUnitInAggroRangeCheck(NearestHostileUnitInAggroRangeCheck const&);
+            NearestHostileUnitInAttackDistanceCheck(NearestHostileUnitInAttackDistanceCheck const&);
+    };
+
+    class TC_GAME_API NearestHostileUnitInAggroRangeCheck
+    {
+    public:
+        explicit NearestHostileUnitInAggroRangeCheck(Creature const* creature, bool useLOS = false) : _me(creature), _useLOS(useLOS) { }
+
+        bool operator()(Unit* u) const
+        {
+            if (!u->IsHostileTo(_me))
+                return false;
+
+            if (!u->IsWithinDistInMap(_me, _me->GetAggroRange(u)))
+                return false;
+
+            if (!_me->IsValidAttackTarget(u))
+                return false;
+
+            if (_useLOS && !u->IsWithinLOSInMap(_me))
+                return false;
+
+            return true;
+        }
+
+    private:
+        Creature const* _me;
+        bool _useLOS;
+        NearestHostileUnitInAggroRangeCheck(NearestHostileUnitInAggroRangeCheck const&) = delete;
     };
 
     class TC_GAME_API AllWorldObjectsInRange
