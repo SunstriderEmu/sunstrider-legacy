@@ -84,6 +84,7 @@ namespace MMAP
                 bool debugOutput         = false,
                 bool bigBaseUnit         = false,
                 int mapid                = -1,
+                bool quick               = false,
                 const char* offMeshFilePath = NULL);
 
             ~MapBuilder();
@@ -106,6 +107,7 @@ namespace MMAP
             std::set<uint32>* getTileList(uint32 mapID);
 
             void markWalkableTriangles(MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount);
+            void removeUnderTerrainTriangles(uint32 mapID, MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount);
 
             void buildNavMesh(uint32 mapID, dtNavMesh* &navMesh);
 
@@ -140,6 +142,8 @@ namespace MMAP
             bool m_skipContinents;
             bool m_skipJunkMaps;
             bool m_skipBattlegrounds;
+
+            bool m_quick; //skip some nost additions
 
             bool m_bigBaseUnit;
 

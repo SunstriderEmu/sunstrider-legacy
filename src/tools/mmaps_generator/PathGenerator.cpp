@@ -58,7 +58,8 @@ bool handleArgs(int argc, char** argv,
                bool &bigBaseUnit,
                char* &offMeshInputPath,
                char* &file,
-               unsigned int& threads)
+               unsigned int& threads,
+               bool& quick)
 {
     char* param = NULL;
     for (int i = 1; i < argc; ++i)
@@ -189,6 +190,10 @@ bool handleArgs(int argc, char** argv,
 
             offMeshInputPath = param;
         }
+        else if (strcmp(argv[i], "--quick") == 0)
+        {
+            quick = true;
+        }
         else
         {
             int map = atoi(argv[i]);
@@ -225,13 +230,14 @@ int main(int argc, char** argv)
          skipBattlegrounds = false,
          debugOutput = false,
          silent = false,
-         bigBaseUnit = false;
+         bigBaseUnit = false,
+         quick = false;
     char* offMeshInputPath = NULL;
     char* file = NULL;
 
     bool validParam = handleArgs(argc, argv, mapnum,
                                  tileX, tileY, skipLiquid, skipContinents, skipJunkMaps, skipBattlegrounds,
-                                 debugOutput, silent, bigBaseUnit, offMeshInputPath, file, threads);
+                                 debugOutput, silent, bigBaseUnit, offMeshInputPath, file, threads, quick);
 
     if (!validParam)
         return silent ? -1 : finish("You have specified invalid parameters", -1);
@@ -252,7 +258,7 @@ int main(int argc, char** argv)
         return silent ? -3 : finish("Press ENTER to close...", -3);
 
     MapBuilder builder(skipLiquid, skipContinents, skipJunkMaps,
-                       skipBattlegrounds, debugOutput, bigBaseUnit, mapnum, offMeshInputPath);
+                       skipBattlegrounds, debugOutput, bigBaseUnit, mapnum, quick, offMeshInputPath);
 
     uint32 start = GetMSTime();
     if (file)

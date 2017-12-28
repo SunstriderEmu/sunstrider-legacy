@@ -99,6 +99,34 @@ namespace VMAP
         }
     }
 
+    bool ModelInstance::isUnderModel(const G3D::Vector3& p, float* outDist, float* inDist) const
+    {
+        if (!iModel)
+        {
+#ifdef VMAP_DEBUG
+            DEBUG_LOG("<object not loaded>");
+#endif
+            return false;
+        }
+
+        // M2 files don't have bounds
+        if (flags & MOD_M2)
+        {
+            //if (p.
+        }
+        else if (!iBound.contains(p))
+            return false;
+        // child bounds are defined in object space:
+        Vector3 up(0, 0, 1);
+        Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
+        up = iInvRot * up * iInvScale;
+        Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
+
+        if (iModel->IsUnderObject(pModel, up, flags & MOD_M2, outDist, inDist))
+            return true;
+        return false;
+    }
+
     bool ModelInstance::GetLocationInfo(const G3D::Vector3& p, LocationInfo &info) const
     {
         if (!iModel)

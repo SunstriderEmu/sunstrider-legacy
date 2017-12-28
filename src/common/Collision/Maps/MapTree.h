@@ -68,6 +68,7 @@ namespace VMAP
             Returns G3D::inf() if no z found
             */
             float getHeight(const G3D::Vector3& pPos, float maxSearchDist) const;
+            bool isUnderModel(G3D::Vector3& pos, float* outDist = nullptr, float* inDist = nullptr) const;
             bool getAreaInfo(G3D::Vector3 &pos, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const;
             bool GetLocationInfo(const G3D::Vector3 &pos, LocationInfo &info) const;
 

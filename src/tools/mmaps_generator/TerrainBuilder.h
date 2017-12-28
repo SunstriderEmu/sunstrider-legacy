@@ -22,9 +22,13 @@
 #include "PathCommon.h"
 #include "WorldModel.h"
 
+#include "VMapManager2.h"
+
 #include "G3D/Array.h"
 #include "G3D/Vector3.h"
 #include "G3D/Matrix3.h"
+
+#include <shared_mutex>
 
 namespace MMAP
 {
@@ -43,6 +47,7 @@ namespace MMAP
         GRID_V9
     };
 
+    static const int MAP_RESOLUTION = 128;
     static const int V9_SIZE = 129;
     static const int V9_SIZE_SQ = V9_SIZE*V9_SIZE;
     static const int V8_SIZE = 128;
@@ -61,7 +66,7 @@ namespace MMAP
     struct MeshData
     {
         G3D::Array<float> solidVerts;
-        G3D::Array<int> solidTris;
+        G3D::Array<int> solidTris; //contains 3 vertex idx per triangle
 
         G3D::Array<float> liquidVerts;
         G3D::Array<int> liquidTris;
@@ -73,15 +78,20 @@ namespace MMAP
         G3D::Array<unsigned char> offMeshConnectionDirs;
         G3D::Array<unsigned char> offMeshConnectionsAreas;
         G3D::Array<unsigned short> offMeshConnectionsFlags;
+
+        bool IsTerrainTriangle(int tri) const { return tri < vmapFirstTriangle || tri >= vmapLastTriangle; }
+        int vmapFirstTriangle;
+        int vmapLastTriangle;
     };
 
     class TerrainBuilder
     {
         public:
-            TerrainBuilder(bool skipLiquid);
+            TerrainBuilder(bool skipLiquid, bool quick);
             ~TerrainBuilder();
 
             void loadMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData);
+            void unloadVMap(uint32 mapID, uint32 tileX, uint32 tileY);
             bool loadVMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData);
             void loadOffMeshConnections(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData, const char* offMeshFilePath);
 
@@ -94,6 +104,10 @@ namespace MMAP
             static void copyIndices(std::vector<VMAP::MeshTriangle> &source, G3D::Array<int> &dest, int offest, bool flip);
             static void copyIndices(G3D::Array<int> &src, G3D::Array<int> &dest, int offset);
             static void cleanVertices(G3D::Array<float> &verts, G3D::Array<int> &tris);
+            
+            //nost func
+            float getHeight(uint32 mapID, float x, float y);
+            bool IsUnderMap(uint32 mapID, float* pos /* y,z,x */);
         private:
             /// Loads a portion of a map's terrain
             bool loadMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData, Spot portion);
@@ -125,6 +139,13 @@ namespace MMAP
             // hide parameterless and copy constructor
             TerrainBuilder();
             TerrainBuilder(const TerrainBuilder &tb);
+
+            //(adapted from) nost additions
+            std::unordered_map<uint32 /*mapID*/, float* /*v9*/> map_V9;
+            std::unordered_map<uint32 /*mapID*/, float* /*v8*/> map_V8;
+            std::shared_mutex map_V_mutex;
+            VMAP::VMapManager2 vmapManager;
+            bool m_quick;
     };
 }
 

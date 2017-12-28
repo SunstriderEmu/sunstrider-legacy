@@ -16,7 +16,7 @@ namespace MMAP
 {
     MapBuilder::MapBuilder(bool skipLiquid,
         bool skipContinents, bool skipJunkMaps, bool skipBattlegrounds,
-        bool debugOutput, bool bigBaseUnit, int mapid, const char* offMeshFilePath) :
+        bool debugOutput, bool bigBaseUnit, int mapid, bool quick, const char* offMeshFilePath) :
         m_terrainBuilder     (NULL),
         m_debugOutput        (debugOutput),
         m_offMeshFilePath    (offMeshFilePath),
@@ -28,9 +28,10 @@ namespace MMAP
         m_totalTiles         (0u),
         m_totalTilesProcessed(0u),
         m_rcContext          (NULL),
-        _cancelationToken    (false)
+        _cancelationToken    (false),
+        m_quick(quick)
     {
-        m_terrainBuilder = new TerrainBuilder(skipLiquid);
+        m_terrainBuilder = new TerrainBuilder(skipLiquid, quick);
 
         m_rcContext = new rcContext(false);
 
@@ -401,6 +402,10 @@ namespace MMAP
         // get heightmap data
         m_terrainBuilder->loadMap(mapID, tileX, tileY, meshData);
 
+        // remove unused vertices
+        TerrainBuilder::cleanVertices(meshData.solidVerts, meshData.solidTris);
+        TerrainBuilder::cleanVertices(meshData.liquidVerts, meshData.liquidTris);
+
         // get model data
         m_terrainBuilder->loadVMap(mapID, tileY, tileX, meshData);
 
@@ -428,6 +433,7 @@ namespace MMAP
 
         // build navmesh tile
         buildMoveMapTile(mapID, tileX, tileY, meshData, bmin, bmax, navMesh);
+        m_terrainBuilder->unloadVMap(mapID, tileY, tileX);
     }
 
     /**************************************************************************/
@@ -512,6 +518,40 @@ namespace MMAP
         rcVsub(e1, v2, v0);
         rcVcross(norm, e0, e1);
         rcVnormalize(norm);
+    }
+
+    void MapBuilder::removeUnderTerrainTriangles(uint32 MapID, MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount)
+    {
+        float norm[3];
+        for (int i = 0; i < tTriCount; ++i)
+        {
+            if (!meshData.IsTerrainTriangle(i))
+                continue;
+
+            if (triFlags[i])
+            {
+                const int* tri = &tTris[i * 3];
+                calcTriNormal(&tVerts[tri[0] * 3], &tVerts[tri[1] * 3], &tVerts[tri[2] * 3], norm);
+
+                // Get triangle corners (as usual, yzx positions)
+                // (actually we push these corners towards the center a bit to prevent collision with border models etc...)
+                float verts[9];
+                for (int c = 0; c < 3; ++c) // Corner
+                    for (int v = 0; v < 3; ++v) // Coordinate
+                        verts[3 * c + v] = (5 * tVerts[tTris[c] * 3 + v] + tVerts[tTris[(c + 1) % 3] * 3 + v] + tVerts[tTris[(c + 2) % 3] * 3 + v]) / 7;
+
+                // A triangle is undermap if all corners are undermap
+                bool undermap1 = m_terrainBuilder->IsUnderMap(MapID, &verts[0]);
+                bool undermap2 = m_terrainBuilder->IsUnderMap(MapID, &verts[3]);
+                bool undermap3 = m_terrainBuilder->IsUnderMap(MapID, &verts[6]);
+
+                if (undermap1 && undermap2 && undermap3)
+                {
+                    triFlags[i] = NAV_EMPTY;
+                    continue;
+                }
+            }
+        }
     }
 
     void MapBuilder::markWalkableTriangles(MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount)
@@ -656,6 +696,7 @@ namespace MMAP
                 tileCfg.bmax[2] = config.bmin[2] + float((y+1)*config.tileSize + config.borderSize)*config.cs;
 
                 // build heightfield
+                /// 1. Alloc heightfield for walkable areas
                 tile.solid = rcAllocHeightfield();
                 if (!tile.solid || !rcCreateHeightfield(m_rcContext, *tile.solid, tileCfg.width, tileCfg.height, tileCfg.bmin, tileCfg.bmax, tileCfg.cs, tileCfg.ch))
                 {
@@ -663,6 +704,7 @@ namespace MMAP
                     continue;
                 }
 
+                /// 2. Generate heightfield for water. Put all liquid geometry there
                 // We need to build liquid heighfield to set poly swim flag under.
                 liquidsTile.solid = rcAllocHeightfield();
                 if (!liquidsTile.solid || !rcCreateHeightfield(m_rcContext, *liquidsTile.solid, tileCfg.width, tileCfg.height, tileCfg.bmin, tileCfg.bmax, tileCfg.cs, tileCfg.ch))
@@ -672,11 +714,17 @@ namespace MMAP
                 }
                 rcRasterizeTriangles(m_rcContext, lVerts, lVertCount, lTris, lTriFlags, lTriCount, *liquidsTile.solid, 0);
 
+                /// 3. Mark all triangles with correct flags:
+                // Can't use rcMarkWalkableTriangles. We need something really more specific.
                 // mark all walkable tiles, both liquids and solids
                 unsigned char* triFlags = new unsigned char[tTriCount];
                 memset(triFlags, NAV_EMPTY, tTriCount*sizeof(unsigned char)); //start empty instead of NAV_GROUND
                 //rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
-                markWalkableTriangles(meshData, triFlags, tVerts, tTris, tTriCount); // sun addition (adapted from nost)
+                markWalkableTriangles(meshData, triFlags, tVerts, tTris, tTriCount); // sun addition, replaces rcClearUnwalkableTriangles (adapted from nost)
+                // Now we remove underterrain triangles (actually set flags to 0)
+                if(!m_quick)
+                    removeUnderTerrainTriangles(mapID, meshData, triFlags, tVerts, tTris, tTriCount); //adapted from nost
+
                 rcRasterizeTriangles(m_rcContext, tVerts, tVertCount, tTris, triFlags, tTriCount, *tile.solid, config.walkableClimb);
                 delete[] triFlags;
 

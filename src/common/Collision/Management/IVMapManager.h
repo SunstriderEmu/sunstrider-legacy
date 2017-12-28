@@ -125,6 +125,7 @@ namespace VMAP
             \param z gets adjusted to the ground height for which this are info is valid
             */
             virtual bool getAreaInfo(unsigned int pMapId, float x, float y, float &z, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const=0;
+            virtual bool isUnderModel(unsigned int pMapId, float x, float y, float z, float* outDist = nullptr, float* inDist = nullptr) const = 0;
             virtual bool GetLiquidLevel(uint32 pMapId, float x, float y, float z, uint8 ReqLiquidTypeMask, float &level, float &floor, LiquidType& typeMask) const=0;
             // get both area + liquid data in a single vmap lookup
             virtual void getAreaAndLiquidData(unsigned int mapId, float x, float y, float z, uint8 reqLiquidType, AreaAndLiquidData& data) const = 0;

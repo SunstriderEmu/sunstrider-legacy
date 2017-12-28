@@ -306,6 +306,18 @@ namespace VMAP
         return false;
     }
 
+    bool VMapManager2::isUnderModel(unsigned int pMapId, float x, float y, float z, float* outDist, float* inDist) const
+    {
+        bool result = false;
+        InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(pMapId);
+        if (instanceTree != iInstanceMapTrees.end())
+        {
+            Vector3 pos = convertPositionToInternalRep(x, y, z);
+            result = instanceTree->second->isUnderModel(pos, outDist, inDist);
+        }
+        return result;
+    }
+
     bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidTypeMask, float& level, float& floor, LiquidType& type) const
     {
         if (IsVMAPDisabledForPtr(mapId, VMAP_DISABLE_LIQUIDSTATUS))
