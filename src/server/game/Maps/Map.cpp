@@ -533,7 +533,7 @@ bool Map::AddToMap(T* obj, bool checkTransport)
     /// @todo Needs clean up. An object should not be added to map twice.
     if (obj->IsInWorld())
     {
-        DEBUG_ASSERT(false); //sunstrider addition
+        //DEBUG_ASSERT(false); //disabled, BattleGround code does not respect this...
         ASSERT(obj->IsInGrid());
         obj->UpdateObjectVisibility(true);
         return true;

@@ -1501,8 +1501,8 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
     if(inactive)
         go->SetInactive(true);
 
-    // add to world, so it can be later looked up from HashMapHolder
-    map->AddToMap(go);
+    map->AddToMap(go); // add to world, so it can be later looked up from HashMapHolder in SpawnBGObject
+
     BgObjects[type] = go->GetGUID();
     return true;
 }
@@ -1585,7 +1585,8 @@ void Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
                     obj->SetInactive(false);
             }
             obj->SetRespawnTime(respawntime);
-            if(!obj->IsInWorld()) //sunstrider: TC code tries to add it to map a second time in some cases
+            
+            if (!obj->IsInWorld()) //sunstrider: TC code tries to add it to map a second time in some cases
                 map->AddToMap(obj);
         }
 }

@@ -93,7 +93,7 @@ void BattlegroundBE::AddPlayer(Player *plr)
 {
     Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
-    auto  sc = new BattlegroundBEScore;
+    auto sc = new BattlegroundBEScore;
 
     PlayerScores[plr->GetGUID()] = sc;
 
