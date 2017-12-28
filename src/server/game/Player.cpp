@@ -19940,10 +19940,13 @@ bool Player::IsNeverVisible() const
 
 bool Player::CanNeverSee(WorldObject const* obj) const
 {
-    //can never see opposite playters in arena while in prep
-    Player const* targetPlayer = obj->ToPlayer();
-    if (targetPlayer && targetPlayer->InArena() && !IsInSameRaidWith(targetPlayer) && targetPlayer->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION))
-        return true;
+    if (obj->ToUnit())
+    {
+        //can never see opposite playters in arena while in prep
+        Player const* targetPlayer = obj->ToUnit()->GetCharmerOrOwnerPlayerOrPlayerItself();
+        if (targetPlayer && targetPlayer->InArena() && !IsInSameRaidWith(targetPlayer) && targetPlayer->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION))
+            return true;
+    }
 
     return WorldObject::CanNeverSee(obj);
 }
