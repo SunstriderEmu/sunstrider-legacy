@@ -1791,7 +1791,7 @@ void Battleground::HandleTriggerBuff(ObjectGuid const& go_guid)
     SpawnBGObject(index, BUFF_RESPAWN_TIME);
 }
 
-void Battleground::HandleKillPlayer( Player *player, Player *killer )
+void Battleground::HandleKillPlayer( Player* player, Player* killer )
 {
     //keep in mind that for arena this will have to be changed a bit
 
@@ -1799,7 +1799,7 @@ void Battleground::HandleKillPlayer( Player *player, Player *killer )
     UpdatePlayerScore(player, SCORE_DEATHS, 1);
 
     // add +1 kills to group and +1 killing_blows to killer
-    if( killer )
+    if( killer && killer != player) // a player may kill itself in some cases!
     {
         UpdatePlayerScore(killer, SCORE_HONORABLE_KILLS, 1);
         UpdatePlayerScore(killer, SCORE_KILLING_BLOWS, 1);
