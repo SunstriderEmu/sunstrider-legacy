@@ -2704,6 +2704,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
 		bool CanAlwaysSee(WorldObject const* obj) const override;
 		bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
+        bool CanNeverSee(WorldObject const* obj) const override;
 
 		bool m_needsZoneUpdate;
 

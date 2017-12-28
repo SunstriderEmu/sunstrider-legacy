@@ -686,6 +686,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint32 m_areaId;
         float m_staticFloorZ;
 
+        virtual bool CanNeverSee(WorldObject const* obj) const;
+        virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }
+
     private:
         Map*   m_currMap;                                   //current object's Map location
 		uint32 m_InstanceId;                                // in map copy with instance id
@@ -697,8 +700,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         bool mSemaphoreTeleport;
 
-		bool CanNeverSee(WorldObject const* obj) const;
-		virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }
 		bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert = false) const;
 		bool CanDetectInvisibilityOf(WorldObject const* obj) const;
 		bool CanDetectStealthOf(WorldObject const* obj, bool checkAlert = false) const;
