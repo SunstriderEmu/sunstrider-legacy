@@ -523,7 +523,7 @@ private:
 class TC_GAME_API World
 {
     public:
-        static volatile uint32 m_worldLoopCounter;
+        static std::atomic<uint32> m_worldLoopCounter;
 
         static World* instance()
         {
@@ -762,7 +762,7 @@ class TC_GAME_API World
 
         void UpdateArenaSeasonLogs();
 
-        static volatile bool m_stopEvent;
+        static std::atomic<bool> m_stopEvent;
         static uint8 m_ExitCode;
         uint32 m_ShutdownTimer;
         uint32 m_ShutdownMask;
