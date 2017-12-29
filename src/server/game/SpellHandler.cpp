@@ -30,7 +30,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     recvPacket >> bagIndex >> slot >> castCount >> spellId >> itemGUID >> glyphIndex >> castFlags;
 #else
     recvPacket >> bagIndex >> slot >> spell_count >> cast_count >> item_guid;
-#endif;
+#endif
 
     // ignore for remote control state
     if (pUser->m_unitMovedByMe != pUser)

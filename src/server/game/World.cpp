@@ -68,9 +68,9 @@
 #include "RandomPlayerbotMgr.h"
 #endif
 
-TC_GAME_API std::atomic<bool> World::m_stopEvent = false;
+TC_GAME_API std::atomic<bool> World::m_stopEvent(false);
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
-TC_GAME_API std::atomic<uint32> World::m_worldLoopCounter = 0;
+TC_GAME_API std::atomic<uint32> World::m_worldLoopCounter(0);
 
 TC_GAME_API float World::m_MaxVisibleDistanceOnContinents = DEFAULT_VISIBILITY_DISTANCE;
 TC_GAME_API float World::m_MaxVisibleDistanceInInstances  = DEFAULT_VISIBILITY_INSTANCE;

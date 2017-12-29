@@ -5208,10 +5208,12 @@ SpellCastResult Spell::CheckCast(bool strict)
 #endif
 
         if (!IsIgnoringCooldowns() && m_caster->GetTypeId() == TYPEID_PLAYER && ((m_caster->ToPlayer())->HasSpellCooldown(m_spellInfo->Id)))
+        {
             if (m_triggeredByAuraSpell)
                 return SPELL_FAILED_DONT_REPORT;
             else
                 return SPELL_FAILED_NOT_READY;
+        }
     }
 
     // Check global cooldown
