@@ -419,11 +419,11 @@ uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, 
     if (results)
     {
         Field* fields = results->Fetch();
-        uint8 minLevel = fields[0].GetUInt8();
-        uint8 maxLevel = fields[1].GetUInt8();
-        level = urand(minLevel, maxLevel);
-        if (level > maxLevel)
-            level = maxLevel;
+        uint8 zoneMinLevel = fields[0].GetUInt8();
+        uint8 zoneMaxLevel = fields[1].GetUInt8();
+        level = urand(zoneMinLevel, zoneMaxLevel);
+        if (level > zoneMaxLevel)
+            level = zoneMaxLevel;
     }
     else
     {
@@ -506,10 +506,10 @@ list<uint32> RandomPlayerbotMgr::GetBots()
         auto data = sCharacterCache->GetCharacterCacheByGuid(itr);
         if (!data)
         {
-            QueryResult results = CharacterDatabase.PQuery("select account, name, gender, race, class, level FROM characters where guid = %u", itr);
-            if (results)
+            QueryResult results2 = CharacterDatabase.PQuery("select account, name, gender, race, class, level FROM characters where guid = %u", itr);
+            if (results2)
             {
-                Field* fields = results->Fetch();
+                Field* fields = results2->Fetch();
                 uint32 account = fields[0].GetUInt32();
                 std::string name = fields[1].GetString();
                 uint8 gender = fields[2].GetUInt8();

@@ -15,28 +15,18 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QueryCallbackProcessor_h__
-#define QueryCallbackProcessor_h__
+#include "MySQLThreading.h"
+#ifdef _WIN32 // hack for broken mysql.h not including the correct winsock header for SOCKET definition, fixed in 5.7
+#include <winsock2.h>
+#endif
+#include <mysql.h>
 
-#include "Define.h"
-#include <vector>
-
-class QueryCallback;
-
-class TC_DATABASE_API QueryCallbackProcessor
+void MySQL::Library_Init()
 {
-public:
-    QueryCallbackProcessor();
-    ~QueryCallbackProcessor();
+    mysql_library_init(-1, nullptr, nullptr);
+}
 
-    void AddQuery(QueryCallback&& query);
-    void ProcessReadyQueries();
-
-private:
-    QueryCallbackProcessor(QueryCallbackProcessor const&) = delete;
-    QueryCallbackProcessor& operator=(QueryCallbackProcessor const&) = delete;
-
-    std::vector<QueryCallback> _callbacks;
-};
-
-#endif // QueryCallbackProcessor_h__
+void MySQL::Library_End()
+{
+    mysql_library_end();
+}

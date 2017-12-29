@@ -251,17 +251,17 @@ list<Item*> InventoryAction::parseItems(std::string text)
     uint32 quality = chat->parseItemQuality(text);
     if (quality != MAX_ITEM_QUALITY)
     {
-        FindItemsToTradeByQualityVisitor visitor(quality, count);
-        IterateItems(&visitor);
-        found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+        FindItemsToTradeByQualityVisitor _visitor(quality, count);
+        IterateItems(&_visitor);
+        found.insert(_visitor.GetResult().begin(), _visitor.GetResult().end());
     }
 
     uint32 itemClass = MAX_ITEM_CLASS, itemSubClass = 0;
     if (chat->parseItemClass(text, &itemClass, &itemSubClass))
     {
-        FindItemsToTradeByClassVisitor visitor(itemClass, itemSubClass, count);
-        IterateItems(&visitor);
-        found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+        FindItemsToTradeByClassVisitor _visitor(itemClass, itemSubClass, count);
+        IterateItems(&_visitor);
+        found.insert(_visitor.GetResult().begin(), _visitor.GetResult().end());
     }
 
     uint32 fromSlot = chat->parseSlot(text);
@@ -275,9 +275,9 @@ list<Item*> InventoryAction::parseItems(std::string text)
     ItemIds ids = chat->parseItems(text);
     for (ItemIds::iterator i = ids.begin(); i != ids.end(); i++)
     {
-        FindItemByIdVisitor visitor(*i);
-        IterateItems(&visitor, ITERATE_ALL_ITEMS);
-        found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+        FindItemByIdVisitor _visitor(*i);
+        IterateItems(&_visitor, ITERATE_ALL_ITEMS);
+        found.insert(_visitor.GetResult().begin(), _visitor.GetResult().end());
     }
 
     list<Item*> result;

@@ -23,12 +23,12 @@ Unit* EnemyHealerTargetValue::Calculate()
         if (!ai->IsInterruptableSpellCasting(unit, spell))
             continue;
 
-        Spell* spell = unit->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (spell && spell->m_spellInfo->IsPositive())
+        Spell* _spell = unit->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (_spell && _spell->m_spellInfo->IsPositive())
             return unit;
 
-        spell = unit->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-        if (spell && spell->m_spellInfo->IsPositive())
+        _spell = unit->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+        if (_spell && _spell->m_spellInfo->IsPositive())
             return unit;
     }
 

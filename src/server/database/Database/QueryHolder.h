@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,32 +18,21 @@
 #ifndef _QUERYHOLDER_H
 #define _QUERYHOLDER_H
 
-#include <future>
-class PreparedStatement;
 #include "SQLOperation.h"
 
 class TC_DATABASE_API SQLQueryHolder
 {
     friend class SQLQueryHolderTask;
     private:
-        typedef std::pair<SQLElementData, SQLResultSetUnion> SQLResultPair;
-        std::vector<SQLResultPair> m_queries;
+        std::vector<std::pair<PreparedStatement*, PreparedQueryResult>> m_queries;
     public:
         SQLQueryHolder() { }
-        ~SQLQueryHolder();
-        bool SetQuery(size_t index, const char* sql);
-        template<typename... Args>
-        bool SetPQuery(size_t index, const char* sql, Args const&... args) { return SetQuery(index, Trinity::StringFormat(sql, args...).c_str()); }
+        virtual ~SQLQueryHolder();
         bool SetPreparedQuery(size_t index, PreparedStatement* stmt);
         void SetSize(size_t size);
-        QueryResult GetResult(size_t index);
         PreparedQueryResult GetPreparedResult(size_t index);
-        void SetResult(size_t index, ResultSet* result);
         void SetPreparedResult(size_t index, PreparedResultSet* result);
 };
-
-typedef std::future<SQLQueryHolder*> QueryResultHolderFuture;
-typedef std::promise<SQLQueryHolder*> QueryResultHolderPromise;
 
 class TC_DATABASE_API SQLQueryHolderTask : public SQLOperation
 {
@@ -56,7 +45,7 @@ class TC_DATABASE_API SQLQueryHolderTask : public SQLOperation
         SQLQueryHolderTask(SQLQueryHolder* holder)
             : m_holder(holder), m_executed(false) { }
 
-        ~SQLQueryHolderTask() override;
+        ~SQLQueryHolderTask();
 
         bool Execute() override;
         QueryResultHolderFuture GetFuture() { return m_result.get_future(); }

@@ -28,11 +28,11 @@ bool SetHomeAction::Execute(Event event)
     list<ObjectGuid> npcs = AI_VALUE(list<ObjectGuid>, "nearest npcs");
     for (list<ObjectGuid>::iterator i = npcs.begin(); i != npcs.end(); i++)
     {
-        Creature *unit = bot->GetNPCIfCanInteractWith(*i, UNIT_NPC_FLAG_INNKEEPER);
-        if (!unit)
+        Creature* _unit = bot->GetNPCIfCanInteractWith(*i, UNIT_NPC_FLAG_INNKEEPER);
+        if (!_unit)
             continue;
 
-        bot->GetSession()->SendBindPoint(unit);
+        bot->GetSession()->SendBindPoint(_unit);
         ai->TellMaster("This inn is my new home");
         return true;
     }

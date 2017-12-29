@@ -150,11 +150,11 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
         Quest const* qInfo = sObjectMgr->GetQuestTemplate(questid);
         if (qInfo)
         {
-            WorldPacket* const packet = new WorldPacket(CMSG_QUESTGIVER_ACCEPT_QUEST, 8+4+4);
-            *packet << item_guid;
-            *packet << questid;
-            *packet << uint32(0);
-            bot->GetSession()->QueuePacket(packet); // queue the packet to get around race condition
+            WorldPacket* const _packet = new WorldPacket(CMSG_QUESTGIVER_ACCEPT_QUEST, 8+4+4);
+            *_packet << item_guid;
+            *_packet << questid;
+            *_packet << uint32(0);
+            bot->GetSession()->QueuePacket(_packet); // queue the packet to get around race condition
             std::ostringstream out; out << "Got quest " << chat->formatQuest(qInfo);
             ai->TellMasterNoFacing(out.str());
             return true;

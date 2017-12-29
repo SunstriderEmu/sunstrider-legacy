@@ -5,7 +5,7 @@ CollectSourceFiles(
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders)
 
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/databasePCH.h)
-
+ 
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 

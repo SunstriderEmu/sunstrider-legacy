@@ -1,8 +1,10 @@
 
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include "Common.h"
 #include "RealmList.h"
 #include "Database/DatabaseEnv.h"
+#include "Log.h"
 
 namespace boost { namespace asio { namespace ip { class address; } } }
 

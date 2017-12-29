@@ -291,8 +291,8 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
             {
                 do
                 {
-                    Field* fields = results2->Fetch();
-                    uint32 guid = fields[0].GetUInt32();
+                    Field* fields2 = results2->Fetch();
+                    uint32 guid = fields2[0].GetUInt32();
                     randomBots.push_back(guid);
                 } while (results2->NextRow());
             }

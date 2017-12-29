@@ -64,7 +64,6 @@ void CWardenDataStorage::LoadWardenDataResult(bool reload)
 
     if (!result)
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u warden data and results", count);
         return;
     }
@@ -133,7 +132,6 @@ void CWardenDataStorage::LoadWardenDataResult(bool reload)
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading"," ");
     TC_LOG_INFO("server.loading",">> Loaded %u warden data and results", count);
 }
 

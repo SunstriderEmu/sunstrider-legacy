@@ -458,7 +458,6 @@ void GameEventMgr::LoadFromDB()
             ++count;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u game event prerequisites in game events", count );
     }
 
@@ -470,7 +469,6 @@ void GameEventMgr::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u creatures in game events", count );
     }
     else
@@ -495,7 +493,6 @@ void GameEventMgr::LoadFromDB()
             crelist.push_back(guid);
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO( "server.loading",">> Loaded %u creatures in game events", count );
     }
 
@@ -532,7 +529,6 @@ void GameEventMgr::LoadFromDB()
             golist.push_back(guid);
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u gameobjects in game events", count );
     }
 
@@ -586,7 +582,6 @@ void GameEventMgr::LoadFromDB()
             equiplist.push_back(std::pair<uint32, ModelEquip>(guid, newModelEquipSet));
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO( "server.loading",">> Loaded %u model/equipment changes in game events", count );
     }
 
@@ -597,7 +592,6 @@ void GameEventMgr::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u quests additions in game events", count );
     }
     else
@@ -621,7 +615,6 @@ void GameEventMgr::LoadFromDB()
             questlist.push_back(QuestRelation(id, quest));
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u quests additions in game events", count );
     }
 
@@ -632,7 +625,6 @@ void GameEventMgr::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u go quests additions in game events", count );
     }
     else
@@ -656,7 +648,6 @@ void GameEventMgr::LoadFromDB()
             questlist.push_back(QuestRelation(id, quest));
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u quests additions in game events", count );
     }
 
@@ -667,7 +658,6 @@ void GameEventMgr::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u quest event conditions in game events", count );
     }
     else
@@ -693,7 +683,6 @@ void GameEventMgr::LoadFromDB()
             mQuestToEventConditions[quest].num = num;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u quest event conditions in game events", count );
     }
 
@@ -704,7 +693,6 @@ void GameEventMgr::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u conditions in game events", count );
     }
     else
@@ -730,7 +718,6 @@ void GameEventMgr::LoadFromDB()
             ++count;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u conditions in game events", count );
     }
 
@@ -741,7 +728,6 @@ void GameEventMgr::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u condition saves in game events", count );
     }
     else
@@ -773,7 +759,6 @@ void GameEventMgr::LoadFromDB()
             ++count;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading", " ");
         TC_LOG_INFO("server.loading", ">> Loaded %u condition saves in game events", count );
     }
 
@@ -785,7 +770,6 @@ void GameEventMgr::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u npcflags in game events", count );
     }
     else
@@ -809,7 +793,6 @@ void GameEventMgr::LoadFromDB()
             ++count;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading", " ");
         TC_LOG_INFO("server.loading", ">> Loaded %u npcflags in game events", count );
     }
 
@@ -825,7 +808,6 @@ void GameEventMgr::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u battleground holidays in game events", count );
     }
     else
@@ -847,7 +829,6 @@ void GameEventMgr::LoadFromDB()
             mGameEventBattlegroundHolidays[event_id] = fields[1].GetUInt32();
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading", " ");
         TC_LOG_INFO("server.loading", ">> Loaded %u battleground holidays in game events", count );
     }
 }

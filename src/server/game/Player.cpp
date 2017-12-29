@@ -3525,7 +3525,7 @@ void Player::SendClearCooldown(uint32 spell_id, Unit* target)
     SendDirectMessage(&data);
 }
 
-void Player::_LoadSpellCooldowns(QueryResult result)
+void Player::_LoadSpellCooldowns(PreparedQueryResult result)
 {
     m_spellCooldowns.clear();
 
@@ -3923,7 +3923,10 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     LeaveAllArenaTeams(playerguid);
 
     // the player was uninvited already on logout so just remove from group
-    QueryResult resultGroup = CharacterDatabase.PQuery("SELECT leaderGuid FROM group_member WHERE memberGuid='%u'", guid);
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GROUP_MEMBER);
+    stmt->setUInt32(0, guid);
+    PreparedQueryResult resultGroup = CharacterDatabase.Query(stmt);
     if(resultGroup)
     {
         uint64 leaderGuid = MAKE_NEW_GUID((*resultGroup)[0].GetUInt32(), 0, HighGuid::Player);
@@ -15103,7 +15106,7 @@ void Player::SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, uint64 guid, u
 /***                   LOAD SYSTEM                     ***/
 /*********************************************************/
 
-void Player::_LoadDeclinedNames(QueryResult result)
+void Player::_LoadDeclinedNames(PreparedQueryResult result)
 {
     if(!result)
         return;
@@ -15117,7 +15120,7 @@ void Player::_LoadDeclinedNames(QueryResult result)
         m_declinedname->name[i] = fields[i].GetString();
 }
 
-void Player::_LoadArenaTeamInfo(QueryResult result)
+void Player::_LoadArenaTeamInfo(PreparedQueryResult result)
 {
     // arenateamid, played_week, played_season, PersonalRating
     memset((void*)&m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1], 0, sizeof(uint32)*18);
@@ -15241,7 +15244,7 @@ float Player::GetFloatValueFromDB(uint16 index, uint64 guid)
 
 bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 {
-    QueryResult result = holder->GetResult(PLAYER_LOGIN_QUERY_LOADFROM);
+    PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_FROM);
 
     Object::_Create( guid, 0, HighGuid::Player );
 
@@ -15348,7 +15351,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     }
 
     // load home bind and check in same time class/race pair, it used later for restore broken positions
-    if (!_LoadHomeBind(holder->GetResult(PLAYER_LOGIN_QUERY_LOADHOMEBIND)))
+    if (!_LoadHomeBind(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_HOME_BIND)))
     {
         return false;
     }
@@ -15383,9 +15386,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     if (m_customXp < 1.0f || m_customXp > sWorld->GetRate(RATE_XP_KILL))
         m_customXp = 0;
 
-    _LoadGroup(holder->GetResult(PLAYER_LOGIN_QUERY_LOADGROUP));
+    _LoadGroup(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_GROUP));
 
-    _LoadArenaTeamInfo(holder->GetResult(PLAYER_LOGIN_QUERY_LOADARENAINFO));
+    _LoadArenaTeamInfo(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_ARENA_INFO));
 
     uint32 arena_currency = fields[LOAD_DATA_ARENAPOINTS].GetUInt32();
     if (arena_currency > sWorld->getConfig(CONFIG_MAX_ARENA_POINTS))
@@ -15416,7 +15419,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[LOAD_DATA_TODAYKILLS].GetUInt16());
     SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[LOAD_DATA_YESTERDAYKILLS].GetUInt16());
 
-    _LoadBoundInstances(holder->GetResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
+    _LoadBoundInstances(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BOUND_INSTANCES));
     _LoadBGData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BG_DATA));
 
     GetSession()->SetPlayer(this);
@@ -15782,7 +15785,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetUInt32Value(PLAYER_TRACK_CREATURES, 0 );
     SetUInt32Value(PLAYER_TRACK_RESOURCES, 0 );
 
-    _LoadSkills(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
+    _LoadSkills(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SKILLS));
     UpdateSkillsForLevel(); //update skills after load, to make sure they are correctly update at player load
 
     // make sure the unit is considered out of combat for proper loading
@@ -15816,13 +15819,13 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     //mails are loaded only when needed ;-) - when player in game click on mailbox.
     //_LoadMail();
 
-    _LoadAuras(holder->GetResult(PLAYER_LOGIN_QUERY_LOADAURAS), time_diff);
+    _LoadAuras(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_AURAS), time_diff);
 
     // add ghost flag (must be after aura load: PLAYER_FLAGS_GHOST set in aura)
     if( HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST) )
         m_deathState = DEAD;
 
-    _LoadSpells(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSPELLS));
+    _LoadSpells(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SPELLS));
 
     // after spell load
     InitTalentForLevel();
@@ -15830,23 +15833,23 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     LearnDefaultSpells();
 
     // after spell load, learn rewarded spell if need also
-    _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
-    _LoadDailyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS));
+    _LoadQuestStatus(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_QUEST_STATUS));
+    _LoadDailyQuestStatus(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_DAILY_QUEST_STATUS));
 
     // must be before inventory (some items required reputation check)
-    _LoadReputation(holder->GetResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
+    _LoadReputation(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_REPUTATION));
 
-    _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
+    _LoadInventory(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_INVENTORY), time_diff);
 
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);
 
-    _LoadActions(holder->GetResult(PLAYER_LOGIN_QUERY_LOADACTIONS));
+    _LoadActions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_ACTIONS));
 
     // unread mails and next delivery time, actual mails not loaded
-    _LoadMailInit(holder->GetResult(PLAYER_LOGIN_QUERY_LOADMAILCOUNT), holder->GetResult(PLAYER_LOGIN_QUERY_LOADMAILDATE));
+    _LoadMailInit(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_MAIL_COUNT), holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_MAIL_DATE));
 
-    m_social = sSocialMgr->LoadFromDB(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSOCIALLIST), GetGUIDLow());
+    m_social = sSocialMgr->LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SOCIAL_LIST), GetGUIDLow());
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER_FIELD_KNOWN_TITLES
     // note: PLAYER_FIELD_KNOWN_TITLES updated at quest status loaded
@@ -15857,7 +15860,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     SetUInt32Value(PLAYER_CHOSEN_TITLE, curTitle);
 
-    _LoadSpellCooldowns(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS));
+    _LoadSpellCooldowns(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SPELL_COOLDOWNS));
 
     // Spell code allow apply any auras to dead character in load time in aura/spell/item loading
     // Do now before stats re-calculation cleanup for ghost state unexpected auras
@@ -15924,7 +15927,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         }
     }
 
-    _LoadDeclinedNames(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
+    _LoadDeclinedNames(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_DECLINED_NAMES));
 
     return true;
 }
@@ -16035,7 +16038,7 @@ bool Player::IsAllowedToLoot(Creature const* creature) const
     return false;
 }
 
-void Player::_LoadActions(QueryResult result)
+void Player::_LoadActions(PreparedQueryResult result)
 {
     m_actionButtons.clear();
 
@@ -16057,7 +16060,7 @@ void Player::_LoadActions(QueryResult result)
     }
 }
 
-void Player::_LoadAuras(QueryResult result, uint32 timediff)
+void Player::_LoadAuras(PreparedQueryResult result, uint32 timediff)
 {
     m_Auras.clear();
     for (auto & m_modAura : m_modAuras)
@@ -16174,7 +16177,7 @@ void Player::LoadCorpse(PreparedQueryResult result)
     RemoveAtLoginFlag(AT_LOGIN_RESURRECT);
 }
 
-void Player::_LoadInventory(QueryResult result, uint32 timediff)
+void Player::_LoadInventory(PreparedQueryResult result, uint32 timediff)
 {
     //QueryResult result = CharacterDatabase.PQuery("SELECT bag,slot,item,item_template FROM character_inventory JOIN item_instance ON character_inventory.item = item_instance.guid WHERE character_inventory.guid = '%u' ORDER BY bag,slot", GetGUIDLow());
     std::map<uint64, Bag*> bagMap;                          // fast guid lookup for bags
@@ -16368,7 +16371,7 @@ void Player::_LoadMailedItems(Mail *mail)
     } while (result->NextRow());
 }
 
-void Player::_LoadMailInit(QueryResult resultUnread, QueryResult resultDelivery)
+void Player::_LoadMailInit(PreparedQueryResult resultUnread, PreparedQueryResult resultDelivery)
 {
     //set a count of unread mails
     //QueryResult resultMails = CharacterDatabase.PQuery("SELECT COUNT(id) FROM mail WHERE receiver = '%u' AND (checked & 1)=0 AND deliver_time <= '" UI64FMTD "'", GUID_LOPART(playerGuid),(uint64)cTime);
@@ -16442,7 +16445,7 @@ void Player::LoadPet()
     }
 }
 
-void Player::_LoadQuestStatus(QueryResult result)
+void Player::_LoadQuestStatus(PreparedQueryResult result)
 {
     m_QuestStatus.clear();
 
@@ -16545,7 +16548,7 @@ void Player::_LoadQuestStatus(QueryResult result)
         SetQuestSlot(i,0);
 }
 
-void Player::_LoadDailyQuestStatus(QueryResult result)
+void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
 {
     for(uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
         SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,0);
@@ -16584,7 +16587,7 @@ void Player::_LoadDailyQuestStatus(QueryResult result)
     m_DailyQuestChanged = false;
 }
 
-void Player::_LoadReputation(QueryResult result)
+void Player::_LoadReputation(PreparedQueryResult result)
 {
     m_factions.clear();
 
@@ -16637,7 +16640,7 @@ void Player::_LoadReputation(QueryResult result)
     }
 }
 
-void Player::_LoadSpells(QueryResult result)
+void Player::_LoadSpells(PreparedQueryResult result)
 {
     //QueryResult result = CharacterDatabase.PQuery("SELECT spell, active, disabled FROM character_spell WHERE guid = '%u'",GetGUIDLow());
     if(result)
@@ -16652,7 +16655,7 @@ void Player::_LoadSpells(QueryResult result)
     }
 }
 
-void Player::_LoadGroup(QueryResult result)
+void Player::_LoadGroup(PreparedQueryResult result)
 {
     //QueryResult result = CharacterDatabase.PQuery("SELECT leaderGuid FROM group_member WHERE memberGuid='%u'", GetGUIDLow());
     if(result)
@@ -16673,7 +16676,7 @@ void Player::_LoadGroup(QueryResult result)
     }
 }
 
-void Player::_LoadBoundInstances(QueryResult result)
+void Player::_LoadBoundInstances(PreparedQueryResult result)
 {
     for(auto & m_boundInstance : m_boundInstances)
         m_boundInstance.clear();
@@ -16988,7 +16991,7 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
     return true;
 }
 
-bool Player::_LoadHomeBind(QueryResult result)
+bool Player::_LoadHomeBind(PreparedQueryResult result)
 {
     PlayerInfo const *info = sObjectMgr->GetPlayerInfo(GetRace(), GetClass());
     if (!info)
@@ -21106,11 +21109,11 @@ void Player::DoPack58(uint8 step)
                 count++;
                 Field *fields = result->Fetch();
                 uint32 itemid = fields[0].GetUInt32();
-                uint32 count = fields[1].GetUInt32();
-                if(!itemid || !count)
+                uint32 _count = fields[1].GetUInt32();
+                if(!itemid || !_count)
                     continue;
 
-                StoreNewItemInBestSlots(itemid, count);
+                StoreNewItemInBestSlots(itemid, _count);
             }
             while( result->NextRow() );
         }
@@ -22401,10 +22404,10 @@ void Player::SetHomebind(WorldLocation const& loc, uint32 area_id)
         m_homebindMapId, m_homebindAreaId, m_homebindX, m_homebindY, m_homebindZ, GetGUIDLow());
 }
 
-void Player::_LoadSkills(QueryResult result)
+void Player::_LoadSkills(PreparedQueryResult result)
 {
     //                                                           0      1      2
-    // SetPQuery(PLAYER_LOGIN_QUERY_LOADSKILLS,          "SELECT skill, value, max FROM character_skills WHERE guid = '%u'", GUID_LOPART(m_guid));
+    // SetPQuery(PLAYER_LOGIN_QUERY_LOAD_SKILLS,          "SELECT skill, value, max FROM character_skills WHERE guid = '%u'", GUID_LOPART(m_guid));
 
     uint32 count = 0;
     std::unordered_map<uint32, uint32> loadedSkillValues;

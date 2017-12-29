@@ -281,7 +281,6 @@ void SpellMgr::LoadSpellTargetPositions()
 
     } while( result->NextRow() );
 
-    TC_LOG_INFO("server.loading"," ");
     TC_LOG_INFO("server.loading", ">> Loaded %u spell teleport coordinates", count );
 }
 
@@ -392,7 +391,6 @@ void SpellMgr::LoadSpellProcEvents()
     QueryResult result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask, ProcFlags, procEx, ppmRate, CustomChance, Cooldown FROM spell_proc_event");
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u spell proc event conditions", count  );
         return;
     }
@@ -436,7 +434,6 @@ void SpellMgr::LoadSpellProcEvents()
         ++count;
     } while( result->NextRow() );
 
-    TC_LOG_INFO("server.loading"," ");
     if (customProc)
         TC_LOG_INFO("server.loading", ">> Loaded %u custom spell proc event conditions +%u custom",  count, customProc );
     else
@@ -599,7 +596,6 @@ void SpellMgr::LoadSpellElixirs()
     QueryResult result = WorldDatabase.Query("SELECT entry, mask FROM spell_elixir");
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u spell elixir definitions", count );
         return;
     }
@@ -624,7 +620,6 @@ void SpellMgr::LoadSpellElixirs()
         ++count;
     } while( result->NextRow() );
 
-    TC_LOG_INFO("server.loading"," ");
     TC_LOG_INFO("server.loading", ">> Loaded %u spell elixir definitions", count );
 }
 
@@ -716,7 +711,6 @@ void SpellMgr::LoadSpellEnchantProcData()
     QueryResult result = WorldDatabase.Query("SELECT entry, customChance, PPMChance, procEx FROM spell_enchant_proc_data");
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u spell enchant proc event conditions", count );
         return;
     }
@@ -2373,8 +2367,8 @@ bool IsSpellAllowedInLocation(SpellInfo const *spellInfo,uint32 map_id,uint32 zo
     if( spellInfo->AreaId && spellInfo->AreaId != zone_id && spellInfo->AreaId != area_id )
         return false;
 
-    MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
-    if (mapEntry && mapEntry->IsRaid() && spellInfo->HasAttribute(SPELL_ATTR6_NOT_IN_RAID_INSTANCE))
+    MapEntry const* _mapEntry = sMapStore.LookupEntry(map_id);
+    if (_mapEntry && _mapEntry->IsRaid() && spellInfo->HasAttribute(SPELL_ATTR6_NOT_IN_RAID_INSTANCE))
         return false;
 
     // elixirs (all area dependent elixirs have family SPELLFAMILY_POTION, use this for speedup)
@@ -2582,7 +2576,6 @@ void SpellMgr::LoadSkillLineAbilityMap()
         ++count;
     }
 
-    TC_LOG_INFO("server.loading"," ");
     TC_LOG_INFO("server.loading",">> Loaded %u SkillLineAbility MultiMap", count);
 }
 

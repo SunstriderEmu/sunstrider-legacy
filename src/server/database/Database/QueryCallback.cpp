@@ -1,5 +1,22 @@
+/*
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "QueryCallback.h"
+#include "Errors.h"
 
 template<typename T, typename... Args>
 inline void Construct(T& t, Args&&... args)
@@ -14,7 +31,7 @@ inline void Destroy(T& t)
 }
 
 template<typename T>
-void ConstructActiveMember(T* obj)
+inline void ConstructActiveMember(T* obj)
 {
     if (!obj->_isPrepared)
         Construct(obj->_string);
@@ -23,7 +40,7 @@ void ConstructActiveMember(T* obj)
 }
 
 template<typename T>
-void DestroyActiveMember(T* obj)
+inline void DestroyActiveMember(T* obj)
 {
     if (!obj->_isPrepared)
         Destroy(obj->_string);
@@ -32,7 +49,7 @@ void DestroyActiveMember(T* obj)
 }
 
 template<typename T>
-void MoveFrom(T* to, T&& from)
+inline void MoveFrom(T* to, T&& from)
 {
     ASSERT(to->_isPrepared == from._isPrepared);
 
@@ -183,7 +200,7 @@ QueryCallback::Status QueryCallback::InvokeIfReady()
     {
         if (_string.valid() && _string.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
         {
-            std::future<QueryResult> f(std::move(_string));
+            QueryResultFuture f(std::move(_string));
             std::function<void(QueryCallback&, QueryResult)> cb(std::move(callback._string));
             cb(*this, f.get());
             return checkStateAndReturnCompletion();
@@ -193,7 +210,7 @@ QueryCallback::Status QueryCallback::InvokeIfReady()
     {
         if (_prepared.valid() && _prepared.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
         {
-            std::future<PreparedQueryResult> f(std::move(_prepared));
+            PreparedQueryResultFuture f(std::move(_prepared));
             std::function<void(QueryCallback&, PreparedQueryResult)> cb(std::move(callback._prepared));
             cb(*this, f.get());
             return checkStateAndReturnCompletion();

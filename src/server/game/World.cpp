@@ -843,6 +843,12 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_START_GM_LEVEL]       = sConfigMgr->GetIntDefault("GM.StartLevel", 1);
     m_configs[CONFIG_GM_DEFAULT_GUILD]     = sConfigMgr->GetIntDefault("GM.DefaultGuild", 0);
     m_configs[CONFIG_GM_FORCE_GUILD]       = sConfigMgr->GetIntDefault("GM.ForceGuild", 0);
+    if (m_configs[CONFIG_GM_FORCE_GUILD] && m_configs[CONFIG_GM_DEFAULT_GUILD] && m_configs[CONFIG_GM_FORCE_GUILD] != m_configs[CONFIG_GM_DEFAULT_GUILD])
+    {
+        TC_LOG_ERROR("server.loading", "GM.DefaultGuild is defined (%u) but is not the same as GM.ForceGuild (%u). DefaultGuild will have no effect.");
+        m_configs[CONFIG_GM_DEFAULT_GUILD] = 0;
+    }
+
     m_configs[CONFIG_ALLOW_GM_GROUP]       = sConfigMgr->GetBoolDefault("GM.AllowInvite", false);
     m_configs[CONFIG_ALLOW_GM_FRIEND]      = sConfigMgr->GetBoolDefault("GM.AllowFriend", false);
     if(m_configs[CONFIG_START_GM_LEVEL] < m_configs[CONFIG_START_PLAYER_LEVEL])
@@ -2951,8 +2957,8 @@ void World::LoadSanctuaryAndFFAZones()
             v.push_back(tempstr);
         }
 
-        for (auto it : v) {
-            uint32 zoneId = atoi(it.c_str());
+        for (auto itr : v) {
+            uint32 zoneId = atoi(itr.c_str());
             configSanctuariesZones.emplace(zoneId);
         }
     }

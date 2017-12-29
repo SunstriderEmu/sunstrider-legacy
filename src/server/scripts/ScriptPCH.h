@@ -28,6 +28,7 @@
 #include "ObjectAccessor.h"
 #include "MotionMaster.h"
 #include "Map.h"
+#include "Log.h"
 
 #ifdef TESTS
     #include "TestCase.h"

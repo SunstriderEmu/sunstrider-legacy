@@ -513,9 +513,7 @@ void LoadDBCStores(const std::string& dataPath)
         exit(1);
     }
 
-    TC_LOG_INFO("server.loading"," ");
     TC_LOG_INFO("server.loading", ">> Loaded %d data stores", DBCFilesCount );
-    TC_LOG_INFO("server.loading"," ");
 }
 
 SimpleFactionsList const* GetFactionTeamList(uint32 faction)

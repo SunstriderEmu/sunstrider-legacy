@@ -1024,7 +1024,7 @@ void Spell::EffectDummy(uint32 i)
                     if(m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    uint32 spell_id = 0;
+                    uint32 _spell_id = 0;
                     switch(m_caster->GetMap()->urand(1,5))
                     {
                         case 1: spell_id = 8064; break;     // Sleepy
@@ -1033,7 +1033,7 @@ void Spell::EffectDummy(uint32 i)
                         case 4: spell_id = 8067; break;     // Party Time!
                         case 5: spell_id = 8068; break;     // Healthy Spirit
                     }
-                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
+                    m_caster->CastSpell(m_caster, _spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 8213:                                  // Savory Deviate Delight
@@ -1100,18 +1100,18 @@ void Spell::EffectDummy(uint32 i)
                     if(!unitTarget)
                         return;
 
-                    uint32 spell_id = 0;
+                    uint32 _spell_id = 0;
 
                     uint32 roll = m_caster->GetMap()->urand(0, 99);
 
                     if(roll < 2)                            // 2% for 30 sec self root (off-like chance unknown)
-                        spell_id = 16566;
+                        _spell_id = 16566;
                     else if(roll < 4)                       // 2% for 20 sec root, charge to target (off-like chance unknown)
-                        spell_id = 13119;
+                        _spell_id = 13119;
                     else                                    // normal root
-                        spell_id = 13099;
+                        _spell_id = 13099;
 
-                    m_caster->CastSpell(unitTarget,spell_id, TRIGGERED_FULL_MASK,nullptr);
+                    m_caster->CastSpell(unitTarget, _spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 13280:                                 // Gnomish Death Ray
@@ -1184,7 +1184,7 @@ void Spell::EffectDummy(uint32 i)
                     if(m_caster->GetTypeId()!=TYPEID_PLAYER)
                         return;
 
-                    uint32 spell_id = 0;
+                    uint32 _spell_id = 0;
                     switch(m_caster->GetMap()->urand(1,3))
                     {
                         case 1: spell_id = 16595; break;
@@ -1192,7 +1192,7 @@ void Spell::EffectDummy(uint32 i)
                         default:spell_id = 16591; break;
                     }
 
-                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
+                    m_caster->CastSpell(m_caster, _spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 17251:                                 // Spirit Healer Res
@@ -1401,18 +1401,18 @@ void Spell::EffectDummy(uint32 i)
                     if(m_caster->GetTypeId()!=TYPEID_PLAYER)
                         return;
 
-                    uint32 spell_id = 0;
+                    uint32 _spell_id = 0;
 
                     switch(m_caster->GetMap()->urand(1,5))
                     {
-                        case 1: spell_id = 33053; break;
-                        case 2: spell_id = 33057; break;
-                        case 3: spell_id = 33059; break;
-                        case 4: spell_id = 33062; break;
-                        case 5: spell_id = 33064; break;
+                        case 1: _spell_id = 33053; break;
+                        case 2: _spell_id = 33057; break;
+                        case 3: _spell_id = 33059; break;
+                        case 4: _spell_id = 33062; break;
+                        case 5: _spell_id = 33064; break;
                     }
 
-                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
+                    m_caster->CastSpell(m_caster, _spell_id, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 35686:                                 // Electro-Shock (Electro-Shock Goodness!)
@@ -1453,15 +1453,15 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 35745:
                 {
-                    uint32 spell_id;
+                    uint32 _spell_id;
                     switch(m_caster->GetAreaId())
                     {
-                        case 3900: spell_id = 35743; break;
-                        case 3742: spell_id = 35744; break;
+                        case 3900: _spell_id = 35743; break;
+                        case 3742: _spell_id = 35744; break;
                         default: return;
                     }
 
-                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK);
+                    m_caster->CastSpell(m_caster, _spell_id, TRIGGERED_FULL_MASK);
                     return;
                 }
                 case 37674:                                 // Chaos Blast
@@ -2039,16 +2039,16 @@ void Spell::EffectDummy(uint32 i)
                 if(!pet || !pet->GetVictim())
                     return;
 
-                uint32 spell_id = 0;
+                uint32 _spell_id = 0;
                 switch (m_spellInfo->Id)
                 {
-                case 34026: spell_id = 34027; break;        // rank 1
+                case 34026: _spell_id = 34027; break;        // rank 1
                 default:
-                    TC_LOG_ERROR("FIXME","Spell::EffectDummy: Spell %u not handled in KC",m_spellInfo->Id);
+                    TC_LOG_ERROR("spells","Spell::EffectDummy: Spell %u not handled in KC",m_spellInfo->Id);
                     return;
                 }
 
-                pet->CastSpell(pet->GetVictim(), spell_id, TRIGGERED_FULL_MASK);
+                pet->CastSpell(pet->GetVictim(), _spell_id, TRIGGERED_FULL_MASK);
                 return;
             }
 
@@ -2141,8 +2141,8 @@ void Spell::EffectDummy(uint32 i)
                     if(!unitTarget)
                         return;
 
-                    uint32 spell_id = m_spellInfo->Effects[i].BasePoints+1;//m_currentBasePoints[i]+1;
-                    SpellInfo const* spell_proto = sSpellMgr->GetSpellInfo(spell_id);
+                    uint32 _spell_id = m_spellInfo->Effects[i].BasePoints+1;//m_currentBasePoints[i]+1;
+                    SpellInfo const* spell_proto = sSpellMgr->GetSpellInfo(_spell_id);
                     if(!spell_proto)
                         return;
 
@@ -2223,17 +2223,17 @@ void Spell::EffectDummy(uint32 i)
                     if(!unitTarget)
                         return;
 
-                    uint32 spell_id = 0;
+                    uint32 _spell_id = 0;
                     switch(unitTarget->GetClass())
                     {
-                        case CLASS_DRUID:   spell_id = 37878; break;
-                        case CLASS_PALADIN: spell_id = 37879; break;
-                        case CLASS_PRIEST:  spell_id = 37880; break;
-                        case CLASS_SHAMAN:  spell_id = 37881; break;
+                        case CLASS_DRUID:   _spell_id = 37878; break;
+                        case CLASS_PALADIN: _spell_id = 37879; break;
+                        case CLASS_PRIEST:  _spell_id = 37880; break;
+                        case CLASS_SHAMAN:  _spell_id = 37881; break;
                         default: return;                    // ignore for not healing classes
                     }
 
-                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK);
+                    m_caster->CastSpell(m_caster, _spell_id, TRIGGERED_FULL_MASK);
                     return;
                 }
             }
@@ -2242,28 +2242,28 @@ void Spell::EffectDummy(uint32 i)
             //Shaman Rockbiter Weapon
             if (m_spellInfo->SpellFamilyFlags == 0x400000)
             {
-                uint32 spell_id = 0;
+                uint32 _spell_id = 0;
                 switch(m_spellInfo->Id)
                 {
-                    case  8017: spell_id = 36494; break;    // Rank 1
-                    case  8018: spell_id = 36750; break;    // Rank 2
-                    case  8019: spell_id = 36755; break;    // Rank 3
-                    case 10399: spell_id = 36759; break;    // Rank 4
-                    case 16314: spell_id = 36763; break;    // Rank 5
-                    case 16315: spell_id = 36766; break;    // Rank 6
-                    case 16316: spell_id = 36771; break;    // Rank 7
-                    case 25479: spell_id = 36775; break;    // Rank 8
-                    case 25485: spell_id = 36499; break;    // Rank 9
+                    case  8017: _spell_id = 36494; break;    // Rank 1
+                    case  8018: _spell_id = 36750; break;    // Rank 2
+                    case  8019: _spell_id = 36755; break;    // Rank 3
+                    case 10399: _spell_id = 36759; break;    // Rank 4
+                    case 16314: _spell_id = 36763; break;    // Rank 5
+                    case 16315: _spell_id = 36766; break;    // Rank 6
+                    case 16316: _spell_id = 36771; break;    // Rank 7
+                    case 25479: _spell_id = 36775; break;    // Rank 8
+                    case 25485: _spell_id = 36499; break;    // Rank 9
                     default:
-                        TC_LOG_ERROR("FIXME","Spell::EffectDummy: Spell %u not handled in RW",m_spellInfo->Id);
+                        TC_LOG_ERROR("spells","Spell::EffectDummy: Spell %u not handled in RW", m_spellInfo->Id);
                         return;
                 }
 
-                SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( spell_id );
+                SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(_spell_id);
 
                 if(!spellInfo)
                 {
-                    TC_LOG_ERROR("FIXME","WORLD: unknown spell id %i\n", spell_id);
+                    TC_LOG_ERROR("spells","WORLD: unknown spell id %i\n", _spell_id);
                     return;
                 }
 

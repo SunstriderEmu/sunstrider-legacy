@@ -1,13 +1,32 @@
+/*
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef DatabaseLoader_h__
 #define DatabaseLoader_h__
 
-#include "DatabaseWorkerPool.h"
 #include "Define.h"
 
 #include <functional>
-#include <stack>
 #include <queue>
+#include <stack>
+#include <string>
+
+template <class T>
+class DatabaseWorkerPool;
 
 // A helper class to initiate all database worker pools,
 // handles updating, delays preparing of statements and cleans up on failure.

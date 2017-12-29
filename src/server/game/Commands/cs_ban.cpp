@@ -2,6 +2,8 @@
 #include "Language.h"
 #include "AccountMgr.h"
 
+#define _CONCAT3_(A, B, C) "CONCAT( " A ", " B ", " C " )"
+
 bool ChatHandler::HandleUnBanAccountCommand(const char* args)
 {
     return HandleUnBanHelper(SANCTION_BAN_ACCOUNT,args);
@@ -36,7 +38,7 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
     else
     {
         result = LoginDatabase.PQuery( "SELECT ip,bandate,unbandate,bannedby,banreason FROM ip_banned"
-            " WHERE (bandate=unbandate OR unbandate>UNIX_TIMESTAMP()) AND ip " _LIKE_ " " _CONCAT3_ ("'%%'","'%s'","'%%'")
+            " WHERE (bandate=unbandate OR unbandate>UNIX_TIMESTAMP()) AND ip LIKE " _CONCAT3_ ("'%%'","'%s'","'%%'")
             " ORDER BY unbandate",filter.c_str() );
     }
 
@@ -100,7 +102,7 @@ bool ChatHandler::HandleBanListCharacterCommand(const char* args)
 
     std::string filter = cFilter;
     LoginDatabase.EscapeString(filter);
-    QueryResult result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name " _LIKE_ " " _CONCAT3_ ("'%%'","'%s'","'%%'"),filter.c_str());
+    QueryResult result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name LIKE " _CONCAT3_ ("'%%'","'%s'","'%%'"),filter.c_str());
     if (!result)
     {
         PSendSysMessage(LANG_BANLIST_NOCHARACTER);
@@ -128,7 +130,7 @@ bool ChatHandler::HandleBanListAccountCommand(const char* args)
     else
     {
         result = LoginDatabase.PQuery("SELECT account.id, username FROM account, account_banned"
-            " WHERE account.id = account_banned.id AND active = 1 AND username " _LIKE_ " " _CONCAT3_ ("'%%'","'%s'","'%%'")" GROUP BY account.id",
+            " WHERE account.id = account_banned.id AND active = 1 AND username LIKE " _CONCAT3_ ("'%%'","'%s'","'%%'")" GROUP BY account.id",
             filter.c_str());
     }
 

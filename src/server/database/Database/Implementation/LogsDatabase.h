@@ -45,13 +45,12 @@ class TC_DATABASE_API LogsDatabaseConnection : public MySQLConnection
         typedef LogsDatabaseStatements Statements;
 
         //- Constructors for sync and async connections
-        LogsDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo) { }
-        LogsDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo) : MySQLConnection(q, connInfo) { }
+        LogsDatabaseConnection(MySQLConnectionInfo& connInfo);
+        LogsDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo);
+        ~LogsDatabaseConnection();
 
         //- Loads database type specific prepared statements
         void DoPrepareStatements() override;
 };
-
-typedef DatabaseWorkerPool<LogsDatabaseConnection> LogsDatabaseWorkerPool;
 
 #endif

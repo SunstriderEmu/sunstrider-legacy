@@ -60,10 +60,10 @@ bool GossipHelloAction::Execute(Event event)
             continue;
         }
 
-        WorldPacket p1;
+        WorldPacket _p1;
         std::string code;
-        p1 << guid << menu.GetMenuId() << i << code;
-        bot->GetSession()->HandleGossipSelectOptionOpcode(p1);
+        _p1 << guid << menu.GetMenuId() << i << code;
+        bot->GetSession()->HandleGossipSelectOptionOpcode(_p1);
 
         i = 0;
     }

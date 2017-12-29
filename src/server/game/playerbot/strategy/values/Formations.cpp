@@ -326,11 +326,11 @@ WorldLocation MoveFormation::MoveSingleLine(vector<Player*> line, float diff, fl
 
         if (member == bot)
         {
-            float angle = orientation + M_PI / 2.0f;
+            float _angle = orientation + M_PI / 2.0f;
             float radius = range * index;
 
-            float lx = x + cos(angle) * radius;
-            float ly = y + sin(angle) * radius;
+            float lx = x + cos(_angle) * radius;
+            float ly = y + sin(_angle) * radius;
             float lz = cz;
             float ground = bot->GetMap()->GetHeight(lx, ly, lz + 0.5f);
             if (ground <= INVALID_HEIGHT)

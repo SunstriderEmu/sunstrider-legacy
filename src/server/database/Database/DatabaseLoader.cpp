@@ -1,9 +1,26 @@
+/*
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "DatabaseLoader.h"
-#include "DBUpdater.h"
 #include "Config.h"
-#include <iostream>
-#include <fstream>
+#include "DatabaseEnv.h"
+#include "DBUpdater.h"
+#include "Log.h"
+
 #include <mysqld_error.h>
 
 DatabaseLoader::DatabaseLoader(std::string const& logger, uint32 const defaultUpdateMask)
@@ -43,8 +60,6 @@ DatabaseLoader& DatabaseLoader::AddDatabase(DatabaseWorkerPool<T>& pool, std::st
             if ((error == ER_BAD_DB_ERROR) && updatesEnabledForThis && _autoSetup)
             {
                 // Try to create the database and connect again if auto setup is enabled
-
-                // undefined reference to `DBUpdater<LogsDatabaseConnection>::Create(DatabaseWorkerPool<LogsDatabaseConnection>&)'
                 if (DBUpdater<T>::Create(pool) && (!pool.Open()))
                     error = 0;
             }
@@ -53,7 +68,7 @@ DatabaseLoader& DatabaseLoader::AddDatabase(DatabaseWorkerPool<T>& pool, std::st
             if (error)
             {
                 TC_LOG_ERROR("sql.driver", "\nDatabasePool %s NOT opened. There were errors opening the MySQL connections. Check your SQLDriverLogFile "
-                    "for specific errors. Read wiki at http://www.trinitycore.info/display/tc/TrinityCore+Home. Error %u.", name.c_str(), error);
+                    "for specific errors. Read wiki at http://www.trinitycore.info/display/tc/TrinityCore+Home", name.c_str());
 
                 return false;
             }

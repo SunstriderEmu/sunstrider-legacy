@@ -2067,7 +2067,6 @@ void ObjectMgr::LoadItemLocales()
     if(!result)
     {
         TC_LOG_INFO("server.loading",">> Loaded 0 Item locale strings. DB table `locales_item` is empty.");
-        TC_LOG_INFO("server.loading", " ");
         return;
     }
     do
@@ -7151,16 +7150,16 @@ void ObjectMgr::LoadGameObjectForQuests()
     
 }
 
-bool ObjectMgr::LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table, int32 min_value, int32 max_value)
+bool ObjectMgr::LoadTrinityStrings(DatabaseWorkerPool<WorldDatabaseConnection>& db, char const* table, int32 min_value, int32 max_value)
 {
     // cleanup affected map part for reloading case
-    for(auto itr = mTrinityStringLocaleMap.begin(); itr != mTrinityStringLocaleMap.end();)
+    for(auto itr = _trinityStringStore.begin(); itr != _trinityStringStore.end();)
     {
         if(itr->first >= min_value && itr->first <= max_value)
         {
             auto itr2 = itr;
             ++itr;
-            mTrinityStringLocaleMap.erase(itr2);
+            _trinityStringStore.erase(itr2);
         }
         else
             ++itr;
@@ -7198,7 +7197,7 @@ bool ObjectMgr::LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* tabl
             continue;
         }
 
-        TrinityStringLocale& data = mTrinityStringLocaleMap[entry];
+        TrinityStringLocale& data = _trinityStringStore[entry];
 
         if(data.Content.size() > 0)
         {
@@ -8309,7 +8308,7 @@ uint32 GetAreaTriggerScriptId(uint32 trigger_id)
     return sObjectMgr->GetAreaTriggerScriptId(trigger_id);
 }
 
-bool LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table,int32 start_value, int32 end_value)
+bool LoadTrinityStrings(DatabaseWorkerPool<WorldDatabaseConnection>& db, char const* table,int32 start_value, int32 end_value)
 {
     if(start_value >= 0 || start_value <= end_value)        // start/end reversed for negative values
     {

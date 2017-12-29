@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,6 +16,7 @@
  */
 
 #include "WorldDatabase.h"
+#include "PreparedStatement.h"
 
 void WorldDatabaseConnection::DoPrepareStatements()
 {
@@ -102,4 +103,17 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_SEL_ITEM_EXTENDED_COST, "SELECT id, reqhonorpoints, reqarenapoints, reqitem0, reqitem1, reqitem2, reqitem3, reqitem4, reqitemcount0, reqitemcount1, reqitemcount2, reqitemcount3, reqitemcount4, reqpersonalarenarating FROM item_extended_cost", CONNECTION_SYNCH);
 
     PrepareStatement(WORLD_DEL_SPAWNGROUP_MEMBER, "DELETE FROM spawn_group WHERE spawnType = ? AND spawnId = ?", CONNECTION_ASYNC);
+}
+
+
+WorldDatabaseConnection::WorldDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)
+{
+}
+
+WorldDatabaseConnection::WorldDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo) : MySQLConnection(q, connInfo)
+{
+}
+
+WorldDatabaseConnection::~WorldDatabaseConnection()
+{
 }

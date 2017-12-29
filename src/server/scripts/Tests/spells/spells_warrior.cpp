@@ -1862,7 +1862,7 @@ public:
         {
             float const allowedError = 0.01f;
             uint32 sampeSize = _GetPercentApproximationParams(allowedError);
-            auto AI = rogue->GetTestingPlayerbotAI();
+            //auto AI = rogue->GetTestingPlayerbotAI();
             for (uint32 i = 0; i < sampeSize; i++)
             {
                 rogue->AttackerStateUpdate(warrior, BASE_ATTACK);

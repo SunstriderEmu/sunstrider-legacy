@@ -1024,26 +1024,26 @@ enum PlayerChatTag
 // used at player loading query list preparing, and later result selection
 enum PlayerLoginQueryIndex
 {
-    PLAYER_LOGIN_QUERY_LOADFROM                 = 0,
-    PLAYER_LOGIN_QUERY_LOADGROUP                = 1,
-    PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES       = 2,
-    PLAYER_LOGIN_QUERY_LOADAURAS                = 3,
-    PLAYER_LOGIN_QUERY_LOADSPELLS               = 4,
-    PLAYER_LOGIN_QUERY_LOADQUESTSTATUS          = 5,
-    PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS     = 6,
-    PLAYER_LOGIN_QUERY_LOADREPUTATION           = 7,
-    PLAYER_LOGIN_QUERY_LOADINVENTORY            = 8,
-    PLAYER_LOGIN_QUERY_LOADACTIONS              = 9,
-    PLAYER_LOGIN_QUERY_LOADMAILCOUNT            = 10,
-    PLAYER_LOGIN_QUERY_LOADMAILDATE             = 11,
-    PLAYER_LOGIN_QUERY_LOADSOCIALLIST           = 12,
-    PLAYER_LOGIN_QUERY_LOADHOMEBIND             = 13,
-    PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS       = 14,
-    PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES        = 15,
-    PLAYER_LOGIN_QUERY_LOADGUILD                = 16,
-    PLAYER_LOGIN_QUERY_LOADARENAINFO            = 17,
-    PLAYER_LOGIN_QUERY_LOADSKILLS               = 18,
-    PLAYER_LOGIN_QUERY_LOAD_BG_DATA             = 19,
+    PLAYER_LOGIN_QUERY_LOAD_FROM                  = 0,
+    PLAYER_LOGIN_QUERY_LOAD_GROUP                 = 1,
+    PLAYER_LOGIN_QUERY_LOAD_BOUND_INSTANCES       = 2,
+    PLAYER_LOGIN_QUERY_LOAD_AURAS                 = 3,
+    PLAYER_LOGIN_QUERY_LOAD_SPELLS                = 4,
+    PLAYER_LOGIN_QUERY_LOAD_QUEST_STATUS          = 5,
+    PLAYER_LOGIN_QUERY_LOAD_DAILY_QUEST_STATUS    = 6,
+    PLAYER_LOGIN_QUERY_LOAD_REPUTATION            = 7,
+    PLAYER_LOGIN_QUERY_LOAD_INVENTORY             = 8,
+    PLAYER_LOGIN_QUERY_LOAD_ACTIONS               = 9,
+    PLAYER_LOGIN_QUERY_LOAD_MAIL_COUNT            = 10,
+    PLAYER_LOGIN_QUERY_LOAD_MAIL_DATE             = 11,
+    PLAYER_LOGIN_QUERY_LOAD_SOCIAL_LIST           = 12,
+    PLAYER_LOGIN_QUERY_LOAD_HOME_BIND             = 13,
+    PLAYER_LOGIN_QUERY_LOAD_SPELL_COOLDOWNS       = 14,
+    PLAYER_LOGIN_QUERY_LOAD_DECLINED_NAMES        = 15,
+    PLAYER_LOGIN_QUERY_LOAD_GUILD                 = 16,
+    PLAYER_LOGIN_QUERY_LOAD_ARENA_INFO            = 17,
+    PLAYER_LOGIN_QUERY_LOAD_SKILLS                = 18,
+    PLAYER_LOGIN_QUERY_LOAD_BG_DATA               = 19,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -1764,7 +1764,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void RemoveAllSpellCooldown();
         void SendClearCooldown(uint32 spell_id, Unit* target);
 
-        void _LoadSpellCooldowns(QueryResult result);
+        void _LoadSpellCooldowns(PreparedQueryResult result);
         void _SaveSpellCooldowns(SQLTransaction trans);
 
         // global cooldown
@@ -2509,22 +2509,22 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /***                   LOAD SYSTEM                     ***/
         /*********************************************************/
 
-        void _LoadActions(QueryResult result);
-        void _LoadAuras(QueryResult result, uint32 timediff);
-        void _LoadBoundInstances(QueryResult result);
-        void _LoadInventory(QueryResult result, uint32 timediff);
-        void _LoadMailInit(QueryResult resultUnread, QueryResult resultDelivery);
+        void _LoadActions(PreparedQueryResult result);
+        void _LoadAuras(PreparedQueryResult result, uint32 timediff);
+        void _LoadBoundInstances(PreparedQueryResult result);
+        void _LoadInventory(PreparedQueryResult result, uint32 timediff);
+        void _LoadMailInit(PreparedQueryResult resultUnread, PreparedQueryResult resultDelivery);
         void _LoadMail();
         void _LoadMailedItems(Mail *mail);
-        void _LoadQuestStatus(QueryResult result);
-        void _LoadDailyQuestStatus(QueryResult result);
-        void _LoadGroup(QueryResult result);
-        void _LoadSkills(QueryResult result);
-        void _LoadReputation(QueryResult result);
-        void _LoadSpells(QueryResult result);
-        bool _LoadHomeBind(QueryResult result);
-        void _LoadDeclinedNames(QueryResult result);
-        void _LoadArenaTeamInfo(QueryResult result);
+        void _LoadQuestStatus(PreparedQueryResult result);
+        void _LoadDailyQuestStatus(PreparedQueryResult result);
+        void _LoadGroup(PreparedQueryResult result);
+        void _LoadSkills(PreparedQueryResult result);
+        void _LoadReputation(PreparedQueryResult result);
+        void _LoadSpells(PreparedQueryResult result);
+        bool _LoadHomeBind(PreparedQueryResult result);
+        void _LoadDeclinedNames(PreparedQueryResult result);
+        void _LoadArenaTeamInfo(PreparedQueryResult result);
         void _LoadBGData(PreparedQueryResult result);
 
         /*********************************************************/

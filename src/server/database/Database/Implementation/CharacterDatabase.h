@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,10 +18,9 @@
 #ifndef _CHARACTERDATABASE_H
 #define _CHARACTERDATABASE_H
 
-#include "DatabaseWorkerPool.h"
 #include "MySQLConnection.h"
 
-enum CharacterDatabaseStatements
+enum CharacterDatabaseStatements : uint32
 {
     /*  Naming standard for defines:
         {DB}_{SEL/INS/UPD/DEL/REP}_{Summary of data changed}
@@ -65,14 +64,29 @@ enum CharacterDatabaseStatements
     CHAR_DEL_BATTLEGROUND_RANDOM,
     CHAR_INS_BATTLEGROUND_RANDOM,
 
+    */
     CHAR_SEL_CHARACTER,
     CHAR_SEL_GROUP_MEMBER,
     CHAR_SEL_CHARACTER_INSTANCE,
     CHAR_SEL_CHARACTER_AURAS,
     CHAR_SEL_CHARACTER_SPELL,
     CHAR_SEL_CHARACTER_QUESTSTATUS,
-
     CHAR_SEL_CHARACTER_QUESTSTATUS_DAILY,
+    CHAR_SEL_CHARACTER_REPUTATION,
+    CHAR_SEL_CHARACTER_INVENTORY,
+    CHAR_SEL_CHARACTER_ACTIONS,
+    CHAR_SEL_CHARACTER_MAILCOUNT,
+    CHAR_SEL_CHARACTER_MAILDATE,
+    CHAR_SEL_CHARACTER_SOCIALLIST,
+    CHAR_SEL_CHARACTER_HOMEBIND,
+    CHAR_SEL_CHARACTER_SPELLCOOLDOWNS,
+    CHAR_SEL_CHARACTER_DECLINEDNAMES,
+    CHAR_SEL_GUILD_MEMBER,
+    CHAR_SEL_CHARACTER_ARENAINFO,
+    CHAR_SEL_CHARACTER_SKILLS,
+    CHAR_SEL_CHARACTER_BGDATA,
+    /*
+
     CHAR_SEL_CHARACTER_QUESTSTATUS_WEEKLY,
     CHAR_SEL_CHARACTER_QUESTSTATUS_MONTHLY,
     CHAR_SEL_CHARACTER_QUESTSTATUS_SEASONAL,
@@ -89,28 +103,13 @@ enum CharacterDatabaseStatements
     CHAR_DEL_RESET_CHARACTER_QUESTSTATUS_MONTHLY,
     CHAR_DEL_RESET_CHARACTER_QUESTSTATUS_SEASONAL_BY_EVENT,
 
-    CHAR_SEL_CHARACTER_REPUTATION,
-    CHAR_SEL_CHARACTER_INVENTORY,
-    CHAR_SEL_CHARACTER_ACTIONS,
-    CHAR_SEL_CHARACTER_MAILCOUNT,
-    CHAR_SEL_CHARACTER_MAILDATE,
     CHAR_SEL_MAIL_COUNT,
-    CHAR_SEL_CHARACTER_SOCIALLIST,
-    CHAR_SEL_CHARACTER_HOMEBIND,
-    CHAR_SEL_CHARACTER_SPELLCOOLDOWNS,
-    CHAR_SEL_CHARACTER_DECLINEDNAMES,
-    CHAR_SEL_GUILD_MEMBER,
     CHAR_SEL_GUILD_MEMBER_EXTENDED,
-    CHAR_SEL_CHARACTER_ARENAINFO,
     CHAR_SEL_CHARACTER_ACHIEVEMENTS,
     CHAR_SEL_CHARACTER_CRITERIAPROGRESS,
     CHAR_SEL_CHARACTER_EQUIPMENTSETS,
-    */
-    CHAR_SEL_CHARACTER_BGDATA,
-    /*
     CHAR_SEL_CHARACTER_GLYPHS,
     CHAR_SEL_CHARACTER_TALENTS,
-    CHAR_SEL_CHARACTER_SKILLS,
     CHAR_SEL_CHARACTER_RANDOMBG,
     CHAR_SEL_CHARACTER_BANNED,
     CHAR_SEL_CHARACTER_QUESTSTATUSREW,
@@ -557,13 +556,12 @@ public:
     typedef CharacterDatabaseStatements Statements;
 
     //- Constructors for sync and async connections
-    CharacterDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo) { }
-    CharacterDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo) : MySQLConnection(q, connInfo) { }
+    CharacterDatabaseConnection(MySQLConnectionInfo& connInfo);
+    CharacterDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo);
+    ~CharacterDatabaseConnection();
 
     //- Loads database type specific prepared statements
     void DoPrepareStatements() override;
 };
-
-typedef DatabaseWorkerPool<CharacterDatabaseConnection> CharacterDatabaseWorkerPool;
 
 #endif

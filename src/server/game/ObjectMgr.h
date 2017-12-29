@@ -796,7 +796,7 @@ class TC_GAME_API ObjectMgr
         void LoadSpellScriptNames();
         void ValidateSpellScripts();
 
-        bool LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table, int32 min_value, int32 max_value);
+        bool LoadTrinityStrings(DatabaseWorkerPool<WorldDatabaseConnection>& db, char const* table, int32 min_value, int32 max_value);
         bool LoadTrinityStrings() { return LoadTrinityStrings(WorldDatabase,"trinity_string",MIN_TRINITY_STRING_ID,MAX_TRINITY_STRING_ID); }
         void LoadPetCreateSpells();
         void LoadBroadcastTexts();
@@ -1046,8 +1046,8 @@ class TC_GAME_API ObjectMgr
 
         TrinityStringLocale const* GetTrinityStringLocale(int32 entry) const
         {
-            auto itr = mTrinityStringLocaleMap.find(entry);
-            if( itr == mTrinityStringLocaleMap.end()) return nullptr;
+            auto itr = _trinityStringStore.find(entry);
+            if( itr == _trinityStringStore.end()) return nullptr;
             return &itr->second;
         }
 
@@ -1355,7 +1355,7 @@ class TC_GAME_API ObjectMgr
         QuestLocaleContainer mQuestLocaleMap;
         NpcTextLocaleContainer mGossipTextLocaleMap;
         PageTextLocaleContainer mPageTextLocaleMap;
-        TrinityStringLocaleContainer mTrinityStringLocaleMap;
+        TrinityStringLocaleContainer _trinityStringStore;
         GossipMenuItemsLocaleContainer _gossipMenuItemsLocaleStore;
         PointOfInterestLocaleContainer _pointOfInterestLocaleStore;
 
@@ -1393,7 +1393,7 @@ class TC_GAME_API ObjectMgr
 #define sObjectMgr ObjectMgr::instance()
 
 // scripting access functions
-bool LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table,int32 start_value = -1, int32 end_value = std::numeric_limits<int32>::min());
+bool LoadTrinityStrings(DatabaseWorkerPool<WorldDatabaseConnection>& db, char const* table,int32 start_value = -1, int32 end_value = std::numeric_limits<int32>::min());
 uint32 GetAreaTriggerScriptId(uint32 trigger_id);
 
 #endif

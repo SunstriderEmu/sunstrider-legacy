@@ -35,6 +35,7 @@
 #include "MapManager.h"
 #include "ScriptReloadMgr.h"
 #include "AppenderDB.h"
+#include "MySQLThreading.h"
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_UNIX
 #include <fstream>
 #include <execinfo.h>

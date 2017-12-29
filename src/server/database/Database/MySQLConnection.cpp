@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,31 +15,42 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "MySQLConnection.h"
 #include "Common.h"
-
-#ifdef _WIN32
-  #include <winsock2.h>
+#include "DatabaseWorker.h"
+#include "Log.h"
+#include "PreparedStatement.h"
+#include "QueryResult.h"
+#include "Timer.h"
+#include "Transaction.h"
+#include "Util.h"
+#include <errmsg.h>
+#ifdef _WIN32 // hack for broken mysql.h not including the correct winsock header for SOCKET definition, fixed in 5.7
+#include <winsock2.h>
 #endif
 #include <mysql.h>
 #include <mysqld_error.h>
-#include <errmsg.h>
 
-#include "MySQLConnection.h"
-#include "MySQLThreading.h"
-#include "QueryResult.h"
-#include "SQLOperation.h"
-#include "PreparedStatement.h"
-#include "DatabaseWorker.h"
-#include "Timer.h"
-#include "Log.h"
-#include "ProducerConsumerQueue.h"
+MySQLConnectionInfo::MySQLConnectionInfo(std::string const& infoString)
+{
+    Tokenizer tokens(infoString, ';');
+
+    if (tokens.size() != 5)
+        return;
+
+    uint8 i = 0;
+
+    host.assign(tokens[i++]);
+    port_or_socket.assign(tokens[i++]);
+    user.assign(tokens[i++]);
+    password.assign(tokens[i++]);
+    database.assign(tokens[i++]);
+}
 
 MySQLConnection::MySQLConnection(MySQLConnectionInfo& connInfo) :
 m_reconnecting(false),
 m_prepareError(false),
 m_queue(nullptr),
-m_worker(nullptr),
 m_Mysql(nullptr),
 m_connectionInfo(connInfo),
 m_connectionFlags(CONNECTION_SYNCH) { }
@@ -52,28 +63,26 @@ m_Mysql(nullptr),
 m_connectionInfo(connInfo),
 m_connectionFlags(CONNECTION_ASYNC)
 {
-    m_worker = new DatabaseWorker(m_queue, this);
+    m_worker = Trinity::make_unique<DatabaseWorker>(m_queue, this);
 }
 
 MySQLConnection::~MySQLConnection()
 {
-    for (auto & m_stmt : m_stmts)
-        delete m_stmt;
+    Close();
+}
+
+void MySQLConnection::Close()
+{
+    // Stop the worker thread before the statements are cleared
+    m_worker.reset();
+
+    m_stmts.clear();
 
     if (m_Mysql)
     {
         mysql_close(m_Mysql);
         m_Mysql = nullptr;
     }
-
-    if (m_worker)
-        delete m_worker;
-}
-
-void MySQLConnection::Close()
-{
-    /// Only close us if we're not operating
-    delete this;
 }
 
 uint32 MySQLConnection::Open()
@@ -83,7 +92,7 @@ uint32 MySQLConnection::Open()
     if (!mysqlInit)
     {
         TC_LOG_ERROR("sql.sql", "Could not initialize Mysql connection to database `%s`", m_connectionInfo.database.c_str());
-        return false;
+        return CR_UNKNOWN_ERROR;
     }
 
     int port;
@@ -145,7 +154,7 @@ uint32 MySQLConnection::Open()
     }
     else
     {
-        TC_LOG_ERROR("sql.sql", "Could not connect to MySQL database at %s: %s\n", m_connectionInfo.host.c_str(), mysql_error(mysqlInit));
+        TC_LOG_ERROR("sql.sql", "Could not connect to MySQL database at %s: %s", m_connectionInfo.host.c_str(), mysql_error(mysqlInit));
         mysql_close(mysqlInit);
         return mysql_errno(mysqlInit);
     }
@@ -157,7 +166,7 @@ bool MySQLConnection::PrepareStatements()
     return !m_prepareError;
 }
 
-bool MySQLConnection::Execute(const char* sql)
+bool MySQLConnection::Execute(char const* sql)
 {
     if (!m_Mysql)
         return false;
@@ -190,48 +199,46 @@ bool MySQLConnection::Execute(PreparedStatement* stmt)
         return false;
 
     uint32 index = stmt->m_index;
+
+    MySQLPreparedStatement* m_mStmt = GetPreparedStatement(index);
+    ASSERT(m_mStmt);            // Can only be null if preparation failed, server side error or bad query
+    m_mStmt->m_stmt = stmt;     // Cross reference them for debug output
+
+    stmt->BindParameters(m_mStmt);
+
+    MYSQL_STMT* msql_STMT = m_mStmt->GetSTMT();
+    MYSQL_BIND* msql_BIND = m_mStmt->GetBind();
+
+    uint32 _s = GetMSTime();
+
+    if (mysql_stmt_bind_param(msql_STMT, msql_BIND))
     {
-        MySQLPreparedStatement* m_mStmt = GetPreparedStatement(index);
-        ASSERT(m_mStmt);            // Can only be null if preparation failed, server side error or bad query
-        m_mStmt->m_stmt = stmt;     // Cross reference them for debug output
-        stmt->m_stmt = m_mStmt;     /// @todo Cleaner way
+        uint32 lErrno = mysql_errno(m_Mysql);
+        TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString().c_str(), lErrno, mysql_stmt_error(msql_STMT));
 
-        stmt->BindParameters();
-
-        MYSQL_STMT* msql_STMT = m_mStmt->GetSTMT();
-        MYSQL_BIND* msql_BIND = m_mStmt->GetBind();
-
-        uint32 _s = GetMSTime();
-
-        if (mysql_stmt_bind_param(msql_STMT, msql_BIND))
-        {
-            uint32 lErrno = mysql_errno(m_Mysql);
-            TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
-
-            if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
-                return Execute(stmt);       // Try again
-
-            m_mStmt->ClearParameters();
-            return false;
-        }
-
-        if (mysql_stmt_execute(msql_STMT))
-        {
-            uint32 lErrno = mysql_errno(m_Mysql);
-            TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
-
-            if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
-                return Execute(stmt);       // Try again
-
-            m_mStmt->ClearParameters();
-            return false;
-        }
-
-        TC_LOG_DEBUG("sql.sql", "[%u ms] SQL(p): %s", GetMSTimeDiff(_s, GetMSTime()), m_mStmt->getQueryString(m_queries[index].first).c_str());
+        if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
+            return Execute(stmt);       // Try again
 
         m_mStmt->ClearParameters();
-        return true;
+        return false;
     }
+
+    if (mysql_stmt_execute(msql_STMT))
+    {
+        uint32 lErrno = mysql_errno(m_Mysql);
+        TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString().c_str(), lErrno, mysql_stmt_error(msql_STMT));
+
+        if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
+            return Execute(stmt);       // Try again
+
+        m_mStmt->ClearParameters();
+        return false;
+    }
+
+    TC_LOG_DEBUG("sql.sql", "[%u ms] SQL(p): %s", GetMSTimeDiff(_s, GetMSTime()), m_mStmt->getQueryString().c_str());
+
+    m_mStmt->ClearParameters();
+    return true;
 }
 
 bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint64* pRowCount, uint32* pFieldCount)
@@ -240,58 +247,55 @@ bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint6
         return false;
 
     uint32 index = stmt->m_index;
+
+    MySQLPreparedStatement* m_mStmt = GetPreparedStatement(index);
+    ASSERT(m_mStmt);            // Can only be null if preparation failed, server side error or bad query
+    m_mStmt->m_stmt = stmt;     // Cross reference them for debug output
+
+    stmt->BindParameters(m_mStmt);
+
+    MYSQL_STMT* msql_STMT = m_mStmt->GetSTMT();
+    MYSQL_BIND* msql_BIND = m_mStmt->GetBind();
+
+    uint32 _s = GetMSTime();
+
+    if (mysql_stmt_bind_param(msql_STMT, msql_BIND))
     {
-        MySQLPreparedStatement* m_mStmt = GetPreparedStatement(index);
-        ASSERT(m_mStmt);            // Can only be null if preparation failed, server side error or bad query
-        m_mStmt->m_stmt = stmt;     // Cross reference them for debug output
-        stmt->m_stmt = m_mStmt;     /// @todo Cleaner way
+        uint32 lErrno = mysql_errno(m_Mysql);
+        TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString().c_str(), lErrno, mysql_stmt_error(msql_STMT));
 
-        stmt->BindParameters();
-
-        MYSQL_STMT* msql_STMT = m_mStmt->GetSTMT();
-        MYSQL_BIND* msql_BIND = m_mStmt->GetBind();
-
-        uint32 _s = GetMSTime();
-
-        if (mysql_stmt_bind_param(msql_STMT, msql_BIND))
-        {
-            uint32 lErrno = mysql_errno(m_Mysql);
-            TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
-
-            if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
-                return _Query(stmt, pResult, pRowCount, pFieldCount);       // Try again
-
-            m_mStmt->ClearParameters();
-            return false;
-        }
-
-        if (mysql_stmt_execute(msql_STMT))
-        {
-            uint32 lErrno = mysql_errno(m_Mysql);
-            TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s",
-                m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
-
-            if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
-                return _Query(stmt, pResult, pRowCount, pFieldCount);      // Try again
-
-            m_mStmt->ClearParameters();
-            return false;
-        }
-
-        TC_LOG_DEBUG("sql.sql", "[%u ms] SQL(p): %s", GetMSTimeDiff(_s, GetMSTime()), m_mStmt->getQueryString(m_queries[index].first).c_str());
+        if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
+            return _Query(stmt, pResult, pRowCount, pFieldCount);       // Try again
 
         m_mStmt->ClearParameters();
-
-        *pResult = mysql_stmt_result_metadata(msql_STMT);
-        *pRowCount = mysql_stmt_num_rows(msql_STMT);
-        *pFieldCount = mysql_stmt_field_count(msql_STMT);
-
-        return true;
-
+        return false;
     }
+
+    if (mysql_stmt_execute(msql_STMT))
+    {
+        uint32 lErrno = mysql_errno(m_Mysql);
+        TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s",
+            m_mStmt->getQueryString().c_str(), lErrno, mysql_stmt_error(msql_STMT));
+
+        if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
+            return _Query(stmt, pResult, pRowCount, pFieldCount);      // Try again
+
+        m_mStmt->ClearParameters();
+        return false;
+    }
+
+    TC_LOG_DEBUG("sql.sql", "[%u ms] SQL(p): %s", GetMSTimeDiff(_s, GetMSTime()), m_mStmt->getQueryString().c_str());
+
+    m_mStmt->ClearParameters();
+
+    *pResult = mysql_stmt_result_metadata(msql_STMT);
+    *pRowCount = mysql_stmt_num_rows(msql_STMT);
+    *pFieldCount = mysql_stmt_field_count(msql_STMT);
+
+    return true;
 }
 
-ResultSet* MySQLConnection::Query(const char* sql)
+ResultSet* MySQLConnection::Query(char const* sql)
 {
     if (!sql)
         return nullptr;
@@ -363,16 +367,15 @@ void MySQLConnection::CommitTransaction()
     Execute("COMMIT");
 }
 
-bool MySQLConnection::ExecuteTransaction(SQLTransaction& transaction)
+int MySQLConnection::ExecuteTransaction(SQLTransaction& transaction)
 {
-    std::list<SQLElementData> const& queries = transaction->m_queries;
+    std::vector<SQLElementData> const& queries = transaction->m_queries;
     if (queries.empty())
-        return false;
+        return -1;
 
     BeginTransaction();
 
-    std::list<SQLElementData>::const_iterator itr;
-    for (itr = queries.begin(); itr != queries.end(); ++itr)
+    for (auto itr = queries.begin(); itr != queries.end(); ++itr)
     {
         SQLElementData const& data = *itr;
         switch (itr->type)
@@ -384,20 +387,22 @@ bool MySQLConnection::ExecuteTransaction(SQLTransaction& transaction)
                 if (!Execute(stmt))
                 {
                     TC_LOG_WARN("sql.sql", "Transaction aborted. %u queries not executed.", (uint32)queries.size());
+                    int errorCode = GetLastError();
                     RollbackTransaction();
-                    return false;
+                    return errorCode;
                 }
             }
             break;
             case SQL_ELEMENT_RAW:
             {
-                const char* sql = data.element.query;
+                char const* sql = data.element.query;
                 ASSERT(sql);
                 if (!Execute(sql))
                 {
                     TC_LOG_WARN("sql.sql", "Transaction aborted. %u queries not executed.", (uint32)queries.size());
+                    int errorCode = GetLastError();
                     RollbackTransaction();
-                    return false;
+                    return errorCode;
                 }
             }
             break;
@@ -410,13 +415,33 @@ bool MySQLConnection::ExecuteTransaction(SQLTransaction& transaction)
     // and not while iterating over every element.
 
     CommitTransaction();
-    return true;
+    return 0;
+}
+
+void MySQLConnection::Ping()
+{
+    mysql_ping(m_Mysql);
+}
+
+uint32 MySQLConnection::GetLastError()
+{
+    return mysql_errno(m_Mysql);
+}
+
+bool MySQLConnection::LockIfReady()
+{
+    return m_Mutex.try_lock();
+}
+
+void MySQLConnection::Unlock()
+{
+    m_Mutex.unlock();
 }
 
 MySQLPreparedStatement* MySQLConnection::GetPreparedStatement(uint32 index)
 {
     ASSERT(index < m_stmts.size());
-    MySQLPreparedStatement* ret = m_stmts[index];
+    MySQLPreparedStatement* ret = m_stmts[index].get();
     if (!ret)
         TC_LOG_ERROR("sql.sql", "Could not fetch prepared statement %u on database `%s`, connection type: %s.",
             index, m_connectionInfo.database.c_str(), (m_connectionFlags & CONNECTION_ASYNC) ? "asynchronous" : "synchronous");
@@ -424,44 +449,35 @@ MySQLPreparedStatement* MySQLConnection::GetPreparedStatement(uint32 index)
     return ret;
 }
 
-void MySQLConnection::PrepareStatement(uint32 index, const char* sql, ConnectionFlags flags)
+void MySQLConnection::PrepareStatement(uint32 index, std::string const& sql, ConnectionFlags flags)
 {
-    m_queries.insert(PreparedStatementMap::value_type(index, std::make_pair(sql, flags)));
-
-    // For reconnection case
-    if (m_reconnecting)
-        delete m_stmts[index];
-
     // Check if specified query should be prepared on this connection
     // i.e. don't prepare async statements on synchronous connections
     // to save memory that will not be used.
     if (!(m_connectionFlags & flags))
     {
-        m_stmts[index] = nullptr;
+        m_stmts[index].reset();
         return;
     }
 
     MYSQL_STMT* stmt = mysql_stmt_init(m_Mysql);
     if (!stmt)
     {
-        TC_LOG_ERROR("sql.sql", "In mysql_stmt_init() id: %u, sql: \"%s\"", index, sql);
+        TC_LOG_ERROR("sql.sql", "In mysql_stmt_init() id: %u, sql: \"%s\"", index, sql.c_str());
         TC_LOG_ERROR("sql.sql", "%s", mysql_error(m_Mysql));
         m_prepareError = true;
     }
     else
     {
-        if (mysql_stmt_prepare(stmt, sql, static_cast<unsigned long>(strlen(sql))))
+        if (mysql_stmt_prepare(stmt, sql.c_str(), static_cast<unsigned long>(sql.size())))
         {
-            TC_LOG_ERROR("sql.sql", "In mysql_stmt_prepare() id: %u, sql: \"%s\"", index, sql);
+            TC_LOG_ERROR("sql.sql", "In mysql_stmt_prepare() id: %u, sql: \"%s\"", index, sql.c_str());
             TC_LOG_ERROR("sql.sql", "%s", mysql_stmt_error(stmt));
             mysql_stmt_close(stmt);
             m_prepareError = true;
         }
         else
-        {
-            auto  mStmt = new MySQLPreparedStatement(stmt);
-            m_stmts[index] = mStmt;
-        }
+            m_stmts[index] = Trinity::make_unique<MySQLPreparedStatement>(stmt, sql);
     }
 }
 
@@ -481,7 +497,7 @@ PreparedResultSet* MySQLConnection::Query(PreparedStatement* stmt)
     return new PreparedResultSet(stmt->m_stmt->GetSTMT(), result, rowCount, fieldCount);
 }
 
-bool MySQLConnection::_HandleMySQLErrno(uint32 errNo)
+bool MySQLConnection::_HandleMySQLErrno(uint32 errNo, uint8 attempts /*= 5*/)
 {
     switch (errNo)
     {
@@ -490,24 +506,59 @@ bool MySQLConnection::_HandleMySQLErrno(uint32 errNo)
         case CR_INVALID_CONN_HANDLE:
         case CR_SERVER_LOST_EXTENDED:
         {
-            m_reconnecting = true;
-            uint64 oldThreadId = mysql_thread_id(GetHandle());
-            mysql_close(GetHandle());
-            if (this->Open())                           // Don't remove 'this' pointer unless you want to skip loading all prepared statements....
+            if (m_Mysql)
             {
-                TC_LOG_INFO("sql.sql", "Connection to the MySQL server is active.");
-                if (oldThreadId != mysql_thread_id(GetHandle()))
-                    TC_LOG_INFO("sql.sql", "Successfully reconnected to %s @%s:%s (%s).",
-                        m_connectionInfo.database.c_str(), m_connectionInfo.host.c_str(), m_connectionInfo.port_or_socket.c_str(),
-                            (m_connectionFlags & CONNECTION_ASYNC) ? "asynchronous" : "synchronous");
+                TC_LOG_ERROR("sql.sql", "Lost the connection to the MySQL server!");
+
+                mysql_close(GetHandle());
+                m_Mysql = nullptr;
+            }
+
+            /*no break*/
+        }
+        case CR_CONN_HOST_ERROR:
+        {
+            TC_LOG_INFO("sql.sql", "Attempting to reconnect to the MySQL server...");
+
+            m_reconnecting = true;
+
+            uint32 const lErrno = Open();
+            if (!lErrno)
+            {
+                // Don't remove 'this' pointer unless you want to skip loading all prepared statements...
+                if (!this->PrepareStatements())
+                {
+                    TC_LOG_FATAL("sql.sql", "Could not re-prepare statements!");
+                    std::this_thread::sleep_for(std::chrono::seconds(10));
+                    std::abort();
+                }
+
+                TC_LOG_INFO("sql.sql", "Successfully reconnected to %s @%s:%s (%s).",
+                    m_connectionInfo.database.c_str(), m_connectionInfo.host.c_str(), m_connectionInfo.port_or_socket.c_str(),
+                        (m_connectionFlags & CONNECTION_ASYNC) ? "asynchronous" : "synchronous");
 
                 m_reconnecting = false;
                 return true;
             }
 
-            uint32 lErrno = mysql_errno(GetHandle());   // It's possible this attempted reconnect throws 2006 at us. To prevent crazy recursive calls, sleep here.
-            std::this_thread::sleep_for(std::chrono::seconds(3)); // Sleep 3 seconds
-            return _HandleMySQLErrno(lErrno);                     // Call self (recursive)
+            if ((--attempts) == 0)
+            {
+                // Shut down the server when the mysql server isn't
+                // reachable for some time
+                TC_LOG_FATAL("sql.sql", "Failed to reconnect to the MySQL server, "
+                             "terminating the server to prevent data corruption!");
+
+                // We could also initiate a shutdown through using std::raise(SIGTERM)
+                std::this_thread::sleep_for(std::chrono::seconds(10));
+                std::abort();
+            }
+            else
+            {
+                // It's possible this attempted reconnect throws 2006 at us.
+                // To prevent crazy recursive calls, sleep here.
+                std::this_thread::sleep_for(std::chrono::seconds(3)); // Sleep 3 seconds
+                return _HandleMySQLErrno(lErrno, attempts); // Call self (recursive)
+            }
         }
 
         case ER_LOCK_DEADLOCK:
@@ -520,16 +571,15 @@ bool MySQLConnection::_HandleMySQLErrno(uint32 errNo)
         // Outdated table or database structure - terminate core
         case ER_BAD_FIELD_ERROR:
         case ER_NO_SUCH_TABLE:
-        case ER_WARN_DATA_OUT_OF_RANGE:
-            TC_LOG_ERROR("sql.sql", "Your database structure is not up to date.");
+            TC_LOG_ERROR("sql.sql", "Your database structure is not up to date. Please make sure you've executed all queries in the sql/updates folders.");
             std::this_thread::sleep_for(std::chrono::seconds(10));
             std::abort();
-            // return false;
+            //return false;
         case ER_PARSE_ERROR:
             TC_LOG_ERROR("sql.sql", "Error while parsing SQL. Core fix required.");
             std::this_thread::sleep_for(std::chrono::seconds(10));
             std::abort();
-            // return false;
+            //return false;
         default:
             TC_LOG_ERROR("sql.sql", "Unhandled MySQL errno %u. Unexpected behaviour possible.", errNo);
             return false;

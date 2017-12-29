@@ -14,6 +14,7 @@
 #include "Log.h"
 #include "ProcessPriority.h"
 #include "RealmList.h"
+#include "MySQLThreading.h"
 #include "GitRevision.h"
 #include "Util.h"
 #include <iostream>
