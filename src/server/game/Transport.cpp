@@ -30,6 +30,7 @@ uint32 Transport::GetPathProgress() const
 
 MotionTransport::MotionTransport() : 
     Transport(), 
+    _updating(false),
     _transportInfo(nullptr), 
     _isMoving(true), 
     _pendingStop(false), 
@@ -148,8 +149,13 @@ void MotionTransport::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet&)
 
 void MotionTransport::Update(uint32 diff)
 {
+    ASSERT(_updating == false);
+    _updating = true;
     if (_delayedTeleport) //on sunstrider some maps may be updated several times while continent update only once. In case of teleport, this prevent keeping updating the transport again until we finished a full world update (and thus processed the delayed updates and teleports)
+    {
+        _updating = false;
         return;
+    }
 
     uint32 const positionUpdateDelay = 1;
 
@@ -159,7 +165,10 @@ void MotionTransport::Update(uint32 diff)
         TC_LOG_ERROR("entities.transport", "Could not initialize GameObjectAI for Transport");
 
     if (GetKeyFrames().size() <= 1)
+    {
+        _updating = false;
         return;
+    }
 
     if (IsMoving() || !_pendingStop)
         SetPathProgress(GetPathProgress() + diff);
@@ -225,7 +234,10 @@ void MotionTransport::Update(uint32 diff)
         // Departure event
         if (_currentFrame->IsTeleportFrame())
             if (TeleportTransport(_nextFrame->Node->MapID, _nextFrame->Node->LocX, _nextFrame->Node->LocY, _nextFrame->Node->LocZ, _nextFrame->InitialOrientation))
+            {
+                _updating = false;
                 return; // Update more in new map thread
+            }
     }
 
     // Add model to map after we are fully done with moving maps
@@ -274,14 +286,22 @@ void MotionTransport::Update(uint32 diff)
     }
 
     sScriptMgr->OnTransportUpdate(this, diff);
+    _updating = false;
 }
 
 void MotionTransport::DelayedUpdate(uint32 diff)
 {
+    ASSERT(_updating == false);
+    _updating = true;
     if (GetKeyFrames().size() <= 1)
+    {
+        _updating = false;
         return;
+    }
 
     DelayedTeleportTransport();
+
+    _updating = false;
 }
 
 void MotionTransport::UpdatePosition(float x, float y, float z, float o)

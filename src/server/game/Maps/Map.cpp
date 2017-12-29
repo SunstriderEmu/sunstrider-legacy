@@ -580,6 +580,11 @@ bool Map::AddToMap(T* obj, bool checkTransport)
     return true;
 }
 
+#ifdef TRINITY_DEBUG
+    //ensuring transports are indeed present in only one map at a time
+    std::set<MotionTransport*> allTransports;
+#endif
+
 template<>
 bool Map::AddToMap(MotionTransport* obj, bool /* checkTransport */)
 {
@@ -605,6 +610,10 @@ bool Map::AddToMap(MotionTransport* obj, bool /* checkTransport */)
 
     //DO NOT ADD TO GRID. Else transport will be removed with grid unload. Transports are being kept updated even in unloaded grid.
     _transports.insert(obj);
+#ifdef TRINITY_DEBUG
+    ASSERT(allTransports.find(obj) == allTransports.end());
+    allTransports.insert(obj);
+#endif
 
     // Broadcast creation to players
     if (!GetPlayers().isEmpty())
@@ -955,8 +964,11 @@ void Map::RemoveFromMap(MotionTransport* obj, bool remove)
     {
         auto itr = _transports.find(obj);
         if (itr == _transports.end())
+        {
             //did not find transport in list ? Should not happen, logic error somewhere
-            ASSERT(false);
+            DEBUG_ASSERT(false);
+            return;
+        }
 
         if (itr == _transportsUpdateIter) //if current iter is the deleted transport, increase it
             ++_transportsUpdateIter;
@@ -965,6 +977,10 @@ void Map::RemoveFromMap(MotionTransport* obj, bool remove)
     }
     else
         _transports.erase(obj);
+#ifdef TRINITY_DEBUG
+    ASSERT(allTransports.find(obj) != allTransports.end());
+    allTransports.erase(obj);
+#endif
 
     obj->ResetMap();
 

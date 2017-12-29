@@ -91,6 +91,8 @@ private:
     bool _passengersLoaded;
     bool _delayedAddModel;
     bool _delayedTeleport;
+
+    std::atomic<bool> _updating;
 };
 
 class TC_GAME_API StaticTransport : public Transport
