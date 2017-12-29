@@ -106,7 +106,7 @@ void MapUpdater::schedule_update(Map& map, uint32 diff)
     std::lock_guard<std::mutex> lock(_lock);
 
     MapUpdateRequest* request = new MapUpdateRequest(map, *this, diff);
-    if((map.Instanceable() || map.GetMapType() != MAP_TYPE_TEST_MAP) && map.GetMapType() != MAP_TYPE_MAP_INSTANCED) { // MapInstanced re schedule the instances it contains by itself, so we want to call it only once
+    if((map.Instanceable() || map.GetMapType() == MAP_TYPE_TEST_MAP) && map.GetMapType() != MAP_TYPE_MAP_INSTANCED) { // MapInstanced re schedule the instances it contains by itself, so we want to call it only once
         pending_loop_maps++;
         _loop_queue.Push(request);
     } else {
