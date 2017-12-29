@@ -24,6 +24,7 @@
 #include <array>
 #include <string>
 #include <vector>
+#include "QueryCallback.h"
 
 template <typename T>
 class ProducerConsumerQueue;
