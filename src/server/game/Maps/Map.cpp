@@ -583,7 +583,7 @@ bool Map::AddToMap(T* obj, bool checkTransport)
 template<>
 bool Map::AddToMap(MotionTransport* obj, bool /* checkTransport */)
 {
-    assert(obj);
+    ASSERT(obj);
     if (obj->IsInWorld())
         DEBUG_ASSERT(false);
 
@@ -850,7 +850,7 @@ void Map::Update(const uint32 &t_diff)
     //update our transports
     for (_transportsUpdateIter = _transports.begin(); _transportsUpdateIter != _transports.end();)
     {
-        WorldObject* obj = *_transportsUpdateIter;
+        MotionTransport* obj = *_transportsUpdateIter;
         ++_transportsUpdateIter;
 
         if (!obj->IsInWorld())
@@ -957,7 +957,8 @@ void Map::RemoveFromMap(MotionTransport* obj, bool remove)
         if (itr == _transports.end())
             //did not find transport in list ? Should not happen, logic error somewhere
             ASSERT(false);
-        if (itr == _transportsUpdateIter)
+
+        if (itr == _transportsUpdateIter) //if current iter is the deleted transport, increase it
             ++_transportsUpdateIter;
 
         _transports.erase(itr);

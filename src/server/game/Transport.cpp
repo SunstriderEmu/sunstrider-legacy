@@ -148,6 +148,9 @@ void MotionTransport::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet&)
 
 void MotionTransport::Update(uint32 diff)
 {
+    if (_delayedTeleport) //on sunstrider some maps may be updated several times while continent update only once. In case of teleport, this prevent keeping updating the transport again until we finished a full world update (and thus processed the delayed updates and teleports)
+        return;
+
     uint32 const positionUpdateDelay = 1;
 
     if (AI())
@@ -593,10 +596,16 @@ void MotionTransport::DelayedTeleportTransport()
     _delayedTeleport = false;
 
     uint32 newMapId = _nextFrame->Node->MapID;
+
     float x = _nextFrame->Node->LocX,
         y = _nextFrame->Node->LocY,
         z = _nextFrame->Node->LocZ,
         o = _nextFrame->InitialOrientation;
+
+    Map* newMap = sMapMgr->CreateBaseMap(newMapId);
+    GetMap()->RemoveFromMap<MotionTransport>(this, false);
+    newMap->LoadGrid(x, y); // sunwell: load before adding passengers to new map
+    SetMap(newMap);
 
     PassengerSet _passengersCopy = _passengers;
     for (auto itr = _passengersCopy.begin(); itr != _passengersCopy.end(); )
@@ -635,7 +644,7 @@ void MotionTransport::DelayedTeleportTransport()
             float destX, destY, destZ, destO;
             obj->m_movementInfo.transport.pos.GetPosition(destX, destY, destZ, destO);
             TransportBase::CalculatePassengerPosition(destX, destY, destZ, &destO, x, y, z, o);
-            if (!obj->ToPlayer()->TeleportTo(newMapId, destX, destY, destZ, destO, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | TELE_TO_TRANSPORT_TELEPORT))
+            if (!obj->ToPlayer()->TeleportTo(newMapId, destX, destY, destZ, destO, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_UNSUMMON_PET | TELE_TO_TRANSPORT_TELEPORT))
                 _passengers.erase(obj);
         }
         break;
@@ -643,11 +652,6 @@ void MotionTransport::DelayedTeleportTransport()
             break;
         }
     }
-
-    Map* newMap = sMapMgr->CreateBaseMap(newMapId);
-    GetMap()->RemoveFromMap<MotionTransport>(this, false);
-    newMap->LoadGrid(x, y); // sunwell: load before adding passengers to new map
-    SetMap(newMap);
 
     Relocate(x, y, z, o);
     GetMap()->AddToMap<MotionTransport>(this);
