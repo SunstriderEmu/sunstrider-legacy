@@ -5110,10 +5110,10 @@ void ObjectMgr::LoadInstanceTemplate()
         }
 
         sMapDifficultyMap[MAKE_PAIR32(i.first, REGULAR_DIFFICULTY)] = MapDifficulty(temp->reset_delay, temp->maxPlayers, false);
-        if (MapEntry const* entry = sMapStore.LookupEntry(i.first))
+        if (MapEntry const* _entry = sMapStore.LookupEntry(i.first))
         {
-            if (entry->resetTimeHeroic || temp->heroicForced)
-                sMapDifficultyMap[MAKE_PAIR32(entry->MapID, DUNGEON_DIFFICULTY_HEROIC)] = MapDifficulty(entry->resetTimeHeroic / DAY,temp->maxPlayers, false);;
+            if (_entry->resetTimeHeroic || temp->heroicForced)
+                sMapDifficultyMap[MAKE_PAIR32(_entry->MapID, DUNGEON_DIFFICULTY_HEROIC)] = MapDifficulty(_entry->resetTimeHeroic / DAY, temp->maxPlayers, false);;
         }
     }
 #endif

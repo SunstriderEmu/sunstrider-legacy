@@ -234,9 +234,9 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if (IsCritter())
     {
         AIM_Initialize();
-        float px, py, pz;
-        owner->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, GetFollowAngle());
-        Relocate(px, py, pz, owner->GetOrientation());
+        float x, y, z;
+        owner->GetClosePoint(x, y, z, GetCombatReach(), PET_FOLLOW_DIST, GetFollowAngle());
+        Relocate(x, y, z, owner->GetOrientation());
 
         if (!IsPositionValid())
         {
@@ -415,10 +415,10 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
                 delete m_declinedname;
 
             m_declinedname = new DeclinedName;
-            Field *fields = result->Fetch();
+            Field* _fields = result->Fetch();
             for(int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
             {
-                m_declinedname->name[i] = fields[i].GetString();
+                m_declinedname->name[i] = _fields[i].GetString();
             }
         }
     }
@@ -850,8 +850,8 @@ int32 Pet::GetTPForSpell(uint32 spellid)
 
         if(sSpellMgr->GetFirstSpellInChain(m_spell.first) == chainstart)
         {
-            SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(m_spell.first);
-            for(auto _spell_idx2 = skill_bounds.first; _spell_idx2 != skill_bounds.second; ++_spell_idx2)
+            SkillLineAbilityMapBounds _skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(m_spell.first);
+            for(auto _spell_idx2 = _skill_bounds.first; _spell_idx2 != _skill_bounds.second; ++_spell_idx2)
             {
                 if(_spell_idx2->second->reqtrainpoints > spenttrainp)
                 {

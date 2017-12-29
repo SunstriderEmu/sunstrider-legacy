@@ -57,8 +57,8 @@ Group::~Group()
     // will be unloaded first so we must be prepared for both cases
     // this may unload some instance saves
     for(auto & m_boundInstance : m_boundInstances)
-        for(auto itr : m_boundInstance)
-            itr.second.save->RemoveGroup(this);
+        for(auto _itr : m_boundInstance)
+            _itr.second.save->RemoveGroup(this);
 
     // Sub group counters clean up
     if (m_subGroupsCounts)

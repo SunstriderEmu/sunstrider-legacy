@@ -381,10 +381,10 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
         if (GetPlayer()->GetStandState() == UNIT_STAND_STATE_STAND)
            GetPlayer()->SetStandState(PLAYER_STATE_SIT);
 
-        WorldPacket data( SMSG_FORCE_MOVE_ROOT, (8+4) );    // guess size
-        data << GetPlayer()->GetPackGUID();
-        data << (uint32)2;
-        SendPacket( &data );
+        WorldPacket _data( SMSG_FORCE_MOVE_ROOT, (8+4) );    // guess size
+        _data << GetPlayer()->GetPackGUID();
+        _data << (uint32)2;
+        SendPacket( &_data);
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 

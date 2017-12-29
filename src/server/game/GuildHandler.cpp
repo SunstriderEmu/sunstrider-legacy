@@ -1135,8 +1135,8 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             else                                            // swap
             {
                 gDest.clear();
-                uint8 msg = pGuild->CanStoreItem(BankTabDst,BankTabSlotDst,gDest,pItemSrc->GetCount(),pItemSrc,true);
-                if( msg != EQUIP_ERR_OK )
+                uint8 _msg = pGuild->CanStoreItem(BankTabDst,BankTabSlotDst,gDest,pItemSrc->GetCount(),pItemSrc,true);
+                if(_msg != EQUIP_ERR_OK )
                 {
                     pl->SendEquipError( msg, pItemSrc, nullptr );
                     return;
