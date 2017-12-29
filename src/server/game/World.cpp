@@ -845,7 +845,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_GM_FORCE_GUILD]       = sConfigMgr->GetIntDefault("GM.ForceGuild", 0);
     if (m_configs[CONFIG_GM_FORCE_GUILD] && m_configs[CONFIG_GM_DEFAULT_GUILD] && m_configs[CONFIG_GM_FORCE_GUILD] != m_configs[CONFIG_GM_DEFAULT_GUILD])
     {
-        TC_LOG_ERROR("server.loading", "GM.DefaultGuild is defined (%u) but is not the same as GM.ForceGuild (%u). DefaultGuild will have no effect.");
+        TC_LOG_ERROR("server.loading", "GM.DefaultGuild is defined (%u) but is not the same as GM.ForceGuild (%u). DefaultGuild will have no effect.", m_configs[CONFIG_GM_DEFAULT_GUILD], m_configs[CONFIG_GM_FORCE_GUILD]);
         m_configs[CONFIG_GM_DEFAULT_GUILD] = 0;
     }
 
