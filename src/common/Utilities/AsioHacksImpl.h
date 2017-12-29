@@ -15,34 +15,18 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOGGER_H
-#define LOGGER_H
+#ifndef AsioHacksImpl_h__
+#define AsioHacksImpl_h__
 
-#include "Define.h"
-#include "LogCommon.h"
-#include <unordered_map>
-#include <string>
+#include <boost/asio/strand.hpp>
 
-class Appender;
-struct LogMessage;
-
-class TC_COMMON_API Logger
+namespace Trinity
 {
+    class AsioStrand : public boost::asio::io_service::strand
+    {
     public:
-        Logger(std::string const& name, LogLevel level);
+        AsioStrand(boost::asio::io_service& io_service) : boost::asio::io_service::strand(io_service) { }
+    };
+}
 
-        void addAppender(uint8 type, Appender* appender);
-        void delAppender(uint8 type);
-
-        std::string const& getName() const;
-        LogLevel getLogLevel() const;
-        void setLogLevel(LogLevel level);
-        void write(LogMessage* message) const;
-
-    private:
-        std::string name;
-        LogLevel level;
-        std::unordered_map<uint8, Appender*> appenders;
-};
-
-#endif
+#endif // AsioHacksImpl_h__

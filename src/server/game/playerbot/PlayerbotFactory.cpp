@@ -1327,11 +1327,11 @@ void PlayerbotFactory::InitPotions()
             if (!spellInfo)
                 continue;
 
-            for (int i = 0 ; i < 3; i++)
+            for (int k = 0 ; k < 3; k++)
             {
-                if (spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL || spellInfo->Effects[i].Effect == SPELL_EFFECT_ENERGIZE)
+                if (spellInfo->Effects[k].Effect == SPELL_EFFECT_HEAL || spellInfo->Effects[k].Effect == SPELL_EFFECT_ENERGIZE)
                 {
-                    items[spellInfo->Effects[i].Effect].push_back(itemId);
+                    items[spellInfo->Effects[k].Effect].push_back(itemId);
                     break;
                 }
             }

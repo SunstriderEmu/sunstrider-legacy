@@ -11930,13 +11930,13 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
     {
         for(int i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; i++)
         {
-            Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
-            if( pItem && pItem->GetEntry() == item )
+            Item* _pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
+            if(_pItem && _pItem->GetEntry() == item )
             {
-                if( pItem->GetCount() + remcount <= count )
+                if(_pItem->GetCount() + remcount <= count )
                 {
                     // all items in inventory can unequipped
-                    remcount += pItem->GetCount();
+                    remcount += _pItem->GetCount();
                     DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
 
                     if(remcount >=count)
@@ -11945,11 +11945,11 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                 else
                 {
                     //pProto = pItem->GetTemplate(); //not used
-                    ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
-                    pItem->SetCount( pItem->GetCount() - count + remcount );
+                    ItemRemovedQuestCheck(_pItem->GetEntry(), count - remcount );
+                    _pItem->SetCount(_pItem->GetCount() - count + remcount );
                     if( IsInWorld() & update )
-                        pItem->SendUpdateToPlayer( this );
-                    pItem->SetState(ITEM_CHANGED, this);
+                        _pItem->SendUpdateToPlayer( this );
+                    _pItem->SetState(ITEM_CHANGED, this);
                     return;
                 }
             }
@@ -17151,8 +17151,7 @@ void Player::SaveToDB(bool create /*=false*/)
         << finiteAlways(GetTeleportDest().m_orientation) << ", '";
     }
 
-    uint8 i;
-    for( i = 0; i < 8; i++ )
+    for(uint8 i = 0; i < 8; i++ )
         ss << m_taxi.GetTaximask(i) << " ";
 
     ss << "', ";
@@ -20659,8 +20658,8 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
     {
         //skip spells with effect SPELL_EFFECT_TRADE_SKILL, these are skill spec and shouldn't be learned again when unlearned
         uint32 triggerSpell = Effect.TriggerSpell;
-        if(SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(triggerSpell))
-            if(spellInfo->Effects[0].Effect == SPELL_EFFECT_TRADE_SKILL)
+        if(SpellInfo const* _spellInfo = sSpellMgr->GetSpellInfo(triggerSpell))
+            if(_spellInfo->Effects[0].Effect == SPELL_EFFECT_TRADE_SKILL)
                 continue;
 
         if(Effect.Effect == SPELL_EFFECT_LEARN_SPELL && !HasSpell(Effect.TriggerSpell))

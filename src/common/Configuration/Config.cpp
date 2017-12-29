@@ -143,11 +143,11 @@ std::string const& ConfigMgr::GetFilename()
     return _filename;
 }
 
-std::list<std::string> ConfigMgr::GetKeysByString(std::string const& name)
+std::vector<std::string> ConfigMgr::GetKeysByString(std::string const& name)
 {
     std::lock_guard<std::mutex> lock(_configLock);
 
-    std::list<std::string> keys;
+    std::vector<std::string> keys;
 
     for (const ptree::value_type& child : _config)
         if (child.first.compare(0, name.length(), name) == 0)

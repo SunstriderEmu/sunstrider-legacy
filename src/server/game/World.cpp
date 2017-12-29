@@ -1842,6 +1842,9 @@ void World::SetInitialWorldSettings()
 
     uint32 serverStartedTime = GetMSTimeDiffToNow(serverStartingTime);
     TC_LOG_INFO("server.loading","World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
+
+    if (uint32 realmId = sConfigMgr->GetIntDefault("RealmID", 0)) // 0 reserved for auth
+        sLog->SetRealmId(realmId);
 }
 
 void World::DetectDBCLang()

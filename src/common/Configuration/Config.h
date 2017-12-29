@@ -30,7 +30,7 @@ public:
 
     std::string const& GetFilename();
 	std::vector<std::string> const& GetArguments() const { return _args; }
-    std::list<std::string> GetKeysByString(std::string const& name);
+    std::vector<std::string> GetKeysByString(std::string const& name);
 
 private:
     std::string _filename;
