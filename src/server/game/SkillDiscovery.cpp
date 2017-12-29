@@ -112,15 +112,13 @@ void LoadSkillDiscoveryTable()
             ++count;
         } while (result->NextRow());
 
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_INFO( "FIXME",">> Loaded %u skill discovery definitions", count );
+        TC_LOG_INFO( "server.loading",">> Loaded %u skill discovery definitions", count );
         if(!ssNonDiscoverableEntries.str().empty())
-            TC_LOG_ERROR("FIXME","Some items can't be successfully discovered: have in chance field value < 0.000001 in `skill_discovery_template` DB table . List:\n%s",ssNonDiscoverableEntries.str().c_str());
+            TC_LOG_ERROR("server.loading","Some items can't be successfully discovered: have in chance field value < 0.000001 in `skill_discovery_template` DB table . List:\n%s", ssNonDiscoverableEntries.str().c_str());
     }
     else
     {
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_INFO("FIXME", ">> Loaded 0 skill discovery definitions. DB table `skill_discovery_template` is empty." );
+        TC_LOG_INFO("server.loading", ">> Loaded 0 skill discovery definitions. DB table `skill_discovery_template` is empty." );
     }
 }
 

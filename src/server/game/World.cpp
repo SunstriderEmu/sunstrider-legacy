@@ -1810,6 +1810,8 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Transports..." );
     if (!getConfig(CONFIG_DEBUG_DISABLE_TRANSPORTS))
         sTransportMgr->SpawnContinentTransports();
+    else
+        TC_LOG_INFO("server.loading", "Transports are disabled");
 
     TC_LOG_INFO("server.loading","Deleting expired bans..." );
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
@@ -2984,8 +2986,8 @@ void World::LoadSanctuaryAndFFAZones()
             v.push_back(tempstr);
         }
 
-        for (auto it : v) {
-            uint32 zoneId = atoi(it.c_str());
+        for (auto itr : v) {
+            uint32 zoneId = atoi(itr.c_str());
             configFFAZones.emplace(zoneId);
         }
     }

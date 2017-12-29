@@ -505,7 +505,6 @@ void Battleground::EndBattleground(uint32 winner)
     uint32 winner_rating = 0;
     uint32 final_loser_rating = 0;
     uint32 final_winner_rating = 0;
-    WorldPacket data;
     Player *Source = nullptr;
     const char *winmsg = "";
     
@@ -760,6 +759,7 @@ void Battleground::EndBattleground(uint32 winner)
 
     if(Source)
     {
+        WorldPacket data;
         ChatHandler::BuildChatPacket(data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, Source->GetGUID(), 0, winmsg, 0);
         SendPacketToAll(&data);
     }

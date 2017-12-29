@@ -53,13 +53,11 @@ void LoadRandomEnchantmentsTable()
             ++count;
         } while (result->NextRow());
 
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_INFO("FIXME", ">> Loaded %u Item Enchantment definitions", count );
+        TC_LOG_INFO("server.loading", ">> Loaded %u Item Enchantment definitions", count );
     }
     else
     {
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_ERROR( "FIXME",">> Loaded 0 Item Enchantment definitions. DB table `item_enchantment_template` is empty.");
+        TC_LOG_ERROR( "server.loading",">> Loaded 0 Item Enchantment definitions. DB table `item_enchantment_template` is empty.");
     }
 }
 

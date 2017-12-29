@@ -105,13 +105,11 @@ void LoadSkillExtraItemTable()
             ++count;
         } while (result->NextRow());
 
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_INFO( "FIXME",">> Loaded %u spell specialization definitions", count );
+        TC_LOG_INFO( "server.loading",">> Loaded %u spell specialization definitions", count );
     }
     else
     {
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_INFO("FIXME", ">> Loaded 0 spell specialization definitions. DB table `skill_extra_item_template` is empty." );
+        TC_LOG_INFO("server.loading", ">> Loaded 0 spell specialization definitions. DB table `skill_extra_item_template` is empty." );
     }
 }
 
