@@ -107,7 +107,7 @@ namespace MMAP
             std::set<uint32>* getTileList(uint32 mapID);
 
             void markWalkableTriangles(MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount);
-            void removeUnderTerrainTriangles(uint32 mapID, MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount);
+            void removeVMAPTrianglesUnderTerrain(uint32 mapID, MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount);
 
             void buildNavMesh(uint32 mapID, dtNavMesh* &navMesh);
 
@@ -143,7 +143,13 @@ namespace MMAP
             bool m_skipJunkMaps;
             bool m_skipBattlegrounds;
 
-            bool m_quick; //skip some nost additions
+            /*
+            skip some nost additions
+            Those additions makes two things:
+            - remove terrain triangles inside vmaps (wmo and m2/mdx) objects (you can visualize this with RecastDemo and --debugOutput enabled)
+            - then later mark vmaps triangle under terrain as non walkable
+            */
+            bool m_quick;
 
             bool m_bigBaseUnit;
 

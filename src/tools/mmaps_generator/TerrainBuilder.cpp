@@ -776,7 +776,7 @@ namespace MMAP
                 }
             }
 
-            //from here, code from Nost!
+            //from here, code adapted from Nost! This will remove terrain (adt) geometry inside m2/wmx and wmo objects
             meshData.vmapLastTriangle = meshData.solidTris.size() / 3;
             if (m_quick)
                 break;
@@ -785,7 +785,7 @@ namespace MMAP
             if (!mapVertsCount || !mapTrisCount)  //sun addition
                 break;
 
-            float* terrainInsideModelsVerts = new float[mapVertsCount]; //mark vertices inside model. Positives values mean inside model.
+            float* terrainInsideModelsVerts = new float[mapVertsCount]; //terrain vertices inside any model. Positives values mean inside model.
             for (int i = 0; i < mapVertsCount; ++i)
                 terrainInsideModelsVerts[i] = -1.0f;
 
@@ -803,7 +803,8 @@ namespace MMAP
                 worldModel->getGroupModels(groupModels);
 
                 // all M2s need to have triangle indices reversed
-                bool isM2 = instance.name.find(".m2") != instance.name.npos || instance.name.find(".M2") != instance.name.npos;
+                //sun: added mdx... probably wrong but this somehow fixes the logic :/ probably indirectly
+                bool isM2 = instance.name.find(".mdx") != instance.name.npos || instance.name.find(".m2") != instance.name.npos || instance.name.find(".M2") != instance.name.npos;
 
                 // transform data
                 float scale = instance.iScale;
@@ -850,12 +851,13 @@ namespace MMAP
             {
                 G3D::Vector3 tri[3]; //triangle position  (? y, z, x ?)
                 uint32 vertIdx[3];
-                bool    insideModel[3] = { false }; // triangle vertex inside model
+                bool insideModel[3] = { false }; // triangle vertex inside model
                 for (int j = 0; j < 3; ++j)
                 {
                     vertIdx[j] = meshData.solidTris[i * 3 + j];
+                    float insideDistance = terrainInsideModelsVerts[vertIdx[j]];
                     if (vertIdx[j] < mapVertsCount)
-                        insideModel[j] = (terrainInsideModelsVerts[vertIdx[j]] >= 0.1f);
+                        insideModel[j] = (insideDistance >= 0.1f);
                     //sun: get triangle position from vertex idx
                     tri[j] = G3D::Vector3(meshData.solidVerts[3 * vertIdx[j] + 2], meshData.solidVerts[3 * vertIdx[j]], meshData.solidVerts[3 * vertIdx[j] + 1]);
                 }
@@ -863,11 +865,11 @@ namespace MMAP
                 // First case: nothing to do =) (sun: skip if no vertex of triangle is sticking out enough out of the model)
                 if (terrainInsideModelsVerts[vertIdx[0]] < 1.0f && terrainInsideModelsVerts[vertIdx[1]] < 1.0f && terrainInsideModelsVerts[vertIdx[2]] < 1.0f)
                     continue;
-                if (insideModel[0] == insideModel[1] && insideModel[1] == insideModel[2])
+                if (insideModel[0] == insideModel[1] == insideModel[2]) // all vertexes are in, or all vertexes are out
                     continue;
 
                 // There is one vertex outside
-                uint32 outsideIdx;
+                uint32 outsideIdx; //first vertex outside
                 for (outsideIdx = 0; outsideIdx < 3; ++outsideIdx)
                     if (!insideModel[outsideIdx])
                         break;
@@ -945,18 +947,19 @@ namespace MMAP
                 for (int j = 0; j < 3; ++j)
                     meshData.solidTris[i * 3 + j] = vertIdx[j];
             }
-
+         
             /// sun: Clear map triangles completely under models
             for (int i = 0; i < mapTrisCount / 3; ++i)
             {
-                bool    insideModel[3] = { false }; // triangle vertex inside model
-                bool    allInBorder = true; //all points are close to the model
+                bool insideModel[3] = { false }; // triangle vertex inside model
+                bool allInBorder = true; //true = all points are close to the model
                 for (int j = 0; j < 3; ++j)
                 {
                     if (meshData.solidTris[i * 3 + j] < mapVertsCount)
                     {
-                        insideModel[j] = (terrainInsideModelsVerts[meshData.solidTris[i * 3 + j]] >= 1.0f);
-                        if (terrainInsideModelsVerts[meshData.solidTris[i * 3 + j]] >= 1.5f) //sun, moved this condition inside previous if. This was causing crash with triangles added in previous steps (triangle idx outside of terrainInsideModelsVerts range), and we dont need to process those
+                        float insideValue = terrainInsideModelsVerts[meshData.solidTris[i * 3 + j]];
+                        insideModel[j] = (insideValue >= 1.0f && insideValue);
+                        if (insideValue >= 1.5f) //sun, moved this condition inside previous if. This was causing crash with triangles added in previous steps (triangle idx outside of terrainInsideModelsVerts range), and we dont need to process those
                             allInBorder = false;
                     }
                 }

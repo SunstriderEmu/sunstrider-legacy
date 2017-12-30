@@ -520,12 +520,13 @@ namespace MMAP
         rcVnormalize(norm);
     }
 
-    void MapBuilder::removeUnderTerrainTriangles(uint32 MapID, MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount)
+    //mark triangle under terrain as non walkable (adapted from nost)
+    void MapBuilder::removeVMAPTrianglesUnderTerrain(uint32 MapID, MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount)
     {
         float norm[3];
         for (int i = 0; i < tTriCount; ++i)
         {
-            if (!meshData.IsTerrainTriangle(i))
+            if (meshData.IsTerrainTriangle(i))
                 continue;
 
             if (triFlags[i])
@@ -542,14 +543,17 @@ namespace MMAP
 
                 // A triangle is undermap if all corners are undermap
                 bool undermap1 = m_terrainBuilder->IsUnderMap(MapID, &verts[0]);
-                bool undermap2 = m_terrainBuilder->IsUnderMap(MapID, &verts[3]);
-                bool undermap3 = m_terrainBuilder->IsUnderMap(MapID, &verts[6]);
-
-                if (undermap1 && undermap2 && undermap3)
-                {
-                    triFlags[i] = NAV_EMPTY;
+                if (!undermap1)
                     continue;
-                }
+                bool undermap2 = m_terrainBuilder->IsUnderMap(MapID, &verts[3]);
+                if (!undermap2)
+                    continue;
+                bool undermap3 = m_terrainBuilder->IsUnderMap(MapID, &verts[6]);
+                if (!undermap3)
+                    continue;
+
+                triFlags[i] = NAV_EMPTY; //all three points are undermap
+                continue;
             }
         }
     }
@@ -721,9 +725,9 @@ namespace MMAP
                 memset(triFlags, NAV_EMPTY, tTriCount*sizeof(unsigned char)); //start empty instead of NAV_GROUND
                 //rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
                 markWalkableTriangles(meshData, triFlags, tVerts, tTris, tTriCount); // sun addition, replaces rcClearUnwalkableTriangles (adapted from nost)
-                // Now we remove underterrain triangles (actually set flags to 0)
+                // Now we remove terrain triangles under the mesh (actually set flags to 0)
                 if(!m_quick)
-                    removeUnderTerrainTriangles(mapID, meshData, triFlags, tVerts, tTris, tTriCount); //adapted from nost
+                    removeVMAPTrianglesUnderTerrain(mapID, meshData, triFlags, tVerts, tTris, tTriCount);
 
                 rcRasterizeTriangles(m_rcContext, tVerts, tVertCount, tTris, triFlags, tTriCount, *tile.solid, config.walkableClimb);
                 delete[] triFlags;
