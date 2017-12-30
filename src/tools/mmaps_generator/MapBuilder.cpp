@@ -523,6 +523,7 @@ namespace MMAP
     //mark triangle under terrain as non walkable (adapted from nost)
     void MapBuilder::removeVMAPTrianglesUnderTerrain(uint32 MapID, MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount)
     {
+        /* sun; removed for now, does not seem working + don't see obvious cases where this is useful for now
         float norm[3];
         for (int i = 0; i < tTriCount; ++i)
         {
@@ -556,6 +557,7 @@ namespace MMAP
                 continue;
             }
         }
+        */
     }
 
     void MapBuilder::markWalkableTriangles(MeshData& meshData, unsigned char triFlags[], float* tVerts, int* tTris, int tTriCount)
