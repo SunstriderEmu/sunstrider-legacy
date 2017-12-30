@@ -3,7 +3,7 @@
 #define TRINITY_MOVEMENTGENERATOR_H
 
 #include "Define.h"
-#include "FactoryHolder.h"
+#include "SelectableAI.h"
 #include "MotionMaster.h"
 #include "Common.h"
 
