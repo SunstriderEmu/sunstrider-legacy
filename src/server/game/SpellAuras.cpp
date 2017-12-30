@@ -5052,10 +5052,14 @@ void Aura::HandleAuraModIncreaseEnergyPercent(bool apply, bool /*Real*/)
         return;
 
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
-    float amount = float(GetModifierValue());
+
+    // Save old powers for further calculation
+    int32 oldPower = int32(m_target->GetPower(powerType));
+    int32 oldMaxPower = int32(m_target->GetMaxPower(powerType));
 
     if (apply)
     {
+        float amount = float(GetModifierValue());
         m_target->ApplyStatPctModifier(unitMod, TOTAL_PCT, amount);
     }
     else
@@ -5063,6 +5067,11 @@ void Aura::HandleAuraModIncreaseEnergyPercent(bool apply, bool /*Real*/)
         float amount = m_target->GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT, GetMiscValue());
         m_target->SetStatPctModifier(unitMod, TOTAL_PCT, amount);
     }
+
+    // Calculate the current power change
+    int32 change = m_target->GetMaxPower(powerType) - oldMaxPower;
+    change = (oldPower + change) - m_target->GetPower(powerType);
+    m_target->ModifyPower(powerType, change);
 }
 
 void Aura::HandleAuraModIncreaseHealthPercent(bool apply, bool /*Real*/)
