@@ -16722,6 +16722,7 @@ float Unit::GetCollisionHeight() const
     return scaleMod * modelData->CollisionHeight;
 }
 
+//might slightly move targetPos
 bool _IsLeapAccessibleByPath(Unit* unit, Position& targetPos)
 {
     float distToTarget = unit->GetExactDistance(targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
@@ -16748,6 +16749,7 @@ bool _IsLeapAccessibleByPath(Unit* unit, Position& targetPos)
                 && !unit->GetCollisionPosition(unit->GetPosition(), firstPoint.x, firstPoint.y, firstPoint.z + 1.5f, targetPos)
                 )
             {
+                targetPos.Relocate(lastPoint.x, lastPoint.y, lastPoint.z);
                 //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
                 return true;
             }
@@ -16797,10 +16799,18 @@ Position Unit::GetLeapPosition(float dist)
         for (int8 j = 1; j >= 0; j--)
         {
             //search at given z then at z + maxSearchDist
-            float mapHeight = GetMap()->GetHeight(PHASEMASK_NORMAL, destx, desty, destz + j * maxSearchDist / 2, true, maxSearchDist, true);
+            float mapHeight = GetMap()->GetHeight(PHASEMASK_NORMAL, destx, desty, destz + j * (maxSearchDist / 2.0f), true, maxSearchDist / 2.0f, true);
             if (mapHeight != INVALID_HEIGHT)
             {
-                //if is accessible by path
+                //if no collision
+                if (!GetCollisionPosition(currentPos, destx, desty, mapHeight, targetPos, GetCombatReach()) && GetMap()->IsPlayerWalkable(Position(destx, desty, mapHeight)))
+                {
+                    //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPositionFound valid target point, %f %f %f was in LoS", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+                    //GetCollisionPosition already set targetPos to destx, desty, destz
+                    goto exitloopfounddest;
+                }
+
+                //else if is accessible by path
                 targetPos.Relocate(destx, desty, mapHeight);
                 float distToTarget = GetExactDistance(targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
                 if (distToTarget < 4.0f)
@@ -16808,7 +16818,6 @@ Position Unit::GetLeapPosition(float dist)
 
                 if (_IsLeapAccessibleByPath(this, targetPos)) 
                 {
-                    targetPos.Relocate(destx, desty, mapHeight + 1.0f);
                     //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
                     goto exitloopfounddest;
                 }
