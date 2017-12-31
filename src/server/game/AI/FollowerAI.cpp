@@ -65,7 +65,7 @@ bool FollowerAI::AssistPlayerInCombat(Unit* pWho)
         return false;
 
     //too far away and no free sight?
-    if (me->IsWithinDistInMap(pWho, MAX_PLAYER_DISTANCE) && me->IsWithinLOSInMap(pWho, VMAP::ModelIgnoreFlags::M2))
+    if (me->IsWithinDistInMap(pWho, MAX_PLAYER_DISTANCE) && me->IsWithinLOSInMap(pWho, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
     {
         //already fighting someone?
         if (!me->GetVictim())
@@ -96,7 +96,7 @@ void FollowerAI::MoveInLineOfSight(Unit* pWho)
         if (me->IsHostileTo(pWho))
         {
             float fAttackRadius = me->GetAggroRange(pWho);
-            if (me->IsWithinDistInMap(pWho, fAttackRadius) && me->IsWithinLOSInMap(pWho, VMAP::ModelIgnoreFlags::M2))
+            if (me->IsWithinDistInMap(pWho, fAttackRadius) && me->IsWithinLOSInMap(pWho, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
             {
                 if (!me->GetVictim())
                 {

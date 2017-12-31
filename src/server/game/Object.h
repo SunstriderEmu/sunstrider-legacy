@@ -84,6 +84,8 @@ namespace G3D
 typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
 typedef std::unordered_set<uint32> UpdatePlayerSet;
 
+float const DEFAULT_COLLISION_HEIGHT = 2.03128f; // Most common value in dbc
+
 struct MovementInfo
 {
     // common
@@ -535,8 +537,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         // No check if same map. Use only if you will sure about placing both object at same map
         bool IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D = true) const;
         bool IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D = true, bool incOwnRadius = true, bool incTargetRadius = true) const;
-        bool IsWithinLOS(float x, float y, float z, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
-        bool IsWithinLOSInMap(WorldObject const* obj, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
+        bool IsWithinLOS(float x, float y, float z, LineOfSightChecks checks = LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
+        bool IsWithinLOSInMap(WorldObject const* obj, LineOfSightChecks checks = LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
         Position GetHitSpherePointFor(Position const& dest) const;
         void GetHitSpherePointFor(Position const& dest, float& x, float& y, float& z) const;
         bool isInFront(WorldObject const* target, float arc = M_PI) const;
@@ -644,7 +646,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void UpdatePositionData(bool updateCreatureLiquid = false);
         float GetFloorZ() const;
         virtual float GetCollisionHeight() const { return 0.0f; }
-        float GetMidsectionHeight() const { return GetCollisionHeight() / 2.0f; }
+        float GetMapWaterOrGroundLevel(float x, float y, float z, float* ground = nullptr) const;
+        float GetMapHeight(float x, float y, float z, bool vmap = true, float distanceToSearch = 50.0f) const; // DEFAULT_HEIGHT_SEARCH in map.h
 
         void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet& player_set) override;
 

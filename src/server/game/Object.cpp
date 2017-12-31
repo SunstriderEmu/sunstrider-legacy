@@ -911,7 +911,7 @@ WorldObject::~WorldObject()
 void WorldObject::UpdatePositionData(bool updateCreatureLiquid)
 {
     PositionFullTerrainStatus data;
-    GetMap()->GetFullTerrainStatusForPosition(GetPositionX(), GetPositionY(), GetPositionZ(), data);
+    GetMap()->GetFullTerrainStatusForPosition(GetPositionX(), GetPositionY(), GetPositionZ(), data, MAP_ALL_LIQUIDS);
     ProcessPositionDataChanged(data, updateCreatureLiquid);
 }
 
@@ -1119,31 +1119,47 @@ bool WorldObject::IsWithinDist2d(const Position* pos, float dist) const
     return IsInDist2d(pos, dist + GetCombatReach());
 }
 
-bool WorldObject::IsWithinLOSInMap(const WorldObject* obj, VMAP::ModelIgnoreFlags ignoreFlags) const
+bool WorldObject::IsWithinLOSInMap(const WorldObject* obj, LineOfSightChecks checks, VMAP::ModelIgnoreFlags ignoreFlags) const
 {
     if (!IsInMap(obj)) 
         return false;
 
-    float x, y, z;
+    float ox, oy, oz;
     if (obj->GetTypeId() == TYPEID_PLAYER)
-        obj->GetPosition(x, y, z);
+    {
+        obj->GetPosition(ox, oy, oz);
+        oz += GetCollisionHeight();
+    }
     else
-        obj->GetHitSpherePointFor(GetPosition(), x, y, z);
+        obj->GetHitSpherePointFor({ GetPositionX(), GetPositionY(), GetPositionZ() + GetCollisionHeight() }, ox, oy, oz);
     
-    return IsWithinLOS(x, y, z, ignoreFlags);
+    float x, y, z;
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        GetPosition(x, y, z);
+        z += GetCollisionHeight();
+    }
+    else
+        GetHitSpherePointFor({ obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ() + obj->GetCollisionHeight() }, x, y, z);
+
+    return GetMap()->isInLineOfSight(x, y, z, ox, oy, oz, GetPhaseMask(), checks, ignoreFlags);
 }
 
-bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz, VMAP::ModelIgnoreFlags ignoreFlags) const
+bool WorldObject::IsWithinLOS(float ox, float oy, float oz, LineOfSightChecks checks, VMAP::ModelIgnoreFlags ignoreFlags) const
 {
     if(IsInWorld())
     {
+        oz += GetCollisionHeight();
         float x, y, z;
         if (GetTypeId() == TYPEID_PLAYER)
+        {
             GetPosition(x, y, z);
+            z += GetCollisionHeight();
+        }
         else
             GetHitSpherePointFor({ ox, oy, oz }, x, y, z);
         
-        return GetMap()->isInLineOfSight(x, y, z + 2.0f, ox, oy, oz + 2.0f, GetPhaseMask(), ignoreFlags);
+        return GetMap()->isInLineOfSight(x, y, z + 2.0f, ox, oy, oz + 2.0f, GetPhaseMask(), checks, ignoreFlags);
    }
     
     return true;
@@ -1151,7 +1167,7 @@ bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz, VM
 
 Position WorldObject::GetHitSpherePointFor(Position const& dest) const
 {
-    G3D::Vector3 vThis(GetPositionX(), GetPositionY(), GetPositionZ());
+    G3D::Vector3 vThis(GetPositionX(), GetPositionY(), GetPositionZ() + GetCollisionHeight());
     G3D::Vector3 vObj(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
     G3D::Vector3 contactPoint = vThis + (vObj - vThis).directionOrZero() * std::min(dest.GetExactDist(GetPosition()), GetCombatReach());
     
@@ -1276,9 +1292,7 @@ Position WorldObject::GetRandomPoint(const Position &srcPos, float distance) con
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
-    float new_z = GetMap()->GetHeight(x,y,z,true);
-    if(new_z > INVALID_HEIGHT)
-        z = new_z+ 0.05f;                                   // just to be sure that we are not a few pixel under the surface
+    z = GetMapHeight(x, y, z);
 }
 
 void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float maxDist) const
@@ -1294,7 +1308,10 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float maxDi
     }
 
     Position pos = GetPosition();
-    WorldObject::UpdateAllowedPositionZ(GetPhaseMask(), GetMapId(), x, y, z, canSwim, canFly, waterWalk, maxDist);
+    float newZ = z + GetCollisionHeight();
+    WorldObject::UpdateAllowedPositionZ(GetPhaseMask(), GetMapId(), x, y, newZ, canSwim, canFly, waterWalk, maxDist);
+    if (newZ != z + GetCollisionHeight())
+        z = newZ;
 }
 
 void WorldObject::UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist)
@@ -1319,7 +1336,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x
     }
     else
     {
-        float ground_z = baseMap->GetHeight(phaseMask, x, y, z, true, DEFAULT_HEIGHT_SEARCH);
+        float ground_z = baseMap->GetHeight(phaseMask, x, y, z, true);
         if (z < ground_z && std::fabs(z - ground_z) <= maxDist)
             z = ground_z;
     }
@@ -2268,39 +2285,14 @@ Position WorldObject::GetNearPosition(float dist, float angle)
     return pos;
 }
 
-// @todo: replace with WorldObject::UpdateAllowedPositionZ
-float NormalizeZforCollision(WorldObject* obj, float x, float y, float z)
-{
-    float ground = obj->GetMap()->GetHeight(obj->GetPhaseMask(), x, y, z, true, MAX_HEIGHT);
-    float floor = obj->GetMap()->GetHeight(obj->GetPhaseMask(), x, y, z + 2.0f, true);
-    float helper = fabs(ground - z) <= fabs(floor - z) ? ground : floor;
-    if (z > helper) // must be above ground
-    {
-        if (Unit* unit = obj->ToUnit())
-        {
-            if (unit->CanFly())
-                return z;
-        }
-        LiquidData liquid_status;
-        ZLiquidStatus res = obj->GetMap()->GetLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-        if (res && liquid_status.level > helper) // water must be above ground
-        {
-            if (liquid_status.level > z) // z is underwater
-                return z;
-            else
-                return fabs(liquid_status.level - z) <= fabs(helper - z) ? liquid_status.level : helper;
-        }
-    }
-    return helper;
-}
-
 void WorldObject::MovePositionToFirstWalkableCollision(Position &pos, float dist, float angle, bool keepZ)
 {
     angle += GetOrientation();
     float destx, desty, destz;
     destx = pos.m_positionX + dist * std::cos(angle);
     desty = pos.m_positionY + dist * std::sin(angle);
-    
+    destz = pos.m_positionZ;
+
     // Prevent invalid coordinates here, position is unchanged
     if (!Trinity::IsValidMapCoord(destx, desty))
     {
@@ -2308,14 +2300,13 @@ void WorldObject::MovePositionToFirstWalkableCollision(Position &pos, float dist
         return;
     }
     
-    destz = pos.m_positionZ;
     if(!keepZ)
         UpdateAllowedPositionZ(destx, desty, destz, dist);
 
     TC_LOG_DEBUG("vmap", "WorldObject::MovePositionToFirstWalkableCollision: Called with %f,%f. Target Z set to %f.", destx, desty, destz);
     
     // check static collision (terrain + WMO + MDX ?)
-    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.m_positionX, pos.m_positionY, pos.m_positionZ + 0.5f, destx, desty, destz + 0.5f, destx, desty, destz, -0.5f);
+    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.m_positionX, pos.m_positionY, pos.m_positionZ, destx, desty, destz, destx, desty, destz, -0.5f);
 
     // collision occured
     if (col)
@@ -2762,8 +2753,8 @@ void WorldObject::MovePosition(Position &pos, float dist, float angle)
         return;
     }
 
-    ground = GetMap()->GetHeight(GetPhaseMask(), destx, desty, MAX_HEIGHT, true);
-    floor = GetMap()->GetHeight(GetPhaseMask(), destx, desty, pos.m_positionZ, true);
+    ground = GetMapHeight(destx, desty, MAX_HEIGHT);
+    floor = GetMapHeight(destx, desty, pos.m_positionZ);
     destz = fabs(ground - pos.m_positionZ) <= fabs(floor - pos.m_positionZ) ? ground : floor;
 
     float step = dist/10.0f;
@@ -2775,8 +2766,8 @@ void WorldObject::MovePosition(Position &pos, float dist, float angle)
         {
             destx -= step * std::cos(angle);
             desty -= step * std::sin(angle);
-            ground = GetMap()->GetHeight(GetPhaseMask(), destx, desty, MAX_HEIGHT, true);
-            floor = GetMap()->GetHeight(GetPhaseMask(), destx, desty, pos.m_positionZ, true);
+            ground = GetMapHeight(destx, desty, MAX_HEIGHT);
+            floor = GetMapHeight(destx, desty, pos.m_positionZ);
             destz = fabs(ground - pos.m_positionZ) <= fabs(floor - pos.m_positionZ) ? ground : floor;
         }
         // we have correct destz now
@@ -2956,7 +2947,23 @@ float WorldObject::GetFloorZ() const
     if (!IsInWorld())
         return m_staticFloorZ;
     //this is the same as Map::GetHeight but we use our cached value for the map height instead for performance
-    return std::max<float>(m_staticFloorZ, GetMap()->GetGameObjectFloor(GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ()));
+    return std::max<float>(m_staticFloorZ, GetMap()->GetGameObjectFloor(GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ() + GetCollisionHeight()));
+}
+
+float WorldObject::GetMapWaterOrGroundLevel(float x, float y, float z, float* ground/* = nullptr*/) const
+{
+    if (Unit const* unit = ToUnit())
+        return GetMap()->GetWaterOrGroundLevel(GetPhaseMask(), x, y, z, ground, !unit->HasAuraType(SPELL_AURA_WATER_WALK), GetCollisionHeight());
+
+    return z;
+}
+
+float WorldObject::GetMapHeight(float x, float y, float z, bool vmap/* = true*/, float distanceToSearch/* = DEFAULT_HEIGHT_SEARCH*/) const
+{
+    if (z != MAX_HEIGHT)
+        z += GetCollisionHeight();
+
+    return GetMap()->GetHeight(GetPhaseMask(), x, y, z, vmap, distanceToSearch);
 }
 
 uint64 Object::GetGUID() const { return GetUInt64Value(OBJECT_FIELD_GUID); }

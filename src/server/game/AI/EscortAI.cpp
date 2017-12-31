@@ -467,7 +467,7 @@ bool EscortAI::AssistPlayerInCombatAgainst(Unit* who)
         return false;
 
     //too far away and no free sight?
-    if (me->IsWithinDistInMap(who, GetMaxPlayerDistance()) && me->IsWithinLOSInMap(who, VMAP::ModelIgnoreFlags::M2))
+    if (me->IsWithinDistInMap(who, GetMaxPlayerDistance()) && me->IsWithinLOSInMap(who, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
     {
         me->EngageWithTarget(who);
         return true;

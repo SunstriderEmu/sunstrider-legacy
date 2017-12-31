@@ -10,7 +10,7 @@ Unit* CurrentTargetValue::Get()
         return NULL;
 
     Unit* unit = ObjectAccessor::GetUnit(*bot, selection);
-    if (unit && !bot->IsWithinLOSInMap(unit, VMAP::ModelIgnoreFlags::M2))
+    if (unit && !bot->IsWithinLOSInMap(unit, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
         return NULL;
 
     return unit;

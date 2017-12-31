@@ -108,7 +108,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
         return;
     }
 
-    uint32 count = 0;
+    uint32 loadedCount = 0;
 
     do
     {
@@ -317,7 +317,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
         // creature entry / guid not found in storage, create empty event list for it and increase counters
         if (mEventMap[source_type].find(temp.entryOrGuid) == mEventMap[source_type].end())
         {
-            ++count;
+            ++loadedCount;
             SmartAIEventList eventList;
             mEventMap[source_type][temp.entryOrGuid] = eventList;
         }
@@ -326,7 +326,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
     }
     while (result->NextRow());
 
-    TC_LOG_INFO("server.loading",">> Loaded %u SmartAI scripts in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading",">> Loaded %u SmartAI scripts in %u ms", loadedCount, GetMSTimeDiffToNow(oldMSTime));
 
     UnLoadHelperStores();
 }

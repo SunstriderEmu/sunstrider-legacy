@@ -204,7 +204,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // Check both start and end points, if they're both in water, then we can *safely* let the creature move
             for (uint32 i = 0; i < _pathPoints.size(); ++i)
             {
-                ZLiquidStatus status = _sourceUnit->GetBaseMap()->GetLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, MAP_ALL_LIQUIDS);
+                ZLiquidStatus status = _sourceUnit->GetBaseMap()->GetLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, MAP_ALL_LIQUIDS, nullptr, _sourceUnit->GetCollisionHeight());
                 // One of the points is not in the water, cancel movement.
                 if (status == LIQUID_MAP_NO_WATER)
                 {
@@ -673,7 +673,7 @@ NavTerrain PathGenerator::GetNavTerrain(float x, float y, float z)
 {
     LiquidData data;
     Map const* map = _sourceUnit ? _sourceUnit->GetBaseMap() : sMapMgr->CreateBaseMap(_sourceMapId);
-    ZLiquidStatus liquidStatus = map->GetLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &data);
+    ZLiquidStatus liquidStatus = map->GetLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &data, _sourceUnit->GetCollisionHeight());
 
     if (liquidStatus == LIQUID_MAP_NO_WATER)
         return NAV_GROUND;

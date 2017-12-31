@@ -4,6 +4,8 @@
 #include "Define.h"
 #include <cassert>
 
+float const GROUND_HEIGHT_TOLERANCE = 0.05f; // Extra tolerance to z position to check if it is in air or on ground.
+
 enum SpellEffIndex : uint8
 {
     EFFECT_0 = 0,
@@ -2703,6 +2705,14 @@ enum GroupJoinBattlegroundResult
     FAKE_ERR_BATTLEGROUND_FROZEN            , //LANG_BG_GROUP_MEMBER_FROZEN
     FAKE_ERR_BATTLEGROUND_TEAM_SIZE         , //LANG_BG_GROUP_TOO_LARGE
 #endif
+};
+
+enum LineOfSightChecks
+{
+    LINEOFSIGHT_CHECK_VMAP      = 0x1, // check static floor layout data
+    LINEOFSIGHT_CHECK_GOBJECT   = 0x2, // check dynamic game object data
+
+    LINEOFSIGHT_ALL_CHECKS      = (LINEOFSIGHT_CHECK_VMAP | LINEOFSIGHT_CHECK_GOBJECT)
 };
 
 #endif

@@ -3479,7 +3479,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             float range = (float)e.event.los.maxDist;
 
             //if range is ok and we are actually in LOS
-            if (me->IsWithinDistInMap(unit, range) && me->IsWithinLOSInMap(unit, VMAP::ModelIgnoreFlags::M2))
+            if (me->IsWithinDistInMap(unit, range) && me->IsWithinLOSInMap(unit, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
             {
                 //if friendly event&&who is not hostile OR hostile event&&who is hostile
                 if ((e.event.los.noHostile && !me->IsHostileTo(unit)) ||
@@ -3499,7 +3499,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             float range = (float)e.event.los.maxDist;
 
             //if range is ok and we are actually in LOS
-            if (me->IsWithinDistInMap(unit, range) && me->IsWithinLOSInMap(unit, VMAP::ModelIgnoreFlags::M2))
+            if (me->IsWithinDistInMap(unit, range) && me->IsWithinLOSInMap(unit, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
             {
                 //if friendly event&&who is not hostile OR hostile event&&who is hostile
                 if ((e.event.los.noHostile && !me->IsHostileTo(unit)) ||
@@ -3814,7 +3814,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             if(!victim)
                 return;
 
-            bool withinLos = me->IsWithinLOSInMap(victim, VMAP::ModelIgnoreFlags::M2);
+            bool withinLos = me->IsWithinLOSInMap(victim, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2);
             if(!e.event.victimNotInLoS.invert) //normal case, triggers if cannot see
             {
                 if(withinLos)

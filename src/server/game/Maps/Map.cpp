@@ -1680,18 +1680,18 @@ bool Map::IsPlayerWalkable(Position pos) const
     return true;
 }
 
-float Map::GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/) const
+float Map::GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/, float collisionHeight /*= DEFAULT_COLLISION_HEIGHT*/) const
 {
     if (const_cast<Map*>(this)->GetGrid(x, y))
     {
         // we need ground level (including grid height version) for proper return water level in point
-        float ground_z = GetHeight(x, y, z, true, 50.0f);
+        float ground_z = GetHeight(x, y, z + collisionHeight, true, 50.0f);
         if (ground)
             *ground = ground_z;
 
         LiquidData liquid_status;
 
-        ZLiquidStatus res = GetLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status);
+        ZLiquidStatus res = GetLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status, collisionHeight);
         switch (res)
         {
         case LIQUID_MAP_ABOVE_WATER:
@@ -1791,8 +1791,7 @@ float Map::_GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearch
     {
         float _mapheight = gmap->getHeight(x,y);
 
-        // look from a bit higher pos to find the floor, ignore under surface case
-        if (z + 2.0f > _mapheight)
+        if (z > _mapheight)
             mapHeight = _mapheight;
         else
             mapHeight = VMAP_INVALID_HEIGHT_VALUE;
@@ -1806,8 +1805,7 @@ float Map::_GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearch
         VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
         if (vmgr->isHeightCalcEnabled())
         {
-            // look from a bit higher pos to find the floor
-            vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f, maxSearchDist);
+            vmapHeight = vmgr->getHeight(GetId(), x, y, z, maxSearchDist);
         }
         else
             vmapHeight = VMAP_INVALID_HEIGHT_VALUE;
@@ -1900,8 +1898,7 @@ bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, in
         if(GridMap *gmap = const_cast<Map*>(this)->GetGrid(x, y))
         {
             float _mapheight = gmap->getHeight(x,y);
-            // z + 2.0f condition taken from GetHeight(), not sure if it's such a great choice...
-            if(z + 2.0f > _mapheight &&  _mapheight > vmap_z)
+            if(z > _mapheight &&  _mapheight > vmap_z)
                 return false;
         }
         return true;
@@ -1956,7 +1953,7 @@ uint8 Map::GetTerrainType(float x, float y) const
         return 0;
 }
 
-ZLiquidStatus Map::GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTypeMask, LiquidData* data) const
+ZLiquidStatus Map::GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTypeMask, LiquidData* data, float collisionHeight) const
 {
     ZLiquidStatus result = LIQUID_MAP_NO_WATER;
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
@@ -2012,7 +2009,7 @@ ZLiquidStatus Map::GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTyp
             float delta = liquid_level - z;
 
             // Get position delta
-            if (delta > 2.0f)                   // Under water
+            if (delta > collisionHeight)                   // Under water
                 return LIQUID_MAP_UNDER_WATER;
             if (delta > 0.0f)                   // In water
                 return LIQUID_MAP_IN_WATER;
@@ -2025,7 +2022,7 @@ ZLiquidStatus Map::GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTyp
     if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
     {
         LiquidData map_data;
-        ZLiquidStatus map_result = gmap->GetLiquidStatus(x, y, z, reqLiquidTypeMask, &map_data);
+        ZLiquidStatus map_result = gmap->GetLiquidStatus(x, y, z, reqLiquidTypeMask, &map_data, collisionHeight);
         // Not override LIQUID_MAP_ABOVE_WATER with LIQUID_MAP_NO_WATER:
         if (map_result != LIQUID_MAP_NO_WATER && (map_data.level > ground_level))
         {
@@ -2039,7 +2036,7 @@ ZLiquidStatus Map::GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTyp
     return result;
 }
 
-void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFullTerrainStatus& data, uint8 reqLiquidType) const
+void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFullTerrainStatus& data, uint8 reqLiquidType, float collisionHeight) const
 {
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
     VMAP::AreaAndLiquidData vmapData;
@@ -2052,7 +2049,7 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
 
     // area lookup
     AreaTableEntry const* areaEntry = nullptr;
-    if (vmapData.areaInfo && (z + 2.0f <= mapHeight || mapHeight <= vmapData.floorZ))
+    if (vmapData.areaInfo && (z <= mapHeight || mapHeight <= vmapData.floorZ))
         if (WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(vmapData.areaInfo->rootId, vmapData.areaInfo->adtId, vmapData.areaInfo->groupId))
             areaEntry = sAreaTableStore.LookupEntry(wmoEntry->areaId);
 
@@ -2078,7 +2075,7 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
 
     // liquid processing
     data.liquidStatus = LIQUID_MAP_NO_WATER;
-    if (vmapData.liquidInfo && vmapData.liquidInfo->level > vmapData.floorZ && z + 2.0f > vmapData.floorZ)
+    if (vmapData.liquidInfo && vmapData.liquidInfo->level > vmapData.floorZ && z > vmapData.floorZ)
     {
         uint32 liquidType = vmapData.liquidInfo->type;
 #ifdef LICH_KING
@@ -2114,7 +2111,7 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
         data.liquidInfo->type_flags = GetLiquidFlagsFromType(liquidFlagType);
 
         float delta = vmapData.liquidInfo->level - z;
-        if (delta > 2.0f)
+        if (delta > collisionHeight)
             data.liquidStatus = LIQUID_MAP_UNDER_WATER;
         else if (delta > 0.0f)
             data.liquidStatus = LIQUID_MAP_IN_WATER;
@@ -2127,7 +2124,7 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
     if (gmap && (data.liquidStatus == LIQUID_MAP_ABOVE_WATER || data.liquidStatus == LIQUID_MAP_NO_WATER))
     {
         LiquidData gridMapLiquid;
-        ZLiquidStatus gridMapStatus = gmap->GetLiquidStatus(x, y, z, reqLiquidType, &gridMapLiquid);
+        ZLiquidStatus gridMapStatus = gmap->GetLiquidStatus(x, y, z, reqLiquidType, &gridMapLiquid, collisionHeight);
         if (gridMapStatus != LIQUID_MAP_NO_WATER && (gridMapLiquid.level > vmapData.floorZ))
         {
 #ifdef LICH_KING
@@ -2173,10 +2170,15 @@ void Map::GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, flo
 }
 
 
-bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask, VMAP::ModelIgnoreFlags ignoreFlags) const
+bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask, LineOfSightChecks checks, VMAP::ModelIgnoreFlags ignoreFlags) const
 {
-    return VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(GetId(), x1, y1, z1, x2, y2, z2, ignoreFlags)
-            && _dynamicTree.isInLineOfSight(x1, y1, z1, x2, y2, z2, phasemask);
+    if ((checks & LINEOFSIGHT_CHECK_VMAP)
+        && !VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(GetId(), x1, y1, z1, x2, y2, z2, ignoreFlags))
+        return false;
+    if (/*sWorld->getBoolConfig(CONFIG_CHECK_GOBJECT_LOS) && */(checks & LINEOFSIGHT_CHECK_GOBJECT)
+        && !_dynamicTree.isInLineOfSight(x1, y1, z1, x2, y2, z2, phasemask))
+        return false;
+    return true;
 }
 
 bool Map::IsInWater(float x, float y, float pZ, LiquidData *data) const

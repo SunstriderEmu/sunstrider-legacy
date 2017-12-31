@@ -40,7 +40,7 @@ class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, 
 
     private:
         void SetTargetLocation(T*);
-        void GetPoint(T*, float &x, float &y, float &z);
+        void GetPoint(T*, Position &position);
 
         uint64 _fleeTargetGUID;
         TimeTracker i_nextCheckTime;

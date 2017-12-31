@@ -1612,7 +1612,7 @@ void SimpleCharmedPlayerAI::UpdateAI(const uint32 diff)
 
             if (IsRangedAttacker())
             {
-                _chaseCloser = !me->IsWithinLOSInMap(target, VMAP::ModelIgnoreFlags::M2);
+                _chaseCloser = !me->IsWithinLOSInMap(target, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2);
                 if (_chaseCloser)
                     AttackStart(target);
                 else
@@ -1641,7 +1641,7 @@ void SimpleCharmedPlayerAI::UpdateAI(const uint32 diff)
             {
                 if (IsRangedAttacker())
                 { // chase to zero if the target isn't in line of sight
-                    bool inLOS = me->IsWithinLOSInMap(target, VMAP::ModelIgnoreFlags::M2);
+                    bool inLOS = me->IsWithinLOSInMap(target, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2);
                     if (_chaseCloser != !inLOS)
                     {
                         _chaseCloser = !inLOS;

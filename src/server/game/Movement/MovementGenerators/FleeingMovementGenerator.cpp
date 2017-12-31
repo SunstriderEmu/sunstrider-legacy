@@ -28,18 +28,11 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
 
     owner->AddUnitState(UNIT_STATE_FLEEING_MOVE);
 
-    float x, y, z;
-    GetPoint(owner, x, y, z);
+    Position destination = owner->GetPosition();
+    GetPoint(owner, destination);
 
     // Add LOS check for target point
-    Position mypos = owner->GetPosition();
-    bool isInLOS = VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(owner->GetMapId(),
-                                                                                mypos.m_positionX,
-                                                                                mypos.m_positionY,
-                                                                                mypos.m_positionZ + 2.0f,
-                                                                                x, y, z + 2.0f,
-                                                                                VMAP::ModelIgnoreFlags::Nothing);
-    if (!isInLOS)
+    if (!owner->IsWithinLOS(destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ()))
     {
         i_nextCheckTime.Reset(200);
         return;
@@ -50,7 +43,7 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
 
     _path->SetPathLengthLimit(30.0f);
     _path->ExcludeSteepSlopes();
-    bool result = _path->CalculatePath(x, y, z);
+    bool result = _path->CalculatePath(destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
     if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
     {
         i_nextCheckTime.Reset(100);
@@ -65,7 +58,7 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
 }
 
 template<class T>
-void FleeingMovementGenerator<T>::GetPoint(T* owner, float &x, float &y, float &z)
+void FleeingMovementGenerator<T>::GetPoint(T* owner, Position &position)
 {
     float casterDistance, casterAngle;
     if (Unit* fleeTarget = ObjectAccessor::GetUnit(*owner, _fleeTargetGUID))
@@ -99,10 +92,7 @@ void FleeingMovementGenerator<T>::GetPoint(T* owner, float &x, float &y, float &
         angle = frand(0.0f, 2.0f * static_cast<float>(M_PI));
     }
 
-    Position pos = owner->GetFirstWalkableCollisionPosition(distance, angle);
-    x = pos.m_positionX;
-    y = pos.m_positionY;
-    z = pos.m_positionZ;
+    position = owner->GetFirstWalkableCollisionPosition(distance, angle);
 }
 
 template<class T>
@@ -170,8 +160,8 @@ bool FleeingMovementGenerator<T>::DoUpdate(T* owner, uint32 time_diff)
 
 template bool FleeingMovementGenerator<Player>::DoInitialize(Player*);
 template bool FleeingMovementGenerator<Creature>::DoInitialize(Creature*);
-template void FleeingMovementGenerator<Player>::GetPoint(Player*, float&, float&, float&);
-template void FleeingMovementGenerator<Creature>::GetPoint(Creature*, float&, float&, float&);
+template void FleeingMovementGenerator<Player>::GetPoint(Player*, Position&);
+template void FleeingMovementGenerator<Creature>::GetPoint(Creature*, Position&);
 template void FleeingMovementGenerator<Player>::SetTargetLocation(Player*);
 template void FleeingMovementGenerator<Creature>::SetTargetLocation(Creature*);
 template void FleeingMovementGenerator<Player>::DoReset(Player*);

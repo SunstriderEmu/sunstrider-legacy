@@ -14,6 +14,7 @@
 #include "ObjectGuid.h"
 #include "SpawnData.h"
 #include "Transaction.h"
+#include "SharedDefines.h"
 
 #include <bitset>
 #include <list>
@@ -254,7 +255,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         float GetHeight(float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, bool walkableOnly = false) const;
         float GetMinHeight(float x, float y) const;
         /* Get map level (checking vmaps) or liquid level at given point */
-        float GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground = nullptr, bool swim = false) const;
+        float GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground = nullptr, bool swim = false, float collisionHeight = 2.03128f) const; // DEFAULT_COLLISION_HEIGHT in Object.h
         bool IsPlayerWalkable(Position pos) const;
         //Returns INVALID_HEIGHT if nothing found. walkableOnly NYI
         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, bool walkableOnly = false) const;
@@ -269,7 +270,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         }
         Transport* GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject = nullptr);
 
-        bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask = 0, VMAP::ModelIgnoreFlags ignoreFlags = /*VMAP::ModelIgnoreFlags::Nothing*/ VMAP::ModelIgnoreFlags(0)) const;
+        bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask, LineOfSightChecks checks, VMAP::ModelIgnoreFlags ignoreFlags) const;
         void Balance() { _dynamicTree.balance(); }
         //get dynamic collision (gameobjects only ?)
         bool getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
@@ -301,8 +302,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         static void DeleteRespawnTimesInDB(uint16 mapId, uint32 instanceId);
 
-        ZLiquidStatus GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTypeMask, LiquidData *data = nullptr) const;
-        void GetFullTerrainStatusForPosition(float x, float y, float z, PositionFullTerrainStatus& data, uint8 reqLiquidType = MAP_ALL_LIQUIDS) const;
+        ZLiquidStatus GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTypeMask, LiquidData *data = nullptr, float collisionHeight = 2.03128f) const;  // DEFAULT_COLLISION_HEIGHT in Object.h
+        void GetFullTerrainStatusForPosition(float x, float y, float z, PositionFullTerrainStatus& data, uint8 reqLiquidType = MAP_ALL_LIQUIDS, float collisionHeight = 2.03128f) const; // DEFAULT_COLLISION_HEIGHT in Object.h
 
         uint32 GetAreaId(float x, float y, float z, bool *isOutdoors) const;
         bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;

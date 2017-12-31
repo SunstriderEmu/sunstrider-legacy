@@ -170,7 +170,7 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
         _recalculateTravel = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
         // then, if the target is in range, check also Line of Sight. Consider target has moved if out of sight.
         if (!_recalculateTravel)
-            _recalculateTravel = !_target->IsWithinLOSInMap(owner, VMAP::ModelIgnoreFlags::M2);
+            _recalculateTravel = !_target->IsWithinLOSInMap(owner, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2);
     }
 
     bool someoneMoved = (owner->GetExactDistSq(&lastOwnerXYZ) >= 0.1f*0.1f) || (_target->GetExactDistSq(&lastTargetXYZ) >= 0.1f*0.1f);

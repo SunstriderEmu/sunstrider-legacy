@@ -554,7 +554,7 @@ uint8 GridMap::getTerrainType(float x, float y) const
 }
 
 // Get water state on map
-ZLiquidStatus GridMap::GetLiquidStatus(float x, float y, float z, uint8 ReqLiquidTypeMask, LiquidData* data)
+ZLiquidStatus GridMap::GetLiquidStatus(float x, float y, float z, uint8 ReqLiquidTypeMask, LiquidData* data, float collisionHeight)
 {
     // Check water type (if no water return)
     if (!_liquidType && !_liquidFlags)
@@ -632,7 +632,7 @@ ZLiquidStatus GridMap::GetLiquidStatus(float x, float y, float z, uint8 ReqLiqui
     float ground_level = getHeight(x, y);
 
     // Check water level and ground level
-    if (liquid_level < ground_level || z < ground_level - 2)
+    if (liquid_level < ground_level || z < ground_level)
         return LIQUID_MAP_NO_WATER;
 
     // All ok in water -> store data
@@ -647,7 +647,7 @@ ZLiquidStatus GridMap::GetLiquidStatus(float x, float y, float z, uint8 ReqLiqui
     // For speed check as int values
     float delta = liquid_level - z;
 
-    if (delta > 2.0f)                   // Under water
+    if (delta > collisionHeight)                   // Under water
         return LIQUID_MAP_UNDER_WATER;
     if (delta > 0.0f)                   // In water
         return LIQUID_MAP_IN_WATER;

@@ -39,7 +39,7 @@ list<ObjectGuid> NearestGameObjects::Calculate()
     for(list<GameObject*>::iterator tIter = targets.begin(); tIter != targets.end(); ++tIter)
     {
         GameObject* go = *tIter;
-        if(bot->IsWithinLOSInMap(go, VMAP::ModelIgnoreFlags::M2))
+        if(bot->IsWithinLOSInMap(go, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
             result.push_back(ObjectGuid(go->GetGUID()));
     }
 
