@@ -238,9 +238,9 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
         if(!cId)
             return false;
 
-        uint32 lowguid = atoi(cId);
+        lowguid = atoi(cId);
 
-        /* FIXME: impossibel without entry
+        /* FIXME: impossible without entry
         if(lowguid)
             pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(),MAKE_GUID(lowguid,HighGuid::Unit));
         */

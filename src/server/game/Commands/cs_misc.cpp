@@ -1981,8 +1981,8 @@ bool ChatHandler::HandleSetTitleCommand(const char* args)
     if(CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId)) {
         if (Player* plr = GetSelectedUnit()->ToPlayer())
             plr->SetTitle(titleEntry,true);
-        else if (Player* plr = m_session->GetPlayer())
-            plr->SetTitle(titleEntry,true);
+        else if (Player* _plr = m_session->GetPlayer())
+            _plr->SetTitle(titleEntry,true);
     }
 
     return true;

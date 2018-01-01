@@ -225,11 +225,11 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
                 if (v[2] == "random")
                 {
-                    QueryResult query = WorldDatabase.PQuery("SELECT item_id, count FROM shop_items_random WHERE category = %u ORDER BY RAND() LIMIT 1", atoi(v[3].c_str()));
+                    QueryResult query2 = WorldDatabase.PQuery("SELECT item_id, count FROM shop_items_random WHERE category = %u ORDER BY RAND() LIMIT 1", atoi(v[3].c_str()));
 
-                    if (query)
+                    if (query2)
                     {
-                        Field *field = query->Fetch();
+                        Field *field = query2->Fetch();
                         itemId = field[0].GetUInt32();
                         count = field[1].GetUInt32();
                     }
@@ -309,15 +309,18 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                 }
 
                 do {
-                    Field *fields = result->Fetch();
-                    uint32 itemId = fields[0].GetUInt32();
+                    Field* fields2 = result->Fetch();
+                    uint32 itemId = fields2[0].GetUInt32();
 
                     ItemPosCountVec dest;
                     uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, 1);
-                    if (msg == EQUIP_ERR_OK) {
+                    if (msg == EQUIP_ERR_OK) 
+                    {
                         Item *item = player->StoreNewItem(dest, itemId, true);
                         player->SendNewItem(item, 1, true, true);
-                    } else {
+                    }
+                    else 
+                    {
                         player->SendEquipError(msg, nullptr, nullptr);
                         PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, 1);
                     }

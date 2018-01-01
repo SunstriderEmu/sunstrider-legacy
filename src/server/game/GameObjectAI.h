@@ -7,8 +7,8 @@
 #include "CreatureAI.h"
 #include "Object.h"
 #include "GameObject.h"
+#include "Optional.h"
 
-//class GameObject;
 enum GOState: uint32;
 enum LootState: uint32;
 
@@ -43,7 +43,9 @@ class TC_GAME_API GameObjectAI
 
         virtual void QuestReward(Player* player, Quest const* quest, uint32 opt) { }
 
-        uint32 GetDialogStatus(Player* /*player*/);
+        // Called when the dialog status between a player and the gameobject is requested.
+        virtual Optional<QuestGiverStatus> GetDialogStatus(Player* /*player*/) { return boost::none; }
+
         virtual void Destroyed(Player* player, uint32 eventId) { }
         virtual void SetData(uint32 id, uint32 value, Unit* setter = nullptr) { }
         virtual void GetData(uint32 id) const { }

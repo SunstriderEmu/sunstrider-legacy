@@ -572,18 +572,17 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
     {
         case TYPEID_GAMEOBJECT:
         {
-            QuestGiverStatus questStatus = QuestGiverStatus(questgiver->ToGameObject()->AI()->GetDialogStatus(this));
-            if (questStatus != DIALOG_STATUS_SCRIPTED_NO_STATUS)
-                return questStatus;
+            if (auto questStatus = questgiver->ToGameObject()->AI()->GetDialogStatus(this))
+                return *questStatus;
             qir = &sObjectMgr->mGOQuestInvolvedRelations;
             qr  = &sObjectMgr->mGOQuestRelations;
             break;
         }
         case TYPEID_UNIT:
         {
-            QuestGiverStatus questStatus = QuestGiverStatus(questgiver->ToCreature()->AI()->GetDialogStatus(this));
-            if (questStatus != DIALOG_STATUS_SCRIPTED_NO_STATUS)
-                return questStatus;
+            if (auto questStatus = questgiver->ToCreature()->AI()->GetDialogStatus(this))
+                return *questStatus;
+
             qir = &sObjectMgr->mCreatureQuestInvolvedRelations;
             qr  = &sObjectMgr->mCreatureQuestRelations;
             break;

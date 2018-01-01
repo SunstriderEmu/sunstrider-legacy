@@ -840,6 +840,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsHomeless() const { return m_homeless; }
 
         bool IsEscortNPC(bool onlyIfActive = true);
+
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
         bool InitEntry(uint32 entry, const CreatureData* data = nullptr);

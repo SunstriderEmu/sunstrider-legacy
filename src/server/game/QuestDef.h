@@ -112,8 +112,6 @@ enum QuestGiverStatus
     DIALOG_STATUS_REWARD2                  = 7,             // not yellow dot on minimap
     DIALOG_STATUS_REWARD                   = 8,              // yellow dot on minimap
 #endif
-                                                            // Custom value meaning that script call did not return any valid quest status
-    DIALOG_STATUS_SCRIPTED_NO_STATUS     = 100,
 };
 
 enum __QuestFlags
