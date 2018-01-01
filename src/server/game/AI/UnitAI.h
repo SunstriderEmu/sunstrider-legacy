@@ -208,11 +208,6 @@ class TC_GAME_API UnitAI
         Unit* SelectTarget(SelectAggroTarget target, uint32 position, float distNear, float distFar, bool playerOnly);
         Unit* SelectTarget(uint32 position, float distMin, float distMax, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex);
         void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint32 notHavingAuraId = 0, uint8 effIndex = 0);
-
-        virtual void WaypointPathStarted(uint32 /*nodeId*/, uint32 /*pathId*/) { }
-        virtual void WaypointStarted(uint32 /*nodeId*/, uint32 /*pathId*/) { } 
-        virtual void WaypointReached(uint32 /*nodeId*/, uint32 /*pathId*/) { } 
-        virtual void WaypointPathEnded(uint32 /*nodeId*/, uint32 /*pathId*/) { } 
 };
 
 #endif //TRINITY_UNITAI_H

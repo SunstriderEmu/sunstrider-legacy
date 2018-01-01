@@ -147,7 +147,7 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
     i_nextMoveTime.Reset(1000); //movement will start after 1s
 
     // inform AI
-    if (creature->AI())
+    if (creature->IsAIEnabled)
         creature->AI()->WaypointPathStarted(_path->nodes[_currentNode].id, _path->id);
 
     return true;
@@ -235,7 +235,7 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 a
     {
         //waypoints ended
         creature->UpdateCurrentWaypointInfo(0, 0);
-        if (creature->AI())
+        if (creature->IsAIEnabled)
             creature->AI()->WaypointPathEnded(arrivedNode.id, _path->id);
         return;
     }
@@ -584,7 +584,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     }
 
     // inform AI
-    if (creature->AI())
+    if (creature->IsAIEnabled)
     {
         WaypointNode const& dbCurrentNode = _path->nodes.at(_currentNode);
         creature->AI()->WaypointStarted(dbCurrentNode.id, _path->id);
@@ -674,7 +674,7 @@ void WaypointMovementGenerator<Creature>::MovementInform(Creature* creature, uin
     onArrivedProcessing = true;
 #endif
 
-    if (creature->AI())
+    if (creature->IsAIEnabled)
     {
         creature->AI()->MovementInform(WAYPOINT_MOTION_TYPE, DBNodeId);
         if(_path)

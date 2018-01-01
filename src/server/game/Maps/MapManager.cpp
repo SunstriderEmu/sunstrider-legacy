@@ -323,10 +323,10 @@ uint32 MapManager::GetNumInstances()
     uint32 ret = 0;
     for(auto & i_map : i_maps)
     {
-        Map *map = i_map.second;
-        if(!map->Instanceable()) 
+        Map* _map = i_map.second;
+        if(!_map->Instanceable())
             continue;
-        MapInstanced::InstancedMaps &maps = ((MapInstanced *)map)->GetInstancedMaps();
+        MapInstanced::InstancedMaps &maps = ((MapInstanced *)_map)->GetInstancedMaps();
         for(auto & map : maps)
             if(map.second->IsDungeon()) ret++;
     }
@@ -340,10 +340,10 @@ uint32 MapManager::GetNumPlayersInInstances()
     uint32 ret = 0;
     for(auto & i_map : i_maps)
     {
-        Map *map = i_map.second;
-        if(!map->Instanceable()) 
+        Map* _map = i_map.second;
+        if(!_map->Instanceable())
             continue;
-        MapInstanced::InstancedMaps &maps = ((MapInstanced *)map)->GetInstancedMaps();
+        MapInstanced::InstancedMaps &maps = ((MapInstanced *)_map)->GetInstancedMaps();
         for(auto & map : maps)
             if(map.second->IsDungeon())
                 ret += ((InstanceMap*)map.second)->GetPlayers().getSize();
