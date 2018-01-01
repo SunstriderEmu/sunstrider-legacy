@@ -11,8 +11,11 @@ git:
 branch:
   only:
     - master
-  
+
 sudo: required
+
+services:
+  - mysql
 
 before_install:
   - export DEBIAN_FRONTEND=noninteractive
