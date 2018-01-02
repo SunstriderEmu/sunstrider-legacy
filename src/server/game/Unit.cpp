@@ -3632,8 +3632,6 @@ void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
         if(!spell->IsInterruptable())
             return;
 
-        m_currentSpells[spellType] = nullptr;
-
         // send autorepeat cancel message for autorepeat spells
         if (spellType == CURRENT_AUTOREPEAT_SPELL)
         {
@@ -3641,9 +3639,12 @@ void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
                 (this->ToPlayer())->SendAutoRepeatCancel();
         }
 
+        m_currentSpells[spellType] = nullptr;
+
         if (spell->getState() != SPELL_STATE_FINISHED)
             spell->cancel();
-        spell->SetReferencedFromCurrent(false);
+        else
+            spell->SetReferencedFromCurrent(false);
     }
 }
 
