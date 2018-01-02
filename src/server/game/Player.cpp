@@ -5353,7 +5353,7 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
     return false;
 }
 
-void Player::UpdateWeaponSkill (WeaponAttackType attType)
+void Player::UpdateWeaponSkill(WeaponAttackType attType)
 {
     // no skill gain in pvp
     Unit *pVictim = GetVictim();
@@ -5368,29 +5368,28 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
 
     uint32 weapon_skill_gain = sWorld->getConfig(CONFIG_SKILL_GAIN_WEAPON);
 
-    switch(attType)
+    Item* tmpitem = GetWeaponForAttack(attType, true);
+    if (!tmpitem && attType == BASE_ATTACK)
     {
-        case BASE_ATTACK:
-        {
-            Item *tmpitem = GetWeaponForAttack(attType,true);
-
-            if (!tmpitem)
-                UpdateSkill(SKILL_UNARMED,weapon_skill_gain);
-            else if(tmpitem->GetTemplate()->SubClass != ITEM_SUBCLASS_WEAPON_FISHING_POLE)
-                UpdateSkill(tmpitem->GetSkill(),weapon_skill_gain);
-            break;
-        }
-        case OFF_ATTACK:
-        case RANGED_ATTACK:
-        {
-            Item *tmpitem = GetWeaponForAttack(attType,true);
-            if (tmpitem)
-                UpdateSkill(tmpitem->GetSkill(),weapon_skill_gain);
-            break;
-        }
-        default:
-            break;
+        // Keep unarmed & fist weapon skills in sync
+        UpdateSkill(SKILL_UNARMED, weapon_skill_gain);
+        UpdateSkill(SKILL_FIST_WEAPONS, weapon_skill_gain);
     }
+    else if (tmpitem)
+    {
+        switch (tmpitem->GetTemplate()->SubClass)
+        {
+        case ITEM_SUBCLASS_WEAPON_FISHING_POLE:
+            break;
+        case ITEM_SUBCLASS_WEAPON_FIST:
+            UpdateSkill(SKILL_UNARMED, weapon_skill_gain);
+            // no break intended
+        default:
+            UpdateSkill(tmpitem->GetSkill(), weapon_skill_gain);
+            break;
+        }
+    }
+
     UpdateAllCritPercentages();
 }
 
