@@ -228,7 +228,7 @@ void BattlegroundAB::AddPlayer(Player *plr)
     PlayerScores[plr->GetGUID()] = sc;
 }
 
-void BattlegroundAB::RemovePlayer(Player * /*plr*/, uint64 /*guid*/)
+void BattlegroundAB::RemovePlayer(Player * /*plr*/, ObjectGuid /*guid*/)
 {
 
 }
@@ -405,7 +405,7 @@ void BattlegroundAB::_NodeDeOccupied(uint8 node)
         return;
 
     // Those who are waiting to resurrect at this node are taken to the closest own node's graveyard
-    std::vector<uint64> ghost_list = m_ReviveQueue[BgCreatures[node]];
+    std::vector<ObjectGuid> ghost_list = m_ReviveQueue[BgCreatures[node]];
     if( !ghost_list.empty() )
     {
         WorldSafeLocsEntry const *ClosestGrave = nullptr;

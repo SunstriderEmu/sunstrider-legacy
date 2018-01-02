@@ -98,7 +98,7 @@ struct SpellDestination
     WorldLocation _position;
     //no transport handling in spell destination for BC client
 #ifdef LICH_KING
-    uint64 _transportGUID;
+    ObjectGuid _transportGUID;
     Position _transportOffset;
 #endif
 };
@@ -117,22 +117,22 @@ public:
 
     void SetTargetFlag(SpellCastTargetFlags flag) { m_targetMask |= flag; }
 
-    uint64 GetUnitTargetGUID() const;
+    ObjectGuid GetUnitTargetGUID() const;
     Unit* GetUnitTarget() const;
     void SetUnitTarget(Unit* target);
 
-    uint64 GetGOTargetGUID() const;
+    ObjectGuid GetGOTargetGUID() const;
     GameObject* GetGOTarget() const;
     void SetGOTarget(GameObject* target);
 
-    uint64 GetCorpseTargetGUID() const;
+    ObjectGuid GetCorpseTargetGUID() const;
     Corpse* GetCorpseTarget() const;
 
     WorldObject* GetObjectTarget() const;
-    uint64 GetObjectTargetGUID() const;
+    ObjectGuid GetObjectTargetGUID() const;
     void RemoveObjectTarget();
 
-    uint64 GetItemTargetGUID() const { return m_itemTargetGUID; }
+    ObjectGuid GetItemTargetGUID() const { return m_itemTargetGUID; }
     Item* GetItemTarget() const { return m_itemTarget; }
     uint32 GetItemTargetEntry() const { return m_itemTargetEntry; }
     void SetItemTarget(Item* item);
@@ -175,7 +175,7 @@ public:
     void OutDebug() const;
 
     // sunwell: Channel data
-    void SetObjectTargetChannel(uint64 targetGUID);
+    void SetObjectTargetChannel(ObjectGuid targetGUID);
     void SetDstChannel(SpellDestination const& spellDest);
     WorldObject* GetObjectTargetChannel(Unit* caster) const;
     bool HasDstChannel() const;
@@ -189,8 +189,8 @@ private:
     Item* m_itemTarget;
 
     // object GUID/etc, can be used always
-    uint64 m_objectTargetGUID;
-    uint64 m_itemTargetGUID;
+    ObjectGuid m_objectTargetGUID;
+    ObjectGuid m_itemTargetGUID;
     uint32 m_itemTargetEntry;
 
     SpellDestination m_src;
@@ -201,7 +201,7 @@ private:
 
     // sunwell: Save channel data
     SpellDestination m_dstChannel;
-    uint64 m_objectTargetGUIDChannel;
+    ObjectGuid m_objectTargetGUIDChannel;
 };
 
 struct SpellValue
@@ -242,13 +242,13 @@ enum SpellEffectHandleMode
 // special structure containing data for channel target spells
 struct ChannelTargetData
 {
-    ChannelTargetData(uint64 cguid, const SpellDestination* dst) : channelGUID(cguid)
+    ChannelTargetData(ObjectGuid cguid, const SpellDestination* dst) : channelGUID(cguid)
     {
         if (dst)
             spellDst = *dst;
     }
 
-    uint64 channelGUID;
+    ObjectGuid channelGUID;
     SpellDestination spellDst;
 };
 
@@ -381,7 +381,7 @@ class TC_GAME_API Spell
         void EffectPlayMusic(uint32 i);
         void EffectForceCastWithValue(uint32 i);
 
-        Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID = 0, Spell** triggeringContainer = nullptr, bool skipCheck = false);
+        Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags, ObjectGuid originalCasterGUID = ObjectGuid::Empty, Spell** triggeringContainer = nullptr, bool skipCheck = false);
         ~Spell();
 
         void InitExplicitTargets(SpellCastTargets const& targets);
@@ -480,7 +480,7 @@ class TC_GAME_API Spell
         const SpellInfo* const m_spellInfo;
         int32 m_currentBasePoints[3];                       // cache SpellInfo::EffectBasePoints and use for set custom base points
         Item* m_CastItem;
-        uint64 m_castItemGUID;
+        ObjectGuid m_castItemGUID;
         uint8 m_cast_count;
         SpellCastTargets m_targets;
         bool m_skipHitCheck;
@@ -547,14 +547,14 @@ class TC_GAME_API Spell
         void TriggerGlobalCooldown();
         void CancelGlobalCooldown();
 
-        void SendLoot(uint64 guid, LootType loottype);
+        void SendLoot(ObjectGuid guid, LootType loottype);
         std::pair<float, float> GetMinMaxRange(bool strict);
 
         Unit* const m_caster;
 
         SpellValue* const m_spellValue;
 
-        uint64 m_originalCasterGUID;                        // real source of cast (aura caster/etc), used for spell targets selection
+        ObjectGuid m_originalCasterGUID;                    // real source of cast (aura caster/etc), used for spell targets selection
                                                             // e.g. damage around area spell trigered by victim aura and damage enemies of aura caster
         Unit* m_originalCaster;                             // cached pointer for m_originalCaster, updated at Spell::UpdatePointers()
 
@@ -620,7 +620,7 @@ class TC_GAME_API Spell
         // Targets store structures and data
         struct TargetInfo
         {
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             uint64 timeDelay;
             SpellMissInfo missCondition:8;
             SpellMissInfo reflectResult:8;
@@ -636,7 +636,7 @@ class TC_GAME_API Spell
 
         struct GOTargetInfo
         {
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             uint64 timeDelay;
             uint8  effectMask:8;
             bool   processed:1;
@@ -938,12 +938,12 @@ class TC_GAME_API SpellEvent : public BasicEvent
 class TC_GAME_API ReflectEvent : public BasicEvent
 {
 public:
-    ReflectEvent(Unit* caster, uint64 targetGUID, const SpellInfo* spellInfo) : _caster(caster), _targetGUID(targetGUID), _spellInfo(spellInfo) { }
+    ReflectEvent(Unit* caster, ObjectGuid targetGUID, const SpellInfo* spellInfo) : _caster(caster), _targetGUID(targetGUID), _spellInfo(spellInfo) { }
     bool Execute(uint64 e_time, uint32 p_time) override;
 
 protected:
 	Unit* _caster;
-    uint64 _targetGUID;
+    ObjectGuid _targetGUID;
     const SpellInfo* _spellInfo;
 };
 

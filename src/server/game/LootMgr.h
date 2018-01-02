@@ -220,9 +220,9 @@ struct TC_GAME_API Loot
     std::vector<uint32> removed_items;
     uint32 gold;
     uint8 unlootedCount;
-    uint64 roundRobinPlayer;                            // GUID of the player having the Round-Robin ownership for the loot. If 0, round robin owner has released.
+    ObjectGuid roundRobinPlayer;                            // GUID of the player having the Round-Robin ownership for the loot. If 0, round robin owner has released.
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), roundRobinPlayer(0) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
@@ -250,7 +250,7 @@ struct TC_GAME_API Loot
         quest_items.clear();
         gold = 0;
         unlootedCount = 0;
-        roundRobinPlayer = 0;
+        roundRobinPlayer.Clear();
         i_LootValidatorRefManager.clearReferences();
     }
 
@@ -260,8 +260,8 @@ struct TC_GAME_API Loot
     void NotifyItemRemoved(uint8 lootIndex);
     void NotifyQuestItemRemoved(uint8 questIndex);
     void NotifyMoneyRemoved();
-    void AddLooter(uint64 GUID) { PlayersLooting.insert(GUID); }
-    void RemoveLooter(uint64 GUID) { PlayersLooting.erase(GUID); }
+    void AddLooter(ObjectGuid GUID) { PlayersLooting.insert(GUID); }
+    void RemoveLooter(ObjectGuid GUID) { PlayersLooting.erase(GUID); }
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
     void FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner);
@@ -276,7 +276,7 @@ struct TC_GAME_API Loot
     bool hasOverThresholdItem() const;
 
     private:
-        std::set<uint64> PlayersLooting;
+        std::set<ObjectGuid> PlayersLooting;
         QuestItemMap PlayerQuestItems;
         QuestItemMap PlayerFFAItems;
         QuestItemMap PlayerNonQuestNonFFAConditionalItems;

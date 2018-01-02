@@ -18,7 +18,7 @@ class TC_GAME_API Bag : public Item
         void AddToWorld() override;
         void RemoveFromWorld() override;
 
-        bool Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto) override;
+        bool Create(ObjectGuid::LowType guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto) override;
 
         void StoreItem( uint8 slot, Item *pItem, bool update );
         void RemoveItem( uint8 slot, bool update );
@@ -26,7 +26,7 @@ class TC_GAME_API Bag : public Item
         Item* GetItemByPos( uint8 slot ) const;
         uint32 GetItemCount( uint32 item, Item* eItem = nullptr ) const;
 
-        uint8 GetSlotByItemGUID(uint64 guid) const;
+        uint8 GetSlotByItemGUID(ObjectGuid guid) const;
         bool IsEmpty() const;
         uint32 GetFreeSlots() const;
         uint32 GetBagSize() const { return GetUInt32Value(CONTAINER_FIELD_NUM_SLOTS); }
@@ -35,7 +35,7 @@ class TC_GAME_API Bag : public Item
         // overwrite virtual Item::SaveToDB
         void SaveToDB(SQLTransaction trans) override;
         // overwrite virtual Item::LoadFromDB
-        bool LoadFromDB(uint32 guid, uint64 owner_guid) override;
+        bool LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid) override;
         // overwrite virtual Item::DeleteFromDB
         void DeleteFromDB() override;
 

@@ -28,7 +28,7 @@ bool LogsDatabaseAccessor::ShouldLog(WorldConfigs configIndex, WorldConfigs conf
     return (duration != 0 || (gmInvolved && (gmDuration != 0)));
 }
 
-void LogsDatabaseAccessor::Enchantment(Player const* caster, Player const* targetPlayer, uint32 itemGUIDLow, uint32 itemEntry, uint32 enchantID, bool permanent)
+void LogsDatabaseAccessor::Enchantment(Player const* caster, Player const* targetPlayer, ObjectGuid::LowType itemGUIDLow, uint32 itemEntry, uint32 enchantID, bool permanent)
 {
     bool gmInvolved = caster->GetSession()->GetSecurity() > SEC_PLAYER;
 
@@ -37,8 +37,8 @@ void LogsDatabaseAccessor::Enchantment(Player const* caster, Player const* targe
 
     // PrepareStatement(LOGS_INS_CHAR_ENCHANT, "INSERT INTO char_enchant (player_guid, target_player_guid, item_guid, item_entry, enchant_id, permanent, player_IP, target_player_IP, time, gm_involved) VALUES (?,?,?,?,?,?,?,?, UNIX_TIMESTAMP(),?)", CONNECTION_ASYNC);
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_CHAR_ENCHANT);
-    stmt->setUInt32(0, caster->GetGUIDLow());
-    stmt->setUInt32(1, targetPlayer->GetGUIDLow());
+    stmt->setUInt32(0, caster->GetGUID().GetCounter());
+    stmt->setUInt32(1, targetPlayer->GetGUID().GetCounter());
     stmt->setUInt32(2, itemGUIDLow);
     stmt->setUInt32(3, itemEntry);
     stmt->setUInt32(4, enchantID);
@@ -97,7 +97,7 @@ void LogsDatabaseAccessor::BossDown(Creature const* victim, std::string const& b
     LogsDatabase.Execute(stmt);
 }
 
-void LogsDatabaseAccessor::CharacterDelete(WorldSession const* session, uint32 playerGUID, std::string const& charName, uint8 /* level */, std::string const& IP)
+void LogsDatabaseAccessor::CharacterDelete(WorldSession const* session, ObjectGuid::LowType playerGUID, std::string const& charName, uint8 /* level */, std::string const& IP)
 {
     bool gmInvolved = session->GetSecurity() > SEC_PLAYER;
 
@@ -116,7 +116,7 @@ void LogsDatabaseAccessor::CharacterDelete(WorldSession const* session, uint32 p
     LogsDatabase.Execute(stmt);
 }
 
-void LogsDatabaseAccessor::CharacterRename(WorldSession const* session, uint32 playerGUID, std::string const& oldName, std::string const& newName, std::string const& IP)
+void LogsDatabaseAccessor::CharacterRename(WorldSession const* session, ObjectGuid::LowType playerGUID, std::string const& oldName, std::string const& newName, std::string const& IP)
 {
     bool gmInvolved = session->GetSecurity() > SEC_PLAYER;
 
@@ -141,14 +141,14 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
 
     Player* player = m_session ? m_session->GetPlayer() : nullptr;
 
-    uint64 targetGUID = 0;
+    ObjectGuid targetGUID;
     if (target)
     {
         //be sure to have table guid
         if (target->GetTypeId() == TYPEID_UNIT)
-            targetGUID = MAKE_NEW_GUID(target->ToCreature()->GetSpawnId(), target->ToCreature()->GetEntry(), HighGuid::Unit);
+            targetGUID = ObjectGuid(HighGuid::Unit, target->ToCreature()->GetEntry(), target->ToCreature()->GetSpawnId());
         else if (target->GetTypeId() == TYPEID_GAMEOBJECT)
-            targetGUID = ObjectGuid(HighGuid::GameObject, target->ToGameObject()->GetEntry(), target->ToGameObject()->GetSpawnId()).GetRawValue();
+            targetGUID = ObjectGuid(HighGuid::GameObject, target->ToGameObject()->GetEntry(), target->ToGameObject()->GetSpawnId());
         else
             targetGUID = target->GetGUID();
     }
@@ -185,7 +185,7 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
     selection_name, selection_map, selection_x, selection_y, selection_z, command, IP) VALUES (?,?,?,UNIX_TIMESTAMP(),?,?,?,??,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC); */
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_GM_COMMAND);
     stmt->setUInt32(0, m_session ? m_session->GetAccountId() : 0);
-    stmt->setUInt32(1, player ? player->GetGUIDLow() : 0);
+    stmt->setUInt32(1, player ? player->GetGUID().GetCounter() : 0);
     stmt->setUInt8(2, m_session ? m_session->GetSecurity() : 0);
     stmt->setUInt32(3, player ? player->GetMapId() : 0);
     stmt->setFloat(4, player ? player->GetPositionX() : 0);
@@ -194,7 +194,7 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
     stmt->setString(7, areaName);
     stmt->setString(8, zoneName);
     stmt->setString(9, GetLogNameForGuid(targetGUID));
-    stmt->setUInt32(10, GUID_LOPART(targetGUID));
+    stmt->setUInt32(10, targetGUID.GetCounter());
     stmt->setString(11, targetNameLog);
     stmt->setUInt32(12, (player && player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetMapId() : 0);
     stmt->setFloat(13, (player && player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetPositionX() : 0);
@@ -223,9 +223,9 @@ void LogsDatabaseAccessor::CharacterChat(ChatMsg type, Language lang, Player con
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_CHAR_CHAT);
 
     stmt->setUInt8( 0, uint8(type));
-    stmt->setUInt32(1, player->GetGUIDLow());
+    stmt->setUInt32(1, player->GetGUID().GetCounter());
     stmt->setUInt32(2, session->GetAccountId());
-    stmt->setUInt32(3, toPlayer ? toPlayer->GetGUIDLow() : 0);
+    stmt->setUInt32(3, toPlayer ? toPlayer->GetGUID().GetCounter() : 0);
     stmt->setUInt32(4, logChannelId);
     stmt->setString(5, to);
     stmt->setString(6, msg);
@@ -248,7 +248,7 @@ void LogsDatabaseAccessor::GuildMoneyTransfer(Player const* player, uint32 guild
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_CHAR_GUILD_MONEY);
 
     stmt->setUInt32(0, player->GetSession()->GetAccountId());
-    stmt->setUInt32(1, player->GetGUIDLow());
+    stmt->setUInt32(1, player->GetGUID().GetCounter());
     stmt->setUInt32(2, guildId);
     stmt->setInt32(3, money);
     stmt->setString(4, player->GetSession()->GetRemoteAddress());
@@ -258,7 +258,7 @@ void LogsDatabaseAccessor::GuildMoneyTransfer(Player const* player, uint32 guild
 }
 
 
-void LogsDatabaseAccessor::GuildBankItemTransfer(Player const* player, bool deposit, uint32 itemGuid, uint32 itemEntry, uint8 itemCount)
+void LogsDatabaseAccessor::GuildBankItemTransfer(Player const* player, bool deposit, ObjectGuid::LowType itemGuid, uint32 itemEntry, uint8 itemCount)
 {
     bool gmInvolved = player->GetSession()->GetSecurity() > SEC_PLAYER;
 
@@ -269,7 +269,7 @@ void LogsDatabaseAccessor::GuildBankItemTransfer(Player const* player, bool depo
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_CHAR_ITEM_GUILD_BANK);
 
     stmt->setUInt32(0, player->GetSession()->GetAccountId());
-    stmt->setUInt32(1, player->GetGUIDLow());
+    stmt->setUInt32(1, player->GetGUID().GetCounter());
     stmt->setUInt32(2, player->GetGuildId());
     stmt->setString(3, deposit ? "chartoguild" : "guildtochar");
     stmt->setUInt32(4, itemGuid);
@@ -292,7 +292,7 @@ void LogsDatabaseAccessor::CharacterItemDelete(Player const* player, Item const*
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_CHAR_ITEM_DELETE);
 
     stmt->setUInt32(0, player->GetSession()->GetAccountId());
-    stmt->setUInt32(1, player->GetGUIDLow());
+    stmt->setUInt32(1, player->GetGUID().GetCounter());
     stmt->setUInt32(2, item->GetEntry());
     stmt->setUInt32(3, item->GetCount());
     stmt->setString(4, player->GetSession()->GetRemoteAddress());
@@ -301,7 +301,7 @@ void LogsDatabaseAccessor::CharacterItemDelete(Player const* player, Item const*
     LogsDatabase.Execute(stmt);
 }
 
-void LogsDatabaseAccessor::Sanction(WorldSession const* authorSession, uint32 targetAccount, uint32 targetGUID, SanctionType type, uint32 durationSecs, std::string const& reason)
+void LogsDatabaseAccessor::Sanction(WorldSession const* authorSession, uint32 targetAccount, ObjectGuid::LowType targetGUID, SanctionType type, uint32 durationSecs, std::string const& reason)
 {
     if (!ShouldLog(CONFIG_LOG_SANCTIONS, WorldConfigs(0), false))
         return;
@@ -317,7 +317,7 @@ void LogsDatabaseAccessor::Sanction(WorldSession const* authorSession, uint32 ta
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_SANCTION);
 
     stmt->setUInt32(0, authorSession ? authorSession->GetAccountId() : 0);
-    stmt->setUInt32(1, authorSession ? authorSession->GetPlayer()->GetGUIDLow() : 0);
+    stmt->setUInt32(1, authorSession ? authorSession->GetPlayer()->GetGUID().GetCounter() : 0);
     stmt->setUInt32(2, targetAccount);
     stmt->setUInt32(3, targetGUID);
     stmt->setString(4, targetIP);
@@ -329,7 +329,7 @@ void LogsDatabaseAccessor::Sanction(WorldSession const* authorSession, uint32 ta
     LogsDatabase.Execute(stmt);
 }
 
-void LogsDatabaseAccessor::RemoveSanction(WorldSession const* authorSession, uint32 targetAccount, uint32 targetGUID, std::string const& targetIP, SanctionType type)
+void LogsDatabaseAccessor::RemoveSanction(WorldSession const* authorSession, uint32 targetAccount, ObjectGuid::LowType targetGUID, std::string const& targetIP, SanctionType type)
 {
     if (!ShouldLog(CONFIG_LOG_SANCTIONS, WorldConfigs(0), false))
         return;
@@ -338,7 +338,7 @@ void LogsDatabaseAccessor::RemoveSanction(WorldSession const* authorSession, uin
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_SANCTION_REMOVE);
 
     stmt->setUInt32(0, authorSession ? authorSession->GetAccountId() : 0);
-    stmt->setUInt32(1, authorSession ? authorSession->GetPlayer()->GetGUIDLow() : 0);
+    stmt->setUInt32(1, authorSession ? authorSession->GetPlayer()->GetGUID().GetCounter() : 0);
     stmt->setUInt32(2, targetAccount);
     stmt->setUInt32(3, targetGUID);
     stmt->setString(4, targetIP);
@@ -356,7 +356,7 @@ void LogsDatabaseAccessor::Mail(uint32 mailId, MailMessageType type, uint32 send
     Player const* sender = nullptr;
     if (type == MAIL_NORMAL)
     {
-        if ((sender = ObjectAccessor::FindPlayer(sender_guidlow_or_entry)))
+        if ((sender = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, sender_guidlow_or_entry))))
         {
             IP = sender->GetSession()->GetRemoteAddress();
             if(sender->GetSession()->GetSecurity() > SEC_PLAYER)
@@ -427,8 +427,8 @@ void LogsDatabaseAccessor::CharacterTrade(Player const* p1, Player const* p2, st
     stmt->setUInt32(0, max_trade_id);
     stmt->setUInt32(1, p1->GetSession()->GetAccountId());
     stmt->setUInt32(2, p2->GetSession()->GetAccountId());
-    stmt->setUInt32(3, p1->GetGUIDLow());
-    stmt->setUInt32(4, p2->GetGUIDLow());
+    stmt->setUInt32(3, p1->GetGUID().GetCounter());
+    stmt->setUInt32(4, p2->GetGUID().GetCounter());
     stmt->setUInt32(5, p1Gold);
     stmt->setUInt32(6, p2Gold);
     stmt->setString(7, p1->GetSession()->GetRemoteAddress());
@@ -446,7 +446,7 @@ void LogsDatabaseAccessor::CharacterTrade(Player const* p1, Player const* p2, st
 
         stmt->setUInt32(0, tradeId);
         stmt->setBool(1, p1top2);
-        stmt->setUInt32(2, item->GetGUIDLow());
+        stmt->setUInt32(2, item->GetGUID().GetCounter());
         stmt->setUInt32(3, item->GetEntry());
         stmt->setUInt8(4, item->GetCount());
 
@@ -482,7 +482,7 @@ void LogsDatabaseAccessor::CleanupOldMonitorLogs()
     }
 }
 
-void LogsDatabaseAccessor::WonAuction(uint32 bidderAccount, uint32 bidderGUID, uint32 sellerAccount, uint32 sellerGUID, uint32 itemGUID, uint32 itemEntry, uint32 itemCount)
+void LogsDatabaseAccessor::WonAuction(uint32 bidderAccount, ObjectGuid::LowType bidderGUID, uint32 sellerAccount, ObjectGuid::LowType sellerGUID, ObjectGuid::LowType itemGUID, uint32 itemEntry, uint32 itemCount)
 {
     uint32 sellerSecurity = sAccountMgr->GetSecurity(sellerAccount);
     uint32 bidderSecurity = sAccountMgr->GetSecurity(bidderAccount);
@@ -506,7 +506,7 @@ void LogsDatabaseAccessor::WonAuction(uint32 bidderAccount, uint32 bidderGUID, u
     LogsDatabase.Execute(stmt);
 }
 
-void LogsDatabaseAccessor::CreateAuction(Player const* player, uint32 itemGUID, uint32 itemEntry, uint32 itemCount)
+void LogsDatabaseAccessor::CreateAuction(Player const* player, ObjectGuid::LowType itemGUID, uint32 itemEntry, uint32 itemCount)
 {
     WorldSession const* session = player->GetSession();
     uint32 accountId = session->GetAccountId();
@@ -520,7 +520,7 @@ void LogsDatabaseAccessor::CreateAuction(Player const* player, uint32 itemGUID, 
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_CHAR_AUCTION_CREATE);
     
     stmt->setUInt32(0, accountId);
-    stmt->setUInt32(1, player->GetGUIDLow());
+    stmt->setUInt32(1, player->GetGUID().GetCounter());
     stmt->setUInt32(2, itemGUID);
     stmt->setUInt32(3, itemEntry);
     stmt->setUInt16(4, itemCount);
@@ -554,7 +554,7 @@ void LogsDatabaseAccessor::BuyOrSellItemToVendor(BuyTransactionType type, Player
 
     stmt->setString(0, transaction_type);
     stmt->setUInt32(1, player->GetSession()->GetAccountId());
-    stmt->setUInt32(2, player->GetGUIDLow());
+    stmt->setUInt32(2, player->GetGUID().GetCounter());
     stmt->setUInt32(3, item->GetEntry());
     stmt->setUInt32(4, item->GetCount());
     stmt->setUInt32(5, vendor->GetEntry());

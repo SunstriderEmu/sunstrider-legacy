@@ -27,10 +27,6 @@
 
 void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     if(GM_Ticket *ticket = sObjectMgr->GetGMTicketByPlayer(GetPlayer()->GetGUID()))
     {
       WorldPacket data( SMSG_GMTICKET_CREATE, 4 );
@@ -63,7 +59,7 @@ void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
     ticket->pos_z = z;
     ticket->timestamp = time(nullptr);
     ticket->closed = 0;
-    ticket->assignedToGM = 0;
+    ticket->assignedToGM = ObjectGuid::Empty;
     ticket->comment = "";
 
     sObjectMgr->AddOrUpdateGMTicket(*ticket, true);
@@ -73,9 +69,6 @@ void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGMTicketUpdateOpcode( WorldPacket & recvData)
 {
-    
-    
-    
     WorldPacket data(SMSG_GMTICKET_UPDATETEXT, 4);
 
     std::string message;
@@ -102,8 +95,6 @@ void WorldSession::HandleGMTicketUpdateOpcode( WorldPacket & recvData)
 
 void WorldSession::HandleGMTicketDeleteOpcode( WorldPacket & /*recvData*/)
 {
-    
-    
     GM_Ticket* ticket = sObjectMgr->GetGMTicketByPlayer(GetPlayer()->GetGUID());
     if(ticket)
     {
@@ -119,8 +110,6 @@ void WorldSession::HandleGMTicketDeleteOpcode( WorldPacket & /*recvData*/)
 
 void WorldSession::HandleGMTicketGetTicketOpcode( WorldPacket & /*recvData*/)
 {
-    
-    
     WorldPacket data( SMSG_QUERY_TIME_RESPONSE, 4+4 );
     data << (uint32)time(nullptr);
     data << (uint32)0;
@@ -143,20 +132,20 @@ void WorldSession::HandleGMTicketSystemStatusOpcode( WorldPacket & /*recvData*/)
 
 void WorldSession::SendGMTicketGetTicket(uint32 status, char const* text)
 {
-  int len = text ? strlen(text) : 0;
-  WorldPacket data( SMSG_GMTICKET_GETTICKET, (4+len+1+4+2+4+4) );
-  data << uint32(status); // standard 0x0A, 0x06 if text present
-  if(status == 6)
-  {
-    data << text; // ticket text
-    data << uint8(0x7); // ticket category
-    data << float(0); // tickets in queue?
-    data << float(0); // if > "tickets in queue" then "We are currently experiencing a high volume of petitions."
-    data << float(0); // 0 - "Your ticket will be serviced soon", 1 - "Wait time currently unavailable"
-    data << uint8(0); // if == 2 and next field == 1 then "Your ticket has been escalated"
-    data << uint8(0); // const
-  }
-  SendPacket( &data );
+    int len = text ? strlen(text) : 0;
+    WorldPacket data( SMSG_GMTICKET_GETTICKET, (4+len+1+4+2+4+4) );
+    data << uint32(status); // standard 0x0A, 0x06 if text present
+    if(status == 6)
+    {
+        data << text; // ticket text
+        data << uint8(0x7); // ticket category
+        data << float(0); // tickets in queue?
+        data << float(0); // if > "tickets in queue" then "We are currently experiencing a high volume of petitions."
+        data << float(0); // 0 - "Your ticket will be serviced soon", 1 - "Wait time currently unavailable"
+        data << uint8(0); // if == 2 and next field == 1 then "Your ticket has been escalated"
+        data << uint8(0); // const
+    }
+    SendPacket( &data );
 }
 
 void WorldSession::HandleGMSurveySubmit(WorldPacket& recvData)

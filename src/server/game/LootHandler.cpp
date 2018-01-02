@@ -34,18 +34,14 @@
 
 void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     Player  *player =   GetPlayer();
-    uint64   lguid =    player->GetLootGUID();
+    ObjectGuid   lguid =    player->GetLootGUID();
     Loot    *loot;
     uint8    lootSlot;
 
     recvData >> lootSlot;
 
-    if (IS_GAMEOBJECT_GUID(lguid))
+    if (lguid.IsGameObject())
     {
         GameObject *go =
             ObjectAccessor::GetGameObject(*player, lguid);
@@ -65,7 +61,7 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
 
         loot = &go->loot;
     }
-    else if (IS_ITEM_GUID(lguid))
+    else if (lguid.IsItem())
     {
         Item *pItem = player->GetItemByGuid( lguid );
 
@@ -77,7 +73,7 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
 
         loot = &pItem->loot;
     }
-    else if (IS_CORPSE_GUID(lguid))
+    else if (lguid.IsCorpse())
     {
         Corpse *bones = ObjectAccessor::GetCorpse(*player, lguid);
         if (!bones)
@@ -170,20 +166,20 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
         player->SendEquipError( msg, nullptr, nullptr );
 
     // If player is removing the last LootItem, delete the empty container.
-    if (loot->isLooted() && IS_ITEM_GUID(lguid))
+    if (loot->isLooted() && lguid.IsItem())
         player->GetSession()->DoLootRelease(lguid);
 }
 
 void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 {
     Player *player = GetPlayer();
-    uint64 guid = player->GetLootGUID();
+    ObjectGuid guid = player->GetLootGUID();
     if(!guid)
         return;
 
     Loot *pLoot = nullptr;
 
-    switch(HighGuid(GUID_HIPART(guid)))
+    switch(guid.GetHigh())
     {
         case HighGuid::GameObject:
         {
@@ -237,7 +233,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 
     if( pLoot )
     {
-        if (!IS_ITEM_GUID(guid) && player->GetGroup())      //item can be looted only single player
+        if (!guid.IsItem() && player->GetGroup())      //item can be looted only single player
         {
             Group *group = player->GetGroup();
 
@@ -268,18 +264,14 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
         pLoot->NotifyMoneyRemoved();
 
         // Delete container if empty
-        if (pLoot->isLooted() && IS_ITEM_GUID(guid))
+        if (pLoot->isLooted() && guid.IsItem())
             player->GetSession()->DoLootRelease(guid);
     }
 }
 
 void WorldSession::HandleLootOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     GetPlayer()->SendLoot(guid, LOOT_CORPSE);
@@ -287,14 +279,12 @@ void WorldSession::HandleLootOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLootReleaseOpcode( WorldPacket & recvData )
 {
-    
-
     // cheaters can modify lguid to prevent correct apply loot release code and re-loot
     // use internal stored guid
-    uint64   guid;
+    ObjectGuid   guid;
     recvData >> guid;
 
-    uint64 lguid = GetPlayer()->GetLootGUID();
+    ObjectGuid lguid = GetPlayer()->GetLootGUID();
     if (lguid)
     {
         if (lguid == guid)
@@ -303,15 +293,15 @@ void WorldSession::HandleLootReleaseOpcode( WorldPacket & recvData )
             return;
         }
     }
-    TC_LOG_DEBUG("network.opcode", "Player %u tried to release loot " UI64FMTD " but wasn't looting it (was looting " UI64FMTD ")", GetPlayer()->GetGUIDLow(), guid, lguid);
+    TC_LOG_DEBUG("network.opcode", "Player %u tried to release loot " UI64FMTD " but wasn't looting it (was looting " UI64FMTD ")", GetPlayer()->GetGUID().GetCounter(), guid, lguid);
 }
 
-void WorldSession::DoLootRelease( uint64 lguid )
+void WorldSession::DoLootRelease(ObjectGuid lguid)
 {
     Player  *player = GetPlayer();
     Loot    *loot;
 
-    player->SetLootGUID(0);
+    player->SetLootGUID(ObjectGuid::Empty);
     player->SendLootRelease(lguid);
     
     player->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
@@ -319,7 +309,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
     if (!player->IsInWorld())
         return;
 
-    if (IS_GAMEOBJECT_GUID(lguid))
+    if (lguid.IsGameObject())
     {
         GameObject *go = ObjectAccessor::GetGameObject(*player, lguid);
         if (!go)
@@ -406,10 +396,10 @@ void WorldSession::DoLootRelease( uint64 lguid )
 
             // if the round robin player release, reset it.
             if (player->GetGUID() == loot->roundRobinPlayer)
-                loot->roundRobinPlayer = 0;
+                loot->roundRobinPlayer.Clear();
         }
     }
-    else if (IS_CORPSE_GUID(lguid))        // ONLY remove insignia at BG
+    else if (lguid.IsCorpse())        // ONLY remove insignia at BG
     {
         Corpse *corpse = ObjectAccessor::GetCorpse(*player, lguid);
         if (!corpse || !corpse->IsWithinDistInMap(_player,INTERACTION_DISTANCE) )
@@ -424,7 +414,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
             corpse->RemoveFlag(CORPSE_FIELD_DYNAMIC_FLAGS, CORPSE_DYNFLAG_LOOTABLE);
         }
     }
-    else if (IS_ITEM_GUID(lguid))
+    else if (lguid.IsItem())
     {
         Item *pItem = player->GetItemByGuid(lguid );
         if(!pItem)
@@ -482,7 +472,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
             // if the round robin player release, reset it.
             if (player->GetGUID() == loot->roundRobinPlayer)
             {
-                loot->roundRobinPlayer = 0;
+                loot->roundRobinPlayer.Clear();
 
                 if (Group* group = player->GetGroup())
                 {
@@ -502,7 +492,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
 void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
 {
     uint8 slotid;
-    uint64 lootguid, target_playerguid;
+    ObjectGuid lootguid, target_playerguid;
 
     recvData >> lootguid >> slotid >> target_playerguid;
 
@@ -546,12 +536,12 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
 
     Loot *pLoot = nullptr;
 
-    if(IS_CREATURE_OR_VEHICLE_GUID(GetPlayer()->GetLootGUID()))
+    if(GetPlayer()->GetLootGUID().IsCreatureOrVehicle())
     {
         if(Creature *pCreature = ObjectAccessor::GetCreature(*GetPlayer(), lootguid))
             pLoot = &pCreature->loot;
     }
-    else if(IS_GAMEOBJECT_GUID(GetPlayer()->GetLootGUID()))
+    else if(GetPlayer()->GetLootGUID().IsGameObject())
     {
         if(GameObject *pGO = ObjectAccessor::GetGameObject(*GetPlayer(), lootguid))
            pLoot = &pGO->loot;

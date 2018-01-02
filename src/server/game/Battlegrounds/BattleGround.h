@@ -126,7 +126,7 @@ struct BattlegroundObjectInfo
 
 struct PlayerLogInfo
 {
-    uint32 guid;
+    ObjectGuid::LowType guid;
     std::string ip;
     uint32 heal;
     uint32 damage;
@@ -327,18 +327,18 @@ class TC_GAME_API Battleground
         bool isBattleground() const { return !m_IsArena; }
         bool isRated() const        { return m_IsRated; }
 
-        typedef std::map<uint64, BattlegroundPlayer> BattlegroundPlayerMap;
+        typedef std::map<ObjectGuid, BattlegroundPlayer> BattlegroundPlayerMap;
         BattlegroundPlayerMap const& GetPlayers() const { return m_Players; }
         uint32 GetPlayersSize() const { return m_Players.size(); }
 
-        std::map<uint64, BattlegroundScore*>::const_iterator GetPlayerScoresBegin() const { return PlayerScores.begin(); }
-        std::map<uint64, BattlegroundScore*>::const_iterator GetPlayerScoresEnd() const { return PlayerScores.end(); }
+        std::map<ObjectGuid, BattlegroundScore*>::const_iterator GetPlayerScoresBegin() const { return PlayerScores.begin(); }
+        std::map<ObjectGuid, BattlegroundScore*>::const_iterator GetPlayerScoresEnd() const { return PlayerScores.end(); }
         uint32 GetPlayerScoresSize() const { return PlayerScores.size(); }
 
         uint32 GetReviveQueueSize() const { return m_ReviveQueue.size(); }
 
-        void AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid);
-        void RemovePlayerFromResurrectQueue(uint64 player_guid);
+        void AddPlayerToResurrectQueue(ObjectGuid npc_guid, ObjectGuid player_guid);
+        void RemovePlayerFromResurrectQueue(ObjectGuid player_guid);
 
         void StartBattleground();
 
@@ -441,7 +441,7 @@ class TC_GAME_API Battleground
 
         void AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team);
 
-        virtual void RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket);
+        virtual void RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool SendPacket);
                                                             // can be extended in in BG subclass
 
         void HandleTriggerBuff(ObjectGuid const& go_guid);
@@ -466,19 +466,19 @@ class TC_GAME_API Battleground
         virtual bool HandlePlayerUnderMap(Player * plr) {return false;}
 
         // since arenas can be AvA or Hvh, we have to get the "temporary" team of a player
-        uint32 GetPlayerTeam(uint64 guid);
-        bool IsPlayerInBattleground(uint64 guid);
+        uint32 GetPlayerTeam(ObjectGuid guid);
+        bool IsPlayerInBattleground(ObjectGuid guid);
 
         bool ToBeDeleted() const { return m_SetDeleteThis; }
         void SetDeleteThis() {m_SetDeleteThis = true;}
 
-        typedef std::set<uint64> SpectatorList;
-        void AddSpectator (uint64 playerGuid) {m_Spectators.insert(playerGuid); }
+        typedef std::set<ObjectGuid> SpectatorList;
+        void AddSpectator (ObjectGuid playerGuid) {m_Spectators.insert(playerGuid); }
         void onAddSpectator (Player *spectator);
-        void RemoveSpectator(uint64 playerGuid) { m_Spectators.erase(playerGuid); }
+        void RemoveSpectator(ObjectGuid playerGuid) { m_Spectators.erase(playerGuid); }
         bool HaveSpectators() { return (m_Spectators.size() > 0); }
         void SendSpectateAddonsMsg(SpectatorAddonMsg msg);
-        bool isSpectator(uint64 guid);
+        bool isSpectator(ObjectGuid guid);
         bool canEnterSpectator(Player *spectator);
 
         virtual bool IsSpellAllowed(uint32 /*spellId*/, Player const* /*player*/) const { return true; }
@@ -496,14 +496,14 @@ class TC_GAME_API Battleground
         void _ProcessLeave(uint32 diff);
 
         /* Scorekeeping */
-        std::map<uint64, BattlegroundScore*>    PlayerScores; // Player scores
+        std::map<ObjectGuid, BattlegroundScore*>    PlayerScores; // Player scores
         // must be implemented in BG subclass
-        virtual void RemovePlayer(Player * /*player*/, uint64 /*guid*/) {}
+        virtual void RemovePlayer(Player * /*player*/, ObjectGuid /*guid*/) {}
 
         /* Player lists, those need to be accessible by inherited classes */
         BattlegroundPlayerMap  m_Players;
                                                             // Spirit Guide guid + Player list GUIDS
-        std::map<uint64, std::vector<uint64> >  m_ReviveQueue;
+        std::map<ObjectGuid, std::vector<ObjectGuid> >  m_ReviveQueue;
 
         /*
         this is important variable used for invitation messages
@@ -542,7 +542,7 @@ class TC_GAME_API Battleground
                     
 
         /* Player lists */
-        std::vector<uint64> m_ResurrectQueue;               // Player GUID
+        std::vector<ObjectGuid> m_ResurrectQueue;               // Player GUID
         GuidDeque m_OfflineQueue;                           // Player GUID, contain all disconected players not yet kicked out
 
         /* Invited counters are useful for player invitation to BG - do not allow, if BG is started to one faction to have 2 more players than another faction */
@@ -579,7 +579,7 @@ class TC_GAME_API Battleground
         float m_StartMaxDist;
         uint32 ScriptId;
         
-        std::map<uint64, PlayerLogInfo*> m_team1LogInfo, m_team2LogInfo;
+        std::map<ObjectGuid, PlayerLogInfo*> m_team1LogInfo, m_team2LogInfo;
 
         SpectatorList m_Spectators;
 };

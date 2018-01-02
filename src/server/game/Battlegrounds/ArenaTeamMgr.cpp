@@ -22,7 +22,7 @@ void ArenaTeamMgr::DistributeArenaPoints()
     sWorld->SendGlobalText("Distributing arena points to players...", nullptr);
 
     //temporary structure for storing maximum points to add values for all players
-    std::map<uint32, uint32> PlayerPoints;
+    std::map<ObjectGuid::LowType, uint32> PlayerPoints;
 
     //at first update all points for all team members
     for (auto team_itr = sObjectMgr->GetArenaTeamMapBegin(); team_itr != sObjectMgr->GetArenaTeamMapEnd(); ++team_itr)
@@ -41,7 +41,7 @@ void ArenaTeamMgr::DistributeArenaPoints()
         trans->PAppend("UPDATE characters SET arenaPoints = arenaPoints + '%u' WHERE guid = '%u'", PlayerPoint.second, PlayerPoint.first);
 
         // Add points if player is online
-        Player* pl = ObjectAccessor::FindConnectedPlayer(PlayerPoint.first);
+        Player* pl = ObjectAccessor::FindConnectedPlayer(ObjectGuid(HighGuid::Player, PlayerPoint.first));
         if (pl)
             pl->ModifyArenaPoints(PlayerPoint.second);
     }

@@ -89,16 +89,18 @@ void AuctionHouseMgr::SendAuctionWonMail(SQLTransaction& trans, AuctionEntry *au
         return;
 
     Player* bidder = sObjectMgr->GetPlayer(auction->bidder);
+    ObjectGuid bidderGuid(HighGuid::Player, auction->bidder);
 
     uint32 bidder_accId = 0;
     if (!bidder)
-        bidder_accId = sCharacterCache->GetCharacterAccountIdByGuid(auction->bidder);
+        bidder_accId = sCharacterCache->GetCharacterAccountIdByGuid(bidderGuid);
     else
         bidder_accId = bidder->GetSession()->GetAccountId();
 
     // data for logging
     {
-        uint32 owner_accid = sCharacterCache->GetCharacterAccountIdByGuid(auction->owner);
+        ObjectGuid ownerGuid = ObjectGuid(HighGuid::Player, auction->owner);
+        uint32 owner_accid = sCharacterCache->GetCharacterAccountIdByGuid(ownerGuid);
 
         LogsDatabaseAccessor::WonAuction(bidder_accId, auction->bidder, owner_accid, auction->owner, auction->item_guidlow, auction->item_template, pItem->GetCount());
     }
@@ -120,7 +122,7 @@ void AuctionHouseMgr::SendAuctionWonMail(SQLTransaction& trans, AuctionEntry *au
 
         // set owner to bidder (to prevent delete item with sender char deleting)
         // owner in `data` will set at mail receive and item extracting
-        trans->PAppend("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'",auction->bidder,pItem->GetGUIDLow());
+        trans->PAppend("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'",auction->bidder,pItem->GetGUID().GetCounter());
 
         MailItemsInfo mi;
         mi.AddItem(auction->item_guidlow, auction->item_template, pItem);
@@ -128,7 +130,7 @@ void AuctionHouseMgr::SendAuctionWonMail(SQLTransaction& trans, AuctionEntry *au
         if (bidder)
             bidder->GetSession()->SendAuctionBidderNotification( auction->GetHouseId(), auction->Id, bidder->GetGUID(), 0, 0, auction->item_template);
         else
-            RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
+            RemoveAItem(pItem->GetGUID().GetCounter()); // we have to remove the item, before we delete it !!
 
         // will delete item or place to receiver mail list
         WorldSession::SendMailTo(bidder, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->bidder, msgAuctionWonSubject.str(), itemTextId, &mi, 0, 0, MAIL_CHECK_MASK_AUCTION);
@@ -136,8 +138,8 @@ void AuctionHouseMgr::SendAuctionWonMail(SQLTransaction& trans, AuctionEntry *au
     // receiver not exist
     else
     {
-        trans->PAppend("DELETE FROM item_instance WHERE guid='%u'", pItem->GetGUIDLow());
-        RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
+        trans->PAppend("DELETE FROM item_instance WHERE guid='%u'", pItem->GetGUID().GetCounter());
+        RemoveAItem(pItem->GetGUID().GetCounter()); // we have to remove the item, before we delete it !!
         delete pItem;
     }
 }
@@ -205,7 +207,7 @@ void AuctionHouseMgr::SendAuctionSuccessfulMail(SQLTransaction& trans, AuctionEn
         WorldSession::SendMailTo(trans, owner, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->owner, msgAuctionSuccessfulSubject.str(), itemTextId, nullptr, profit, 0, MAIL_CHECK_MASK_AUCTION, sWorld->getConfig(CONFIG_MAIL_DELIVERY_DELAY));
     }
     else
-        TC_LOG_ERROR("auctionHouse","SendAuctionSuccessfulMail: Mail not sent for some reason to player %s (GUID %u, account %u).", owner ? owner->GetName().c_str() : "<unknown> (maybe offline)", owner ? owner->GetGUIDLow() : 0, owner_accId);
+        TC_LOG_ERROR("auctionHouse","SendAuctionSuccessfulMail: Mail not sent for some reason to player %s (GUID %u, account %u).", owner ? owner->GetName().c_str() : "<unknown> (maybe offline)", owner ? owner->GetGUID().GetCounter() : 0, owner_accId);
 }
 
 //does not clear ram
@@ -231,19 +233,19 @@ void AuctionHouseMgr::SendAuctionExpiredMail(SQLTransaction& trans, AuctionEntry
         if ( owner )
             owner->GetSession()->SendAuctionOwnerNotification( auction );
         else
-            RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
+            RemoveAItem(pItem->GetGUID().GetCounter()); // we have to remove the item, before we delete it !!
 
         MailItemsInfo mi;
         mi.AddItem(auction->item_guidlow, auction->item_template, pItem);
 
         // will delete item or place to receiver mail list
-        WorldSession::SendMailTo(trans, owner, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), owner->GetGUIDLow(), subject.str(), 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+        WorldSession::SendMailTo(trans, owner, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), owner->GetGUID().GetCounter(), subject.str(), 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
     }
     // owner not found
     else
     {
-        trans->PAppend("DELETE FROM item_instance WHERE guid='%u'",pItem->GetGUIDLow());
-        RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
+        trans->PAppend("DELETE FROM item_instance WHERE guid='%u'",pItem->GetGUID().GetCounter());
+        RemoveAItem(pItem->GetGUID().GetCounter()); // we have to remove the item, before we delete it !!
         delete pItem;
     }
 }
@@ -265,7 +267,7 @@ void AuctionHouseMgr::LoadAuctionItems()
     do
     {
         fields = result->Fetch();
-        uint32 item_guid = fields[0].GetUInt32();
+        ObjectGuid::LowType item_guid = fields[0].GetUInt32();
         uint32 item_template = fields[1].GetUInt32();
 
         ItemTemplate const *proto = sObjectMgr->GetItemTemplate(item_template);
@@ -278,7 +280,7 @@ void AuctionHouseMgr::LoadAuctionItems()
 
         Item *item = NewItemOrBag(proto);
 
-        if(!item->LoadFromDB(item_guid,0))
+        if(!item->LoadFromDB(item_guid, ObjectGuid::Empty))
         {
             TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadAuctionItems: Unknown item (GUID: %u, id: %u) in auction, skipped.", item_guid, item_template);
             delete item;
@@ -393,8 +395,8 @@ void AuctionHouseMgr::LoadAuctions()
 void AuctionHouseMgr::AddAItem( Item* it )
 {
     ASSERT( it );
-    ASSERT( mAitems.find(it->GetGUIDLow()) == mAitems.end());
-    mAitems[it->GetGUIDLow()] = it;
+    ASSERT( mAitems.find(it->GetGUID().GetCounter()) == mAitems.end());
+    mAitems[it->GetGUID().GetCounter()] = it;
 }
 
 bool AuctionHouseMgr::RemoveAItem( uint32 id )
@@ -415,7 +417,7 @@ void AuctionHouseMgr::Update()
     mNeutralAuctions.Update();
 }
 
-void AuctionHouseMgr::RemoveAllAuctionsOf(SQLTransaction& trans, uint32 ownerGUID)
+void AuctionHouseMgr::RemoveAllAuctionsOf(SQLTransaction& trans, ObjectGuid::LowType ownerGUID)
 {
     mHordeAuctions.RemoveAllAuctionsOf(trans, ownerGUID);
     mAllianceAuctions.RemoveAllAuctionsOf(trans, ownerGUID);
@@ -500,7 +502,7 @@ void AuctionHouseObject::Update()
 }
 
 // NOT threadsafe!
-void AuctionHouseObject::RemoveAllAuctionsOf(SQLTransaction& trans, uint32 ownerGUID)
+void AuctionHouseObject::RemoveAllAuctionsOf(SQLTransaction& trans, ObjectGuid::LowType ownerGUID)
 {
     AuctionEntryMap::iterator next;
     for (auto itr = AuctionsMap.begin(); itr != AuctionsMap.end();itr = next)
@@ -538,7 +540,7 @@ void AuctionHouseObject::BuildListBidderItems(WorldPacket& data, Player* player,
     for (AuctionEntryMap::const_iterator itr = AuctionsMap.begin();itr != AuctionsMap.end();++itr)
     {
         AuctionEntry *Aentry = itr->second;
-        if( Aentry && Aentry->bidder == player->GetGUIDLow() )
+        if( Aentry && Aentry->bidder == player->GetGUID().GetCounter() )
         {
             if (itr->second->BuildAuctionInfo(data))
                 ++count;
@@ -552,7 +554,7 @@ void AuctionHouseObject::BuildListOwnerItems(WorldPacket& data, Player* player, 
     for (AuctionEntryMap::const_iterator itr = AuctionsMap.begin();itr != AuctionsMap.end();++itr)
     {
         AuctionEntry *Aentry = itr->second;
-        if( Aentry && Aentry->owner == player->GetGUIDLow() )
+        if( Aentry && Aentry->owner == player->GetGUID().GetCounter() )
         {
             if(Aentry->BuildAuctionInfo(data))
                 ++count;
@@ -570,7 +572,7 @@ uint32 AuctionHouseObject::GetAuctionsCount(Player* player)
     for (AuctionEntryMap::const_iterator itr = AuctionsMap.begin();itr != AuctionsMap.end();++itr)
     {
         AuctionEntry *Aentry = itr->second;
-        if( Aentry && Aentry->owner == player->GetGUIDLow() )
+        if( Aentry && Aentry->owner == player->GetGUID().GetCounter() )
             ++totalcount;
     }
     return totalcount;

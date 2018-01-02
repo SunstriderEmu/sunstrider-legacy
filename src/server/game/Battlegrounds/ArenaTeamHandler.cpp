@@ -13,7 +13,7 @@
 
 void WorldSession::HandleInspectArenaTeamsOpcode(WorldPacket & recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     if(Player *plr = sObjectMgr->GetPlayer(guid))
@@ -91,7 +91,7 @@ void WorldSession::HandleArenaTeamInviteOpcode(WorldPacket & recvData)
     }
 
     // OK result but not send invite
-    if(player->GetSocial()->HasIgnore(GetPlayer()->GetGUIDLow()))
+    if(player->GetSocial()->HasIgnore(GetPlayer()->GetGUID().GetCounter()))
         return;
 
     if (!sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && player->GetTeam() != GetPlayer()->GetTeam())

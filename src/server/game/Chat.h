@@ -37,7 +37,7 @@ class TC_GAME_API ChatHandler
          ~ChatHandler() = default;
 
          // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
-         static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, uint64 senderGUID, uint64 receiverGUID, std::string const& message, uint8 chatTag = 0,
+         static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, ObjectGuid senderGUID, ObjectGuid receiverGUID, std::string const& message, uint8 chatTag = 0,
                                     std::string const& senderName = "", std::string const& receiverName = "",
                                     uint32 achievementId = 0, bool gmMessage = false, std::string const& channelName = "");
          // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
@@ -86,7 +86,7 @@ class TC_GAME_API ChatHandler
 
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player
-        bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = nullptr, std::string* player_name = nullptr);
+        bool extractPlayerTarget(char* args, Player** player, ObjectGuid* player_guid =nullptr, std::string* player_name = nullptr);
         char*     extractKeyFromLink(char* text, char const* const* linkTypes, int* found_idx, char** something1 = nullptr);
         uint32    extractSpellIdFromLink(char* text);
         GameTele const* extractGameTeleFromLink(char* text);
@@ -356,7 +356,6 @@ class TC_GAME_API ChatHandler
         bool HandleDebugStealthLevel(const char* args);
         bool HandleDebugAttackDistance(const char* args);
         bool HandleDebugUnloadGrid(const char* args);
-        bool HandleDebugLoadedScripts(const char* args);
         bool HandleDebugResetDailyQuests(const char* args);
         bool HandleDebugShowAttackers(const char* args);
         bool HandleDebugSendZoneUnderAttack(const char* args);
@@ -661,7 +660,7 @@ class TC_GAME_API ChatHandler
         bool HandleWaterwalkCheatCommand(const char* args);
         bool HandleTaxiCheatCommand(const char* args);
 
-        bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, uint64 &guid, bool offline = false);
+        bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, ObjectGuid &guid, bool offline = false);
 
         GameObject* GetNearbyGameObject();
         GameObject* GetObjectFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid);

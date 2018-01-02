@@ -867,13 +867,13 @@ bool ChatHandler::LookupPlayerSearchCommand(QueryResult result, int32 limit)
         {
             PSendSysMessage(LANG_LOOKUP_PLAYER_ACCOUNT,acc_name.c_str(),acc_id);
 
-            uint64 guid = 0;
+            ObjectGuid guid = ObjectGuid::Empty;
             std::string name;
 
             do
             {
                 Field* charfields = chars->Fetch();
-                guid = charfields[0].GetUInt64();
+                guid = ObjectGuid(charfields[0].GetUInt64());
                 name = charfields[1].GetString();
 
                 PSendSysMessage(LANG_LOOKUP_PLAYER_CHARACTER,name.c_str(),guid);

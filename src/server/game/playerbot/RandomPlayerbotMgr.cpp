@@ -115,9 +115,10 @@ void RandomPlayerbotMgr::ScheduleTeleport(uint32 bot)
 bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
 {
     uint32 isValid = GetEventValue(bot, "add");
+    ObjectGuid guid = ObjectGuid(HighGuid::Player, bot);
     if (!isValid)
     {
-        Player* player = GetPlayerBot(bot);
+        Player* player = GetPlayerBot(guid);
         if (!player || !player->GetGroup())
         {
             sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %d expired", bot);
@@ -126,10 +127,10 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
         return true;
     }
 
-    if (!GetPlayerBot(bot))
+    if (!GetPlayerBot(guid))
     {
         sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %d logged in", bot);
-        AddPlayerBot(bot, 0);
+        AddPlayerBot(guid, 0);
         if (!GetEventValue(bot, "online"))
         {
             SetEventValue(bot, "online", 1, sPlayerbotAIConfig.minRandomBotInWorldTime);
@@ -137,7 +138,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
         return true;
     }
 
-    Player* player = GetPlayerBot(bot);
+    Player* player = GetPlayerBot(guid);
     if (!player)
         return false;
 
@@ -194,7 +195,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
     if (!logout)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Logging out bot %d", bot);
-        LogoutPlayerBot(bot);
+        LogoutPlayerBot(guid);
         SetEventValue(bot, "logout", 1, sPlayerbotAIConfig.maxRandomBotInWorldTime);
         return true;
     }
@@ -669,9 +670,9 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
                     }
                     uint32 randomTime = urand(sPlayerbotAIConfig.minRandomBotRandomizeTime, sPlayerbotAIConfig.maxRandomBotRandomizeTime);
                     CharacterDatabase.PExecute("update ai_playerbot_random_bots set validIn = '%u' where event = 'randomize' and bot = '%u'",
-                            randomTime, bot->GetGUIDLow());
+                            randomTime, bot->GetGUID().GetCounter());
                     CharacterDatabase.PExecute("update ai_playerbot_random_bots set validIn = '%u' where event = 'logout' and bot = '%u'",
-                            sPlayerbotAIConfig.maxRandomBotInWorldTime, bot->GetGUIDLow());
+                            sPlayerbotAIConfig.maxRandomBotInWorldTime, bot->GetGUID().GetCounter());
                 } while (results->NextRow());
             }
         }
@@ -921,8 +922,8 @@ string RandomPlayerbotMgr::HandleRemoteCommand(std::string request)
     }
 
     std::string command = std::string(request.begin(), pos);
-    uint64 guid = atoi(string(pos + 1, request.end()).c_str());
-    Player* bot = GetPlayerBot(guid);
+    ObjectGuid::LowType guid = atoi(string(pos + 1, request.end()).c_str());
+    Player* bot = GetPlayerBot(ObjectGuid(HighGuid::Player, guid));
     if (!bot)
         return "invalid guid";
 

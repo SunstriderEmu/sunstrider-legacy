@@ -33,7 +33,7 @@ bool MuteInfoForAccount(ChatHandler& chatHandler, uint32 accountid)
         Field* fields = result2->Fetch();
 
         uint32 authorAccount = fields[0].GetUInt32();
-        uint32 authorGUID = fields[1].GetUInt32();
+        ObjectGuid::LowType authorGUID = fields[1].GetUInt32();
 //        uint32 targetAccount = fields[2].GetUInt32();
         uint32 duration = fields[3].GetUInt32();
         uint64 muteTime = fields[4].GetUInt32();
@@ -42,7 +42,7 @@ bool MuteInfoForAccount(ChatHandler& chatHandler, uint32 accountid)
         uint64 unbantimestamp = muteTime + (duration * MINUTE);
         std::string authorname;
         std::string displayName;
-        bool nameResult = sCharacterCache->GetCharacterNameByGuid(authorGUID, displayName);
+        bool nameResult = sCharacterCache->GetCharacterNameByGuid(ObjectGuid(HighGuid::Player, authorGUID), displayName);
         if (!nameResult)
             authorname = "<Unknown>";
 

@@ -222,7 +222,7 @@ class BattlegroundAB : public Battleground
 
         void Update(time_t diff) override;
         void AddPlayer(Player *plr) override;
-        void RemovePlayer(Player *plr,uint64 guid) override;
+        void RemovePlayer(Player *plr,ObjectGuid guid) override;
         void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
         bool SetupBattleground() override;
         void ResetBGSubclass() override;

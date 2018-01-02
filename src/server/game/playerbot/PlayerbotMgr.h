@@ -20,9 +20,9 @@ public:
     virtual ~PlayerbotHolder();
 
     //Connect bot to server
-    Player* AddPlayerBot(uint64 guid, uint32 masterAccountId, bool testingBot = false);
-    void LogoutPlayerBot(uint64 guid);
-    Player* GetPlayerBot (uint64 guid) const;
+    Player* AddPlayerBot(ObjectGuid guid, uint32 masterAccountId, bool testingBot = false);
+    void LogoutPlayerBot(ObjectGuid guid);
+    Player* GetPlayerBot (ObjectGuid guid) const;
     PlayerBotMap::const_iterator GetPlayerBotsBegin() const { return playerBots.begin(); }
     PlayerBotMap::const_iterator GetPlayerBotsEnd()   const { return playerBots.end();   }
 

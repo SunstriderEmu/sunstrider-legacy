@@ -46,8 +46,8 @@ class UpdateData
     public:
         UpdateData();
 
-        void AddOutOfRangeGUID(std::set<uint64>& guids);
-        void AddOutOfRangeGUID(const uint64 &guid);
+        void AddOutOfRangeGUID(std::set<ObjectGuid>& guids);
+        void AddOutOfRangeGUID(const ObjectGuid &guid);
         void AddUpdateBlock(const ByteBuffer &block);
         /** Build a WorldPacket from this update data 
             @packet an unitialized WorldPacket

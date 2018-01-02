@@ -19,7 +19,7 @@ public:
             Wait(1 * SECOND * IN_MILLISECONDS);
             GameObject* obj = p->SummonGameObject(2061, p->GetPosition(), G3D::Quat(), 0); //campire
             TEST_ASSERT(obj != nullptr);
-            obj->SetOwnerGUID(0); //remove owner, environmental traps don't have any
+            obj->SetOwnerGUID(ObjectGuid::Empty); //remove owner, environmental traps don't have any
 
             //just test if player has taken any damage
             uint32 initialHealth = p->GetHealth();

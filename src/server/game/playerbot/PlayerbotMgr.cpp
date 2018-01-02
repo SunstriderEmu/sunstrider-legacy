@@ -51,7 +51,7 @@ void PlayerbotHolder::LogoutAllBots()
     }
 }
 
-void PlayerbotHolder::LogoutPlayerBot(uint64 guid)
+void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
 {
     Player* bot = GetPlayerBot(guid);
     if (bot)
@@ -66,7 +66,7 @@ void PlayerbotHolder::LogoutPlayerBot(uint64 guid)
     }
 }
 
-Player* PlayerbotHolder::GetPlayerBot(uint64 playerGuid) const
+Player* PlayerbotHolder::GetPlayerBot(ObjectGuid playerGuid) const
 {
     PlayerBotMap::const_iterator it = playerBots.find(playerGuid);
     return (it == playerBots.end()) ? 0 : it->second;
@@ -148,7 +148,7 @@ string PlayerbotHolder::ProcessBotCommand(std::string cmd, ObjectGuid guid, bool
         if (sObjectMgr->GetPlayer(guid))
             return "player already logged in";
 
-        AddPlayerBot(guid.GetRawValue(), masterAccountId);
+        AddPlayerBot(guid, masterAccountId);
         return "ok";
     }
     else if (cmd == "remove" || cmd == "logout" || cmd == "rm")
@@ -156,16 +156,16 @@ string PlayerbotHolder::ProcessBotCommand(std::string cmd, ObjectGuid guid, bool
         if (!sObjectMgr->GetPlayer(guid))
             return "player is offline";
 
-        if (!GetPlayerBot(guid.GetRawValue()))
+        if (!GetPlayerBot(guid))
             return "not your bot";
 
-        LogoutPlayerBot(guid.GetRawValue());
+        LogoutPlayerBot(guid);
         return "ok";
     }
 
     if (admin)
     {
-        Player* bot = GetPlayerBot(guid.GetRawValue());
+        Player* bot = GetPlayerBot(guid);
         if (!bot)
             return "bot not found";
 
@@ -341,7 +341,7 @@ list<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Play
         std::ostringstream out;
         out << cmdStr << ": " << bot << " - ";
 
-        ObjectGuid member = ObjectGuid(HighGuid::Player, sCharacterCache->GetCharacterGuidByName(bot));
+        ObjectGuid member = sCharacterCache->GetCharacterGuidByName(bot);
         if (!member)
         {
             out << "character not found";

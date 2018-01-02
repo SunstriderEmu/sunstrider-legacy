@@ -13,7 +13,7 @@ enum GroupAI
 
 struct FormationInfo
 {
-    uint32 leaderGUID = 0;
+    ObjectGuid::LowType leaderGUID = 0;
     float follow_dist = 0.0f;
     float follow_angle = 0.0f;
     GroupAI groupAI = GROUP_AI_FULL_SUPPORT;
@@ -49,7 +49,7 @@ class TC_GAME_API CreatureGroupManager
         void BreakFormation(Creature* leader);
         void LoadCreatureFormations();
 
-        void AddGroupMember(uint32 creature_lowguid, FormationInfo* group_member);
+        void AddGroupMember(ObjectGuid::LowType creature_lowguid, FormationInfo* group_member);
 
         CreatureGroupInfoType const& GetGroupMap()
         {
@@ -57,7 +57,7 @@ class TC_GAME_API CreatureGroupManager
         };
 
         //get guid for storing in group map
-        static uint32 GetCreatureGUIDForStore(Creature* member);
+        static ObjectGuid::LowType GetCreatureGUIDForStore(Creature* member);
     private:
         CreatureGroupInfoType CreatureGroupMap;
 

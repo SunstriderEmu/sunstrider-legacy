@@ -58,7 +58,7 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
     }
 
     Player* target;
-    uint64 target_guid;
+    ObjectGuid target_guid;
     std::string target_name;
     if (!extractPlayerTarget((char*)args, &target, &target_guid, &target_name))
         return false;

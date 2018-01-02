@@ -37,8 +37,8 @@ class TC_GAME_API Corpse : public WorldObject, public GridObject<Corpse>
         void AddToWorld() override;
         void RemoveFromWorld() override;
 
-        bool Create( uint32 guidlow );
-        bool Create( uint32 guidlow, Player *owner);
+        bool Create(ObjectGuid::LowType guidlow );
+        bool Create(ObjectGuid::LowType guidlow, Player *owner);
 
 		void SaveToDB();
 		bool LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields);
@@ -46,7 +46,7 @@ class TC_GAME_API Corpse : public WorldObject, public GridObject<Corpse>
 		void DeleteFromDB(SQLTransaction& trans);
 		static void DeleteFromDB(ObjectGuid const& ownerGuid, SQLTransaction& trans);
 
-        uint64 GetOwnerGUID() const;
+        ObjectGuid GetOwnerGUID() const;
 
         time_t const& GetGhostTime() const { return m_time; }
         void ResetGhostTime() { m_time = time(nullptr); }

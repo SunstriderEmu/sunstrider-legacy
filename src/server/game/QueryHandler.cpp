@@ -7,10 +7,10 @@
 #include "NPCHandler.h"
 #include "CharacterCache.h"
 
-void WorldSession::SendNameQueryOpcode(uint64 guid)
+void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
 {
     Player* player = ObjectAccessor::FindPlayer(guid);
-    CharacterCacheEntry const* nameData = sCharacterCache->GetCharacterCacheByGuid(GUID_LOPART(guid));
+    CharacterCacheEntry const* nameData = sCharacterCache->GetCharacterCacheByGuid(guid.GetCounter());
 
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8 + 1 + 4 + 4 + 4 + 1));
 #ifdef LICH_KING
@@ -51,7 +51,7 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
 
 void WorldSession::HandleNameQueryOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     SendNameQueryOpcode(guid);
@@ -76,7 +76,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
     uint32 entry;
     recvData >> entry;
 #ifdef LICH_KING
-    uint64 guid;
+    ObjectGuid guid;
     if(GetClientBuild() == BUILD_335)
         recvData >> guid;
 #endif
@@ -141,11 +141,11 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
     }
     else
     {
-        uint64 guid;
+        ObjectGuid guid;
         recvData >> guid;
 
         TC_LOG_ERROR("network","WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (GUID: %u, ENTRY: %u)",
-            GUID_LOPART(guid), entry);
+            guid.GetCounter(), entry);
         WorldPacket data( SMSG_CREATURE_QUERY_RESPONSE, 4 );
         data << uint32(entry | 0x80000000);
         SendPacket( &data );
@@ -159,7 +159,7 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
     uint32 entryID;
     recvData >> entryID;
 #ifdef LICH_KING
-    uint64 guid;
+    ObjectGuid guid;
     if(GetClientBuild() == BUILD_335)
         recvData >> guid;
 #endif
@@ -209,11 +209,11 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
     else
     {
 
-        uint64 guid;
+        ObjectGuid guid;
         recvData >> guid;
 
         TC_LOG_ERROR("FIXME",  "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (GUID: %u, ENTRY: %u)",
-            GUID_LOPART(guid), entryID );
+            guid.GetCounter(), entryID );
         WorldPacket data ( SMSG_GAMEOBJECT_QUERY_RESPONSE, 4 );
         data << uint32(entryID | 0x80000000);
         SendPacket( &data );
@@ -271,7 +271,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recvData*/)
 void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
 {
     uint32 textID;
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> textID;
     //TC_LOG_DEBUG("network", "WORLD: CMSG_NPC_TEXT_QUERY TextId: %u", textID);

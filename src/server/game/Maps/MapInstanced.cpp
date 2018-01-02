@@ -92,7 +92,7 @@ void MapInstanced::MapCrashed(Map* map)
 }
 
 /*
-bool MapInstanced::RemoveBones(uint64 guid, float x, float y)
+bool MapInstanced::RemoveBones(ObjectGuid guid, float x, float y)
 {
     bool remove_result = false;
 

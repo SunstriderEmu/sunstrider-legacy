@@ -159,9 +159,9 @@ public:
 	void ChangeState() override { }
     void FillInitialWorldStates(WorldPacket & data) override;
     void UpdateTowerState();
-    int32 HandleOpenGo(Player *plr, uint64 guid) override;
+    int32 HandleOpenGo(Player *plr, ObjectGuid guid) override;
     void SetBeaconState(uint32 controlling_team); // not good atm
-    bool HandleGossipOption(Player * plr, uint64 guid, uint32 gossipid) override;
+    bool HandleGossipOption(Player * plr, ObjectGuid guid, uint32 gossipid) override;
     bool HandleDropFlag(Player * plr, uint32 spellId) override;
     bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso) override;
 private:

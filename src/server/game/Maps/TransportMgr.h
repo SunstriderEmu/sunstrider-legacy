@@ -93,7 +93,7 @@ class TransportMgr
         void LoadTransportTemplates();
 
         // Creates a transport using given GameObject template entry
-        MotionTransport* CreateTransport(uint32 entry, uint32 guid = 0, Map* map = nullptr);
+        MotionTransport* CreateTransport(uint32 entry, ObjectGuid::LowType guid = 0, Map* map = nullptr);
 
         // Spawns all continent transports, used at core startup
         void SpawnContinentTransports();

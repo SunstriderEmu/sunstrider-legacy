@@ -264,7 +264,7 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
         uint32 flag      = u->GetUInt32Value(UNIT_FIELD_FLAGS);
         uint32 npcflag   = u->GetUInt32Value(UNIT_NPC_FLAGS);
         uint32 dyflag    = u->GetUInt32Value(UNIT_DYNAMIC_FLAGS);
-        PSendSysMessage(LANG_CURRENT_FACTION,u->GetGUIDLow(),factionid,flag,npcflag,dyflag);
+        PSendSysMessage(LANG_CURRENT_FACTION,u->GetGUID().GetCounter(),factionid,flag,npcflag,dyflag);
         return true;
     }
 
@@ -315,7 +315,7 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
     else
         dyflag = atoi(pdyflag);
 
-    PSendSysMessage(LANG_YOU_CHANGE_FACTION, u->GetGUIDLow(),factionid,flag,npcflag,dyflag);
+    PSendSysMessage(LANG_YOU_CHANGE_FACTION, u->GetGUID().GetCounter(),factionid,flag,npcflag,dyflag);
 
     u->SetFaction(factionid);
     u->SetUInt32Value(UNIT_FIELD_FLAGS,flag);

@@ -527,7 +527,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
     if (_player)
     {
-        if (uint64 lguid = GetPlayer()->GetLootGUID())
+        if (ObjectGuid lguid = GetPlayer()->GetLootGUID())
             DoLootRelease(lguid);
 
         #ifdef PLAYERBOT
@@ -680,12 +680,12 @@ void WorldSession::LogoutPlayer(bool Save)
 
 
         ///- Broadcast a logout message to the player's friends
-        sSocialMgr->SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
+        sSocialMgr->SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUID().GetCounter(), true);
 
         ///- Delete the player object
         _player->CleanupsBeforeDelete();                    // do some cleanup before deleting to prevent crash at crossreferences to already deleted data
 
-        sSocialMgr->RemovePlayerSocial (_player->GetGUIDLow ());
+        sSocialMgr->RemovePlayerSocial (_player->GetGUID().GetCounter ());
         delete _player;
         _player = NULL;
 
@@ -1546,7 +1546,7 @@ void WorldSession::SendMountResult(MountResult res)
     SendPacket(&data);
 }
 
-void WorldSession::SendMinimapPing(uint64 guid, uint32 x, uint32 y)
+void WorldSession::SendMinimapPing(ObjectGuid guid, uint32 x, uint32 y)
 {
     WorldPacket data(MSG_MINIMAP_PING, (8+4+4));
     data << uint64(guid);
@@ -1604,7 +1604,7 @@ void WorldSession::SendClearTarget(uint64 target)
 
 void WorldSession::HandleSpellClick(WorldPacket& recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     // this will get something not in world. crash
@@ -1675,7 +1675,7 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
         { \
             TC_LOG_DEBUG("entities.unit", "WorldSession::ReadMovementInfo: Violation of MovementFlags found (%s). " \
                 "MovementFlags: %u, MovementFlags2: %u for player GUID: %u. Mask %u will be removed.", \
-                STRINGIZE(check), mi->GetMovementFlags(), mi->GetExtraMovementFlags(), GetPlayer()->GetGUIDLow(), maskToRemove); \
+                STRINGIZE(check), mi->GetMovementFlags(), mi->GetExtraMovementFlags(), GetPlayer()->GetGUID().GetCounter(), maskToRemove); \
             mi->RemoveMovementFlag((maskToRemove)); \
         } \
     }
@@ -1828,7 +1828,7 @@ bool WorldSession::StartRecording(std::string const& recordName)
     _player->GetPosition();
 
     _player->m_clientGUIDs.clear(); //clear objects for this client to force re sending them for record
-    m_replayRecorder = std::make_shared<ReplayRecorder>(_player->GetGUIDLow());
+    m_replayRecorder = std::make_shared<ReplayRecorder>(_player->GetGUID().GetCounter());
     return m_replayRecorder->StartPacketDump(recordName.c_str(), WorldLocation(*_player));
 }
 

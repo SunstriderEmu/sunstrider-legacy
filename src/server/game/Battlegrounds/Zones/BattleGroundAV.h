@@ -1494,7 +1494,7 @@ class BattlegroundAV : public Battleground
         /* inherited from BattlegroundClass */
         void AddPlayer(Player *plr) override;
 
-        void RemovePlayer(Player *plr,uint64 guid) override;
+        void RemovePlayer(Player *plr,ObjectGuid guid) override;
         void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
         bool SetupBattleground() override;
         void ResetBGSubclass() override;
@@ -1566,8 +1566,8 @@ class BattlegroundAV : public Battleground
         uint8 m_MaxLevel; //TODO remove this when battleground-getmaxlevel() returns something usefull
         bool m_IsInformedNearVictory[2];
 
-        std::vector<uint64> m_hordeMarshals;
-        std::vector<uint64> m_allianceMarshals;
+        std::vector<ObjectGuid> m_hordeMarshals;
+        std::vector<ObjectGuid> m_allianceMarshals;
 };
 
 #endif

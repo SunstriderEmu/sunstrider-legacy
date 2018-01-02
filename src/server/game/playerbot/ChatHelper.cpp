@@ -320,7 +320,9 @@ list<ObjectGuid> ChatHelper::parseGameobjects(string& text)
         if (endPos == -1)     //break if error
             break;
         istringstream stream(text.substr(pos, endPos - pos));
-        uint64 guid; stream >> guid;
+        uint64 _guid;
+        stream >> _guid;
+        ObjectGuid guid(_guid);
 
         // extract GO entry
         pos = endPos + 1;

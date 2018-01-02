@@ -20,7 +20,7 @@ PathGenerator::PathGenerator(const Unit* owner) :
     _sourcePos.Relocate(owner);
     
     UpdateOptions();
-    //TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceUnit->GetGUIDLow());
+    //TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceUnit->GetGUID().GetCounter());
 }
 
 PathGenerator::PathGenerator(const Position& startPos, uint32 mapId, uint32 instanceId, uint32 options) :
@@ -67,7 +67,7 @@ void PathGenerator::SetSourcePosition(Position const& p)
 PathGenerator::~PathGenerator()
 {
     if(_sourceUnit)
-        TC_LOG_DEBUG("maps", "++ PathGenerator::~PathGenerator() for %u \n", _sourceUnit->GetGUIDLow());
+        TC_LOG_DEBUG("maps", "++ PathGenerator::~PathGenerator() for %u \n", _sourceUnit->GetGUID().GetCounter());
     else
         TC_LOG_DEBUG("maps", "++ PathGenerator::~PathGenerator()");
 }
@@ -93,7 +93,7 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
     _straightLine = straightLine;
 
     /* if(_sourceUnit)
-        TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath() for %u \n", _sourceUnit->GetGUIDLow());
+        TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath() for %u \n", _sourceUnit->GetGUID().GetCounter());
     else
         TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath()");  */
 
@@ -410,7 +410,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // and hopefully recover on the next Update
             // we still need to copy our preffix
             if(_sourceUnit)
-                TC_LOG_ERROR("maps", "%u's Path Build failed: 0 length path", _sourceUnit->GetGUIDLow());
+                TC_LOG_ERROR("maps", "%u's Path Build failed: 0 length path", _sourceUnit->GetGUID().GetCounter());
             else
                 TC_LOG_ERROR("maps", "Path Build failed: 0 length path");
         }
@@ -474,7 +474,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
         {
             // only happens if we passed bad data to findPath(), or navmesh is messed up
             if(_sourceUnit)
-                TC_LOG_ERROR("maps", "%u's Path Build failed: 0 length path", _sourceUnit->GetGUIDLow());
+                TC_LOG_ERROR("maps", "%u's Path Build failed: 0 length path", _sourceUnit->GetGUID().GetCounter());
             else
                 TC_LOG_ERROR("maps", "Path Build failed: 0 length path");
             BuildShortcut();
@@ -673,7 +673,7 @@ NavTerrain PathGenerator::GetNavTerrain(float x, float y, float z)
 {
     LiquidData data;
     Map const* map = _sourceUnit ? _sourceUnit->GetBaseMap() : sMapMgr->CreateBaseMap(_sourceMapId);
-    ZLiquidStatus liquidStatus = map->GetLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &data, _sourceUnit->GetCollisionHeight());
+    ZLiquidStatus liquidStatus = map->GetLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &data, _sourceUnit ? _sourceUnit->GetCollisionHeight() : DEFAULT_COLLISION_HEIGHT);
 
     if (liquidStatus == LIQUID_MAP_NO_WATER)
         return NAV_GROUND;

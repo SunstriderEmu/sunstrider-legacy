@@ -98,20 +98,20 @@ class TC_GAME_API PlayerSocial
         PlayerSocial();
         ~PlayerSocial();
         // adding/removing
-        bool AddToSocialList(uint32 friend_guid, bool ignore);
-        void RemoveFromSocialList(uint32 friend_guid, bool ignore);
-        void SetFriendNote(uint32 friend_guid, std::string note);
+        bool AddToSocialList(ObjectGuid::LowType friend_guid, bool ignore);
+        void RemoveFromSocialList(ObjectGuid::LowType friend_guid, bool ignore);
+        void SetFriendNote(ObjectGuid::LowType friend_guid, std::string note);
         // Packet send's
         void SendSocialList();
         // Misc
-        bool HasFriend(uint32 friend_guid);
-        bool HasIgnore(uint32 ignore_guid);
-        uint32 GetPlayerGUID() { return m_playerGUID; }
-        void SetPlayerGUID(uint32 guid) { m_playerGUID = guid; }
+        bool HasFriend(ObjectGuid::LowType friend_guid);
+        bool HasIgnore(ObjectGuid::LowType ignore_guid);
+        ObjectGuid::LowType GetPlayerGUID() { return m_playerGUID; }
+        void SetPlayerGUID(ObjectGuid::LowType guid) { m_playerGUID = guid; }
         uint32 GetNumberOfSocialsWithFlag(SocialFlag flag);
     private:
         PlayerSocialMap m_playerSocialMap;
-        uint32 m_playerGUID;
+        ObjectGuid::LowType m_playerGUID;
 };
 
 class TC_GAME_API SocialMgr
@@ -126,15 +126,15 @@ class TC_GAME_API SocialMgr
             return &instance;
         }
         // Misc
-        void RemovePlayerSocial(uint32 guid);
-        void GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &friendInfo);
+        void RemovePlayerSocial(ObjectGuid::LowType guid);
+        void GetFriendInfo(Player *player, ObjectGuid::LowType friendGUID, FriendInfo &friendInfo);
         // Packet management
-        void MakeFriendStatusPacket(FriendsResult result, uint32 friend_guid, WorldPacket *data);
-        void SendFriendStatus(Player *player, FriendsResult result, uint32 friend_guid, bool broadcast);
+        void MakeFriendStatusPacket(FriendsResult result, ObjectGuid::LowType friend_guid, WorldPacket *data);
+        void SendFriendStatus(Player *player, FriendsResult result, ObjectGuid::LowType friend_guid, bool broadcast);
         void BroadcastToFriendListers(Player *player, WorldPacket *packet);
         // Loading
-        PlayerSocial* LoadFromDB(PreparedQueryResult result, uint32 guid);
-        PlayerSocial* GetDefault(uint32 guid);
+        PlayerSocial* LoadFromDB(PreparedQueryResult result, ObjectGuid::LowType guid);
+        PlayerSocial* GetDefault(ObjectGuid::LowType guid);
     private:
         SocialMap m_socialMap;
 };

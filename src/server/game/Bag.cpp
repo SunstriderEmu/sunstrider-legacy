@@ -71,7 +71,7 @@ void Bag::RemoveFromWorld()
     Item::RemoveFromWorld();
 }
 
-bool Bag::Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto)
+bool Bag::Create(ObjectGuid::LowType guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto)
 {
     if(!itemProto)
         itemProto = sObjectMgr->GetItemTemplate(itemid);
@@ -85,8 +85,8 @@ bool Bag::Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplat
     SetEntry(itemid);
     SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
 
-    SetUInt64Value(ITEM_FIELD_OWNER, owner ? owner->GetGUID() : 0);
-    SetUInt64Value(ITEM_FIELD_CONTAINED, owner ? owner->GetGUID() : 0);
+    SetGuidValue(ITEM_FIELD_OWNER, owner ? owner->GetGUID() : ObjectGuid::Empty);
+    SetGuidValue(ITEM_FIELD_CONTAINED, owner ? owner->GetGUID() : ObjectGuid::Empty);
 
     SetUInt32Value(ITEM_FIELD_MAXDURABILITY, itemProto->MaxDurability);
     SetUInt32Value(ITEM_FIELD_DURABILITY, itemProto->MaxDurability);
@@ -111,7 +111,7 @@ void Bag::SaveToDB(SQLTransaction trans)
     Item::SaveToDB(trans);
 }
 
-bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid)
+bool Bag::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
 {
     if(!Item::LoadFromDB(guid, owner_guid))
         return false;
@@ -173,7 +173,7 @@ void Bag::StoreItem( uint8 slot, Item *pItem, bool /*update*/ )
     {
         m_bagslot[slot] = pItem;
         SetUInt64Value(CONTAINER_FIELD_SLOT_1 + (slot * 2), pItem->GetGUID());
-        pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, GetGUID());
+        pItem->SetGuidValue(ITEM_FIELD_CONTAINED, GetGUID());
         pItem->SetUInt64Value( ITEM_FIELD_OWNER, GetOwnerGUID() );
         pItem->SetContainer(this);
         pItem->SetSlot(slot);
@@ -223,7 +223,7 @@ uint32 Bag::GetItemCount( uint32 item, Item* eItem ) const
     return count;
 }
 
-uint8 Bag::GetSlotByItemGUID(uint64 guid) const
+uint8 Bag::GetSlotByItemGUID(ObjectGuid guid) const
 {
     for(uint32 i = 0; i < GetBagSize(); ++i)
         if(m_bagslot[i] != nullptr)

@@ -62,9 +62,9 @@ class TC_GAME_API BattlegroundMgr
 
         /* Packet Building */
         void BuildPlayerJoinedBattlegroundPacket(WorldPacket *data, Player *plr);
-        void BuildPlayerLeftBattlegroundPacket(WorldPacket *data, uint64 guid);
+        void BuildPlayerLeftBattlegroundPacket(WorldPacket *data, ObjectGuid guid);
         //fromWhere is LK only
-        void BuildBattlegroundListPacket(WorldPacket* data, uint64 guid, Player* plr, BattlegroundTypeId bgTypeId, uint8 fromWhere = 0);
+        void BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid guid, Player* plr, BattlegroundTypeId bgTypeId, uint8 fromWhere = 0);
         void BuildGroupJoinedBattlegroundPacket(WorldPacket* data, GroupJoinBattlegroundResult result);
         void BuildUpdateWorldStatePacket(WorldPacket *data, uint32 field, uint32 value);
         //void BuildPvPLogDataPacket(WorldPacket *data, Battleground *bg);
@@ -104,7 +104,7 @@ class TC_GAME_API BattlegroundMgr
         const bool IsArenaTesting() const { return m_ArenaTesting; }
         const bool IsBattleGroundTesting() const { return m_Testing; }
 
-        void SendAreaSpiritHealerQueryOpcode(Player *pl, Battleground *bg, uint64 guid);
+        void SendAreaSpiritHealerQueryOpcode(Player *pl, Battleground *bg, ObjectGuid guid);
 
         static BattlegroundQueueTypeId BGQueueTypeId(BattlegroundTypeId bgTypeId, uint8 arenaType);
         static BattlegroundTypeId BGTemplateId(BattlegroundQueueTypeId bgQueueTypeId);

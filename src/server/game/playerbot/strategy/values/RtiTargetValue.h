@@ -37,7 +37,7 @@ namespace ai
             if (index == -1)
                 return NULL;
 
-            uint64 guid = group->GetTargetIcon(index);
+            ObjectGuid guid = group->GetTargetIcon(index);
             if (!guid)
                 return NULL;
 

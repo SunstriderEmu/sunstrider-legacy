@@ -55,7 +55,7 @@ class TC_GAME_API FollowerAI : public ScriptedAI
 
         bool AssistPlayerInCombat(Unit* pWho);
 
-        uint64 m_uiLeaderGUID;
+        ObjectGuid m_uiLeaderGUID;
         uint32 m_uiUpdateFollowTimer;
         uint32 m_uiFollowState;
 

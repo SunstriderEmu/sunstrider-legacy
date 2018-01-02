@@ -18,7 +18,7 @@ bool GossipHelloAction::Execute(Event event)
     }
     else
     {
-        uint64 uGuid;
+        ObjectGuid uGuid;
         p.rpos(0);
         p >> uGuid;
         guid = ObjectGuid(uGuid);

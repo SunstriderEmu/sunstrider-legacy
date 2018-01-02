@@ -61,8 +61,7 @@ void Totem::UnSummon(uint32 msTime)
         {
             if (GetOwner()->m_SummonSlot[i] == GetGUID())
             {
-                //GetOwner()->m_SummonSlot[i].Clear();
-                GetOwner()->m_SummonSlot[i] = 0;
+                GetOwner()->m_SummonSlot[i].Clear();
                 break;
             }
         }
@@ -100,7 +99,7 @@ void Totem::UnSummon(uint32 msTime)
     AddObjectToRemoveList();
 }
 
-void Totem::SetOwner(uint64 guid)
+void Totem::SetOwner(ObjectGuid guid)
 {
     SetCreatorGUID(guid);
     SetOwnerGUID(guid);

@@ -773,7 +773,7 @@ void World::LoadConfigSettings(bool reload)
             TC_LOG_ERROR("server.loading","ERROR in config file in Arena.NewTitleDistribution.Gladiators, skipped this entry.");
             continue;
         }
-        uint32 playerguid = atoi(subTokens[0].c_str());
+        ObjectGuid::LowType playerguid = atoi(subTokens[0].c_str());
         if(playerguid == 0)
         {
             TC_LOG_ERROR("server.loading","ERROR in config file in Arena.NewTitleDistribution.Gladiators, skipped this entry.");
@@ -2444,7 +2444,7 @@ BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uin
 
     QueryResult resultAccounts = nullptr;                     //used for kicking
 
-//    uint32 authorGUID = sCharacterCache->GetCharacterGuidByName(safe_author);
+//    ObjectGuid::LowType authorGUID = sCharacterCache->GetCharacterGuidByName(safe_author);
 
     ///- Update the database with ban information
     switch(mode)
@@ -3148,7 +3148,7 @@ void World::ProcessQueryCallbacks()
     _queryProcessor.ProcessReadyQueries();
 }
 
-void World::InvalidatePlayerDataToAllClient(uint64 guid)
+void World::InvalidatePlayerDataToAllClient(ObjectGuid guid)
 {
     WorldPacket data(SMSG_INVALIDATE_PLAYER, 8);
     data << guid;

@@ -30,7 +30,7 @@ class TC_GAME_API GuardAI : public CreatureAI
 
     private:
         Creature &i_creature;
-        uint64 i_victimGuid;
+        ObjectGuid i_victimGuid;
         GuardState i_state;
         TimeTracker i_tracker;
 };

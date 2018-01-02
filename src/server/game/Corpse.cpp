@@ -55,13 +55,13 @@ void Corpse::RemoveFromWorld()
     Object::RemoveFromWorld();
 }
 
-bool Corpse::Create( uint32 guidlow )
+bool Corpse::Create(ObjectGuid::LowType guidlow)
 {
     Object::_Create(guidlow, 0, HighGuid::Corpse);
     return true;
 }
 
-bool Corpse::Create( uint32 guidlow, Player *owner )
+bool Corpse::Create(ObjectGuid::LowType guidlow, Player *owner)
 {
     WorldObject::_Create(guidlow, HighGuid::Corpse, owner->GetPhaseMask());
 
@@ -96,7 +96,7 @@ void Corpse::SaveToDB()
     TODO CORPSE
     std::ostringstream ss;
     ss  << "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instanceId) VALUES ("
-        << GetGUIDLow() << ", " << GUID_LOPART(GetOwnerGUID()) << ", " << GetPositionX() << ", " << GetPositionY() << ", " << GetPositionZ() << ", "
+        << GetGUID().GetCounter() << ", " << GetOwnerGUID().GetCounter() << ", " << GetPositionX() << ", " << GetPositionY() << ", " << GetPositionZ() << ", "
         << GetOrientation() << ", "  << GetZoneId() << ", "  << GetMapId() << ", '";
     for(uint16 i = 0; i < m_valuesCount; i++ )
         ss << GetUInt32Value(i) << " ";
@@ -106,7 +106,7 @@ void Corpse::SaveToDB()
     */
 }
 
-uint64 Corpse::GetOwnerGUID() const { return GetUInt64Value(CORPSE_FIELD_OWNER); }
+ObjectGuid Corpse::GetOwnerGUID() const { return GetGuidValue(CORPSE_FIELD_OWNER); }
 
 void Corpse::DeleteFromDB(SQLTransaction& trans)
 {
@@ -165,13 +165,13 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
     m_type             = CorpseType(fields[7].GetUInt8());
     if(m_type >= MAX_CORPSE_TYPE)
     {
-        TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %d) have wrong corpse type, not load.",GetGUIDLow(),GUID_LOPART(GetOwnerGUID()));
+        TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %d) have wrong corpse type, not load.",GetGUID().GetCounter(),GetOwnerGUID().GetCounter());
         return false;
     }
     uint32 instanceid  = fields[8].GetUInt32();
 
     // overwrite possible wrong/corrupted guid
-    SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HighGuid::Corpse));
+    SetGuidValue(OBJECT_FIELD_GUID, ObjectGuid(HighGuid::Corpse, 0, guid));
 
     // place
     SetInstanceId(instanceid);
@@ -181,7 +181,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
     if(!IsPositionValid())
     {
         TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
-            GetGUIDLow(),GUID_LOPART(GetOwnerGUID()),GetPositionX(),GetPositionY());
+            GetGUID().GetCounter(),GetOwnerGUID().GetCounter(),GetPositionX(),GetPositionY());
         return false;
     }
 

@@ -6,7 +6,7 @@
 class ReplayRecorder
 {
 public:
-    ReplayRecorder(uint32 recorderGUID) : 
+    ReplayRecorder(ObjectGuid::LowType recorderGUID) :
         recorderGUID(recorderGUID),
         _pcktWriting(nullptr)
     {}
@@ -18,7 +18,7 @@ public:
 
 private:
 	FILE* _pcktWriting;
-    uint32 recorderGUID;
+    ObjectGuid::LowType recorderGUID;
 };
 
 #endif //REPLAY_RECORDER_H

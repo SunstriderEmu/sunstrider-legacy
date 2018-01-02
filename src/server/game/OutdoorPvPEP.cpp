@@ -94,7 +94,7 @@ void OPvPCapturePointEP_EWT::ChangeState()
 
     // complete quest objective
     if (m_TowerState == EP_TS_H_P || m_TowerState == EP_TS_A_P)
-        SendObjectiveComplete(EP_EWT_CM, 0);
+        SendObjectiveComplete(EP_EWT_CM, ObjectGuid::Empty);
 }
 
 void OPvPCapturePointEP_EWT::FillInitialWorldStates(WorldPacket &data)
@@ -212,7 +212,7 @@ void OPvPCapturePointEP_NPT::ChangeState()
 
     // complete quest objective
     if (m_TowerState == EP_TS_H_P || m_TowerState == EP_TS_A_P)
-        SendObjectiveComplete(EP_NPT_CM, 0);
+        SendObjectiveComplete(EP_NPT_CM, ObjectGuid::Empty);
 }
 
 void OPvPCapturePointEP_NPT::FillInitialWorldStates(WorldPacket &data)
@@ -324,7 +324,7 @@ void OPvPCapturePointEP_CGT::ChangeState()
 
     // complete quest objective
     if (m_TowerState == EP_TS_H_P || m_TowerState == EP_TS_A_P)
-        SendObjectiveComplete(EP_CGT_CM, 0);
+        SendObjectiveComplete(EP_CGT_CM, ObjectGuid::Empty);
 }
 
 void OPvPCapturePointEP_CGT::FillInitialWorldStates(WorldPacket &data)
@@ -434,7 +434,7 @@ void OPvPCapturePointEP_PWT::ChangeState()
 
     // complete quest objective
     if (m_TowerState == EP_TS_H_P || m_TowerState == EP_TS_A_P)
-        SendObjectiveComplete(EP_PWT_CM, 0);
+        SendObjectiveComplete(EP_PWT_CM, ObjectGuid::Empty);
 }
 
 void OPvPCapturePointEP_PWT::FillInitialWorldStates(WorldPacket &data)
@@ -499,7 +499,7 @@ bool OPvPCapturePointEP_PWT::CanTalkTo(Player * p, Creature * c, GossipMenuItems
     return false;
 }
 
-bool OPvPCapturePointEP_PWT::HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid)
+bool OPvPCapturePointEP_PWT::HandleGossipOption(Player *plr, ObjectGuid guid, uint32 gossipid)
 {
     auto itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())

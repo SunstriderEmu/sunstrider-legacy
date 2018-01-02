@@ -99,7 +99,7 @@ void BattlegroundRL::AddPlayer(Player *plr)
     UpdateWorldState(0xbb9, GetAlivePlayersCountByTeam(HORDE));
 }
 
-void BattlegroundRL::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
+void BattlegroundRL::RemovePlayer(Player* /*plr*/, ObjectGuid /*guid*/)
 {
     if(GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -156,7 +156,7 @@ void BattlegroundRL::HandleAreaTrigger(Player *Source, uint32 Trigger)
         return;
 
     //uint32 SpellId = 0;
-    //uint64 buff_guid = 0;
+    //ObjectGuid buff_guid = 0;
     switch(Trigger)
     {
         case 4696:                                          // buff trigger?

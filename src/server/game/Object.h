@@ -37,7 +37,7 @@
 #define NOMINAL_MELEE_RANGE         5.0f
 #define MELEE_RANGE                 (NOMINAL_MELEE_RANGE - MIN_MELEE_REACH * 2) //center to center for players
 
-uint32 GuidHigh2TypeId(uint32 guid_hi);
+uint32 GuidHigh2TypeId(HighGuid guid_hi);
 
 enum TempSummonType
 {
@@ -90,7 +90,7 @@ struct MovementInfo
 {
     // common
 #ifdef LICH_KING
-    uint64 guid;
+    ObjectGuid guid;
 #endif
     uint32 flags;
 #ifdef LICH_KING
@@ -106,12 +106,12 @@ struct MovementInfo
     {
         void Reset()
         {
-            guid = 0;
+            guid.Clear();
             pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
             time = 0;
         }
 
-        uint64 guid;
+        ObjectGuid guid;
         Position pos;
         uint32 time;
     } transport;
@@ -208,10 +208,7 @@ class TC_GAME_API Object
             ClearUpdateMask(true);
         }
 
-        uint64 GetGUID() const;
-        uint32 GetGUIDLow() const;
-        uint32 GetGUIDMid() const;
-        uint32 GetGUIDHigh() const;
+        ObjectGuid GetGUID() const;
         PackedGuid const& GetPackGUID() const;
         uint32 GetEntry() const;
         void SetEntry(uint32 entry);
@@ -242,7 +239,7 @@ class TC_GAME_API Object
         float GetFloatValue( uint16 index ) const;
         uint8 GetByteValue( uint16 index, uint8 offset) const;
         uint16 GetUInt16Value(uint16 index, uint8 offset) const;
-        uint64 GetGuidValue(uint16 index) const; //for TC compat
+        ObjectGuid GetGuidValue(uint16 index) const;
 
         void SetInt32Value(uint16 index, int32 value);
         void SetUInt32Value(uint16 index, uint32 value);
@@ -254,7 +251,7 @@ class TC_GAME_API Object
         void SetInt16Value(uint16 index, uint8 offset, int16 value) { SetUInt16Value(index, offset, (uint16)value); }
         void SetStatFloatValue(uint16 index, float value);
         void SetStatInt32Value(uint16 index, int32 value);
-        void SetGuidValue(uint16 index, uint64 value); //for TC compat
+        void SetGuidValue(uint16 index, ObjectGuid value);
 		bool AddGuidValue(uint16 index, ObjectGuid value);
 		bool RemoveGuidValue(uint16 index, ObjectGuid value);
 
@@ -334,7 +331,7 @@ class TC_GAME_API Object
         Object();
 
         void _InitValues();
-        void _Create(uint32 guidlow, uint32 entry, HighGuid guidhigh);
+        void _Create(ObjectGuid::LowType guidlow, uint32 entry, HighGuid guidhigh);
         std::string _ConcatFields(uint16 startIndex, uint16 size) const;
         void _LoadIntoDataField(std::string const& data, uint32 startOffset, uint32 count);
 
@@ -446,7 +443,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         virtual void Update ( uint32 /*time_diff*/ ) { }
 
-        void _Create( uint32 guidlow, HighGuid guidhigh, uint32 phaseMask);
+        void _Create(ObjectGuid::LowType guidlow, HighGuid guidhigh, uint32 phaseMask);
         virtual void AddToWorld() override;
 		virtual void RemoveFromWorld() override;
 
@@ -556,7 +553,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
 		virtual uint8 GetLevelForTarget(WorldObject const* /*target*/) const { return 1; }
 
-        void SendObjectDeSpawnAnim(uint64 guid);
+        void SendObjectDeSpawnAnim(ObjectGuid guid);
 
         virtual void SaveRespawnTime(uint32 /*forceDelay*/ = 0, bool /*saveToDB*/ = true) { }
         void AddObjectToRemoveList();
@@ -615,7 +612,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         bool m_isTempWorldObject;
 
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
-        uint64 lootingGroupLeaderGUID;                      // used to find group which is looting corpse
+        ObjectGuid lootingGroupLeaderGUID;                      // used to find group which is looting corpse
 
 		void DestroyForNearbyPlayers();
 		virtual void UpdateObjectVisibility(bool forced = true);
@@ -635,7 +632,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         float GetTransOffsetZ() const { return m_movementInfo.transport.pos.GetPositionZ(); }
         float GetTransOffsetO() const { return m_movementInfo.transport.pos.GetOrientation(); }
         uint32 GetTransTime()   const { return m_movementInfo.transport.time; }
-        virtual uint64 GetTransGUID()   const;
+        virtual ObjectGuid GetTransGUID() const;
         void SetTransport(Transport* t) { m_transport = t; }
 
         virtual float GetStationaryX() const { return GetPositionX(); }

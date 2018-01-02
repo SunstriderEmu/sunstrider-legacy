@@ -45,8 +45,8 @@ class SpectatorAddonMsg {
         void CancelSpell(uint32 _spellId) { spellId = _spellId; castTime = 99998; EnableFlag(SPECTATOR_PREFIX_SPELL); }
         void CreateAura(uint32 _caster,  uint32 _spellId, bool _isDebuff, uint8 _type, int32 _duration, int32 _expire, uint16 _stack, bool _isRemove);
 
-        static bool SendPacket(SpectatorAddonMsg msg, uint64 receiver);
-        bool SendPacket(uint64 receiver);
+        static bool SendPacket(SpectatorAddonMsg msg, ObjectGuid receiver);
+        bool SendPacket(ObjectGuid receiver);
 
         std::string GetMsgData();
 

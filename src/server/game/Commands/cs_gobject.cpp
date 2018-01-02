@@ -226,7 +226,7 @@ bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
     if(!cId)
         return false;
 
-    uint32 guidLow = atoi(cId);
+    ObjectGuid::LowType guidLow = atoi(cId);
     if(!guidLow)
         return false;
 
@@ -239,13 +239,13 @@ bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
         return false;
     }
 
-    uint64 ownerGuid = object->GetOwnerGUID();
+    ObjectGuid ownerGuid = object->GetOwnerGUID();
     if(ownerGuid)
     {
         Unit* owner = ObjectAccessor::GetUnit(*m_session->GetPlayer(), ownerGuid);
-        if(!owner || !IS_PLAYER_GUID(ownerGuid))
+        if(!owner || !ownerGuid.IsPlayer())
         {
-            PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, GUID_LOPART(ownerGuid), object->GetSpawnId());
+            PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, ownerGuid.GetCounter(), object->GetSpawnId());
             SetSentErrorMessage(true);
             return false;
         }
@@ -270,7 +270,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
     if(!cId)
         return false;
 
-    uint32 lowguid = atoi(cId);
+    ObjectGuid::LowType lowguid = atoi(cId);
     if(!lowguid)
         return false;
 
@@ -330,7 +330,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
     if(!cId)
         return false;
 
-    uint32 lowguid = atoi(cId);
+    ObjectGuid::LowType lowguid = atoi(cId);
     if(!lowguid)
         return false;
 
@@ -453,7 +453,7 @@ bool ChatHandler::HandleActivateObjectCommand(const char *args)
     if(!cId)
         return false;
 
-    uint32 lowguid = atoi(cId);
+    ObjectGuid::LowType lowguid = atoi(cId);
     if(!lowguid)
         return false;
 
@@ -519,7 +519,7 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
     char* cEvent = strtok((char*)args, " ");
     char* cGobGUID = strtok(nullptr, " ");
     int16 event = 0;
-    uint32 gobGUID = 0;
+    ObjectGuid::LowType gobGUID = 0;
 
     if(!cEvent || !cGobGUID) 
        return false;
@@ -544,7 +544,9 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
         return false;
     }
 
-    int16 currentEventId = sGameEventMgr->GetGameObjectEvent(gobGUID);
+    ObjectGuid fullGUID = ObjectGuid(HighGuid::GameObject, data->id, gobGUID);
+
+    int16 currentEventId = sGameEventMgr->GetGameObjectEvent(fullGUID);
     if(currentEventId)
     {
         //PSendSysMessage("Le gobject est déjà lié à l'event %i.",currentEventId);
@@ -553,12 +555,12 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
         return false;
     }
 
-    if(sGameEventMgr->AddGameObjectToEvent(gobGUID, event))
+    if(sGameEventMgr->AddGameObjectToEvent(fullGUID, event))
         //PSendSysMessage("Le gobject (guid : %u) a été lié à l'event %i.",gobGUID,event);
-        PSendSysMessage("Gobject (guid: %u) is now linked to the event %i.",gobGUID,event);
+        PSendSysMessage("Gobject (guid: %u) is now linked to the event %i.", gobGUID, event);
     else
         //PSendSysMessage("Erreur : Le gobject (guid : %u) n'a pas pu être lié à l'event %d (event inexistant ?).",gobGUID,event);
-        PSendSysMessage("Error: gobject (guid: %u) could not be linked to the event %d (event nonexistent?).",gobGUID,event);
+        PSendSysMessage("Error: gobject (guid: %u) could not be linked to the event %d (event nonexistent?).",gobGUID, event);
 
     return true;
 }
@@ -568,7 +570,7 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
 {
     GameObjectData const* data = nullptr;
     char* cGobGUID = strtok((char*)args, " ");
-    uint32 gobGUID = 0;
+    ObjectGuid::LowType gobGUID = 0;
 
     if(!cGobGUID)
         return false;
@@ -584,18 +586,19 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
         return false;
     } 
 
-    int16 currentEventId = sGameEventMgr->GetGameObjectEvent(gobGUID);
+    ObjectGuid fullGUID = ObjectGuid(HighGuid::GameObject, data->id, gobGUID);
+    int16 currentEventId = sGameEventMgr->GetGameObjectEvent(fullGUID);
     if (!currentEventId)
     {
         //PSendSysMessage("Le gobject (guid : %u) n'est lié à aucun event.",gobGUID);
-        PSendSysMessage("Gobject (guid: %u) is not linked to any event.",gobGUID);
+        PSendSysMessage("Gobject (guid: %u) is not linked to any event.", gobGUID);
     } else {
-        if(sGameEventMgr->RemoveGameObjectFromEvent(gobGUID))
+        if(sGameEventMgr->RemoveGameObjectFromEvent(fullGUID))
             //PSendSysMessage("Le gobject (guid : %u) n'est plus lié à l'event %i.",gobGUID,currentEventId);
-            PSendSysMessage("Gobject (guid: %u) is not linked anymore to the event %i.",gobGUID,currentEventId);
+            PSendSysMessage("Gobject (guid: %u) is not linked anymore to the event %i.", gobGUID, currentEventId);
         else
             //PSendSysMessage("Erreur lors de la suppression du gobject (guid : %u) de l'event %i.",gobGUID,currentEventId);
-            PSendSysMessage("Error on removing gobject (guid: %u) from the event %i.",gobGUID,currentEventId);
+            PSendSysMessage("Error on removing gobject (guid: %u) from the event %i.", gobGUID, currentEventId);
             SetSentErrorMessage(true);
             return false;
     }
@@ -615,7 +618,7 @@ bool ChatHandler::HandleGobGetValueCommand(const char * args)
     if (!cGUID || !cIndex)
         return false;
 
-    uint64 guid = atoi(cGUID);
+    ObjectGuid::LowType guid = atoi(cGUID);
     if(!guid) 
         return false;
 
@@ -634,7 +637,7 @@ bool ChatHandler::HandleGobGetValueCommand(const char * args)
     uint32 index = (uint32)atoi(cIndex);
     if(index >= target->GetValuesCount())
     {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
+        PSendSysMessage(LANG_TOO_BIG_INDEX, index, uint32(guid), target->GetValuesCount());
         return false;
     }
     uint64 uValue;
@@ -654,14 +657,14 @@ bool ChatHandler::HandleGobGetValueCommand(const char * args)
     {
     case 0: //uint32
         uValue = target->GetUInt32Value(index);
-        PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        PSendSysMessage(LANG_GET_UINT_FIELD, guid, index, uValue);
         break;
     case 1: //uint64
         uValue = target->GetUInt64Value(index);
-        PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        PSendSysMessage(LANG_GET_UINT_FIELD, guid, index, uValue);
     case 2: //float
         fValue = target->GetFloatValue(index);
-        PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), index, fValue);
+        PSendSysMessage(LANG_GET_FLOAT_FIELD, guid, index, fValue);
         break;
     }
 
@@ -681,7 +684,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
     if (!cGUID || !cIndex || !cValue)
         return false;
 
-    uint64 guid = atoi(cGUID);
+    ObjectGuid::LowType guid = atoi(cGUID);
     if(!guid) 
         return false;
 
@@ -700,7 +703,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
     uint32 index = (uint32)atoi(cIndex);
     if(index >= target->GetValuesCount())
     {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
+        PSendSysMessage(LANG_TOO_BIG_INDEX, index, guid, target->GetValuesCount());
         return false;
     }
     uint64 uValue;
@@ -721,16 +724,16 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
     case 0: //uint32
         uValue = (uint32)atoi(cValue);
         target->SetUInt32Value(index,uValue);
-        PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        PSendSysMessage(LANG_SET_UINT_FIELD, guid, index, uValue);
         break;
     case 1: //uint64
         uValue = (uint64)atoi(cValue);
         target->SetUInt64Value(index,uValue);
-        PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        PSendSysMessage(LANG_SET_UINT_FIELD, guid, index, uValue);
     case 2: //float
         fValue = (float)atof(cValue);
         target->SetFloatValue(index,fValue);
-        PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), index, fValue);
+        PSendSysMessage(LANG_SET_FLOAT_FIELD, guid, index, fValue);
         break;
     }
 

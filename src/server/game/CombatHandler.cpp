@@ -29,17 +29,12 @@
 
 void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     Unit* enemy = ObjectAccessor::GetUnit(*_player, guid);
 
     if (!enemy) {
-        if (!IS_UNIT_GUID(guid))
-            TC_LOG_ERROR("FIXME","WORLD: Object %u (TypeID: %u) isn't player, pet or creature", GUID_LOPART(guid), GuidHigh2TypeId(GUID_HIPART(guid)));
-        else
-            TC_LOG_ERROR("FIXME","WORLD: Enemy %s %u not found", GetLogNameForGuid(guid), GUID_LOPART(guid));
-
         // stop attack state at client
         SendMeleeAttackStop(nullptr);
         return;
@@ -88,7 +83,7 @@ void WorldSession::HandleSetSheathedOpcode( WorldPacket & recvData )
         return;
     }
 
-    //TC_LOG_DEBUG("network.opcode", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed );
+    //TC_LOG_DEBUG("network.opcode", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUID().GetCounter(), sheathed );
 
     GetPlayer()->SetSheath(SheathState(sheathed));
 }

@@ -32,7 +32,7 @@ OutdoorPvPNA::OutdoorPvPNA()
 void OutdoorPvPNA::HandleKillImpl(Player* plr, Unit* killed)
 {
     if (killed->GetTypeId() == TYPEID_PLAYER && plr->GetTeam() != (killed->ToPlayer())->GetTeam()) {
-        plr->KilledMonsterCredit(NA_CREDIT_MARKER, 0);
+        plr->KilledMonsterCredit(NA_CREDIT_MARKER, ObjectGuid::Empty);
         if (plr->GetTeam() == TEAM_ALLIANCE)
             plr->CastSpell(plr, NA_KILL_TOKEN_ALLIANCE, TRIGGERED_FULL_MASK);
         else
@@ -66,7 +66,7 @@ uint32 OPvPCapturePointNA::GetAliveGuardsCount()
                 if (cr->IsAlive())
                     ++cnt;
             }
-            else if (CreatureData const * cd = sObjectMgr->GetCreatureData(GUID_LOPART(itr->second))) {
+            else if (CreatureData const * cd = sObjectMgr->GetCreatureData(itr->second.GetCounter())) {
                 ++cnt;
             }
         }
@@ -431,7 +431,7 @@ bool OPvPCapturePointNA::HandleCustomSpell(Player* plr, uint32 spellId, GameObje
     return false;
 }
 
-int32 OPvPCapturePointNA::HandleOpenGo(Player* plr, uint64 guid)
+int32 OPvPCapturePointNA::HandleOpenGo(Player* plr, ObjectGuid guid)
 {
     int32 retval = OPvPCapturePoint::HandleOpenGo(plr, guid);
     if (retval >= 0) {

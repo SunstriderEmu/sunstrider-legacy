@@ -19,7 +19,7 @@ public:
     bool UpdateReplay();
     static bool OpcodeAllowedWhileReplaying(Opcodes op);
 
-	uint32 GetRecorderGuid() const { return _recorderGuid; }
+    ObjectGuid::LowType GetRecorderGuid() const { return _recorderGuid; }
 	void SkipTime(int32 delay) { _pcktReadTimer += delay; }
 	void SetSpeedRate(float r) { _pcktReadSpeedRate = r; }
 	bool ReadFromFile(std::string const& file, WorldLocation& startLoc);
@@ -30,7 +30,7 @@ private:
     float  _pcktReadSpeedRate;
     uint32 _pcktReadTimer;
     uint32 _pcktReadLastUpdate;
-    uint32 _recorderGuid;
+    ObjectGuid::LowType _recorderGuid;
 
     Player* _player;
 };

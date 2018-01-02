@@ -214,17 +214,17 @@ bool ChatHandler::HandleQuestCompleteCommand(const char* args)
         if(uint32 spell_id = pQuest->ReqSpell[i])
         {
             for(uint16 z = 0; z < creaturecount; ++z)
-                player->CastedCreatureOrGO(creatureOrGo,0,spell_id);
+                player->CastedCreatureOrGO(creatureOrGo, ObjectGuid::Empty,spell_id);
         }
         else if(creatureOrGo > 0)
         {
             for(uint16 z = 0; z < creaturecount; ++z)
-                player->KilledMonsterCredit(creatureOrGo,0);
+                player->KilledMonsterCredit(creatureOrGo, ObjectGuid::Empty);
         }
         else if(creatureOrGo < 0)
         {
             for(uint16 z = 0; z < creaturecount; ++z)
-                player->CastedCreatureOrGO(creatureOrGo,0,0);
+                player->CastedCreatureOrGO(creatureOrGo, ObjectGuid::Empty,0);
         }
     }
 
@@ -293,7 +293,7 @@ bool ChatHandler::HandleQuestReportCommand(const char* args)
 bool ChatHandler::HandleQuestCountCompleteCommand(const char* args)
 {
     Player* player;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     if(!*args) //if no name provided, check if we have a player on target
     {
         player = GetSelectedPlayerOrSelf();

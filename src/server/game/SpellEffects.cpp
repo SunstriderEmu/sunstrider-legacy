@@ -764,7 +764,7 @@ void Spell::EffectDummy(uint32 i)
                     if (!charmer)
                         break;
 
-                    charmer->KilledMonsterCredit(21959, 0, 10612);
+                    charmer->KilledMonsterCredit(21959, ObjectGuid::Empty, 10612);
                     break;
                 }
                 // Blazerunner Dispel
@@ -813,7 +813,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if (gameObjTarget && m_caster->ToPlayer()) {
                         if (i == 0)
-                            m_caster->ToPlayer()->KilledMonsterCredit(12247, 0);
+                            m_caster->ToPlayer()->KilledMonsterCredit(12247, ObjectGuid::Empty);
                     }
                     
                     break;
@@ -1730,11 +1730,11 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if (Player* player = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself()) {
                         if (Creature* west = m_caster->FindNearestCreature(22348, 12.0f, true))
-                            player->KilledMonsterCredit(22348, 0);
+                            player->KilledMonsterCredit(22348, ObjectGuid::Empty);
                         else if (Creature* center = m_caster->FindNearestCreature(22350, 12.0f, true))
-                            player->KilledMonsterCredit(22350, 0);
+                            player->KilledMonsterCredit(22350, ObjectGuid::Empty);
                         else if (Creature* east = m_caster->FindNearestCreature(22351, 12.0f, true))
-                            player->KilledMonsterCredit(22351, 0);
+                            player->KilledMonsterCredit(22351, ObjectGuid::Empty);
                     }
                     
                     return;
@@ -3068,7 +3068,7 @@ void Spell::EffectSendEvent(uint32 effIndex)
 
     //special cases TODO: Move them to instanceScript->ProcessEvent
     if (m_spellInfo->Id == 34140 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(10305) == QUEST_STATUS_INCOMPLETE)
-        (m_caster->ToPlayer())->KilledMonsterCredit(19547, 0);
+        (m_caster->ToPlayer())->KilledMonsterCredit(19547, ObjectGuid::Empty);
     else if (m_spellInfo->Id == 30098 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(9444) == QUEST_STATUS_INCOMPLETE)
         (m_caster->ToPlayer())->CompleteQuest(9444);
     else if (m_spellInfo->Id == 24325) {
@@ -3077,7 +3077,7 @@ void Spell::EffectSendEvent(uint32 effIndex)
             return;
     }
     else if (m_spellInfo->Id == 32408 && (m_caster->ToPlayer()))
-        (m_caster->ToPlayer())->KilledMonsterCredit(18395, 0);
+        (m_caster->ToPlayer())->KilledMonsterCredit(18395, ObjectGuid::Empty);
     else if (m_spellInfo->Id == 40328) {
         Creature *soulgrinder = m_caster->FindNearestCreature(23019, 10.0f, true);
         if (soulgrinder) {      // Fear all ghosts
@@ -3100,11 +3100,11 @@ void Spell::EffectSendEvent(uint32 effIndex)
             m_caster->SummonCreature(23019, 3535.181641, 5590.692871, 0.183175, 3.915725, TEMPSUMMON_DEAD_DESPAWN, 0);
     }
     else if (m_spellInfo->Id == 24706 && m_caster->ToPlayer())
-        m_caster->ToPlayer()->KilledMonsterCredit(15415, 0);
+        m_caster->ToPlayer()->KilledMonsterCredit(15415, ObjectGuid::Empty);
     else if (m_spellInfo->Id == 20737 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->SummonCreature(12918, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
     else if (m_spellInfo->Id == 42338 && m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->ToPlayer()->KilledMonsterCredit(23727, 0);
+        m_caster->ToPlayer()->KilledMonsterCredit(23727, ObjectGuid::Empty);
     
     if (ZoneScript* zoneScript = m_caster->GetZoneScript())
         zoneScript->ProcessEvent(focusObject, m_spellInfo->Effects[effIndex].MiscValue);
@@ -3466,7 +3466,7 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
 
         // set the "Crafted by ..." property of the item
         if( pProto->Class != ITEM_CLASS_CONSUMABLE && pProto->Class != ITEM_CLASS_QUEST)
-            pItem->SetUInt32Value(ITEM_FIELD_CREATOR,player->GetGUIDLow());
+            pItem->SetUInt32Value(ITEM_FIELD_CREATOR,player->GetGUID().GetCounter());
 
         // send info to the client
         player->SendNewItem(pItem, num_to_add, true, true);
@@ -3635,7 +3635,7 @@ void Spell::EffectEnergisePct(uint32 i)
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
 }
 
-void Spell::SendLoot(uint64 guid, LootType loottype)
+void Spell::SendLoot(ObjectGuid guid, LootType loottype)
 {
     Player* player = m_caster->ToPlayer();
     if (!player)
@@ -3647,7 +3647,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
         if (!gameObjTarget->isSpawned() && !player->IsGameMaster())
         {
             TC_LOG_ERROR("entities.player.cheat", "Possible hacking attempt: Player %s [guid: %u] tried to loot a gameobject [entry: %u id: %u] which is on respawn timer without being in GM mode!",
-                player->GetName().c_str(), player->GetGUIDLow(), gameObjTarget->GetEntry(), gameObjTarget->GetGUIDLow());
+                player->GetName().c_str(), player->GetGUID().GetCounter(), gameObjTarget->GetEntry(), gameObjTarget->GetGUID().GetCounter());
             return;
         }
 
@@ -3736,11 +3736,11 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     Player* player = m_caster->ToPlayer();
 
     uint32 lockId = 0;
-    uint64 guid = 0;
+    ObjectGuid guid;
     
     //Hand of Iruxos
     if (m_spellInfo->Id == 18762 && m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->ToPlayer()->KilledMonsterCredit(11937, 0);
+        m_caster->ToPlayer()->KilledMonsterCredit(11937, ObjectGuid::Empty);
 
     // Get lockId
     if(gameObjTarget)
@@ -3803,7 +3803,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     if (!lockInfo)
     {
         TC_LOG_ERROR("network", "Spell::EffectOpenLock: %s [guid = %u] has an unknown lockId: %u!",
-            (gameObjTarget ? "gameobject" : "item"), GUID_LOPART(guid), lockId);
+            (gameObjTarget ? "gameobject" : "item"), guid.GetCounter(), lockId);
         SendCastResult(SPELL_FAILED_BAD_TARGETS);
         return;
     }
@@ -3867,9 +3867,9 @@ void Spell::EffectOpenLock(uint32 /*i*/)
             if(gameObjTarget)
             {
                 // Allow one skill-up until respawned
-                if ( !gameObjTarget->IsInSkillupList( player->GetGUIDLow() ) &&
+                if ( !gameObjTarget->IsInSkillupList( player->GetGUID().GetCounter() ) &&
                     player->UpdateGatherSkill(SkillId, pureSkillValue, reqSkillValue) )
-                    gameObjTarget->AddToSkillupList( player->GetGUIDLow() );
+                    gameObjTarget->AddToSkillupList( player->GetGUID().GetCounter() );
             }
             else if(itemTarget)
             {
@@ -4093,7 +4093,7 @@ void Spell::EffectDispel(uint32 i)
     // Ok if exist some buffs for dispel try dispel it
     if (!dispel_list.empty())
     {
-        std::list < std::pair<uint32,uint64> > success_list;// (spell_id,casterGuid)
+        std::list < std::pair<uint32, ObjectGuid> > success_list;// (spell_id,casterGuid)
         std::list < uint32 > fail_list;                     // spell_id
         int32 list_size = dispel_list.size();
         // dispel N = damage buffs (or while exist buffs for dispel)
@@ -4116,7 +4116,7 @@ void Spell::EffectDispel(uint32 i)
             if (roll_chance_i(miss_chance))
                 fail_list.push_back(aur->GetId());
             else
-                success_list.push_back(std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+                success_list.push_back(std::pair<uint32,ObjectGuid>(aur->GetId(),aur->GetCasterGUID()));
             // Remove buff from list for prevent doubles
             for (auto j = dispel_list.begin(); j != dispel_list.end(); )
             {
@@ -4390,7 +4390,7 @@ void Spell::EffectEnchantItemPerm(uint32 i)
         if(!item_owner)
             return;
 
-        LogsDatabaseAccessor::Enchantment(p_caster, item_owner, itemTarget->GetGUIDLow(), itemTarget->GetEntry(), enchant_id, true);
+        LogsDatabaseAccessor::Enchantment(p_caster, item_owner, itemTarget->GetGUID().GetCounter(), itemTarget->GetEntry(), enchant_id, true);
 
         // remove old enchanting before applying new if equipped
         item_owner->ApplyEnchantment(itemTarget,PERM_ENCHANTMENT_SLOT,false);
@@ -4529,7 +4529,7 @@ void Spell::EffectEnchantItemTmp(uint32 i)
     if(!item_owner)
         return;
 
-    LogsDatabaseAccessor::Enchantment(p_caster, item_owner, itemTarget->GetGUIDLow(), itemTarget->GetEntry(), enchant_id, false);
+    LogsDatabaseAccessor::Enchantment(p_caster, item_owner, itemTarget->GetGUID().GetCounter(), itemTarget->GetEntry(), enchant_id, false);
 
     // remove old enchanting before applying new if equipped
     item_owner->ApplyEnchantment(itemTarget,TEMP_ENCHANTMENT_SLOT,false);
@@ -5235,7 +5235,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Plant Kil'sorrow Banner (quest 9931)
         case 32314:
             if (Player *plr = m_caster->ToPlayer())
-                plr->KilledMonsterCredit(18393, 0);
+                plr->KilledMonsterCredit(18393, ObjectGuid::Empty);
             break;
         // Grillok's Eye Quest Credit
         case 38530:
@@ -5761,7 +5761,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 break;                
             }
                 
-            uint64 old_critter_guid = m_caster->GetCritterGUID();
+            ObjectGuid old_critter_guid = m_caster->GetCritterGUID();
             Pet* old_critter = m_caster->GetMap()->GetPet(old_critter_guid);
             // for same pet just despawn
             if (old_critter && old_critter->GetEntry() == petEntry) {
@@ -6031,7 +6031,7 @@ void Spell::EffectDuel(uint32 i)
     Player *target = unitTarget->ToPlayer();
 
     // caster or target already have requested duel
-    if( caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUIDLow()) )
+    if( caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUID().GetCounter()) )
         return;
 
     // Players can only fight a duel with each other outside (=not inside dungeons and not in capital cities)
@@ -6112,8 +6112,8 @@ void Spell::EffectDuel(uint32 i)
     duel2->startTimer = 0;
     target->duel      = duel2;
 
-    caster->SetUInt64Value(PLAYER_DUEL_ARBITER,pGameObj->GetGUID());
-    target->SetUInt64Value(PLAYER_DUEL_ARBITER,pGameObj->GetGUID());
+    caster->SetGuidValue(PLAYER_DUEL_ARBITER,pGameObj->GetGUID());
+    target->SetGuidValue(PLAYER_DUEL_ARBITER,pGameObj->GetGUID());
 }
 
 void Spell::EffectStuck(uint32 /*i*/)
@@ -6136,7 +6136,7 @@ void Spell::EffectStuck(uint32 /*i*/)
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(8690);
     if(!spellInfo)
         return;
-    Spell spell(pTarget, spellInfo, TRIGGERED_FULL_MASK, 0);
+    Spell spell(pTarget, spellInfo, TRIGGERED_FULL_MASK);
     spell.SendSpellCooldown();
     
     pTarget->Kill(pTarget, false);
@@ -6355,15 +6355,17 @@ void Spell::EffectSummonObject(uint32 i)
         default: return;
     }
 
-    uint64 guid = m_caster->m_ObjectSlot[slot];
+    ObjectGuid guid = m_caster->m_ObjectSlot[slot];
     if(guid != 0)
     {
         GameObject* obj = nullptr;
         if( m_caster )
             obj = ObjectAccessor::GetGameObject(*m_caster, guid);
 
-        if(obj) obj->Delete();
-        m_caster->m_ObjectSlot[slot] = 0;
+        if(obj) 
+            obj->Delete();
+
+        m_caster->m_ObjectSlot[slot].Clear();
     }
 
     auto  pGameObj = new GameObject;
@@ -7068,7 +7070,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     {
         case GAMEOBJECT_TYPE_FISHINGNODE:
         {
-            m_caster->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT,pGameObj->GetGUID());
+            m_caster->SetGuidValue(UNIT_FIELD_CHANNEL_OBJECT,pGameObj->GetGUID());
                                                             // Orientation3
             pGameObj->SetFloatValue(GAMEOBJECT_PARENTROTATION + 2, 0.88431775569915771 );
                                                             // Orientation4
@@ -7242,7 +7244,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
     // Ok if exist some buffs for dispel try dispel it
     if (!steal_list.empty())
     {
-        std::list < std::pair<uint32,uint64> > success_list;
+        std::list < std::pair<uint32, ObjectGuid> > success_list;
         std::list < uint32 > fail_list;
         int32 list_size = steal_list.size();
         // dispel N = damage buffs (or while exist buffs for dispel)
@@ -7263,7 +7265,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
             if (roll_chance_i(miss_chance))
                 fail_list.push_back(aur->GetId());
             else
-                success_list.push_back(std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+                success_list.push_back(std::pair<uint32, ObjectGuid>(aur->GetId(),aur->GetCasterGUID()));
 
             // Remove buff from list for prevent doubles
             for (auto j = steal_list.begin(); j != steal_list.end(); )
@@ -7320,7 +7322,7 @@ void Spell::EffectKillCredit(uint32 i)
     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    (unitTarget->ToPlayer())->KilledMonsterCredit(m_spellInfo->Effects[i].MiscValue, 0);
+    (unitTarget->ToPlayer())->KilledMonsterCredit(m_spellInfo->Effects[i].MiscValue, ObjectGuid::Empty);
 }
 
 void Spell::EffectQuestFail(uint32 i)

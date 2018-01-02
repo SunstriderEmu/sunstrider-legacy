@@ -106,7 +106,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> 
 
 void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<Creature> &m, uint32 &count, Map* map)
 {
-    for(uint32 guid : guid_set)
+    for(auto guid : guid_set)
     {
         // Don't spawn at all if there's a respawn time
         if (map->GetCreatureRespawnTime(guid))
@@ -142,7 +142,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<Cre
 
 void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<GameObject> &m, uint32 &count, Map* map)
 {
-    for (uint32 guid : guid_set)
+    for (auto guid : guid_set)
     {
         // Don't spawn at all if there's a respawn time
         if (map->GetGORespawnTime(guid))

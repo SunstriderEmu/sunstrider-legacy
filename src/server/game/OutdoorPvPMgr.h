@@ -40,7 +40,7 @@ public:
     // handle custom (non-exist in dbc) spell if registered
     bool HandleCustomSpell(Player * plr, uint32 spellId, GameObject* go);
     // handle custom go if registered
-    bool HandleOpenGo(Player * plr, uint64 guid);
+    bool HandleOpenGo(Player * plr, ObjectGuid guid);
 
 	ZoneScript* GetZoneScript(uint32 zoneId);
 
@@ -48,7 +48,7 @@ public:
 
     void Update(uint32 diff);
 
-    void HandleGossipOption(Player * player, uint64 guid, uint32 gossipid);
+    void HandleGossipOption(Player * player, ObjectGuid guid, uint32 gossipid);
 
     bool CanTalkTo(Player * player, Creature * creature, GossipMenuItems const& gso);
 

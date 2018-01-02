@@ -30,6 +30,7 @@ class SQLResultQueue;
 class WorldSocket;
 class ArenaTeam;
 struct CharTitlesEntry;
+class ObjectGuid;
 
 typedef std::unordered_map<uint32, WorldSession*> SessionMap;
 
@@ -614,7 +615,7 @@ class TC_GAME_API World
         void SendServerMessage(uint32 type, const char* text = "", Player* player = nullptr);
 
         //Force all connected clients to clear specified player cache
-        void InvalidatePlayerDataToAllClient(uint64 guid);
+        void InvalidatePlayerDataToAllClient(ObjectGuid guid);
 
         void SendZoneUnderAttack(uint32 zoneId, Team team);
 

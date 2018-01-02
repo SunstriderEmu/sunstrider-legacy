@@ -83,7 +83,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
     }
 
     // OK result but not send invite
-    if(player->GetSocial()->HasIgnore(GetPlayer()->GetGUIDLow()))
+    if(player->GetSocial()->HasIgnore(GetPlayer()->GetGUID().GetCounter()))
         return;
 
     // not let enemies sign guild charter
@@ -115,7 +115,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 
     player->SetGuildIdInvited(GetPlayer()->GetGuildId());
     // Put record into guildlog
-    guild->LogGuildEvent(GUILD_EVENT_LOG_INVITE_PLAYER, GetPlayer()->GetGUIDLow(), player->GetGUIDLow(), 0);
+    guild->LogGuildEvent(GUILD_EVENT_LOG_INVITE_PLAYER, GetPlayer()->GetGUID().GetCounter(), player->GetGUID().GetCounter(), 0);
 
     WorldPacket data(SMSG_GUILD_INVITE, (8+10));            // guess size
     data << GetPlayer()->GetName();
@@ -149,7 +149,7 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    uint64 plGuid;
+    ObjectGuid plGuid;
     MemberSlot* slot = guild->GetMemberSlot(plName, plGuid);
     if(!slot)
     {
@@ -172,7 +172,7 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 
     guild->DeleteMember(plGuid);
     // Put record into guildlog
-    guild->LogGuildEvent(GUILD_EVENT_LOG_UNINVITE_PLAYER, GetPlayer()->GetGUIDLow(), GUID_LOPART(plGuid), 0);
+    guild->LogGuildEvent(GUILD_EVENT_LOG_UNINVITE_PLAYER, GetPlayer()->GetGUID().GetCounter(), plGuid.GetCounter(), 0);
 
     WorldPacket data(SMSG_GUILD_EVENT, (2+20));             // guess size
     data << (uint8)GE_REMOVED;
@@ -202,7 +202,7 @@ void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
         return;
     CharacterDatabase.CommitTransaction(trans);
     // Put record into guildlog
-    guild->LogGuildEvent(GUILD_EVENT_LOG_JOIN_GUILD, GetPlayer()->GetGUIDLow(), 0, 0);
+    guild->LogGuildEvent(GUILD_EVENT_LOG_JOIN_GUILD, GetPlayer()->GetGUID().GetCounter(), 0, 0);
 
     WorldPacket data(SMSG_GUILD_EVENT, (2+10));             // guess size
     data << (uint8)GE_JOINED;
@@ -278,7 +278,7 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    uint64 plGuid;
+    ObjectGuid plGuid;
     MemberSlot* slot = guild->GetMemberSlot(plName, plGuid);
 
     if(!slot)
@@ -300,7 +300,7 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 
     guild->ChangeRank(plGuid, newRankId);
     // Put record into guildlog
-    guild->LogGuildEvent(GUILD_EVENT_LOG_PROMOTE_PLAYER, GetPlayer()->GetGUIDLow(), GUID_LOPART(plGuid), newRankId);
+    guild->LogGuildEvent(GUILD_EVENT_LOG_PROMOTE_PLAYER, GetPlayer()->GetGUID().GetCounter(), plGuid.GetCounter(), newRankId);
 
     WorldPacket data(SMSG_GUILD_EVENT, (2+30));             // guess size
     data << (uint8)GE_PROMOTION;
@@ -336,7 +336,7 @@ void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    uint64 plGuid;
+    ObjectGuid plGuid;
     MemberSlot* slot = guild->GetMemberSlot(plName, plGuid);
 
     if (!slot)
@@ -356,7 +356,7 @@ void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 
     guild->ChangeRank(plGuid, (slot->RankId+1));
     // Put record into guildlog
-    guild->LogGuildEvent(GUILD_EVENT_LOG_DEMOTE_PLAYER, GetPlayer()->GetGUIDLow(), GUID_LOPART(plGuid), (slot->RankId));
+    guild->LogGuildEvent(GUILD_EVENT_LOG_DEMOTE_PLAYER, GetPlayer()->GetGUID().GetCounter(), plGuid.GetCounter(), (slot->RankId));
 
     WorldPacket data(SMSG_GUILD_EVENT, (2+30));             // guess size
     data << (uint8)GE_DEMOTION;
@@ -396,7 +396,7 @@ void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
 
     guild->DeleteMember(_player->GetGUID());
     // Put record into guildlog
-    guild->LogGuildEvent(GUILD_EVENT_LOG_LEAVE_GUILD, _player->GetGUIDLow(), 0, 0);
+    guild->LogGuildEvent(GUILD_EVENT_LOG_LEAVE_GUILD, _player->GetGUID().GetCounter(), 0, 0);
 
     WorldPacket data(SMSG_GUILD_EVENT, (2+10));             // guess size
     data << (uint8)GE_LEFT;
@@ -460,7 +460,7 @@ void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    uint64 newLeaderGUID;
+    ObjectGuid newLeaderGUID;
     MemberSlot* slot = guild->GetMemberSlot(name, newLeaderGUID);
 
     if (!slot)
@@ -541,7 +541,7 @@ void WorldSession::HandleGuildSetPublicNoteOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    uint64 plGuid;
+    ObjectGuid plGuid;
     MemberSlot* slot = guild->GetMemberSlot(name, plGuid);
 
     if (!slot)
@@ -579,7 +579,7 @@ void WorldSession::HandleGuildSetOfficerNoteOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    uint64 plGuid;
+    ObjectGuid plGuid;
     MemberSlot* slot = guild->GetMemberSlot(plName, plGuid);
 
     if (!slot)
@@ -742,7 +742,7 @@ void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
 {
     //TC_LOG_DEBUG("network.opcode","WORLD: Received MSG_SAVE_GUILD_EMBLEM");
 
-    uint64 vendorGuid;
+    ObjectGuid vendorGuid;
 
     uint32 EmblemStyle;
     uint32 EmblemColor;
@@ -757,7 +757,7 @@ void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
     {
         //"That's not an emblem vendor!"
         SendSaveGuildEmblem(ERR_GUILDEMBLEM_INVALIDVENDOR);
-        TC_LOG_ERROR("FIXME","WORLD: HandleSaveGuildEmblemOpcode - Unit (GUID: %u) not found or you can't interact with him.", GUID_LOPART(vendorGuid));
+        TC_LOG_ERROR("FIXME","WORLD: HandleSaveGuildEmblemOpcode - Unit (GUID: %u) not found or you can't interact with him.", vendorGuid.GetCounter());
         return;
     }
 
@@ -827,7 +827,7 @@ void WorldSession::HandleGuildBankMoneyWithdrawn( WorldPacket & /* recvData */ )
     if(!pGuild)
         return;
 
-    pGuild->SendMoneyInfo(this, GetPlayer()->GetGUIDLow());
+    pGuild->SendMoneyInfo(this, GetPlayer()->GetGUID().GetCounter());
 }
 
 void WorldSession::HandleGuildPermissions( WorldPacket& /* recvData */ )
@@ -846,12 +846,12 @@ void WorldSession::HandleGuildPermissions( WorldPacket& /* recvData */ )
     data << uint32(rankId);                                 // guild rank id
     data << uint32(pGuild->GetRankRights(rankId));          // rank rights
                                                             // money per day left
-    data << uint32(pGuild->GetMemberMoneyWithdrawRem(GetPlayer()->GetGUIDLow()));
+    data << uint32(pGuild->GetMemberMoneyWithdrawRem(GetPlayer()->GetGUID().GetCounter()));
     data << uint8(pGuild->GetPurchasedTabs());              // tabs count
     for(int i = 0; i < GUILD_BANK_MAX_TABS; ++i)
     {
         data << uint32(pGuild->GetBankRights(rankId, uint8(i)));
-        data << uint32(pGuild->GetMemberSlotWithdrawRem(GetPlayer()->GetGUIDLow(), uint8(i)));
+        data << uint32(pGuild->GetMemberSlotWithdrawRem(GetPlayer()->GetGUID().GetCounter(), uint8(i)));
     }
     SendPacket(&data);
 }
@@ -859,7 +859,7 @@ void WorldSession::HandleGuildPermissions( WorldPacket& /* recvData */ )
 /* Called when clicking on Guild bank gameobject */
 void WorldSession::HandleGuildBankerActivate( WorldPacket & recvData )
 {
-    uint64 GoGuid;
+    ObjectGuid GoGuid;
     uint8  unk;
     recvData >> GoGuid >> unk;
 
@@ -881,7 +881,7 @@ void WorldSession::HandleGuildBankerActivate( WorldPacket & recvData )
 /* Called when opening guild bank tab only (first one) */
 void WorldSession::HandleGuildBankerActivateTab( WorldPacket & recvData )
 {
-    uint64 GoGuid;
+    ObjectGuid GoGuid;
     uint8 TabId, unk1;
     recvData >> GoGuid >> TabId >> unk1;
 
@@ -898,14 +898,14 @@ void WorldSession::HandleGuildBankerActivateTab( WorldPacket & recvData )
 
     // Let's update the amount of gold the player can withdraw before displaying the content
     // This is usefull if money withdraw right has changed
-    pGuild->SendMoneyInfo(this, GetPlayer()->GetGUIDLow());
+    pGuild->SendMoneyInfo(this, GetPlayer()->GetGUID().GetCounter());
 
     pGuild->DisplayGuildBankContent(this, TabId);
 }
 
 void WorldSession::HandleGuildBankDepositMoney( WorldPacket & recvData )
 {
-    uint64 GoGuid;
+    ObjectGuid GoGuid;
     uint32 money;
     recvData >> GoGuid >> money;
 
@@ -935,7 +935,7 @@ void WorldSession::HandleGuildBankDepositMoney( WorldPacket & recvData )
     CharacterDatabase.CommitTransaction(trans);
 
     // log
-    pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_MONEY, uint8(0), GetPlayer()->GetGUIDLow(), money);
+    pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_MONEY, uint8(0), GetPlayer()->GetGUID().GetCounter(), money);
 
     pGuild->DisplayGuildBankTabsInfo(this);
     pGuild->DisplayGuildBankContent(this, 0);
@@ -946,7 +946,7 @@ void WorldSession::HandleGuildBankDepositMoney( WorldPacket & recvData )
 
 void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
 {
-    uint64 GoGuid;
+    ObjectGuid GoGuid;
     uint32 money;
     recvData >> GoGuid >> money;
 
@@ -972,7 +972,7 @@ void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    if (!pGuild->MemberMoneyWithdraw(money, GetPlayer()->GetGUIDLow(), trans))
+    if (!pGuild->MemberMoneyWithdraw(money, GetPlayer()->GetGUID().GetCounter(), trans))
     {
         //CharacterDatabase.RollbackTransaction();
         return;
@@ -984,9 +984,9 @@ void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
     CharacterDatabase.CommitTransaction(trans);
 
     // Log
-    pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_MONEY, uint8(0), GetPlayer()->GetGUIDLow(), money);
+    pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_MONEY, uint8(0), GetPlayer()->GetGUID().GetCounter(), money);
 
-    pGuild->SendMoneyInfo(this, GetPlayer()->GetGUIDLow());
+    pGuild->SendMoneyInfo(this, GetPlayer()->GetGUID().GetCounter());
     pGuild->DisplayGuildBankTabsInfo(this);
     pGuild->DisplayGuildBankContent(this, 0);
     pGuild->DisplayGuildBankMoneyUpdate();
@@ -996,7 +996,7 @@ void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
 
 void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 {
-    uint64 GoGuid;
+    ObjectGuid GoGuid;
     uint8 BankToBank;
 
     uint8 BankTab, BankTabSlot, AutoStore = 0, AutoStoreCount, PlayerSlot = 0, PlayerBag = 0, SplitedAmount = 0;
@@ -1082,11 +1082,11 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
         if(BankTab!=BankTabDst)
         {
             // check dest pos rights (if different tabs)
-            if(!pGuild->IsMemberHaveRights(pl->GetGUIDLow(), BankTabDst, GUILD_BANK_RIGHT_DEPOSIT_ITEM))
+            if(!pGuild->IsMemberHaveRights(pl->GetGUID().GetCounter(), BankTabDst, GUILD_BANK_RIGHT_DEPOSIT_ITEM))
                 return;
 
             // check source pos rights (if different tabs)
-            uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUIDLow(), BankTab);
+            uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUID().GetCounter(), BankTab);
             if(remRight <= 0)
                 return;
         }
@@ -1109,7 +1109,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             }
 
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
-            pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTab, pl->GetGUIDLow(), pItemSrc->GetEntry(), SplitedAmount, BankTabDst);
+            pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTab, pl->GetGUID().GetCounter(), pItemSrc->GetEntry(), SplitedAmount, BankTabDst);
 
             pl->ItemRemovedQuestCheck( pItemSrc->GetEntry(), SplitedAmount );
             pItemSrc->SetCount( pItemSrc->GetCount() - SplitedAmount );
@@ -1126,7 +1126,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             {
                 // TODO: SQL Transaction
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTab,    pl->GetGUIDLow(), pItemSrc->GetEntry(), pItemSrc->GetCount(), BankTabDst);
+                pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTab,    pl->GetGUID().GetCounter(), pItemSrc->GetEntry(), pItemSrc->GetCount(), BankTabDst);
 
                 pGuild->RemoveItem(BankTab, BankTabSlot, trans);
                 pGuild->StoreItem(BankTabDst, gDest, pItemSrc, trans);
@@ -1153,18 +1153,18 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                 if(BankTab!=BankTabDst)
                 {
                     // check source pos rights (item swapped to src)
-                    if(!pGuild->IsMemberHaveRights(pl->GetGUIDLow(), BankTab, GUILD_BANK_RIGHT_DEPOSIT_ITEM))
+                    if(!pGuild->IsMemberHaveRights(pl->GetGUID().GetCounter(), BankTab, GUILD_BANK_RIGHT_DEPOSIT_ITEM))
                         return;
 
                     // check dest pos rights (item swapped to src)
-                    uint32 remRightDst = pGuild->GetMemberSlotWithdrawRem(pl->GetGUIDLow(), BankTabDst);
+                    uint32 remRightDst = pGuild->GetMemberSlotWithdrawRem(pl->GetGUID().GetCounter(), BankTabDst);
                     if(remRightDst <= 0)
                         return;
                 }
 
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTab,    pl->GetGUIDLow(), pItemSrc->GetEntry(), pItemSrc->GetCount(), BankTabDst);
-                pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTabDst, pl->GetGUIDLow(), pItemDst->GetEntry(), pItemDst->GetCount(), BankTab);
+                pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTab,    pl->GetGUID().GetCounter(), pItemSrc->GetEntry(), pItemSrc->GetCount(), BankTabDst);
+                pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTabDst, pl->GetGUID().GetCounter(), pItemDst->GetEntry(), pItemDst->GetCount(), BankTab);
 
                 pGuild->RemoveItem(BankTab, BankTabSlot, trans);
                 pGuild->RemoveItem(BankTabDst, BankTabSlotDst, trans);
@@ -1235,7 +1235,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             }
 
             // check source pos rights (item moved to inventory)
-            uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUIDLow(), BankTab);
+            uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUID().GetCounter(), BankTab);
             if(remRight <= 0)
             {
                 delete pNewItem;
@@ -1243,7 +1243,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             }
 
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
-            pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), SplitedAmount);
+            pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUID().GetCounter(), pItemBank->GetEntry(), SplitedAmount);
 
             pItemBank->SetCount(pItemBank->GetCount()-SplitedAmount);
             pItemBank->FSetState(ITEM_CHANGED);
@@ -1251,7 +1251,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             pl->MoveItemToInventory(dest,pNewItem,true);
             pl->SaveInventoryAndGoldToDB(trans);
 
-            pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
+            pGuild->MemberItemWithdraw(BankTab, pl->GetGUID().GetCounter());
             CharacterDatabase.CommitTransaction(trans);
 
             LogsDatabaseAccessor::GuildBankItemTransfer(pl, false, pNewItem->GetGUID(), pNewItem->GetEntry(), pNewItem->GetCount());
@@ -1263,18 +1263,18 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             if( msg == EQUIP_ERR_OK )                       // merge case
             {
                 // check source pos rights (item moved to inventory)
-                uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUIDLow(), BankTab);
+                uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUID().GetCounter(), BankTab);
                 if(remRight <= 0)
                     return;
 
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
+                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUID().GetCounter(), pItemBank->GetEntry(), pItemBank->GetCount());
 
                 pGuild->RemoveItem(BankTab, BankTabSlot, trans);
                 pl->MoveItemToInventory(dest,pItemBank,true);
                 pl->SaveInventoryAndGoldToDB(trans);
 
-                pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
+                pGuild->MemberItemWithdraw(BankTab, pl->GetGUID().GetCounter());
                 CharacterDatabase.CommitTransaction(trans);
 
                 LogsDatabaseAccessor::GuildBankItemTransfer(pl, false, pItemBank->GetGUID(), pItemBank->GetEntry(), pItemBank->GetCount());
@@ -1282,7 +1282,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             else                                            // Bank <-> Char swap items
             {
                 // check source pos rights (item swapped to bank)
-                if(!pGuild->IsMemberHaveRights(pl->GetGUIDLow(), BankTab, GUILD_BANK_RIGHT_DEPOSIT_ITEM))
+                if(!pGuild->IsMemberHaveRights(pl->GetGUID().GetCounter(), BankTab, GUILD_BANK_RIGHT_DEPOSIT_ITEM))
                     return;
 
                 if(pItemChar)
@@ -1314,15 +1314,15 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                 }
 
                 // check source pos rights (item moved to inventory)
-                uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUIDLow(), BankTab);
+                uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUID().GetCounter(), BankTab);
                 if(remRight <= 0)
                     return;
 
-                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
+                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUID().GetCounter(), pItemBank->GetEntry(), pItemBank->GetCount());
                 LogsDatabaseAccessor::GuildBankItemTransfer(pl, false, pItemBank->GetGUID(), pItemBank->GetEntry(), pItemBank->GetCount());
                 if (pItemChar)
                 {
-                    pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
+                    pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUID().GetCounter(), pItemChar->GetEntry(), pItemChar->GetCount());
                     LogsDatabaseAccessor::GuildBankItemTransfer(pl, true, pItemChar->GetGUID(), pItemChar->GetEntry(), pItemChar->GetCount());
                 }
 
@@ -1340,7 +1340,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                 pl->MoveItemToInventory(iDest,pItemBank,true);
                 pl->SaveInventoryAndGoldToDB(trans);
 
-                pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
+                pGuild->MemberItemWithdraw(BankTab, pl->GetGUID().GetCounter());
                 CharacterDatabase.CommitTransaction(trans);
 
             }
@@ -1358,7 +1358,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
     }
 
     // check source pos rights (item moved to bank)
-    if(!pGuild->IsMemberHaveRights(pl->GetGUIDLow(), BankTab, GUILD_BANK_RIGHT_DEPOSIT_ITEM))
+    if(!pGuild->IsMemberHaveRights(pl->GetGUID().GetCounter(), BankTab, GUILD_BANK_RIGHT_DEPOSIT_ITEM))
         return;
 
     if(SplitedAmount > pItemChar->GetCount())
@@ -1384,7 +1384,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
         }
        
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), SplitedAmount);
+        pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUID().GetCounter(), pItemChar->GetEntry(), SplitedAmount);
         LogsDatabaseAccessor::GuildBankItemTransfer(pl, true, pItemChar->GetGUID(), pItemChar->GetEntry(), SplitedAmount);
 
         pl->ItemRemovedQuestCheck( pItemChar->GetEntry(), SplitedAmount );
@@ -1403,7 +1403,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
         uint8 msg = pGuild->CanStoreItem(BankTab,BankTabSlot,dest,pItemChar->GetCount(),pItemChar,false);
         if( msg == EQUIP_ERR_OK )                           // merge
         {
-            pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
+            pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUID().GetCounter(), pItemChar->GetEntry(), pItemChar->GetCount());
             LogsDatabaseAccessor::GuildBankItemTransfer(pl, true, pItemChar->GetGUID(), pItemChar->GetEntry(), pItemChar->GetCount());
 
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -1442,7 +1442,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             if(pItemBank)
             {
                 // check bank pos rights (item swapped with inventory)
-                uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUIDLow(), BankTab);
+                uint32 remRight = pGuild->GetMemberSlotWithdrawRem(pl->GetGUID().GetCounter(), BankTab);
                 if(remRight <= 0)
                     return;
             }
@@ -1450,11 +1450,11 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
             if (pItemBank)
             {
-                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
+                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUID().GetCounter(), pItemBank->GetEntry(), pItemBank->GetCount());
                 LogsDatabaseAccessor::GuildBankItemTransfer(pl, false, pItemBank->GetGUID(), pItemBank->GetEntry(), pItemBank->GetCount());
             }
 
-            pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
+            pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUID().GetCounter(), pItemChar->GetEntry(), pItemChar->GetCount());
             LogsDatabaseAccessor::GuildBankItemTransfer(pl, true, pItemChar->GetGUID(), pItemChar->GetEntry(), pItemChar->GetCount());
 
             pl->MoveItemFromInventory(PlayerBag, PlayerSlot, true);
@@ -1468,7 +1468,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             pl->SaveInventoryAndGoldToDB(trans);
             if (pItemBank)
             {
-                pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
+                pGuild->MemberItemWithdraw(BankTab, pl->GetGUID().GetCounter());
             }
             CharacterDatabase.CommitTransaction(trans);
 
@@ -1479,7 +1479,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 
 void WorldSession::HandleGuildBankBuyTab( WorldPacket & recvData )
 {
-    uint64 GoGuid;
+    ObjectGuid GoGuid;
     uint8 TabId;
 
     recvData >> GoGuid;
@@ -1523,10 +1523,7 @@ void WorldSession::HandleGuildBankBuyTab( WorldPacket & recvData )
 
 void WorldSession::HandleGuildBankUpdateTab( WorldPacket & recvData )
 {
-    
-    
-    
-    uint64 GoGuid;
+    ObjectGuid GoGuid;
     uint8 TabId;
     std::string Name;
     std::string IconIndex;

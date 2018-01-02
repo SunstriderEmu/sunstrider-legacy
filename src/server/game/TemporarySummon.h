@@ -20,17 +20,17 @@ class TC_GAME_API TempSummon : public Creature
 
 	Unit* GetSummoner() const override;
 	Creature* GetSummonerCreatureBase() const;
-	uint64 GetSummonerGUID() const { return m_summonerGUID; }
+    ObjectGuid GetSummonerGUID() const { return m_summonerGUID; }
         TempSummonType GetSummonType() { return m_type; }
 	uint32 GetTimer() const { return m_timer; }
 //        Unit* GetSummoner() const override { return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : nullptr; }
 
 	const SummonPropertiesEntry* const m_Properties;
-    private:
-        TempSummonType m_type;
-        uint32 m_timer;
-        uint32 m_lifetime;
-	uint64 m_summonerGUID;
+private:
+    TempSummonType m_type;
+    uint32 m_timer;
+    uint32 m_lifetime;
+	ObjectGuid m_summonerGUID;
 };
 
 class TC_GAME_API Minion : public TempSummon

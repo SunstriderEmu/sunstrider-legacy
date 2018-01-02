@@ -92,7 +92,7 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
     char* receiver_str = strtok((char*)args, " ");
     char* text = strtok(nullptr, "");
 
-    uint64 guid = m_session->GetPlayer()->GetTarget();
+    ObjectGuid guid = m_session->GetPlayer()->GetTarget();
     Creature* pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(), guid);
 
     if(!pCreature || !receiver_str || !text)
@@ -100,7 +100,7 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid= atol(receiver_str);
+    ObjectGuid receiver_guid = ObjectGuid(uint64(atol(receiver_str)));
     Player* targetPlayer = ObjectAccessor::FindPlayer(receiver_guid);
     if(!targetPlayer)
     {
@@ -133,7 +133,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     if (Transport* tt = chr->GetTransport())
         if (MotionTransport* trans = tt->ToMotionTransport())
         {
-            uint32 guid = sObjectMgr->GenerateCreatureSpawnId();
+            ObjectGuid::LowType guid = sObjectMgr->GenerateCreatureSpawnId();
             CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
             data.id = id;
             data.spawnPoint.m_positionX = chr->GetTransOffsetX();
@@ -171,14 +171,14 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
 
     if(!pCreature->IsPositionValid())
     {
-        TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
+        TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUID().GetCounter(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
         return false;
     }
 
     pCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
 
-    uint32 db_guid = pCreature->GetSpawnId();
+    ObjectGuid::LowType db_guid = pCreature->GetSpawnId();
 
     // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
     pCreature->LoadFromDB(db_guid, map, true, false);
@@ -198,12 +198,12 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
         if(!cId)
             return false;
 
-        uint32 lowguid = atoi(cId);
+        ObjectGuid::LowType lowguid = atoi(cId);
         if(!lowguid)
             return false;
 
         if (CreatureData const* cr_data = sObjectMgr->GetCreatureData(lowguid))
-            unit = ObjectAccessor::GetCreature(*m_session->GetPlayer(), MAKE_NEW_GUID(lowguid, cr_data->id, HighGuid::Unit));
+            unit = ObjectAccessor::GetCreature(*m_session->GetPlayer(), ObjectGuid(HighGuid::Unit, cr_data->id, lowguid));
     }
     else
         unit = GetSelectedCreature();
@@ -227,7 +227,7 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
 //move selected creature
 bool ChatHandler::HandleNpcMoveCommand(const char* args)
 {
-    uint32 lowguid = 0;
+    ObjectGuid::LowType lowguid = 0;
 
     Creature* pCreature = GetSelectedCreature();
 
@@ -510,7 +510,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
     if(!guid_str)
         return false;
 
-    uint32 lowguid = 0;
+    ObjectGuid::LowType lowguid = 0;
     Creature* pCreature = nullptr;
 
     if( dontdel_str )
@@ -683,7 +683,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
         if(CreatureTemplate const *master = sObjectMgr->GetCreatureTemplate(linked->id))
-            PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(target->GetSpawnId()), linked->id, master->Name.c_str());
+            PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(ObjectGuid(HighGuid::Unit, target->GetEntry(), target->GetSpawnId())), linked->id, master->Name.c_str());
     PSendSysMessage("Movement flag: %u", target->GetUnitMovementFlags());
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
         SendSysMessage(LANG_NPCINFO_VENDOR);
@@ -825,7 +825,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
 {
     ARGS_CHECK
 
-    uint32 leaderGUID = (uint32) atoi((char*)args);
+        ObjectGuid::LowType leaderGUID = (ObjectGuid::LowType) atoi((char*)args);
 
     Creature *pCreature = GetSelectedCreature();
 
@@ -861,7 +861,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     if (pCreature->GetMap()->Instanceable())
         leader = pCreature->GetMap()->GetCreatureBySpawnId(leaderGUID);
     else
-        leader = pCreature->GetMap()->GetCreature(MAKE_NEW_GUID(leaderGUID, data->id, HighGuid::Unit));
+        leader = pCreature->GetMap()->GetCreature(ObjectGuid(HighGuid::Unit, data->id, leaderGUID));
 
     if (!leader)
     {
@@ -918,13 +918,13 @@ bool ChatHandler::HandleNpcRemoveFormationCommand(const char* args)
     CreatureGroup* formation = pCreature->GetFormation();
     if(!formation)
     {
-        PSendSysMessage("Selected creature (%u) is not in a formation.", pCreature->GetGUIDLow());
+        PSendSysMessage("Selected creature (%u) is not in a formation.", pCreature->GetGUID().GetCounter());
         return true;
     }
 
     formation->RemoveMember(pCreature);
     pCreature->SetFormation(nullptr);
-    WorldDatabase.PExecute("DELETE ROM `creature_formations` WHERE memberGUID = %u",pCreature->GetGUIDLow());
+    WorldDatabase.PExecute("DELETE ROM `creature_formations` WHERE memberGUID = %u",pCreature->GetGUID().GetCounter());
 
     PSendSysMessage("Creature removed from formation.");
 
@@ -935,7 +935,7 @@ bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
 {
     ARGS_CHECK
 
-    uint32 linkguid = (uint32) atoi((char*)args);
+    ObjectGuid::LowType linkguid = (uint32) atoi((char*)args);
 
     Creature* pCreature = GetSelectedCreature();
 
@@ -948,7 +948,7 @@ bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
 
     if(!pCreature->GetSpawnId())
     {
-        PSendSysMessage("Selected creature [guidlow:%u] isn't in `creature` table", pCreature->GetGUIDLow());
+        PSendSysMessage("Selected creature [guidlow:%u] isn't in `creature` table", pCreature->GetGUID().GetCounter());
         SetSentErrorMessage(true);
         return false;
     }
@@ -981,13 +981,13 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
         Player* plr = m_session->GetPlayer();
         if (!guid || !plr)
             return false;
-        uint64 uintGUID = (uint64)atoll(guid);
+        ObjectGuid uintGUID = ObjectGuid(uint64(atoll(guid)));
         QueryResult result = WorldDatabase.PQuery("SELECT id FROM creature WHERE guid = %u LIMIT 1", uintGUID);
         if (result) {
             Field *fields = result->Fetch();
             uint32 creatureentry = fields[0].GetUInt32();
-            uint64 packedguid = MAKE_NEW_GUID(uintGUID, creatureentry, HighGuid::Unit);
-            Unit* pUnit = ObjectAccessor::GetUnit(*plr, packedguid);
+            ObjectGuid fullguid = ObjectGuid(HighGuid::Unit, creatureentry, uint32(uintGUID));
+            Unit* pUnit = ObjectAccessor::GetUnit(*plr, fullguid);
             if (!pUnit) {
                 PSendSysMessage("No unit found.");
                 return true;
@@ -1201,7 +1201,7 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
     char* cEvent = strtok((char*)args, " ");
     char* cCreatureGUID = strtok(nullptr, " ");
     int16 event = 0;
-    uint32 creatureGUID = 0;
+    ObjectGuid::LowType creatureGUID = 0;
     bool justShowInfo = false;
     if(!cEvent) // No params given
     {
@@ -1226,16 +1226,17 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
         return true;
     }
 
-    int16 currentEventId = sGameEventMgr->GetCreatureEvent(creatureGUID);
+    ObjectGuid fullGUID = ObjectGuid(HighGuid::Unit, data->id, creatureGUID);
+    int16 currentEventId = sGameEventMgr->GetCreatureEvent(fullGUID);
 
     if (justShowInfo)
     {
         if(currentEventId)
             //PSendSysMessage("La creature (guid : %u) est liée à l'event %i.",creatureGUID,currentEventId);
-            PSendSysMessage("Creature (guid: %u) bound to event %i.",creatureGUID,currentEventId);
+            PSendSysMessage("Creature (guid: %u) bound to event %i.",creatureGUID, currentEventId);
         else
             //PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
-            PSendSysMessage("Creature (guid : %u) is not bound to an event.",creatureGUID);
+            PSendSysMessage("Creature (guid : %u) is not bound to an event.", creatureGUID);
     } else {
         if(currentEventId)
         {
@@ -1245,7 +1246,7 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
             return true;
         }
 
-        if(sGameEventMgr->AddCreatureToEvent(creatureGUID, event))
+        if(sGameEventMgr->AddCreatureToEvent(fullGUID, event))
             //PSendSysMessage("La creature (guid : %u) a été liée à l'event %i.",creatureGUID,event);
             PSendSysMessage("Creature (guid: %u) is now bound to the event %i.",creatureGUID,event);
         else
@@ -1262,7 +1263,7 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
     Creature* creature = nullptr;
     CreatureData const* data = nullptr;
     char* cCreatureGUID = strtok((char*)args, " ");
-    uint32 creatureGUID = 0;
+    ObjectGuid::LowType creatureGUID = 0;
 
     if(cCreatureGUID) //Guid given
     {
@@ -1275,7 +1276,7 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
             SetSentErrorMessage(true);
             return false;
         }           
-        creatureGUID = creature->GetGUIDLow();
+        creatureGUID = creature->GetGUID().GetCounter();
     }
 
     data = sObjectMgr->GetCreatureData(creatureGUID);
@@ -1286,14 +1287,15 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
         return true;
     } 
 
-    int16 currentEventId = sGameEventMgr->GetCreatureEvent(creatureGUID);
+    ObjectGuid fullGUID = ObjectGuid(HighGuid::Unit, data->id, creatureGUID);
+    int16 currentEventId = sGameEventMgr->GetCreatureEvent(fullGUID);
 
     if (!currentEventId)
     {
         //PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
         PSendSysMessage("Creature (guid: %u) is not linked to any event.",creatureGUID);
     } else {
-        if(sGameEventMgr->RemoveCreatureFromEvent(creatureGUID))
+        if(sGameEventMgr->RemoveCreatureFromEvent(fullGUID))
             //PSendSysMessage("La creature (guid : %u) n'est plus liée à l'event %i.",creatureGUID,currentEventId);
             PSendSysMessage("Creature (guid: %u) is not anymore linked to the event %i.",creatureGUID,currentEventId);
         else
@@ -1324,7 +1326,7 @@ bool ChatHandler::HandleNpcNearCommand(const char* args)
         do
         {
             Field *fields = result->Fetch();
-            uint32 guid = fields[0].GetUInt32();
+            ObjectGuid::LowType guid = fields[0].GetUInt32();
             uint32 entry = fields[1].GetUInt32();
             float x = fields[2].GetFloat();
             float y = fields[3].GetFloat();
@@ -1528,7 +1530,7 @@ bool ChatHandler::HandleNpcSpawnDistCommand(const char* args)
         mtype = RANDOM_MOTION_TYPE;
 
     Creature *pCreature = GetSelectedCreature();
-    uint32 u_guidlow = 0;
+    ObjectGuid::LowType u_guidlow = 0;
 
     if (pCreature)
         u_guidlow = pCreature->GetSpawnId();
@@ -1568,7 +1570,7 @@ bool ChatHandler::HandleNpcSpawnTimeCommand(const char* args)
     }
 
     Creature *pCreature = GetSelectedCreature();
-    uint32 u_guidlow = 0;
+    ObjectGuid::LowType u_guidlow = 0;
 
     if (pCreature)
         u_guidlow = pCreature->GetSpawnId();

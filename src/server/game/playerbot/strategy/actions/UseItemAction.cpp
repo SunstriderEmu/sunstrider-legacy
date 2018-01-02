@@ -80,7 +80,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
     uint8 cast_count = 1;
-    uint64 item_guid = item->GetGUID();
+    ObjectGuid item_guid = item->GetGUID();
     uint32 glyphIndex = 0;
     uint8 unk_flags = 0;
 
@@ -206,7 +206,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
             }
 
             //Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE, ObjectGuid::Empty, true);
-            Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE, 0, nullptr, true);
+            Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE, ObjectGuid::Empty, nullptr, true);
             ai->WaitForSpellCast(spell);
             delete spell;
         }

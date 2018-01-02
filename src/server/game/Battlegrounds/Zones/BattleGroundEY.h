@@ -286,15 +286,15 @@ class BattlegroundEY : public Battleground
         void AddPlayer(Player *plr) override;
 
         /* BG Flags */
-        uint64 GetFlagPickerGUID() const    { return m_FlagKeeper; }
-        void SetFlagPicker(uint64 guid)     { m_FlagKeeper = guid; }
+        ObjectGuid GetFlagPickerGUID() const    { return m_FlagKeeper; }
+        void SetFlagPicker(ObjectGuid guid)     { m_FlagKeeper = guid; }
         bool IsFlagPickedup() const         { return m_FlagKeeper != 0; }
         uint8 GetFlagState() const          { return m_FlagState; }
         void RespawnFlag(bool send_message);
         void RespawnFlagAfterDrop();
 
-        void RemovePlayer(Player *plr,uint64 guid) override;
-        void HandleBuffUse(uint64 const& buff_guid);
+        void RemovePlayer(Player *plr,ObjectGuid guid) override;
+        void HandleBuffUse(ObjectGuid const& buff_guid);
         void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
         void HandleKillPlayer(Player *player, Player *killer) override;
         WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;
@@ -303,8 +303,8 @@ class BattlegroundEY : public Battleground
         void UpdateTeamScore(uint32 Team);
         void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
         void FillInitialWorldStates(WorldPacket& data) override;
-        void SetDroppedFlagGUID(uint64 guid)       { m_DroppedFlagGUID = guid;}
-        uint64 GetDroppedFlagGUID() const          { return m_DroppedFlagGUID;}
+        void SetDroppedFlagGUID(ObjectGuid guid)       { m_DroppedFlagGUID = guid;}
+        ObjectGuid GetDroppedFlagGUID() const          { return m_DroppedFlagGUID;}
 
         /* Battleground Events */
         void EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj) override;
@@ -335,8 +335,8 @@ class BattlegroundEY : public Battleground
 
         uint32 m_Points_Trigger[EY_POINTS_MAX];
 
-        uint64 m_FlagKeeper;                                // keepers guid
-        uint64 m_DroppedFlagGUID;
+        ObjectGuid m_FlagKeeper;                                // keepers guid
+        ObjectGuid m_DroppedFlagGUID;
         uint32 m_FlagCapturedBgObjectType;                  // type that should be despawned when flag is captured
         uint8 m_FlagState;                                  // for checking flag state
         int32 m_FlagsTimer;

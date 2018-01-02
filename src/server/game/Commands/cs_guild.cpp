@@ -80,7 +80,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         return false;
     }
 
-    uint64 plGuid = 0;
+    ObjectGuid plGuid;
     if (Player* targetPlayer = ObjectAccessor::FindPlayerByName (plName.c_str ()))
         plGuid = targetPlayer->GetGUID ();
     else
@@ -122,7 +122,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
         return false;
     }
 
-    uint64 plGuid = 0;
+    ObjectGuid plGuid;
     uint32 glId   = 0;
     if (Player* targetPlayer = ObjectAccessor::FindPlayerByName (plName.c_str ()))
     {
@@ -174,7 +174,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
         return false;
     }
 
-    uint64 plGuid = 0;
+    ObjectGuid plGuid;
     uint32 glId   = 0;
     if (Player* targetPlayer = ObjectAccessor::FindPlayerByName (plName.c_str ()))
     {

@@ -800,14 +800,14 @@ namespace Trinity
     class TC_GAME_API ObjectGUIDCheck
     {
     public:
-        ObjectGUIDCheck(uint64 GUID, bool equals) : _GUID(GUID), _equals(equals) {}
+        ObjectGUIDCheck(ObjectGuid GUID, bool equals) : _GUID(GUID), _equals(equals) {}
         bool operator()(WorldObject const* object)
         {
             return (object->GetGUID() == _GUID) == _equals;
         }
 
     private:
-        uint64 _GUID;
+        ObjectGuid _GUID;
         bool _equals;
     };
 
@@ -1175,11 +1175,11 @@ namespace Trinity
     class TC_GAME_API GameObjectWithSpawnIdCheck
     {
         public:
-            GameObjectWithSpawnIdCheck(WorldObject const& obj,uint32 db_guid) : i_obj(obj), i_db_guid(db_guid) {}
+            GameObjectWithSpawnIdCheck(WorldObject const& obj, ObjectGuid::LowType db_guid) : i_obj(obj), i_db_guid(db_guid) {}
             bool operator()(GameObject const* go) const;
         private:
             WorldObject const& i_obj;
-            uint32 i_db_guid;
+            ObjectGuid::LowType i_db_guid;
     };
 }
 #endif

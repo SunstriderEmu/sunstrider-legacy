@@ -29,24 +29,24 @@ public:
     // Cleanup most log tables according to their respective CONFIG_LOG_* options
     static void CleanupOldLogs();
 
-    static void Enchantment(Player const* caster, Player const* targetPlayer, uint32 itemGUIDLow, uint32 itemEntry, uint32 enchantID, bool permanent);
+    static void Enchantment(Player const* caster, Player const* targetPlayer, ObjectGuid::LowType itemGUIDLow, uint32 itemEntry, uint32 enchantID, bool permanent);
     static void BattlegroundStats(uint32 mapId, time_t start, time_t end, Team winner, uint32 scoreAlliance, uint32 scoreHorde);
     static void BossDown(Creature const* victim, std::string const& bossName, std::string const& bossNameFr, uint32 downByGuildId, std::string const& , uint32 guildPercentage, uint32 leaderGuid);
-    static void CharacterDelete(WorldSession const* session, uint32 playerGUID, std::string const& charName, uint8 level, std::string const& IP);
-    static void CharacterRename(WorldSession const* m_session, uint32 playerGUID, std::string const& oldName, std::string const& newName, std::string const& IP);
+    static void CharacterDelete(WorldSession const* session, ObjectGuid::LowType playerGUID, std::string const& charName, uint8 level, std::string const& IP);
+    static void CharacterRename(WorldSession const* m_session, ObjectGuid::LowType playerGUID, std::string const& oldName, std::string const& newName, std::string const& IP);
     static void GMCommand(WorldSession const* m_session, Unit const* target, std::string const& fullcmd);
     // 'to' can be a player name or a channel name
     static void CharacterChat(ChatMsg type, Language lang, Player const* player, Player const* toPlayer, uint32 logChannelId, std::string const& to, std::string const& msg);
     static void GuildMoneyTransfer(Player const* player, uint32 guildId, int32 money);
-    static void GuildBankItemTransfer(Player const* player, bool deposit, uint32 itemGuid, uint32 itemEntry, uint8 itemCount);
+    static void GuildBankItemTransfer(Player const* player, bool deposit, ObjectGuid::LowType itemGuid, uint32 itemEntry, uint8 itemCount);
     static void CharacterItemDelete(Player const* player, Item const* item);
-    static void Sanction(WorldSession const* author, uint32 targetAccount, uint32 targetGUID, SanctionType type, uint32 durationSecs, std::string const& reason);
-    static void RemoveSanction(WorldSession const* author, uint32 targetAccount, uint32 targetGUID, std::string const& targetIP, SanctionType type);
+    static void Sanction(WorldSession const* author, uint32 targetAccount, ObjectGuid::LowType targetGUID, SanctionType type, uint32 durationSecs, std::string const& reason);
+    static void RemoveSanction(WorldSession const* author, uint32 targetAccount, ObjectGuid::LowType targetGUID, std::string const& targetIP, SanctionType type);
     // money can be negative to indicate a COD (Collect on Delivery)
     static void Mail(uint32 mailId, MailMessageType type, uint32 sender_guidlow_or_entry, uint32 receiver_guidlow, std::string const& subject, uint32 itemTextId, MailItemsInfo const* mi, int32 money);
 
-    static void WonAuction(uint32 bidderAccount, uint32 bidderGUID, uint32 sellerAccount, uint32 sellerGUID, uint32 itemGUID, uint32 itemEntry, uint32 itemCount);
-    static void CreateAuction(Player const* player, uint32 itemGUID, uint32 itemEntry, uint32 itemCount);
+    static void WonAuction(uint32 bidderAccount, ObjectGuid::LowType bidderGUID, uint32 sellerAccount, ObjectGuid::LowType sellerGUID, ObjectGuid::LowType itemGUID, uint32 itemEntry, uint32 itemCount);
+    static void CreateAuction(Player const* player, ObjectGuid::LowType itemGUID, uint32 itemEntry, uint32 itemCount);
 
     static void LogConnectionIP(WorldSession const* session);
 

@@ -48,7 +48,7 @@ class TC_GAME_API PetAI : public CreatureAI
 
         Creature &i_pet;
         TimeTracker i_tracker;
-        std::set<uint64> m_AllySet;
+        std::set<ObjectGuid> m_AllySet;
         uint32 m_updateAlliesTimer;
 
 		TargetSpellList m_targetSpellStore;

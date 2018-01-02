@@ -138,10 +138,10 @@ class BattlegroundWS : public Battleground
         void AddPlayer(Player *plr) override;
 
         /* BG Flags */
-        uint64 GetAllianceFlagPickerGUID() const    { return m_FlagKeepers[TEAM_ALLIANCE]; }
-        uint64 GetHordeFlagPickerGUID() const       { return m_FlagKeepers[TEAM_HORDE]; }
-        void SetAllianceFlagPicker(uint64 guid)     { m_FlagKeepers[TEAM_ALLIANCE] = guid; }
-        void SetHordeFlagPicker(uint64 guid)        { m_FlagKeepers[TEAM_HORDE] = guid; }
+        ObjectGuid GetAllianceFlagPickerGUID() const    { return m_FlagKeepers[TEAM_ALLIANCE]; }
+        ObjectGuid GetHordeFlagPickerGUID() const       { return m_FlagKeepers[TEAM_HORDE]; }
+        void SetAllianceFlagPicker(ObjectGuid guid)     { m_FlagKeepers[TEAM_ALLIANCE] = guid; }
+        void SetHordeFlagPicker(ObjectGuid guid)        { m_FlagKeepers[TEAM_HORDE] = guid; }
         bool IsAllianceFlagPickedup() const         { return m_FlagKeepers[TEAM_ALLIANCE] != 0; }
         bool IsHordeFlagPickedup() const            { return m_FlagKeepers[TEAM_HORDE] != 0; }
         void RespawnFlag(uint32 Team, bool captured);
@@ -157,7 +157,7 @@ class BattlegroundWS : public Battleground
         void EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj) override;
         void EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType) override;
 
-        void RemovePlayer(Player *plr, uint64 guid) override;
+        void RemovePlayer(Player *plr, ObjectGuid guid) override;
         void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
         void HandleKillPlayer(Player *player, Player *killer) override;
         bool SetupBattleground() override;
@@ -166,8 +166,8 @@ class BattlegroundWS : public Battleground
         void UpdateFlagState(uint32 team, uint32 value);
         void UpdateTeamScore(uint32 team);
         void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
-        void SetDroppedFlagGUID(uint64 guid, uint32 TeamID)  { m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)] = guid;}
-        uint64 GetDroppedFlagGUID(uint32 TeamID)             { return m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)];}
+        void SetDroppedFlagGUID(ObjectGuid guid, uint32 TeamID)  { m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)] = guid;}
+        ObjectGuid GetDroppedFlagGUID(uint32 TeamID)             { return m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)];}
         void FillInitialWorldStates(WorldPacket& data) override;
         WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;
 
@@ -178,8 +178,8 @@ class BattlegroundWS : public Battleground
         void RemovePoint(uint32 TeamID, uint32 Points = 1)  { m_TeamScores[GetTeamIndexByTeamId(TeamID)] -= Points; m_score[GetTeamIndexByTeamId(TeamID)] =  m_TeamScores[GetTeamIndexByTeamId(TeamID)]; }
 
     private:
-        uint64 m_FlagKeepers[2];                            // 0 - alliance, 1 - horde
-        uint64 m_DroppedFlagGUID[2];
+        ObjectGuid m_FlagKeepers[2];                            // 0 - alliance, 1 - horde
+        ObjectGuid m_DroppedFlagGUID[2];
         uint8 m_FlagState[2];                               // for checking flag state
         uint32 m_TeamScores[2];
         int32 m_FlagsTimer[2];

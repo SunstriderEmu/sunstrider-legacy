@@ -49,7 +49,7 @@ uint32 PlayerSocial::GetNumberOfSocialsWithFlag(SocialFlag flag)
     return counter;
 }
 
-bool PlayerSocial::AddToSocialList(uint32 friend_guid, bool _ignore)
+bool PlayerSocial::AddToSocialList(ObjectGuid::LowType friend_guid, bool _ignore)
 {
     // check client limits
     if(_ignore)
@@ -83,7 +83,7 @@ bool PlayerSocial::AddToSocialList(uint32 friend_guid, bool _ignore)
     return true;
 }
 
-void PlayerSocial::RemoveFromSocialList(uint32 friend_guid, bool _ignore)
+void PlayerSocial::RemoveFromSocialList(ObjectGuid::LowType friend_guid, bool _ignore)
 {
     auto itr = m_playerSocialMap.find(friend_guid);
     if(itr == m_playerSocialMap.end())                      // not exist
@@ -105,7 +105,7 @@ void PlayerSocial::RemoveFromSocialList(uint32 friend_guid, bool _ignore)
     }
 }
 
-void PlayerSocial::SetFriendNote(uint32 friend_guid, std::string note)
+void PlayerSocial::SetFriendNote(ObjectGuid::LowType friend_guid, std::string note)
 {
     auto itr = m_playerSocialMap.find(friend_guid);
     if(itr == m_playerSocialMap.end())                      // not exist
@@ -152,7 +152,7 @@ void PlayerSocial::SendSocialList()
     plr->SendDirectMessage(&data);
 }
 
-bool PlayerSocial::HasFriend(uint32 friend_guid)
+bool PlayerSocial::HasFriend(ObjectGuid::LowType friend_guid)
 {
     auto itr = m_playerSocialMap.find(friend_guid);
     if(itr != m_playerSocialMap.end())
@@ -160,7 +160,7 @@ bool PlayerSocial::HasFriend(uint32 friend_guid)
     return false;
 }
 
-bool PlayerSocial::HasIgnore(uint32 ignore_guid)
+bool PlayerSocial::HasIgnore(ObjectGuid::LowType ignore_guid)
 {
     auto itr = m_playerSocialMap.find(ignore_guid);
     if(itr != m_playerSocialMap.end())
@@ -178,14 +178,14 @@ SocialMgr::~SocialMgr()
 
 }
 
-void SocialMgr::RemovePlayerSocial(uint32 guid)
+void SocialMgr::RemovePlayerSocial(ObjectGuid::LowType guid)
 {
     auto itr = m_socialMap.find(guid);
     if(itr != m_socialMap.end())
         m_socialMap.erase(itr);
 }
 
-void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &friendInfo)
+void SocialMgr::GetFriendInfo(Player *player, ObjectGuid::LowType friendGUID, FriendInfo &friendInfo)
 {
     if(!player)
         return;
@@ -195,7 +195,7 @@ void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &fri
     friendInfo.Level = 0;
     friendInfo.Class = 0;
 
-    Player *pFriend = ObjectAccessor::FindConnectedPlayer(friendGUID);
+    Player *pFriend = ObjectAccessor::FindConnectedPlayer(ObjectGuid(HighGuid::Player, friendGUID));
     if(!pFriend)
         return;
 
@@ -226,14 +226,14 @@ void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &fri
     }
 }
 
-void SocialMgr::MakeFriendStatusPacket(FriendsResult result, uint32 guid, WorldPacket *data)
+void SocialMgr::MakeFriendStatusPacket(FriendsResult result, ObjectGuid::LowType guid, WorldPacket *data)
 {
     data->Initialize(SMSG_FRIEND_STATUS, 5);
     *data << uint8(result);
     *data << uint64(guid);
 }
 
-void SocialMgr::SendFriendStatus(Player *player, FriendsResult result, uint32 friend_guid, bool broadcast)
+void SocialMgr::SendFriendStatus(Player *player, FriendsResult result, ObjectGuid::LowType friend_guid, bool broadcast)
 {
     FriendInfo fi;
 
@@ -272,7 +272,7 @@ void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
 
     uint32 team     = player->GetTeam();
     uint32 security = player->GetSession()->GetSecurity();
-    uint32 guid     = player->GetGUIDLow();
+    ObjectGuid::LowType guid     = player->GetGUID().GetCounter();
     AccountTypes gmLevelInWhoList = AccountTypes(sWorld->getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST));
     bool allowTwoSideWhoList = sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_WHO_LIST);
 
@@ -281,7 +281,7 @@ void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
         auto itr2 = itr->second.m_playerSocialMap.find(guid);
         if(itr2 != itr->second.m_playerSocialMap.end() && (itr2->second.Flags & SOCIAL_FLAG_FRIEND))
         {
-            Player *pFriend = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HighGuid::Player));
+            Player *pFriend = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, itr->first));
 
             // PLAYER see his team only and PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
             // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
@@ -295,14 +295,14 @@ void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
         }
     }
 }
-PlayerSocial* SocialMgr::GetDefault(uint32 guid)
+PlayerSocial* SocialMgr::GetDefault(ObjectGuid::LowType guid)
 {
     PlayerSocial* social = &m_socialMap[guid];
     social->SetPlayerGUID(guid);
     return social;
 }
 
-PlayerSocial* SocialMgr::LoadFromDB(PreparedQueryResult result, uint32 guid)
+PlayerSocial* SocialMgr::LoadFromDB(PreparedQueryResult result, ObjectGuid::LowType guid)
 {
     PlayerSocial* social = &m_socialMap[guid];
     social->SetPlayerGUID(guid);
@@ -310,7 +310,7 @@ PlayerSocial* SocialMgr::LoadFromDB(PreparedQueryResult result, uint32 guid)
     if(!result)
         return social;
 
-    uint32 friend_guid = 0;
+    ObjectGuid::LowType friend_guid = 0;
     uint32 flags = 0;
     std::string note = "";
 

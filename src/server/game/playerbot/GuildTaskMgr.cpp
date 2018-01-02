@@ -51,7 +51,7 @@ void GuildTaskMgr::Update(Player* player, Player* guildMaster)
         return;
     }
 
-    uint32 owner = (uint32)player->GetGUIDLow();
+    uint32 owner = (uint32)player->GetGUID().GetCounter();
 
     uint32 activeTask = GetTaskValue(owner, guildId, "activeTask");
     if (!activeTask)
@@ -268,7 +268,7 @@ bool GuildTaskMgr::SendItemAdvertisement(uint32 itemId, uint32 owner, uint32 gui
 
     //dummy mail for now
     MailItemsInfo mi;
-    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUIDLow(), player->GetGUIDLow(), "Guild Task Advertisement TODO 1", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUID().GetCounter(), player->GetGUID().GetCounter(), "Guild Task Advertisement TODO 1", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
 
     return true;
 }
@@ -300,7 +300,7 @@ bool GuildTaskMgr::SendKillAdvertisement(uint32 creatureId, uint32 owner, uint32
 
     //dummy mail for now
     MailItemsInfo mi;
-    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUIDLow(), player->GetGUIDLow(), "Guild Task Advertisement TODO 2", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUID().GetCounter(), player->GetGUID().GetCounter(), "Guild Task Advertisement TODO 2", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
 
     return true;
 }
@@ -346,7 +346,7 @@ bool GuildTaskMgr::SendThanks(uint32 owner, uint32 guildId)
         CharacterDatabase.CommitTransaction(trans);
         */
         MailItemsInfo mi;
-        WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUIDLow(), player->GetGUIDLow(), "Guild Task Advertisement TODO 3", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+        WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUID().GetCounter(), player->GetGUID().GetCounter(), "Guild Task Advertisement TODO 3", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
 
         return true;
     }
@@ -484,14 +484,14 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
     if (cmd.find("stats ") != std::string::npos)
     {
         std::string charName = cmd.substr(cmd.find("stats ") + 6);
-        uint64 guid = sCharacterCache->GetCharacterGuidByName(charName);
+        ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(charName);
         if (!guid)
         {
             sLog->outMessage("gtask", LOG_LEVEL_ERROR, "Player %s not found", charName.c_str());
             return false;
         }
 
-        uint32 owner = GUID_LOPART(guid);
+        uint32 owner = guid.GetCounter();
 
         QueryResult result = CharacterDatabase.PQuery(
                 "select `value`, `time`, validIn, guildid, `type` from ai_playerbot_guild_tasks where owner = '%u' order by guildid, `type`",
@@ -533,14 +533,14 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
     if (cmd.find("reward ") != std::string::npos)
     {
         std::string charName = cmd.substr(cmd.find("reward ") + 7);
-        uint64 guid = sCharacterCache->GetCharacterGuidByName(charName);
+        ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(charName);
         if (!guid)
         {
             sLog->outMessage("gtask", LOG_LEVEL_ERROR, "Player %s not found", charName.c_str());
             return false;
         }
 
-        uint32 owner = GUID_LOPART(guid);
+        uint32 owner = guid.GetCounter();
         QueryResult result = CharacterDatabase.PQuery(
                 "select distinct guildid from ai_playerbot_guild_tasks where owner = '%u'",
                 owner);
@@ -571,7 +571,7 @@ void GuildTaskMgr::CheckItemTask(uint32 itemId, uint32 obtained, Player* ownerPl
     if (!guildId)
         return;
 
-    uint32 owner = ownerPlayer->GetGUIDLow();
+    uint32 owner = ownerPlayer->GetGUID().GetCounter();
 
     sLog->outMessage("gtask", LOG_LEVEL_DEBUG, "%s / %s: checking guild task",
             bot->GetGuild()->GetName().c_str(), ownerPlayer->GetName().c_str());
@@ -682,7 +682,7 @@ bool GuildTaskMgr::Reward(uint32 owner, uint32 guildId)
     CharacterDatabase.CommitTransaction(trans);
     */
     MailItemsInfo mi;
-    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUIDLow(), player->GetGUIDLow(), "Thank You TODO", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUID().GetCounter(), player->GetGUID().GetCounter(), "Thank You TODO", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
 
     SetTaskValue(owner, guildId, "activeTask", 0, 0);
     return true;
@@ -690,7 +690,7 @@ bool GuildTaskMgr::Reward(uint32 owner, uint32 guildId)
 
 void GuildTaskMgr::CheckKillTask(Player* player, Unit* victim)
 {
-    uint32 owner = player->GetGUIDLow();
+    uint32 owner = player->GetGUID().GetCounter();
     Creature* creature = victim->ToCreature();
     if (!creature)
         return;

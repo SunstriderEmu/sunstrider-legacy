@@ -254,7 +254,7 @@ Item::Item( )
     m_itemProto = nullptr;
 }
 
-bool Item::Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto)
+bool Item::Create(ObjectGuid::LowType guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto)
 {
     if(!itemProto)
         return false;
@@ -265,8 +265,8 @@ bool Item::Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemTempl
     m_itemProto = itemProto;
     SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
 
-    SetUInt64Value(ITEM_FIELD_OWNER, owner ? owner->GetGUID() : 0);
-    SetUInt64Value(ITEM_FIELD_CONTAINED, owner ? owner->GetGUID() : 0);
+    SetGuidValue(ITEM_FIELD_OWNER, owner ? owner->GetGUID() : ObjectGuid::Empty);
+    SetGuidValue(ITEM_FIELD_CONTAINED, owner ? owner->GetGUID() : ObjectGuid::Empty);
 
     SetUInt32Value(ITEM_FIELD_STACK_COUNT, 1);
     SetUInt32Value(ITEM_FIELD_MAXDURABILITY, itemProto->MaxDurability);
@@ -299,7 +299,7 @@ void Item::UpdateDuration(Player* owner, uint32 diff)
 
 void Item::SaveToDB(SQLTransaction trans)
 {
-    uint32 guid = GetGUIDLow();
+    ObjectGuid::LowType guid = GetGUID().GetCounter();
     switch (uState)
     {
         case ITEM_NEW:
@@ -327,9 +327,9 @@ void Item::SaveToDB(SQLTransaction trans)
             uint8 index = 0; 
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(uState == ITEM_NEW ? CHAR_REP_ITEM_INSTANCE : CHAR_UPD_ITEM_INSTANCE);
             stmt->setUInt32(index++, GetGUID());
-            stmt->setUInt32(index++, GUID_LOPART(GetOwnerGUID()));
+            stmt->setUInt32(index++,GetOwnerGUID().GetCounter());
             stmt->setUInt32(index++, GetEntry());
-            stmt->setUInt64(index++, GetUInt64Value(ITEM_FIELD_CONTAINED));
+            stmt->setUInt64(index++, GetGuidValue(ITEM_FIELD_CONTAINED));
             stmt->setUInt32(index++, GetUInt32Value(ITEM_FIELD_CREATOR));
             stmt->setUInt32(index++, GetUInt32Value(ITEM_FIELD_GIFTCREATOR));
             stmt->setUInt16(index++, GetCount());
@@ -356,7 +356,7 @@ void Item::SaveToDB(SQLTransaction trans)
             trans->Append(stmt);
 
              if ((uState == ITEM_CHANGED) && HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
-                trans->PAppend("UPDATE character_gifts SET guid = '%u' WHERE item_guid = '%u'", GUID_LOPART(GetOwnerGUID()), GetGUIDLow());
+                trans->PAppend("UPDATE character_gifts SET guid = '%u' WHERE item_guid = '%u'",GetOwnerGUID().GetCounter(), GetGUID().GetCounter());
         } break;
         case ITEM_REMOVED:
         {
@@ -364,7 +364,7 @@ void Item::SaveToDB(SQLTransaction trans)
                 trans->PAppend("DELETE FROM item_text WHERE id = '%u'", GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID));
             trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", guid);
             if(HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
-                trans->PAppend("DELETE FROM character_gifts WHERE item_guid = '%u'", GetGUIDLow());
+                trans->PAppend("DELETE FROM character_gifts WHERE item_guid = '%u'", GetGUID().GetCounter());
 
             delete this;
             return;
@@ -375,7 +375,7 @@ void Item::SaveToDB(SQLTransaction trans)
     SetState(ITEM_UNCHANGED);
 }
 
-bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
+bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
 {
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
@@ -387,25 +387,25 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
 
     if (!result)
     {
-        TC_LOG_ERROR("sql.sql","ERROR: Item (GUID: %u owner: %u) not found in table `item_instance`, can't load. ",guid,GUID_LOPART(owner_guid));
+        TC_LOG_ERROR("sql.sql","ERROR: Item (GUID: %u owner: %u) not found in table `item_instance`, can't load. ", guid, owner_guid.GetCounter());
         return false;
     }
 
     Field* fields = result->Fetch();
 
     uint8 index = 0;
-    SetOwnerGUID(ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()).GetRawValue());
+    SetOwnerGUID(ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()));
     SetEntry(fields[index++].GetUInt32());
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(GetEntry());
     if (!proto)
     {
-        TC_LOG_ERROR("sql.sql", "ERROR: Item (GUID: %u owner: %u) has an invalid entry %u `item_instance`, can't load. ", guid, GUID_LOPART(owner_guid), GetEntry());
+        TC_LOG_ERROR("sql.sql", "ERROR: Item (GUID: %u owner: %u) has an invalid entry %u `item_instance`, can't load. ", guid, owner_guid.GetCounter(), GetEntry());
         return false;
     }
 
-    SetUInt64Value(ITEM_FIELD_CONTAINED, fields[index++].GetUInt64());
-    SetUInt64Value(ITEM_FIELD_CREATOR, ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()).GetRawValue());
-    SetUInt64Value(ITEM_FIELD_GIFTCREATOR, ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()).GetRawValue());
+    SetGuidValue(ITEM_FIELD_CONTAINED, ObjectGuid(fields[index++].GetUInt64())); //todo: switch this to uint32
+    SetGuidValue(ITEM_FIELD_CREATOR, ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()));
+    SetGuidValue(ITEM_FIELD_GIFTCREATOR, ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()));
     SetUInt32Value(ITEM_FIELD_STACK_COUNT, fields[index++].GetUInt16());
     SetUInt32Value(ITEM_FIELD_DURATION, fields[index++].GetUInt32());
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
@@ -428,10 +428,10 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
     bool need_save = false;                                 // need explicit save data at load fixes
 
     // overwrite possible wrong/corrupted guid
-    uint64 new_item_guid = MAKE_NEW_GUID(guid,0, HighGuid::Item);
-    if(GetUInt64Value(OBJECT_FIELD_GUID) != new_item_guid)
+    ObjectGuid new_item_guid = ObjectGuid(HighGuid::Item, 0, guid);
+    if(GetGuidValue(OBJECT_FIELD_GUID) != new_item_guid)
     {
-        SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid,0, HighGuid::Item));
+        SetGuidValue(OBJECT_FIELD_GUID, ObjectGuid(HighGuid::Item, 0, guid));
         need_save = true;
     }
 
@@ -482,12 +482,12 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
 
 void Item::DeleteFromDB()
 {
-    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'",GetGUIDLow());
+    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'",GetGUID().GetCounter());
 }
 
 void Item::DeleteFromInventoryDB(SQLTransaction trans)
 {
-    trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'",GetGUIDLow());
+    trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'",GetGUID().GetCounter());
 }
 
 Player* Item::GetOwner()const
@@ -699,14 +699,14 @@ void Item::AddToUpdateQueueOf(Player *player)
         player = GetOwner();
         if (!player)
         {
-            TC_LOG_ERROR("FIXME","Item::AddToUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!", GUID_LOPART(GetOwnerGUID()));
+            TC_LOG_ERROR("FIXME","Item::AddToUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!",GetOwnerGUID().GetCounter());
             return;
         }
     }
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        TC_LOG_ERROR("FIXME","Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!",GetOwnerGUID().GetCounter(), player->GetGUID().GetCounter());
         return;
     }
 
@@ -725,14 +725,14 @@ void Item::RemoveFromUpdateQueueOf(Player *player)
         player = GetOwner();
         if (!player)
         {
-            TC_LOG_ERROR("FIXME","Item::RemoveFromUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!", GUID_LOPART(GetOwnerGUID()));
+            TC_LOG_ERROR("FIXME","Item::RemoveFromUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!",GetOwnerGUID().GetCounter());
             return;
         }
     }
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        TC_LOG_ERROR("FIXME","Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!",GetOwnerGUID().GetCounter(), player->GetGUID().GetCounter());
         return;
     }
 
@@ -997,8 +997,8 @@ void Item::RemoveFromObjectUpdate()
         owner->GetMap()->RemoveUpdateObject(this);
 }
 
-uint64 Item::GetOwnerGUID() const { return GetUInt64Value(ITEM_FIELD_OWNER); }
-void Item::SetOwnerGUID(ObjectGuid const& guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
+ObjectGuid Item::GetOwnerGUID() const { return GetGuidValue(ITEM_FIELD_OWNER); }
+void Item::SetOwnerGUID(ObjectGuid const& guid) { SetGuidValue(ITEM_FIELD_OWNER, guid); }
 void Item::SetBinding(bool val) { ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, val); }
 bool Item::IsSoulBound() const { return HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND); }
 bool Item::IsBag() const { return GetTemplate()->InventoryType == INVTYPE_BAG; }

@@ -26,7 +26,7 @@ T* EnsureAI(U* ai)
     return cast_ai;
 };
 
-class TC_GAME_API SummonList : public std::list<uint64>
+class TC_GAME_API SummonList : public std::list<ObjectGuid>
 {
 public:
     SummonList(Creature* creature) : me(creature) {}
@@ -41,7 +41,7 @@ private:
     Creature* me;
 };
 
-class TC_GAME_API BumpHelper : std::map<uint64,uint32>
+class TC_GAME_API BumpHelper : std::map<ObjectGuid,uint32>
 {
 public:
     BumpHelper(uint32 cooldown) : m_cooldown(cooldown) {}

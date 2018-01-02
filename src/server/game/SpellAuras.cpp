@@ -299,8 +299,8 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
 };
 
 Aura::Aura(SpellInfo const* spellproto, uint8 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) :
-m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_spellmod(nullptr), m_effIndex(eff), m_caster_guid(0), m_target(target),
-m_timeCla(1000), m_castItemGuid(castItem?castItem->GetGUID():0), m_auraSlot(MAX_AURAS),
+m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_spellmod(nullptr), m_effIndex(eff), m_target(target),
+m_timeCla(1000), m_castItemGuid(castItem ? castItem->GetGUID() : ObjectGuid::Empty), m_auraSlot(MAX_AURAS),
 m_positive(false), m_permanent(false), m_isPeriodic(false), m_IsTrigger(false), m_isAreaAura(false),
 m_isPersistent(false), m_removeMode(AURA_REMOVE_BY_DEFAULT), m_isRemovedOnShapeLost(true), m_in_use(false),
 m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE)
@@ -372,7 +372,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
 
         // channel data structure
         if (Spell* spell = caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-            m_channelData = new ChannelTargetData(caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT), spell->m_targets.HasDst() ? spell->m_targets.GetDst() : nullptr);
+            m_channelData = new ChannelTargetData(caster->GetGuidValue(UNIT_FIELD_CHANNEL_OBJECT), spell->m_targets.HasDst() ? spell->m_targets.GetDst() : nullptr);
     }
 
     if(m_maxduration == -1 || (m_isPassive && m_spellProto->GetDuration() == 0))
@@ -1271,7 +1271,7 @@ void Aura::TriggerSpell()
     // generic casting code with custom spells and target/caster customs
     uint32 trigger_spell_id = GetSpellInfo()->Effects[m_effIndex].TriggerSpell;
 
-    uint64 originalCasterGUID = GetCasterGUID();
+    ObjectGuid originalCasterGUID = GetCasterGUID();
 
     SpellInfo const *triggeredSpellInfo = sSpellMgr->GetSpellInfo(trigger_spell_id);
     SpellInfo const *auraSpellInfo = GetSpellInfo();
@@ -2005,7 +2005,7 @@ void Aura::TriggerSpell()
                     return;
 
                 caster = target;
-                originalCasterGUID = 0;
+                originalCasterGUID.Clear();
                 break;
             }
             // Mana Tide
@@ -2104,7 +2104,7 @@ Unit* Aura::GetTriggerTarget() const
     Unit* target = ObjectAccessor::GetUnit(*m_target,
         /*m_target->GetTypeId()==TYPEID_PLAYER ?
         (m_target->ToPlayer())->GetTarget() :*/
-        m_target->GetUInt64Value(UNIT_FIELD_TARGET));
+        m_target->GetGuidValue(UNIT_FIELD_TARGET));
     return target ? target : m_target;
 }
 
@@ -2334,7 +2334,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }        
             case 34477:                                     // Misdirection
             {
-                m_target->SetReducedThreatPercent(0, 0);
+                m_target->SetReducedThreatPercent(0, ObjectGuid::Empty);
                 return;
             }
             case 40830:
@@ -2668,7 +2668,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             {
                 if (apply)
                 {
-                    uint64 guid = caster->m_SummonSlot[3];
+                    ObjectGuid guid = caster->m_SummonSlot[3];
                     if (guid)
                     {
                         Creature *totem = ObjectAccessor::GetCreature(*caster, guid);
@@ -5782,7 +5782,7 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
                         bg->HandleKillPlayer(m_target->ToPlayer(), killer);
                 }
             }
-            (m_target->ToPlayer())->SetSpiritRedeptionKiller(uint64(0));
+            (m_target->ToPlayer())->SetSpiritRedeptionKiller(ObjectGuid::Empty);
         }
     }
     m_target->ApplySpellImmune(GetId(),IMMUNITY_SCHOOL,SPELL_SCHOOL_MASK_NORMAL,apply);;
@@ -6159,7 +6159,7 @@ void Aura::PeriodicTick()
             pCaster->CalcAbsorbResist(m_target, GetSpellInfo()->GetSchoolMask(), DOT, pdamage, &absorb, &resist, GetId());
 
             TC_LOG_DEBUG("FIXME","PeriodicTick: %u (TypeId: %u) attacked %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId(),absorb);
+                GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId(),absorb);
 
             // Shadow Word: Death backfire damage hackfix
             if (GetId() == 32409 && GetCaster()->ToPlayer()) {
@@ -6281,7 +6281,7 @@ void Aura::PeriodicTick()
                 pdamage = uint32(m_target->GetHealth());
 
             TC_LOG_DEBUG("FIXME","PeriodicTick: %u (TypeId: %u) health leech of %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId(),absorb);
+                GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId(),absorb);
 
             pCaster->SendSpellNonMeleeDamageLog(m_target, GetId(), pdamage, GetSpellInfo()->GetSchoolMask(), absorb, resist, false, 0);
 
@@ -6368,7 +6368,7 @@ void Aura::PeriodicTick()
             heal *= GetStackAmount();
 
             TC_LOG_DEBUG("spell","PeriodicTick: %u (TypeId: %u) heal of %u (TypeId: %u) for %u health inflicted by %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), heal, GetId());
+                GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), heal, GetId());
             
             SpellPeriodicAuraLogInfo pInfo(this, heal, 0, 0, 0.0f);
             m_target->SendPeriodicAuraLog(&pInfo);
@@ -6452,8 +6452,8 @@ void Aura::PeriodicTick()
             // ignore non positive values (can be result apply spellmods to aura damage
             uint32 pdamage = GetModifierValue() > 0 ? GetModifierValue() : 0;
 
-            TC_LOG_DEBUG("FIXME","PeriodicTick: %u (TypeId: %u) power leech of %u (TypeId: %u) for %u dmg inflicted by %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId());
+            TC_LOG_DEBUG("spells","PeriodicTick: %u (TypeId: %u) power leech of %u (TypeId: %u) for %u dmg inflicted by %u",
+                GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId());
 
             if(GetMiscValue() < 0 || GetMiscValue() > 4)
                 break;
@@ -6523,8 +6523,8 @@ void Aura::PeriodicTick()
             // ignore non positive values (can be result apply spellmods to aura damage)
             uint32 amount = GetModifierValue() > 0 ? GetModifierValue() : 0;
 
-            TC_LOG_DEBUG("FIXME","PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u dmg inflicted by %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), amount, GetId());
+            TC_LOG_DEBUG("spells","PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u dmg inflicted by %u",
+                GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), amount, GetId());
 
             if(GetMiscValue() < 0 || GetMiscValue() > 4)
                 break;
@@ -6571,8 +6571,8 @@ void Aura::PeriodicTick()
 
             uint32 amount = uint32(m_target->GetMaxPower(powerType) * mod/100);
 
-            TC_LOG_DEBUG("FIXME","PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u mana inflicted by %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), amount, GetId());
+            TC_LOG_DEBUG("spells","PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u mana inflicted by %u",
+                GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), amount, GetId());
 
             if(m_target->GetMaxPower(powerType) == 0)
                 break;
@@ -6665,7 +6665,7 @@ void Aura::PeriodicTick()
             {
                 // for players, start regeneration after 1s (in polymorph fast regeneration case)
                 // only if caster is Player (after patch 2.4.2)
-                if (IS_PLAYER_GUID(GetCasterGUID()))
+                if (GetCasterGUID().IsPlayer())
                     (m_target->ToPlayer())->setRegenTimer(1000);
 
                 //dismount polymorphed target (after patch 2.4.2)

@@ -513,14 +513,14 @@ void InstanceScript::WriteSaveDataBossStates(std::ostringstream& data)
         data << uint32(bossInfo.state) << ' ';
 }
 
-void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject *go)
+void InstanceScript::HandleGameObject(ObjectGuid GUID, bool open, GameObject *go)
 {
     if (!go)
         go = instance->GetGameObject(GUID);
     if (go)
         go->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
     else
-        TC_LOG_DEBUG("scripts", "ZoneScript: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
+        TC_LOG_DEBUG("scripts", "ZoneScript: HandleGameObject failed for gameobject with GUID %u", GUID.GetCounter());
 }
 
 void InstanceScript::DoUseDoorOrButton(ObjectGuid guid, uint32 withRestoreTime /*= 0*/, bool useAlternativeState /*= false*/)

@@ -159,7 +159,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         //Handle open / close objects
         //use HandleGameObject(NULL,boolen,GO); in OnGameObjectCreate in instance scripts
         //use HandleGameObject(GUID,boolen,NULL); in any other script
-        void HandleGameObject(uint64 GUID, bool open, GameObject *go = nullptr);
+        void HandleGameObject(ObjectGuid GUID, bool open, GameObject *go = nullptr);
 
         // Change active state of doors or buttons
         void DoUseDoorOrButton(ObjectGuid guid, uint32 withRestoreTime = 0, bool useAlternativeState = false);

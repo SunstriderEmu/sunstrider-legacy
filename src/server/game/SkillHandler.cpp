@@ -162,13 +162,13 @@ void WorldSession::HandleTalentWipeConfirmOpcode( WorldPacket & recvData )
     
 
     TC_LOG_DEBUG("network.opcode","MSG_TALENT_WIPE_CONFIRM");
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER);
     if (!unit)
     {
-        TC_LOG_ERROR( "network","WORLD: HandleTalentWipeConfirmOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "network","WORLD: HandleTalentWipeConfirmOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 

@@ -25,7 +25,7 @@ template<class T>
 class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
 {
     public:
-        FleeingMovementGenerator(uint64 fleeTargetGUID) : _path(nullptr), _fleeTargetGUID(fleeTargetGUID), i_nextCheckTime(0) { }
+        FleeingMovementGenerator(ObjectGuid fleeTargetGUID) : _path(nullptr), _fleeTargetGUID(fleeTargetGUID), i_nextCheckTime(0) { }
 		~FleeingMovementGenerator()
 		{
 			delete _path;
@@ -42,7 +42,7 @@ class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, 
         void SetTargetLocation(T*);
         void GetPoint(T*, Position &position);
 
-        uint64 _fleeTargetGUID;
+        ObjectGuid _fleeTargetGUID;
         TimeTracker i_nextCheckTime;
         PathGenerator* _path;
         bool _interrupt;
@@ -51,7 +51,7 @@ class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, 
 class TC_GAME_API TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
 {
     public:
-        TimedFleeingMovementGenerator(uint64 fright, uint32 time) :
+        TimedFleeingMovementGenerator(ObjectGuid fright, uint32 time) :
             FleeingMovementGenerator<Creature>(fright),
             _totalFleeTime(time) { }
 

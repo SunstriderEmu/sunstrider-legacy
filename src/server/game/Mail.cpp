@@ -19,7 +19,7 @@ void MailItem::deleteItem( bool inDB )
     if(item)
     {
         if(inDB)
-            CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid='%u'", item->GetGUIDLow());
+            CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid='%u'", item->GetGUID().GetCounter());
 
         delete item;
         item=nullptr;
@@ -52,10 +52,10 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
         for(uint8 i = 0; i < items_count; ++i)
         {
             uint8  item_slot;
-            uint64 item_guid;
+            ObjectGuid item_guid;
             recvData >> item_slot;
             recvData >> item_guid;
-            mi.AddItem(GUID_LOPART(item_guid), item_slot);
+            mi.AddItem(item_guid.GetCounter(), item_slot);
         }
     }
 
@@ -70,19 +70,19 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 
     Player* pl = _player;
 
-    uint64 rc = 0;
+    ObjectGuid rc;
     if(normalizePlayerName(receiver))
         rc = sCharacterCache->GetCharacterGuidByName(receiver);
 
     if (!rc)
     {
         TC_LOG_DEBUG("network","Player %u is sending mail to %s (GUID: not existed!) with subject %s and body %s includes %u items, %u copper and %u COD copper with StationeryID = %u, PackageID = %u",
-            pl->GetGUIDLow(), receiver.c_str(), subject.c_str(), body.c_str(), items_count, money, COD, StationeryID, PackageID);
+            pl->GetGUID().GetCounter(), receiver.c_str(), subject.c_str(), body.c_str(), items_count, money, COD, StationeryID, PackageID);
         pl->SendMailResult(0, 0, MAIL_ERR_RECIPIENT_NOT_FOUND);
         return;
     }
 
-    TC_LOG_DEBUG("network", "Player %u is sending mail to %s (GUID: %u) with subject %s and body %s includes %u items, %u copper and %u COD copper with StationeryID = %u, PackageID = %u", pl->GetGUIDLow(), receiver.c_str(), GUID_LOPART(rc), subject.c_str(), body.c_str(), items_count, money, COD, StationeryID, PackageID);
+    TC_LOG_DEBUG("network", "Player %u is sending mail to %s (GUID: %u) with subject %s and body %s includes %u items, %u copper and %u COD copper with StationeryID = %u, PackageID = %u", pl->GetGUID().GetCounter(), receiver.c_str(), rc.GetCounter(), subject.c_str(), body.c_str(), items_count, money, COD, StationeryID, PackageID);
 
     if(pl->GetGUID() == rc)
     {
@@ -113,7 +113,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
     else
     {
         rc_team = sCharacterCache->GetCharacterTeamByGuid(rc);
-        QueryResult result = CharacterDatabase.PQuery("SELECT COUNT(*) FROM mail WHERE receiver = '%u'", GUID_LOPART(rc));
+        QueryResult result = CharacterDatabase.PQuery("SELECT COUNT(*) FROM mail WHERE receiver = '%u'", rc.GetCounter());
         if(result)
         {
             Field *fields = result->Fetch();
@@ -145,7 +145,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
                 return;
             }
 
-            mailItem.item = pl->GetItemByGuid(MAKE_NEW_GUID(mailItem.item_guidlow, 0, HighGuid::Item));
+            mailItem.item = pl->GetItemByGuid(ObjectGuid(HighGuid::Item, 0, mailItem.item_guidlow));
             // prevent sending bag with items (cheat: can be placed in bag after adding equipped empty bag to mail)
             if(!mailItem.item || !mailItem.item->CanBeTraded())
             {
@@ -201,7 +201,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
                 mailItem.item->DeleteFromInventoryDB(trans);     //deletes item from character's inventory
                 mailItem.item->SaveToDB(trans);                  // recursive and not have transaction guard into self, item not in inventory and can be save standalone
                 // owner in data will set at mail receive and item extracting
-                trans->PAppend("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", GUID_LOPART(rc), mailItem.item->GetGUIDLow());
+                trans->PAppend("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", rc.GetCounter(), mailItem.item->GetGUID().GetCounter());
             }
 
             // if item send to character at another account, then apply item delivery delay
@@ -214,7 +214,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 
     // will delete item or place to receiver mail list
     uint8 stationery = pl->IsGameMaster() ? MAIL_STATIONERY_GM : MAIL_STATIONERY_NORMAL;
-    WorldSession::SendMailTo(trans, receive, MAIL_NORMAL, stationery, pl->GetGUIDLow(), GUID_LOPART(rc), subject, itemTextId, &mi, money, COD, MAIL_CHECK_MASK_NONE, deliver_delay);
+    WorldSession::SendMailTo(trans, receive, MAIL_NORMAL, stationery, pl->GetGUID().GetCounter(), rc.GetCounter(), subject, itemTextId, &mi, money, COD, MAIL_CHECK_MASK_NONE, deliver_delay);
 
     pl->SaveInventoryAndGoldToDB(trans);
     CharacterDatabase.CommitTransaction(trans);
@@ -285,7 +285,7 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData )
         {
             Item *item = pl->GetMItem(itr2.item_guid);
             if(item)
-                mi.AddItem(item->GetGUIDLow(), item->GetEntry(), item);
+                mi.AddItem(item->GetGUID().GetCounter(), item->GetEntry(), item);
             else
             {
                 //WTF?
@@ -308,7 +308,7 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData )
     pl->SendMailResult(mailId, MAIL_RETURNED_TO_SENDER, 0);
 }
 
-void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid, const std::string& subject, uint32 itemTextId, MailItemsInfo *mi, uint32 money, uint16 mailTemplateId )
+void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, ObjectGuid::LowType sender_guid, ObjectGuid::LowType receiver_guid, const std::string& subject, uint32 itemTextId, MailItemsInfo *mi, uint32 money, uint16 mailTemplateId )
 {
     if(messageType != MAIL_NORMAL)                          // return only to players
     {
@@ -316,11 +316,11 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
         return;
     }
 
-    Player *receiver = sObjectMgr->GetPlayer(MAKE_NEW_GUID(receiver_guid, 0, HighGuid::Player));
+    Player *receiver = sObjectMgr->GetPlayer(ObjectGuid(HighGuid::Player, receiver_guid));
 
     uint32 rc_account = 0;
     if(!receiver)
-        rc_account = sCharacterCache->GetCharacterAccountIdByGuid(MAKE_NEW_GUID(receiver_guid, 0, HighGuid::Player));
+        rc_account = sCharacterCache->GetCharacterAccountIdByGuid(ObjectGuid(HighGuid::Player, receiver_guid));
 
     if(!receiver && !rc_account)                            // sender not exist
     {
@@ -343,7 +343,7 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
             MailItem& mailItem = mailItemIter.second;
             mailItem.item->SaveToDB(trans);                  // item not in inventory and can be save standalone
             // owner in data will set at mail receive and item extracting
-            trans->PAppend("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", receiver_guid, mailItem.item->GetGUIDLow());
+            trans->PAppend("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", receiver_guid, mailItem.item->GetGUID().GetCounter());
         }
     }
 
@@ -391,7 +391,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
 
         if (m->COD > 0)                                     //if there is COD, take COD money from player and send them to sender by mail
         {
-            uint64 sender_guid = MAKE_NEW_GUID(m->sender, 0, HighGuid::Player);
+            ObjectGuid sender_guid = ObjectGuid(HighGuid::Player, m->sender);
             Player *receive = sObjectMgr->GetPlayer(sender_guid);
 
             uint32 sender_accId = sCharacterCache->GetCharacterAccountIdByGuid(sender_guid);
@@ -407,7 +407,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
         m->COD = 0;
         m->state = MAIL_STATE_CHANGED;
         pl->m_mailsUpdated = true;
-        pl->RemoveMItem(it->GetGUIDLow());
+        pl->RemoveMItem(it->GetGUID().GetCounter());
 
         uint32 count = it->GetCount();                      // save counts before store and possible merge with deleting
         pl->MoveItemToInventory(dest,it,true);
@@ -499,7 +499,7 @@ void WorldSession::HandleGetMailList(WorldPacket & recvData )
         switch((*itr)->messageType)
         {
             case MAIL_NORMAL:                               // sender guid
-                data << uint64(MAKE_NEW_GUID((*itr)->sender, 0, HighGuid::Player));
+                data << uint64(ObjectGuid(HighGuid::Player, (*itr)->sender));
                 break;
             case MAIL_CREATURE:
             case MAIL_GAMEOBJECT:
@@ -529,7 +529,7 @@ void WorldSession::HandleGetMailList(WorldPacket & recvData )
             // item index (0-6?)
             data << (uint8)  i;
             // item guid low?
-            data << (uint32) (item ? item->GetGUIDLow() : 0);
+            data << (uint32) (item ? item->GetGUID().GetCounter() : 0);
             // entry
             data << (uint32) (item ? item->GetEntry() : 0);
             for(uint8 j = 0; j < 6; ++j)
@@ -689,7 +689,7 @@ void WorldSession::HandleQueryNextMailTime(WorldPacket & /*recvData*/ )
     SendPacket(&data);
 }
 
-void WorldSession::SendMailTo(SQLTransaction& trans, Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 receiver_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay, uint16 mailTemplateId)
+void WorldSession::SendMailTo(SQLTransaction& trans, Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, ObjectGuid::LowType receiver_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay, uint16 mailTemplateId)
 {
     if (receiver_guidlow == 0)
     {
@@ -736,7 +736,7 @@ void WorldSession::SendMailTo(SQLTransaction& trans, Player* receiver, MailMessa
             m->stationery = stationery;
             m->mailTemplateId = mailTemplateId;
             m->sender = sender_guidlow_or_entry;
-            m->receiver = receiver->GetGUIDLow();
+            m->receiver = receiver->GetGUID().GetCounter();
             m->subject = subject;
             m->itemTextId = itemTextId;
 
@@ -785,7 +785,7 @@ void WorldSession::SendMailTo(SQLTransaction& trans, Player* receiver, MailMessa
         mi->deleteIncludedItems(false);
 }
 
-void WorldSession::SendMailTo(Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay, uint16 mailTemplateId)
+void WorldSession::SendMailTo(Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, ObjectGuid::LowType received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay, uint16 mailTemplateId)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     SendMailTo(trans, receiver, messageType, stationery, sender_guidlow_or_entry, received_guidlow, subject, itemTextId, mi, money, COD, checked, deliver_delay, mailTemplateId);

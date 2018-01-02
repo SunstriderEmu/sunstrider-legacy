@@ -78,7 +78,7 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
             return false;
         }
 
-        if(sCharacterCache->GetCharacterAccountIdByGuid(guid))
+        if(sCharacterCache->GetCharacterAccountIdByGuid(ObjectGuid(HighGuid::Player, guid)))
         {
             PSendSysMessage(LANG_CHARACTER_GUID_IN_USE,guid);
             SetSentErrorMessage(true);
@@ -138,7 +138,7 @@ bool ChatHandler::HandleWritePDumpCommand(const char *args)
         guid = sCharacterCache->GetCharacterGuidByName(name);
     }
 
-    if(!sCharacterCache->GetCharacterAccountIdByGuid(guid))
+    if(!sCharacterCache->GetCharacterAccountIdByGuid(ObjectGuid(HighGuid::Player, guid)))
     {
         PSendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);

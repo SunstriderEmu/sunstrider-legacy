@@ -1489,11 +1489,11 @@ class TC_GAME_API Unit : public WorldObject
         bool HasAuraType(AuraType auraType) const;
 		bool HasAuraTypeWithMiscvalue(AuraType auratype, int32 miscvalue) const;
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
-        bool HasAuraTypeWithCaster(AuraType auraType, uint64 caster) const;
+        bool HasAuraTypeWithCaster(AuraType auraType, ObjectGuid caster) const;
         bool HasAuraEffect(uint32 spellId, uint8 effIndex = 0) const;
         bool HasAuraWithMechanic(Mechanics mechanic) const;
-        bool HasAuraWithCaster(uint32 spellId, uint8 effIndex, uint64 owner) const;
-        bool HasAuraWithCasterNot(uint32 spellId, uint8 effIndex, uint64 owner) const;
+        bool HasAuraWithCaster(uint32 spellId, uint8 effIndex, ObjectGuid owner) const;
+        bool HasAuraWithCasterNot(uint32 spellId, uint8 effIndex, ObjectGuid owner) const;
         bool HasStrongerAuraWithDR(SpellInfo const* auraSpellInfo, Unit* caster, bool triggered) const;
 
         bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
@@ -1536,16 +1536,16 @@ class TC_GAME_API Unit : public WorldObject
         void SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Powers powertype);
         uint32 SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool IsTriggeredSpell = false, bool useSpellDamage = true);
         //returns SpellCastResult
-        uint32 CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0 );
-        uint32 CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
-        uint32 CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0, bool skipHit = false);
-        uint32 CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0, bool skipHit = false);
-        uint32 CastCustomSpell(Unit* victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, TriggerCastFlags triggerFlags, Item *castItem= nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
-        uint32 CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit* Victim = nullptr, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
-        uint32 CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = nullptr, TriggerCastFlags triggerFlags = TRIGGERED_FULL_MASK, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
-        uint32 CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
-        uint32 CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags triggerFlags, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
-        uint32 CastSpell(GameObject *go, uint32 spellId, TriggerCastFlags triggerFlags, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
+        uint32 CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        uint32 CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        uint32 CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty, bool skipHit = false);
+        uint32 CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty, bool skipHit = false);
+        uint32 CastCustomSpell(Unit* victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, TriggerCastFlags triggerFlags, Item *castItem= nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        uint32 CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit* Victim = nullptr, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        uint32 CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = nullptr, TriggerCastFlags triggerFlags = TRIGGERED_FULL_MASK, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        uint32 CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        uint32 CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags triggerFlags, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
+        uint32 CastSpell(GameObject *go, uint32 spellId, TriggerCastFlags triggerFlags, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
         Aura* AddAura(uint32 spellId, Unit *target);
 
         void LogBossDown(Creature* victim);
@@ -1600,32 +1600,32 @@ class TC_GAME_API Unit : public WorldObject
         DeathState GetDeathState() { return m_deathState; };
         virtual void SetDeathState(DeathState s);           // overwrited in Creature/Player/Pet
 
-        uint64 GetOwnerGUID() const { return  GetUInt64Value(UNIT_FIELD_SUMMONEDBY); }
-        void SetOwnerGUID(uint64 owner);
-        uint64 GetCreatorGUID() const { return GetUInt64Value(UNIT_FIELD_CREATEDBY); }
+        ObjectGuid GetOwnerGUID() const { return  GetGuidValue(UNIT_FIELD_SUMMONEDBY); }
+        void SetOwnerGUID(ObjectGuid owner);
+        ObjectGuid GetCreatorGUID() const { return GetGuidValue(UNIT_FIELD_CREATEDBY); }
         /** Set a "X's minion" text on the creature */
-        void SetCreatorGUID(uint64 creator) { SetUInt64Value(UNIT_FIELD_CREATEDBY, creator); }
-        uint64 GetMinionGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMON); }
-		void SetMinionGUID(uint64 guid) { SetGuidValue(UNIT_FIELD_SUMMON, guid); }
-        uint64 GetCharmerGUID() const { return GetUInt64Value(UNIT_FIELD_CHARMEDBY); }
-        void SetCharmerGUID(uint64 owner) { SetUInt64Value(UNIT_FIELD_CHARMEDBY, owner); }
-        uint64 GetCharmGUID() const { return  GetUInt64Value( UNIT_FIELD_CHARM); }
-		void SetPetGUID(uint64 guid) { m_SummonSlot[SUMMON_SLOT_PET] = guid; }
-		uint64 GetPetGUID() const { return m_SummonSlot[SUMMON_SLOT_PET]; }
+        void SetCreatorGUID(ObjectGuid creator) { SetGuidValue(UNIT_FIELD_CREATEDBY, creator); }
+        ObjectGuid GetMinionGUID() const { return GetGuidValue(UNIT_FIELD_SUMMON); }
+		void SetMinionGUID(ObjectGuid guid) { SetGuidValue(UNIT_FIELD_SUMMON, guid); }
+        ObjectGuid GetCharmerGUID() const { return GetGuidValue(UNIT_FIELD_CHARMEDBY); }
+        void SetCharmerGUID(ObjectGuid owner) { SetGuidValue(UNIT_FIELD_CHARMEDBY, owner); }
+        ObjectGuid GetCharmGUID() const { return  GetGuidValue( UNIT_FIELD_CHARM); }
+		void SetPetGUID(ObjectGuid guid) { m_SummonSlot[SUMMON_SLOT_PET] = guid; }
+        ObjectGuid GetPetGUID() const { return m_SummonSlot[SUMMON_SLOT_PET]; }
 #ifdef LICH_KING
-		void SetCritterGUID(uint64 guid) { SetGuidValue(UNIT_FIELD_CRITTER, guid); }
-		uint64 GetCritterGUID() const { return GetGuidValue(UNIT_FIELD_CRITTER);
+		void SetCritterGUID(ObjectGuid guid) { SetGuidValue(UNIT_FIELD_CRITTER, guid); }
+        ObjectGuid GetCritterGUID() const { return GetGuidValue(UNIT_FIELD_CRITTER);
 #else
-		void SetCritterGUID(uint64 guid) { m_miniPet = guid; }
-		uint64 GetCritterGUID() const { return m_miniPet; }
+		void SetCritterGUID(ObjectGuid guid) { m_miniPet = guid; }
+        ObjectGuid GetCritterGUID() const { return m_miniPet; }
 #endif
 
         bool IsControlledByPlayer() const { return m_ControlledByPlayer; }
 
-        uint64 GetCharmerOrOwnerGUID() const { return GetCharmerGUID() ? GetCharmerGUID() : GetOwnerGUID(); }
-        uint64 GetCharmerOrOwnerOrOwnGUID() const
+        ObjectGuid GetCharmerOrOwnerGUID() const { return GetCharmerGUID() ? GetCharmerGUID() : GetOwnerGUID(); }
+        ObjectGuid GetCharmerOrOwnerOrOwnGUID() const
         {
-            if(uint64 guid = GetCharmerOrOwnerGUID())
+            if(ObjectGuid guid = GetCharmerOrOwnerGUID())
                 return guid;
             return GetGUID();
         }
@@ -1663,7 +1663,7 @@ class TC_GAME_API Unit : public WorldObject
 		ControlList m_Controlled;
 		Unit* GetFirstControlled() const;
 		void RemoveAllControlled();
-		uint64 m_miniPet;
+        ObjectGuid m_miniPet;
 
         bool IsCharmed() const { return GetCharmerGUID() != 0; }
         bool IsPossessed() const { return HasUnitState(UNIT_STATE_POSSESSED); }
@@ -1703,13 +1703,13 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveSingleAuraFromStack(uint32 spellId, uint8 effindex);
         void RemoveAurasDueToSpell(uint32 spellId, Aura* except = nullptr);
         void RemoveAurasDueToItemSpell(Item* castItem,uint32 spellId);
-        void RemoveAurasByCasterSpell(uint32 spellId, uint8 effIndex, uint64 casterGUID);
-        void RemoveAurasByCasterSpell(uint32 spellId, uint64 casterGUID);
-        void SetAurasDurationByCasterSpell(uint32 spellId, uint64 casterGUID, int32 duration);
-        Aura* GetAuraByCasterSpell(uint32 spellId, uint64 casterGUID);
-        Aura* GetAuraByCasterSpell(uint32 spellId, uint8 effIndex, uint64 casterGUID);
-        void RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit *dispeler);
-        void RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit *stealer);
+        void RemoveAurasByCasterSpell(uint32 spellId, uint8 effIndex, ObjectGuid casterGUID);
+        void RemoveAurasByCasterSpell(uint32 spellId, ObjectGuid casterGUID);
+        void SetAurasDurationByCasterSpell(uint32 spellId, ObjectGuid casterGUID, int32 duration);
+        Aura* GetAuraByCasterSpell(uint32 spellId, ObjectGuid casterGUID);
+        Aura* GetAuraByCasterSpell(uint32 spellId, uint8 effIndex, ObjectGuid casterGUID);
+        void RemoveAurasDueToSpellByDispel(uint32 spellId, ObjectGuid casterGUID, Unit *dispeler);
+        void RemoveAurasDueToSpellBySteal(uint32 spellId, ObjectGuid casterGUID, Unit *stealer);
         void RemoveAurasDueToSpellByCancel(uint32 spellId);
         void RemoveAurasAtChanneledTarget(SpellInfo const* spellInfo, Unit * caster);
         void RemoveNotOwnSingleTargetAuras();
@@ -1793,8 +1793,8 @@ class TC_GAME_API Unit : public WorldObject
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 
         uint32 m_addDmgOnce;
-        uint64 m_SummonSlot[MAX_SUMMON_SLOT];
-        uint64 m_ObjectSlot[MAX_GAMEOBJECT_SLOT];
+        ObjectGuid m_SummonSlot[MAX_SUMMON_SLOT];
+        ObjectGuid m_ObjectSlot[MAX_GAMEOBJECT_SLOT];
         uint32 m_ShapeShiftFormSpellId;
         ShapeshiftForm m_form;
         float m_modMeleeHitChance;
@@ -1871,8 +1871,8 @@ class TC_GAME_API Unit : public WorldObject
         void SetFacingTo(float ori);
         void SetFacingToObject(WorldObject const* object, bool force = true);
 
-        uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
-        virtual void SetTarget(uint64 /*guid*/) = 0;
+        ObjectGuid GetTarget() const { return GetGuidValue(UNIT_FIELD_TARGET); }
+        virtual void SetTarget(ObjectGuid /*guid*/) = 0;
 
         // Movement info
         Movement::MoveSpline * movespline;
@@ -1942,15 +1942,15 @@ class TC_GAME_API Unit : public WorldObject
         void addHatedBy(HostileReference* pHostileReference) { m_HostileRefManager.insertFirst(pHostileReference); };
         void removeHatedBy(HostileReference* /*pHostileReference*/ ) { /* nothing to do yet */ }
         HostileRefManager& GetHostileRefManager() { return m_HostileRefManager; }
-        bool HasInThreatList(uint64 hostileGUID) const;
+        bool HasInThreatList(ObjectGuid hostileGUID) const;
 
         //TC compat
-        Aura* GetAuraApplication(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint8 reqEffMask = 0, AuraApplication * except = nullptr) const;
+        Aura* GetAuraApplication(uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty, ObjectGuid itemCasterGUID = ObjectGuid::Empty, uint8 reqEffMask = 0, AuraApplication * except = nullptr) const;
         Aura* GetAura(uint32 spellId, uint8 effindex);
-        Aura* GetAuraWithCaster(uint32 spellId, uint64 casterGUID);
+        Aura* GetAuraWithCaster(uint32 spellId, ObjectGuid casterGUID);
 
-        AuraApplication* GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint8 reqEffMask = 0, AuraApplication * except = nullptr) const;
-        Aura* GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = ObjectGuid::Empty, uint8 reqEffMask = 0) const;
+        AuraApplication* GetAuraApplicationOfRankedSpell(uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty, ObjectGuid itemCasterGUID = ObjectGuid::Empty, uint8 reqEffMask = 0, AuraApplication * except = nullptr) const;
+        Aura* GetAuraOfRankedSpell(uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty, ObjectGuid itemCasterGUID = ObjectGuid::Empty, uint8 reqEffMask = 0) const;
 
         AuraMap      & GetAuras()       { return m_Auras; }
         AuraMap const& GetAuras() const { return m_Auras; }
@@ -1998,7 +1998,7 @@ class TC_GAME_API Unit : public WorldObject
 
         void AddDynObject(DynamicObject* dynObj);
         void RemoveDynObject(uint32 spellid);
-        void RemoveDynObjectWithGUID(uint64 guid) { m_dynObjGUIDs.remove(guid); }
+        void RemoveDynObjectWithGUID(ObjectGuid guid) { m_dynObjGUIDs.remove(guid); }
         void RemoveAllDynObjects();
         void AddGameObject(GameObject* gameObj);
         void RemoveGameObject(GameObject* gameObj, bool del);
@@ -2157,13 +2157,13 @@ class TC_GAME_API Unit : public WorldObject
         //bool m_Notified, m_IsInNotifyList;
         //float oldX, oldY, oldZ;
 
-        void SetReducedThreatPercent(uint32 pct, uint64 guid)
+        void SetReducedThreatPercent(uint32 pct, ObjectGuid guid)
         {
             m_redirectThreatPercent = pct;
             m_misdirectionTargetGUID = guid;
         }
 
-        void SetLastMisdirectionTargetGUID(uint64 guid)
+        void SetLastMisdirectionTargetGUID(ObjectGuid guid)
         {
             m_misdirectionLastTargetGUID = guid;
         }
@@ -2188,7 +2188,7 @@ class TC_GAME_API Unit : public WorldObject
 
         void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
         virtual Unit* GetSummoner() const;
-        uint64 GetSummonerGUID() { return m_summoner; }
+        ObjectGuid GetSummonerGUID() { return m_summoner; }
         
         bool IsJustCCed() { return (m_justCCed > 0); }
         
@@ -2215,11 +2215,11 @@ class TC_GAME_API Unit : public WorldObject
         void Whisper(uint32 textId, Player* target, bool isBossWhisper = false);
 
         //retrocompatibility function, do not use. TextId's here are from script_texts or trinity_string
-        void old_Talk(uint32 textId, ChatMsg msgType, float textRange, uint64 targetGUID, uint32 language);
-        void old_Say(int32 textId, uint32 language, uint64 TargetGuid);
-        void old_Yell(int32 textId, uint32 language, uint64 TargetGuid);
-        void old_TextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false);
-        void old_Whisper(int32 textId, uint64 receiver, bool IsBossWhisper = false);
+        void old_Talk(uint32 textId, ChatMsg msgType, float textRange, ObjectGuid targetGUID, uint32 language);
+        void old_Say(int32 textId, uint32 language, ObjectGuid TargetGuid);
+        void old_Yell(int32 textId, uint32 language, ObjectGuid TargetGuid);
+        void old_TextEmote(int32 textId, ObjectGuid TargetGuid, bool IsBossEmote = false);
+        void old_Whisper(int32 textId, ObjectGuid receiver, bool IsBossWhisper = false);
 
         float GetCollisionHeight() const override;
 
@@ -2256,7 +2256,7 @@ class TC_GAME_API Unit : public WorldObject
         AuraMap::iterator m_AurasUpdateIterator;
         uint32 m_removedAurasCount;
 
-        typedef std::list<uint64> DynObjectGUIDs;
+        typedef std::list<ObjectGuid> DynObjectGUIDs;
         DynObjectGUIDs m_dynObjGUIDs;
 
         std::list<GameObject*> m_gameObj;
@@ -2293,12 +2293,12 @@ class TC_GAME_API Unit : public WorldObject
         uint32 m_unitTypeMask;
         LiquidTypeEntry const* _lastLiquid;
         
-        uint64 m_summoner;
+        ObjectGuid m_summoner;
         
         uint8 m_justCCed; // Set to 2 when getting CC aura, decremented (if > 0) every update - used to stop pet combat on target
 
-        std::map<uint64,uint16> m_detectedUnit; // <guid,timer> for stealth detection, a spotted unit is kept visible for a while 
-        std::set<uint64> m_detectedByUnit; //we need to keep track of who detected us to be able to reset it when needed
+        std::map<ObjectGuid, uint16> m_detectedUnit; // <guid,timer> for stealth detection, a spotted unit is kept visible for a while 
+        std::set<ObjectGuid> m_detectedByUnit; //we need to keep track of who detected us to be able to reset it when needed
         
         // Testing
         bool m_disabledRegen;
@@ -2328,14 +2328,14 @@ class TC_GAME_API Unit : public WorldObject
         ComboPointHolderSet m_ComboPointHolders;
 
         uint32 m_redirectThreatPercent;
-        uint64 m_misdirectionTargetGUID;
-        uint64 m_misdirectionLastTargetGUID;
+        ObjectGuid m_misdirectionTargetGUID;
+        ObjectGuid m_misdirectionLastTargetGUID;
         
         uint8 IsRotating;//0none 1left 2right
         uint32 RotateTimer;
         uint32 RotateTimerFull;
         double RotateAngle;
-        uint64 LastTargetGUID;
+        ObjectGuid LastTargetGUID;
         bool m_attackVictimOnEnd;
 
         uint32 m_procDeep;
@@ -2350,12 +2350,12 @@ class TC_GAME_API Unit : public WorldObject
 class RedirectSpellEvent : public BasicEvent
 {
 public:
-    RedirectSpellEvent(Unit& self, uint64 auraOwnerGUID, AuraEffect* auraEffect) : _self(self), _auraOwnerGUID(auraOwnerGUID), _auraEffect(auraEffect) { }
+    RedirectSpellEvent(Unit& self, ObjectGuid auraOwnerGUID, AuraEffect* auraEffect) : _self(self), _auraOwnerGUID(auraOwnerGUID), _auraEffect(auraEffect) { }
     bool Execute(uint64 e_time, uint32 p_time) override;
 
 protected:
     Unit& _self;
-    uint64 _auraOwnerGUID;
+    ObjectGuid _auraOwnerGUID;
     AuraEffect* _auraEffect;
 };
 

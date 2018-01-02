@@ -168,7 +168,6 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     lootForPickPocketed(false), 
     lootForBody(false), 
     m_lootMoney(0), 
-    m_lootRecipient(0), 
     m_lootRecipientGroup(0),
     m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25),
     m_corpseDelay(60), 
@@ -252,7 +251,7 @@ void Creature::AddToWorld()
         Unit::AddToWorld();
         SearchFormation();
 
-        if(uint32 guid = GetSpawnId())
+        if(ObjectGuid::LowType guid = GetSpawnId())
         {
             if (CreatureData const* data = sObjectMgr->GetCreatureData(guid))
                 m_creaturePoolId = data->poolId;
@@ -306,7 +305,7 @@ void Creature::SearchFormation()
     if(IsPet())
         return;
 
-    uint32 lowguid = GetSpawnId();
+    ObjectGuid::LowType lowguid = GetSpawnId();
     if(!lowguid)
         return;
 
@@ -593,11 +592,11 @@ void Creature::Update(uint32 diff)
     {
         case JUST_RESPAWNED:
             // Must not be called, see Creature::setDeathState JUST_RESPAWNED -> ALIVE promoting.
-            TC_LOG_ERROR("entities.unit","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_RESPAWNED (4)",GetGUIDLow(),GetEntry());
+            TC_LOG_ERROR("entities.unit","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_RESPAWNED (4)",GetGUID().GetCounter(),GetEntry());
             break;
         case JUST_DIED:
             // Must not be called, see Creature::setDeathState JUST_DIED -> CORPSE promoting.
-            TC_LOG_ERROR("entities.unit","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_DEAD (1)",GetGUIDLow(),GetEntry());
+            TC_LOG_ERROR("entities.unit","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_DEAD (1)",GetGUID().GetCounter(),GetEntry());
             break;
         case DEAD:
         {
@@ -679,7 +678,7 @@ void Creature::Update(uint32 diff)
                         if (group)
                             group->EndRoll();
                         m_groupLootTimer = 0;
-                        lootingGroupLeaderGUID = 0;
+                        lootingGroupLeaderGUID.Clear();
                     }
                 }
             }
@@ -722,7 +721,7 @@ void Creature::Update(uint32 diff)
                 {
                     std::list<HostileReference *> t_list = GetThreatManager().getThreatList();
                     for(auto & i : t_list)
-                        if(i && IS_PLAYER_GUID(i->getUnitGuid()))
+                        if(i && i->getUnitGuid().IsPlayer())
                         {
                             AreaCombat();
                             break;
@@ -859,7 +858,7 @@ void Creature::Update(uint32 diff)
     if (IsInWorld())
     {
         // sunwell:
-        if (IS_PLAYER_GUID(GetOwnerGUID()))
+        if (GetOwnerGUID().IsPlayer())
         {
             if (m_transportCheckTimer <= diff)
             {
@@ -1021,7 +1020,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     return true;
 }
 
-bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData *data, bool dynamic)
+bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData *data, bool dynamic)
 {
     ASSERT(map);
     SetMap(map);
@@ -1143,7 +1142,7 @@ bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
     if(!trainer_spells || trainer_spells->spellList.empty())
     {
         TC_LOG_ERROR("sql.sql","Creature %u (Entry: %u) have UNIT_NPC_FLAG_TRAINER but have empty trainer spell list.",
-            GetGUIDLow(),GetEntry());
+            GetGUID().GetCounter(),GetEntry());
         return false;
     }
 
@@ -1268,7 +1267,7 @@ Group* Creature::GetLootRecipientGroup() const
     if (!m_lootRecipient)
         return nullptr;
 
-    return sObjectMgr->GetGroupByLeader(m_lootRecipientGroup);
+    return sObjectMgr->GetGroupByLeader(ObjectGuid(HighGuid::Player, m_lootRecipientGroup));
 }
 
 // return true if this creature is tapped by the player or by a member of his group.
@@ -1292,7 +1291,7 @@ void Creature::SetLootRecipient(Unit *unit)
 
     if (!unit)
     {
-        m_lootRecipient = 0;
+        m_lootRecipient.Clear();
         m_lootRecipientGroup = 0;
         RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE|UNIT_DYNFLAG_TAPPED);
         return;
@@ -1459,7 +1458,7 @@ void Creature::SelectLevel()
     UpdateLevelDependantStats();
 }
 
-bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data)
+bool Creature::CreateFromProto(ObjectGuid::LowType guidlow, uint32 Entry, const CreatureData *data)
 {
     CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(Entry);
     if(!cinfo)
@@ -1553,7 +1552,7 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
 
     if(!IsPositionValid())
     {
-        TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",GetGUIDLow(),GetEntry(),GetPositionX(),GetPositionY());
+        TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",GetGUID().GetCounter(),GetEntry(),GetPositionX(),GetPositionY());
         return false;
     }
     //We should set first home position, because then AI calls home movement
@@ -1695,7 +1694,7 @@ void Creature::DeleteFromDB()
 {
     if (!m_spawnId)
     {
-        TC_LOG_ERROR("entities.unit", "Trying to delete not saved creature! LowGUID: %u, Entry: %u", GetGUIDLow(), GetEntry());
+        TC_LOG_ERROR("entities.unit", "Trying to delete not saved creature! LowGUID: %u, Entry: %u", GetGUID().GetCounter(), GetEntry());
         return;
     }
 
@@ -2027,7 +2026,7 @@ void Creature::SetDeathState(DeathState s)
             ((InstanceMap*)map)->GetInstanceScript()->OnCreatureDeath(this);
 
         ReleaseFocus(nullptr); // remove spellcast focus
-        SetTarget(0); // drop target - dead mobs shouldn't ever target things
+        SetTarget(ObjectGuid::Empty); // drop target - dead mobs shouldn't ever target things
         SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
 
         SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);       // if creature is mounted on a virtual mount, remove it at death
@@ -2149,7 +2148,7 @@ void Creature::Respawn(bool force /* = false */)
     }
 
     TC_LOG_DEBUG("entities.unit", "Respawning creature %s (%u)",
-        GetName().c_str(), GetGUIDLow());
+        GetName().c_str(), GetGUID().GetCounter());
 }
 
 void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/, Seconds const& forceRespawnTimer /*= 0*/)
@@ -3047,7 +3046,8 @@ const CreatureData* Creature::GetLinkedRespawnCreatureData() const
     if(!m_spawnId) // only hard-spawned creatures from DB can have a linked master
         return nullptr;
 
-    if(uint32 targetGuid = sObjectMgr->GetLinkedRespawnGuid(m_spawnId))
+    ObjectGuid linkedGuid = ObjectGuid(HighGuid::Unit, GetEntry(), m_spawnId);
+    if(ObjectGuid targetGuid = sObjectMgr->GetLinkedRespawnGuid(linkedGuid))
         return sObjectMgr->GetCreatureData(targetGuid);
 
     return nullptr;
@@ -3073,9 +3073,9 @@ void Creature::AreaCombat()
     }
 }
 
-bool Creature::HadPlayerInThreatListAtDeath(uint64 guid) const
+bool Creature::HadPlayerInThreatListAtDeath(ObjectGuid guid) const
 {
-    auto itr = m_playerInThreatListAtDeath.find(GUID_LOPART(guid));
+    auto itr = m_playerInThreatListAtDeath.find(guid.GetCounter());
     return itr == m_playerInThreatListAtDeath.end();
 }
 
@@ -3085,7 +3085,7 @@ void Creature::ConvertThreatListIntoPlayerListAtDeath()
     for(auto itr : threatList)
     {
         if(itr->getThreat() > 0.0f && itr->getSourceUnit()->GetTypeId() == TYPEID_PLAYER)
-            m_playerInThreatListAtDeath.insert(itr->GetSource()->GetOwner()->GetGUIDLow());
+            m_playerInThreatListAtDeath.insert(itr->GetSource()->GetOwner()->GetGUID().GetCounter());
     }
 }
 
@@ -3151,10 +3151,10 @@ void Creature::Motion_Initialize()
         GetMotionMaster()->Initialize();
 }
 
-void Creature::SetTarget(uint64 guid)
+void Creature::SetTarget(ObjectGuid guid)
 {
     if (!_focusSpell)
-        SetUInt64Value(UNIT_FIELD_TARGET, guid);
+        SetGuidValue(UNIT_FIELD_TARGET, guid);
 }
 
 void Creature::FocusTarget(Spell const* focusSpell, WorldObject const* target)
@@ -3164,7 +3164,7 @@ void Creature::FocusTarget(Spell const* focusSpell, WorldObject const* target)
         return;
 
     _focusSpell = focusSpell;
-    SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
+    SetGuidValue(UNIT_FIELD_TARGET, target->GetGUID());
     if (focusSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
         AddUnitState(UNIT_STATE_CANNOT_TURN);
 
@@ -3182,9 +3182,9 @@ void Creature::ReleaseFocus(Spell const* focusSpell)
         return;
 
     if (Unit* victim = GetVictim())
-        SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+        SetTarget(victim->GetGUID());
     else
-        SetUInt64Value(UNIT_FIELD_TARGET, 0);
+        SetTarget(ObjectGuid::Empty);
 
     if (_focusSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
         ClearUnitState(UNIT_STATE_CANNOT_TURN);
@@ -3487,7 +3487,7 @@ void Creature::SetTextRepeatId(uint8 textGroup, uint8 id)
     if (std::find(repeats.begin(), repeats.end(), id) == repeats.end())
         repeats.push_back(id);
     else
-        TC_LOG_ERROR("sql.sql", "CreatureTextMgr: TextGroup %u for Creature(%s) GuidLow %u Entry %u, id %u already added", uint32(textGroup), GetName().c_str(), GetGUIDLow(), GetEntry(), uint32(id));
+        TC_LOG_ERROR("sql.sql", "CreatureTextMgr: TextGroup %u for Creature(%s) GuidLow %u Entry %u, id %u already added", uint32(textGroup), GetName().c_str(), GetGUID().GetCounter(), GetEntry(), uint32(id));
 }
 
 CreatureTextRepeatIds Creature::GetTextRepeatGroup(uint8 textGroup)

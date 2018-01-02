@@ -125,7 +125,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
 
         chr->TeleportTo(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation);
     }
-    else if (uint64 guid = sCharacterCache->GetCharacterGuidByName(name.c_str()))
+    else if (ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name.c_str()))
     {
         PSendSysMessage(LANG_TELEPORTING_TO, name.c_str(), GetTrinityString(LANG_OFFLINE), tele->name.c_str());
         Player::SavePositionInDB(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation,sMapMgr->GetZoneId(tele->mapId,tele->position_x,tele->position_y,tele->position_z),guid);

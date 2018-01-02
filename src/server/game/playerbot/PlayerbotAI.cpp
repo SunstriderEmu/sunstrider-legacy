@@ -25,7 +25,7 @@ using namespace std;
 
 vector<std::string>& split(const std::string &s, char delim, vector<std::string> &elems);
 vector<std::string> split(const std::string &s, char delim);
-uint64 extractGuid(WorldPacket& packet);
+ObjectGuid extractGuid(WorldPacket& packet);
 std::string &trim(std::string &s);
 
 uint32 PlayerbotChatHandler::extractQuestId(std::string str)
@@ -289,8 +289,8 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
     case SMSG_MOVE_SET_CAN_FLY:
         { //BC + LK okay
             WorldPacket p(packet);
-            uint64 guid;
-            p.readPackGUID(guid);
+            ObjectGuid guid;
+            p >> guid.ReadAsPacked();
             if (guid != bot->GetGUID())
                 return;
 
@@ -300,8 +300,8 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
     case SMSG_MOVE_UNSET_CAN_FLY:
         { //BC + LK okay
             WorldPacket p(packet);
-            uint64 guid;
-            p.readPackGUID(guid);
+            ObjectGuid guid;
+            p >> guid.ReadAsPacked();
             if (guid != bot->GetGUID())
                 return;
             bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_PLAYER_FLYING);
@@ -326,8 +326,8 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
         { //BC + LK okay
             WorldPacket p(packet);
             p.rpos(0);
-            uint64 casterGuid;
-            p.readPackGUID(casterGuid);
+            ObjectGuid casterGuid;
+            p >> casterGuid.ReadAsPacked();
             if (casterGuid != bot->GetGUID())
                 return;
 
@@ -344,8 +344,8 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
         { //BC + LK okay
             WorldPacket p(packet);
             p.rpos(0);
-            uint64 casterGuid;
-            p.readPackGUID(casterGuid);
+            ObjectGuid casterGuid;
+            p >> casterGuid.ReadAsPacked();
 
             if (casterGuid != bot->GetGUID())
                 return;

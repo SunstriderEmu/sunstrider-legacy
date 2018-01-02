@@ -41,7 +41,7 @@ private:
     PlayerbotHolder* playerbotHolder;
 
 public:
-    PlayerbotLoginQueryHolder(PlayerbotHolder* playerbotHolder, uint32 masterAccount, uint32 accountId, uint64 guid)
+    PlayerbotLoginQueryHolder(PlayerbotHolder* playerbotHolder, uint32 masterAccount, uint32 accountId, ObjectGuid guid)
         : LoginQueryHolder(accountId, ObjectGuid(guid)), masterAccountId(masterAccount), playerbotHolder(playerbotHolder) { }
 
 public:
@@ -49,7 +49,7 @@ public:
     PlayerbotHolder* GetPlayerbotHolder() { return playerbotHolder; }
 };
 
-Player* PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount, bool testingBot)
+Player* PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccount, bool testingBot)
 {
     // has bot already been added?x
     Player* bot = sObjectMgr->GetPlayer(playerGuid);
@@ -114,7 +114,7 @@ bool LoginQueryHolder::Initialize()
     SetSize(MAX_PLAYER_LOGIN_QUERY);
 
     bool res = true;
-    uint32 lowGuid = GUID_LOPART(m_guid);
+    ObjectGuid::LowType lowGuid = m_guid.GetCounter();
 
     // NOTE: all fields in `characters` must be read to prevent lost character data at next save in case wrong DB structure.
     // !!! NOTE: including unused `zone`,`online`
@@ -218,7 +218,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
     {
         do
         {
-            uint32 guidlow = (*result)[0].GetUInt32();
+            ObjectGuid::LowType guidlow = (*result)[0].GetUInt32();
             TC_LOG_INFO("network", "Loading char guid %u from account %u.", guidlow, GetAccountId());
             if (Player::BuildEnumData(result, &data, this))
             {
@@ -492,9 +492,9 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
             SendCharCreate(CHAR_CREATE_SUCCESS);
 
             std::string IP_str = GetRemoteAddress();
-            TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUIDLow());
+            TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUID().GetCounter());
             //sScriptMgr->OnPlayerCreate(&newChar);
-            sCharacterCache->AddCharacterCacheEntry(newChar.GetGUIDLow(), GetAccountId(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel(), 0);
+            sCharacterCache->AddCharacterCacheEntry(newChar.GetGUID().GetCounter(), GetAccountId(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel(), 0);
 
             newChar.CleanupsBeforeDelete();
         };
@@ -514,7 +514,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     //uint32 initAccountId = GetAccountId();
@@ -546,7 +546,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
         return;
     }
 
-    QueryResult result = CharacterDatabase.PQuery("SELECT account, name, level FROM characters WHERE guid='%u'", GUID_LOPART(guid));
+    QueryResult result = CharacterDatabase.PQuery("SELECT account, name, level FROM characters WHERE guid='%u'", guid.GetCounter());
     if(result)
     {
         Field *fields = result->Fetch();
@@ -560,7 +560,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
         return;
 
     std::string IP_str = GetRemoteAddress();
-    TC_LOG_DEBUG("entities.player","Account: %d (IP: %s) Delete Character:[%s] (guid:%u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
+    TC_LOG_DEBUG("entities.player","Account: %d (IP: %s) Delete Character:[%s] (guid:%u)",GetAccountId(),IP_str.c_str(),name.c_str(),guid.GetCounter());
 
     //    sScriptMgr->OnPlayerDelete(guid, initAccountId); // To prevent race conditioning, but as it also makes sense, we hand the accountId over for successful delete.
 
@@ -568,11 +568,11 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
         fname.append("/");
     char fpath[64];
-    snprintf(fpath, 64, "chardump/%d_%d_%s", GetAccountId(), GUID_LOPART(guid), name.c_str());
+    snprintf(fpath, 64, "chardump/%d_%d_%s", GetAccountId(), guid.GetCounter(), name.c_str());
     fname.append(fpath);
-    PlayerDumpWriter().WriteDump(fname, GUID_LOPART(guid));
+    PlayerDumpWriter().WriteDump(fname, guid.GetCounter());
 
-    LogsDatabaseAccessor::CharacterDelete(this, GUID_LOPART(guid), name, level, GetRemoteAddress());
+    LogsDatabaseAccessor::CharacterDelete(this, guid.GetCounter(), name, level, GetRemoteAddress());
 
 #ifdef LICH_LING
     sCalendarMgr->RemoveAllPlayerEventsAndInvites(guid);
@@ -591,7 +591,7 @@ void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recvData )
     }
 
     m_playerLoading = true;
-    uint64 playerGuid = 0;
+    ObjectGuid playerGuid;
 
    // TC_LOG_DEBUG( "network.opcode","WORLD: Recvd Player Logon Message" );
 
@@ -662,7 +662,7 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     }
     */
 
-    //QueryResult result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());
+    //QueryResult result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUID().GetCounter());
 
     uint32 guildId = 0;
     if (PreparedQueryResult resultGuild = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_GUILD))
@@ -698,12 +698,12 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
                     }
                     else
                     {
-                        TC_LOG_ERROR("entities.player", "Could not add player to default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
+                        TC_LOG_ERROR("entities.player", "Could not add player to default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUID().GetCounter());
                     }
                     CharacterDatabase.CommitTransaction(trans);
                 }
                 else {
-                    TC_LOG_ERROR("entities.player", "Could not find default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
+                    TC_LOG_ERROR("entities.player", "Could not find default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUID().GetCounter());
                 }
             }
         }
@@ -725,7 +725,7 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
                         pCurrChar->SetRank(gmGuild->GetLowestRank());
                     }
                     else {
-                        TC_LOG_ERROR("entities.player", "Could not add player to forced guild Id %u for GM player %s (%u)", GMForcedGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
+                        TC_LOG_ERROR("entities.player", "Could not add player to forced guild Id %u for GM player %s (%u)", GMForcedGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUID().GetCounter());
                     }
                 }
             }
@@ -759,7 +759,7 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
         else
         {
             // remove wrong guild data
-            TC_LOG_ERROR("network", "Player %s (GUID: %u) marked as member not existed guild (id: %u), removing guild membership for player.", pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow(), pCurrChar->GetGuildId());
+            TC_LOG_ERROR("network", "Player %s (GUID: %u) marked as member not existed guild (id: %u), removing guild membership for player.", pCurrChar->GetName().c_str(), pCurrChar->GetGUID().GetCounter(), pCurrChar->GetGuildId());
             pCurrChar->SetInGuild(0);
         }
     }
@@ -817,18 +817,18 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     ObjectAccessor::AddObject(pCurrChar);
     //TC_LOG_DEBUG("FIXME","Player %s added to Map.",pCurrChar->GetName());
     if (!pCurrChar->GetSocial())
-        pCurrChar->m_social = sSocialMgr->GetDefault(pCurrChar->GetGUIDLow());
+        pCurrChar->m_social = sSocialMgr->GetDefault(pCurrChar->GetGUID().GetCounter());
     else 
         pCurrChar->GetSocial()->SendSocialList();
 
     pCurrChar->SendInitialPacketsAfterAddToMap();
 
-    CharacterDatabase.PExecute("UPDATE characters SET online = 1 WHERE guid = '%u'", pCurrChar->GetGUIDLow());
+    CharacterDatabase.PExecute("UPDATE characters SET online = 1 WHERE guid = '%u'", pCurrChar->GetGUID().GetCounter());
     LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = '%u'", GetAccountId());
     pCurrChar->SetInGameTime(GetMSTime());
 
     // friend status
-    sSocialMgr->SendFriendStatus(pCurrChar, FRIEND_ONLINE, pCurrChar->GetGUIDLow(), true);
+    sSocialMgr->SendFriendStatus(pCurrChar, FRIEND_ONLINE, pCurrChar->GetGUID().GetCounter(), true);
 
     if (sWorld->getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
         pCurrChar->UpdateArenaTitles();
@@ -883,7 +883,7 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_SET_DESERTER)) {
         pCurrChar->CastSpell(pCurrChar, 26013, TRIGGERED_FULL_MASK);
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_SET_DESERTER);
-        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'8' WHERE guid = %u", pCurrChar->GetGUIDLow());
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'8' WHERE guid = %u", pCurrChar->GetGUID().GetCounter());
         if (pCurrChar->IsDead())
             pCurrChar->ResurrectPlayer(1.f);
     }
@@ -892,7 +892,7 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
         pCurrChar->m_taxi.ResetTaximask();
         pCurrChar->InitTaxiNodesForLevel();
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_RESET_FLYS);
-        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'16' WHERE guid = %u", pCurrChar->GetGUIDLow());
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'16' WHERE guid = %u", pCurrChar->GetGUID().GetCounter());
     }
 
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_ALL_REP)) {
@@ -958,7 +958,7 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
 
     std::string IP_str = GetRemoteAddress();
     //sLog->outChar("Account: %d (IP: %s) Login Character:[%s] (guid:%u)",
-    //     GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUIDLow());
+    //     GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUID().GetCounter());
 
     m_playerLoading = false;
 
@@ -984,13 +984,13 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
 
 void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 {
-    uint64 playerGuid = holder->GetGuid();
+    ObjectGuid playerGuid = holder->GetGuid();
 
     Player* pCurrChar = nullptr;
     pCurrChar = new Player(this);
 
     // "GetAccountId()==db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
-    if (!pCurrChar->LoadFromDB(GUID_LOPART(playerGuid), holder))
+    if (!pCurrChar->LoadFromDB(playerGuid.GetCounter(), holder))
     {
         KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick
         delete pCurrChar;                                   // delete it manually
@@ -1160,7 +1160,7 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
     // and that there is no character with the desired new name
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_FREE_NAME);
 
-    stmt->setUInt32(0, GUID_LOPART(renameInfo->Guid));
+    stmt->setUInt32(0, renameInfo->Guid.GetCounter());
     stmt->setUInt32(1, GetAccountId());
     stmt->setString(2, renameInfo->Name);
 
@@ -1178,7 +1178,7 @@ void WorldSession::HandleCharRenameCallback(std::shared_ptr<CharacterRenameInfo>
 
     Field* fields = result->Fetch();
 
-    uint32 guidLow      = fields[0].GetUInt32();
+    ObjectGuid::LowType guidLow      = fields[0].GetUInt32();
     std::string oldname = fields[1].GetString();
     uint16 atLoginFlags = fields[2].GetUInt16();
 
@@ -1204,7 +1204,7 @@ void WorldSession::HandleCharRenameCallback(std::shared_ptr<CharacterRenameInfo>
 
 void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
 
 
     recvData >> guid;
@@ -1281,9 +1281,9 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
         CharacterDatabase.EscapeString(i);
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM character_declinedname WHERE guid = '%u'", GUID_LOPART(guid));
+    trans->PAppend("DELETE FROM character_declinedname WHERE guid = '%u'", guid.GetCounter());
     trans->PAppend("INSERT INTO character_declinedname (guid, genitive, dative, accusative, instrumental, prepositional) VALUES ('%u','%s','%s','%s','%s','%s')",
-        GUID_LOPART(guid), declinedname.name[0].c_str(), declinedname.name[1].c_str(), declinedname.name[2].c_str(), declinedname.name[3].c_str(), declinedname.name[4].c_str());
+        guid.GetCounter(), declinedname.name[0].c_str(), declinedname.name[1].c_str(), declinedname.name[2].c_str(), declinedname.name[3].c_str(), declinedname.name[4].c_str());
     CharacterDatabase.CommitTransaction(trans);
 
     WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);

@@ -11,7 +11,7 @@
 
 void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 {
-    uint64 guid;
+    ObjectGuid guid;
     Player *pl;
     Player *plTarget;
 
@@ -26,7 +26,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
     if(pl == pl->duel->initiator || !plTarget || pl == plTarget || pl->duel->startTime != 0 || plTarget->duel->startTime != 0)
         return;
 
-    TC_LOG_DEBUG("network.opcodes", "WORLD: received CMSG_DUEL_ACCEPTED. P1 %u vs P2 %u.", pl->GetGUIDLow(), plTarget->GetGUIDLow());
+    TC_LOG_DEBUG("network.opcodes", "WORLD: received CMSG_DUEL_ACCEPTED. P1 %u vs P2 %u.", pl->GetGUID().GetCounter(), plTarget->GetGUID().GetCounter());
 
     //reset cooldown in duel area
     if(pl->IsInDuelArea())
@@ -67,7 +67,7 @@ void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
 
     // player either discarded the duel using the "discard button"
     // or used "/forfeit" before countdown reached 0
-    uint64 guid;
+    ObjectGuid guid;
     recvPacket >> guid;
 
     GetPlayer()->DuelComplete(DUEL_INTERRUPTED);

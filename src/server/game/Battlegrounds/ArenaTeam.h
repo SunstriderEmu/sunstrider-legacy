@@ -77,7 +77,7 @@ enum ArenaTeamTypes
 
 struct TC_GAME_API ArenaTeamMember
 {
-    uint64 Guid;
+    ObjectGuid Guid;
     uint32 WeekGames;
     uint32 wins_week;
     uint32 SeasonGames;
@@ -114,7 +114,7 @@ class TC_GAME_API ArenaTeam
         ArenaTeam();
         ~ArenaTeam();
 
-        bool Create(uint64 CaptainGuid, uint32 type, std::string ArenaTeamName);
+        bool Create(ObjectGuid CaptainGuid, uint32 type, std::string ArenaTeamName);
         void Disband(WorldSession *session);
 
         typedef std::list<ArenaTeamMember> MemberList;
@@ -123,7 +123,7 @@ class TC_GAME_API ArenaTeam
         uint32 GetType() const            { return Type; }
         uint8  GetSlot() const            { return GetSlotByType(GetType()); }
         static uint8 GetSlotByType(uint32 type);
-        const uint64& GetCaptain() const  { return CaptainGuid; }
+        const ObjectGuid& GetCaptain() const  { return CaptainGuid; }
         std::string const& GetName() const       { return Name; }
         void SetName(std::string const& name) { Name = name; }
         const ArenaTeamStats& GetStats() const { return stats; }
@@ -138,12 +138,12 @@ class TC_GAME_API ArenaTeam
         uint32 GetBorderColor() const     { return BorderColor; }
         uint32 GetBackgroundColor() const { return BackgroundColor; }
 
-        void SetCaptain(const uint64& guid);
-        bool AddMember(const uint64& PlayerGuid, SQLTransaction trans);
+        void SetCaptain(ObjectGuid guid);
+        bool AddMember(ObjectGuid PlayerGuid, SQLTransaction trans);
 
         // Shouldn't be const uint64& ed, because than can reference guid from members on Disband
         // and this method removes given record from list. So invalid reference can happen.
-        void DeleteMember(uint64 guid, bool cleanDb = true);
+        void DeleteMember(ObjectGuid guid, bool cleanDb = true);
 
         void SetEmblem(uint32 backgroundColor, uint32 emblemStyle, uint32 emblemColor, uint32 borderStyle, uint32 borderColor);
 
@@ -153,9 +153,9 @@ class TC_GAME_API ArenaTeam
         bool   Empty() const                { return Members.empty(); }
         MemberList::iterator membersBegin() { return Members.begin(); }
         MemberList::iterator membersEnd()   { return Members.end(); }
-        bool HaveMember(const uint64& guid) const;
+        bool HaveMember(ObjectGuid guid) const;
 
-        ArenaTeamMember* GetMember(const uint64& guid);
+        ArenaTeamMember* GetMember(ObjectGuid guid);
         ArenaTeamMember* GetMember(const std::string& name);
 
         void GetMembers(std::list<ArenaTeamMember*>& memberList);
@@ -174,7 +174,7 @@ class TC_GAME_API ArenaTeam
         void Roster(WorldSession *session);
         void Query(WorldSession *session);
         void Stats(WorldSession *session);
-        void InspectStats(WorldSession *session, uint64 guid);
+        void InspectStats(WorldSession *session, ObjectGuid guid);
 
         uint32 GetPoints(uint32 MemberRating);
         int32 GetRatingMod(uint32 ownRating, uint32 opponentRating, bool won);
@@ -183,9 +183,9 @@ class TC_GAME_API ArenaTeam
         void MemberWon(Player * plr, uint32 againstRating);
         int32 LostAgainst(uint32 againstRating);
         void MemberLost(Player * plr, uint32 againstRating);
-        void OfflineMemberLost(uint64 guid, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange = -12);
+        void OfflineMemberLost(ObjectGuid guid, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange = -12);
 
-        void UpdateArenaPointsHelper(std::map<uint32, uint32> & PlayerPoints);
+        void UpdateArenaPointsHelper(std::map<ObjectGuid::LowType, uint32> & PlayerPoints);
         void UpdateRank();
 
         void NotifyStatsChanged();
@@ -198,7 +198,7 @@ class TC_GAME_API ArenaTeam
         uint32 Id;
         uint32 Type;
         std::string Name;
-        uint64 CaptainGuid;
+        ObjectGuid CaptainGuid;
 
         uint32 BackgroundColor; // ARGB format
         uint32 EmblemStyle;     // icon id

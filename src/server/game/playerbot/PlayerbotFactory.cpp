@@ -125,7 +125,6 @@ void PlayerbotFactory::Randomize(bool incremental)
 
 void PlayerbotFactory::InitPet()
 {
-    /* TODO PLAYERBOT
     Pet* pet = bot->GetPet();
 
     if (!pet)
@@ -170,7 +169,7 @@ void PlayerbotFactory::InitPet()
             if (!petInfo)
                 continue;
 
-            uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
+            uint32 guid = map->GenerateLowGuid<HighGuid::Pet>();
             pet = new Pet(bot, HUNTER_PET);
             if (!pet->Create(guid, map, 0, ids[index], 0))
             {
@@ -185,7 +184,9 @@ void PlayerbotFactory::InitPet()
             bot->SetPetGUID(pet->GetGUID());
             bot->GetMap()->AddToMap(pet->ToCreature());
             bot->SetMinion(pet, true);
+#ifdef LICH_KING
             pet->InitTalentForLevel();
+#endif
             bot->PetSpellInitialize();
             bot->InitTamedPet(pet, bot->GetLevel(), 0);
 
@@ -212,7 +213,6 @@ void PlayerbotFactory::InitPet()
 
         pet->ToggleAutocast(spellInfo, true);
     }
-    */
 }
 
 void PlayerbotFactory::ClearSpells()

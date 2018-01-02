@@ -22,7 +22,7 @@ bool ChatHandler::HandleSmartAIShowErrorsCommand(const char* args)
             return true;
         }
 
-        guid = target->GetGUIDLow();
+        guid = target->GetGUID().GetCounter();
         entry = target->GetEntry();
     } else {
         //arguments given, check if guid or entry
@@ -63,7 +63,7 @@ bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
             return true;
         }
 
-        guid = target->GetGUIDLow();
+        guid = target->GetGUID().GetCounter();
         entry = target->GetEntry();
     } else {
         //arguments given, check if guid or entry

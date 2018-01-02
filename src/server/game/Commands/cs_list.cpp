@@ -56,7 +56,7 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
         do
         {
             Field *fields = result->Fetch();
-            uint32 guid = fields[0].GetUInt32();
+            ObjectGuid::LowType guid = fields[0].GetUInt32();
             float x = fields[1].GetFloat();
             float y = fields[2].GetFloat();
             float z = fields[3].GetFloat();
@@ -125,10 +125,10 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         do
         {
             Field *fields = result->Fetch();
-            uint32 item_guid = fields[0].GetUInt32();
+            ObjectGuid::LowType item_guid = fields[0].GetUInt32();
             uint32 item_bag = fields[1].GetUInt32();
             uint32 item_slot = fields[2].GetUInt32();
-            uint32 owner_guid = fields[3].GetUInt32();
+            ObjectGuid::LowType owner_guid = fields[3].GetUInt32();
             uint32 owner_acc = fields[4].GetUInt32();
             std::string owner_name = fields[5].GetString();
 
@@ -179,7 +179,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         do
         {
             Field *fields = result->Fetch();
-            uint32 item_guid        = fields[0].GetUInt32();
+            ObjectGuid::LowType item_guid        = fields[0].GetUInt32();
             uint32 item_s           = fields[1].GetUInt32();
             uint32 item_r           = fields[2].GetUInt32();
             uint32 item_s_acc       = fields[3].GetUInt32();
@@ -225,7 +225,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         do
         {
             Field *fields = result->Fetch();
-            uint32 item_guid       = fields[0].GetUInt32();
+            ObjectGuid::LowType item_guid       = fields[0].GetUInt32();
             uint32 owner           = fields[1].GetUInt32();
             uint32 owner_acc       = fields[2].GetUInt32();
             std::string owner_name = fields[3].GetString();
@@ -255,7 +255,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         do
         {
             Field *fields = result->Fetch();
-            uint32 item_guid = fields[0].GetUInt32();
+            ObjectGuid::LowType item_guid = fields[0].GetUInt32();
             uint32 guild_guid = fields[1].GetUInt32();
             std::string guild_name = fields[2].GetString();
 
@@ -334,7 +334,7 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
         do
         {
             Field *fields = result->Fetch();
-            uint32 guid = fields[0].GetUInt32();
+            ObjectGuid::LowType guid = fields[0].GetUInt32();
             float x = fields[1].GetFloat();
             float y = fields[2].GetFloat();
             float z = fields[3].GetFloat();
@@ -374,7 +374,7 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
             itr->second->GetModifier()->m_auraname, itr->second->GetDuration(), itr->second->GetMaxDuration(),
             itr->second->GetSpellInfo()->SpellName[GetSessionDbcLocale()],
             (itr->second->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
-            IS_PLAYER_GUID(itr->second->GetCasterGUID()) ? "player" : "creature",GUID_LOPART(itr->second->GetCasterGUID()));
+            itr->second->GetCasterGUID().IsPlayer() ? "player" : "creature",itr->second->GetCasterGUID().GetCounter());
     }
     for (int i = 0; i < TOTAL_AURAS; i++)
     {
@@ -386,7 +386,7 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
             bool talent = GetTalentSpellCost(itr->GetId()) > 0;
             PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, itr->GetId(), itr->GetEffIndex(),
                 itr->GetSpellInfo()->SpellName[GetSessionDbcLocale()],(itr->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
-                IS_PLAYER_GUID(itr->GetCasterGUID()) ? "player" : "creature",GUID_LOPART(itr->GetCasterGUID()));
+                itr->GetCasterGUID().IsPlayer() ? "player" : "creature",itr->GetCasterGUID().GetCounter());
         }
     }
     return true;

@@ -411,11 +411,11 @@ void BattlegroundAV::Update(time_t diff)
             // Add auras to marshals/warmasters
             for(const auto & itr : GetPlayers()) {
                 if(Player* plr = sObjectMgr->GetPlayer(itr.first)) {
-                    for (uint64 & m_allianceMarshal : m_allianceMarshals) {
+                    for (ObjectGuid & m_allianceMarshal : m_allianceMarshals) {
                         if (Creature *marshal = plr->GetMap()->GetCreature(m_allianceMarshal))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), TRIGGERED_FULL_MASK);
                     }
-                    for (uint64 & m_hordeMarshal : m_hordeMarshals) {
+                    for (ObjectGuid & m_hordeMarshal : m_hordeMarshals) {
                         if (Creature *marshal = plr->GetMap()->GetCreature(m_hordeMarshal))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), TRIGGERED_FULL_MASK);
                     }
@@ -487,13 +487,13 @@ void BattlegroundAV::Update(time_t diff)
         // Add auras to marshals/warmasters if they don't have it (after reset for example)
         for(const auto & itr : GetPlayers()) {
             if(Player* plr = sObjectMgr->GetPlayer(itr.first)) {
-                for (uint64 & m_allianceMarshal : m_allianceMarshals) {
+                for (ObjectGuid & m_allianceMarshal : m_allianceMarshals) {
                     if (Creature *marshal = plr->GetMap()->GetCreature(m_allianceMarshal)) {
                         if (!marshal->HasAuraEffect(GetAuraFromMarshalEntry(marshal->GetEntry())))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), TRIGGERED_FULL_MASK);
                     }
                 }
-                for (uint64 & m_hordeMarshal : m_hordeMarshals) {
+                for (ObjectGuid & m_hordeMarshal : m_hordeMarshals) {
                     if (Creature *marshal = plr->GetMap()->GetCreature(m_hordeMarshal)) {
                         if (!marshal->HasAuraEffect(GetAuraFromMarshalEntry(marshal->GetEntry())))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), TRIGGERED_FULL_MASK);
@@ -577,7 +577,7 @@ void BattlegroundAV::EndBattleground(uint32 winner)
     Battleground::EndBattleground(winner);
 }
 
-void BattlegroundAV::RemovePlayer(Player* plr,uint64 /*guid*/)
+void BattlegroundAV::RemovePlayer(Player* plr, ObjectGuid /*guid*/)
 {
    if(!plr)
     {
@@ -726,13 +726,13 @@ void BattlegroundAV::EventPlayerDestroyedPoint(BG_AV_Nodes node)
                     break;
                 }
                 if (faction == ALLIANCE) {
-                    for (uint64 & m_allianceMarshal : m_allianceMarshals) {
+                    for (ObjectGuid & m_allianceMarshal : m_allianceMarshals) {
                         if (Creature *marshal = cr->GetMap()->GetCreature(m_allianceMarshal))
                             marshal->RemoveAurasDueToSpell(auraToRemove);
                     }
                 }
                 else if (faction == HORDE) {
-                    for (uint64 & m_hordeMarshal : m_hordeMarshals) {
+                    for (ObjectGuid & m_hordeMarshal : m_hordeMarshals) {
                         if (Creature *marshal = cr->GetMap()->GetCreature(m_hordeMarshal))
                             marshal->RemoveAurasDueToSpell(auraToRemove);
                     }
@@ -1162,7 +1162,7 @@ void BattlegroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
             SpawnBGObject(BG_AV_OBJECT_AURA_N_FIRSTAID_STATION+3*node,RESPAWN_IMMEDIATELY); //neutral aura spawn
             SpawnBGObject(BG_AV_OBJECT_AURA_A_FIRSTAID_STATION+GetTeamIndexByTeamId(owner)+3*node,RESPAWN_ONE_DAY); //teeamaura despawn
             // Those who are waiting to resurrect at this object are taken to the closest own object's graveyard
-            std::vector<uint64> ghost_list = m_ReviveQueue[BgCreatures[node]];
+            std::vector<ObjectGuid> ghost_list = m_ReviveQueue[BgCreatures[node]];
             if( !ghost_list.empty() )
             {
                 Player *plr;
@@ -1598,7 +1598,7 @@ void BattlegroundAV::RemoveMarshalAura(Unit *killer, uint32 entry)
     case 14763:
     case 14764:
     case 14765:
-        for (uint64 & m_allianceMarshal : m_allianceMarshals) {
+        for (ObjectGuid & m_allianceMarshal : m_allianceMarshals) {
             if (Creature *marshal = killer->GetMap()->GetCreature(m_allianceMarshal))
                 marshal->RemoveAurasDueToSpell(GetAuraFromMarshalEntry(entry));
         }
@@ -1607,7 +1607,7 @@ void BattlegroundAV::RemoveMarshalAura(Unit *killer, uint32 entry)
     case 14776:
     case 14772:
     case 14777:
-        for (uint64 & m_hordeMarshal : m_hordeMarshals) {
+        for (ObjectGuid & m_hordeMarshal : m_hordeMarshals) {
             if (Creature *marshal = killer->GetMap()->GetCreature(m_hordeMarshal))
                 marshal->RemoveAurasDueToSpell(GetAuraFromMarshalEntry(entry));
         }

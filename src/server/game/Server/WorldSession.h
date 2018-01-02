@@ -183,7 +183,7 @@ struct CharacterRenameInfo
     friend class WorldSession;
 
     protected:
-        uint64 Guid;
+        ObjectGuid Guid;
         std::string Name;
 };
 
@@ -287,35 +287,35 @@ class TC_GAME_API WorldSession
         /// Handle the authentication waiting queue (to be completed)
         void SendAuthWaitQue(uint32 position);
 
-        //void SendTestCreatureQueryOpcode( uint32 entry, uint64 guid, uint32 testvalue );
-        void SendNameQueryOpcode(uint64 guid);
+        //void SendTestCreatureQueryOpcode( uint32 entry, ObjectGuid guid, uint32 testvalue );
+        void SendNameQueryOpcode(ObjectGuid guid);
 
-        void SendTrainerList( uint64 guid );
-        void SendTrainerList( uint64 guid, const std::string& strTitle );
-        void SendListInventory( uint64 guid );
-        void SendShowBank( uint64 guid );
-        void SendTabardVendorActivate( uint64 guid );
+        void SendTrainerList( ObjectGuid guid );
+        void SendTrainerList( ObjectGuid guid, const std::string& strTitle );
+        void SendListInventory( ObjectGuid guid );
+        void SendShowBank( ObjectGuid guid );
+        void SendTabardVendorActivate( ObjectGuid guid );
         void SendSpiritResurrect();
         void SendBindPoint(Creature* npc);
 
         void SendMeleeAttackStop(Unit const* enemy);
 
-        void SendBattleGroundList( uint64 guid, BattlegroundTypeId bgTypeId );
+        void SendBattleGroundList( ObjectGuid guid, BattlegroundTypeId bgTypeId );
 
         void SendTradeStatus(uint32 status);
         void SendCancelTrade();
         void SendUpdateTrade();
 
-        void SendPetitionQueryOpcode( uint64 petitionguid);
+        void SendPetitionQueryOpcode(ObjectGuid petitionguid);
 
-        void SendMinimapPing(uint64 guid, uint32 x, uint32 y);
+        void SendMinimapPing(ObjectGuid guid, uint32 x, uint32 y);
 
         //pet
-        void SendPetNameQuery(uint64 guid, uint32 petnumber);
-        void SendStablePet(uint64 guid );
-        void SendStablePetCallback(uint64 guid, PreparedQueryResult result);
+        void SendPetNameQuery(ObjectGuid guid, uint32 petnumber);
+        void SendStablePet(ObjectGuid guid );
+        void SendStablePetCallback(ObjectGuid guid, PreparedQueryResult result);
         void SendStableResult(uint8 guid);
-        bool CheckStableMaster(uint64 guid);
+        bool CheckStableMaster(ObjectGuid guid);
 
         //mount
         void SendMountResult(MountResult res);
@@ -347,16 +347,16 @@ class TC_GAME_API WorldSession
         void SendTitleEarned(uint32 titleIndex, bool earned);
 
         //mail
-        static void SendReturnToSender(uint8 messageType, uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid, const std::string& subject, uint32 itemTextId, MailItemsInfo *mi, uint32 money, uint16 mailTemplateId = 0);
-        static void SendMailTo(SQLTransaction& trans, Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
-        static void SendMailTo(Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
+        static void SendReturnToSender(uint8 messageType, uint32 sender_acc, uint32 sender_guid, ObjectGuid::LowType receiver_guid, const std::string& subject, uint32 itemTextId, MailItemsInfo *mi, uint32 money, uint16 mailTemplateId = 0);
+        static void SendMailTo(SQLTransaction& trans, Player* receiver, MailMessageType messageType, uint8 stationery, ObjectGuid::LowType sender_guidlow_or_entry, ObjectGuid::LowType received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
+        static void SendMailTo(Player* receiver, MailMessageType messageType, uint8 stationery, ObjectGuid::LowType sender_guidlow_or_entry, ObjectGuid::LowType received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
 
         //return item name for player local, or default to english if not found
         std::string GetLocalizedItemName(const ItemTemplate* proto);
         std::string GetLocalizedItemName(uint32 itemId);
 
         //auction
-        void SendAuctionHello( uint64 guid, Creature * unit );
+        void SendAuctionHello( ObjectGuid guid, Creature * unit );
         void SendAuctionCommandResult( uint32 auctionId, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
         void SendAuctionBidderNotification( uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 item_template);
         void SendAuctionOwnerNotification( AuctionEntry * auction );
@@ -364,14 +364,14 @@ class TC_GAME_API WorldSession
         void SendAuctionCancelledToBidderMail( AuctionEntry* auction );
 
         //Item Enchantment
-        void SendEnchantmentLog(uint64 Target, uint64 Caster,uint32 ItemID,uint32 SpellID);
-        void SendItemEnchantTimeUpdate(uint64 Playerguid, uint64 Itemguid,uint32 slot,uint32 Duration);
+        void SendEnchantmentLog(ObjectGuid Target, ObjectGuid Caster, uint32 ItemID, uint32 SpellID);
+        void SendItemEnchantTimeUpdate(ObjectGuid Playerguid, ObjectGuid Itemguid,uint32 slot, uint32 Duration);
 
         //clear client target if target has given guid
         void SendClearTarget(uint64 target);
 
         //Taxi
-        void SendTaxiStatus( uint64 guid );
+        void SendTaxiStatus( ObjectGuid guid );
         void SendTaxiMenu(Creature* unit );
         void SendDoFlight(uint32 mountDisplayId, uint32 path, uint32 pathNode = 0);
         bool SendLearnNewTaxiNode( Creature* unit );
@@ -382,7 +382,7 @@ class TC_GAME_API WorldSession
         void SendArenaTeamCommandResult(uint32 team_action, const std::string& team, const std::string& player, uint32 error_id);
         void BuildArenaTeamEventPacket(WorldPacket *data, uint8 eventid, uint8 str_count, const std::string& str1, const std::string& str2, const std::string& str3);
         void SendNotInArenaTeamPacket(uint8 type);
-        void SendPetitionShowList( uint64 guid );
+        void SendPetitionShowList( ObjectGuid guid );
         void SendSaveGuildEmblem( uint32 msg );
 
         // Dynamic map data
@@ -398,7 +398,7 @@ class TC_GAME_API WorldSession
 
         void BuildPartyMemberStatsChangedPacket(Player *player, WorldPacket *data);
 
-        void DoLootRelease( uint64 lguid );
+        void DoLootRelease(ObjectGuid lguid);
         
         // Account mute time
         time_t m_muteTime;
@@ -771,7 +771,7 @@ class TC_GAME_API WorldSession
         void HandleTutorialReset( WorldPacket & recvData );
 
         //Pet
-		void HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid, uint16 flag, uint64 guid2);
+		void HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spellid, uint16 flag, ObjectGuid guid2);
         void HandlePetAction( WorldPacket & recvData );
         void HandlePetStopAttack(WorldPacket& recvData);
         void HandlePetNameQuery( WorldPacket & recvData );
@@ -936,7 +936,7 @@ class TC_GAME_API WorldSession
         void LogUnprocessedTail(WorldPacket* packet);
 
         // EnumData helpers
-        bool IsLegitCharacterForAccount(uint32 lowGUID)
+        bool IsLegitCharacterForAccount(ObjectGuid::LowType lowGUID)
         {
             return _legitCharacters.find(lowGUID) != _legitCharacters.end();
         }

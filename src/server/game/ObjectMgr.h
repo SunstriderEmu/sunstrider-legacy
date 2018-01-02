@@ -311,9 +311,6 @@ struct CellObjectGuids
 typedef std::unordered_map<uint32/*cell_id*/,CellObjectGuids> CellObjectGuidsMap;
 typedef std::unordered_map<uint32/*(mapid,spawnMode) pair*/,CellObjectGuidsMap> MapObjectGuids;
 
-typedef std::unordered_map<uint64/*(instance,guid) pair*/,time_t> RespawnTimes;
-
-
 // mangos string ranges
 #define MIN_TRINITY_STRING_ID    1
 #define MAX_TRINITY_STRING_ID    2000000000
@@ -478,7 +475,7 @@ SkillRangeType GetSkillRangeType(SkillRaceClassInfoEntry const* rcEntry);
 struct GM_Ticket
 {
   uint64 guid;
-  uint64 playerGuid;
+  ObjectGuid playerGuid;
   float pos_x;
   float pos_y;
   float pos_z;
@@ -487,7 +484,7 @@ struct GM_Ticket
   uint64 createtime;
   uint64 timestamp;
   int64 closed; // 0 = Open, -1 = Console, playerGuid = player abandoned ticket, other = GM who closed it.
-  uint64 assignedToGM;
+  ObjectGuid assignedToGM;
   std::string comment;
 };
 typedef std::list<GM_Ticket*> GmTicketList;
@@ -623,9 +620,9 @@ class TC_GAME_API ObjectMgr
         std::unordered_map<uint32, uint32> TransportEventMap;
 
         //Get player in world by high guid
-        Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
+        Player* GetPlayer(ObjectGuid guid) const { return ObjectAccessor::FindPlayer(guid); }
         //Get player in world by low guid
-        Player* GetPlayer(uint32 lowguid) const { return ObjectAccessor::FindPlayer(MAKE_NEW_GUID(lowguid,0,HighGuid::Player)); }
+        Player* GetPlayer(ObjectGuid::LowType lowguid) const { return ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, lowguid)); }
 
         GameObjectTemplate const* GetGameObjectTemplate(uint32 id);
         GameObjectTemplateContainer const* GetGameObjectTemplateStore() const { return &_gameObjectTemplateStore; }
@@ -634,16 +631,16 @@ class TC_GAME_API ObjectMgr
         void LoadGameObjectTemplate();
         void AddGameObjectTemplate(GameObjectTemplate *goinfo);
 
-        Group * GetGroupByLeader(const uint64 &guid) const;
+        Group* GetGroupByLeader(ObjectGuid guid) const;
         void AddGroup(Group* group) { mGroupSet.insert( group ); }
         void RemoveGroup(Group* group) { mGroupSet.erase( group ); }
         GroupSet::iterator GetGroupSetBegin() { return mGroupSet.begin(); }
         GroupSet::iterator GetGroupSetEnd()   { return mGroupSet.end(); }
 
 
-        bool IsGuildLeader(uint64 const&guid) const;
+        bool IsGuildLeader(ObjectGuid const&guid) const;
 
-        Guild* GetGuildByLeader(uint64 const&guid) const;
+        Guild* GetGuildByLeader(ObjectGuid const&guid) const;
         Guild* GetGuildById(const uint32 GuildId);
         Guild* GetGuildByName(const std::string& guildname);
         std::string GetGuildNameById(const uint32 GuildId);
@@ -658,8 +655,8 @@ class TC_GAME_API ObjectMgr
         ArenaTeam* GetArenaTeamById(const uint32 arenateamid);
         ArenaTeam* GetArenaTeamByName(const std::string& arenateamname);
 
-        ArenaTeam* _GetArenaTeamByCaptain(uint64 const& guid) const;
-        bool IsArenaTeamCaptain(uint64 const& guid) const;
+        ArenaTeam* _GetArenaTeamByCaptain(ObjectGuid const& guid) const;
+        bool IsArenaTeamCaptain(ObjectGuid const& guid) const;
 
         //Add a team to the team list. Given team object will be destroyed upon ObjectMgr destruction.
         void AddArenaTeam(ArenaTeam* arenaTeam);
@@ -675,7 +672,7 @@ class TC_GAME_API ObjectMgr
         CreatureModelInfo const* GetCreatureModelRandomGender(uint32& displayID);
         static uint32 ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureData *data = nullptr);
         EquipmentInfo const* GetEquipmentInfo(uint32 entry, int8& id) const;
-        CreatureAddon const* GetCreatureAddon(uint32 lowguid) const;
+        CreatureAddon const* GetCreatureAddon(ObjectGuid::LowType lowguid) const;
         CreatureAddon const* GetCreatureTemplateAddon(uint32 entry) const;
 
         ItemTemplate const* GetItemTemplate(uint32 id);
@@ -963,14 +960,14 @@ class TC_GAME_API ObjectMgr
         }
         void OnDeleteSpawnData(SpawnData const* data);
         CreatureDataContainer const& GetAllCreatureData() const { return _creatureDataStore; }
-        CreatureData const* GetCreatureData(uint32 guid) const
+        CreatureData const* GetCreatureData(ObjectGuid::LowType guid) const
         {
             auto itr = _creatureDataStore.find(guid);
             if(itr==_creatureDataStore.end()) return nullptr;
             return &itr->second;
         }
-        CreatureData& NewOrExistCreatureData(uint32 guid) { return _creatureDataStore[guid]; }
-        void DeleteCreatureData(uint32 guid);
+        CreatureData& NewOrExistCreatureData(ObjectGuid::LowType guid) { return _creatureDataStore[guid]; }
+        void DeleteCreatureData(ObjectGuid::LowType guid);
         ObjectGuid GetLinkedRespawnGuid(ObjectGuid guid) const
         {
             LinkedRespawnContainer::const_iterator itr = _linkedRespawnStore.find(guid);
@@ -1028,7 +1025,7 @@ class TC_GAME_API ObjectMgr
             return &itr->second;
         }
 
-        GameObjectData const* GetGameObjectData(uint32 guid) const
+        GameObjectData const* GetGameObjectData(ObjectGuid::LowType guid) const
         {
             auto itr = _gameObjectDataStore.find(guid);
             if(itr == _gameObjectDataStore.end()) 
@@ -1041,8 +1038,8 @@ class TC_GAME_API ObjectMgr
             return _gameObjectDataStore;
         }
 
-        GameObjectData& NewOrExistGameObjectData(uint32 guid) { return _gameObjectDataStore[guid]; }
-        void DeleteGameObjectData(uint32 guid);
+        GameObjectData& NewOrExistGameObjectData(ObjectGuid::LowType guid) { return _gameObjectDataStore[guid]; }
+        void DeleteGameObjectData(ObjectGuid::LowType guid);
 
         TrinityStringLocale const* GetTrinityStringLocale(int32 entry) const
         {
@@ -1069,10 +1066,10 @@ class TC_GAME_API ObjectMgr
 		*/
 
         // grid objects. Grids object are only used to load new cells
-        void AddCreatureToGrid(uint32 guid, CreatureData const* data);
-        void RemoveCreatureFromGrid(uint32 guid, CreatureData const* data);
-        void AddGameobjectToGrid(uint32 guid, GameObjectData const* data);
-        void RemoveGameobjectFromGrid(uint32 guid, GameObjectData const* data);
+        void AddCreatureToGrid(ObjectGuid::LowType guid, CreatureData const* data);
+        void RemoveCreatureFromGrid(ObjectGuid::LowType guid, CreatureData const* data);
+        void AddGameobjectToGrid(ObjectGuid::LowType guid, GameObjectData const* data);
+        void RemoveGameobjectFromGrid(ObjectGuid::LowType guid, GameObjectData const* data);
         uint32 AddGameObjectData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0, float rotation0 = 0, float rotation1 = 0, float rotation2 = 0, float rotation3 = 0);
         uint32 AddCreatureData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0);
 
@@ -1141,7 +1138,7 @@ class TC_GAME_API ObjectMgr
             return _gossipMenuItemsStore.equal_range(uiMenuId);
         }
 
-        uint32 GetNpcGossipMenu(uint32 guid) const
+        uint32 GetNpcGossipMenu(ObjectGuid::LowType guid) const
         {
             auto iter = m_mCacheNpcMenuIdMap.find(guid);
             if(iter == m_mCacheNpcMenuIdMap.end())
@@ -1150,7 +1147,7 @@ class TC_GAME_API ObjectMgr
             return iter->second;
         }
 
-        uint32 GetGameobjectGossipMenu(uint32 guid) const
+        uint32 GetGameobjectGossipMenu(ObjectGuid::LowType guid) const
         {
             auto iter = m_mCacheGoMenuIdMap.find(guid);
             if(iter == m_mCacheGoMenuIdMap.end())
@@ -1188,7 +1185,7 @@ class TC_GAME_API ObjectMgr
         uint32 GetScriptId(std::string const& name);
 
         GM_Ticket* GetGMTicket(uint64 ticketGuid);
-        GM_Ticket* GetGMTicketByPlayer(uint64 playerGuid);
+        GM_Ticket* GetGMTicketByPlayer(ObjectGuid playerGuid);
         void AddOrUpdateGMTicket(GM_Ticket &ticket, bool create = false);
         void _AddOrUpdateGMTicket(GM_Ticket &ticket);
         void RemoveGMTicket(uint64 ticketGuid, int64 source = -1, bool permanently = false);
@@ -1196,13 +1193,6 @@ class TC_GAME_API ObjectMgr
         GmTicketList m_GMTicketList;
         uint64 GenerateGMTicketId();
 
-        uint32 GetLoadedScriptsStats(uint32& entryLoaded, uint32& guidLoaded)
-        {
-            entryLoaded = m_creatureScriptsByEntry.size();
-            guidLoaded = m_creatureScriptsByGUID.size();
-            return 0;
-        }
-        
         typedef std::map<uint32, uint32> FactionChangeMap;
         
         FactionChangeMap factionchange_items;
@@ -1296,11 +1286,6 @@ class TC_GAME_API ObjectMgr
 
         ScriptNameContainer  _scriptNamesStore;
         
-        typedef std::map<uint32, std::string> EntryScriptsMap;
-        EntryScriptsMap m_creatureScriptsByEntry;
-        typedef std::map<uint64, std::string> GUIDScriptsMap;
-        GUIDScriptsMap m_creatureScriptsByGUID;
-
         LocaleConstant DBCLocaleIndex;
 
         PageTextContainer _pageTextStore;

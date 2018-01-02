@@ -378,8 +378,6 @@ typedef std::map<RepListID,FactionState> FactionStateList;
 
 typedef std::map<uint32,ReputationRank> ForcedReactions;
 
-typedef std::set<uint64> GuardianPetList;
-
 struct EnchantDuration
 {
     EnchantDuration() : item(nullptr), slot(MAX_ENCHANTMENT_SLOT), leftduration(0) {};
@@ -1101,15 +1099,15 @@ enum PlayerCommandStates
 struct SpamReport
 {
     time_t time;
-    uint64 reporterGUID;
+    ObjectGuid reporterGUID;
     std::string message;
 };
 
-typedef std::map<uint32, SpamReport> SpamReports;
+typedef std::map<ObjectGuid::LowType, SpamReport> SpamReports;
 
 struct Gladiator {
-    Gladiator(uint32 guid, uint8 r) : playerguid(guid), rank(r) {}
-    uint32 playerguid;
+    Gladiator(ObjectGuid::LowType guid, uint8 r) : playerguid(guid), rank(r) {}
+    ObjectGuid::LowType playerguid;
     uint8 rank;
 };
 
@@ -1117,11 +1115,11 @@ class LoginQueryHolder : public SQLQueryHolder
 {
 private:
     uint32 m_accountId;
-    uint64 m_guid;
+    ObjectGuid m_guid;
 public:
-    LoginQueryHolder(uint32 accountId, uint64 guid)
+    LoginQueryHolder(uint32 accountId, ObjectGuid guid)
         : m_accountId(accountId), m_guid(guid) { }
-    uint64 GetGuid() const { return m_guid; }
+    ObjectGuid GetGuid() const { return m_guid; }
     uint32 GetAccountId() const { return m_accountId; }
     bool Initialize();
 };
@@ -1197,8 +1195,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdateSummonExpireTime() { m_summon_expire = time(nullptr) + MAX_PLAYER_SUMMON_DELAY; }
         time_t GetSummonExpireTimer() const { return m_summon_expire; }
 
-        bool Create(uint32 guidlow, CharacterCreateInfo* createInfo);
-        bool Create( uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId);
+        bool Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo);
+        bool Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId);
         virtual void SetMapAtCreation(PlayerInfo const* info);
 
         void Update( uint32 time ) override;
@@ -1219,9 +1217,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendInstanceResetWarning(uint32 mapid, uint32 time);
 
         bool CanInteractWithQuestGiver(Object* questGiver);
-        Creature* GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask = UNIT_NPC_FLAG_NONE);
-        GameObject* GetGameObjectIfCanInteractWith(uint64 guid) const;
-        GameObject* GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type) const;
+        Creature* GetNPCIfCanInteractWith(ObjectGuid guid, uint32 npcflagmask = UNIT_NPC_FLAG_NONE);
+        GameObject* GetGameObjectIfCanInteractWith(ObjectGuid guid) const;
+        GameObject* GetGameObjectIfCanInteractWith(ObjectGuid guid, GameobjectTypes type) const;
 
         void ToggleAFK();
         void ToggleDND();
@@ -1317,9 +1315,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetSheath(SheathState sheathed ) override;
         uint8 FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap ) const;
         uint32 GetItemCount( uint32 item, bool inBankAlso = false, Item* skipItem = nullptr ) const;
-        Item* GetItemByGuid( uint64 guid ) const;
+        Item* GetItemByGuid(ObjectGuid guid ) const;
         Item* GetItemByPos( uint16 pos ) const;
         Item* GetItemByPos( uint8 bag, uint8 slot ) const;
+        Bag*  GetBagByPos(uint8 slot) const;
         //Does additional check for disarmed weapons
         Item* GetUseableItemByPos(uint8 bag, uint8 slot) const;
         Item* GetWeaponForAttack(WeaponAttackType attackType, bool useable = false) const;
@@ -1411,7 +1410,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 GetMaxKeyringSize() const { return KEYRING_SLOT_END-KEYRING_SLOT_START; }
         void SendEquipError( uint8 msg, Item* pItem, Item *pItem2 );
         void SendBuyError( uint8 msg, Creature* pCreature, uint32 item, uint32 param );
-        void SendSellError( uint8 msg, Creature* pCreature, uint64 guid, uint32 param );
+        void SendSellError( uint8 msg, Creature* pCreature, ObjectGuid guid, uint32 param );
         void AddWeaponProficiency(uint32 newflag) { m_WeaponProficiency |= newflag; }
         void AddArmorProficiency(uint32 newflag) { m_ArmorProficiency |= newflag; }
         uint32 GetWeaponProficiency() const { return m_WeaponProficiency; }
@@ -1423,7 +1422,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
             return !IsInFeralForm() && (!mainhand || !HasFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISARMED) );
         }
         void SendNewItem( Item *item, uint32 count, bool received, bool created, bool broadcast = false, bool sendChatMessage = true);
-        bool BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint64 bagguid, uint8 slot);
+        bool BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 item, uint8 count, uint8 bag, uint8 slot);
 
         float GetReputationPriceDiscount( Creature const* pCreature ) const;
         float GetReputationPriceDiscount(FactionTemplateEntry const* factionTemplate) const;
@@ -1456,10 +1455,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /***                    QUEST SYSTEM                   ***/
         /*********************************************************/
 
-        void PrepareQuestMenu( uint64 guid );
-        void SendPreparedQuest( uint64 guid );
+        void PrepareQuestMenu(ObjectGuid guid );
+        void SendPreparedQuest(ObjectGuid guid );
         bool IsActiveQuest( uint32 quest_id ) const;
-        Quest const *GetNextQuest( uint64 guid, Quest const *pQuest );
+        Quest const *GetNextQuest(ObjectGuid guid, Quest const *pQuest );
         bool CanSeeStartQuest( Quest const *pQuest );
         bool CanTakeQuest( Quest const *pQuest, bool msg );
         bool CanAddQuest( Quest const *pQuest, bool msg );
@@ -1533,10 +1532,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void GroupEventHappens( uint32 questId, WorldObject const* pEventObject );
         void ItemAddedQuestCheck( uint32 entry, uint32 count );
         void ItemRemovedQuestCheck( uint32 entry, uint32 count );
-        void KilledMonsterCredit(uint32 entry, uint64 guid, uint32 questId = 0);
-        void ActivatedGO(uint32 entry, uint64 guid);
-        void CastedCreatureOrGO( uint32 entry, uint64 guid, uint32 spell_id );
-        void TalkedToCreature( uint32 entry, uint64 guid );
+        void KilledMonsterCredit(uint32 entry, ObjectGuid guid, uint32 questId = 0);
+        void ActivatedGO(uint32 entry, ObjectGuid guid);
+        void CastedCreatureOrGO( uint32 entry, ObjectGuid guid, uint32 spell_id );
+        void TalkedToCreature( uint32 entry, ObjectGuid guid );
         void MoneyChanged( uint32 value );
         bool HasQuestForItem( uint32 itemid ) const;
         bool HasQuestForGO(int32 GOId);
@@ -1551,10 +1550,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendQuestConfirmAccept(Quest const* pQuest, Player* pReceiver);
         void SendPushToPartyResponse( Player *pPlayer, uint32 msg );
         void SendQuestUpdateAddItem( Quest const* pQuest, uint32 item_idx, uint32 count );
-        void SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, uint64 guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count );
+        void SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, ObjectGuid guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count );
 
-        uint64 GetDivider() { return m_divider; };
-        void SetDivider( uint64 guid ) { m_divider = guid; };
+        ObjectGuid GetDivider() { return m_divider; };
+        void SetDivider(ObjectGuid guid) { m_divider = guid; };
 
         uint32 GetInGameTime() { return m_ingametime; };
 
@@ -1567,14 +1566,14 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /*********************************************************/
 
         bool LoadFromDB(uint32 guid, SQLQueryHolder *holder);
-        static bool   LoadValuesArrayFromDB(Tokens& data,uint64 guid);
+        static bool   LoadValuesArrayFromDB(Tokens& data,ObjectGuid guid);
         static uint32 GetUInt32ValueFromArray(Tokens const& data, uint16 index);
         static float  GetFloatValueFromArray(Tokens const& data, uint16 index);
-        static uint32 GetUInt32ValueFromDB(uint16 index, uint64 guid);
-        static float  GetFloatValueFromDB(uint16 index, uint64 guid);
-        static uint32 GetZoneIdFromDB(uint64 guid);
-        static uint32 GetLevelFromStorage(uint64 guid);
-        static bool   LoadPositionFromDB(uint32& mapid, float& x,float& y,float& z,float& o, bool& in_flight, uint64 guid);
+        static uint32 GetUInt32ValueFromDB(uint16 index, ObjectGuid guid);
+        static float  GetFloatValueFromDB(uint16 index, ObjectGuid guid);
+        static uint32 GetZoneIdFromDB(ObjectGuid guid);
+        static uint32 GetLevelFromStorage(ObjectGuid guid);
+        static bool   LoadPositionFromDB(uint32& mapid, float& x,float& y,float& z,float& o, bool& in_flight, ObjectGuid guid);
 
         static bool IsValidGender(uint8 Gender) { return Gender <= GENDER_FEMALE; }
 
@@ -1586,18 +1585,18 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         virtual void SaveInventoryAndGoldToDB(SQLTransaction trans);                    // fast save function for item/money cheating preventing
         virtual void SaveGoldToDB(SQLTransaction trans);
         virtual void SaveDataFieldToDB();
-        static bool SaveValuesArrayInDB(Tokens const& data,uint64 guid);
+        static bool SaveValuesArrayInDB(Tokens const& data,ObjectGuid guid);
         static void SetUInt32ValueInArray(Tokens& data,uint16 index, uint32 value);
         static void SetFloatValueInArray(Tokens& data,uint16 index, float value);
-        static void SetUInt32ValueInDB(uint16 index, uint32 value, uint64 guid);
-        static void SetFloatValueInDB(uint16 index, float value, uint64 guid);
-        static void SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint32 zone,uint64 guid);
+        static void SetUInt32ValueInDB(uint16 index, uint32 value, ObjectGuid guid);
+        static void SetFloatValueInDB(uint16 index, float value, ObjectGuid guid);
+        static void SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint32 zone,ObjectGuid guid);
 
         bool m_mailsLoaded;
         bool m_mailsUpdated;
 
-        void SetBindPoint(uint64 guid);
-        void SendTalentWipeConfirm(uint64 guid);
+        void SetBindPoint(ObjectGuid guid);
+        void SendTalentWipeConfirm(ObjectGuid guid);
         void RewardRage( uint32 damage, uint32 weaponSpeedHitFactor, bool attacker );
         void SendPetSkillWipeConfirm();
         //void CalcRage( uint32 damage,bool attacker );
@@ -1628,18 +1627,18 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Unit* GetSelectedUnit() const;
         Player* GetSelectedPlayer() const;
 
-        void SetTarget(uint64 /*guid*/) override { } /// Used for serverside target changes, does not apply to players
-        void SetSelection(uint64 guid) { SetUInt64Value(UNIT_FIELD_TARGET, guid); }
+        void SetTarget(ObjectGuid /*guid*/) override { } /// Used for serverside target changes, does not apply to players
+        void SetSelection(ObjectGuid guid) { SetGuidValue(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() { return m_comboPoints; }
         uint8 GetComboPoints(Unit const* who = nullptr) const { return (who && m_comboTarget != who->GetGUID()) ? 0 : m_comboPoints; }
-        uint64 GetComboTarget() { return m_comboTarget; }
+        ObjectGuid GetComboTarget() { return m_comboTarget; }
 
         void AddComboPoints(Unit* target, int8 count, bool forceCurrent = false);
         void ClearComboPoints(uint32 spellId = 0);
         void SendComboPoints();
 
-        void SendMailResult(uint32 mailId, uint32 mailAction, uint32 mailError, uint32 equipError = 0, uint32 item_guid = 0, uint32 item_count = 0);
+        void SendMailResult(uint32 mailId, uint32 mailAction, uint32 mailError, uint32 equipError = 0, ObjectGuid::LowType item_guid = 0, uint32 item_count = 0);
         void SendNewMail();
         void UpdateNextMailTimeAndUnreads();
         void AddNewMailDeliverTime(time_t deliver_time);
@@ -1679,7 +1678,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         {
             ASSERT( it );
             //assert deleted, because items can be added before loading
-            mMitems[it->GetGUIDLow()] = it;
+            mMitems[it->GetGUID().GetCounter()] = it;
         }
 
         bool RemoveMItem(uint32 id)
@@ -1772,7 +1771,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HasGlobalCooldown(SpellInfo const *spellInfo) const;
         void RemoveGlobalCooldown(SpellInfo const *spellInfo);
 
-        void setResurrectRequestData(uint64 guid, uint32 mapId, float X, float Y, float Z, uint32 health, uint32 mana)
+        void setResurrectRequestData(ObjectGuid guid, uint32 mapId, float X, float Y, float Z, uint32 health, uint32 mana)
         {
             m_resurrectGUID = guid;
             m_resurrectMap = mapId;
@@ -1782,8 +1781,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
             m_resurrectHealth = health;
             m_resurrectMana = mana;
         };
-        void clearResurrectRequestData() { setResurrectRequestData(0,0,0.0f,0.0f,0.0f,0,0); }
-        bool isRessurectRequestedBy(uint64 guid) const { return m_resurrectGUID != 0 && m_resurrectGUID == guid; }
+        void clearResurrectRequestData() { setResurrectRequestData(ObjectGuid::Empty, 0, 0.0f, 0.0f, 0.0f, 0, 0); }
+        bool isRessurectRequestedBy(ObjectGuid guid) const { return m_resurrectGUID != 0 && m_resurrectGUID == guid; }
         bool isRessurectRequested() const { return m_resurrectGUID != 0; }
         void RessurectUsingRequestData();
 
@@ -1841,7 +1840,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool IsInSameGroupWith(Player const* p) const;
         bool IsInSameRaidWith(Player const* p) const { return p==this || (GetGroup() != nullptr && GetGroup() == p->GetGroup()); }
         void UninviteFromGroup();
-        static void RemoveFromGroup(Group* group, uint64 guid);
+        static void RemoveFromGroup(Group* group, ObjectGuid guid);
         void RemoveFromGroup() { RemoveFromGroup(GetGroup(),GetGUID()); }
         void SendUpdateToOutOfRangeGroupMembers();
 
@@ -1852,12 +1851,12 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Guild* GetGuild() const;
         uint32 GetRank() const;
         int GetGuildIdInvited() const { return _guildIdInvited; }
-        static void RemovePetitionsAndSigns(uint64 guid, uint32 type, SQLTransaction trans);
-        static uint32 GetGuildIdFromCharacterInfo(uint32 guid);
+        static void RemovePetitionsAndSigns(ObjectGuid guid, uint32 type, SQLTransaction trans);
+        static uint32 GetGuildIdFromCharacterInfo(ObjectGuid::LowType guid);
 
         // Arena Team
         void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot);
-        static uint32 GetArenaTeamIdFromCharacterInfo(uint64 guid, uint8 slot);
+        static uint32 GetArenaTeamIdFromCharacterInfo(ObjectGuid guid, uint8 slot);
         uint32 GetArenaTeamId(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6)); }
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { _arenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() const { return _arenaTeamIdInvited; }
@@ -1924,8 +1923,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdateExpertise(WeaponAttackType attType);
         void UpdateManaRegen();
 
-        const uint64& GetLootGUID() const { return m_lootGuid; }
-        void SetLootGUID(const uint64 &guid) { m_lootGuid = guid; }
+        ObjectGuid GetLootGUID() const { return m_lootGuid; }
+        void SetLootGUID(ObjectGuid guid) { m_lootGuid = guid; }
 
         void RemovedInsignia(Player* looterPlr);
 
@@ -1978,8 +1977,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         * @param updateRealmChars when this flag is set, the amount of characters on that realm will be updated in the realmlist
         * @param deleteFinally    if this flag is set, the character will be permanently removed from the database
         */
-        static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true, bool deleteFinally = false);
-        static void LeaveAllArenaTeams(uint64 guid);
+        static void DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRealmChars = true, bool deleteFinally = false);
+        static void LeaveAllArenaTeams(ObjectGuid guid);
         static void DeleteOldCharacters();
 
         Corpse *GetCorpse() const;
@@ -2163,9 +2162,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         PlayerMenu* PlayerTalkClass;
         std::vector<ItemSetEffect *> ItemSetEff;
 
-        void SendLoot(uint64 guid, LootType loot_type);
-        void SendLootError(uint64 guid, LootError error);
-        void SendLootRelease( uint64 guid );
+        void SendLoot(ObjectGuid guid, LootType loot_type);
+        void SendLootError(ObjectGuid guid, LootError error);
+        void SendLootRelease( ObjectGuid guid );
         void SendNotifyLootItemRemoved(uint8 lootSlot);
         void SendNotifyLootMoneyRemoved();
 
@@ -2435,8 +2434,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetGender(uint8 gender) { m_gender = gender; }
         void SetRace(uint8 newrace) { m_race = newrace; } // Race/Faction change
         
-        void SetSpiritRedeptionKiller(uint64 killerGUID) { m_spiritRedemptionKillerGUID = killerGUID; }
-        uint64 GetSpiritRedemptionKiller() { return m_spiritRedemptionKillerGUID; }
+        void SetSpiritRedeptionKiller(ObjectGuid killerGUID) { m_spiritRedemptionKillerGUID = killerGUID; }
+        ObjectGuid GetSpiritRedemptionKiller() { return m_spiritRedemptionKillerGUID; }
 
         bool hasCustomXpRate() const { return m_customXp != 0.0f; }
         float getCustomXpRate() const { return m_customXp; }
@@ -2452,7 +2451,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void setCommentator(bool on);
 
-        void addSpamReport(uint64 reporterGUID, std::string message);
+        void addSpamReport(ObjectGuid reporterGUID, std::string message);
         time_t lastLagReport;
         
         std::vector<Item*> m_itemUpdateQueue;
@@ -2502,7 +2501,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         std::set<uint32> m_timedquests;
 
-        uint64 m_divider;
+        ObjectGuid m_divider;
         uint32 m_ingametime;
 
         /*********************************************************/
@@ -2567,7 +2566,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         time_t m_lastHonorUpdateTime;
 
         bool _removeSpell(uint16 spell_id);
-        uint64 m_lootGuid;
+        ObjectGuid m_lootGuid;
 
         uint8 m_race;
         uint8 m_class;
@@ -2585,7 +2584,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         uint32 m_ExtraFlags;
 
-        uint64 m_comboTarget;
+        ObjectGuid m_comboTarget;
         int8 m_comboPoints;
 
         QuestStatusMap m_QuestStatus;
@@ -2618,7 +2617,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void ResetTimeSync();
         void SendTimeSync();
 
-        uint64 m_resurrectGUID;
+        ObjectGuid m_resurrectGUID;
         uint32 m_resurrectMap;
         float m_resurrectX, m_resurrectY, m_resurrectZ;
         uint32 m_resurrectHealth, m_resurrectMana;
@@ -2674,7 +2673,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         //movement anticheat
         uint32 m_anti_lastmovetime;     //last movement time
-        uint64 m_anti_transportGUID;    //current transport GUID
+        ObjectGuid m_anti_transportGUID;    //current transport GUID
         float  m_anti_MovedLen;         //Length of traveled way
         uint32 m_anti_NextLenCheck;
         uint32 m_anti_beginfalltime;    //alternative falling begin time
@@ -2713,8 +2712,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         PlayerbotMgr* m_playerbotMgr;
 #endif
 
-        //GuardianPetList m_guardianPets;
-
         // Player summoning
         time_t m_summon_expire;
         uint32 m_summon_mapid;
@@ -2729,7 +2726,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool m_isXpBlocked;
         
         // Spirit of Redemption
-        uint64 m_spiritRedemptionKillerGUID;
+        ObjectGuid m_spiritRedemptionKillerGUID;
         
         time_t _attackersCheckTime;
         

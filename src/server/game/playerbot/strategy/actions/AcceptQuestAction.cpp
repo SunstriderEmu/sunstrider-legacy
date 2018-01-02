@@ -17,7 +17,7 @@ bool AcceptQuestAction::Execute(Event event)
         return false;
 
     //Player* _bot = ai->GetBot();
-    uint64 guid;
+    ObjectGuid guid;
     uint32 quest;
 
     std::string text = event.getParam();

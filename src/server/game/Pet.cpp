@@ -135,7 +135,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 {
     m_loading = true;
 
-    uint32 ownerid = owner->GetGUIDLow();
+    uint32 ownerid = owner->GetGUID().GetCounter();
     Unit* target = nullptr;
 
     QueryResult result;
@@ -184,7 +184,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     }
 
     Map *map = owner->GetMap();
-    uint32 guid = map->GenerateLowGuid<HighGuid::Pet>();
+    ObjectGuid::LowType guid = map->GenerateLowGuid<HighGuid::Pet>();
     uint32 pet_number = fields[0].GetUInt32();
     if(!Create(guid, map, owner->GetPhaseMask(), petentry, pet_number))
     {
@@ -223,7 +223,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if(!IsPositionValid())
     {
         TC_LOG_ERROR("entities.pet","ERROR: Pet (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",
-            GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
+            GetGUID().GetCounter(), GetEntry(), GetPositionX(), GetPositionY());
         return false;
     }
 
@@ -407,7 +407,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     //Declined names
     if(owner->GetTypeId() == TYPEID_PLAYER && getPetType() == HUNTER_PET)
     {
-        result = CharacterDatabase.PQuery("SELECT genitive, dative, accusative, instrumental, prepositional FROM character_pet_declinedname WHERE owner = '%u' AND id = '%u'", owner->GetGUIDLow(), GetCharmInfo()->GetPetNumber());
+        result = CharacterDatabase.PQuery("SELECT genitive, dative, accusative, instrumental, prepositional FROM character_pet_declinedname WHERE owner = '%u' AND id = '%u'", owner->GetGUID().GetCounter(), GetCharmInfo()->GetPetNumber());
 
         if(result)
         {
@@ -476,7 +476,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
 #endif
 
     // dont save not player pets
-    if (!IS_PLAYER_GUID(GetOwnerGUID()))
+    if (!GetOwnerGUID().IsPlayer())
         return;
 
     uint32 curhealth = GetHealth();
@@ -494,7 +494,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
 
     if (mode >= PET_SAVE_AS_CURRENT) //every mode but PET_SAVE_AS_DELETED
     {
-        uint32 owner = GUID_LOPART(GetOwnerGUID());
+        ObjectGuid::LowType owner = GetOwnerGUID().GetCounter();
         std::string name = m_name;
         CharacterDatabase.EscapeString(name);
         // remove current data
@@ -554,7 +554,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
     }
 }
 
-void Pet::DeleteFromDB(uint32 guidlow)
+void Pet::DeleteFromDB(ObjectGuid::LowType guidlow)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM character_pet WHERE id = '%u'", guidlow);
@@ -868,7 +868,7 @@ int32 Pet::GetTPForSpell(uint32 spellid)
 uint32 Pet::GetMaxLoyaltyPoints(uint32 level)
 {
     if (!level) {
-        TC_LOG_ERROR("entities.pet","CRASH ALERT: Called Pet::GetMaxLoyaltyPoints with level 0 for creature entry %u, owner %s (GUID %u). Incrementing it to prevent crash.", GetEntry(), GetOwner() ? GetOwner()->GetName().c_str() : "unknown", GetOwner() ? GetOwner()->GetGUIDLow() : 0);
+        TC_LOG_ERROR("entities.pet","CRASH ALERT: Called Pet::GetMaxLoyaltyPoints with level 0 for creature entry %u, owner %s (GUID %u). Incrementing it to prevent crash.", GetEntry(), GetOwner() ? GetOwner()->GetName().c_str() : "unknown", GetOwner() ? GetOwner()->GetGUID().GetCounter() : 0);
         ++level;
     }
 
@@ -1036,7 +1036,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     if(!IsPositionValid())
     {
         TC_LOG_ERROR("entities.pet","ERROR: Pet (guidlow %d, entry %d) not created base at creature. Suggested coordinates isn't valid (X: %f Y: %f)",
-            GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
+            GetGUID().GetCounter(), GetEntry(), GetPositionX(), GetPositionY());
         return false;
     }
 
@@ -1509,7 +1509,7 @@ void Pet::_LoadAuras(uint32 timediff)
         do
         {
             Field *fields = result->Fetch();
-            uint64 caster_guid = fields[0].GetUInt64();
+            ObjectGuid caster_guid = ObjectGuid(fields[0].GetUInt64());
             uint32 spellid = fields[1].GetUInt32();
             uint32 effindex = fields[2].GetUInt32();
             uint32 stackcount= fields[3].GetUInt32();
@@ -1611,7 +1611,7 @@ void Pet::_SaveAuras(SQLTransaction& trans)
         }
 
         // don't save guid of caster in case we are caster of the spell - guid for pet is generated every pet load, so it won't match saved guid anyways
-        uint64 casterGUID = (aura->GetCasterGUID() == GetGUID()) ? 0 : aura->GetCasterGUID();
+        ObjectGuid casterGUID = (aura->GetCasterGUID() == GetGUID()) ? ObjectGuid::Empty : aura->GetCasterGUID();
 
         trans->PAppend("INSERT INTO pet_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges)"
             "VALUES ('%u', '" UI64FMTD "', '%u', '%u', '%u', '%d', '%d', '%d', '%d')",
@@ -1995,7 +1995,7 @@ void Pet::ToggleAutocast(SpellInfo const* spellInfo, bool apply)
     }
 }
 
-bool Pet::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 Entry, uint32 pet_number)
+bool Pet::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32 Entry, uint32 pet_number)
 {
     ASSERT(map);
     SetMap(map);

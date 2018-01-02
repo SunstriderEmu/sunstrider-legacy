@@ -98,7 +98,7 @@ void BattlegroundNA::AddPlayer(Player *plr)
     UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 }
 
-void BattlegroundNA::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
+void BattlegroundNA::RemovePlayer(Player* /*plr*/, ObjectGuid /*guid*/)
 {
     if(GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -154,7 +154,7 @@ void BattlegroundNA::HandleAreaTrigger(Player *Source, uint32 Trigger)
         return;
 
     //uint32 SpellId = 0;
-    //uint64 buff_guid = 0;
+    //ObjectGuid buff_guid = 0;
     switch(Trigger)
     {
         case 4536:                                          // buff trigger?

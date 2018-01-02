@@ -40,13 +40,13 @@ static void CorpsesEraseCallBack(QueryResult result, bool bones)
     do
     {
         Field *fields = result->Fetch();
-        uint32 guidlow = fields[0].GetUInt32();
+        ObjectGuid::LowType guidlow = fields[0].GetUInt32();
         float positionX = fields[1].GetFloat();
         float positionY = fields[2].GetFloat();
         uint32 mapid    = fields[3].GetUInt32();
-        uint64 player_guid = MAKE_NEW_GUID(fields[4].GetUInt32(), 0, HighGuid::Player);
+        ObjectGuid player_guid = ObjectGuid(HighGuid::Player, fields[4].GetUInt32());
 
-        uint64 guid = MAKE_NEW_GUID(guidlow, 0, HighGuid::Corpse);
+        ObjectGuid guid = MAKE_NEW_GUID(guidlow, 0, HighGuid::Corpse);
 
         /// Resurrectable - convert corpses to bones
         if(!bones)

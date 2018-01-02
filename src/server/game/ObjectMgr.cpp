@@ -193,7 +193,7 @@ ObjectMgr::~ObjectMgr()
     
 }
 
-Group * ObjectMgr::GetGroupByLeader(const uint64 &guid) const
+Group * ObjectMgr::GetGroupByLeader(ObjectGuid guid) const
 {
     for(auto itr : mGroupSet)
         if (itr->GetLeaderGUID() == guid)
@@ -253,7 +253,7 @@ std::string ObjectMgr::GetGuildNameById(const uint32 GuildId)
     return "";
 }
 
-Guild* ObjectMgr::GetGuildByLeader(const uint64 &guid) const
+Guild* ObjectMgr::GetGuildByLeader(const ObjectGuid &guid) const
 {
     for(const auto & itr : mGuildMap)
         if (itr.second->GetLeaderGUID() == guid)
@@ -262,7 +262,7 @@ Guild* ObjectMgr::GetGuildByLeader(const uint64 &guid) const
     return nullptr;
 }
 
-bool ObjectMgr::IsGuildLeader(const uint64 &guid) const
+bool ObjectMgr::IsGuildLeader(const ObjectGuid &guid) const
 {
     QueryResult result = CharacterDatabase.PQuery("SELECT guildid FROM guild WHERE leaderguid=%u", uint32(guid));
     if (!result)
@@ -345,7 +345,7 @@ ArenaTeam* ObjectMgr::GetArenaTeamByName(const std::string& arenateamname)
     return nullptr;
 }
 
-ArenaTeam* ObjectMgr::_GetArenaTeamByCaptain(uint64 const& guid) const
+ArenaTeam* ObjectMgr::_GetArenaTeamByCaptain(ObjectGuid const& guid) const
 {
     for(const auto & itr : mArenaTeamMap)
         if (itr.second->GetCaptain() == guid)
@@ -354,7 +354,7 @@ ArenaTeam* ObjectMgr::_GetArenaTeamByCaptain(uint64 const& guid) const
     return nullptr;
 }
 
-bool ObjectMgr::IsArenaTeamCaptain(uint64 const& guid) const
+bool ObjectMgr::IsArenaTeamCaptain(ObjectGuid const& guid) const
 {
     QueryResult result = CharacterDatabase.PQuery("SELECT arenateamid FROM arena_team WHERE captainguid=%u", uint32(guid));
     if (!result)
@@ -779,7 +779,7 @@ void ObjectMgr::LoadCreatureAddons()
     {
         Field* fields = result->Fetch();
 
-        uint32 guid = fields[0].GetUInt32();
+        ObjectGuid::LowType guid = fields[0].GetUInt32();
 
         CreatureData const* creData = GetCreatureData(guid);
         if (!creData)
@@ -846,7 +846,7 @@ void ObjectMgr::LoadCreatureAddons()
     TC_LOG_INFO("server.loading", ">> Loaded %u creature addons in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-CreatureAddon const* ObjectMgr::GetCreatureAddon(uint32 lowguid) const
+CreatureAddon const* ObjectMgr::GetCreatureAddon(ObjectGuid::LowType lowguid) const
 {
     auto itr = _creatureAddonStore.find(lowguid);
     if (itr != _creatureAddonStore.end())
@@ -1470,7 +1470,7 @@ void ObjectMgr::LoadCreatures()
     {
         Field *fields = result->Fetch();
 
-        uint32 guid = fields[0].GetUInt32();
+        ObjectGuid::LowType guid = fields[0].GetUInt32();
 
         CreatureData& data = _creatureDataStore[guid];
 
@@ -1575,7 +1575,7 @@ void ObjectMgr::DeleteCreatureData(ObjectGuid::LowType guid)
     _creatureDataStore.erase(guid);
 }
 
-void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
+void ObjectMgr::AddCreatureToGrid(ObjectGuid::LowType guid, CreatureData const* data)
 {
     uint8 mask = data->spawnMask;
     for(uint8 i = 0; mask != 0; i++, mask >>= 1)
@@ -1591,7 +1591,7 @@ void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
     }
 }
 
-void ObjectMgr::RemoveCreatureFromGrid(uint32 guid, CreatureData const* data)
+void ObjectMgr::RemoveCreatureFromGrid(ObjectGuid::LowType guid, CreatureData const* data)
 {
     uint8 mask = data->spawnMask;
     for(uint8 i = 0; mask != 0; i++, mask >>= 1)
@@ -1630,7 +1630,7 @@ void ObjectMgr::LoadGameObjects()
     {
         Field *fields = result->Fetch();
 
-        uint32 guid         = fields[0].GetUInt32();
+        ObjectGuid::LowType guid         = fields[0].GetUInt32();
         uint32 entry        = fields[1].GetUInt32();
 
         GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
@@ -1941,7 +1941,7 @@ void ObjectMgr::OnDeleteSpawnData(SpawnData const* data)
     ASSERT(false, "Spawn data (%u,%u) being removed is member of spawn group %u, but not actually listed in the lookup table for that group!", uint32(data->type), data->spawnId, data->spawnGroupData->groupId);
 }
 
-void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
+void ObjectMgr::AddGameobjectToGrid(ObjectGuid::LowType guid, GameObjectData const* data)
 {
     assert(data);
 
@@ -1959,7 +1959,7 @@ void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
     }
 }
 
-void ObjectMgr::RemoveGameobjectFromGrid(uint32 guid, GameObjectData const* data)
+void ObjectMgr::RemoveGameobjectFromGrid(ObjectGuid::LowType guid, GameObjectData const* data)
 {
     uint8 mask = data->spawnMask;
     for(uint8 i = 0; mask != 0; i++, mask >>= 1)
@@ -3484,7 +3484,7 @@ void ObjectMgr::LoadGroups()
 {
     // -- loading groups --
     Group *group = nullptr;
-    uint64 leaderGuid = 0;
+    ObjectGuid leaderGuid = ObjectGuid::Empty;
     uint32 count = 0;
     //                                                     0         1              2           3           4              5      6      7      8      9      10     11     12     13      14          15
     QueryResult result = CharacterDatabase.Query("SELECT mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, isRaid, difficulty, leaderGuid FROM groups");
@@ -3499,7 +3499,7 @@ void ObjectMgr::LoadGroups()
     {
         Field *fields = result->Fetch();
         ++count;
-        leaderGuid = MAKE_NEW_GUID(fields[15].GetUInt32(),0,HighGuid::Player);
+        leaderGuid = ObjectGuid(HighGuid::Player, fields[15].GetUInt32());
 
         group = new Group;
         if(!group->LoadGroupFromDB(leaderGuid, result, false))
@@ -3516,7 +3516,7 @@ void ObjectMgr::LoadGroups()
     // -- loading members --
     count = 0;
     group = nullptr;
-    leaderGuid = 0;
+    leaderGuid = ObjectGuid::Empty;
     //                                        0           1          2         3
     result = CharacterDatabase.Query("SELECT memberGuid, assistant, subgroup, leaderGuid FROM group_member ORDER BY leaderGuid");
     if (result)
@@ -3525,7 +3525,7 @@ void ObjectMgr::LoadGroups()
         {
             Field *fields = result->Fetch();
             count++;
-            leaderGuid = MAKE_NEW_GUID(fields[3].GetUInt32(), 0, HighGuid::Player);
+            leaderGuid = ObjectGuid(HighGuid::Player, fields[3].GetUInt32());
             if(!group || group->GetLeaderGUID() != leaderGuid)
             {
                 group = GetGroupByLeader(leaderGuid);
@@ -3562,7 +3562,7 @@ void ObjectMgr::LoadGroups()
     // -- loading instances --
     count = 0;
     group = nullptr;
-    leaderGuid = 0;
+    leaderGuid = ObjectGuid::Empty;
     result = CharacterDatabase.Query(
         //      0           1    2         3          4           5
         "SELECT leaderGuid, map, instance, permanent, difficulty, resettime, "
@@ -3577,7 +3577,7 @@ void ObjectMgr::LoadGroups()
         {
             Field *fields = result->Fetch();
             count++;
-            leaderGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HighGuid::Player);
+            leaderGuid = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
             if(!group || group->GetLeaderGUID() != leaderGuid)
             {
                 group = GetGroupByLeader(leaderGuid);
@@ -5344,7 +5344,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
                 {
                     Field *fields2 = resultItems->Fetch();
 
-                    uint32 item_guid_low = fields2[0].GetUInt32();
+                    ObjectGuid::LowType item_guid_low = fields2[0].GetUInt32();
                     uint32 item_template = fields2[1].GetUInt32();
 
                     m->AddItem(item_guid_low, item_template);
@@ -6622,7 +6622,7 @@ void ObjectMgr::LoadCorpses()
     {
         Field *fields = result->Fetch();
 
-        uint32 guid = fields[result->GetFieldCount()-1].GetUInt32();
+        ObjectGuid::LowType guid = fields[result->GetFieldCount()-1].GetUInt32();
 
         auto corpse = new Corpse;
         if(!corpse->LoadFromDB(guid,fields))
@@ -7870,7 +7870,8 @@ void ObjectMgr::LoadCreatureGossip()
     }
 
     uint32 count = 0;
-    uint32 guid,menuid;
+    ObjectGuid::LowType guid;
+    uint32 menuid;
     do
     {
         Field* fields = result->Fetch();
@@ -8359,7 +8360,7 @@ void ObjectMgr::LoadGMTickets()
     Field *fields = result->Fetch();
     ticket = new GM_Ticket;
     ticket->guid = fields[0].GetUInt32();
-    ticket->playerGuid = fields[1].GetUInt32();
+    ticket->playerGuid = ObjectGuid(HighGuid::Player, fields[1].GetUInt32());
     ticket->message = fields[2].GetString();
     ticket->createtime = fields[3].GetUInt32();
     ticket->map = fields[4].GetUInt32();
@@ -8368,7 +8369,7 @@ void ObjectMgr::LoadGMTickets()
     ticket->pos_z = fields[7].GetFloat();
     ticket->timestamp = fields[8].GetUInt32();
     ticket->closed = fields[9].GetUInt32();
-    ticket->assignedToGM = fields[10].GetUInt32();
+    ticket->assignedToGM = ObjectGuid(HighGuid::Player, fields[10].GetUInt32());
     ticket->comment = fields[11].GetString();
     ++count;
 
@@ -8392,7 +8393,7 @@ GM_Ticket* ObjectMgr::GetGMTicket(uint64 ticketGuid)
     return nullptr;
 }
 
-GM_Ticket* ObjectMgr::GetGMTicketByPlayer(uint64 playerGuid)
+GM_Ticket* ObjectMgr::GetGMTicketByPlayer(ObjectGuid playerGuid)
 {
     for(GmTicketList::const_iterator i = m_GMTicketList.begin(); i != m_GMTicketList.end(); ++i)
         if((*i) && (*i)->playerGuid == playerGuid && (*i)->closed == 0) 

@@ -232,9 +232,9 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
     if(obj)
         obj->Delete();
     else
-        TC_LOG_ERROR("bg.battleground","unknown droped flag bg, guid: %u",GUID_LOPART(GetDroppedFlagGUID(team)));
+        TC_LOG_ERROR("bg.battleground","unknown droped flag bg, guid: %u",GetDroppedFlagGUID(team).GetCounter());
 
-    SetDroppedFlagGUID(0,team);
+    SetDroppedFlagGUID(ObjectGuid::Empty, team);
     m_BothFlagsKept = false;
 }
 
@@ -252,7 +252,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     {
         if (!this->IsHordeFlagPickedup())
             return;
-        SetHordeFlagPicker(0);                              // must be before aura remove to prevent 2 events (drop+capture) at the same time
+        SetHordeFlagPicker(ObjectGuid::Empty);                              // must be before aura remove to prevent 2 events (drop+capture) at the same time
                                                             // horde flag in base (but not respawned yet)
         m_FlagState[TEAM_HORDE] = BG_WS_FLAG_STATE_WAIT_RESPAWN;
                                                             // Drop Horde Flag from Player
@@ -273,7 +273,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     {
         if (!this->IsAllianceFlagPickedup())
             return;
-        SetAllianceFlagPicker(0);                           // must be before aura remove to prevent 2 events (drop+capture) at the same time
+        SetAllianceFlagPicker(ObjectGuid::Empty);                           // must be before aura remove to prevent 2 events (drop+capture) at the same time
                                                             // alliance flag in base (but not respawned yet)
         m_FlagState[TEAM_ALLIANCE] = BG_WS_FLAG_STATE_WAIT_RESPAWN;
                                                             // Drop Alliance Flag from Player
@@ -346,7 +346,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
                 return;
             if(GetHordeFlagPickerGUID() == Source->GetGUID())
             {
-                SetHordeFlagPicker(0);
+                SetHordeFlagPicker(ObjectGuid::Empty);
                 Source->RemoveAurasDueToSpell(BG_WS_SPELL_WARSONG_FLAG);
             }
         }
@@ -356,7 +356,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
                 return;
             if(GetAllianceFlagPickerGUID() == Source->GetGUID())
             {
-                SetAllianceFlagPicker(0);
+                SetAllianceFlagPicker(ObjectGuid::Empty);
                 Source->RemoveAurasDueToSpell(BG_WS_SPELL_SILVERWING_FLAG);
             }
         }
@@ -372,7 +372,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
 
         if(GetHordeFlagPickerGUID() == Source->GetGUID())
         {
-            SetHordeFlagPicker(0);
+            SetHordeFlagPicker(ObjectGuid::Empty);
             Source->RemoveAurasDueToSpell(BG_WS_SPELL_WARSONG_FLAG);
             if(m_FlagDebuffState == 1)
               Source->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
@@ -392,7 +392,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
 
         if(GetAllianceFlagPickerGUID() == Source->GetGUID())
         {
-            SetAllianceFlagPicker(0);
+            SetAllianceFlagPicker(ObjectGuid::Empty);
             Source->RemoveAurasDueToSpell(BG_WS_SPELL_SILVERWING_FLAG);
             if(m_FlagDebuffState == 1)
               Source->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
@@ -526,7 +526,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 }
 
-void BattlegroundWS::RemovePlayer(Player *plr, uint64 guid)
+void BattlegroundWS::RemovePlayer(Player *plr, ObjectGuid guid)
 {
     // sometimes flag aura not removed :(
     if(IsAllianceFlagPickedup() && m_FlagKeepers[TEAM_ALLIANCE] == guid)
@@ -534,7 +534,7 @@ void BattlegroundWS::RemovePlayer(Player *plr, uint64 guid)
         if(!plr)
         {
             TC_LOG_ERROR("bg.battleground","BattlegroundWS: Removing offline player who has the FLAG!!");
-            this->SetAllianceFlagPicker(0);
+            this->SetAllianceFlagPicker(ObjectGuid::Empty);
             this->RespawnFlag(ALLIANCE, false);
         }
         else
@@ -545,7 +545,7 @@ void BattlegroundWS::RemovePlayer(Player *plr, uint64 guid)
         if(!plr)
         {
             TC_LOG_ERROR("bg.battleground","BattlegroundWS: Removing offline player who has the FLAG!!");
-            this->SetHordeFlagPicker(0);
+            this->SetHordeFlagPicker(ObjectGuid::Empty);
             this->RespawnFlag(HORDE, false);
         }
         else
@@ -576,7 +576,7 @@ void BattlegroundWS::HandleAreaTrigger(Player *Source, uint32 Trigger)
         return;
 
     //uint32 SpellId = 0;
-    //uint64 buff_guid = 0;
+    //ObjectGuid buff_guid = 0;
     switch(Trigger)
     {
         case 3686:                                          // Alliance elixir of speed spawn. Trigger not working, because located inside other areatrigger, can be replaced by IsWithinDist(object, dist) in Battleground::Update().
@@ -671,10 +671,10 @@ bool BattlegroundWS::SetupBattleground()
 
 void BattlegroundWS::ResetBGSubclass()
 {
-    m_FlagKeepers[TEAM_ALLIANCE]     = 0;
-    m_FlagKeepers[TEAM_HORDE]        = 0;
-    m_DroppedFlagGUID[TEAM_ALLIANCE] = 0;
-    m_DroppedFlagGUID[TEAM_HORDE]    = 0;
+    m_FlagKeepers[TEAM_ALLIANCE].Clear();
+    m_FlagKeepers[TEAM_HORDE].Clear();
+    m_DroppedFlagGUID[TEAM_ALLIANCE].Clear();
+    m_DroppedFlagGUID[TEAM_HORDE].Clear();
     m_FlagState[TEAM_ALLIANCE]       = BG_WS_FLAG_STATE_ON_BASE;
     m_FlagState[TEAM_HORDE]          = BG_WS_FLAG_STATE_ON_BASE;
     m_TeamScores[TEAM_ALLIANCE]      = 0;

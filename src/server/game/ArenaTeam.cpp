@@ -12,7 +12,6 @@ ArenaTeam::ArenaTeam()
     Id                     = 0;
     Type                   = 0;
     Name                   = "";
-    CaptainGuid            = 0;
     BackgroundColor        = 0;                                // background
     EmblemStyle            = 0;                                // icon
     EmblemColor            = 0;                                // icon color
@@ -32,7 +31,7 @@ ArenaTeam::~ArenaTeam()
 
 }
 
-bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamName)
+bool ArenaTeam::Create(ObjectGuid captainGuid, uint32 type, std::string ArenaTeamName)
 {
     if(!sObjectMgr->GetPlayer(captainGuid))                      // player not exist
         return false;
@@ -56,7 +55,7 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
     AddMember(CaptainGuid, trans);
     trans->PAppend("INSERT INTO arena_team (arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor) "
         "VALUES('%u','%s','%u','%u','%u','%u','%u','%u','%u')",
-        Id, ArenaTeamName.c_str(), GUID_LOPART(CaptainGuid), Type, BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor);
+        Id, ArenaTeamName.c_str(), CaptainGuid.GetCounter(), Type, BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor);
     trans->PAppend("INSERT INTO arena_team_stats (arenateamid, rating, games, wins, played, wins2, rank) VALUES "
         "('%u', '%u', '%u', '%u', '%u', '%u', '%u')", Id, stats.rating, stats.WeekGames, stats.wins_week, stats.SeasonGames, stats.wins_season, stats.rank);
 
@@ -67,12 +66,12 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
     if (Player* captain = sObjectMgr->GetPlayer(GetCaptain()))
         ip = captain->GetSession()->GetRemoteAddress();
     LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_CREATE), GetType(), GUID_LOPART(GetCaptain()), ip.c_str(), time(nullptr));
+            GetId(), uint32(AT_EV_CREATE), GetType(), GetCaptain().GetCounter(), ip.c_str(), time(nullptr));
     
     return true;
 }
 
-bool ArenaTeam::AddMember(const uint64& playerGuid, SQLTransaction trans)
+bool ArenaTeam::AddMember(ObjectGuid playerGuid, SQLTransaction trans)
 {
     // arena team is full (can't have more than type * 2 players!)
     if(GetMembersSize() >= GetType() * 2)
@@ -100,7 +99,7 @@ bool ArenaTeam::AddMember(const uint64& playerGuid, SQLTransaction trans)
     // Check if player is already in a similar arena team
     if ((player && player->GetArenaTeamId(GetSlot())) || Player::GetArenaTeamIdFromCharacterInfo(playerGuid, GetType()) != 0)
     {
-        TC_LOG_DEBUG("bg.arena", "Arena: %u %s already has an arena team of type %u", GUID_LOPART(playerGuid), playerName.c_str(), GetType());
+        TC_LOG_DEBUG("bg.arena", "Arena: %u %s already has an arena team of type %u", playerGuid.GetCounter(), playerName.c_str(), GetType());
         return false;
     }
 
@@ -119,7 +118,7 @@ bool ArenaTeam::AddMember(const uint64& playerGuid, SQLTransaction trans)
 
     sCharacterCache->UpdateCharacterArenaTeamId(playerGuid, GetSlot(), GetId());
 
-    trans->PAppend("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.Guid), newmember.PersonalRating );
+    trans->PAppend("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, newmember.Guid.GetCounter(), newmember.PersonalRating );
     
     // Inform player if online
     if(player)
@@ -132,9 +131,9 @@ bool ArenaTeam::AddMember(const uint64& playerGuid, SQLTransaction trans)
         if(CaptainGuid != playerGuid)
             player->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot() * 6) + 1, 1);
 
-        TC_LOG_DEBUG("arena","Player: %s [GUID: %u] joined arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUIDLow(), GetType(), GetId());
+        TC_LOG_DEBUG("arena","Player: %s [GUID: %u] joined arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUID().GetCounter(), GetType(), GetId());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_JOIN), GetType(), GUID_LOPART(playerGuid), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
+            GetId(), uint32(AT_EV_JOIN), GetType(), playerGuid.GetCounter(), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
 
     }
     return true;
@@ -167,7 +166,7 @@ bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
 
     Id = fields[0].GetUInt32();
     Name = fields[1].GetString();
-    CaptainGuid  = MAKE_NEW_GUID(fields[2].GetUInt32(), 0, HighGuid::Player);
+    CaptainGuid  = ObjectGuid(HighGuid::Player, fields[2].GetUInt32());
     Type = fields[3].GetUInt8();
     BackgroundColor = fields[4].GetUInt32();
     EmblemStyle = fields[5].GetUInt32();
@@ -226,7 +225,7 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
     {
         Field *fields = result->Fetch();
         ArenaTeamMember newmember;
-        newmember.Guid            = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HighGuid::Player);
+        newmember.Guid            = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
         newmember.WeekGames      = fields[1].GetUInt32();
         newmember.wins_week       = fields[2].GetUInt32();
         newmember.SeasonGames    = fields[3].GetUInt32();
@@ -240,7 +239,7 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
     }while( result->NextRow() );
 }
 
-void ArenaTeam::SetCaptain(const uint64& guid)
+void ArenaTeam::SetCaptain(ObjectGuid guid)
 {
     // disable remove/promote buttons
     Player *oldcaptain = sObjectMgr->GetPlayer(GetCaptain());
@@ -251,7 +250,7 @@ void ArenaTeam::SetCaptain(const uint64& guid)
     CaptainGuid = guid;
 
     // update database
-    CharacterDatabase.PExecute("UPDATE arena_team SET captainguid = '%u' WHERE arenateamid = '%u'", GUID_LOPART(guid), Id);
+    CharacterDatabase.PExecute("UPDATE arena_team SET captainguid = '%u' WHERE arenateamid = '%u'", guid.GetCounter(), Id);
 
     // enable remove/promote buttons
     Player *newcaptain = sObjectMgr->GetPlayer(guid);
@@ -260,11 +259,11 @@ void ArenaTeam::SetCaptain(const uint64& guid)
         newcaptain->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 1 + (GetSlot() * 6), 0);
         TC_LOG_DEBUG("arena", "Player: %s [GUID: " UI64FMTD "] promoted player : %s[GUID:" UI64FMTD "] to leader of arena team[Id:%u][Type:%u].", oldcaptain ? oldcaptain->GetName().c_str() : "", oldcaptain ? oldcaptain->GetGUID() : 0, newcaptain->GetName().c_str(), newcaptain->GetGUID(), GetId(), GetType());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_PROMOTE), GetType(), GUID_LOPART(guid), newcaptain->GetSession()->GetRemoteAddress().c_str(), time(nullptr));
+            GetId(), uint32(AT_EV_PROMOTE), GetType(), guid.GetCounter(), newcaptain->GetSession()->GetRemoteAddress().c_str(), time(nullptr));
     }
 }
 
-void ArenaTeam::DeleteMember(uint64 guid, bool cleanDb)
+void ArenaTeam::DeleteMember(ObjectGuid guid, bool cleanDb)
 {
     Player *player = sObjectMgr->GetPlayer(guid);
     if (player && player->InArena())
@@ -291,12 +290,12 @@ void ArenaTeam::DeleteMember(uint64 guid, bool cleanDb)
         {
             player->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot() * 6) + i, 0);
         }
-        TC_LOG_DEBUG("arena","Player: %s [GUID: %u] left arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUIDLow(), GetType(), GetId());
+        TC_LOG_DEBUG("arena","Player: %s [GUID: %u] left arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUID().GetCounter(), GetType(), GetId());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_LEAVE), GetType(), GUID_LOPART(guid), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
+            GetId(), uint32(AT_EV_LEAVE), GetType(), guid.GetCounter(), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
     }
     if(cleanDb)
-        CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), GUID_LOPART(guid));
+        CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), guid.GetCounter());
 }
 
 void ArenaTeam::Disband(WorldSession *session)
@@ -322,10 +321,10 @@ void ArenaTeam::Disband(WorldSession *session)
 
     Player *player = session->GetPlayer();
     if(player)
-        TC_LOG_DEBUG("arena","Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUIDLow(), GetType(), GetId());
+        TC_LOG_DEBUG("arena","Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUID().GetCounter(), GetType(), GetId());
   
     LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_DISBAND), GetType(), (player ? player->GetGUIDLow() : 0), session->GetRemoteAddress().c_str(), time(nullptr));
+            GetId(), uint32(AT_EV_DISBAND), GetType(), (player ? player->GetGUID().GetCounter() : 0), session->GetRemoteAddress().c_str(), time(nullptr));
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM arena_team WHERE arenateamid = '%u'", Id);
@@ -406,7 +405,7 @@ void ArenaTeam::NotifyStatsChanged()
     }
 }
 
-void ArenaTeam::InspectStats(WorldSession *session, uint64 guid)
+void ArenaTeam::InspectStats(WorldSession *session, ObjectGuid guid)
 {
     ArenaTeamMember* member = GetMember(guid);
     if(!member)
@@ -511,7 +510,7 @@ uint8 ArenaTeam::GetSlotByType( uint32 type )
     return 0xFF;
 }
 
-bool ArenaTeam::HaveMember( const uint64& guid ) const
+bool ArenaTeam::HaveMember(ObjectGuid guid ) const
 {
     for (const auto & member : Members)
         if(member.Guid == guid)
@@ -520,7 +519,7 @@ bool ArenaTeam::HaveMember( const uint64& guid ) const
     return false;
 }
 
-ArenaTeamMember* ArenaTeam::GetMember(const uint64& guid)
+ArenaTeamMember* ArenaTeam::GetMember(ObjectGuid guid)
 {
     for (auto & member : Members)
         if (member.Guid == guid)
@@ -699,7 +698,7 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating)
     }
 }
 
-void ArenaTeam::OfflineMemberLost(uint64 guid, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
+void ArenaTeam::OfflineMemberLost(ObjectGuid guid, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
 {
     // Called for offline player after ending rated arena match!
     for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
@@ -748,7 +747,7 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating)
     }
 }
 
-void ArenaTeam::UpdateArenaPointsHelper(std::map<uint32, uint32>& PlayerPoints)
+void ArenaTeam::UpdateArenaPointsHelper(std::map<ObjectGuid::LowType, uint32>& PlayerPoints)
 {
     // helper function for arena point distribution (this way, when distributing, no actual calculation is required, just a few comparisons)
     // 10 played games per week is a minimum
@@ -770,15 +769,15 @@ void ArenaTeam::UpdateArenaPointsHelper(std::map<uint32, uint32>& PlayerPoints)
             points_to_add = GetPoints(itr->PersonalRating);
         // OBSOLETE : CharacterDatabase.PExecute("UPDATE arena_team_member SET points_to_add = '%u' WHERE arenateamid = '%u' AND guid = '%u'", points_to_add, Id, itr->guid);
 
-        auto plr_itr = PlayerPoints.find(GUID_LOPART(itr->Guid));
+        auto plr_itr = PlayerPoints.find(itr->Guid.GetCounter());
         if (plr_itr != PlayerPoints.end())
         {
             //check if there is already more points
             if (plr_itr->second < points_to_add)
-                PlayerPoints[GUID_LOPART(itr->Guid)] = points_to_add;
+                PlayerPoints[itr->Guid.GetCounter()] = points_to_add;
         }
         else
-            PlayerPoints[GUID_LOPART(itr->Guid)] = points_to_add;
+            PlayerPoints[itr->Guid.GetCounter()] = points_to_add;
     }
 }
 

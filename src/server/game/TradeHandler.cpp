@@ -129,12 +129,12 @@ void WorldSession::SendUpdateTrade()
             data << (uint32) item->GetUInt32Value(ITEM_FIELD_STACK_COUNT);
             data << (uint32) 0;                             // probably gift=1, created_by=0?
                                                             // gift creator
-            data << (uint64) item->GetUInt64Value(ITEM_FIELD_GIFTCREATOR);
+            data << (uint64) item->GetGuidValue(ITEM_FIELD_GIFTCREATOR);
             data << (uint32) item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT);
             for(uint8 j = 0; j < 3; ++j)
                 data << (uint32) 0;                         // enchantment id (permanent/gems?)
                                                             // creator
-            data << (uint64) item->GetUInt64Value(ITEM_FIELD_CREATOR);
+            data << (uint64) item->GetGuidValue(ITEM_FIELD_CREATOR);
             data << (uint32) item->GetSpellCharges();       // charges
             data << (uint32) item->GetItemSuffixFactor();   // SuffixFactor
                                                             // random properties id
@@ -188,21 +188,21 @@ void WorldSession::moveItems(std::vector<Item*> myItems, std::vector<Item*> hisI
             if(myItems[i])
             {
                 if(!traderCanTrade)
-                    TC_LOG_FATAL("FIXME","Trader %u can't store item: %u", _player->GetGUIDLow(), myItems[i]->GetGUIDLow());
+                    TC_LOG_FATAL("FIXME","Trader %u can't store item: %u", _player->GetGUID().GetCounter(), myItems[i]->GetGUID().GetCounter());
                 if(_player->CanStoreItem( NULL_BAG, NULL_SLOT, playerDst, myItems[i], false ) == EQUIP_ERR_OK)
                     _player->MoveItemToInventory(playerDst, myItems[i], true, true);
                 else
-                    TC_LOG_FATAL("FIXME","Player %u can't take item back: %u", _player->GetGUIDLow(), myItems[i]->GetGUIDLow());
+                    TC_LOG_FATAL("FIXME","Player %u can't take item back: %u", _player->GetGUID().GetCounter(), myItems[i]->GetGUID().GetCounter());
             }
             // return the already removed items to the original owner
             if(hisItems[i])
             {
                 if(!playerCanTrade)
-                    TC_LOG_FATAL("FIXME","Player %u can't store item: %u", _player->GetGUIDLow(), hisItems[i]->GetGUIDLow());
+                    TC_LOG_FATAL("FIXME","Player %u can't store item: %u", _player->GetGUID().GetCounter(), hisItems[i]->GetGUID().GetCounter());
                 if(_player->pTrader->CanStoreItem( NULL_BAG, NULL_SLOT, traderDst, hisItems[i], false ) == EQUIP_ERR_OK)
                     _player->pTrader->MoveItemToInventory(traderDst, hisItems[i], true, true);
                 else
-                    TC_LOG_FATAL("FIXME","Trader %u can't take item back: %u", _player->GetGUIDLow(), hisItems[i]->GetGUIDLow());
+                    TC_LOG_FATAL("FIXME","Trader %u can't take item back: %u", _player->GetGUID().GetCounter(), hisItems[i]->GetGUID().GetCounter());
             }
         }
     }
@@ -413,7 +413,7 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
     if( GetPlayer()->pTrader )
         return;
 
-    uint64 ID;
+    ObjectGuid otherPlayer;
 
     if( !GetPlayer()->IsAlive() )
     {
@@ -439,9 +439,9 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    recvPacket >> ID;
+    recvPacket >> otherPlayer;
 
-    Player* pOther = ObjectAccessor::FindPlayer( ID );
+    Player* pOther = ObjectAccessor::FindPlayer(otherPlayer);
 
     if( !pOther )
     {
@@ -479,7 +479,7 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if( pOther->GetSocial()->HasIgnore(GetPlayer()->GetGUIDLow()) )
+    if( pOther->GetSocial()->HasIgnore(GetPlayer()->GetGUID().GetCounter()) )
     {
         SendTradeStatus(TRADE_STATUS_IGNORE_YOU);
         return;

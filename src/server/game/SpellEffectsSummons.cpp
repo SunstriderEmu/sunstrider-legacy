@@ -232,7 +232,7 @@ void Spell::EffectSummonType(uint32 effIndex)
                 case 26295:
                 case 26293:
                     if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                        m_caster->ToPlayer()->KilledMonsterCredit(15893, 0);
+                        m_caster->ToPlayer()->KilledMonsterCredit(15893, ObjectGuid::Empty);
                     break;
                 case 26333:
                 case 26334:
@@ -241,7 +241,7 @@ void Spell::EffectSummonType(uint32 effIndex)
                 case 26338:
                 case 26335:
                     if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                        m_caster->ToPlayer()->KilledMonsterCredit(15893, 0);
+                        m_caster->ToPlayer()->KilledMonsterCredit(15893, ObjectGuid::Empty);
                     break;
                 case 26516:
                 case 26517:
@@ -256,7 +256,7 @@ void Spell::EffectSummonType(uint32 effIndex)
                 case 26327:
                 case 26326:
                     if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                        m_caster->ToPlayer()->KilledMonsterCredit(15894, 0);
+                        m_caster->ToPlayer()->KilledMonsterCredit(15894, ObjectGuid::Empty);
                     break;
                 default:
                     break;

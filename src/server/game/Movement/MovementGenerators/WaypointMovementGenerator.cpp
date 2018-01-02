@@ -107,7 +107,7 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
         if (!_path)
         {
             // No path id found for entry
-            TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator::LoadPath: creature %s (Entry: %u GUID: %u DB GUID: %u) could not find path id: %u", creature->GetName().c_str(), creature->GetEntry(), creature->GetGUIDLow(), creature->GetSpawnId(), path_id);
+            TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator::LoadPath: creature %s (Entry: %u GUID: %u DB GUID: %u) could not find path id: %u", creature->GetName().c_str(), creature->GetEntry(), creature->GetGUID().GetCounter(), creature->GetSpawnId(), path_id);
             return false;
         }
 
@@ -194,7 +194,7 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 a
     
     if (arrivedNode.eventId && urand(0, 99) < arrivedNode.eventChance)
     {
-        TC_LOG_DEBUG("maps.script", "Creature movement start script %u at point %u for %u", arrivedNode.eventId, arrivedNode.id, creature->GetGUIDLow());
+        TC_LOG_DEBUG("maps.script", "Creature movement start script %u at point %u for %u", arrivedNode.eventId, arrivedNode.id, creature->GetGUID().GetCounter());
         creature->GetMap()->ScriptsStart(sWaypointScripts, arrivedNode.eventId, creature, NULL, false);
     }
 

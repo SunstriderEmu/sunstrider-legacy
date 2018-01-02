@@ -61,7 +61,7 @@ void OPvPCapturePoint::AddGO(uint32 type, ObjectGuid::LowType guid, uint32 entry
         entry = data->id;
     }
 
-    m_Objects[type] = MAKE_NEW_GUID(guid, entry, HighGuid::GameObject);
+    m_Objects[type] = ObjectGuid(HighGuid::GameObject, entry, guid);
     m_ObjectTypes[m_Objects[type]] = type;
 }
 
@@ -75,7 +75,7 @@ void OPvPCapturePoint::AddCre(uint32 type, ObjectGuid::LowType guid, uint32 entr
         entry = data->id;
     }
 
-    m_Creatures[type] = MAKE_NEW_GUID(guid, entry, HighGuid::Unit);
+    m_Creatures[type] = ObjectGuid(HighGuid::Unit, entry, guid);
     m_CreatureTypes[m_Creatures[type]] = type;
 }
 
@@ -151,7 +151,7 @@ bool OPvPCapturePoint::DelCreature(uint32 type)
     if(!cr)
     {
         // can happen when closing the core
-        m_Creatures[type] = 0;
+        m_Creatures[type].Clear();
         return false;
     }
 
@@ -170,7 +170,7 @@ bool OPvPCapturePoint::DelCreature(uint32 type)
 
     sObjectMgr->DeleteCreatureData(spawnId);
     m_CreatureTypes[m_Creatures[type]] = 0;
-    m_Creatures[type] = 0;
+    m_Creatures[type].Clear();
     return true;
 }
 
@@ -182,7 +182,7 @@ bool OPvPCapturePoint::DelObject(uint32 type)
     GameObject *obj = m_PvP->GetMap()->GetGameObject(m_Objects[type]);
     if(!obj)
     {
-        m_Objects[type] = 0;
+        m_Objects[type].Clear();
         return false;
     }
     uint32 guid = obj->GetSpawnId();
@@ -190,7 +190,7 @@ bool OPvPCapturePoint::DelObject(uint32 type)
     obj->Delete();
     sObjectMgr->DeleteGameObjectData(guid);
     m_ObjectTypes[m_Objects[type]] = 0;
-    m_Objects[type] = 0;
+    m_Objects[type].Clear();
     return true;
 }
 
@@ -301,7 +301,7 @@ void OPvPCapturePoint::UpdateActivePlayerProximityCheck()
 {
     for(auto & m_ActivePlayerGuid : m_activePlayers)
     {
-        std::set<uint64>::iterator itr, next;
+        std::set<ObjectGuid>::iterator itr, next;
         for(itr = m_ActivePlayerGuid.begin(); itr != m_ActivePlayerGuid.end(); itr = next)
         {
             next = itr;
@@ -463,7 +463,7 @@ void OPvPCapturePoint::SendUpdateWorldState(uint32 field, uint32 value)
     }
 }
 
-void OPvPCapturePoint::SendObjectiveComplete(uint32 id,uint64 guid)
+void OPvPCapturePoint::SendObjectiveComplete(uint32 id,ObjectGuid guid)
 {
     uint32 team;
     switch(m_State)
@@ -549,7 +549,7 @@ bool OPvPCapturePoint::HandleCustomSpell(Player *player, uint32 spellId, GameObj
     return false;
 }
 
-bool OutdoorPvP::HandleOpenGo(Player *player, uint64 guid)
+bool OutdoorPvP::HandleOpenGo(Player *player, ObjectGuid guid)
 {
     for(auto & m_OPvPCapturePoint : m_capturePoints)
     {
@@ -559,7 +559,7 @@ bool OutdoorPvP::HandleOpenGo(Player *player, uint64 guid)
     return false;
 }
 
-bool OutdoorPvP::HandleGossipOption(Player * plr, uint64 guid, uint32 id)
+bool OutdoorPvP::HandleGossipOption(Player * plr, ObjectGuid guid, uint32 id)
 {
     for(auto & m_OPvPCapturePoint : m_capturePoints)
     {
@@ -589,7 +589,7 @@ bool OutdoorPvP::HandleDropFlag(Player * plr, uint32 id)
     return false;
 }
 
-bool OPvPCapturePoint::HandleGossipOption(Player * plr, uint64 guid, uint32 id)
+bool OPvPCapturePoint::HandleGossipOption(Player * plr, ObjectGuid guid, uint32 id)
 {
     return false;
 }
@@ -604,7 +604,7 @@ bool OPvPCapturePoint::HandleDropFlag(Player * plr, uint32 id)
     return false;
 }
 
-int32 OPvPCapturePoint::HandleOpenGo(Player *plr, uint64 guid)
+int32 OPvPCapturePoint::HandleOpenGo(Player *plr, ObjectGuid guid)
 {
     auto itr = m_ObjectTypes.find(guid);
     if(itr != m_ObjectTypes.end())
@@ -631,7 +631,7 @@ void OutdoorPvP::SetMapFromZone(uint32 zone)
 
 void OutdoorPvP::OnGameObjectCreate(GameObject* go)
 {
-    GoScriptPair sp(go->GetGUIDLow(), go);
+    GoScriptPair sp(go->GetGUID().GetCounter(), go);
     m_GoScriptStore.insert(sp);
     if (go->GetGoType() != GAMEOBJECT_TYPE_CAPTURE_POINT)
         return;
@@ -642,7 +642,7 @@ void OutdoorPvP::OnGameObjectCreate(GameObject* go)
 
 void OutdoorPvP::OnGameObjectRemove(GameObject* go)
 {
-    m_GoScriptStore.erase(go->GetGUIDLow());
+    m_GoScriptStore.erase(go->GetGUID().GetCounter());
 
     if (go->GetGoType() != GAMEOBJECT_TYPE_CAPTURE_POINT)
         return;
@@ -653,13 +653,13 @@ void OutdoorPvP::OnGameObjectRemove(GameObject* go)
 
 void OutdoorPvP::OnCreatureCreate(Creature* creature)
 {
-    CreatureScriptPair sp(creature->GetGUIDLow(), creature);
+    CreatureScriptPair sp(creature->GetGUID().GetCounter(), creature);
     m_CreatureScriptStore.insert(sp);
 }
 
 void OutdoorPvP::OnCreatureRemove(Creature* creature)
 {
-    m_CreatureScriptStore.erase(creature->GetGUIDLow());
+    m_CreatureScriptStore.erase(creature->GetGUID().GetCounter());
 }
 
 void OutdoorPvP::SendDefenseMessage(uint32 zoneId, uint32 id)

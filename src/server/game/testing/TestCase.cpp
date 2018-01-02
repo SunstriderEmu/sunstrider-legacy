@@ -361,7 +361,7 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
         return nullptr;
     ai->HandleTeleportAck(); //immediately handle teleport packet
 
-    sCharacterCache->AddCharacterCacheEntry(player->GetGUIDLow(), testAccountId, player->GetName(), cci.Gender, cci.Race, cci.Class, level, 0);
+    sCharacterCache->AddCharacterCacheEntry(player->GetGUID().GetCounter(), testAccountId, player->GetName(), cci.Gender, cci.Race, cci.Class, level, 0);
 
     //usually done in LoadFromDB
     player->SetCanModifyStats(true);
@@ -930,7 +930,7 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
 
     Wait(1);
     Aura* aura = target->GetAuraWithCaster(spellID, caster->GetGUID());
-    INTERNAL_ASSERT_INFO("Target has not %u aura with caster %u after spell successfully casted", spellID, caster->GetGUIDLow());
+    INTERNAL_ASSERT_INFO("Target has not %u aura with caster %u after spell successfully casted", spellID, caster->GetGUID().GetCounter());
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
     //spell did hit, let's wait for dot duration
@@ -1152,12 +1152,12 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID)
     bool hasAura = target->HasAura(spellID);
     if (spellID > 0)
     {
-        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
         INTERNAL_TEST_ASSERT(hasAura);
     }
     else 
     {
-        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
         INTERNAL_TEST_ASSERT(!hasAura);
     }
 }
@@ -1167,12 +1167,12 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID, uint8 effectIndex)
     bool hasAura = target->HasAuraEffect(spellID, effectIndex);
     if (spellID > 0)
     {
-        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
         INTERNAL_TEST_ASSERT(hasAura);
     }
     else 
     {
-        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
         INTERNAL_TEST_ASSERT(!hasAura);
     }
 }
@@ -1187,18 +1187,18 @@ void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 c
 void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 durationMS)
 {
     Aura* aura = target->GetAura(spellID, effect);
-    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
     uint32 auraDuration = aura->GetMaxDuration();
-    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with duration %u instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraDuration, durationMS);
+    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with duration %u instead of %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID, auraDuration, durationMS);
     INTERNAL_TEST_ASSERT(auraDuration == durationMS);
 }
 
 void TestCase::_TestAuraStack(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 stacks, bool stack)
 {
     Aura* aura = target->GetAura(spellID, effect);
-    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUIDLow(), target->GetName().c_str(), spellID);
+    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
     uint32 auraStacks = 0;
@@ -1210,7 +1210,7 @@ void TestCase::_TestAuraStack(Unit* target, uint32 spellID, SpellEffIndex effect
         auraStacks = aura->GetCharges();
         type = "charges";
     }
-    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with %u %s instead of %u", target->GetGUIDLow(), target->GetName().c_str(), spellID, auraStacks, type.c_str(), stacks);
+    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with %u %s instead of %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID, auraStacks, type.c_str(), stacks);
     INTERNAL_TEST_ASSERT(auraStacks == stacks);
 }
 

@@ -1,4 +1,3 @@
-//Adapted and updated from TrinityCore : 2014-01-24
 
 #ifndef TRINITY_SMARTSCRIPT_H
 #define TRINITY_SMARTSCRIPT_H
@@ -218,8 +217,8 @@ class TC_GAME_API SmartScript
 					}
 				}
 			}
-            goOrigGUID = 0;
-            meOrigGUID = 0;
+            goOrigGUID.Clear();
+            meOrigGUID.Clear();
         }
 
         uint32 GetPhase() { return mEventPhase; }
@@ -229,7 +228,7 @@ class TC_GAME_API SmartScript
         //TIMED_ACTIONLIST (script type 9 aka script9)
         void SetScript9(SmartScriptHolder& e, uint32 entry);
         Unit* GetLastInvoker(Unit* invoker = nullptr);
-        uint64 mLastInvoker;
+        ObjectGuid mLastInvoker;
         uint32 mLastProcessedActionId;
         typedef std::unordered_map<uint32, uint32> CounterMap;
         CounterMap mCounterList;
@@ -247,9 +246,9 @@ class TC_GAME_API SmartScript
         SmartAIEventList mTimedActionList;
         bool isProcessingTimedActionList;
         Creature* me;
-        uint64 meOrigGUID;
+        ObjectGuid meOrigGUID;
         GameObject* go;
-        uint64 goOrigGUID;
+        ObjectGuid goOrigGUID;
         AreaTriggerEntry const* trigger;
         SmartScriptType mScriptType;
         uint32 mEventPhase;

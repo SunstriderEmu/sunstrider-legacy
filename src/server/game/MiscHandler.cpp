@@ -44,7 +44,7 @@ void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
     // release spirit after he's killed but before he is updated
     if(GetPlayer()->GetDeathState() == JUST_DIED)
     {
-        TC_LOG_ERROR("network","HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("network","HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
         GetPlayer()->KillPlayer();
     }
 
@@ -60,7 +60,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
 
     uint32 gossipListId;
     uint32 menuId;
-    uint64 guid;
+    ObjectGuid guid;
     std::string code = "";
 
     recvData >> guid >> menuId >> gossipListId;
@@ -80,7 +80,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
 
     Creature* unit = nullptr;
     GameObject* go = nullptr;
-    if (IS_CREATURE_OR_VEHICLE_GUID(guid))
+    if (guid.IsCreatureOrVehicle())
     {
         unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_GOSSIP);
         if (!unit)
@@ -89,7 +89,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
             return;
         }
     }
-    else if (IS_GAMEOBJECT_GUID(guid))
+    else if (guid.IsGameObject())
     {
         go = _player->GetGameObjectIfCanInteractWith(guid);
         if (!go)
@@ -340,7 +340,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
 {
     //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_LOGOUT_REQUEST Message, security - %u", GetSecurity());
 
-    if (uint64 lguid = GetPlayer()->GetLootGUID())
+    if (ObjectGuid lguid = GetPlayer()->GetLootGUID())
         DoLootRelease(lguid);
 
     bool canLogoutInCombat = GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
@@ -478,7 +478,7 @@ void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
     // When this packet send?
 
 
-    uint64 guid ;
+    ObjectGuid guid ;
     recvData >> guid;
 
     _player->SetUInt32Value(UNIT_FIELD_TARGET,guid);
@@ -493,7 +493,7 @@ void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     _player->SetSelection(guid);
@@ -571,7 +571,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket &recvData)
     if (dist > CORPSE_RECLAIM_RADIUS)
         return;
 
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     // resurrect
@@ -590,7 +590,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recvData)
     if(GetPlayer()->IsAlive())
         return;
 
-    uint64 guid;
+    ObjectGuid guid;
     uint8 status;
     recvData >> guid;
     recvData >> status;
@@ -624,13 +624,13 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(triggerId);
     if(!atEntry)
     {
-        TC_LOG_ERROR("network","Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",GetPlayer()->GetName().c_str(),GetPlayer()->GetGUIDLow(), triggerId);
+        TC_LOG_ERROR("network","Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",GetPlayer()->GetName().c_str(),GetPlayer()->GetGUID().GetCounter(), triggerId);
         return;
     }
 
     if (GetPlayer()->GetMapId()!=atEntry->mapid)
     {
-        TC_LOG_ERROR("network","Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u", GetPlayer()->GetName().c_str(), atEntry->mapid, GetPlayer()->GetMapId(), GetPlayer()->GetGUIDLow(), triggerId);
+        TC_LOG_ERROR("network","Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u", GetPlayer()->GetName().c_str(), atEntry->mapid, GetPlayer()->GetMapId(), GetPlayer()->GetGUID().GetCounter(), triggerId);
         return;
     }
 
@@ -646,7 +646,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
         if(dist > atEntry->radius + delta)
         {
             TC_LOG_ERROR("network","Player '%s' (GUID: %u) too far (radius: %f distance: %f), ignore Area Trigger ID: %u",
-                pl->GetName().c_str(), pl->GetGUIDLow(), atEntry->radius, dist, triggerId);
+                pl->GetName().c_str(), pl->GetGUID().GetCounter(), atEntry->radius, dist, triggerId);
             return;
         }
     }
@@ -960,7 +960,7 @@ void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )
 {
     //TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_TIME_SKIPPED");
 
-    uint64 guid;
+    ObjectGuid guid;
     uint32 time_skipped;
 #ifdef LICH_KING
     recvData.readPackGUID(guid);
@@ -1002,7 +1002,7 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
     /*
         TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK" );
         recvData.hexlike();
-        uint64 guid;
+        ObjectGuid guid;
         uint64 unknown1;
         uint32 unknown2;
         float PositionX;
@@ -1032,7 +1032,7 @@ void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
     /*
         TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_ROOT_ACK" );
         recvData.hexlike();
-        uint64 guid;
+        ObjectGuid guid;
         uint64 unknown1;
         uint32 unknown2;
         float PositionX;
@@ -1092,7 +1092,7 @@ void WorldSession::HandlePlayedTime(WorldPacket& recvData)
 
 void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     _player->SetSelection(guid);
@@ -1178,7 +1178,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     Player *player = ObjectAccessor::GetPlayer(*_player, guid);
@@ -1210,7 +1210,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
     if (GetPlayer()->IsInFlight())
     {
         TC_LOG_DEBUG("network", "Player '%s' (GUID: %u) in flight, ignore worldport command.",
-            GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
+            GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
         return;
     }
 
@@ -1299,7 +1299,7 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
     //TC_LOG_DEBUG("network", "WORLD: CMSG_COMPLAIN");
 
     uint8 ComplaintType;                                        // 0 - mail, 1 - chat
-    uint64 spammer_guid;
+    ObjectGuid spammer_guid;
     uint32 unk1 = 0, unk2 = 0, unk3 = 0, unk4 = 0;
     std::string description = "";
     recvData >> ComplaintType;                             // unk 0x01 const, may be spam type (mail/chat)
@@ -1445,7 +1445,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
 
     if(mode >= MAX_DIFFICULTY)
     {
-        TC_LOG_ERROR("network","WorldSession::HandleSetDungeonDifficultyOpcode: player %d sent an invalid instance mode %d!", _player->GetGUIDLow(), mode);
+        TC_LOG_ERROR("network","WorldSession::HandleSetDungeonDifficultyOpcode: player %d sent an invalid instance mode %d!", _player->GetGUID().GetCounter(), mode);
         return;
     }
 
@@ -1453,7 +1453,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
     Map *map = _player->GetMap();
     if(map && map->IsDungeon())
     {
-        TC_LOG_ERROR("network","WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while inside!", _player->GetGUIDLow());
+        TC_LOG_ERROR("network","WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while inside!", _player->GetGUID().GetCounter());
         return;
     }
 
@@ -1474,7 +1474,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
                 if (!groupGuy->IsInMap(groupGuy))
                 {
                     TC_LOG_DEBUG("network", "WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while group member (Name: %s, GUID: %u) is inside!",
-                        _player->GetGUIDLow(), groupGuy->GetName().c_str(), groupGuy->GetGUIDLow());
+                        _player->GetGUID().GetCounter(), groupGuy->GetName().c_str(), groupGuy->GetGUID().GetCounter());
                     return;
                 }
             }
@@ -1512,7 +1512,7 @@ void WorldSession::HandleCancelMountAuraOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recvData )
 {
-    uint64 guid = 0;                                            // guid - unused
+    ObjectGuid guid;                                       // guid - unused
     recvData >> guid;
 
     recvData.read_skip<uint32>();                          // unk

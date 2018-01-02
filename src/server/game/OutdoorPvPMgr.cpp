@@ -190,7 +190,7 @@ bool OutdoorPvPMgr::HandleCustomSpell(Player *plr, uint32 spellId, GameObject * 
     return false;
 }
 
-bool OutdoorPvPMgr::HandleOpenGo(Player *plr, uint64 guid)
+bool OutdoorPvPMgr::HandleOpenGo(Player *plr, ObjectGuid guid)
 {
     for(auto & itr : m_OutdoorPvPSet)
     {
@@ -200,7 +200,7 @@ bool OutdoorPvPMgr::HandleOpenGo(Player *plr, uint64 guid)
     return false;
 }
 
-void OutdoorPvPMgr::HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid)
+void OutdoorPvPMgr::HandleGossipOption(Player *plr, ObjectGuid guid, uint32 gossipid)
 {
     for(auto & itr : m_OutdoorPvPSet)
     {

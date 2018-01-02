@@ -86,7 +86,7 @@ bool ChatHandler::HandleResetHonorCommand (const char * args)
             return false;
         }
 
-        uint64 guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
+        ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
         player = sObjectMgr->GetPlayer(guid);
     }
     else
@@ -121,7 +121,7 @@ bool ChatHandler::HandleResetLevelCommand(const char * args)
             return false;
         }
 
-        uint64 guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
+        ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
         player = sObjectMgr->GetPlayer(guid);
     }
     else
@@ -165,7 +165,7 @@ bool ChatHandler::HandleResetStatsCommand(const char * args)
             return false;
         }
 
-        uint64 guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
+        ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
         player = sObjectMgr->GetPlayer(guid);
     }
     else
@@ -192,7 +192,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
 {
     char* pName = strtok((char*)args, "");
     Player *player = nullptr;
-    uint64 playerGUID = 0;
+    ObjectGuid playerGUID = ObjectGuid::Empty;
     if (pName)
     {
         std::string name = pName;
@@ -229,7 +229,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
     }
     else
     {
-        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE guid = '%u'",uint32(AT_LOGIN_RESET_SPELLS), GUID_LOPART(playerGUID));
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE guid = '%u'",uint32(AT_LOGIN_RESET_SPELLS), playerGUID.GetCounter());
         PSendSysMessage(LANG_RESET_SPELLS_OFFLINE,pName);
     }
 
@@ -240,7 +240,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
 {
     char* pName = strtok((char*)args, "");
     Player *player = nullptr;
-    uint64 playerGUID = 0;
+    ObjectGuid playerGUID = ObjectGuid::Empty;
     if (pName)
     {
         std::string name = pName;
@@ -276,7 +276,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
     }
     else
     {
-        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE guid = '%u'",uint32(AT_LOGIN_RESET_TALENTS), GUID_LOPART(playerGUID) );
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE guid = '%u'",uint32(AT_LOGIN_RESET_TALENTS), playerGUID.GetCounter() );
         PSendSysMessage(LANG_RESET_TALENTS_OFFLINE,pName);
     }
 

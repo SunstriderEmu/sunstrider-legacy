@@ -19,13 +19,13 @@
 //void called when player click on auctioneer npc
 void WorldSession::HandleAuctionHelloOpcode( WorldPacket & recvData )
 {
-    uint64 guid;                                            //NPC guid
+    ObjectGuid guid;                                            //NPC guid
     recvData >> guid;
 
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
     if (!unit)
     {
-        TC_LOG_ERROR("auction","WORLD: HandleAuctionHelloOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR("auction","WORLD: HandleAuctionHelloOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 
@@ -37,7 +37,7 @@ void WorldSession::HandleAuctionHelloOpcode( WorldPacket & recvData )
 }
 
 //this void causes that auction window is opened
-void WorldSession::SendAuctionHello( uint64 guid, Creature* unit )
+void WorldSession::SendAuctionHello( ObjectGuid guid, Creature* unit )
 {
     AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit->GetFaction());
     if(!ahEntry)
@@ -93,7 +93,7 @@ void WorldSession::SendAuctionOwnerNotification( AuctionEntry* auction)
 //this function sends mail to old bidder
 void WorldSession::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPrice)
 {
-    uint64 oldBidder_guid = MAKE_NEW_GUID(auction->bidder,0, HighGuid::Player);
+    ObjectGuid oldBidder_guid = ObjectGuid(HighGuid::Player, auction->bidder);
     Player *oldBidder = sObjectMgr->GetPlayer(oldBidder_guid);
 
     uint32 oldBidder_accId = 0;
@@ -119,7 +119,7 @@ void WorldSession::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPri
 //this function sends mail, when auction is cancelled to old bidder
 void WorldSession::SendAuctionCancelledToBidderMail( AuctionEntry* auction )
 {
-    uint64 bidder_guid = MAKE_NEW_GUID(auction->bidder, 0, HighGuid::Player);
+    ObjectGuid bidder_guid = ObjectGuid(HighGuid::Player, auction->bidder);
     Player *bidder = sObjectMgr->GetPlayer(bidder_guid);
 
     uint32 bidder_accId = 0;
@@ -139,7 +139,7 @@ void WorldSession::SendAuctionCancelledToBidderMail( AuctionEntry* auction )
 //this void creates new auction and adds auction to some auctionhouse
 void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
 {
-    uint64 auctioneerGUID, itemGUID;
+    ObjectGuid auctioneerGUID, itemGUID;
     uint32 etime, bid, buyout;
     recvData >> auctioneerGUID >> itemGUID;
     recvData >> bid >> buyout >> etime;
@@ -151,14 +151,14 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(auctioneerGUID, UNIT_NPC_FLAG_AUCTIONEER);
     if (!pCreature)
     {
-        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionSellItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(auctioneerGUID)) );
+        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionSellItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(auctioneerGUID.GetCounter()) );
         return;
     }
 
     AuctionHouseEntry const* auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(pCreature->GetFaction());
     if(!auctionHouseEntry)
     {
-        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionSellItem - Unit (GUID: %u) has wrong faction.", uint32(GUID_LOPART(auctioneerGUID)) );
+        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionSellItem - Unit (GUID: %u) has wrong faction.", uint32(auctioneerGUID.GetCounter()) );
         return;
     }
 
@@ -187,9 +187,9 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
 
     Item *it = pl->GetItemByGuid( itemGUID );
     //do not allow to sell already auctioned items
-    if(sAuctionMgr->GetAItem(GUID_LOPART(itemGUID)))
+    if(sAuctionMgr->GetAItem(itemGUID.GetCounter()))
     {
-        TC_LOG_ERROR("auctionHouse","AuctionError, player %s is sending item id: %u, but item is already in another auction", pl->GetName().c_str(), GUID_LOPART(itemGUID));
+        TC_LOG_ERROR("auctionHouse","AuctionError, player %s is sending item id: %u, but item is already in another auction", pl->GetName().c_str(), itemGUID.GetCounter());
         SendAuctionCommandResult(0, AUCTION_SELL_ITEM, AUCTION_INTERNAL_ERROR);
         return;
     }
@@ -220,7 +220,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
         return;
     }
 
-    LogsDatabaseAccessor::CreateAuction(GetPlayer(), it->GetGUIDLow(), it->GetEntry(), it->GetCount());
+    LogsDatabaseAccessor::CreateAuction(GetPlayer(), it->GetGUID().GetCounter(), it->GetEntry(), it->GetCount());
 
     pl->ModifyMoney( -int32(deposit) );
 
@@ -231,11 +231,11 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
     if(sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION))
         AH->auctioneer = 23442;
     else
-        AH->auctioneer = GUID_LOPART(auctioneerGUID);
+        AH->auctioneer = auctioneerGUID.GetCounter();
 
-    AH->item_guidlow = GUID_LOPART(itemGUID);
+    AH->item_guidlow = itemGUID.GetCounter();
     AH->item_template = it->GetEntry();
-    AH->owner = pl->GetGUIDLow();
+    AH->owner = pl->GetGUID().GetCounter();
     AH->startbid = bid;
     AH->bidder = 0;
     AH->bid = 0;
@@ -245,7 +245,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
     AH->auctionHouseEntry = auctionHouseEntry;
     AH->deposit_time = time(nullptr);
 
-    TC_LOG_DEBUG("auctionHouse","selling item %u to auctioneer %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", GUID_LOPART(itemGUID), AH->auctioneer, bid, buyout, auction_time, AH->GetHouseId());
+    TC_LOG_DEBUG("auctionHouse","selling item %u to auctioneer %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", itemGUID.GetCounter(), AH->auctioneer, bid, buyout, auction_time, AH->GetHouseId());
     auctionHouse->AddAuction(AH);
 
     sAuctionMgr->AddAItem(it);
@@ -264,11 +264,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
 //this function is called when client bids or buys out auction
 void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
 {
-    
-    
-    
-
-    uint64 auctioneerGUID;
+    ObjectGuid auctioneerGUID;
     uint32 auctionId;
     uint32 price;
     recvData >> auctioneerGUID;
@@ -280,7 +276,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(auctioneerGUID, UNIT_NPC_FLAG_AUCTIONEER);
     if (!pCreature)
     {
-        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionPlaceBid - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(auctioneerGUID)) );
+        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionPlaceBid - Unit (GUID: %u) not found or you can't interact with him.", uint32(auctioneerGUID.GetCounter()) );
         return;
     }
 
@@ -289,7 +285,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     AuctionEntry *auction = auctionHouse->GetAuction(auctionId);
     Player *pl = GetPlayer();
 
-    if( !auction || auction->owner == pl->GetGUIDLow() )
+    if( !auction || auction->owner == pl->GetGUID().GetCounter() )
     {
         //you cannot bid your own auction:
         SendAuctionCommandResult( 0, AUCTION_PLACE_BID, CANNOT_BID_YOUR_AUCTION_ERROR );
@@ -297,8 +293,8 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     }
 
     // impossible have online own another character (use this for speedup check in case online owner)
-    Player* auction_owner = sObjectMgr->GetPlayer(MAKE_NEW_GUID(auction->owner, 0, HighGuid::Player));
-    if( !auction_owner && sCharacterCache->GetCharacterAccountIdByGuid(MAKE_NEW_GUID(auction->owner, 0, HighGuid::Player)) == pl->GetSession()->GetAccountId())
+    Player* auction_owner = sObjectMgr->GetPlayer(ObjectGuid(HighGuid::Player, auction->owner));
+    if( !auction_owner && sCharacterCache->GetCharacterAccountIdByGuid(ObjectGuid(HighGuid::Player, auction->owner)) == pl->GetSession()->GetAccountId())
     {
         //you cannot bid your another character auction:
         SendAuctionCommandResult( 0, AUCTION_PLACE_BID, CANNOT_BID_YOUR_AUCTION_ERROR );
@@ -338,7 +334,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     {
         if (auction->bidder > 0)
         {
-            if ( auction->bidder == pl->GetGUIDLow() )
+            if ( auction->bidder == pl->GetGUID().GetCounter() )
             {
                 pl->ModifyMoney( -int32(price - auction->bid));
             }
@@ -353,7 +349,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
         {
             pl->ModifyMoney( -int32(price) );
         }
-        auction->bidder = pl->GetGUIDLow();
+        auction->bidder = pl->GetGUID().GetCounter();
         auction->bid = price;
 
         // after this update we should save player's money ...
@@ -364,7 +360,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     else
     {
         //buyout:
-        if (pl->GetGUIDLow() == auction->bidder )
+        if (pl->GetGUID().GetCounter() == auction->bidder )
         {
             pl->ModifyMoney(-int32(auction->buyout - auction->bid));
         }
@@ -376,7 +372,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
                 SendAuctionOutbiddedMail( auction, auction->buyout );
             }
         }
-        auction->bidder = pl->GetGUIDLow();
+        auction->bidder = pl->GetGUID().GetCounter();
         auction->bid = auction->buyout;
 
         sAuctionMgr->SendAuctionSalePendingMail( trans, auction );
@@ -399,11 +395,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
 //this void is called when auction_owner cancels his auction
 void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
 {
-    
-    
-    
-
-    uint64 auctioneerGUID;
+    ObjectGuid auctioneerGUID;
     uint32 auctionId;
     recvData >> auctioneerGUID;
     recvData >> auctionId;
@@ -412,7 +404,7 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(auctioneerGUID, UNIT_NPC_FLAG_AUCTIONEER);
     if (!pCreature)
     {
-        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionRemoveItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(auctioneerGUID)) );
+        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionRemoveItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(auctioneerGUID.GetCounter()) );
         return;
     }
 
@@ -425,7 +417,7 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
     AuctionEntry *auction = auctionHouse->GetAuction(auctionId);
     Player *pl = GetPlayer();
 
-    if (auction && auction->owner == pl->GetGUIDLow())
+    if (auction && auction->owner == pl->GetGUID().GetCounter())
     {
         Item *pItem = sAuctionMgr->GetAItem(auction->item_guidlow);
         if (pItem)
@@ -447,7 +439,7 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
             mi.AddItem(auction->item_guidlow, auction->item_template, pItem);
 
             // item will deleted or added to received mail list
-            WorldSession::SendMailTo(pl, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), pl->GetGUIDLow(), msgAuctionCanceledOwner.str(), 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+            WorldSession::SendMailTo(pl, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), pl->GetGUID().GetCounter(), msgAuctionCanceledOwner.str(), 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
         }
         else
         {
@@ -460,7 +452,7 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
     {
         SendAuctionCommandResult( 0, AUCTION_CANCEL, AUCTION_INTERNAL_ERROR );
         //this code isn't possible... maybe there should be assert
-        TC_LOG_ERROR("auction", "POSSIBLE CHEATER : %u, he tried to cancel auction (id: %u) of another player, or auction is NULL", pl->GetGUIDLow(), auctionId );
+        TC_LOG_ERROR("auction", "POSSIBLE CHEATER : %u, he tried to cancel auction (id: %u) of another player, or auction is NULL", pl->GetGUID().GetCounter(), auctionId );
         return;
     }
 
@@ -483,7 +475,7 @@ void WorldSession::HandleAuctionListBidderItems( WorldPacket & recvData )
     
     
 
-    uint64 guid;                                            //NPC guid
+    ObjectGuid guid;                                            //NPC guid
     uint32 listfrom;                                        //page of auctions
     uint32 outbiddedCount;                                  //count of outbidded auctions
 
@@ -499,7 +491,7 @@ void WorldSession::HandleAuctionListBidderItems( WorldPacket & recvData )
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
     if (!pCreature)
     {
-        TC_LOG_ERROR("auction",  "WORLD: HandleAuctionListBidderItems - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR("auction",  "WORLD: HandleAuctionListBidderItems - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 
@@ -542,7 +534,7 @@ void WorldSession::HandleAuctionListOwnerItems( WorldPacket & recvData )
     
 
     uint32 listfrom;
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> guid;
     recvData >> listfrom;                                  // not used in fact (this list not have page control in client)
@@ -550,7 +542,7 @@ void WorldSession::HandleAuctionListOwnerItems( WorldPacket & recvData )
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
     if (!pCreature)
     {
-        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionListOwnerItems - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionListOwnerItems - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 
@@ -579,7 +571,7 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recvData )
     std::string searchedname;
     uint8 levelmin, levelmax, usable;
     uint32 listfrom, auctionSlotID, auctionMainCategory, auctionSubCategory, quality;
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> guid;
     recvData >> listfrom;                                  // start, used for page control listing by 50 elements
@@ -591,7 +583,7 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recvData )
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
     if (!pCreature)
     {
-        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionListItems - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "auction", "WORLD: HandleAuctionListItems - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 

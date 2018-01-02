@@ -219,7 +219,7 @@ class TC_GAME_API Aura
 
         SpellInfo const* GetSpellInfo() const { return m_spellProto; }
         uint32 GetId() const;
-        uint64 GetCastItemGUID() const { return m_castItemGuid; }
+        ObjectGuid GetCastItemGUID() const { return m_castItemGuid; }
 		uint8 GetEffIndex() const{ return m_effIndex; }
         uint8 GetEffectMask() const { return 1 << m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
@@ -245,7 +245,7 @@ class TC_GAME_API Aura
         void UpdateSlotCounterAndDuration();
         uint32 GetTickNumber() const { return m_tickNumber; }
 
-        uint64 const& GetCasterGUID() const { return m_caster_guid; }
+        ObjectGuid const& GetCasterGUID() const { return m_caster_guid; }
         Unit* GetCaster() const;
         //compat TC
         inline WorldObject* GetOwner() const { return GetCaster(); }
@@ -254,7 +254,7 @@ class TC_GAME_API Aura
 
         Unit* GetTarget() const { return m_target; }
         void SetTarget(Unit* target) { m_target = target; }
-        void SetLoadedState(uint64 caster_guid,int32 damage,int32 maxduration,int32 duration,int32 charges)
+        void SetLoadedState(ObjectGuid caster_guid, int32 damage, int32 maxduration, int32 duration, int32 charges)
         {
             m_caster_guid = caster_guid;
             m_modifier.m_amount = damage;
@@ -347,13 +347,13 @@ class TC_GAME_API Aura
         uint8 m_effIndex;
         SpellInfo const *m_spellProto;
         int32 m_currentBasePoints;                          // cache SpellInfo::EffectBasePoints and use for set custom base points
-        uint64 m_caster_guid;
+        ObjectGuid m_caster_guid;
         Unit* m_target;
         int32 m_maxduration;
         int32 m_duration;
         uint32 m_tickNumber;
         int32 m_timeCla;
-        uint64 m_castItemGuid;                              // it is NOT safe to keep a pointer to the item because it may get deleted
+        ObjectGuid m_castItemGuid;                              // it is NOT safe to keep a pointer to the item because it may get deleted
         time_t m_applyTime;
         bool m_active;
 
@@ -414,7 +414,7 @@ class TC_GAME_API PersistentAreaAura : public Aura
         void Update(uint32 diff) override;
         void AddSource(DynamicObject* dynObj);
     public:
-        std::list<uint64> sourceDynObjects; //list of dynamic objects the aura originate from
+        std::list<ObjectGuid> sourceDynObjects; //list of dynamic objects the aura originate from
 };
 
 Aura* CreateAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);

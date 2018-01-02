@@ -56,9 +56,6 @@ SmartScript::SmartScript() :
     mUseTextTimer(false),
     mTalkerEntry(0),
     mTemplate(SMARTAI_TEMPLATE_BASIC),
-    meOrigGUID(0),
-    goOrigGUID(0),
-    mLastInvoker(0),
     mScriptType(SMART_SCRIPT_TYPE_CREATURE),
     isProcessingTimedActionList(false),
     mLastProcessedActionId(0)
@@ -83,7 +80,7 @@ void SmartScript::OnReset()
         }
     }
     ProcessEventsFor(SMART_EVENT_RESET);
-    mLastInvoker = 0;
+    mLastInvoker.Clear();
     mCounterList.clear();
 }
 
@@ -118,7 +115,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         mLastInvoker = unit->GetGUID();
 
     if (Unit* tempInvoker = GetLastInvoker())
-        TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: Invoker: %s (guidlow: %u)", tempInvoker->GetName().c_str(), tempInvoker->GetGUIDLow());
+        TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: Invoker: %s (guidlow: %u)", tempInvoker->GetName().c_str(), tempInvoker->GetGUID().GetCounter());
     
     mLastProcessedActionId = e.event_id;
 
@@ -170,7 +167,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 mTextTimer = e.action.talk.duration;
             
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_TALK: talker: %s (GuidLow: %u), textGuid: %u",
-                talker->GetName().c_str(), talker->GetGUIDLow(), talkTarget ? talkTarget->GetGUIDLow() : 0);
+                talker->GetName().c_str(), talker->GetGUID().GetCounter(), talkTarget ? talkTarget->GetGUID().GetCounter() : 0);
             break;
         }
         case SMART_ACTION_SIMPLE_TALK:
@@ -185,7 +182,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     sCreatureTextMgr->SendChat(me, uint8(e.action.talk.textGroupID), IsPlayer(templastInvoker) ? templastInvoker : nullptr, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, (target)->ToPlayer());
                 }
                 TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SIMPLE_TALK: talker: %s (GuidLow: %u), textGroupId: %u",
-                    target->GetName().c_str(), (target)->GetGUIDLow(), uint8(e.action.talk.textGroupID));
+                    target->GetName().c_str(), (target)->GetGUID().GetCounter(), uint8(e.action.talk.textGroupID));
             }
 
             break;
@@ -198,7 +195,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     target->ToUnit()->HandleEmoteCommand(e.action.emote.emote);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_PLAY_EMOTE: target: %s (GuidLow: %u), emote: %u",
-                        target->GetName().c_str(), target->GetGUIDLow(), e.action.emote.emote);
+                        target->GetName().c_str(), target->GetGUID().GetCounter(), e.action.emote.emote);
                 }
             }
 
@@ -216,7 +213,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         target->PlayDirectSound(e.action.sound.sound, e.action.sound.onlySelf ? target->ToPlayer() : nullptr);
 
                     TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
-                        target->GetName().c_str(), target->GetGUIDLow(), e.action.sound.sound, e.action.sound.onlySelf);
+                        target->GetName().c_str(), target->GetGUID().GetCounter(), e.action.sound.sound, e.action.sound.onlySelf);
                 }
             }
 
@@ -232,7 +229,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     {
                         target->ToCreature()->SetFaction(e.action.faction.factionID);
                         TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SET_FACTION: Creature entry %u, GuidLow %u set faction to %u",
-                            target->GetEntry(), target->GetGUIDLow(), e.action.faction.factionID);
+                            target->GetEntry(), target->GetGUID().GetCounter(), e.action.faction.factionID);
                     }
                     else
                     {
@@ -242,7 +239,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                             {
                                 target->ToCreature()->SetFaction(ci->faction);
                                 TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SET_FACTION: Creature entry %u, GuidLow %u set faction to %u",
-                                    target->GetEntry(), target->GetGUIDLow(), ci->faction);
+                                    target->GetEntry(), target->GetGUID().GetCounter(), ci->faction);
                             }
                         }
                     }
@@ -267,7 +264,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                             uint32 displayId = ObjectMgr::ChooseDisplayId(ci);
                             target->ToCreature()->SetDisplayId(displayId);
                             TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_MORPH_TO_ENTRY_OR_MODEL: Creature entry %u, GuidLow %u set displayid to %u",
-                                target->GetEntry(), target->GetGUIDLow(), displayId);
+                                target->GetEntry(), target->GetGUID().GetCounter(), displayId);
                         }
                     }
                     //if no param1, then use value from param2 (modelId)
@@ -275,14 +272,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     {
                         target->ToCreature()->SetDisplayId(e.action.morphOrMount.model);
                         TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_MORPH_TO_ENTRY_OR_MODEL: Creature entry %u, GuidLow %u set displayid to %u",
-                            target->GetEntry(), target->GetGUIDLow(), e.action.morphOrMount.model);
+                            target->GetEntry(), target->GetGUID().GetCounter(), e.action.morphOrMount.model);
                     }
                 }
                 else
                 {
                     target->ToCreature()->DeMorph();
                     TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_MORPH_TO_ENTRY_OR_MODEL: Creature entry %u, GuidLow %u demorphs.",
-                        target->GetEntry(), target->GetGUIDLow());
+                        target->GetEntry(), target->GetGUID().GetCounter());
                 }
             }
         }
@@ -294,7 +291,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     target->ToPlayer()->FailQuest(e.action.quest.quest);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_FAIL_QUEST: Player guidLow %u fails quest %u",
-                        target->GetGUIDLow(), e.action.quest.quest);
+                        target->GetGUID().GetCounter(), e.action.quest.quest);
                 }
             }
             break;
@@ -309,7 +306,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     {
                         target->ToPlayer()->AddQuestAndCheckCompletion(q, nullptr);
                         TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_ADD_QUEST: Player guidLow %u add quest %u",
-                            target->GetGUIDLow(), e.action.quest.quest);
+                            target->GetGUID().GetCounter(), e.action.quest.quest);
                     }
                 }
             }
@@ -360,7 +357,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     uint32 emote = temp[urand(0, count - 1)];
                     target->ToUnit()->HandleEmoteCommand(emote);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_RANDOM_EMOTE: Creature guidLow %u handle random emote %u",
-                        target->GetGUIDLow(), emote);
+                        target->GetGUID().GetCounter(), emote);
                 }
             }
 
@@ -377,7 +374,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     me->GetThreatManager().modifyThreatPercent(target, e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                      TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_THREAT_ALL_PCT: Creature guidLow %u modify threat for unit %u, value %i",
-                        me->GetGUIDLow(), target->GetGUIDLow(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
+                        me->GetGUID().GetCounter(), target->GetGUID().GetCounter(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                 }
             break;
         }
@@ -392,7 +389,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     me->GetThreatManager().modifyThreatPercent(target->ToUnit(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_THREAT_SINGLE_PCT: Creature guidLow %u modify threat for unit %u, value %i",
-                        me->GetGUIDLow(), target->GetGUIDLow(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
+                        me->GetGUID().GetCounter(), target->GetGUID().GetCounter(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                 }
             }
 
@@ -406,7 +403,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     target->ToPlayer()->GroupEventHappens(e.action.quest.quest, me);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_CALL_AREAEXPLOREDOREVENTHAPPENS: Player guidLow %u credited quest %u",
-                        target->GetGUIDLow(), e.action.quest.quest);
+                        target->GetGUID().GetCounter(), e.action.quest.quest);
                 }
             }
 
@@ -458,13 +455,13 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                             }
 
                             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_CAST:: Creature %u casts spell %u on target %u with castflags %u with result %u",
-                                me->GetGUIDLow(), e.action.cast.spell, (target)->GetGUIDLow(), e.action.cast.castFlags, result);
+                                me->GetGUID().GetCounter(), e.action.cast.spell, (target)->GetGUID().GetCounter(), e.action.cast.castFlags, result);
                         }
                         else if (go) 
                         { //gameobject case
                             uint32 result = go->CastSpell(target->ToUnit(), e.action.cast.spell, triggerFlag);
                             TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_CAST:: Gameobject %u casts spell %u on target %u with result %u",
-                                go->GetGUIDLow(), e.action.cast.spell, target->GetGUIDLow(), result);
+                                go->GetGUID().GetCounter(), e.action.cast.spell, target->GetGUID().GetCounter(), result);
                         }
                     }
                     else
@@ -503,7 +500,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
                     tempLastInvoker->CastSpell((target)->ToUnit(), e.action.cast.spell, triggerFlag);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_INVOKER_CAST: Invoker %u casts spell %u on target %u with castflags %u",
-                        tempLastInvoker->GetGUIDLow(), e.action.cast.spell, target->GetGUIDLow(), e.action.cast.castFlags);
+                        tempLastInvoker->GetGUID().GetCounter(), e.action.cast.spell, target->GetGUID().GetCounter(), e.action.cast.castFlags);
                 }
                 else
                     TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: " UI64FMTD " Entry: %u Type: %u) already has the aura", e.action.cast.spell, target->GetGUID(), target->GetEntry(), uint32(target->GetTypeId()));
@@ -519,7 +516,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     target->ToUnit()->AddAura(e.action.cast.spell, target->ToUnit());
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_ADD_AURA: Adding aura %u to unit %u",
-                        e.action.cast.spell, target->GetGUIDLow());
+                        e.action.cast.spell, target->GetGUID().GetCounter());
                 }
             }
 
@@ -535,7 +532,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     target->ToGameObject()->SetLootState(GO_READY);
                     target->ToGameObject()->UseDoorOrButton(0, false, unit);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_ACTIVATE_GOBJECT. Gameobject %u (entry: %u) activated",
-                        target->GetGUIDLow(), target->GetEntry());
+                        target->GetGUID().GetCounter(), target->GetEntry());
                 }
             }
 
@@ -549,7 +546,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     target->ToGameObject()->ResetDoorOrButton();
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_RESET_GOBJECT. Gameobject %u (entry: %u) reset",
-                        target->GetGUIDLow(), target->GetEntry());
+                        target->GetGUID().GetCounter(), target->GetEntry());
                 }
             }
 
@@ -563,7 +560,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     target->ToUnit()->SetEmoteState(e.action.emote.emote);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SET_EMOTE_STATE. Unit %u set emotestate to %u",
-                        target->GetGUIDLow(), e.action.emote.emote);
+                        target->GetGUID().GetCounter(), e.action.emote.emote);
                 }
             }
 
@@ -580,13 +577,13 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     {
                         target->ToUnit()->SetFlag(UNIT_FIELD_FLAGS, e.action.unitFlag.flag);
                         TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SET_UNIT_FLAG. Unit %u added flag %u to UNIT_FIELD_FLAGS",
-                        target->GetGUIDLow(), e.action.unitFlag.flag);
+                        target->GetGUID().GetCounter(), e.action.unitFlag.flag);
                     }
                     else
                     {
                         target->ToUnit()->SetFlag(UNIT_FIELD_FLAGS_2, e.action.unitFlag.flag);
                         TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SET_UNIT_FLAG. Unit %u added flag %u to UNIT_FIELD_FLAGS_2",
-                        target->GetGUIDLow(), e.action.unitFlag.flag);
+                        target->GetGUID().GetCounter(), e.action.unitFlag.flag);
                     }
                 }
             }
@@ -604,13 +601,13 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     {
                         target->ToUnit()->RemoveFlag(UNIT_FIELD_FLAGS, e.action.unitFlag.flag);
                         TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_REMOVE_UNIT_FLAG. Unit %u removed flag %u to UNIT_FIELD_FLAGS",
-                        target->GetGUIDLow(), e.action.unitFlag.flag);
+                        target->GetGUID().GetCounter(), e.action.unitFlag.flag);
                     }
                     else
                     {
                         target->ToUnit()->RemoveFlag(UNIT_FIELD_FLAGS_2, e.action.unitFlag.flag);
                         TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_REMOVE_UNIT_FLAG. Unit %u removed flag %u to UNIT_FIELD_FLAGS_2",
-                        target->GetGUIDLow(), e.action.unitFlag.flag);
+                        target->GetGUID().GetCounter(), e.action.unitFlag.flag);
                     }
                 }
             }
@@ -625,7 +622,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             CAST_AI(SmartAI, me->AI())->SetAutoAttack(e.action.autoAttack.attack);
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_AUTO_ATTACK: Creature: %u bool on = %u",
-                me->GetGUIDLow(), e.action.autoAttack.attack);
+                me->GetGUID().GetCounter(), e.action.autoAttack.attack);
             break;
         }
         case SMART_ACTION_ALLOW_COMBAT_MOVEMENT:
@@ -636,7 +633,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             bool move = e.action.combatMove.move;
             CAST_AI(SmartAI, me->AI())->SetCombatMove(move);
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_ALLOW_COMBAT_MOVEMENT: Creature %u bool on = %u",
-                me->GetGUIDLow(), e.action.combatMove.move);
+                me->GetGUID().GetCounter(), e.action.combatMove.move);
             break;
         }
         case SMART_ACTION_SET_EVENT_PHASE:
@@ -652,7 +649,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
                 ENSURE_AI(SmartAI, c->AI())->GetScript()->SetPhase(e.action.setEventPhase.phase);
                 TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SET_EVENT_PHASE: Creature %u set event phase %u",
-                    target->GetGUIDLow(), e.action.setEventPhase.phase);
+                    target->GetGUID().GetCounter(), e.action.setEventPhase.phase);
             }
 
             break;
@@ -672,7 +669,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 ENSURE_AI(SmartAI, c->AI())->GetScript()->DecPhase(e.action.incEventPhase.dec);
                     
                 TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_INC_EVENT_PHASE: Creature %u inc event phase by %u, "
-                    "decrease by %u", GetBaseObject()->GetGUIDLow(), e.action.incEventPhase.inc, e.action.incEventPhase.dec);
+                    "decrease by %u", GetBaseObject()->GetGUID().GetCounter(), e.action.incEventPhase.inc, e.action.incEventPhase.dec);
             }
 
             break;
@@ -683,7 +680,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 break;
 
             me->AI()->EnterEvadeMode();
-            TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_EVADE: Creature %u EnterEvadeMode", me->GetGUIDLow());
+            TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_EVADE: Creature %u EnterEvadeMode", me->GetGUID().GetCounter());
             break;
         }
         case SMART_ACTION_FLEE_FOR_ASSIST: //scripts.ai : Emote
@@ -698,7 +695,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 Trinity::BroadcastTextBuilder builder(me, CHAT_MSG_MONSTER_EMOTE, BROADCAST_TEXT_FLEE_FOR_ASSIST);
                 sCreatureTextMgr->SendChatPacket(me, builder, CHAT_MSG_MONSTER_EMOTE);
             }
-            TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_FLEE_FOR_ASSIST: Creature %u DoFleeToGetAssistance", me->GetGUIDLow());
+            TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_FLEE_FOR_ASSIST: Creature %u DoFleeToGetAssistance", me->GetGUID().GetCounter());
             break;
         }
         case SMART_ACTION_CALL_GROUPEVENTHAPPENS:
@@ -720,7 +717,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     player->GroupEventHappens(e.action.quest.quest, GetBaseObject());
                     TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_CALL_GROUPEVENTHAPPENS: Player %u, group credit for quest %u",
-                        unit->GetGUIDLow(), e.action.quest.quest);
+                        unit->GetGUID().GetCounter(), e.action.quest.quest);
                 }
 
 #ifdef LICH_KING
@@ -740,7 +737,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 break;
 
             me->CombatStop(true);
-            TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_COMBAT_STOP: %u CombatStop", me->GetGUIDLow());
+            TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_COMBAT_STOP: %u CombatStop", me->GetGUID().GetCounter());
             break;
         } 
         case SMART_ACTION_REMOVEAURASFROMSPELL:
@@ -764,7 +761,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     target->ToUnit()->RemoveAllAuras();
 
                 TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_REMOVEAURASFROMSPELL: Unit %u, spell %u",
-                    target->GetGUIDLow(), e.action.removeAura.spell);
+                    target->GetGUID().GetCounter(), e.action.removeAura.spell);
             }
 
 
@@ -787,7 +784,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     ENSURE_AI(SmartAI, me->AI())->SetFollow(target->ToUnit(), float(e.action.follow.dist) + 0.1f, e.action.follow.angle, e.action.follow.credit, e.action.follow.entry, e.action.follow.creditType);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_FOLLOW: Creature %u following target %u",
-                        me->GetGUIDLow(), target->GetGUIDLow());
+                        me->GetGUID().GetCounter(), target->GetGUID().GetCounter());
                     break;
                 }
             }
@@ -824,7 +821,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             uint32 phase = temp[urand(0, count - 1)];
             SetPhase(phase);
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_RANDOM_PHASE: Creature %u sets event phase to %u",
-                GetBaseObject()->GetGUIDLow(), phase);
+                GetBaseObject()->GetGUID().GetCounter(), phase);
             break;
         }
         case SMART_ACTION_RANDOM_PHASE_RANGE:
@@ -835,7 +832,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             uint32 phase = urand(e.action.randomPhaseRange.phaseMin, e.action.randomPhaseRange.phaseMax);
             SetPhase(phase);
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_RANDOM_PHASE_RANGE: Creature %u sets event phase to %u",
-                GetBaseObject()->GetGUIDLow(), phase);
+                GetBaseObject()->GetGUID().GetCounter(), phase);
             break;
         }
         case SMART_ACTION_CALL_KILLEDMONSTER:
@@ -849,7 +846,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     player->RewardPlayerAndGroupAtEvent(e.action.killedMonster.creature, player);
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_CALL_KILLEDMONSTER: Player %u, Killcredit: %u",
-                        player->GetGUIDLow(), e.action.killedMonster.creature);
+                        player->GetGUID().GetCounter(), e.action.killedMonster.creature);
                 }
             }
             else // Specific target type
@@ -860,7 +857,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     {
                         target->ToPlayer()->RewardPlayerAndGroupAtEvent(e.action.killedMonster.creature, target->ToPlayer());
                         TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_CALL_KILLEDMONSTER: Player %u, Killcredit: %u",
-                            target->GetGUIDLow(), e.action.killedMonster.creature);
+                            target->GetGUID().GetCounter(), e.action.killedMonster.creature);
                     }
                 }
 
@@ -944,7 +941,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (me && !me->IsDead())
             {
                 me->Kill(me);
-                TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_DIE: Creature %u", me->GetGUIDLow());
+                TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_DIE: Creature %u", me->GetGUID().GetCounter());
             }
             break;
         }
@@ -955,7 +952,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (IsCreature(target))
                 {
                     me->AI()->DoZoneInCombat();
-                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_SET_IN_COMBAT_WITH_ZONE: Creature %u", me->GetGUIDLow());
+                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_SET_IN_COMBAT_WITH_ZONE: Creature %u", me->GetGUID().GetCounter());
                 }
             }
             
@@ -973,7 +970,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         Trinity::BroadcastTextBuilder builder(me, CHAT_MSG_MONSTER_EMOTE, BROADCAST_TEXT_CALL_FOR_HELP);
                         sCreatureTextMgr->SendChatPacket(me, builder, CHAT_MSG_MONSTER_EMOTE);
                     }
-                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_CALL_FOR_HELP: Creature %u, target: %u", me->GetGUIDLow(), target->GetGUIDLow());
+                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_CALL_FOR_HELP: Creature %u, target: %u", me->GetGUID().GetCounter(), target->GetGUID().GetCounter());
                 }
             }
 
@@ -985,7 +982,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 me->SetSheath(SheathState(e.action.setSheath.sheath));
                 TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_SET_SHEATH: Creature %u, State: %u",
-                    me->GetGUIDLow(), e.action.setSheath.sheath);
+                    me->GetGUID().GetCounter(), e.action.setSheath.sheath);
             }
             break;
         }
@@ -1910,9 +1907,9 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (IsCreature(target))
                 {
                     if (!meOrigGUID)
-                        meOrigGUID = me ? me->GetGUID() : 0;
+                        meOrigGUID = me ? me->GetGUID() : ObjectGuid::Empty;
                     if (!goOrigGUID)
-                        goOrigGUID = go ? go->GetGUID() : 0;
+                        goOrigGUID = go ? go->GetGUID() : ObjectGuid::Empty;
                     go = nullptr;
                     me = target->ToCreature();
                     break;
@@ -1920,9 +1917,9 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 else if (IsGameObject(target))
                 {
                     if (!meOrigGUID)
-                        meOrigGUID = me ? me->GetGUID() : 0;
+                        meOrigGUID = me ? me->GetGUID() : ObjectGuid::Empty;
                     if (!goOrigGUID)
-                        goOrigGUID = go ? go->GetGUID() : 0;
+                        goOrigGUID = go ? go->GetGUID() : ObjectGuid::Empty;
                     go = target->ToGameObject();
                     me = nullptr;
                     break;
@@ -2524,11 +2521,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         case SMART_ACTION_ADD_TO_FORMATION:
         {
             if(!me->GetFormation())
-                sCreatureGroupMgr->AddCreatureToGroup(me->GetGUIDLow(), me);
+                sCreatureGroupMgr->AddCreatureToGroup(me->GetGUID().GetCounter(), me);
 
             for (auto target : targets)
                 if (Creature* creatureTarget = target->ToCreature())
-                    sCreatureGroupMgr->AddCreatureToGroup(me->GetGUIDLow(), creatureTarget);
+                    sCreatureGroupMgr->AddCreatureToGroup(me->GetGUID().GetCounter(), creatureTarget);
 
             break;
         }
@@ -2536,7 +2533,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         {
             for (auto target : targets)
                 if (Creature* creatureTarget = target->ToCreature())
-                    sCreatureGroupMgr->RemoveCreatureFromGroup(me->GetGUIDLow(), creatureTarget);
+                    sCreatureGroupMgr->RemoveCreatureFromGroup(me->GetGUID().GetCounter(), creatureTarget);
 
             break;
         }
@@ -2572,7 +2569,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
                 ENSURE_AI(SmartAI, c->AI())->GetScript()->SetTemplatePhase(e.action.setEventPhase.phase);
                 TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SET_EVENT_PHASE: Creature %u set event template phase %u",
-                    target->GetGUIDLow(), e.action.setEventPhase.phase);
+                    target->GetGUID().GetCounter(), e.action.setEventPhase.phase);
             }
             break;
         }
@@ -3120,14 +3117,13 @@ void SmartScript::GetTargets(ObjectVector& targets, SmartScriptHolder const& e, 
         {
             if (me)
             {
-                uint64 charmerOrOwnerGuid = me->GetCharmerOrOwnerGUID();
+                ObjectGuid charmerOrOwnerGuid = me->GetCharmerOrOwnerGUID();
 
-                /* TC
                 if (!charmerOrOwnerGuid)
                     if (TempSummon* tempSummon = me->ToTempSummon())
                         if (Unit* summoner = tempSummon->GetSummoner())
                             charmerOrOwnerGuid = summoner->GetGUID();
-                            */
+
                 if (!charmerOrOwnerGuid)
                     charmerOrOwnerGuid = me->GetCreatorGUID();
 
@@ -3799,7 +3795,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             if(e.event.friendlyDeath.entry && unit->GetEntry() != e.event.friendlyDeath.range)
                 return;
 
-            if(e.event.friendlyDeath.guid && unit->GetGUIDLow() != e.event.friendlyDeath.guid)
+            if(e.event.friendlyDeath.guid && unit->GetGUID().GetCounter() != e.event.friendlyDeath.guid)
                 return;
 
             ProcessAction(e, unit);

@@ -52,8 +52,7 @@ void VisibleNotifier::SendToSelf()
         i_player.m_clientGUIDs.erase(*it);
         i_data.AddOutOfRangeGUID(*it);
 
-        //if (it->IsPlayer())
-        if(IS_PLAYER_GUID(*it))
+        if (it->IsPlayer())
         {
             Player* player = ObjectAccessor::FindPlayer(*it);
             if (player && !player->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
@@ -299,7 +298,7 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
     for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         DynamicObject* target = iter->GetSource();
-        if (!IS_PLAYER_GUID(target->GetCasterGUID()) || !target->InSamePhase(i_phaseMask))
+        if (!target->GetCasterGUID().IsPlayer() || !target->InSamePhase(i_phaseMask))
             continue;
 
         // Sunwell optimization: Check whether the dynobject allows to see through it

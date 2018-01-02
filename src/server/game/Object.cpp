@@ -35,9 +35,9 @@
 #include "TemporarySummon.h"
 #include "DynamicTree.h"
 
-uint32 GuidHigh2TypeId(uint32 guid_hi)
+uint32 GuidHigh2TypeId(HighGuid guid_hi)
 {
-    switch(HighGuid(guid_hi))
+    switch(guid_hi)
     {
         case HighGuid::Item:         return TYPEID_ITEM;
         //case HighGuid::Container:    return TYPEID_CONTAINER; HighGuid::Container==HighGuid::Item currently
@@ -104,13 +104,14 @@ void Object::_InitValues()
     m_objectUpdated = false;
 }
 
-void Object::_Create( uint32 guidlow, uint32 entry, HighGuid guidhigh )
+void Object::_Create(ObjectGuid::LowType guidlow, uint32 entry, HighGuid guidhigh )
 {
-    if(!m_uint32Values) _InitValues();
+    if(!m_uint32Values)
+        _InitValues();
 
-    uint64 guid = MAKE_NEW_GUID(guidlow, entry, guidhigh);  // required more changes to make it working
-    SetUInt64Value( OBJECT_FIELD_GUID, guid );
-    SetUInt32Value( OBJECT_FIELD_TYPE, m_objectType );
+    ObjectGuid guid(guidhigh, entry, guidlow);
+    SetGuidValue( OBJECT_FIELD_GUID, guid );
+    SetUInt32Value(OBJECT_FIELD_TYPE, m_objectType);
     m_PackGUID.Set(guid);
 }
 
@@ -373,10 +374,10 @@ uint16 Object::GetUInt16Value(uint16 index, uint8 offset) const
     return *(((uint16*)&m_uint32Values[index]) + offset);
 }
 
-uint64 Object::GetGuidValue(uint16 index) const
+ObjectGuid Object::GetGuidValue(uint16 index) const
 {
     ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, false));
-    return *((uint64*)&(m_uint32Values[index]));
+    return *((ObjectGuid*)&(m_uint32Values[index]));
 }
 
 void Object::BuildValuesUpdate(uint8 updateType, ByteBuffer * data, Player *target) const
@@ -552,12 +553,12 @@ void Object::SetUInt16Value( uint16 index, uint8 offset, uint16 value )
     }
 }
 
-void Object::SetGuidValue(uint16 index, uint64 value)
+void Object::SetGuidValue(uint16 index, ObjectGuid value)
 {
     ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
-    if (*((uint64*)&(m_uint32Values[index])) != value)
+    if (*((ObjectGuid*)&(m_uint32Values[index])) != value)
     {
-        *((uint64*)&(m_uint32Values[index])) = value;
+        *((ObjectGuid*)&(m_uint32Values[index])) = value;
         _changesMask.SetBit(index);
         _changesMask.SetBit(index + 1);
 
@@ -802,7 +803,6 @@ bool Object::PrintIndexError(uint32 index, bool set) const
 
 WorldObject::WorldObject(bool isWorldObject) :
     LastUsedScriptID(0),
-    lootingGroupLeaderGUID(0),
     m_isWorldObject(isWorldObject),
     m_InstanceId(0),
     m_currMap(nullptr),
@@ -887,7 +887,7 @@ void WorldObject::CleanupsBeforeDelete(bool /*finalCleanup*/)
         RemoveFromWorld();
 }
 
-void WorldObject::_Create( uint32 guidlow, HighGuid guidhigh, uint32 phaseMask)
+void WorldObject::_Create(ObjectGuid::LowType guidlow, HighGuid guidhigh, uint32 phaseMask)
 {
     Object::_Create(guidlow, 0, guidhigh);
     m_phaseMask = phaseMask;
@@ -1426,10 +1426,10 @@ void WorldObject::SendMessageToSetInRange(WorldPacket *data, float dist, bool se
     Cell::VisitWorldObjects(this, notifier, dist);
 }
 
-void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
+void WorldObject::SendObjectDeSpawnAnim(ObjectGuid guid)
 {
     WorldPacket data(SMSG_GAMEOBJECT_DESPAWN_ANIM, 8);
-    data << guid;
+    data << uint64(guid);
     SendMessageToSet(&data, true);
 }
 
@@ -1440,7 +1440,7 @@ void WorldObject::AddObjectToRemoveList()
     Map* map = FindMap();
     if(!map)
     {
-        TC_LOG_ERROR("FIXME","Object (TypeId: %u Entry: %u GUID: %u) at attempt add to move list not have valid map (Id: %u).",GetTypeId(),GetEntry(),GetGUIDLow(),GetMapId());
+        TC_LOG_ERROR("misc","Object (TypeId: %u Entry: %u GUID: %u) at attempt add to move list not have valid map (Id: %u).", GetTypeId(), GetEntry(), GetGUID().GetCounter(),GetMapId());
         return;
     }
 
@@ -1835,7 +1835,7 @@ TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, fl
 
     if(!pCreature->IsPositionValid())
     {
-        TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
+        TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUID().GetCounter(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
         return nullptr;
     }
@@ -1882,7 +1882,7 @@ Pet* Player::GetPet() const
             return pet;
 
         // there may be a guardian in this slot
-        //TC_LOG_ERROR("entities.player", "Player::GetPet: Pet %u does not exist.", GUID_LOPART(pet_guid));
+        //TC_LOG_ERROR("entities.player", "Player::GetPet: Pet %u does not exist.", pet_guid.GetCounter());
         //const_cast<Player*>(this)->SetPetGUID(0);
     }
 
@@ -1925,7 +1925,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     if(!pet->IsPositionValid())
     {
-        TC_LOG_ERROR("FIXME","ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
+        TC_LOG_ERROR("misc","ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUID().GetCounter(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
         delete pet;
         return nullptr;
     }
@@ -1934,7 +1934,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
     if (!pet->Create(map->GenerateLowGuid<HighGuid::Pet>(), map, GetPhaseMask(), entry, pet_number))
     {
-        TC_LOG_ERROR("FIXME", "no such creature entry %u", entry);
+        TC_LOG_ERROR("misc", "no such creature entry %u", entry);
         delete pet;
         return nullptr;
     }
@@ -2004,85 +2004,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     
     return pet;
 }
-
-/*
-Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 duration)
-{
-    PetType petType = SUMMON_PET;
-    Pet* pet = new Pet(this, petType);
-
-    // petentry==0 for hunter "call pet" (current pet summoned if any)
-    if(!entry)
-    {
-        delete pet;
-        return nullptr;
-    }
-
-    Map *map = GetMap();
-    uint32 pet_number = sObjectMgr->GeneratePetNumber();
-    if(!pet->Create(map->GenerateLowGuid<HighGuid::Pet>(), map, GetPhaseMask(), entry, pet_number))
-    {
-        TC_LOG_ERROR("FIXME","no such creature entry %u", entry);
-        delete pet;
-        return nullptr;
-    }
-
-    pet->Relocate(x, y, z, ang);
-
-    if(!pet->IsPositionValid())
-    {
-        TC_LOG_ERROR("FIXME","ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
-        delete pet;
-        return nullptr;
-    }
-
-    pet->SetOwnerGUID(GetGUID());
-    pet->SetCreatorGUID(GetGUID());
-    pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, GetFaction());
-
-    pet->AIM_Initialize();
-
-    pet->SetPowerType(POWER_MANA);
-    pet->SetUInt32Value(UNIT_NPC_FLAGS , 0);
-    pet->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
-    pet->InitStatsForLevel(GetLevel());
-
-    SetMinion(pet, true);
-
-    switch(petType)
-    {
-        case SUMMON_PET:
-            pet->SetUInt32Value(UNIT_FIELD_BYTES_0, 2048);
-            pet->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
-            pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
-            pet->SetFullHealth();
-            pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
-            break;
-        default:
-            break;
-    }
-
-    map->AddToMap(pet->ToCreature());
-
-    switch (petType)
-    {
-    case SUMMON_PET:
-        pet->InitPetCreateSpells();
-        //TC pet->InitTalentForLevel();
-        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
-        PetSpellInitialize();
-        break;
-    default:
-        break;
-    }
-
-
-    if(duration > 0)
-        pet->SetDuration(duration);
-
-    return pet;
-}
-*/
 
 GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, G3D::Quat const& rot, uint32 respawnTime) const
 {
@@ -2654,7 +2575,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             case TYPEID_GAMEOBJECT:
             case TYPEID_DYNAMICOBJECT:
             case TYPEID_CORPSE:
-                *data << uint32(GetGUIDLow());              // GetGUIDLow()
+                *data << uint32(GetGUID().GetCounter());              // GetGUID().GetCounter()
                 break;
             //! Unit, Player and default here are sending wrong values.
             /// @todo Research the proper formula
@@ -2691,7 +2612,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             case TYPEID_DYNAMICOBJECT:
             case TYPEID_CORPSE:
 
-                *data << uint32(GetGUIDHigh());             // GetGUIDHigh()
+                *data << uint32(GetGUID().GetHigh());             // GetGUID().GetHigh()
                 break;
             default:
                 *data << uint32(0x00000000);                // unk
@@ -2749,7 +2670,7 @@ void WorldObject::MovePosition(Position &pos, float dist, float angle)
     if (!Trinity::IsValidMapCoord(destx, desty, pos.m_positionZ))
     {
         TC_LOG_FATAL("misc", "WorldObject::MovePosition: Object (TypeId: %u Entry: %u GUID: %u) has invalid coordinates X: %f and Y: %f were passed!",
-            GetTypeId(), GetEntry(), GetGUIDLow(), destx, desty);
+            GetTypeId(), GetEntry(), GetGUID().GetCounter(), destx, desty);
         return;
     }
 
@@ -2848,9 +2769,9 @@ struct WorldObjectChangeAccumulator
         for (auto & iter : m)
         {
             source = iter.GetSource();
-            uint64 guid = source->GetCasterGUID();
+            ObjectGuid guid = source->GetCasterGUID();
 
-            if (IS_PLAYER_GUID(guid))
+            if (guid.IsPlayer())
             {
                 //Caster may be NULL if DynObj is in removelist
                 if (Player* caster = ObjectAccessor::FindPlayer(guid))
@@ -2869,10 +2790,10 @@ struct WorldObjectChangeAccumulator
     void BuildPacket(Player* player)
     {
         // Only send update once to a player
-        if (i_playerSet.find(player->GetGUIDLow()) == i_playerSet.end() && player->HaveAtClient(&i_object))
+        if (i_playerSet.find(player->GetGUID().GetCounter()) == i_playerSet.end() && player->HaveAtClient(&i_object))
         {
             i_object.BuildFieldsUpdate(player, i_updateDatas);
-            i_playerSet.insert(player->GetGUIDLow());
+            i_playerSet.insert(player->GetGUID().GetCounter());
         }
     }
 
@@ -2935,11 +2856,11 @@ void WorldObject::DestroyForNearbyPlayers()
     }
 }
 
-uint64 WorldObject::GetTransGUID() const
+ObjectGuid WorldObject::GetTransGUID() const
 {
     if (GetTransport())
         return GetTransport()->GetGUID();
-    return 0;
+    return ObjectGuid::Empty;
 }
 
 float WorldObject::GetFloorZ() const
@@ -2966,10 +2887,7 @@ float WorldObject::GetMapHeight(float x, float y, float z, bool vmap/* = true*/,
     return GetMap()->GetHeight(GetPhaseMask(), x, y, z, vmap, distanceToSearch);
 }
 
-uint64 Object::GetGUID() const { return GetUInt64Value(OBJECT_FIELD_GUID); }
-uint32 Object::GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
-uint32 Object::GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
-uint32 Object::GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
+ObjectGuid Object::GetGUID() const { return GetGuidValue(OBJECT_FIELD_GUID); }
 PackedGuid const& Object::GetPackGUID() const { return m_PackGUID; }
 uint32 Object::GetEntry() const { return GetUInt32Value(OBJECT_FIELD_ENTRY); }
 void Object::SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY, entry); }

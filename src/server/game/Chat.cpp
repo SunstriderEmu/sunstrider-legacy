@@ -269,7 +269,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "stealth",        SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugStealthLevel,            "" },
         { "detect",         SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugAttackDistance,          "" },
         { "unloadgrid",     SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugUnloadGrid,              "" },
-        { "loadedscripts",  SEC_GAMEMASTER3,  true,  &ChatHandler::HandleDebugLoadedScripts,           "" },
         { "resetdaily",     SEC_GAMEMASTER3,  true,  &ChatHandler::HandleDebugResetDailyQuests,        "" },
         { "attackers",      SEC_GAMEMASTER2,  false, &ChatHandler::HandleDebugShowAttackers,           "" },
         { "zoneattack",     SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugSendZoneUnderAttack,     "" },
@@ -1223,7 +1222,7 @@ bool ChatHandler::ShowHelpForCommand(std::vector<ChatCommand> const& table, cons
     return ShowHelpForSubCommands(table,"",cmd);
 }
 
-size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, uint64 senderGUID, uint64 receiverGUID, std::string const& message, uint8 chatTag,
+size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, ObjectGuid senderGUID, ObjectGuid receiverGUID, std::string const& message, uint8 chatTag,
                                   std::string const& senderName /*= ""*/, std::string const& receiverName /*= ""*/,
                                   uint32 achievementId /*= 0*/, bool gmMessage /*= false*/, std::string const& channelName /*= ""*/)
 {
@@ -1253,7 +1252,7 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
             data << senderName;
             receiverGUIDPos = data.wpos();
             data << uint64(receiverGUID);
-            if (receiverGUID && !IS_PLAYER_GUID(receiverGUID) && !IS_PET_GUID(receiverGUID))
+            if (receiverGUID && !receiverGUID.IsPlayer() && !receiverGUID.IsPet())
             {
                 data << uint32(receiverName.length() + 1);
                 data << receiverName;
@@ -1272,7 +1271,7 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
         case CHAT_MSG_BG_SYSTEM_HORDE:
             receiverGUIDPos = data.wpos();
             data << uint64(receiverGUID);
-            if (receiverGUID && !IS_PLAYER_GUID(receiverGUID))
+            if (receiverGUID && !receiverGUID.IsPlayer())
             {
                 data << uint32(receiverName.length() + 1);
                 data << receiverName;
@@ -1318,11 +1317,11 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
 size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string const& message,
                                   uint32 achievementId /*= 0*/, std::string const& channelName /*= ""*/, LocaleConstant locale /*= DEFAULT_LOCALE*/)
 {
-    uint64 senderGUID = 0;
+    ObjectGuid senderGUID;
     std::string senderName = "";
     uint8 chatTag = 0;
     bool gmMessage = false;
-    uint64 receiverGUID = 0;
+    ObjectGuid receiverGUID;
     std::string receiverName = "";
     if (sender)
     {
@@ -1351,7 +1350,7 @@ Player * ChatHandler::GetSelectedPlayer() const
     if(!m_session)
         return nullptr;
 
-    uint64 guid  = m_session->GetPlayer()->GetTarget();
+    ObjectGuid guid  = m_session->GetPlayer()->GetTarget();
 
     if (guid == 0)
         return m_session->GetPlayer();
@@ -1364,7 +1363,7 @@ Player* ChatHandler::GetSelectedPlayerOrSelf() const
     if (!m_session)
         return nullptr;
 
-    uint64 selected = m_session->GetPlayer()->GetTarget();
+    ObjectGuid selected = m_session->GetPlayer()->GetTarget();
     if (!selected)
         return m_session->GetPlayer();
 
@@ -1382,7 +1381,7 @@ Unit* ChatHandler::GetSelectedUnit() const
     if(!m_session)
         return nullptr;
 
-    uint64 guid = m_session->GetPlayer()->GetTarget();
+    ObjectGuid guid = m_session->GetPlayer()->GetTarget();
 
     if (guid == 0)
         return m_session->GetPlayer();
@@ -1670,10 +1669,10 @@ LocaleConstant CliHandler::GetSessionDbcLocale() const
     return sWorld->GetDefaultDbcLocale();
 }
 
-bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, uint64 &guid, bool offline)
+bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, ObjectGuid &guid, bool offline)
 {
     plr  = nullptr;
-    guid = 0;
+    guid.Clear();
 
     if(cname)
     {
@@ -1728,7 +1727,7 @@ std::string ChatHandler::extractPlayerNameFromLink(char* text)
     return name;
 }
 
-bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* player_guid /*=NULL*/, std::string* player_name /*= NULL*/)
+bool ChatHandler::extractPlayerTarget(char* args, Player** player, ObjectGuid* player_guid /*=nullptr*/, std::string* player_name /*= NULL*/)
 {
     if (args && *args)
     {
@@ -1747,7 +1746,7 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
             *player = pl;
 
         // if need guid value from DB (in name case for check player existence)
-        uint64 guid = !pl && (player_guid || player_name) ? sCharacterCache->GetCharacterGuidByName(name) : 0;
+        ObjectGuid guid = !pl && (player_guid || player_name) ? sCharacterCache->GetCharacterGuidByName(name) : ObjectGuid::Empty;
 
         // if allowed player guid (if no then only online players allowed)
         if (player_guid)
@@ -1764,7 +1763,7 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
             *player = pl;
         // if allowed player guid (if no then only online players allowed)
         if (player_guid)
-            *player_guid = pl ? pl->GetGUID() : 0;
+            *player_guid = pl ? pl->GetGUID() : ObjectGuid::Empty;
 
         if (player_name)
             *player_name = pl ? pl->GetName() : "";

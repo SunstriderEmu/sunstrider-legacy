@@ -20,7 +20,7 @@ TotemAI::Permissible(const Creature *creature)
     return PERMIT_BASE_NO;
 }
 
-TotemAI::TotemAI(Creature *c) : CreatureAI(c), i_totem(static_cast<Totem&>(*c)), i_victimGuid(0)
+TotemAI::TotemAI(Creature *c) : CreatureAI(c), i_totem(static_cast<Totem&>(*c))
 {
 }
 
@@ -78,7 +78,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
         i_totem.CastSpell(victim, i_totem.GetSpell(), TRIGGERED_NONE);
     }
     else
-        i_victimGuid = 0;
+        i_victimGuid.Clear();
 }
 
 void

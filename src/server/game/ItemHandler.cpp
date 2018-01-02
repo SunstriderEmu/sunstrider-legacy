@@ -84,7 +84,7 @@ void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAutoEquipItemSlotOpcode( WorldPacket & recvData )
 {
-    uint64 itemguid;
+    ObjectGuid itemguid;
     uint8 dstslot;
     recvData >> itemguid >> dstslot;
 
@@ -510,14 +510,14 @@ void WorldSession::HandleReadItem( WorldPacket & recvData )
 void WorldSession::HandlePageQuerySkippedOpcode( WorldPacket & recvData )
 {
     uint32 itemid;
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> itemid >> guid;
 }
 
 void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
 {
-    uint64 vendorguid, itemguid;
+    ObjectGuid vendorguid, itemguid;
     uint8 _count;
 
     recvData >> vendorguid >> itemguid >> _count;
@@ -531,7 +531,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
-        TC_LOG_ERROR( "network","WORLD: HandleSellItemOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
+        TC_LOG_ERROR( "network","WORLD: HandleSellItemOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(vendorguid.GetCounter()) );
         _player->SendSellError( SELL_ERR_CANT_FIND_VENDOR, nullptr, itemguid, 0);
         return;
     }
@@ -629,7 +629,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBuybackItem(WorldPacket & recvData)
 {
-    uint64 vendorguid;
+    ObjectGuid vendorguid;
     uint32 slot;
 
     recvData >> vendorguid >> slot;
@@ -637,8 +637,8 @@ void WorldSession::HandleBuybackItem(WorldPacket & recvData)
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
-        TC_LOG_ERROR("network", "WORLD: HandleBuybackItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
-        _player->SendSellError( SELL_ERR_CANT_FIND_VENDOR, nullptr, 0, 0);
+        TC_LOG_ERROR("network", "WORLD: HandleBuybackItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(vendorguid.GetCounter()) );
+        _player->SendSellError(SELL_ERR_CANT_FIND_VENDOR, nullptr, ObjectGuid::Empty, 0);
         return;
     }
 
@@ -677,30 +677,54 @@ void WorldSession::HandleBuybackItem(WorldPacket & recvData)
 
 void WorldSession::HandleBuyItemInSlotOpcode( WorldPacket & recvData )
 {
-    uint64 vendorguid, bagguid;
+    ObjectGuid vendorguid, bagguid;
     uint32 item;
     uint8 slot, count;
 
     recvData >> vendorguid >> item >> bagguid >> slot >> count;
 
-    GetPlayer()->BuyItemFromVendor(vendorguid,item,count,bagguid,slot);
+    uint8 bag = NULL_BAG;                                   // init for case invalid bagGUID
+
+    // find bag slot by bag guid
+    if (bagguid == _player->GetGUID())
+        bag = INVENTORY_SLOT_BAG_0;
+    else
+    {
+        for (int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+        {
+            if (Bag* pBag = _player->GetBagByPos(i))
+            {
+                if (bagguid == pBag->GetGUID())
+                {
+                    bag = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    // bag not found, cheating?
+    if (bag == NULL_BAG)
+        return;
+
+    GetPlayer()->BuyItemFromVendorSlot(vendorguid, item, count, bag,slot);
 }
 
 void WorldSession::HandleBuyItemOpcode( WorldPacket & recvData )
 {
-    uint64 vendorguid;
+    ObjectGuid vendorguid;
     uint32 item;
     uint8 count;
     uint8 unused; //sunstrider: reversed from client, always 1
 
     recvData >> vendorguid >> item >> count >> unused;
 
-    GetPlayer()->BuyItemFromVendor(vendorguid, item, count, NULL_BAG, NULL_SLOT);
+    GetPlayer()->BuyItemFromVendorSlot(vendorguid, item, count, NULL_BAG, NULL_SLOT);
 }
 
-void WorldSession::HandleListInventoryOpcode( WorldPacket & recvData )
+void WorldSession::HandleListInventoryOpcode(WorldPacket & recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> guid;
 
@@ -710,13 +734,13 @@ void WorldSession::HandleListInventoryOpcode( WorldPacket & recvData )
     SendListInventory( guid );
 }
 
-void WorldSession::SendListInventory( uint64 vendorguid )
+void WorldSession::SendListInventory(ObjectGuid vendorguid)
 {
     Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
-        TC_LOG_ERROR("network", "WORLD: SendListInventory - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
-        _player->SendSellError( SELL_ERR_CANT_FIND_VENDOR, nullptr, 0, 0);
+        TC_LOG_ERROR("network", "WORLD: SendListInventory - Unit (GUID: %u) not found or you can't interact with him.", uint32(vendorguid.GetCounter()) );
+        _player->SendSellError( SELL_ERR_CANT_FIND_VENDOR, nullptr, ObjectGuid::Empty, 0);
         return;
     }
 
@@ -919,7 +943,7 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
     
     if(_player->IsBankPos(src))
     {
-        TC_LOG_ERROR("network","POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::HandleAutoBankItemOpcode - Tried to autobank an item already in bank (slot %u) !", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), srcslot);
+        TC_LOG_ERROR("network","POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::HandleAutoBankItemOpcode - Tried to autobank an item already in bank (slot %u) !", GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str(), srcslot);
         return;
     }
 
@@ -1000,7 +1024,7 @@ void WorldSession::HandleSetAmmoOpcode(WorldPacket & recvData)
         GetPlayer()->SetAmmo(item);
 }
 
-void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster, uint32 ItemID, uint32 SpellID)
+void WorldSession::SendEnchantmentLog(ObjectGuid Target, ObjectGuid Caster, uint32 ItemID, uint32 SpellID)
 {
     WorldPacket data(SMSG_ENCHANTMENTLOG, (8 + 8 + 4 + 4 + 1));     // last check 2.0.10
 #ifdef LICH_KING
@@ -1016,7 +1040,7 @@ void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster, uint32 ItemI
     SendPacket(&data);
 }
 
-void WorldSession::SendItemEnchantTimeUpdate(uint64 Playerguid, uint64 Itemguid, uint32 slot, uint32 Duration)
+void WorldSession::SendItemEnchantTimeUpdate(ObjectGuid Playerguid, ObjectGuid Itemguid, uint32 slot, uint32 Duration)
 {
     // last check 2.0.10
     WorldPacket data(SMSG_ITEM_ENCHANT_TIME_UPDATE, (8+4+4+8));
@@ -1088,7 +1112,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    if(item->GetUInt64Value(ITEM_FIELD_GIFTCREATOR))        // HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED);
+    if(item->GetGuidValue(ITEM_FIELD_GIFTCREATOR))        // HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED);
     {
         _player->SendEquipError( EQUIP_ERR_WRAPPED_CANT_BE_WRAPPED, item, nullptr );
         return;
@@ -1120,7 +1144,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
     }
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("INSERT INTO character_gifts VALUES ('%u', '%u', '%u', '%u')", GUID_LOPART(item->GetOwnerGUID()), item->GetGUIDLow(), item->GetEntry(), item->GetUInt32Value(ITEM_FIELD_FLAGS));
+    trans->PAppend("INSERT INTO character_gifts VALUES ('%u', '%u', '%u', '%u')", item->GetOwnerGUID().GetCounter(), item->GetGUID().GetCounter(), item->GetEntry(), item->GetUInt32Value(ITEM_FIELD_FLAGS));
     item->SetEntry(gift->GetEntry());
 
     switch (item->GetEntry())
@@ -1132,7 +1156,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         case 17307: item->SetEntry(17308); break;
         case 21830: item->SetEntry(21831); break;
     }
-    item->SetUInt64Value(ITEM_FIELD_GIFTCREATOR, _player->GetGUID());
+    item->SetGuidValue(ITEM_FIELD_GIFTCREATOR, _player->GetGUID());
     item->SetUInt32Value(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED);
     item->SetState(ITEM_CHANGED, _player);
 
@@ -1150,12 +1174,12 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
 {
-    uint64 guids[4];
+    ObjectGuid guids[4];
     uint32 GemEnchants[3], OldEnchants[3];
     Item *Gems[3];
     bool SocketBonusActivated, SocketBonusToBeActivated;
 
-    for(uint64 & guid : guids)
+    for(ObjectGuid & guid : guids)
         recvData >> guid;
 
     if(!guids[0])

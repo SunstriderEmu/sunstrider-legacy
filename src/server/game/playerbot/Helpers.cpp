@@ -50,9 +50,7 @@ char *strstri(const char *haystack, const char *needle)
     return 0;
 }
 
-
-
-uint64 extractGuid(WorldPacket& packet)
+ObjectGuid extractGuid(WorldPacket& packet)
 {
     uint8 mask;
     packet >> mask;
@@ -72,7 +70,7 @@ uint64 extractGuid(WorldPacket& packet)
         ++bit;
         testMask <<= 1;
     }
-    return guid;
+    return ObjectGuid(guid);
 }
 
 std::string &ltrim(std::string &s) {

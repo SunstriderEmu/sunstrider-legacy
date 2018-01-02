@@ -238,7 +238,7 @@ bool ChatHandler::HandleReportLagCommand(const char* args)
     Player* player = GetSession()->GetPlayer();
     if (now - player->lastLagReport > 10) { // Spam prevention
         TC_LOG_INFO("misc", "[LAG] Player %s (GUID: %u - IP: %s) reported lag - Current timediff: %u",
-            player->GetName().c_str(), player->GetGUIDLow(), GetSession()->GetRemoteAddress().c_str(), sWorld->GetUpdateTime());
+            player->GetName().c_str(), player->GetGUID().GetCounter(), GetSession()->GetRemoteAddress().c_str(), sWorld->GetUpdateTime());
         player->lastLagReport = now;
     }
 
@@ -375,7 +375,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             PSendSysMessage("Teleportation failed");
         }
     }
-    else if (uint64 guid = sCharacterCache->GetCharacterGuidByName(name))
+    else if (ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name))
     {
         PSendSysMessage(LANG_SUMMONING, name.c_str(), GetTrinityString(LANG_OFFLINE));
 
@@ -514,7 +514,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         return true;
     }
 
-    if (uint64 guid = sCharacterCache->GetCharacterGuidByName(name))
+    if (ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name))
     {
         PSendSysMessage(LANG_APPEARING_AT, name.c_str());
 
@@ -822,7 +822,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = sCharacterCache->GetCharacterGuidByName(name);
+    ObjectGuid receiver_guid = sCharacterCache->GetCharacterGuidByName(name);
     if (!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -831,7 +831,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
     }
 
     // from console show not existed sender
-    uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
+    ObjectGuid::LowType sender_guidlo = m_session ? m_session->GetPlayer()->GetGUID().GetCounter() : 0;
 
     MailMessageType messagetype = MAIL_NORMAL;
     uint32 stationery = MAIL_STATIONERY_GM;
@@ -839,7 +839,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
 
     Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
 
-    WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, nullptr, 0, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, receiver_guid.GetCounter(), subject, itemTextId, nullptr, 0, 0, MAIL_CHECK_MASK_NONE);
 
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;
@@ -884,7 +884,7 @@ bool ChatHandler::HandleSaveAllCommand(const char* /*args*/)
 bool ChatHandler::HandlePInfoCommand(const char* args)
 {
     Player* target = nullptr;
-    uint64 targetGUID = 0;
+    ObjectGuid targetGUID = ObjectGuid::Empty;
 
     PreparedStatement* stmt = nullptr;
 
@@ -953,7 +953,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     else
     {
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PINFO);
-        stmt->setUInt32(0, GUID_LOPART(targetGUID));
+        stmt->setUInt32(0, targetGUID.GetCounter());
         PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
         if (!result)
@@ -1005,7 +1005,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         }
     }
 
-    PSendSysMessage(LANG_PINFO_ACCOUNT, (target ? "" : GetTrinityString(LANG_OFFLINE)), name.c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, security, last_ip.c_str(), last_login.c_str(), latency);
+    PSendSysMessage(LANG_PINFO_ACCOUNT, (target ? "" : GetTrinityString(LANG_OFFLINE)), name.c_str(), targetGUID.GetCounter(), username.c_str(), accId, security, last_ip.c_str(), last_login.c_str(), latency);
 
     std::string timeStr = secsToTimeString(total_player_time, true, true);
     uint32 gold = money / GOLD;
@@ -1076,7 +1076,7 @@ bool ChatHandler::HandleReloadAllPaths(const char* args)
 bool ChatHandler::HandleRenameCommand(const char* args)
 {
     Player* target = nullptr;
-    uint64 targetGUID = 0;
+    ObjectGuid targetGUID = ObjectGuid::Empty;
     std::string oldname;
 
     char* px = strtok((char*)args, " ");
@@ -1117,8 +1117,8 @@ bool ChatHandler::HandleRenameCommand(const char* args)
     }
     else
     {
-        PSendSysMessage(LANG_RENAME_PLAYER_GUID, oldname.c_str(), GUID_LOPART(targetGUID));
-        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '1' WHERE guid = '%u'", GUID_LOPART(targetGUID));
+        PSendSysMessage(LANG_RENAME_PLAYER_GUID, oldname.c_str(), targetGUID.GetCounter());
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '1' WHERE guid = '%u'", targetGUID.GetCounter());
     }
 
     return true;
@@ -1146,7 +1146,7 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
         return true;
     }
 
-    uint64 targetGUID = 0;
+    ObjectGuid targetGUID = ObjectGuid::Empty;
     std::string stringName = playerName;
 
     targetGUID = sCharacterCache->GetCharacterGuidByName(stringName);
@@ -1156,7 +1156,7 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
         return true;
     }
 
-    CharacterCacheEntry const* playerData = sCharacterCache->GetCharacterCacheByGuid(GUID_LOPART(targetGUID));
+    CharacterCacheEntry const* playerData = sCharacterCache->GetCharacterCacheByGuid(targetGUID.GetCounter());
     if (!playerData)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1295,7 +1295,7 @@ bool ChatHandler::HandleChanBan(const char* args)
 
     if (ChannelMgr* cMgr = channelMgr(player->GetTeam())) {
         if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), player)) {
-            chn->Kick(m_session ? m_session->GetPlayer()->GetGUID() : 0, player->GetName());
+            chn->Kick(m_session ? m_session->GetPlayer()->GetGUID() : ObjectGuid::Empty, player->GetName());
             chn->AddNewGMBan(accountid, time(nullptr) + durationSecs);
             //TODO translate
             ChatHandler(player).PSendSysMessage("You have been banned from World channel with this reason: %s", reasonstr.c_str());
@@ -1422,7 +1422,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     if (!normalizePlayerName(character_name))
         return false;
 
-    uint64 character_guid;
+    ObjectGuid character_guid;
     uint32 account_id;
 
     Player *player = ObjectAccessor::FindConnectedPlayerByName(character_name.c_str());
@@ -1449,7 +1449,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     sAccountMgr->GetName(account_id, account_name);
 
     Player::DeleteFromDB(character_guid, account_id, true);
-    PSendSysMessage(LANG_CHARACTER_DELETED, character_name.c_str(), GUID_LOPART(character_guid), account_name.c_str(), account_id);
+    PSendSysMessage(LANG_CHARACTER_DELETED, character_name.c_str(), character_guid.GetCounter(), account_name.c_str(), account_id);
     return true;
 }
 

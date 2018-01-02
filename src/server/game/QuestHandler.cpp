@@ -23,13 +23,13 @@
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
     uint8 questStatus = DIALOG_STATUS_NONE;
 
     Object* questgiver = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
     if (!questgiver) {
-        TC_LOG_ERROR("network.opcode","Error in CMSG_QUESTGIVER_STATUS_QUERY, called for not found questgiver (Typeid: %u GUID: %u)", GuidHigh2TypeId(GUID_HIPART(guid)), GUID_LOPART(guid));
+        TC_LOG_ERROR("network.opcode","Error in CMSG_QUESTGIVER_STATUS_QUERY, called for not found questgiver (Typeid: %u GUID: %u)", GuidHigh2TypeId(guid.GetHigh()), guid.GetCounter());
         return;
     }
 
@@ -65,14 +65,14 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     Creature* pCreature = GetPlayer()->GetNPCIfCanInteractWith(guid);
     if (!pCreature)
     {
         TC_LOG_ERROR ("network","WORLD: HandleQuestgiverHelloOpcode - Unit (GUID: %u) not found or you can't interact with him.",
-            GUID_LOPART(guid));
+            guid.GetCounter());
         return;
     }
 
@@ -93,7 +93,7 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
     uint32 quest;
     recvData >> guid >> quest;
 
@@ -106,7 +106,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
         )
     {
         _player->PlayerTalkClass->SendCloseGossip();
-        _player->SetDivider( 0 );
+        _player->SetDivider(ObjectGuid::Empty);
         return;
     }
 
@@ -117,7 +117,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
         if(!GetPlayer()->CanTakeQuest(qInfo,true) )
         {
             _player->PlayerTalkClass->SendCloseGossip();
-            _player->SetDivider( 0 );
+            _player->SetDivider(ObjectGuid::Empty);
             return;
         }
 
@@ -127,7 +127,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
             if( pPlayer )
             {
                 pPlayer->SendPushToPartyResponse( _player, QUEST_PARTY_MSG_ACCEPT_QUEST );
-                _player->SetDivider( 0 );
+                _player->SetDivider(ObjectGuid::Empty);
             }
         }
 
@@ -183,7 +183,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
     uint32 quest;
     recvData >> guid >> quest;
 
@@ -216,12 +216,12 @@ void WorldSession::HandleQuestQueryOpcode( WorldPacket & recvData )
 void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
 {
     uint32 quest, reward;
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid >> quest >> reward;
 
     if(reward >= QUEST_REWARD_CHOICES_COUNT)
     {
-        TC_LOG_ERROR("FIXME","Error in CMSG_QUESTGIVER_CHOOSE_REWARD: player %s (guid %d) tried to get invalid reward (%u) (probably packet hacking)", _player->GetName().c_str(), _player->GetGUIDLow(), reward);
+        TC_LOG_ERROR("FIXME","Error in CMSG_QUESTGIVER_CHOOSE_REWARD: player %s (guid %d) tried to get invalid reward (%u) (probably packet hacking)", _player->GetName().c_str(), _player->GetGUID().GetCounter(), reward);
         return;
     }
 
@@ -282,7 +282,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
 void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recvData )
 {
     uint32 quest;
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid >> quest;
 
     Object* pObject = ObjectAccessor::GetObjectByTypeMask(*_player, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT);
@@ -403,7 +403,7 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recvData)
 void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
 {
     uint32 questID;
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid >> questID;
 
     Quest const* quest = sObjectMgr->GetQuestTemplate(questID);
@@ -547,7 +547,7 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 
 void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
 {
-    uint64 guid;
+    ObjectGuid guid;
     uint8 msg;
     recvPacket >> guid >> msg;
 
@@ -558,7 +558,7 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
             player->SendPushToPartyResponse(_player, msg);
     }
 
-    _player->SetDivider(0);
+    _player->SetDivider(ObjectGuid::Empty);
 }
 
 QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
@@ -669,13 +669,13 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
     WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE, 4);
     data << uint32(count);                                  // placeholder
 
-    for(uint64 m_clientGUID : _player->m_clientGUIDs)
+    for(auto m_clientGUID : _player->m_clientGUIDs)
     {
         uint8 questStatus = DIALOG_STATUS_NONE;
 
-        if(IS_CREATURE_GUID(m_clientGUID))
+        if (m_clientGUID.IsAnyTypeCreature())
         {
-            Creature *questgiver = ObjectAccessor::GetCreature(*_player, m_clientGUID);
+            Creature *questgiver = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, m_clientGUID);
             if(!questgiver || questgiver->IsHostileTo(_player))
                 continue;
             if(!questgiver->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
@@ -688,7 +688,7 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
             data << uint8(questStatus);
             ++count;
         }
-        else if(IS_GAMEOBJECT_GUID(m_clientGUID))
+        else if(m_clientGUID.IsGameObject())
         {
             GameObject *questgiver = ObjectAccessor::GetGameObject(*_player, m_clientGUID);
             if(!questgiver)

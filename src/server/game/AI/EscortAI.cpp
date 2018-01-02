@@ -9,7 +9,7 @@ enum Points
 
 EscortAI::EscortAI(Creature *c) : ScriptedAI(c),
 _playerCheckTimer(1000), _maxPlayerDistance(DEFAULT_MAX_PLAYER_DISTANCE), _pauseTimer(2500),
-_despawnAtEnd(true), _despawnAtFar(true), _escortState(STATE_ESCORT_NONE), _playerGUID(0), _escortQuest(nullptr),
+_despawnAtEnd(true), _despawnAtFar(true), _escortState(STATE_ESCORT_NONE), _escortQuest(nullptr),
 _hasImmuneToNPCFlags(false), _started(false), _ended(false), _resume(false), _manualPath(false),
 _running(false), _instantRespawn(false), _returnToStart(false), _activeAttacker(true)
 {
@@ -341,9 +341,7 @@ bool EscortAI::IsPlayerOrGroupInRange()
     return false;
 }
 
-//void Start(bool isActiveAttacker = true, bool run = false, uint64 playerGUID = 0, Quest const* quest = nullptr, bool instantRespawn = false, bool canLoopPath = false, bool resetWaypoints = true);
-
-void EscortAI::Start(bool isActiveAttacker /* = true*/, bool run /* = false */, uint64 playerGUID /* = 0 */, Quest const* quest /* = nullptr */, bool instantRespawn /* = false */, bool canLoopPath /* = false */, bool resetWaypoints /* = true */)
+void EscortAI::Start(bool isActiveAttacker /* = true*/, bool run /* = false */, ObjectGuid playerGUID /* = 0 */, Quest const* quest /* = nullptr */, bool instantRespawn /* = false */, bool canLoopPath /* = false */, bool resetWaypoints /* = true */)
 {
     if (Map* map = me->GetMap())
     {
@@ -403,7 +401,7 @@ void EscortAI::Start(bool isActiveAttacker /* = true*/, bool run /* = false */, 
         me->SetImmuneToNPC(false);
     }
 
-    TC_LOG_DEBUG("scripts", "EscortAI::Start: (script: %s, creature entry: %u) started with %u waypoints. ActiveAttacker = %d, Run = %d, Player = %u", me->GetScriptName().c_str(), me->GetEntry(), uint32(_path.nodes.size()), _activeAttacker, _running, GUID_LOPART(_playerGUID));
+    TC_LOG_DEBUG("scripts", "EscortAI::Start: (script: %s, creature entry: %u) started with %u waypoints. ActiveAttacker = %d, Run = %d, Player = %u", me->GetScriptName().c_str(), me->GetEntry(), uint32(_path.nodes.size()), _activeAttacker, _running, _playerGUID.GetCounter());
 
     // set initial speed
     me->SetWalk(!_running);

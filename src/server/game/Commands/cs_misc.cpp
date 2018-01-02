@@ -189,7 +189,7 @@ bool ChatHandler::HandleItemMoveCommand(const char* args)
 
 bool ChatHandler::HandleGUIDCommand(const char* /*args*/)
 {
-    uint64 guid = m_session->GetPlayer()->GetTarget();
+    ObjectGuid guid = m_session->GetPlayer()->GetTarget();
 
     if (guid == 0)
     {
@@ -198,7 +198,7 @@ bool ChatHandler::HandleGUIDCommand(const char* /*args*/)
         return false;
     }
 
-    PSendSysMessage(LANG_OBJECT_GUID, GUID_LOPART(guid), GUID_HIPART(guid));
+    PSendSysMessage(LANG_OBJECT_GUID, guid.GetCounter(), guid.GetHigh());
     return true;
 }
 
@@ -220,7 +220,7 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
         return false;
     }
 
-    uint64 guid = sCharacterCache->GetCharacterGuidByName(cname.c_str());
+    ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(cname.c_str());
     if(!guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -305,7 +305,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
         return false;
     }
 
-    uint64 guid = sCharacterCache->GetCharacterGuidByName(cname.c_str());
+    ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(cname.c_str());
     if(!guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -998,7 +998,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
 
     // player
     Player *chr = nullptr;
-    uint64 chr_guid = 0;
+    ObjectGuid chr_guid;
 
     std::string name;
 
@@ -1065,10 +1065,10 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
     else
     {
         // update level and XP at level, all other will be updated at loading
-        CharacterDatabase.PExecute("UPDATE characters SET level = '%u', xp = 0 WHERE guid = '%u'", newlevel, GUID_LOPART(chr_guid));
+        CharacterDatabase.PExecute("UPDATE characters SET level = '%u', xp = 0 WHERE guid = '%u'", newlevel, chr_guid.GetCounter());
     }
 
-    sCharacterCache->UpdateCharacterLevel(GUID_LOPART(chr_guid), newlevel);
+    sCharacterCache->UpdateCharacterLevel(chr_guid.GetCounter(), newlevel);
 
     if(m_session && m_session->GetPlayer() != chr)                       // including chr==NULL
         PSendSysMessage(LANG_YOU_CHANGE_LVL,name.c_str(),newlevel);
@@ -1234,7 +1234,7 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
         return false;
     }
 
-    PSendSysMessage(LANG_MOVEGENS_LIST,(unit->GetTypeId()==TYPEID_PLAYER ? "Player" : "Creature" ),unit->GetGUIDLow());
+    PSendSysMessage(LANG_MOVEGENS_LIST,(unit->GetTypeId()==TYPEID_PLAYER ? "Player" : "Creature" ),unit->GetGUID().GetCounter());
 
     MotionMaster* motionMaster = unit->GetMotionMaster();
     float x, y, z;
@@ -1277,9 +1277,9 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
                 if (!target)
                     SendSysMessage(LANG_MOVEGENS_CHASE_NULL);
                 else if (target->GetTypeId() == TYPEID_PLAYER)
-                    PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER, target->GetName().c_str(), target->GetGUIDLow());
+                    PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER, target->GetName().c_str(), target->GetGUID().GetCounter());
                 else
-                    PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE, target->GetName().c_str(), target->GetGUIDLow());
+                    PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE, target->GetName().c_str(), target->GetGUID().GetCounter());
                 break;
             }
             case FOLLOW_MOTION_TYPE:
@@ -1293,9 +1293,9 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
                 if (!target)
                     SendSysMessage(LANG_MOVEGENS_FOLLOW_NULL);
                 else if (target->GetTypeId() == TYPEID_PLAYER)
-                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER, target->GetName().c_str(), target->GetGUIDLow());
+                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER, target->GetName().c_str(), target->GetGUID().GetCounter());
                 else
-                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE, target->GetName().c_str(), target->GetGUIDLow());
+                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE, target->GetName().c_str(), target->GetGUID().GetCounter());
                 break;
             }
             case HOME_MOTION_TYPE:
@@ -1520,7 +1520,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = sCharacterCache->GetCharacterGuidByName(name);
+    ObjectGuid receiver_guid = sCharacterCache->GetCharacterGuidByName(name);
     if(!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1529,7 +1529,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
     }
 
     // from console show not existed sender
-    uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
+    ObjectGuid::LowType sender_guidlo = m_session ? m_session->GetPlayer()->GetGUID().GetCounter() : 0;
 
     MailMessageType messagetype = MAIL_NORMAL;
     uint32 stationery = MAIL_STATIONERY_GM;
@@ -1546,12 +1546,12 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         if(Item* item = Item::CreateItem(itr->first, itr->second,m_session ? m_session->GetPlayer() : nullptr))
         {
             item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
-            mi.AddItem(item->GetGUIDLow(), item->GetEntry(), item);
+            mi.AddItem(item->GetGUID().GetCounter(), item->GetEntry(), item);
         }
     }
     CharacterDatabase.CommitTransaction(trans);
 
-    WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, receiver_guid.GetCounter(), subject, itemTextId, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
 
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;
@@ -1621,7 +1621,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = sCharacterCache->GetCharacterGuidByName(name);
+    ObjectGuid receiver_guid = sCharacterCache->GetCharacterGuidByName(name);
     if (!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1630,7 +1630,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
     }
 
     // from console show not existed sender
-    uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
+    ObjectGuid::LowType sender_guidlo = m_session ? m_session->GetPlayer()->GetGUID().GetCounter() : 0;
 
     MailMessageType messagetype = MAIL_NORMAL;
     uint32 stationery = MAIL_STATIONERY_GM;
@@ -1638,7 +1638,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
 
     Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
 
-    WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, nullptr, money, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, receiver_guid.GetCounter(), subject, itemTextId, nullptr, money, 0, MAIL_CHECK_MASK_NONE);
 
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;
@@ -1848,7 +1848,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
             }
             //if player found: delete his freeze aura
             Field *fields=result->Fetch();
-            uint64 pguid = fields[0].GetUInt64();
+            ObjectGuid pguid = ObjectGuid(fields[0].GetUInt64());
             CharacterDatabase.PQuery("DELETE FROM `character_aura` WHERE character_aura.spell = 9454 AND character_aura.guid = '%u'",pguid);
             PSendSysMessage(LANG_COMMAND_UNFREEZE,name.c_str());
             return true;
@@ -1933,7 +1933,7 @@ bool ChatHandler::HandleGetMoveFlagsCommand(const char* args)
     if (!target)
         target = m_session->GetPlayer();
 
-    PSendSysMessage("Target (%u) moveflags = %u",target->GetGUIDLow(),target->GetUnitMovementFlags());
+    PSendSysMessage("Target (%u) moveflags = %u",target->GetGUID().GetCounter(),target->GetUnitMovementFlags());
 
     return true;
 }
@@ -1955,7 +1955,7 @@ bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
 
     target->SetUnitMovementFlags(moveFlags);
 
-    PSendSysMessage("Target (%u) moveflags set to %u",target->GetGUIDLow(),moveFlags);
+    PSendSysMessage("Target (%u) moveflags set to %u",target->GetGUID().GetCounter(),moveFlags);
 
     return true;
 }

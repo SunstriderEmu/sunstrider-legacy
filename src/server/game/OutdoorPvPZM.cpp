@@ -209,7 +209,7 @@ bool OPvPCapturePointZM_GraveYard::Update(uint32 diff)
     return retval;
 }
 
-int32 OPvPCapturePointZM_GraveYard::HandleOpenGo(Player *plr, uint64 guid)
+int32 OPvPCapturePointZM_GraveYard::HandleOpenGo(Player *plr, ObjectGuid guid)
 {
     int32 retval = OPvPCapturePoint::HandleOpenGo(plr, guid);
     if(retval>=0)
@@ -329,7 +329,7 @@ void OPvPCapturePointZM_GraveYard::SetBeaconState(uint32 controlling_faction)
 
 bool OPvPCapturePointZM_GraveYard::CanTalkTo(Player* plr, Creature* c, GossipMenuItems const& gso)
 {
-    uint64 guid = c->GetGUID();
+    ObjectGuid guid = c->GetGUID();
     auto itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())
     {
@@ -347,7 +347,7 @@ bool OPvPCapturePointZM_GraveYard::CanTalkTo(Player* plr, Creature* c, GossipMen
     return false;
 }
 
-bool OPvPCapturePointZM_GraveYard::HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid)
+bool OPvPCapturePointZM_GraveYard::HandleGossipOption(Player *plr, ObjectGuid guid, uint32 gossipid)
 {
     auto itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())

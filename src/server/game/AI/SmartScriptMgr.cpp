@@ -1393,7 +1393,7 @@ void ObjectGuidVector::UpdateObjects(WorldObject const& ref) const
 {
     _objectVector.clear();
 
-    for (uint64 const& guid : _guidVector)
+    for (ObjectGuid const& guid : _guidVector)
         if (WorldObject* obj = ObjectAccessor::GetWorldObject(ref, guid))
             _objectVector.push_back(obj);
 }

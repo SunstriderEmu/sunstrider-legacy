@@ -23,7 +23,7 @@ class TC_GAME_API TotemAI : public CreatureAI
 
     private:
         Totem &i_totem;
-        uint64 i_victimGuid;
+        ObjectGuid i_victimGuid;
 };
 
 //simply kill self

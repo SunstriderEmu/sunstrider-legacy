@@ -108,7 +108,7 @@ class TC_GAME_API ObjectGuid
 		static typename std::enable_if<ObjectGuidTraits<type>::MapSpecific, ObjectGuid>::type Create(uint32 entry, LowType counter) { return MapSpecific(type, entry, counter); }
 
         ObjectGuid() : _guid(0) { }
-        ObjectGuid(uint64 guid) : _guid(guid) { }
+        explicit ObjectGuid(uint64 guid) : _guid(guid) { }
         ObjectGuid(HighGuid hi, uint32 entry, uint32 counter) : _guid(counter ? uint64(counter) | (uint64(entry) << 24) | (uint64(hi) << 48) : 0) { }
         ObjectGuid(HighGuid hi, uint32 counter) : _guid(counter ? uint64(counter) | (uint64(hi) << 48) : 0) { }
 
@@ -184,8 +184,6 @@ class TC_GAME_API ObjectGuid
 
         bool operator!() const { return IsEmpty(); }
         bool operator== (ObjectGuid const& guid) const { return GetRawValue() == guid.GetRawValue(); }
-        bool operator== (uint64 guid) const { return GetRawValue() == guid; }
-        bool operator== (uint32 guid) const { return GetRawValue() == guid; }
         bool operator!= (ObjectGuid const& guid) const { return GetRawValue() != guid.GetRawValue(); }
         bool operator< (ObjectGuid const& guid) const { return GetRawValue() < guid.GetRawValue(); }
 
@@ -229,11 +227,11 @@ class TC_GAME_API ObjectGuid
 };
 
 // Some Shared defines
-typedef std::set<uint64> GuidSet;
-typedef std::list<uint64> GuidList;
-typedef std::deque<uint64> GuidDeque;
-typedef std::vector<uint64> GuidVector;
-typedef std::unordered_set<uint64> GuidUnorderedSet;
+typedef std::set<ObjectGuid> GuidSet;
+typedef std::list<ObjectGuid> GuidList;
+typedef std::deque<ObjectGuid> GuidDeque;
+typedef std::vector<ObjectGuid> GuidVector;
+typedef std::unordered_set<ObjectGuid> GuidUnorderedSet;
 
 // minimum buffer size for packed guid is 9 bytes
 #define PACKED_GUID_MIN_BUFFER_SIZE 9
@@ -245,8 +243,9 @@ class TC_GAME_API PackedGuid
     public:
         explicit PackedGuid() : _packedGuid(PACKED_GUID_MIN_BUFFER_SIZE) { _packedGuid.appendPackGUID(0); }
         explicit PackedGuid(uint64 guid) : _packedGuid(PACKED_GUID_MIN_BUFFER_SIZE) { _packedGuid.appendPackGUID(guid); }
+        explicit PackedGuid(ObjectGuid guid) : _packedGuid(PACKED_GUID_MIN_BUFFER_SIZE) { _packedGuid.appendPackGUID(guid); }
 
-        void Set(uint64 guid) { _packedGuid.wpos(0); _packedGuid.appendPackGUID(guid); }
+        void Set(ObjectGuid guid) { _packedGuid.wpos(0); _packedGuid.appendPackGUID(guid); }
 
         size_t size() const { return _packedGuid.size(); }
 

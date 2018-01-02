@@ -337,7 +337,7 @@ void BattlegroundEY::AddPlayer(Player *plr)
     PlayerScores[plr->GetGUID()] = sc;
 }
 
-void BattlegroundEY::RemovePlayer(Player *plr, uint64 guid)
+void BattlegroundEY::RemovePlayer(Player *plr, ObjectGuid guid)
 {
     // sometimes flag aura not removed :(
     for (int j = EY_POINTS_MAX; j >= 0; --j)
@@ -354,7 +354,7 @@ void BattlegroundEY::RemovePlayer(Player *plr, uint64 guid)
                 this->EventPlayerDroppedFlag(plr);
             else
             {
-                SetFlagPicker(0);
+                SetFlagPicker(ObjectGuid::Empty);
                 RespawnFlag(true);
             }
         }
@@ -514,8 +514,8 @@ void BattlegroundEY::ResetBGSubclass()
     m_HonorScoreTics[TEAM_HORDE] = 0;
     m_FlagState = BG_EY_FLAG_STATE_ON_BASE;
     m_FlagCapturedBgObjectType = 0;
-    m_FlagKeeper = 0;
-    m_DroppedFlagGUID = 0;
+    m_FlagKeeper.Clear();
+    m_DroppedFlagGUID.Clear();
     m_PointAddingTimer = 0;
     m_TowerCapCheckTimer = 0;
 
@@ -557,9 +557,9 @@ void BattlegroundEY::RespawnFlagAfterDrop()
     if(obj)
         obj->Delete();
     else
-        TC_LOG_ERROR("bg.battleground","BattlegroundEY: Unknown dropped flag guid: %u",GUID_LOPART(GetDroppedFlagGUID()));
+        TC_LOG_ERROR("bg.battleground","BattlegroundEY: Unknown dropped flag guid: %u",GetDroppedFlagGUID().GetCounter());
 
-    SetDroppedFlagGUID(0);
+    SetDroppedFlagGUID(ObjectGuid::Empty);
 }
 
 void BattlegroundEY::HandleKillPlayer(Player *player, Player *killer)
@@ -579,7 +579,7 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
         // just take off the aura
         if(IsFlagPickedup() && GetFlagPickerGUID() == Source->GetGUID())
         {
-            SetFlagPicker(0);
+            SetFlagPicker(ObjectGuid::Empty);
             Source->RemoveAurasDueToSpell(BG_EY_NETHERSTORM_FLAG_SPELL);
         }
         return;
@@ -591,7 +591,7 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
     if(GetFlagPickerGUID() != Source->GetGUID())
         return;
 
-    SetFlagPicker(0);
+    SetFlagPicker(ObjectGuid::Empty);
     Source->RemoveAurasDueToSpell(BG_EY_NETHERSTORM_FLAG_SPELL);
     m_FlagState = BG_EY_FLAG_STATE_ON_GROUND;
     m_FlagsTimer = BG_EY_FLAG_RESPAWN_TIME;
@@ -737,7 +737,7 @@ void BattlegroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
 
     uint8 team_id = 0;
 
-    SetFlagPicker(0);
+    SetFlagPicker(ObjectGuid::Empty);
     m_FlagState = BG_EY_FLAG_STATE_WAIT_RESPAWN;
     Source->RemoveAurasDueToSpell(BG_EY_NETHERSTORM_FLAG_SPELL);
 

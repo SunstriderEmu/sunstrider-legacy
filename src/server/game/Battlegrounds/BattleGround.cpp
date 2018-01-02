@@ -199,7 +199,7 @@ Battleground::~Battleground()
     for (auto & itr : m_team2LogInfo)
         delete itr.second;
 
-    for (BattlegroundScoreMap::const_iterator itr = PlayerScores.begin(); itr != PlayerScores.end(); ++itr)
+    for (auto itr = PlayerScores.begin(); itr != PlayerScores.end(); ++itr)
         delete itr->second;
 }
 
@@ -277,7 +277,7 @@ void Battleground::Update(time_t diff)
     }
     else if (m_LastResurrectTime > 500)    // Resurrect players only half a second later, to see spirit heal effect on NPC
     {
-        for(uint64 & itr : m_ResurrectQueue)
+        for(ObjectGuid& itr : m_ResurrectQueue)
         {
             Player *plr = sObjectMgr->GetPlayer(itr);
             if(!plr)
@@ -347,7 +347,7 @@ inline void Battleground::_ProcessLeave(uint32 diff)
                                                         // do not change any battleground's private variables
         }
 
-        for (uint64 m_Spectator : m_Spectators)
+        for (ObjectGuid const& m_Spectator : m_Spectators)
             RemovePlayerAtLeave(m_Spectator, true, true);
     }
 
@@ -728,7 +728,7 @@ void Battleground::EndBattleground(uint32 winner)
         plr->SendDirectMessage(&data);
     }
 
-    for (uint64 m_Spectator : m_Spectators)
+    for (ObjectGuid m_Spectator : m_Spectators)
     {
         Player *plr = sObjectMgr->GetPlayer(m_Spectator);
         if(!plr)
@@ -760,7 +760,7 @@ void Battleground::EndBattleground(uint32 winner)
     if(Source)
     {
         WorldPacket data;
-        ChatHandler::BuildChatPacket(data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, Source->GetGUID(), 0, winmsg, 0);
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, Source->GetGUID(), ObjectGuid::Empty, winmsg, 0);
         SendPacketToAll(&data);
     }
 }
@@ -856,7 +856,7 @@ void Battleground::SetStatus(BattlegroundStatus Status)
     }
 }
 
-void Battleground::RewardMark(Player *plr,uint32 count)
+void Battleground::RewardMark(Player* plr, uint32 count)
 {
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
     if(plr->GetDummyAura(SPELL_AURA_PLAYER_INACTIVE))
@@ -866,7 +866,7 @@ void Battleground::RewardMark(Player *plr,uint32 count)
         return;
    
     // Give less marks if the player has been disconnected during the battleground
-    auto itr = m_Players.find(plr->GetGUIDLow());
+    auto itr = m_Players.find(plr->GetGUID());
     if (itr != m_Players.end())
     {
         float offlineRatio = itr->second.TotalOfflineTime / float(m_StartTime);
@@ -940,7 +940,7 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
 
         // item
         MailItemsInfo mi;
-        mi.AddItem(markItem->GetGUIDLow(), markItem->GetEntry(), markItem);
+        mi.AddItem(markItem->GetGUID().GetCounter(), markItem->GetEntry(), markItem);
 
         // subject: item name
         std::string subject = plr->GetSession()->GetLocalizedItemName(markProto);
@@ -953,7 +953,7 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         snprintf(textBuf,300,textFormat.c_str(),GetName().c_str(),GetName().c_str());
         uint32 itemTextId = sObjectMgr->CreateItemText( textBuf );
 
-        WorldSession::SendMailTo(trans, plr, MAIL_CREATURE, MAIL_STATIONERY_NORMAL, bmEntry, plr->GetGUIDLow(), subject, itemTextId , &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+        WorldSession::SendMailTo(trans, plr, MAIL_CREATURE, MAIL_STATIONERY_NORMAL, bmEntry, plr->GetGUID().GetCounter(), subject, itemTextId , &mi, 0, 0, MAIL_CHECK_MASK_NONE);
         CharacterDatabase.CommitTransaction(trans);
     }
 }
@@ -991,7 +991,7 @@ void Battleground::BlockMovement(Player *plr)
     plr->SetClientControl(plr, 0);                          // movement disabled NOTE: the effect will be automatically removed by client when the player is teleported from the battleground, so no need to send with uint8(1) in RemovePlayerAtLeave()
 }
 
-void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket)
+void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool SendPacket)
 {
     if (isSpectator(guid))
     {
@@ -1240,7 +1240,7 @@ void Battleground::AddPlayer(Player *plr)
         
     // score struct must be created in inherited class
 
-    uint64 guid = plr->GetGUID();
+    ObjectGuid guid = plr->GetGUID();
     uint32 team = plr->GetBGTeam();
 
     BattlegroundPlayer bp;
@@ -1447,7 +1447,7 @@ void Battleground::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
     }
 }
 
-void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid)
+void Battleground::AddPlayerToResurrectQueue(ObjectGuid npc_guid, ObjectGuid player_guid)
 {
     m_ReviveQueue[npc_guid].push_back(player_guid);
 
@@ -1458,7 +1458,7 @@ void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
     plr->CastSpell(plr, SPELL_WAITING_FOR_RESURRECT, TRIGGERED_FULL_MASK);
 }
 
-void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
+void Battleground::RemovePlayerFromResurrectQueue(ObjectGuid player_guid)
 {
     for(auto & itr : m_ReviveQueue)
     {
@@ -1612,7 +1612,7 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y,
 
     if(!pCreature->IsPositionValid())
     {
-        TC_LOG_ERROR("battleground","ERROR: Creature (guidlow %d, entry %d) not added to battleground. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
+        TC_LOG_ERROR("battleground","ERROR: Creature (guidlow %d, entry %d) not added to battleground. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUID().GetCounter(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
         return nullptr;
     }
@@ -1649,7 +1649,7 @@ bool Battleground::DelCreature(uint32 type)
 
     cr->AI()->EnterEvadeMode();
     cr->AddObjectToRemoveList();
-    BgCreatures[type] = 0;
+    BgCreatures[type].Clear();
     return true;
 }
 
@@ -1667,7 +1667,7 @@ bool Battleground::DelObject(uint32 type)
     }
     obj->SetRespawnTime(0);                                 // not save respawn time
     obj->Delete();
-    BgObjects[type] = 0;
+    BgObjects[type].Clear();
     return true;
 }
 
@@ -1690,7 +1690,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
 
     //pCreature->SetDeathState(DEAD);
 
-    pCreature->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, pCreature->GetGUID());
+    pCreature->SetGuidValue(UNIT_FIELD_CHANNEL_OBJECT, pCreature->GetGUID());
     // aura
     pCreature->SetUInt32Value(UNIT_FIELD_AURA, SPELL_SPIRIT_HEAL_CHANNEL);
     pCreature->SetUInt32Value(UNIT_FIELD_AURAFLAGS, 0x00000009);
@@ -1769,7 +1769,7 @@ void Battleground::HandleTriggerBuff(ObjectGuid const& go_guid)
         index--;
     if (index < 0)
     {
-        TC_LOG_ERROR("battleground","Battleground (Type: %u) has buff gameobject (Guid: %u Entry: %u Type:%u) but it hasn't that object in its internal data",GetTypeID(),GUID_LOPART(go_guid),obj->GetEntry(),obj->GetGoType());
+        TC_LOG_ERROR("battleground","Battleground (Type: %u) has buff gameobject (Guid: %u Entry: %u Type:%u) but it hasn't that object in its internal data",GetTypeID(),go_guid.GetCounter(),obj->GetEntry(),obj->GetGoType());
         return;
     }
 
@@ -1824,18 +1824,18 @@ void Battleground::HandleKillPlayer( Player* player, Player* killer )
 
 // return the player's team based on battlegroundplayer info
 // used in same faction arena matches mainly
-uint32 Battleground::GetPlayerTeam(uint64 guid)
+uint32 Battleground::GetPlayerTeam(ObjectGuid guid)
 {
-    std::map<uint64, BattlegroundPlayer>::const_iterator itr = m_Players.find(guid);
+    std::map<ObjectGuid, BattlegroundPlayer>::const_iterator itr = m_Players.find(guid);
     if(itr != m_Players.end())
         return itr->second.Team;
     return 0;
 }
 
-bool Battleground::IsPlayerInBattleground(uint64 guid)
+bool Battleground::IsPlayerInBattleground(ObjectGuid guid)
 {
-    std::map<uint64, BattlegroundPlayer>::const_iterator itr = m_Players.find(guid);
-    if(itr!=m_Players.end())
+    std::map<ObjectGuid, BattlegroundPlayer>::const_iterator itr = m_Players.find(guid);
+    if(itr != m_Players.end())
         return true;
     return false;
 }
@@ -1935,7 +1935,7 @@ void Battleground::EventPlayerLoggedIn(Player* player)
 // This method should be called when player logs out from running battleground
 void Battleground::EventPlayerLoggedOut(Player* player)
 {
-    uint64 guid = player->GetGUID();
+    ObjectGuid guid = player->GetGUID();
     if (!IsPlayerInBattleground(guid))  // Check if this player really is in battleground (might be a GM who teleported inside)
         return;
 
@@ -1970,7 +1970,7 @@ void Battleground::EventPlayerLoggedOut(Player* player)
 void Battleground::PlayerInvitedInRatedArena(Player* player, uint32 team)
 {
     auto  logInfo = new PlayerLogInfo;
-    logInfo->guid = player->GetGUIDLow();
+    logInfo->guid = player->GetGUID().GetCounter();
     logInfo->ip = player->GetSession()->GetRemoteAddress();
     logInfo->heal = 0;
     logInfo->damage = 0;
@@ -1987,13 +1987,13 @@ void Battleground::SendSpectateAddonsMsg(SpectatorAddonMsg msg)
     if (!HaveSpectators())
         return;
 
-    for (uint64 m_Spectator : m_Spectators)
+    for (ObjectGuid m_Spectator : m_Spectators)
         msg.SendPacket(m_Spectator);
 }
 
-bool Battleground::isSpectator(uint64 guid)
+bool Battleground::isSpectator(ObjectGuid guid)
 {
-    for(uint64 m_Spectator : m_Spectators)
+    for(ObjectGuid m_Spectator : m_Spectators)
     {
         if (guid == m_Spectator)
             return true;
@@ -2085,7 +2085,7 @@ inline void Battleground::_ProcessOfflineQueue(uint32 diff)
                 if (isBattleground() /*&& sWorld->getBoolConfig(CONFIG_BATTLEGROUND_TRACK_DESERTERS) */ &&
                     (GetStatus() == STATUS_IN_PROGRESS || GetStatus() == STATUS_WAIT_JOIN))
                 {
-                    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '8' WHERE guid = %u", GUID_LOPART(itr->first)); // AT_LOGIN_SET_DESERTER
+                    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '8' WHERE guid = %u", itr->first.GetCounter()); // AT_LOGIN_SET_DESERTER
                     /*PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_DESERTER_TRACK);
                     stmt->setUInt32(0, itr->first.GetCounter());
                     stmt->setUInt8(1, BG_DESERTION_TYPE_OFFLINE);

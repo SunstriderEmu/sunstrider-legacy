@@ -113,26 +113,26 @@ class TC_GAME_API GameEventMgr
         Event can be negative to have the creature spawned when event is inactive.
 		If map is given, this function will also add/remove the creature from the map if found
         */
-        bool AddCreatureToEvent(uint32 guid, int16 event_id, Map* map = nullptr);
+        bool AddCreatureToEvent(ObjectGuid guid, int16 event_id, Map* map = nullptr);
         /* Add a gobject of given guid to an event (both in DB + in live memory).  Return success.
         Event can be negative to have the gameobject spawned when event is inactive.
 		If map is given, this function will also add/remove the gobject from the map if found
          */
-        bool AddGameObjectToEvent(uint32 guid, int16 event_id, Map* map = nullptr);
+        bool AddGameObjectToEvent(ObjectGuid guid, int16 event_id, Map* map = nullptr);
         /* Remove a creature of given guid from all events (both in DB + in live memory). If map is given, this function will also add/remove the gobject from the map if found. Return success. */
-        bool RemoveCreatureFromEvent(uint32 guid, Map* map = nullptr);
+        bool RemoveCreatureFromEvent(ObjectGuid guid, Map* map = nullptr);
         /* Remove a gameobject of given guid from all events (both in DB + in live memory). If map is given, this function will also add/remove the gobject from the map if found. Return success. */
-        bool RemoveGameObjectFromEvent(uint32 guid, Map* map = nullptr);
+        bool RemoveGameObjectFromEvent(ObjectGuid guid, Map* map = nullptr);
         /* Create a new game event, both in database and live memory, return success & the id of the created event in reference */
-        bool CreateGameEvent(const char* name,int16& event_id);
+        bool CreateGameEvent(const char* name, int16& event_id);
         /* Set start time of a game event, both in database and live memory, return success */
         //bool SetEventStartTime(uint16 event_id,time_t startTime);
         /* Set end time of a game event, both in database and live memory, return success */
         //bool SetEventEndTime(uint16 event_id,time_t endTime);
         /* Return an event_id if a given creature is linked to game_event system, null otherwise. Can be negative (despawned when event is enabled and vice versa). */
-        int16 GetCreatureEvent(uint32 guid);
+        int16 GetCreatureEvent(ObjectGuid guid);
         /* Return an event_id if a given gameobject is linked to game_event system, null otherwise. Can be negative (despawned when event is enabled and vice versa). */
-        int16 GetGameObjectEvent(uint32 guid);
+        int16 GetGameObjectEvent(ObjectGuid guid);
 
         /* just a helper function returning wheter object of this event should be spawned depending if event is active or not
         Negative events can be used here too.
@@ -163,7 +163,7 @@ class TC_GAME_API GameEventMgr
         bool hasCreatureActiveEventExcept(uint32 creature_guid, uint16 event_id);
         bool hasGameObjectActiveEventExcept(uint32 go_guid, uint16 event_id);
     protected:
-        typedef std::vector<GuidList> GameEventGuidMap;
+        typedef std::vector<std::list<ObjectGuid::LowType>> GameEventGuidMap;
         typedef std::pair<uint32, ModelEquip> ModelEquipPair;
         typedef std::list<ModelEquipPair> ModelEquipList;
         typedef std::vector<ModelEquipList> GameEventModelEquipMap;
@@ -179,10 +179,10 @@ class TC_GAME_API GameEventMgr
         typedef std::list<GuidNPCFlagPair> NPCFlagList;
         typedef std::vector<NPCFlagList> GameEventNPCFlagMap;
         typedef std::pair<uint16 /*event id*/, uint32 /*menu id*/> EventNPCGossipIdPair;
-        typedef std::map<uint32 /*guid*/, EventNPCGossipIdPair> GuidEventNpcGossipIdMap;
+        typedef std::map<ObjectGuid::LowType /*guid*/, EventNPCGossipIdPair> GuidEventNpcGossipIdMap;
         typedef std::vector<uint32> GameEventBitmask;
         GameEventQuestMap mGameEventCreatureQuests;
-        GameEventQuestMap mGameEventGameObjectQuests;
+        GameEventQuestMap mGameEventGameObjectQuests; 
         GameEventNPCVendorMap mGameEventVendors;
         GameEventModelEquipMap mGameEventModelEquip;
         GameEventNPCTrainerSpellsMap mGameEventTrainers;

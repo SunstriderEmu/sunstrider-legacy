@@ -27,7 +27,7 @@ class TC_GAME_API Totem : public Minion
         uint32 GetTotemDuration() const { return m_duration; }
         TotemType GetTotemType() const { return m_type; }
         void SetDuration(uint32 dur) { m_duration = dur; }
-        void SetOwner(uint64 guid);
+        void SetOwner(ObjectGuid guid);
 
         bool UpdateStats(Stats /*stat*/) override { return true; }
         bool UpdateAllStats() override { return true; }

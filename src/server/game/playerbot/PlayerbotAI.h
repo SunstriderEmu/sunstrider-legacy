@@ -257,10 +257,10 @@ public:
 
 private:
    
-    std::unordered_map<uint64 /*targetGUID*/, std::vector<SpellDamageDoneInfo>> spellDamageDone;
-    std::unordered_map<uint64 /*targetGUID*/, std::vector<WhiteDamageDoneInfo>> whiteDamageDone;
-    std::unordered_map<uint64 /*targetGUID*/, std::vector<HealingDoneInfo>> healingDone;
-    std::unordered_map<uint64 /*targetGUID*/, std::vector<TickInfo>> ticksDone;
+    std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<SpellDamageDoneInfo>> spellDamageDone;
+    std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<WhiteDamageDoneInfo>> whiteDamageDone;
+    std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<HealingDoneInfo>> healingDone;
+    std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<TickInfo>> ticksDone;
 
 };
 

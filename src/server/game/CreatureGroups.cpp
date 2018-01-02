@@ -38,7 +38,7 @@ void CreatureGroupManager::Clear()
     CreatureGroupMap.clear();
 }
 
-void CreatureGroupManager::AddGroupMember(uint32 creature_lowguid, FormationInfo* group_member)
+void CreatureGroupManager::AddGroupMember(ObjectGuid::LowType creature_lowguid, FormationInfo* group_member)
 {
     CreatureGroupMap[creature_lowguid] = group_member;
 }
@@ -144,7 +144,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         //Load group member data
         group_member                        = new FormationInfo;
         group_member->leaderGUID            = fields[0].GetUInt32();
-        uint32 memberGUID = fields[1].GetUInt32();
+        ObjectGuid::LowType memberGUID = fields[1].GetUInt32();
         //If creature is group leader we may skip loading of dist/angle
         if(group_member->leaderGUID != memberGUID)
         {
@@ -174,11 +174,11 @@ void CreatureGroupManager::LoadCreatureFormations()
     //Free some heap
 }
 
-uint32 CreatureGroupManager::GetCreatureGUIDForStore(Creature* member)
+ObjectGuid::LowType CreatureGroupManager::GetCreatureGUIDForStore(Creature* member)
 {
     //always use table guid except for summons
     if (member->IsSummon())
-        return member->GetGUIDLow();
+        return member->GetGUID().GetCounter();
     else
         return member->GetSpawnId();
 }
@@ -198,12 +198,12 @@ void CreatureGroup::EmptyFormation()
 
 void CreatureGroup::AddMember(Creature *member, MemberPosition* pos)
 {
-    uint32 memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(member);
+    ObjectGuid::LowType memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(member);
 
     if (member->GetFormation())
     {
         if(member->IsSummon())
-            TC_LOG_ERROR("misc", "Tried to add a summoned member (guid: %u, entry %u) already in a formation to formation", member->GetGUIDLow(), member->GetEntry());
+            TC_LOG_ERROR("misc", "Tried to add a summoned member (guid: %u, entry %u) already in a formation to formation", member->GetGUID().GetCounter(), member->GetEntry());
         else
             TC_LOG_ERROR("misc", "Tried to add a member (tableguid: %u, entry %u) already in a formation to formation", member->GetSpawnId(), member->GetEntry());
         return;
@@ -220,7 +220,7 @@ void CreatureGroup::AddMember(Creature *member, MemberPosition* pos)
     {
         //get leader to calc angle and distance from his current pos
         if (!m_leader)
-            m_leader = member->GetMap()->GetCreature(MAKE_PAIR64(m_groupID, uint32(HighGuid::Unit)));
+            m_leader = member->GetMap()->GetCreatureBySpawnId(m_groupID);
        
         if (!m_leader)
             return;
@@ -238,7 +238,7 @@ void CreatureGroup::AddMember(Creature *member, MemberPosition* pos)
                 fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
             }
         }
-        fInfo->leaderGUID = m_leader->GetGUIDLow();
+        fInfo->leaderGUID = m_leader->GetGUID().GetCounter();
         sCreatureGroupMgr->AddGroupMember(memberGUID, fInfo);
     }
     else {
@@ -266,7 +266,7 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
     if(!member || !target)
         return;
 
-    uint32 memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(member);
+    ObjectGuid::LowType memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(member);
 
     CreatureGroupInfoType const& groupMap = sCreatureGroupMgr->GetGroupMap();
     auto fInfo = groupMap.find(memberGUID);
@@ -354,7 +354,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
     if(!m_leader)
         return;
 
-    uint32 memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(m_leader);
+    ObjectGuid::LowType memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(m_leader);
 
     uint8 groupAI = sCreatureGroupMgr->GetGroupMap().at(memberGUID)->groupAI;
     if (groupAI == GROUP_AI_NONE)

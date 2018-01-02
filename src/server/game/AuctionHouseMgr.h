@@ -27,8 +27,8 @@ enum AuctionAction
 struct AuctionEntry
 {
     uint32 Id;
-    uint32 auctioneer;                                      // creature low guid
-    uint32 item_guidlow;
+    ObjectGuid::LowType auctioneer;                                      // creature low guid
+    ObjectGuid::LowType item_guidlow;
     uint32 item_template;
     uint32 owner;
     uint32 startbid;                                        //maybe useless
@@ -85,7 +85,7 @@ class AuctionHouseObject
         return AuctionsMap.erase(id) ? true : false;
     }
     
-    void RemoveAllAuctionsOf(SQLTransaction& trans, uint32 ownerGUID);
+    void RemoveAllAuctionsOf(SQLTransaction& trans, ObjectGuid::LowType ownerGUID);
 
     void Update();
 
@@ -135,7 +135,7 @@ class AuctionHouseMgr
         void SendAuctionExpiredMail(SQLTransaction& trans, AuctionEntry * auction );
         static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item *pItem);
         static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId);
-        void RemoveAllAuctionsOf(SQLTransaction& trans, uint32 ownerGUID);
+        void RemoveAllAuctionsOf(SQLTransaction& trans, ObjectGuid::LowType ownerGUID);
 
     public:
       //load first auction items, because of check if item exists, when loading

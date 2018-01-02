@@ -42,13 +42,13 @@ void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recvData )
     
     
 
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TABARDDESIGNER);
     if (!unit)
     {
-        TC_LOG_ERROR( "network","WORLD: HandleTabardVendorActivateOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "network","WORLD: HandleTabardVendorActivateOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 
@@ -59,7 +59,7 @@ void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recvData )
     SendTabardVendorActivate(guid);
 }
 
-void WorldSession::SendTabardVendorActivate( uint64 guid )
+void WorldSession::SendTabardVendorActivate( ObjectGuid guid )
 {
     WorldPacket data( MSG_TABARDVENDOR_ACTIVATE, 8 );
     data << guid;
@@ -72,13 +72,13 @@ void WorldSession::HandleBankerActivateOpcode( WorldPacket & recvData )
     
     
 
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_BANKER);
     if (!unit)
     {
-        TC_LOG_ERROR( "network","WORLD: HandleBankerActivateOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "network","WORLD: HandleBankerActivateOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 
@@ -89,7 +89,7 @@ void WorldSession::HandleBankerActivateOpcode( WorldPacket & recvData )
     SendShowBank(guid);
 }
 
-void WorldSession::SendShowBank( uint64 guid )
+void WorldSession::SendShowBank( ObjectGuid guid )
 {
     WorldPacket data( SMSG_SHOW_BANK, 8 );
     data << guid;
@@ -102,24 +102,24 @@ void WorldSession::HandleTrainerListOpcode( WorldPacket & recvData )
     
     
 
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> guid;
     SendTrainerList( guid );
 }
 
-void WorldSession::SendTrainerList( uint64 guid )
+void WorldSession::SendTrainerList( ObjectGuid guid )
 {
     std::string str = GetTrinityString(LANG_NPC_TAINER_HELLO);
     SendTrainerList( guid, str );
 }
 
-void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
+void WorldSession::SendTrainerList( ObjectGuid guid, const std::string& strTitle )
 {
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER);
     if (!unit)
     {
-        TC_LOG_ERROR( "network","WORLD: SendTrainerList - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "network","WORLD: SendTrainerList - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 
@@ -135,7 +135,7 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
 
     if (!ci)
     {
-        TC_LOG_ERROR("network", "WORLD: SendTrainerList - (GUID: %u) NO CREATUREINFO!",GUID_LOPART(guid) );
+        TC_LOG_ERROR("network", "WORLD: SendTrainerList - (GUID: %u) NO CREATUREINFO!",guid.GetCounter() );
         return;
     }
 
@@ -143,7 +143,7 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
     if(!trainer_spells)
     {
         TC_LOG_ERROR( "network","WORLD: SendTrainerList - Training spells not found for creature (GUID: %u Entry: %u)",
-            GUID_LOPART(guid), unit->GetEntry());
+            guid.GetCounter(), unit->GetEntry());
         return;
     }
 
@@ -192,7 +192,7 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
 
 void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
     uint32 spellId = 0;
 
     recvData >> guid >> spellId;
@@ -201,7 +201,7 @@ void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER);
     if (!unit)
     {
-        TC_LOG_ERROR( "network","WORLD: HandleTrainerBuySpellOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "network","WORLD: HandleTrainerBuySpellOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 
@@ -255,13 +255,13 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
 {
 //    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GOSSIP_HELLO");
     
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid);
     if (!unit)
     {
-        TC_LOG_ERROR("network", "WORLD: HandleGossipHelloOpcode - Player %s (GUID: %u) attempted to speak with unit (GUID: %u) but it was not found or out of range. Cheat attempt?", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow(), uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR("network", "WORLD: HandleGossipHelloOpcode - Player %s (GUID: %u) attempted to speak with unit (GUID: %u) but it was not found or out of range. Cheat attempt?", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter(), uint32(guid.GetCounter()) );
         return;
     }
 
@@ -299,14 +299,14 @@ void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recvData )
 {
     
 
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> guid;
 
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_SPIRITHEALER);
     if (!unit)
     {
-        TC_LOG_ERROR("network", "WORLD: HandleSpiritHealerActivateOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR("network", "WORLD: HandleSpiritHealerActivateOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(guid.GetCounter()) );
         return;
     }
 
@@ -355,11 +355,7 @@ void WorldSession::SendSpiritResurrect()
 
 void WorldSession::HandleBinderActivateOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
-    uint64 npcGUID;
+    ObjectGuid npcGUID;
     recvData >> npcGUID;
 
     if(!GetPlayer()->IsAlive())
@@ -368,7 +364,7 @@ void WorldSession::HandleBinderActivateOpcode( WorldPacket & recvData )
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(npcGUID, UNIT_NPC_FLAG_INNKEEPER);
     if (!unit)
     {
-        TC_LOG_ERROR( "network","WORLD: HandleBinderActivateOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(npcGUID)) );
+        TC_LOG_ERROR( "network","WORLD: HandleBinderActivateOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(npcGUID.GetCounter()) );
         return;
     }
 
@@ -399,18 +395,15 @@ void WorldSession::SendBindPoint(Creature *npc)
 //Need fix
 void WorldSession::HandleListStabledPetsOpcode( WorldPacket & recvData )
 {
-    
-    
     TC_LOG_DEBUG("network", "WORLD: Recv MSG_LIST_STABLED_PETS");
     
-
-    uint64 npcGUID;
+    ObjectGuid npcGUID;
 
     recvData >> npcGUID;
     
     if (!CheckStableMaster(npcGUID))
     {
-        TC_LOG_ERROR("network","WORLD: HandleListStabledPetsOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(npcGUID)) );
+        TC_LOG_ERROR("network","WORLD: HandleListStabledPetsOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(npcGUID.GetCounter()) );
         return;
     }
 
@@ -425,16 +418,16 @@ void WorldSession::HandleListStabledPetsOpcode( WorldPacket & recvData )
     SendStablePet(npcGUID);
 }
 
-void WorldSession::SendStablePet(uint64 guid )
+void WorldSession::SendStablePet(ObjectGuid guid )
 {
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SLOTS_DETAIL);
 
-    stmt->setUInt32(0, _player->GetGUIDLow());
+    stmt->setUInt32(0, _player->GetGUID().GetCounter());
 
     _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::SendStablePetCallback, this, guid, std::placeholders::_1)));
 }
 
-void WorldSession::SendStablePetCallback(uint64 guid, PreparedQueryResult result)
+void WorldSession::SendStablePetCallback(ObjectGuid guid, PreparedQueryResult result)
 {
     if (!GetPlayer())
         return;
@@ -443,7 +436,7 @@ void WorldSession::SendStablePetCallback(uint64 guid, PreparedQueryResult result
 
     WorldPacket data(MSG_LIST_STABLED_PETS, 200);           // guess size
 
-    data << uint64 (guid);
+    data << ObjectGuid(guid);
 
     size_t wpos = data.wpos();
     data << uint8(0);                                       // place holder for slot show number
@@ -482,7 +475,7 @@ void WorldSession::SendStablePetCallback(uint64 guid, PreparedQueryResult result
 void WorldSession::HandleStablePet( WorldPacket & recvData )
 {
     //TC_LOG_DEBUG("network", "WORLD: Recv CMSG_STABLE_PET");
-    uint64 npcGUID;
+    ObjectGuid npcGUID;
 
     recvData >> npcGUID;
 
@@ -513,7 +506,7 @@ void WorldSession::HandleStablePet( WorldPacket & recvData )
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SLOTS);
 
-    stmt->setUInt32(0, _player->GetGUIDLow());
+    stmt->setUInt32(0, _player->GetGUID().GetCounter());
     stmt->setUInt8(1, PET_SAVE_FIRST_STABLE_SLOT);
     stmt->setUInt8(2, PET_SAVE_LAST_STABLE_SLOT);
 
@@ -558,7 +551,7 @@ void WorldSession::HandleStablePetCallback(PreparedQueryResult result)
 void WorldSession::HandleUnstablePet( WorldPacket & recvData )
 {
     //TC_LOG_DEBUG("network", "WORLD: Recv CMSG_UNSTABLE_PET.");
-    uint64 npcGUID;
+    ObjectGuid npcGUID;
     uint32 petId;
 
     recvData >> npcGUID >> petId;
@@ -575,7 +568,7 @@ void WorldSession::HandleUnstablePet( WorldPacket & recvData )
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_ENTRY);
 
-    stmt->setUInt32(0, _player->GetGUIDLow());
+    stmt->setUInt32(0, _player->GetGUID().GetCounter());
     stmt->setUInt32(1, petId);
     stmt->setUInt8(2, PET_SAVE_FIRST_STABLE_SLOT);
     stmt->setUInt8(3, PET_SAVE_LAST_STABLE_SLOT);
@@ -603,7 +596,7 @@ void WorldSession::HandleUnstablePetCallback(uint32 petId, PreparedQueryResult r
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_CURRENT);
 
-    stmt->setUInt32(0, _player->GetGUIDLow());
+    stmt->setUInt32(0, _player->GetGUID().GetCounter());
 
     _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleUnstablePetCallback2, this, petId, petEntry, std::placeholders::_1)));
 }
@@ -641,14 +634,14 @@ void WorldSession::HandleUnstablePetCallback2(uint32 petId, uint32 petEntry, Pre
 
 void WorldSession::HandleBuyStableSlot( WorldPacket & recvData )
 {
-    uint64 npcGUID;
+    ObjectGuid npcGUID;
 
     recvData >> npcGUID;
 
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(npcGUID, UNIT_NPC_FLAG_STABLEMASTER);
     if (!unit)
     {
-        TC_LOG_ERROR( "network","WORLD: HandleBuyStableSlot - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(npcGUID)) );
+        TC_LOG_ERROR( "network","WORLD: HandleBuyStableSlot - Unit (GUID: %u) not found or you can't interact with him.", uint32(npcGUID.GetCounter()) );
         return;
     }
 
@@ -685,7 +678,7 @@ void WorldSession::HandleStableRevivePet(WorldPacket &/* recvData */)
 void WorldSession::HandleStableSwapPet(WorldPacket& recvData)
 {
     //TC_LOG_DEBUG("network", "WORLD: Recv CMSG_STABLE_SWAP_PET.");
-    uint64 npcGUID;
+    ObjectGuid npcGUID;
     uint32 petId;
 
     recvData >> npcGUID >> petId;
@@ -712,7 +705,7 @@ void WorldSession::HandleStableSwapPet(WorldPacket& recvData)
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SLOT_BY_ID);
 
-    stmt->setUInt32(0, _player->GetGUIDLow());
+    stmt->setUInt32(0, _player->GetGUID().GetCounter());
     stmt->setUInt32(1, petId);
 
     _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleStableSwapPetCallback, this, petId, std::placeholders::_1)));
@@ -771,7 +764,7 @@ void WorldSession::HandleStableSwapPetCallback(uint32 petId, PreparedQueryResult
 
 void WorldSession::HandleRepairItemOpcode( WorldPacket & recvData )
 {
-    uint64 npcGUID, itemGUID;
+    ObjectGuid npcGUID, itemGUID;
     uint8 guildBank;                                        // new in 2.3.2, bool that means from guild bank money
 
     recvData >> npcGUID >> itemGUID >> guildBank;
@@ -779,7 +772,7 @@ void WorldSession::HandleRepairItemOpcode( WorldPacket & recvData )
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(npcGUID, UNIT_NPC_FLAG_REPAIR);
     if (!unit)
     {
-        TC_LOG_ERROR("network", "WORLD: HandleRepairItemOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(npcGUID)) );
+        TC_LOG_ERROR("network", "WORLD: HandleRepairItemOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(npcGUID.GetCounter()) );
         return;
     }
 
@@ -810,8 +803,8 @@ void WorldSession::HandleRepairItemOpcode( WorldPacket & recvData )
         Guild *pGuild = sObjectMgr->GetGuildById(GuildId);
         if (!pGuild)
             return;
-        pGuild->LogBankEvent(GUILD_BANK_LOG_REPAIR_MONEY, 0, _player->GetGUIDLow(), TotalCost);
-        pGuild->SendMoneyInfo(this, _player->GetGUIDLow());
+        pGuild->LogBankEvent(GUILD_BANK_LOG_REPAIR_MONEY, 0, _player->GetGUID().GetCounter(), TotalCost);
+        pGuild->SendMoneyInfo(this, _player->GetGUID().GetCounter());
     }
 }
 

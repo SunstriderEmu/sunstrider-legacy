@@ -19,7 +19,7 @@ struct TSpellSummary
 
 void SummonList::Despawn(Creature *summon)
 {
-    uint64 guid = summon->GetGUID();
+    ObjectGuid guid = summon->GetGUID();
     for(auto i = begin(); i != end(); ++i)
     {
         if(*i == guid)
@@ -51,7 +51,7 @@ void SummonList::DespawnEntry(uint32 entry)
 
 void SummonList::DespawnAll(bool withoutWorldBoss)
 {
-    for(uint64 & i : *this)
+    for(ObjectGuid & i : *this)
     {
         if(Creature *summon = ObjectAccessor::GetCreature(*me, i))
         {
@@ -71,7 +71,7 @@ bool SummonList::IsEmpty()
 
 Creature* SummonList::GetCreatureWithEntry(uint32 entry) const
 {
-    for (uint64 i : *this)
+    for (ObjectGuid i : *this)
     {
         if (Creature* summon = ObjectAccessor::GetCreature(*me, i))
             if (summon->GetEntry() == entry)

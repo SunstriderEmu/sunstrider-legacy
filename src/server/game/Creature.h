@@ -498,7 +498,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void DisappearAndDie();
 
-        bool Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData *data = nullptr, bool dynamic = false);
+        bool Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData *data = nullptr, bool dynamic = false);
         //get data from SQL storage
         void LoadCreatureAddon();
         //reapply creature addon data to creature
@@ -774,7 +774,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetCreaturePoolId(uint32 id) { m_creaturePoolId = id; }
         
         /** This is only filled for world bosses */
-        bool HadPlayerInThreatListAtDeath(uint64 guid) const;
+        bool HadPlayerInThreatListAtDeath(ObjectGuid guid) const;
         void ConvertThreatListIntoPlayerListAtDeath();
         std::set<uint32> const& GetThreatListAtDeath() const { return m_playerInThreatListAtDeath; }
 
@@ -816,7 +816,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool GetRespawnCompatibilityMode() { return m_respawnCompatibilityMode; }
 
         // Handling caster facing during spellcast
-        void SetTarget(uint64 guid) override;
+        void SetTarget(ObjectGuid guid) override;
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
         void ReleaseFocus(Spell const* focusSpell);
         bool IsFocusing(Spell const* focusSpell = nullptr, bool withDelay = false) override;
@@ -842,7 +842,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsEscortNPC(bool onlyIfActive = true);
 
     protected:
-        bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
+        bool CreateFromProto(ObjectGuid::LowType guidlow, uint32 Entry, const CreatureData *data = nullptr);
         bool InitEntry(uint32 entry, const CreatureData* data = nullptr);
 
 		bool IsInvisibleDueToDespawn() const override;
@@ -854,7 +854,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void _RealtimeSetCreatureInfo();
 
         uint32 m_lootMoney;
-        uint64 m_lootRecipient;
+        ObjectGuid m_lootRecipient;
         uint32 m_lootRecipientGroup; //group identified by leader
         /* This is only filled for worldbosses with every players with threat > 0  */
         std::set<uint32> m_playerInThreatListAtDeath;
@@ -878,7 +878,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 m_relocateTimer;
         void AreaCombat();
         MovementGeneratorType m_defaultMovementType;
-        uint32 m_spawnId;                               ///< For new or temporary creatures is 0 for saved it is lowguid
+        ObjectGuid::LowType m_spawnId;                               ///< For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;
         int8 m_originalEquipmentId; // can be -1
 
@@ -941,16 +941,16 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 class TC_GAME_API AssistDelayEvent : public BasicEvent
 {
     public:
-        AssistDelayEvent(const uint64& victim, Unit& owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
+        AssistDelayEvent(ObjectGuid victim, Unit& owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
 
         bool Execute(uint64 e_time, uint32 p_time) override;
-        void AddAssistant(const uint64& guid) { m_assistants.push_back(guid); }
+        void AddAssistant(ObjectGuid guid) { m_assistants.push_back(guid); }
     private:
         AssistDelayEvent();
 
-        uint64            m_victim;
-        std::list<uint64> m_assistants;
-        Unit&             m_owner;
+        ObjectGuid            m_victim;
+        std::list<ObjectGuid> m_assistants;
+        Unit&                 m_owner;
 };
 
 class TC_GAME_API ForcedDespawnDelayEvent : public BasicEvent

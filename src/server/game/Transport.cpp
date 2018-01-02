@@ -53,7 +53,7 @@ MotionTransport::~MotionTransport()
     UnloadStaticPassengers();
 }
 
-bool MotionTransport::CreateMoTrans(uint32 guidlow, uint32 entry, uint32 mapid, float x, float y, float z, float ang, uint32 animprogress)
+bool MotionTransport::CreateMoTrans(ObjectGuid::LowType guidlow, uint32 entry, uint32 mapid, float x, float y, float z, float ang, uint32 animprogress)
 {
     Relocate(x, y, z, ang);
 
@@ -369,13 +369,13 @@ void MotionTransport::RemovePassenger(WorldObject* passenger, bool withAll)
         {
             passenger->SetTransport(nullptr);
             passenger->m_movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
-            passenger->m_movementInfo.transport.guid = 0;
+            passenger->m_movementInfo.transport.guid.Clear();
             passenger->m_movementInfo.transport.pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         }
     }
 }
 
-Creature* MotionTransport::CreateNPCPassenger(uint32 guid, CreatureData const* data)
+Creature* MotionTransport::CreateNPCPassenger(ObjectGuid::LowType guid, CreatureData const* data)
 {
     Map* map = GetMap();
     auto  creature = new Creature();
@@ -412,7 +412,7 @@ Creature* MotionTransport::CreateNPCPassenger(uint32 guid, CreatureData const* d
 
     if (!creature->IsPositionValid())
     {
-        TC_LOG_ERROR("entities.transport", "Creature (guidlow %d, entry %d) not created. Suggested coordinates aren't valid (X: %f Y: %f)", creature->GetGUIDLow(), creature->GetEntry(), creature->GetPositionX(), creature->GetPositionY());
+        TC_LOG_ERROR("entities.transport", "Creature (guidlow %d, entry %d) not created. Suggested coordinates aren't valid (X: %f Y: %f)", creature->GetGUID().GetCounter(), creature->GetEntry(), creature->GetPositionX(), creature->GetPositionY());
         delete creature;
         return nullptr;
     }
@@ -428,7 +428,7 @@ Creature* MotionTransport::CreateNPCPassenger(uint32 guid, CreatureData const* d
     return creature;
 }
 
-GameObject* MotionTransport::CreateGOPassenger(uint32 guid, GameObjectData const* data)
+GameObject* MotionTransport::CreateGOPassenger(ObjectGuid::LowType guid, GameObjectData const* data)
 {
 #ifdef LICH_KING
     Map* map = GetMap();
@@ -454,7 +454,7 @@ GameObject* MotionTransport::CreateGOPassenger(uint32 guid, GameObjectData const
 
     if (!go->IsPositionValid())
     {
-        TC_LOG_ERROR("entities.transport", "GameObject (guidlow %d, entry %d) not created. Suggested coordinates aren't valid (X: %f Y: %f)", go->GetGUIDLow(), go->GetEntry(), go->GetPositionX(), go->GetPositionY());
+        TC_LOG_ERROR("entities.transport", "GameObject (guidlow %d, entry %d) not created. Suggested coordinates aren't valid (X: %f Y: %f)", go->GetGUID().GetCounter(), go->GetEntry(), go->GetPositionX(), go->GetPositionY());
         delete go;
         return NULL;
     }
@@ -786,7 +786,7 @@ StaticTransport::~StaticTransport()
     ASSERT(_passengers.empty());
 }
 
-bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit, bool dynamic, uint32 spawnid)
+bool StaticTransport::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit, bool dynamic, uint32 spawnid)
 {
     ASSERT(map);
     SetMap(map);
@@ -819,7 +819,7 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 ph
 #ifdef LICH_KING
     Object::_Create(guidlow, 0, HighGuid::Transport);
 #else
-    //Object::_Create(guidlow, goinfo->entry, HighGuid::GameObject); //entry doesn't seem necessary, but keeping this in comment in case this causes problem. If you change this, you'll also need to change it in layer::LoadFromDB (search for "MAKE_NEW_GUID(transGUIDLow, 0, HighGuid::GameObject)")
+    //Object::_Create(guidlow, goinfo->entry, HighGuid::GameObject); //entry doesn't seem necessary, but keeping this in comment in case this causes problem. If you change this, you'll also need to change it in Player::LoadFromDB
     Object::_Create(guidlow, 0, HighGuid::GameObject);
 #endif
 
@@ -1104,7 +1104,7 @@ void StaticTransport::RemovePassenger(WorldObject* passenger, bool withAll)
         {
             passenger->SetTransport(nullptr);
             passenger->m_movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
-            passenger->m_movementInfo.transport.guid = 0;
+            passenger->m_movementInfo.transport.guid.Clear();
             passenger->m_movementInfo.transport.pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         }
     }

@@ -1386,7 +1386,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
 #endif
             bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.22f * mod;
             //TC if (AuraEffect* aurEff = owner->GetAuraEffectOfRankedSpell(34453, EFFECT_1, owner->GetGUID())) // Animal Handler
-            if (AuraEffect* aurEff = owner->GetAuraOfRankedSpell(34453, EFFECT_1, owner->GetGUID())) // Animal Handler
+            if (AuraEffect* aurEff = owner->GetAuraOfRankedSpell(34453, owner->GetGUID(), ObjectGuid::Empty, EFFECT_1_MASK)) // Animal Handler
             {
                 AddPct(bonusAP, aurEff->GetAmount());
                 AddPct(val, aurEff->GetAmount());

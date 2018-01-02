@@ -23,7 +23,7 @@ class TC_GAME_API MapInstanced : public Map
         // functions overwrite Map versions
         void Update(const uint32&) override;
         void DelayedUpdate(const uint32 diff) override;
-        //bool RemoveBones(uint64 guid, float x, float y) override;
+        //bool RemoveBones(ObjectGuid guid, float x, float y) override;
         void UnloadAll() override;
         EnterState CannotEnter(Player* /*player*/) override;
 

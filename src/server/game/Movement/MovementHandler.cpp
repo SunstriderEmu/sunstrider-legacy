@@ -119,7 +119,7 @@ void WorldSession::HandleMoveWorldportAck()
         if(!GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation()))
         {
             // the player must always be able to teleport home
-            TC_LOG_ERROR("network","WORLD: failed to teleport player %s (%d) to homebind location %d,%f,%f,%f,%f!", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow(), GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
+            TC_LOG_ERROR("network","WORLD: failed to teleport player %s (%d) to homebind location %d,%f,%f,%f,%f!", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter(), GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
             DEBUG_ASSERT(false);
         }
         return;
@@ -218,11 +218,12 @@ void WorldSession::HandleMoveWorldportAck()
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
 {
     //TC_LOG_DEBUG("network", "MSG_MOVE_TELEPORT_ACK");
-    uint64 guid;
-    if(GetClientBuild() == BUILD_335)
-        recvData.readPackGUID(guid);
-    else
-        recvData >> guid;
+    ObjectGuid guid;
+#ifdef LICH_KING
+    recvData >> guid.ReadAsPacked();
+#else
+    recvData >> guid;
+#endif
 
     uint32 sequenceIndex, time;
     recvData >> sequenceIndex >> time;
@@ -304,7 +305,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     }
 
 #ifdef LICH_KING
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData.readPackGUID(guid);
 #endif
@@ -393,7 +394,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     {
         plrMover->m_transport->RemovePassenger(plrMover);
         plrMover->m_transport = NULL;
-        plrMover->m_anti_transportGUID = 0;
+        plrMover->m_anti_transportGUID.Clear();
         movementInfo.transport.Reset();
     }
 
@@ -627,7 +628,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
    // TC_LOG_DEBUG("network", "WORLD: Recvd %s (%u, 0x%X) opcode", GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(), opcode, opcode);
 
     /* extract packet */
-    uint64 guid;
+    ObjectGuid guid;
     uint32 unk1;
     float  newspeed;
 
@@ -704,7 +705,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
     //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_SET_ACTIVE_MOVER");
 
     //LK OK
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid; //Client started controlling this unit
 
     /*TC
@@ -725,7 +726,7 @@ void WorldSession::HandleMoveNotActiveMover(WorldPacket &recvData)
 {
     //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_MOVE_NOT_ACTIVE_MOVER");
 
-    uint64 old_mover_guid;
+    ObjectGuid old_mover_guid;
 #ifdef LICH_KING
     recvData.readPackGUID(old_mover_guid);
 #else
@@ -760,7 +761,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
 {
     //TC_LOG_DEBUG("network", "CMSG_MOVE_KNOCK_BACK_ACK");
 
-    uint64 guid;
+    ObjectGuid guid;
 #ifdef LICH_KING
     recvData.readPackGUID(guid);
 #else
@@ -815,7 +816,7 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 {
     //TC_LOG_DEBUG("network", "CMSG_MOVE_HOVER_ACK");
 
-    uint64 guid;                                            // guid - unused
+    ObjectGuid guid;                                            // guid - unused
 #ifdef LICH_KING
     recvData.readPackGUID(guid);
 #else
@@ -836,7 +837,7 @@ void WorldSession::HandleMoveWaterWalkAck(WorldPacket& recvData)
 {
     //TC_LOG_DEBUG("network", "CMSG_MOVE_WATER_WALK_ACK");
 
-    uint64 guid;                                            // guid - unused
+    ObjectGuid guid;                                            // guid - unused
     recvData >> guid;
 
     recvData.read_skip<uint32>();                          // unk
@@ -852,7 +853,7 @@ void WorldSession::HandleSummonResponseOpcode(WorldPacket& recvData)
     if (!_player->IsAlive() || _player->IsInCombat())
         return;
 
-    uint64 summoner_guid;
+    ObjectGuid summoner_guid;
     bool agree;
     recvData >> summoner_guid;
     recvData >> agree;
@@ -902,7 +903,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
         {
             lastCheatWarn = time(NULL);
             std::stringstream msg;
-            msg << "New anticheat entry for player " << player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
+            msg << "New anticheat entry for player " << player << " (guid : " << GetPlayer()->GetGUID().GetCounter() << ").";
 
             ChatHandler(GetPlayer()).SendGlobalGMSysMessage(msg.str().c_str());
         }

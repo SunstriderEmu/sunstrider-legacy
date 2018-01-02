@@ -183,7 +183,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
     return true;
   }
-  uint64 tarGUID = sCharacterCache->GetCharacterGuidByName(targm.c_str());
+  ObjectGuid tarGUID = sCharacterCache->GetCharacterGuidByName(targm.c_str());
   uint64 accid = sCharacterCache->GetCharacterAccountIdByGuid(tarGUID);
   QueryResult result = LoginDatabase.PQuery("SELECT `gmlevel` FROM `account` WHERE `id` = '%u'", accid);
   if(!tarGUID|| !result || result->Fetch()->GetUInt32() < SEC_GAMEMASTER1)
@@ -214,37 +214,37 @@ bool ChatHandler::HandleGMTicketUnAssignCommand(const char* args)
 {
     ARGS_CHECK
 
-  uint64 ticketGuid = atoi(args);
-  Player *cplr = m_session->GetPlayer();
-  GM_Ticket *ticket = sObjectMgr->GetGMTicket(ticketGuid);
+    uint64 ticketGuid = atoi(args);
+    Player* cplr = m_session->GetPlayer();
+    GM_Ticket* ticket = sObjectMgr->GetGMTicket(ticketGuid);
 
-  if(!ticket|| ticket->closed != 0)
-  {
-    SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
+    if(!ticket|| ticket->closed != 0)
+    {
+        SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
+        return true;
+    }
+    if(ticket->assignedToGM == 0)
+    {
+        PSendSysMessage(LANG_COMMAND_TICKETNOTASSIGNED, ticket->guid);
+        return true;
+    }
+
+    std::string gmname;
+    sCharacterCache->GetCharacterNameByGuid(ticket->assignedToGM, gmname);
+    Player *plr = sObjectMgr->GetPlayer(ticket->assignedToGM);
+    if(plr && plr->IsInWorld() && plr->GetSession()->GetSecurity() > cplr->GetSession()->GetSecurity())
+    {
+        SendSysMessage(LANG_COMMAND_TICKETUNASSIGNSECURITY);
+        return true;
+    }
+
+    SendTicket(ticket, 0, false, false, false, true, true);
+    std::string str = GetTrinityStringVA(LANG_COMMAND_TICKETLISTUNASSIGNED, cplr->GetName().c_str());
+    SendGlobalGMSysMessage(str.c_str());
+
+    ticket->assignedToGM.Clear();
+    sObjectMgr->AddOrUpdateGMTicket(*ticket);
     return true;
-  }
-  if(ticket->assignedToGM == 0)
-  {
-    PSendSysMessage(LANG_COMMAND_TICKETNOTASSIGNED, ticket->guid);
-    return true;
-  }
-
-  std::string gmname;
-  sCharacterCache->GetCharacterNameByGuid(ticket->assignedToGM, gmname);
-  Player *plr = sObjectMgr->GetPlayer(ticket->assignedToGM);
-  if(plr && plr->IsInWorld() && plr->GetSession()->GetSecurity() > cplr->GetSession()->GetSecurity())
-  {
-    SendSysMessage(LANG_COMMAND_TICKETUNASSIGNSECURITY);
-    return true;
-  }
-
-  SendTicket(ticket, 0, false, false, false, true, true);
-  std::string str = GetTrinityStringVA(LANG_COMMAND_TICKETLISTUNASSIGNED, cplr->GetName().c_str());
-  SendGlobalGMSysMessage(str.c_str());
-
-  ticket->assignedToGM = 0;
-  sObjectMgr->AddOrUpdateGMTicket(*ticket);
-  return true;
 }
 
 bool ChatHandler::HandleGMTicketCommentCommand(const char* args)

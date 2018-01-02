@@ -31,7 +31,7 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
 
     FriendsResult friendResult = FRIEND_NOT_FOUND;
 
-    uint32 friendGuid = sCharacterCache->GetCharacterGuidByName(friendName);
+    ObjectGuid::LowType friendGuid = sCharacterCache->GetCharacterGuidByName(friendName);
     if (friendGuid)
     {
         if (CharacterCacheEntry const* characterInfo = sCharacterCache->GetCharacterCacheByGuid(friendGuid))
@@ -45,37 +45,37 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
                     friendResult = FRIEND_SELF;
                 else if (GetPlayer()->GetTeam() != team && !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND) && GetSecurity() < SEC_GAMEMASTER1)
                     friendResult = FRIEND_ENEMY;
-                else if (GetPlayer()->GetSocial()->HasFriend(GUID_LOPART(friendGuid)))
+                else if (GetPlayer()->GetSocial()->HasFriend(friendGuid))
                     friendResult = FRIEND_ALREADY;
                 else
                 {
-                    Player* pFriend = ObjectAccessor::FindPlayer(friendGuid);
+                    Player* pFriend = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, friendGuid));
                     if (pFriend && pFriend->IsInWorld() && pFriend->IsVisibleGloballyFor(GetPlayer()))
                         friendResult = FRIEND_ADDED_ONLINE;
                     else
                         friendResult = FRIEND_ADDED_OFFLINE;
-                    if (!GetPlayer()->GetSocial()->AddToSocialList(GUID_LOPART(friendGuid), false))
+                    if (!GetPlayer()->GetSocial()->AddToSocialList(friendGuid, false))
                     {
                         friendResult = FRIEND_LIST_FULL;
                         TC_LOG_DEBUG("network", "WORLD: %s's friend list is full.", GetPlayer()->GetName().c_str());
                     }
                 }
-                GetPlayer()->GetSocial()->SetFriendNote(GUID_LOPART(friendGuid), friendNote);
+                GetPlayer()->GetSocial()->SetFriendNote(friendGuid, friendNote);
             }
         }
     }
 
-    sSocialMgr->SendFriendStatus(GetPlayer(), friendResult, GUID_LOPART(friendGuid), false);
+    sSocialMgr->SendFriendStatus(GetPlayer(), friendResult, friendGuid, false);
 }
 
 void WorldSession::HandleDelFriendOpcode( WorldPacket & recvData )
 {
-    uint64 friendGUID;
+    ObjectGuid friendGUID;
     recvData >> friendGUID;
 
-    _player->GetSocial()->RemoveFromSocialList(GUID_LOPART(friendGUID), false);
+    _player->GetSocial()->RemoveFromSocialList(friendGUID.GetCounter(), false);
 
-    sSocialMgr->SendFriendStatus(GetPlayer(), FRIEND_REMOVED, GUID_LOPART(friendGUID), false);
+    sSocialMgr->SendFriendStatus(GetPlayer(), FRIEND_REMOVED, friendGUID.GetCounter(), false);
 }
 
 void WorldSession::HandleAddIgnoreOpcode( WorldPacket & recvData )
@@ -96,7 +96,7 @@ void WorldSession::HandleAddIgnoreOpcode( WorldPacket & recvData )
 
     ignoreResult = FRIEND_IGNORE_NOT_FOUND;
 
-    uint32 ignoreGuid = sCharacterCache->GetCharacterGuidByName(ignoreName);
+    ObjectGuid::LowType ignoreGuid = sCharacterCache->GetCharacterGuidByName(ignoreName);
     if (ignoreGuid)
     {
         if (ignoreGuid == GetPlayer()->GetGUID())              //not add yourself
@@ -120,18 +120,18 @@ void WorldSession::HandleDelIgnoreOpcode( WorldPacket & recvData )
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_DEL_IGNORE");
 
-    uint64 ignoreGUID;
+    ObjectGuid ignoreGUID;
 
     recvData >> ignoreGUID;
 
-    _player->GetSocial()->RemoveFromSocialList(GUID_LOPART(ignoreGUID), true);
+    _player->GetSocial()->RemoveFromSocialList(ignoreGUID.GetCounter(), true);
 
-    sSocialMgr->SendFriendStatus(GetPlayer(), FRIEND_IGNORE_REMOVED, GUID_LOPART(ignoreGUID), false);
+    sSocialMgr->SendFriendStatus(GetPlayer(), FRIEND_IGNORE_REMOVED, ignoreGUID.GetCounter(), false);
 }
 
 void WorldSession::HandleSetContactNotesOpcode(WorldPacket & recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
     std::string note;
     recvData >> guid >> note;
 

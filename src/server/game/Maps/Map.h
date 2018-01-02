@@ -46,9 +46,9 @@ struct SummonPropertiesEntry;
 
 struct ScriptAction
 {
-	uint64 sourceGUID;
-	uint64 targetGUID;
-	uint64 ownerGUID;                                       // owner of source if source is item
+    ObjectGuid sourceGUID;
+    ObjectGuid targetGUID;
+    ObjectGuid ownerGUID;                                       // owner of source if source is item
 	ScriptInfo const* script;                               // pointer to static script data
 };
 
@@ -744,7 +744,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
                 m_activeForcedNonPlayers.erase(obj);
         }
 
-        typedef std::map<uint32, std::set<uint64> > CreaturePoolMember;
+        typedef std::map<uint32, std::set<ObjectGuid> > CreaturePoolMember;
         CreaturePoolMember m_cpmembers;
 
         RespawnListContainer _respawnTimes;

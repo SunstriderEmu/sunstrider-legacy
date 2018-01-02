@@ -20,8 +20,8 @@ class TC_GAME_API ZoneScript
 	ZoneScript() { }
 	virtual ~ZoneScript() { }
 
-    virtual uint32 GetCreatureEntry(uint32 /*guidlow*/, CreatureData const* data);
-    virtual uint32 GetGameObjectEntry(uint32 /*guidlow*/, uint32 entry) { return entry; }
+    virtual uint32 GetCreatureEntry(ObjectGuid::LowType /*guidlow*/, CreatureData const* data);
+    virtual uint32 GetGameObjectEntry(ObjectGuid::LowType /*guidlow*/, uint32 entry) { return entry; }
 
 	virtual void OnUnitDeath(Unit*) { }
 

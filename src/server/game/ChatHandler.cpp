@@ -188,7 +188,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
            return;
 
        if (sWorld->IsPhishing(msg)) {
-           sWorld->LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
+           sWorld->LogPhishing(GetPlayer()->GetGUID().GetCounter(), 0, msg);
            return;
         }
    }
@@ -532,7 +532,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
 
 
     uint32 text_emote, emoteNum;
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> text_emote;
     recvData >> emoteNum;
@@ -588,7 +588,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData )
 {
-    uint64 iguid;
+    ObjectGuid iguid;
     uint8 reason;
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_CHAT_IGNORED");
 

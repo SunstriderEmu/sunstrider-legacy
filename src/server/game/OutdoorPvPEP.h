@@ -213,7 +213,7 @@ public:
     OPvPCapturePointEP_PWT(OutdoorPvP * pvp);
 	void ChangeState() override;
     void FillInitialWorldStates(WorldPacket & data) override;
-    bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid) override;
+    bool HandleGossipOption(Player *plr, ObjectGuid guid, uint32 gossipid) override;
     bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso) override;
 protected:
     void SummonFlightMaster(uint32 team);

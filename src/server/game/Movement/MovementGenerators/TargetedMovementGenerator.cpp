@@ -34,7 +34,7 @@ void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
     lastOwnerXYZ.Relocate(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ());
     lastTargetXYZ.Relocate(_target->GetPositionX(), _target->GetPositionY(), _target->GetPositionZ());
 
-    bool isPlayerPet = owner->IsPet() && IS_PLAYER_GUID(owner->GetOwnerGUID());
+    bool isPlayerPet = owner->IsPet() && owner->GetOwnerGUID().IsPlayer();
     if (!_offset)
     {
         // to nearest contact position
@@ -245,7 +245,7 @@ void ChaseMovementGenerator<Creature>::MovementInform(Creature* unit)
 {
     // Pass back the GUIDLow of the target. If it is pet's owner then PetAI will handle
     if (unit->AI())
-        unit->AI()->MovementInform(CHASE_MOTION_TYPE, _target.getTarget()->GetGUIDLow());
+        unit->AI()->MovementInform(CHASE_MOTION_TYPE, _target.getTarget()->GetGUID().GetCounter());
 }
 
 template<class T>
@@ -325,7 +325,7 @@ void FollowMovementGenerator<Creature>::MovementInform(Creature* unit)
 {
     // Pass back the GUIDLow of the target. If it is pet's owner then PetAI will handle
     if (unit->AI())
-        unit->AI()->MovementInform(FOLLOW_MOTION_TYPE, _target.getTarget()->GetGUIDLow());
+        unit->AI()->MovementInform(FOLLOW_MOTION_TYPE, _target.getTarget()->GetGUID().GetCounter());
 }
 
 //-----------------------------------------------//

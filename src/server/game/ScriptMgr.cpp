@@ -444,12 +444,12 @@ class CreatureGameObjectScriptRegistrySwapHooks
         gameobject->AI()->Reset();
     }
 
-    static Creature* GetEntityFromMap(std::common_type<Creature>, Map* map, uint64 const& guid)
+    static Creature* GetEntityFromMap(std::common_type<Creature>, Map* map, ObjectGuid const& guid)
     {
         return map->GetCreature(guid);
     }
 
-    static GameObject* GetEntityFromMap(std::common_type<GameObject>, Map* map, uint64 const& guid)
+    static GameObject* GetEntityFromMap(std::common_type<GameObject>, Map* map, ObjectGuid const& guid)
     {
         return map->GetGameObject(guid);
     }
@@ -481,7 +481,7 @@ class CreatureGameObjectScriptRegistrySwapHooks
         // (that were not added to the world as of now)
         sMapMgr->DoForAllMaps([&](Map* map)
         {
-            std::vector<uint64> guidsToReset;
+            std::vector<ObjectGuid> guidsToReset;
 
             VisitObjectsToSwapOnMap(map, idsToRemove, [&](ObjectType* object)
             {
@@ -507,7 +507,7 @@ class CreatureGameObjectScriptRegistrySwapHooks
     {
         sMapMgr->DoForAllMaps([&](Map* map)
         {
-            std::vector<uint64> guidsToReset;
+            std::vector<ObjectGuid> guidsToReset;
 
             VisitObjectsToSwapOnMap(map, idsToRemove, [&](ObjectType* object)
             {
@@ -1150,7 +1150,7 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
 
     if (textEntry >= 0)
     {
-        error_log("TSCR: DoScriptText with source entry %u (TypeId=%u, guid=%u) attempts to process text entry %i, but text entry must be negative.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUIDLow(),textEntry);
+        error_log("TSCR: DoScriptText with source entry %u (TypeId=%u, guid=%u) attempts to process text entry %i, but text entry must be negative.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUID().GetCounter(),textEntry);
         return;
     }
 
@@ -1158,7 +1158,7 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
 
     if (i == TextMap.end())
     {
-        error_log("TSCR: DoScriptText with source entry %u (TypeId=%u, guid=%u) could not find text entry %i.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUIDLow(),textEntry);
+        error_log("TSCR: DoScriptText with source entry %u (TypeId=%u, guid=%u) could not find text entry %i.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUID().GetCounter(),textEntry);
         return;
     }
 
@@ -1185,16 +1185,16 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
     switch((*i).second.Type)
     {
         case CHAT_TYPE_SAY:
-            pSource->old_Say(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);
+            pSource->old_Say(textEntry, (*i).second.Language, target ? target->GetGUID() : ObjectGuid::Empty);
             break;
         case CHAT_TYPE_YELL:
-            pSource->old_Yell(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);
+            pSource->old_Yell(textEntry, (*i).second.Language, target ? target->GetGUID() : ObjectGuid::Empty);
             break;
         case CHAT_TYPE_TEXT_EMOTE:
-            pSource->old_TextEmote(textEntry, target ? target->GetGUID() : 0);
+            pSource->old_TextEmote(textEntry, target ? target->GetGUID() : ObjectGuid::Empty);
             break;
         case CHAT_TYPE_BOSS_EMOTE:
-            pSource->old_TextEmote(textEntry, target ? target->GetGUID() : 0, true);
+            pSource->old_TextEmote(textEntry, target ? target->GetGUID() : ObjectGuid::Empty, true);
             break;
         case CHAT_TYPE_WHISPER:
             {

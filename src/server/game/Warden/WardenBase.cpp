@@ -116,7 +116,7 @@ void WardenBase::Update()
                     Client->KickPlayer();
                 
                 //if (sWorld->getConfig(CONFIG_WARDEN_DB_LOG))
-                    //LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'Response timeout', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), time(NULL));
+                    //LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'Response timeout', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUID().GetCounter() : 0, Client->GetAccountId(), time(NULL));
             }
             else
                 _wardenKickTimer += diff;

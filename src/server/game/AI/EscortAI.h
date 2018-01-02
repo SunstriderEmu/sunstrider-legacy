@@ -62,7 +62,7 @@ struct TC_GAME_API EscortAI : public ScriptedAI
         //Use manually added waypoint. When using this, SetRun is ignored and unit flags are used instead
         void AddWaypoint(uint32 id, float x, float y, float z, float orientation = 0, uint32 waitTime = 0);
 
-        void Start(bool isActiveAttacker = true, bool run = false, uint64 playerGUID = 0, Quest const* quest = nullptr, bool instantRespawn = false, bool canLoopPath = false, bool resetWaypoints = true);
+        void Start(bool isActiveAttacker = true, bool run = false, ObjectGuid playerGUID = ObjectGuid::Empty, Quest const* quest = nullptr, bool instantRespawn = false, bool canLoopPath = false, bool resetWaypoints = true);
         
         //sunstrider: keeping for compat but pretty useless, wp moveType will be used instead in all case except when using AddWaypoint
         void SetRun(bool on = true);
@@ -82,13 +82,13 @@ struct TC_GAME_API EscortAI : public ScriptedAI
         bool IsActiveAttacker() const { return _activeAttacker; } // used in EnterEvadeMode override
         void SetActiveAttacker(bool attack) { _activeAttacker = attack; }
 
-        uint64 GetEventStarterGUID() const { return _playerGUID; }
+        ObjectGuid GetEventStarterGUID() const { return _playerGUID; }
 
         virtual bool IsEscortNPC(bool isEscorting) const override;
 
     // EscortAI variables
     protected:
-        uint64 _playerGUID;
+        ObjectGuid _playerGUID;
 
         Player* GetPlayerForEscort();
     private:

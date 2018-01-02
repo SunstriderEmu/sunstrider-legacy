@@ -82,7 +82,7 @@ enum MailStationery
 
 struct MailItemInfo
 {
-    uint32 item_guid;
+    ObjectGuid::LowType item_guid;
     uint32 item_template;
 };
 
@@ -91,7 +91,7 @@ struct TC_GAME_API MailItem
     MailItem() : item_slot(0), item_guidlow(0), item_template(0), item(nullptr) {}
 
     uint8 item_slot;                                        // slot in mail
-    uint32 item_guidlow;                                    // item guid (low part)
+    ObjectGuid::LowType item_guidlow;                                    // item guid (low part)
     uint32 item_template;                                   // item entry
     Item *item;                                             // item pointer
 
@@ -108,7 +108,7 @@ class TC_GAME_API MailItemsInfo
         MailItemMap::iterator begin() { return i_MailItemMap.begin(); }
         MailItemMap::iterator end() { return i_MailItemMap.end(); }
 
-        void AddItem(uint32 guidlow, uint32 _template, Item *item, uint8 slot = 0)
+        void AddItem(ObjectGuid::LowType guidlow, uint32 _template, Item *item, uint8 slot = 0)
         {
             MailItem mailItem;
             mailItem.item_slot = slot;
@@ -118,7 +118,7 @@ class TC_GAME_API MailItemsInfo
             i_MailItemMap[guidlow] = mailItem;
         }
 
-        void AddItem(uint32 guidlow, uint8 slot = 0)
+        void AddItem(ObjectGuid::LowType guidlow, uint8 slot = 0)
         {
             MailItem mailItem;
             mailItem.item_guidlow = guidlow;
@@ -148,7 +148,7 @@ struct TC_GAME_API Mail
     uint8 stationery;
     uint16 mailTemplateId;
     uint32 sender;
-    uint32 receiver;
+    ObjectGuid::LowType receiver;
     std::string subject;
     uint32 itemTextId;
     std::vector<MailItemInfo> items;
@@ -160,7 +160,7 @@ struct TC_GAME_API Mail
     uint32 checked;
     MailState state;
 
-    void AddItem(uint32 itemGuidLow, uint32 item_template)
+    void AddItem(ObjectGuid::LowType itemGuidLow, uint32 item_template)
     {
         MailItemInfo mii;
         mii.item_guid = itemGuidLow;

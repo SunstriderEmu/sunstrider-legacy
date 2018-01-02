@@ -13,7 +13,7 @@ ObjectGuid Event::getObject()
     WorldPacket p(packet);
     p.rpos(0);
     
-    uint64 guid;
+    ObjectGuid guid;
     p >> guid;
 
     return ObjectGuid(guid);

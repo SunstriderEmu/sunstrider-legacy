@@ -99,7 +99,7 @@ void GameObject::RemoveFromOwner()
     // This happens when a mage portal is despawned after the caster changes map (for example using the portal)
     TC_LOG_DEBUG("misc", "Removed GameObject (GUID: %u Entry: %u SpellId: %u LinkedGO: %u) that just lost any reference to the owner (%s) GO list",
         ObjectGuid(GetGUID()).GetCounter(), GetGOInfo()->entry, m_spellId, GetGOInfo()->GetLinkedGameObjectEntry(), ownerGUID.ToString().c_str());
-    SetOwnerGUID(0 /*ObjectGuid::Empty*/);
+    SetOwnerGUID(ObjectGuid::Empty);
 }
 
 std::string GameObject::GetAIName() const
@@ -264,7 +264,7 @@ void GameObject::RemoveFromWorld()
 }
 
 //spawnId will be generated on save later if needed
-bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit, bool dynamic, uint32 spawnid)
+bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit, bool dynamic, uint32 spawnid)
 {
     ASSERT(map);
     SetMap(map);
@@ -597,7 +597,7 @@ void GameObject::Update(uint32 diff)
                     {
                         if (trapTarget)
                         {
-                            CastSpell(trapTarget, goInfo->trap.spellId, trapTarget->GetGUID());
+                            CastSpell(trapTarget, goInfo->trap.spellId, TRIGGERED_FULL_MASK, trapTarget->GetGUID());
                             m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
                         }
                         break;
@@ -606,7 +606,7 @@ void GameObject::Update(uint32 diff)
 
                 if (trapTarget)
                 {
-                    CastSpell(trapTarget, goInfo->trap.spellId, GetOwnerGUID());
+                    CastSpell(trapTarget, goInfo->trap.spellId, TRIGGERED_FULL_MASK, GetOwnerGUID());
                     if(owner)
                         if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
                             owner->ProcDamageAndSpell(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
@@ -658,7 +658,7 @@ void GameObject::Update(uint32 diff)
                             if (group)
                                 group->EndRoll();
                             m_groupLootTimer = 0;
-                            lootingGroupLeaderGUID = 0;
+                            lootingGroupLeaderGUID.Clear();
                         }
                     }
                     break;
@@ -685,7 +685,7 @@ void GameObject::Update(uint32 diff)
                     auto end = m_unique_users.end();
                     for (; it != end; it++)
                     {
-                        Unit* owner = ObjectAccessor::GetUnit(*this, uint64(*it));
+                        Unit* owner = ObjectAccessor::GetUnit(*this, ObjectGuid(HighGuid::Player, *it));
                         if (owner) owner->CastSpell(owner, spellId, TRIGGERED_NONE);
                     }
 
@@ -770,10 +770,10 @@ void GameObject::Refresh()
 
 void GameObject::AddUniqueUse(Player* player)
 {
-    if(m_unique_users.find(player->GetGUIDLow()) != m_unique_users.end())
+    if(m_unique_users.find(player->GetGUID().GetCounter()) != m_unique_users.end())
         return;
     AddUse();
-    m_unique_users.insert(player->GetGUIDLow());
+    m_unique_users.insert(player->GetGUID().GetCounter());
 }
 
 void GameObject::Delete()
@@ -1055,7 +1055,7 @@ void GameObject::UpdateModel()
         GetMap()->InsertGameObjectModel(*m_model);
 }
 
-GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)
+GameObject* GameObject::GetGameObject(WorldObject& object, ObjectGuid guid)
 {
     return ObjectAccessor::GetGameObject(object,guid);
 }
@@ -1803,7 +1803,7 @@ void GameObject::Use(Unit* user)
     spell->prepare(&targets);
 }
 
-uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster)
+uint32 GameObject::CastSpell(Unit* target, uint32 spellId, TriggerCastFlags triggerFlag, ObjectGuid originalCaster)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -1842,12 +1842,12 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster
         trigger->SetFaction(owner->GetFaction());
         // needed for GO casts for proper target validation checks
         trigger->SetOwnerGUID(owner->GetGUID());
-        return trigger->CastSpell(target, spellId, TRIGGERED_FULL_MASK, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
+        return trigger->CastSpell(target, spellId, triggerFlag, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
     }
     else
     {
         trigger->SetFaction(spellInfo->IsPositive() ? FACTION_FRIENDLY : FACTION_MONSTER);
-        return trigger->CastSpell(target, spellId, TRIGGERED_FULL_MASK, nullptr, nullptr, originalCaster);
+        return trigger->CastSpell(target, spellId, triggerFlag, nullptr, nullptr, originalCaster);
     }
 }
 

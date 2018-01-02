@@ -269,7 +269,7 @@ void ThreatContainer::clearReferences()
 HostileReference* ThreatContainer::getReferenceByTarget(Unit const* pVictim) const
 {
     HostileReference* result = nullptr;
-    uint64 guid = pVictim->GetGUID();
+    ObjectGuid guid = pVictim->GetGUID();
     for(auto i : iThreatList)
     {
         if(i->getUnitGuid() == guid)

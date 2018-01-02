@@ -14,7 +14,7 @@ int GuardAI::Permissible(const Creature *creature)
     return PERMIT_BASE_NO;
 }
 
-GuardAI::GuardAI(Creature *c) : CreatureAI(c), i_creature(*c), i_victimGuid(0), i_state(STATE_NORMAL), i_tracker(TIME_INTERVAL_LOOK)
+GuardAI::GuardAI(Creature *c) : CreatureAI(c), i_creature(*c), i_state(STATE_NORMAL), i_tracker(TIME_INTERVAL_LOOK)
 {
 }
 
@@ -55,7 +55,7 @@ void GuardAI::EnterEvadeMode(EvadeReason why)
 
         i_state = STATE_NORMAL;
 
-        i_victimGuid = 0;
+        i_victimGuid.Clear();
         i_creature.CombatStop(true);
         i_creature.GetThreatManager().ClearAllThreat();
         return;
@@ -63,7 +63,7 @@ void GuardAI::EnterEvadeMode(EvadeReason why)
 
     i_creature.RemoveAllAuras();
     i_creature.GetThreatManager().ClearAllThreat();
-    i_victimGuid = 0;
+    i_victimGuid.Clear();
     i_creature.CombatStop();
     i_state = STATE_NORMAL;
 

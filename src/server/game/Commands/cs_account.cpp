@@ -82,7 +82,7 @@ bool ChatHandler::HandleAccountCreateCommand(char const* args)
             {
                 TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Character:[%s] (GUID: %u) created Account %s (Email: '%s')",
                     GetSession()->GetAccountId(), GetSession()->GetRemoteAddress().c_str(),
-                    GetSession()->GetPlayer()->GetName().c_str(), GetSession()->GetPlayer()->GetGUIDLow(),
+                    GetSession()->GetPlayer()->GetName().c_str(), GetSession()->GetPlayer()->GetGUID().GetCounter(),
                     accountName, email.c_str());
             }
             break;

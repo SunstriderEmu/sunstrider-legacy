@@ -75,7 +75,7 @@ public:
     // send world state update to all players present
     virtual void SendUpdateWorldState(uint32 field, uint32 value);
     // send kill notify to players in the controlling faction
-    virtual void SendObjectiveComplete(uint32 id, uint64 guid);
+    virtual void SendObjectiveComplete(uint32 id, ObjectGuid guid);
 
     // used when player is activated/inactivated in the area
     bool HandlePlayerEnter(Player * plr);
@@ -85,7 +85,7 @@ public:
     virtual bool IsInsideObjective(Player * plr);
 
     virtual bool HandleCustomSpell(Player *plr, uint32 spellId, GameObject * go);
-    virtual int32 HandleOpenGo(Player *plr, uint64 guid);
+    virtual int32 HandleOpenGo(Player *plr, ObjectGuid guid);
 
     // returns true if the state of the objective has changed, in this case, the OutdoorPvP must send a world state ui update.
     virtual bool Update(uint32 diff);
@@ -96,7 +96,7 @@ public:
 
 	virtual void SendChangePhase();
 
-    virtual bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid);
+    virtual bool HandleGossipOption(Player *plr, ObjectGuid guid, uint32 gossipid);
 
     virtual bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso);
 
@@ -124,7 +124,7 @@ protected:
 	
 protected:
     // active players in the area of the objective, 0 - alliance, 1 - horde
-    std::set<uint64> m_activePlayers[2];
+    std::set<ObjectGuid> m_activePlayers[2];
     // total shift needed to capture the objective
     float m_maxValue;
 	float m_minValue;
@@ -147,10 +147,10 @@ protected:
 
     // map to store the various gameobjects and creatures spawned by the objective
     //        type , guid
-    std::map<uint32,uint64> m_Objects;
-    std::map<uint32,uint64> m_Creatures;
-    std::map<uint64,uint32> m_ObjectTypes;
-    std::map<uint64,uint32> m_CreatureTypes;
+    std::map<uint32, ObjectGuid> m_Objects;
+    std::map<uint32, ObjectGuid> m_Creatures;
+    std::map<ObjectGuid, uint32> m_ObjectTypes;
+    std::map<ObjectGuid, uint32> m_CreatureTypes;
 
     //uint64 m_CapturePointCreature;
 };
@@ -182,7 +182,7 @@ public:
     // called on custom spell
     virtual bool HandleCustomSpell(Player *plr, uint32 spellId, GameObject * go);
     // called on go use
-    virtual bool HandleOpenGo(Player *plr, uint64 guid);
+    virtual bool HandleOpenGo(Player *plr, ObjectGuid guid);
 
     // setup stuff
     virtual bool SetupOutdoorPvP() {return true;}
@@ -216,7 +216,7 @@ public:
 
     virtual bool HandleDropFlag(Player * plr, uint32 spellId);
 
-    virtual bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid);
+    virtual bool HandleGossipOption(Player *plr, ObjectGuid guid, uint32 gossipid);
 
     virtual bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso);
 

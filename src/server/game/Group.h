@@ -57,7 +57,7 @@ enum GroupUpdateFlags
     GROUP_UPDATE_FLAG_ZONE              = 0x00000080,       // uint16
     GROUP_UPDATE_FLAG_POSITION          = 0x00000100,       // uint16, uint16
     GROUP_UPDATE_FLAG_AURAS             = 0x00000200,       // uint64 mask, for each bit set uint16 spellid + uint8 unk
-    GROUP_UPDATE_FLAG_PET_GUID          = 0x00000400,       // uint64 pet guid
+    GROUP_UPDATE_FLAG_PET_GUID          = 0x00000400,       // ObjectGuid pet guid
     GROUP_UPDATE_FLAG_PET_NAME          = 0x00000800,       // pet name, NULL terminated string
     GROUP_UPDATE_FLAG_PET_MODEL_ID      = 0x00001000,       // uint16, model id
     GROUP_UPDATE_FLAG_PET_CUR_HP        = 0x00002000,       // uint16 pet cur health
@@ -83,7 +83,7 @@ class InstanceSave;
 class TC_GAME_API Roll : public LootValidatorRef
 {
     public:
-        Roll(uint64 _guid, LootItem const& li)
+        Roll(ObjectGuid _guid, LootItem const& li)
             : itemGUID(_guid), itemid(li.itemid), itemRandomPropId(li.randomPropertyId), itemRandomSuffix(li.randomSuffix),
             totalPlayersRolling(0), totalNeed(0), totalGreed(0), totalPass(0), itemSlot(0) {}
         ~Roll() override = default;
@@ -91,11 +91,11 @@ class TC_GAME_API Roll : public LootValidatorRef
         Loot *getLoot() { return getTarget(); }
         void targetObjectBuildLink() override;
 
-        uint64 itemGUID;
+        ObjectGuid itemGUID;
         uint32 itemid;
         int32  itemRandomPropId;
         uint32 itemRandomSuffix;
-        typedef std::map<uint64, RollVote> PlayerVote;
+        typedef std::map<ObjectGuid, RollVote> PlayerVote;
         PlayerVote playerVote;                              //vote position correspond with player position (in group)
         uint8 totalPlayersRolling;
         uint8 totalNeed;
@@ -120,7 +120,7 @@ class TC_GAME_API Group
     public:
         struct MemberSlot
         {
-            uint64      guid;
+            ObjectGuid  guid;
             std::string name;
             uint8       group;
             bool        assistant; //todo: upgrade this to 'roles', there are other roles ( 0x2 main assist, 0x4 main tank )
@@ -140,22 +140,22 @@ class TC_GAME_API Group
         ~Group();
 
         // group manipulation methods
-        bool   Create(const uint64 &guid, std::string const& name, SQLTransaction trans);
-        bool   LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result = nullptr, bool loadMembers = true);
-        bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant);
+        bool   Create(ObjectGuid guid, std::string const& name, SQLTransaction trans);
+        bool   LoadGroupFromDB(ObjectGuid leaderGuid, QueryResult result = nullptr, bool loadMembers = true);
+        bool   LoadMemberFromDB(ObjectGuid::LowType guidLow, uint8 subgroup, bool assistant);
         bool   AddInvite(Player *player);
         void   RemoveInvite(Player *player);
         void   RemoveAllInvites();
         bool   AddLeaderInvite(Player *player);
-        bool   AddMember(const uint64 &guid, std::string name, SQLTransaction trans);
+        bool   AddMember(ObjectGuid guid, std::string name, SQLTransaction trans);
                                                             // method: 0=just remove, 1=kick
-        uint32 RemoveMember(const uint64 &guid, const uint8 &method);
-        void   ChangeLeader(const uint64 &guid);
-        void   CheckLeader(const uint64 &guid, bool isLogout);
+        uint32 RemoveMember(ObjectGuid guid, const uint8 &method);
+        void   ChangeLeader(ObjectGuid guid);
+        void   CheckLeader(ObjectGuid guid, bool isLogout);
         bool   ChangeLeaderToFirstOnlineMember();
         static void ConvertLeaderInstancesToGroup(Player *player, Group *group, bool switchLeader);
         void   SetLootMethod(LootMethod method) { m_lootMethod = method; }
-        void   SetLooterGuid(const uint64 &guid) { m_looterGuid = guid; }
+        void   SetLooterGuid(ObjectGuid guid) { m_looterGuid = guid; }
         void   UpdateLooterGuid( WorldObject* object, bool ifneed = false );
         void   SetLootThreshold(ItemQualities threshold) { m_lootThreshold = threshold; }
         void   Disband(bool hideDestroy=false);
@@ -170,18 +170,18 @@ class TC_GAME_API Group
         bool isLFGGroup()  const { return false; }
         bool IsCreated()   const { return GetMembersCount() > 0; }
         //group currently use leader guid as identifier, this function is here for compat with trinity code
-        inline const uint32 GetLowGUID() const { return GetLeaderGUID();  }
-        const uint64& GetLeaderGUID() const { return m_leaderGuid; }
+        inline const ObjectGuid::LowType GetLowGUID() const { return GetLeaderGUID();  }
+        ObjectGuid GetLeaderGUID() const { return m_leaderGuid; }
         const char * GetLeaderName() const { return m_leaderName.c_str(); }
         LootMethod    GetLootMethod() const { return m_lootMethod; }
-        const uint64& GetLooterGuid() const { return m_looterGuid; }
-        const uint64& GetMasterLooterGuid() const { return m_masterLooterGuid; }
+        ObjectGuid GetLooterGuid() const { return m_looterGuid; }
+        ObjectGuid GetMasterLooterGuid() const { return m_masterLooterGuid; }
         ItemQualities GetLootThreshold() const { return m_lootThreshold; }
 
         // member manipulation methods
-        bool IsMember(const uint64& guid) const { return _getMemberCSlot(guid) != m_memberSlots.end(); }
-        bool IsLeader(const uint64& guid) const { return (GetLeaderGUID() == guid); }
-        uint64 GetMemberGUID(const std::string& name)
+        bool IsMember(ObjectGuid guid) const { return _getMemberCSlot(guid) != m_memberSlots.end(); }
+        bool IsLeader(ObjectGuid guid) const { return (GetLeaderGUID() == guid); }
+        ObjectGuid GetMemberGUID(const std::string& name)
         {
             for(member_citerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
             {
@@ -190,9 +190,9 @@ class TC_GAME_API Group
                     return itr->guid;
                 }
             }
-            return 0;
+            return ObjectGuid::Empty;
         }
-        bool IsAssistant(uint64 guid) const
+        bool IsAssistant(ObjectGuid guid) const
         {
             auto mslot = _getMemberCSlot(guid);
             if(mslot==m_memberSlots.end())
@@ -200,11 +200,11 @@ class TC_GAME_API Group
 
             return mslot->assistant;
         }
-        Player* GetInvited(const uint64& guid) const;
+        Player* GetInvited(ObjectGuid guid) const;
         Player* GetInvited(const std::string& name) const;
         void CleanInvited();
 
-        bool SameSubGroup(uint64 guid1,const uint64& guid2) const
+        bool SameSubGroup(ObjectGuid guid1, ObjectGuid guid2) const
         {
             auto mslot2 = _getMemberCSlot(guid2);
             if(mslot2==m_memberSlots.end())
@@ -213,7 +213,7 @@ class TC_GAME_API Group
             return SameSubGroup(guid1,&*mslot2);
         }
 
-        bool SameSubGroup(uint64 guid1, MemberSlot const* slot2) const
+        bool SameSubGroup(ObjectGuid guid1, MemberSlot const* slot2) const
         {
             auto mslot1 = _getMemberCSlot(guid1);
             if(mslot1==m_memberSlots.end() || !slot2)
@@ -234,7 +234,7 @@ class TC_GAME_API Group
         GroupReference const* GetFirstMember() const { return m_memberMgr.getFirst(); }
         uint32 GetMembersCount() const { return m_memberSlots.size(); }
         void GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_level, Player* & member_with_max_level, Player* & not_gray_member_with_max_level);
-        uint8  GetMemberGroup(uint64 guid) const
+        uint8  GetMemberGroup(ObjectGuid guid) const
         {
             auto mslot = _getMemberCSlot(guid);
             if(mslot==m_memberSlots.end())
@@ -255,17 +255,17 @@ class TC_GAME_API Group
 #endif
         GroupJoinBattlegroundResult CanJoinBattlegroundQueue(Battleground const* bgOrTemplate, BattlegroundQueueTypeId bgQueueTypeId, uint32 MinPlayerCount, uint32 MaxPlayerCount, bool isRated, uint32 arenaSlot);
 
-        void ChangeMembersGroup(const uint64 &guid, const uint8 &group);
-        void ChangeMembersGroup(Player *player, const uint8 &group);
+        void ChangeMembersGroup(ObjectGuid guid, uint8 group);
+        void ChangeMembersGroup(Player* player,uint8 group);
 
-        void SetAssistant(uint64 guid, const bool &state)
+        void SetAssistant(ObjectGuid guid, const bool &state)
         {
             if(!isRaidGroup())
                 return;
             if(_setAssistantFlag(guid, state))
                 SendUpdate();
         }
-        void SetMainTank(uint64 guid)
+        void SetMainTank(ObjectGuid guid)
         {
             if(!isRaidGroup())
                 return;
@@ -273,7 +273,7 @@ class TC_GAME_API Group
             if(_setMainTank(guid))
                 SendUpdate();
         }
-        void SetMainAssistant(uint64 guid)
+        void SetMainAssistant(ObjectGuid guid)
         {
             if(!isRaidGroup())
                 return;
@@ -282,8 +282,8 @@ class TC_GAME_API Group
                 SendUpdate();
         }
 
-        void SetTargetIcon(uint8 id, uint64 guid);
-        uint64 GetTargetIcon(uint8 id) const;
+        void SetTargetIcon(uint8 id, ObjectGuid guid);
+        ObjectGuid GetTargetIcon(uint8 id) const;
         void SetDifficulty(Difficulty difficulty);
         Difficulty GetDifficulty(bool isRaid = false) const;
         uint16 InInstance();
@@ -294,7 +294,7 @@ class TC_GAME_API Group
         //void SendInit(WorldSession *session);
         void SendTargetIconList(WorldSession *session);
         void SendUpdate();
-        void SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot = nullptr);
+        void SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot = nullptr);
         void Update(time_t diff);
         void UpdatePlayerOutOfRange(Player* pPlayer);
 
@@ -313,7 +313,7 @@ class TC_GAME_API Group
         }
 
                                                             // ignore: GUID of player that will be ignored
-        void BroadcastPacket(WorldPacket *packet, bool ignorePlayersInBGRaid, int group=-1, uint64 ignore=0);
+        void BroadcastPacket(WorldPacket *packet, bool ignorePlayersInBGRaid, int group=-1, ObjectGuid ignore = ObjectGuid::Empty);
         void BroadcastReadyCheck(WorldPacket *packet);
         void OfflineReadyCheck();
         
@@ -324,14 +324,14 @@ class TC_GAME_API Group
         /*********************************************************/
 
         void SendLootStartRoll(uint32 CountDown, const Roll &r);
-        void SendLootRoll(const uint64& SourceGuid, const uint64& TargetGuid, uint8 RollNumber, uint8 RollType, const Roll &r);
-        void SendLootRollWon(const uint64& SourceGuid, const uint64& TargetGuid, uint8 RollNumber, uint8 RollType, const Roll &r);
+        void SendLootRoll(ObjectGuid SourceGuid, ObjectGuid TargetGuid, uint8 RollNumber, uint8 RollType, const Roll &r);
+        void SendLootRollWon(ObjectGuid SourceGuid, ObjectGuid TargetGuid, uint8 RollNumber, uint8 RollType, const Roll &r);
         void SendLootAllPassed(uint32 NumberOfPlayers, const Roll &r);
         void SendLooter(Creature* creature, Player* pLooter);
-        void GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object);
-        void NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* object);
-        void MasterLoot(const uint64& playerGUID, Loot *loot, WorldObject* object);
-        Rolls::iterator GetRoll(uint64 Guid)
+        void GroupLoot(ObjectGuid playerGUID, Loot *loot, WorldObject* object);
+        void NeedBeforeGreed(ObjectGuid playerGUID, Loot *loot, WorldObject* object);
+        void MasterLoot(ObjectGuid playerGUID, Loot *loot, WorldObject* object);
+        Rolls::iterator GetRoll(ObjectGuid Guid)
         {
             Rolls::iterator iter;
             for (iter=RollId.begin(); iter != RollId.end(); ++iter)
@@ -344,7 +344,7 @@ class TC_GAME_API Group
             return RollId.end();
         }
         void CountTheRoll(Rolls::iterator roll, uint32 NumberOfPlayers);
-        void CountRollVote(const uint64& playerGUID, const uint64& Guid, uint32 NumberOfPlayers, uint8 Choise);
+        void CountRollVote(ObjectGuid playerGUID, ObjectGuid Guid, uint32 NumberOfPlayers, uint8 Choise);
         void EndRoll();
 
         void LinkMember(GroupReference *pRef) { m_memberMgr.insertFirst(pRef); }
@@ -362,17 +362,17 @@ class TC_GAME_API Group
         void BroadcastGroupUpdate(void);
 
     protected:
-        bool _addMember(const uint64 &guid, std::string name, SQLTransaction trans, bool isAssistant=false);
-        bool _addMember(const uint64 &guid, std::string name, bool isAssistant, uint8 group, SQLTransaction trans);
-        bool _removeMember(const uint64 &guid);             // returns true if leader has changed
-        void _setLeader(const uint64 &guid);
+        bool _addMember(ObjectGuid guid, std::string name, SQLTransaction trans, bool isAssistant=false);
+        bool _addMember(ObjectGuid guid, std::string name, bool isAssistant, uint8 group, SQLTransaction trans);
+        bool _removeMember(ObjectGuid guid);             // returns true if leader has changed
+        void _setLeader(ObjectGuid guid);
 
-        void _removeRolls(const uint64 &guid);
+        void _removeRolls(ObjectGuid guid);
 
-        bool _setMembersGroup(const uint64 &guid, const uint8 &group);
-        bool _setAssistantFlag(const uint64 &guid, const bool &state);
-        bool _setMainTank(const uint64 &guid);
-        bool _setMainAssistant(const uint64 &guid);
+        bool _setMembersGroup(ObjectGuid guid, const uint8 &group);
+        bool _setAssistantFlag(ObjectGuid guid, const bool &state);
+        bool _setMainTank(ObjectGuid guid);
+        bool _setMainAssistant(ObjectGuid guid);
 
         void _homebindIfInstance(Player *player);
 
@@ -388,7 +388,7 @@ class TC_GAME_API Group
                 ++m_subGroupsCounts[itr->group];
         }
 
-        member_citerator _getMemberCSlot(uint64 Guid) const
+        member_citerator _getMemberCSlot(ObjectGuid Guid) const
         {
             for(auto itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
             {
@@ -398,7 +398,7 @@ class TC_GAME_API Group
             return m_memberSlots.end();
         }
 
-        member_witerator _getMemberWSlot(uint64 Guid)
+        member_witerator _getMemberWSlot(ObjectGuid Guid)
         {
             for(auto itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
             {
@@ -423,19 +423,19 @@ class TC_GAME_API Group
         MemberSlotList      m_memberSlots;
         GroupRefManager     m_memberMgr;
         InvitesList         m_invitees;
-        uint64              m_leaderGuid;
+        ObjectGuid          m_leaderGuid;
         std::string         m_leaderName;
-        uint64              m_mainTank;
-        uint64              m_mainAssistant;
+        ObjectGuid          m_mainTank;
+        ObjectGuid          m_mainAssistant;
         GroupType           m_groupType;
         Difficulty          m_dungeonDifficulty;
         Difficulty          m_raidDifficulty; //LK compat, no effect yet
         Battleground*       m_bgGroup;
-        uint64              m_targetIcons[TARGETICONCOUNT];
+        ObjectGuid          m_targetIcons[TARGETICONCOUNT];
         LootMethod          m_lootMethod;
         ItemQualities       m_lootThreshold;
-        uint64              m_looterGuid;
-        uint64              m_masterLooterGuid; //TODO : save in db
+        ObjectGuid          m_looterGuid;
+        ObjectGuid          m_masterLooterGuid; //TODO : save in db
         Rolls               RollId;
         BoundInstancesMap   m_boundInstances[MAX_DIFFICULTY];
         uint8*              m_subGroupsCounts;

@@ -185,22 +185,25 @@ class TC_GAME_API Item : public Object
 
         Item ( );
 
-        virtual bool Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *proto);
+        virtual bool Create(ObjectGuid::LowType guidlow, uint32 itemid, Player const* owner, ItemTemplate const *proto);
 
         ItemTemplate const* GetTemplate() const { return m_itemProto; }
 
-        uint64 GetOwnerGUID() const;
+        ObjectGuid GetOwnerGUID() const;
         void SetOwnerGUID(ObjectGuid const& guid);
         Player* GetOwner() const;
 
         void SetBinding(bool val);
         bool IsSoulBound() const;
-        bool IsBindedNotWith(uint64 guid) const { return IsSoulBound() && GetOwnerGUID()!= guid; }
+        bool IsBindedNotWith(ObjectGuid guid) const { return IsSoulBound() && GetOwnerGUID()!= guid; }
         bool IsBoundByEnchant() const;
         virtual void SaveToDB(SQLTransaction trans);
-        virtual bool LoadFromDB(uint32 guid, uint64 owner_guid);
+        virtual bool LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid);
         virtual void DeleteFromDB();
         void DeleteFromInventoryDB(SQLTransaction trans);
+
+        Bag* ToBag() { if (IsBag()) return reinterpret_cast<Bag*>(this); else return nullptr; }
+        Bag const* ToBag() const { if (IsBag()) return reinterpret_cast<Bag const*>(this); else return nullptr; }
 
         bool IsBag() const;
         bool IsBroken() const;

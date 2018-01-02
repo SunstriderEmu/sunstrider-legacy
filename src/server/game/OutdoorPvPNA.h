@@ -230,7 +230,7 @@ public:
     void ChangeState() override;
     void FillInitialWorldStates(WorldPacket & data) override;
     bool HandleCustomSpell(Player *plr, uint32 spellId, GameObject * go) override;
-    int32 HandleOpenGo(Player *plr, uint64 guid) override;
+    int32 HandleOpenGo(Player *plr, ObjectGuid guid) override;
     uint32 GetAliveGuardsCount();
 protected:
     // called when a faction takes control

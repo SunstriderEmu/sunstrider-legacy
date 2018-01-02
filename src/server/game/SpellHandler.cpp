@@ -24,7 +24,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     uint8 bagIndex, slot;
     uint8 spell_count;                                      // number of spells at item, not used
     uint8 cast_count;                                       // next cast if exists (single or not)
-    uint64 item_guid;
+    ObjectGuid item_guid;
 
 #ifdef LICH_KING
     recvPacket >> bagIndex >> slot >> castCount >> spellId >> itemGUID >> glyphIndex >> castFlags;
@@ -167,7 +167,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         if (!lockInfo)
         {
             pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, nullptr );
-            TC_LOG_ERROR("network", "WORLD::OpenItem: item [guid = %u] has an unknown lockId: %u!", pItem->GetGUIDLow() , lockId);
+            TC_LOG_ERROR("network", "WORLD::OpenItem: item [guid = %u] has an unknown lockId: %u!", pItem->GetGUID().GetCounter() , lockId);
             return;
         }
 
@@ -204,25 +204,25 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
     if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))// wrapped?
     {
-        QueryResult result = CharacterDatabase.PQuery("SELECT entry, flags FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
+        QueryResult result = CharacterDatabase.PQuery("SELECT entry, flags FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUID().GetCounter());
         if (result)
         {
             Field *fields = result->Fetch();
             uint32 entry = fields[0].GetUInt32();
             uint32 flags = fields[1].GetUInt32();
 
-            pItem->SetUInt64Value(ITEM_FIELD_GIFTCREATOR, 0);
+            pItem->SetGuidValue(ITEM_FIELD_GIFTCREATOR, ObjectGuid::Empty);
             pItem->SetEntry(entry);
             pItem->SetUInt32Value(ITEM_FIELD_FLAGS, flags);
             pItem->SetState(ITEM_CHANGED, pUser);
         }
         else
         {
-            TC_LOG_ERROR("network","Wrapped item %u don't have record in character_gifts table and will deleted", pItem->GetGUIDLow());
+            TC_LOG_ERROR("network","Wrapped item %u don't have record in character_gifts table and will deleted", pItem->GetGUID().GetCounter());
             pUser->DestroyItem(pItem->GetBagSlot(), pItem->GetSlot(), true);
             return;
         }
-        CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
+        CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUID().GetCounter());
     }
     else
         pUser->SendLoot(pItem->GetGUID(),LOOT_CORPSE);
@@ -230,7 +230,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 {
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> guid;
 
@@ -243,7 +243,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
     if (!gameObjTarget->isSpawned() && !_player->IsGameMaster())
     {
         TC_LOG_ERROR("entities.player.cheat", "Possible hacking attempt: Player %s [guid: %u] tried to loot a gameobject [entry: %u id: %u] which is on respawn timer without being in GM mode!",
-            _player->GetName().c_str(), _player->GetGUIDLow(), gameObjTarget->GetEntry(), gameObjTarget->GetGUIDLow());
+            _player->GetName().c_str(), _player->GetGUID().GetCounter(), gameObjTarget->GetEntry(), gameObjTarget->GetGUID().GetCounter());
         return;
     }
 
@@ -309,7 +309,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellInfo = actualSpellInfo;
     } else if (spellInfo->Effects[0].ApplyAuraName == SPELL_AURA_BIND_SIGHT) {
         //client doesn't send target if it's not in range, so we have to pick it from UNIT_FIELD_TARGET
-        if(uint64 targetGUID = _player->GetUInt64Value(UNIT_FIELD_TARGET))
+        if(ObjectGuid targetGUID = _player->GetGuidValue(UNIT_FIELD_TARGET))
             if(Unit* target = ObjectAccessor::GetUnit(*_player, targetGUID))
                 targets.SetUnitTarget(target);
     }
@@ -370,7 +370,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
 
 void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
 {
-    uint64 guid;
+    ObjectGuid guid;
     uint32 spellId;
 
     recvPacket >> guid;
@@ -387,13 +387,13 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
 
     if(!pet)
     {
-        TC_LOG_ERROR( "network", "Pet %u not exist.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "network", "Pet %u not exist.", uint32(guid.GetCounter()) );
         return;
     }
 
     if(pet != GetPlayer()->GetGuardianPet() && pet != GetPlayer()->GetCharm())
     {
-        TC_LOG_ERROR( "network", "HandlePetCancelAura.Pet %u isn't pet of player %s", uint32(GUID_LOPART(guid)),GetPlayer()->GetName().c_str() );
+        TC_LOG_ERROR( "network", "HandlePetCancelAura.Pet %u isn't pet of player %s", uint32(guid.GetCounter()),GetPlayer()->GetName().c_str() );
         return;
     }
 
@@ -469,7 +469,7 @@ void WorldSession::HandleSelfResOpcode( WorldPacket & /* recvData */)
 
 void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
     recvData >> guid;
 
     // Get unit for which data is needed by client

@@ -45,7 +45,7 @@ class BattlegroundNA : public Battleground
         /* inherited from BattlegroundClass */
         virtual void AddPlayer(Player *plr);
 
-        void RemovePlayer(Player *plr, uint64 guid);
+        void RemovePlayer(Player *plr, ObjectGuid guid);
         void HandleAreaTrigger(Player *Source, uint32 Trigger);
         bool SetupBattleground();
         virtual void ResetBGSubclass();

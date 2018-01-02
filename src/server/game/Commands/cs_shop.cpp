@@ -384,7 +384,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     
     uint32 m_race = m_session->GetPlayer()->GetRace();
     
-    if (t_race != m_race || t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
+    if (t_race != m_race || t_guid == m_session->GetPlayer()->GetGUID().GetCounter() || t_account != m_session->GetAccountId())
         return false;
 
     uint32 bankBags = m_session->GetPlayer()->GetByteValue(PLAYER_BYTES_2, 2);
@@ -488,12 +488,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     Player* plr = m_session->GetPlayer();
     
     // My values
-    uint32 m_guid = plr->GetGUIDLow();
+    uint32 m_guid = plr->GetGUID().GetCounter();
     uint32 m_account = m_session->GetAccountId();
     uint32 m_class = plr->GetClass();
     uint32 m_race = plr->GetRace();
 //    uint8 m_gender = plr->GetGender();
-    uint64 m_fullGUID = plr->GetGUID();
+    ObjectGuid m_fullGUID = plr->GetGUID();
     
     // Target values
     uint32 t_guid = fields[0].GetUInt32();
@@ -608,7 +608,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Arena teams
     if (factionChange) {
-        result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUIDLow());
+        result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUID().GetCounter());
 
         if (result) {
             //TODO translate
@@ -625,8 +625,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     oss << fname;
     if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
         oss << "/";
-    oss << "chardump_factionchange/" << account_id << "_" << GUID_LOPART(m_session->GetPlayer()->GetGUID()) << "_" << m_session->GetPlayer()->GetName();
-    PlayerDumpWriter().WriteDump(oss.str().c_str(), GUID_LOPART(m_session->GetPlayer()->GetGUID()));
+    oss << "chardump_factionchange/" << account_id << "_" << m_session->GetPlayer()->GetGUID().GetCounter() << "_" << m_session->GetPlayer()->GetName();
+    PlayerDumpWriter().WriteDump(oss.str().c_str(), m_session->GetPlayer()->GetGUID().GetCounter());
     
     WorldLocation loc;
     uint32 area_id = 0;
@@ -832,9 +832,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                                 newItem->SaveToDB(trans);
 
                                 MailItemsInfo mi;
-                                mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
+                                mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);
                                 std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                                WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                                WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                             }
                         }
                     }
@@ -858,9 +858,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                                 newItem->SaveToDB(trans);
 
                                 MailItemsInfo mi;
-                                mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
+                                mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);
                                 std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                                WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                                WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                             }
                         }
                     }
@@ -897,9 +897,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                             CharacterDatabase.CommitTransaction(trans);
 
                             MailItemsInfo mi;
-                            mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
+                            mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);
                             std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                            WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                            WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                         }
                     }
                 }
@@ -932,9 +932,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                             newItem->SaveToDB(trans);
 
                             MailItemsInfo mi;
-                            mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
+                            mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);
                             std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                            WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                            WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                         }
                     }
                 }
@@ -943,7 +943,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
     
     // Act like auctions are expired
-    sAuctionMgr->RemoveAllAuctionsOf(trans, plr->GetGUIDLow());
+    sAuctionMgr->RemoveAllAuctionsOf(trans, plr->GetGUID().GetCounter());
     plr->RemoveAllAuras();
 
     // Remove instance tag
@@ -981,22 +981,22 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
             if (dest_team == TEAM_ALLIANCE) {
                 if (quest_alliance == 0)
-                    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = %u AND quest = %u", plr->GetGUIDLow(), quest_horde);
+                    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = %u AND quest = %u", plr->GetGUID().GetCounter(), quest_horde);
                 else
-                    CharacterDatabase.PExecute("UPDATE character_queststatus SET quest = %u WHERE guid = %u AND quest = %u", quest_alliance, plr->GetGUIDLow(), quest_horde);
+                    CharacterDatabase.PExecute("UPDATE character_queststatus SET quest = %u WHERE guid = %u AND quest = %u", quest_alliance, plr->GetGUID().GetCounter(), quest_horde);
             }
             else {
                 if (quest_horde == 0)
-                    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = %u AND quest = %u", plr->GetGUIDLow(), quest_alliance);
+                    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = %u AND quest = %u", plr->GetGUID().GetCounter(), quest_alliance);
                 else
-                    CharacterDatabase.PExecute("UPDATE character_queststatus SET quest = %u WHERE guid = %u AND quest = %u", quest_horde, plr->GetGUIDLow(), quest_alliance);
+                    CharacterDatabase.PExecute("UPDATE character_queststatus SET quest = %u WHERE guid = %u AND quest = %u", quest_horde, plr->GetGUID().GetCounter(), quest_alliance);
             }
         }
     }
 
     // Friend list
     if (factionChange)
-        CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = %u OR friend = %u", plr->GetGUIDLow(), plr->GetGUIDLow());
+        CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = %u OR friend = %u", plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter());
 
     // Relocation
     if (factionChange) {
