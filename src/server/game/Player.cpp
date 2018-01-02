@@ -8143,12 +8143,42 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
     if (IS_GAMEOBJECT_GUID(guid))
     {
-        GameObject *go =
-            ObjectAccessor::GetGameObject(*this, guid);
+        GameObject *go = ObjectAccessor::GetGameObject(*this, guid);
 
-        // not check distance for GO in case owned GO (fishing bobber case, for example)
-        // And permit out of range GO with no owner in case fishing hole
-        if (!go || (loot_type != LOOT_FISHINGHOLE && (loot_type != LOOT_FISHING || go->GetOwnerGUID() != GetGUID()) && !go->IsInRange(GetPositionX(), GetPositionY(), GetPositionZ(),INTERACTION_DISTANCE)))
+        auto shouldLootRelease = [this](GameObject* go, LootType lootType) -> bool
+        {
+            // not check distance for GO in case owned GO (fishing bobber case, for example)
+            // And permit out of range GO with no owner in case fishing hole
+            if (!go)
+                return true;
+
+            if (lootType == LOOT_SKINNING)
+            {
+                // Disarm Trap
+                if (!go->IsWithinDistInMap(this, 20.f))
+                    return true;
+            }
+            else
+            {
+                //check interaction distance if not fishing
+                if (lootType != LOOT_FISHINGHOLE 
+                    && ( (lootType != LOOT_FISHING 
+#ifdef LICH_KING
+                        && lootType != LOOT_FISHING_JUNK
+#endif
+                        ) 
+                        || go->GetOwnerGUID() != GetGUID()) 
+                    && !go->IsWithinDistInMap(this, INTERACTION_DISTANCE))
+                    return true;
+
+                if (lootType == LOOT_CORPSE && go->GetRespawnTime() && go->isSpawnedByDefault())
+                    return true;
+            }
+
+            return false;
+        };
+
+        if (shouldLootRelease(go, loot_type))
         {
             SendLootRelease(guid);
             return;
