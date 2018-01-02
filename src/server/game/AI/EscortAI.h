@@ -40,7 +40,7 @@ struct TC_GAME_API EscortAI : public ScriptedAI
         // Pure Virtual Functions
         virtual void WaypointReached(uint32, uint32) override = 0;
 
-        void EnterCombat(Unit*) override = 0;
+        void JustEngagedWith(Unit*) override = 0;
 
         void Reset() override = 0;
 

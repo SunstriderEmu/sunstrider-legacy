@@ -56,7 +56,7 @@ void SimpleAI::Reset()
 {
 }
 
-void SimpleAI::EnterCombat(Unit *who)
+void SimpleAI::JustEngagedWith(Unit *who)
 {
             //Reset cast timers
             if (Spell[0].First_Cast >= 0)

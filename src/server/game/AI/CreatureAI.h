@@ -127,7 +127,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual void JustReachedHome() {}
 
         // Called for reaction at enter to combat if not in combat yet (enemy can be NULL)
-        virtual void EnterCombat(Unit* enemy) {}
+        virtual void JustEngagedWith(Unit* enemy) {}
         
         virtual void ReceiveEmote(Player* /*player*/, uint32 /*text_emote*/) {}
 

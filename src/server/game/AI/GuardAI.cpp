@@ -113,7 +113,7 @@ void guardAI::Reset()
     BuffTimer = 0;                                          //Rebuff as soon as we can
 }
 
-void guardAI::EnterCombat(Unit *who)
+void guardAI::JustEngagedWith(Unit *who)
 {
     if (me->GetEntry() == 15184)
     {

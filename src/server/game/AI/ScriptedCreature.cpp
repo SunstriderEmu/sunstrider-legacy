@@ -449,7 +449,7 @@ void BossAI::_JustReachedHome()
     me->SetKeepActive(false);
 }
 
-void BossAI::_EnterCombat()
+void BossAI::_JustEngagedWith()
 {
     if (instance)
     {

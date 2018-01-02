@@ -121,7 +121,7 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     void Reset() override {}
 
     //Called at creature aggro either by MoveInLOS or Attack Start
-    void EnterCombat(Unit*) override {}
+    void JustEngagedWith(Unit*) override {}
 
     //*************
     //AI Helper Functions
@@ -206,7 +206,7 @@ public:
     virtual void ScheduleTasks() { }
 
     void Reset() override { _Reset(); }
-    void EnterCombat(Unit* /*who*/) override { _EnterCombat(); }
+    void JustEngagedWith(Unit* /*who*/) override { _JustEngagedWith(); }
     void JustDied(Unit* /*killer*/) override { _JustDied(); }
     void JustReachedHome() override { _JustReachedHome(); }
 
@@ -214,7 +214,7 @@ public:
 
 protected:
     void _Reset();
-    void _EnterCombat();
+    void _JustEngagedWith();
     void _JustDied();
     void _JustReachedHome();
     void _DespawnAtEvade(Seconds delayToRespawn, Creature* who = nullptr);

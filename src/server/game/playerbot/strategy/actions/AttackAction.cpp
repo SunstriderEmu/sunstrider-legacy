@@ -83,7 +83,7 @@ bool AttackAction::Attack(Unit* target)
     if (pet)
     {
         pet->SetTarget(target->GetGUID());
-        pet->AI()->EnterCombat(target);
+        pet->AI()->JustEngagedWith(target);
         /* TC
         pet->GetCharmInfo()->SetIsCommandAttack(true);
         */

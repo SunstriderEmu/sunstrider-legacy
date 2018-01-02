@@ -146,7 +146,7 @@ bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
                 assistant->SetNoCallAssistance(true);
                 assistant->CombatStart(victim);
                 if (assistant->IsAIEnabled) {
-                    assistant->AI()->EnterCombat(victim);
+                    assistant->AI()->JustEngagedWith(victim);
                     assistant->AI()->AttackStart(victim);
                 }
 

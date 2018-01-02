@@ -45,7 +45,7 @@ struct TC_GAME_API guardAI : public ScriptedAI
 
     void Reset();
 
-    void EnterCombat(Unit *who);
+    void JustEngagedWith(Unit *who);
 
     void JustDied(Unit *Killer);
 
