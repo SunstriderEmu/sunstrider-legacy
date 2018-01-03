@@ -10,13 +10,18 @@ public:
     class CreatureLinkedRespawnTestImpl : public TestCase
     {
     public:
-        CreatureLinkedRespawnTestImpl() : TestCase(STATUS_INCOMPLETE, WorldLocation(13)) { }
+        CreatureLinkedRespawnTestImpl() : TestCase(STATUS_PASSING, WorldLocation(560)),
+            masterCreature(nullptr), slaveCreature(nullptr) 
+        { }
 
-        Creature* masterCreature = nullptr;
-        Creature* slaveCreature = nullptr;
+        Creature* masterCreature;
+        Creature* slaveCreature;
 
         void Test() override
         {
+            masterCreature = nullptr;
+            slaveCreature = nullptr;
+
             //setting up
             auto spawnCreature = [&]() 
             {
@@ -37,18 +42,20 @@ public:
 
             masterCreature = spawnCreature();
             slaveCreature = spawnCreature();
-          
-            sObjectMgr->SetCreatureLinkedRespawn(slaveCreature->GetSpawnId(), masterCreature->GetSpawnId());
+
+            bool linked = sObjectMgr->SetCreatureLinkedRespawn(slaveCreature->GetSpawnId(), masterCreature->GetSpawnId());
+            ASSERT_INFO("Creature link failed");
+            TEST_ASSERT(linked);
 
             masterCreature->SetRespawnTime(1 * DAY);
             slaveCreature->SetRespawnTime(1 * SECOND);
 
             //Test
-            masterCreature->DisappearAndDie();
-            slaveCreature->DisappearAndDie();
+            masterCreature->KillSelf();
+            slaveCreature->KillSelf();
 
             //give time to slave to respawn
-            Wait(10);
+            Wait(Seconds(10));
 
             ASSERT_INFO("Slave creature shouldn't have respawned if master is dead");
             TEST_ASSERT(!slaveCreature->IsAlive());
@@ -60,14 +67,9 @@ public:
         void Cleanup() override
         {
             if (masterCreature)
-            {
                 masterCreature->DeleteFromDB();
-            }
             if (slaveCreature)
-            {
                 slaveCreature->DeleteFromDB();
-                sObjectMgr->SetCreatureLinkedRespawn(slaveCreature->GetSpawnId(), 0);
-            }
         }
     };
 

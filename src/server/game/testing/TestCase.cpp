@@ -163,10 +163,10 @@ void TestCase::Wait(uint32 ms)
 
 void TestCase::_Cleanup()
 {
+    Cleanup(); //test defined additional cleanup
+
     if (_testMapInstanceId)
         sMapMgr->UnloadTestMap(_location.GetMapId(), _testMapInstanceId);
-
-    Cleanup(); //test defined additional cleanup
 }
 
 bool TestCase::_InternalSetup()
