@@ -84,19 +84,68 @@ struct BattlemasterListEntry
                                                             // 32 unused
 };
 
+
+struct CharacterFacialHairStylesEntry
+{
+    uint32 Race;
+    uint32 Gender;
+    uint32 Variation;
+    // uint32 Geoset[5];
+};
+
+enum CharSectionFlags
+{
+    SECTION_FLAG_PLAYER = 0x01,
+    SECTION_FLAG_DEATH_KNIGHT = 0x04
+};
+
+enum CharSectionType
+{
+    SECTION_TYPE_SKIN = 0,
+    SECTION_TYPE_FACE = 1,
+    SECTION_TYPE_FACIAL_HAIR = 2,
+    SECTION_TYPE_HAIR = 3,
+    SECTION_TYPE_UNDERWEAR = 4
+};
+
+struct CharSectionsEntry
+{
+    //uint32 Id;
+    uint32 Race;
+    uint32 Gender;
+    uint32 GenType;
+#ifdef LICH_KING
+    //char* TexturePath[3];
+    uint32 Flags;
+    uint32 Type;
+    uint32 Color;
+#else
+    uint32 Type;
+    uint32 Color;
+    //char* TexturePath[3];
+    uint32 Flags;
+#endif
+
+    inline bool HasFlag(CharSectionFlags flag) const { return !!(Flags & flag); }
+};
+
+#ifdef LICH_KING
+#define MAX_OUTFIT_ITEMS 24
+#else
 #define MAX_OUTFIT_ITEMS 12
-// #define MAX_OUTFIT_ITEMS 24                              // 12->24 in 3.0.x
+#endif
 
 struct CharStartOutfitEntry
 {
     //uint32 Id;                                            // 0
-    uint32 RaceClassGender;                                 // 1 (UNIT_FIELD_BYTES_0 & 0x00FFFFFF) comparable (0 byte = race, 1 byte = class, 2 byte = gender)
-    int32 ItemId[MAX_OUTFIT_ITEMS];                         // 2-13
-    //int32 ItemDisplayId[MAX_OUTFIT_ITEMS];                // 14-25 not required at server side
-    //int32 ItemInventorySlot[MAX_OUTFIT_ITEMS];            // 26-37 not required at server side
-    //int32 InventoryType[MAX_OUTFIT_ITEMS]                 // 38-47 not sure
-    //uint32 PetDisplayID;                                  // 39
-    //uint32 PetFamilyID;                                   // 40
+    uint8 Race;                                             // 1
+    uint8 Class;                                            // 2
+    uint8 Gender;                                           // 3
+    //uint8 Unused;                                         // 4
+    int32 ItemId[MAX_OUTFIT_ITEMS];                         // 5-16
+    //int32 ItemDisplayId[MAX_OUTFIT_ITEMS];                // 
+    //int32 ItemInventorySlot[MAX_OUTFIT_ITEMS];            //
+    //int32 InventoryType[MAX_OUTFIT_ITEMS]                 // 
 };
 
 struct CharTitlesEntry

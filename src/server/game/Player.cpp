@@ -439,6 +439,13 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
 
 bool Player::Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo)
 {
+    if (!ValidateAppearance(createInfo->Race, createInfo->Class, createInfo->Gender, createInfo->HairStyle, createInfo->HairColor, createInfo->Face, createInfo->FacialHair, createInfo->Skin, true))
+    {
+        TC_LOG_ERROR("entities.player.cheat", "Player::Create: Possible hacking attempt: Account %u tried to create a character named '%s' with invalid appearance attributes - refusing to do so",
+            GetSession()->GetAccountId(), m_name.c_str());
+        return false;
+    }
+
     return Create(guidlow, createInfo->Name, createInfo->Race, createInfo->Class, createInfo->Gender, createInfo->Skin, createInfo->Face, createInfo->HairStyle, createInfo->HairColor, createInfo->FacialHair, createInfo->OutfitId);
 }
 
@@ -613,20 +620,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
     }
 
     // original items
-    CharStartOutfitEntry const* oEntry = nullptr;
-    for (uint32 i = 1; i < sCharStartOutfitStore.GetNumRows(); ++i)
-    {
-        if(CharStartOutfitEntry const* entry = sCharStartOutfitStore.LookupEntry(i))
-        {
-            if(entry->RaceClassGender == uint32(( race | (class_ << 8) | (gender << 16) )))
-            {
-                oEntry = entry;
-                break;
-            }
-        }
-    }
-
-    if(oEntry)
+    if (CharStartOutfitEntry const* oEntry = GetCharStartOutfitEntry(race, class_, gender))
     {
         for(int j : oEntry->ItemId)
         {
@@ -1445,13 +1439,39 @@ bool Player::BuildEnumData(PreparedQueryResult result, WorldPacket * p_data, Wor
     *p_data << uint8(gender);                                   // gender
 
     uint32 playerBytes = fields[5].GetUInt32();
-    *p_data << uint8(playerBytes);                              // skin
-    *p_data << uint8(playerBytes >> 8);                         // face
-    *p_data << uint8(playerBytes >> 16);                        // hair style
-    *p_data << uint8(playerBytes >> 24);                        // hair color
-
     uint32 playerBytes2 = fields[6].GetUInt32();
-    *p_data << uint8(playerBytes2 & 0xFF);                      // facial hair
+    uint32 atLoginFlags = fields[15].GetUInt32();
+
+    uint8 skin = uint8(playerBytes);
+    uint8 face = uint8(playerBytes >> 8);
+    uint8 hairStyle = uint8(playerBytes >> 16);
+    uint8 hairColor = uint8(playerBytes >> 24);
+    uint8 facialStyle = uint8(playerBytes2 & 0xFF);
+
+#ifdef LICH_KING
+    if (!ValidateAppearance(uint8(plrRace), uint8(plrClass), gender, hairStyle, hairColor, face, facialStyle, skin))
+    {
+        TC_LOG_ERROR("entities.player.loading", "Player %u has wrong Appearance values (Hair/Skin/Color), forcing recustomize", guid);
+
+        // Make sure customization always works properly - send all zeroes instead
+        skin = 0, face = 0, hairStyle = 0, hairColor = 0, facialStyle = 0;
+
+        if (!(atLoginFlags & AT_LOGIN_CUSTOMIZE))
+        {
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
+            stmt->setUInt16(0, uint16(AT_LOGIN_CUSTOMIZE));
+            stmt->setUInt32(1, guid);
+            CharacterDatabase.Execute(stmt);
+            atLoginFlags |= AT_LOGIN_CUSTOMIZE;
+        }
+    }
+#endif
+
+    *p_data << uint8(skin);
+    *p_data << uint8(face);
+    *p_data << uint8(hairStyle);
+    *p_data << uint8(hairColor);   
+    *p_data << uint8(facialStyle);
 
     *p_data << uint8(fields[7].GetUInt8());                     // level
     *p_data << uint32(fields[8].GetUInt32());                   // zone
@@ -1465,7 +1485,6 @@ bool Player::BuildEnumData(PreparedQueryResult result, WorldPacket * p_data, Wor
 
     uint32 char_flags = 0;
     uint32 playerFlags = fields[14].GetUInt32();
-    uint32 atLoginFlags = fields[15].GetUInt32();
     if (playerFlags & PLAYER_FLAGS_HIDE_HELM)
         char_flags |= CHARACTER_FLAG_HIDE_HELM;
     if (playerFlags & PLAYER_FLAGS_HIDE_CLOAK)
@@ -20469,6 +20488,57 @@ void Player::SendSupercededSpell(uint32 oldSpell, uint32 newSpell) const
     WorldPacket data(SMSG_SUPERCEDED_SPELL, 8);
     data << uint32(oldSpell) << uint32(newSpell);
     GetSession()->SendPacket(&data);
+}
+
+bool Player::ValidateAppearance(uint8 race, uint8 class_, uint8 gender, uint8 hairID, uint8 hairColor, uint8 faceID, uint8 facialHair, uint8 skinColor, bool create /*=false*/)
+{
+    auto validateCharSection = [class_, create](CharSectionsEntry const* entry) -> bool
+    {
+        if (!entry)
+            return false;
+
+#ifdef LICH_KING
+        // Check Death Knight exclusive
+        if (class_ != CLASS_DEATH_KNIGHT && entry->HasFlag(SECTION_FLAG_DEATH_KNIGHT))
+            return false;
+#endif
+
+        // Character creation/customize has some limited sections (as opposed to barbershop)
+        if (create && !entry->HasFlag(SECTION_FLAG_PLAYER))
+            return false;
+
+        return true;
+    };
+
+    // For Skin type is always 0
+    CharSectionsEntry const* skinEntry = GetCharSectionEntry(race, SECTION_TYPE_SKIN, gender, 0, skinColor);
+    if (!validateCharSection(skinEntry))
+        return false;
+
+    // Skin Color defined as Face color, too
+    CharSectionsEntry const* faceEntry = GetCharSectionEntry(race, SECTION_TYPE_FACE, gender, faceID, skinColor);
+    if (!validateCharSection(faceEntry))
+        return false;
+
+    // Check Hair
+    CharSectionsEntry const* hairEntry = GetCharSectionEntry(race, SECTION_TYPE_HAIR, gender, hairID, hairColor);
+    if (!validateCharSection(hairEntry))
+        return false;
+
+    // These combinations don't have an entry of Type SECTION_TYPE_FACIAL_HAIR, exclude them from that check
+    bool const excludeCheck = (race == RACE_TAUREN) || (race == RACE_DRAENEI) || (gender == GENDER_FEMALE && race != RACE_NIGHTELF && race != RACE_UNDEAD_PLAYER);
+    if (!excludeCheck)
+    {
+        CharSectionsEntry const* facialHairEntry = GetCharSectionEntry(race, SECTION_TYPE_FACIAL_HAIR, gender, facialHair, hairColor);
+        if (!validateCharSection(facialHairEntry))
+            return false;
+    }
+
+    CharacterFacialHairStylesEntry const* entry = GetCharFacialHairEntry(race, gender, facialHair);
+    if (!entry)
+        return false;
+
+    return true;
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()

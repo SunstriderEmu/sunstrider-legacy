@@ -40,6 +40,10 @@ TC_GAME_API uint32 GetLiquidFlags(uint32 liquidTypeRec);
 TC_GAME_API PvPDifficultyEntry const* GetBattlegroundBracketByLevel(uint32 mapid, uint32 level);
 TC_GAME_API PvPDifficultyEntry const* GetBattlegroundBracketById(uint32 mapid, BattlegroundBracketId id);
 
+TC_GAME_API CharacterFacialHairStylesEntry const* GetCharFacialHairEntry(uint8 race, uint8 gender, uint8 facialHairID);
+TC_GAME_API CharSectionsEntry const* GetCharSectionEntry(uint8 race, CharSectionType genType, uint8 gender, uint8 type, uint8 color);
+TC_GAME_API CharStartOutfitEntry const* GetCharStartOutfitEntry(uint8 race, uint8 class_, uint8 gender);
+
 TC_GAME_API uint32 GetTalentInspectBitPosInTab(uint32 talentId);
 TC_GAME_API uint32 GetTalentTabInspectBitSize(uint32 talentTabId);
 TC_GAME_API uint32 const* /*[3]*/ GetTalentTabPages(uint32 cls);

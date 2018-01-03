@@ -41,7 +41,12 @@ DBCStorage <AreaTriggerEntry> sAreaTriggerStore(AreaTriggerEntryfmt);
 DBCStorage <AuctionHouseEntry> sAuctionHouseStore(AuctionHouseEntryfmt);
 DBCStorage <BankBagSlotPricesEntry> sBankBagSlotPricesStore(BankBagSlotPricesEntryfmt);
 DBCStorage <BattlemasterListEntry> sBattlemasterListStore(BattlemasterListEntryfmt);
+DBCStorage <CharacterFacialHairStylesEntry> sCharacterFacialHairStylesStore(CharacterFacialHairStylesfmt);
+std::unordered_map<uint32, CharacterFacialHairStylesEntry const*> sCharFacialHairMap;
+DBCStorage <CharSectionsEntry> sCharSectionsStore(CharSectionsEntryfmt);
+std::unordered_multimap<uint32, CharSectionsEntry const*> sCharSectionMap;
 DBCStorage <CharStartOutfitEntry> sCharStartOutfitStore(CharStartOutfitEntryfmt);
+std::map<uint32, CharStartOutfitEntry const*> sCharStartOutfitMap;
 DBCStorage <CharTitlesEntry> sCharTitlesStore(CharTitlesEntryfmt);
 DBCStorage <ChatChannelsEntry> sChatChannelsStore(ChatChannelsEntryfmt);
 DBCStorage <ChrClassesEntry> sChrClassesStore(ChrClassesEntryfmt);
@@ -228,6 +233,8 @@ void LoadDBCStores(const std::string& dataPath)
     LOAD_DBC(sAuctionHouseStore, "AuctionHouse.dbc");
     LOAD_DBC(sBankBagSlotPricesStore, "BankBagSlotPrices.dbc");
     LOAD_DBC(sBattlemasterListStore, "BattlemasterList.dbc");
+    LOAD_DBC(sCharacterFacialHairStylesStore, "CharacterFacialHairStyles.dbc");
+    LOAD_DBC(sCharSectionsStore, "CharSections.dbc");
     LOAD_DBC(sCharStartOutfitStore, "CharStartOutfit.dbc");
 
     LOAD_DBC(sCharTitlesStore, "CharTitles.dbc");
@@ -478,6 +485,17 @@ void LoadDBCStores(const std::string& dataPath)
     }
     LOAD_DBC(sWorldMapAreaStore, "WorldMapArea.dbc");
     LOAD_DBC(sWorldSafeLocsStore, "WorldSafeLocs.dbc");
+
+    for (CharacterFacialHairStylesEntry const* entry : sCharacterFacialHairStylesStore)
+        if (entry->Race && ((1 << (entry->Race - 1)) & RACEMASK_ALL_PLAYABLE) != 0) // ignore nonplayable races
+            sCharFacialHairMap.insert({ entry->Race | (entry->Gender << 8) | (entry->Variation << 16), entry });
+
+    for (CharSectionsEntry const* entry : sCharSectionsStore)
+        if (entry->Race && ((1 << (entry->Race - 1)) & RACEMASK_ALL_PLAYABLE) != 0) // ignore nonplayable races
+            sCharSectionMap.insert({ entry->GenType | (entry->Gender << 8) | (entry->Race << 16), entry });
+
+    for (CharStartOutfitEntry const* outfit : sCharStartOutfitStore)
+        sCharStartOutfitMap[outfit->Race | (outfit->Class << 8) | (outfit->Gender << 16)] = outfit;
 
     // error checks
     if(bad_dbc_files.size() >= DBCFilesCount )
@@ -748,6 +766,36 @@ uint32 GetLiquidFlags(uint32 liquidTypeRec)
         return GetLiquidFlagsFromType(liq->GetType());
 
     return 0;
+}
+
+CharacterFacialHairStylesEntry const* GetCharFacialHairEntry(uint8 race, uint8 gender, uint8 facialHairID)
+{
+    auto itr = sCharFacialHairMap.find(uint32(race) | uint32(gender << 8) | uint32(facialHairID << 16));
+    if (itr == sCharFacialHairMap.end())
+        return nullptr;
+
+    return itr->second;
+}
+
+CharSectionsEntry const* GetCharSectionEntry(uint8 race, CharSectionType genType, uint8 gender, uint8 type, uint8 color)
+{
+    uint32 const key = uint32(genType) | uint32(gender << 8) | uint32(race << 16);
+    for (auto const& section : Trinity::Containers::MapEqualRange(sCharSectionMap, key))
+    {
+        if (section.second->Type == type && section.second->Color == color)
+            return section.second;
+    }
+
+    return nullptr;
+}
+
+CharStartOutfitEntry const* GetCharStartOutfitEntry(uint8 race, uint8 class_, uint8 gender)
+{
+    std::map<uint32, CharStartOutfitEntry const*>::const_iterator itr = sCharStartOutfitMap.find(race | (class_ << 8) | (gender << 16));
+    if (itr == sCharStartOutfitMap.end())
+        return nullptr;
+
+    return itr->second;
 }
 
 #ifndef LICH_KING

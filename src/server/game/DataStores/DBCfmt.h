@@ -6,7 +6,13 @@ char const AuctionHouseEntryfmt[]="niiixxxxxxxxxxxxxxxxx";
 char const AreaTriggerEntryfmt[]="niffffffff";
 char const BankBagSlotPricesEntryfmt[]="ni";
 char const BattlemasterListEntryfmt[]="niiixxxxxiiiixxssssssssssssssssxx";
-char const CharStartOutfitEntryfmt[]="diiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxxxxx";
+char const CharStartOutfitEntryfmt[]="dbbbXiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxxxxx";
+#ifdef LICH_KING
+char const CharSectionsEntryfmt[] = "diiixxxiii";
+#else
+char const CharSectionsEntryfmt[] = "diiiiixxxi";
+#endif
+char const CharacterFacialHairStylesfmt[] = "iiixxxxx";
 // 3*12 new item fields in 3.0.x
 //char const CharStartOutfitEntryfmt[]="diiiiiiiiiiiiiiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 char const CharTitlesEntryfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxi";
