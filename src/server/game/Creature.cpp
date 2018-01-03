@@ -1714,6 +1714,11 @@ void Creature::DeleteFromDB()
     trans->PAppend("DELETE FROM creature_addon WHERE guid = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_creature WHERE guid = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_spawnId);
+
+    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CRELINKED_RESPAWN);
+    stmt->setUInt32(0, m_spawnId);
+    trans->Append(stmt);
+
     WorldDatabase.CommitTransaction(trans);
 }
 
