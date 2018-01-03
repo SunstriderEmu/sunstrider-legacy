@@ -961,26 +961,19 @@ void GameObject::SetLootState(LootState state, Unit* unit)
     if(AI())
         AI()->OnLootStateChanged(state, unit);
 
-    /*if (m_model)
+    /*
+    Sun: disabled this, this is already handled in SetGoState, no use having this here too
+    if (m_model)
     {
-        // startOpen determines whether we are going to add or remove the LoS on activation
-        bool startOpen = (GetGoType() == GAMEOBJECT_TYPE_DOOR || GetGoType() == GAMEOBJECT_TYPE_BUTTON ? GetGOInfo()->door.startOpen : false);
-        
-        //if (GetGoState() == GO_NOT_READY)
-            //startOpen = !startOpen;
-        
-        if (GetGoType() == GAMEOBJECT_TYPE_DOOR) {
-            if (state == GO_READY || state == GO_ACTIVATED) // Opening
-                EnableCollision(false);
-            else // Closing
-                EnableCollision(true);
-        }
-        else {
-            if (state == GO_ACTIVATED || state == GO_JUST_DEACTIVATED)
-                EnableCollision(startOpen);
-            else if (state == GO_READY)
-                EnableCollision(!startOpen);
-        }
+        if (GetGoType() == GAMEOBJECT_TYPE_DOOR) // only set collision for doors on SetGoState
+        return;
+
+        bool collision = false;
+        // Use the current go state
+        if ((GetGoState() != GO_STATE_READY && (state == GO_ACTIVATED || state == GO_JUST_DEACTIVATED)) || state == GO_READY)
+            collision = !collision;
+
+        EnableCollision(collision);
     }*/
 }
 
