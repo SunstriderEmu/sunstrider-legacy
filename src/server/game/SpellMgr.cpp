@@ -3184,6 +3184,14 @@ void SpellMgr::LoadSpellInfoDiminishing()
     TC_LOG_INFO("server.loading", ">> Loaded SpellInfo diminishing infos in %u ms", GetMSTimeDiffToNow(oldMSTime));
 }
 
+SpellInfo const* SpellMgr::EnsureSpellInfo(uint32 spellId) const
+{
+    ASSERT(spellId < GetSpellInfoStoreSize());
+    SpellInfo const* spellInfo = mSpellInfoMap[spellId];
+    ASSERT(spellInfo);
+    return spellInfo;
+}
+
 void SpellMgr::LoadSpellInfoImmunities()
 {
     uint32 oldMSTime = GetMSTime();

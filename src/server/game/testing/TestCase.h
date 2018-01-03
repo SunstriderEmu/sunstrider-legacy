@@ -2,12 +2,26 @@
 #define TESTCASE_H
 
 #include "Duration.h"
+#include <string>
+#include "SharedDefines.h"
+#include "DBCEnums.h"
+#include "SpellMgr.h"
+#include "ScriptMgr.h"
+#include "Unit.h"
 
 #define TEST_CREATURE_ENTRY 8
 
 class TestMap;
 class TestThread;
 class TestPlayer;
+class WorldLocation;
+class Player;
+class TestPlayer;
+class Creature;
+class GameObject;
+struct Position;
+class TempSummon;
+
 
 //input info for next TEST_ASSERT check
 #define ASSERT_INFO(expr, ...) _AssertInfo(expr, ## __VA_ARGS__)

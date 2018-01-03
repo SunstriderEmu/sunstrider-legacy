@@ -8,6 +8,7 @@
 #include "SharedDefines.h"
 #include "DBCStructure.h"
 #include "SpellInfo.h"
+#include <unordered_map>
 
 #include <map>
 
@@ -935,13 +936,7 @@ class TC_GAME_API SpellMgr
         // SpellInfo object management
         SpellInfo const* GetSpellInfo(uint32 spellId) const { return spellId < GetSpellInfoStoreSize() ? mSpellInfoMap[spellId] : nullptr; }
         // Use this only with 100% valid spellIds
-        SpellInfo const* EnsureSpellInfo(uint32 spellId) const
-        {
-            ASSERT(spellId < GetSpellInfoStoreSize());
-            SpellInfo const* spellInfo = mSpellInfoMap[spellId];
-            ASSERT(spellInfo);
-            return spellInfo;
-        }
+        SpellInfo const* EnsureSpellInfo(uint32 spellId) const;
         uint32 GetSpellInfoStoreSize() const { return mSpellInfoMap.size(); }
 
     private:

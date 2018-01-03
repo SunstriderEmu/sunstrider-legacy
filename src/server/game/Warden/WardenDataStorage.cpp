@@ -113,10 +113,10 @@ void CWardenDataStorage::LoadWardenDataResult(bool reload)
 
         if (type == MPQ_CHECK || type == MEM_CHECK)
         {
-            std::string result = fields[2].GetString();
+            std::string result2 = fields[2].GetString();
             WardenDataResult *wr = new WardenDataResult();
-            wr->res.SetHexStr(result.c_str());
-            int len = result.size() / 2;
+            wr->res.SetHexStr(result2.c_str());
+            int len = result2.size() / 2;
 
             if (wr->res.GetNumBytes() < len)
             {

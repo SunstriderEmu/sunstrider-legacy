@@ -1215,12 +1215,12 @@ void Aura::HandleAddModifier(bool apply, bool Real)
         for(auto itr : auraMap)
         {
             Aura* aura = itr.second;
-            SpellInfo const *spellInfo = aura->GetSpellInfo();
-            if(!spellInfo)
+            SpellInfo const* auraspellInfo = aura->GetSpellInfo();
+            if(!auraspellInfo)
                 continue;
             // only passive and permament auras-active auras should have amount set on spellcast and not be affected
             // if aura is casted by others, it will not be affected
-            if ((aura->IsPassive() || aura->IsPermanent()) && aura->GetCasterGUID() == m_target->GetGUID() && (m_target->ToPlayer())->IsAffectedBySpellmod(spellInfo,m_spellmod))
+            if ((aura->IsPassive() || aura->IsPermanent()) && aura->GetCasterGUID() == m_target->GetGUID() && (m_target->ToPlayer())->IsAffectedBySpellmod(auraspellInfo,m_spellmod))
             {
                 uint8 index = aura->GetEffIndex();
                 if (  GetMiscValue() == SPELLMOD_ALL_EFFECTS
@@ -1230,11 +1230,11 @@ void Aura::HandleAddModifier(bool apply, bool Real)
                    )
                 {
                     // hack for now : New aura just to get new amount
-                    Aura* temp = CreateAura(spellInfo, index, nullptr, m_target, m_target);
+                    Aura* temp = CreateAura(auraspellInfo, index, nullptr, m_target, m_target);
                     int32 amountValue = temp->GetModifierValuePerStack();
 
                     //TC_LOG_INFO("FIXME","HandleAddModifier(...) reapplying aura (%u,%i) with new amount %i",aura->GetId(),index,amountValue);
-                    AuraType type = (AuraType)spellInfo->Effects[index].ApplyAuraName;
+                    AuraType type = (AuraType)auraspellInfo->Effects[index].ApplyAuraName;
                     //unapply current aura, change amount then re apply it
                     (*aura.*AuraHandler [type])(false,Real);
                     aura->SetModifierValuePerStack(amountValue);
@@ -2285,8 +2285,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             {
                 if(m_target->GetHealth() == 0) //we died before the seed could explode
                 {
-                    if(Unit* caster = ObjectAccessor::GetUnit(*m_target, GetCasterGUID()))
-                        caster->CastSpell(m_target, 27285, TRIGGERED_FULL_MASK); //explosion spell
+                    if(Unit* caster2 = ObjectAccessor::GetUnit(*m_target, GetCasterGUID()))
+                        caster2->CastSpell(m_target, 27285, TRIGGERED_FULL_MASK); //explosion spell
                 }
             }
             case 2584:                                     // Waiting to Resurrect
@@ -4551,9 +4551,9 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             {
                 if (apply && !loading)
                 {
-                    if(Unit* caster = GetCaster())
+                    if(Unit* caster2 = GetCaster())
                     {
-                        Unit::AuraList const& classScripts = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+                        Unit::AuraList const& classScripts = caster2->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
                         for(auto classScript : classScripts)
                         {
                             int32 tickcount = m_spellProto->GetDuration() / m_spellProto->Effects[m_effIndex].Amplitude;

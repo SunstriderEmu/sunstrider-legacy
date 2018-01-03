@@ -637,7 +637,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
             }
 
             uint32 count = iProto->Stackable;               // max stack by default (mostly 1)
-            if(iProto->Class==ITEM_CLASS_CONSUMABLE && iProto->SubClass==ITEM_SUBCLASS_FOOD)
+            if (iProto->Class == ITEM_CLASS_CONSUMABLE && iProto->SubClass == ITEM_SUBCLASS_FOOD)
             {
                 switch(iProto->Spells[0].SpellCategory)
                 {
@@ -690,8 +690,8 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
                 }
 
                 // if  this is ammo then use it
-                uint8 msg = CanUseAmmo( pItem->GetTemplate()->ItemId );
-                if( msg == EQUIP_ERR_OK )
+                uint8 msg2 = CanUseAmmo( pItem->GetTemplate()->ItemId );
+                if(msg2 == EQUIP_ERR_OK )
                     SetAmmo( pItem->GetTemplate()->ItemId );
             }
         }
@@ -824,11 +824,11 @@ void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 
     if (type==DAMAGE_FALL && !IsAlive())                     // DealDamage not apply item durability loss at self damage
     {
-        TC_LOG_DEBUG("entities.player","We are fall to death, loosing 10 percents durability");
+        TC_LOG_DEBUG("entities.player", "Player fell to death, loosing 10 percents durability");
         DurabilityLossAll(0.10f,false);
         // durability lost message
-        WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 0);
-        SendDirectMessage(&data);
+        WorldPacket data2(SMSG_DURABILITY_DAMAGE_DEATH, 0);
+        SendDirectMessage(&data2);
     }
 }
 
@@ -1241,7 +1241,6 @@ void Player::Update( uint32 p_time )
             {
                 // use area updates as well
                 // needed for free far all arenas for example
-                uint32 newarea = GetAreaId();
                 if( m_areaUpdateId != newarea )
                     UpdateArea(newarea);
 
@@ -1528,14 +1527,14 @@ bool Player::BuildEnumData(PreparedQueryResult result, WorldPacket * p_data, Wor
     // show pet at selection character in character list only for non-ghost character
     if (result && !(playerFlags & PLAYER_FLAGS_GHOST) && (plrClass == CLASS_WARLOCK || plrClass == CLASS_HUNTER))
     {
-        Field* fields = result->Fetch();
+        Field* fields2 = result->Fetch();
 
-        uint32 entry = fields[16].GetUInt32();
+        uint32 entry = fields2[16].GetUInt32();
         CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(entry);
         if (cInfo)
         {
-            petDisplayId = fields[17].GetUInt32();
-            petLevel = fields[18].GetUInt8();
+            petDisplayId = fields2[17].GetUInt32();
+            petLevel = fields2[18].GetUInt8();
             petFamily = cInfo->family;
         }
     }
@@ -3482,8 +3481,8 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
     // remove dependent spells
     SpellLearnSpellMapBounds spell_bounds = sSpellMgr->GetSpellLearnSpellMapBounds(spell_id);
 
-    for (auto itr2 = spell_bounds.first; itr2 != spell_bounds.second; ++itr2)
-        RemoveSpell(itr2->second.spell, disabled);
+    for (auto itr3 = spell_bounds.first; itr3 != spell_bounds.second; ++itr3)
+        RemoveSpell(itr3->second.spell, disabled);
 }
 
 void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */)
@@ -4053,9 +4052,9 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
             trans->PAppend("DELETE FROM character_pet_declinedname WHERE owner = '%u'", guid);
             trans->PAppend("DELETE FROM character_skills WHERE guid = '%u'", guid);
 
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_BGDATA);
-            stmt->setUInt32(0, guid);
-            trans->Append(stmt);
+            PreparedStatement* stmt2 = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_BGDATA);
+            stmt2->setUInt32(0, guid);
+            trans->Append(stmt2);
 
         } break;
         // The character gets unlinked from the account, the name gets freed up and appears as deleted ingame

@@ -5584,13 +5584,13 @@ SpellCastResult Spell::CheckCast(bool strict)
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 else if (m_spellInfo->Id == 44997) { // Converting Sentry
-                    Unit* target = m_targets.GetUnitTarget();
-                    if (!target || target->GetEntry() != 24972 || target->IsAlive())
+                    Unit* target2 = m_targets.GetUnitTarget();
+                    if (!target2 || target2->GetEntry() != 24972 || target2->IsAlive())
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 else if (m_spellInfo->Id == 35771) { // Tag Subbued Talbuk
-                    Unit* target = m_targets.GetUnitTarget();
-                    if (!target || !target->ToCreature() || !target->ToCreature()->IsBelowHPPercent(20))
+                    Unit* target2 = m_targets.GetUnitTarget();
+                    if (!target2 || !target2->ToCreature() || !target2->ToCreature()->IsBelowHPPercent(20))
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 break;
@@ -5686,8 +5686,8 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 // Can be area effect, Check only for players and not check if target - caster (spell can have multiply drain/burn effects)
                 if(m_caster->GetTypeId() == TYPEID_PLAYER)
-                    if(Unit* target = m_targets.GetUnitTarget())
-                        if (target != m_caster && target->GetPowerType() != Powers(m_spellInfo->Effects[i].MiscValue))
+                    if(Unit* target2 = m_targets.GetUnitTarget())
+                        if (target2 != m_caster && target2->GetPowerType() != Powers(m_spellInfo->Effects[i].MiscValue))
                             return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
@@ -5704,15 +5704,15 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_caster->HasUnitState(UNIT_STATE_ROOT))
                     return SPELL_FAILED_ROOTED;
 
-                Unit* target = m_targets.GetUnitTarget();
-                if (!target)
+                Unit* _target = m_targets.GetUnitTarget();
+                if (!_target)
                     return SPELL_FAILED_DONT_REPORT;
 
-                Position pos = target->GetFirstWalkableCollisionPosition(target->GetCombatReach(), target->GetRelativeAngle(m_caster));
+                Position pos = _target->GetFirstWalkableCollisionPosition(_target->GetCombatReach(), _target->GetRelativeAngle(m_caster));
                 delete m_preGeneratedPath; //just in case, if logic changes elsewhere
                 m_preGeneratedPath = new PathGenerator(m_caster);
                 m_preGeneratedPath->SetPathLengthLimit(m_spellInfo->GetMaxRange(false, m_caster) *1.4f);
-                bool result = m_preGeneratedPath->CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + target->GetCombatReach(), false, false);
+                bool result = m_preGeneratedPath->CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + _target->GetCombatReach(), false, false);
 
                 if (m_preGeneratedPath->GetPathType() & PATHFIND_SHORT) //path found is longer than limit
                     return SPELL_FAILED_OUT_OF_RANGE;
@@ -5726,9 +5726,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                     uint16 pathSize = m_preGeneratedPath->GetPath().size();
                     G3D::Vector3 beforeLastPointV = m_preGeneratedPath->GetPath()[pathSize-2];
                     const Position beforeLastPointP { beforeLastPointV.x, beforeLastPointV.y, beforeLastPointV.z, 0.0f };
-                    const Position newLastPoint = target->GetFirstWalkableCollisionPosition(CONTACT_DISTANCE*3, target->GetRelativeAngle(&beforeLastPointP));
+                    const Position newLastPoint = _target->GetFirstWalkableCollisionPosition(CONTACT_DISTANCE*3, _target->GetRelativeAngle(&beforeLastPointP));
                     //Recreate a path to this point
-                    result = m_preGeneratedPath->CalculatePath(newLastPoint.m_positionX, newLastPoint.m_positionY, newLastPoint.m_positionZ + target->GetCombatReach(), false, false);
+                    result = m_preGeneratedPath->CalculatePath(newLastPoint.m_positionX, newLastPoint.m_positionY, newLastPoint.m_positionZ + _target->GetCombatReach(), false, false);
                 }
 
                 if (m_preGeneratedPath->GetPathType() & PATHFIND_SHORT)
