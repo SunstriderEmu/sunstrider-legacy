@@ -118,7 +118,6 @@ void TestMgr::Update(uint32 const diff)
         if (testThread->IsFinished())
         {
             _results.TestFinished(*test);
-            testThread->GetTest()->_Cleanup();
             size_t removed = _remainingTests.erase(testID);
             ASSERT(removed == 1);
             continue;

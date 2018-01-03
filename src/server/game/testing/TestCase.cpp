@@ -8,7 +8,6 @@
 #include "CharacterCache.h"
 
 #define MAP_TESTING_ID 13
-#define TEST_CREATURE_ENTRY 8
 
 //same as TEST_ASSERT but will track caller file and line to print it in case of error
 #define INTERNAL_TEST_ASSERT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo();
@@ -166,6 +165,8 @@ void TestCase::_Cleanup()
 {
     if (_testMapInstanceId)
         sMapMgr->UnloadTestMap(_location.GetMapId(), _testMapInstanceId);
+
+    Cleanup(); //test defined additional cleanup
 }
 
 bool TestCase::_InternalSetup()

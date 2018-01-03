@@ -51,6 +51,7 @@ void TestThread::Run()
         _testCase->_FailNoException(e.what());
     }
 
+    _testCase->_Cleanup();
     _state = STATE_FINISHED;
 
     //unlock sleeping TestMgr if needed (we finished test)

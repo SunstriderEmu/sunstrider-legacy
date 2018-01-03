@@ -639,7 +639,7 @@ void Creature::Update(uint32 diff)
                         SetRespawnTime(WEEK);
                     else
                     {
-                        // else copy time from master and add a little
+                        // else copy time from master and add a little offset
                         time_t baseRespawnTime = std::max(linkedRespawnTime, now);
                         time_t const offset = urand(5, MINUTE);
 

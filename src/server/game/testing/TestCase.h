@@ -3,6 +3,8 @@
 
 #include "Duration.h"
 
+#define TEST_CREATURE_ENTRY 8
+
 class TestMap;
 class TestThread;
 class TestPlayer;
@@ -52,6 +54,8 @@ public:
 
     // Main test function to be implemented by each test
     virtual void Test() = 0;
+    // Cleanup function, always called after the test whatever the result
+    virtual void Cleanup() { }
 
 
     // Utility functions

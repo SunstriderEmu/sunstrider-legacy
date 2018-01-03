@@ -485,6 +485,8 @@ typedef std::unordered_map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup
 
 class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public MapObject
 {
+    friend class TestCase;
+
     public:
 
         explicit Creature(bool isWorldObject = false);
@@ -878,7 +880,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 m_relocateTimer;
         void AreaCombat();
         MovementGeneratorType m_defaultMovementType;
-        ObjectGuid::LowType m_spawnId;                               ///< For new or temporary creatures is 0 for saved it is lowguid
+        ObjectGuid::LowType m_spawnId;                               /// For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;
         int8 m_originalEquipmentId; // can be -1
 

@@ -131,6 +131,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     Map *map = chr->GetMap();
 
     if (Transport* tt = chr->GetTransport())
+    {
         if (MotionTransport* trans = tt->ToMotionTransport())
         {
             ObjectGuid::LowType guid = sObjectMgr->GenerateCreatureSpawnId();
@@ -147,20 +148,22 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
             data.movementType = 1;
             data.spawnMask = 1;
 
-            if(!trans->GetGOInfo())
+            if (!trans->GetGOInfo())
             {
                 SendSysMessage("Error: cannot save creature on transport because trans->GetGOInfo() == NULL");
                 return true;
             }
-            if(Creature* creature = trans->CreateNPCPassenger(guid, &data))
+            if (Creature* creature = trans->CreateNPCPassenger(guid, &data))
             {
                 sObjectMgr->AddCreatureToGrid(guid, &data);
                 creature->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode());
-            } else {
+            }
+            else {
                 SendSysMessage("Error: cannot create NPC Passenger.");
             }
             return true;
         }
+    }
 
     auto pCreature = new Creature;
     if (!pCreature->Create(sObjectMgr->GenerateCreatureSpawnId(), map, chr->GetPhaseMask(), id, { x, y, z, o }))
