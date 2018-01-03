@@ -124,7 +124,7 @@ class TC_GAME_API UnitAI
         virtual void DoAction(const int32 param) {}
         virtual uint32 GetData(uint32 /*id = 0*/) const { return 0; }
         virtual void SetData(uint32 /*id*/, uint32 /*value*/, Unit* setter = nullptr) {}
-        virtual void SetGUID(ObjectGuid /*guid*/, int32 /*id*/ = 0) { }
+        virtual void SetGUID(ObjectGuid const& /*guid*/, int32 /*id*/ = 0) { }
         virtual ObjectGuid GetGUID(int32 /*id*/ = 0) const { return ObjectGuid::Empty; }
 
         // Called at any Damage from any attacker (before damage apply)
