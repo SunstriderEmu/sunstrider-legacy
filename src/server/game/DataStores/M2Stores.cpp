@@ -54,8 +54,8 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     uint32 interpolationMax = 0;
 
     //for (uint32 k = 0; k < cam->target_positions.interpolation_ranges.number; ++k)
-    uint32 k = 0;
     {
+        uint32 k = 0;
         if (cam->target_positions.interpolation_ranges.offset_elements + (sizeof(InterpolationPair) * k) > buffSize)
             return false;
 
@@ -67,6 +67,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
 
     //for (uint32 k = 0; k < cam->positions.interpolation_ranges.number; ++k)
     {
+        uint32 k = 0;
         if (cam->positions.interpolation_ranges.offset_elements + (sizeof(InterpolationPair) * k) > buffSize)
             return false;
 

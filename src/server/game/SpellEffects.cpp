@@ -1033,7 +1033,7 @@ void Spell::EffectDummy(uint32 i)
                         case 4: spell_id = 8067; break;     // Party Time!
                         case 5: spell_id = 8068; break;     // Healthy Spirit
                     }
-                    m_caster->CastSpell(m_caster, _spell_id, TRIGGERED_FULL_MASK,nullptr);
+                    m_caster->CastSpell(m_caster, _spell_id, true);
                     return;
                 }
                 case 8213:                                  // Savory Deviate Delight
@@ -1041,15 +1041,15 @@ void Spell::EffectDummy(uint32 i)
                     if(m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    uint32 spell_id = 0;
+                    uint32 spell_id_ = 0;
                     switch(m_caster->GetMap()->urand(1,2))
                     {
                         // Flip Out - ninja
-                        case 1: spell_id = (m_caster->GetGender() == GENDER_MALE ? 8219 : 8220); break;
+                        case 1: spell_id_ = (m_caster->GetGender() == GENDER_MALE ? 8219 : 8220); break;
                         // Yaaarrrr - pirate
-                        case 2: spell_id = (m_caster->GetGender() == GENDER_MALE ? 8221 : 8222); break;
+                        case 2: spell_id_ = (m_caster->GetGender() == GENDER_MALE ? 8221 : 8222); break;
                     }
-                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
+                    m_caster->CastSpell(m_caster, spell_id_, true);
                     return;
                 }
                 case 8593:                                  // Symbol of life (restore creature to life)
@@ -1213,9 +1213,9 @@ void Spell::EffectDummy(uint32 i)
                     if(!itemTarget && m_caster->GetTypeId()!=TYPEID_PLAYER)
                         return;
 
-                    uint32 spell_id = roll_chance_i(50) ? 17269 : 17270;
+                    uint32 spell_id_ = roll_chance_i(50) ? 17269 : 17270;
 
-                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
+                    m_caster->CastSpell(m_caster, spell_id_, TRIGGERED_FULL_MASK,nullptr);
                     return;
                 }
                 case 23019:                                 // Crystal Prison Dummy DND
@@ -1360,8 +1360,8 @@ void Spell::EffectDummy(uint32 i)
                     Aura * dummy = m_caster->GetDummyAura(28734);
                     if (dummy)
                     {
-                        int32 bp = damage * dummy->GetStackAmount();
-                        m_caster->CastCustomSpell(m_caster, 28733, &bp, nullptr, nullptr, TRIGGERED_FULL_MASK);
+                        int32 bp_ = damage * dummy->GetStackAmount();
+                        m_caster->CastCustomSpell(m_caster, 28733, &bp_, nullptr, nullptr, TRIGGERED_FULL_MASK);
                         m_caster->RemoveAurasDueToSpell(28734);
                     }
                     return;
@@ -1372,9 +1372,9 @@ void Spell::EffectDummy(uint32 i)
                     if( m_caster->GetTypeId() != TYPEID_PLAYER )
                         return;
 
-                    uint32 spell_id = roll_chance_i(50) ? 29277 : 29278;
+                    uint32 spell_id_ = roll_chance_i(50) ? 29277 : 29278;
 
-                    m_caster->CastSpell(m_caster,spell_id, TRIGGERED_FULL_MASK,nullptr);
+                    m_caster->CastSpell(m_caster, spell_id_, TRIGGERED_FULL_MASK, nullptr);
                     return;
                 }
                 case 29858:                                 // Soulshatter
@@ -1782,8 +1782,8 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if (!unitTarget || !m_caster)
                         return;
-                    int32 bp = 45000 - (unitTarget->GetDistance(m_caster) * 2500);
-                    m_caster->CastCustomSpell(unitTarget, 5255, &bp, nullptr, nullptr, TRIGGERED_FULL_MASK);
+                    int32 bp_ = 45000 - (unitTarget->GetDistance(m_caster) * 2500);
+                    m_caster->CastCustomSpell(unitTarget, 5255, &bp_, nullptr, nullptr, TRIGGERED_FULL_MASK);
                     
                     return;
                 }

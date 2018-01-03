@@ -369,8 +369,8 @@ uint32 MapManager::GetNumPlayersInMap(uint32 mapId)
             break;
         } else {
             MapInstanced::InstancedMaps& maps = ((MapInstanced *)map)->GetInstancedMaps();
-            for (auto & map : maps)
-                ret += ((InstanceMap *)map.second)->GetPlayers().getSize();
+            for (auto& _map : maps)
+                ret += ((InstanceMap*)_map.second)->GetPlayers().getSize();
         }
     }
 

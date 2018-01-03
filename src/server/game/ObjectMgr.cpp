@@ -8674,12 +8674,12 @@ void ObjectMgr::LoadSpellTemplates()
                 continue;
             }
 
-            for (uint32 itr = 1; itr <= 171; itr++)
+            for (uint32 i = 1; i <= 171; i++)
             {
-                if (fields[itr].IsNull())
+                if (fields[i].IsNull())
                     continue;
 
-                switch (itr)
+                switch (i)
                 {
                 case 1: spell->Category = fields[1].GetUInt32(); break;
                 case 2: spell->Dispel = fields[2].GetUInt32(); break;
@@ -8732,7 +8732,7 @@ void ObjectMgr::LoadSpellTemplates()
                 case 49:
                 case 50:
                 case 51:
-                    spell->Reagent[itr - 44] = fields[itr].GetInt32(); break;
+                    spell->Reagent[i - 44] = fields[i].GetInt32(); break;
                 case 52: //ReagentCount start
                 case 53:
                 case 54:
@@ -8741,86 +8741,86 @@ void ObjectMgr::LoadSpellTemplates()
                 case 57:
                 case 58:
                 case 59:
-                    spell->ReagentCount[itr - 52] = fields[itr].GetUInt32(); break;
+                    spell->ReagentCount[i - 52] = fields[i].GetUInt32(); break;
                 case 60: spell->EquippedItemClass = fields[60].GetInt32(); break;
                 case 61: spell->EquippedItemSubClassMask = fields[61].GetInt32(); break;
                 case 62: spell->EquippedItemInventoryTypeMask = fields[62].GetInt32(); break;
                 case 63:
                 case 64:
                 case 65:
-                    spell->Effect[itr - 63] = fields[itr].GetUInt32(); break;
+                    spell->Effect[i - 63] = fields[i].GetUInt32(); break;
                 case 66:
                 case 67:
                 case 68:
-                    spell->EffectDieSides[itr - 66] = fields[itr].GetInt32(); break;
+                    spell->EffectDieSides[i - 66] = fields[i].GetInt32(); break;
                 case 69:
                 case 70:
                 case 71:
-                    spell->EffectBaseDice[itr - 69] = fields[itr].GetInt32(); break;
+                    spell->EffectBaseDice[i - 69] = fields[i].GetInt32(); break;
                 case 72:
                 case 73:
                 case 74:
-                    spell->EffectDicePerLevel[itr - 72] = fields[itr].GetFloat(); break;
+                    spell->EffectDicePerLevel[i - 72] = fields[i].GetFloat(); break;
                 case 75:
                 case 76:
                 case 77:
-                    spell->EffectRealPointsPerLevel[itr - 75] = fields[itr].GetFloat(); break;
+                    spell->EffectRealPointsPerLevel[i - 75] = fields[i].GetFloat(); break;
                 case 78:
                 case 79:
                 case 80:
-                    spell->EffectBasePoints[itr - 78] = fields[itr].GetInt32(); break;
+                    spell->EffectBasePoints[i - 78] = fields[i].GetInt32(); break;
                 case 81:
                 case 82:
                 case 83:
-                    spell->EffectMechanic[itr - 81] = fields[itr].GetUInt32(); break;
+                    spell->EffectMechanic[i - 81] = fields[i].GetUInt32(); break;
                 case 84:
                 case 85:
                 case 86:
-                    spell->EffectImplicitTargetA[itr - 84] = fields[itr].GetUInt32(); break;
+                    spell->EffectImplicitTargetA[i - 84] = fields[i].GetUInt32(); break;
                 case 87:
                 case 88:
                 case 89:
-                    spell->EffectImplicitTargetB[itr - 87] = fields[itr].GetUInt32(); break;
+                    spell->EffectImplicitTargetB[i - 87] = fields[i].GetUInt32(); break;
                 case 90:
                 case 91:
                 case 92:
-                    spell->EffectRadiusIndex[itr - 90] = fields[itr].GetUInt32(); break;
+                    spell->EffectRadiusIndex[i - 90] = fields[i].GetUInt32(); break;
                 case 93:
                 case 94:
                 case 95:
-                    spell->EffectApplyAuraName[itr - 93] = fields[itr].GetUInt32(); break;
+                    spell->EffectApplyAuraName[i - 93] = fields[i].GetUInt32(); break;
                 case 96:
                 case 97:
                 case 98:
-                    spell->EffectAmplitude[itr - 96] = fields[itr].GetUInt32(); break;
+                    spell->EffectAmplitude[i - 96] = fields[i].GetUInt32(); break;
                 case 99:
                 case 100:
                 case 101:
-                    spell->EffectValueMultiplier[itr - 99] = fields[itr].GetFloat(); break;
+                    spell->EffectValueMultiplier[i - 99] = fields[i].GetFloat(); break;
                 case 102:
                 case 103:
                 case 104:
-                    spell->EffectChainTarget[itr - 102] = fields[itr].GetUInt32(); break;
+                    spell->EffectChainTarget[i - 102] = fields[i].GetUInt32(); break;
                 case 105:
                 case 106:
                 case 107:
-                    spell->EffectItemType[itr - 105] = fields[itr].GetUInt32(); break;
+                    spell->EffectItemType[i - 105] = fields[i].GetUInt32(); break;
                 case 108:
                 case 109:
                 case 110:
-                    spell->EffectMiscValue[itr - 108] = fields[itr].GetInt32(); break;
+                    spell->EffectMiscValue[i - 108] = fields[i].GetInt32(); break;
                 case 111:
                 case 112:
                 case 113:
-                    spell->EffectMiscValueB[itr - 111] = fields[itr].GetInt32(); break;
+                    spell->EffectMiscValueB[i - 111] = fields[i].GetInt32(); break;
                 case 114:
                 case 115:
                 case 116:
-                    spell->EffectTriggerSpell[itr - 114] = fields[itr].GetUInt32(); break;
+                    spell->EffectTriggerSpell[i - 114] = fields[i].GetUInt32(); break;
                 case 117:
                 case 118:
                 case 119:
-                    spell->EffectPointsPerComboPoint[itr - 117] = fields[itr].GetFloat(); break;
+                    spell->EffectPointsPerComboPoint[i - 117] = fields[i].GetFloat(); break;
                 case 120: spell->SpellVisual = fields[120].GetUInt32(); break;
                 case 121: spell->SpellIconID = fields[121].GetUInt32(); break;
                 case 122: spell->activeIconID = fields[122].GetUInt32(); break;
@@ -8868,7 +8868,7 @@ void ObjectMgr::LoadSpellTemplates()
                 case 164:
                 case 165:
                 case 166:
-                    spell->EffectDamageMultiplier[itr - 164] = fields[itr].GetFloat(); break;
+                    spell->EffectDamageMultiplier[i - 164] = fields[i].GetFloat(); break;
                 case 167: spell->TotemCategory[0] = fields[167].GetUInt32(); break;
                 case 168: spell->TotemCategory[1] = fields[168].GetUInt32(); break;
                 case 169: spell->AreaId = fields[169].GetUInt32(); break;

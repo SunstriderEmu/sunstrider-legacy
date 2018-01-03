@@ -439,13 +439,6 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
 
 bool Player::Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo)
 {
-    if (!ValidateAppearance(createInfo->Race, createInfo->Class, createInfo->Gender, createInfo->HairStyle, createInfo->HairColor, createInfo->Face, createInfo->FacialHair, createInfo->Skin, true))
-    {
-        TC_LOG_ERROR("entities.player.cheat", "Player::Create: Possible hacking attempt: Account %u tried to create a character named '%s' with invalid appearance attributes - refusing to do so",
-            GetSession()->GetAccountId(), m_name.c_str());
-        return false;
-    }
-
     return Create(guidlow, createInfo->Name, createInfo->Race, createInfo->Class, createInfo->Gender, createInfo->Skin, createInfo->Face, createInfo->HairStyle, createInfo->HairColor, createInfo->FacialHair, createInfo->OutfitId);
 }
 
@@ -472,6 +465,13 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
     if (!info)
     {
         TC_LOG_ERROR("entities.player", "Player have incorrect race/class pair. Can't be loaded.");
+        return false;
+    }
+
+    if (!ValidateAppearance(race, class_, gender, hairStyle, hairColor, face, facialHair, skin, true))
+    {
+        TC_LOG_ERROR("entities.player.cheat", "Player::Create: Possible hacking attempt: Account %u tried to create a character named '%s' with invalid appearance attributes - refusing to do so",
+            GetSession()->GetAccountId(), m_name.c_str());
         return false;
     }
 
@@ -4060,11 +4060,9 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
         // The character gets unlinked from the account, the name gets freed up and appears as deleted ingame
         case CHAR_DELETE_UNLINK:
         {
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_DELETE_INFO);
-
-            stmt->setUInt32(0, guid);
-
-            trans->Append(stmt);
+            PreparedStatement* _stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_DELETE_INFO);
+            _stmt->setUInt32(0, guid);
+            trans->Append(_stmt);
             break;
         } break;
 
@@ -5580,19 +5578,19 @@ void Player::SetSkill(uint32 id, uint16 step, uint16 newVal, uint16 maxVal)
                 mSkillStatus.erase(itr);
 
             // remove spells that depend on this skill when removing the skill
-            for (PlayerSpellMap::const_iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
+            for (PlayerSpellMap::const_iterator itr_ = m_spells.begin(), next = m_spells.begin(); itr_ != m_spells.end(); itr_ = next)
             {
                 ++next;
-                if(itr->second->state == PLAYERSPELL_REMOVED)
+                if(itr_->second->state == PLAYERSPELL_REMOVED)
                     continue;
 
-                SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(itr->first);
+                SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(itr_->first);
                 for(auto _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
                 {
                     if (_spell_idx->second->skillId == id)
                     {
                         // this may remove more than one spell (dependents)
-                        RemoveSpell(itr->first);
+                        RemoveSpell(itr_->first);
                         next = m_spells.begin();
                         break;
                     }
@@ -20500,11 +20498,11 @@ bool Player::ValidateAppearance(uint8 race, uint8 class_, uint8 gender, uint8 ha
         // Check Death Knight exclusive
         if (class_ != CLASS_DEATH_KNIGHT && entry->HasFlag(SECTION_FLAG_DEATH_KNIGHT))
             return false;
-#endif
 
         // Character creation/customize has some limited sections (as opposed to barbershop)
         if (create && !entry->HasFlag(SECTION_FLAG_PLAYER))
             return false;
+#endif
 
         return true;
     };

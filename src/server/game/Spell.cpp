@@ -5985,13 +5985,13 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if(!(m_caster->ToPlayer())->GetTarget())
                     return SPELL_FAILED_BAD_TARGETS;
 
-                Player* target = sObjectMgr->GetPlayer((m_caster->ToPlayer())->GetTarget());
-                if( !target || (m_caster->ToPlayer())==target || !target->IsInSameRaidWith(m_caster->ToPlayer()) )
+                Player* target_ = sObjectMgr->GetPlayer((m_caster->ToPlayer())->GetTarget());
+                if( !target_ || (m_caster->ToPlayer())== target_ || !target_->IsInSameRaidWith(m_caster->ToPlayer()) )
                     return SPELL_FAILED_BAD_TARGETS;
 
 #ifdef LICH_KING
                 // summon pending error
-                if (target->GetSummonExpireTimer() > time(NULL))
+                if (target_->GetSummonExpireTimer() > time(NULL))
                     return SPELL_FAILED_SUMMON_PENDING;
 #endif
 
@@ -6002,7 +6002,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     uint32 mapId = m_caster->GetMap()->GetId();
                     Difficulty difficulty = m_caster->GetMap()->GetDifficulty();
                     if (map->IsRaid())
-                        if (InstancePlayerBind* targetBind = target->GetBoundInstance(mapId, difficulty))
+                        if (InstancePlayerBind* targetBind = target_->GetBoundInstance(mapId, difficulty))
                             if (InstancePlayerBind* casterBind = m_caster->ToPlayer()->GetBoundInstance(mapId, difficulty))
                                 if (targetBind->perm && targetBind->save != casterBind->save)
                                     return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
@@ -6010,7 +6010,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(m_caster->GetMapId());
                     if(!instance)
                         return SPELL_FAILED_TARGET_NOT_IN_INSTANCE;
-                    if(!target->Satisfy(sObjectMgr->GetAccessRequirement(instance->access_id), m_caster->GetMapId()))
+                    if(!target_->Satisfy(sObjectMgr->GetAccessRequirement(instance->access_id), m_caster->GetMapId()))
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 break;
@@ -6175,35 +6175,35 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 // hack SelectSpellTargets is call after this so...
                 if (m_spellInfo->Id == 34630) {
-                    if (Creature* target = m_caster->FindNearestCreature(19849, 15.0f, true))
-                        m_targets.SetUnitTarget(target);
+                    if (Creature* target_ = m_caster->FindNearestCreature(19849, 15.0f, true))
+                        m_targets.SetUnitTarget(target_);
                 }
                 else if (m_spellInfo->Id == 45839)
                 {
-                    if (Creature* target = m_caster->FindNearestCreature(25653, 100.0f, true))
-                        m_targets.SetUnitTarget(target);
+                    if (Creature* target_ = m_caster->FindNearestCreature(25653, 100.0f, true))
+                        m_targets.SetUnitTarget(target_);
                 }
 
-                if (Unit* target = m_targets.GetUnitTarget())
+                if (Unit* target_ = m_targets.GetUnitTarget())
                 {
 #ifdef LICH_KING
-                    if (target->GetTypeId() == TYPEID_UNIT && target->ToCreature()->IsVehicle())
+                    if (target_->GetTypeId() == TYPEID_UNIT && target_->ToCreature()->IsVehicle())
                         return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 #endif
-                    if (target->IsMounted())
+                    if (target_->IsMounted())
                         return SPELL_FAILED_CANT_BE_CHARMED;
 
-                    if (target->GetCharmerGUID())
+                    if (target_->GetCharmerGUID())
                         return SPELL_FAILED_CHARMED;
 
-                    if (target->GetOwnerGUID() && target->GetOwnerGUID().IsPlayer())
+                    if (target_->GetOwnerGUID() && target_->GetOwnerGUID().IsPlayer())
                         return SPELL_FAILED_TARGET_IS_PLAYER_CONTROLLED;
 
-                    if (target->IsPet() && (!target->GetOwner() || target->GetOwner()->ToPlayer()))
+                    if (target_->IsPet() && (!target->GetOwner() || target_->GetOwner()->ToPlayer()))
                         return SPELL_FAILED_CANT_BE_CHARMED;
 
-                    int32 localDamage = CalculateDamage(i, target);
-                    if (localDamage && int32(target->GetLevel()) > localDamage)
+                    int32 localDamage = CalculateDamage(i, target_);
+                    if (localDamage && int32(target_->GetLevel()) > localDamage)
                         return SPELL_FAILED_HIGHLEVEL;
                 }
 
@@ -7782,8 +7782,8 @@ bool ReflectEvent::Execute(uint64 e_time, uint32 p_time)
     // FIXME: Add a flag on unit itself, not to setRemoveReflect if unit is already flagged for it (prevent infinite delay on reflect lolz)
     if (Spell* sp = _caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
         sp->setRemoveReflect();
-    else if (Spell* sp = _caster->m_currentSpells[CURRENT_GENERIC_SPELL])
-        sp->setRemoveReflect();
+    else if (Spell* sp_ = _caster->m_currentSpells[CURRENT_GENERIC_SPELL])
+        sp_->setRemoveReflect();
 
     return true;
 }

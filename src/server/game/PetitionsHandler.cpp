@@ -622,9 +622,9 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
     for(uint8 i = 1; i <= signs; i++)
     {
         Field *fields = result->Fetch();
-        ObjectGuid plguid = ObjectGuid(fields[0].GetUInt64());
+        ObjectGuid _plguid = ObjectGuid(fields[0].GetUInt64());
 
-        data << plguid;                                     // Player GUID
+        data << _plguid;                                     // Player GUID
         data << (uint32)0;                                  // there 0 ...
 
         result->NextRow();

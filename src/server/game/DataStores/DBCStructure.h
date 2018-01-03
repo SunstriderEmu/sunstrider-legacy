@@ -87,16 +87,26 @@ struct BattlemasterListEntry
 
 struct CharacterFacialHairStylesEntry
 {
+#ifdef LICH_KING
     uint32 Race;
     uint32 Gender;
     uint32 Variation;
     // uint32 Geoset[5];
+#else
+    uint32 Race;
+    uint32 Gender;
+    uint32 Variation;
+    // uint32 unk[8];
+#endif
 };
 
 enum CharSectionFlags
 {
+#ifdef LICH_KING
     SECTION_FLAG_PLAYER = 0x01,
     SECTION_FLAG_DEATH_KNIGHT = 0x04
+#endif
+    //BC has only 0x01, with a different meaning
 };
 
 enum CharSectionType

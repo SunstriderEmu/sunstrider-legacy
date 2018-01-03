@@ -6,15 +6,15 @@ char const AuctionHouseEntryfmt[]="niiixxxxxxxxxxxxxxxxx";
 char const AreaTriggerEntryfmt[]="niffffffff";
 char const BankBagSlotPricesEntryfmt[]="ni";
 char const BattlemasterListEntryfmt[]="niiixxxxxiiiixxssssssssssssssssxx";
-char const CharStartOutfitEntryfmt[]="dbbbXiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxxxxx";
 #ifdef LICH_KING
 char const CharSectionsEntryfmt[] = "diiixxxiii";
+char const CharStartOutfitEntryfmt[]="diiiiiiiiiiiiiiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+char const CharacterFacialHairStylesfmt[] = "iiixxxxx";
 #else
 char const CharSectionsEntryfmt[] = "diiiiixxxi";
+char const CharStartOutfitEntryfmt[] = "dbbbXiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxx";
+char const CharacterFacialHairStylesfmt[] = "iiixxxxxxxx";
 #endif
-char const CharacterFacialHairStylesfmt[] = "iiixxxxx";
-// 3*12 new item fields in 3.0.x
-//char const CharStartOutfitEntryfmt[]="diiiiiiiiiiiiiiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 char const CharTitlesEntryfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxi";
 char const ChatChannelsEntryfmt[]="iixssssssssssssssssxxxxxxxxxxxxxxxxxx";
                                                             // ChatChannelsEntryfmt, index not used (more compact store)

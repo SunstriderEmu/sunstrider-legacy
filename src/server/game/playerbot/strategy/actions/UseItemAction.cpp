@@ -155,8 +155,8 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
             *_packet << questid;
             *_packet << uint32(0);
             bot->GetSession()->QueuePacket(_packet); // queue the packet to get around race condition
-            std::ostringstream out; out << "Got quest " << chat->formatQuest(qInfo);
-            ai->TellMasterNoFacing(out.str());
+            std::ostringstream _out; _out << "Got quest " << chat->formatQuest(qInfo);
+            ai->TellMasterNoFacing(_out.str());
             return true;
         }
     }

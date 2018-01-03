@@ -1379,9 +1379,9 @@ void SpellMgr::LoadSpellLearnSpells()
                 SpellLearnSpellMapBounds spell_bounds = sSpellMgr->GetSpellLearnSpellMapBounds(spellId);
 
                 bool found = false;
-                for(auto itr = spell_bounds.first; itr != spell_bounds.second; ++itr)
+                for(auto itr_ = spell_bounds.first; itr_ != spell_bounds.second; ++itr_)
                 {
-                    if(itr->second.spell == dbc_node.spell)
+                    if(itr_->second.spell == dbc_node.spell)
                     {
                         TC_LOG_ERROR("sql.sql","Spell %u auto-learn spell %u in spell.dbc then the record in `spell_learn_spell` is redundant, please fix DB.",
                             spellId,dbc_node.spell);

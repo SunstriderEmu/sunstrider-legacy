@@ -577,10 +577,10 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     {
         mutetime = time(NULL) + llabs(mutetime);
 
-        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME_LOGIN);
-        stmt->setInt64(0, mutetime);
-        stmt->setUInt32(1, account.Id);
-        LoginDatabase.Execute(stmt);
+        PreparedStatement* stmt_ = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME_LOGIN);
+        stmt_->setInt64(0, mutetime);
+        stmt_->setUInt32(1, account.Id);
+        LoginDatabase.Execute(stmt_);
     }
 
     if (account.IsBanned)
