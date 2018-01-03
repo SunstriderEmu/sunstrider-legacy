@@ -1389,50 +1389,50 @@ void ObjectMgr::LoadLinkedRespawn()
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " linked respawns in %u ms", uint64(_linkedRespawnStore.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
-bool ObjectMgr::SetCreatureLinkedRespawn(ObjectGuid::LowType guidLow, ObjectGuid::LowType linkedGuidLow)
+bool ObjectMgr::SetCreatureLinkedRespawn(ObjectGuid::LowType spawnId, ObjectGuid::LowType linkedSpawnId)
 {
-    if (!guidLow)
+    if (!spawnId)
         return false;
 
-    CreatureData const* master = GetCreatureData(guidLow);
+    CreatureData const* master = GetCreatureData(spawnId); //sun: this is actually the slave
     ASSERT(master);
-    ObjectGuid guid(HighGuid::Unit, master->id, guidLow);
+    ObjectGuid guid(HighGuid::Unit, master->id, spawnId); 
 
-    if (!linkedGuidLow) // we're removing the linking
+    if (!linkedSpawnId) // we're removing the linking
     {
         _linkedRespawnStore.erase(guid);
         PreparedStatement *stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CRELINKED_RESPAWN);
-        stmt->setUInt32(0, guidLow);
+        stmt->setUInt32(0, spawnId);
         WorldDatabase.Execute(stmt);
         return true;
     }
 
-    CreatureData const* slave = GetCreatureData(linkedGuidLow);
+    CreatureData const* slave = GetCreatureData(linkedSpawnId); //sun: this is actually the master (boss for example)
     if (!slave)
     {
-        TC_LOG_ERROR("sql.sql", "Creature '%u' linking to non-existent creature '%u'.", guidLow, linkedGuidLow);
+        TC_LOG_ERROR("sql.sql", "Creature '%u' linking to non-existent creature '%u'.", spawnId, linkedSpawnId);
         return false;
     }
 
     MapEntry const* map = sMapStore.LookupEntry(master->spawnPoint.GetMapId());
     if (!map || !map->Instanceable() || (master->spawnPoint.GetMapId() != slave->spawnPoint.GetMapId()))
     {
-        TC_LOG_ERROR("sql.sql", "Creature '%u' linking to '%u' on an unpermitted map.", guidLow, linkedGuidLow);
+        TC_LOG_ERROR("sql.sql", "Creature '%u' linking to '%u' on an unpermitted map.", spawnId, linkedSpawnId);
         return false;
     }
 
     if (!(master->spawnMask & slave->spawnMask))  // they must have a possibility to meet (normal/heroic difficulty)
     {
-        TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature '%u' linking to '%u' with not corresponding spawnMask", guidLow, linkedGuidLow);
+        TC_LOG_ERROR("sql.sql", "LinkedRespawn: Creature '%u' linking to '%u' with not corresponding spawnMask", spawnId, linkedSpawnId);
         return false;
     }
 
-    ObjectGuid linkedGuid(HighGuid::Unit, slave->id, linkedGuidLow);
+    ObjectGuid linkedGuid(HighGuid::Unit, slave->id, linkedSpawnId);
 
     _linkedRespawnStore[guid] = linkedGuid;
     PreparedStatement *stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_LINKED_RESPAWN);
-    stmt->setUInt32(0, guidLow);
-    stmt->setUInt32(1, linkedGuidLow);
+    stmt->setUInt32(0, spawnId);
+    stmt->setUInt32(1, linkedSpawnId);
     WorldDatabase.Execute(stmt);
     return true;
 }

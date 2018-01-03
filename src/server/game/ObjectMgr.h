@@ -578,6 +578,7 @@ class PlayerDumpReader;
 class TC_GAME_API ObjectMgr
 {
     friend class PlayerDumpReader;
+    friend class TestCase;
 
     public:
         ObjectMgr();
@@ -805,7 +806,12 @@ class TC_GAME_API ObjectMgr
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
         void LoadCreatures();
         void LoadLinkedRespawn();
-        bool SetCreatureLinkedRespawn(ObjectGuid::LowType guid, ObjectGuid::LowType linkedGuid);
+        /* 
+        spawnId: spawnId of the creature or gameobject you want to link.
+        linkedSpawnId: spawnId of the creature or gameobject (boss most likely) that you want to link to.
+        use linkedSpawnId = 0 to remove link.
+        */
+        bool SetCreatureLinkedRespawn(ObjectGuid::LowType spawnId, ObjectGuid::LowType linkedSpawnId);
         void LoadCreatureAddons();
         void LoadCreatureTemplateAddons();
         void LoadCreatureModelInfo();

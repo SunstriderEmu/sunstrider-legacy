@@ -1,6 +1,5 @@
 #include "TestCase.h"
 #include "TestPlayer.h"
-#include "World.h"
 
 class DummyTest : public TestCaseScript
 {
