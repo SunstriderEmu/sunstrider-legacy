@@ -38,7 +38,7 @@ CREATE TABLE `account` (
   `failed_logins` int(10) unsigned NOT NULL DEFAULT '0',
   `locked` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `lock_country` varchar(2) NOT NULL DEFAULT '00',
-  `last_login` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `last_login` timestamp NULL,
   `online` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `expansion` tinyint(3) unsigned NOT NULL DEFAULT '2',
   `mutetime` bigint(20) NOT NULL DEFAULT '0',
