@@ -7,7 +7,7 @@
 #include "GossipDef.h"
 
 //FIXME: not working for float values
-void FillSnapshotValues(Unit* target, std::vector<uint32>& values)
+void FillSnapshotValues(WorldObject* target, std::vector<uint32>& values)
 {
     uint32 valuesCount = target->GetValuesCount();
     values.clear();
@@ -1244,7 +1244,7 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* /* args */)
     return true;
 }
 
-/* Syntax: .debug valuessnapshots <start|stop> */
+/* Syntax: .debug valuessnapshot <start|stop> */
 bool ChatHandler::HandleDebugValuesSnapshot(const char* args)
 {
 #ifdef TRINITY_DEBUG
