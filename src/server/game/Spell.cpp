@@ -5982,7 +5982,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if(!(m_caster->ToPlayer())->GetTarget())
                     return SPELL_FAILED_BAD_TARGETS;
 
-                Player* target_ = sObjectMgr->GetPlayer((m_caster->ToPlayer())->GetTarget());
+                Player* target_ = ObjectAccessor::FindPlayer((m_caster->ToPlayer())->GetTarget());
                 if( !target_ || (m_caster->ToPlayer())== target_ || !target_->IsInSameRaidWith(m_caster->ToPlayer()) )
                     return SPELL_FAILED_BAD_TARGETS;
 

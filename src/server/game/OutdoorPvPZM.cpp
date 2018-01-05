@@ -163,40 +163,40 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
 {
     if(team == ALLIANCE)
     {
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
         }
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
     }
     else if(team == HORDE)
     {
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
         }
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
     }
     else
     {
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
     }
@@ -250,7 +250,7 @@ OPvPCapturePointZM_GraveYard::OPvPCapturePointZM_GraveYard(OutdoorPvP *pvp)
 {
     m_BothControllingFaction = 0;
     m_GraveYardState = ZM_GRAVEYARD_N;
-    m_FlagCarrierGUID = 0;
+    m_FlagCarrierGUID.Clear();
     // add field scouts here
     AddCreature(ZM_ALLIANCE_FIELD_SCOUT,ZM_AllianceFieldScout.entry,ZM_AllianceFieldScout.map,ZM_AllianceFieldScout.x,ZM_AllianceFieldScout.y,ZM_AllianceFieldScout.z,ZM_AllianceFieldScout.o);
     AddCreature(ZM_HORDE_FIELD_SCOUT,ZM_HordeFieldScout.entry,ZM_HordeFieldScout.map,ZM_HordeFieldScout.x,ZM_HordeFieldScout.y,ZM_HordeFieldScout.z,ZM_HordeFieldScout.o);
@@ -312,13 +312,13 @@ void OPvPCapturePointZM_GraveYard::SetBeaconState(uint32 controlling_faction)
             if(m_FlagCarrierGUID)
             {
                 // remove flag from carrier, reset flag carrier guid
-                Player * p = sObjectMgr->GetPlayer(m_FlagCarrierGUID);
+                Player * p = ObjectAccessor::FindPlayer(m_FlagCarrierGUID);
                 if(p)
                 {
                    p->RemoveAurasDueToSpell(ZM_BATTLE_STANDARD_A);
                    p->RemoveAurasDueToSpell(ZM_BATTLE_STANDARD_H);
                 }
-                m_FlagCarrierGUID = 0;
+                m_FlagCarrierGUID.Clear();
             }
         }
         break;
@@ -380,10 +380,8 @@ bool OPvPCapturePointZM_GraveYard::HandleDropFlag(Player * plr, uint32 spellId)
     switch(spellId)
     {
     case ZM_BATTLE_STANDARD_A:
-        m_FlagCarrierGUID = 0;
-        return true;
     case ZM_BATTLE_STANDARD_H:
-        m_FlagCarrierGUID = 0;
+        m_FlagCarrierGUID.Clear();
         return true;
     }
     return false;

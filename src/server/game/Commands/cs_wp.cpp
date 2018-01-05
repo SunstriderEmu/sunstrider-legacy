@@ -713,7 +713,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
         PSendSysMessage("|cff00ff00DEBUG: wp modify del, PathID: |r|cff00ffff%u|r", pathid);
 
         // wpCreature
-        Creature* wpCreature = nullptr;
+        wpCreature = nullptr;
 
         if( wpGuid != 0 )
         {
@@ -742,7 +742,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
         Map *map = chr->GetMap();
         {
             // wpCreature
-            Creature* wpCreature = nullptr;
+            wpCreature = nullptr;
             // What to do:
             // Move the visual spawnpoint
             // Respawn the owner of the waypoints

@@ -151,7 +151,7 @@ uint32 GuildTaskMgr::CreateTask(uint32 owner, uint32 guildId)
 
 bool GuildTaskMgr::CreateItemTask(uint32 owner, uint32 guildId)
 {
-    Player* player = sObjectMgr->GetPlayer(owner);
+    Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, owner));
     if (!player)
         return false;
 
@@ -176,7 +176,7 @@ bool GuildTaskMgr::CreateItemTask(uint32 owner, uint32 guildId)
 
 bool GuildTaskMgr::CreateKillTask(uint32 owner, uint32 guildId)
 {
-    Player* player = sObjectMgr->GetPlayer(owner);
+    Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, (owner)));
     if (!player)
         return false;
 
@@ -218,11 +218,11 @@ bool GuildTaskMgr::SendAdvertisement(uint32 owner, uint32 guildId)
     if (!guild)
         return false;
 
-    Player* player = sObjectMgr->GetPlayer(owner);
+    Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, (owner)));
     if (!player)
         return false;
 
-    Player* leader = sObjectMgr->GetPlayer(guild->GetLeaderGUID());
+    Player* leader = ObjectAccessor::FindPlayer(guild->GetLeaderGUID());
     if (!leader)
         return false;
 
@@ -240,8 +240,8 @@ bool GuildTaskMgr::SendAdvertisement(uint32 owner, uint32 guildId)
 bool GuildTaskMgr::SendItemAdvertisement(uint32 itemId, uint32 owner, uint32 guildId)
 {
     Guild *guild = sObjectMgr->GetGuildById(guildId);
-    Player* player = sObjectMgr->GetPlayer(owner);
-    Player* leader = sObjectMgr->GetPlayer(guild->GetLeaderGUID());
+    Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, (owner)));
+    Player* leader = ObjectAccessor::FindPlayer(guild->GetLeaderGUID());
 
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
     if (!proto)
@@ -277,8 +277,8 @@ bool GuildTaskMgr::SendItemAdvertisement(uint32 itemId, uint32 owner, uint32 gui
 bool GuildTaskMgr::SendKillAdvertisement(uint32 creatureId, uint32 owner, uint32 guildId)
 {
     Guild *guild = sObjectMgr->GetGuildById(guildId);
-    Player* player = sObjectMgr->GetPlayer(owner);
-    Player* leader = sObjectMgr->GetPlayer(guild->GetLeaderGUID());
+    Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, owner));
+    Player* leader = ObjectAccessor::FindPlayer(guild->GetLeaderGUID());
 
     CreatureTemplate const* proto = sObjectMgr->GetCreatureTemplate(creatureId);
     if (!proto)
@@ -311,11 +311,11 @@ bool GuildTaskMgr::SendThanks(uint32 owner, uint32 guildId)
     if (!guild)
         return false;
 
-    Player* player = sObjectMgr->GetPlayer(owner);
+    Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, owner));
     if (!player)
         return false;
 
-    Player* leader = sObjectMgr->GetPlayer(guild->GetLeaderGUID());
+    Player* leader = ObjectAccessor::FindPlayer(guild->GetLeaderGUID());
     if (!leader)
         return false;
 
@@ -620,11 +620,11 @@ bool GuildTaskMgr::Reward(uint32 owner, uint32 guildId)
     if (!guild)
         return false;
 
-    Player* player = sObjectMgr->GetPlayer(owner);
+    Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, owner));
     if (!player)
         return false;
 
-    Player* leader = sObjectMgr->GetPlayer(guild->GetLeaderGUID());
+    Player* leader = ObjectAccessor::FindPlayer(guild->GetLeaderGUID());
     if (!leader)
         return false;
 

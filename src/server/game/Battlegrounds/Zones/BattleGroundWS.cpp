@@ -100,7 +100,7 @@ void BattlegroundWS::Update(time_t diff)
             SetStatus(STATUS_IN_PROGRESS);
 
             for(const auto & itr : GetPlayers())
-                if(Player* plr = sObjectMgr->GetPlayer(itr.first))
+                if(Player* plr = ObjectAccessor::FindPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_PREPARATION);
         }
     }
@@ -153,20 +153,20 @@ void BattlegroundWS::Update(time_t diff)
           m_FlagSpellForceTimer += diff;
           if(m_FlagDebuffState == 0 && m_FlagSpellForceTimer >= 300000)  //5 minutes (down from 10)
           {
-            if(Player * plr = sObjectMgr->GetPlayer(m_FlagKeepers[0]))
+            if(Player * plr = ObjectAccessor::FindPlayer(m_FlagKeepers[0]))
               plr->CastSpell(plr,WS_SPELL_FOCUSED_ASSAULT, TRIGGERED_FULL_MASK);
-            if(Player * plr = sObjectMgr->GetPlayer(m_FlagKeepers[1]))
+            if(Player * plr = ObjectAccessor::FindPlayer(m_FlagKeepers[1]))
               plr->CastSpell(plr,WS_SPELL_FOCUSED_ASSAULT, TRIGGERED_FULL_MASK);
             m_FlagDebuffState = 1;
           }
           else if(m_FlagDebuffState == 1 && m_FlagSpellForceTimer >= 600000) //10 minutes (down from 15)
           {
-            if(Player * plr = sObjectMgr->GetPlayer(m_FlagKeepers[0]))
+            if(Player * plr = ObjectAccessor::FindPlayer(m_FlagKeepers[0]))
             {
               plr->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
               plr->CastSpell(plr,WS_SPELL_BRUTAL_ASSAULT, TRIGGERED_FULL_MASK);
             }
-            if(Player * plr = sObjectMgr->GetPlayer(m_FlagKeepers[1]))
+            if(Player * plr = ObjectAccessor::FindPlayer(m_FlagKeepers[1]))
             {
               plr->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
               plr->CastSpell(plr,WS_SPELL_BRUTAL_ASSAULT, TRIGGERED_FULL_MASK);
@@ -293,7 +293,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     
     for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
+        Player *plr = ObjectAccessor::FindPlayer(m_Player.first);
 
         if(!plr)
             continue;

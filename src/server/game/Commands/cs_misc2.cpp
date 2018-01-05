@@ -837,7 +837,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
     uint32 stationery = MAIL_STATIONERY_GM;
     uint32 itemTextId = !text.empty() ? sObjectMgr->CreateItemText(text) : 0;
 
-    Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
+    Player *receiver = ObjectAccessor::FindPlayer(receiver_guid);
 
     WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, receiver_guid.GetCounter(), subject, itemTextId, nullptr, 0, 0, MAIL_CHECK_MASK_NONE);
 

@@ -595,7 +595,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData )
     recvData >> iguid;
     recvData >> reason; //not 100% sure but this is from 4.0x
 
-    Player *player = sObjectMgr->GetPlayer(iguid);
+    Player *player = ObjectAccessor::FindPlayer(iguid);
     if(!player || !player->GetSession())
         return;
 

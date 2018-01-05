@@ -87,7 +87,7 @@ bool ChatHandler::HandleResetHonorCommand (const char * args)
         }
 
         ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
-        player = sObjectMgr->GetPlayer(guid);
+        player = ObjectAccessor::FindPlayer(guid);
     }
     else
         player = GetSelectedPlayerOrSelf();
@@ -122,7 +122,7 @@ bool ChatHandler::HandleResetLevelCommand(const char * args)
         }
 
         ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
-        player = sObjectMgr->GetPlayer(guid);
+        player = ObjectAccessor::FindPlayer(guid);
     }
     else
         player = GetSelectedPlayerOrSelf();
@@ -166,7 +166,7 @@ bool ChatHandler::HandleResetStatsCommand(const char * args)
         }
 
         ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
-        player = sObjectMgr->GetPlayer(guid);
+        player = ObjectAccessor::FindPlayer(guid);
     }
     else
         player = GetSelectedPlayerOrSelf();

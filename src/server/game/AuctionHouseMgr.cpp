@@ -88,8 +88,8 @@ void AuctionHouseMgr::SendAuctionWonMail(SQLTransaction& trans, AuctionEntry *au
     if(!pItem)
         return;
 
-    Player* bidder = sObjectMgr->GetPlayer(auction->bidder);
     ObjectGuid bidderGuid(HighGuid::Player, auction->bidder);
+    Player* bidder = ObjectAccessor::FindConnectedPlayer(bidderGuid);
 
     uint32 bidder_accId = 0;
     if (!bidder)

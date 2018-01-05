@@ -168,7 +168,7 @@ private:
     uint32 m_GraveYardState;
 protected:
     uint32 m_BothControllingFaction;
-    uint64 m_FlagCarrierGUID;
+    ObjectGuid m_FlagCarrierGUID;
 };
 
 class OutdoorPvPZM : public OutdoorPvP

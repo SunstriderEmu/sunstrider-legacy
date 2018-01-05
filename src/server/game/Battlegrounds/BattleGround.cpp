@@ -250,7 +250,7 @@ void Battleground::Update(time_t diff)
                 Creature *sh = nullptr;
                 for(auto itr2 = (itr.second).begin(); itr2 != (itr.second).end(); ++itr2)
                 {
-                    Player *plr = sObjectMgr->GetPlayer(*itr2);
+                    Player *plr = ObjectAccessor::FindPlayer(*itr2);
                     if(!plr)
                         continue;
 
@@ -279,7 +279,7 @@ void Battleground::Update(time_t diff)
     {
         for(ObjectGuid& itr : m_ResurrectQueue)
         {
-            Player *plr = sObjectMgr->GetPlayer(itr);
+            Player *plr = ObjectAccessor::FindPlayer(itr);
             if(!plr)
                 continue;
             plr->ResurrectPlayer(1.0f);
@@ -370,7 +370,7 @@ void Battleground::SendPacketToAll(WorldPacket *packet)
 {
     for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
+        Player *plr = ObjectAccessor::FindPlayer(m_Player.first);
         if(plr)
             plr->SendDirectMessage(packet);
     }
@@ -380,7 +380,7 @@ void Battleground::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *
 {
     for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
+        Player *plr = ObjectAccessor::FindPlayer(m_Player.first);
 
         if (!plr)
             continue;
@@ -409,7 +409,7 @@ void Battleground::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
 
     for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
+        Player *plr = ObjectAccessor::FindPlayer(m_Player.first);
 
         if (!plr)
             continue;
@@ -429,7 +429,7 @@ void Battleground::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
 {
     for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
+        Player *plr = ObjectAccessor::FindPlayer(m_Player.first);
 
         if (!plr)
             continue;
@@ -446,7 +446,7 @@ void Battleground::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 {
     for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
+        Player *plr = ObjectAccessor::FindPlayer(m_Player.first);
 
         if(!plr)
             continue;
@@ -468,7 +468,7 @@ void Battleground::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
 
     for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
+        Player *plr = ObjectAccessor::FindPlayer(m_Player.first);
 
         if(!plr)
             continue;
@@ -592,7 +592,7 @@ void Battleground::EndBattleground(uint32 winner)
 
             TC_LOG_DEBUG("arena","Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, _arenaTeamIds[TEAM_ALLIANCE], _arenaTeamIds[TEAM_HORDE], winner_arena_team->GetId(), final_winner_rating, final_loser_rating, winner_change);
             for (auto itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr) {
-                if (Player* player = sObjectMgr->GetPlayer(itr->first)) {
+                if (Player* player = ObjectAccessor::FindPlayer(itr->first)) {
                     TC_LOG_DEBUG("arena","Statistics for %s (GUID: " UI64FMTD ", Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName().c_str(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
                     //LogsDatabase.PExecute("INSERT INTO arena_match_player (match_id, player_guid, player_name, team, ip, heal, damage, killing_blows) VALUES (%u, " UI64FMTD ", '%s', %u, '%s', %u, %u, %u)", matchId, itr->first, player->GetName(), player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
                     uint32 team = GetPlayerTeam(itr->first);
@@ -667,7 +667,7 @@ void Battleground::EndBattleground(uint32 winner)
 
     for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
+        Player *plr = ObjectAccessor::FindPlayer(m_Player.first);
         if(!plr)
             continue;
 
@@ -733,7 +733,7 @@ void Battleground::EndBattleground(uint32 winner)
 
     for (ObjectGuid m_Spectator : m_Spectators)
     {
-        Player *plr = sObjectMgr->GetPlayer(m_Spectator);
+        Player *plr = ObjectAccessor::FindPlayer(m_Spectator);
         if(!plr)
             continue;
 
@@ -1048,7 +1048,7 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
 
     RemovePlayerFromResurrectQueue(guid);
 
-    Player *plr = sObjectMgr->GetPlayer(guid);
+    Player *plr = ObjectAccessor::FindPlayer(guid);
     if (plr)
     {
         // should remove spirit of redemption
@@ -1454,7 +1454,7 @@ void Battleground::AddPlayerToResurrectQueue(ObjectGuid npc_guid, ObjectGuid pla
 {
     m_ReviveQueue[npc_guid].push_back(player_guid);
 
-    Player *plr = sObjectMgr->GetPlayer(player_guid);
+    Player *plr = ObjectAccessor::FindPlayer(player_guid);
     if(!plr)
         return;
 
@@ -1471,7 +1471,7 @@ void Battleground::RemovePlayerFromResurrectQueue(ObjectGuid player_guid)
             {
                 (itr.second).erase(itr2);
 
-                Player *plr = sObjectMgr->GetPlayer(player_guid);
+                Player *plr = ObjectAccessor::FindPlayer(player_guid);
                 if(!plr)
                     return;
 
@@ -1812,7 +1812,7 @@ void Battleground::HandleKillPlayer( Player* player, Player* killer )
 
         for(auto & m_Player : m_Players)
         {
-            Player *plr = sObjectMgr->GetPlayer(m_Player.first);
+            Player *plr = ObjectAccessor::FindPlayer(m_Player.first);
 
             if(!plr || plr == killer)
                 continue;
@@ -1852,7 +1852,7 @@ uint32 Battleground::GetAlivePlayersCountByTeam(uint32 Team) const
     {
         if(m_Player.second.Team == Team)
         {
-            Player * pl = sObjectMgr->GetPlayer(m_Player.first);
+            Player * pl = ObjectAccessor::FindPlayer(m_Player.first);
             if(pl && pl->IsAlive())
                 ++count;
         }

@@ -972,7 +972,7 @@ void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    if (!pGuild->MemberMoneyWithdraw(money, GetPlayer()->GetGUID().GetCounter(), trans))
+    if (!pGuild->HandleMemberWithdrawMoney(money, GetPlayer()->GetGUID().GetCounter(), trans))
     {
         //CharacterDatabase.RollbackTransaction();
         return;

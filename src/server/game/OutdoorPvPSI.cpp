@@ -70,40 +70,40 @@ void OutdoorPvPSI::BuffTeam(uint32 team)
 {
     if(team == ALLIANCE)
     {
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR, TRIGGERED_FULL_MASK);
         }
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
     }
     else if(team == HORDE)
     {
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR, TRIGGERED_FULL_MASK);
         }
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
     }
     else
     {
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
     }

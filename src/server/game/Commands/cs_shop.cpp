@@ -892,9 +892,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                         plr->StoreNewItem( dest, to, count, true);
                     else {
                         if (Item* newItem = Item::CreateItem(to, count, plr)) {
-                            SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                            newItem->SaveToDB(trans);
-                            CharacterDatabase.CommitTransaction(trans);
+                            SQLTransaction trans_ = CharacterDatabase.BeginTransaction();
+                            newItem->SaveToDB(trans_);
+                            CharacterDatabase.CommitTransaction(trans_);
 
                             MailItemsInfo mi;
                             mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);

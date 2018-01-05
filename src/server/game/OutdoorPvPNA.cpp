@@ -82,42 +82,42 @@ uint32 OPvPCapturePointNA::GetAliveGuardsCount()
 void OutdoorPvPNA::BuffTeam(uint32 team)
 {
     if (team == TEAM_ALLIANCE) {
-        for(uint64 itr : m_players[0]) {
-            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
+        for(ObjectGuid itr : m_players[0]) {
+            if (Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->CastSpell(plr, NA_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
             }
         }
-        for(uint64 itr : m_players[1]) {
-            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
+        for(ObjectGuid itr : m_players[1]) {
+            if (Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
         }
     }
     else if (team == TEAM_HORDE) {
-        for (uint64 itr : m_players[1]) {
-            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
+        for (ObjectGuid itr : m_players[1]) {
+            if (Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->CastSpell(plr, NA_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
             }
         }
-        for (uint64 itr : m_players[0]) {
-            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
+        for (ObjectGuid itr : m_players[0]) {
+            if (Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
         }
     }
     else {
-        for (uint64 itr : m_players[0]) {
-            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
+        for (ObjectGuid itr : m_players[0]) {
+            if (Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
         }
-        for (uint64 itr : m_players[1]) {
-            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
+        for (ObjectGuid itr : m_players[1]) {
+            if (Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }

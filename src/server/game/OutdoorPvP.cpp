@@ -438,7 +438,7 @@ void OutdoorPvP::SendUpdateWorldState(uint32 field, uint32 value)
         // send to all players present in the area
         for(auto itr = m_PlayerGuid.begin(); itr != m_PlayerGuid.end(); ++itr)
         {
-            Player * plr = sObjectMgr->GetPlayer(*itr);
+            Player * plr = ObjectAccessor::FindPlayer(*itr);
             if(plr)
             {
                 plr->SendUpdateWorldState(field,value);
@@ -454,7 +454,7 @@ void OPvPCapturePoint::SendUpdateWorldState(uint32 field, uint32 value)
         // send to all players present in the area
         for(auto itr = m_ActivePlayerGuid.begin(); itr != m_ActivePlayerGuid.end(); ++itr)
         {
-            Player * plr = sObjectMgr->GetPlayer(*itr);
+            Player * plr = ObjectAccessor::FindPlayer(*itr);
             if(plr)
             {
                 plr->SendUpdateWorldState(field,value);
@@ -480,8 +480,8 @@ void OPvPCapturePoint::SendObjectiveComplete(uint32 id,ObjectGuid guid)
     }
 
     // send to all players present in the area
-    for(uint64 itr : m_activePlayers[team])
-        if(Player* plr = sObjectMgr->GetPlayer(itr))
+    for(ObjectGuid itr : m_activePlayers[team])
+        if(Player* plr = ObjectAccessor::FindPlayer(itr))
             plr->KilledMonsterCredit(id,guid);
 }
 

@@ -375,7 +375,7 @@ class TC_GAME_API Guild
         void   IncOnlineMemberCount() { ++m_onlinemembers; }
         // Money deposit/withdraw
         void   SendMoneyInfo(WorldSession *session, ObjectGuid::LowType LowGuid);
-        bool   MemberMoneyWithdraw(uint32 amount, ObjectGuid::LowType LowGuid, SQLTransaction trans);
+        bool   HandleMemberWithdrawMoney(uint32 amount, ObjectGuid::LowType LowGuid, SQLTransaction trans);
         uint64 GetGuildBankMoney() { return guildbank_money; }
         void   SetBankMoney(int64 money, SQLTransaction trans);
         // per days

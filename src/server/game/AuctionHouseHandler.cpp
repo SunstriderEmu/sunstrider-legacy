@@ -94,7 +94,7 @@ void WorldSession::SendAuctionOwnerNotification( AuctionEntry* auction)
 void WorldSession::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPrice)
 {
     ObjectGuid oldBidder_guid = ObjectGuid(HighGuid::Player, auction->bidder);
-    Player *oldBidder = sObjectMgr->GetPlayer(oldBidder_guid);
+    Player *oldBidder = ObjectAccessor::FindPlayer(oldBidder_guid);
 
     uint32 oldBidder_accId = 0;
     if(!oldBidder)
@@ -120,7 +120,7 @@ void WorldSession::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPri
 void WorldSession::SendAuctionCancelledToBidderMail( AuctionEntry* auction )
 {
     ObjectGuid bidder_guid = ObjectGuid(HighGuid::Player, auction->bidder);
-    Player *bidder = sObjectMgr->GetPlayer(bidder_guid);
+    Player *bidder = ObjectAccessor::FindPlayer(bidder_guid);
 
     uint32 bidder_accId = 0;
     if(!bidder)
@@ -293,7 +293,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     }
 
     // impossible have online own another character (use this for speedup check in case online owner)
-    Player* auction_owner = sObjectMgr->GetPlayer(ObjectGuid(HighGuid::Player, auction->owner));
+    Player* auction_owner = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, auction->owner));
     if( !auction_owner && sCharacterCache->GetCharacterAccountIdByGuid(ObjectGuid(HighGuid::Player, auction->owner)) == pl->GetSession()->GetAccountId())
     {
         //you cannot bid your another character auction:

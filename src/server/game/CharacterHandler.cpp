@@ -52,7 +52,7 @@ public:
 Player* PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccount, bool testingBot)
 {
     // has bot already been added?x
-    Player* bot = sObjectMgr->GetPlayer(playerGuid);
+    Player* bot = ObjectAccessor::FindPlayer(playerGuid);
 
     if (bot && bot->IsInWorld())
         return nullptr;

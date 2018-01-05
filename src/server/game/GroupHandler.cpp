@@ -195,7 +195,7 @@ void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recvData*/ )
         return;
     }
 
-    Player* leader = sObjectMgr->GetPlayer(group->GetLeaderGUID());
+    Player* leader = ObjectAccessor::FindPlayer(group->GetLeaderGUID());
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     // forming a new group, create it
@@ -855,7 +855,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
     ObjectGuid Guid;
     recvData >> Guid;
 
-    Player *player = sObjectMgr->GetPlayer(Guid);
+    Player *player = ObjectAccessor::FindConnectedPlayer(Guid);
     if (!player)
     {
         //LK OK

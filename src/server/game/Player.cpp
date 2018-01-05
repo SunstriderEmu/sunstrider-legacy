@@ -4586,7 +4586,7 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
                 }
 
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                pGuild->MemberMoneyWithdraw(costs, GetGUID().GetCounter(), trans);
+                pGuild->HandleMemberWithdrawMoney(costs, GetGUID().GetCounter(), trans);
                 CharacterDatabase.CommitTransaction(trans);
                 TotalCost = costs;
             }
@@ -18607,7 +18607,7 @@ void Player::RemovePetitionsAndSigns(ObjectGuid guid, uint32 type, SQLTransactio
             ObjectGuid petitionguid = ObjectGuid(HighGuid::Item, fields[1].GetUInt32());
 
             // send update if charter owner in game
-            Player* owner = sObjectMgr->GetPlayer(ownerguid);
+            Player* owner = ObjectAccessor::FindPlayer(ownerguid);
             if(owner)
                 owner->GetSession()->SendPetitionQueryOpcode(petitionguid);
 

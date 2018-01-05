@@ -13524,7 +13524,7 @@ void Unit::ClearComboPointHolders()
     {
         uint32 lowguid = *m_ComboPointHolders.begin();
 
-        Player* plr = sObjectMgr->GetPlayer(ObjectGuid(HighGuid::Player, lowguid));
+        Player* plr = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, lowguid));
         if(plr && plr->GetComboTarget()==GetGUID())         // recheck for safe
             plr->ClearComboPoints();                        // remove also guid from m_ComboPointHolders;
         else

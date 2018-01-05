@@ -100,7 +100,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
         return;
     }
 
-    Player *receive = sObjectMgr->GetPlayer(rc);
+    Player *receive = ObjectAccessor::FindPlayer(rc);
 
     uint32 rc_team = 0;
     uint8 mails_count = 0;                                  //do not allow to send to one player more than 100 mails
@@ -316,7 +316,7 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, Obje
         return;
     }
 
-    Player *receiver = sObjectMgr->GetPlayer(ObjectGuid(HighGuid::Player, receiver_guid));
+    Player *receiver = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, receiver_guid));
 
     uint32 rc_account = 0;
     if(!receiver)
@@ -392,7 +392,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
         if (m->COD > 0)                                     //if there is COD, take COD money from player and send them to sender by mail
         {
             ObjectGuid sender_guid = ObjectGuid(HighGuid::Player, m->sender);
-            Player *receive = sObjectMgr->GetPlayer(sender_guid);
+            Player *receive = ObjectAccessor::FindPlayer(sender_guid);
 
             uint32 sender_accId = sCharacterCache->GetCharacterAccountIdByGuid(sender_guid);
 

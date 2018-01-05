@@ -321,40 +321,40 @@ void OutdoorPvPHP::BuffTeam(uint32 team)
 {
     if(team == ALLIANCE)
     {
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,AllianceBuff, TRIGGERED_FULL_MASK);
         }
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(HordeBuff);
         }
     }
     else if(team == HORDE)
     {
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,HordeBuff, TRIGGERED_FULL_MASK);
         }
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(AllianceBuff);
         }
     }
     else
     {
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(AllianceBuff);
         }
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(HordeBuff);
         }
     }

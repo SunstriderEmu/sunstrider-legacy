@@ -410,7 +410,7 @@ void BattlegroundAV::Update(time_t diff)
 
             // Add auras to marshals/warmasters
             for(const auto & itr : GetPlayers()) {
-                if(Player* plr = sObjectMgr->GetPlayer(itr.first)) {
+                if(Player* plr = ObjectAccessor::FindPlayer(itr.first)) {
                     for (ObjectGuid & m_allianceMarshal : m_allianceMarshals) {
                         if (Creature *marshal = plr->GetMap()->GetCreature(m_allianceMarshal))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), TRIGGERED_FULL_MASK);
@@ -424,7 +424,7 @@ void BattlegroundAV::Update(time_t diff)
             }
 
             for(const auto & itr : GetPlayers())
-                if(Player* plr = sObjectMgr->GetPlayer(itr.first))
+                if(Player* plr = ObjectAccessor::FindPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_PREPARATION);
         }
     }
@@ -486,7 +486,7 @@ void BattlegroundAV::Update(time_t diff)
             
         // Add auras to marshals/warmasters if they don't have it (after reset for example)
         for(const auto & itr : GetPlayers()) {
-            if(Player* plr = sObjectMgr->GetPlayer(itr.first)) {
+            if(Player* plr = ObjectAccessor::FindPlayer(itr.first)) {
                 for (ObjectGuid & m_allianceMarshal : m_allianceMarshals) {
                     if (Creature *marshal = plr->GetMap()->GetCreature(m_allianceMarshal)) {
                         if (!marshal->HasAuraEffect(GetAuraFromMarshalEntry(marshal->GetEntry())))
@@ -1169,7 +1169,7 @@ void BattlegroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
                 WorldSafeLocsEntry const *ClosestGrave = nullptr;
                 for (auto itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
                 {
-                    plr = sObjectMgr->GetPlayer(*ghost_list.begin());
+                    plr = ObjectAccessor::FindPlayer(*ghost_list.begin());
                     if( !plr )
                         continue;
                     if(!ClosestGrave)

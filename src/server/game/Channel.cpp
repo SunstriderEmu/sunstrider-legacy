@@ -105,7 +105,7 @@ void Channel::Join(ObjectGuid p, const char *pass)
         return;
     }
 
-    Player *plr = sObjectMgr->GetPlayer(p);
+    Player *plr = ObjectAccessor::FindPlayer(p);
 
     if(plr)
     {
@@ -164,7 +164,7 @@ void Channel::Leave(ObjectGuid p, bool send)
     }
     else
     {
-        Player *plr = sObjectMgr->GetPlayer(p);
+        Player *plr = ObjectAccessor::FindPlayer(p);
         if(send)
         {
             WorldPacket data;
@@ -263,7 +263,7 @@ void Channel::KickOrBan(ObjectGuid good, std::string const& badname, bool ban)
 void Channel::UnBan(ObjectGuid good, std::string const& badname)
 {
     uint32 sec = 0;
-    Player *gplr = sObjectMgr->GetPlayer(good);
+    Player *gplr = ObjectAccessor::FindPlayer(good);
     if(gplr)
         sec = gplr->GetSession()->GetSecurity();
 
@@ -302,7 +302,7 @@ void Channel::UnBan(ObjectGuid good, std::string const& badname)
 void Channel::Password(ObjectGuid p, const char *pass)
 {
     uint32 sec = 0;
-    Player *plr = sObjectMgr->GetPlayer(p);
+    Player *plr = ObjectAccessor::FindPlayer(p);
     if(plr)
         sec = plr->GetSession()->GetSecurity();
     
@@ -334,7 +334,7 @@ void Channel::Password(ObjectGuid p, const char *pass)
 void Channel::SetMode(ObjectGuid p, const char *p2n, bool mod, bool set)
 {
     uint32 sec = 0;
-    Player *plr = sObjectMgr->GetPlayer(p);
+    Player *plr = ObjectAccessor::FindPlayer(p);
     if(plr)
         sec = plr->GetSession()->GetSecurity();
 
@@ -402,7 +402,7 @@ void Channel::SetMode(ObjectGuid p, const char *p2n, bool mod, bool set)
 void Channel::SetOwner(ObjectGuid p, const char *newname)
 {
     uint32 sec = 0;
-    Player *plr = sObjectMgr->GetPlayer(p);
+    Player *plr = ObjectAccessor::FindPlayer(p);
     if(plr)
         sec = plr->GetSession()->GetSecurity();
 
@@ -485,7 +485,7 @@ void Channel::List(Player* player)
         for(auto& _player : players)
         {
             /*
-            Player *plr = sObjectMgr->GetPlayer(i->first);
+            Player *plr = ObjectAccessor::FindPlayer(i->first);
 
             // PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
             // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
@@ -509,7 +509,7 @@ void Channel::List(Player* player)
 void Channel::Announce(ObjectGuid p)
 {
     uint32 sec = 0;
-    Player *plr = sObjectMgr->GetPlayer(p);
+    Player *plr = ObjectAccessor::FindPlayer(p);
     if(plr)
         sec = plr->GetSession()->GetSecurity();
 
@@ -541,7 +541,7 @@ void Channel::Announce(ObjectGuid p)
 void Channel::Moderate(ObjectGuid p)
 {
     uint32 sec = 0;
-    Player *plr = sObjectMgr->GetPlayer(p);
+    Player *plr = ObjectAccessor::FindPlayer(p);
     if(plr)
         sec = plr->GetSession()->GetSecurity();
 
@@ -579,7 +579,7 @@ void Channel::Say(ObjectGuid playerGUID, const char *what, Language lang)
         lang = LANG_UNIVERSAL;
 
     uint32 sec = 0;
-    Player *plr = sObjectMgr->GetPlayer(playerGUID);
+    Player *plr = ObjectAccessor::FindPlayer(playerGUID);
     if(plr)
         sec = plr->GetSession()->GetSecurity();
 
@@ -648,7 +648,7 @@ void Channel::Invite(ObjectGuid playerGUID, const char *newname)
         return;
     }
 
-    Player *plr = sObjectMgr->GetPlayer(playerGUID);
+    Player *plr = ObjectAccessor::FindPlayer(playerGUID);
     if (!plr)
         return;
 
@@ -711,7 +711,7 @@ void Channel::SendToAll(WorldPacket *data, ObjectGuid p)
 {
     for(auto & player : players)
     {
-        Player *plr = sObjectMgr->GetPlayer(player.first);
+        Player *plr = ObjectAccessor::FindPlayer(player.first);
         if(plr)
         {
             if(!p || !plr->GetSocial()->HasIgnore(p.GetCounter()))
@@ -726,7 +726,7 @@ void Channel::SendToAllButOne(WorldPacket *data, ObjectGuid who)
     {
         if(player.first != who)
         {
-            Player *plr = sObjectMgr->GetPlayer(player.first);
+            Player *plr = ObjectAccessor::FindPlayer(player.first);
             if(plr)
                 plr->SendDirectMessage(data);
         }
@@ -735,7 +735,7 @@ void Channel::SendToAllButOne(WorldPacket *data, ObjectGuid who)
 
 void Channel::SendToOne(WorldPacket *data, ObjectGuid who)
 {
-    Player *plr = sObjectMgr->GetPlayer(who);
+    Player *plr = ObjectAccessor::FindPlayer(who);
     if(plr)
         plr->SendDirectMessage(data);
 }

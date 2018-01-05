@@ -1409,7 +1409,7 @@ Player * ChatHandler::GetSelectedPlayer() const
     if (guid == 0)
         return m_session->GetPlayer();
 
-    return sObjectMgr->GetPlayer(guid);
+    return ObjectAccessor::FindPlayer(guid);
 }
 
 Player* ChatHandler::GetSelectedPlayerOrSelf() const

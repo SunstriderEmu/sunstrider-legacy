@@ -5751,7 +5751,7 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
         if (m_target->GetTypeId() == TYPEID_PLAYER) {
             if (m_target->ToPlayer()->InBattleground()) {
                 if(Battleground *bg = m_target->ToPlayer()->GetBattleground()) {
-                    if (Player* killer = sObjectMgr->GetPlayer(m_target->ToPlayer()->GetSpiritRedemptionKiller()))
+                    if (Player* killer = ObjectAccessor::FindPlayer(m_target->ToPlayer()->GetSpiritRedemptionKiller()))
                         bg->HandleKillPlayer(m_target->ToPlayer(), killer);
                 }
             }

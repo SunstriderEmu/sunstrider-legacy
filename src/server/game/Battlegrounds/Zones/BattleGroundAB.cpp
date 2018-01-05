@@ -105,7 +105,7 @@ void BattlegroundAB::Update(time_t diff)
             SetStatus(STATUS_IN_PROGRESS);
 
             for(const auto & itr : GetPlayers())
-                if(Player* plr = sObjectMgr->GetPlayer(itr.first))
+                if(Player* plr = ObjectAccessor::FindPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_PREPARATION);
         }
 
@@ -412,7 +412,7 @@ void BattlegroundAB::_NodeDeOccupied(uint8 node)
         Player *plr;
         for (auto itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
-            plr = sObjectMgr->GetPlayer(*ghost_list.begin());
+            plr = ObjectAccessor::FindPlayer(*ghost_list.begin());
             if( !plr )
                 continue;
             if( !ClosestGrave )

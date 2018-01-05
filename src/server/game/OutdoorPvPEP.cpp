@@ -616,9 +616,9 @@ void OutdoorPvPEP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
 
 void OutdoorPvPEP::BuffTeams()
 {
-    for(uint64 itr : m_players[0])
+    for(ObjectGuid itr : m_players[0])
     {
-        if(Player * plr = sObjectMgr->GetPlayer(itr))
+        if(Player * plr = ObjectAccessor::FindPlayer(itr))
         {
             for(uint32 EP_AllianceBuff : EP_AllianceBuffs)
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_AllianceBuff);
@@ -626,9 +626,9 @@ void OutdoorPvPEP::BuffTeams()
                 if(plr->IsInWorld()) plr->CastSpell(plr,EP_AllianceBuffs[m_AllianceTowersControlled-1], TRIGGERED_FULL_MASK);
         }
     }
-    for(uint64 itr : m_players[1])
+    for(ObjectGuid itr : m_players[1])
     {
-        if(Player * plr = sObjectMgr->GetPlayer(itr))
+        if(Player * plr = ObjectAccessor::FindPlayer(itr))
         {
             for(uint32 EP_HordeBuff : EP_HordeBuffs)
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_HordeBuff);

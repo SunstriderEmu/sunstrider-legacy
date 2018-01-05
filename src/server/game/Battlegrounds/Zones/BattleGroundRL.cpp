@@ -71,7 +71,7 @@ void BattlegroundRL::Update(time_t diff)
             SetStartDelayTime(0);
 
             for(const auto & itr : GetPlayers())
-                if(Player *plr = sObjectMgr->GetPlayer(itr.first))
+                if(Player *plr = ObjectAccessor::FindPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
 
             if(!GetPlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))

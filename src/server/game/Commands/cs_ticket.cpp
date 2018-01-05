@@ -61,7 +61,7 @@ bool ChatHandler::HandleGMTicketList(bool onlineOnly, bool closedOnly)
         if ((*itr)->closed != 0)
             continue;
 
-        if (onlineOnly && !sObjectMgr->GetPlayer((*itr)->playerGuid))
+        if (onlineOnly && !ObjectAccessor::FindPlayer((*itr)->playerGuid))
             continue;
 
         SendTicket(*itr, now, false, false);
@@ -144,7 +144,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
   }
   SendTicket(ticket, time(nullptr), false, false, false, false, true);
 
-  Player *plr = sObjectMgr->GetPlayer(ticket->playerGuid);
+  Player *plr = ObjectAccessor::FindPlayer(ticket->playerGuid);
   ticket->timestamp = time(nullptr);
   sObjectMgr->RemoveGMTicket(ticket, m_session ? m_session->GetAccountId() : 0); 
 
@@ -231,7 +231,7 @@ bool ChatHandler::HandleGMTicketUnAssignCommand(const char* args)
 
     std::string gmname;
     sCharacterCache->GetCharacterNameByGuid(ticket->assignedToGM, gmname);
-    Player *plr = sObjectMgr->GetPlayer(ticket->assignedToGM);
+    Player *plr = ObjectAccessor::FindPlayer(ticket->assignedToGM);
     if(plr && plr->IsInWorld() && plr->GetSession()->GetSecurity() > cplr->GetSession()->GetSecurity())
     {
         SendSysMessage(LANG_COMMAND_TICKETUNASSIGNSECURITY);
@@ -301,7 +301,7 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
   SendTicket(ticket, 0, false, false, false, false, true);
   std::string str = PGetParseString(LANG_COMMAND_TICKETDELETED, m_session ? m_session->GetPlayer()->GetName().c_str() : "");
   SendGlobalGMSysMessage(str.c_str());
-  Player *plr = sObjectMgr->GetPlayer(ticket->playerGuid);
+  Player *plr = ObjectAccessor::FindPlayer(ticket->playerGuid);
   sObjectMgr->RemoveGMTicket(ticket, -1, true);
   if(plr && plr->IsInWorld())
   {

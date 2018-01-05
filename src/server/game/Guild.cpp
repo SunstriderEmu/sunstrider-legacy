@@ -123,7 +123,7 @@ bool Guild::AddMember(ObjectGuid plGuid, uint32 plRank)
 
 bool Guild::AddMember(ObjectGuid plGuid, uint32 plRank, SQLTransaction trans)
 {
-    Player* pl = sObjectMgr->GetPlayer(plGuid);
+    Player* pl = ObjectAccessor::FindPlayer(plGuid);
     if(pl)
     {
         if(pl->GetGuildId() != 0)
@@ -388,7 +388,7 @@ bool Guild::FillPlayerData(ObjectGuid guid, MemberSlot* memslot)
     uint32 plClass;
     uint32 plZone;
 
-    Player* pl = sObjectMgr->GetPlayer(guid);
+    Player* pl = ObjectAccessor::FindPlayer(guid);
     if(pl)
     {
         plName  =   pl->GetName();
@@ -501,7 +501,7 @@ void Guild::DeleteMember(ObjectGuid guid, bool isDisbanding)
         SetLeader(newLeaderGUID);
 
         // If player not online data in data field will be loaded from guild tabs no need to update it !!
-        if(Player *newLeader = sObjectMgr->GetPlayer(newLeaderGUID))
+        if(Player *newLeader = ObjectAccessor::FindPlayer(newLeaderGUID))
             newLeader->SetRank(GR_GUILDMASTER);
 
         // when leader non-exist (at guild load with deleted leader only) not send broadcasts
@@ -524,7 +524,7 @@ void Guild::DeleteMember(ObjectGuid guid, bool isDisbanding)
 
     members.erase(guid.GetCounter());
 
-    Player *player = sObjectMgr->GetPlayer(guid);
+    Player *player = ObjectAccessor::FindPlayer(guid);
     // If player not online data in data field will be loaded from guild tabs no need to update it !!
     if(player)
     {
@@ -542,7 +542,7 @@ void Guild::ChangeRank(ObjectGuid guid, uint32 newRank)
     if( itr != members.end() )
         itr->second.RankId = newRank;
 
-    Player *player = sObjectMgr->GetPlayer(guid);
+    Player *player = ObjectAccessor::FindPlayer(guid);
     // If player not online data in data field will be loaded from guild tabs no need to update it !!
     if(player)
         player->SetRank(newRank);
@@ -1341,9 +1341,9 @@ void Guild::SendMoneyInfo(WorldSession *session, ObjectGuid::LowType LowGuid)
     session->SendPacket(&data);
 }
 
-bool Guild::MemberMoneyWithdraw(uint32 amount, ObjectGuid::LowType LowGuid, SQLTransaction trans)
+bool Guild::HandleMemberWithdrawMoney(uint32 amount, ObjectGuid::LowType LowGuid, SQLTransaction trans)
 {
-    Player* player = sObjectMgr->GetPlayer(LowGuid);
+    Player* player = ObjectAccessor::FindConnectedPlayer(ObjectGuid(HighGuid::Player, LowGuid));
     if(!player)
         return false;
 

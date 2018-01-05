@@ -1172,7 +1172,7 @@ ObjectGuid PlayerbotFactory::GetRandomBot()
         {
             Field* fields = result->Fetch();
             ObjectGuid guid = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
-            if (!sObjectMgr->GetPlayer(guid))
+            if (!ObjectAccessor::FindPlayer(guid))
                 guids.push_back(guid);
         } while (result->NextRow());
     }

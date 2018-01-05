@@ -86,40 +86,40 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
 {
     if(team == ALLIANCE)
     {
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
         }
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
         }
     }
     else if(team == HORDE)
     {
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
         }
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
         }
     }
     else
     {
-        for(uint64 itr : m_players[0])
+        for(ObjectGuid itr : m_players[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
         }
-        for(uint64 itr : m_players[1])
+        for(ObjectGuid itr : m_players[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr))
+            if(Player * plr = ObjectAccessor::FindPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
         }
     }
@@ -129,9 +129,9 @@ void OPvPCapturePointTF::RewardDailyQuest(uint32 team)
 {
     if (team == ALLIANCE)
     {
-        for(uint64 itr : m_activePlayers[0])
+        for(ObjectGuid itr : m_activePlayers[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr)) {
+            if(Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if(plr->IsInWorld() && plr->GetQuestStatus(11505) == QUEST_STATUS_INCOMPLETE)
                     plr->AreaExploredOrEventHappens(11505);
             }
@@ -139,9 +139,9 @@ void OPvPCapturePointTF::RewardDailyQuest(uint32 team)
     }
     else if (team == HORDE)
     {
-        for(uint64 itr : m_activePlayers[1])
+        for(ObjectGuid itr : m_activePlayers[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(itr)) {
+            if(Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if(plr->IsInWorld() && plr->GetQuestStatus(11506) == QUEST_STATUS_INCOMPLETE)
                     plr->AreaExploredOrEventHappens(11506);
             }

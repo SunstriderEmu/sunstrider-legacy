@@ -120,7 +120,7 @@ void PlayerSocial::SetFriendNote(ObjectGuid::LowType friend_guid, std::string no
 
 void PlayerSocial::SendSocialList()
 {
-    Player *plr = sObjectMgr->GetPlayer(GetPlayerGUID());
+    Player *plr = ObjectAccessor::FindConnectedPlayer(ObjectGuid(HighGuid::Player, GetPlayerGUID()));
     if(!plr)
         return;
 

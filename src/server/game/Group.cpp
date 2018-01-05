@@ -85,7 +85,7 @@ bool Group::Create(ObjectGuid guid, std::string const& name, SQLTransaction tran
 
     if(!isBGGroup())
     {
-        Player *leader = sObjectMgr->GetPlayer(guid);
+        Player *leader = ObjectAccessor::FindPlayer(guid);
         if(leader) 
             m_dungeonDifficulty = Difficulty(leader->GetDifficulty());
 
@@ -279,7 +279,7 @@ bool Group::AddMember(ObjectGuid guid, std::string name, SQLTransaction trans)
         return false;
     SendUpdate();
 
-    Player *player = sObjectMgr->GetPlayer(guid);
+    Player *player = ObjectAccessor::FindPlayer(guid);
     if (!player)
         return false;
      
@@ -361,7 +361,7 @@ uint32 Group::RemoveMember(ObjectGuid guid, const uint8 &method)
     {
         bool leaderChanged = _removeMember(guid);
 
-        if(Player *player = sObjectMgr->GetPlayer( guid ))
+        if(Player *player = ObjectAccessor::FindPlayer( guid ))
         {
             WorldPacket data;
 
@@ -475,7 +475,7 @@ void Group::Disband(bool hideDestroy)
 
     for(member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
     {
-        player = sObjectMgr->GetPlayer(citr->guid);
+        player = ObjectAccessor::FindPlayer(citr->guid);
         if (!player)
             continue;
 
@@ -564,7 +564,7 @@ void Group::SendLootStartRoll(uint32 CountDown, const Roll &r)
 
     for (const auto & itr : r.playerVote)
     {
-        Player *p = sObjectMgr->GetPlayer(itr.first);
+        Player *p = ObjectAccessor::FindPlayer(itr.first);
         if(!p || !p->GetSession())
             continue;
 
@@ -588,7 +588,7 @@ void Group::SendLootRoll(ObjectGuid SourceGuid, ObjectGuid TargetGuid, uint8 Rol
 
     for(const auto & itr : r.playerVote)
     {
-        Player *p = sObjectMgr->GetPlayer(itr.first);
+        Player *p = ObjectAccessor::FindPlayer(itr.first);
         if(!p || !p->GetSession())
             continue;
 
@@ -611,7 +611,7 @@ void Group::SendLootRollWon(ObjectGuid SourceGuid, ObjectGuid TargetGuid, uint8 
 
     for(const auto & itr : r.playerVote)
     {
-        Player *p = sObjectMgr->GetPlayer(itr.first);
+        Player *p = ObjectAccessor::FindPlayer(itr.first);
         if(!p || !p->GetSession())
             continue;
 
@@ -653,7 +653,7 @@ void Group::SendLootAllPassed(uint32 NumberOfPlayers, const Roll &r)
 
     for(const auto & itr : r.playerVote)
     {
-        Player *p = sObjectMgr->GetPlayer(itr.first);
+        Player *p = ObjectAccessor::FindPlayer(itr.first);
         if(!p || !p->GetSession())
             continue;
 
@@ -667,7 +667,7 @@ void Group::GroupLoot(ObjectGuid playerGUID, Loot *loot, WorldObject* object)
     std::vector<LootItem>::iterator i;
     ItemTemplate const *item;
     uint8 itemSlot = 0;
-    Player *player = sObjectMgr->GetPlayer(playerGUID);
+    Player *player = ObjectAccessor::FindPlayer(playerGUID);
     Group *group = player->GetGroup();
 
     for (i=loot->items.begin(); i != loot->items.end(); ++i, ++itemSlot)
@@ -712,7 +712,7 @@ void Group::GroupLoot(ObjectGuid playerGUID, Loot *loot, WorldObject* object)
             // If there is any "auto pass", broadcast the pass now.
             if (r->totalPass) {
                 for (Roll::PlayerVote::const_iterator itr=r->playerVote.begin(); itr != r->playerVote.end(); ++itr) {
-                    Player *p = sObjectMgr->GetPlayer(itr->first);
+                    Player *p = ObjectAccessor::FindPlayer(itr->first);
                     if (!p || !p->GetSession())
                         continue;
                     
@@ -738,7 +738,7 @@ void Group::GroupLoot(ObjectGuid playerGUID, Loot *loot, WorldObject* object)
 void Group::NeedBeforeGreed(ObjectGuid playerGUID, Loot *loot, WorldObject* object)
 {
     ItemTemplate const *item;
-    Player *player = sObjectMgr->GetPlayer(playerGUID);
+    Player *player = ObjectAccessor::FindPlayer(playerGUID);
     Group *group = player->GetGroup();
 
     uint8 itemSlot = 0;
@@ -780,7 +780,7 @@ void Group::NeedBeforeGreed(ObjectGuid playerGUID, Loot *loot, WorldObject* obje
                 // If there is any "auto pass", broadcast the pass now.
                 if (r->totalPass) {
                     for (Roll::PlayerVote::const_iterator itr=r->playerVote.begin(); itr != r->playerVote.end(); ++itr) {
-                        Player *p = sObjectMgr->GetPlayer(itr->first);
+                        Player *p = ObjectAccessor::FindPlayer(itr->first);
                         if (!p || !p->GetSession())
                             continue;
 
@@ -807,7 +807,7 @@ void Group::NeedBeforeGreed(ObjectGuid playerGUID, Loot *loot, WorldObject* obje
 
 void Group::MasterLoot(ObjectGuid playerGUID, Loot* /*loot*/, WorldObject* object)
 {
-    Player *player = sObjectMgr->GetPlayer(playerGUID);
+    Player *player = ObjectAccessor::FindPlayer(playerGUID);
     if(!player)
         return;
 
@@ -921,7 +921,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, uint32 NumberOfPlayers)
                 }
             }
             SendLootRollWon(ObjectGuid::Empty, maxguid, maxresul, 1, *roll);
-            player = sObjectMgr->GetPlayer(maxguid);
+            player = ObjectAccessor::FindPlayer(maxguid);
 
             if(player && player->GetSession())
             {
@@ -966,7 +966,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, uint32 NumberOfPlayers)
                 }
             }
             SendLootRollWon(ObjectGuid::Empty, maxguid, maxresul, 2, *roll);
-            player = sObjectMgr->GetPlayer(maxguid);
+            player = ObjectAccessor::FindPlayer(maxguid);
 
             if(player && player->GetSession())
             {
@@ -1080,7 +1080,7 @@ void Group::SendTargetIconList(WorldSession *session)
 
 void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
 {
-    Player* player = sObjectMgr->GetPlayer(playerGUID);
+    Player* player = ObjectAccessor::FindPlayer(playerGUID);
     if (!player || !player->GetSession() || player->GetGroup() != this)
         return;
 
@@ -1123,7 +1123,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
         if (slot->guid == citr2->guid)
             continue;
 
-        Player* member = sObjectMgr->GetPlayer(citr2->guid);
+        Player* member = ObjectAccessor::FindPlayer(citr2->guid);
         uint8 onlineState = (member) ? MEMBER_STATUS_ONLINE : MEMBER_STATUS_OFFLINE;
         onlineState = onlineState | ((isBGGroup()) ? MEMBER_STATUS_PVP : 0);
 
@@ -1181,6 +1181,8 @@ void Group::UpdatePlayerOutOfRange(Player* pPlayer)
     if(!pPlayer)
         return;
 
+    //to improve: Only build packet if needed
+
     Player *player;
     WorldPacket data;
     pPlayer->GetSession()->BuildPartyMemberStatsChangedPacket(pPlayer, &data);
@@ -1221,7 +1223,7 @@ void Group::OfflineReadyCheck()
 {
     for(member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
     {
-        Player *pl = sObjectMgr->GetPlayer(citr->guid);
+        Player *pl = ObjectAccessor::FindPlayer(citr->guid);
         if (!pl || !pl->GetSession())
         {
             WorldPacket data(MSG_RAID_READY_CHECK_CONFIRM, 9);
@@ -1263,7 +1265,7 @@ bool Group::_addMember(ObjectGuid guid, std::string name, bool isAssistant, uint
     if(!guid)
         return false;
 
-    Player *player = sObjectMgr->GetPlayer(guid);
+    Player *player = ObjectAccessor::FindPlayer(guid);
 
     MemberSlot member;
     member.guid      = guid;
@@ -1310,7 +1312,7 @@ bool Group::_addMember(ObjectGuid guid, std::string name, bool isAssistant, uint
 
 bool Group::_removeMember(ObjectGuid guid)
 {
-    Player *player = sObjectMgr->GetPlayer(guid);
+    Player *player = ObjectAccessor::FindPlayer(guid);
     if (player)
     {
         // if we are removing player from battleground raid
@@ -1373,7 +1375,7 @@ void Group::_setLeader(ObjectGuid guid)
             ")", m_leaderGuid.GetCounter(), slot->guid
         );
 
-        Player *player = sObjectMgr->GetPlayer(slot->guid);
+        Player *player = ObjectAccessor::FindPlayer(slot->guid);
         if (!player)
             return; //do not allow switching leader to offline players
 
@@ -1535,7 +1537,7 @@ void Group::ChangeMembersGroup(ObjectGuid guid, uint8 group)
     if(!isRaidGroup())
         return;
 
-    Player* player = sObjectMgr->GetPlayer(guid);
+    Player* player = ObjectAccessor::FindPlayer(guid);
 
     if (!player)
     {
@@ -2013,7 +2015,7 @@ void Group::BroadcastGroupUpdate()
     for(member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
     {
 
-        Player *pp = sObjectMgr->GetPlayer(citr->guid);
+        Player *pp = ObjectAccessor::FindPlayer(citr->guid);
         if(pp && pp->IsInWorld())
         {
             pp->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);
@@ -2030,7 +2032,7 @@ Player* Group::GetRandomMember()
     
     for(member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
     {
-        player = sObjectMgr->GetPlayer(citr->guid);
+        player = ObjectAccessor::FindPlayer(citr->guid);
         if (!player)
             continue;
         if (player->IsDead())

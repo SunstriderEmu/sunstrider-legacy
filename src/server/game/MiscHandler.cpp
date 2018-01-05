@@ -1331,7 +1331,7 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
     SendPacket(&data);
 
     if (ComplaintType == 1) {
-        if (Player* spammer = sObjectMgr->GetPlayer(spammer_guid))
+        if (Player* spammer = ObjectAccessor::FindPlayer(spammer_guid))
             spammer->addSpamReport(_player->GetGUID(), description.c_str());
     }
 

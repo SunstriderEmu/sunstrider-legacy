@@ -621,11 +621,6 @@ class TC_GAME_API ObjectMgr
 
         std::unordered_map<uint32, uint32> TransportEventMap;
 
-        //Get player in world by high guid
-        Player* GetPlayer(ObjectGuid guid) const { return ObjectAccessor::FindPlayer(guid); }
-        //Get player in world by low guid
-        Player* GetPlayer(ObjectGuid::LowType lowguid) const { return ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, lowguid)); }
-
         GameObjectTemplate const* GetGameObjectTemplate(uint32 id);
         GameObjectTemplateContainer const* GetGameObjectTemplateStore() const { return &_gameObjectTemplateStore; }
         bool IsGameObjectStaticTransport(uint32 entry);

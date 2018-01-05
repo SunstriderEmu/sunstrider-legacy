@@ -16,7 +16,7 @@ void WorldSession::HandleInspectArenaTeamsOpcode(WorldPacket & recvData)
     ObjectGuid guid;
     recvData >> guid;
 
-    if(Player *plr = sObjectMgr->GetPlayer(guid))
+    if(Player *plr = ObjectAccessor::FindPlayer(guid))
     {
         for (uint8 i = 0; i < MAX_ARENA_SLOT; i++)
         {
@@ -244,7 +244,7 @@ void WorldSession::HandleArenaTeamRemoveOpcode(WorldPacket & recvData)
         SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", name, ERR_ARENA_TEAM_PLAYER_NOT_FOUND_S);
         return;
     }
-    if (Player* plr = sObjectMgr->GetPlayer(member->Guid)) {
+    if (Player* plr = ObjectAccessor::FindPlayer(member->Guid)) {
         if (plr->InArena())
             return;
     }

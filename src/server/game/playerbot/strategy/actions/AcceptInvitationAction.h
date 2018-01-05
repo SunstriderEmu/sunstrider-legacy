@@ -17,7 +17,7 @@ namespace ai
             if (!grp)
                 return false;
 
-            Player* inviter = sObjectMgr->GetPlayer(grp->GetLeaderGUID());
+            Player* inviter = ObjectAccessor::FindPlayer(grp->GetLeaderGUID());
             if (!inviter)
                 return false;
 

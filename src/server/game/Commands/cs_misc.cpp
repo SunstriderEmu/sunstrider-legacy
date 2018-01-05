@@ -232,7 +232,7 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
         return false;
     }
 
-    Player *chr = sObjectMgr->GetPlayer(guid);
+    Player *chr = ObjectAccessor::FindPlayer(guid);
 
     // check security
     uint32 account_id = 0;
@@ -315,7 +315,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
         return false;
     }
 
-    Player *chr = sObjectMgr->GetPlayer(guid);
+    Player *chr = ObjectAccessor::FindPlayer(guid);
 
     // check security
     uint32 account_id = 0;
@@ -1549,7 +1549,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
     uint32 stationery = MAIL_STATIONERY_GM;
     uint32 itemTextId = !text.empty() ? sObjectMgr->CreateItemText( text ) : 0;
 
-    Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
+    Player *receiver = ObjectAccessor::FindPlayer(receiver_guid);
 
     // fill mail
     MailItemsInfo mi;                                       // item list preparing
@@ -1650,7 +1650,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
     uint32 stationery = MAIL_STATIONERY_GM;
     uint32 itemTextId = !text.empty() ? sObjectMgr->CreateItemText( text ) : 0;
 
-    Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
+    Player *receiver = ObjectAccessor::FindPlayer(receiver_guid);
 
     WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, receiver_guid.GetCounter(), subject, itemTextId, nullptr, money, 0, MAIL_CHECK_MASK_NONE);
 
