@@ -169,6 +169,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "tp",             SEC_GAMEMASTER1,      false, &ChatHandler::HandleModifyTalentCommand,        "" },
         { "titles",         SEC_GAMEMASTER2,      false, &ChatHandler::HandleModifyKnownTitlesCommand,   "" },
         { "mount",          SEC_GAMEMASTER1,      false, &ChatHandler::HandleModifyMountCommand,         "" },
+        { "phase",          SEC_GAMEMASTER1,      false, &ChatHandler::HandleModifyPhaseCommand,         "" },
         { "honor",          SEC_GAMEMASTER2,      false, &ChatHandler::HandleModifyHonorCommand,         "" },
         { "rep",            SEC_GAMEMASTER2,      false, &ChatHandler::HandleModifyRepCommand,           "" },
         { "arena",          SEC_GAMEMASTER2,      false, &ChatHandler::HandleModifyArenaCommand,         "" },
@@ -490,10 +491,10 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
 
     static std::vector<ChatCommand> teleCommandTable =
     {
-        { "add",            SEC_GAMEMASTER3,  false, &ChatHandler::HandleAddTeleCommand,             "" },
-        { "del",            SEC_GAMEMASTER3,  true,  &ChatHandler::HandleDelTeleCommand,             "" },
-        { "name",           SEC_GAMEMASTER1,  true,  &ChatHandler::HandleNameTeleCommand,            "" },
-        { "group",          SEC_GAMEMASTER1,  false, &ChatHandler::HandleGroupTeleCommand,           "" },
+        { "add",            SEC_GAMEMASTER3,  false, &ChatHandler::HandleTeleAddCommand,             "" },
+        { "del",            SEC_GAMEMASTER3,  true,  &ChatHandler::HandleTeleDelCommand,             "" },
+        { "name",           SEC_GAMEMASTER1,  true,  &ChatHandler::HandleTeleNameCommand,            "" },
+        { "group",          SEC_GAMEMASTER1,  false, &ChatHandler::HandleTeleGroupCommand,           "" },
         { "",               SEC_GAMEMASTER1,  false, &ChatHandler::HandleTeleCommand,                "" },
     };
 
@@ -774,7 +775,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "recup",          SEC_GAMEMASTER3,  false, &ChatHandler::HandleRecupCommand,               "" },
         { "reload",         SEC_ADMINISTRATOR,true,  nullptr,                                        "", reloadCommandTable },
         { "removetitle"    ,SEC_GAMEMASTER3,  false, &ChatHandler::HandleRemoveTitleCommand,         "" },
-        { "rename",         SEC_GAMEMASTER2,  true,  &ChatHandler::HandleRenameCommand,              "" },
+        { "rename",         SEC_GAMEMASTER2,  true,  &ChatHandler::HandleCharacterRenameCommand,     "" },
         { "repairitems",    SEC_GAMEMASTER2,  false, &ChatHandler::HandleRepairitemsCommand,         "" },
         { "replay",         SEC_ADMINISTRATOR,false, nullptr,                                        "", replayCommandTable },
         { "reportlag",      SEC_PLAYER,       false, &ChatHandler::HandleReportLagCommand,           "" },
@@ -880,6 +881,59 @@ void ChatHandler::invalidateCommandTable()
 {
     //TC commandTableCache.reset();
     load_command_table = true;
+}
+
+
+bool ChatHandler::HasLowerSecurity(Player* target, ObjectGuid guid, bool strong)
+{
+    WorldSession* target_session = nullptr;
+    uint32 target_account = 0;
+
+    if (target)
+        target_session = target->GetSession();
+    else if (guid)
+        target_account = sCharacterCache->GetCharacterAccountIdByGuid(guid);
+
+    if (!target_session && !target_account)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return true;
+    }
+
+    return HasLowerSecurityAccount(target_session, target_account, strong);
+}
+
+bool ChatHandler::HasLowerSecurityAccount(WorldSession* target, uint32 target_account, bool strong)
+{
+    uint32 target_sec;
+
+    // allow everything from console and RA console
+    if (!m_session)
+        return false;
+
+    // ignore only for non-players for non strong checks (when allow apply command at least to same sec level)
+    /* TC
+    if (m_session->HasPermission(rbac::RBAC_PERM_CHECK_FOR_LOWER_SECURITY) && !strong && !sWorld->getBoolConfig(CONFIG_GM_LOWER_SECURITY))
+        return false;
+    */
+
+    if (target)
+        target_sec = target->GetSecurity();
+    else if (target_account)
+        target_sec = AccountMgr::GetSecurity(target_account, realm.Id.Realm);
+    else
+        return true;                                        // caller must report error for (target == nullptr && target_account == 0)
+
+    AccountTypes target_ac_sec = AccountTypes(target_sec);
+    if (m_session->GetSecurity() < target_ac_sec || (strong && m_session->GetSecurity() <= target_ac_sec))
+    {
+        SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
+        SetSentErrorMessage(true);
+        return true;
+    }
+
+    return false;
 }
 
 const char* ChatHandler::GetTrinityString(int32 entry) const

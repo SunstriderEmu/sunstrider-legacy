@@ -1073,7 +1073,7 @@ bool ChatHandler::HandleReloadAllPaths(const char* args)
 
 
 //rename characters
-bool ChatHandler::HandleRenameCommand(const char* args)
+bool ChatHandler::HandleCharacterRenameCommand(const char* args)
 {
     Player* target = nullptr;
     ObjectGuid targetGUID = ObjectGuid::Empty;
@@ -1093,9 +1093,18 @@ bool ChatHandler::HandleRenameCommand(const char* args)
         }
 
         target = ObjectAccessor::FindConnectedPlayerByName(oldname.c_str());
-
-        if (!target)
+        if (target)
+        {
+            // check online security
+            if (HasLowerSecurity(target, ObjectGuid::Empty))
+                return false;
+        }
+        else {
             targetGUID = sCharacterCache->GetCharacterGuidByName(oldname);
+            // check offline security
+            if (HasLowerSecurity(nullptr, targetGUID))
+                return false;
+        }
     }
 
     if (!target && !targetGUID)

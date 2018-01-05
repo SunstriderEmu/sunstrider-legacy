@@ -2,7 +2,7 @@
 #include "Language.h"
 #include "CharacterCache.h"
 
-bool ChatHandler::HandleAddTeleCommand(const char * args)
+bool ChatHandler::HandleTeleAddCommand(const char * args)
 {
     ARGS_CHECK
 
@@ -41,7 +41,7 @@ bool ChatHandler::HandleAddTeleCommand(const char * args)
     return true;
 }
 
-bool ChatHandler::HandleDelTeleCommand(const char * args)
+bool ChatHandler::HandleTeleDelCommand(const char * args)
 {
     ARGS_CHECK
 
@@ -59,7 +59,7 @@ bool ChatHandler::HandleDelTeleCommand(const char * args)
 }
 
 // teleport player to given game_tele.entry
-bool ChatHandler::HandleNameTeleCommand(const char * args)
+bool ChatHandler::HandleTeleNameCommand(const char * args)
 {
     ARGS_CHECK
 
@@ -137,7 +137,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
 }
 
 //Teleport group to given game_tele.entry
-bool ChatHandler::HandleGroupTeleCommand(const char * args)
+bool ChatHandler::HandleTeleGroupCommand(const char * args)
 {
     ARGS_CHECK
 

@@ -78,6 +78,9 @@ class TC_GAME_API ChatHandler
         
         WorldSession* GetSession() { return m_session; }
 
+        bool HasLowerSecurity(Player* target, ObjectGuid guid, bool strong = false);
+        bool HasLowerSecurityAccount(WorldSession* target, uint32 account, bool strong = false);
+
         static void SendMessageWithoutAuthor(char const* channel, const char* msg);
         char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = nullptr);
 
@@ -141,8 +144,8 @@ class TC_GAME_API ChatHandler
         bool HandleGPSCommand(const char* args);
         bool HandleGPSSCommand(const char* args);
         bool HandleWhispersCommand(const char* args);
-        bool HandleNameTeleCommand(const char* args);
-        bool HandleGroupTeleCommand(const char* args);
+        bool HandleTeleNameCommand(const char* args);
+        bool HandleTeleGroupCommand(const char* args);
         bool HandleDrunkCommand(const char* args);
         bool HandleSendItemsCommand(const char* args);
         bool HandleSendMailCommand(const char* args);
@@ -493,8 +496,8 @@ class TC_GAME_API ChatHandler
         bool HandleChangeWeather(const char* args);
         bool HandleKickPlayerCommand(const char * args);
         bool HandleTeleCommand(const char * args);
-        bool HandleAddTeleCommand(const char * args);
-        bool HandleDelTeleCommand(const char * args);
+        bool HandleTeleAddCommand(const char * args);
+        bool HandleTeleDelCommand(const char * args);
         bool HandleListAurasCommand(const char * args);
         bool HandleBlinkCommand(const char* args);
 
@@ -559,7 +562,7 @@ class TC_GAME_API ChatHandler
         bool HandleDebugPlaySound2Command(const char* args);
         bool HandleDebugSendChannelNotifyCommand(const char* args);
         bool HandleDebugSendChatMsgCommand(const char* args);
-        bool HandleRenameCommand(const char* args);
+        bool HandleCharacterRenameCommand(const char* args);
         bool HandleRenameArenaTeamCommand(const char* args);
         bool HandleLoadPDumpCommand(const char *args);
         bool HandleWritePDumpCommand(const char *args);

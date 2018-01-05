@@ -41,12 +41,16 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
             return false;
         }
 
-        if(player==m_session->GetPlayer())
+        if(player == m_session->GetPlayer())
         {
             SendSysMessage(LANG_COMMAND_KICKSELF);
             SetSentErrorMessage(true);
             return false;
         }
+
+        // check online security
+        if (HasLowerSecurity(player, ObjectGuid::Empty))
+            return false;
 
         if(sWorld->getConfig(CONFIG_SHOW_KICK_IN_WORLD) == 1)
         {
@@ -245,12 +249,10 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
         security = sAccountMgr->GetSecurity(account_id);
     }
 
-    if(m_session && security >= m_session->GetSecurity())
-    {
-        SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
-        SetSentErrorMessage(true);
+    // must have strong lesser security level
+    if (HasLowerSecurity(chr, guid, true))
         return false;
-    }
+
 
     if (chr)
     {
@@ -336,6 +338,10 @@ bool ChatHandler::HandleMuteCommand(const char* args)
         SetSentErrorMessage(true);
         return false;
     }
+
+    // must have strong lesser security level
+    if (HasLowerSecurity(chr, guid, true))
+        return false;
 
     uint32 duration = notspeaktime*MINUTE;
     time_t mutetime = time(nullptr) + duration;
@@ -643,6 +649,10 @@ bool ChatHandler::HandleDieCommand(const char* /*args*/)
         return false;
     }
 
+    if (Player* player = target->ToPlayer())
+        if (HasLowerSecurity(player, ObjectGuid::Empty, false))
+            return false;
+
     if( target->IsAlive() )
     {
         m_session->GetPlayer()->Kill(target);
@@ -680,6 +690,10 @@ bool ChatHandler::HandleDamageCommand(const char * args)
         SetSentErrorMessage(true);
         return false;
     }
+
+    if (Player* player = target->ToPlayer())
+        if (HasLowerSecurity(player, ObjectGuid::Empty, false))
+            return false;
 
     if( !target->IsAlive() )
         return true;

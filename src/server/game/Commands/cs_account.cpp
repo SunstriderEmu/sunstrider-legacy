@@ -45,6 +45,12 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char* args)
         }
     }
 
+    // Let set addon state only for lesser (strong) security level
+    // or to self account
+    if (GetSession() && GetSession()->GetAccountId() != account_id &&
+        HasLowerSecurityAccount(nullptr, account_id, true))
+        return false;
+
     int lev=atoi(szExp);                                    //get int anyway (0 if error)
     if(lev < 0)
         return false;
@@ -135,19 +141,10 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
     }
 
     /// Commands not recommended call from chat, but support anyway
-    if(m_session)
-    {
-        uint32 targetSecurity = sAccountMgr->GetSecurity(account_id);
-
-        /// can delete only for account with less security
-        /// This is also reject self apply in fact
-        if (targetSecurity >= m_session->GetSecurity())
-        {
-            SendSysMessage (LANG_YOURS_SECURITY_IS_LOW);
-            SetSentErrorMessage (true);
-            return false;
-        }
-    }
+    /// can delete only for account with less security
+    /// This is also reject self apply in fact
+    if (HasLowerSecurityAccount(nullptr, account_id, true))
+        return false;
 
     AccountOpResult result = sAccountMgr->DeleteAccount(account_id);
     switch(result)
@@ -247,13 +244,9 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
     uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_CONSOLE;
 
     /// can set password only for target with less security
-    /// This is also reject self apply in fact
-    if (targetSecurity >= plSecurity)
-    {
-        SendSysMessage (LANG_YOURS_SECURITY_IS_LOW);
-        SetSentErrorMessage (true);
+    /// This also restricts setting handler's own password
+    if (HasLowerSecurityAccount(nullptr, targetAccountId, true))
         return false;
-    }
 
     if (strcmp(szPassword1,szPassword2))
     {
