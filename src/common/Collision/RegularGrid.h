@@ -7,7 +7,7 @@
 #include <G3D/BoundsTrait.h>
 #include <G3D/PositionTrait.h>
 #include <unordered_map>
-
+#include "IteratorPair.h"
 
 template<class Node>
 struct NodeCreator{

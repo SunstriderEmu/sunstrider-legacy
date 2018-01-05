@@ -37,7 +37,7 @@ enum SpellCustomAttributes
     SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL  = 0x00020000,
     SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER = 0x00040000,     // Instead of original caster
     SPELL_ATTR_CU_CANT_BREAK_CC                 = 0x00080000,     // Damage done by these spells won't break crowd controls
-    SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT     = 0x00100000,
+    //reuse                                     = 0x00100000,
     SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER      = 0x00200000,     // Auras removed when target enters an instance
     SPELL_ATTR_CU_AOE_CANT_TARGET_SELF          = 0x00400000,
     SPELL_ATTR_CU_CONE_180                      = 0x00800000,

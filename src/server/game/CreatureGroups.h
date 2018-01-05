@@ -100,7 +100,7 @@ class TC_GAME_API CreatureGroup
         void SetLootable(bool lootable);
 
         void LeaderMoveTo(float x, float y, float z, bool run);
-        void MemberAttackStart(Creature* member, Unit *target);
+        void MemberEngagingTarget(Creature* member, Unit *target);
 
         void UpdateCombat();
         void Respawn();

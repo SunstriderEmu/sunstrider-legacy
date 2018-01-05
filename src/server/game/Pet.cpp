@@ -1238,8 +1238,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     break;
                 case ENTRY_SHADOWFIEND: // Shadowfiend
                 {
-                    PetLevelInfo const* pInfo = sObjectMgr->GetPetLevelInfo(creature_ID, petlevel);
-                    if (!pInfo) {
+                    if (!pInfo) 
+                    {
                         SetCreateMana(28 + 10 * petlevel);
                         SetCreateHealth(28 + 30 * petlevel);
                     }
@@ -1555,7 +1555,7 @@ void Pet::_LoadAuras(uint32 timediff)
                 
             bool abort = false;
             for (const auto & Effect : spellproto->Effects) { // Don't load these, they make the core crash sometimes
-                if (Effect.ApplyAuraName == SPELL_AURA_IGNORED)
+                if (Effect.ApplyAuraName == SPELL_AURA_MOD_DETAUNT)
                     abort = true;
             }
 
@@ -2016,6 +2016,8 @@ bool Pet::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
     InitPetAuras(Entry);
+
+    GetThreatManager().Initialize();
 
     return true;
 }

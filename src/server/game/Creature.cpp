@@ -144,11 +144,7 @@ bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             if (assistant && assistant->CanAssistTo(&m_owner, victim))
             {
                 assistant->SetNoCallAssistance(true);
-                assistant->CombatStart(victim);
-                if (assistant->IsAIEnabled) {
-                    assistant->AI()->JustEngagedWith(victim);
-                    assistant->AI()->AttackStart(victim);
-                }
+                assistant->EngageWithTarget(victim);
 
                 if (InstanceScript* instance = ((InstanceScript*)assistant->GetInstanceScript()))
                     instance->MonsterPulled(assistant, victim);
@@ -552,12 +548,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
         SetDisableGravity(true);
     }
 
-    if(IsTotem() || IsTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
-        SetReactState(REACT_PASSIVE);
-    /*else if(IsCivilian())
-        SetReactState(REACT_DEFENSIVE);*/
-    else
-        SetReactState(REACT_AGGRESSIVE);
+    InitializeReactState();
 
     if(cInfo->flags_extra & CREATURE_FLAG_EXTRA_NO_TAUNT)
     {
@@ -569,12 +560,14 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
 
     //TrinityCore has this LoadCreatureAddon();
     UpdateMovementFlags();
+
+    GetThreatManager().UpdateOnlineStates(true, true);
     return true;
 }
 
 void Creature::Update(uint32 diff)
 {
-    if (IsAIEnabled && m_triggerJustAppeared)
+    if (IsAIEnabled && m_triggerJustAppeared && m_deathState != DEAD)
     {
 #ifdef LICH_KING
         if (m_respawnCompatibilityMode && m_vehicleKit)
@@ -694,6 +687,8 @@ void Creature::Update(uint32 diff)
             if (!IsAlive())
                 break;
 
+            GetThreatManager().Update(diff);
+
             if (m_GlobalCooldown <= diff)
                 m_GlobalCooldown = 0;
             else
@@ -719,14 +714,13 @@ void Creature::Update(uint32 diff)
             {
                 if(m_areaCombatTimer < diff)
                 {
-                    std::list<HostileReference *> t_list = GetThreatManager().getThreatList();
-                    for(auto & i : t_list)
-                        if(i && i->getUnitGuid().IsPlayer())
+                    for (auto const& pair : GetCombatManager().GetPvECombatRefs())
+                        if (Player* player = pair.second->GetOther(this)->ToPlayer())
                         {
                             AreaCombat();
                             break;
                         }
-
+                  
                     m_areaCombatTimer = 5000;
                 }else m_areaCombatTimer -= diff;
             }
@@ -1114,7 +1108,112 @@ bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, u
     }
     */
 
+    GetThreatManager().Initialize();
+
     return true;
+}
+
+Unit* Creature::SelectVictim(bool evade /*= true*/)
+{
+    Unit* target = nullptr;
+
+    ThreatManager& mgr = GetThreatManager();
+
+    if (mgr.CanHaveThreatList())
+    {
+        target = mgr.SelectVictim();
+        while (!target)
+        {
+            Unit* newTarget = nullptr;
+            // nothing found to attack - try to find something we're in combat with (but don't have a threat entry for yet) and start attacking it
+            for (auto const& pair : GetCombatManager().GetPvECombatRefs())
+            {
+                newTarget = pair.second->GetOther(this);
+                if (!mgr.IsThreatenedBy(newTarget, true))
+                {
+                    mgr.AddThreat(newTarget, 0.0f, nullptr, true, true);
+                    break;
+                }
+                else
+                    newTarget = nullptr;
+            }
+            if (!newTarget)
+                break;
+            target = mgr.SelectVictim();
+        }
+    }
+    else if (!HasReactState(REACT_PASSIVE))
+    {
+        // We're a player pet, probably
+        target = GetAttackerForHelper();
+        if (!target && IsSummon())
+        {
+            if (Unit* owner = ToTempSummon()->GetOwner())
+            {
+                if (owner->IsInCombat())
+                    target = owner->GetAttackerForHelper();
+                if (!target)
+                {
+                    for (ControlList::const_iterator itr = owner->m_Controlled.begin(); itr != owner->m_Controlled.end(); ++itr)
+                    {
+                        if ((*itr)->IsInCombat())
+                        {
+                            target = (*itr)->GetAttackerForHelper();
+                            if (target)
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+        return nullptr;
+
+    if (target && _IsTargetAcceptable(target) && CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
+    {
+        if (!IsFocusing(nullptr, true))
+            SetInFront(target);
+        return target;
+    }
+
+#ifdef LICH_KING
+    /// @todo a vehicle may eat some mob, so mob should not evade
+    if (GetVehicle())
+        return nullptr;
+#endif
+
+    // search nearby enemy before enter evade mode
+    if (HasReactState(REACT_AGGRESSIVE))
+    {
+        target = SelectNearestTargetInAttackDistance(m_CombatDistance ? m_CombatDistance : ATTACK_DISTANCE);
+
+        if (target && _IsTargetAcceptable(target) && CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
+            return target;
+    }
+
+    Unit::AuraEffectList const& iAuras = GetAuraEffectsByType(SPELL_AURA_MOD_INVISIBILITY);
+    if (!iAuras.empty())
+    {
+        for (Unit::AuraEffectList::const_iterator itr = iAuras.begin(); itr != iAuras.end(); ++itr)
+        {
+            if ((*itr)->GetBase()->IsPermanent())
+            {
+                if(evade)
+                    AI()->EnterEvadeMode(CreatureAI::EVADE_REASON_OTHER);
+                break;
+            }
+        }
+        return nullptr;
+    }
+
+    if (evade)
+    {
+        // enter in evade mode in other case
+        AI()->EnterEvadeMode(CreatureAI::EVADE_REASON_NO_HOSTILES);
+    }
+
+    return nullptr;
 }
 
 void Creature::SetReactState(ReactStates st) 
@@ -1130,6 +1229,18 @@ void Creature::SetReactState(ReactStates st)
 
         break;
     }
+}
+
+void Creature::InitializeReactState()
+{
+    if (IsTotem() || IsTrigger() || IsCritter() || IsSpiritService())
+        SetReactState(REACT_PASSIVE);
+    /*
+    else if (IsCivilian())
+    SetReactState(REACT_DEFENSIVE);
+    */
+    else
+        SetReactState(REACT_AGGRESSIVE);
 }
 
 bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
@@ -2118,6 +2229,8 @@ void Creature::Respawn(bool force /* = false */)
             SetDeathState(JUST_RESPAWNED);
 
             GetMotionMaster()->InitDefault();
+            //Re-initialize reactstate that could be altered by movementgenerators
+            InitializeReactState();
 
             //re rand level & model
             SelectLevel();
@@ -3086,12 +3199,12 @@ bool Creature::HadPlayerInThreatListAtDeath(ObjectGuid guid) const
 
 void Creature::ConvertThreatListIntoPlayerListAtDeath()
 {
-    auto threatList = GetThreatManager().getThreatList();
-    for(auto itr : threatList)
-    {
-        if(itr->getThreat() > 0.0f && itr->getSourceUnit()->GetTypeId() == TYPEID_PLAYER)
-            m_playerInThreatListAtDeath.insert(itr->GetSource()->GetOwner()->GetGUID().GetCounter());
-    }
+    for (auto itr : GetThreatManager().GetUnsortedThreatList())
+        if (Player* player = itr->GetVictim()->ToPlayer())
+        {
+            if (itr->GetThreat() > 0.0f)
+                m_playerInThreatListAtDeath.insert(player->GetGUID().GetCounter());
+        }
 }
 
 bool Creature::IsBelowHPPercent(float percent)
@@ -3511,6 +3624,39 @@ void Creature::ClearTextRepeatGroup(uint8 textGroup)
     auto groupItr = m_textRepeat.find(textGroup);
     if (groupItr != m_textRepeat.end())
         groupItr->second.clear();
+}
+
+void Creature::AtEnterCombat()
+{
+    Unit::AtEnterCombat();
+
+    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC); // sun: remove immunity so players can fight back
+
+    if (!(GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_MOUNTED_COMBAT_ALLOWED))
+        Dismount();
+
+    if (IsPet() || IsGuardian()) // update pets' speed for catchup OOC speed
+    {
+        UpdateSpeed(MOVE_RUN);
+        UpdateSpeed(MOVE_SWIM);
+        UpdateSpeed(MOVE_FLIGHT);
+    }
+}
+
+void Creature::AtExitCombat()
+{
+    Unit::AtExitCombat();
+
+    ClearUnitState(UNIT_STATE_ATTACK_PLAYER);
+    if (HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED))
+        SetUInt32Value(UNIT_DYNAMIC_FLAGS, GetCreatureTemplate()->dynamicflags);
+
+    if (IsPet() || IsGuardian()) // update pets' speed for catchup OOC speed
+    {
+        UpdateSpeed(MOVE_RUN);
+        UpdateSpeed(MOVE_SWIM);
+        UpdateSpeed(MOVE_FLIGHT);
+    }
 }
 
 void Creature::SetKeepActiveTimer(uint32 timerMS)

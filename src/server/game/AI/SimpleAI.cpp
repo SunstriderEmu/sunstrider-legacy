@@ -137,10 +137,10 @@ void SimpleAI::KilledUnit(Unit *victim)
         target = me->GetVictim();
         break;
     case CAST_HOSTILE_SECOND_AGGRO:
-        target = SelectTarget(SELECT_TARGET_TOPAGGRO,1);
+        target = SelectTarget(SELECT_TARGET_MAXTHREAT,1);
         break;
     case CAST_HOSTILE_LAST_AGGRO:
-        target = SelectTarget(SELECT_TARGET_BOTTOMAGGRO,0);
+        target = SelectTarget(SELECT_TARGET_MINTHREAT,0);
         break;
     case CAST_HOSTILE_RANDOM:
         target = SelectTarget(SELECT_TARGET_RANDOM,0);
@@ -190,10 +190,10 @@ void SimpleAI::DamageTaken(Unit *killer, uint32 &damage)
         target = me->GetVictim();
         break;
     case CAST_HOSTILE_SECOND_AGGRO:
-        target = SelectTarget(SELECT_TARGET_TOPAGGRO,1);
+        target = SelectTarget(SELECT_TARGET_MAXTHREAT,1);
         break;
     case CAST_HOSTILE_LAST_AGGRO:
-        target = SelectTarget(SELECT_TARGET_BOTTOMAGGRO,0);
+        target = SelectTarget(SELECT_TARGET_MINTHREAT,0);
         break;
     case CAST_HOSTILE_RANDOM:
         target = SelectTarget(SELECT_TARGET_RANDOM,0);
@@ -241,10 +241,10 @@ void SimpleAI::UpdateAI(const uint32 diff)
                     target = me->GetVictim();
                     break;
                 case CAST_HOSTILE_SECOND_AGGRO:
-                    target = SelectTarget(SELECT_TARGET_TOPAGGRO,1);
+                    target = SelectTarget(SELECT_TARGET_MAXTHREAT,1);
                     break;
                 case CAST_HOSTILE_LAST_AGGRO:
-                    target = SelectTarget(SELECT_TARGET_BOTTOMAGGRO,0);
+                    target = SelectTarget(SELECT_TARGET_MINTHREAT,0);
                     break;
                 case CAST_HOSTILE_RANDOM:
                     target = SelectTarget(SELECT_TARGET_RANDOM,0);

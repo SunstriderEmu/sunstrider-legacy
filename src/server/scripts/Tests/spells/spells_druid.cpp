@@ -869,15 +869,15 @@ public:
 			druid->AttackStop();
 
 			uint32 cowerPoints = 1170;
-			float const threat = creature->GetThreat(druid);
+			float const threat = creature->GetThreatManager().GetThreat(druid);
 			float const expectedThreat = threat - cowerPoints;
 			uint32 expectedCowerEnergy = 20;
 
 			druid->SetPower(POWER_ENERGY, expectedCowerEnergy);
             TEST_CAST(druid, creature, ClassSpells::Druid::COWER_RNK_5);
 			TEST_ASSERT(druid->GetPower(POWER_ENERGY) == 0);
-			ASSERT_INFO("Before: %f, current: %f, expected: %f", threat, creature->GetThreat(druid), expectedThreat);
-			TEST_ASSERT(creature->GetThreat(druid) == expectedThreat);
+			ASSERT_INFO("Before: %f, current: %f, expected: %f", threat, creature->GetThreatManager().GetThreat(druid), expectedThreat);
+			TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == expectedThreat);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::COWER_RNK_5, 10 * SECOND * IN_MILLISECONDS);
 		}
 	};
@@ -1100,7 +1100,7 @@ public:
 			creature->SetHealth(10000);
             TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			Wait(500);
-			uint32 warlockThreat = creature->GetThreat(warlock);
+			uint32 warlockThreat = creature->GetThreatManager().GetThreat(warlock);
 			TEST_ASSERT(warlockThreat > 0);
 			TEST_ASSERT(creature->GetTarget() == warlock->GetGUID());
 
@@ -1111,14 +1111,14 @@ public:
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetDuration() == 3 * SECOND * IN_MILLISECONDS);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::GROWL_RNK_1, 10 * SECOND);
-			TEST_ASSERT(creature->GetThreat(druid) == warlockThreat);
+			TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == warlockThreat);
 
 			// Keep aggro
 			Wait(1000);
             TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			Wait(500);
-			warlockThreat = creature->GetThreat(warlock);
-			TEST_ASSERT(warlockThreat > creature->GetThreat(druid));
+			warlockThreat = creature->GetThreatManager().GetThreat(warlock);
+			TEST_ASSERT(warlockThreat > creature->GetThreatManager().GetThreat(druid));
 			TEST_ASSERT(creature->GetTarget() == druid->GetGUID());
 
 			// Lose aggro

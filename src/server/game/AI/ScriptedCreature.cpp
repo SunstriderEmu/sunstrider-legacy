@@ -344,31 +344,47 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea()
     return true;
 }
 
-void ScriptedAI::DoResetThreat()
+void ScriptedAI::AddThreat(Unit* victim, float amount, Unit* who)
 {
-    if (!me->CanHaveThreatList() || me->GetThreatManager().IsThreatListEmpty())
-    {
-        error_log("TSCR: DoResetThreat called for creature that either cannot have threat list or has empty threat list (me entry = %d)", me->GetEntry());
-
+    if (!victim)
         return;
-    }
-
-    std::list<HostileReference*>& m_threatlist = me->GetThreatManager().getThreatList();
-    std::list<HostileReference*>::iterator itr;
-
-    for(itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
-    {
-        Unit* pUnit = nullptr;
-        pUnit = ObjectAccessor::GetUnit((*me), (*itr)->getUnitGuid());
-        if(pUnit && me->GetThreat(pUnit))
-            DoModifyThreatPercent(pUnit, -100);
-    }
+    if (!who)
+        who = me;
+    who->GetThreatManager().AddThreat(victim, amount, nullptr, true, true);
 }
 
-void ScriptedAI::DoModifyThreatPercent(Unit *pUnit, int32 pct)
+void ScriptedAI::ModifyThreatByPercent(Unit* victim, int32 pct, Unit* who)
 {
-    if(!pUnit) return;
-    me->GetThreatManager().modifyThreatPercent(pUnit, pct);
+    if (!victim)
+        return;
+    if (!who)
+        who = me;
+    who->GetThreatManager().ModifyThreatByPercent(victim, pct);
+}
+
+void ScriptedAI::ResetThreat(Unit* victim, Unit* who)
+{
+    if (!victim)
+        return;
+    if (!who)
+        who = me;
+    who->GetThreatManager().ResetThreat(victim);
+}
+
+void ScriptedAI::ResetThreatList(Unit* who)
+{
+    if (!who)
+        who = me;
+    who->GetThreatManager().ResetAllThreat();
+}
+
+float ScriptedAI::GetThreat(Unit const* victim, Unit const* who)
+{
+    if (!victim)
+        return 0.0f;
+    if (!who)
+        who = me;
+    return who->GetThreatManager().GetThreat(victim);
 }
 
 void ScriptedAI::DoTeleportTo(float x, float y, float z, uint32 time)
@@ -472,11 +488,12 @@ void BossAI::TeleportCheaters()
     float x, y, z;
     me->GetPosition(x, y, z);
 
-    ThreatContainer::StorageType threatList = me->GetThreatManager().getThreatList();
-    for (ThreatContainer::StorageType::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
-        if (Unit* target = (*itr)->getTarget())
-            if (target->GetTypeId() == TYPEID_PLAYER && !CheckBoundary(target))
-                target->NearTeleportTo(x, y, z, 0);
+    for (auto const& pair : me->GetCombatManager().GetPvECombatRefs())
+    {
+        Unit* target = pair.second->GetOther(me);
+        if (target->IsControlledByPlayer() && !CheckBoundary(target))
+            target->NearTeleportTo(x, y, z, 0);
+    }
 }
 
 void BossAI::JustSummoned(Creature* summon)

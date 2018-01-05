@@ -2163,7 +2163,7 @@ public:
             creature->SetHealth(10000);
             TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             Wait(500);
-            uint32 warlockThreat = creature->GetThreat(warlock);
+            uint32 warlockThreat = creature->GetThreatManager().GetThreat(warlock);
             TEST_ASSERT(warlockThreat > 0);
             TEST_ASSERT(creature->GetTarget() == warlock->GetGUID());
 
@@ -2177,14 +2177,14 @@ public:
             TEST_CAST(warrior, creature, ClassSpells::Warrior::TAUNT_RNK_1);
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::TAUNT_RNK_1, EFFECT_1, 3 * SECOND  * IN_MILLISECONDS);
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::TAUNT_RNK_1, 10 * SECOND);
-            TEST_ASSERT(creature->GetThreat(warrior) == warlockThreat);
+            TEST_ASSERT(creature->GetThreatManager().GetThreat(warrior) == warlockThreat);
 
             // Keep aggro
             Wait(1000);
             TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             Wait(500);
-            warlockThreat = creature->GetThreat(warlock);
-            TEST_ASSERT(warlockThreat > creature->GetThreat(warrior));
+            warlockThreat = creature->GetThreatManager().GetThreat(warlock);
+            TEST_ASSERT(warlockThreat > creature->GetThreatManager().GetThreat(warrior));
             TEST_ASSERT(creature->GetTarget() == warrior->GetGUID());
 
             // Lose aggro

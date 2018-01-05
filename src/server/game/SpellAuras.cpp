@@ -255,7 +255,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleAuraModRangedHaste,                        //218 SPELL_AURA_HASTE_RANGED
     &Aura::HandleModManaRegen,                              //219 SPELL_AURA_MOD_MANA_REGEN_FROM_STAT
     &Aura::HandleNULL,                                      //220 SPELL_AURA_MOD_RATING_FROM_STAT
-    &Aura::HandleAuraIgnored,                               //221 SPELL_AURA_IGNORED
+    &Aura::HandleModDetaunt,                                //221 SPELL_AURA_MOD_DETAUNT
     &Aura::HandleUnused,                                    //222 unused
     &Aura::HandleNULL,                                      //223 Cold Stare
     &Aura::HandleUnused,                                    //224 unused
@@ -2334,7 +2334,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }        
             case 34477:                                     // Misdirection
             {
-                m_target->SetReducedThreatPercent(0, ObjectGuid::Empty);
+                GetTarget()->GetThreatManager().UnregisterRedirectThreat(GetId()); //SPELL_HUNTER_MISDIRECTION
                 return;
             }
             case 40830:
@@ -3182,6 +3182,8 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
 
     if (GetSpellInfo()->GetSpellSpecific() == SPELL_MAGE_POLYMORPH)
         m_isPeriodic = apply;
+
+    m_target->GetThreatManager().UpdateOnlineStates(true, false);
 }
 
 void Aura::HandleForceReaction(bool apply, bool Real)
@@ -3468,6 +3470,7 @@ void Aura::HandleModConfuse(bool apply, bool Real)
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_CONFUSED);
+    m_target->GetThreatManager().UpdateOnlineStates(true, false);
 }
 
 void Aura::HandleModFear(bool apply, bool Real)
@@ -3480,6 +3483,7 @@ void Aura::HandleModFear(bool apply, bool Real)
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_FLEEING);
+    m_target->GetThreatManager().UpdateOnlineStates(true, false);
 }
 
 void Aura::HandleFeignDeath(bool apply, bool Real)
@@ -3499,9 +3503,6 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->SendMessageToSet(&data,true);
         */
 
-        Unit *lastmd = m_target->GetLastRedirectTarget();
-        bool mdtarget_attacked = false;
-
         std::list<Unit*> targets;
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityRange());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(m_target, targets, u_check);
@@ -3510,10 +3511,6 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         /* first pass, interrupt spells and check for units attacking the misdirection target */
         for(auto & target : targets)
         {
-            Unit *vict = target->GetVictim();
-            if (vict && lastmd && vict->GetGUID() == lastmd->GetGUID())
-                mdtarget_attacked = true;
-
             if(!target->HasUnitState(UNIT_STATE_CASTING))
                 continue;
 
@@ -3522,40 +3519,37 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                 if(target->GetCurrentSpell(i)
                 && target->GetCurrentSpell(i)->m_targets.GetUnitTargetGUID() == m_target->GetGUID())
                 {
-                    target->InterruptSpell(i, false);
+                    target->InterruptSpell(CurrentSpellTypes(i), false);
                 }
             }
         }
-
-        /* second pass, redirect mobs to the mdtarget if required */
-        if (mdtarget_attacked)
+        if (m_target->GetMap()->IsDungeon()) // feign death does not remove combat in dungeons
         {
-            for (auto & target : targets)
-            {
-                if (Creature *c = target->ToCreature())
-                {
-                    if (c->GetVictim() && c->GetVictim()->GetGUID() == m_target->GetGUID())
-                        c->GetThreatManager().AddThreat(lastmd, 10.0f);
-                }
-            }
+            m_target->AttackStop();
+            if (Player* targetPlayer = m_target->ToPlayer())
+                targetPlayer->SendAttackSwingCancelAttack();
         }
+        else
+            m_target->CombatStop(false, false);
 
-                                                            // blizz like 2.0.x
-        m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);
-                                                            // blizz like 2.0.x
-        m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                                                            // blizz like 2.0.x
-        m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-
-        m_target->AddUnitState(UNIT_STATE_DIED);
-        m_target->CombatStop();
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION); //drop flag in bg
 
         // prevent interrupt message
-        if(m_caster_guid==m_target->GetGUID() && m_target->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+        if (m_caster_guid == m_target->GetGUID() && m_target->GetCurrentSpell(CURRENT_GENERIC_SPELL))
             m_target->GetCurrentSpell(CURRENT_GENERIC_SPELL)->finish();
         m_target->InterruptNonMeleeSpells(true);
-        m_target->GetHostileRefManager().deleteReferences();
+
+        // stop handling the effect if it was removed by linked event
+        if (GetRemoveMode())
+            return;
+
+        m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);  // blizz like 2.0.x
+        m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);   // blizz like 2.0.x
+        m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD); // blizz like 2.0.x
+        m_target->AddUnitState(UNIT_STATE_DIED);
+
+        if (Creature* creature = m_target->ToCreature())
+            creature->SetReactState(REACT_PASSIVE);
     }
     else
     {
@@ -3570,11 +3564,10 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);  // blizz like 2.0.x
         m_target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);  // blizz like 2.0.x
         m_target->ClearUnitState(UNIT_STATE_DIED);
-        
-        /* TC
+
+        //reset react state
         if (Creature* creature = m_target->ToCreature())
             creature->InitializeReactState();
-            */
 
         if (Map* map = m_target->GetMap()) {
             if (m_target->ToPlayer()) {
@@ -3584,6 +3577,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
             }
         }
     }
+    m_target->GetThreatManager().UpdateOnlineStates(true, false);
 }
 
 void Aura::HandleAuraModDisarm(bool apply, bool Real)
@@ -3654,7 +3648,9 @@ void Aura::HandleAuraModStun(bool apply, bool Real)
 
     if (!apply && m_target->HasAuraType(GetAuraType()))
         return;
+
     m_target->SetControlled(apply, UNIT_STATE_STUNNED);
+    m_target->GetThreatManager().UpdateOnlineStates(true, false);
 }
 
 
@@ -3834,6 +3830,7 @@ void Aura::HandleAuraModRoot(bool apply, bool Real)
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_ROOT);
+    m_target->GetThreatManager().UpdateOnlineStates(true, false);
 }
 
 void Aura::HandleAuraModSilence(bool apply, bool Real)
@@ -3896,35 +3893,7 @@ void Aura::HandleModThreat(bool apply, bool Real)
     if(!Real)
         return;
 
-    if (!m_target || (apply && !m_target->IsAlive()))
-        return;
-
-    Unit* caster = GetCaster();
-
-    if(!caster)
-        return;
-
-    int level_diff = 0;
-    int multiplier = 0;
-    switch (GetId())
-    {
-        // Arcane Shroud
-        case 26400:
-            level_diff = m_target->GetLevel() - 60;
-            multiplier = 2;
-            break;
-        // The Eye of Diminution
-        case 28862:
-            level_diff = m_target->GetLevel() - 60;
-            multiplier = 1;
-            break;
-    }
-    if (level_diff > 0)
-        m_modifier.m_amount += multiplier * level_diff;
-
-    for (int8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
-        if (GetMiscValue() & (1 << i))
-            ApplyPercentModFloatVar(m_target->m_threatModifier[i], float(GetModifierValue()), apply);
+    GetTarget()->GetThreatManager().UpdateMySpellSchoolModifiers();
 }
 
 void Aura::HandleAuraModTotalThreat(bool apply, bool Real)
@@ -3937,17 +3906,8 @@ void Aura::HandleAuraModTotalThreat(bool apply, bool Real)
         return;
 
     Unit* caster = GetCaster();
-
-    if(!caster || !caster->IsAlive())
-        return;
-
-    float threatMod = 0.0f;
-    if(apply)
-        threatMod = float(GetModifierValue());
-    else
-        threatMod =  float(-GetModifierValue());
-
-    m_target->GetHostileRefManager().threatAssist(caster, threatMod);
+    if(caster || caster->IsAlive())
+        caster->GetThreatManager().UpdateMyTempModifiers();
 }
 
 void Aura::HandleModTaunt(bool apply, bool Real)
@@ -3959,18 +3919,22 @@ void Aura::HandleModTaunt(bool apply, bool Real)
     if(!m_target->IsAlive() || !m_target->CanHaveThreatList())
         return;
 
-    Unit* caster = GetCaster();
+    m_target->GetThreatManager().TauntUpdate();
+}
 
-    if(!caster || !caster->IsAlive() || caster->GetTypeId() != TYPEID_PLAYER)
+void Aura::HandleModDetaunt(bool apply, bool Real)
+{
+    if (!Real)
         return;
 
-    if(apply)
-        m_target->TauntApply(caster);
-    else
-    {
-        // When taunt aura fades out, mob will switch to previous target if current has less than 1.1 * secondthreat
-        m_target->TauntFadeOut(caster);
-    }
+    if (!m_target)
+        return;
+
+    Unit* caster = GetCaster();
+    if (!caster || !caster->IsAlive() || !m_target->IsAlive() || !caster->CanHaveThreatList())
+        return;
+
+    caster->GetThreatManager().TauntUpdate();
 }
 
 /*********************************************************/
@@ -4212,11 +4176,13 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
             }
         }
     }
+    m_target->GetThreatManager().UpdateOnlineStates(true, false);
 }
 
 void Aura::HandleAuraModDmgImmunity(bool apply, bool Real)
 {
     GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
+    m_target->GetThreatManager().UpdateOnlineStates(true, false);
 }
 
 void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
@@ -5739,7 +5705,14 @@ void Aura::HandleModUnattackable( bool apply, bool real )
 
     if(real && apply)
     {
-        m_target->CombatStop();
+        if (m_target->GetMap()->IsDungeon())
+        {
+            m_target->AttackStop();
+            if (Player* targetPlayer = m_target->ToPlayer())
+                targetPlayer->SendAttackSwingCancelAttack();
+        }
+        else
+            m_target->CombatStop();
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION); //drop flag in bg
     }
 
@@ -6316,7 +6289,7 @@ void Aura::PeriodicTick()
             heal = pCaster->SpellHealingBonusTaken(pCaster, GetSpellInfo(), heal, DOT);
 
             int32 gain = pCaster->ModifyHealth(heal);
-            pCaster->GetHostileRefManager().threatAssist(pCaster, gain * 0.5f, spellProto);
+            pCaster->GetThreatManager().ForwardThreatForAssistingMe(pCaster, gain * 0.5f, spellProto);
 
             pCaster->SendHealSpellLog(pCaster, spellProto->Id, heal);
             break;
@@ -6387,7 +6360,7 @@ void Aura::PeriodicTick()
 
             float threat = float(gain) * 0.5f * sSpellMgr->GetSpellThreatModPercent(GetSpellInfo());
 
-            m_target->GetHostileRefManager().threatAssist(pCaster, threat, GetSpellInfo());
+            m_target->GetThreatManager().ForwardThreatForAssistingMe(pCaster, threat, GetSpellInfo());
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellInfo const* spellProto = GetSpellInfo();
@@ -6547,7 +6520,7 @@ void Aura::PeriodicTick()
             realDamage = amount;
 
             if(Unit* pCaster = GetCaster())
-                m_target->GetHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellInfo(),false,true); //to confirm : threat from energize spells is not subject to threat modifiers
+                m_target->GetThreatManager().ForwardThreatForAssistingMe(pCaster, float(gain) * 0.5f, GetSpellInfo(), true); //to confirm : threat from energize spells is not subject to threat modifiers
             break;
         }
         case SPELL_AURA_OBS_MOD_POWER:
@@ -6585,7 +6558,7 @@ void Aura::PeriodicTick()
             int32 gain = m_target->ModifyPower(powerType, amount);
 
             if(Unit* pCaster = GetCaster())
-                m_target->GetHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellInfo());
+                m_target->GetThreatManager().ForwardThreatForAssistingMe(pCaster, float(gain) * 0.5f, GetSpellInfo());
             break;
         }
         case SPELL_AURA_POWER_BURN_MANA:
@@ -6684,7 +6657,7 @@ void Aura::PeriodicTick()
                 {
                     SpellInfo const *spellProto = GetSpellInfo();
                     if (spellProto)
-                        m_target->GetHostileRefManager().threatAssist(caster, float(gain) * 0.5f, spellProto);
+                        m_target->GetThreatManager().ForwardThreatForAssistingMe(caster, float(gain) * 0.5f, spellProto);
                 }
             }
             break;
@@ -7011,6 +6984,8 @@ void Aura::HandlePreventFleeing(bool apply, bool Real)
 
     if(apply && m_target->HasAuraType(SPELL_AURA_MOD_FEAR))
         m_target->SetControlled(false, UNIT_STATE_FLEEING);
+
+    m_target->GetThreatManager().UpdateOnlineStates(true, false);
 }
 
 void Aura::HandleManaShield(bool apply, bool Real)
@@ -7132,22 +7107,6 @@ void Aura::HandleAOECharm(bool apply, bool Real)
         m_target->SetCharmedBy(caster, CHARM_TYPE_CONVERT, this);
     else
         m_target->RemoveCharmedBy(caster);
-}
-
-void Aura::HandleAuraIgnored(bool apply, bool Real)
-{
-    if (!Real)
-        return;
-    
-    if (!m_target)
-        return;
-        
-    Unit* caster = GetCaster();
-    
-    if (apply)
-        caster->GetThreatManager().detauntApply(m_target);
-    else
-        caster->GetThreatManager().detauntFadeOut(m_target);
 }
 
 void Aura::HandleModStateImmunityMask(bool apply, bool Real)

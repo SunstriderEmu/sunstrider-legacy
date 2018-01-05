@@ -604,53 +604,93 @@ bool ChatHandler::HandleDebugBattleGroundCommand(const char* )
     return true;
 }
 
-bool ChatHandler::HandleDebugThreatList(const char * args)
+bool ChatHandler::HandleDebugThreatListCommand(const char * args)
 {
-    Creature* target = GetSelectedCreature();
-    if(!target || target->IsTotem() || target->IsPet())
-        return false;
+    Unit* target = GetSelectedUnit();
+    if (!target)
+        target = GetSession()->GetPlayer();
 
-    uint32 limit = 0;
-    if(args)
-        limit = (uint32)atoi(args);
-
-    std::list<HostileReference*>& tlist = target->GetThreatManager().getThreatList();
-    std::list<HostileReference*>::iterator itr;
-    uint32 cnt = 0;
-    PSendSysMessage("Threat list of %s (guid %u)",target->GetName().c_str(), target->GetGUID().GetCounter());
-    for(itr = tlist.begin(); itr != tlist.end(); ++itr)
+    ThreatManager& mgr = target->GetThreatManager();
+    if (!target->IsAlive())
     {
-        Unit* unit = (*itr)->getTarget();
-        if(!unit)
-            continue;
-        ++cnt;
-        PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName().c_str(), unit->GetGUID().GetCounter(), unit->GetEntry(), (*itr)->getThreat());
-
-        if (limit && cnt >= limit)
-            break;
+        PSendSysMessage("%s (guid %u) is not alive.", target->GetName().c_str(), target->GetGUID().GetCounter());
+        return true;
     }
-    SendSysMessage("End of threat list.");
+
+    uint32 count = 0;
+    auto const& threatenedByMe = target->GetThreatManager().GetThreatenedByMeList();
+    if (threatenedByMe.empty())
+        PSendSysMessage("%s (guid %u) does not threaten any units.", target->GetName().c_str(), target->GetGUID().GetCounter());
+    else
+    {
+        PSendSysMessage("List of units threatened by %s (guid %u)", target->GetName().c_str(), target->GetGUID().GetCounter());
+        for (auto const& pair : threatenedByMe)
+        {
+            Unit* unit = pair.second->GetOwner();
+            PSendSysMessage("   %u.   %s   (current guid %u,spawnID %u)  - threat %f", ++count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), unit->GetTypeId() == TYPEID_UNIT ? unit->ToCreature()->GetSpawnId() : 0, pair.second->GetThreat());
+        }
+        SendSysMessage("End of threatened-by-me list.");
+    }
+
+    if (!mgr.CanHaveThreatList())
+       PSendSysMessage("%s (guid %u) cannot have a threat list.", target->GetName().c_str(), target->GetGUID().GetCounter());
+    else if (mgr.IsEngaged())
+    {
+        count = 0;
+        PSendSysMessage("Threat list of %s (guid %u, spawnID %u)", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
+        for (ThreatReference const* ref : mgr.GetSortedThreatList())
+        {
+            Unit* unit = ref->GetVictim();
+            char const* onlineStr;
+            switch (ref->GetOnlineState())
+            {
+            case ThreatReference::ONLINE_STATE_SUPPRESSED:
+                onlineStr = " [SUPPRESSED]";
+                break;
+            case ThreatReference::ONLINE_STATE_OFFLINE:
+                onlineStr = " [OFFLINE]";
+                break;
+            default:
+                onlineStr = "";
+            }
+            char const* tauntStr;
+            switch (ref->GetTauntState())
+            {
+            case ThreatReference::TAUNT_STATE_TAUNT:
+                tauntStr = " [TAUNT]";
+                break;
+            case ThreatReference::TAUNT_STATE_DETAUNT:
+                tauntStr = " [DETAUNT]";
+                break;
+            default:
+                tauntStr = "";
+            }
+            PSendSysMessage("   %u.   %s   (guid %u)  - threat %f%s%s", ++count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), ref->GetThreat(), tauntStr, onlineStr);
+        }
+        SendSysMessage("End of threat list.");
+    }
+    else
+        PSendSysMessage("%s (guid %u, spawnID %u) is not currently engaged.", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
     return true;
 }
 
-bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
+bool ChatHandler::HandleDebugCombatListCommand(const char * /*args*/)
 {
     Unit* target = GetSelectedUnit();
-    if(!target)
-        target = m_session->GetPlayer();
-    HostileReference* ref = target->GetHostileRefManager().getFirst();
-    uint32 cnt = 0;
-    PSendSysMessage("Hostil reference list of %s (guid %u)",target->GetName().c_str(), target->GetGUID().GetCounter());
-    while(ref)
+    if (!target)
+        target = GetSession()->GetPlayer();
+
+    PSendSysMessage("Combat refs: (Combat state: %d | Manager state: %d)", target->IsInCombat(), target->GetCombatManager().HasCombat());
+    for (auto const& ref : target->GetCombatManager().GetPvPCombatRefs())
     {
-        if(Unit * unit = ref->GetSource()->GetOwner())
-        {
-            ++cnt;
-            PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName().c_str(), unit->GetGUID().GetCounter(), unit->GetEntry(), ref->getThreat());
-        }
-        ref = ref->next();
+        Unit* unit = ref.second->GetOther(target);
+        PSendSysMessage("[PvP] %s (SpawnID %u)", unit->GetName().c_str(), unit->GetTypeId() == TYPEID_UNIT ? unit->ToCreature()->GetSpawnId() : 0);
     }
-    SendSysMessage("End of hostil reference list.");
+    for (auto const& ref : target->GetCombatManager().GetPvECombatRefs())
+    {
+        Unit* unit = ref.second->GetOther(target);
+        PSendSysMessage("[PvE] %s (SpawnID %u)", unit->GetName().c_str(), unit->GetTypeId() == TYPEID_UNIT ? unit->ToCreature()->GetSpawnId() : 0);
+    }
     return true;
 }
 

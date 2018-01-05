@@ -50,7 +50,6 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
                 case COMMAND_FOLLOW:                        //spellid=1792  //FOLLOW
                     pet->AttackStop();
                     pet->InterruptNonMeleeSpells(false);
-                    pet->ClearInPetCombat();
                     pet->GetMotionMaster()->MoveFollow(_player, PET_FOLLOW_DIST, pet->GetFollowAngle());
                     charmInfo->SetCommandState( COMMAND_FOLLOW );
 
@@ -160,9 +159,8 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
             switch(spellid)
             {
                 case REACT_PASSIVE:                         //passive
-                    /* TC disabled, we don't want pets to stop attacking on setting passive. Passive is not a non-combat mode but a fine pet control mode.
+                    /* sun: TC disabled, we don't want pets to stop attacking on setting passive. Passive is not a non-combat mode but a fine pet control mode.
                     pet->AttackStop();
-                    pet->ClearInPetCombat();
                     */
                     // no break;
                 case REACT_DEFENSIVE:                       //recovery
@@ -392,7 +390,6 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recvData)
         return;
 
     pet->AttackStop();
-    pet->ClearInPetCombat();
 
 }
 void WorldSession::HandlePetNameQuery( WorldPacket & recvData )

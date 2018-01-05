@@ -13,6 +13,7 @@
 #include "ConditionMgr.h"
 #include "World.h"
 #include "Position.h"
+#include "IteratorPair.h"
 
 #include <string>
 #include <map>

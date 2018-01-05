@@ -85,7 +85,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         }
 
         if (  spellInfo->HasInitialAggro() )
-           i_check->CombatStart(target);
+           i_check->EngageWithTarget(target);
     }
     
     //return if already an area aura that can't stack with ours

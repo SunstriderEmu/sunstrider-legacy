@@ -505,6 +505,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint32 GetPhaseMask() const { return m_phaseMask; }
 		bool InSamePhase(WorldObject const* obj) const;
 		bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask) != 0; }
+        static bool InSamePhase(WorldObject const* a, WorldObject const* b) { return a && a->InSamePhase(b); }
 		virtual void SetPhaseMask(uint32 newPhaseMask, bool update);
 
         InstanceScript* GetInstanceScript();

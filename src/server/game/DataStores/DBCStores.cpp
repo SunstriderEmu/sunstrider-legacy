@@ -4,6 +4,7 @@
 #include "Item.h"
 #include "DBCfmt.h"
 #include "DBCFileLoader.h"
+#include "IteratorPair.h"
 
 #include <map>
 #include <fstream>

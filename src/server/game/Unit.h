@@ -9,7 +9,7 @@
 #include "UpdateFields.h"
 #include "SharedDefines.h"
 #include "ThreatManager.h"
-#include "HostileRefManager.h"
+#include "CombatManager.h"
 #include "Movement/FollowerReference.h"
 #include "Movement/FollowerRefManager.h"
 #include "EventProcessor.h"
@@ -1247,8 +1247,8 @@ class TC_GAME_API Unit : public WorldObject
         }
         
         void ValidateAttackersAndOwnTarget();
-        void CombatStop(bool cast = false);
-        void CombatStopWithPets(bool cast = false);
+        void CombatStop(bool includingCast = false, bool mutualPvP = true);
+        void CombatStopWithPets(bool includingCast = false);
         Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE) const;
 
         void AddUnitState(uint32 f) { m_state |= f; }
@@ -1458,28 +1458,47 @@ class TC_GAME_API Unit : public WorldObject
 
         bool IsInFlight()  const { return HasUnitState(UNIT_STATE_IN_FLIGHT); }
 
-        bool IsEngaged() const { return IsInCombat(); }
-        bool IsEngagedBy(Unit const* who) const { return IsInCombatWith(who); }
-        void EngageWithTarget(Unit* who);
-        bool IsThreatened() const { return CanHaveThreatList() && !GetThreatManager().IsThreatListEmpty(); }
-        bool IsThreatenedBy(Unit const* who) const { return who && CanHaveThreatList() && GetThreatManager().IsThreatenedBy(who); }
+        /// ====================== THREAT & COMBAT ====================
+        bool CanHaveThreatList() const { return m_threatManager.CanHaveThreatList(); }
+        // For NPCs with threat list: Whether there are any enemies on our threat list
+        // For other units: Whether we're in combat
+        // This value is different from IsInCombat when a projectile spell is midair (combat on launch - threat+aggro on impact)
+        bool IsEngaged() const { return CanHaveThreatList() ? m_threatManager.IsEngaged() : IsInCombat(); }
+        bool IsEngagedBy(Unit const* who) const { return CanHaveThreatList() ? IsThreatenedBy(who) : IsInCombatWith(who); }
+        void EngageWithTarget(Unit* who); // Adds target to threat list if applicable, otherwise just sets combat state
+                                          // Combat handling
+        CombatManager& GetCombatManager() { return m_combatManager; }
+        CombatManager const& GetCombatManager() const { return m_combatManager; }
+        void AttackedTarget(Unit* target, bool canInitialAggro);
 
-        void SetImmuneToAll(bool apply, bool keepCombat = false) { SetImmuneToPC(apply, keepCombat); SetImmuneToNPC(apply, keepCombat); }
         bool IsImmuneToAll() const { return IsImmuneToPC() && IsImmuneToNPC(); }
-        void SetImmuneToPC(bool apply, bool keepCombat = false);
+        void SetImmuneToAll(bool apply, bool keepCombat);
+        virtual void SetImmuneToAll(bool apply) { SetImmuneToAll(apply, false); }
         bool IsImmuneToPC() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC); }
-        void SetImmuneToNPC(bool apply, bool keepCombat = false);
+        void SetImmuneToPC(bool apply, bool keepCombat);
+        virtual void SetImmuneToPC(bool apply) { SetImmuneToPC(apply, false); }
         bool IsImmuneToNPC() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC); }
+        void SetImmuneToNPC(bool apply, bool keepCombat);
+        virtual void SetImmuneToNPC(bool apply) { SetImmuneToNPC(apply, false); }
 
-        bool IsInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
-        bool IsPetInCombat() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT); }
-        void CombatStart(Unit* target, bool updatePvP = true);
-        void SetInCombatState(bool PvP, Unit* enemy = nullptr);
-        void SetInCombatWith(Unit* enemy);
-        bool IsInCombatWith(Unit const* enemy) const;
-        void ClearInCombat();
-		void ClearInPetCombat();
-        uint32 GetCombatTimer() const { return m_CombatTimer; }
+        bool IsInCombat() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
+        bool IsInCombatWith(Unit const* who) const { return who && m_combatManager.IsInCombatWith(who); }
+        void SetInCombatWith(Unit* enemy) { if (enemy) m_combatManager.SetInCombatWith(enemy); }
+        void ClearInCombat() { m_combatManager.EndAllCombat(); }
+        void UpdatePetCombatState();
+        // Threat handling
+        bool IsThreatened() const;
+        bool IsThreatenedBy(Unit const* who) const { return who && m_threatManager.IsThreatenedBy(who, true); }
+        // Exposes the threat manager directly - be careful when interfacing with this
+        // As a general rule of thumb, any unit pointer MUST be null checked BEFORE passing it to threatmanager methods
+        // threatmanager will NOT null check your pointers for you - misuse = crash
+        ThreatManager& GetThreatManager() { return m_threatManager; }
+        ThreatManager const& GetThreatManager() const { return m_threatManager; }
+
+#ifdef LICH_KING
+        void SendClearTarget();
+        void SendThreatListUpdate() { m_threatManager.SendThreatListToClients(); }
+#endif
 
         //TC compat
         bool HasAura(uint32 spellId) const {
@@ -1583,6 +1602,9 @@ class TC_GAME_API Unit : public WorldObject
 
         void ProcessPositionDataChanged(PositionFullTerrainStatus const& data, bool updateCreatureLiquid = false) override;
         virtual void ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData, bool forceCreature = false);
+
+        virtual void AtEnterCombat() { }
+        virtual void AtExitCombat();
 
 		bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
 		bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
@@ -1802,7 +1824,6 @@ class TC_GAME_API Unit : public WorldObject
         float m_modSpellHitChance;
         int32 m_baseSpellCritChance;
 
-        float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];
 
         // Event handler. Processed only when creature is alive
@@ -1931,19 +1952,6 @@ class TC_GAME_API Unit : public WorldObject
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
 
-        // Threat related methods
-        bool CanHaveThreatList(bool skipAliveCheck = false) const;
-        float GetThreat(Unit* u) const;
-        void ApplyTotalThreatModifier(float& threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL);
-        void TauntApply(Unit* pVictim);
-        void TauntFadeOut(Unit *taunter);
-        ThreatManager& GetThreatManager() { return m_ThreatManager; }
-        ThreatManager const& GetThreatManager() const { return m_ThreatManager; }
-        void addHatedBy(HostileReference* pHostileReference) { m_HostileRefManager.insertFirst(pHostileReference); };
-        void removeHatedBy(HostileReference* /*pHostileReference*/ ) { /* nothing to do yet */ }
-        HostileRefManager& GetHostileRefManager() { return m_HostileRefManager; }
-        bool HasInThreatList(ObjectGuid hostileGUID) const;
-
         //TC compat
         Aura* GetAuraApplication(uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty, ObjectGuid itemCasterGUID = ObjectGuid::Empty, uint8 reqEffMask = 0, AuraApplication * except = nullptr) const;
         Aura* GetAura(uint32 spellId, uint8 effindex);
@@ -2015,6 +2023,7 @@ class TC_GAME_API Unit : public WorldObject
         bool HasAuraState(AuraStateType flag, SpellInfo const* spellProto = nullptr, Unit const* Caster = nullptr) const;
         void UnsummonAllTotems();
         //This triggers a KillMagnetEvent
+        bool IsMagnet() const;
         Unit* GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo);
         Unit* GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo = nullptr);
 
@@ -2055,8 +2064,6 @@ class TC_GAME_API Unit : public WorldObject
 
         void SetLastManaUse(uint32 spellCastTime) { m_lastManaUse = spellCastTime; }
         bool IsUnderLastManaUseEffect() const;
-
-        void SetContestedPvP(Player *attackedPlayer = nullptr);
 
         void ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply);
         void ApplySpellDispelImmunity(const SpellInfo * spellProto, DispelType type, bool apply);
@@ -2156,21 +2163,6 @@ class TC_GAME_API Unit : public WorldObject
         //void SetToNotify();
         //bool m_Notified, m_IsInNotifyList;
         //float oldX, oldY, oldZ;
-
-        void SetReducedThreatPercent(uint32 pct, ObjectGuid guid)
-        {
-            m_redirectThreatPercent = pct;
-            m_misdirectionTargetGUID = guid;
-        }
-
-        void SetLastMisdirectionTargetGUID(ObjectGuid guid)
-        {
-            m_misdirectionLastTargetGUID = guid;
-        }
-
-        uint32 GetRedirectThreatPercent() { return m_redirectThreatPercent; }
-        Unit *GetRedirectThreatTarget();
-        Unit *GetLastRedirectTarget();
 
         bool IsAIEnabled, NeedChangeAI;
 
@@ -2288,8 +2280,6 @@ class TC_GAME_API Unit : public WorldObject
 
         uint32 m_reactiveTimer[MAX_REACTIVE];
 
-        ThreatManager m_ThreatManager;
-        
         uint32 m_unitTypeMask;
         LiquidTypeEntry const* _lastLiquid;
         
@@ -2313,23 +2303,19 @@ class TC_GAME_API Unit : public WorldObject
         bool HandleMendingAuraProc(Aura* triggeredByAura);
 
         uint32 m_state;                                     // Even derived shouldn't modify
-        uint32 m_CombatTimer;
         uint32 m_lastManaUse;                               // msecs
         TimeTrackerSmall m_movesplineTimer;
 
         DiminishingReturn m_Diminishing[DIMINISHING_MAX];
-        // Manage all Units threatening us
-//        ThreatManager m_ThreatManager;
         // Manage all Units that are threatened by us
-        HostileRefManager m_HostileRefManager;
+        friend class CombatManager;
+        CombatManager m_combatManager; 
+        friend class ThreatManager;
+        ThreatManager m_threatManager;
 
         FollowerRefManager m_FollowingRefManager;
 
         ComboPointHolderSet m_ComboPointHolders;
-
-        uint32 m_redirectThreatPercent;
-        ObjectGuid m_misdirectionTargetGUID;
-        ObjectGuid m_misdirectionLastTargetGUID;
         
         uint8 IsRotating;//0none 1left 2right
         uint32 RotateTimer;
@@ -2354,7 +2340,7 @@ public:
     bool Execute(uint64 e_time, uint32 p_time) override;
 
 protected:
-    Unit& _self;
+    Unit & _self;
     ObjectGuid _auraOwnerGUID;
     AuraEffect* _auraEffect;
 };

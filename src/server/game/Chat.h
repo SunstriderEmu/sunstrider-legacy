@@ -620,8 +620,8 @@ class TC_GAME_API ChatHandler
         bool HandleDebugGetLootRecipient(const char * args);
         bool HandleDebugArenaCommand(const char * args);
         bool HandleDebugBattleGroundCommand(const char * args);
-        bool HandleDebugThreatList(const char * args);
-        bool HandleDebugHostilRefList(const char * args);
+        bool HandleDebugThreatListCommand(const char * args);
+        bool HandleDebugCombatListCommand(const char * args);
         bool HandlePossessCommand(const char* args);
         bool HandleUnPossessCommand(const char* args);
         bool HandleBindSightCommand(const char* args);

@@ -20,12 +20,8 @@ GuardAI::GuardAI(Creature *c) : CreatureAI(c), i_creature(*c), i_state(STATE_NOR
 
 bool GuardAI::CanSeeAlways(WorldObject const* obj)
 {
-    if (!obj->isType(TYPEMASK_UNIT))
-        return false;
-
-    ThreatContainer::StorageType threatList = me->GetThreatManager().getThreatList();
-    for (ThreatContainer::StorageType::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
-        if ((*itr)->getUnitGuid() == obj->GetGUID())
+    if (Unit const* unit = obj->ToUnit())
+        if (unit->IsControlledByPlayer() && me->IsEngagedBy(unit))
             return true;
 
     return false;

@@ -446,18 +446,7 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
 
     bot->GetPlayerbotAI()->Reset();
 
-    HostileReference *ref = bot->GetHostileRefManager().getFirst();
-    while( ref )
-    {
-        ThreatManager *threatManager = ref->GetSource();
-        Unit *unit = threatManager->GetOwner();
-      //  float threat = ref->getThreat();
-
-        unit->RemoveAllAttackers();
-        unit->ClearInCombat();
-
-        ref = ref->next();
-    }
+    bot->GetCombatManager().EndAllCombat();
 
     bot->RemoveAllAttackers();
     bot->ClearInCombat();

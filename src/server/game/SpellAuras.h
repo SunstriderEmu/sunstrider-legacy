@@ -193,7 +193,7 @@ class TC_GAME_API Aura
         void HandleAttackerPowerBonus(bool apply, bool Real);
         void HandleAOECharm(bool apply, bool Real);
         void HandlePeriodicTriggerSpellWithValue(bool apply, bool Real);
-        void HandleAuraIgnored(bool apply, bool Real);
+        void HandleModDetaunt(bool apply, bool Real);
         void HandleModStateImmunityMask(bool apply, bool Real);
         void HandleAuraCloneCaster(bool apply, bool Real);
 

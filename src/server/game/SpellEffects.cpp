@@ -1254,7 +1254,7 @@ void Spell::EffectDummy(uint32 i)
                     if (!m_CastItem) return;
                     m_caster->CastSpell(m_caster,13166, TRIGGERED_FULL_MASK,m_CastItem);
                     return;
-                case 23138:
+                case 23138: //Gate of Shazzrah
                 {
                     if(!unitTarget)
                         return;
@@ -1268,7 +1268,7 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget, 19712, TRIGGERED_NONE);
                     if (m_caster->ToCreature())
                         if (m_caster->ToCreature()->AI())
-                            m_caster->ToCreature()->GetThreatManager().clearReferences();
+                            m_caster->ToCreature()->GetThreatManager().ClearAllThreat();
                     return;
                 }
                 case 23448:                                 // Ultrasafe Transporter: Gadgetzan - backfires
@@ -1379,7 +1379,7 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 29858:                                 // Soulshatter
                     if (unitTarget && unitTarget->CanHaveThreatList()
-                        && unitTarget->GetThreatManager().getThreat(m_caster) > 0.0f)
+                        && unitTarget->GetThreatManager().GetThreat(m_caster) > 0.0f)
                         m_caster->CastSpell(unitTarget,32835, TRIGGERED_FULL_MASK);
                     return;
                 case 30458:                                 // Nigh Invulnerability
@@ -2694,7 +2694,7 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
         && m_spellInfo->GetCategory() == spellInfo->GetCategory())
         m_caster->ToPlayer()->RemoveSpellCooldown(spellInfo->Id);
 
-    auto spell = new Spell(m_caster, spellInfo, TRIGGERED_FULL_MASK, m_originalCasterGUID );
+    auto spell = new Spell(m_caster, spellInfo, TriggerCastFlags(TRIGGERED_IGNORE_GCD|TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD|TRIGGERED_IGNORE_CAST_IN_PROGRESS|TRIGGERED_CAST_DIRECTLY), m_originalCasterGUID );
 
     SpellCastTargets targets;
     targets.SetDst(m_targets.GetDstPos()->GetPosition());
@@ -3307,7 +3307,7 @@ void Spell::EffectHealPct( uint32 /*i*/ )
         caster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, false);
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
-        unitTarget->GetHostileRefManager().threatAssist(m_caster, float(gain) * 0.5f, m_spellInfo);
+        unitTarget->GetThreatManager().ForwardThreatForAssistingMe(m_caster, float(gain) * 0.5f, m_spellInfo);
 
         if(caster->GetTypeId()==TYPEID_PLAYER)
             if(Battleground *bg = (caster->ToPlayer())->GetBattleground())
@@ -3568,7 +3568,7 @@ void Spell::EffectEnergize(uint32 i)
 
     unitTarget->ModifyPower(power,damage);
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
-    m_caster->GetHostileRefManager().threatAssist(unitTarget, float(damage) * 0.5f, m_spellInfo, false, true);
+    m_caster->GetThreatManager().ForwardThreatForAssistingMe(unitTarget, float(damage) * 0.5f, m_spellInfo, true);
 
     // Mad Alchemist's Potion
     if (m_spellInfo->Id == 45051)
@@ -4727,29 +4727,22 @@ void Spell::EffectTaunt(uint32 /*i*/)
 
     // this effect use before aura Taunt apply for prevent taunt already attacking target
     // for spell as marked "non effective at already attacking target"
-    if(!unitTarget || !unitTarget->CanHaveThreatList()
-        || unitTarget->GetVictim() == m_caster)
+    if(!unitTarget || !unitTarget->CanHaveThreatList())
     {
         SendCastResult(SPELL_FAILED_DONT_REPORT);
         return;
     }
 
-    // Also use this effect to set the taunter's threat to the taunted creature's highest value
-    if (!unitTarget->GetThreatManager().getOnlineContainer().empty())
+    ThreatManager& mgr = unitTarget->GetThreatManager();
+    if (mgr.GetCurrentVictim() == m_caster)
     {
-        float myThreat = unitTarget->GetThreatManager().getThreat(m_caster);
-        float topThreat = unitTarget->GetThreatManager().getOnlineContainer().getMostHated()->getThreat();
-        if (topThreat > myThreat)
-            unitTarget->GetThreatManager().doAddThreat(m_caster, topThreat - myThreat);
-
-        //Set aggro victim to caster
-        if(HostileReference* forcedVictim = unitTarget->GetThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
-            unitTarget->GetThreatManager().setCurrentVictim(forcedVictim);
+        SendCastResult(SPELL_FAILED_DONT_REPORT);
+        return;
     }
 
-    if((unitTarget->ToCreature())->IsAIEnabled) {
-        (unitTarget->ToCreature())->AI()->AttackStart(m_caster);
-    }
+    if (!mgr.IsThreatListEmpty())
+        // Set threat equal to highest threat currently on target
+        mgr.MatchUnitThreatToHighestThreat(m_caster);
 }
 
 void Spell::EffectWeaponDmg(uint32 i)
@@ -5000,13 +4993,13 @@ void Spell::EffectThreat(uint32 /*i*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if(!unitTarget || !unitTarget->IsAlive() || !m_caster->IsAlive())
+    if(!unitTarget || !m_caster->IsAlive())
         return;
 
     if(!unitTarget->CanHaveThreatList())
         return;
 
-    unitTarget->GetThreatManager().AddThreat(m_caster, float(damage));
+    unitTarget->GetThreatManager().AddThreat(m_caster, float(damage), m_spellInfo, true);
 }
 
 void Spell::EffectHealMaxHealth(uint32 /*i*/)
@@ -5961,8 +5954,6 @@ void Spell::EffectSanctuary(uint32 /*i*/)
     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
         unitTarget->ToPlayer()->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
 
-    unitTarget->GetHostileRefManager().UpdateVisibility();
-
     //stop spells currently cast against this target
     std::list<Unit*> targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityRange());
@@ -5984,8 +5975,18 @@ void Spell::EffectSanctuary(uint32 /*i*/)
         }
     }
 
-    unitTarget->CombatStop();
-    unitTarget->GetHostileRefManager().deleteReferences();   // stop all fighting
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER && !unitTarget->GetMap()->IsDungeon())
+    {
+        // stop all pve combat for players outside dungeons, suppress pvp combat
+        unitTarget->CombatStop(false, false);
+    }
+    else
+    {
+        // in dungeons (or for nonplayers), reset this unit on all enemies' threat lists
+        for (auto const& pair : unitTarget->GetThreatManager().GetThreatenedByMeList())
+            pair.second->SetThreat(0.0f);
+    }
+
     // Vanish allows to remove all threat and cast regular stealth so other spells can be used
     if(m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (m_spellInfo->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE_VANISH))
     {
@@ -6989,7 +6990,7 @@ void Spell::EffectModifyThreatPercent(uint32 /*effIndex*/)
     if(!unitTarget)
         return;
 
-    unitTarget->GetThreatManager().modifyThreatPercent(m_caster, damage);
+    unitTarget->GetThreatManager().ModifyThreatByPercent(m_caster, damage);
 }
 
 void Spell::EffectTransmitted(uint32 effIndex)
@@ -7382,10 +7383,13 @@ void Spell::EffectRedirectThreat(uint32 /*i*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if(unitTarget) {
-        m_caster->SetReducedThreatPercent(100, unitTarget->GetGUID());
-        m_caster->SetLastMisdirectionTargetGUID(unitTarget->GetGUID());
-    }
+#ifndef LICH_KING
+    //only misdirect spell on BC, redirect 100%
+    damage = 100;
+#endif
+
+    if (unitTarget)
+        m_caster->GetThreatManager().RegisterRedirectThreat(m_spellInfo->Id, unitTarget->GetGUID(), uint32(damage));
 }
 
 void Spell::EffectPlaySound(uint32 effIndex)

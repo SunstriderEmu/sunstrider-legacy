@@ -50,19 +50,12 @@ void AttackersValue::AddAttackersOf(Group* group, set<Unit*>& targets)
 
 void AttackersValue::AddAttackersOf(Unit* unit, set<Unit*>& targets)
 {
-    HostileRefManager& refManager = unit->GetHostileRefManager();
-    HostileReference *ref = refManager.getFirst();
-    if (!ref)
-        return;
-
-    while( ref )
+    for (auto itr : unit->GetThreatManager().GetUnsortedThreatList())
     {
-        ThreatManager *threatManager = ref->GetSource();
-        Unit *attacker = threatManager->GetOwner();
-        Unit *victim = attacker->GetVictim();
+        Unit *attacker = itr->GetOwner();
+        Unit *victim = itr->GetVictim();
         if (victim == unit)
             targets.insert(attacker);
-        ref = ref->next();
     }
 }
 
@@ -90,5 +83,5 @@ bool AttackersValue::hasRealThreat(Unit *attacker)
         !attacker->IsPolymorphed() &&
         !attacker->IsInRoots() &&
         !attacker->IsFriendlyTo(bot) &&
-        (attacker->GetThreatManager().getCurrentVictim() || dynamic_cast<Player*>(attacker));
+        (attacker->GetThreatManager().GetCurrentVictim() || dynamic_cast<Player*>(attacker));
 }

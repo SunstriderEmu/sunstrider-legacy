@@ -715,6 +715,8 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
         LearnAllClassSpells();
     }
 
+    GetThreatManager().Initialize();
+
     return true;
 }
 
@@ -1328,7 +1330,7 @@ void Player::Update( uint32 p_time )
         {
             m_hostileReferenceCheckTimer = 1 * SECOND;
             if (!GetMap()->IsDungeon())
-                GetHostileRefManager().deleteReferencesOutOfRange(GetVisibilityRange());
+                GetCombatManager().EndCombatBeyondRange(GetVisibilityRange(), true);
         }
         else
             m_hostileReferenceCheckTimer -= p_time;
@@ -2344,8 +2346,6 @@ void Player::SetInWater(bool apply)
 
     // remove auras that need water/land
     RemoveAurasWithInterruptFlags(apply ? AURA_INTERRUPT_FLAG_NOT_ABOVEWATER : AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
-
-    GetHostileRefManager().updateThreatTables();
 }
 
 bool Player::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
@@ -2367,11 +2367,11 @@ void Player::SetGameMaster(bool on)
         SetFaction(FACTION_FRIENDLY);
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
 
+        if (Pet* pet = GetPet())
+            pet->SetFaction(FACTION_FRIENDLY);
+
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
         ResetContestedPvP();
-
-        GetHostileRefManager().setOnlineOfflineState(false);
-        CombatStop();
 
         SetPhaseMask(PHASEMASK_ANYWHERE, false);    // see and visible in all phases
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
@@ -2384,6 +2384,12 @@ void Player::SetGameMaster(bool on)
         SetFactionForRace(GetRace());
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
 
+        if (Pet* pet = GetPet())
+        {
+            pet->SetFaction(GetFaction());
+            pet->GetThreatManager().UpdateOnlineStates();
+        }
+
         // restore FFA PvP Server state
         if(sWorld->IsFFAPvPRealm())
             SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
@@ -2391,7 +2397,6 @@ void Player::SetGameMaster(bool on)
         // restore FFA PvP area state, remove not allowed for GM mounts
         UpdateArea(m_areaUpdateId);
 
-        GetHostileRefManager().setOnlineOfflineState(true);
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
     }
 
@@ -16174,15 +16179,15 @@ void Player::_LoadAuras(PreparedQueryResult result, uint32 timediff)
             if (caster_guid != GetGUID() && spellproto->IsSingleTarget())
                 continue;
 
-            // Do not load SPELL_AURA_IGNORED auras
-        bool abort = false;
-            for (const auto & Effect : spellproto->Effects) {
-                if (Effect.Effect == SPELL_EFFECT_APPLY_AURA && Effect.ApplyAuraName == 221)
-                    abort = true;
-            }
+            // Do not load SPELL_AURA_MOD_DETAUNT auras
+            bool abort = false;
+                for (const auto & Effect : spellproto->Effects) {
+                    if (Effect.Effect == SPELL_EFFECT_APPLY_AURA && Effect.ApplyAuraName == SPELL_AURA_MOD_DETAUNT)
+                        abort = true;
+                }
 
-        if (abort)
-        continue;
+            if (abort)
+            continue;
 
             for(uint32 i=0; i<stackcount; i++)
             {
@@ -18026,6 +18031,31 @@ void Player::UpdatePvPFlag(time_t currTime)
     UpdatePvP(false);
 }
 
+void Player::SetContestedPvP(Player* attackedPlayer)
+{
+    if (attackedPlayer && (attackedPlayer == this || (duel && duel->opponent == attackedPlayer)))
+        return;
+
+    SetContestedPvPTimer(30000);
+    if (!HasUnitState(UNIT_STATE_ATTACK_PLAYER))
+    {
+        AddUnitState(UNIT_STATE_ATTACK_PLAYER);
+        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP);
+        // call MoveInLineOfSight for nearby contested guards
+        Trinity::AIRelocationNotifier notifier(*this);
+        Cell::VisitWorldObjects(this, notifier, GetVisibilityRange());
+    }
+    for (Unit* unit : m_Controlled)
+    {
+        if (!unit->HasUnitState(UNIT_STATE_ATTACK_PLAYER))
+        {
+            unit->AddUnitState(UNIT_STATE_ATTACK_PLAYER);
+            Trinity::AIRelocationNotifier notifier(*unit);
+            Cell::VisitWorldObjects(this, notifier, GetVisibilityRange());
+        }
+    }
+}
+
 void Player::ResetContestedPvP()
 {
     ClearUnitState(UNIT_STATE_ATTACK_PLAYER);
@@ -18853,7 +18883,6 @@ void Player::CleanupAfterTaxiFlight()
     m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
     Dismount();
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_TAXI_FLIGHT);
-    GetHostileRefManager().setOnlineOfflineState(true);
 }
 
 void Player::ContinueTaxiFlight()
@@ -22234,6 +22263,21 @@ void Player::ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidDat
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWATER_INDARKWATER);
 }
 
+void Player::AtExitCombat()
+{
+    Unit::AtExitCombat();
+#ifdef LICH_KING
+    UpdatePotionCooldown();
+    
+    if (GetClass() == CLASS_DEATH_KNIGHT)
+        for (uint8 i = 0; i < MAX_RUNES; ++i)
+        {
+            SetRuneTimer(i, 0xFFFFFFFF);
+            SetLastRuneGraceTimer(i, 0);
+        }
+#endif
+}
+
 void Player::SetCanParry( bool value )
 {
     if(m_canParry == value)
@@ -22726,7 +22770,7 @@ void Player::SetSpectate(bool on)
 
         ResetContestedPvP();
 
-        GetHostileRefManager().setOnlineOfflineState(false);
+        GetThreatManager().UpdateOnlineStates();
 
         SetDisplayId(10045);
 
@@ -22746,7 +22790,7 @@ void Player::SetSpectate(bool on)
         // restore FFA PvP area state, remove not allowed for GM mounts
         UpdateArea(m_areaUpdateId);
 
-        GetHostileRefManager().setOnlineOfflineState(true);
+        GetThreatManager().UpdateOnlineStates();
         spectateCanceled = false;
         spectatorFlag = false;
         SetDisplayId(GetNativeDisplayId());

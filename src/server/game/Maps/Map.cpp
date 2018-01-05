@@ -825,19 +825,31 @@ void Map::Update(const uint32 &t_diff)
     // to make sure calls to Map::Remove don't invalidate it
     for(m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
     {
-        Player* plr = m_mapRefIter->GetSource();
+        Player* player = m_mapRefIter->GetSource();
 
-        if (!plr || !plr->IsInWorld())
+        if (!player || !player->IsInWorld())
             continue;
 
         // update players at tick
-        plr->Update(t_diff);
+        player->Update(t_diff);
+
+        VisitNearbyCellsOf(player, grid_object_update, world_object_update);
 
         // If player is using far sight or mind vision, visit that object too
-        if (WorldObject* viewPoint = plr->GetViewpoint())
+        if (WorldObject* viewPoint = player->GetViewpoint())
             VisitNearbyCellsOf(viewPoint, grid_object_update, world_object_update);
 
-        VisitNearbyCellsOf(plr, grid_object_update, world_object_update);
+        // Handle updates for creatures in combat with player and are more than 60 yards away
+        if (player->IsInCombat())
+        {
+            std::vector<Unit*> toVisit;
+            for (auto const& pair : player->GetCombatManager().GetPvECombatRefs())
+                if (Creature* unit = pair.second->GetOther(player)->ToCreature())
+                    if (unit->GetMapId() == player->GetMapId() && !unit->IsWithinDistInMap(player, GetVisibilityRange(), false))
+                        toVisit.push_back(unit);
+            for (Unit* unit : toVisit)
+                VisitNearbyCellsOf(unit, grid_object_update, world_object_update);
+        }
     }
 
     //must be done before creatures update
@@ -893,7 +905,7 @@ void Map::RemovePlayerFromMap(Player *player, bool remove)
     player->UpdateZone(MAP_INVALID_ZONE, 0);
     sScriptMgr->OnPlayerLeaveMap(this, player);
 
-    player->GetHostileRefManager().deleteReferences(); // multithreading crashfix
+    player->CombatStop();
 
     ASSERT(player);
 
@@ -4164,7 +4176,7 @@ void Map::ApplyDynamicModeRespawnScaling(WorldObject const* obj, ObjectGuid::Low
 SpawnGroupTemplateData const* Map::GetSpawnGroupData(uint32 groupId) const
 {
     SpawnGroupTemplateData const* data = sObjectMgr->GetSpawnGroupData(groupId);
-    if (data && data->mapId == GetId())
+    if (data && (data->flags & SPAWNGROUP_FLAG_SYSTEM || data->mapId == GetId()))
         return data;
     return nullptr;
 }
@@ -4295,10 +4307,11 @@ bool Map::IsSpawnGroupActive(uint32 groupId) const
     SpawnGroupTemplateData const* const data = GetSpawnGroupData(groupId);
     if (!data)
     {
-        TC_LOG_WARN("maps", "Tried to query state of non-existing spawn group %u on map %u.", groupId, GetId());
+        TC_LOG_ERROR("maps", "Tried to query state of non-existing spawn group %u on map %u.", groupId, GetId());
         return false;
     }
     if (data->flags & SPAWNGROUP_FLAG_SYSTEM)
         return true;
+    // either manual spawn group and toggled, or not manual spawn group and not toggled...
     return (_toggledSpawnGroupIds.find(groupId) != _toggledSpawnGroupIds.end()) != !(data->flags & SPAWNGROUP_FLAG_MANUAL_SPAWN);
 }

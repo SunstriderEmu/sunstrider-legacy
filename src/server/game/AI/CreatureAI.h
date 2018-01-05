@@ -77,7 +77,7 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         void Talk(uint8 id, WorldObject const* whisperTarget = nullptr);
         //Places the entire map into combat with creature
-        void DoZoneInCombat(Unit* pUnit = nullptr, bool force = false);
+        void DoZoneInCombat(Creature* creature = nullptr, float maxRangeToNearestTarget = 250.0f);
         bool IsInMeleeRange() const;
 
         //Called when MoveInLineOfSight, check if 'who' is a player or has a player owner, and help him if any of his attackers are in assist range. Return true if started helping.

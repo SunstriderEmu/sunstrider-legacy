@@ -2536,8 +2536,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         float threat = float(gain) * 0.5f * sSpellMgr->GetSpellThreatModPercent(m_spellInfo);
 
-        Unit* threatTarget = (GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER) || !m_originalCaster)? m_caster : m_originalCaster;
-        unitTarget->GetHostileRefManager().threatAssist(threatTarget, threat, m_spellInfo);
+        Unit* threatTarget = (GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER) || !m_originalCaster) ? m_caster : m_originalCaster;
+        unitTarget->GetThreatManager().ForwardThreatForAssistingMe(threatTarget, threat, m_spellInfo);
 
         if(caster->GetTypeId()==TYPEID_PLAYER)
         {
@@ -2651,18 +2651,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
     if( missInfo != SPELL_MISS_EVADE && !m_caster->IsFriendlyTo(unit) && !IsPositive(hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
     {
-        if(m_spellInfo->HasInitialAggro())
-        {
-            m_caster->CombatStart(unit, m_spellInfo->HasInitialAggro() && !IsTriggered()); //sunstrider: A triggered spell should not be considered as a pvp action
-        }
-        else if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_AURA_CC))
+        if(!IsTriggered()) //sun: prevent triggered spells to trigger pvp... a frost armor proc is not an offensive action
+            m_caster->AttackedTarget(unit, m_spellInfo->HasInitialAggro());
+        if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_AURA_CC))
         {
             if(!unit->IsStandState())
                 unit->SetStandState(PLAYER_STATE_NONE);
-        }
-        else if (m_spellInfo->HasAttribute(SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT))
-        {
-            m_caster->SetInCombatState(true);
         }
     }
     
@@ -2856,14 +2850,17 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
             // assisting case, healing and resurrection
             if(unit->HasUnitState(UNIT_STATE_ATTACK_PLAYER))
             {
-                caster->SetContestedPvP();
-                //caster->UpdatePvP(true);
+                if (Player* playerOwner = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself())
+                {
+                    playerOwner->SetContestedPvP();
+                    playerOwner->UpdatePvP(true);
+                }
             }
             if( unit->IsInCombat() && m_spellInfo->HasInitialAggro())
             {
-                //threat to current caster instead of original caster
-                m_caster->SetInCombatState(unit->GetCombatTimer() > 0, unit);
-                unit->GetHostileRefManager().threatAssist(m_caster, 0.0f);
+                if (m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE)) // only do explicit combat forwarding for PvP enabled units
+                    m_caster->GetCombatManager().InheritCombatStatesFrom(unit);    // for creature v creature combat, the threat forward does it for us
+                unit->GetThreatManager().ForwardThreatForAssistingMe(m_caster, 0.0f, nullptr, true);
             }
         }
     }
@@ -5130,7 +5127,7 @@ void Spell::HandleFlatThreat()
         if(!IsPositive(!m_caster->IsFriendlyTo(targetUnit)))
             targetUnit->GetThreatManager().AddThreat(m_caster, threat, m_spellInfo);
         else //or assist threat if friendly target
-            m_caster->GetHostileRefManager().threatAssist(targetUnit, threat, m_spellInfo);
+            m_caster->GetThreatManager().ForwardThreatForAssistingMe(targetUnit, threat, m_spellInfo);
     }
 }
 
@@ -7873,6 +7870,10 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier,
         unit = m_caster;
     if (!unit)
         return;
+
+    // This will only cause combat - the target will engage once the projectile hits (in DoAllEffectOnTarget)
+    if (targetInfo.missCondition != SPELL_MISS_EVADE && !m_caster->IsFriendlyTo(unit) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)) && (m_spellInfo->HasInitialAggro() || unit->IsEngaged()))
+        m_caster->SetInCombatWith(unit);
 
     uint8 ssEffect = MAX_SPELL_EFFECTS;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)

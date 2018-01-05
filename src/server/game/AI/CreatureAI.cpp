@@ -150,12 +150,16 @@ bool CreatureAI::UpdateVictim(bool evade)
             if (!me->IsFocusing(nullptr, true) && victim != me->GetVictim())
                 AttackStart(victim);
 
-        return me->GetVictim() != nullptr;
-    } else if (me->GetThreatManager().IsThreatListEmpty())
+        return evade && me->GetVictim() != nullptr;
+    }
+    else if (!me->IsInCombat())
     {
-        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
+        if(evade)
+            EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
         return false;
     }
+    else if(me->GetVictim())
+        me->AttackStop();
 
     return true;
 }
@@ -235,39 +239,55 @@ bool CreatureAI::IsInMeleeRange() const
     return false;
 }
 
-void CreatureAI::DoZoneInCombat(Unit* pUnit, bool force)
+void CreatureAI::DoZoneInCombat(Creature* creature /*= nullptr*/, float maxRangeToNearestTarget /* = 250.0f*/)
 {
-    if (!pUnit)
-        pUnit = me;
+    if (!creature)
+        creature = me;
 
-    Map *map = pUnit->GetMap();
-
-    if (!map->IsDungeon())                                  //use IsDungeon instead of Instanceable, in case battlegrounds will be instantiated
+    Map* map = creature->GetMap();
+    if (creature->CanHaveThreatList())
     {
-        error_log("TSCR: DoZoneInCombat call for map that isn't an instance (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? (pUnit->ToCreature())->GetEntry() : 0);
-        return;
-    }
-
-    if (!pUnit->CanHaveThreatList())
-    {
-        if (!force && pUnit->GetThreatManager().IsThreatListEmpty())
+        if (!map->IsDungeon())                                  //use IsDungeon instead of Instanceable, in case battlegrounds will be instantiated
         {
-            error_log("TSCR: DoZoneInCombat called for creature that either cannot have threat list or has empty threat list (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? (pUnit->ToCreature())->GetEntry() : 0);
+            TC_LOG_ERROR("misc", "DoZoneInCombat call for map that isn't an instance (creature entry = %d)", creature->GetTypeId() == TYPEID_UNIT ? creature->ToCreature()->GetEntry() : 0);
+            return;
+        }
 
+        if (!creature->HasReactState(REACT_PASSIVE) && !creature->GetVictim())
+        {
+            if (Unit* nearTarget = creature->SelectNearestTarget(maxRangeToNearestTarget))
+                creature->AI()->AttackStart(nearTarget);
+            else if (creature->IsSummon())
+            {
+                if (Unit* summoner = creature->ToTempSummon()->GetSummoner())
+                {
+                    if (creature->IsFriendlyTo(summoner))
+                    {
+                        Unit* target = summoner->GetAttackerForHelper();
+                        if (target && creature->IsHostileTo(target))
+                            creature->AI()->AttackStart(target);
+                    }
+                }
+            }
+        }
+
+        // Intended duplicated check, the code above this should select a victim
+        // If it can't find a suitable attack target then we should error out.
+        if (!creature->HasReactState(REACT_PASSIVE) && !creature->GetVictim())
+        {
+            TC_LOG_ERROR("misc.dozoneincombat", "DoZoneInCombat called for creature that has empty threat list (creature entry = %u)", creature->GetEntry());
             return;
         }
     }
 
-    Map::PlayerList const &PlayerList = map->GetPlayers();
-    for (const auto & i : PlayerList)
-    {
-        if (Player* i_pl = i.GetSource())
-            if (i_pl->IsAlive()
-                && !i_pl->IsGameMaster())
-            {
-                pUnit->GetThreatManager().AddThreat(i_pl, 0.0f);
-            }
-    }
+    Map::PlayerList const& playerList = map->GetPlayers();
+    if (playerList.isEmpty())
+        return;
+
+    for (Map::PlayerList::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+        if (Player* player = itr->GetSource())
+            if (player->IsAlive())
+                creature->EngageWithTarget(player);
 }
 
 static const uint32 BOUNDARY_VISUALIZE_CREATURE = 15425;

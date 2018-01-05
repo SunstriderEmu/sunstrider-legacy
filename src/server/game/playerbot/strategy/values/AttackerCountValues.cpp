@@ -16,18 +16,15 @@ bool HasAggroValue::Calculate()
     if (!target)
         return true;
 
-    HostileReference *ref = bot->GetHostileRefManager().getFirst();
-    if (!ref)
-        return true; // simulate as target is not atacking anybody yet
+    if (!bot->GetThreatManager().GetAnyTarget())
+        return true;  // simulate as target is not atacking anybody yet
 
-    while( ref )
+    for (auto itr : bot->GetThreatManager().GetUnsortedThreatList())
     {
-        ThreatManager *threatManager = ref->GetSource();
-        Unit *attacker = threatManager->GetOwner();
-        Unit *victim = attacker->GetVictim();
+        Unit *attacker = itr->GetOwner();
+        Unit *victim = itr->GetVictim();
         if (victim == bot && target == attacker)
             return true;
-        ref = ref->next();
     }
     return false;
 }

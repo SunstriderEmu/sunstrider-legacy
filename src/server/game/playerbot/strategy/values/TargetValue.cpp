@@ -33,11 +33,9 @@ void FindTargetStrategy::GetPlayerCount(Unit* creature, int* tankCount, int* dps
     *tankCount = 0;
     *dpsCount = 0;
 
-    for (HostileReference *ref = creature->GetHostileRefManager().getFirst(); ref; ref = ref->next())
+    for (auto itr : creature->GetThreatManager().GetUnsortedThreatList())
     {
-        ThreatManager *threatManager = ref->GetSource();
-        Unit *attacker = threatManager->GetOwner();
-        Unit *victim = attacker->GetVictim();
+        Unit *victim = itr->GetVictim();
         Player *player = dynamic_cast<Player*>(victim);
 
         if (!player)
