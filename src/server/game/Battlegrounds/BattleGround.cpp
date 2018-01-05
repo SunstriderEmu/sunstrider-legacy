@@ -1309,6 +1309,15 @@ void Battleground::AddPlayer(Player *plr)
     TC_LOG_DEBUG("battleground","BATTLEGROUND: Player %s joined the battle.", plr->GetName().c_str());
 }
 
+void Battleground::SetStartDelayTime(int Time)
+{
+    if (   (IsArena() && sBattlegroundMgr->IsArenaTesting())
+        || (isBattleground() && sBattlegroundMgr->IsBattleGroundTesting()) )
+        m_StartDelayTime = 1000;
+    else
+        m_StartDelayTime = Time;
+}
+
 /* This method should be called only once ... it adds pointer to queue */
 void Battleground::AddToBGFreeSlotQueue()
 {
