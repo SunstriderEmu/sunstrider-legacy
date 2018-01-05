@@ -11199,7 +11199,6 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
     // Phase player, dont update
     WorldObject::SetPhaseMask(newPhaseMask, false);
 
-    /*
     // Phase pets and summons
     if (IsInWorld())
     {
@@ -11212,9 +11211,10 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
                 if (Creature* summon = GetMap()->GetCreature(m_SummonSlot[i]))
                     summon->SetPhaseMask(newPhaseMask, true);
 
+        /*
         RemoveNotOwnSingleTargetAuras(newPhaseMask); // we can lost access to caster or target
+        */
     }
-    */
 
     // Update visibility after phasing pets and summons so they wont despawn
     if (update)

@@ -858,11 +858,11 @@ bool ChatHandler::HandleWpChangePathTypeCommand(const char* args)
         // check db value
         PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_PATH_TYPE);
         stmt->setUInt32(0, pathId);
-        PreparedQueryResult result = WorldDatabase.Query(stmt);
+        PreparedQueryResult result_ = WorldDatabase.Query(stmt);
         
-        if(result)
+        if(result_)
         {
-            uint32 type = result->Fetch()->GetUInt16();
+            uint32 type = result_->Fetch()->GetUInt16();
             std::string pathTypeStr = GetWaypointPathTypeName(WaypointPathType(type));
             PSendSysMessage("DB : Path id %u has type set to %s (%u)", pathId, pathTypeStr.c_str(), type);
         } else {
@@ -978,11 +978,11 @@ bool ChatHandler::HandleWpChangePathDirectionCommand(const char* args)
         // check db value
         PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_PATH_DIRECTION);
         stmt->setUInt32(0, pathId);
-        PreparedQueryResult result = WorldDatabase.Query(stmt);
+        PreparedQueryResult result_ = WorldDatabase.Query(stmt);
         
-        if(result)
+        if(result_)
         {
-            uint32 dir = result->Fetch()->GetUInt16();
+            uint32 dir = result_->Fetch()->GetUInt16();
             std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
             PSendSysMessage("DB : Path id %u has direction set to %s (%u)", pathId, pathDirStr.c_str(), dir);
         } else {

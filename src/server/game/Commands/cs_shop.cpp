@@ -714,10 +714,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations WHERE race_from = %u AND race_to = %u", m_race, t_race);
     if (result) {
         do {
-            Field* fields = result->Fetch();
+            Field* _fields = result->Fetch();
             
-            uint32 from = fields[0].GetUInt32();
-            uint32 to = fields[1].GetUInt32();
+            uint32 from = _fields[0].GetUInt32();
+            uint32 to = _fields[1].GetUInt32();
             
             if (!from)
                 continue;
@@ -793,10 +793,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         result = WorldDatabase.PQuery("SELECT spell1, spell2 FROM player_factionchange_spells_priest_specific WHERE race1 IN (0,%u) AND race2 IN (0,%u) ORDER BY race1,race2", m_race, t_race); //order by is here to handle non race specific spells first
         if (result) {
             do {
-                Field* fields = result->Fetch();
+                Field* _fields = result->Fetch();
             
-                uint32 from = fields[0].GetUInt32();
-                uint32 to = fields[1].GetUInt32();
+                uint32 from = _fields[0].GetUInt32();
+                uint32 to = _fields[1].GetUInt32();
 
                 if (plr->HasSpell(from))
                     plr->RemoveSpell(from);
@@ -873,10 +873,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     result = WorldDatabase.PQuery("SELECT item1, item2 FROM player_factionchange_items_race_specific WHERE race1 = %u AND race2 = %u", m_race, t_race);
     if (result) {
         do {
-            Field* fields = result->Fetch();
+            Field* _fields = result->Fetch();
             
-            uint32 from = fields[0].GetUInt32();
-            uint32 to = fields[1].GetUInt32();
+            uint32 from = _fields[0].GetUInt32();
+            uint32 to = _fields[1].GetUInt32();
 
             if (to == 0) {
                 uint32 count = plr->GetItemCount(from, true);
@@ -910,10 +910,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     result = WorldDatabase.PQuery("SELECT item2, item1 FROM player_factionchange_items_race_specific WHERE race2 = %u AND race1 = %u", m_race, t_race);
     if (result) {
         do {
-            Field* fields = result->Fetch();
+            Field* _fields = result->Fetch();
             
-            uint32 from = fields[0].GetUInt32();
-            uint32 to = fields[1].GetUInt32();
+            uint32 from = _fields[0].GetUInt32();
+            uint32 to = _fields[1].GetUInt32();
 
             if (to == 0) {
                 uint32 count = plr->GetItemCount(from, true);

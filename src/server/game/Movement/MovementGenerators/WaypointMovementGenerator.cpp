@@ -211,12 +211,12 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 a
     {
         if (Transport* trans = (creature->GetTransport() ? creature->GetTransport()->ToMotionTransport() : NULL))
         {
-            float x, y, z, o;
-            creature->GetPosition(x, y, z, o);
+            float tx, ty, tz, to;
+            creature->GetPosition(tx, ty, tz, to);
             o -= trans->GetOrientation();
-            creature->SetTransportHomePosition(x, y, z, o);
-            trans->CalculatePassengerPosition(x, y, z, &o);
-            creature->SetHomePosition(x, y, z, o);
+            creature->SetTransportHomePosition(tx, ty, tz, to);
+            trans->CalculatePassengerPosition(tx, ty, tz, &to);
+            creature->SetHomePosition(tx, ty, tz, to);
         }
         else
             transportPath = false;

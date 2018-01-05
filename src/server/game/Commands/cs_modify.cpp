@@ -646,6 +646,24 @@ bool ChatHandler::HandleModifyScaleCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleModifyPhaseCommand(const char* args)
+{
+    uint32 phasemask = (uint32)atoi((char*)args);
+    if (phasemask < PHASEMASK_NORMAL)
+        return false;
+
+    Unit* target = GetSelectedUnit();
+    if (!target)
+        target = GetSession()->GetPlayer();
+
+    // check online security
+    else if (target->GetTypeId() == TYPEID_PLAYER && HasLowerSecurity(target->ToPlayer(), ObjectGuid::Empty))
+        return false;
+
+    target->SetPhaseMask(phasemask, true);
+    return true;
+}
+
 //Enable Player mount
 bool ChatHandler::HandleModifyMountCommand(const char* args)
 {

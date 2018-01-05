@@ -64,11 +64,11 @@ void WaypointMgr::Load()
     } while (result->NextRow());
 
     PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_INFO);
-    if(PreparedQueryResult result = WorldDatabase.Query(stmt))
+    if(PreparedQueryResult result_ = WorldDatabase.Query(stmt))
     {
         do
         {
-            Field* fields = result->Fetch();
+            Field* fields = result_->Fetch();
 
             uint32 pathId = fields[0].GetUInt32();
             auto itr = _waypointStore.find(pathId);
@@ -81,7 +81,7 @@ void WaypointMgr::Load()
             path.pathType = fields[1].GetUInt16();
             path.pathDirection = fields[2].GetUInt8();
 
-        } while (result->NextRow());
+        } while (result_->NextRow());
     }
 
     TC_LOG_INFO("server.loading", ">> Loaded %u waypoints in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
@@ -136,9 +136,9 @@ void WaypointMgr::ReloadPath(uint32 id)
     //sunstrider: additional path info
     PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_INFO_BY_ID);
     stmt->setUInt32(0, id);
-    if(PreparedQueryResult result = WorldDatabase.Query(stmt))
+    if(PreparedQueryResult result_ = WorldDatabase.Query(stmt))
     {
-        Field* fields = result->Fetch();
+        Field* fields = result_->Fetch();
 
         path.pathType = fields[0].GetUInt16();
         path.pathDirection = fields[1].GetUInt8();

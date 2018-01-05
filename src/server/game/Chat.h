@@ -196,6 +196,7 @@ class TC_GAME_API ChatHandler
         bool HandleModifySwimCommand(const char* args);
         bool HandleModifyScaleCommand(const char* args);
         bool HandleModifyMountCommand(const char* args);
+        bool HandleModifyPhaseCommand(const char* args);
         bool HandleModifyBitCommand(const char* args);
         bool HandleModifyFactionCommand(const char* args);
         bool HandleModifySpellCommand(const char* args);
