@@ -302,7 +302,7 @@ class TC_GAME_API Battleground
         //Decrease timer before gates opening
         void ModifyStartDelayTime(int diff) { m_StartDelayTime -= diff; }
         //Set timer before gates opening
-        void SetStartDelayTime(int Time)    { m_StartDelayTime = Time; }
+        void SetStartDelayTime(int Time);
 
         void SetMaxPlayersPerTeam(uint32 MaxPlayers) { m_MaxPlayersPerTeam = MaxPlayers; }
         void SetMinPlayersPerTeam(uint32 MinPlayers) { m_MinPlayersPerTeam = MinPlayers; }
