@@ -2712,7 +2712,7 @@ void Creature::CallForHelp(float radius)
 bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction /* = true */) const
 {
     // is it true?
-    if(!HasReactState(REACT_AGGRESSIVE) || (HasJustAppeared() && !m_summoner)) //ignore justrespawned if summoned
+    if(!HasReactState(REACT_AGGRESSIVE) || (HasJustAppeared() && !IsControlledByPlayer())) //ignore justrespawned if summoned
         return false;
 
     // we don't need help from zombies :)

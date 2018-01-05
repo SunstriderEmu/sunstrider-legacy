@@ -193,24 +193,20 @@ void Spell::EffectSummonType(uint32 effIndex)
                 //lolhack section
                 switch (m_spellInfo->Id)
                 {
-                    case 45392:
-                        summon->SetSummoner(m_originalCaster);
+                    case 45392: //Summon Demonic Vapor
                         if (summon->AI())
                             summon->AI()->AttackStart(m_caster);
                         break;
-                    case 45891:
+                    case 45891: //Sinister Reflection Summon
                         if (summon->AI())
                             summon->AI()->AttackStart(m_caster);
                         break;
-                    case 45410:
-                        summon->SetSummoner(m_originalCaster);
-                        break;
-                    case 45836:
-                        summon->SetSummoner(m_caster);
+                    case 45836: //Summon Blue Drake
+                        //summon->SetSummoner(m_caster);
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            m_caster->CastSpell((Unit*)nullptr, 45839, TRIGGERED_FULL_MASK);
-                        m_caster->CastSpell((Unit*)nullptr, 45838, TRIGGERED_FULL_MASK);
-                        summon->CastSpell((Unit*)nullptr, 45838, TRIGGERED_FULL_MASK);
+                            m_caster->CastSpell((Unit*)nullptr, 45839, true);
+                        m_caster->CastSpell((Unit*)nullptr, 45838, true);
+                        summon->CastSpell((Unit*)nullptr, 45838, true);
                         break;
                 }
                 //TC ExecuteLogEffectSummonObject(effIndex, summon);

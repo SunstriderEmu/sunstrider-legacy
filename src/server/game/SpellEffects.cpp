@@ -423,14 +423,15 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
 
                 break;
             }
-            case 45779:
+            case 45779: //Felfire Fission
             {
                 if (!unitTarget)
                     return;
-
-                if (Unit* summoner = m_caster->GetSummoner())
-                    if (unitTarget == summoner)
-                        return;
+                
+                if(TempSummon* u = m_caster->ToTempSummon())
+                    if (Unit* summoner = u->GetSummoner())
+                        if (unitTarget == summoner)
+                            return;
 
                 break;
             }

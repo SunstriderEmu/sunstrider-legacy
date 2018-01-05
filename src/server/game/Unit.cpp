@@ -14989,11 +14989,6 @@ Aura* Unit::AddAura(uint32 spellId, Unit* target)
     return firstAura;
 }
 
-Unit* Unit::GetSummoner() const
-{ 
-    return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : nullptr; 
-}
-
 void Unit::SetFullTauntImmunity(bool apply)
 {
     ApplySpellImmune(0, IMMUNITY_ID, 31789, apply);

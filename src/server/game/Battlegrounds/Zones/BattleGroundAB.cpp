@@ -320,7 +320,7 @@ int32 BattlegroundAB::_GetNodeNameId(uint8 node)
         default:
             ABORT();
     }
-    return 0;
+    //return 0;
 }
 
 void BattlegroundAB::FillInitialWorldStates(WorldPacket& data)

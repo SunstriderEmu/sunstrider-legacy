@@ -2178,10 +2178,6 @@ class TC_GAME_API Unit : public WorldObject
         TempSummon* ToTempSummon() { if (IsSummon()) return reinterpret_cast<TempSummon*>(this); else return nullptr; }
         TempSummon const* ToTempSummon() const { if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return nullptr; }
 
-        void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
-        virtual Unit* GetSummoner() const;
-        ObjectGuid GetSummonerGUID() { return m_summoner; }
-        
         bool IsJustCCed() { return (m_justCCed > 0); }
         
         // Part of Evade mechanics
@@ -2282,8 +2278,6 @@ class TC_GAME_API Unit : public WorldObject
 
         uint32 m_unitTypeMask;
         LiquidTypeEntry const* _lastLiquid;
-        
-        ObjectGuid m_summoner;
         
         uint8 m_justCCed; // Set to 2 when getting CC aura, decremented (if > 0) every update - used to stop pet combat on target
 
