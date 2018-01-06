@@ -658,7 +658,7 @@ class TC_GAME_API Spell
         void AddDestTarget(SpellDestination const& dest, uint32 effIndex);
 
         void DoAllEffectOnTarget(TargetInfo *target);
-        void DoSpellHitOnUnit(Unit *unit, uint32 effectMask);
+        SpellMissInfo DoSpellHitOnUnit(Unit *unit, uint32 effectMask);
         void DoAllEffectOnTarget(GOTargetInfo *target);
         void DoAllEffectOnTarget(ItemTargetInfo *target);
         bool UpdateChanneledTargetList();

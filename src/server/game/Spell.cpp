@@ -2484,9 +2484,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                             // Slice and Dice, relentless strikes, eviscerate
     //bool canEffectTrigger = (m_spellInfo->AttributesEx4 & (SPELL_ATTR4_CANT_PROC_FROM_SELFCAST | SPELL_ATTR4_UNK4) ? m_caster!=unitTarget : true) 
     //    && m_canTrigger;
+    Unit* spellHitTarget = nullptr;
 
     if (missInfo==SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
-        DoSpellHitOnUnit(unit, mask);
+        spellHitTarget = unit;
     else if (missInfo == SPELL_MISS_REFLECT)                // In case spell reflect from target, do all effect on caster (if hit)
     {  
         if (m_removeReflect) {
@@ -2495,18 +2496,25 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         }
 
         if (target->reflectResult == SPELL_MISS_NONE)       // If reflected spell hit caster -> do all effect on him
-            DoSpellHitOnUnit(m_caster, mask);
+            spellHitTarget = m_caster;
     }
-    /*else //TODO: This is a hack. need fix
-    {
-        uint32 tempMask = 0;
-        for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if(m_spellInfo->Effects[i].Effect == SPELL_EFFECT_DUMMY
-                || m_spellInfo->Effects[i].Effect == SPELL_EFFECT_TRIGGER_SPELL)
-                tempMask |= 1<<i;
-        if(tempMask &= mask)
-            DoSpellHitOnUnit(unit, tempMask);
-    }*/
+
+    bool enablePvP = false; // need to check PvP state before spell effects, but act on it afterwards
+
+    if(spellHitTarget)
+    {   // if target is flagged for pvp also flag caster if a player
+        if (!IsTriggered() && unit->IsPvP() && m_caster->GetTypeId() == TYPEID_PLAYER)
+            enablePvP = true; // Decide on PvP flagging now, but act on it later.
+
+        SpellMissInfo missInfo2 = DoSpellHitOnUnit(spellHitTarget, mask);
+        if (missInfo2 != SPELL_MISS_NONE)
+        {
+            if (missInfo2 != SPELL_MISS_MISS)
+                m_caster->SendSpellMiss(unit, m_spellInfo->Id, missInfo2);
+            m_damage = 0;
+            spellHitTarget = nullptr;
+        }
+    }
 
     // Do not take combo points on dodge and miss
     if (missInfo != SPELL_MISS_NONE && m_needComboPoints && m_targets.GetUnitTargetGUID() == target->targetGUID)
@@ -2661,6 +2669,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     {
         if(!IsTriggered()) //sun: prevent triggered spells to trigger pvp... a frost armor proc is not an offensive action
             m_caster->AttackedTarget(unit, m_spellInfo->HasInitialAggro());
+
         if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_AURA_CC))
         {
             if(!unit->IsStandState())
@@ -2668,14 +2677,21 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         }
     }
     
-    // if target is flagged for pvp also flag caster
-    if(unit->IsPvP() && !IsTriggered())
+    if (spellHitTarget)
     {
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            (m_caster->ToPlayer())->UpdatePvP(true);
-    }
+        //AI functions
+        if (spellHitTarget->GetTypeId() == TYPEID_UNIT && (spellHitTarget->ToCreature())->IsAIEnabled)
+            (spellHitTarget->ToCreature())->AI()->SpellHit(caster, m_spellInfo);
 
-    CallScriptAfterHitHandlers();
+        if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
+            (m_caster->ToCreature())->AI()->SpellHitTarget(spellHitTarget, m_spellInfo);
+
+        // if target is flagged for pvp also flag caster
+        if (enablePvP)
+            (m_caster->ToPlayer())->UpdatePvP(true);
+
+        CallScriptAfterHitHandlers();
+    }
 }
 
 bool Spell::UpdateChanneledTargetList()
@@ -2769,27 +2785,53 @@ bool Spell::UpdateChanneledTargetList()
     return channelTargetEffectMask == 0;
 }
 
-void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
+SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
 {
     if(!unit || !effectMask)
-        return;
+        return SPELL_MISS_EVADE;
+
+    // Target may have begun evading between launch and hit phases - re-check now
+    if (Creature* creatureTarget = unit->ToCreature())
+        if (creatureTarget->IsEvadingAttacks())
+            return SPELL_MISS_EVADE;
 
     Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
 
-    // Recheck immune (only for delayed spells)
-    if(    m_spellInfo->Speed
-        && !(m_spellInfo->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
-        && !(m_spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE))
-        && unit->IsImmunedToSpell(m_spellInfo, caster)
-      )
+    // For delayed spells immunity may be applied between missile launch and hit - check immunity for that case
+    if (m_spellInfo->Speed && unit->IsImmunedToSpell(m_spellInfo, caster))
+        return SPELL_MISS_IMMUNE;
+
+    // disable effects to which unit is immune
+    SpellMissInfo returnVal = SPELL_MISS_IMMUNE;
+    for (uint32 effectNumber = 0; effectNumber < MAX_SPELL_EFFECTS; ++effectNumber)
     {
-        caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
-        m_damage = 0;
-        return;
+        if (effectMask & (1 << effectNumber))
+        {
+            if (unit->IsImmunedToSpellEffect(m_spellInfo, effectNumber, m_caster))
+                effectMask &= ~(1 << effectNumber);
+        }
     }
+
+    if (!effectMask)
+        return returnVal;
 
     PrepareScriptHitHandlers();
     CallScriptBeforeHitHandlers();
+
+#ifdef LICH_KING
+    if (Player* player = unit->ToPlayer())
+    {
+        player->StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, m_spellInfo->Id);
+        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, m_spellInfo->Id, 0, m_caster);
+        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, m_spellInfo->Id);
+    }
+
+    if (Player* player = m_caster->ToPlayer())
+    {
+        player->StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_CASTER, m_spellInfo->Id);
+        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL2, m_spellInfo->Id, 0, unit);
+    }
+#endif
 
     if( caster != unit )
     {
@@ -2798,13 +2840,6 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
             // Recheck UNIT_FLAG_NON_ATTACKABLE and evade for delayed spells
             if (m_spellInfo->Speed > 0.0f)
             {
-                if (unit->GetTypeId() == TYPEID_UNIT && unit->ToCreature()->IsInEvadeMode())
-                {
-                    caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
-                    m_damage = 0;
-                    return;
-                }
-
                 if (unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 {
                     bool nearbyEntrySpell = false;
@@ -2818,28 +2853,26 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
                     }
 
                     if (!nearbyEntrySpell)
-                    {
-                        caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
-                        m_damage = 0;
-                        return;
-                    }
+                        return SPELL_MISS_EVADE;
                 }
             }
         }
-        if( !caster->IsFriendlyTo(unit) )
+        
+        if (m_caster->_IsValidAttackTarget(unit, m_spellInfo))
+            unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
+        else if( !caster->IsFriendlyTo(unit) )
         {
             // reset damage to 0 if target has Invisibility or Vanish aura (_only_ vanish, not stealth) and isn't visible for caster
             bool isVisibleForHit = ( (unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->CanSeeOrDetect(caster, true)) ? false : true;
             
             // for delayed spells ignore not visible explicit target
-            if(m_spellInfo->Speed > 0.0f && unit==m_targets.GetUnitTarget() && !isVisibleForHit)
+            if(m_spellInfo->Speed > 0.0f && unit == m_targets.GetUnitTarget() && !isVisibleForHit)
             {
                 // that was causing CombatLog errors
                 //caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
-                return;
+                return SPELL_MISS_NONE;
             }
-            unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
 
             if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_AURA_CC))
                 unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
@@ -2849,11 +2882,7 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
             // for delayed spells ignore negative spells (after duel end) for friendly targets
             // TODO: this cause soul transfer bugged
             if(m_spellInfo->Speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositive() && m_spellInfo->Id != 45034) // FIXME: Hack for Boundless Agony (Kalecgos)
-            {
-                caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
-                m_damage = 0;
-                return;
-            }
+                return SPELL_MISS_EVADE;
 
             // assisting case, healing and resurrection
             if(unit->HasUnitState(UNIT_STATE_ATTACK_PLAYER))
@@ -2889,10 +2918,7 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
         m_diminishLevel = diminishLevel; //for later use in aura application
         // send immunity message if target is immune
         if(diminishLevel == DIMINISHING_LEVEL_IMMUNE)
-        {
-            caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_IMMUNE);
-            return;
-        }
+            return SPELL_MISS_IMMUNE;
 
         DiminishingReturnsType type = m_spellInfo->GetDiminishingReturnsGroupType(triggered);
         // Increase Diminishing on unit, current informations for actually casts will use values above
@@ -2916,14 +2942,6 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
 
     if (sanct_effect >= 0 && (effectMask & (1 << sanct_effect)))
         HandleEffects(unit, nullptr, nullptr, sanct_effect, SPELL_EFFECT_HANDLE_HIT_TARGET);
-
-    if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) 
-    {
-        (unit->ToCreature())->AI()->SpellHit(caster, m_spellInfo);
-    }
-
-    if(caster->GetTypeId() == TYPEID_UNIT && (caster->ToCreature())->IsAIEnabled)
-        (caster->ToCreature())->AI()->SpellHitTarget(unit, m_spellInfo);
 
     // trigger only for first effect targets
     if (m_ChanceTriggerSpells.size() && (effectMask & 0x1))
@@ -2970,6 +2988,8 @@ void Spell::DoSpellHitOnUnit(Unit* unit, const uint32 effectMask)
             }
         }
     }
+
+    return SPELL_MISS_NONE;
 }
 
 void Spell::DoAllEffectOnTarget(GOTargetInfo* target)
