@@ -28,7 +28,12 @@
 #include "ScriptLoader.h"
 #include "OutdoorPvPMgr.h"
 #include "Realm/Realm.h"
+#include "IoContext.h"
+#include "Resolver.h"
 #include "World.h"
+#include "MapManager.h"
+#include "OutdoorPvPMgr.h"
+#include "InstanceSaveMgr.h"
 #include "Configuration/Config.h"
 #include "ProcessPriority.h"
 #include "Timer.h"
@@ -73,8 +78,8 @@ int m_ServiceStatus = -1;
 class FreezeDetector
 {
 public:
-    FreezeDetector(boost::asio::io_service& ioService, uint32 maxCoreStuckTime)
-        : _timer(ioService), _worldLoopCounter(0), _lastChangeMsTime(0), _maxCoreStuckTimeInMs(maxCoreStuckTime) { }
+    FreezeDetector(Trinity::Asio::IoContext& ioContext, uint32 maxCoreStuckTime)
+        : _timer(ioContext), _worldLoopCounter(0), _lastChangeMsTime(0), _maxCoreStuckTimeInMs(maxCoreStuckTime) { }
 
     static void Start(std::shared_ptr<FreezeDetector> const& freezeDetector)
     {
@@ -95,13 +100,13 @@ uint32 realmID;                                             ///< Id of the realm
 
 void SignalHandler(const boost::system::error_code& error, int signalNumber);
 void FreezeDetectorHandler(const boost::system::error_code& error);
-AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService);
+AsyncAcceptor* StartRaSocketAcceptor(Trinity::Asio::IoContext& ioContext);
 bool StartDB();
 void StopDB();
 void WorldUpdateLoop();
 void ClearOnlineAccounts();
 void ShutdownCLIThread(std::thread* cliThread);
-bool LoadRealmInfo(boost::asio::io_service& ioService);
+bool LoadRealmInfo(Trinity::Asio::IoContext& ioContext);
 variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, std::string& cfg_service);
 
 //segv handler, print stack to dump file
@@ -173,11 +178,11 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
-    std::shared_ptr<boost::asio::io_service> ioService = std::make_shared<boost::asio::io_service>();
+    std::shared_ptr<Trinity::Asio::IoContext> ioContext = std::make_shared<Trinity::Asio::IoContext>();
 
     sLog->RegisterAppender<AppenderDB>();
-    // If logs are supposed to be handled async then we need to pass the io_service into the Log singleton
-    sLog->Initialize(sConfigMgr->GetBoolDefault("Log.Async.Enable", false) ? ioService.get() : nullptr);
+    // If logs are supposed to be handled async then we need to pass the ioContext into the Log singleton
+    sLog->Initialize(sConfigMgr->GetBoolDefault("Log.Async.Enable", false) ? ioContext.get() : nullptr);
 
     Trinity::Banner::Show("worldserver-daemon",
         [](char const* text)
@@ -212,8 +217,8 @@ extern int main(int argc, char **argv)
         }
     }
 
-    // Set signal handlers (this must be done before starting io_service threads, because otherwise they would unblock and exit)
-    boost::asio::signal_set signals(*ioService, SIGINT, SIGTERM);
+    // Set signal handlers (this must be done before starting IoContext threads, because otherwise they would unblock and exit)
+    boost::asio::signal_set signals(*ioContext, SIGINT, SIGTERM);
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
     signals.add(SIGBREAK);
 #endif
@@ -221,9 +226,9 @@ extern int main(int argc, char **argv)
 
     // Start the Boost based thread pool
     int numThreads = sConfigMgr->GetIntDefault("ThreadPool", 1);
-    std::shared_ptr<std::vector<std::thread>> threadPool(new std::vector<std::thread>(), [ioService](std::vector<std::thread>* del)
+    std::shared_ptr<std::vector<std::thread>> threadPool(new std::vector<std::thread>(), [ioContext](std::vector<std::thread>* del)
     {
-        ioService->stop();
+        ioContext->stop();
         for (std::thread& thr : *del)
             thr.join();
 
@@ -234,7 +239,7 @@ extern int main(int argc, char **argv)
         numThreads = 1;
 
     for (int i = 0; i < numThreads; ++i)
-        threadPool->push_back(std::thread([ioService]() { ioService->run(); }));
+        threadPool->push_back(std::thread([ioContext]() { ioContext->run(); }));
 
     //Set process priority according to configuration settings
     SetProcessPriority("server.worldserver");
@@ -248,7 +253,7 @@ extern int main(int argc, char **argv)
     // Set server offline (not connectable)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = (flag & ~%u) | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, REALM_FLAG_VERSION_MISMATCH, realmID);
 
-    LoadRealmInfo(*ioService);
+    LoadRealmInfo(*ioContext);
 
     sScriptMgr->SetScriptLoader(AddScripts);
     std::shared_ptr<void> sScriptMgrHandle(nullptr, [](void*)
@@ -272,7 +277,7 @@ extern int main(int argc, char **argv)
     // Start the Remote Access port (acceptor) if enabled
     AsyncAcceptor* raAcceptor = nullptr;
     if (sConfigMgr->GetBoolDefault("Ra.Enable", false))
-        raAcceptor = StartRaSocketAcceptor(*ioService);
+        raAcceptor = StartRaSocketAcceptor(*ioContext);
 
     // Start soap serving thread if enabled
     std::shared_ptr<std::thread> soapThread;
@@ -298,7 +303,7 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
-    if (!sWorldSocketMgr.StartNetwork(*ioService, worldListener, worldPort, networkThreads))
+    if (!sWorldSocketMgr.StartWorldNetwork(*ioContext, worldListener, worldPort, networkThreads))
     {
         TC_LOG_ERROR("server.worldserver", "Failed to initialize network");
         return 1;
@@ -339,7 +344,7 @@ extern int main(int argc, char **argv)
     std::shared_ptr<FreezeDetector> freezeDetector;
     if (int coreStuckTime = sConfigMgr->GetIntDefault("MaxCoreStuckTime", 0))
     {
-        freezeDetector = std::make_shared<FreezeDetector>(*ioService, coreStuckTime * 1000);
+        freezeDetector = std::make_shared<FreezeDetector>(*ioContext, coreStuckTime * 1000);
         FreezeDetector::Start(freezeDetector);
         TC_LOG_INFO("server.worldserver", "Starting up anti-freeze thread (%u seconds max stuck time)...", coreStuckTime);
     }
@@ -595,12 +600,12 @@ void SignalHandler(const boost::system::error_code& error, int /*signalNumber*/)
 }
 
 
-AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService)
+AsyncAcceptor* StartRaSocketAcceptor(Trinity::Asio::IoContext& ioContext)
 {
     uint16 raPort = uint16(sConfigMgr->GetIntDefault("Ra.Port", 3443));
     std::string raListener = sConfigMgr->GetStringDefault("Ra.IP", "0.0.0.0");
 
-    AsyncAcceptor* acceptor = new AsyncAcceptor(ioService, raListener, raPort);
+    AsyncAcceptor* acceptor = new AsyncAcceptor(ioContext, raListener, raPort);
     if (!acceptor->Bind())
     {
         TC_LOG_ERROR("server.worldserver", "Failed to bind RA socket acceptor");
@@ -612,48 +617,41 @@ AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService)
     return acceptor;
 }
 
-bool LoadRealmInfo(boost::asio::io_service& ioService)
+bool LoadRealmInfo(Trinity::Asio::IoContext& ioContext)
 {
-    boost::asio::ip::tcp::resolver resolver(ioService);
-    boost::asio::ip::tcp::resolver::iterator end;
-
     QueryResult result = LoginDatabase.PQuery("SELECT id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild FROM realmlist WHERE id = %u", realm.Id.Realm);
     if (!result)
         return false;
 
+    boost::asio::ip::tcp::resolver resolver(ioContext);
+
     Field* fields = result->Fetch();
     realm.Name = fields[1].GetString();
-    boost::asio::ip::tcp::resolver::query externalAddressQuery(ip::tcp::v4(), fields[2].GetString(), "");
-
-    boost::system::error_code ec;
-    boost::asio::ip::tcp::resolver::iterator endPoint = resolver.resolve(externalAddressQuery, ec);
-    if (endPoint == end || ec)
+    Optional<boost::asio::ip::tcp::endpoint> externalAddress = Trinity::Net::Resolve(resolver, boost::asio::ip::tcp::v4(), fields[2].GetString(), "");
+    if (!externalAddress)
     {
         TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[2].GetString().c_str());
         return false;
     }
 
-    realm.ExternalAddress = (*endPoint).endpoint().address();
+    realm.ExternalAddress = Trinity::make_unique<boost::asio::ip::address>(externalAddress->address());
 
-    boost::asio::ip::tcp::resolver::query localAddressQuery(ip::tcp::v4(), fields[3].GetString(), "");
-    endPoint = resolver.resolve(localAddressQuery, ec);
-    if (endPoint == end || ec)
+    Optional<boost::asio::ip::tcp::endpoint> localAddress = Trinity::Net::Resolve(resolver, boost::asio::ip::tcp::v4(), fields[3].GetString(), "");
+    if (!localAddress)
     {
         TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[3].GetString().c_str());
         return false;
     }
 
-    realm.LocalAddress = (*endPoint).endpoint().address();
-
-    boost::asio::ip::tcp::resolver::query localSubmaskQuery(ip::tcp::v4(), fields[4].GetString(), "");
-    endPoint = resolver.resolve(localSubmaskQuery, ec);
-    if (endPoint == end || ec)
+    realm.LocalAddress = Trinity::make_unique<boost::asio::ip::address>(localAddress->address());
+    Optional<boost::asio::ip::tcp::endpoint> localSubmask = Trinity::Net::Resolve(resolver, boost::asio::ip::tcp::v4(), fields[4].GetString(), "");
+    if (!localSubmask)
     {
         TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[4].GetString().c_str());
         return false;
     }
 
-    realm.LocalSubnetMask = (*endPoint).endpoint().address();
+    realm.LocalSubnetMask = Trinity::make_unique<boost::asio::ip::address>(localSubmask->address());
 
     realm.Port = fields[5].GetUInt16();
     realm.Type = fields[6].GetUInt8();

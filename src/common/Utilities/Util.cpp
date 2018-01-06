@@ -5,6 +5,7 @@
 #include "SFMT.h"
 #include <boost/thread/tss.hpp>
 #include <cstdarg>
+#include "IpAddress.h"
 
 #if COMPILER == TRINITY_COMPILER_GNU
   #include <sys/socket.h>
@@ -216,9 +217,9 @@ bool IsIPAddress(char const* ipaddress)
     if(!ipaddress)
         return false;
 
-    // Let the big boys do it.
-    // Drawback: all valid ip address formats are recognized e.g.: 12.23,121234,0xABCD)
-    return inet_addr(ipaddress) != INADDR_NONE;
+    boost::system::error_code error;
+    Trinity::Net::make_address(ipaddress, error);
+    return !error;
 }
 
 /// create PID file

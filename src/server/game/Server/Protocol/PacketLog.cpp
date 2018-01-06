@@ -17,6 +17,7 @@
 
 #include "PacketLog.h"
 #include "Config.h"
+#include "IpAddress.h"
 #include "WorldPacket.h"
 #include "Timer.h"
 #include "Log.h"

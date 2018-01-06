@@ -124,6 +124,7 @@ message(STATUS "MSVC: Enabled C++14")
 # C4127: "conditional expression is constant" -> incorrect warning in ObjectGuid. Code is correct and will be correctly optimized by compiler. https://stackoverflow.com/questions/25573996/c4127-conditional-expression-is-constant
 # C4100: unreferenced formal parameter
 # C4505: unreferenced local function has been removed
+# C4457: declaration of 'x' hides function parameter
 target_compile_options(trinity-compile-option-interface
   INTERFACE
     /wd4351
@@ -132,7 +133,8 @@ target_compile_options(trinity-compile-option-interface
 	/wd4706
 	/wd4127
 	/wd4100
-	/wd4505)
+	/wd4505
+	/wd4457)
 	
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  ")
 if(DO_WARN)

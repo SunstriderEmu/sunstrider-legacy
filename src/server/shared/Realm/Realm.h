@@ -1,28 +1,26 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef Realm_h__
 #define Realm_h__
 
 #include "Common.h"
-#include <boost/asio/ip/address.hpp>
+#include "AsioHacksFwd.h"
 #include <boost/asio/ip/tcp.hpp>
-
-using namespace boost::asio;
 
 enum RealmFlags
 {
@@ -70,9 +68,9 @@ struct TC_SHARED_API Realm
 {
     RealmHandle Id;
     uint32 Build;
-    ip::address ExternalAddress;
-    ip::address LocalAddress;
-    ip::address LocalSubnetMask;
+    std::unique_ptr<boost::asio::ip::address> ExternalAddress;
+    std::unique_ptr<boost::asio::ip::address> LocalAddress;
+    std::unique_ptr<boost::asio::ip::address> LocalSubnetMask;
     uint16 Port;
     std::string Name;
     uint8 Type; // icon
@@ -81,7 +79,7 @@ struct TC_SHARED_API Realm
     AccountTypes AllowedSecurityLevel;
     float PopulationLevel;
 
-    ip::tcp::endpoint GetAddressForClient(ip::address const& clientAddr) const;
+    boost::asio::ip::tcp_endpoint GetAddressForClient(boost::asio::ip::address const& clientAddr) const;
 };
 
 #endif // Realm_h__
