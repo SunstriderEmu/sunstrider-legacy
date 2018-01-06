@@ -588,8 +588,6 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags,
                 m_spellSchoolMask = SpellSchoolMask(1 << pItem->GetTemplate()->Damage->DamageType);
         }
     }
-    // Set health leech amount to zero
-    m_healthLeech = 0;
 
     if(originalCasterGUID)
         m_originalCasterGUID = originalCasterGUID;
@@ -2536,40 +2534,16 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         else
             procEx |= PROC_EX_NORMAL_HIT;
 
-        caster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, crit);
+        HealInfo healInfo(caster, unitTarget, addhealth, m_spellInfo, m_spellInfo->GetSchoolMask());
+        caster->HealBySpell(healInfo, crit, missInfo);
+
+        float threat = healInfo.GetEffectiveHeal() * 0.5f * sSpellMgr->GetSpellThreatModPercent(m_spellInfo);
+        Unit* threatTarget = (GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER) || !m_originalCaster) ? m_caster : m_originalCaster;
+        unitTarget->GetThreatManager().ForwardThreatForAssistingMe(threatTarget, threat, m_spellInfo);
 
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, addhealth, m_attackType, m_spellInfo, m_canTrigger);
-            
-        if (unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->ToCreature()->IsAIEnabled) {
-            unitTarget->ToCreature()->AI()->HealReceived(caster, addhealth);
-        }
-        if (caster->GetTypeId() == TYPEID_UNIT && caster->ToCreature()->IsAIEnabled)
-            caster->ToCreature()->AI()->HealDone(unitTarget, addhealth);
-
-        int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
-
-        float threat = float(gain) * 0.5f * sSpellMgr->GetSpellThreatModPercent(m_spellInfo);
-
-        Unit* threatTarget = (GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER) || !m_originalCaster) ? m_caster : m_originalCaster;
-        unitTarget->GetThreatManager().ForwardThreatForAssistingMe(threatTarget, threat, m_spellInfo);
-
-        if(caster->GetTypeId()==TYPEID_PLAYER)
-        {
-            if(Battleground *bg = (caster->ToPlayer())->GetBattleground())
-            {
-                bg->UpdatePlayerScore((caster->ToPlayer()), SCORE_HEALING_DONE, gain);
-                if (unitTarget->GetTypeId()==TYPEID_PLAYER)
-                    bg->UpdatePlayerScore(unitTarget->ToPlayer(), SCORE_HEALING_TAKEN, gain);
-            }
-        }
-
-#ifdef TESTS
-        if (Player* p = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself())
-            if (p->GetPlayerbotAI())
-                m_caster->ToPlayer()->GetPlayerbotAI()->CastedHealingSpell(unitTarget, addhealth, gain, m_spellInfo->Id, missInfo, crit);
-#endif
     }
     // Do damage and triggers
     else if (m_damage > 0)
@@ -4123,13 +4097,6 @@ void Spell::finish(bool ok, bool cancelChannel)
     // Okay to remove extra attacks
     if(IsSpellHaveEffect(m_spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
         m_caster->m_extraAttacks = 0;
-
-    // Heal caster for all health leech from all targets
-    if (m_healthLeech)
-    {
-        m_caster->ModifyHealth(m_healthLeech);
-        m_caster->SendHealSpellLog(m_caster, m_spellInfo->Id, uint32(m_healthLeech));
-    }
 
     if (IsAutoActionResetSpell())
     {

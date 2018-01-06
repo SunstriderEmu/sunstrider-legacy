@@ -1362,8 +1362,8 @@ void Aura::TriggerSpell()
                     case 23493:
                     {
                         int32 heal = target->GetMaxHealth() / 10;
-                        target->ModifyHealth( heal );
-                        target->SendHealSpellLog(target, 23493, heal);
+                        HealInfo healInfo(target, target, heal, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
+                        caster->HealBySpell(healInfo);
 
                         int32 mana = target->GetMaxPower(POWER_MANA);
                         if (mana)
@@ -6288,10 +6288,10 @@ void Aura::PeriodicTick()
             uint32 heal = pCaster->SpellHealingBonusDone(pCaster, spellProto, uint32(new_damage * multiplier), DOT);
             heal = pCaster->SpellHealingBonusTaken(pCaster, GetSpellInfo(), heal, DOT);
 
-            int32 gain = pCaster->ModifyHealth(heal);
-            pCaster->GetThreatManager().ForwardThreatForAssistingMe(pCaster, gain * 0.5f, spellProto);
+            HealInfo healInfo(pCaster, pCaster, heal, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
+            pCaster->HealBySpell(healInfo, false);
 
-            pCaster->SendHealSpellLog(pCaster, spellProto->Id, heal);
+            pCaster->GetThreatManager().ForwardThreatForAssistingMe(pCaster, healInfo.GetEffectiveHeal() * 0.5f, spellProto);
             break;
         }
         case SPELL_AURA_OBS_MOD_HEALTH:

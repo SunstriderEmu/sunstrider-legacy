@@ -3289,89 +3289,74 @@ void Spell::EffectHeal( uint32 /*i*/ )
 
 void Spell::EffectHealPct( uint32 /*i*/ )
 {
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if( unitTarget && unitTarget->IsAlive() && damage >= 0)
-    {
-        // Try to get original caster
-        Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
+    if (!unitTarget || !unitTarget->IsAlive() || damage < 0)
+        return;
 
-        // Skip if m_originalCaster not available
-        if (!caster)
-            return;
+    // Try to get original caster
+    Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
+
+    // Skip if m_originalCaster not available
+    if (!caster)
+        return;
             
-        if (m_spellInfo->Id == 39703)
-            unitTarget = caster;
+    if (m_spellInfo->Id == 39703)
+        unitTarget = caster;
 
-        uint32 addhealth = unitTarget->GetMaxHealth() * damage / 100;
-        caster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, false);
+    uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(damage), HEAL);
+    heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL);
 
-        int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
-        unitTarget->GetThreatManager().ForwardThreatForAssistingMe(m_caster, float(gain) * 0.5f, m_spellInfo);
-
-        if(caster->GetTypeId()==TYPEID_PLAYER)
-            if(Battleground *bg = (caster->ToPlayer())->GetBattleground())
-                bg->UpdatePlayerScore((caster->ToPlayer()), SCORE_HEALING_DONE, gain);
-    }
+    m_healing += heal;
 }
 
 void Spell::EffectHealMechanical( uint32 /*i*/ )
 {
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    // Mechanic creature type should be correctly checked by targetCreatureType field
-    if( unitTarget && unitTarget->IsAlive() && damage >= 0)
-    {
-        // Try to get original caster
-        Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
+    if (!unitTarget || !unitTarget->IsAlive() || damage < 0)
+        return;
 
-        // Skip if m_originalCaster not available
-        if (!caster)
-            return;
+    // Try to get original caster
+    Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
 
-        uint32 heal = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, uint32(damage), HEAL);
-        heal = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, heal, HEAL);
+    // Skip if m_originalCaster not available
+    if (!caster)
+        return;
 
-        caster->SendHealSpellLog(unitTarget, m_spellInfo->Id, heal, false);
-        unitTarget->ModifyHealth( int32(damage) );
-    }
+    //"Also, it seems to be affected by +healing as my lvl 48 shaman with +123 healing just used this for 811 heal to my mechanical dragonling."
+    uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, uint32(damage), HEAL);
+
+    m_healing += unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL);
 }
 
-void Spell::EffectHealthLeech(uint32 i)
+void Spell::EffectHealthLeech(uint32 effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if(!unitTarget)
-        return;
-    if(!unitTarget->IsAlive())
+    if (!unitTarget || !unitTarget->IsAlive() || damage < 0)
         return;
 
-    if(damage < 0)
-        return;
+    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE);
+    damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE);
 
-    float multiplier = m_spellInfo->Effects[i].CalcValueMultiplier(m_caster);
+    float healMultiplier = m_spellInfo->Effects[effIndex].CalcValueMultiplier(m_originalCaster, this);
 
-    int32 new_damage = int32(damage*multiplier);
-    uint32 curHealth = unitTarget->GetHealth();
-    new_damage = m_caster->SpellNonMeleeDamageLog(unitTarget, m_spellInfo->Id, new_damage, IsTriggered(), true);
-    if(curHealth < new_damage)
-        new_damage = curHealth;
+    m_damage += damage;
 
+    // get max possible damage, don't count overkill for heal
+    uint32 healthGain = uint32(-unitTarget->GetHealthGain(-damage) * healMultiplier);
     if(m_caster->IsAlive())
     {
-        new_damage = m_caster->SpellHealingBonusDone(unitTarget, m_spellInfo, new_damage, HEAL);
-        new_damage = m_caster->SpellHealingBonusTaken(m_caster, m_spellInfo, new_damage, HEAL);
+        healthGain = m_caster->SpellHealingBonusDone(unitTarget, m_spellInfo, healthGain, HEAL);
+        healthGain = m_caster->SpellHealingBonusTaken(m_caster, m_spellInfo, healthGain, HEAL);
 
-        m_caster->ModifyHealth(new_damage);
-
-        if(m_caster->GetTypeId() == TYPEID_PLAYER)
-            m_caster->SendHealSpellLog(m_caster, m_spellInfo->Id, uint32(new_damage));
+        HealInfo healInfo(m_caster, m_caster, healthGain, m_spellInfo, m_spellSchoolMask);
+        m_caster->HealBySpell(healInfo);
     }
-//    m_healthLeech+=tmpvalue;
-//    m_damage+=new_damage;
 }
 
 void Spell::DoCreateItem(uint32 i, uint32 itemtype)
@@ -5012,17 +4997,7 @@ void Spell::EffectHealMaxHealth(uint32 /*i*/)
         return;
 
     uint32 addhealth = m_originalCaster ? m_originalCaster->GetMaxHealth() : m_caster->GetMaxHealth();
-    bool crit = m_caster->IsSpellCrit(unitTarget, m_spellInfo, m_spellSchoolMask, m_attackType);
-    if(crit)
-        addhealth += addhealth;
-
-    uint32 targetMaxHealth = unitTarget->GetMaxHealth();
-    uint32 targetHealth = unitTarget->GetHealth();
-    uint32 finalTargetHealth = (targetHealth + addhealth > targetMaxHealth) ? targetMaxHealth : targetHealth + addhealth;
-    unitTarget->SetHealth(finalTargetHealth);
-
-    if(m_originalCaster)
-        m_originalCaster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, crit);
+    m_healing += addhealth;
 }
 
 void Spell::EffectInterruptCast(uint32 i)

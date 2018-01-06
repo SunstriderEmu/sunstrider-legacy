@@ -861,6 +861,36 @@ struct CalcDamageInfo
     MeleeHitOutcome hitOutCome;  // TODO: remove this field (need use TargetState)
 };
 
+class TC_GAME_API HealInfo
+{
+private:
+    Unit * const _healer;
+    Unit* const _target;
+    uint32 _heal;
+    uint32 _effectiveHeal;
+    uint32 _absorb; //always 0 on BC
+    SpellInfo const* const _spellInfo;
+    SpellSchoolMask const _schoolMask;
+    uint32 _hitMask;
+
+public:
+    HealInfo(Unit* healer, Unit* target, uint32 heal, SpellInfo const* spellInfo, SpellSchoolMask schoolMask);
+
+    //no effect on BC
+    void AbsorbHeal(uint32 amount);
+    void SetEffectiveHeal(uint32 amount) { _effectiveHeal = amount; }
+
+    Unit* GetHealer() const { return _healer; }
+    Unit* GetTarget() const { return _target; }
+    uint32 GetHeal() const { return _heal; }
+    uint32 GetEffectiveHeal() const { return _effectiveHeal; }
+    uint32 GetAbsorb() const { return _absorb; }
+    SpellInfo const* GetSpellInfo() const { return _spellInfo; };
+    SpellSchoolMask GetSchoolMask() const { return _schoolMask; };
+
+    uint32 GetHitMask() const;
+};
+
 // Spell damage info structure based on structure sending in SMSG_SPELLNONMELEEDAMAGELOG opcode
 struct SpellNonMeleeDamage{
  SpellNonMeleeDamage(Unit *_attacker, Unit *_target, uint32 _SpellID, uint32 _schoolMask) :
@@ -1304,6 +1334,7 @@ class TC_GAME_API Unit : public WorldObject
         void SetMaxHealth(uint32 val);
         inline void SetFullHealth() { SetHealth(GetMaxHealth()); }
         int32 ModifyHealth(int32 val);
+        int32 GetHealthGain(int32 dVal);
 
         // Testing
         void DisableRegeneration(bool set) { m_disabledRegen = set; }
@@ -1387,6 +1418,7 @@ class TC_GAME_API Unit : public WorldObject
         uint32 DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage = nullptr, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *spellProto = nullptr, bool durabilityLoss = true);
         void Kill(Unit *pVictim, bool durabilityLoss = true);
         void KillSelf(bool durabilityLoss = true) { Kill(this, durabilityLoss); }
+        void DealHeal(HealInfo& healInfo);
 
         void ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellInfo const *procSpell = nullptr, bool canTrigger = true);
         void ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellInfo const * procSpell, uint32 damage );
@@ -1551,7 +1583,9 @@ class TC_GAME_API Unit : public WorldObject
         
         void SetFullTauntImmunity(bool apply);
 
-        void SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool critical = false);
+        void SendHealSpellLog(HealInfo& healInfo, bool critical = false);
+        int32 HealBySpell(HealInfo& healInfo, bool critical = false, SpellMissInfo missInfo = SPELL_MISS_NONE);
+        //void SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool critical = false);
         void SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Powers powertype);
         uint32 SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool IsTriggeredSpell = false, bool useSpellDamage = true);
         //returns SpellCastResult

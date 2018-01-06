@@ -8605,16 +8605,88 @@ void Unit::RemoveAllControlled()
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT); // m_controlled is now empty, so we know none of our minions are in combat
 }
 
-void Unit::SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool critical)
+void Unit::DealHeal(HealInfo& healInfo)
+{
+    int32 gain = 0;
+    Unit* victim = healInfo.GetTarget();
+    uint32 addhealth = healInfo.GetHeal();
+
+    if (victim->IsAIEnabled)
+        victim->GetAI()->HealReceived(this, addhealth);
+
+    if (IsAIEnabled)
+        GetAI()->HealDone(victim, addhealth);
+
+    if (addhealth)
+        gain = victim->ModifyHealth(int32(addhealth));
+
+    // Hook for OnHeal Event
+    //sScriptMgr->OnHeal(this, victim, (uint32&)gain);
+
+    Unit* unit = this;
+
+    if (GetTypeId() == TYPEID_UNIT && IsTotem())
+        unit = GetOwner();
+
+    if (Player* player = unit->ToPlayer())
+    {
+        if (Battleground* bg = player->GetBattleground())
+            bg->UpdatePlayerScore(player, SCORE_HEALING_DONE, gain);
+
+#ifdef LICH_KING
+        // use the actual gain, as the overheal shall not be counted, skip gain 0 (it ignored anyway in to criteria)
+        if (gain)
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HEALING_DONE, gain, 0, victim);
+
+        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEAL_CAST, addhealth);
+#endif
+    }
+
+#ifdef LICH_KING
+    if (Player* player = victim->ToPlayer())
+    {
+        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_TOTAL_HEALING_RECEIVED, gain);
+        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEALING_RECEIVED, addhealth);
+    }
+#endif
+
+    if (gain)
+        healInfo.SetEffectiveHeal(gain > 0 ? static_cast<uint32>(gain) : 0UL);
+}
+
+int32 Unit::HealBySpell(HealInfo& healInfo, bool critical /*= false*/, SpellMissInfo missInfo /* = SPELL_MISS_NONE */)
+{
+#ifdef LICH_KING
+    // calculate heal absorb and reduce healing
+    CalcHealAbsorb(healInfo);
+#endif
+
+    DealHeal(healInfo);
+    SendHealSpellLog(healInfo, critical);
+
+#ifdef TESTS
+    if (Player* p = healInfo.GetHealer()->GetCharmerOrOwnerPlayerOrPlayerItself())
+        if (auto AI = p->GetPlayerbotAI())
+            AI->CastedHealingSpell(healInfo.GetTarget(), healInfo.GetHeal(), healInfo.GetEffectiveHeal(), healInfo.GetSpellInfo()->Id, missInfo, critical);
+#endif
+
+    return healInfo.GetEffectiveHeal();
+}
+
+void Unit::SendHealSpellLog(HealInfo& healInfo, bool critical /*= false*/)
 {
     // we guess size
-    WorldPacket data(SMSG_SPELLHEALLOG, (8+8+4+4+1));
-    data << pVictim->GetPackGUID();
-    data << GetPackGUID();
-    data << uint32(SpellID);
-    data << uint32(Damage);
+    WorldPacket data(SMSG_SPELLHEALLOG, 8 + 8 + 4 + 4 + 4 + 4 + 1 + 1);
+    data << healInfo.GetTarget()->GetPackGUID();
+    data << healInfo.GetHealer()->GetPackGUID();
+    data << uint32(healInfo.GetSpellInfo()->Id);
+    data << uint32(healInfo.GetHeal());
+#ifdef LICH_KING
+    data << uint32(healInfo.GetHeal() - healInfo.GetEffectiveHeal());
+    data << uint32(healInfo.GetAbsorb()); // Absorb amount
+#endif
     data << uint8(critical ? 1 : 0);
-    data << uint8(0);                                       // unused in client?
+    data << uint8(0); // unused
     SendMessageToSet(&data, true);
 }
 
@@ -10951,6 +11023,31 @@ int32 Unit::ModifyHealth(int32 dVal)
         SetHealth(maxHealth);
         gain = maxHealth - curHealth;
     }
+
+    return gain;
+}
+
+int32 Unit::GetHealthGain(int32 dVal)
+{
+    int32 gain = 0;
+
+    if (dVal == 0)
+        return 0;
+
+    int32 curHealth = (int32)GetHealth();
+
+    int32 val = dVal + curHealth;
+    if (val <= 0)
+    {
+        return -curHealth;
+    }
+
+    int32 maxHealth = (int32)GetMaxHealth();
+
+    if (val < maxHealth)
+        gain = dVal;
+    else if (curHealth != maxHealth)
+        gain = maxHealth - curHealth;
 
     return gain;
 }
@@ -16530,4 +16627,21 @@ void UnitActionBarEntry::SetType(ActiveStates type)
 void UnitActionBarEntry::SetAction(uint32 action)
 {
     packedData = (packedData & 0xFF000000) | UNIT_ACTION_BUTTON_ACTION(action);
+}
+
+HealInfo::HealInfo(Unit* healer, Unit* target, uint32 heal, SpellInfo const* spellInfo, SpellSchoolMask schoolMask)
+    : _healer(healer), _target(target), _heal(heal), _effectiveHeal(0), _absorb(0), _spellInfo(spellInfo), _schoolMask(schoolMask), _hitMask(0)
+{
+}
+
+void HealInfo::AbsorbHeal(uint32 amount)
+{
+#ifdef LICH_KING
+    amount = std::min(amount, GetHeal());
+    _absorb += amount;
+    _heal -= amount;
+    amount = std::min(amount, GetEffectiveHeal());
+    _effectiveHeal -= amount;
+    _hitMask |= PROC_HIT_ABSORB;
+#endif
 }
