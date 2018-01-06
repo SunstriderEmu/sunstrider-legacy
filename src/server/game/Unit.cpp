@@ -12553,7 +12553,6 @@ void Unit::CleanupsBeforeDelete(bool finalCleanup)
     m_Events.KillAllEvents(false);                      // non-delatable (currently casted spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList
     CombatStop();
     ClearComboPointHolders();
-    GetThreatManager().ClearAllThreat();
     RemoveAllGameObjects();
     RemoveAllDynObjects();
     GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
