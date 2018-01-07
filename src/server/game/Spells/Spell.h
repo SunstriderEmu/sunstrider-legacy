@@ -410,8 +410,14 @@ class TC_GAME_API Spell
         void SearchAreaTargets(std::list<WorldObject*>& targets, float range, Position const* position, Unit* referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionContainer* condList);
         void SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, SpellTargetSelectionCategories selectCategory, ConditionContainer* condList, bool isChainHeal);
 
+        inline uint32 prepare(Unit* const target, Aura const* triggeredByAura = nullptr)
+        {
+            SpellCastTargets targets;
+            targets.SetUnitTarget(target);
+            return prepare(targets, triggeredByAura);
+        }
         //return SpellCastResult
-        uint32 prepare(SpellCastTargets const* targets, Aura* triggeredByAura = nullptr);
+        uint32 prepare(SpellCastTargets const& targets, Aura const* triggeredByAura = nullptr);
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
@@ -483,7 +489,7 @@ class TC_GAME_API Spell
         ObjectGuid m_castItemGUID;
         uint8 m_cast_count;
         SpellCastTargets m_targets;
-        bool m_skipHitCheck;
+        bool m_skipCheck;
 
         int32 GetCastTime() const { return m_casttime; }
         bool IsAutoRepeat() const { return m_autoRepeat; }

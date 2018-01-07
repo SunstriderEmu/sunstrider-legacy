@@ -561,7 +561,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags,
     _scriptsLoaded(false),
     _spellEvent(nullptr)
 {
-    m_skipHitCheck = skipCheck;
+    m_skipCheck = skipCheck;
     m_selfContainer = nullptr;
     m_triggeringContainer = triggeringContainer;
     m_referencedFromCurrentSpell = false;
@@ -2270,7 +2270,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     if (m_originalCaster)
     {
         targetInfo.missCondition = m_originalCaster->SpellHitResult(target, m_spellInfo, m_canReflect);
-        if (m_skipHitCheck && targetInfo.missCondition != SPELL_MISS_IMMUNE)
+        if (m_skipCheck && targetInfo.missCondition != SPELL_MISS_IMMUNE)
             targetInfo.missCondition = SPELL_MISS_NONE;
     }
     else
@@ -2575,7 +2575,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             caster != unitTarget && unitTarget->IsAlive())
         {
             // Redirect damage to caster if victim alive
-            m_caster->CastCustomSpell(m_caster, 32409, nullptr, nullptr, nullptr, TRIGGERED_FULL_MASK);
+            m_caster->CastSpell(m_caster, 32409, TRIGGERED_FULL_MASK);
             if (m_caster->ToPlayer())
                 m_caster->ToPlayer()->m_swdBackfireDmg = m_damage;
             //breakcompile;   // Build damage packet directly here and fake spell damage
@@ -2584,8 +2584,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // Judgement of Blood
         else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000800000000LL && m_spellInfo->SpellIconID==153)
         {
-            int32 damagePoint  = damageInfo.damage * 33 / 100;
-            m_caster->CastCustomSpell(m_caster, 32220, &damagePoint, nullptr, nullptr, TRIGGERED_FULL_MASK);
+            CastSpellExtraArgs args;
+            args.TriggerFlags = TRIGGERED_FULL_MASK;
+            args.AddSpellBP0(damageInfo.damage * 33 / 100);
+            m_caster->CastSpell(m_caster, 32220, args);
         }
         // Bloodthirst
         else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
@@ -2925,7 +2927,10 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
         {
             if(i->second == 100 || roll_chance_i(i->second))
             {
-                caster->CastSpell(unit, i->first, TRIGGERED_FULL_MASK, nullptr, nullptr, ObjectGuid::Empty, TRIGGERED_FULL_MASK);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SkipHit = true;
+                caster->CastSpell(unit, i->first->Id, args);
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
                 if (i->first->GetDuration() == -1)
@@ -2958,7 +2963,12 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
                 if(i < 0)
                     unit->RemoveAurasDueToSpell(-i);
                 else
-                    unit->CastSpell(unit, i, TRIGGERED_FULL_MASK, nullptr, nullptr, caster->GetGUID());
+                {
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetOriginalCaster(caster->GetGUID());
+                    unit->CastSpell(unit, i, args);
+                }
             }
         }
     }
@@ -3098,14 +3108,14 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 }
 
 */
-uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
+uint32 Spell::prepare(SpellCastTargets const& targets, Aura const* triggeredByAura)
 {
     if(m_CastItem)
         m_castItemGUID = m_CastItem->GetGUID();
     else
         m_castItemGUID = ObjectGuid::Empty;
 
-    InitExplicitTargets(*targets);
+    InitExplicitTargets(targets);
 
     // Fill aura scaling information
     if (m_caster->IsControlledByPlayer() && !m_spellInfo->IsPassive() && m_spellInfo->SpellLevel && !m_spellInfo->IsChanneled() && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_SCALING))
@@ -3171,7 +3181,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
     if(result != SPELL_CAST_OK && !IsAutoRepeat()) //always cast autorepeat dummy for triggering
     {
         if(triggeredByAura)
-            triggeredByAura->SetDuration(0);
+            const_cast<Aura*>(triggeredByAura)->SetDuration(0);
 
         SendCastResult(result);
         finish(false,false);
@@ -5153,7 +5163,7 @@ void Spell::TriggerSpell()
     for(auto & m_TriggerSpell : m_TriggerSpells)
     {
         auto  spell = new Spell(m_caster, m_TriggerSpell, TRIGGERED_FULL_MASK, m_originalCasterGUID, m_selfContainer, true);
-        spell->prepare(&m_targets);                         // use original spell original targets
+        spell->prepare(m_targets);                         // use original spell original targets
     }
 }
 
@@ -5959,7 +5969,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (m_caster->GetTypeId()==TYPEID_PLAYER && m_caster->GetClass()==CLASS_WARLOCK)
                     {
                         if (strict)                         //starting cast, trigger pet stun (cast by pet so it doesn't attack player)
-                            pet->CastSpell(pet, 32752, TRIGGERED_FULL_MASK, nullptr, nullptr, pet->GetGUID());
+                        {
+                            CastSpellExtraArgs args;
+                            args.TriggerFlags = TRIGGERED_FULL_MASK;
+                            args.SetOriginalCaster(pet->GetGUID());
+                            pet->CastSpell(pet, 32752, args);
+                        }
                     }
                     else if (!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET))
                         return SPELL_FAILED_ALREADY_HAVE_SUMMON;
@@ -7955,7 +7970,11 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier,
 
             basepoints = (targetInfo.crit ? Unit::SpellCriticalDamageBonus(m_caster, m_spellInfo, m_damage, target) : m_damage);
             m_damage = mdmg;
-            m_caster->CastCustomSpell(target, 26654, &basepoints, NULL, NULL, TRIGGERED_FULL_MASK);
+
+            CastSpellExtraArgs args;
+            args.TriggerFlags = TRIGGERED_FULL_MASK;
+            args.AddSpellBP0(int32(basepoints));
+            m_caster->CastSpell(target, 26654, args);
 
             if (m_spellInfo->Id != 44949)
                 aur->DropCharge();

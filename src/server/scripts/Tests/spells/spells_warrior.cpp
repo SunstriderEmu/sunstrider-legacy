@@ -1861,9 +1861,9 @@ public:
         void TestShieldBlock(TestPlayer* warrior, TestPlayer* rogue, float expectedResult, bool block = false)
         {
             float const allowedError = 0.01f;
-            uint32 sampeSize = _GetPercentApproximationParams(allowedError);
+            uint32 sampleSize = _GetPercentApproximationParams(allowedError);
             //auto AI = rogue->GetTestingPlayerbotAI();
-            for (uint32 i = 0; i < sampeSize; i++)
+            for (uint32 i = 0; i < sampleSize; i++)
             {
                 rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
                 if (block && !warrior->HasAura(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1))

@@ -110,7 +110,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid _guid)
                 if (SkillByLockType(LockType(lockInfo->Index[i])) > 0)
                 {
                     skillId = SkillByLockType(LockType(lockInfo->Index[i]));
-                    //TODO PLAYERBOT reqSkillValue = lockInfo->Skill[i];
+                    reqSkillValue = lockInfo->requiredlockskill; //Skill[i];
                     this->guid = _guid;
                 }
                 break;

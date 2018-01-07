@@ -1341,7 +1341,11 @@ void Aura::TriggerSpell()
                      case 19695: // Baron Geddon Inferno
                      {
                          int32 damageForTick[8] = { 500, 500, 1000, 1000, 2000, 2000, 3000, 5000 };
-                         triggerTarget->CastCustomSpell(triggerTarget, 19698, &damageForTick[GetAuraTicks() - 1], NULL, NULL, TRIGGERED_FULL_MASK, NULL);
+
+                         CastSpellExtraArgs args;
+                         args.TriggerFlags = TRIGGERED_FULL_MASK;
+                         args.AddSpellBP0(int32(damageForTick[GetAuraTicks() - 1]));
+                         triggerTarget->CastSpell(triggerTarget, 19698, args);
                          return;
                      }*/
 //                    // Frostwolf Muzzle DND
@@ -1353,7 +1357,10 @@ void Aura::TriggerSpell()
                     // Brood Affliction: Bronze
                     case 23170:
                     {
-                        m_target->CastSpell(m_target, 23171, TRIGGERED_FULL_MASK, nullptr, this);
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetTriggeringAura(this);
+                        m_target->CastSpell(m_target, 23171, args);
                         return;
                     }
 //                    // Mark of Frost
@@ -1551,8 +1558,11 @@ void Aura::TriggerSpell()
                     // Doomfire dot
                     case 31944:
                     {
-                        int32 BasePoints = int32(GetModifier()->m_amount);
-                        m_target->CastCustomSpell( m_target, 31969, &BasePoints, nullptr, nullptr, TRIGGERED_FULL_MASK, nullptr, this, m_target->GetGUID() );  /* X */
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.AddSpellBP0(int32(GetModifier()->m_amount));
+                        args.SetOriginalCaster(m_target->GetGUID());
+                        m_target->CastSpell(m_target, 31969, args);
         
                         ApplyModifier(false);
                         SetModifierValue(GetModifierValue() - 150);
@@ -1694,8 +1704,12 @@ void Aura::TriggerSpell()
 //                    // Inferno
                       case 39346:
                       {
-                          int32 BasePoints = int32(GetModifier()->m_amount);
-                          m_target->CastCustomSpell(m_target,35283,&BasePoints,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr,this);
+                          CastSpellExtraArgs args;
+                          args.TriggerFlags = TRIGGERED_FULL_MASK;
+                          args.AddSpellBP0(int32(GetModifier()->m_amount));
+                          args.SetTriggeringAura(this);
+                          m_target->CastSpell(m_target, 31969, args);
+
                           return;
                       }
 //                    // Enchanted Weapons
@@ -1707,8 +1721,11 @@ void Aura::TriggerSpell()
                       // Shadow Inferno
                       case 39645:
                       {
-                          int32 BasePoints = int32(GetModifier()->m_amount);
-                          m_target->CastCustomSpell(m_target,39646,&BasePoints,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr,this);
+                          CastSpellExtraArgs args;
+                          args.TriggerFlags = TRIGGERED_FULL_MASK;
+                          args.AddSpellBP0(int32(GetModifier()->m_amount));
+                          args.SetTriggeringAura(this);
+                          m_target->CastSpell(m_target, 39646, args);
                           return;
                       }
                     // Tear of Azzinoth Summon Channel - it's not really supposed to do anything,and this only prevents the console spam
@@ -1791,8 +1808,11 @@ void Aura::TriggerSpell()
 //                    case 51510: break;
                     case 29768:
                     {
-                        int32 dmg = 200 * m_tickNumber;
-                        m_target->CastCustomSpell(m_target, 29766, &dmg, nullptr, nullptr, TRIGGERED_FULL_MASK, nullptr, this);
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.AddSpellBP0(int32(200 * m_tickNumber));
+                        args.SetTriggeringAura(this);
+                        m_target->CastSpell(m_target, 29766, args);
                         
                         return;
                     }            
@@ -1808,8 +1828,13 @@ void Aura::TriggerSpell()
                     // Invisibility
                     case 66:
                     {
-                        if(!m_duration)
-                            m_target->CastSpell(m_target, 32612, TRIGGERED_FULL_MASK, nullptr, this);
+                        if (!m_duration)
+                        {
+                            CastSpellExtraArgs args;
+                            args.TriggerFlags = TRIGGERED_FULL_MASK;
+                            args.SetTriggeringAura(this);
+                            m_target->CastSpell(m_target, 32612, args);
+                        }
                         return;
                     }
                     default:
@@ -1863,8 +1888,13 @@ void Aura::TriggerSpell()
                         if(lRage > 100)                                     // rage stored as rage*10
                             lRage = 100;
                         m_target->ModifyPower(POWER_RAGE, -lRage);
-                        int32 FRTriggerBasePoints = int32(lRage*LifePerRage/10);
-                        m_target->CastCustomSpell(m_target,22845,&FRTriggerBasePoints,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr,this);
+
+                        int32 FRTriggerBasePoints = int32(lRage*LifePerRage / 10);
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.AddSpellBP0(FRTriggerBasePoints);
+                        args.SetTriggeringAura(this);
+                        m_target->CastSpell(m_target, 22845, args);
                         return;
                     }
                     default:
@@ -2013,7 +2043,12 @@ void Aura::TriggerSpell()
             {
                 if(!caster)
                     return;
-                caster->CastCustomSpell(target, trigger_spell_id, &m_modifier.m_amount, nullptr, nullptr, TRIGGERED_FULL_MASK, nullptr, this, originalCasterGUID);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.AddSpellBP0(int32(m_modifier.m_amount));
+                args.SetTriggeringAura(this);
+                args.SetOriginalCaster(originalCasterGUID);
+                caster->CastSpell(target, trigger_spell_id, args);
                 return;
             }
             // Warlord's Rage
@@ -2026,7 +2061,12 @@ void Aura::TriggerSpell()
             {
                 if(!caster)
                     return;
-                caster->CastCustomSpell(trigger_spell_id, SPELLVALUE_MAX_TARGETS, m_tickNumber / 15 + 1, nullptr, TRIGGERED_FULL_MASK, nullptr, this, originalCasterGUID);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SpellValueOverrides.AddMod(SPELLVALUE_MAX_TARGETS, int32(m_tickNumber / 15 + 1));
+                args.SetTriggeringAura(this);
+                args.SetOriginalCaster(originalCasterGUID);
+                caster->CastSpell(nullptr, trigger_spell_id, args);
                 return;
             }
             case 46680:
@@ -2035,7 +2075,13 @@ void Aura::TriggerSpell()
                 if (caster->ToCreature())
                     if (caster->ToCreature()->AI())
                         if (Unit* victim = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0))
-                            m_target->CastSpell(victim, triggeredSpellInfo, TRIGGERED_FULL_MASK, nullptr, this, originalCasterGUID);
+                        {
+                            CastSpellExtraArgs args;
+                            args.TriggerFlags = TRIGGERED_FULL_MASK;
+                            args.SetTriggeringAura(this);
+                            args.SetOriginalCaster(originalCasterGUID);
+                            m_target->CastSpell(victim, triggeredSpellInfo->Id, args);
+                        }
                 return;
             case 45921:
                 if (!caster)
@@ -2044,7 +2090,13 @@ void Aura::TriggerSpell()
                 if (caster->ToCreature())
                     if (caster->ToCreature()->AI())
                         if (Unit* victim = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
-                            caster->CastSpell(victim, triggeredSpellInfo, TRIGGERED_FULL_MASK, nullptr, this, originalCasterGUID);
+                        {
+                            CastSpellExtraArgs args;
+                            args.TriggerFlags = TRIGGERED_FULL_MASK;
+                            args.SetTriggeringAura(this);
+                            args.SetOriginalCaster(originalCasterGUID);
+                            caster->CastSpell(victim, triggeredSpellInfo->Id, args);
+                        }
         }
     }
     
@@ -2059,7 +2111,11 @@ void Aura::TriggerSpell()
         targets.SetObjectTargetChannel(m_channelData->channelGUID);
     }
 
-    m_target->CastSpell(targets, triggeredSpellInfo, nullptr, TRIGGERED_FULL_MASK, nullptr, this, originalCasterGUID);
+    CastSpellExtraArgs args;
+    args.TriggerFlags = TRIGGERED_FULL_MASK;
+    args.SetTriggeringAura(this);
+    args.SetOriginalCaster(originalCasterGUID);
+    m_target->CastSpell(targets, triggeredSpellInfo->Id, args);
 }
 
 uint8 Aura::CalcMaxCharges(Unit* caster) const
@@ -2143,8 +2199,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
             case 13139:                                     // net-o-matic
                 // root to self part of (root_target->charge->root_self sequence
-                if(caster)
-                    caster->CastSpell(caster,13138, TRIGGERED_FULL_MASK,nullptr,this);
+                if (caster)
+                {
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetTriggeringAura(this);
+                    caster->CastSpell(caster, 13138, args);
+                }
                 return;
             case 34520: //Elemental Power Extractor
             {
@@ -2194,23 +2255,31 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             */
             case 37096:                                     // Blood Elf Disguise
                 if(caster)
-                {
+                {   
+                    uint32 castSpellId = 0;
                     switch(caster->GetGender())
                     {
-                        case GENDER_FEMALE:
-                            caster->CastSpell(m_target,37095, TRIGGERED_FULL_MASK,nullptr,this);
-                            break;
-                        case GENDER_MALE:
-                            caster->CastSpell(m_target,37093, TRIGGERED_FULL_MASK,nullptr,this);
-                            break;
-                        default:
-                            break;
+                        case GENDER_FEMALE: castSpellId = 37095; break;
+                        case GENDER_MALE: castSpellId = 37093; break;
+                        default: break;
+                    }
+                    if (castSpellId)
+                    {
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetTriggeringAura(this);
+                        caster->CastSpell(m_target, castSpellId, args);
                     }
                 }
                 return;
             case 39850:                                     // Rocket Blast
-                if(roll_chance_i(20))                       // backfire stun
-                    m_target->CastSpell(m_target, 51581, TRIGGERED_FULL_MASK, nullptr, this);
+                if (roll_chance_i(20))                       // backfire stun
+                {
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetTriggeringAura(this);
+                    m_target->CastSpell(m_target, 51581, args);
+                }
                 return;
             case 43873:                                     // Headless Horseman Laugh
                 if(caster->GetTypeId() == TYPEID_PLAYER)
@@ -2219,16 +2288,20 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 46354:                                     // Blood Elf Illusion
                 if(caster)
                 {
+                    uint32 castSpellId = 0;
                     switch(caster->GetGender())
                     {
-                        case GENDER_FEMALE:
-                            caster->CastSpell(m_target,46356, TRIGGERED_FULL_MASK,nullptr,this);
-                            break;
-                        case GENDER_MALE:
-                            caster->CastSpell(m_target,46355, TRIGGERED_FULL_MASK,nullptr,this);
-                            break;
+                        case GENDER_FEMALE: castSpellId = 46356; break;
+                        case GENDER_MALE:   castSpellId = 46355; break;
                         default:
                             break;
+                    }
+                    if (castSpellId)
+                    {
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetTriggeringAura(this);
+                        caster->CastSpell(m_target, castSpellId, args);
                     }
                 }
                 return;
@@ -2274,8 +2347,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 case 30105: finalSpelId = 30104; break;
             }
 
-            if(finalSpelId)
-                caster->CastSpell(m_target,finalSpelId, TRIGGERED_FULL_MASK,nullptr,this);
+            if (finalSpelId)
+            {
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(this);
+                caster->CastSpell(m_target, finalSpelId, args);
+            }
             return;
         }
 
@@ -2300,14 +2378,20 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 28169:                                     // Mutating Injection
             {
                 // Mutagen Explosion
-                m_target->CastSpell(m_target, 28206, TRIGGERED_FULL_MASK, nullptr, this);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(this);
+                m_target->CastSpell(m_target, 28206, args);
                 // Poison Cloud
-                m_target->CastSpell(m_target, 28240, TRIGGERED_FULL_MASK, nullptr, this);
+                m_target->CastSpell(m_target, 28240, args);
                 return;
             }
             case 36730:                                     // Flame Strike
             {
-                m_target->CastSpell(m_target, 36731, TRIGGERED_FULL_MASK, nullptr, this);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(this);
+                m_target->CastSpell(m_target, 36731, args);
                 return;
             }
             case 44191:                                     // Flame Strike
@@ -2316,7 +2400,10 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 {
                     uint32 spellId = m_target->GetMap()->IsHeroic() ? 46163 : 44190;
 
-                    m_target->CastSpell(m_target, spellId, TRIGGERED_FULL_MASK, nullptr, this);
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetTriggeringAura(this);
+                    m_target->CastSpell(m_target, spellId, args);
                 }
                 return;
             }
@@ -2329,7 +2416,10 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }        
             case 46308:                                     // Burning Winds - casted only at creatures at spawn
             {
-                m_target->CastSpell(m_target,47287, TRIGGERED_FULL_MASK,nullptr,this);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(this);
+                m_target->CastSpell(m_target, 47287, args);
                 return;
             }        
             case 34477:                                     // Misdirection
@@ -2474,8 +2564,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     const SpellInfo *spell = sSpellMgr->GetSpellInfo(spellId);
                     if (!spell)
                         return;
-                    for (int i=0; i < spell->StackAmount; ++i)
-                        caster->CastSpell(m_target, spell->Id, TRIGGERED_FULL_MASK, nullptr, nullptr, GetCasterGUID());
+                    for (int i = 0; i < spell->StackAmount; ++i)
+                    {
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetOriginalCaster(GetCasterGUID());
+                        caster->CastSpell(m_target, spell->Id, args);
+                    }
                     return;
                 }
                 m_target->RemoveAurasDueToSpell(spellId);
@@ -2489,8 +2584,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     const SpellInfo *spell = sSpellMgr->GetSpellInfo(spellId);
                     if (!spell)
                         return;
-                    for (int i=0; i < spell->StackAmount; ++i)
-                        caster->CastSpell(m_target, spell->Id, TRIGGERED_FULL_MASK, nullptr, nullptr, GetCasterGUID());
+                    for (int i = 0; i < spell->StackAmount; ++i)
+                    {
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetOriginalCaster(GetCasterGUID());
+                        caster->CastSpell(m_target, spell->Id, args);
+                    }
                     return;
                 }
                 m_target->RemoveAurasDueToSpell(spellId);
@@ -2546,7 +2646,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                             {
                                 m_modifier.m_amount = caster->SpellHealingBonusDone(m_target, GetSpellInfo(), m_modifier.m_amount, HEAL);
                             }
-                            m_target->CastCustomSpell(m_target,33778,&m_modifier.m_amount,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr,this,GetCasterGUID());
+
+                            CastSpellExtraArgs args;
+                            args.TriggerFlags = TRIGGERED_FULL_MASK;
+                            args.AddSpellBP0(int32(GetModifier()->m_amount));
+                            args.SetTriggeringAura(this);
+                            args.SetOriginalCaster(GetCasterGUID());
+                            m_target->CastSpell(m_target, 33778, args);
                         }
                     }
                 }
@@ -2920,17 +3026,28 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                         }
                     }
 
-                    if (m_modifier.m_miscvalue == FORM_CAT)
+                    if (FurorChance)
                     {
-                        m_target->SetPower(POWER_ENERGY,0);
-                        if(urand(1,100) <= FurorChance)
-                            m_target->CastSpell(m_target,17099, TRIGGERED_FULL_MASK,nullptr,this);
-                    }
-                    else
-                    {
-                        m_target->SetPower(POWER_RAGE,0);
-                        if(urand(1,100) <= FurorChance)
-                            m_target->CastSpell(m_target,17057, TRIGGERED_FULL_MASK,nullptr,this);
+                        uint32 castSpellId = 0;
+                        if (m_modifier.m_miscvalue == FORM_CAT)
+                        {
+                            m_target->SetPower(POWER_ENERGY, 0);
+                            if (urand(1, 100) <= FurorChance)
+                                castSpellId = 17099;
+                        }
+                        else
+                        {
+                            m_target->SetPower(POWER_RAGE, 0);
+                            if (urand(1, 100) <= FurorChance)
+                                castSpellId = 17057;
+                        }
+                        if (castSpellId)
+                        {
+                            CastSpellExtraArgs args;
+                            args.TriggerFlags = TRIGGERED_FULL_MASK;
+                            args.SetTriggeringAura(this);
+                            m_target->CastSpell(m_target, castSpellId, args);
+                        }
                     }
                     break;
                 }
@@ -2985,15 +3102,25 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
             case FORM_DIREBEAR:
             case FORM_CAT:
             {
-                if(Aura* dummy = m_target->GetDummyAura(37315) )
-                    m_target->CastSpell(m_target,37316, TRIGGERED_FULL_MASK,nullptr,dummy);
+                if (Aura* dummy = m_target->GetDummyAura(37315))
+                {
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetTriggeringAura(dummy);
+                    m_target->CastSpell(m_target, 37316, args);
+                }
                 break;
             }
             // Nordrassil Regalia - bonus
             case FORM_MOONKIN:
             {
-                if(Aura* dummy = m_target->GetDummyAura(37324) )
-                    m_target->CastSpell(m_target,37325, TRIGGERED_FULL_MASK,nullptr,dummy);
+                if (Aura* dummy = m_target->GetDummyAura(37324))
+                {
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetTriggeringAura(dummy);
+                    m_target->CastSpell(m_target, 37325, args);
+                }
                 break;
             }
             default:
@@ -3727,7 +3854,10 @@ void Aura::HandleModStealth(bool apply, bool Real)
             if (apply)
             {
                 int32 bp = mDummyAura->GetModifier()->m_amount;
-                m_target->CastCustomSpell(m_target,31665,&bp,nullptr,nullptr, TRIGGERED_FULL_MASK);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.AddSpellBP0(int32(bp));
+                m_target->CastSpell(m_target, 31665, args);
             }
             else
                 m_target->CastSpell(m_target,31666, TRIGGERED_FULL_MASK);
@@ -3871,7 +4001,10 @@ void Aura::HandleAuraModSilence(bool apply, bool Real)
                 if (dummy)
                 {
                     int32 bp = dummy->GetStackAmount() * 10;
-                    caster->CastCustomSpell(caster, 25048, &bp, nullptr, nullptr, TRIGGERED_FULL_MASK);
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.AddSpellBP0(int32(bp));
+                    m_target->CastSpell(m_target, 25048, args);
                     caster->RemoveAurasDueToSpell(28734);
                 }
             }
@@ -4051,7 +4184,12 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
                 if ( m_dummyAura->GetSpellInfo()->SpellIconID == 2229 )
                 {
                     if (apply)
-                        owner->CastSpell(owner, 34471, TRIGGERED_FULL_MASK, nullptr, this);
+                    {
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetTriggeringAura(this);
+                        owner->CastSpell(owner, 34471, args);
+                    }
                     else
                         owner->RemoveAurasDueToSpell(34471);
                     break;
@@ -4270,19 +4408,34 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
     m_isPeriodic = apply;
     m_IsTrigger = apply;
 
+
     // Curse of the Plaguebringer
     if (!apply && m_spellProto->Id == 29213 && m_removeMode!=AURA_REMOVE_BY_DISPEL)
     {
         // Cast Wrath of the Plaguebringer if not dispelled
-        m_target->CastSpell(m_target, 29214, TRIGGERED_FULL_MASK, nullptr, this);
+        CastSpellExtraArgs args;
+        args.TriggerFlags = TRIGGERED_FULL_MASK;
+        args.SetTriggeringAura(this);
+        m_target->CastSpell(m_target, 29214, args);
     }
 
     // Wrath of the Astromancer
-    else if(!apply && m_spellProto->Id == 42783)
-        m_target->CastSpell(m_target, 42787, TRIGGERED_FULL_MASK, nullptr, this);
+    else if (!apply && m_spellProto->Id == 42783)
+    {
+        CastSpellExtraArgs args;
+        args.TriggerFlags = TRIGGERED_FULL_MASK;
+        args.SetTriggeringAura(this);
+        m_target->CastSpell(m_target, 42787, args);
+        
+    }
     // Murmur's Touch (Shockwave)
     else if (!apply && m_spellProto->Id == 38794)
-        m_target->CastSpell(m_target, 33686, TRIGGERED_FULL_MASK, nullptr, this);
+    {
+        CastSpellExtraArgs args;
+        args.TriggerFlags = TRIGGERED_FULL_MASK;
+        args.SetTriggeringAura(this);
+        m_target->CastSpell(m_target, 33686, args);
+    }
     // Start periodic on next tick or at aura apply. Example: Windfury && Tremor && Earthbind totems
     else if (GetSpellInfo()->HasAttribute(SPELL_ATTR5_START_PERIODIC_AT_APPLY) && apply && Real) 
         m_periodicTimer = 0;
@@ -4312,7 +4465,11 @@ void Aura::HandlePeriodicHeal(bool apply, bool Real)
     if (Real && apply && GetSpellInfo()->Mechanic == MECHANIC_BANDAGE)
     {
         // provided m_target as original caster to prevent apply aura caster selection for this negative buff
-        m_target->CastSpell(m_target,11196, TRIGGERED_FULL_MASK,nullptr,this,m_target->GetGUID());
+        CastSpellExtraArgs args;
+        args.TriggerFlags = TRIGGERED_FULL_MASK;
+        args.SetTriggeringAura(this);
+        args.SetOriginalCaster(m_target->GetGUID());
+        m_target->CastSpell(m_target, 11196, args);
     }
 
     // For prevent double apply bonuses
@@ -5449,8 +5606,20 @@ void Aura::HandleShapeshiftBoosts(bool apply)
 
     if(apply)
     {
-        if (spellId) m_target->CastSpell(m_target, spellId, TRIGGERED_FULL_MASK, nullptr, this );
-        if (spellId2) m_target->CastSpell(m_target, spellId2, TRIGGERED_FULL_MASK, nullptr, this);
+        if (spellId)
+        {
+            CastSpellExtraArgs args;
+            args.TriggerFlags = TRIGGERED_FULL_MASK;
+            args.SetTriggeringAura(this);
+            m_target->CastSpell(m_target, spellId, args);
+        }
+        if (spellId2)
+        {
+            CastSpellExtraArgs args;
+            args.TriggerFlags = TRIGGERED_FULL_MASK;
+            args.SetTriggeringAura(this);
+            m_target->CastSpell(m_target, spellId2, args);
+        }
 
         if(m_target->GetTypeId() == TYPEID_PLAYER)
         {
@@ -5461,15 +5630,25 @@ void Aura::HandleShapeshiftBoosts(bool apply)
                 if(itr.first==spellId || itr.first==spellId2) continue;
                 SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr.first);
                 if (!spellInfo || !(spellInfo->Attributes & ((1<<6) | (1<<7)))) continue;
-                if (spellInfo->Stances & (1<<form))
-                    m_target->CastSpell(m_target, itr.first, TRIGGERED_FULL_MASK, nullptr, this);
+                if (spellInfo->Stances & (1 << form))
+                {
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetTriggeringAura(this);
+                    m_target->CastSpell(m_target, itr.first, args);
+                }
             }
             //LotP
             if ((m_target->ToPlayer())->HasSpell(17007))
             {
                 SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(24932);
-                if (spellInfo && spellInfo->Stances & (1<<form))
-                    m_target->CastSpell(m_target, 24932, TRIGGERED_FULL_MASK, nullptr, this);
+                if (spellInfo && spellInfo->Stances & (1 << form))
+                {
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetTriggeringAura(this);
+                    m_target->CastSpell(m_target, 24932, args);
+                }
             }
             // HotW
             if (HotWSpellId)
@@ -5483,7 +5662,11 @@ void Aura::HandleShapeshiftBoosts(bool apply)
                         if(GetModifier()->m_miscvalue == FORM_CAT)
                             HotWMod /= 2;
 
-                        m_target->CastCustomSpell(m_target, HotWSpellId, &HotWMod, nullptr, nullptr, TRIGGERED_FULL_MASK, nullptr, this);
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.AddSpellBP0(int32(HotWMod));
+                        args.SetTriggeringAura(this);
+                        m_target->CastSpell(m_target, HotWSpellId, args);
                         break;
                     }
                 }
@@ -6317,7 +6500,12 @@ void Aura::PeriodicTick()
                         if (i->GetModifier()->m_miscvalue == 4086 || i->GetModifier()->m_miscvalue == 4087) {
                             int32 chance = i->GetSpellInfo()->Effects[i->GetEffIndex()].BasePoints;
                             if (roll_chance_i(chance))
-                                owner->CastSpell(m_target, 24406, TRIGGERED_FULL_MASK, nullptr, i);
+                            {
+                                CastSpellExtraArgs args;
+                                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                                args.SetTriggeringAura(i);
+                                owner->CastSpell(m_target, 24406, args);
+                            }
 
                             break;
                         }
@@ -6469,7 +6657,10 @@ void Aura::PeriodicTick()
             // Mark of Kaz'rogal
             if(GetId() == 31447 && m_target->GetPower(power) == 0)
             {
-                m_target->CastSpell(m_target, 31463, TRIGGERED_FULL_MASK, nullptr, this);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(this);
+                m_target->CastSpell(m_target, 31463, args);
                 // Remove aura
                 SetDuration(0);
             }
@@ -6482,7 +6673,10 @@ void Aura::PeriodicTick()
 
                 if(m_target->GetPower(power) == 0)
                 {
-                    m_target->CastSpell(m_target, 32961, TRIGGERED_FULL_MASK, nullptr, this);
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetTriggeringAura(this);
+                    m_target->CastSpell(m_target, 32961, args);
                     // Remove aura
                     SetDuration(0);
                 }
@@ -6622,8 +6816,13 @@ void Aura::PeriodicTick()
             {
                 if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster(GetSpellInfo(), GetEffIndex()) ? GetCaster() : m_target)
                 {
-                    int32 basepoints0 = int32(GetModifier()->m_amount);
-                    triggerCaster->CastCustomSpell(m_target, triggerSpellId, &basepoints0, &basepoints0, &basepoints0, TRIGGERED_FULL_MASK, nullptr, this);
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT0, GetModifier()->m_amount);
+                    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT1, GetModifier()->m_amount);
+                    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT2, GetModifier()->m_amount);
+                    args.SetTriggeringAura(this);
+                    triggerCaster->CastSpell(m_target, triggerSpellId, args);
                 }
             }
             break;
@@ -6777,13 +6976,23 @@ void Aura::PeriodicDummyTick()
         case 7057:                                  // Haunting Spirits
         {
             if (roll_chance_i(33))
-                m_target->CastSpell(m_target,m_modifier.m_amount, TRIGGERED_FULL_MASK,nullptr,this);
+            {
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(this);
+                m_target->CastSpell(m_target, m_modifier.m_amount, args);
+            }
             return;
         }
         case 41170:
         {
             if (roll_chance_i(45))
-                m_target->CastSpell(m_target,6945, TRIGGERED_FULL_MASK,nullptr,this);
+            {
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(this);
+                m_target->CastSpell(m_target, 6945, args);
+            }
             return;
             
         }
@@ -6927,10 +7136,16 @@ void Aura::PeriodicDummyTick()
 //        case 45996: break;
         // Summon Blood Elves Periodic
         case 46041: 
-            m_target->CastSpell(m_target, 46037, TRIGGERED_FULL_MASK, nullptr, this);
-            m_target->CastSpell(m_target, roll_chance_i(50) ? 46038 : 46039, TRIGGERED_FULL_MASK, nullptr, this);
-            m_target->CastSpell(m_target, 46040, TRIGGERED_FULL_MASK, nullptr, this);
+        {
+            CastSpellExtraArgs args;
+            args.TriggerFlags = TRIGGERED_FULL_MASK;
+            args.SetTriggeringAura(this);
+
+            m_target->CastSpell(m_target, 46037, args);
+            m_target->CastSpell(m_target, roll_chance_i(50) ? 46038 : 46039, args);
+            m_target->CastSpell(m_target, 46040, args);
             return;
+        }
         break;
 //        // Transform Visual Missile Periodic
 //        case 46205: break;

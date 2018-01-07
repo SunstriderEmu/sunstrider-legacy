@@ -1027,6 +1027,8 @@ void Unit::CastStop(uint32 except_spellid)
         if (m_currentSpells[i] && m_currentSpells[i]->m_spellInfo->Id!=except_spellid)
             InterruptSpell(i,false, false);
 }
+
+/*
 uint32 Unit::CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem, Aura* triggeredByAura, ObjectGuid originalCaster)
 {
     return CastSpell(victim, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
@@ -1067,8 +1069,8 @@ uint32 Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlag
     auto spell = new Spell(this, spellInfo, triggerFlags, originalCaster, nullptr, false);
 
     spell->m_CastItem = castItem;
-    spell->m_skipHitCheck = skipHit;
-    return spell->prepare(&targets, triggeredByAura);
+    spell->m_skipCheck = skipHit;
+    return spell->prepare(targets, triggeredByAura);
 }
 
 uint32 Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, TriggerCastFlags triggerFlags, Item *castItem, Aura* triggeredByAura, ObjectGuid originalCaster)
@@ -1106,7 +1108,7 @@ uint32 Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellIn
             spell->SetSpellValue(itr.first, itr.second);
 
     spell->m_CastItem = castItem;
-    return spell->prepare(&targets, triggeredByAura);
+    return spell->prepare(targets, triggeredByAura);
 }
 
 uint32 Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim, TriggerCastFlags triggerFlags, Item *castItem, Aura* triggeredByAura, ObjectGuid originalCaster)
@@ -1134,10 +1136,7 @@ uint32 Unit::CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFla
         TC_LOG_ERROR("spell","CastSpell(x,y,z): unknown spell id %i by caster: %s %u)", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUID().GetCounter() : GetEntry()));
         return SPELL_FAILED_UNKNOWN;
     }
-
-/*    if (castItem)
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id); */
-
+    
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
 
@@ -1168,10 +1167,7 @@ uint32 Unit::CastSpell(GameObject *go, uint32 spellId, TriggerCastFlags triggerF
         TC_LOG_ERROR("spell","CastSpell: spell id %i by caster: %s %u) is not gameobject spell", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUID().GetCounter() : GetEntry()));
         return SPELL_FAILED_UNKNOWN;
     }
-
-  /*  if (castItem)
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id); */
-
+    
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
 
@@ -1181,6 +1177,49 @@ uint32 Unit::CastSpell(GameObject *go, uint32 spellId, TriggerCastFlags triggerF
     targets.SetGOTarget(go);
     spell->m_CastItem = castItem;
     return spell->prepare(&targets, triggeredByAura);
+}
+*/
+
+uint32 Unit::CastSpell(SpellCastTargets const& targets, uint32 spellId, CastSpellExtraArgs const& args)
+{
+    SpellInfo const* info = sSpellMgr->GetSpellInfo(spellId);
+    if (!info)
+    {
+        TC_LOG_ERROR("entities.unit", "CastSpell: unknown spell %u by caster %s", spellId, GetGUID().ToString().c_str());
+        return SPELL_FAILED_UNKNOWN;
+    }
+
+    Spell* spell = new Spell(this, info, args.TriggerFlags, args.OriginalCaster, nullptr, args.SkipHit);
+    for (auto const& pair : args.SpellValueOverrides)
+        spell->SetSpellValue(pair.first, pair.second);
+
+    spell->m_CastItem = args.CastItem;
+    return spell->prepare(targets, args.TriggeringAura);
+}
+
+uint32 Unit::CastSpell(WorldObject* target, uint32 spellId, CastSpellExtraArgs const& args)
+{
+    SpellCastTargets targets;
+    if (target)
+    {
+        if (Unit* unitTarget = target->ToUnit())
+            targets.SetUnitTarget(unitTarget);
+        else if (GameObject* goTarget = target->ToGameObject())
+            targets.SetGOTarget(goTarget);
+        else
+        {
+            TC_LOG_ERROR("entities.unit", "CastSpell: Invalid target %s passed to spell cast by %s", target->GetGUID().ToString().c_str(), GetGUID().ToString().c_str());
+            return SPELL_FAILED_BAD_TARGETS;
+        }
+    }
+    return CastSpell(targets, spellId, args);
+}
+
+uint32 Unit::CastSpell(Position const& dest, uint32 spellId, CastSpellExtraArgs const& args)
+{
+    SpellCastTargets targets;
+    targets.SetDst(dest);
+    return CastSpell(targets, spellId, args);
 }
 
 // Obsolete func need remove, here only for compatibility vs another patches
@@ -2016,7 +2055,13 @@ void Unit::CalcAbsorbResist(Unit* pVictim, SpellSchoolMask schoolMask, DamageEff
     }
     // do not cast spells while looping auras; auras can get invalid otherwise
     if (reflectDamage)
-        pVictim->CastCustomSpell(this, 33619, &reflectDamage, nullptr, nullptr, TRIGGERED_FULL_MASK, nullptr, reflectAura);
+    {
+        CastSpellExtraArgs args;
+        args.TriggerFlags = TRIGGERED_FULL_MASK;
+        args.AddSpellBP0(int32(reflectDamage));
+        args.SetTriggeringAura(reflectAura);
+        pVictim->CastSpell(this, 33619, args);
+    }
 
     // Remove all expired absorb auras
     if (expiredExists)
@@ -3514,7 +3559,7 @@ void Unit::_UpdateAutoRepeatSpell()
 
         // we want to shoot
         auto spell = new Spell(this, autoRepeatSpellInfo, TRIGGERED_FULL_MASK);
-        spell->prepare(&(GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_targets));
+        spell->prepare(GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_targets);
 
         // all went good, reset attack
         ResetAttackTimer(RANGED_ATTACK);
@@ -4625,7 +4670,11 @@ void Unit::RemoveAurasDueToSpellByDispel(uint32 spellId, ObjectGuid casterGUID, 
                 RemoveAura(iter, AURA_REMOVE_BY_DISPEL);
 
                 // backfire damage and silence
-                dispeler->CastCustomSpell(dispeler, 31117, &damage, nullptr, nullptr, TRIGGERED_FULL_MASK, nullptr, nullptr,caster_guid);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.AddSpellBP0(int32(damage));
+                args.SetOriginalCaster(caster_guid);
+                dispeler->CastSpell(dispeler, 31117, args);
 
                 iter = m_Auras.begin();                     // iterator can be invalidate at cast if self-dispel
             }
@@ -5003,8 +5052,13 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                 for(int itr : *spell_triggered)
                     if(itr < 0)
                         RemoveAurasDueToSpell(-itr);
-                    else if(Unit* _caster = Aur->GetCaster())
-                        CastSpell(this, itr, TRIGGERED_FULL_MASK, nullptr, nullptr, _caster->GetGUID());
+                    else if (Unit* _caster = Aur->GetCaster())
+                    {
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetOriginalCaster(_caster->GetGUID());
+                        CastSpell(this, itr, args);
+                    }
             }
         }
         if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_LINK_AURA))
@@ -5519,7 +5573,7 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 
     if(!triggerEntry)
     {
-        TC_LOG_ERROR("FIXME","Unit::HandleHasteAuraProc: Spell %u have not existed triggered spell %u",hasteSpell->Id,triggered_spell_id);
+        TC_LOG_ERROR("spells","Unit::HandleHasteAuraProc: Spell %u have not existed triggered spell %u",hasteSpell->Id,triggered_spell_id);
         return false;
     }
 
@@ -5530,10 +5584,13 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     if( cooldown && GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->HasSpellCooldown(triggered_spell_id))
         return false;
 
+    CastSpellExtraArgs args;
+    args.TriggerFlags = TRIGGERED_FULL_MASK;
     if(basepoints0)
-        CastCustomSpell(target,triggered_spell_id,&basepoints0,nullptr,nullptr, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
-    else
-        CastSpell(target,triggered_spell_id, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
+        args.AddSpellBP0(int32(basepoints0));
+    args.SetTriggeringAura(triggeredByAura);
+    args.SetCastItem(castItem);
+    CastSpell(target, triggered_spell_id, args);
 
     if( cooldown && GetTypeId()==TYPEID_PLAYER )
         (this->ToPlayer())->AddSpellCooldown(triggered_spell_id,0,time(nullptr) + cooldown);
@@ -6002,7 +6059,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return true;                        // charge counting (will removed)
                     }
 
-                    CastSpell(this, 28682, TRIGGERED_FULL_MASK, castItem, triggeredByAura);
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetTriggeringAura(triggeredByAura);
+                    args.SetCastItem(castItem);
+                    CastSpell(this, 28682, args);
+
                     return (procEx & PROC_EX_CRITICAL_HIT);// charge update only at crit hits, no hidden cooldowns
                 }
             }
@@ -6066,8 +6128,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     // Remove our seed aura before casting
                     RemoveAurasByCasterSpell(triggeredByAura->GetId(),casterGuid);
                     // Cast finish spell
-                    if(Unit* caster = ObjectAccessor::GetUnit(*this, casterGuid))
-                        caster->CastSpell(this, 27285, TRIGGERED_FULL_MASK, castItem);
+                    if (Unit* caster = ObjectAccessor::GetUnit(*this, casterGuid))
+                    {
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetCastItem(castItem);
+                        caster->CastSpell(this, 27285, args);
+                    }
                     return true;                            // no hidden cooldown
                 }
 
@@ -6093,8 +6160,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     RemoveAurasDueToSpell(triggeredByAura->GetId());
 
                     // Cast finish spell (triggeredByAura already not exist!)
-                    if(Unit* caster = ObjectAccessor::GetUnit(*this, casterGuid))
-                        caster->CastSpell(this, 32865, TRIGGERED_FULL_MASK, castItem);
+                    if (Unit* caster = ObjectAccessor::GetUnit(*this, casterGuid))
+                    {
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetCastItem(castItem);
+                        caster->CastSpell(this, 32865, args);
+                    }
                     return true;                            // no hidden cooldown
                 }
                 // Damage counting
@@ -6163,7 +6235,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 
                 // energize amount
                 basepoints0 = triggeredByAura->GetModifier()->m_amount*damage/100;
-                pVictim->CastCustomSpell(pVictim,34919,&basepoints0,nullptr,nullptr, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.AddSpellBP0(int32(basepoints0));
+                args.SetTriggeringAura(triggeredByAura);
+                args.SetCastItem(castItem);
+                pVictim->CastSpell(pVictim, 34919, args);
                 return true;                                // no hidden cooldown
             }
             switch(dummySpell->Id)
@@ -6180,7 +6257,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 
                     // heal amount
                     basepoints0 = triggeredByAura->GetModifier()->m_amount*damage/100;
-                    pVictim->CastCustomSpell(pVictim,15290,&basepoints0,nullptr,nullptr, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.AddSpellBP0(int32(basepoints0));
+                    args.SetTriggeringAura(triggeredByAura);
+                    args.SetCastItem(castItem);
+                    pVictim->CastSpell(pVictim, 15290, args);
                     return true;                                // no hidden cooldown
                 }
                 // Priest Tier 6 Trinket (Ashtongue Talisman of Acumen)
@@ -6398,7 +6480,11 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     damagePoint = pVictim->SpellDamageBonusTaken(this, dummySpell, damagePoint, SPELL_DIRECT_DAMAGE);
                 }
 
-                CastCustomSpell(pVictim,spellId,&damagePoint,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr, triggeredByAura);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT0, int32(damagePoint));
+                args.SetTriggeringAura(triggeredByAura);
+                CastSpell(pVictim, spellId, args);
                 return true;                                // no hidden cooldown
             }
             // Seal of Blood do damage trigger
@@ -6474,7 +6560,11 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                             {
                                 int32 directDamage = SpellDamageBonusDone(pVictim,aura->GetSpellInfo(),aura->GetModifierValuePerStack(),DOT)/2;
                                 damage = pVictim->SpellDamageBonusTaken(this, aura->GetSpellInfo(), directDamage, DOT)/2;
-                                CastCustomSpell(pVictim, 42463, &directDamage,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr,triggeredByAura);
+                                CastSpellExtraArgs args;
+                                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                                args.AddSpellBP0(int32(directDamage));
+                                args.SetTriggeringAura(triggeredByAura);
+                                CastSpell(pVictim, 42463, args);
                             }
                             break;
                         }
@@ -6631,8 +6721,15 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         (this->ToPlayer())->AddSpellCooldown(dummySpell->Id,0,time(nullptr) + cooldown);
 
                     // Attack Twice
-                    for ( uint32 i = 0; i<2; ++i )
-                        CastCustomSpell(pVictim,triggered_spell_id,&basepoints0,nullptr,nullptr, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
+                    for (uint32 i = 0; i < 2; ++i)
+                    {
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.AddSpellBP0(int32(basepoints0));
+                        args.SetTriggeringAura(triggeredByAura);
+                        args.SetCastItem(castItem);
+                        CastSpell(pVictim, triggered_spell_id, args);
+                    }
 
                     return true;
                 }
@@ -6739,7 +6836,11 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 // As on wiki:
                 // BUG: Rank 2 to 10 (and maybe 11) of Lightning Bolt will proc another Bolt with FULL damage (not halved). This bug is known and will probably be fixed soon.
                 // So - no add changes :)
-                CastSpell(pVictim, spellId, TRIGGERED_FULL_MASK, castItem, triggeredByAura);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(triggeredByAura);
+                args.SetCastItem(castItem);
+                CastSpell(pVictim, spellId, args);
 
                 (this->ToPlayer())->AddSpellMod(mod, false);
 
@@ -6768,7 +6869,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         }
                         else continue;
                         basepoints0 = CalculateSpellDamage(procSpell,i,procSpell->Effects[i].BasePoints,this) * 0.4f;
-                        CastCustomSpell(this,triggered_spell_id,&basepoints0,nullptr,nullptr, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.AddSpellBP0(int32(basepoints0));
+                        args.SetTriggeringAura(triggeredByAura);
+                        args.SetCastItem(castItem);
+                        CastSpell(this, triggered_spell_id, args);
                     }
                     return true;
                 }
@@ -6797,10 +6903,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     if( cooldown && GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->HasSpellCooldown(triggered_spell_id))
         return false;
 
+    CastSpellExtraArgs args;
+    args.TriggerFlags = TRIGGERED_FULL_MASK;
     if(basepoints0)
-        CastCustomSpell(target,triggered_spell_id,&basepoints0,nullptr,nullptr, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
-    else
-        CastSpell(target,triggered_spell_id, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
+        args.AddSpellBP0(int32(basepoints0));
+    args.SetTriggeringAura(triggeredByAura);
+    args.SetCastItem(castItem);
+    CastSpell(target, triggered_spell_id, args);
 
     if( cooldown && GetTypeId()==TYPEID_PLAYER )
         (this->ToPlayer())->AddSpellCooldown(triggered_spell_id,0,time(nullptr) + cooldown);
@@ -6855,11 +6964,23 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      {
          // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
          if (this->IsAlive())
-             CastSpell(this, 29471, TRIGGERED_FULL_MASK, castItem, triggeredByAura);
+         {
+             CastSpellExtraArgs args;
+             args.TriggerFlags = TRIGGERED_FULL_MASK;
+             args.SetTriggeringAura(triggeredByAura);
+             args.SetCastItem(castItem);
+             CastSpell(this, 29471, args);
+         }
          if (pVictim && pVictim->IsAlive()) {
              //CastSpell(pVictim, 27526, TRIGGERED_FULL_MASK, castItem, triggeredByAura);
              if (pVictim->GetPowerType() == POWER_MANA && pVictim->GetPower(POWER_MANA) > 8)
-                CastSpell(this, 27526, TRIGGERED_FULL_MASK, castItem, triggeredByAura);
+             {
+                 CastSpellExtraArgs args;
+                 args.TriggerFlags = TRIGGERED_FULL_MASK;
+                 args.SetTriggeringAura(triggeredByAura);
+                 args.SetCastItem(castItem);
+                 CastSpell(this, 27526, args);
+             }
         }
         //RemoveAurasDueToSpell(46939);
          return true;
@@ -7126,7 +7247,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             if (!pVictim || !pVictim->IsAlive())
                 return false;
             // stacking
-            CastSpell(this, 37658, TRIGGERED_FULL_MASK, nullptr, triggeredByAura);
+            CastSpellExtraArgs args;
+            args.TriggerFlags = TRIGGERED_FULL_MASK;
+            args.SetTriggeringAura(triggeredByAura);
+            CastSpell(this, 37658, args);
             // counting
             Aura * dummy = GetDummyAura(37658);
             if (!dummy)
@@ -7302,7 +7426,11 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             // Judgement of Light and Judgement of Wisdom
             if (auraSpellInfo->SpellFamilyFlags & 0x0000000000080000LL)
             {
-                pVictim->CastSpell(pVictim, trigger_spell_id, TRIGGERED_FULL_MASK, castItem, triggeredByAura);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(triggeredByAura);
+                args.SetCastItem(castItem);
+                pVictim->CastSpell(pVictim, trigger_spell_id, args);
                 return true;                        // no hidden cooldown
             }
             break;
@@ -7330,10 +7458,13 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     if( cooldown && GetTypeId()==TYPEID_PLAYER )
         (this->ToPlayer())->AddSpellCooldown(trigger_spell_id,0,time(nullptr) + cooldown);
 
-    if(basepoints0)
-        CastCustomSpell(target,trigger_spell_id,&basepoints0,nullptr,nullptr, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
-    else
-        CastSpell(target,trigger_spell_id, TRIGGERED_FULL_MASK,castItem,triggeredByAura);
+    CastSpellExtraArgs args;
+    args.TriggerFlags = TRIGGERED_FULL_MASK;
+    if (basepoints0)
+        args.AddSpellBP0(int32(basepoints0));
+    args.SetTriggeringAura(triggeredByAura);
+    args.SetCastItem(castItem);
+    CastSpell(target, trigger_spell_id, args);
 
     return true;
 }
@@ -7426,7 +7557,11 @@ bool Unit::HandleOverrideClassScriptAuraProc(Unit *pVictim, Aura *triggeredByAur
     if( cooldown && GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->HasSpellCooldown(triggered_spell_id))
         return false;
 
-    CastSpell(pVictim, triggered_spell_id, TRIGGERED_FULL_MASK, castItem, triggeredByAura);
+    CastSpellExtraArgs args;
+    args.TriggerFlags = TRIGGERED_FULL_MASK;
+    args.SetTriggeringAura(triggeredByAura);
+    args.SetCastItem(castItem);
+    CastSpell(pVictim, triggered_spell_id, args);
 
     if( cooldown && GetTypeId()==TYPEID_PLAYER )
         (this->ToPlayer())->AddSpellCooldown(triggered_spell_id,0,time(nullptr) + cooldown);
@@ -7969,11 +8104,13 @@ void Unit::ModifyAuraState(AuraStateType flag, bool apply)
                 const PlayerSpellMap& sp_list = (this->ToPlayer())->GetSpellMap();
                 for (const auto & itr : sp_list)
                 {
-                    if(itr.second->state == PLAYERSPELL_REMOVED) continue;
+                    if(itr.second->state == PLAYERSPELL_REMOVED) 
+                        continue;
                     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr.first);
-                    if (!spellInfo || !spellInfo->IsPassive()) continue;
-                    if (spellInfo->CasterAuraState == flag)
-                        CastSpell(this, itr.first, TRIGGERED_FULL_MASK, nullptr);
+                    if (!spellInfo || !spellInfo->IsPassive()) 
+                        continue;
+                    if (spellInfo->CasterAuraState == uint32(flag))
+                        CastSpell(this, itr.first, true);
                 }
             }
         }
@@ -12843,7 +12980,7 @@ void CharmInfo::InitPossessCreateSpells()
             if (spellInfo)
             {
                 if (spellInfo->IsPassive())
-                    _unit->CastSpell(_unit, spellInfo, true);
+                    _unit->CastSpell(_unit, spellInfo->Id, true);
                 else
                     AddSpellToActionBar(spellInfo, ACT_PASSIVE, i % MAX_UNIT_ACTION_BAR_INDEX);
             }
@@ -12876,7 +13013,7 @@ void CharmInfo::InitCharmCreateSpells()
 
         if (spellInfo->IsPassive())
         {
-            _unit->CastSpell(_unit, spellInfo, true);
+            _unit->CastSpell(_unit, spellInfo->Id, true);
             _charmspells[x].SetActionAndType(spellId, ACT_PASSIVE);
         }
         else
@@ -14044,7 +14181,12 @@ bool Unit::HandleMendingAuraProc( Aura* triggeredByAura )
                 mod->charges = 0;
 
                 caster->AddSpellMod(mod, true);
-                CastCustomSpell(target,spellProto->Id,&heal,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr,triggeredByAura,caster->GetGUID());
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.AddSpellBP0(int32(heal));
+                args.SetTriggeringAura(triggeredByAura);
+                args.SetOriginalCaster(caster->GetGUID());
+                CastSpell(target, spellProto->Id, args);
                 caster->AddSpellMod(mod, false);
 
                 heal = SpellHealingBonusDone(target, spellProto, heal, HEAL);
@@ -14055,7 +14197,11 @@ bool Unit::HandleMendingAuraProc( Aura* triggeredByAura )
     // else double heal here?
 
     // heal
-    CastCustomSpell(this,33110,&heal,nullptr,nullptr, TRIGGERED_FULL_MASK,nullptr,nullptr,caster_guid);
+    CastSpellExtraArgs args;
+    args.TriggerFlags = TRIGGERED_FULL_MASK;
+    args.AddSpellBP0(heal);
+    args.SetOriginalCaster(caster_guid);
+    CastSpell(this, 33110, args);
     return true;
 }
 
@@ -14193,7 +14339,10 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 pVictim->SetUInt32Value(PLAYER_SELF_RES_SPELL,ressSpellId);
 
                 // FORM_SPIRITOFREDEMPTION and related auras
-                pVictim->CastSpell(pVictim,27827, TRIGGERED_FULL_MASK,nullptr,vDummyAura);
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetTriggeringAura(vDummyAura);
+                pVictim->CastSpell(pVictim, 27827, args);
                 //pVictim->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); // should not be attackable
                 SpiritOfRedemption = true;
                 (pVictim->ToPlayer())->SetSpiritRedeptionKiller(GetGUID());

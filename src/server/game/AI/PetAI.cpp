@@ -556,7 +556,7 @@ void PetAI::UpdateAI(const uint32 diff)
             if(i_pet.IsPet())
                 ((Pet*)&i_pet)->CheckLearning(spell->m_spellInfo->Id);
 
-            spell->prepare(&targets);
+            spell->prepare(targets);
         }
 
         for (TargetSpellList::const_iterator itr = m_targetSpellStore.begin(); itr != m_targetSpellStore.end(); ++itr)

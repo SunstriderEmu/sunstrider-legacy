@@ -879,6 +879,13 @@ PlayerAI::TargetedSpell PlayerAI::SelectSpellCast(PossibleSpellVector& spells)
     return selected;
 }
 
+void PlayerAI::DoCastAtTarget(TargetedSpell spell)
+{
+    SpellCastTargets targets;
+    targets.SetUnitTarget(spell.second);
+    spell.first->prepare(targets);
+}
+
 void PlayerAI::DoRangedAttackIfReady()
 {
     if (me->HasUnitState(UNIT_STATE_CASTING))

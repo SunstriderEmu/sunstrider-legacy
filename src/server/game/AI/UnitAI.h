@@ -5,6 +5,7 @@
 #include "Unit.h"
 #include "QuestDef.h"
 #include "ThreatManager.h"
+#include "SpellDefines.h"
 class Unit;
 class Quest;
 class Player;
@@ -148,12 +149,18 @@ class TC_GAME_API UnitAI
         virtual void HealDone(Unit* /*done_to*/, uint32& /*addhealth*/) { }
 
         //Cast spell by Id, return SpellCastResult
-        uint32 DoCast(Unit* victim, uint32 spellId, bool triggered = false);
+
+        //TC uint32 DoCast(uint32 spellId);
+        uint32 DoCast(Unit* victim, uint32 spellId, CastSpellExtraArgs const& args = {});
+        uint32 DoCastSelf(uint32 spellId, CastSpellExtraArgs const& args = {}) { return DoCast(me, spellId, args); }
+        uint32 DoCastVictim(uint32 spellId, CastSpellExtraArgs const& args = {});
+        uint32 DoCastAOE(uint32 spellId, CastSpellExtraArgs const& args = {}) { return DoCast(nullptr, spellId, args); }
+       /* uint32 DoCast(Unit* victim, uint32 spellId, bool triggered = false);
         uint32 DoCastSelf(uint32 spellId, bool triggered = false) { return DoCast(me, spellId, triggered); }
         uint32 DoCastAOE(uint32 spellId, bool triggered = false);
         uint32 DoCastVictim(uint32 spellId, bool triggered = false);
         //Cast spell by spell info
-        uint32 DoCastSpell(Unit* who, SpellInfo const *spellInfo, bool triggered = false);
+        uint32 DoCastSpell(Unit* who, SpellInfo const *spellInfo, bool triggered = false);*/
 
         //Do melee swing of current victim if in rnage and ready and not casting
         virtual void DoMeleeAttackIfReady();

@@ -153,12 +153,11 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
             return false;
     }
 
-    bool triggered = (trig_str != nullptr);
+    TriggerCastFlags triggered = (trig_str != nullptr) ? TRIGGERED_FULL_DEBUG_MASK : TRIGGERED_NONE;
 
     float x,y,z;
     m_session->GetPlayer()->GetClosePoint(x,y,z,dist);
-
-    m_session->GetPlayer()->CastSpell(x,y,z,spell, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
+    m_session->GetPlayer()->CastSpell({ x,y,z }, spell, triggered);
     return true;
 }
 

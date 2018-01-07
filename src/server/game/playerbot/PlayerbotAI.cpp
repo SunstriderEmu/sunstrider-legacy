@@ -1002,7 +1002,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target)
         return false;
     }
 
-    spell->prepare(&targets);
+    spell->prepare(targets);
     WaitForSpellCast(spell);
 
     if (oldSel)

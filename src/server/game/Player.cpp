@@ -7650,7 +7650,10 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
 
         TC_LOG_DEBUG("entities.player","WORLD: cast %s Equip spellId - %i", (item ? "item" : "itemset"), spellInfo->Id);
 
-        CastSpell(this,spellInfo, TRIGGERED_FULL_MASK,item);
+        CastSpellExtraArgs args;
+        args.TriggerFlags = TRIGGERED_FULL_MASK;
+        args.SetCastItem(item);
+        CastSpell(this, spellInfo->Id, args);
     }
     else
     {
@@ -7781,7 +7784,12 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             }
 
             if (roll_chance_f(chance))
-                CastSpell(target, spellInfo->Id, TRIGGERED_FULL_MASK, item);
+            {
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetCastItem(item);
+                CastSpell(target, spellInfo->Id, args);
+            }
         }
     }
 
@@ -7808,7 +7816,12 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     case 16313: FTSpellId = 25488; break; // Rank 7
                 }
                 if (FTSpellId)
-                    CastSpell(target, FTSpellId, TRIGGERED_FULL_MASK, item);
+                {
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.SetCastItem(item);
+                    CastSpell(target, FTSpellId, args);
+                }
                 continue;
             }
 
@@ -7859,10 +7872,11 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
 
             if (roll_chance_f(chance))
             {
-                if(spellInfo->IsPositive(!IsFriendlyTo(target)))
-                    CastSpell(this, pEnchant->spellid[s], TRIGGERED_FULL_MASK, item);
-                else
-                    CastSpell(target, pEnchant->spellid[s], TRIGGERED_FULL_MASK, item);
+                Unit* _target = spellInfo->IsPositive(!IsFriendlyTo(target)) ? this : target;
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetCastItem(item);
+                CastSpell(_target, pEnchant->spellid[s], args);
             }
         }
     }
@@ -7892,7 +7906,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
         spell->m_CastItem = item;
         spell->m_cast_count = cast_count;               //set count of casts
         spell->m_currentBasePoints[0] = learning_spell_id;
-        spell->prepare(&targets);
+        spell->prepare(targets);
         return;
     }
 
@@ -7934,7 +7948,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
         }
 
         pushSpells.push_back(spell);
-        //spell->prepare(&targets);
+        //spell->prepare(targets);
 
         ++count;
     }
@@ -7942,7 +7956,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
 
     // send all spells in one go, prevents crash because container is not set
     for (std::list<Spell*>::const_iterator itr = pushSpells.begin(); itr != pushSpells.end(); ++itr)
-        (*itr)->prepare(&targets);
+        (*itr)->prepare(targets);
 }
 
 void Player::_RemoveAllItemMods()
@@ -12920,11 +12934,16 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                                 }
                             }
                         }
-                        // Cast custom spell vs all equal basepoints getted from enchant_amount
-                        if (basepoints)
-                            CastCustomSpell(this,enchant_spell_id,&basepoints,&basepoints,&basepoints, TRIGGERED_FULL_MASK,item);
-                        else
-                            CastSpell(this,enchant_spell_id, TRIGGERED_FULL_MASK,item);
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        if (basepoints) // Cast custom spell vs all equal basepoints getted from enchant_amount
+                        {
+                            args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT0, int32(basepoints));
+                            args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT1, int32(basepoints));
+                            args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT2, int32(basepoints));
+                        }
+                        args.SetCastItem(item);
+                        CastSpell(this, enchant_spell_id, args);
                     }
                     else
                         RemoveAurasDueToItemSpell(item,enchant_spell_id);
@@ -23755,7 +23774,12 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             break;
         case GOSSIP_OPTION_SPIRITHEALER:
             if (IsDead())
-                source->ToCreature()->CastSpell(source->ToCreature(), 17251, TRIGGERED_FULL_MASK, nullptr, nullptr, GetGUID());
+            {
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.SetOriginalCaster(GetGUID());
+                source->ToCreature()->CastSpell(source, 17251, args);
+            }
             break;
         case GOSSIP_OPTION_QUESTGIVER:
             PrepareQuestMenu(guid);

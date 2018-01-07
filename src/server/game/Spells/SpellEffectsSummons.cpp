@@ -265,7 +265,7 @@ void Spell::EffectSummonType(uint32 effIndex)
                 {
                     // Enslave demon effect, without mana cost and cooldown
                     m_caster->CastSpell(summon, 20882, TRIGGERED_FULL_MASK);          // FIXME: enslave does not scale with level, level 62+ minions cannot be enslaved
-                    summon->CastSpell(summon, 22703, TRIGGERED_FULL_MASK, nullptr); // Inferno effect
+                    summon->CastSpell(summon, 22703, true); // Inferno effect
                 } break;
                 case 23369: // Whirling Blade (no idea what this is for)
                 {
@@ -303,11 +303,13 @@ void Spell::EffectSummonType(uint32 effIndex)
                 spellId = spellInfo->Id;
         }
 
+        CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
+
         // if we have small value, it indicates seat position
         if (basePoints > 0 && basePoints < MAX_VEHICLE_SEATS)
-            m_originalCaster->CastCustomSpell(spellId, SPELLVALUE_BASE_POINT0, basePoints, summon, TRIGGERED_FULL_MASK);
-        else
-            m_originalCaster->CastSpell(summon, spellId, TRIGGERED_FULL_MASK);
+            args.AddSpellBP0(basePoints);
+
+        m_originalCaster->CastSpell(summon, spellId, args);
 
         uint32 faction = properties->Faction;
         if (!faction)

@@ -2213,13 +2213,12 @@ void Pet::CastPetAura(PetAura const* aura)
     if(!auraId)
         return;
 
+    CastSpellExtraArgs args;
+    args.TriggerFlags = TRIGGERED_FULL_MASK;
     if(auraId == 35696)                                       // Demonic Knowledge
-    {
-        int32 basePoints = int32(aura->GetDamage() * (GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT)) / 100);
-        CastCustomSpell(this, auraId, &basePoints, nullptr, nullptr, TRIGGERED_FULL_MASK);
-    }
-    else
-        CastSpell(this, auraId, TRIGGERED_FULL_MASK);
+        args.AddSpellBP0(CalculatePct(aura->GetDamage(), GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT)));
+    
+    CastSpell(this, auraId, args);
 }
 
 Player* Pet::GetOwner() const

@@ -578,17 +578,17 @@ uint32 TestCase::_GetPercentApproximationParams(float const allowedError)
     return sampleSize;
 }
 
-void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax)
+void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& absoluteAllowedError, uint32 const expectedMin, uint32 const expectedMax)
 {
     double targetProbability = 0.999; // Corresponds to 99.9%
-    allowedError = (expectedMax - expectedMin) / 25; //arbitary
-    allowedError = std::max(allowedError, uint32(1)); //min 1
+    absoluteAllowedError = (expectedMax - expectedMin) / 25; //arbitary
+    absoluteAllowedError = std::max(absoluteAllowedError, uint32(1)); //min 1
 
-    uint32 LB_max = expectedMax - allowedError; // lower bound on the maximum
-    uint32 UB_max = expectedMax + allowedError; // upper bound on the maximum
+    uint32 LB_max = expectedMax - absoluteAllowedError; // lower bound on the maximum
+    uint32 UB_max = expectedMax + absoluteAllowedError; // upper bound on the maximum
 
-    uint32 LB_min = std::max(expectedMin, allowedError) - allowedError ; // lower bound on the minimum, and try to avoid negative numbers
-    uint32 UB_min = expectedMin + allowedError; // upper bound on the minimum
+    uint32 LB_min = std::max(expectedMin, absoluteAllowedError) - absoluteAllowedError; // lower bound on the minimum, and try to avoid negative numbers
+    uint32 UB_min = expectedMin + absoluteAllowedError; // upper bound on the minimum
 
     // The probability of having the estimation of the maximum between LB_max and UB_max is
     // 1 - [(y-LB_min)/(UB_max-LB_min)]^n

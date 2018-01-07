@@ -1793,7 +1793,7 @@ void GameObject::Use(Unit* user)
     SpellCastTargets targets;
     targets.SetUnitTarget( user );
 
-    spell->prepare(&targets);
+    spell->prepare(targets);
 }
 
 uint32 GameObject::CastSpell(Unit* target, uint32 spellId, TriggerCastFlags triggerFlag, ObjectGuid originalCaster)
@@ -1815,7 +1815,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, TriggerCastFlags trig
     if (self)
     {
         if (target)
-            return target->CastSpell(target, spellInfo, TRIGGERED_FULL_MASK);
+            return target->CastSpell(target, spellInfo->Id, TRIGGERED_FULL_MASK);
         return SPELL_FAILED_UNKNOWN;
     }
 
@@ -1826,8 +1826,10 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, TriggerCastFlags trig
 
     // remove immunity flags, to allow spell to target anything
     trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
-
     trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+
+    CastSpellExtraArgs args;
+    args.TriggerFlags = triggerFlag;
     if(Unit *owner = GetOwner())
     {
         if (owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
@@ -1835,12 +1837,16 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, TriggerCastFlags trig
         trigger->SetFaction(owner->GetFaction());
         // needed for GO casts for proper target validation checks
         trigger->SetOwnerGUID(owner->GetGUID());
-        return trigger->CastSpell(target, spellId, triggerFlag, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
+        args.OriginalCaster = owner->GetGUID();
+        return trigger->CastSpell(target, spellId, args);
     }
     else
     {
         trigger->SetFaction(spellInfo->IsPositive() ? FACTION_FRIENDLY : FACTION_MONSTER);
-        return trigger->CastSpell(target, spellId, triggerFlag, nullptr, nullptr, originalCaster);
+        // Set owner guid for target if no owner available - needed by trigger auras
+        // - trigger gets despawned and there's no caster avalible (see AuraEffect::TriggerSpell())
+        args.OriginalCaster = target ? target->GetGUID() : ObjectGuid::Empty;
+        return trigger->CastSpell(target, spellId, args);
     }
 }
 

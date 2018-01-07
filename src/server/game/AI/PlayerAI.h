@@ -61,12 +61,7 @@ class TC_GAME_API PlayerAI : public UnitAI
            This invalidates the vector, and empties it to prevent accidental misuse. */
         TargetedSpell SelectSpellCast(PossibleSpellVector& spells);
         /* Helper method - casts the included spell at the included target */
-        inline void DoCastAtTarget(TargetedSpell spell)
-        {
-            SpellCastTargets targets;
-            targets.SetUnitTarget(spell.second);
-            spell.first->prepare(&targets);
-        }
+        void DoCastAtTarget(TargetedSpell spell);
 
         virtual Unit* SelectAttackTarget() const { return me->GetCharmer() ? me->GetCharmer()->GetVictim() : nullptr; }
         void DoRangedAttackIfReady();

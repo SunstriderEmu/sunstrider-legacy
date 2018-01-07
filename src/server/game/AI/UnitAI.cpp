@@ -271,12 +271,64 @@ bool FarthestTargetSelector::operator()(Unit const* target) const
     return true;
 }
 
-uint32 UnitAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
+/* TC
+uint32 UnitAI::DoCast(uint32 spellId)
 {
-    if (!victim || (me->HasUnitState(UNIT_STATE_CASTING) && !triggered))
+    Unit* target = nullptr;
+
+    switch (AISpellInfo[spellId].target)
+    {
+    default:
+    case AITARGET_SELF:
+        target = me;
+        break;
+    case AITARGET_VICTIM:
+        target = me->GetVictim();
+        break;
+    case AITARGET_ENEMY:
+    {
+        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId))
+        {
+            bool playerOnly = spellInfo->HasAttribute(SPELL_ATTR3_ONLY_TARGET_PLAYERS);
+            target = SelectTarget(SELECT_TARGET_RANDOM, 0, spellInfo->GetMaxRange(false), playerOnly);
+        }
+        break;
+    }
+    case AITARGET_ALLY:
+        target = me;
+        break;
+    case AITARGET_BUFF:
+        target = me;
+        break;
+    case AITARGET_DEBUFF:
+    {
+        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId))
+        {
+            bool playerOnly = spellInfo->HasAttribute(SPELL_ATTR3_ONLY_TARGET_PLAYERS);
+            float range = spellInfo->GetMaxRange(false);
+
+            DefaultTargetSelector targetSelector(me, range, playerOnly, true, -(int32)spellId);
+            if (!(spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_VICTIM)
+                && targetSelector(me->GetVictim()))
+                target = me->GetVictim();
+            else
+                target = SelectTarget(SELECT_TARGET_RANDOM, 0, targetSelector);
+        }
+        break;
+    }
+    }
+
+    if (target)
+        me->CastSpell(target, spellId, false);
+}
+*/
+
+uint32 UnitAI::DoCast(Unit* victim, uint32 spellId, CastSpellExtraArgs const& args)
+{
+    if (me->HasUnitState(UNIT_STATE_CASTING) && !(args.TriggerFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS))
         return SPELL_FAILED_UNKNOWN;
 
-    uint32 reason = me->CastSpell(victim, spellId, triggered);
+    uint32 reason = me->CastSpell(victim, spellId, args);
 
     //restore combat movement on out of mana
     if (reason == SPELL_FAILED_NO_POWER && GetRestoreCombatMovementOnOOM() && !IsCombatMovementAllowed())
@@ -285,28 +337,12 @@ uint32 UnitAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
     return reason;
 }
 
-uint32 UnitAI::DoCastAOE(uint32 spellId, bool triggered)
+uint32 UnitAI::DoCastVictim(uint32 spellId, CastSpellExtraArgs const& args)
 {
-    if (!triggered && me->HasUnitState(UNIT_STATE_CASTING))
-        return SPELL_FAILED_UNKNOWN;
+    if (Unit* victim = me->GetVictim())
+        return DoCast(victim, spellId, args);
 
-    return me->CastSpell(nullptr, spellId, triggered);
-}
-
-uint32 UnitAI::DoCastSpell(Unit* who, SpellInfo const *spellInfo, bool triggered)
-{
-    if (!triggered && me->HasUnitState(UNIT_STATE_CASTING))
-        return SPELL_FAILED_UNKNOWN;
-
-    return me->CastSpell(who, spellInfo, triggered);
-}
-
-uint32 UnitAI::DoCastVictim(uint32 spellId, bool triggered)
-{
-    if (!me->GetVictim() || (me->HasUnitState(UNIT_STATE_CASTING) && !triggered))
-        return SPELL_FAILED_UNKNOWN;
-
-    return me->CastSpell(me->GetVictim(), spellId, triggered);
+    return SPELL_FAILED_BAD_TARGETS;
 }
 
 Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, bool withTank, int32 aura)

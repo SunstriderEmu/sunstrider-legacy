@@ -136,6 +136,9 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     //Stop attack of current victim
     void DoStopAttack();
 
+    //Cast spell by spell info
+    void DoCastSpell(Unit* target, SpellInfo const* spellInfo, bool triggered = false);
+
     //Plays a sound to all nearby players
     void DoPlaySoundToSet(Unit* unit, uint32 sound);
 
