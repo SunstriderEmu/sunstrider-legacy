@@ -1094,7 +1094,7 @@ enum Targets
 
 #define TOTAL_SPELL_TARGETS              94
 
-enum SpellMissInfo
+enum SpellMissInfo : uint32
 {
     SPELL_MISS_NONE                    = 0,
     SPELL_MISS_MISS                    = 1,
