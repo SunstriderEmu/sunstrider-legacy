@@ -1282,7 +1282,7 @@ public:
             // Heal
             auto AI = warlock->GetTestingPlayerbotAI();
             auto healingToTarget = AI->GetHealingDoneInfo(warlock);
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1);
+            //SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1);
             TEST_ASSERT(healingToTarget->size() == 1);
 
             uint32 heal = healingToTarget->begin()->healing;
@@ -1446,10 +1446,10 @@ public:
 
             // Threat
             TEST_CAST(priest, creature, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
-            uint32 startThreat = creature->GetThreat(priest);
+            uint32 startThreat = creature->GetThreatManager().GetThreat(priest);
 
-            TEST_ASSERT(startThreat > creature->GetThreat(tank));
-            ASSERT_INFO("tank: %u, priest: %u", creature->GetThreat(tank), creature->GetThreat(priest));
+            TEST_ASSERT(startThreat > creature->GetThreatManager().GetThreat(tank));
+            ASSERT_INFO("tank: %u, priest: %u", creature->GetThreatManager().GetThreat(tank), creature->GetThreatManager().GetThreat(priest));
             TEST_ASSERT(creature->GetTarget() == priest->GetGUID());
 
             // Fade
@@ -1465,11 +1465,11 @@ public:
             // Effect
             uint32 const fadeFactor = 1500;
             uint32 expectedThreat = startThreat - fadeFactor;
-            TEST_ASSERT(creature->GetThreat(priest) == expectedThreat);
+            TEST_ASSERT(creature->GetThreatManager().GetThreat(priest) == expectedThreat);
 
             Wait(11000);
             TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::FADE_RNK_7);
-            TEST_ASSERT(creature->GetThreat(priest) == expectedThreat);
+            TEST_ASSERT(creature->GetThreatManager().GetThreat(priest) == expectedThreat);
         }
     };
 
