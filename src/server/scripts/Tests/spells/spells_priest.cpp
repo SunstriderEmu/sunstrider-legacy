@@ -1449,7 +1449,7 @@ public:
             uint32 startThreat = creature->GetThreatManager().GetThreat(priest);
 
             TEST_ASSERT(startThreat > creature->GetThreatManager().GetThreat(tank));
-            ASSERT_INFO("tank: %u, priest: %u", creature->GetThreatManager().GetThreat(tank), creature->GetThreatManager().GetThreat(priest));
+            ASSERT_INFO("Wrong target. tank threat: %u, priest threat: %u", creature->GetThreatManager().GetThreat(tank), creature->GetThreatManager().GetThreat(priest));
             TEST_ASSERT(creature->GetTarget() == priest->GetGUID());
 
             // Fade
