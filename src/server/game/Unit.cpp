@@ -2407,17 +2407,21 @@ uint32 Unit::CalculateDamage(WeaponAttackType attType, bool normalized, SpellInf
     return GetMap()->urand((uint32)min_damage, (uint32)max_damage);
 }
 
+// http://et.worldofwarcraft.wikia.com/wiki/Downranking
+// http://wowwiki.wikia.com/wiki/Spell_power?oldid=1576621
 float Unit::CalculateLevelPenalty(SpellInfo const* spellProto) const
 {
-    if(spellProto->SpellLevel <= 0)
+    if (spellProto->SpellLevel <= 0)
         return 1.0f;
 
     float LvlPenalty = 0.0f;
-
-    if(spellProto->SpellLevel < 20)
+    if (spellProto->SpellLevel < 20)
         LvlPenalty = (20.0f - spellProto->SpellLevel) * 3.75f;
-    float LvlFactor = (float(spellProto->SpellLevel) + 6.0f) / float(GetLevel());
-    if(LvlFactor > 1.0f)
+    if (LvlPenalty < 0)
+        LvlPenalty = 0.0f;
+
+    float LvlFactor = (float(spellProto->MaxLevel) + 6.0f) / float(GetLevel());
+    if (LvlFactor > 1.0f)
         LvlFactor = 1.0f;
 
     return (100.0f - LvlPenalty) * LvlFactor / 100.0f;
