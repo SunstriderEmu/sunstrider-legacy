@@ -2222,6 +2222,10 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
 
 MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType) const
 {
+#ifdef TESTS
+    if (_forceMeleeResult < MELEE_HIT_TOTAL)
+        return _forceMeleeResult;
+#endif
     if (victim->GetTypeId() == TYPEID_UNIT)
     {
         if (victim->ToCreature()->IsEvadingAttacks())

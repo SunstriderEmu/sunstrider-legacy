@@ -827,6 +827,8 @@ enum MeleeHitOutcome : int
     MELEE_HIT_CRUSHING,
     MELEE_HIT_NORMAL,
     MELEE_HIT_BLOCK_CRIT, //not used in the game?
+
+    MELEE_HIT_TOTAL,
 };
 
 struct CleanDamage
@@ -1440,9 +1442,13 @@ class TC_GAME_API Unit : public WorldObject
         SpellMissInfo MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, Item* castItem = nullptr);
         SpellMissInfo SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool canReflect = false, Item* castItem = nullptr);
 #ifdef TESTS
-        SpellMissInfo _forceHitResult = SPELL_MISS_TOTAL;
+        SpellMissInfo _forceHitResult = SpellMissInfo(-1);
         void ForceSpellHitResult(SpellMissInfo missInfo) { _forceHitResult = missInfo; }
         void ResetForceSpellHitResult() { _forceHitResult = SpellMissInfo(-1); }
+
+        MeleeHitOutcome _forceMeleeResult = MeleeHitOutcome(-1);
+        void ForceMeleeHitResult(MeleeHitOutcome outcome) { _forceMeleeResult = outcome; }
+        void ResetForceMeleeHitResult() { _forceMeleeResult = MeleeHitOutcome(-1); }
 #endif
 
         float GetUnitDodgeChance(WeaponAttackType attType, Unit const* victim) const;

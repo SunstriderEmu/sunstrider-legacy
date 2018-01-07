@@ -679,13 +679,13 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     uint32 maxPredictionError;
     _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
 
-    caster->ForceSpellHitResult(SPELL_MISS_NONE);
+    caster->ForceMeleeHitResult(crit ? MELEE_HIT_CRIT : MELEE_HIT_NORMAL);
     for (uint32 i = 0; i < sampleSize; i++)
     if (attackType != RANGED_ATTACK)
         caster->AttackerStateUpdate(target, attackType);
     else
         caster->CastSpell(target, 75, true); //shoot
-    caster->ResetForceSpellHitResult();
+    caster->ResetForceMeleeHitResult();
 
     Wait(3 * SECOND * IN_MILLISECONDS);
     uint32 dealtMin;
