@@ -205,8 +205,9 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
         if(!lowguid)
             return false;
 
-        if (CreatureData const* cr_data = sObjectMgr->GetCreatureData(lowguid))
-            unit = ObjectAccessor::GetCreature(*m_session->GetPlayer(), ObjectGuid(HighGuid::Unit, cr_data->id, lowguid));
+        // force respawn to make sure we find something
+        GetSession()->GetPlayer()->GetMap()->ForceRespawn(SPAWN_TYPE_CREATURE, lowguid);
+        unit = GetCreatureFromPlayerMapByDbGuid(lowguid);
     }
     else
         unit = GetSelectedCreature();

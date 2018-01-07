@@ -230,7 +230,9 @@ bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
     if(!guidLow)
         return false;
 
-    // by DB guid
+    Player const* const player = GetSession()->GetPlayer();
+    // force respawn to make sure we find something
+    player->GetMap()->ForceRespawn(SPAWN_TYPE_GAMEOBJECT, guidLow);
     GameObject* object = GetObjectFromPlayerMapByDbGuid(guidLow);
     if(!object)
     {

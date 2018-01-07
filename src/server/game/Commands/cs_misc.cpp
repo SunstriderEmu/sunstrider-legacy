@@ -1225,7 +1225,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
     Cell::VisitGridObjects(player, worker, player->GetGridActivationRange());
 
     // Now handle any that had despawned, but had respawn time logged.
-    RespawnVector data;
+    std::vector<RespawnInfo*> data;
     player->GetMap()->GetRespawnInfo(data, SPAWN_TYPEMASK_ALL, 0);
     if (!data.empty())
     {
