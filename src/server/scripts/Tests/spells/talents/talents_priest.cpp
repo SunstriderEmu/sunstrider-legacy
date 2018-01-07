@@ -51,23 +51,23 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PRIEST);
-			// Smite rank 10
-			uint32 const smiteMinDamage = 549;
-			uint32 const smiteMaxDamage = 616;
+			TestPlayer* priest = SpawnRandomPlayer(CLASS_PRIEST);
+			// Smite
+			uint32 const smiteMinDamage = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN;
+			uint32 const smiteMaxDamage = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX;
 
-			// Holy fire rank 9
-			uint32 const holyFireMinDamage = 426;
-			uint32 const holyFireMaxDamage = 537;
-            uint32 const holyFireDotDamage = 165;
+			// Holy Fire
+			uint32 const holyFireMinDamage = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MIN;
+			uint32 const holyFireMaxDamage = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MAX;
+            uint32 const holyFireDotDamage = 5.0f * floor(ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_TOTAL / 5.0f);
 
 			Creature* dummyTarget = SpawnCreature();
 
 			//Test improved damage 10%
-			LearnTalent(player, Talents::Priest::SEARING_LIGHT_RNK_2);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage * 1.1f, smiteMaxDamage * 1.1f, false);
-            TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.1f, holyFireMaxDamage * 1.1f, false);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDotDamage * 1.1f, false);
+			LearnTalent(priest, Talents::Priest::SEARING_LIGHT_RNK_2);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage * 1.1f, smiteMaxDamage * 1.1f, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.1f, holyFireMaxDamage * 1.1f, false);
+            TEST_DOT_DAMAGE(priest, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDotDamage * 1.1f, false);
 		}
 	};
 

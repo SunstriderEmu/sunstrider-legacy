@@ -318,7 +318,7 @@ public:
             Position spawn(_location);
             // Paladin
             spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* paladinA = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN, 70, spawn);
+            SpawnPlayer(CLASS_PALADIN, RACE_HUMAN, 70, spawn);
             TestPlayer* paladinH = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF, 70, spawn);
             // Mage
             spawn.MoveInFront(spawn, 3.0f);
@@ -326,28 +326,28 @@ public:
             TestPlayer* mageH = SpawnPlayer(CLASS_MAGE, RACE_BLOODELF, 70, spawn);
             // Warlock
             spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* warlockA = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawn);
+            SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawn);
             TestPlayer* warlockH = SpawnPlayer(CLASS_WARLOCK, RACE_BLOODELF, 70, spawn);
             // Shaman
             spawn.MoveInFront(spawn, 3.0f);
             TestPlayer* shamanA = SpawnShaman(RACE_DRAENEI, spawn);
-            TestPlayer* shamanH = SpawnShaman(RACE_ORC, spawn);
+            SpawnShaman(RACE_ORC, spawn);
             // Hunter
             spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* hunterA = SpawnHunter(RACE_DWARF, spawn);
+            SpawnHunter(RACE_DWARF, spawn);
             TestPlayer* hunterH = SpawnHunter(RACE_ORC, spawn);
             // Warrior
             spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* warriorA = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
-            TestPlayer* warriorH = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN, 70, spawn);
+            SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
+            SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN, 70, spawn);
             // Druid
             spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* druidA = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF, 70, spawn);
-            TestPlayer* druidH = SpawnPlayer(CLASS_DRUID, RACE_TAUREN, 70, spawn);
+            SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF, 70, spawn);
+            SpawnPlayer(CLASS_DRUID, RACE_TAUREN, 70, spawn);
             // Rogue
             spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* rogueA = SpawnPlayer(CLASS_ROGUE, RACE_NIGHTELF, 70, spawn);
-            TestPlayer* rogueH = SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 70, spawn);
+            SpawnPlayer(CLASS_ROGUE, RACE_NIGHTELF, 70, spawn);
+            SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 70, spawn);
             // RIP
             spawn.MoveInFront(spawn, 3.0f);
             TestPlayer* ripA = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
@@ -1045,8 +1045,8 @@ public:
             // Heal
             int const spellMaxLevel = 39;
             int const spellBaseLevel = 34;
-            float const spellRealPointsPerLevel = 4.5;
-            float const downrankingCoeff = (spellBaseLevel + 6) / 70.0f; //  (spellMaxLevel + 5) / playerLevel <- downranking coeff formula
+            float const spellRealPointsPerLevel = 4.5f;
+            float const downrankingCoeff = (spellMaxLevel + 6) / 70.0f;
             uint32 const bonusPoints = (spellMaxLevel - spellBaseLevel) * spellRealPointsPerLevel;
             uint32 const bonusMaxPoints = 93; // effectDieSides1
             float const healCastTime = 3.0f;
@@ -1065,6 +1065,420 @@ public:
     }
 };
 
+class HolyFireTest : public TestCaseScript
+{
+public:
+    HolyFireTest() : TestCaseScript("spells priest holy_fire") { }
+
+    class HolyFireTestImpt : public TestCase
+    {
+    public:
+        HolyFireTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            Creature* creature = SpawnCreature();
+
+            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 BH
+
+            // Mana cost
+            uint32 const expectedHolyFireMana = 290;
+            TEST_POWER_COST(priest, creature, ClassSpells::Priest::HOLY_FIRE_RNK_9, POWER_MANA, expectedHolyFireMana);
+
+            // Direct
+            float const holyFireCoeff = ClassSpellsCoeff::Priest::HOLY_FIRE;
+            uint32 const bonusSP = 292 * holyFireCoeff;
+            uint32 const holyFireMin = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MIN + bonusSP;
+            uint32 const holyFireMax = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MAX + bonusSP;
+            TEST_DIRECT_SPELL_DAMAGE(priest, creature, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMin, holyFireMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, creature, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMin * 1.5f, holyFireMax * 1.5f, true);
+            
+            // DoT -- wrong DoT Coeff
+            float const holyFireDoTCoeff = ClassSpellsCoeff::Priest::HOLY_FIRE_DOT;
+            uint32 const bonusDoTSP = 292 * holyFireDoTCoeff;
+            uint32 const holyFireDoT = 5.0f * floor((ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_TOTAL + bonusDoTSP) / 5.0f);
+            TEST_DOT_DAMAGE(priest, creature, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDoT, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<HolyFireTestImpt>();
+    }
+};
+
+class LesserHealTest : public TestCaseScript
+{
+public:
+    LesserHealTest() : TestCaseScript("spells priest lesser_heal") { }
+
+    class LesserHealTestImpt : public TestCase
+    {
+    public:
+        LesserHealTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+
+            // Mana cost
+            uint32 const expectedLesserHealMana = 75;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::LESSER_HEAL_RNK_3, POWER_MANA, expectedLesserHealMana);
+
+            // Lesser Heal
+            int const spellMaxLevel = 15;
+            int const spellBaseLevel = 10;
+            float const spellRealPointsPerLevel = 1.6f;
+            float const downrankingCoeff = (spellMaxLevel + 6) / 70.0f; //  (spellMaxLevel + 5) / playerLevel <- downranking coeff formula
+            float const below20penaltyCoeff = 1.0f - ((20.0f - spellBaseLevel) * 0.0375f);
+            uint32 const bonusPoints = (spellMaxLevel - spellBaseLevel) * spellRealPointsPerLevel;
+            uint32 const bonusMaxPoints = 23; // effectDieSides1
+            float const healCastTime = 2.5f;
+            float const healCoeff = healCastTime / 3.5f;
+            uint32 const bonusLesserHeal = 550 * healCoeff * downrankingCoeff * below20penaltyCoeff;
+            uint32 const healMin = ClassSpellsDamage::Priest::LESSER_HEAL_RNK_3_MIN + bonusPoints + bonusLesserHeal;
+            uint32 const healMax = ClassSpellsDamage::Priest::LESSER_HEAL_RNK_3_MAX + bonusPoints + bonusMaxPoints + bonusLesserHeal;
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::LESSER_HEAL_RNK_3, healMin, healMax, false);
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::LESSER_HEAL_RNK_3, healMin * 1.5f, healMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<LesserHealTestImpt>();
+    }
+};
+
+class PrayerOfHealingTest : public TestCaseScript
+{
+public:
+    PrayerOfHealingTest() : TestCaseScript("spells priest prayer_of_healing") { }
+
+    class PrayerOfHealingTestImpt : public TestCase
+    {
+    public:
+        PrayerOfHealingTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 3.0f);
+            TestPlayer* priest2 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+            spawn.MoveInFront(spawn, 3.0f);
+            TestPlayer* priest3 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+            spawn.MoveInFront(spawn, 19.0f);
+            TestPlayer* priest4 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+            spawn.MoveInFront(spawn, 10.0f);
+            TestPlayer* priest5 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+            TestPlayer* priest6 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+
+            // Get all the units
+            std::vector<WorldObject*> targets;
+            Trinity::AllWorldObjectsInRange u_check(priest, 50.0f);
+            Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(priest, targets, u_check);
+            Cell::VisitAllObjects(priest, searcher, 50.0f);
+
+            // Reverse array
+            std::reverse(std::begin(targets), std::end(targets));
+
+            // Group raid the players
+            for (WorldObject* object : targets)
+            {
+                if (Player* player = object->ToPlayer())
+                {
+                    player->DisableRegeneration(true);
+                    player->SetHealth(1);
+
+                    if (player == priest)
+                        continue;
+
+                    GroupPlayer(priest, player);
+                }
+            }
+
+            spawn.MoveInFront(spawn, -36.0f);
+            priest6->Relocate(spawn);
+
+            TEST_ASSERT(!priest->GetGroup()->SameSubGroup(priest, priest6));
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+
+            // Mana cost
+            uint32 const expectedPrayerOfHealingMana = 1255;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, POWER_MANA, expectedPrayerOfHealingMana);
+
+            // Raid & Range
+            TEST_ASSERT(priest->GetHealth() > 1);
+            TEST_ASSERT(priest2->GetHealth() > 1);
+            TEST_ASSERT(priest3->GetHealth() > 1);
+            TEST_ASSERT(priest4->GetHealth() > 1);
+            TEST_ASSERT(priest5->GetHealth() == 1); // 35m
+            TEST_ASSERT(priest6->GetHealth() == 1); // not in the same group
+
+            // Heal
+            float const prayerOfHealingCastTime = 3.0f;
+            float const prayerOfHealingCoeff = prayerOfHealingCastTime / 3.5f / 2.0f;
+            uint32 const bonusHeal = 550 * prayerOfHealingCoeff;
+            uint32 const prayerOfHealingMin = ClassSpellsDamage::Priest::PRAYER_OF_HEALING_RNK_6_MIN + bonusHeal;
+            uint32 const prayerOfHealingMax = ClassSpellsDamage::Priest::PRAYER_OF_HEALING_RNK_6_MAX + bonusHeal;
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, prayerOfHealingMin, prayerOfHealingMax, false);
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, prayerOfHealingMin * 1.5f, prayerOfHealingMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<PrayerOfHealingTestImpt>();
+    }
+};
+
+class PrayerOfMendingTest : public TestCaseScript
+{
+public:
+    PrayerOfMendingTest() : TestCaseScript("spells priest prayer_of_mending") { }
+
+    class PrayerOfMendingTestImpt : public TestCase
+    {
+    public:
+        PrayerOfMendingTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, -2.0f);
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_BLOODELF, 70, spawn);
+            spawn.MoveInFront(spawn, -2.0f);
+            TestPlayer* priest2 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN, 70, spawn);
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+
+            // Failed
+            TEST_CAST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, SPELL_FAILED_BAD_TARGETS);
+            GroupPlayer(priest, warlock);
+
+            // Mana cost
+            uint32 const expectedPrayerOfMendingMana = 390;
+            TEST_POWER_COST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, POWER_MANA, expectedPrayerOfMendingMana);
+
+            // Cooldown
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, 10 * SECOND);
+
+            // Aura duration
+            TEST_AURA_MAX_DURATION(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, EFFECT_0, 30 * SECOND * IN_MILLISECONDS);
+
+            // Charge
+            TEST_AURA_CHARGE(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, EFFECT_0, 5);
+
+            // Changed target and 1 charge less
+            priest2->Attack(warlock, true);
+            Wait(500);
+            TEST_AURA_CHARGE(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, EFFECT_0, 4);
+
+            // Heal
+            auto AI = warlock->GetTestingPlayerbotAI();
+            auto healingToTarget = AI->GetHealingDoneInfo(warlock);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1);
+            TEST_ASSERT(healingToTarget->size() == 1);
+
+            uint32 heal = healingToTarget->begin()->healing;
+
+            float const prayerOfMendingCastTime = 1.5f;
+            float const prayerOfMendingCoeff = prayerOfMendingCastTime / 3.5f / 2.0f;
+            uint32 const bonusHeal = 550 * prayerOfMendingCoeff;
+            uint32 const prayerOfMending = ClassSpellsDamage::Priest::PRAYER_OF_MENDING_RNK_1 + bonusHeal;
+
+            ASSERT_INFO("Heal: %u, expected: %u", heal, prayerOfMending);
+            TEST_ASSERT(heal == prayerOfMending);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<PrayerOfMendingTestImpt>();
+    }
+};
+
+class RenewTest : public TestCaseScript
+{
+public:
+    RenewTest() : TestCaseScript("spells priest renew") { }
+
+    class RenewTestImpt : public TestCase
+    {
+    public:
+        RenewTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+
+            // Mana cost
+            uint32 const expectedRenewMana = 450;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, POWER_MANA, expectedRenewMana);
+
+            // Heal
+            float const renewDuration = 15.0f;
+            float const renewCoeff = renewDuration / 15.0f;
+            uint32 const bonusHeal = 550 * renewCoeff;
+            uint32 const renewTicks = 5.0f * floor((ClassSpellsDamage::Priest::RENEW_RNK_12_TOTAL + bonusHeal) / 5.0f);
+            TEST_DOT_DAMAGE(priest, priest, ClassSpells::Priest::RENEW_RNK_12, renewTicks, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<RenewTestImpt>();
+    }
+};
+
+class ResurrectionTest : public TestCaseScript
+{
+public:
+    ResurrectionTest() : TestCaseScript("spells priest resurrection") { }
+
+    class ResurrectionTestImpt : public TestCase
+    {
+    public:
+        ResurrectionTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+
+        void TestResurrection(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 expectedHealth, uint32 expectedMana)
+        {
+            victim->KillSelf(true);
+            TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
+            //victim->AcceptRessurectRequest();
+            TEST_ASSERT(victim->GetHealth() == expectedHealth);
+            TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
+        }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* ally = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            TestPlayer* enemy = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+
+            uint32 manaCost = 1572;
+
+            TestResurrection(druid, ally, ClassSpells::Priest::RESURRECTION_RNK_1, manaCost, 70, 135);
+            TestResurrection(druid, enemy, ClassSpells::Priest::RESURRECTION_RNK_2, manaCost, 160, 300);
+            TestResurrection(druid, ally, ClassSpells::Priest::RESURRECTION_RNK_3, manaCost, 300, 520);
+            TestResurrection(druid, enemy, ClassSpells::Priest::RESURRECTION_RNK_4, manaCost, 500, 750);
+            TestResurrection(druid, ally, ClassSpells::Priest::RESURRECTION_RNK_5, manaCost, 750, 1000);
+            TestResurrection(druid, enemy, ClassSpells::Priest::RESURRECTION_RNK_6, manaCost, 1100, 1150);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ResurrectionTestImpt>();
+    }
+};
+
+class SmiteTest : public TestCaseScript
+{
+public:
+    SmiteTest() : TestCaseScript("spells priest smite") { }
+
+    class SmiteTestImpt : public TestCase
+    {
+    public:
+        SmiteTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+
+            // Mana cost
+            uint32 const expectedSmiteMana = 385;
+            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, POWER_MANA, expectedSmiteMana);
+
+            // Heal
+            float const smiteCastTime = 2.5f;
+            float const smiteCoeff = smiteCastTime / 3.5f;
+            uint32 const bonusHeal = 292 * smiteCoeff;
+            uint32 const smiteMin = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN + bonusHeal;
+            uint32 const smiteMax = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX + bonusHeal;
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, smiteMin, smiteMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, smiteMin * 1.5f, smiteMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SmiteTestImpt>();
+    }
+};
+
+class FadeTest : public TestCaseScript
+{
+public:
+    FadeTest() : TestCaseScript("spells priest fade") { }
+
+    class FadeTestImpt : public TestCase
+    {
+    public:
+        FadeTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* tank = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            Creature* creature = SpawnCreature(16878, true); // Shattered Hand Berserker -- Lvl 61
+
+            // Setup
+            tank->SetMaxHealth(30000);
+            tank->SetFullHealth();
+            TEST_CAST(tank, tank, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            EQUIP_ITEM(tank, 34185); // Shield
+            tank->SetPower(POWER_RAGE, 100 * 10);
+            tank->Attack(creature, true);
+            Wait(500);
+            TEST_ASSERT(creature->GetTarget() == tank->GetGUID());
+
+            // Threat
+            TEST_CAST(priest, creature, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            uint32 startThreat = creature->GetThreat(priest);
+
+            TEST_ASSERT(startThreat > creature->GetThreat(tank));
+            ASSERT_INFO("tank: %u, priest: %u", creature->GetThreat(tank), creature->GetThreat(priest));
+            TEST_ASSERT(creature->GetTarget() == priest->GetGUID());
+
+            // Fade
+            uint32 const expectedFadeMana = 330;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::FADE_RNK_7, POWER_MANA, expectedFadeMana);
+
+            // Aura duration
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FADE_RNK_7, EFFECT_0, 10 * SECOND * IN_MILLISECONDS);
+
+            // Cooldown
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FADE_RNK_7, 30 * SECOND);
+
+            // Effect
+            uint32 const fadeFactor = 1500;
+            uint32 expectedThreat = startThreat - fadeFactor;
+            TEST_ASSERT(creature->GetThreat(priest) == expectedThreat);
+
+            Wait(11000);
+            TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::FADE_RNK_7);
+            TEST_ASSERT(creature->GetThreat(priest) == expectedThreat);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<FadeTestImpt>();
+    }
+};
+
 void AddSC_test_spells_priest()
 {
     // Discipline: 10/10
@@ -1078,11 +1492,20 @@ void AddSC_test_spells_priest()
     new PowerWordShieldTest();
     new PrayerOfFortitudeTest();
     new ShackleUndeadTest();
-    // Holy: /
+    // Holy: 13/13
     new AbolishDiseaseTest();
     new BindingHealTest();
     new CureDiseaseTest();
     new FlashHealTest();
     new GreaterHealTest();
     new HealTest();
+    new HolyFireTest();
+    new LesserHealTest();
+    new PrayerOfHealingTest();
+    new PrayerOfMendingTest();
+    new RenewTest();
+    new ResurrectionTest();
+    new SmiteTest();
+    // Shadow: /
+    new FadeTest();
 }

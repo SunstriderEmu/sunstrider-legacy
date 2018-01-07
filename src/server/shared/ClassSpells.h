@@ -2902,6 +2902,7 @@ namespace ClassSpells
             PRAYER_OF_HEALING_RNK_5 = 25316,
             PRAYER_OF_HEALING_RNK_6 = 25308,
             PRAYER_OF_MENDING_RNK_1 = 33076,
+            PRAYER_OF_MENDING_RNK_1_BUFF = 41635,
             RENEW_RNK_1 = 139,
             RENEW_RNK_2 = 6074,
             RENEW_RNK_3 = 6075,

@@ -241,6 +241,17 @@ namespace ClassSpellsDamage
             GREATER_HEAL_RNK_7_MIN = 2414,
             GREATER_HEAL_RNK_7_MAX = 2803,
             HEAL_RNK_4_MIN = 712,
+            HOLY_FIRE_RNK_9_MIN = 426,
+            HOLY_FIRE_RNK_9_MAX = 537,
+            HOLY_FIRE_RNK_9_TOTAL = 165,
+            LESSER_HEAL_RNK_3_MIN = 135,
+            LESSER_HEAL_RNK_3_MAX = 158,
+            PRAYER_OF_HEALING_RNK_6_MIN = 1251,
+            PRAYER_OF_HEALING_RNK_6_MAX = 1322,
+            PRAYER_OF_MENDING_RNK_1 = 800,
+            RENEW_RNK_12_TOTAL = 1110,
+            SMITE_RNK_10_MIN = 549,
+            SMITE_RNK_10_MAX = 616,
 		};
 	};
 
