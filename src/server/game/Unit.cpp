@@ -10761,7 +10761,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
 
     // can't attack untargetable 
     // sunstrider: only apply this to player, allow easier scripting
-    if (attacker->GetTypeId() == TYPEID_PLAYER
+    if (attacker->IsControlledByPlayer()
         && (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_UNTARGETABLE))
         && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
         return false;
