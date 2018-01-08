@@ -21432,25 +21432,6 @@ float Player::GetReputationPriceDiscount(FactionTemplateEntry const* factionTemp
     return 1.0f - 0.05f* (rank - REP_NEUTRAL);
 }
 
-/*
-// if spell doesn't require a stance or the player is in the required stance
-if( ( !spellInfo->Stances &&
-spell_id != 5420 && spell_id != 5419 && spell_id != 7376 &&
-spell_id != 7381 && spell_id != 21156 && spell_id != 21009 &&
-spell_id != 21178 && spell_id != 33948 && spell_id != 40121 ) ||
-(m_form != 0 && (spellInfo->Stances & (1<<(m_form-1)))) ||
-(spell_id ==  5420 && m_form == FORM_TREE) ||
-(spell_id ==  5419 && m_form == FORM_TRAVEL) ||
-(spell_id ==  7376 && m_form == FORM_DEFENSIVESTANCE) ||
-(spell_id ==  7381 && m_form == FORM_BERSERKERSTANCE) ||
-(spell_id == 21156 && m_form == FORM_BATTLESTANCE)||
-(spell_id == 21178 && (m_form == FORM_BEAR || m_form == FORM_DIREBEAR) ) ||
-(spell_id == 33948 && m_form == FORM_FLIGHT) ||
-(spell_id == 40121 && m_form == FORM_FLIGHT_EPIC) )
-//Check CasterAuraStates
-if (   (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState)))
-&& HasItemFitToSpellRequirements(spellInfo) )
-*/
 bool Player::HandlePassiveSpellLearn(SpellInfo const* spellInfo)
 {
     // note: form passives activated with shapeshift spells be implemented by HandleShapeshiftBoosts instead of spell_learn_spell

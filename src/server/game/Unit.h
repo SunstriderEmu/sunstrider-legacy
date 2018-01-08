@@ -1455,24 +1455,11 @@ class TC_GAME_API Unit : public WorldObject
         void SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Powers powertype);
         uint32 SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool IsTriggeredSpell = false, bool useSpellDamage = true);
 
-        // CastSpell's third arg can be a variety of things - check out CastSpellExtraArgs' constructors!
+        // CastSpell's third arg can be a variety of things - check out CastSpellExtraArgs' constructors! Returns SpellCastResult
         uint32 CastSpell(SpellCastTargets const& targets, uint32 spellId, CastSpellExtraArgs const& args = {});
         uint32 CastSpell(WorldObject* target, uint32 spellId, CastSpellExtraArgs const& args = {});
         uint32 CastSpell(Position const& dest, uint32 spellId, CastSpellExtraArgs const& args = {});
 
-        //returns SpellCastResult
-        /*
-        uint32 CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
-        uint32 CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
-        uint32 CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty, bool skipHit = false);
-        uint32 CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty, bool skipHit = false);
-        uint32 CastCustomSpell(Unit* victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, TriggerCastFlags triggerFlags, Item *castItem= nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
-        uint32 CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit* Victim = nullptr, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
-        uint32 CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = nullptr, TriggerCastFlags triggerFlags = TRIGGERED_FULL_MASK, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
-        uint32 CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
-        uint32 CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags triggerFlags, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
-        uint32 CastSpell(GameObject *go, uint32 spellId, TriggerCastFlags triggerFlags, Item *castItem = nullptr, Aura* triggeredByAura = nullptr, ObjectGuid originalCaster = ObjectGuid::Empty);
-        */
         Aura* AddAura(uint32 spellId, Unit *target);
 
         void LogBossDown(Creature* victim);
