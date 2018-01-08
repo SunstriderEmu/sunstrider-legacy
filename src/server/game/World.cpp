@@ -1747,6 +1747,9 @@ void World::SetInitialWorldSettings()
     sScriptMgr->Initialize(_TRINITY_SCRIPT_CONFIG);
 //TC    sScriptMgr->OnConfigLoad(false);                                // must be done after the ScriptMgr has been properly initialized
 
+    TC_LOG_INFO("server.loading", "Validating spell scripts...");
+    sObjectMgr->ValidateSpellScripts();
+
     TC_LOG_INFO("server.loading","Loading SmartAI scripts...");
     sSmartScriptMgr->LoadSmartAIFromDB();
 

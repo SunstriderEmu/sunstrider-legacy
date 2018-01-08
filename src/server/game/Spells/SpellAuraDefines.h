@@ -20,7 +20,34 @@ enum DAMAGE_ABSORB_TYPE
     ONLY_MAGIC_ABSORB       = -1,
 };
 
-enum AuraType : unsigned int
+enum AuraEffectHandleModes
+{
+    AURA_EFFECT_HANDLE_DEFAULT         = 0x0,
+    AURA_EFFECT_HANDLE_REAL            = 0x01, // handler applies/removes effect from unit
+    //Next one are NYI
+    AURA_EFFECT_HANDLE_SEND_FOR_CLIENT = 0x02, // handler sends apply/remove packet to unit
+    AURA_EFFECT_HANDLE_CHANGE_AMOUNT   = 0x04, // handler updates effect on target after effect amount change
+    AURA_EFFECT_HANDLE_REAPPLY         = 0x08, // handler updates effect on target after aura is reapplied on target
+    AURA_EFFECT_HANDLE_STAT            = 0x10, // handler updates effect on target when stat removal/apply is needed for calculations by core
+    AURA_EFFECT_HANDLE_SKILL           = 0x20, // handler updates effect on target when skill removal/apply is needed for calculations by core
+
+    AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK               = (AURA_EFFECT_HANDLE_SEND_FOR_CLIENT | AURA_EFFECT_HANDLE_REAL), // any case handler need to send packet
+    AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK                 = (AURA_EFFECT_HANDLE_CHANGE_AMOUNT | AURA_EFFECT_HANDLE_REAL), // any case handler applies effect depending on amount
+    AURA_EFFECT_HANDLE_CHANGE_AMOUNT_SEND_FOR_CLIENT_MASK = (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK),
+    AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK               = (AURA_EFFECT_HANDLE_REAPPLY | AURA_EFFECT_HANDLE_REAL)
+};
+
+
+enum AuraRemoveMode
+{
+    AURA_REMOVE_BY_DEFAULT,
+    AURA_REMOVE_BY_STACK,                                   // at replace by semillar aura
+    AURA_REMOVE_BY_CANCEL,
+    AURA_REMOVE_BY_DISPEL,
+    AURA_REMOVE_BY_DEATH
+};
+
+enum AuraType : uint32
 {
     SPELL_AURA_NONE = 0,
     SPELL_AURA_BIND_SIGHT = 1,

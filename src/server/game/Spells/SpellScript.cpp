@@ -677,104 +677,109 @@ SpellValue const* SpellScript::GetSpellValue()
     return m_spell->m_spellValue;
 }
 
-/* NYI
 bool AuraScript::_Validate(SpellInfo const* entry)
 {
-    for (std::list<CheckAreaTargetHandler>::iterator itr = DoCheckAreaTarget.begin(); itr != DoCheckAreaTarget.end();  ++itr)
-        if (!entry->HasAreaAuraEffect() && !entry->HasEffect(SPELL_EFFECT_PERSISTENT_AREA_AURA))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` of script `%s` does not have area aura effect - handler bound to hook `DoCheckAreaTarget` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
+    /*
+    for (auto itr = DoCheckAreaTarget.begin(); itr != DoCheckAreaTarget.end(); ++itr)
+        if (!entry->HasAreaAuraEffect() && !entry->HasEffect(SPELL_EFFECT_PERSISTENT_AREA_AURA) && !entry->HasEffect(SPELL_EFFECT_APPLY_AURA))
+            TC_LOG_ERROR("scripts", "Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `DoCheckAreaTarget` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
 
-    for (std::list<AuraDispelHandler>::iterator itr = OnDispel.begin(); itr != OnDispel.end();  ++itr)
+    for (auto itr = OnDispel.begin(); itr != OnDispel.end(); ++itr)
         if (!entry->HasEffect(SPELL_EFFECT_APPLY_AURA) && !entry->HasAreaAuraEffect())
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `OnDispel` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `OnDispel` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
 
-    for (std::list<AuraDispelHandler>::iterator itr = AfterDispel.begin(); itr != AfterDispel.end();  ++itr)
+    for (auto itr = AfterDispel.begin(); itr != AfterDispel.end(); ++itr)
         if (!entry->HasEffect(SPELL_EFFECT_APPLY_AURA) && !entry->HasAreaAuraEffect())
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `AfterDispel` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
-
-    for (std::list<EffectApplyHandler>::iterator itr = OnEffectApply.begin(); itr != OnEffectApply.end();  ++itr)
+            TC_LOG_ERROR("scripts", "Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `AfterDispel` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
+    */
+    for (auto itr = OnEffectApply.begin(); itr != OnEffectApply.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectApply` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectApply` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectApplyHandler>::iterator itr = OnEffectRemove.begin(); itr != OnEffectRemove.end();  ++itr)
+    for (auto itr = OnEffectRemove.begin(); itr != OnEffectRemove.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectRemove` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectRemove` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectApplyHandler>::iterator itr = AfterEffectApply.begin(); itr != AfterEffectApply.end();  ++itr)
+    for (auto itr = AfterEffectApply.begin(); itr != AfterEffectApply.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectApply` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectApply` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectApplyHandler>::iterator itr = AfterEffectRemove.begin(); itr != AfterEffectRemove.end();  ++itr)
+    for (auto itr = AfterEffectRemove.begin(); itr != AfterEffectRemove.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectRemove` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
-
-    for (std::list<EffectPeriodicHandler>::iterator itr = OnEffectPeriodic.begin(); itr != OnEffectPeriodic.end();  ++itr)
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectRemove` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+    /*
+    for (auto itr = OnEffectPeriodic.begin(); itr != OnEffectPeriodic.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectPeriodic` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectPeriodic` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectUpdatePeriodicHandler>::iterator itr = OnEffectUpdatePeriodic.begin(); itr != OnEffectUpdatePeriodic.end();  ++itr)
+    for (auto itr = OnEffectUpdatePeriodic.begin(); itr != OnEffectUpdatePeriodic.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectUpdatePeriodic` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectUpdatePeriodic` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectCalcAmountHandler>::iterator itr = DoEffectCalcAmount.begin(); itr != DoEffectCalcAmount.end();  ++itr)
+    for (auto itr = DoEffectCalcAmount.begin(); itr != DoEffectCalcAmount.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `DoEffectCalcAmount` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `DoEffectCalcAmount` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectCalcPeriodicHandler>::iterator itr = DoEffectCalcPeriodic.begin(); itr != DoEffectCalcPeriodic.end();  ++itr)
+    for (auto itr = DoEffectCalcPeriodic.begin(); itr != DoEffectCalcPeriodic.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `DoEffectCalcPeriodic` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `DoEffectCalcPeriodic` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectCalcSpellModHandler>::iterator itr = DoEffectCalcSpellMod.begin(); itr != DoEffectCalcSpellMod.end();  ++itr)
+    for (auto itr = DoEffectCalcSpellMod.begin(); itr != DoEffectCalcSpellMod.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `DoEffectCalcSpellMod` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `DoEffectCalcSpellMod` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectAbsorbHandler>::iterator itr = OnEffectAbsorb.begin(); itr != OnEffectAbsorb.end();  ++itr)
+    for (auto itr = OnEffectAbsorb.begin(); itr != OnEffectAbsorb.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectAbsorb` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectAbsorb` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectAbsorbHandler>::iterator itr = AfterEffectAbsorb.begin(); itr != AfterEffectAbsorb.end();  ++itr)
+    for (auto itr = AfterEffectAbsorb.begin(); itr != AfterEffectAbsorb.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectAbsorb` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectAbsorb` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectManaShieldHandler>::iterator itr = OnEffectManaShield.begin(); itr != OnEffectManaShield.end();  ++itr)
+    for (auto itr = OnEffectManaShield.begin(); itr != OnEffectManaShield.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectManaShield` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectManaShield` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectManaShieldHandler>::iterator itr = AfterEffectManaShield.begin(); itr != AfterEffectManaShield.end();  ++itr)
+    for (auto itr = AfterEffectManaShield.begin(); itr != AfterEffectManaShield.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
-            TC_LOG_ERROR("scripts", "TSCR: Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectManaShield` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectManaShield` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectSplitHandler>::iterator itr = OnEffectSplit.begin(); itr != OnEffectSplit.end();  ++itr)
+    for (auto itr = OnEffectSplit.begin(); itr != OnEffectSplit.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
             TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectSplit` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<CheckProcHandler>::iterator itr = DoCheckProc.begin(); itr != DoCheckProc.end(); ++itr)
+    for (auto itr = DoCheckProc.begin(); itr != DoCheckProc.end(); ++itr)
         if (!entry->HasEffect(SPELL_EFFECT_APPLY_AURA) && !entry->HasAreaAuraEffect())
             TC_LOG_ERROR("scripts", "Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `DoCheckProc` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
 
-    for (std::list<AuraProcHandler>::iterator itr = DoPrepareProc.begin(); itr != DoPrepareProc.end(); ++itr)
+    for (auto itr = DoCheckEffectProc.begin(); itr != DoCheckEffectProc.end(); ++itr)
+        if (!itr->GetAffectedEffectsMask(entry))
+            TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `DoCheckEffectProc` of AuraScript won't be executed", entry->Id, itr->ToString().c_str(), m_scriptName->c_str());
+
+    for (auto itr = DoPrepareProc.begin(); itr != DoPrepareProc.end(); ++itr)
         if (!entry->HasEffect(SPELL_EFFECT_APPLY_AURA) && !entry->HasAreaAuraEffect())
             TC_LOG_ERROR("scripts", "Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `DoPrepareProc` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
 
-    for (std::list<AuraProcHandler>::iterator itr = OnProc.begin(); itr != OnProc.end(); ++itr)
+    for (auto itr = OnProc.begin(); itr != OnProc.end(); ++itr)
         if (!entry->HasEffect(SPELL_EFFECT_APPLY_AURA) && !entry->HasAreaAuraEffect())
             TC_LOG_ERROR("scripts", "Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `OnProc` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
 
-    for (std::list<AuraProcHandler>::iterator itr = AfterProc.begin(); itr != AfterProc.end(); ++itr)
+    for (auto itr = AfterProc.begin(); itr != AfterProc.end(); ++itr)
         if (!entry->HasEffect(SPELL_EFFECT_APPLY_AURA) && !entry->HasAreaAuraEffect())
             TC_LOG_ERROR("scripts", "Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `AfterProc` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
 
-    for (std::list<EffectProcHandler>::iterator itr = OnEffectProc.begin(); itr != OnEffectProc.end(); ++itr)
+    for (auto itr = OnEffectProc.begin(); itr != OnEffectProc.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
             TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectProc` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    for (std::list<EffectProcHandler>::iterator itr = AfterEffectProc.begin(); itr != AfterEffectProc.end(); ++itr)
+    for (auto itr = AfterEffectProc.begin(); itr != AfterEffectProc.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
             TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectProc` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
-
+*/
     return _SpellScript::_Validate(entry);
 }
 
+/*
 AuraScript::CheckAreaTargetHandler::CheckAreaTargetHandler(AuraCheckAreaTargetFnType _pHandlerScript)
 {
     pHandlerScript = _pHandlerScript;
@@ -794,15 +799,15 @@ void AuraScript::AuraDispelHandler::Call(AuraScript* auraScript, DispelInfo* _di
 {
     (auraScript->*pHandlerScript)(_dispelInfo);
 }
+*/
 
 AuraScript::EffectBase::EffectBase(uint8 _effIndex, uint16 _effName)
-    : _SpellScript::EffectAuraNameCheck(_effName), _SpellScript::EffectHook(_effIndex)
-{
-}
+    : _SpellScript::EffectAuraNameCheck(_effName), _SpellScript::EffectHook(SpellEffIndex(_effIndex))
+{ }
 
-bool AuraScript::EffectBase::CheckEffect(SpellInfo const* spellEntry, uint8 effIndex)
+bool AuraScript::EffectBase::CheckEffect(SpellInfo const* spellEntry, SpellEffIndex effIndexToCheck)
 {
-    return _SpellScript::EffectAuraNameCheck::Check(spellEntry, effIndex);
+    return _SpellScript::EffectAuraNameCheck::Check(spellEntry, effIndexToCheck);
 }
 
 std::string AuraScript::EffectBase::ToString()
@@ -810,6 +815,7 @@ std::string AuraScript::EffectBase::ToString()
     return "Index: " + EffIndexToString() + " AuraName: " +_SpellScript::EffectAuraNameCheck::ToString();
 }
 
+/*
 AuraScript::EffectPeriodicHandler::EffectPeriodicHandler(AuraEffectPeriodicFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)
     : AuraScript::EffectBase(_effIndex, _effName)
 {
@@ -864,7 +870,7 @@ void AuraScript::EffectCalcSpellModHandler::Call(AuraScript* auraScript, AuraEff
 {
     (auraScript->*pEffectHandlerScript)(aurEff, spellMod);
 }
-
+*/
 AuraScript::EffectApplyHandler::EffectApplyHandler(AuraEffectApplicationModeFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName, AuraEffectHandleModes _mode)
     : AuraScript::EffectBase(_effIndex, _effName)
 {
@@ -877,7 +883,7 @@ void AuraScript::EffectApplyHandler::Call(AuraScript* auraScript, AuraEffect con
     if (_mode & mode)
         (auraScript->*pEffectHandlerScript)(_aurEff, _mode);
 }
-
+/*
 AuraScript::EffectAbsorbHandler::EffectAbsorbHandler(AuraEffectAbsorbFnType _pEffectHandlerScript, uint8 _effIndex)
     : AuraScript::EffectBase(_effIndex, SPELL_AURA_SCHOOL_ABSORB)
 {
@@ -941,7 +947,7 @@ void AuraScript::EffectProcHandler::Call(AuraScript* auraScript, AuraEffect cons
 {
     (auraScript->*_EffectHandlerScript)(aurEff, eventInfo);
 }
-
+*/
 bool AuraScript::_Load(Aura* aura)
 {
     m_aura = aura;
@@ -1037,7 +1043,7 @@ Unit* AuraScript::GetUnitOwner() const
     return m_aura->GetUnitOwner();
 }
 
-DynamicObject* AuraScript::GetDynobjOwner() const
+/*DynamicObject* AuraScript::GetDynobjOwner() const
 {
     return m_aura->GetDynobjOwner();
 }
@@ -1046,16 +1052,19 @@ void AuraScript::Remove(uint32 removeMode)
 {
     m_aura->Remove((AuraRemoveMode)removeMode);
 }
+*/
 
 Aura* AuraScript::GetAura() const
 {
     return m_aura;
 }
 
+/*
 AuraObjectType AuraScript::GetType() const
 {
     return m_aura->GetType();
 }
+*/
 
 int32 AuraScript::GetDuration() const
 {
@@ -1064,13 +1073,15 @@ int32 AuraScript::GetDuration() const
 
 void AuraScript::SetDuration(int32 duration, bool withMods)
 {
-    m_aura->SetDuration(duration, withMods);
+    m_aura->SetDuration(duration/*TC , withMods*/);
 }
 
+/*
 void AuraScript::RefreshDuration()
 {
     m_aura->RefreshDuration();
 }
+*/
 
 time_t AuraScript::GetApplyTime() const
 {
@@ -1087,10 +1098,12 @@ void AuraScript::SetMaxDuration(int32 duration)
     m_aura->SetMaxDuration(duration);
 }
 
+/*
 int32 AuraScript::CalcMaxDuration() const
 {
     return m_aura->CalcMaxDuration();
 }
+*/
 
 bool AuraScript::IsExpired() const
 {
@@ -1137,10 +1150,12 @@ void AuraScript::SetStackAmount(uint8 num)
     m_aura->SetStackAmount(num);
 }
 
+/*
 bool AuraScript::ModStackAmount(int32 num, AuraRemoveMode removeMode)
 {
     return m_aura->ModStackAmount(num, removeMode);
 }
+*/
 
 bool AuraScript::IsPassive() const
 {
@@ -1152,6 +1167,7 @@ bool AuraScript::IsDeathPersistent() const
     return m_aura->IsDeathPersistent();
 }
 
+/*/
 bool AuraScript::HasEffect(uint8 effIndex) const
 {
     return m_aura->HasEffect(effIndex);
@@ -1166,6 +1182,7 @@ bool AuraScript::HasEffectType(AuraType type) const
 {
     return m_aura->HasEffectType(type);
 }
+*/
 
 Unit* AuraScript::GetTarget() const
 {
@@ -1199,4 +1216,3 @@ AuraApplication const* AuraScript::GetTargetApplication() const
 {
     return m_auraApplication;
 }
-*/

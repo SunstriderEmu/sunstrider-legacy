@@ -4354,7 +4354,7 @@ bool Unit::AddAura(Aura *Aur)
         }
     }
 
-    Aur->ApplyModifier(true,true);
+    Aur->HandleEffect(true,true);
 
     uint32 id = Aur->GetId();
     Unit* target = Aur->GetTarget();
@@ -4512,7 +4512,7 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
                     &&(CompareAuraRanks(spellId, effIndex, i_spellId, i_effIndex) < 0))
                     return false;
 
-                // Its a parent aura (create this aura in ApplyModifier)
+                // Its a parent aura (create this aura in HandleEffect)
                 if ((*i).second->IsInUse())
                 {
                     TC_LOG_ERROR("spell","Aura (Spell %u Effect %u) is in process but attempt removed at aura (Spell %u Effect %u) adding, need add stack rule for Unit::RemoveNoStackAurasDueToAura", i->second->GetId(), i->second->GetEffIndex(),Aur->GetId(), Aur->GetEffIndex());
@@ -4715,9 +4715,9 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, ObjectGuid casterGUID, U
             // Remove aura as dispel
             if (iter->second->GetStackAmount() > 1) {
                 // reapply modifier with reduced stack amount
-                iter->second->ApplyModifier(false, true);
+                iter->second->HandleEffect(false, true);
                 iter->second->SetStackAmount(iter->second->GetStackAmount() - 1);
-                iter->second->ApplyModifier(true, true);
+                iter->second->HandleEffect(true, true);
                 iter->second->UpdateSlotCounterAndDuration();
                 ++iter;
             }
@@ -4817,9 +4817,9 @@ void Unit::RemoveSingleAuraFromStackByDispel(uint32 spellId)
             if(iter->second->GetStackAmount() > 1)
             {
                 // reapply modifier with reduced stack amount
-                iter->second->ApplyModifier(false,true);
+                iter->second->HandleEffect(false,true);
                 iter->second->SetStackAmount(iter->second->GetStackAmount()-1);
-                iter->second->ApplyModifier(true,true);
+                iter->second->HandleEffect(true,true);
 
                 iter->second->UpdateSlotCounterAndDuration();
                 return; // not remove aura if stack amount > 1
@@ -4840,9 +4840,9 @@ void Unit::RemoveSingleAuraFromStack(uint32 spellId, uint8 effindex)
         if(iter->second->GetStackAmount() > 1)
         {
             // reapply modifier with reduced stack amount
-            iter->second->ApplyModifier(false,true);
+            iter->second->HandleEffect(false,true);
             iter->second->SetStackAmount(iter->second->GetStackAmount()-1);
-            iter->second->ApplyModifier(true,true);
+            iter->second->HandleEffect(true,true);
 
             iter->second->UpdateSlotCounterAndDuration();
             return; // not remove aura if stack amount > 1
@@ -5020,7 +5020,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
         }
     }
     assert(!Aur->IsInUse());
-    Aur->ApplyModifier(false,true);
+    Aur->HandleEffect(false,true);
 
     Aur->SetStackAmount(0);
 
@@ -5196,7 +5196,7 @@ void Unit::_RemoveAllAuraMods()
 {
     for (AuraMap::const_iterator i = m_Auras.begin(); i != m_Auras.end(); ++i)
     {
-        (*i).second->ApplyModifier(false);
+        (*i).second->HandleEffect(false);
     }
 }
 
@@ -5204,7 +5204,7 @@ void Unit::_ApplyAllAuraMods()
 {
     for (AuraMap::const_iterator i = m_Auras.begin(); i != m_Auras.end(); ++i)
     {
-        (*i).second->ApplyModifier(true);
+        (*i).second->HandleEffect(true);
     }
 }
 
@@ -14645,7 +14645,7 @@ void Unit::SetStunned(bool apply)
         if (GetTypeId() == TYPEID_PLAYER)
             SetStandState(UNIT_STAND_STATE_STAND);
 
-        WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8);
+        WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8 + 4);
         data << GetPackGUID();
         data << uint32(0);
         SendMessageToSet(&data, true);
@@ -14696,7 +14696,7 @@ void Unit::SetRooted(bool apply)
 
         if (GetTypeId() == TYPEID_PLAYER)
         {
-            WorldPacket data(SMSG_FORCE_MOVE_ROOT, 10);
+            WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8 + 4);
             data << GetPackGUID();
             data << m_rootTimes;
             SendMessageToSet(&data, true);
@@ -15343,8 +15343,7 @@ void Unit::RestoreDisplayId()
     if (handledAura)
     {
         //unapply (this is still active so can't be reapplied without unapplying first) then re apply
-        handledAura->ApplyModifier(false);
-        handledAura->ApplyModifier(true);
+        handledAura->HandleEffect(true, AURA_EFFECT_HANDLE_SEND_FOR_CLIENT);
     }
 
     // no transform aura found, check for shapeshift

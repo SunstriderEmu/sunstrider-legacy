@@ -1268,6 +1268,11 @@ void ScriptMgr::CreateSpellScripts(uint32 spellId, std::vector<SpellScript*>& sc
     CreateSpellOrAuraScripts(spellId, scriptVector, &SpellScriptLoader::GetSpellScript, invoker);
 }
 
+void ScriptMgr::CreateAuraScripts(uint32 spellId, std::vector<AuraScript*>& scriptVector, Aura* invoker) const
+{
+    CreateSpellOrAuraScripts(spellId, scriptVector, &SpellScriptLoader::GetAuraScript, invoker);
+}
+
 void ScriptMgr::OnCreateMap(Map* map)
 {
     ASSERT(map);

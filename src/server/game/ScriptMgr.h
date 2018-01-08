@@ -44,12 +44,9 @@ enum ShutdownMask : int;
 struct SpellSummary;
 class ScriptMgr;
 class SpellScript;
+class AuraScript;
 class ModuleReference;
 class TestCase;
-
-#define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)
-#define VISIBLE_RANGE       (166.0f)                        //MAX visible range (size of grid)
-#define DEFAULT_TEXT        "<missing text>"
 
 class TC_GAME_API ScriptObject
 {
@@ -94,7 +91,7 @@ public:
     virtual SpellScript* GetSpellScript() const { return nullptr; }
 
     // Should return a fully valid AuraScript pointer.
-  //NYI  virtual AuraScript* GetAuraScript() const { return NULL; }
+    virtual AuraScript* GetAuraScript() const { return nullptr; }
 };
 
 template<class TMap> 
@@ -300,7 +297,7 @@ public: /* Script contexts */
     public: /* SpellScriptLoader */
 
 		void CreateSpellScripts(uint32 spellId, std::vector<SpellScript*>& scriptVector, Spell* invoker) const;
-        //NYIvoid CreateAuraScripts(uint32 spellId, std::vector<AuraScript*>& scriptVector, Aura* invoker);
+        void CreateAuraScripts(uint32 spellId, std::vector<AuraScript*>& scriptVector, Aura* invoker) const;
         SpellScriptLoader* GetSpellScriptLoader(uint32 scriptId);
 
     public: /* AccountScript */
@@ -454,7 +451,6 @@ public:
 };
 #define RegisterSpellScript(spell_script) new GenericSpellScriptLoader<spell_script>(#spell_script)
 
-/*
 template <class A>
 class GenericAuraScriptLoader : public SpellScriptLoader
 {
@@ -473,7 +469,6 @@ public:
     AuraScript* GetAuraScript() const override { return new A(); }
 };
 #define RegisterSpellAndAuraScriptPair(spell_script, aura_script) new GenericSpellAndAuraScriptLoader<spell_script, aura_script>(#spell_script)
-*/
 
 template <class AI>
 class GenericCreatureScript : public CreatureScript

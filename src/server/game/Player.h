@@ -2790,23 +2790,80 @@ void Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell co
     float totalmul = 1.0f;
     int32 totalflat = 0;
 
+    /*TC 
+    // Drop charges for triggering spells instead of triggered ones
+    if (m_spellModTakingSpell)
+        spell = m_spellModTakingSpell;
+        */
+    /* TC, for when we get Player::ApplyModToSpell
+    switch (op)
+    {
+        // special case, if a mod makes spell instant, only consume that mod
+        case SPELLMOD_CASTING_TIME:
+        {
+            SpellModifier* modInstantSpell = nullptr;
+            for (SpellModifier* mod : m_spellMods[op])
+            {
+                if (!IsAffectedBySpellmod(spellInfo, mod, spell))
+                    continue;
+
+                if (mod->type == SPELLMOD_PCT && basevalue < T(10000) && mod->value <= -100)
+                {
+                    modInstantSpell = mod;
+                    break;
+                }
+            }
+
+            if (modInstantSpell)
+            {
+                Player::ApplyModToSpell(modInstantSpell, spell);
+                basevalue = T(0);
+                return;
+            }
+            break;
+        }
+        // special case if two mods apply 100% critical chance, only consume one
+        case SPELLMOD_CRITICAL_CHANCE:
+        {
+            SpellModifier* modCritical = nullptr;
+            for (SpellModifier* mod : m_spellMods[op])
+            {
+                if (!IsAffectedBySpellmod(spellInfo, mod, spell))
+                    continue;
+
+                if (mod->type == SPELLMOD_FLAT && mod->value >= 100)
+                {
+                    modCritical = mod;
+                    break;
+                }
+            }
+
+            if (modCritical)
+            {
+                Player::ApplyModToSpell(modCritical, spell);
+                basevalue = T(100);
+                return;
+            }
+            break;
+        }
+        default:
+        break;
+    }
+    */
+
     for (auto mod : m_spellMods[op])
     {
-        // Charges can be set only for mods with auras
-        /* TC
-        if (!mod->ownerAura)
-        ASSERT(mod->charges == 0);
-        */
-
         if(!IsAffectedBySpellmod(spellInfo,mod,spell))
             continue;
 
-        if (mod->type == SPELLMOD_FLAT)
-            totalflat += mod->value;
-        else if (mod->type == SPELLMOD_PCT)
+        switch (mod->type)
         {
+        case SPELLMOD_FLAT:
+            totalflat += mod->value;
+            break;
+        case SPELLMOD_PCT:
             // skip percent mods for null basevalue (most important for spell mods with charges )
-            if(basevalue == T(0)) 
+            if (basevalue == T(0))
             {
                 //HACKZ //Frost Warding + Molten Shields
                 if (mod->spellId == 11189 || mod->spellId == 28332 || mod->spellId == 11094 || mod->spellId == 13043)
@@ -2815,17 +2872,18 @@ void Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell co
                     continue;
             }
             // special case (skip >10sec spell casts for instant cast setting)
-            if( mod->op==SPELLMOD_CASTING_TIME  && basevalue >= T(10000) && mod->value <= -100)
+            if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
                 continue;
 
             totalmul += CalculatePct(1.0f, mod->value);
+            break;
         }
 
-        //TC DropModCharge(mod, spell);
         if (mod->charges > 0 )
         {
-          if( !(spellInfo->SpellFamilyName == 8 && (spellInfo->SpellFamilyFlags & 0x200000000LL)))
-            --mod->charges;
+            if( !(spellInfo->SpellFamilyName == 8 && (spellInfo->SpellFamilyFlags & 0x200000000LL)))
+                --mod->charges;
+
             if (mod->charges == 0)
             {
                 mod->charges = -1;

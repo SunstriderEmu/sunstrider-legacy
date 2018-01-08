@@ -5633,13 +5633,13 @@ void Player::SetSkill(uint32 id, uint16 step, uint16 newVal, uint16 maxVal)
                 AuraList const& mModSkill = GetAurasByType(SPELL_AURA_MOD_SKILL);
                 for (auto j : mModSkill)
                     if (j->GetMiscValue() == int32(id))
-                        j->ApplyModifier(true);
+                        j->HandleEffect(true);
 
                 // permanent bonuses
                 AuraList const& mModSkillTalent = GetAurasByType(SPELL_AURA_MOD_SKILL_TALENT);
                 for (auto j : mModSkillTalent)
                     if (j->GetMiscValue() == int32(id))
-                        j->ApplyModifier(true);
+                        j->HandleEffect(true);
 
                 // Learn all spells for skill
                 LearnSkillRewardedSpells(id, newVal);
@@ -20493,18 +20493,18 @@ void Player::SendInitialPacketsAfterAddToMap()
     {
         Unit::AuraList const& auraList = GetAurasByType(*itr);
         if(!auraList.empty())
-            auraList.front()->ApplyModifier(true,true);
+            auraList.front()->HandleEffect(true, AURA_EFFECT_HANDLE_SEND_FOR_CLIENT);
     }
 
     if(HasAuraType(SPELL_AURA_MOD_STUN))
         SetMovement(MOVE_ROOT);
 
-    // manual send package (have code in ApplyModifier(true,true); that don't must be re-applied.
+    // manual send package (have code in HandleEffect(true,true); that don't must be re-applied.
     if(HasAuraType(SPELL_AURA_MOD_ROOT))
     {
-        WorldPacket data(SMSG_FORCE_MOVE_ROOT, 10);
+        WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8 + 4);
         data << GetPackGUID();
-        data << (uint32)2;
+        data << uint32(2);
         SendMessageToSet(&data,true);
     }
 
@@ -21725,7 +21725,7 @@ void Player::DisableItemDependentAurasAndCasts( Item * pItem )
            || aura->GetCasterGUID() != GetGUID()  )
             continue;
 
-        aura->ApplyModifier(false);
+        aura->HandleEffect(false);
     }
 
     // currently casted spells can be dependent from item

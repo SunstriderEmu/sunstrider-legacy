@@ -884,15 +884,6 @@ enum AuraStateType
 };
 #define PER_CASTER_AURA_STATE_MASK ( (1<<(AURA_STATE_CONFLAGRATE-1))|(1<<(AURA_STATE_DEADLY_POISON-1)) )
 
-enum AuraRemoveMode
-{
-    AURA_REMOVE_BY_DEFAULT,
-    AURA_REMOVE_BY_STACK,                                   // at replace by semillar aura
-    AURA_REMOVE_BY_CANCEL,
-    AURA_REMOVE_BY_DISPEL,
-    AURA_REMOVE_BY_DEATH
-};
-
 // Spell mechanics
 enum Mechanics : uint32
 {

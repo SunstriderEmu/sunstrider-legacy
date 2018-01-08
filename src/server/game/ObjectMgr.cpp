@@ -4889,9 +4889,9 @@ void ObjectMgr::ValidateSpellScripts()
                 ++count;
 
                 std::unique_ptr<SpellScript> spellScript(spellScriptLoader->GetSpellScript());
-                //NYI std::unique_ptr<AuraScript> auraScript(spellScriptLoader->GetAuraScript());
+                std::unique_ptr<AuraScript> auraScript(spellScriptLoader->GetAuraScript());
 
-                if (!spellScript /*&& !auraScript*/)
+                if (!spellScript&& !auraScript)
                 {
                     TC_LOG_ERROR("scripts", "Functions GetSpellScript() and GetAuraScript() of script `%s` do not return objects - script skipped", GetScriptName(itr->second.first).c_str());
 
@@ -4911,7 +4911,6 @@ void ObjectMgr::ValidateSpellScripts()
                     }
                 }
 
-                /* NYI
                 if (auraScript)
                 {
                     auraScript->_Init(&spellScriptLoader->GetName(), spellEntry->Id);
@@ -4923,7 +4922,6 @@ void ObjectMgr::ValidateSpellScripts()
                         continue;
                     }
                 }
-                */
 
                 // Enable the script when all checks passed
                 itr->second.second = true;

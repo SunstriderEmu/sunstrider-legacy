@@ -422,7 +422,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
         return false;
     }
 
-    uint32 display_id = sObjectMgr->ChooseDisplayId(GetCreatureTemplate(), data);
+    uint32 display_id = ObjectMgr::ChooseDisplayId(GetCreatureTemplate(), data);
     CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(display_id);
     if (!minfo)
     {

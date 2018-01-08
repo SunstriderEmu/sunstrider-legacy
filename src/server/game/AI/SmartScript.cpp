@@ -1039,7 +1039,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     {
                         if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(e.action.morphOrMount.creature))
                         {
-                            uint32 display_id = sObjectMgr->ChooseDisplayId(cInfo);
+                            uint32 display_id = ObjectMgr::ChooseDisplayId(cInfo);
                             me->Mount(display_id);
                         }
                     }

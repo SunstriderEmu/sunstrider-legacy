@@ -8005,6 +8005,9 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
         case SPELLVALUE_MOD_RADIUS:
             m_spellValue->RadiusMod = (float)value / 10000;
             break;
+        /*case SPELLVALUE_AURA_STACK:
+            m_spellValue->AuraStackAmount = uint8(value);
+            break;*/
     }
 }
 
