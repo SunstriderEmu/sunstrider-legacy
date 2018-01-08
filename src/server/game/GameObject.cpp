@@ -30,6 +30,7 @@
 #include "ScriptMgr.h"
 #include "GossipDef.h"
 #include "PoolMgr.h"
+#include "SpawnData.h"
 
 #include "Models/GameObjectModel.h"
 #include "DynamicTree.h"
@@ -950,6 +951,26 @@ void GameObject::DeleteFromDB()
     trans->Append(stmt);
 
     trans->PAppend("DELETE FROM game_event_gameobject WHERE guid = '%u'", m_spawnId);
+
+    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN);
+    stmt->setUInt32(0, m_spawnId);
+    stmt->setUInt32(1, LINKED_RESPAWN_GO_TO_GO);
+    trans->Append(stmt);
+    
+    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN);
+    stmt->setUInt32(0, m_spawnId);
+    stmt->setUInt32(1, LINKED_RESPAWN_GO_TO_CREATURE);
+    trans->Append(stmt);
+    
+    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN_MASTER);
+    stmt->setUInt32(0, m_spawnId);
+    stmt->setUInt32(1, LINKED_RESPAWN_GO_TO_GO);
+    trans->Append(stmt);
+   
+    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN_MASTER);
+    stmt->setUInt32(0, m_spawnId);
+    stmt->setUInt32(1, LINKED_RESPAWN_CREATURE_TO_GO);
+    trans->Append(stmt);
 
     WorldDatabase.CommitTransaction(trans);
 }
