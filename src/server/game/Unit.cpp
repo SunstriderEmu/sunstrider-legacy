@@ -3917,11 +3917,7 @@ int32 Unit::GetMaxPositiveAuraModifier(AuraType auratype) const
     for(auto i : mTotalAuraList)
     {
         if (i)
-        {
-            int32 amount = i->GetModifierValue();
-            if (amount > modifier)
-                modifier = amount;
-        }
+            modifier = std::max(modifier, i->GetModifierValue());
     }
 
     return modifier;
@@ -4354,7 +4350,7 @@ bool Unit::AddAura(Aura *Aur)
         }
     }
 
-    Aur->HandleEffect(true,true);
+    Aur->HandleEffect(true, AURA_EFFECT_HANDLE_REAL);
 
     uint32 id = Aur->GetId();
     Unit* target = Aur->GetTarget();
@@ -4715,9 +4711,9 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, ObjectGuid casterGUID, U
             // Remove aura as dispel
             if (iter->second->GetStackAmount() > 1) {
                 // reapply modifier with reduced stack amount
-                iter->second->HandleEffect(false, true);
+                iter->second->HandleEffect(false, AURA_EFFECT_HANDLE_REAL);
                 iter->second->SetStackAmount(iter->second->GetStackAmount() - 1);
-                iter->second->HandleEffect(true, true);
+                iter->second->HandleEffect(true, AURA_EFFECT_HANDLE_REAL);
                 iter->second->UpdateSlotCounterAndDuration();
                 ++iter;
             }
@@ -4817,9 +4813,9 @@ void Unit::RemoveSingleAuraFromStackByDispel(uint32 spellId)
             if(iter->second->GetStackAmount() > 1)
             {
                 // reapply modifier with reduced stack amount
-                iter->second->HandleEffect(false,true);
+                iter->second->HandleEffect(false, AURA_EFFECT_HANDLE_REAL);
                 iter->second->SetStackAmount(iter->second->GetStackAmount()-1);
-                iter->second->HandleEffect(true,true);
+                iter->second->HandleEffect(true, AURA_EFFECT_HANDLE_REAL);
 
                 iter->second->UpdateSlotCounterAndDuration();
                 return; // not remove aura if stack amount > 1
@@ -4840,9 +4836,9 @@ void Unit::RemoveSingleAuraFromStack(uint32 spellId, uint8 effindex)
         if(iter->second->GetStackAmount() > 1)
         {
             // reapply modifier with reduced stack amount
-            iter->second->HandleEffect(false,true);
+            iter->second->HandleEffect(false, AURA_EFFECT_HANDLE_REAL);
             iter->second->SetStackAmount(iter->second->GetStackAmount()-1);
-            iter->second->HandleEffect(true,true);
+            iter->second->HandleEffect(true, AURA_EFFECT_HANDLE_REAL);
 
             iter->second->UpdateSlotCounterAndDuration();
             return; // not remove aura if stack amount > 1
@@ -5020,7 +5016,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
         }
     }
     assert(!Aur->IsInUse());
-    Aur->HandleEffect(false,true);
+    Aur->HandleEffect(false, AURA_EFFECT_HANDLE_REAL);
 
     Aur->SetStackAmount(0);
 

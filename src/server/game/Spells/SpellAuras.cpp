@@ -652,6 +652,8 @@ void Aura::Update(uint32 diff)
         {
             ++m_tickNumber;
 
+            GetBase()->CallScriptEffectUpdatePeriodicHandlers(this);
+
             // update before applying (aura can be removed in TriggerSpell or PeriodicTick calls)
             m_periodicTimer += m_amplitude;//m_modifier.periodictime;
 
@@ -1184,6 +1186,11 @@ void Aura::UpdateSlotCounterAndDuration()
 
 void Aura::TriggerSpell()
 {
+    AuraApplication* aurApp = this; //TC compat
+    bool prevented = GetBase()->CallScriptEffectPeriodicHandlers(this, aurApp);
+    if (prevented)
+        return;
+
     Unit* caster = GetCaster();
     Unit* target = GetTriggerTarget();
 
@@ -1561,8 +1568,6 @@ void Aura::TriggerSpell()
 //                    case 36785: break;
 //                    // Cannon Charging (self)
 //                    case 36860: break;
-                    // Remote Toy
-                    case 37027: trigger_spell_id = 37029; break;
 //                    // Mark of Death
 //                    case 37125: break;
 //                    // Arcane Flurry
@@ -2854,7 +2859,7 @@ void Aura::HandleWaterBreathing(bool apply, uint8 mode)
 
 void Aura::HandleAuraModShapeshift(bool apply, uint8 mode)
 {
-    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+    if (!(mode & AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK))
         return;
     
     Powers PowerType = POWER_MANA;
@@ -6079,6 +6084,11 @@ void Aura::SendTickImmune(Unit* target, Unit* caster) const
 
 void Aura::PeriodicTick()
 {
+    AuraApplication* aurApp = this; //TC compat
+    bool prevented = GetBase()->CallScriptEffectPeriodicHandlers(this, aurApp);
+    if (prevented)
+        return;
+
     if(!m_target->IsAlive())
         return;
 
@@ -6243,7 +6253,7 @@ void Aura::PeriodicTick()
 
             pCaster->CalcAbsorbResist(m_target, GetSpellInfo()->GetSchoolMask(), DOT, pdamage, &absorb, &resist, GetId());
 
-            TC_LOG_DEBUG("FIXME","PeriodicTick: %u (TypeId: %u) attacked %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
+            TC_LOG_DEBUG("spells","PeriodicTick: %u (TypeId: %u) attacked %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
                 GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId(),absorb);
 
             // Shadow Word: Death backfire damage hackfix
@@ -6457,7 +6467,7 @@ void Aura::PeriodicTick()
 
             heal *= GetStackAmount();
 
-            TC_LOG_DEBUG("spell","PeriodicTick: %u (TypeId: %u) heal of %u (TypeId: %u) for %u health inflicted by %u",
+            TC_LOG_DEBUG("spells","PeriodicTick: %u (TypeId: %u) heal of %u (TypeId: %u) for %u health inflicted by %u",
                 GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), heal, GetId());
             
             SpellPeriodicAuraLogInfo pInfo(this, heal, 0, 0, 0.0f);
@@ -7441,19 +7451,22 @@ void Aura::ApplySpellMod(Unit* target, bool apply)
         }
     }
 
-    uint64 spellFamilyMask = m_spellmod->mask;
-    // Spiritual Attunement hack
-    if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_PALADIN && (spellFamilyMask & 0x0000100000000000LL))
+    if (apply && m_spellmod)
     {
-        if (m_target->HasAuraEffect(31785, 0)) // rank 1
+        uint64 spellFamilyMask = m_spellmod->mask;
+        // Spiritual Attunement hack
+        if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_PALADIN && (spellFamilyMask & 0x0000100000000000LL))
         {
-            m_target->RemoveAurasDueToSpell(31785);
-            m_target->CastSpell(m_target, 31785, true);
-        }
-        if (m_target->HasAuraEffect(33776, 0)) // rank 2
-        {
-            m_target->RemoveAurasDueToSpell(33776);
-            m_target->CastSpell(m_target, 33776, true);
+            if (m_target->HasAuraEffect(31785, 0)) // rank 1
+            {
+                m_target->RemoveAurasDueToSpell(31785);
+                m_target->CastSpell(m_target, 31785, true);
+            }
+            if (m_target->HasAuraEffect(33776, 0)) // rank 2
+            {
+                m_target->RemoveAurasDueToSpell(33776);
+                m_target->CastSpell(m_target, 33776, true);
+            }
         }
     }
 }
@@ -7538,6 +7551,40 @@ void Aura::CallScriptAfterEffectRemoveHandlers(AuraEffect const* aurEff, AuraApp
         for (; effItr != effEndItr; ++effItr)
             if (effItr->IsEffectAffected(m_spellInfo, SpellEffIndex(aurEff->GetEffIndex())))
                 effItr->Call(*scritr, aurEff, mode);
+
+        (*scritr)->_FinishScriptCall();
+    }
+}
+
+bool Aura::CallScriptEffectPeriodicHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp)
+{
+    bool preventDefault = false;
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_EFFECT_PERIODIC, aurApp);
+        auto effEndItr = (*scritr)->OnEffectPeriodic.end(), effItr = (*scritr)->OnEffectPeriodic.begin();
+        for (; effItr != effEndItr; ++effItr)
+            if (effItr->IsEffectAffected(m_spellInfo, SpellEffIndex(aurEff->GetEffIndex())))
+                effItr->Call(*scritr, aurEff);
+
+        if (!preventDefault)
+            preventDefault = (*scritr)->_IsDefaultActionPrevented();
+
+        (*scritr)->_FinishScriptCall();
+    }
+
+    return preventDefault;
+}
+
+void Aura::CallScriptEffectUpdatePeriodicHandlers(AuraEffect* aurEff)
+{
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_EFFECT_UPDATE_PERIODIC);
+        auto effEndItr = (*scritr)->OnEffectUpdatePeriodic.end(), effItr = (*scritr)->OnEffectUpdatePeriodic.begin();
+        for (; effItr != effEndItr; ++effItr)
+            if (effItr->IsEffectAffected(m_spellInfo, SpellEffIndex(aurEff->GetEffIndex())))
+                effItr->Call(*scritr, aurEff);
 
         (*scritr)->_FinishScriptCall();
     }
