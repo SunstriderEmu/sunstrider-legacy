@@ -197,11 +197,11 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
 #endif
 
     MovementInfo movementInfo;                              // used only for proper packet read
-    WriteMovementInfo(&recvData, &movementInfo);
-
-    GetPlayer()->m_anti_lastmovetime = movementInfo.time;
+    ReadMovementInfo(recvData, &movementInfo);
 
     recvData.read_skip<uint32>();                          // spline id
+
+    GetPlayer()->m_anti_lastmovetime = movementInfo.time;
 
     // in taxi flight packet received in 2 case:
     // 1) end taxi path in far (multi-node) flight

@@ -2679,7 +2679,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         ObjectGuid m_anti_transportGUID;    //current transport GUID
         float  m_anti_MovedLen;         //Length of traveled way
         uint32 m_anti_NextLenCheck;
-        uint32 m_anti_beginfalltime;    //alternative falling begin time
         uint32 m_anti_lastalarmtime;    //last time when alarm generated
         uint32 m_anti_alarmcount;       //alarm counter
         uint32 m_anti_TeleTime;

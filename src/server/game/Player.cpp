@@ -282,7 +282,6 @@ Player::Player(WorldSession *session) :
     m_anti_lastmovetime = 0;   //last movement time
     m_anti_NextLenCheck = 0;
     m_anti_MovedLen = 0.0f;
-    m_anti_beginfalltime = 0;  //alternative falling begin time
     m_anti_lastalarmtime = 0;    //last time when alarm generated
     m_anti_alarmcount = 0;       //alarm counter
     m_anti_TeleTime = 0;

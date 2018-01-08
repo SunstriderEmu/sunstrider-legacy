@@ -28,6 +28,8 @@ void LogsDatabaseConnection::DoPrepareStatements()
     PrepareStatement(LOGS_INS_CHAR_AUCTION_CREATE, "INSERT INTO char_auction_create (seller_account, seller_guid, item_guid, item_entry, item_count, time, IP, gm_involved) VALUES (?,?,?,?,?,UNIX_TIMESTAMP(),?,?)", CONNECTION_ASYNC);
     PrepareStatement(LOGS_INS_CHAR_ITEM_VENDOR, "INSERT INTO char_item_vendor (transaction_type, account, guid, item_entry, item_count, vendor_entry, time, IP, gm_involved) VALUES (?,?,?,?,?,?,UNIX_TIMESTAMP(),?,?)", CONNECTION_ASYNC);
     PrepareStatement(LOGS_INS_ACCOUNT_IP, "INSERT INTO account_ip (id, time, ip, gm_involved) VALUES (?,UNIX_TIMESTAMP(),?,?)", CONNECTION_ASYNC);
+
+    PrepareStatement(LOGS_INS_ANTICHEAT_MOVEMENT, "INSERT INTO anticheat_movement (time, player, account, reason, speed, opcode, val1, val2, mapid, posX, posY, posZ, oldPosX, oldPosY, oldPosZ, level) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
 }
 
 LogsDatabaseConnection::LogsDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)
