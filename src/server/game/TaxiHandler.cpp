@@ -189,7 +189,7 @@ void WorldSession::HandleActivateTaxiExpressOpcode (WorldPacket& recvData)
 
 void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
 {
-    TC_LOG_TRACE("network", "WORLD: Received CMSG_MOVE_SPLINE_DONE");
+    //TC_LOG_TRACE("network", "WORLD: Received CMSG_MOVE_SPLINE_DONE");
 
 #ifdef LICH_KING
     ObjectGuid guid; // used only for proper packet read

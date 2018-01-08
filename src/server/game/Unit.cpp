@@ -7953,7 +7953,7 @@ void Unit::ModifyAuraState(AuraStateType flag, bool apply)
                     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr.first);
                     if (!spellInfo || !spellInfo->IsPassive()) 
                         continue;
-                    if (spellInfo->CasterAuraState == uint32(flag))
+                    if (spellInfo->CasterAuraState == flag)
                         CastSpell(this, itr.first, true);
                 }
             }
@@ -11499,12 +11499,24 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
         playerMover->GetSession()->SendPacket(&self);
 
         // Send notification to other players. sent to every clients (if in range) except one: the client of the player concerned by the change.
+        /* Sunstrider: Bug with MSG_MOVE_SET_RUN_SPEED for players, either we shouldn't send this one, structure is incorrect, or info sent is wrong. Probably the latest.
+        The bug was: fleeing players (first movement only) were seen going to another position for other players. BuildMovementPacket seems to be building information contradicting the previous SMSG_MONSTER_MOVE sent at move start.
+        In the meanwhile, send SMSG_SPLINE_SET_RUN_SPEED seems to works flawlessly so... let's go with that
+        **/
+#ifdef LICH_KING
         WorldPacket data;
         data.Initialize(moveTypeToOpcode[mtype][2], 8 + 30 + 4);
         data << GetPackGUID();
         BuildMovementPacket(&data);
         data << float(GetSpeed(mtype));
         playerMover->SendMessageToSet(&data, false);
+#else
+        WorldPacket data;
+        data.Initialize(moveTypeToOpcode[mtype][0], 8 + 4);
+        data << GetPackGUID();
+        data << float(GetSpeed(mtype));
+        playerMover->SendMessageToSet(&data, false);
+#endif
     }
     else // unit controlled by AI.
     {

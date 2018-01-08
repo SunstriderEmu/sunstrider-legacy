@@ -55,6 +55,8 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
     init.SetWalk(false);
     int32 traveltime = init.Launch();
     i_nextCheckTime.Reset(traveltime + urand(800, 1500));
+
+    //TC_LOG_TRACE("misc", "FleeingMovementGenerator<T>::SetTargetLocation pos (%f %f %f)", destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
 }
 
 template<class T>
