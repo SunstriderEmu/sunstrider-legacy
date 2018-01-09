@@ -2566,7 +2566,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (missInfo != SPELL_MISS_REFLECT)
         {
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_canTrigger);
-            if(caster->GetTypeId() == TYPEID_PLAYER)
+            if(caster->GetTypeId() == TYPEID_PLAYER 
+                && !m_spellInfo->HasAttribute(SPELL_ATTR0_STOP_ATTACK_TARGET) 
+                && !m_spellInfo->HasAttribute(SPELL_ATTR4_CANT_TRIGGER_ITEM_SPELLS) 
+                && (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
                 (caster->ToPlayer())->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx, m_spellInfo);
         }
 
@@ -5263,7 +5266,8 @@ SpellCastResult Spell::CheckCast(bool strict)
         if(m_spellInfo->TargetAuraState && !target->HasAuraState(AuraStateType(m_spellInfo->TargetAuraState)))
             return SPELL_FAILED_TARGET_AURASTATE;
 
-        if( !(m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS))
+        if(    !(m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS)) 
+            && !m_spellInfo->HasAttribute(SPELL_ATTR5_SKIP_CHECKCAST_LOS_CHECK)
             && !m_caster->IsWithinLOSInMap(target, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2) )
             return SPELL_FAILED_LINE_OF_SIGHT;
 
@@ -6342,7 +6346,8 @@ SpellCastResult Spell::CheckCast(bool strict)
     
     // check LOS for ground targeted spells
     if (m_targets.HasDst())
-        if (!(m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS)) && !m_spellInfo->HasAttribute(SPELL_ATTR5_UNK26)) //SPELL_ATTR5_UNK26 check from sunwell, not 100% sure okay but the spell with
+        if (!(m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS)) 
+            && !m_spellInfo->HasAttribute(SPELL_ATTR5_SKIP_CHECKCAST_LOS_CHECK))
         {
             float x, y, z;
             m_targets.GetDstPos()->GetPosition(x, y, z);

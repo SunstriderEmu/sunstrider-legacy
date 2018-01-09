@@ -947,54 +947,36 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             }
         }
 
-        if (damagetype != NODAMAGE && damage)// && pVictim->GetTypeId() == TYPEID_PLAYER)
+        if (damagetype != NODAMAGE && damage)
         {
-            /*const SpellInfo *se = i->second->GetSpellInfo();
-            next = i; ++next;
-            if (spellProto && spellProto->Id == se->Id) // Not drop auras added by self
-                continue;
-            if( se->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE )
+            if (pVictim != this && pVictim->GetTypeId() == TYPEID_PLAYER // does not support creature push_back
+                && (!spellProto || !(
+#ifdef LICH_KING
+                    spellProto->HasAttribute(SPELL_ATTR7_NO_PUSHBACK_ON_DAMAGE) ||
+#endif
+                    spellProto->HasAttribute(SPELL_ATTR3_TREAT_AS_PERIODIC))
+                   )
+               )
             {
-                bool remove = true;
-                if (se->ProcFlags & (1<<3))
+                if (damagetype != DOT)
                 {
-                    if (!roll_chance_i(se->ProcChance))
-                        remove = false;
-                }
-                if (remove)
-                {
-                    pVictim->RemoveAurasDueToSpell(i->second->GetId());
-                    // FIXME: this may cause the auras with proc chance to be rerolled several times
-                    next = vAuras.begin();
-                }
-            }
-        }*/
-
-            if(pVictim != this && pVictim->GetTypeId() == TYPEID_PLAYER) // does not support creature push_back
-            {
-                if(damagetype != DOT)
-                {
-                    if(Spell* spell = pVictim->GetCurrentSpell(CURRENT_GENERIC_SPELL))
-                    {
-                        if(spell->getState() == SPELL_STATE_PREPARING)
+                    if (Spell* spell = pVictim->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+                        if (spell->getState() == SPELL_STATE_PREPARING)
                         {
                             uint32 interruptFlags = spell->m_spellInfo->InterruptFlags;
-                            if(interruptFlags & SPELL_INTERRUPT_FLAG_DAMAGE)
+                            if (interruptFlags & SPELL_INTERRUPT_FLAG_DAMAGE)
                                 pVictim->InterruptNonMeleeSpells(false);
-                            else if(interruptFlags & SPELL_INTERRUPT_FLAG_PUSH_BACK)
+                            else if (interruptFlags & SPELL_INTERRUPT_FLAG_PUSH_BACK)
                                 spell->Delayed();
                         }
-                    }
 
-                    if(Spell* spell = pVictim->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-                    {
-                        if(spell->getState() == SPELL_STATE_CASTING)
+                    if (Spell* spell = pVictim->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+                        if (spell->getState() == SPELL_STATE_CASTING)
                         {
                             uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
                             if (((channelInterruptFlags & CHANNEL_FLAG_DELAY) != 0) && (damagetype != DOT))
                                 spell->DelayedChannel();
                         }
-                    }
                 }
             }
         }
@@ -4978,12 +4960,12 @@ void Unit::RemoveArenaAuras(bool onleave)
     // used to remove positive visible auras in arenas
     for(auto iter = m_Auras.begin(); iter != m_Auras.end();)
     {
-        if  (  !(iter->second->GetSpellInfo()->HasAttribute(SPELL_ATTR4_UNK21)) // don't remove stances, shadowform, pally/hunter auras
+        if  ((  !(iter->second->GetSpellInfo()->HasAttribute(SPELL_ATTR4_UNK21)) // don't remove stances, shadowform, pally/hunter auras
             && !iter->second->IsPassive()                               // don't remove passive auras
             && (!(iter->second->GetSpellInfo()->Attributes & SPELL_ATTR2_PRESERVE_ENCHANT_IN_ARENA))
             && (!onleave || !iter->second->IsPositive())                // remove all buffs on enter, negative buffs on leave
             && (iter->second->IsPositive() || !(iter->second->GetSpellInfo()->HasAttribute(SPELL_ATTR3_DEATH_PERSISTENT))) //dont remove death persistent debuff such as deserter
-            )
+            ) || iter->second->GetSpellInfo()->HasAttribute(SPELL_ATTR5_REMOVE_ON_ARENA_ENTER))                             // special marker, always remove)
             RemoveAura(iter);
         else
             ++iter;

@@ -428,7 +428,7 @@ enum SpellAttr4
 {
     SPELL_ATTR4_IGNORE_RESISTANCES         = 0x00000001,           // 0 spells with this attribute will completely ignore the target's resistance (these spells can't be resisted)
     SPELL_ATTR4_PROC_ONLY_ON_CASTER        = 0x00000002,           // 1 proc only on effects with TARGET_UNIT_CASTER?
-    SPELL_ATTR4_EXPIRE_OFFLINE             = 0x00000004,           // 2 Continues while logged out (Unsupported)
+    SPELL_ATTR4_EXPIRE_OFFLINE             = 0x00000004,           // 2 Continues while logged out  //TC SPELL_ATTR4_FADES_WHILE_LOGGED_OUT
     SPELL_ATTR4_CANT_PROC_FROM_SELFCAST    = 0x00000008,           // 3 may be wrong
     SPELL_ATTR4_UNK4                       = 0x00000010,           // 4
     SPELL_ATTR4_UNK5                       = 0x00000020,           // 5
@@ -448,7 +448,7 @@ enum SpellAttr4
     SPELL_ATTR4_UNK19                      = 0x00080000,           // 19 proc delayed, after damage or don't proc on absorb?
     SPELL_ATTR4_NOT_CHECK_SELFCAST_POWER   = 0x00100000,           // 20 NYI supersedes message "More powerful spell applied" for self casts.
     SPELL_ATTR4_UNK21                      = 0x00200000,           // 21
-    SPELL_ATTR4_UNK22                      = 0x00400000,           // 22
+    SPELL_ATTR4_CANT_TRIGGER_ITEM_SPELLS   = 0x00800000,           // 23 spells with this flag should not trigger item spells / enchants (mostly in conjunction with SPELL_ATTR0_STOP_ATTACK_TARGET)
     SPELL_ATTR4_UNK23                      = 0x00800000,           // 23
     SPELL_ATTR4_AUTOSHOT                   = 0x01000000,           // 24
     SPELL_ATTR4_IS_PET_SCALING             = 0x02000000,           // 25 pet scaling auras
@@ -464,7 +464,7 @@ enum SpellAttr5
 {
     SPELL_ATTR5_CAN_CHANNEL_WHEN_MOVING         = 0x00000001,           // 0 available casting channel spell when moving //sunstrider: not sure about this... player clients send channel cancel even with those
     SPELL_ATTR5_NO_REAGENT_WHILE_PREP           = 0x00000002,           // 1 not need reagents if UNIT_FLAG_PREPARATION
-    SPELL_ATTR5_UNK2                            = 0x00000004,           // 2
+    SPELL_ATTR5_REMOVE_ON_ARENA_ENTER           = 0x00000004,           // 2 remove this aura on arena enter
     SPELL_ATTR5_USABLE_WHILE_STUNNED            = 0x00000008,           // 3 usable while stunned
     SPELL_ATTR5_UNK4                            = 0x00000010,           // 4
     SPELL_ATTR5_SINGLE_TARGET_SPELL             = 0x00000020,           // 5 Only one target can be apply at a time
@@ -488,7 +488,7 @@ enum SpellAttr5
     SPELL_ATTR5_UNK23                           = 0x00800000,           // 23
     SPELL_ATTR5_UNK24                           = 0x01000000,           // 24
     SPELL_ATTR5_UNK25                           = 0x02000000,           // 25
-    SPELL_ATTR5_UNK26                           = 0x04000000,           // 26 //sunwell SPELL_ATTR5_SKIP_CHECKCAST_LOS_CHECK. Only two spells on BC have this : 13532 (Thunder Clap) && 27285 (Seed of Corruption)
+    SPELL_ATTR5_SKIP_CHECKCAST_LOS_CHECK        = 0x04000000,           // 26 aoe related - Only two spells on BC have this : 13532 (Thunder Clap) && 27285 (Seed of Corruption)
     SPELL_ATTR5_DONT_SHOW_AURA_IF_SELF_CAST     = 0x08000000,           // 27 Auras with this attribute are not visible on units that are the caster
     SPELL_ATTR5_DONT_SHOW_AURA_IF_NOT_SELF_CAST = 0x10000000,           // 28 Auras with this attribute are not visible on units that are not the caster
     SPELL_ATTR5_UNK29                           = 0x20000000,           // 29
@@ -503,7 +503,7 @@ enum SpellAttr6
     SPELL_ATTR6_IGNORE_CASTER_AURAS             = 0x00000004,           // 2 From TC
     SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG       = 0x00000008,           // 3 skips checking UNIT_FLAG_IMMUNE_TO_PC and UNIT_FLAG_IMMUNE_TO_NPC flags on assist
     SPELL_ATTR6_UNK4                            = 0x00000010,           // 4 not set in 2.4.2
-    SPELL_ATTR6_UNK5                            = 0x00000020,           // 5 Only Ritual of Summoning on 2.4.3 (698) Sunwell SPELL_ATTR6_DONT_CONSUME_CHARGES 
+    SPELL_ATTR6_DONT_CONSUME_PROC_CHARGES       = 0x00000020,           // 5 Only Ritual of Summoning on 2.4.3 (698) 
     SPELL_ATTR6_USE_SPELL_CAST_EVENT            = 0x00000040,           // 6 Auras with this attribute trigger SPELL_CAST combat log event instead of SPELL_AURA_START (clientside attribute)
     SPELL_ATTR6_UNK7                            = 0x00000080,           // 7
     SPELL_ATTR6_CANT_TARGET_CROWD_CONTROLLED    = 0x00000100,           // 8
@@ -525,9 +525,9 @@ enum SpellAttr6
     SPELL_ATTR6_CAN_TARGET_UNTARGETABLE         = 0x01000000,           // 24 not set in 2.4.2
     SPELL_ATTR6_NOT_RESET_SWING_IF_INSTANT      = 0x02000000,           // 25 NYI, not set in 2.4.2
     SPELL_ATTR6_UNK26                           = 0x04000000,           // 26 not set in 2.4.2
-    SPELL_ATTR6_LIMIT_PCT_HEALING_MODS          = 0x08000000,           // 27 not set in 2.4.2 // sunwell: complicated and guessed
+    SPELL_ATTR6_LIMIT_PCT_HEALING_MODS          = 0x08000000,           // 27 not set in 2.4.2
     SPELL_ATTR6_UNK28                           = 0x10000000,           // 28 not set in 2.4.2
-    SPELL_ATTR6_LIMIT_PCT_DAMAGE_MODS           = 0x20000000,           // 29 not set in 2.4.2 // sunwell: complicated and guessed
+    SPELL_ATTR6_LIMIT_PCT_DAMAGE_MODS           = 0x20000000,           // 29 not set in 2.4.2
     SPELL_ATTR6_UNK30                           = 0x40000000,           // 30 not set in 2.4.2
     SPELL_ATTR6_IGNORE_CATEGORY_COOLDOWN_MODS   = 0x80000000,           // 31 not set in 2.4.2 // Spells with this attribute skip applying modifiers to category cooldowns
 };
