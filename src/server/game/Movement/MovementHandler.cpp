@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #include "Common.h"
 #include "WorldPacket.h"
@@ -33,6 +16,7 @@
 #include "World.h"
 #include "Pet.h"
 #include "Chat.h"
+#include "AntiCheatMgr.h"
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
 
@@ -87,7 +71,6 @@ void WorldSession::HandleMoveWorldportAck()
         GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
         return;
     }
-
 
     float z = loc.GetPositionZ();
     if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
@@ -372,7 +355,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                     foundNewTransport = true;
                     plrMover->m_transport = transport;
                     transport->AddPassenger(plrMover);
-                    plrMover->m_anti_transportGUID = transport->GetGUID();
                 }
 
                 if (!foundNewTransport)
@@ -393,8 +375,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     else if (plrMover && plrMover->GetTransport())                // if we were on a transport, leave
     {
         plrMover->m_transport->RemovePassenger(plrMover);
-        plrMover->m_transport = NULL;
-        plrMover->m_anti_transportGUID.Clear();
+        plrMover->m_transport = nullptr;
         movementInfo.transport.Reset();
     }
 
@@ -415,82 +396,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     // Dont allow to turn on walking if charming other player
     if (mover->GetGUID() != _player->GetGUID())
         movementInfo.flags &= ~MOVEMENTFLAG_WALKING;
-
-    // ---- old windrunner anti-cheat features -->>>
-    if(sWorld->GetMvAnticheatEnable() && plrMover && _player->GetGUID() == plrMover->GetGUID() //disabled for charmed
-        && !plrMover->IsInFlight() && plrMover->m_anti_transportGUID == 0
-        && plrMover->GetSession()->GetSecurity() <= sWorld->GetMvAnticheatGmLevel()
-        && ((time(nullptr) - plrMover->m_anti_TeleTime) > 15)
-        /*&& plrMover->GetSession()->GetGroupId() == 0*/ //ignore gm in groups
-        ) 
-    {
-        const uint32 CurTime=GetMSTime();
-        if(GetMSTimeDiff(plrMover->m_anti_lastalarmtime,CurTime) > sWorld->GetMvAnticheatAlarmPeriod())
-        {
-            plrMover->m_anti_alarmcount = 0;
-        }
-        /* I really don't care about movement-type yet (todo)
-        UnitMoveType move_type;
-
-        if (MovementFlags & MOVEMENTFLAG_PLAYER_FLYING) move_type = MOVE_FLY;
-        else if (MovementFlags & MOVEMENTFLAG_SWIMMING) move_type = MOVE_SWIM;
-        else if (MovementFlags & MOVEMENTFLAG_WALK_MODE) move_type = MOVE_WALK;
-        else move_type = MOVE_RUN;*/
-
-        float delta_x = plrMover->GetPositionX() - movementInfo.pos.GetPositionX();
-        float delta_y = plrMover->GetPositionY() - movementInfo.pos.GetPositionY();
-        //float delta_z = plrMover->GetPositionZ() - movementInfo.pos.GetPositionZ();
-        float delta = sqrt(delta_x * delta_x + delta_y * delta_y); // Len of movement-vector via Pythagoras (a^2+b^2=Len)
-        //float tg_z = 0.0f; //tangens
-        //float delta_t = GetMSTimeDiff(GetPlayer()->m_anti_lastmovetime,CurTime); //value not used
-        plrMover->m_anti_lastmovetime = CurTime;
-        plrMover->m_anti_MovedLen += delta;
-
-        /*if (delta_t > 15000.0f)
-            delta_t = 15000.0f;*/
-
-        if (plrMover->m_anti_NextLenCheck <= CurTime) {
-            // Check every 500ms is a lot more advisable then 1000ms, because normal movment packet arrives every 500ms
-            uint32 FH__Tmp1 = plrMover->m_anti_NextLenCheck;
-            float delta_xyt = plrMover->m_anti_MovedLen / (CurTime - (plrMover->m_anti_NextLenCheck - 500));
-            plrMover->m_anti_NextLenCheck = CurTime + 500;
-            plrMover->m_anti_MovedLen = 0.0f;
-            if (delta_xyt > 0.04f && delta <= 80.0f) {
-                Anti__CheatOccurred(CurTime, "Speed hack", delta_xyt, GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(),
-                        (float) (plrMover->GetMotionMaster()->GetCurrentMovementGeneratorType()),
-                        (float) (CurTime - (FH__Tmp1 - 500)), &movementInfo);
-            }
-        }
-
-        if (delta > 80.0f) {
-            Anti__ReportCheat("Tele hack", delta, GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str());
-        }
-
-        // Check for waterwalking
-        if (((movementInfo.GetMovementFlags() & MOVEMENTFLAG_WATERWALKING) != 0) &&
-                ((movementInfo.GetMovementFlags() ^ MOVEMENTFLAG_WATERWALKING) != 0) && // Client sometimes set waterwalk where it shouldn't do that...
-                ((movementInfo.GetMovementFlags() & MOVEMENTFLAG_JUMPING_OR_FALLING) == 0) &&
-                plrMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ() - 6.0f) &&
-                !(plrMover->HasAuraType(SPELL_AURA_WATER_WALK) || plrMover->HasAuraType(SPELL_AURA_GHOST))) {
-            Anti__CheatOccurred(CurTime, "Water walking", 0.0f, NULL, 0.0f, (uint32)(movementInfo.GetMovementFlags()));
-        }
-
-        float Anti__GroundZ = plrMover->GetMap()->GetHeight(plrMover->GetPositionX(),plrMover->GetPositionY(),MAX_HEIGHT);
-        float Anti__FloorZ = plrMover->GetMap()->GetHeight(plrMover->GetPositionX(),plrMover->GetPositionY(),plrMover->GetPositionZ());
-        float Anti__MapZ = (Anti__FloorZ < -199900.0f) ? Anti__GroundZ : Anti__FloorZ;
-
-        if(!plrMover->CanFly() &&
-            ((movementInfo.GetMovementFlags() & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_PLAYER_FLYING)) != 0) &&
-            !plrMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ()-5.0f) &&
-            (Anti__MapZ==INVALID_HEIGHT || Anti__MapZ+5.0f < plrMover->GetPositionZ()) && Anti__MapZ >= -199900.0f)
-        {
-            Anti__CheatOccurred(CurTime,"Fly hack",
-                ((uint8)(plrMover->HasAuraType(SPELL_AURA_FLY))) +
-                ((uint8)(plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))*2),
-                NULL,plrMover->GetPositionZ()-(Anti__MapZ+5.0f));
-        }
-    }
-    // <<---- anti-cheat features
 
     uint32 mstime = GetMSTime();
     /*----------------------*/
@@ -585,6 +490,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
             }
         }
     }
+
+    _player->GetSession()->anticheat.OnPlayerMoved(plrMover, movementInfo, OpcodeClient(opcode));
 }
 
 /*
@@ -783,6 +690,8 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
 
     /* Do we really need to send the data to everyone? Seemed to work better */
     _player->SendMessageToSet(&data, false);
+
+    anticheat.OnPlayerKnockBack(_player);
 }
 
 //CMSG_MOVE_HOVER_ACK
@@ -834,109 +743,4 @@ void WorldSession::HandleSummonResponseOpcode(WorldPacket& recvData)
     recvData >> agree;
 
     _player->SummonIfPossible(agree);
-}
-
-bool WorldSession::Anti__CheatOccurred(uint32 CurTime,const char* Reason,float Speed,const char* Op,
-                                       float Val1,uint32 Val2,MovementInfo* MvInfo)
-{
-    if(!Reason)
-    {
-        TC_LOG_ERROR("warden","Anti__CheatOccurred: Missing Ply or Reason paremeter!");
-        return false;
-    }
-
-    GetPlayer()->m_anti_lastalarmtime = CurTime;
-    GetPlayer()->m_anti_alarmcount = GetPlayer()->m_anti_alarmcount + 1;
-
-    if (GetPlayer()->m_anti_alarmcount > sWorld->GetMvAnticheatAlarmCount())
-    {
-        Anti__ReportCheat(Reason,Speed,Op,Val1,Val2,MvInfo);
-        return true;
-    }
-    return false;
-}
-
-bool WorldSession::Anti__ReportCheat(const char* reason,float speed, const char* opcodeName, float val1, uint32 val2, MovementInfo* movInfo)
-{
-    if(!reason)
-    {
-        TC_LOG_ERROR("warden","Anti__ReportCheat: Missing Player or Reason paremeter!");
-        return false;
-    }
-    Player* player = GetPlayer();
-    uint32 accountId =GetPlayer()->GetSession()->GetAccountId();
-    uint32 mapId = GetPlayer()->GetMapId();q
-    if(!player)
-    {
-        TC_LOG_ERROR("warden","Anti__ReportCheat: no player at report time?");
-        return false;
-    }
-
-    if(sWorld->GetMvAnticheatWarn())
-    {
-        if(lastCheatWarn + 120 < time(NULL)) //2m cooldown
-        {
-            lastCheatWarn = time(NULL);
-            std::stringstream msg;
-            msg << "New anticheat entry for player " << player << " (guid : " << GetPlayer()->GetGUID().GetCounter() << ").";
-
-            ChatHandler(GetPlayer()).SendGlobalGMSysMessage(msg.str().c_str());
-        }
-    }
-
-    if(!opcodeName)
-        opcodeName =""; 
-
-    float oldPosX = player->GetPositionX();
-    float oldPosY = player->GetPositionY();
-    float oldPosZ = player->GetPositionZ();
-    float posX = movInfo ? movInfo->pos.GetPositionX() : oldPosX;
-    float posY = movInfo ? movInfo->pos.GetPositionX() : oldPosY;
-    float posZ = movInfo ? movInfo->pos.GetPositionX() : oldPosZ;
-
-    PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_ANTICHEAT_MOVEMENT);
-
-    stmt->setUInt32(0, time(nullptr));
-    stmt->setUInt32(1, GetPlayer()->GetGUID().GetCounter());
-    stmt->setUInt32(2, accountId);
-    stmt->setString(3, reason);
-    stmt->setFloat(4, speed);
-    stmt->setString(5, opcodeName);
-    stmt->setFloat(6, val1);
-    stmt->setUInt32(7, val2);
-    stmt->setUInt16(8, mapId);
-    stmt->setFloat(9, posX);
-    stmt->setFloat(10, posY);
-    stmt->setFloat(11, posZ);
-    stmt->setFloat(12, oldPosX);
-    stmt->setFloat(13, oldPosY);
-    stmt->setFloat(14, oldPosZ);
-    stmt->setUInt32(15, player->GetLevel());
-
-    LogsDatabase.Execute(stmt);
-
-    if(sWorld->GetMvAnticheatKill() && GetPlayer()->IsAlive())
-    {
-        GetPlayer()->DealDamage(GetPlayer(), GetPlayer()->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-    }
-    if(sWorld->GetMvAnticheatKick())
-    {
-        GetPlayer()->GetSession()->KickPlayer();
-    }
-    if(sWorld->GetMvAnticheatBan() & 1)
-    {
-        sWorld->BanAccount(SANCTION_BAN_CHARACTER, player->GetName(), sWorld->GetMvAnticheatBanTime(), "Cheat", "Anticheat", nullptr);
-    }
-    if(sWorld->GetMvAnticheatBan() & 2)
-    {
-        QueryResult result = LoginDatabase.PQuery("SELECT last_ip FROM account WHERE id=%u", accountId);
-        if(result)
-        {
-            Field *fields = result->Fetch();
-            std::string LastIP = fields[0].GetString();
-            if(!LastIP.empty())
-                sWorld->BanAccount(SANCTION_BAN_IP,LastIP,sWorld->GetMvAnticheatBanTime(), "Cheat", "Anticheat", nullptr);
-        }
-    }
-    return true;
 }

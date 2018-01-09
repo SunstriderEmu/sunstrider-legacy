@@ -576,15 +576,16 @@ void World::LoadConfigSettings(bool reload)
     ///- Read other configuration items from the config file
 
     // movement anticheat
-    m_MvAnticheatEnable                     = sConfigMgr->GetBoolDefault("Anticheat.Movement.Enable",true);
-    m_MvAnticheatKick                       = sConfigMgr->GetBoolDefault("Anticheat.Movement.Kick",false);
-    m_MvAnticheatAlarmCount                 = (uint32)sConfigMgr->GetIntDefault("Anticheat.Movement.AlarmCount", 5);
-    m_MvAnticheatAlarmPeriod                = (uint32)sConfigMgr->GetIntDefault("Anticheat.Movement.AlarmTime", 5000);
-    m_MvAntiCheatBan                        = (unsigned char)sConfigMgr->GetIntDefault("Anticheat.Movement.BanType",0);
-    m_MvAnticheatBanTime                    = sConfigMgr->GetStringDefault("Anticheat.Movement.BanTime","3m");
-    m_MvAnticheatGmLevel                    = (unsigned char)sConfigMgr->GetIntDefault("Anticheat.Movement.GmLevel",0);
-    m_MvAnticheatKill                       = sConfigMgr->GetBoolDefault("Anticheat.Movement.Kill",false);
-    m_MvAnticheatWarn                       = sConfigMgr->GetBoolDefault("Anticheat.Movement.Warn",true);
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_ENABLE] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Enable", true);
+
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_ALARM_COUNT] = sConfigMgr->GetIntDefault("Anticheat.Movement.AlarmCount", 5);
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_ALARM_TIME] = sConfigMgr->GetIntDefault("Anticheat.Movement.AlarmTime", 5000);
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_KICK] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Kick", false);;
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_BAN] = sConfigMgr->GetIntDefault("Anticheat.Movement.BanType", 0);
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_BAN_TIME] = sConfigMgr->GetIntDefault("Anticheat.Movement.BanTime", 90);
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_GM] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Gm", false);
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_KILL] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Kill", false);
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_WARN_GM] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Warn", true);
 
     m_wardenBanTime                         = sConfigMgr->GetStringDefault("Warden.BanTime","180d");
 

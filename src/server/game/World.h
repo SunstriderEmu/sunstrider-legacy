@@ -283,6 +283,16 @@ enum WorldConfigs
 
     CONFIG_AUTOANNOUNCE_ENABLED,
 
+    CONFIG_ANTICHEAT_MOVEMENT_ENABLE,
+    CONFIG_ANTICHEAT_MOVEMENT_KICK,
+    CONFIG_ANTICHEAT_MOVEMENT_BAN,
+    CONFIG_ANTICHEAT_MOVEMENT_BAN_TIME,
+    CONFIG_ANTICHEAT_MOVEMENT_GM,
+    CONFIG_ANTICHEAT_MOVEMENT_KILL,
+    CONFIG_ANTICHEAT_MOVEMENT_WARN_GM,
+    CONFIG_ANTICHEAT_MOVEMENT_ALARM_COUNT,
+    CONFIG_ANTICHEAT_MOVEMENT_ALARM_TIME,
+
     CONFIG_WARDEN_ENABLED,
     CONFIG_WARDEN_KICK,
     CONFIG_WARDEN_NUM_CHECKS,
@@ -690,17 +700,6 @@ class TC_GAME_API World
 		static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances; }
 		static int32 GetVisibilityNotifyPeriodInBGArenas() { return m_visibility_notify_periodInBGArenas; }
 
-        //movement anticheat enable flag
-        inline bool GetMvAnticheatEnable()             {return m_MvAnticheatEnable;}
-        inline bool GetMvAnticheatKick()               {return m_MvAnticheatKick;}
-        inline uint32 GetMvAnticheatAlarmCount()       {return m_MvAnticheatAlarmCount;}
-        inline uint32 GetMvAnticheatAlarmPeriod()      {return m_MvAnticheatAlarmPeriod;}
-        inline unsigned char GetMvAnticheatBan()       {return m_MvAntiCheatBan;}
-        inline std::string GetMvAnticheatBanTime()     {return m_MvAnticheatBanTime;}
-        inline unsigned char GetMvAnticheatGmLevel()   {return m_MvAnticheatGmLevel;}
-        inline bool GetMvAnticheatKill()               {return m_MvAnticheatKill;}
-        inline bool GetMvAnticheatWarn()               {return m_MvAnticheatWarn;}
-
         inline std::string GetWardenBanTime()          {return m_wardenBanTime;}
 
 
@@ -817,17 +816,6 @@ class TC_GAME_API World
 		static int32 m_visibility_notify_periodOnContinents;
 		static int32 m_visibility_notify_periodInInstances;
 		static int32 m_visibility_notify_periodInBGArenas;
-
-        //movement anticheat enable flag
-        bool m_MvAnticheatEnable;
-        bool m_MvAnticheatKick;
-        uint32 m_MvAnticheatAlarmCount;
-        uint32 m_MvAnticheatAlarmPeriod;
-        unsigned char m_MvAntiCheatBan;
-        std::string m_MvAnticheatBanTime;
-        unsigned char m_MvAnticheatGmLevel;
-        bool m_MvAnticheatKill;
-        bool m_MvAnticheatWarn;
 
         std::string m_wardenBanTime;
 

@@ -36,6 +36,7 @@
 #include "PacketUtilities.h"
 #include "ReplayRecorder.h"
 #include "ReplayPlayer.h"
+#include "AntiCheatMgr.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -117,9 +118,9 @@ m_latency(0),
 m_clientTimeDelay(0),
 m_TutorialsChanged(false),
 _warden(nullptr),
-lastCheatWarn(time(nullptr)),
 forceExit(false),
-expireTime(60000) // 1 min after socket loss, session is deleted
+expireTime(60000), // 1 min after socket loss, session is deleted
+anticheat(this)
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
@@ -392,6 +393,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         //sScriptMgr->OnPacketReceive(this, *packet);
                         opHandle->Call(this, *packet);
                         LogUnprocessedTail(packet);
+                        anticheat.OnClientPacketProcessed(*packet);
                     }
                     break;
                 case STATUS_NEVER:

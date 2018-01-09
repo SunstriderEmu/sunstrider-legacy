@@ -2280,6 +2280,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         
         void SetClientControl(Unit* target, uint8 allowMove);
 
+        //Set target as moved by this player
         void SetMover(Unit* target);
 
 		void SetSeer(WorldObject* target) { m_seer = target; }
@@ -2673,15 +2674,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         float m_rest_bonus;
         RestType rest_type;
         ////////////////////Rest System/////////////////////
-
-        //movement anticheat
-        uint32 m_anti_lastmovetime;     //last movement time
-        ObjectGuid m_anti_transportGUID;    //current transport GUID
-        float  m_anti_MovedLen;         //Length of traveled way
-        uint32 m_anti_NextLenCheck;
-        uint32 m_anti_lastalarmtime;    //last time when alarm generated
-        uint32 m_anti_alarmcount;       //alarm counter
-        uint32 m_anti_TeleTime;
 
         uint32 m_resetTalentsCost;
         time_t m_resetTalentsTime;

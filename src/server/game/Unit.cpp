@@ -36,6 +36,7 @@
 #include "TemporarySummon.h"
 #include "PlayerAI.h"
 #include "CharacterCache.h"
+#include "AntiCheatMgr.h"
 
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
@@ -11424,7 +11425,10 @@ void Unit::UpdateSpeed(UnitMoveType mtype)
     speed = min_speed;
 #endif
 
+    float oldSpeed = GetSpeedRate(mtype);
     SetSpeedRate(mtype, speed);
+    if (Player* p = ToPlayer())
+        p->GetSession()->anticheat.OnPlayerSpeedChanged(p, oldSpeed, speed);
 }
 
 /* return true speed */

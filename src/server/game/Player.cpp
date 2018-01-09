@@ -59,6 +59,7 @@
 #include "CharacterDatabase.h"
 #include "PlayerTaxi.h"
 #include "CinematicMgr.h"
+#include "AntiCheatMgr.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -277,15 +278,6 @@ Player::Player(WorldSession *session) :
     m_rest_bonus=0;
     rest_type=REST_TYPE_NO;
     ////////////////////Rest System/////////////////////
-
-    //movement anticheat
-    m_anti_lastmovetime = 0;   //last movement time
-    m_anti_NextLenCheck = 0;
-    m_anti_MovedLen = 0.0f;
-    m_anti_lastalarmtime = 0;    //last time when alarm generated
-    m_anti_alarmcount = 0;       //alarm counter
-    m_anti_TeleTime = 0;
-    /////////////////////////////////
 
     m_mailsLoaded = false;
     m_mailsUpdated = false;
@@ -1870,6 +1862,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         //else
         //    return false;
     }
+    GetSession()->anticheat.OnPlayerTeleport(this);
     return true;
 }
 
@@ -23206,6 +23199,8 @@ bool Player::SetFlying(bool apply, bool packetOnly /* = false */)
     data << uint32(0);          //! movement counter
     SendDirectMessage(&data);
 
+    GetSession()->anticheat.OnPlayerSetFlying(this, apply);
+
     if (packetOnly || Unit::SetFlying(apply))
     {
         data.Initialize(MSG_MOVE_UPDATE_CAN_FLY, 64);
@@ -23347,6 +23342,12 @@ void Player::SetFallInformation(uint32 time, float z)
 
 void Player::SetMover(Unit* target)
 {
+    //if target is a player, notify anticheat
+    if (Player* targetPlayer = target->ToPlayer())
+        targetPlayer->GetSession()->anticheat.OnPlayerMoverChanged(targetPlayer->m_unitMovedByMe->m_playerMovingMe, this);
+    //also notify for ourselves
+    GetSession()->anticheat.OnPlayerMoverChanged(m_unitMovedByMe, target);
+
     m_unitMovedByMe->m_playerMovingMe = nullptr;
     m_unitMovedByMe = target;
     m_unitMovedByMe->m_playerMovingMe = this;

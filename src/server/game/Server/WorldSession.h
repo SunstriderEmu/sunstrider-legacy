@@ -8,6 +8,7 @@
 #include "QueryHolder.h"
 #include "QueryCallback.h"
 #include "World.h"
+#include "AntiCheatMgr.h"
 
 class MailItemsInfo;
 struct ItemTemplate;
@@ -213,11 +214,6 @@ class TC_GAME_API WorldSession
 
         void ReadAddonsInfo(ByteBuffer &data);
         void SendAddonsInfo();
-
-        inline bool Anti__CheatOccurred(uint32 CurTime,const char* Reason,float Speed,const char* Op=nullptr,
-            float Val1=0.0f,uint32 Val2=0,MovementInfo* MvInfo=nullptr);
-        bool Anti__ReportCheat(const char* Reason,float Speed,const char* Op=nullptr,float Val1=0.0f,uint32 Val2=0,MovementInfo* MvInfo=nullptr);
-        time_t lastCheatWarn;
 
         void SendPacket(WorldPacket* packet);
         void SendNotification(const char *format,...) ATTR_PRINTF(2,3);
@@ -428,6 +424,8 @@ class TC_GAME_API WorldSession
         void ResetTimeOutTime(bool onlyActive);
 
         bool IsConnectionIdle() const;
+
+        AntiCheatManager anticheat;
 
     public:                                                 // opcodes handlers
 

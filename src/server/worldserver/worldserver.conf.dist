@@ -275,19 +275,22 @@ InstanceCrashRecovery.Enable = 0
 #                 1 - on
 #
 #    Anticheat.Movement.AlarmCount
-#        Count alarms after that player kicked (default 5)
+#        Count alarms after that player kicked
+#        Default: 5
 #
 #    Anticheat.Movement.AlarmTime
-#        maximum time between alarms for count it (default 5000)
+#        Maximum time between alarms before reseting AlarmCount
+#        Default: 5000 (ms)
 #
 #    Anticheat.Movement.BanType
 #        Default : 0
 #
 #    Anticheat.Movement.BanTime
-#        Default : "3m"
+#        Default : 90 (days)
 #
-#    Anticheat.Movement.GmLevel
-#        Default : 0
+#    Anticheat.Movement.Gm
+#        Enable anticheat for gamematers
+#        Default : false
 #
 #    Anticheat.Movement.Kill
 #        Default : false
@@ -303,8 +306,8 @@ Anticheat.Movement.Kick = 0
 Anticheat.Movement.AlarmCount = 5
 Anticheat.Movement.AlarmTime = 5000
 Anticheat.Movement.BanType = 0
-Anticheat.Movement.BanTime = "3m"
-Anticheat.Movement.GmLevel = 0
+Anticheat.Movement.BanTime = 90
+Anticheat.Movement.Gm = false
 Anticheat.Movement.Kill = false
 Anticheat.Movement.Warn = true
 
