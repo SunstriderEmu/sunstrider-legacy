@@ -2064,6 +2064,9 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
     CalculateMeleeDamage(victim, 0, &damageInfo, attType);
     // Send log damage message to client
     SendAttackStateUpdate(&damageInfo);
+    if(damageInfo.HitInfo == MELEE_HIT_PARRY && victim->GetTypeId() == TYPEID_UNIT)
+        victim->HandleParryRush();
+
     DealMeleeDamage(&damageInfo,true);
     ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
 
@@ -2118,15 +2121,15 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
     int32 const attackerWeaponSkill = GetWeaponSkillValue(attType, victim);
     int32 const victimDefenseSkill = victim->GetDefenseSkillValue(this);
 
-    float miss_chance = MeleeSpellMissChance(victim, attType, int32(GetWeaponSkillValue(attType, victim)) - int32(victim->GetDefenseSkillValue(this)), 0) * 100.0f;
+    float miss_chance = MeleeSpellMissChance(victim, attType, int32(GetWeaponSkillValue(attType, victim)) - int32(victim->GetDefenseSkillValue(this)), 0);
 
     // Critical hit chance
-    int32 crit_chance = std::round(GetUnitCriticalChance(attType, victim) * 100.0f);
+    float crit_chance = GetUnitCriticalChance(attType, victim);
 
     // stunned target cannot dodge and this is checked in GetUnitDodgeChance() (returned 0 in this case)
-    int32 dodge_chance = std::round(GetUnitDodgeChance(attType, victim) * 100.0f);
-    int32 block_chance = std::round(GetUnitBlockChance(attType, victim) * 100.0f);
-    int32 parry_chance = std::round(GetUnitParryChance(attType, victim) * 100.0f);
+    float dodge_chance = GetUnitDodgeChance(attType, victim);
+    float block_chance = GetUnitBlockChance(attType, victim);
+    float parry_chance = GetUnitParryChance(attType, victim);
 
     // melee attack table implementation
     // outcome priority:
@@ -2134,8 +2137,8 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
     // MISS > DODGE > PARRY > GLANCING > BLOCK > CRIT > CRUSHING > HIT
     // http://wowwiki.wikia.com/wiki/Attack_table?oldid=1432543
 
-    int32    sum = 0, tmp = 0;
-    int32    roll = GetMap()->urand(0, 9999);
+    float sum = 0, tmp = 0;
+    float roll = float(GetMap()->rand_norm()) * 100.0f;
 
     // check if attack comes from behind, nobody can parry or block if attacker is behind
     bool canParryOrBlock = victim->HasInArc(float(M_PI), this) 
@@ -2179,7 +2182,6 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
         if (tmp > 0                                         // check if unit _can_ parry
             && roll < (sum += tmp))
         {
-            ((Unit*)victim)->HandleParryRush();
             return MELEE_HIT_PARRY;
         }
     }
@@ -2198,8 +2200,8 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
 
         // against boss-level targets - 24% chance of 25% average damage reduction (damage reduction range : 20-30%)
         // against level 82 elites - 18% chance of 15% average damage reduction (damage reduction range : 10-20%)
-        tmp = 600 + (victimDefenseSkill - skill) * 120;
-        tmp = std::min(tmp, 4000); 
+        tmp = 6 + (victimDefenseSkill - skill) * 1.2;
+        tmp = std::min(tmp, 40.0f); 
         if (tmp > 0 && roll < (sum += tmp))
             return MELEE_HIT_GLANCING;
     }
@@ -2229,14 +2231,14 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
         // when their weapon skill is 15 or more above victim's defense skill
         tmp = victimDefenseSkill;
         // having defense above your maximum (from items, talents etc.) has no effect
-        tmp = std::min(tmp, victimMaxSkillValueForLevel);
+        tmp = std::min(tmp, float(victimMaxSkillValueForLevel));
         // tmp = mob's level * 5 - player's current defense skill
         tmp = attackerMaxSkillValueForLevel - tmp;
         // minimum of 20 points diff (4 levels difference)
-        tmp = std::max(tmp, 20);
+        tmp = std::max(tmp, 20.0f);
 
         // add 2% chance per lacking skill point
-        tmp = tmp * 200 - 1500;
+        tmp = tmp * 2.0f - 15.0f;
         if (tmp > 0 && roll < (sum += tmp))
             return MELEE_HIT_CRUSHING;
     }
