@@ -1881,11 +1881,13 @@ bool WorldSession::StopReplaying()
 
 void CharacterCreateInfo::RandomizeAppearance()
 {
+    /* FIXME, some of these combinations are invalid (will fail in Player::ValidateAppearance)
     Skin = urand(0, 7);
     Face = urand(0, 7);
     HairStyle = urand(0, 7);
     HairColor = urand(0, 7);
-    FacialHair = urand(0, 7);
+    FacialHair = urand(0, 7);*/
+
     OutfitId = 0;
     Gender = urand(GENDER_MALE, GENDER_FEMALE);
 }
