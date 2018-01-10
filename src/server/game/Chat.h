@@ -626,6 +626,7 @@ class TC_GAME_API ChatHandler
         bool HandleDebugBattleGroundCommand(const char * args);
         bool HandleDebugThreatListCommand(const char * args);
         bool HandleDebugCombatListCommand(const char * args);
+        bool HandleDebugThreatInfoCommand(const char* args);
         bool HandlePossessCommand(const char* args);
         bool HandleUnPossessCommand(const char* args);
         bool HandleBindSightCommand(const char* args);

@@ -694,6 +694,80 @@ bool ChatHandler::HandleDebugCombatListCommand(const char * /*args*/)
     return true;
 }
 
+
+bool ChatHandler::HandleDebugThreatInfoCommand(const char* args)
+{
+    Unit* target = GetSelectedUnit();
+    if (!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    PSendSysMessage("Threat info for %s (%s):", target->GetName(), target->GetGUID().ToString().c_str());
+
+    ThreatManager const& mgr = target->GetThreatManager();
+
+    // _singleSchoolModifiers
+    {
+        auto& mods = mgr._singleSchoolModifiers;
+        SendSysMessage(" - Single-school threat modifiers:");
+        PSendSysMessage(" |-- Physical: %.2f%%", mods[SPELL_SCHOOL_NORMAL] * 100.0f);
+        PSendSysMessage(" |-- Holy    : %.2f%%", mods[SPELL_SCHOOL_HOLY] * 100.0f);
+        PSendSysMessage(" |-- Fire    : %.2f%%", mods[SPELL_SCHOOL_FIRE] * 100.0f);
+        PSendSysMessage(" |-- Nature  : %.2f%%", mods[SPELL_SCHOOL_NATURE] * 100.0f);
+        PSendSysMessage(" |-- Frost   : %.2f%%", mods[SPELL_SCHOOL_FROST] * 100.0f);
+        PSendSysMessage(" |-- Shadow  : %.2f%%", mods[SPELL_SCHOOL_SHADOW] * 100.0f);
+        PSendSysMessage(" |-- Arcane  : %.2f%%", mods[SPELL_SCHOOL_ARCANE] * 100.0f);
+    }
+
+    // _multiSchoolModifiers
+    {
+        auto& mods = mgr._multiSchoolModifiers;
+        PSendSysMessage("- Multi-school threat modifiers (%zu entries):", mods.size());
+        for (auto const& pair : mods)
+            PSendSysMessage(" |-- Mask 0x%x: %.2f%%", uint32(pair.first), pair.second);
+    }
+
+    // _redirectInfo
+    {
+        auto const& redirectInfo = mgr._redirectInfo;
+        if (redirectInfo.empty())
+            SendSysMessage(" - No redirects being applied");
+        else
+        {
+            PSendSysMessage(" - %02zu redirects being applied:", redirectInfo.size());
+            for (auto const& pair : redirectInfo)
+            {
+                Unit* unit = ObjectAccessor::GetUnit(*target, pair.first);
+                PSendSysMessage(" |-- %02u%% to %s", pair.second, unit ? unit->GetName().c_str() : pair.first.ToString().c_str());
+            }
+        }
+    }
+
+    // _redirectRegistry
+    {
+        auto const& redirectRegistry = mgr._redirectRegistry;
+        if (redirectRegistry.empty())
+            SendSysMessage(" - No redirects are registered");
+        else
+        {
+            PSendSysMessage(" - %02zu spells may have redirects registered", redirectRegistry.size());
+            for (auto const& outerPair : redirectRegistry) // (spellId, (guid, pct))
+            {
+                SpellInfo const* const spell = sSpellMgr->GetSpellInfo(outerPair.first);
+                PSendSysMessage(" |-- #%06u %s (%zu entries):", outerPair.first, spell ? spell->SpellName[0] : "<unknown>", outerPair.second.size());
+                for (auto const& innerPair : outerPair.second) // (guid, pct)
+                {
+                    Unit* unit = ObjectAccessor::GetUnit(*target, innerPair.first);
+                    PSendSysMessage("   |-- %02u%% to %s", innerPair.second, unit ? unit->GetName().c_str() : innerPair.first.ToString().c_str());
+                }
+            }
+        }
+    }
+}
+
 bool ChatHandler::HandleDebugCinematic(const char* args)
 {
     ARGS_CHECK
