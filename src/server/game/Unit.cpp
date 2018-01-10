@@ -2118,15 +2118,15 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
     int32 const attackerWeaponSkill = GetWeaponSkillValue(attType, victim);
     int32 const victimDefenseSkill = victim->GetDefenseSkillValue(this);
 
-    float miss_chance = MeleeSpellMissChance(victim, attType, int32(GetWeaponSkillValue(attType, victim)) - int32(victim->GetDefenseSkillValue(this)), 0);
+    float miss_chance = MeleeSpellMissChance(victim, attType, int32(GetWeaponSkillValue(attType, victim)) - int32(victim->GetDefenseSkillValue(this)), 0) * 100.0f;
 
     // Critical hit chance
-    int32 crit_chance = int32(GetUnitCriticalChance(attType, victim) * 100.0f);
+    int32 crit_chance = std::round(GetUnitCriticalChance(attType, victim) * 100.0f);
 
     // stunned target cannot dodge and this is checked in GetUnitDodgeChance() (returned 0 in this case)
-    int32 dodge_chance = int32(GetUnitDodgeChance(attType, victim) * 100.0f);
-    int32 block_chance = int32(GetUnitBlockChance(attType, victim) * 100.0f);
-    int32 parry_chance = int32(GetUnitParryChance(attType, victim) * 100.0f);
+    int32 dodge_chance = std::round(GetUnitDodgeChance(attType, victim) * 100.0f);
+    int32 block_chance = std::round(GetUnitBlockChance(attType, victim) * 100.0f);
+    int32 parry_chance = std::round(GetUnitParryChance(attType, victim) * 100.0f);
 
     // melee attack table implementation
     // outcome priority:
