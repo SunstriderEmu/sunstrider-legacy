@@ -46,6 +46,8 @@ void TestMgr::_Load(std::string name_or_pattern)
 bool TestMgr::_TestMatchPattern(std::shared_ptr<TestCase> test, std::string const& pattern) const
 {
     if (pattern == "")
+        return false;
+    else if (pattern == "all")
         return true;
 
     //special case, only run incomplete tests if directly called
