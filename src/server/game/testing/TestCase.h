@@ -213,10 +213,12 @@ protected:
     void _TestAuraStack(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 stacks, bool stack);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
 
-    //Return how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
+    //Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
     static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);
-    //Return how much iterations you should do to be within allowedError of a precise percentage (with 99.9% certainty)
-    static uint32 _GetPercentApproximationParams(float const allowedError);
+    //Returns how much iterations and how much tolerance you should allow for given:
+    //expectedResult: % from absoluteTolerance*2 to 1.0f
+    //absoluteTolerance: % from 0.0f to 1.0f
+    void _GetPercentApproximationParams(uint32& sampleSize, float& resultingAbsoluteTolerance, float const expectedResult, float const absoluteTolerance = 0.01f);
 
 private:
     std::string              _testName;

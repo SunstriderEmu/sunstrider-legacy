@@ -7,6 +7,8 @@
 #include "PlayerbotFactory.h"
 #include "CharacterCache.h"
 
+#include <boost/math/special_functions/erf.hpp>
+
 #define MAP_TESTING_ID 13
 
 //same as TEST_ASSERT but will track caller file and line to print it in case of error
@@ -570,17 +572,36 @@ bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
     return false;
 }
 
-uint32 TestCase::_GetPercentApproximationParams(float const allowedError)
+float myErfInv2(float x) {
+    float tt1, tt2, lnx, sgn;
+    sgn = (x < 0) ? -1.0f : 1.0f;
+
+    x = (1 - x)*(1 + x);        // x = 1 - x*x;
+    lnx = logf(x);
+
+    tt1 = 2 / (M_PI*0.147) + 0.5f * lnx;
+    tt2 = 1 / (0.147) * lnx;
+
+    return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
+}
+void TestCase::_GetPercentApproximationParams(uint32& sampleSize, float& resultingAbsoluteTolerance, float const expectedResult, float const absoluteTolerance)
 {
-    //Improve me... we want a 99.9% certainty
-    uint32 sampleSize = 1000;
-    //todo: calc sample size depending on given allowedError
-    return sampleSize;
+    INTERNAL_ASSERT_INFO("Invalid input tolerance %f", absoluteTolerance);
+    INTERNAL_TEST_ASSERT(Between(absoluteTolerance, 0.001f, 0.1f));
+
+    INTERNAL_ASSERT_INFO("Expected result %f", expectedResult);
+    INTERNAL_TEST_ASSERT(Between(expectedResult, absoluteTolerance * 2, 1.0f));
+
+    float const certainty = 0.999f;
+
+    resultingAbsoluteTolerance = absoluteTolerance / 2;
+    sampleSize = 2 * pow(boost::math::erf_inv(certainty) / absoluteTolerance, 2);
+    sampleSize = std::max(sampleSize, uint32(100)); //min sample size
 }
 
 void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& absoluteAllowedError, uint32 const expectedMin, uint32 const expectedMax)
 {
-    double targetProbability = 0.999; // Corresponds to 99.9%
+    double certainty = 0.999;
     absoluteAllowedError = (expectedMax - expectedMin) / 25; //arbitary
     absoluteAllowedError = std::max(absoluteAllowedError, uint32(1)); //min 1
 
@@ -610,8 +631,8 @@ void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& absoluteAllow
     double ratio_min = (double)(UB_max - UB_min) / (double)(UB_max - LB_min);
     double ratio_max = (double)(LB_max - LB_min) / (double)(UB_max - LB_min);
 
-    uint32 sampleSize_min = std::ceil(std::log(1.0 - targetProbability) / std::log(ratio_min));
-    uint32 sampleSize_max = std::ceil(std::log(1.0 - targetProbability) / std::log(ratio_max));
+    uint32 sampleSize_min = std::ceil(std::log(1.0 - certainty) / std::log(ratio_min));
+    uint32 sampleSize_max = std::ceil(std::log(1.0 - certainty) / std::log(ratio_max));
     sampleSize = std::max(sampleSize_min, sampleSize_max);
 }
 
@@ -1041,20 +1062,25 @@ void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, W
         TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
         return;
     }
-
-    uint32 count = 0;
+    uint32 success = 0;
+    //uint32 total = 0;
     for (auto itr : *damageToTarget)
     {
+      /*  total++;
+        float mean = (success / float(total))* 100.f;
+        if(total % 100)
+            TC_LOG_ERROR("test.unit_test", "%u error %f \t\t mean %f \t\t %f", total, std::abs(mean - expectedResult), mean, expectedResult);*/
+
         if (itr.damageInfo.attackType != weaponAttackType)
             continue;
 
         if (itr.damageInfo.hitOutCome != meleeHitOutcome)
             continue;
 
-        count++;
+        success++;
     }
 
-    float const result = count / float(damageToTarget->size()) * 100.0f;
+    float const result = success / float(damageToTarget->size()) * 100;;
     INTERNAL_ASSERT_INFO("TestMeleeOutcomePercentage: expected result: %f, result: %f", expectedResult, result);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }

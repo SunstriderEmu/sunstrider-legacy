@@ -1858,28 +1858,33 @@ public:
     public:
         ShieldBlockTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
 
-        void TestShieldBlock(TestPlayer* warrior, TestPlayer* rogue, float expectedResult, bool block = false)
+        void TestShieldBlock(TestPlayer* warrior, float expectedResult, bool castShieldBlock = false)
         {
-            float const allowedError = 0.01f;
-            uint32 sampleSize = _GetPercentApproximationParams(allowedError);
+            uint32 sampleSize;
+            float resultingAbsoluteTolerance;
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 3.0f);
+
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
+            rogue->SetFacingToObject(warrior);
+
+            _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResult / 100.0f);
             //auto AI = rogue->GetTestingPlayerbotAI();
             for (uint32 i = 0; i < sampleSize; i++)
             {
-                rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
-                if (block && !warrior->HasAura(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1))
+                if (castShieldBlock && !warrior->HasAura(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1))
                     warrior->AddAura(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, warrior);
+                rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
                 warrior->SetFullHealth();
             }
-            TEST_MELEE_OUTCOME_PERCENTAGE(rogue, warrior, BASE_ATTACK, MELEE_HIT_BLOCK, expectedResult, allowedError);
+            TEST_MELEE_OUTCOME_PERCENTAGE(rogue, warrior, BASE_ATTACK, MELEE_HIT_BLOCK, expectedResult, resultingAbsoluteTolerance * 100);
+            rogue->KillSelf();
         }
 
         void Test() override
         {
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
-
-            Position spawn(_location);
-            spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
 
             // Stances & weapon
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1);
@@ -1887,15 +1892,18 @@ public:
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
             TestRequiresMeleeWeapon(warrior, warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, false, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
-            EQUIP_ITEM(warrior, 34185); // Shield
+            EQUIP_ITEM(warrior, 8320); //random useless shield
 
             // Triggers
             float const startBlock = warrior->GetUnitBlockChance(BASE_ATTACK, warrior);
             float const expectedBlock = startBlock + 75.0f;
-            TestShieldBlock(warrior, rogue, startBlock);
-            TestShieldBlock(warrior, rogue, expectedBlock, true);
+            TestShieldBlock(warrior, startBlock);
+            //@Nasty> can't work, block can be pushed out of attack table
+            TestShieldBlock(warrior, expectedBlock, true);
 
             // Aura
+            warrior->ModifyPower(POWER_RAGE, 100); //shield block costs 10 rage
+            warrior->CastSpell(warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1);
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, EFFECT_0, 5 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
