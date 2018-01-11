@@ -27,7 +27,6 @@ void TestMgr::_Load(std::string name_or_pattern)
     {
         // Get the range of the current key
         range = allTestsScripts.equal_range(i->first);
-
         for (auto testScript = range.first; testScript != range.second; ++testScript)
         {
             auto testCase = testScript->second->GetTest();
