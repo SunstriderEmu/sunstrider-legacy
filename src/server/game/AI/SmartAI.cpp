@@ -930,11 +930,10 @@ void SmartAI::SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker)
     GetScript()->SetScript9(e, entry);
 }
 
-/*
-void SmartAI::sOnGameEvent(bool start, uint16 eventId)
+void SmartAI::OnGameEvent(bool start, uint16 eventId)
 {
-    GetScript()->ProcessEventsFor(start ? SMART_EVENT_GAME_EVENT_START : SMART_EVENT_GAME_EVENT_END, NULL, eventId);
-}*/
+    GetScript()->ProcessEventsFor(start ? SMART_EVENT_GAME_EVENT_START : SMART_EVENT_GAME_EVENT_END, nullptr, eventId);
+}
 
 void SmartAI::OnSpellClick(Unit* clicker, bool& result)
 {

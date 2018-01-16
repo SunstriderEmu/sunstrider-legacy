@@ -174,7 +174,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         bool GossipSelectCode(Player* player, uint32 menuId, uint32 gossipListId, const char* code) override;
         void QuestAccept(Player* player, Quest const* quest) override;
         void QuestReward(Player* player, Quest const* quest, uint32 opt) override;
-        //FIXME void sOnGameEvent(bool start, uint16 eventId) override;
+        void OnGameEvent(bool start, uint16 eventId) override;
 
 
         void SetDespawnTime(uint32 t)
@@ -273,8 +273,8 @@ class TC_GAME_API SmartGameObjectAI : public GameObjectAI
         void QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         void Destroyed(Player* player, uint32 eventId) override;
         void SetData(uint32 id, uint32 value, Unit* setter = nullptr) override;
-        void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker); //FIXME
-        void OnGameEvent(bool start, uint16 eventId); //FIXME
+        void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker);
+        void OnGameEvent(bool start, uint16 eventId) override;
         void OnStateChanged(GOState state, Unit* unit) override;
         void OnLootStateChanged(LootState state, Unit* unit) override;
         void EventInform(uint32 eventId) override; //FIXME

@@ -156,6 +156,7 @@ class TC_GAME_API GameEventMgr
         void UpdateEventNPCVendor(uint16 event_id, bool activate);
         void UpdateEventNPCTrainer(uint16 event_id, bool activate);
         void UpdateBattlegroundSettings();
+        void WarnAIScripts(uint16 event_id, bool activate); //TC RunSmartAIScripts
         bool CheckOneGameEventConditions(uint16 event_id);
         void SaveWorldEventStateToDB(uint16 event_id);
         bool hasCreatureQuestActiveEventExcept(uint32 quest_id, uint16 event_id);

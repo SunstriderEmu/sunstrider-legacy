@@ -52,6 +52,7 @@ class TC_GAME_API GameObjectAI
         virtual void EventInform(uint32 /*eventId*/) { }
         virtual void SpellHit(Unit* /*unit*/, const SpellInfo* /*spellInfo*/) { }
 
+        virtual void OnGameEvent(bool /*start*/, uint16 /*eventId*/) { }
         virtual void OnStateChanged(GOState /*state*/, Unit* /*unit*/) { }
         virtual void OnLootStateChanged(LootState /*state*/, Unit* /*unit*/) { }
 };

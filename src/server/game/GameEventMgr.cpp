@@ -931,6 +931,8 @@ uint32 GameEventMgr::Update()                                  // return the nex
 void GameEventMgr::UnApplyEvent(uint16 event_id)
 {
     TC_LOG_DEBUG("gameevent","GameEventMgr %u \"%s\" removed.", event_id, mGameEvent[event_id].description.c_str());
+    WarnAIScripts(event_id, false);
+
     // un-spawn positive event tagged objects
     GameEventUnspawn(event_id);
     // spawn negative event tagget objects
@@ -962,6 +964,7 @@ void GameEventMgr::ApplyNewEvent(uint16 event_id)
     }
 
     TC_LOG_DEBUG("gameevent","GameEventMgr %u \"%s\" started.", event_id, mGameEvent[event_id].description.c_str());
+    WarnAIScripts(event_id, true);
 
     // spawn positive event tagget objects
     GameEventSpawn(event_id);
@@ -1495,6 +1498,45 @@ void GameEventMgr::SendWorldStateUpdate(Player * plr, uint16 event_id)
         if(itr.second.max_world_state)
             plr->SendUpdateWorldState(itr.second.max_world_state, (uint32)(itr.second.reqNum));
     }
+}
+
+class GameEventAIHookWorker
+{
+public:
+    GameEventAIHookWorker(uint16 eventId, bool activate) : _eventId(eventId), _activate(activate) { }
+
+    void Visit(std::unordered_map<ObjectGuid, Creature*>& creatureMap)
+    {
+        for (auto const& p : creatureMap)
+            if (p.second->IsInWorld() && p.second->IsAIEnabled)
+                p.second->AI()->OnGameEvent(_activate, _eventId);
+    }
+
+    void Visit(std::unordered_map<ObjectGuid, GameObject*>& gameObjectMap)
+    {
+        for (auto const& p : gameObjectMap)
+            if (p.second->IsInWorld())
+                p.second->AI()->OnGameEvent(_activate, _eventId);
+    }
+
+    template<class T>
+    void Visit(std::unordered_map<ObjectGuid, T*>&) { }
+
+private:
+    uint16 _eventId;
+    bool _activate;
+};
+
+void GameEventMgr::WarnAIScripts(uint16 event_id, bool activate)
+{
+    //! Iterate over every supported source type (creature and gameobject)
+    //! Not entirely sure how this will affect units in non-loaded grids.
+    sMapMgr->DoForAllMaps([event_id, activate](Map* map)
+    {
+        GameEventAIHookWorker worker(event_id, activate);
+        TypeContainerVisitor<GameEventAIHookWorker, MapStoredObjectTypesContainer> visitor(worker);
+        visitor.Visit(map->GetObjectsStore());
+    });
 }
 
 bool GameEventMgr::AddCreatureToEvent(ObjectGuid guid, int16 event_id, Map* map /* = nullptr */)
