@@ -8699,8 +8699,9 @@ void ObjectMgr::LoadSpellTemplates()
             }
             else 
             {
-                TC_LOG_ERROR("sql.sql", "Table spell_template_override contains a spell not existing in spell_template!");
-                continue;
+                //we allow new spell in overrides for serverside spells
+                spell = new SpellEntry();
+                spell->Id = id;
             }
 
             for (uint32 i = 1; i <= 171; i++)
