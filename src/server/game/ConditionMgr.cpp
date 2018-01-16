@@ -60,52 +60,54 @@ char const* ConditionMgr::StaticSourceTypeData[CONDITION_SOURCE_TYPE_MAX] =
 
 ConditionMgr::ConditionTypeInfo const ConditionMgr::StaticConditionTypeData[CONDITION_MAX] =
 {
-    { "None",                false, false, false },
-    { "Aura",                 true, true,  true  },
-    { "Item Stored",          true, true,  true  },
-    { "Item Equipped",        true, false, false },
-    { "Zone",                 true, false, false },
-    { "Reputation",           true, true,  false },
-    { "Team",                 true, false, false },
-    { "Skill",                true, true,  false },
-    { "Quest Rewarded",       true, false, false },
-    { "Quest Taken",          true, false, false },
-    { "Drunken",              true, false, false },
-    { "WorldState",           true, true,  false },
-    { "Active Event",         true, false, false },
-    { "Instance Info",        true, true,  true  },
-    { "Quest None",           true, false, false },
-    { "Class",                true, false, false },
-    { "Race",                 true, false, false },
-    { "Achievement",          true, false, false },
-    { "Title",                true, false, false },
-    { "SpawnMask",            true, false, false },
-    { "Gender",               true, false, false },
-    { "Unit State",           true, false, false },
-    { "Map",                  true, false, false },
-    { "Area",                 true, false, false },
-    { "CreatureType",         true, false, false },
-    { "Spell Known",          true, false, false },
-    { "PhaseMask",            true, false, false },
-    { "Level",                true, true,  false },
-    { "Quest Completed",      true, false, false },
-    { "Near Creature",        true, true,  false },
-    { "Near GameObject",      true, true,  false },
-    { "Object Entry or Guid", true, true,  true  },
-    { "Object TypeMask",      true, false, false },
-    { "Relation",             true, true,  false },
-    { "Reaction",             true, true,  false },
-    { "Distance",             true, true,  true  },
-    { "Alive",               false, false, false },
-    { "Health Value",         true, true,  false },
-    { "Health Pct",           true, true, false  },
-    { "Realm Achievement",    true, false, false },
-    { "In Water",            false, false, false },
-    { "Terrain Swap",        false, false, false },
-    { "Sit/stand state",      true,  true, false },
-    { "Daily Quest Completed",true, false, false },
-    { "Charmed",             false, false, false },
-    { "Pet type",             true, false, false },
+    { "None",                 false, false, false  },
+    { "Aura",                 true,  true,  true   },
+    { "Item Stored",          true,  true,  true   },
+    { "Item Equipped",        true,  false, false  },
+    { "Zone",                 true,  false, false  },
+    { "Reputation",           true,  true,  false  },
+    { "Team",                 true,  false, false  },
+    { "Skill",                true,  true,  false  },
+    { "Quest Rewarded",       true,  false, false  },
+    { "Quest Taken",          true,  false, false  },
+    { "Drunken",              true,  false, false  },
+    { "WorldState",           true,  true,  false  },
+    { "Active Event",         true,  false, false  },
+    { "Instance Info",        true,  true,  true   },
+    { "Quest None",           true,  false, false  },
+    { "Class",                true,  false, false  },
+    { "Race",                 true,  false, false  },
+    { "Achievement",          true,  false, false  },
+    { "Title",                true,  false, false  },
+    { "SpawnMask",            true,  false, false  },
+    { "Gender",               true,  false, false  },
+    { "Unit State",           true,  false, false  },
+    { "Map",                  true,  false, false  },
+    { "Area",                 true,  false, false  },
+    { "CreatureType",         true,  false, false  },
+    { "Spell Known",          true,  false, false  },
+    { "PhaseMask",            true,  false, false  },
+    { "Level",                true,  true,  false  },
+    { "Quest Completed",      true,  false, false  },
+    { "Near Creature",        true,  true,  true   },
+    { "Near GameObject",      true,  true,  false  },
+    { "Object Entry or Guid", true,  true,  true   },
+    { "Object TypeMask",      true,  false, false  },
+    { "Relation",             true,  true,  false  },
+    { "Reaction",             true,  true,  false  },
+    { "Distance",             true,  true,  true   },
+    { "Alive",                false, false, false  },
+    { "Health Value",         true,  true,  false  },
+    { "Health Pct",           true,  true,  false  },
+    { "Realm Achievement",    true,  false, false  },
+    { "In Water",             false, false, false  },
+    { "Terrain Swap",         false, false, false  },
+    { "Sit/stand state",      true,  true,  false  },
+    { "Daily Quest Completed",true,  false, false  },
+    { "Charmed",              false, false, false  },
+    { "Pet type",             true,  false, false  },
+    { "On Taxi",              false, false, false  },
+    { "Quest state mask",     true,  true,  false  }
 };
 
 // Checks if object meets the condition
@@ -483,6 +485,27 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
                     condMeets = (((1 << pet->getPetType()) & ConditionValue1) != 0);
             break;
         }
+        case CONDITION_TAXI:
+        {
+            if (Player const* player = object->ToPlayer())
+                condMeets = player->IsInFlight();
+            break;
+        }
+        case CONDITION_QUESTSTATE:
+        {
+            if (Player const* player = object->ToPlayer())
+            {
+                if (
+                    ((ConditionValue2 & (1 << QUEST_STATUS_NONE)) && (player->GetQuestStatus(ConditionValue1) == QUEST_STATUS_NONE)) ||
+                    ((ConditionValue2 & (1 << QUEST_STATUS_COMPLETE)) && (player->GetQuestStatus(ConditionValue1) == QUEST_STATUS_COMPLETE)) ||
+                    ((ConditionValue2 & (1 << QUEST_STATUS_INCOMPLETE)) && (player->GetQuestStatus(ConditionValue1) == QUEST_STATUS_INCOMPLETE)) ||
+                    ((ConditionValue2 & (1 << QUEST_STATUS_FAILED)) && (player->GetQuestStatus(ConditionValue1) == QUEST_STATUS_FAILED)) ||
+                    ((ConditionValue2 & (1 << QUEST_STATUS_REWARDED)) && player->GetQuestRewardStatus(ConditionValue1))
+                    )
+                    condMeets = true;
+            }
+            break;
+        }
         default:
             condMeets = false;
             break;
@@ -664,6 +687,12 @@ uint32 Condition::GetSearcherTypeMaskForCondition()
             mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_PLAYER;
             break;
         case CONDITION_PET_TYPE:
+            mask |= GRID_MAP_TYPE_MASK_PLAYER;
+            break;
+        case CONDITION_TAXI:
+            mask |= GRID_MAP_TYPE_MASK_PLAYER;
+            break;
+        case CONDITION_QUESTSTATE:
             mask |= GRID_MAP_TYPE_MASK_PLAYER;
             break;
         default:
@@ -1728,9 +1757,14 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             }
             break;
         }
-        case CONDITION_SOURCE_TYPE_PHASE_DEFINITION:
+        case CONDITION_SOURCE_TYPE_TERRAIN_SWAP:
         {
-            TC_LOG_ERROR("sql.sql", "CONDITION_SOURCE_TYPE_PHASE_DEFINITION:: is only for 4.3.4 branch, skipped");
+            TC_LOG_ERROR("sql.sql", "CONDITION_SOURCE_TYPE_TERRAIN_SWAP: is only for 6.x branch, skipped");
+            return false;
+        }
+        case CONDITION_SOURCE_TYPE_PHASE:
+        {
+            TC_LOG_ERROR("sql.sql", "CONDITION_SOURCE_TYPE_PHASE: is only for 6.x branch, skipped");
             return false;
         }
         case CONDITION_SOURCE_TYPE_GOSSIP_MENU:
@@ -2220,6 +2254,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
             break;
         case CONDITION_IN_WATER:
         case CONDITION_CHARMED:
+        case CONDITION_TAXI:
         default:
             break;
     }
