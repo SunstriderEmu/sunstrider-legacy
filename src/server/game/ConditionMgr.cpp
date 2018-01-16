@@ -107,7 +107,23 @@ ConditionMgr::ConditionTypeInfo const ConditionMgr::StaticConditionTypeData[COND
     { "Charmed",              false, false, false  },
     { "Pet type",             true,  false, false  },
     { "On Taxi",              false, false, false  },
-    { "Quest state mask",     true,  true,  false  }
+    { "Quest state mask",     true,  true,  false  }, // CONDITION_QUESTSTATE            = 47
+
+    //dummy filler
+    { "",                     false, false, false  }, //48
+    { "",                     false, false, false  },
+    { "",                     false, false, false  },
+    { "",                     false, false, false  },
+    { "",                     false, false, false  },
+    { "",                     false, false, false  }, //53
+    { "",                     false, false, false  },
+    { "",                     false, false, false  },
+    { "",                     false, false, false  },
+    { "",                     false, false, false  },
+    { "",                     false, false, false  }, //58
+    { "",                     false, false, false  },
+
+    { "Faction",              true,  false, false  }, // CONDITION_FACTION               = 60,
 };
 
 // Checks if object meets the condition
@@ -506,6 +522,9 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
             }
             break;
         }
+        case CONDITION_FACTION:
+            if (Unit const* unit = object->ToUnit())
+                condMeets = unit->GetFaction() == ConditionValue1;
         default:
             condMeets = false;
             break;
@@ -695,6 +714,8 @@ uint32 Condition::GetSearcherTypeMaskForCondition()
         case CONDITION_QUESTSTATE:
             mask |= GRID_MAP_TYPE_MASK_PLAYER;
             break;
+        case CONDITION_FACTION:
+            mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_PLAYER;
         default:
             ASSERT(false && "Condition::GetSearcherTypeMaskForCondition - missing condition handling!");
             break;
@@ -2252,6 +2273,17 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
                 return false;
             }
             break;
+
+        case CONDITION_FACTION:
+        {
+            FactionEntry const* faction = sFactionStore.LookupEntry(cond->ConditionValue1);
+            if (!faction)
+            {
+                TC_LOG_ERROR("sql.sql", "%s has non-existing faction %u, skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
+                return false;
+            }
+        }
+
         case CONDITION_IN_WATER:
         case CONDITION_CHARMED:
         case CONDITION_TAXI:
