@@ -653,10 +653,8 @@ bool ChatHandler::HandleDieCommand(const char* /*args*/)
         if (HasLowerSecurity(player, ObjectGuid::Empty, false))
             return false;
 
-    if( target->IsAlive() )
-    {
-        m_session->GetPlayer()->Kill(target);
-    }
+    if(target->IsAlive())
+        Unit::Kill(m_session->GetPlayer(), target);
 
     return true;
 }
@@ -711,8 +709,8 @@ bool ChatHandler::HandleDamageCommand(const char * args)
     // flat melee damage without resistence/etc reduction
     if(!schoolStr)
     {
-        m_session->GetPlayer()->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
-        m_session->GetPlayer()->SendAttackStateUpdate (HITINFO_NORMALSWING2, target, 1, SPELL_SCHOOL_MASK_NORMAL, damage, 0, 0, VICTIMSTATE_NORMAL, 0);
+        Unit::DealDamage(m_session->GetPlayer(), target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+        m_session->GetPlayer()->SendAttackStateUpdate(HITINFO_NORMALSWING2, target, 1, SPELL_SCHOOL_MASK_NORMAL, damage, 0, 0, VICTIMSTATE_NORMAL, 0);
         return true;
     }
 
@@ -723,7 +721,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
     SpellSchoolMask schoolmask = SpellSchoolMask(1 << school);
 
     if ( schoolmask & SPELL_SCHOOL_MASK_NORMAL )
-        damage = m_session->GetPlayer()->CalcArmorReducedDamage(target, damage, nullptr, BASE_ATTACK);
+        damage = Unit::CalcArmorReducedDamage(m_session->GetPlayer(), target, damage, nullptr, BASE_ATTACK);
 
     char* spellStr = strtok((char*)nullptr, " ");
 
@@ -733,15 +731,15 @@ bool ChatHandler::HandleDamageCommand(const char * args)
         uint32 absorb = 0;
         uint32 resist = 0;
 
-        m_session->GetPlayer()->CalcAbsorbResist(target,schoolmask, SPELL_DIRECT_DAMAGE, damage, &absorb, &resist, 0);
+        Unit::CalcAbsorbResist(m_session->GetPlayer(), target,schoolmask, SPELL_DIRECT_DAMAGE, damage, &absorb, &resist, 0);
 
         if (damage <= absorb + resist)
             return true;
 
         damage -= absorb + resist;
 
-        m_session->GetPlayer()->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
-        m_session->GetPlayer()->SendAttackStateUpdate (HITINFO_NORMALSWING2, target, 1, schoolmask, damage, absorb, resist, VICTIMSTATE_NORMAL, 0);
+        Unit::DealDamage(m_session->GetPlayer(), target, damage, nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
+        m_session->GetPlayer()->SendAttackStateUpdate(HITINFO_NORMALSWING2, target, 1, schoolmask, damage, absorb, resist, VICTIMSTATE_NORMAL, 0);
         return true;
     }
 

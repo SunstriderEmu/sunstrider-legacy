@@ -766,6 +766,7 @@ bool ChatHandler::HandleDebugThreatInfoCommand(const char* args)
             }
         }
     }
+    return true;
 }
 
 bool ChatHandler::HandleDebugCinematic(const char* args)

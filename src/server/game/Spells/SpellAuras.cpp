@@ -223,8 +223,8 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         //184 SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE  implemented in Unit::RollMeleeOutcomeAgainst
     &Aura::HandleNoImmediateEffect,                         //185 SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE implemented in Unit::RollMeleeOutcomeAgainst
     &Aura::HandleNoImmediateEffect,                         //186 SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE  implemented in Unit::MagicSpellHitResult
-    &Aura::HandleNoImmediateEffect,                         //187 SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_CHANCE  implemented in Unit::GetUnitCriticalChance
-    &Aura::HandleNoImmediateEffect,                         //188 SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_CHANCE implemented in Unit::GetUnitCriticalChance
+    &Aura::HandleNoImmediateEffect,                         //187 SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_CHANCE  implemented in Unit::GetUnitCriticalChanceAgainst
+    &Aura::HandleNoImmediateEffect,                         //188 SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_CHANCE implemented in Unit::GetUnitCriticalChanceAgainst
     &Aura::HandleModRating,                                 //189 SPELL_AURA_MOD_RATING
     &Aura::HandleNULL,                                      //190 SPELL_AURA_MOD_FACTION_REPUTATION_GAIN
     &Aura::HandleAuraModUseNormalSpeed,                     //191 SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED
@@ -233,7 +233,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &Aura::HandleUnused,                                    //194 SPELL_AURA_MOD_DEPRICATED_1 not used now (old SPELL_AURA_MOD_SPELL_DAMAGE_OF_INTELLECT)
     &Aura::HandleUnused,                                    //195 SPELL_AURA_MOD_DEPRICATED_2 not used now (old SPELL_AURA_MOD_SPELL_HEALING_OF_INTELLECT)
     &Aura::HandleNULL,                                      //196 SPELL_AURA_MOD_COOLDOWN
-    &Aura::HandleNoImmediateEffect,                         //197 SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE implemented in Unit::SpellCriticalDamageBonus Unit::GetUnitCriticalChance
+    &Aura::HandleNoImmediateEffect,                         //197 SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE implemented in Unit::SpellCriticalDamageBonus Unit::GetUnitCriticalChanceAgainst
     &Aura::HandleUnused,                                    //198 SPELL_AURA_MOD_ALL_WEAPON_SKILLS
     &Aura::HandleNoImmediateEffect,                         //199 SPELL_AURA_MOD_INCREASES_SPELL_PCT_TO_HIT  implemented in Unit::MagicSpellHitResult
     &Aura::HandleNoImmediateEffect,                         //200 SPELL_AURA_MOD_XP_PCT implemented in Player::GiveXP
@@ -1470,7 +1470,7 @@ void Aura::TriggerSpell()
                     case 31347:
                     {
                         m_target->CastSpell(m_target,31350, TRIGGERED_FULL_MASK);
-                        m_target->DealDamage(m_target, m_target->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                        Unit::DealDamage(m_target, m_target, m_target->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                         return;
                     }
                     // Spellcloth
@@ -2338,7 +2338,7 @@ void Aura::HandleAuraDummy(bool apply, uint8 mode)
             {
                 // Kill target if dispelled
                 if (m_removeMode==AURA_REMOVE_BY_DISPEL)
-                    m_target->DealDamage(m_target, m_target->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                    Unit::DealDamage(m_target, m_target, m_target->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                 return;
             }        
             case 46308:                                     // Burning Winds - casted only at creatures at spawn
@@ -6251,7 +6251,7 @@ void Aura::PeriodicTick()
             pdamage *= GetStackAmount();
             realDamage = pdamage;
 
-            pCaster->CalcAbsorbResist(m_target, GetSpellInfo()->GetSchoolMask(), DOT, pdamage, &absorb, &resist, GetId());
+            Unit::CalcAbsorbResist(pCaster, m_target, GetSpellInfo()->GetSchoolMask(), DOT, pdamage, &absorb, &resist, GetId());
 
             TC_LOG_DEBUG("spells","PeriodicTick: %u (TypeId: %u) attacked %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
                 GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId(),absorb);
@@ -6280,7 +6280,7 @@ void Aura::PeriodicTick()
             if (pdamage)
                 procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
-            pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
+            Unit::DealDamage(pCaster, target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
             break;
         }
@@ -6370,7 +6370,7 @@ void Aura::PeriodicTick()
 
             pdamage *= GetStackAmount();
 
-            pCaster->CalcAbsorbResist(m_target, GetSpellInfo()->GetSchoolMask(), DOT, pdamage, &absorb, &resist, GetId());
+            Unit::CalcAbsorbResist(pCaster, m_target, GetSpellInfo()->GetSchoolMask(), DOT, pdamage, &absorb, &resist, GetId());
 
             if(m_target->GetHealth() < pdamage)
                 pdamage = uint32(m_target->GetHealth());
@@ -6393,7 +6393,7 @@ void Aura::PeriodicTick()
             pdamage = (pdamage <= absorb+resist) ? 0 : (pdamage-absorb-resist);
             if (pdamage)
                 procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
-            int32 new_damage = pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, false);
+            int32 new_damage = Unit::DealDamage(pCaster, target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, false);
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
 
             if (!target->IsAlive() && pCaster->IsNonMeleeSpellCast(false))
@@ -6517,7 +6517,7 @@ void Aura::PeriodicTick()
                     pCaster->SendSpellNonMeleeDamageLog(pCaster, GetId(), gain, GetSpellInfo()->GetSchoolMask(), 0, 0, false, 0, false);
 
                     CleanDamage cleanDamage =  CleanDamage(0, BASE_ATTACK, MELEE_HIT_NORMAL );
-                    pCaster->DealDamage(pCaster, gain, &cleanDamage, NODAMAGE, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), true);
+                    Unit::DealDamage(pCaster, pCaster, gain, &cleanDamage, NODAMAGE, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), true);
                 }
             }
 

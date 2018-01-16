@@ -1139,7 +1139,7 @@ public:
             TEST_ASSERT(count <= 5);
 
             // Target effect should break on damage
-            warrior->DealDamage(priest1, 1);
+            Unit::DealDamage(warrior, priest1, 1);
             Wait(500);
             TEST_ASSERT(!priest1->HasAura(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER));
         }

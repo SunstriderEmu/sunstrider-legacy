@@ -717,7 +717,7 @@ void Map::ScriptsProcess()
                 if (!source || (source->ToCreature())->IsDead())
                     break;
 
-                (source->ToCreature())->DealDamage((source->ToCreature()), (source->ToCreature())->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                source->ToCreature()->KillSelf();
 
                 switch (step.script->Kill.RemoveCorpse)
                 {

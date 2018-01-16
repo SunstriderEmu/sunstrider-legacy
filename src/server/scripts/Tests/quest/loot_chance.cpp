@@ -31,7 +31,7 @@ public:
             float chance = CalcChance(iterations, [&]
             { 
                 Creature* warlock = SpawnCreature(21503); //Sunfury Warlock
-                player->DealDamage(warlock, 9999999);
+                Unit::DealDamage(player, warlock, 9999999);
                 TEST_ASSERT(warlock->GetLootRecipient() == player);
                 return HasLootForMe(warlock, player, 30811);
             });

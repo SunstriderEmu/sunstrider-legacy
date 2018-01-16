@@ -280,7 +280,7 @@ void Spell::EffectInstaKill(uint32 /*i*/)
     data << uint32(m_spellInfo->Id);
     m_caster->SendMessageToSet(&data, true);
     
-    m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), nullptr, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+    Unit::DealDamage(m_caster, unitTarget, unitTarget->GetHealth(), nullptr, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
 }
 
 void Spell::EffectEnvironmentalDMG(uint32 i)
@@ -294,7 +294,7 @@ void Spell::EffectEnvironmentalDMG(uint32 i)
     uint32 absorb = 0;
     uint32 resist = 0;
 
-    m_caster->CalcAbsorbResist(m_caster,m_spellInfo->GetSchoolMask(), SPELL_DIRECT_DAMAGE, damage, &absorb, &resist, m_spellInfo->Id);
+    Unit::CalcAbsorbResist(m_caster, m_caster, m_spellInfo->GetSchoolMask(), SPELL_DIRECT_DAMAGE, damage, &absorb, &resist, m_spellInfo->Id);
 
     m_caster->SendSpellNonMeleeDamageLog(m_caster, m_spellInfo->Id, damage, m_spellInfo->GetSchoolMask(), absorb, resist, false, 0, false);
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
@@ -728,7 +728,7 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
 
         if (m_originalCaster && damage > 0 && addBonusDamage)
         {
-            damage = m_originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
+            damage = m_originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, {});
             damage = unitTarget->SpellDamageBonusTaken(m_originalCaster, m_spellInfo, damage, SPELL_DIRECT_DAMAGE);
 
         }
@@ -888,7 +888,7 @@ void Spell::EffectDummy(uint32 i)
                             {
                                 Unit* casttarget = ObjectAccessor::GetUnit((*unitTarget), ihit.targetGUID);
                                 if(casttarget)
-                                    m_caster->DealDamage(casttarget, damage, nullptr, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
+                                    Unit::DealDamage(m_caster, casttarget, damage, nullptr, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
                             }
                     break;
                 }
@@ -1986,7 +1986,7 @@ void Spell::EffectDummy(uint32 i)
                 if(Player* modOwner = m_caster->GetSpellModOwner())
                     modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, cost,this);
 
-                int32 dmg = m_caster->SpellDamageBonusDone(m_caster, m_spellInfo,uint32(cost > 0 ? cost : 0), SPELL_DIRECT_DAMAGE);
+                int32 dmg = m_caster->SpellDamageBonusDone(m_caster, m_spellInfo, uint32(cost > 0 ? cost : 0), SPELL_DIRECT_DAMAGE, {});
                 dmg = m_caster->SpellDamageBonusTaken(m_caster, m_spellInfo, dmg, SPELL_DIRECT_DAMAGE);
 
                 if(int32(m_caster->GetHealth()) > dmg)
@@ -3172,7 +3172,7 @@ void Spell::EffectPowerDrain(uint32 i)
     uint32 curPower = unitTarget->GetPower(drain_power);
 
     //add spell damage bonus
-    damage = m_caster->SpellDamageBonusDone(unitTarget,m_spellInfo,uint32(damage),SPELL_DIRECT_DAMAGE);
+    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, {});
     damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, damage, SPELL_DIRECT_DAMAGE);
 
     // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)

@@ -938,7 +938,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         {
             if (me && !me->IsDead())
             {
-                me->Kill(me);
+                me->KillSelf();
                 TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_DIE: Creature %u", me->GetGUID().GetCounter());
             }
             break;
@@ -1457,9 +1457,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (!IsUnit(target))
                     continue;
 
-                target->ToUnit()->Kill(target->ToUnit());
+                if (me)
+                    Unit::Kill(me, target->ToUnit());
+                else
+                    target->ToUnit()->KillSelf();
             }
-
 
             break;
         }

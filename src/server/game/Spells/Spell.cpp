@@ -2529,7 +2529,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (crit)
         {
             procEx |= PROC_EX_CRITICAL_HIT;
-            addhealth = caster->SpellCriticalDamageBonus(m_spellInfo, addhealth, nullptr);
+            addhealth = Unit::SpellCriticalHealingBonus(caster, m_spellInfo, addhealth, nullptr);
         }
         else
             procEx |= PROC_EX_NORMAL_HIT;
@@ -7949,43 +7949,8 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier,
     else if (m_originalCaster)
         caster = m_originalCaster;
 
-    /* TC spells
-    float critChance = caster->SpellDoneCritChance(unit, m_spellInfo, m_spellSchoolMask, m_attackType, false);
-    critChance = unit->SpellTakenCritChance(caster, m_spellInfo, m_spellSchoolMask, critChance, m_attackType, false);
-    targetInfo.crit = roll_chance_f(std::max(0.0f, critChance));
-    */
-    targetInfo.crit = m_caster->IsSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
-
-    /* sunwell
-    // Sweeping strikes wtf shit ;d
-    if (m_caster->GetClass() == CLASS_WARRIOR && ssEffect < MAX_SPELL_EFFECTS && m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR &&
-        ((m_spellInfo->Id != 50622 && m_spellInfo->Id != 44949) || firstTarget))
-    {
-        if (Aura* aur = m_caster->GetAura(12328))
-        {
-            Unit* target = m_caster->SelectNearbyNoTotemTarget(unit);
-            if (!target || target == unit)
-                return; // finish
-
-            int32 mdmg = m_damage;
-            int32 basepoints = 0;
-            m_damage = 0;
-
-            HandleEffects(target, NULL, NULL, ssEffect, SPELL_EFFECT_HANDLE_LAUNCH_TARGET);
-
-            basepoints = (targetInfo.crit ? Unit::SpellCriticalDamageBonus(m_caster, m_spellInfo, m_damage, target) : m_damage);
-            m_damage = mdmg;
-
-            CastSpellExtraArgs args;
-            args.TriggerFlags = TRIGGERED_FULL_MASK;
-            args.AddSpellBP0(int32(basepoints));
-            m_caster->CastSpell(target, 26654, args);
-
-            if (m_spellInfo->Id != 44949)
-                aur->DropCharge();
-        }
-    }
-    */
+    float critChance = m_caster->SpellCritChanceDone(m_spellInfo, m_spellSchoolMask, m_attackType);
+    targetInfo.crit = roll_chance_f(unit->SpellCritChanceTaken(m_caster, m_spellInfo, m_spellSchoolMask, critChance, m_attackType));
 }
 
 void Spell::SetSpellValue(SpellValueMod mod, int32 value)
