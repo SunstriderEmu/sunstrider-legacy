@@ -1,26 +1,26 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef _EVENT_MAP_H_
 #define _EVENT_MAP_H_
 
-#include "Common.h"
+#include "Define.h"
 #include "Duration.h"
-#include "Util.h"
+#include <map>
 
 class TC_COMMON_API EventMap
 {
@@ -134,10 +134,7 @@ public:
     * @param group The group which the event is associated to. Has to be between 1 and 8. 0 means it has no group.
     * @param phase The phase in which the event can occur. Has to be between 1 and 8. 0 means it can occur in all phases.
     */
-    void ScheduleEvent(uint32 eventId, Milliseconds const& minTime, Milliseconds const& maxTime, uint32 group = 0, uint32 phase = 0)
-    {
-        ScheduleEvent(eventId, urand(uint32(minTime.count()), uint32(maxTime.count())), group, phase);
-    }
+    void ScheduleEvent(uint32 eventId, Milliseconds const& minTime, Milliseconds const& maxTime, uint32 group = 0, uint32 phase = 0);
 
     /**
     * @name ScheduleEvent
@@ -171,10 +168,7 @@ public:
     * @param group The group which the event is associated to. Has to be between 1 and 8. 0 means it has no group.
     * @param phase The phase in which the event can occur. Has to be between 1 and 8. 0 means it can occur in all phases.
     */
-    void RescheduleEvent(uint32 eventId, Milliseconds const& minTime, Milliseconds const& maxTime, uint32 group = 0, uint32 phase = 0)
-    {
-        RescheduleEvent(eventId, urand(uint32(minTime.count()), uint32(maxTime.count())), group, phase);
-    }
+    void RescheduleEvent(uint32 eventId, Milliseconds const& minTime, Milliseconds const& maxTime, uint32 group = 0, uint32 phase = 0);
 
     /**
     * @name RescheduleEvent
@@ -227,10 +221,7 @@ public:
     * @param minTime Minimum time until the event occurs.
     * @param maxTime Maximum time until the event occurs.
     */
-    void Repeat(uint32 minTime, uint32 maxTime)
-    {
-        Repeat(urand(minTime, maxTime));
-    }
+    void Repeat(uint32 minTime, uint32 maxTime);
 
     /**
     * @name ExecuteEvent
@@ -277,6 +268,12 @@ public:
     * @param group Group of the events.
     */
     void DelayEvents(uint32 delay, uint32 group);
+
+    /**
+    Sun custom:
+    Check events with given id delay and set it to delay if it's smaller
+    */
+    void SetMinimalDelay(uint32 eventId, uint32 delay);
 
     /**
     * @name CancelEvent

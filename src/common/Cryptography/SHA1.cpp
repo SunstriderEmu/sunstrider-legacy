@@ -18,6 +18,7 @@
 
 #include "SHA1.h"
 #include "BigNumber.h"
+#include "Util.h"
 #include <cstring>
 #include <stdarg.h>
 

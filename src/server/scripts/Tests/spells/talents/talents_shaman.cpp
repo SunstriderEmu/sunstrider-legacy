@@ -231,7 +231,7 @@ public:
 			uint32 const minOH = 113;
 			uint32 const maxMH = 313;
 
-			Creature* dummyTarget = SpawnCreature();
+			//Creature* dummyTarget = SpawnCreature();
 			// Test regular damage
 			//TestDamage(player, dummyTarget, minOH, maxMH);
 

@@ -192,6 +192,7 @@ struct CreatureTemplate
     float   RangeVariance;
     uint32  unit_class;                                     // enum Classes. Note only 4 classes are known for creatures.
     uint32  unit_flags;                                     // enum UnitFlags mask values
+    uint32  unit_flags2;                                    // enum UnitFlags2 mask values
     uint32  dynamicflags;
     CreatureFamily family;                                         // enum CreatureFamily values for type==CREATURE_TYPE_BEAST, or 0 in another cases
     uint32  trainer_type;

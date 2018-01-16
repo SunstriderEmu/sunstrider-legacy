@@ -474,7 +474,7 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
                                              //   5
                                              "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, faction, npcflag, speed, "
                                              //
-                                             "scale, rank, dmgschool, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, unit_class, unit_flags, dynamicflags, family,"
+                                             "scale, rank, dmgschool, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, unit_class, unit_flags, unit_flags2, dynamicflags, family,"
                                              //   
                                              "trainer_type, trainer_spell, trainer_class, trainer_race, type,"
                                              //  
@@ -545,6 +545,7 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.RangeVariance    = fields[f++].GetFloat();
     creatureTemplate.unit_class       = fields[f++].GetUInt8();
     creatureTemplate.unit_flags       = fields[f++].GetUInt32();
+    creatureTemplate.unit_flags2      = fields[f++].GetUInt32();
     creatureTemplate.dynamicflags     = fields[f++].GetUInt32();
     creatureTemplate.family           = CreatureFamily(fields[f++].GetUInt8());
     creatureTemplate.trainer_type     = fields[f++].GetUInt8();
@@ -585,9 +586,10 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
 {
     if(cInfo->difficulty_entry_1)
     {
+        uint32 diff = DUNGEON_DIFFICULTY_HEROIC;
         uint32 i = cInfo->Entry;
-        CreatureTemplate const* heroicInfo = GetCreatureTemplate(cInfo->difficulty_entry_1);
-        if(!heroicInfo)
+        CreatureTemplate const* difficultyInfo = GetCreatureTemplate(cInfo->difficulty_entry_1);
+        if(!difficultyInfo)
         {
             TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) have `difficulty_entry_1`=%u but the creature does not exist.", i, cInfo->difficulty_entry_1);
         }
@@ -605,32 +607,59 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
             TC_LOG_ERROR("sql.sql","Creature (Entry: %u) have `difficulty_entry_1`=%u but creature entry %u have heroic entry also.",i,cInfo->difficulty_entry_1,cInfo->difficulty_entry_1);
         }*/
 
-        if(heroicInfo)
+        if(difficultyInfo)
         {
-        if(cInfo->npcflag != heroicInfo->npcflag)
+        if(cInfo->npcflag != difficultyInfo->npcflag)
         {
             TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `npcflag` in heroic mode.",i);
         }
 
-        if(cInfo->trainer_class != heroicInfo->trainer_class)
+        if(cInfo->trainer_class != difficultyInfo->trainer_class)
         {
             TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_class` in heroic mode.",i);
         }
 
-        if(cInfo->trainer_race != heroicInfo->trainer_race)
+        if(cInfo->trainer_race != difficultyInfo->trainer_race)
         {
             TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `race` in heroic mode.",i);
         }
 
-        if(cInfo->trainer_type != heroicInfo->trainer_type)
+        if(cInfo->trainer_type != difficultyInfo->trainer_type)
         {
             TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_type` in heroic mode.",i);
         }
 
-        if(cInfo->trainer_spell != heroicInfo->trainer_spell)
+        if(cInfo->trainer_spell != difficultyInfo->trainer_spell)
         {
             TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_spell` in heroic mode.",i);
         }
+
+        uint32 differenceMask = cInfo->npcflag ^ difficultyInfo->npcflag;
+        if (cInfo->npcflag != difficultyInfo->npcflag)
+        {
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u, `npcflag`: %u) has different `npcflag` in difficulty %u mode (Entry: %u, `npcflag`: %u).",
+                cInfo->Entry, cInfo->npcflag, diff + 1, cInfo->difficulty_entry_1, difficultyInfo->npcflag);
+            TC_LOG_ERROR("sql.sql", "Possible FIX: UPDATE `creature_template` SET `npcflag`=`npcflag`^%u WHERE `entry`=%u;",
+                differenceMask, cInfo->difficulty_entry_1);
+        }
+
+        if (cInfo->dmgschool != difficultyInfo->dmgschool)
+        {
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u, `dmgschool`: %u) has different `dmgschool` in difficulty %u mode (Entry: %u, `dmgschool`: %u).",
+                cInfo->Entry, cInfo->dmgschool, diff + 1, cInfo->difficulty_entry_1, difficultyInfo->dmgschool);
+            TC_LOG_ERROR("sql.sql", "Possible FIX: UPDATE `creature_template` SET `dmgschool`=%u WHERE `entry`=%u;",
+                cInfo->dmgschool, cInfo->difficulty_entry_1);
+        }
+
+        differenceMask = cInfo->unit_flags2 ^ difficultyInfo->unit_flags2;
+        if (cInfo->unit_flags2 != difficultyInfo->unit_flags2)
+        {
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u, `unit_flags2`: %u) has different `unit_flags2` in difficulty %u mode (Entry: %u, `unit_flags2`: %u).",
+                cInfo->Entry, cInfo->unit_flags2, diff + 1, cInfo->difficulty_entry_1, difficultyInfo->unit_flags2);
+            TC_LOG_ERROR("sql.sql", "Possible FIX: UPDATE `creature_template` SET `unit_flags2`=`unit_flags2`^%u WHERE `entry`=%u;",
+                differenceMask, cInfo->difficulty_entry_1);
+        }
+
         /*
         hasHeroicEntries.insert(i);
         heroicEntries.insert(cInfo->difficulty_entry_1);**/

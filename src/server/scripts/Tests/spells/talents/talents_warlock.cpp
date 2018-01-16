@@ -695,8 +695,8 @@ public:
 			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax, false);
 
 			// TODO: Shadowburn (takes 1 soul shard per cast)
-			uint32 expectedShadowburnMin = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
-			uint32 expectedShadowburnMax = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
+			//uint32 expectedShadowburnMin = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
+			//uint32 expectedShadowburnMax = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
 			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin, expectedShadowburnMax, false);
 
 			// Corruption
@@ -712,9 +712,9 @@ public:
 			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoD, false);
 
 			// TODO: Seed of Corruption test DoT + end damage
-			uint32 expectedDot = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION_DOT);
-			uint32 expectedDamageMin = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION);
-			uint32 expectedDamageMax = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION);
+            //Tuint32 expectedDot = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION_DOT);
+            //Tuint32 expectedDamageMin = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION);
+            //Tuint32 expectedDamageMax = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION);
 			//TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedCoA);
 		}
 
@@ -837,7 +837,7 @@ public:
 			Position spawnPosition(_location);
 			spawnPosition.MoveInFront(_location, 10.0f);
 			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawnPosition);
-			Creature* dummyTarget = SpawnCreature();
+            //TCreature* dummyTarget = SpawnCreature();
 
 			player->AddItem(6265, 4); // Soul shard
 			Wait(1000);

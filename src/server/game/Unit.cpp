@@ -5842,7 +5842,7 @@ void Unit::SendAttackStateUpdate(CalcDamageInfo *damageInfo)
         data << uint32(0);
     }
 #else
-    //structure seems correct... but client does not show damage type for next damage types in damage log ?
+    //structure seems correct... but client does not show damage type for next damage types in damage log?
     for (uint32 i = 0; i < count; ++i)
     {
         data << uint32(damageInfo->Damages[i].DamageSchoolMask);       // School of sub damage

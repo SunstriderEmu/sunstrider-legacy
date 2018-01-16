@@ -1036,7 +1036,7 @@ public:
 
 			// Initialize Mangle (Cat) on dummy
 			TestA(druidWithMangle, creature, mangleSpellId);
-			uint32 comboTarget = druidWithMangle->GetComboTarget();
+			//uint32 comboTarget = druidWithMangle->GetComboTarget();
 			TEST_ASSERT(druidWithMangle->GetComboTarget() == creature->GetGUID());
 			TEST_ASSERT(druidWithMangle->GetComboPoints() == 1);
 

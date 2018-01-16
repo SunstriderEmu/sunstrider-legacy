@@ -1990,7 +1990,7 @@ public:
             EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
             druid->DisableRegeneration(true);
 
-            uint32 maceBH = 550;
+            int32 maceBH = 550;
             TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
 
             // Mana cost
@@ -2202,7 +2202,7 @@ public:
             EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
             druid->DisableRegeneration(true);
 
-            uint32 maceBH = 550;
+            int32 maceBH = 550;
             TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
 
             // Mana cost
@@ -2347,7 +2347,7 @@ public:
             EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
             druid->DisableRegeneration(true);
 
-            uint32 maceBH = 550;
+            int32 maceBH = 550;
             TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
 
             // Mana cost

@@ -1,21 +1,22 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "EventMap.h"
+#include "Random.h"
 
 void EventMap::Reset()
 {
@@ -32,6 +33,11 @@ void EventMap::SetPhase(uint8 phase)
         _phase = uint8(1 << (phase - 1));
 }
 
+void EventMap::ScheduleEvent(uint32 eventId, Milliseconds const& minTime, Milliseconds const& maxTime, uint32 group /*= 0*/, uint32 phase /*= 0*/)
+{
+    ScheduleEvent(eventId, urand(uint32(minTime.count()), uint32(maxTime.count())), group, phase);
+}
+
 void EventMap::ScheduleEvent(uint32 eventId, uint32 time, uint32 group /*= 0*/, uint8 phase /*= 0*/)
 {
     if (group && group <= 8)
@@ -41,6 +47,16 @@ void EventMap::ScheduleEvent(uint32 eventId, uint32 time, uint32 group /*= 0*/, 
         eventId |= (1 << (phase + 23));
 
     _eventMap.insert(EventStore::value_type(_time + time, eventId));
+}
+
+void EventMap::RescheduleEvent(uint32 eventId, Milliseconds const& minTime, Milliseconds const& maxTime, uint32 group /*= 0*/, uint32 phase /*= 0*/)
+{
+    RescheduleEvent(eventId, urand(uint32(minTime.count()), uint32(maxTime.count())), group, phase);
+}
+
+void EventMap::Repeat(uint32 minTime, uint32 maxTime)
+{
+    Repeat(urand(minTime, maxTime));
 }
 
 uint32 EventMap::ExecuteEvent()
@@ -84,6 +100,27 @@ void EventMap::DelayEvents(uint32 delay, uint32 group)
     }
 
     _eventMap.insert(delayed.begin(), delayed.end());
+}
+
+void EventMap::SetMinimalDelay(uint32 eventId, uint32 delay)
+{
+    if (Empty())
+        return;
+
+    for (EventStore::iterator itr = _eventMap.begin(); itr != _eventMap.end();)
+    {
+        if (eventId == (itr->second & 0x0000FFFF))
+        {
+            if (itr->first < delay)
+            {
+                _eventMap.insert(EventStore::value_type(delay, itr->second));
+                itr = _eventMap.erase(itr);
+                continue;
+            }
+
+        }
+        itr++;
+    }
 }
 
 void EventMap::CancelEvent(uint32 eventId)

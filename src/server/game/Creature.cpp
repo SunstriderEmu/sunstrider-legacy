@@ -512,6 +512,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
         unit_flags |= UNIT_FLAG_IN_COMBAT;
 
     SetUInt32Value(UNIT_FIELD_FLAGS, unit_flags);
+    SetUInt32Value(UNIT_FIELD_FLAGS_2, cInfo->unit_flags2);
     SetUInt32Value(UNIT_DYNAMIC_FLAGS,cInfo->dynamicflags);
 
     SetMeleeDamageSchool(SpellSchools(cInfo->dmgschool));
