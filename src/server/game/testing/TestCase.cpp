@@ -557,6 +557,16 @@ void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastRe
 	INTERNAL_TEST_ASSERT(res == uint32(expectedCode));
 }
 
+void TestCase::_ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, TriggerCastFlags triggeredFlags = TRIGGERED_NONE)
+{
+    caster->ForceSpellHitResult(forcedMissInfo);
+    uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
+    caster->ResetForceSpellHitResult();
+    INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %s", spellID, StringifySpellCastResult(res).c_str());
+    INTERNAL_TEST_ASSERT(res == uint32(SPELL_CAST_OK));
+}
+
+
 bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
 {
     auto items = creature->loot.items;

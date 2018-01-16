@@ -106,13 +106,21 @@ public:
     static std::string StringifySpellCastResult(uint32 result) { return StringifySpellCastResult(SpellCastResult(result)); }
     static std::string StringifySpellCastResult(SpellCastResult result);
 
-    /* Cast a spell and check for spell start return value
+    /* Cast a spell and check for spell start return value (SpellCastResult)
     Usage:
     TEST_CAST(caster, victim, spellID)
     TEST_CAST(caster, victim, spellID, expectedCode)
     TEST_CAST(caster, victim, spellID, expectedCode, triggeredFlags)
     */
     #define TEST_CAST( ... ) { _SetCaller(__FILE__, __LINE__);  _TestCast(__VA_ARGS__); _ResetCaller(); }
+
+    /* Cast a spell with forced hit result. Fails test if spell fail to launch. (SpellMissInfo)
+    Usage:
+    FORCE_CAST(caster, victim, spellID)
+    FORCE_CAST(caster, victim, spellID, forcedMissInfo)
+    FORCE_CAST(caster, victim, spellID, forcedMissInfo, triggeredFlags)
+    */
+    #define FORCE_CAST( ... ) { _SetCaller(__FILE__, __LINE__);  _ForceCast(__VA_ARGS__); _ResetCaller(); }
 
     /* Usage
     TEST_HAS_AURA(target, spellID)
@@ -212,6 +220,7 @@ protected:
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 durationMS);
     void _TestAuraStack(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 stacks, bool stack);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
+    void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
 
     //Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
     static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);
