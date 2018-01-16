@@ -593,7 +593,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
             return (GetLevel()/2 + uint32(GetStat(STAT_STRENGTH)/20));
         }
 
-        SpellSchoolMask GetMeleeDamageSchoolMask() const override { return m_meleeDamageSchoolMask; }
+        SpellSchoolMask GetMeleeDamageSchoolMask(WeaponAttackType /*attackType*/ = BASE_ATTACK, uint8 /*damageIndex*/ = 0) const override { return m_meleeDamageSchoolMask; }
         void SetMeleeDamageSchool(SpellSchools school) { m_meleeDamageSchoolMask = SpellSchoolMask(1 << school); }
 
         void _AddCreatureSpellCooldown(uint32 spell_id, time_t end_time);
@@ -620,7 +620,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void UpdateMaxHealth() override;
         void UpdateMaxPower(Powers power) override;
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
-        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) override;
+        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 damageIndex) const override;
 
         int8 GetOriginalEquipmentId() const { return m_originalEquipmentId; }
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }

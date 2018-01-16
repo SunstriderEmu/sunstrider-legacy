@@ -363,23 +363,15 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
             data << pProto->ItemStat[i].ItemStatValue;
         }
 #ifdef LICH_KING
-        uint32 scalingStatDistribution = pProto->ScalingStatDistribution;
-        uint32 scalingStatValue = pProto->ScalingStatValue;
-#else
-        uint32 scalingStatDistribution = 0;
-        uint32 scalingStatValue = 0;
+        data << uint32(pProto->ScalingStatDistribution);            // scaling stats distribution
+        data << uint32(pProto->ScalingStatValue);                   // some kind of flags used to determine stat values column
 #endif
-        if (GetClientBuild() == BUILD_335)
-        {
-            data << scalingStatDistribution;            // scaling stats distribution
-            data << scalingStatValue;                   // some kind of flags used to determine stat values column
-        }
 
         for(auto i : pProto->Damage)
         {
-            data << i.DamageMin;
-            data << i.DamageMax;
-            data << i.DamageType;
+            data << float(i.DamageMin);
+            data << float(i.DamageMax);
+            data << uint32(i.DamageType);
         }
 
         // resistances (7)

@@ -2476,7 +2476,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     uint32 procAttacker = 0;
     uint32 procVictim = 0;
     prepareHitProcData(procAttacker,procVictim,hostileTarget);
-    uint32 procEx = m_triggeredByAuraSpell? PROC_EX_INTERNAL_TRIGGERED : PROC_EX_NONE;
+    uint32 procEx = m_triggeredByAuraSpell? PROC_HIT_INTERNAL_TRIGGERED : PROC_HIT_NONE;
 
                             //Spells with this flag cannot trigger if effect is casted on self
                             // Slice and Dice, relentless strikes, eviscerate
@@ -2528,11 +2528,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         uint32 addhealth = m_healing;
         if (crit)
         {
-            procEx |= PROC_EX_CRITICAL_HIT;
+            procEx |= PROC_HIT_CRITICAL;
             addhealth = Unit::SpellCriticalHealingBonus(caster, m_spellInfo, addhealth, nullptr);
         }
         else
-            procEx |= PROC_EX_NORMAL_HIT;
+            procEx |= PROC_HIT_NORMAL;
 
         HealInfo healInfo(caster, unitTarget, addhealth, m_spellInfo, m_spellInfo->GetSchoolMask());
         caster->HealBySpell(healInfo, crit, missInfo);
@@ -2543,7 +2543,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
-            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, addhealth, m_attackType, m_spellInfo, m_canTrigger);
+            caster->ProcSkillsAndAuras(unitTarget, procAttacker, procVictim, procEx, addhealth, m_attackType, m_spellInfo, m_canTrigger);
     }
     // Do damage and triggers
     else if (m_damage > 0)
@@ -2558,14 +2558,14 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         caster->SendSpellNonMeleeDamageLog(&damageInfo);
 
         procEx = createProcExtendMask(&damageInfo, missInfo);
-        procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
+        procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
         
         caster->DealSpellDamage(&damageInfo, true);
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
         {
-            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_canTrigger);
+            caster->ProcSkillsAndAuras(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_canTrigger);
             if(caster->GetTypeId() == TYPEID_PLAYER 
                 && !m_spellInfo->HasAttribute(SPELL_ATTR0_STOP_ATTACK_TARGET) 
                 && !m_spellInfo->HasAttribute(SPELL_ATTR4_CANT_TRIGGER_ITEM_SPELLS) 
@@ -2626,7 +2626,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         procEx = createProcExtendMask(&damageInfo, missInfo);
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
-            caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_canTrigger);
+            caster->ProcSkillsAndAuras(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_canTrigger);
 
 #ifdef TESTS
         if (Player* p = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself())
@@ -7790,7 +7790,7 @@ bool ReflectEvent::Execute(uint64 e_time, uint32 p_time)
         return true;
 
     // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
-    _caster->ProcDamageAndSpell(unit_target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT, PROC_EX_REFLECT, 1, BASE_ATTACK, _spellInfo);
+    _caster->ProcSkillsAndAuras(unit_target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT, PROC_HIT_REFLECT, 1, BASE_ATTACK, _spellInfo);
     // FIXME: Add a flag on unit itself, not to setRemoveReflect if unit is already flagged for it (prevent infinite delay on reflect lolz)
     if (Spell* sp = _caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
         sp->setRemoveReflect();

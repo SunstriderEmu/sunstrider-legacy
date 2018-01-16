@@ -294,11 +294,18 @@ void Spell::EffectEnvironmentalDMG(uint32 i)
     uint32 absorb = 0;
     uint32 resist = 0;
 
-    Unit::CalcAbsorbResist(m_caster, m_caster, m_spellInfo->GetSchoolMask(), SPELL_DIRECT_DAMAGE, damage, &absorb, &resist, m_spellInfo->Id);
+    // CalcAbsorbResist already in Player::EnvironmentalDamage
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+        unitTarget->ToPlayer()->EnvironmentalDamage(DAMAGE_FIRE, damage);
+    else
+    {
+        DamageInfo damageInfo(m_caster, unitTarget, damage, m_spellInfo, m_spellInfo->GetSchoolMask(), SPELL_DIRECT_DAMAGE, BASE_ATTACK);
+        Unit::CalcAbsorbResist(damageInfo);
 
-    m_caster->SendSpellNonMeleeDamageLog(m_caster, m_spellInfo->Id, damage, m_spellInfo->GetSchoolMask(), absorb, resist, false, 0, false);
-    if(unitTarget->GetTypeId() == TYPEID_PLAYER)
-        (unitTarget->ToPlayer())->EnvironmentalDamage(DAMAGE_FIRE,damage);
+        uint32 absorb = damageInfo.GetAbsorb();
+        uint32 resist = damageInfo.GetResist();
+        m_caster->SendSpellNonMeleeDamageLog(unitTarget, m_spellInfo->Id, damage, m_spellInfo->GetSchoolMask(), absorb, resist, false, 0, false);
+    }
 }
 
 void Spell::EffectSchoolDMG(uint32 effect_idx)
@@ -656,8 +663,24 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
             // Steady Shot
             else if (m_spellInfo->SpellFamilyFlags & 0x100000000LL)
             {
-                int32 base = m_caster->GetMap()->irand((int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MINDAMAGE), (int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MAXDAMAGE));
+                // Add Ammo and Weapon damage plus RAP * 0.1
+                float dmg_min = 0.f;
+                float dmg_max = 0.f;
+                for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
+                {
+                    dmg_min += m_caster->GetWeaponDamageRange(RANGED_ATTACK, MINDAMAGE, i);
+                    dmg_max += m_caster->GetWeaponDamageRange(RANGED_ATTACK, MAXDAMAGE, i);
+                }
+
+                int32 base;
+                if (dmg_max == 0.0f && dmg_min > dmg_max)
+                    base = int32(dmg_min);
+                else
+                    base = irand(int32(dmg_min), int32(dmg_max));
+
                 damage += int32(float(base) / m_caster->GetAttackTime(RANGED_ATTACK) * 2800 + m_caster->GetTotalAttackPowerValue(RANGED_ATTACK, unitTarget)*0.2f);
+                if (Player* caster = m_caster->ToPlayer())
+                    damage += int32(caster->GetAmmoDPS() * m_caster->GetAttackTime(RANGED_ATTACK) * 0.001f);
 
                 bool found = false;
 
@@ -5076,8 +5099,10 @@ void Spell::EffectWeaponDmg(uint32 i)
         }
     }
 
-    // apply to non-weapon bonus weapon total pct effect, weapon total flat effect included in weapon damage
-    if (fixed_bonus || spell_bonus)
+    // if (addPctMods) { percent mods are added in Unit::CalculateDamage } else { percent mods are added in Unit::MeleeDamageBonusDone }
+    // this distinction is neccessary to properly inform the client about his autoattack damage values from Script_UnitDamage
+    bool const addPctMods = !m_spellInfo->HasAttribute(SPELL_ATTR6_LIMIT_PCT_DAMAGE_MODS) && (m_spellSchoolMask & SPELL_SCHOOL_MASK_NORMAL);
+    if (addPctMods)
     {
         UnitMods unitMod;
         switch (m_attackType)
@@ -5096,7 +5121,7 @@ void Spell::EffectWeaponDmg(uint32 i)
             spell_bonus = int32(spell_bonus * meleeDamageModifier);
     }
 
-    int32 weaponDamage = m_caster->CalculateDamage(m_attackType, normalized, m_spellInfo, unitTarget);
+    int32 weaponDamage = m_caster->CalculateDamage(m_attackType, normalized, addPctMods);
 
     // Sequence is important
     for (const auto & Effect : m_spellInfo->Effects)
@@ -5129,8 +5154,8 @@ void Spell::EffectWeaponDmg(uint32 i)
     uint32 eff_damage = uint32(weaponDamage > 0 ? weaponDamage : 0);
 
     // Add melee damage bonuses (also check for negative)
-    m_caster->MeleeDamageBonus(unitTarget, &eff_damage, m_attackType, m_spellInfo);
-    m_damage += eff_damage;
+    uint32 damageBonusDone = m_caster->MeleeDamageBonusDone(unitTarget, eff_damage, m_attackType, m_spellInfo);
+    m_damage += unitTarget->MeleeDamageBonusTaken(m_caster, damageBonusDone, m_attackType, m_spellInfo);
 }
 
 void Spell::EffectThreat(uint32 /*i*/)

@@ -6076,6 +6076,22 @@ void Aura::HandleSchoolAbsorb(bool apply, uint8 mode)
     }
 }
 
+bool Aura::IsAffectedOnSpell(SpellInfo const* spell) const
+{
+    if (!spell)
+        return false;
+
+    // Check family name and EffectClassMask
+#ifdef LICH_KING
+    if (!spell->IsAffected(m_spellInfo->SpellFamilyName, m_spellInfo->Effects[m_effIndex].SpellClassMask))
+#else
+    if (!spell->IsAffectedBySpell(spell->Id, m_effIndex, 0))
+#endif
+        return false;
+
+    return true;
+}
+
 void Aura::SendTickImmune(Unit* target, Unit* caster) const
 {
     if (caster)
@@ -6169,8 +6185,6 @@ void Aura::PeriodicTick()
                 }
             }
 
-            uint32 absorb=0;
-            uint32 resist=0;
             CleanDamage cleanDamage =  CleanDamage(0, BASE_ATTACK, MELEE_HIT_NORMAL );
 
             // ignore non positive values (can be result apply spellmods to aura damage
@@ -6237,34 +6251,35 @@ void Aura::PeriodicTick()
                 pdamage = uint32(m_target->GetMaxHealth()*amount/100);
 
             //As of 2.2 resilience reduces damage from DoT ticks as much as the chance to not be critically hit
-            // Reduce dot damage from resilience for players
+            //Reduce dot damage from resilience for players
             if (m_target->GetTypeId()==TYPEID_PLAYER)
                 pdamage-=(m_target->ToPlayer())->GetDotDamageReduction(pdamage);
-                
-            //Bloodboil hack
-            if (GetId() == 42005) {
-                pdamage = m_modifier.m_amount;
-                absorb = 0;
-                resist = 0;
-            }
 
             pdamage *= GetStackAmount();
             realDamage = pdamage;
 
-            Unit::CalcAbsorbResist(pCaster, m_target, GetSpellInfo()->GetSchoolMask(), DOT, pdamage, &absorb, &resist, GetId());
+            DamageInfo damageInfo(pCaster, m_target, pdamage, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), DOT, BASE_ATTACK);
+            Unit::CalcAbsorbResist(damageInfo);
+            uint32 damage = damageInfo.GetDamage();
+
+            uint32 absorb = damageInfo.GetAbsorb();
+            uint32 resist = damageInfo.GetResist();
 
             TC_LOG_DEBUG("spells","PeriodicTick: %u (TypeId: %u) attacked %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
-                GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId(),absorb);
+                GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId(), damageInfo.GetAbsorb());
+
+            Unit::DealDamageMods(m_target, damage, &absorb);
 
             // Shadow Word: Death backfire damage hackfix
-            if (GetId() == 32409 && GetCaster()->ToPlayer()) {
-                pdamage = GetCaster()->ToPlayer()->m_swdBackfireDmg;
+            if (GetId() == 32409 && GetCaster()->ToPlayer()) 
+            {
+                damage = GetCaster()->ToPlayer()->m_swdBackfireDmg;
                 GetCaster()->ToPlayer()->m_swdBackfireDmg = 0;
                 absorb = 0;
                 resist = 0;
             }
 
-            SpellPeriodicAuraLogInfo pInfo(this, pdamage, absorb, resist, 0.0f);
+            SpellPeriodicAuraLogInfo pInfo(this, damage, absorb, resist, 0.0f);
             m_target->SendPeriodicAuraLog(&pInfo);
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
@@ -6273,15 +6288,14 @@ void Aura::PeriodicTick()
             // Set trigger flag
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
-            uint32 procEx = PROC_EX_INTERNAL_DOT | PROC_EX_NORMAL_HIT;
+            uint32 procEx = PROC_HIT_INTERNAL_DOT | PROC_HIT_NORMAL;
 
             // Reduce damage by absorb and resist
-            pdamage = (pdamage <= absorb + resist) ? 0 : (pdamage - absorb - resist);
-            if (pdamage)
-                procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
+            if (damage)
+                procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
-            Unit::DealDamage(pCaster, target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
-            pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
+            Unit::DealDamage(pCaster, target, damage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
+            pCaster->ProcSkillsAndAuras(target, procAttacker, procVictim, procEx, damage, BASE_ATTACK, spellProto);
             break;
         }
         case SPELL_AURA_PERIODIC_LEECH:
@@ -6304,8 +6318,6 @@ void Aura::PeriodicTick()
                 return;
             }
 
-            uint32 absorb=0;
-            uint32 resist=0;
             CleanDamage cleanDamage =  CleanDamage(0, BASE_ATTACK, MELEE_HIT_NORMAL );
 
             uint32 pdamage = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
@@ -6370,12 +6382,16 @@ void Aura::PeriodicTick()
 
             pdamage *= GetStackAmount();
 
-            Unit::CalcAbsorbResist(pCaster, m_target, GetSpellInfo()->GetSchoolMask(), DOT, pdamage, &absorb, &resist, GetId());
+            DamageInfo damageInfo(pCaster, m_target, pdamage, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), DOT, BASE_ATTACK);
+            Unit::CalcAbsorbResist(damageInfo);
+
+            uint32 absorb = damageInfo.GetAbsorb();
+            uint32 resist = damageInfo.GetResist();
 
             if(m_target->GetHealth() < pdamage)
                 pdamage = uint32(m_target->GetHealth());
 
-            TC_LOG_DEBUG("FIXME","PeriodicTick: %u (TypeId: %u) health leech of %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
+            TC_LOG_DEBUG("spells","PeriodicTick: %u (TypeId: %u) health leech of %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
                 GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId(),absorb);
 
             pCaster->SendSpellNonMeleeDamageLog(m_target, GetId(), pdamage, GetSpellInfo()->GetSchoolMask(), absorb, resist, false, 0);
@@ -6389,12 +6405,12 @@ void Aura::PeriodicTick()
             // Set trigger flag
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
-            uint32 procEx = PROC_EX_INTERNAL_DOT | PROC_EX_NORMAL_HIT;
+            uint32 procEx = PROC_HIT_INTERNAL_DOT | PROC_HIT_NORMAL;
             pdamage = (pdamage <= absorb+resist) ? 0 : (pdamage-absorb-resist);
             if (pdamage)
-                procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
+                procVictim|=PROC_FLAG_TAKEN_DAMAGE;
             int32 new_damage = Unit::DealDamage(pCaster, target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, false);
-            pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
+            pCaster->ProcSkillsAndAuras(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
 
             if (!target->IsAlive() && pCaster->IsNonMeleeSpellCast(false))
             {
@@ -6404,8 +6420,6 @@ void Aura::PeriodicTick()
                         pCaster->m_currentSpells[i]->cancel();
                 }
             }
-
-
 
             uint32 heal = pCaster->SpellHealingBonusDone(pCaster, spellProto, uint32(new_damage * multiplier), DOT);
             heal = pCaster->SpellHealingBonusTaken(pCaster, GetSpellInfo(), heal, DOT);
@@ -6523,10 +6537,10 @@ void Aura::PeriodicTick()
 
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
-            uint32 procEx = PROC_EX_INTERNAL_HOT | PROC_EX_NORMAL_HIT;
+            uint32 procEx = PROC_HIT_INTERNAL_HOT | PROC_HIT_NORMAL;
             // ignore item heals
             if(procSpell && !haveCastItem)
-                pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, heal, BASE_ATTACK, spellProto);
+                pCaster->ProcSkillsAndAuras(target, procAttacker, procVictim, procEx, heal, BASE_ATTACK, spellProto);
             break;
         }
         case SPELL_AURA_PERIODIC_MANA_LEECH:
@@ -6728,17 +6742,20 @@ void Aura::PeriodicTick()
             SpellNonMeleeDamage damageInfo(pCaster, m_target, spellProto->Id, spellProto->SchoolMask);
             //no SpellDamageBonusDone for burn mana
             pCaster->CalculateSpellDamageTaken(&damageInfo, gain, spellProto);
+
+            Unit::DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
+
             pCaster->SendSpellNonMeleeDamageLog(&damageInfo);
 
             // Set trigger flag
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
-            uint32 procEx       = createProcExtendMask(&damageInfo, SPELL_MISS_NONE) | PROC_EX_INTERNAL_DOT;
+            uint32 procEx       = createProcExtendMask(&damageInfo, SPELL_MISS_NONE) | PROC_HIT_INTERNAL_DOT;
             if (damageInfo.damage)
-                procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
+                procVictim|=PROC_FLAG_TAKEN_DAMAGE;
 
             pCaster->DealSpellDamage(&damageInfo, true);
-            pCaster->ProcDamageAndSpell(damageInfo.target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);
+            pCaster->ProcSkillsAndAuras(damageInfo.target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);
             break;
         }
         // Here tick dummy auras

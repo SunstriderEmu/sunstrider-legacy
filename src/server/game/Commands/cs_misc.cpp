@@ -720,7 +720,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
 
     SpellSchoolMask schoolmask = SpellSchoolMask(1 << school);
 
-    if ( schoolmask & SPELL_SCHOOL_MASK_NORMAL )
+    if (Unit::IsDamageReducedByArmor(schoolmask))
         damage = Unit::CalcArmorReducedDamage(m_session->GetPlayer(), target, damage, nullptr, BASE_ATTACK);
 
     char* spellStr = strtok((char*)nullptr, " ");
@@ -728,18 +728,11 @@ bool ChatHandler::HandleDamageCommand(const char * args)
     // melee damage by specific school
     if(!spellStr)
     {
-        uint32 absorb = 0;
-        uint32 resist = 0;
+        DamageInfo damageInfo(m_session->GetPlayer(), target, damage, nullptr, schoolmask, SPELL_DIRECT_DAMAGE, BASE_ATTACK);
+        Unit::CalcAbsorbResist(damageInfo);
 
-        Unit::CalcAbsorbResist(m_session->GetPlayer(), target,schoolmask, SPELL_DIRECT_DAMAGE, damage, &absorb, &resist, 0);
-
-        if (damage <= absorb + resist)
-            return true;
-
-        damage -= absorb + resist;
-
-        Unit::DealDamage(m_session->GetPlayer(), target, damage, nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
-        m_session->GetPlayer()->SendAttackStateUpdate(HITINFO_NORMALSWING2, target, 1, schoolmask, damage, absorb, resist, VICTIMSTATE_NORMAL, 0);
+        Unit::DealDamage(m_session->GetPlayer(), target, damageInfo.GetDamage(), nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
+        m_session->GetPlayer()->SendAttackStateUpdate(HITINFO_NORMALSWING2, target, 1, schoolmask, damageInfo.GetDamage(), damageInfo.GetAbsorb(), damageInfo.GetResist(), VICTIMSTATE_NORMAL, 0);
         return true;
     }
 

@@ -838,24 +838,29 @@ void TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAtta
     uint32 count = 0;
     for (auto itr : *damageToTarget)
     {
-        if (itr.damageInfo.attackType != attackType)
+        if (itr.damageInfo.AttackType != attackType)
             continue;
 
         //only use full hits
         if (critical)
         {
-            if (itr.damageInfo.HitInfo != HITINFO_CRITICALHIT && itr.damageInfo.hitOutCome != MELEE_HIT_CRIT)
+            if (itr.damageInfo.HitInfo != HITINFO_CRITICALHIT && itr.damageInfo.HitOutCome != MELEE_HIT_CRIT)
                 continue;
         } else {
-            if ((itr.damageInfo.HitInfo != HITINFO_NORMALSWING || itr.damageInfo.HitInfo != HITINFO_NORMALSWING2) && itr.damageInfo.hitOutCome != MELEE_HIT_NORMAL)
+            if ((itr.damageInfo.HitInfo != HITINFO_NORMALSWING || itr.damageInfo.HitInfo != HITINFO_NORMALSWING2) && itr.damageInfo.HitOutCome != MELEE_HIT_NORMAL)
                 continue;
         }
+        uint32 damage = 0;
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
+        {
 
-        uint32 damage = itr.damageInfo.damage;
-        damage += itr.damageInfo.resist;
-        damage += itr.damageInfo.blocked_amount;
-        damage += itr.damageInfo.absorb;
-        //resilience not taken into account...
+            damage += itr.damageInfo.Damages[i].Damage;
+            damage += itr.damageInfo.Damages[i].Resist;
+            damage += itr.damageInfo.Damages[i].Absorb;
+        }
+        damage += itr.damageInfo.Blocked;
+
+        //resilience not taken into account here...
 
         minDamage = std::min(minDamage, damage);
         maxDamage = std::max(maxDamage, damage);
@@ -1071,10 +1076,10 @@ void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, W
         if(total % 100)
             TC_LOG_ERROR("test.unit_test", "%u error %f \t\t mean %f \t\t %f", total, std::abs(mean - expectedResult), mean, expectedResult);*/
 
-        if (itr.damageInfo.attackType != weaponAttackType)
+        if (itr.damageInfo.AttackType != weaponAttackType)
             continue;
 
-        if (itr.damageInfo.hitOutCome != meleeHitOutcome)
+        if (itr.damageInfo.HitOutCome != meleeHitOutcome)
             continue;
 
         success++;

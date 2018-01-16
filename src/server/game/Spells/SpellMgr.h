@@ -422,7 +422,7 @@ enum ProcFlags
    PROC_FLAG_ON_DO_PERIODIC                = 0x00040000,    // 18 Successful do periodic (damage / healing, determined from 14-17 flags)
    PROC_FLAG_TAKEN_PERIODIC                = 0x00080000,    // 19 Taken spell periodic (damage / healing, determined from 14-17 flags)
 
-   PROC_FLAG_TAKEN_ANY_DAMAGE              = 0x00100000,    // 20 Taken any damage
+   PROC_FLAG_TAKEN_DAMAGE              = 0x00100000,    // 20 Taken any damage
    PROC_FLAG_ON_TRAP_ACTIVATION            = 0x00200000,    // 21 On trap activation
 
    PROC_FLAG_TAKEN_OFFHAND_HIT             = 0x00400000,    // 22 Taken off-hand melee attacks(not used)
@@ -442,28 +442,28 @@ enum ProcFlags
 
 enum ProcFlagsEx
 {
-   PROC_EX_NONE                = 0x0000000,                 // If none can tigger on Hit/Crit only (passive spells MUST defined by SpellFamily flag)
-   PROC_EX_NORMAL_HIT          = 0x0000001,                 // If set only from normal hit (only damage spells)
-   PROC_EX_CRITICAL_HIT        = 0x0000002,
-   PROC_EX_MISS                = 0x0000004,
-   PROC_EX_RESIST              = 0x0000008,
-   PROC_EX_DODGE               = 0x0000010,
-   PROC_EX_PARRY               = 0x0000020,
-   PROC_EX_BLOCK               = 0x0000040,
-   PROC_EX_EVADE               = 0x0000080,
-   PROC_EX_IMMUNE              = 0x0000100,
-   PROC_EX_DEFLECT             = 0x0000200,
-   PROC_EX_ABSORB              = 0x0000400,
-   PROC_EX_REFLECT             = 0x0000800,
-   PROC_EX_INTERRUPT           = 0x0001000,                 // Melle hit result can be Interrupt (not used)
-   PROC_EX_RESERVED1           = 0x0002000,
-   PROC_EX_RESERVED2           = 0x0004000,
-   PROC_EX_RESERVED3           = 0x0008000,
-   PROC_EX_EX_TRIGGER_ALWAYS   = 0x0010000,                 // If set trigger always ( no matter another flags) used for drop charges
-   PROC_EX_EX_ONE_TIME_TRIGGER = 0x0020000,                 // If set trigger always but only one time
-   PROC_EX_INTERNAL_HOT        = 0x1000000,                 // Only for internal use
-   PROC_EX_INTERNAL_DOT        = 0x2000000,                 // Only for internal use
-   PROC_EX_INTERNAL_TRIGGERED  = 0x4000000
+   PROC_HIT_NONE                = 0x0000000,                 // If none can trigger on Hit/Crit only (passive spells MUST defined by SpellFamily flag)
+   PROC_HIT_NORMAL              = 0x0000001,                 // If set only from normal hit (only damage spells)
+   PROC_HIT_CRITICAL            = 0x0000002,
+   PROC_HIT_MISS                = 0x0000004,
+   PROC_HIT_FULL_RESIST         = 0x0000008,
+   PROC_HIT_DODGE               = 0x0000010,
+   PROC_HIT_PARRY               = 0x0000020,
+   PROC_HIT_BLOCK               = 0x0000040,                 // partial or full block
+   PROC_HIT_EVADE               = 0x0000080,
+   PROC_HIT_IMMUNE              = 0x0000100,
+   PROC_HIT_DEFLECT             = 0x0000200,
+   PROC_HIT_ABSORB              = 0x0000400,                 // partial or full absorb
+   PROC_HIT_REFLECT             = 0x0000800,
+   PROC_HIT_INTERRUPT           = 0x0001000,                 // Melee hit result can be Interrupt (not used)
+   PROC_HIT_FULL_BLOCK          = 0x0002000,
+   PROC_HIT_RESERVED1           = 0x0004000,
+   PROC_HIT_RESERVED2           = 0x0008000,
+   PROC_HIT_EX_TRIGGER_ALWAYS   = 0x0010000,                 // If set trigger always ( no matter another flags) used for drop charges
+   PROC_HIT_EX_ONE_TIME_TRIGGER = 0x0020000,                 // If set trigger always but only one time
+   PROC_HIT_INTERNAL_HOT        = 0x1000000,                 // Only for internal use
+   PROC_HIT_INTERNAL_DOT        = 0x2000000,                 // Only for internal use
+   PROC_HIT_INTERNAL_TRIGGERED  = 0x4000000
 };
 
 struct SpellProcEventEntry

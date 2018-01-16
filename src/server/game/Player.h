@@ -1896,7 +1896,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdateShieldBlockValue();
         void UpdateSpellDamageAndHealingBonus();
 
-        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) override;
+        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 damageIndex) const override;
+        SpellSchoolMask GetMeleeDamageSchoolMask(WeaponAttackType attackType = BASE_ATTACK, uint8 damageIndex = 0) const override;
         bool HasWand() const;
 
         void UpdateDefenseBonusesMod();

@@ -289,6 +289,7 @@ class TC_GAME_API Aura
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsRemoved() const { return m_isRemoved; }
         bool IsInUse() const { return m_in_use;}
+        bool IsAffectedOnSpell(SpellInfo const* spell) const;
         void CleanupTriggeredSpells();
 
         bool CanBeSaved() const;

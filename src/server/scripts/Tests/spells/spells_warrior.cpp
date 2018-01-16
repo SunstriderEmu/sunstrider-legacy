@@ -662,10 +662,14 @@ public:
                 auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
-                uint32 damage = data.damageInfo.damage;
-                damage += data.damageInfo.resist;
-                damage += data.damageInfo.blocked_amount;
-                damage += data.damageInfo.absorb;
+                uint32 damage = 0;
+                for (uint8 j = 0; j < MAX_ITEM_PROTO_DAMAGES; j++)
+                {
+                    damage += data.damageInfo.Damages[j].Damage;
+                    damage += data.damageInfo.Damages[j].Resist;
+                    damage += data.damageInfo.Damages[j].Absorb;
+                }
+                damage += data.damageInfo.Blocked;
                 uint32 rage = 2.5f * damage / rageConversion * 2.0f * 10.0f;
                 expectedRage += rage;
                 uint32 warRage = warrior->GetPower(POWER_RAGE);
@@ -1715,7 +1719,7 @@ public:
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
 
-                switch (data.damageInfo.hitOutCome)
+                switch (data.damageInfo.HitOutCome)
                 {
                     case MELEE_HIT_DODGE: 
                         TEST_CAST(warrior, rogue, ClassSpells::Warrior::REVENGE_RNK_8, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));

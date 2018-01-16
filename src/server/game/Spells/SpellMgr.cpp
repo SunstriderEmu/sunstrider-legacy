@@ -477,7 +477,7 @@ procExtra = extra info from current event
 bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellProcEvent, uint32 EventProcFlag, SpellInfo const * procSpell, uint32 ProcFlags, uint32 procExtra, bool active)
 {
     // No extra req need
-    uint32 procEvent_procEx = PROC_EX_NONE;
+    uint32 procEvent_procEx = PROC_HIT_NONE;
 
     // check prockFlags for condition
     if((ProcFlags & EventProcFlag) == 0)
@@ -498,11 +498,11 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
     {
         if (EventProcFlag & PROC_FLAG_SUCCESSFUL_NEGATIVE_SPELL_HIT)
         {
-            if (!(procExtra & PROC_EX_INTERNAL_DOT))
+            if (!(procExtra & PROC_HIT_INTERNAL_DOT))
                 return false;
         }
         else if (EventProcFlag & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL
-            && !(procExtra & PROC_EX_INTERNAL_HOT))
+            && !(procExtra & PROC_HIT_INTERNAL_HOT))
             return false;
     }
 
@@ -510,11 +510,11 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
     {
         if (EventProcFlag & PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT)
         {
-            if (!(procExtra & PROC_EX_INTERNAL_DOT))
+            if (!(procExtra & PROC_HIT_INTERNAL_DOT))
                 return false;
         }
         else if (EventProcFlag & PROC_FLAG_TAKEN_POSITIVE_SPELL
-            && !(procExtra & PROC_EX_INTERNAL_HOT))
+            && !(procExtra & PROC_HIT_INTERNAL_HOT))
             return false;
     }
 
@@ -564,19 +564,19 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
     }
 
     // Check for extra req (if none) and hit/crit
-    if (procEvent_procEx == PROC_EX_NONE)
+    if (procEvent_procEx == PROC_HIT_NONE)
     {
         // No extra req, so can trigger only for active (damage/healing present) and hit/crit
-        if((procExtra & (PROC_EX_NORMAL_HIT|PROC_EX_CRITICAL_HIT)) && active)
+        if((procExtra & (PROC_HIT_NORMAL|PROC_HIT_CRITICAL)) && active)
             return true;
     }
     else // Passive spells hits here only if resist/reflect/immune/evade
     {
-        // Exist req for PROC_EX_EX_TRIGGER_ALWAYS
-        if (procEvent_procEx & PROC_EX_EX_TRIGGER_ALWAYS)
+        // Exist req for PROC_HIT_EX_TRIGGER_ALWAYS
+        if (procEvent_procEx & PROC_HIT_EX_TRIGGER_ALWAYS)
             return true;
         // Passive spells can`t trigger if need hit
-        if ((procEvent_procEx & PROC_EX_NORMAL_HIT) && !active)
+        if ((procEvent_procEx & PROC_HIT_NORMAL) && !active)
             return false;
         // Check Extra Requirement like (hit/crit/miss/resist/parry/dodge/block/immune/reflect/absorb and other)
         if (procEvent_procEx & procExtra)

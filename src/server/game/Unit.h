@@ -19,6 +19,7 @@
 #include <list>
 #include "SpellDefines.h"
 #include "SpellInfo.h"
+#include "ItemPrototype.h"
 class UnitAI;
 class SpellCastTargets;
 class Aura;
@@ -272,7 +273,9 @@ enum UnitModifierPctType
 enum WeaponDamageRange
 {
     MINDAMAGE,
-    MAXDAMAGE
+    MAXDAMAGE,
+
+    MAX_WEAPON_DAMAGE_RANGE,
 };
 
 enum DamageTypeToSchool
@@ -705,22 +708,72 @@ struct CleanDamage
 // Need create structure like in SMSG_ATTACKERSTATEUPDATE opcode
 struct CalcDamageInfo
 {
-    Unit  *attacker;             // Attacker
-    Unit  *target;               // Target for damage
-    uint32 damageSchoolMask;
-    uint32 damage;
-    uint32 absorb;
-    uint32 resist;
-    uint32 blocked_amount;
+    Unit* Attacker;
+    Unit* Target;
+
+    struct
+    {
+        uint32 DamageSchoolMask;
+        uint32 Damage;
+        uint32 Absorb;
+        uint32 Resist;
+    } Damages[MAX_ITEM_PROTO_DAMAGES];
+
+    uint32 Blocked;
     uint32 HitInfo;
     uint32 TargetState;
 // Helper
-    WeaponAttackType attackType; //
-    uint32 procAttacker;
-    uint32 procVictim;
-    uint32 procEx;
-    uint32 cleanDamage;          // Used only fo rage calcultion
-    MeleeHitOutcome hitOutCome;  // TODO: remove this field (need use TargetState)
+    WeaponAttackType AttackType; //
+    uint32 ProcAttacker;
+    uint32 ProcVictim;
+    uint32 ProcEx;
+    uint32 CleanDamage;          // Used only fo rage calcultion
+    MeleeHitOutcome HitOutCome;  // TODO: remove this field (need use TargetState)
+};
+
+struct SpellNonMeleeDamage;
+
+class TC_GAME_API DamageInfo
+{
+private:
+    Unit * const m_attacker;
+    Unit* const m_victim;
+    uint32 m_damage;
+    SpellInfo const* const m_spellInfo;
+    SpellSchoolMask const m_schoolMask;
+    DamageEffectType const m_damageType;
+    WeaponAttackType m_attackType;
+    uint32 m_absorb;
+    uint32 m_resist;
+    uint32 m_block;
+    uint32 m_hitMask;
+
+    // amalgamation constructor (used for proc)
+    DamageInfo(DamageInfo const& dmg1, DamageInfo const& dmg2);
+
+public:
+    DamageInfo(Unit* attacker, Unit* victim, uint32 damage, SpellInfo const* spellInfo, SpellSchoolMask schoolMask, DamageEffectType damageType, WeaponAttackType attackType);
+    explicit DamageInfo(CalcDamageInfo const& dmgInfo); // amalgamation wrapper
+    DamageInfo(CalcDamageInfo const& dmgInfo, uint8 damageIndex);
+    DamageInfo(SpellNonMeleeDamage const& spellNonMeleeDamage, DamageEffectType damageType, WeaponAttackType attackType, uint32 hitMask);
+
+    void ModifyDamage(int32 amount);
+    void AbsorbDamage(uint32 amount);
+    void ResistDamage(uint32 amount);
+    void BlockDamage(uint32 amount);
+
+    Unit* GetAttacker() const { return m_attacker; }
+    Unit* GetVictim() const { return m_victim; }
+    SpellInfo const* GetSpellInfo() const { return m_spellInfo; }
+    SpellSchoolMask GetSchoolMask() const { return m_schoolMask; }
+    DamageEffectType GetDamageType() const { return m_damageType; }
+    WeaponAttackType GetAttackType() const { return m_attackType; }
+    uint32 GetDamage() const { return m_damage; }
+    uint32 GetAbsorb() const { return m_absorb; }
+    uint32 GetResist() const { return m_resist; }
+    uint32 GetBlock() const { return m_block; }
+
+    uint32 GetHitMask() const;
 };
 
 class TC_GAME_API HealInfo
@@ -1113,6 +1166,7 @@ class TC_GAME_API Unit : public WorldObject
         bool IsWithinCombatRange(Unit const* obj, float dist2compare) const;
         bool IsWithinMeleeRange(Unit const* obj, float dist = MELEE_RANGE) const;
         float GetMeleeRange(Unit const* target) const;
+        virtual SpellSchoolMask GetMeleeDamageSchoolMask(WeaponAttackType attackType = BASE_ATTACK, uint8 damageIndex = 0) const = 0;
         void GetRandomContactPoint( const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax ) const;
         uint32 m_extraAttacks;
         bool m_canDualWield;
@@ -1277,12 +1331,13 @@ class TC_GAME_API Unit : public WorldObject
 
         uint16 GetMaxSkillValueForLevel(Unit const* target = nullptr) const { return (target ? GetLevelForTarget(target) : GetLevel()) * 5; }
         void RemoveSpellbyDamageTaken(uint32 damage, uint32 spell);
+        static void DealDamageMods(Unit const* victim, uint32& damage, uint32* absorb);
         static uint32 DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage = nullptr, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *spellProto = nullptr, bool durabilityLoss = true);
         static void Kill(Unit* attacker, Unit* victim, bool durabilityLoss = true);
         void KillSelf(bool durabilityLoss = true) { Unit::Kill(this, this, durabilityLoss); }
         static void DealHeal(HealInfo& healInfo);
 
-        void ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellInfo const *procSpell = nullptr, bool canTrigger = true);
+        void ProcSkillsAndAuras(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellInfo const *procSpell = nullptr, bool canTrigger = true);
         void ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellInfo const * procSpell, uint32 damage );
 
         void SetEmoteState(uint32 state);
@@ -1291,7 +1346,7 @@ class TC_GAME_API Unit : public WorldObject
         //float MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) const;
 
         //used for white damage calculation
-        void CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *damageInfo, WeaponAttackType attackType = BASE_ATTACK);
+        void CalculateMeleeDamage(Unit *pVictim, CalcDamageInfo *damageInfo, WeaponAttackType attackType = BASE_ATTACK);
         void DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss);
 
         void CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellInfo const *spellInfo, WeaponAttackType attackType = BASE_ATTACK, bool crit = false);
@@ -1767,11 +1822,11 @@ class TC_GAME_API Unit : public WorldObject
         virtual void UpdateDamagePhysical(WeaponAttackType attType);
         float GetTotalAttackPowerValue(WeaponAttackType attType, Unit* victim = nullptr) const;
         float GetAPBonusVersus(WeaponAttackType attType, Unit* victim) const;
-        float GetWeaponDamageRange(WeaponAttackType attType ,WeaponDamageRange type) const;
-        void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
-        uint32 CalculateDamage(WeaponAttackType attType, bool normalized, SpellInfo const* spellProto = nullptr, Unit* target = nullptr);
-        virtual void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) = 0;
-        float GetAPMultiplier(WeaponAttackType attType, bool normalized);
+        float GetWeaponDamageRange(WeaponAttackType attType ,WeaponDamageRange type, uint8 damageIndex = 0) const;
+        void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value, uint8 damageIndex = 0) { m_weaponDamage[attType][damageRange][damageIndex] = value; }
+        uint32 CalculateDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, uint8 itemDamagesMask = 0) const;
+        virtual void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 damageIndex) const = 0;
+        float GetAPMultiplier(WeaponAttackType attType, bool normalized) const;
 
         virtual bool HasMainWeapon() const { return true; }
 
@@ -1951,8 +2006,8 @@ class TC_GAME_API Unit : public WorldObject
         */
         uint32 SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, Optional<float> const& donePctTotal = {}, uint32 stack = 1);
 
-        void MeleeDamageBonus(Unit *pVictim, uint32 *damage, WeaponAttackType attType, SpellInfo const *spellProto = nullptr);
-//TODO        uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackType attType, SpellInfo const *spellProto = NULL);
+        uint32 MeleeDamageBonusDone(Unit* pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const* spellProto = nullptr, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL);
+        uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackType attType, SpellInfo const* spellProto = nullptr, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL);
 
         bool   IsSpellBlocked(Unit *pVictim, SpellInfo const *spellProto, WeaponAttackType attackType = BASE_ATTACK);
         float  SpellCritChanceDone(SpellInfo const* spellInfo, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK) const;
@@ -1977,9 +2032,10 @@ class TC_GAME_API Unit : public WorldObject
         uint32 GetDamageImmunityMask() const;
         uint32 GetMechanicImmunityMask() const;
 
+        static bool IsDamageReducedByArmor(SpellSchoolMask damageSchoolMask, SpellInfo const* spellInfo = nullptr, int8 effIndex = -1);
         static uint32 CalcArmorReducedDamage(Unit const* attacker, Unit* pVictim, const uint32 damage, SpellInfo const* spellInfo, WeaponAttackType attackType);
-        static uint32 CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 damage, SpellSchoolMask schoolMask, SpellInfo const* spellInfo, DamageEffectType damagetype);
-        static void CalcAbsorbResist(Unit* attacker, Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist, uint32 spellId);
+        static uint32 CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 damage, SpellSchoolMask schoolMask, SpellInfo const* spellInfo);
+        static void CalcAbsorbResist(DamageInfo& damageInfo);
 
         void  UpdateSpeed(UnitMoveType mtype);
         float GetSpeed( UnitMoveType mtype ) const;
@@ -2111,8 +2167,6 @@ class TC_GAME_API Unit : public WorldObject
 
         float GetCollisionHeight() const override;
 
-        virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
-
     protected:
         explicit Unit (bool isWorldObject);
 
@@ -2162,7 +2216,7 @@ class TC_GAME_API Unit : public WorldObject
 
 		float m_auraFlatModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_FLAT_END];
 		float m_auraPctModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_PCT_END];
-        float m_weaponDamage[MAX_ATTACK][2];
+        float m_weaponDamage[MAX_ATTACK][MAX_WEAPON_DAMAGE_RANGE][MAX_ITEM_PROTO_DAMAGES];
         bool m_canModifyStats;
         //std::list< spellEffectPair > AuraSpells[TOTAL_AURAS];  // TODO: use this if ok for mem
 

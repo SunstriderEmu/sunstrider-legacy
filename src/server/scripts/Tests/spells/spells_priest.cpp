@@ -131,7 +131,7 @@ public:
                 auto damageToTarget = AI->GetWhiteDamageDoneInfo(priest);
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
-                if (data.damageInfo.hitOutCome != MELEE_HIT_NORMAL && data.damageInfo.hitOutCome != MELEE_HIT_CRIT)
+                if (data.damageInfo.HitOutCome != MELEE_HIT_NORMAL && data.damageInfo.HitOutCome != MELEE_HIT_CRIT)
                     continue;
                 hits++;
                 Aura* aura = priest->GetAura(ClassSpells::Priest::INNER_FIRE_RNK_7, EFFECT_0);
@@ -555,13 +555,16 @@ public:
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
 
-                if (data.damageInfo.hitOutCome != MELEE_HIT_NORMAL && data.damageInfo.hitOutCome != MELEE_HIT_CRIT)
+                if (data.damageInfo.HitOutCome != MELEE_HIT_NORMAL && data.damageInfo.HitOutCome != MELEE_HIT_CRIT)
                     continue;
 
-                totalDamage += data.damageInfo.damage;
-                totalDamage += data.damageInfo.resist;
-                totalDamage += data.damageInfo.blocked_amount;
-                totalDamage += data.damageInfo.absorb;
+                for (uint8 j = 0; j < MAX_ITEM_PROTO_DAMAGES; j++)
+                {
+                    totalDamage += data.damageInfo.Damages[j].Damage;
+                    totalDamage += data.damageInfo.Damages[j].Resist;
+                    totalDamage += data.damageInfo.Damages[j].Absorb;
+                }
+                totalDamage += data.damageInfo.Blocked;
 
                 if (totalDamage < expectedAbsorb)
                 {

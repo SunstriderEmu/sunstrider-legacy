@@ -1623,7 +1623,7 @@ public:
         void Test() override
         {
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-            Creature* inFront = SpawnCreature();
+            //Creature* inFront = SpawnCreature();
 
             Position spawnPosition(_location);
             spawnPosition.MoveInFront(_location, 3.0f);
@@ -1979,7 +1979,7 @@ public:
             EnableCriticals(druid, crit);
             TEST_CAST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
             Wait(8000);
-            uint32 expectedHealth = druid->GetHealth() - (startHealth + tickTotal);
+            //uint32 expectedHealth = druid->GetHealth() - (startHealth + tickTotal);
             TEST_ASSERT(druid->GetHealth() == expectedBloom);
         }
 

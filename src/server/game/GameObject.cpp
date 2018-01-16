@@ -610,7 +610,7 @@ void GameObject::Update(uint32 diff)
                     CastSpell(trapTarget, goInfo->trap.spellId, TRIGGERED_FULL_MASK, GetOwnerGUID());
                     if(owner)
                         if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
-                            owner->ProcDamageAndSpell(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
+                            owner->ProcSkillsAndAuras(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
                     
                     m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
 

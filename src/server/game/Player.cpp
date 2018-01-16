@@ -797,13 +797,23 @@ void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
     // Absorb, resist some environmental damage type
     uint32 absorb = 0;
     uint32 resist = 0;
+    switch (type)
+    {
+    case DAMAGE_LAVA:
+    case DAMAGE_SLIME:
+    {
+        DamageInfo dmgInfo(this, this, damage, nullptr, type == DAMAGE_LAVA ? SPELL_SCHOOL_MASK_FIRE : SPELL_SCHOOL_MASK_NATURE, DIRECT_DAMAGE, BASE_ATTACK);
+        Unit::CalcAbsorbResist(dmgInfo);
+        absorb = dmgInfo.GetAbsorb();
+        resist = dmgInfo.GetResist();
+        damage = dmgInfo.GetDamage();
+        break;
+    }
+    default:
+        break;
+    }
 
-    if (type == DAMAGE_LAVA)
-        Unit::CalcAbsorbResist(this, this, SPELL_SCHOOL_MASK_FIRE, DIRECT_DAMAGE, damage, &absorb, &resist, 0);
-    else if (type == DAMAGE_SLIME)
-        Unit::CalcAbsorbResist(this, this, SPELL_SCHOOL_MASK_NATURE, DIRECT_DAMAGE, damage, &absorb, &resist, 0);
-
-    damage-=absorb+resist;
+    Unit::DealDamageMods(this, damage, &absorb);
 
     WorldPacket data(SMSG_ENVIRONMENTALDAMAGELOG, (21));
     data << uint64(GetGUID());
@@ -4898,7 +4908,8 @@ float Player::GetMissPercentageFromDefense() const
     diminishing += (GetRatingBonusValue(CR_DEFENSE_SKILL) * 0.04f);
 
     // apply diminishing formula to diminishing miss chance
-    return CalculateDiminishingReturns(miss_cap, GetClass(), nondiminishing, diminishing);
+    //return CalculateDiminishingReturns(miss_cap, GetClass(), nondiminishing, diminishing);
+    return diminishing;
 }
 
 float Player::GetMeleeCritFromAgility()
@@ -7546,39 +7557,50 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, bool appl
         attType = OFF_ATTACK;
     }
 
-    float minDamage = proto->Damage[0].DamageMin;
-    float maxDamage = proto->Damage[0].DamageMax;
-
-#ifdef LICH_KING
-    // If set dpsMod in ScalingStatValue use it for min (70% from average), max (130% from average) damage
-    if (ssv)
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
     {
-        int32 extraDPS = ssv->getDPSMod(proto->ScalingStatValue);
-        if (extraDPS)
+        float minDamage = proto->Damage[i].DamageMin;
+        float maxDamage = proto->Damage[i].DamageMax;
+
+    #ifdef LICH_KING
+        // If set dpsMod in ScalingStatValue use it for min (70% from average), max (130% from average) damage
+        if (ssv && i == 0)
         {
-            float average = extraDPS * proto->Delay / 1000.0f;
-            minDamage = 0.7f * average;
-            maxDamage = 1.3f * average;
+            int32 extraDPS = ssv->getDPSMod(proto->ScalingStatValue);
+            if (extraDPS)
+            {
+                float average = extraDPS * proto->Delay / 1000.0f;
+                minDamage = 0.7f * average;
+                maxDamage = 1.3f * average;
+            }
+        }
+    #endif
+
+        if (apply)
+        {
+            if (minDamage > 0)
+            {
+                damage = apply ? minDamage : BASE_MINDAMAGE;
+                SetBaseWeaponDamage(attType, MINDAMAGE, damage, i);
+            }
+
+            if (maxDamage > 0)
+            {
+                damage = apply ? maxDamage : BASE_MAXDAMAGE;
+                SetBaseWeaponDamage(attType, MAXDAMAGE, damage, i);
+            }
         }
     }
-#endif
-
-    if (minDamage > 0)
+    if (!apply)
     {
-        damage = apply ? minDamage : BASE_MINDAMAGE;
-        SetBaseWeaponDamage(attType, MINDAMAGE, damage);
+        SetBaseWeaponDamage(attType, MINDAMAGE, BASE_MINDAMAGE, 0);
+        SetBaseWeaponDamage(attType, MAXDAMAGE, BASE_MAXDAMAGE, 0);
+
+        SetBaseWeaponDamage(attType, MINDAMAGE, 0.f, 1);
+        SetBaseWeaponDamage(attType, MAXDAMAGE, 0.f, 1);
     }
 
-    if (maxDamage  > 0)
-    {
-        damage = apply ? maxDamage : BASE_MAXDAMAGE;
-        SetBaseWeaponDamage(attType, MAXDAMAGE, damage);
-    }
-
-    if (!IsUseEquipedWeapon(slot == EQUIPMENT_SLOT_MAINHAND)) //false if in feral form or disarmed
-        return;
-
-    if (proto->Delay)
+    if (proto->Delay && !IsInFeralForm())
     {
         if (slot == EQUIPMENT_SLOT_RANGED)
             SetAttackTime(RANGED_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
@@ -7588,8 +7610,20 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, bool appl
             SetAttackTime(OFF_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
     }
 
-    if (CanModifyStats() && (damage || proto->Delay))
+    // No need to modify any physical damage for ferals as it is calculated from stats only
+    if (IsInFeralForm())
+        return;
+
+    if (CanModifyStats() && (GetWeaponDamageRange(attType, MAXDAMAGE) || proto->Delay))
         UpdateDamagePhysical(attType);
+}
+
+SpellSchoolMask Player::GetMeleeDamageSchoolMask(WeaponAttackType attackType /*=BASE_ATTACK*/, uint8 damageIndex /*= 0*/) const
+{
+    if (Item const* weapon = GetWeaponForAttack(attackType, true))
+        return SpellSchoolMask(1 << weapon->GetTemplate()->Damage[damageIndex].DamageType);
+
+    return SPELL_SCHOOL_MASK_NORMAL;
 }
 
 void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
@@ -7751,7 +7785,7 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellInfo const *spell)
 {
     // Can do effect if any damage done to target
-    if (procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE)
+    if (procVictim & PROC_FLAG_TAKEN_DAMAGE)
     {
         for (const auto & spellData : proto->Spells)
         {
@@ -7838,7 +7872,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             else
             {
                 // Can do effect if any damage done to target
-                if (!(procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE))
+                if (!(procVictim & PROC_FLAG_TAKEN_DAMAGE))
                     continue;
             }
 
@@ -8062,7 +8096,7 @@ void Player::_ApplyAmmoBonuses()
     if( !ammo_proto || ammo_proto->Class!=ITEM_CLASS_PROJECTILE || !CheckAmmoCompatibility(ammo_proto))
         currentAmmoDPS = 0.0f;
     else
-        currentAmmoDPS = ammo_proto->Damage[0].DamageMin;
+        currentAmmoDPS = (ammo_proto->Damage[0].DamageMin + ammo_proto->Damage[0].DamageMax) / 2;
 
     if(currentAmmoDPS == GetAmmoDPS())
         return;
