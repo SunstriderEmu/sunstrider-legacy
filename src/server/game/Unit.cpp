@@ -863,9 +863,9 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
     {
         if(Battleground *bg = pVictim->ToPlayer()->GetBattleground())
         {
-            Player* attacker = (attacker->ToPlayer());
-            if(attacker != (pVictim->ToPlayer()))
-                bg->UpdatePlayerScore(attacker, SCORE_DAMAGE_DONE, damage);
+            Player* playerAttacker = (attacker->ToPlayer());
+            if(playerAttacker != (pVictim->ToPlayer()))
+                bg->UpdatePlayerScore(playerAttacker, SCORE_DAMAGE_DONE, damage);
             
             bg->UpdatePlayerScore(pVictim->ToPlayer(), SCORE_DAMAGE_TAKEN, damage);
         }
@@ -6327,7 +6327,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 
                 CastSpellExtraArgs args;
                 args.TriggerFlags = TRIGGERED_FULL_MASK;
-                args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT0, int32(damagePoint));
+                args.AddSpellBP0(int32(damagePoint));
                 args.SetTriggeringAura(triggeredByAura);
                 CastSpell(pVictim, spellId, args);
                 return true;                                // no hidden cooldown

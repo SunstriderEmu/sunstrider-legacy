@@ -1990,7 +1990,7 @@ void Aura::TriggerSpell()
                     return;
                 CastSpellExtraArgs args;
                 args.TriggerFlags = TRIGGERED_FULL_MASK;
-                args.SpellValueOverrides.AddMod(SPELLVALUE_MAX_TARGETS, int32(m_tickNumber / 15 + 1));
+                args.AddSpellMod(SPELLVALUE_MAX_TARGETS, int32(m_tickNumber / 15 + 1));
                 args.SetTriggeringAura(this);
                 args.SetOriginalCaster(originalCasterGUID);
                 caster->CastSpell(nullptr, trigger_spell_id, args);
@@ -6757,9 +6757,9 @@ void Aura::PeriodicTick()
                 {
                     CastSpellExtraArgs args;
                     args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT0, GetModifier()->m_amount);
-                    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT1, GetModifier()->m_amount);
-                    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT2, GetModifier()->m_amount);
+                    args.AddSpellMod(SPELLVALUE_BASE_POINT0, GetModifier()->m_amount);
+                    args.AddSpellMod(SPELLVALUE_BASE_POINT1, GetModifier()->m_amount);
+                    args.AddSpellMod(SPELLVALUE_BASE_POINT2, GetModifier()->m_amount);
                     args.SetTriggeringAura(this);
                     triggerCaster->CastSpell(m_target, triggerSpellId, args);
                 }

@@ -12930,9 +12930,9 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         args.TriggerFlags = TRIGGERED_FULL_MASK;
                         if (basepoints) // Cast custom spell vs all equal basepoints getted from enchant_amount
                         {
-                            args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT0, int32(basepoints));
-                            args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT1, int32(basepoints));
-                            args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT2, int32(basepoints));
+                            args.AddSpellMod(SPELLVALUE_BASE_POINT0, int32(basepoints));
+                            args.AddSpellMod(SPELLVALUE_BASE_POINT1, int32(basepoints));
+                            args.AddSpellMod(SPELLVALUE_BASE_POINT2, int32(basepoints));
                         }
                         args.SetCastItem(item);
                         CastSpell(this, enchant_spell_id, args);

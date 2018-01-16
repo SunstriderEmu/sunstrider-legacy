@@ -1881,9 +1881,9 @@ void Spell::EffectDummy(uint32 i)
 
                     CastSpellExtraArgs args;
                     args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT0, int32(hasteModBasePoints0));
-                    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT1, int32(hasteModBasePoints1));
-                    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT2, int32(hasteModBasePoints2));
+                    args.AddSpellMod(SPELLVALUE_BASE_POINT0, int32(hasteModBasePoints0));
+                    args.AddSpellMod(SPELLVALUE_BASE_POINT1, int32(hasteModBasePoints1));
+                    args.AddSpellMod(SPELLVALUE_BASE_POINT2, int32(hasteModBasePoints2));
                     m_caster->CastSpell(m_caster, 26635, args);
                     return;
                 }
@@ -2489,9 +2489,9 @@ void Spell::EffectTriggerSpellWithValue(uint32 i)
     int32 bp = damage;
     CastSpellExtraArgs args;
     args.TriggerFlags = TRIGGERED_FULL_MASK;
-    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT0, int32(bp));
-    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT1, int32(bp));
-    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT2, int32(bp));
+    args.AddSpellMod(SPELLVALUE_BASE_POINT0, int32(bp));
+    args.AddSpellMod(SPELLVALUE_BASE_POINT1, int32(bp));
+    args.AddSpellMod(SPELLVALUE_BASE_POINT2, int32(bp));
     args.SetOriginalCaster(m_originalCasterGUID);
     m_caster->CastSpell(unitTarget, triggered_spell_id, args);
 }
@@ -7636,8 +7636,8 @@ void Spell::EffectForceCastWithValue(uint32 i)
     int32 bp = damage;
     CastSpellExtraArgs args;
     args.TriggerFlags = TRIGGERED_FULL_MASK;
-    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT0, int32(bp));
-    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT1, int32(bp));
-    args.SpellValueOverrides.AddMod(SPELLVALUE_BASE_POINT2, int32(bp));
+    args.AddSpellMod(SPELLVALUE_BASE_POINT0, int32(bp));
+    args.AddSpellMod(SPELLVALUE_BASE_POINT1, int32(bp));
+    args.AddSpellMod(SPELLVALUE_BASE_POINT2, int32(bp));
     unitTarget->CastSpell(m_caster, spellInfo->Id, args);
 }
