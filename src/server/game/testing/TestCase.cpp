@@ -566,7 +566,6 @@ void TestCase::_ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissI
     INTERNAL_TEST_ASSERT(res == uint32(SPELL_CAST_OK));
 }
 
-
 bool TestCase::HasLootForMe(Creature* creature, Player* player, uint32 itemID)
 {
     auto items = creature->loot.items;
