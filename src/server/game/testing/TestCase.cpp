@@ -557,7 +557,7 @@ void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastRe
 	INTERNAL_TEST_ASSERT(res == uint32(expectedCode));
 }
 
-void TestCase::_ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, TriggerCastFlags triggeredFlags = TRIGGERED_NONE)
+void TestCase::_ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo, TriggerCastFlags triggeredFlags)
 {
     caster->ForceSpellHitResult(forcedMissInfo);
     uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
