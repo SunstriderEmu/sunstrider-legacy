@@ -1078,18 +1078,23 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
 
     SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
     uint32 crTypeMask = pVictim->GetCreatureTypeMask();
-    // Check spell crit chance
-    //bool crit = SpellCritChanceDone(pVictim, spellInfo, damageSchoolMask, attackType);
-    bool blocked = false;
-    // Per-school calc
-    switch (spellInfo->DmgClass)
+
+    // Spells with SPELL_ATTR4_FIXED_DAMAGE ignore resilience because their damage is based off another spell's damage.
+    if (!spellInfo->HasAttribute(SPELL_ATTR4_FIXED_DAMAGE))
     {
-        // Melee and Ranged Spells
+        if (damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL && !spellInfo->HasAttribute(SPELL_ATTR_CU_IGNORE_ARMOR))
+            damage = Unit::CalcArmorReducedDamage(this, pVictim, damage, spellInfo, attackType);
+
+        bool blocked = false;
+        // Per-school calc
+        switch (spellInfo->DmgClass)
+        {
+            // Melee and Ranged Spells
         case SPELL_DAMAGE_CLASS_RANGED:
         case SPELL_DAMAGE_CLASS_MELEE:
         {
             // Physical Damage
-            if ( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL )
+            if (damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL)
             {
                 // Spells with this attribute were already calculated in MeleeSpellHitResult
                 if (!spellInfo->HasAttribute(SPELL_ATTR3_BLOCKABLE_SPELL))
@@ -1101,18 +1106,18 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
 
             if (crit)
             {
-                damageInfo->HitInfo|= SPELL_HIT_TYPE_CRIT;
+                damageInfo->HitInfo |= SPELL_HIT_TYPE_CRIT;
 
                 // Calculate crit bonus
                 uint32 crit_bonus = damage;
                 // Apply crit_damage bonus for melee spells
-                if(Player* modOwner = GetSpellModOwner())
+                if (Player* modOwner = GetSpellModOwner())
                     modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CRIT_DAMAGE_BONUS, crit_bonus);
                 damage += crit_bonus;
 
                 // Apply SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE or SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE
-                int32 critPctDamageMod=0;
-                if(attackType == RANGED_ATTACK)
+                int32 critPctDamageMod = 0;
+                if (attackType == RANGED_ATTACK)
                     critPctDamageMod += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE);
                 else
                 {
@@ -1122,11 +1127,11 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                 // Increase crit damage from SPELL_AURA_MOD_CRIT_PERCENT_VERSUS
                 critPctDamageMod += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_PERCENT_VERSUS, crTypeMask);
 
-                if (critPctDamageMod!=0)
-                    damage = int32((damage) * float((100.0f + critPctDamageMod)/100.0f));
+                if (critPctDamageMod != 0)
+                    damage = int32((damage) * float((100.0f + critPctDamageMod) / 100.0f));
 
                 // Resilience - reduce crit damage
-                if (pVictim->GetTypeId()==TYPEID_PLAYER)
+                if (pVictim->GetTypeId() == TYPEID_PLAYER)
                     damage -= (pVictim->ToPlayer())->GetMeleeCritDamageReduction(damage);
             }
             // Spell weapon based damage CAN BE crit & blocked at same time
@@ -1149,25 +1154,20 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                 damageInfo->HitInfo |= SPELL_HIT_TYPE_CRIT;
                 damage = Unit::SpellCriticalDamageBonus(this, spellInfo, damage, pVictim);
                 // Resilience - reduce crit damage
-                if (pVictim->GetTypeId()==TYPEID_PLAYER && !(spellInfo->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)))
+                if (pVictim->GetTypeId() == TYPEID_PLAYER && !(spellInfo->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)))
                     damage -= (pVictim->ToPlayer())->GetSpellCritDamageReduction(damage);
             }
         }
         break;
+        }
     }
 
-
-    if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL  && !spellInfo->HasAttribute(SPELL_ATTR_CU_IGNORE_ARMOR))
-        damage = Unit::CalcArmorReducedDamage(this, pVictim, damage, spellInfo, attackType);
+    if (damage < 0)
+        damage = 0;
 
     // Calculate absorb resist
-    if(damage > 0)
-    {
-        Unit::CalcAbsorbResist(this, pVictim, damageSchoolMask, SPELL_DIRECT_DAMAGE, damage, &damageInfo->absorb, &damageInfo->resist, (spellInfo ? spellInfo->Id : 0));
-        damage-= damageInfo->absorb + damageInfo->resist;
-    }
-    else
-        damage = 0;
+    Unit::CalcAbsorbResist(this, pVictim, damageSchoolMask, SPELL_DIRECT_DAMAGE, damage, &damageInfo->absorb, &damageInfo->resist, (spellInfo ? spellInfo->Id : 0));
+    damage -= damageInfo->absorb + damageInfo->resist;
         
     if (spellInfo && spellInfo->Id == 46576) {
         if (Aura* aur = pVictim->GetAura(46458, 0))
@@ -8865,13 +8865,19 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, ui
     int32 TakenTotal = 0;
     float TakenTotalMod = 1.0f;
 
-    // ..taken
-    AuraList const& mModDamagePercentTaken = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
-    for (auto i : mModDamagePercentTaken)
-        if (i->GetModifier()->m_miscvalue & spellProto->GetSchoolMask())
-            AddPct(TakenTotalMod, i->GetModifierValue());
-
-
+#ifdef LICH_KING
+    // Mod damage from spell mechanic
+    if (uint32 mechanicMask = spellProto->GetAllEffectsMechanicMask())
+    {
+        TakenTotalMod *= GetTotalAuraMultiplier(SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT, [mechanicMask](AuraEffect const* aurEff) -> bool
+        {
+            if (mechanicMask & uint32(1 << (aurEff->GetMiscValue())))
+                return true;
+            return false;
+        });
+    }
+#endif
+    
     bool hasmangle = false;
     // .. taken pct: dummy auras
     AuraList const& mDummyAuras = GetAurasByType(SPELL_AURA_DUMMY);
@@ -8890,7 +8896,7 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, ui
                 TakenTotalMod *= (mod + 100.0f) / 100.0f;
             }
             break;
-            //This is changed in WLK, using aura 255
+            //This is changed in TLK, using aura 255
             //Mangle bear and cat. This hack should be removed 
         case 2312:
         case 44955:
@@ -8911,91 +8917,64 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, ui
         }
     }
 
-#ifdef LICH_KING
-    // From caster spells
-    if (caster)
+    // Spells with SPELL_ATTR4_FIXED_DAMAGE should only benefit from mechanic damage mod auras.
+    if (!spellProto->HasAttribute(SPELL_ATTR4_FIXED_DAMAGE))
     {
-        AuraEffectList const& mOwnerTaken = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
-        for (AuraEffectList::const_iterator i = mOwnerTaken.begin(); i != mOwnerTaken.end(); ++i)
-            if ((*i)->GetCasterGUID() == caster->GetGUID() && (*i)->IsAffectedOnSpell(spellProto))
-                if (spellProto->ValidateAttribute6SpellDamageMods(caster, *i, damagetype == DOT))
-                    AddPct(TakenTotalMod, (*i)->GetAmount());
+        // from positive and negative SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN
+        // multiplicative bonus, for example Dispersion + Shadowform (0.10*0.85=0.085)
+        TakenTotalMod *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, spellProto->GetSchoolMask());
+
+#ifdef LICH_KING
+        // From caster spells
+        if (caster)
+        {
+            TakenTotalMod *= GetTotalAuraMultiplier(SPELL_AURA_MOD_DAMAGE_FROM_CASTER, [caster, spellProto](AuraEffect const* aurEff) -> bool
+            {
+                if (aurEff->GetCasterGUID() == caster->GetGUID() && aurEff->IsAffectedOnSpell(spellProto))
+                    return true;
+                return false;
+            });
+        }
+#endif
+        int32 TakenAdvertisedBenefit = SpellBaseDamageBonusTaken(spellProto->GetSchoolMask(), damagetype == DOT);
+        float coeff = 0;
+        if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
+            coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
+
+        // Default calculation
+        if (TakenAdvertisedBenefit)
+        {
+            if (coeff <= 0.0f)
+            {
+                Unit const* calc = caster ? caster : this;
+                coeff = calc->CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
+            }
+            // level penalty still applied on Taken bonus - is it blizzlike?
+            float factorMod = CalculateLevelPenalty(spellProto) * stack;
+            TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod);
+        }
     }
 
-    if (uint32 mechanicMask = spellProto->GetAllEffectsMechanicMask())
+  
+#ifdef LICH_KING
+    // Sanctified Wrath (bypass damage reduction)
+    if (caster && TakenTotalMod < 1.0f)
     {
-        int32 modifierMax = 0;
-        int32 modifierMin = 0;
-        AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT);
-        for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+        float damageReduction = 1.0f - TakenTotalMod;
+        Unit::AuraEffectList const& casterIgnoreResist = caster->GetAuraEffectsByType(SPELL_AURA_MOD_IGNORE_TARGET_RESIST);
+        for (AuraEffect const* aurEff : casterIgnoreResist)
         {
-            if (!spellProto->ValidateAttribute6SpellDamageMods(caster, *i, damagetype == DOT))
+            if (!(aurEff->GetMiscValue() & spellProto->GetSchoolMask()))
                 continue;
 
-            // Only death knight spell with this aura, ZOMG!
-            if ((*i)->GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT)
-                if (!caster || caster->GetGUID() != (*i)->GetCasterGUID())
-                    continue;
-
-            if (mechanicMask & uint32(1 << (*i)->GetMiscValue()))
-            {
-                if ((*i)->GetAmount() > 0)
-                {
-                    if ((*i)->GetAmount() > modifierMax)
-                        modifierMax = (*i)->GetAmount();
-                }
-                else if ((*i)->GetAmount() < modifierMin)
-                    modifierMin = (*i)->GetAmount();
-            }
+            AddPct(damageReduction, -aurEff->GetAmount());
         }
 
-        AddPct(TakenTotalMod, modifierMax);
-        AddPct(TakenTotalMod, modifierMin);
-    }
-#endif
-
-    int32 TakenAdvertisedBenefit = SpellBaseDamageBonusTaken(spellProto->GetSchoolMask(), damagetype == DOT);
-    float coeff = 0;
-    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
-    if (bonus)
-        coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
-
-    // Default calculation
-    if (TakenAdvertisedBenefit)
-    {
-        if (coeff <= 0.0f)
-        {
-            if (caster)
-                coeff = caster->CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
-            else
-                coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
-        }
-        float factorMod = CalculateLevelPenalty(spellProto) * stack;
-        TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod);
-    }
-
-#ifdef LICH_KING
-
-    // sunwell: sanctified wrath talent
-    if (caster && TakenTotalMod < 1.0f && caster->HasAuraType(SPELL_AURA_MOD_IGNORE_TARGET_RESIST))
-    {
-        float ignoreModifier = 1.0f - TakenTotalMod;
-        bool addModifier = false;
-        AuraEffectList const& ResIgnoreAuras = caster->GetAuraEffectsByType(SPELL_AURA_MOD_IGNORE_TARGET_RESIST);
-        for (AuraEffectList::const_iterator j = ResIgnoreAuras.begin(); j != ResIgnoreAuras.end(); ++j)
-            if ((*j)->GetMiscValue() & spellProto->SchoolMask)
-            {
-                ApplyPct(ignoreModifier, (*j)->GetAmount());
-                addModifier = true;
-            }
-
-        if (addModifier)
-            TakenTotalMod += ignoreModifier;
+        TakenTotalMod = 1.0f - damageReduction;
     }
 #endif
 
     float tmpDamage = (float(pdamage) + TakenTotal) * TakenTotalMod;
-
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
@@ -9100,8 +9079,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
     int32 DoneAdvertisedBenefit = SpellBaseDamageBonusDone(spellProto->GetSchoolMask()) + BonusDamage;
 
     float coeff = 0.0f;
-    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
-    if (bonus)
+    if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
     {
         if (damagetype == DOT)
         {
@@ -9751,10 +9729,8 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
     }
 #endif
 
-    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
     float coeff = 0;
-    float factorMod = 1.0f;
-    if (bonus)
+    if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
         coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
 
     // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
@@ -9767,28 +9743,23 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
     // Default calculation
     if (TakenAdvertisedBenefit)
     {
-        float TakenCoeff = 0.0f;
         if (coeff <= 0)
             coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
 
-        factorMod *= CalculateLevelPenalty(spellProto) * int32(stack);
-        if (Player* modOwner = GetSpellModOwner())
-        {
-            coeff *= 100.0f;
-            modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff);
-            coeff /= 100.0f;
-        }
-
-        TakenTotal += int32(TakenAdvertisedBenefit * (coeff > 0 ? coeff : TakenCoeff) * factorMod);
+        // level penalty still applied on Taken bonus - is it blizzlike?
+        float factorMod = CalculateLevelPenalty(spellProto) * int32(stack);
+        TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod);
     }
 
 #ifdef LICH_KING
     if (caster)
     {
-        AuraList const& mHealingGet = GetAurasByType(SPELL_AURA_MOD_HEALING_RECEIVED);
-        for (AuraList::const_iterator i = mHealingGet.begin(); i != mHealingGet.end(); ++i)
-            if (caster->GetGUID() == (*i)->GetCasterGUID() && (*i)->IsAffectedOnSpell(spellProto))
-                AddPct(TakenTotalMod, (*i)->GetAmount());
+        TakenTotalMod *= GetTotalAuraMultiplier(SPELL_AURA_MOD_HEALING_RECEIVED, [caster, spellProto](AuraEffect const* aurEff) -> bool
+        {
+            if (caster->GetGUID() == aurEff->GetCasterGUID() && aurEff->IsAffectedOnSpell(spellProto))
+                return true;
+            return false;
+        });
     }
 #endif
 
@@ -9797,10 +9768,10 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
         switch (Effect.ApplyAuraName)
         {
             // Bonus healing does not apply to these spells
-        case SPELL_AURA_PERIODIC_LEECH:
-        case SPELL_AURA_PERIODIC_HEALTH_FUNNEL:
-            TakenTotal = 0;
-            break;
+            case SPELL_AURA_PERIODIC_LEECH:
+            case SPELL_AURA_PERIODIC_HEALTH_FUNNEL:
+                TakenTotal = 0;
+                break;
         }
         if (Effect.Effect == SPELL_EFFECT_HEALTH_LEECH)
             TakenTotal = 0;
@@ -9816,7 +9787,6 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
 #endif
 
     float heal = float(int32(healamount) + TakenTotal) * TakenTotalMod;
-
     return uint32(std::max(heal, 0.0f));
 }
 
@@ -9859,7 +9829,6 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, ui
 
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
-    float coeff = 0.0f;
 
 #ifdef LICH_KING
     switch (spellProto->SpellFamilyName)
@@ -9879,8 +9848,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, ui
 #endif
 
     // Check for table values
-    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
-    if (bonus)
+    float coeff = 0.f;
+    if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
     {
         if (damagetype == DOT)
         {
