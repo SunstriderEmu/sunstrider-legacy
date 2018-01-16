@@ -363,9 +363,26 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote const& eEmote, const std::string
 {
     WorldPacket data(SMSG_QUESTGIVER_QUEST_LIST, 100);    // guess size
     data << uint64(npcGUID);
-    data << Title;
-    data << uint32(eEmote._Delay);                         // player emote
-    data << uint32(eEmote._Emote);                         // NPC emote
+
+    if (QuestGreeting const* questGreeting = sObjectMgr->GetQuestGreeting(npcGUID))
+    {
+        std::string strGreeting = questGreeting->greeting;
+
+        LocaleConstant localeConstant = _session->GetSessionDbLocaleIndex();
+        if (localeConstant != LOCALE_enUS)
+            if (QuestGreetingLocale const* questGreetingLocale = sObjectMgr->GetQuestGreetingLocale(MAKE_PAIR32(npcGUID.GetEntry(), npcGUID.GetTypeId())))
+                ObjectMgr::GetLocaleString(questGreetingLocale->greeting, localeConstant, strGreeting);
+
+        data << strGreeting;
+        data << uint32(questGreeting->greetEmoteDelay);
+        data << uint32(questGreeting->greetEmoteType);
+    }
+    else
+    {
+        data << Title;
+        data << uint32(eEmote._Delay);                         // player emote
+        data << uint32(eEmote._Emote);                         // NPC emote
+    }
 
     size_t count_pos = data.wpos();
     data << uint8 (0); //place holder, will fill later
@@ -444,31 +461,33 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_DETAILS, 100);   // guess size
     data << uint64(npcGUID);
-    if(_session->GetClientBuild() == BUILD_335)
-        data << uint64(_session->GetPlayer()->GetDivider());
+#ifdef LICH_KING
+    data << uint64(_session->GetPlayer()->GetDivider());
+#endif
     data << uint32(quest->GetQuestId());
     data << questTitle;
     data << questDetails;
     data << questObjectives;                             // 3.0.8 unknown value bu
-    if(_session->GetClientBuild() == BUILD_335)
-        data << uint8(activateAccept ? 1 : 0);                  // auto finish
-    else
-        data << uint32(activateAccept);
-
-    if(_session->GetClientBuild() == BUILD_335)
-        data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
+#ifdef LICH_KING
+    data << uint8(activateAccept ? 1 : 0);                  // auto finish
+    data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
+#else
+    data << uint32(activateAccept);
+#endif
 
     data << uint32(quest->GetSuggestedPlayers());
-    if(_session->GetClientBuild() == BUILD_335)
-        data << uint8(0);                                       // IsFinished? value is sent back to server in quest accept packet
+#ifdef LICH_KING
+    data << uint8(0);                                       // IsFinished? value is sent back to server in quest accept packet
+#endif
 
     if (quest->HasFlag(QUEST_FLAGS_HIDDEN_REWARDS))
     {
         data << uint32(0);                                  // Rewarded chosen items hidden
         data << uint32(0);                                  // Rewarded items hidden
         data << uint32(0);                                  // Rewarded money hidden
-        if(_session->GetClientBuild() == BUILD_335)
-            data << uint32(0);                                  // Rewarded XP hidden
+#ifdef LICH_KING
+        data << uint32(0);                                  // Rewarded XP hidden
+#endif
     }
     else
     {
@@ -504,15 +523,17 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
         }
 
         data << uint32(quest->GetRewOrReqMoney());
-        if(_session->GetClientBuild() == BUILD_335)
-            data << uint32(quest->XPValue(_session->GetPlayer()) * sWorld->GetRate(RATE_XP_QUEST));
+#ifdef LICH_KING
+        data << uint32(quest->XPValue(_session->GetPlayer()) * sWorld->GetRate(RATE_XP_QUEST));
+#endif
     }
 
     // rewarded honor points. Multiply with 10 to satisfy client
     data << uint32(10*Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->GetLevel(), quest->GetRewHonorableKills()));
   //  data << uint32(10 * quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));
-    if(_session->GetClientBuild() == BUILD_335)
-        data << float(0.0f);                                    // unk, honor multiplier?
+#ifdef LICH_KING
+    data << float(0.0f);                                    // unk, honor multiplier?
+#endif
     data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if RewardSpellCast == 0)
     data << uint32(quest->GetRewSpellCast());                // cast spell
     data << uint32(quest->GetCharTitleId());                // CharTitleId, new 2.4.0, player gets this title (id from CharTitles)
@@ -739,7 +760,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, ObjectGuid npcGUI
         if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
         {
             ObjectMgr::GetLocaleString(localeData->Title, locale, questTitle);
-            ObjectMgr::GetLocaleString(localeData->OfferRewardText, locale, questOfferRewardText);
+            ObjectMgr::GetLocaleString(localeData->_offerRewardText, locale, questOfferRewardText);
         }
     }
 
@@ -859,7 +880,7 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, ObjectGuid npcGU
         if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
         {
             ObjectMgr::GetLocaleString(localeData->Title, locale, questTitle);
-            ObjectMgr::GetLocaleString(localeData->RequestItemsText, locale, requestItemsText);
+            ObjectMgr::GetLocaleString(localeData->_requestItemsText, locale, requestItemsText);
         }
     }
 

@@ -157,8 +157,8 @@ struct QuestLocale
     std::vector<std::string> Title;
     std::vector<std::string> Details;
     std::vector<std::string> Objectives;
-    std::vector<std::string> OfferRewardText;
-    std::vector<std::string> RequestItemsText;
+    std::vector<std::string> _offerRewardText;
+    std::vector<std::string> _requestItemsText;
     std::vector<std::string> EndText;
     std::vector< std::vector<std::string> > ObjectiveText;
 };
@@ -171,6 +171,10 @@ class Quest
     friend class ObjectMgr;
     public:
         Quest(Field * questRecord);
+        void LoadQuestDetails(Field* fields);
+        void LoadQuestRequestItems(Field* fields);
+        void LoadQuestOfferReward(Field* fields);
+
         uint32 XPValue( Player *pPlayer ) const;
 
         bool HasFlag( uint32 flag ) const { return ( QuestFlags & flag ) != 0; }
@@ -205,8 +209,8 @@ class Quest
         std::string GetTitle() const { return Title; }
         std::string GetDetails() const { return Details; }
         std::string GetObjectives() const { return Objectives; }
-        std::string GetOfferRewardText() const { return OfferRewardText; }
-        std::string GetRequestItemsText() const { return RequestItemsText; }
+        std::string GetOfferRewardText() const { return _offerRewardText; }
+        std::string GetRequestItemsText() const { return _requestItemsText; }
         std::string GetEndText() const { return EndText; }
         int32  GetRewOrReqMoney() const;
         uint32 GetRewHonorableKills() const { return RewardHonorableKills; }
@@ -220,8 +224,8 @@ class Quest
         float  GetPointX() const { return PointX; }
         float  GetPointY() const { return PointY; }
         uint32 GetPointOpt() const { return PointOpt; }
-        uint32 GetIncompleteEmote() const { return IncompleteEmote; }
-        uint32 GetCompleteEmote() const { return CompleteEmote; }
+        uint32 GetIncompleteEmote() const { return _emoteOnIncomplete; }
+        uint32 GetCompleteEmote() const { return _emoteOnComplete; }
         uint32 GetQuestStartScript() const { return QuestStartScript; }
         uint32 GetQuestCompleteScript() const { return QuestCompleteScript; }
         bool   IsRepeatable() const { return QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE; }
@@ -318,8 +322,8 @@ class Quest
         std::string Title;
         std::string Details;
         std::string Objectives;
-        std::string OfferRewardText;
-        std::string RequestItemsText;
+        std::string _offerRewardText;
+        std::string _requestItemsText;
         std::string EndText;
         uint32 RewardHonorableKills;
         int32  RewardOrReqMoney;
@@ -332,8 +336,8 @@ class Quest
         float  PointX;
         float  PointY;
         uint32 PointOpt;
-        uint32 IncompleteEmote;
-        uint32 CompleteEmote;
+        uint32 _emoteOnIncomplete;
+        uint32 _emoteOnComplete;
         uint32 QuestStartScript;
         uint32 QuestCompleteScript;
 };

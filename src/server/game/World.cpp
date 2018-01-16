@@ -1487,6 +1487,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadGossipTextLocales();
     sObjectMgr->LoadPageTextLocales();
     sObjectMgr->LoadGossipMenuItemsLocales();
+    sObjectMgr->LoadQuestGreetingsLocales();
     sObjectMgr->SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
 
     TC_LOG_INFO("server.loading", "Loading Page Texts..." );
@@ -1587,6 +1588,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Quests Relations..." );
     sObjectMgr->LoadQuestRelations();                            // must be after quest load
+
+    TC_LOG_INFO("server.loading", "Loading Quests Greetings...");
+    sObjectMgr->LoadQuestGreetings();                           // must be loaded after creature_template, gameobject_template tables
 
     TC_LOG_INFO("server.loading", "Loading AreaTrigger definitions..." );
     sObjectMgr->LoadAreaTriggerTeleports();

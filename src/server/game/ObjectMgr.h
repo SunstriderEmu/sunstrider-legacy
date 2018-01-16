@@ -323,6 +323,11 @@ struct TrinityStringLocale
     std::vector<std::string> Content;                       // 0 -> default, i -> i-1 locale index
 };
 
+struct QuestGreetingLocale
+{
+    std::vector<std::string> greeting;
+};
+
 typedef std::map<ObjectGuid, ObjectGuid> LinkedRespawnContainer;
 typedef std::unordered_map<uint32,CreatureData> CreatureDataContainer;
 typedef std::unordered_map<uint32,GameObjectData> GameObjectDataContainer;
@@ -331,6 +336,7 @@ typedef std::unordered_map<uint32,GameObjectLocale> GameObjectLocaleContainer;
 typedef std::unordered_map<uint32,ItemLocale> ItemLocaleContainer;
 typedef std::unordered_map<uint32,QuestLocale> QuestLocaleContainer;
 typedef std::unordered_map<uint32,NpcTextLocale> NpcTextLocaleContainer;
+typedef std::unordered_map<uint32, QuestGreetingLocale> QuestGreetingLocaleContainer;
 typedef std::unordered_map<uint32,PageTextLocale> PageTextLocaleContainer;
 typedef std::unordered_map<uint32,TrinityStringLocale> TrinityStringLocaleContainer;
 typedef std::unordered_map<uint32,GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
@@ -461,6 +467,19 @@ typedef std::unordered_map<uint32, VendorItemData> CacheVendorItemMap;
 typedef std::unordered_map<uint32, TrainerSpellData> CacheTrainerSpellMap;
 
 typedef std::unordered_map<uint32, ItemExtendedCostEntry> ItemExtendedStore;
+
+struct QuestGreeting
+{
+    uint16 greetEmoteType;
+    uint32 greetEmoteDelay;
+    std::string greeting;
+
+    QuestGreeting() : greetEmoteType(0), greetEmoteDelay(0) { }
+    QuestGreeting(uint16 _greetEmoteType, uint32 _greetEmoteDelay, std::string _greeting)
+        : greetEmoteType(_greetEmoteType), greetEmoteDelay(_greetEmoteDelay), greeting(_greeting) { }
+};
+
+typedef std::unordered_map<uint8, std::unordered_map<uint32, QuestGreeting>> QuestGreetingContainer;
 
 enum SkillRangeType
 {
@@ -699,25 +718,26 @@ class TC_GAME_API ObjectMgr
 
         Quest const* GetQuestTemplate(uint32 quest_id) const
         {
-            auto itr = mQuestTemplates.find(quest_id);
-            return itr != mQuestTemplates.end() ? itr->second : nullptr;
+            auto itr = _questTemplates.find(quest_id);
+            return itr != _questTemplates.end() ? itr->second : nullptr;
         }
-        QuestMap const& GetQuestTemplates() const { return mQuestTemplates; }
+        QuestMap const& GetQuestTemplates() const { return _questTemplates; }
 
         uint32 GetQuestForAreaTrigger(uint32 Trigger_ID) const
         {
-            auto itr = mQuestAreaTriggerMap.find(Trigger_ID);
-            if(itr != mQuestAreaTriggerMap.end())
+            auto itr = _questAreaTriggerStore.find(Trigger_ID);
+            if(itr != _questAreaTriggerStore.end())
                 return itr->second;
             return 0;
         }
-        bool IsTavernAreaTrigger(uint32 Trigger_ID) const { return mTavernAreaTriggerSet.count(Trigger_ID) != 0; }
+        bool IsTavernAreaTrigger(uint32 Trigger_ID) const { return _tavernAreaTriggerStore.count(Trigger_ID) != 0; }
         bool IsGameObjectForQuests(uint32 entry) const { return _gameObjectForQuestStore.count(entry) != 0; }
 
         BattlegroundTypeId GetBattleMasterBG(uint32 entry) const;
 
         void AddGossipText(GossipText *pGText);
         GossipText *GetGossipText(uint32 Text_ID);
+        QuestGreeting const* GetQuestGreeting(ObjectGuid guid) const;
 
         WorldSafeLocsEntry const *GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team);
         bool AddGraveYardLink(uint32 id, uint32 zone, uint32 team, bool inDB = true);
@@ -737,8 +757,8 @@ class TC_GAME_API ObjectMgr
 
         ReputationOnKillEntry const* GetReputationOnKilEntry(uint32 id) const
         {
-            auto itr = mRepOnKill.find(id);
-            if(itr != mRepOnKill.end())
+            auto itr = _repOnKillStore.find(id);
+            if(itr != _repOnKillStore.end())
                 return &itr->second;
             return nullptr;
         }
@@ -824,6 +844,7 @@ class TC_GAME_API ObjectMgr
         void LoadGossipTextLocales();
         void LoadPageTextLocales();
         void LoadGossipMenuItemsLocales();
+        void LoadQuestGreetingsLocales();
         void LoadInstanceTemplate();
 
         void LoadGossipText();
@@ -832,6 +853,7 @@ class TC_GAME_API ObjectMgr
         void LoadAccessRequirements();
         void LoadQuestAreaTriggers();
         void LoadAreaTriggerScripts();
+        void LoadQuestGreetings();
         void LoadTavernAreaTriggers();
         void LoadBattleMastersEntry();
         void LoadGameObjectForQuests();
@@ -1043,6 +1065,13 @@ class TC_GAME_API ObjectMgr
         GameObjectData& NewOrExistGameObjectData(ObjectGuid::LowType guid) { return _gameObjectDataStore[guid]; }
         void DeleteGameObjectData(ObjectGuid::LowType guid);
 
+        QuestGreetingLocale const* GetQuestGreetingLocale(uint32 id) const
+        {
+            QuestGreetingLocaleContainer::const_iterator itr = _questGreetingLocaleStore.find(id);
+            if (itr == _questGreetingLocaleStore.end()) return nullptr;
+            return &itr->second;
+        }
+
         TrinityStringLocale const* GetTrinityStringLocale(int32 entry) const
         {
             auto itr = _trinityStringStore.find(entry);
@@ -1079,7 +1108,7 @@ class TC_GAME_API ObjectMgr
         void LoadReservedPlayersNames();
         bool IsReservedName(const std::string& name) const
         {
-            return m_ReservedNames.find(name) != m_ReservedNames.end();
+            return _reservedNamesStore.find(name) != _reservedNamesStore.end();
         }
 
         // name with valid structure and symbols
@@ -1242,7 +1271,7 @@ class TC_GAME_API ObjectMgr
 		}
 		std::map<HighGuid, std::unique_ptr<ObjectGuidGeneratorBase>> _guidGenerators;
 
-        QuestMap            mQuestTemplates;
+        QuestMap            _questTemplates;
 
         typedef std::unordered_map<uint32, GossipText*> GossipTextMap;
         typedef std::unordered_map<uint32, uint32> QuestAreaTriggerMap;
@@ -1259,16 +1288,17 @@ class TC_GAME_API ObjectMgr
 
         ItemTextMap         mItemTexts;
 
-        QuestAreaTriggerMap mQuestAreaTriggerMap;
-        BattleMastersMap    mBattleMastersMap;
-        TavernAreaTriggerSet mTavernAreaTriggerSet;
+        QuestAreaTriggerMap _questAreaTriggerStore;
+        BattleMastersMap    _battleMastersStore;
+        TavernAreaTriggerSet _tavernAreaTriggerStore;
         GameObjectForQuestSet _gameObjectForQuestStore;
-        GossipTextMap       mGossipText;
-        AreaTriggerMap      mAreaTriggers;
-        AreaTriggerScriptMap  mAreaTriggerScripts;
-        AccessRequirementMap  mAccessRequirements;
+        GossipTextMap       _gossipTextStore;
+        QuestGreetingContainer _questGreetingStore;
+        AreaTriggerMap      _areaTriggerStore;
+        AreaTriggerScriptMap  _areaTriggerScriptStore;
+        AccessRequirementMap  _accessRequirementStore;
 
-        RepOnKillMap        mRepOnKill;
+        RepOnKillMap        _repOnKillStore;
 
         WeatherZoneMap      mWeatherZoneMap;
 
@@ -1276,7 +1306,7 @@ class TC_GAME_API ObjectMgr
 
         //character reserved names
         typedef std::set<std::string> ReservedNamesMap;
-        ReservedNamesMap    m_ReservedNames;
+        ReservedNamesMap    _reservedNamesStore;
 
         std::set<uint32>    m_DisabledPlayerSpells;
         std::set<uint32>    m_DisabledCreatureSpells;
@@ -1345,6 +1375,7 @@ class TC_GAME_API ObjectMgr
         TrinityStringLocaleContainer _trinityStringStore;
         GossipMenuItemsLocaleContainer _gossipMenuItemsLocaleStore;
         PointOfInterestLocaleContainer _pointOfInterestLocaleStore;
+        QuestGreetingLocaleContainer _questGreetingLocaleStore;
 
         typedef std::vector<uint32> GuildBankTabPriceMap;
         GuildBankTabPriceMap mGuildBankTabPrice;

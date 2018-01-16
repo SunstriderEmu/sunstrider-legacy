@@ -126,19 +126,19 @@ ObjectMgr::ObjectMgr() :
 
 ObjectMgr::~ObjectMgr()
 {
-    for(auto & mQuestTemplate : mQuestTemplates)
+    for(auto & mQuestTemplate : _questTemplates)
     {
         delete mQuestTemplate.second;
     }
-    mQuestTemplates.clear( );
+    _questTemplates.clear( );
 
-    for(auto & i : mGossipText)
+    for(auto & i : _gossipTextStore)
     {
         delete i.second;
     }
-    mGossipText.clear( );
+    _gossipTextStore.clear( );
 
-    mAreaTriggers.clear();
+    _areaTriggerStore.clear();
 
     for(auto & i : petInfo)
     {
@@ -3631,9 +3631,9 @@ void ObjectMgr::LoadGroups()
 void ObjectMgr::LoadQuests()
 {
     // For reload case
-    for(auto itr : mQuestTemplates)
+    for(auto itr : _questTemplates)
         delete itr.second;
-    mQuestTemplates.clear();
+    _questTemplates.clear();
 
     mExclusiveQuestGroups.clear();
 
@@ -3643,33 +3643,22 @@ void ObjectMgr::LoadQuests()
         "RepObjectiveFaction, RepObjectiveValue, RequiredMinRepFaction, RequiredMinRepValue, RequiredMaxRepFaction, RequiredMaxRepValue, SuggestedPlayers, LimitTime,"
     //   17          18            19           20           21           22              23                24         25            26
         "QuestFlags, SpecialFlags, CharTitleId, PrevQuestId, NextQuestId, ExclusiveGroup, NextQuestInChain, SrcItemId, SrcItemCount, SrcSpell,"
-    //   27     28       29          30               31                32       33              34              35              36
-        "Title, Details, Objectives, OfferRewardText, RequestItemsText, EndText, ObjectiveText1, ObjectiveText2, ObjectiveText3, ObjectiveText4,"
-    //   37          38          39          40          41             42             43             44
+    //   27     28       29          30       31              32              33              34
+        "Title, Details, Objectives, EndText, ObjectiveText1, ObjectiveText2, ObjectiveText3, ObjectiveText4,"
         "ReqItemId1, ReqItemId2, ReqItemId3, ReqItemId4, ReqItemCount1, ReqItemCount2, ReqItemCount3, ReqItemCount4,"
-    //   45            46            47            48            49               50               51               52               53             54             54             55
         "ReqSourceId1, ReqSourceId2, ReqSourceId3, ReqSourceId4, ReqSourceCount1, ReqSourceCount2, ReqSourceCount3, ReqSourceCount4, ReqSourceRef1, ReqSourceRef2, ReqSourceRef3, ReqSourceRef4,"
-    //   57                  58                  59                  60                  61                     62                     63                     64
         "ReqCreatureOrGOId1, ReqCreatureOrGOId2, ReqCreatureOrGOId3, ReqCreatureOrGOId4, ReqCreatureOrGOCount1, ReqCreatureOrGOCount2, ReqCreatureOrGOCount3, ReqCreatureOrGOCount4,"
-    //   65             66             67             68
         "ReqSpellCast1, ReqSpellCast2, ReqSpellCast3, ReqSpellCast4,"
-    //   69                70                71                72                73                74
         "RewChoiceItemId1, RewChoiceItemId2, RewChoiceItemId3, RewChoiceItemId4, RewChoiceItemId5, RewChoiceItemId6,"
-    //   75                   76                   77                   78                   79                   80
         "RewChoiceItemCount1, RewChoiceItemCount2, RewChoiceItemCount3, RewChoiceItemCount4, RewChoiceItemCount5, RewChoiceItemCount6,"
-    //   81          82          83          84          85             86             87             88
         "RewItemId1, RewItemId2, RewItemId3, RewItemId4, RewItemCount1, RewItemCount2, RewItemCount3, RewItemCount4,"
-    //   89              90              91              92              93              94            95            96            97            98
         "RewRepFaction1, RewRepFaction2, RewRepFaction3, RewRepFaction4, RewRepFaction5, RewRepValue1, RewRepValue2, RewRepValue3, RewRepValue4, RewRepValue5,"
-    //   99                 100            101               102       103           104                105               106         107     108    109
         "RewHonorableKills, RewOrReqMoney, RewMoneyMaxLevel, RewSpell, RewSpellCast, RewMailTemplateId, RewMailDelaySecs, PointMapId, PointX, PointY, PointOpt,"
-    //   110            111            112           113              114            115            116                117                118                119
-        "DetailsEmote1, DetailsEmote2, DetailsEmote3, DetailsEmote4,IncompleteEmote, CompleteEmote, OfferRewardEmote1, OfferRewardEmote2, OfferRewardEmote3, OfferRewardEmote4,"
-    //   120          121             122
         "StartScript, CompleteScript, quest_bugs.entry"
         " FROM quest_template "
         " LEFT JOIN quest_bugs ON bugged = 1 and quest_bugs.entry = quest_template.entry "
-        );
+    );
+
     if(result == nullptr)
     {
         TC_LOG_INFO("server.loading", ">> Loaded 0 quests definitions" );
@@ -3684,11 +3673,55 @@ void ObjectMgr::LoadQuests()
     {
         Field *fields = result->Fetch();
         auto  newQuest = new Quest(fields);
-        mQuestTemplates[newQuest->GetQuestId()] = newQuest;
+        _questTemplates[newQuest->GetQuestId()] = newQuest;
     } while( result->NextRow() );
 
+    struct QuestLoaderHelper
+    {
+        typedef void(Quest::*QuestLoaderFunction)(Field* fields);
+
+        char const* QueryFields;
+        char const* TableName;
+        char const* TableDesc;
+        QuestLoaderFunction LoaderFunction;
+    };
+
+    static std::vector<QuestLoaderHelper> const QuestLoaderHelpers =
+    {
+        // 0   1       2       3       4       5            6            7            8
+        { "ID, Emote1, Emote2, Emote3, Emote4, EmoteDelay1, EmoteDelay2, EmoteDelay3, EmoteDelay4",                       "quest_details",        "details",             &Quest::LoadQuestDetails },
+
+            // 0   1                2                  3
+        { "ID, EmoteOnComplete, EmoteOnIncomplete, CompletionText",                                                       "quest_request_items",  "request items",       &Quest::LoadQuestRequestItems },
+
+        // 0   1       2       3       4       5            6            7            8            9
+        { "ID, Emote1, Emote2, Emote3, Emote4, EmoteDelay1, EmoteDelay2, EmoteDelay3, EmoteDelay4, RewardText",           "quest_offer_reward",   "reward emotes",       &Quest::LoadQuestOfferReward },
+    };
+
+    for (QuestLoaderHelper const& loader : QuestLoaderHelpers)
+    {
+        QueryResult result2 = WorldDatabase.PQuery("SELECT %s FROM %s", loader.QueryFields, loader.TableName);
+        if (!result2)
+            TC_LOG_INFO("server.loading", ">> Loaded 0 quest %s. DB table `%s` is empty.", loader.TableDesc, loader.TableName);
+        else
+        {
+            do
+            {
+                Field* fields = result2->Fetch();
+                uint32 questId = fields[0].GetUInt32();
+
+                auto itr = _questTemplates.find(questId);
+                if (itr != _questTemplates.end())
+                    (itr->second->*loader.LoaderFunction)(fields);
+                else
+                    TC_LOG_ERROR("server.loading", "Table `%s` has data for quest %u but such quest does not exist", loader.TableName, questId);
+            } while (result2->NextRow());
+        }
+    }
+
+
     // Post processing
-    for (auto iter = mQuestTemplates.begin(); iter != mQuestTemplates.end(); ++iter)
+    for (auto iter = _questTemplates.begin(); iter != _questTemplates.end(); ++iter)
     {
         Quest * qinfo = iter->second;
 
@@ -4228,20 +4261,20 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->NextQuestInChain)
         {
-            if(mQuestTemplates.find(qinfo->NextQuestInChain) == mQuestTemplates.end())
+            if(_questTemplates.find(qinfo->NextQuestInChain) == _questTemplates.end())
             {
                 TC_LOG_ERROR("sql.sql","Quest %u has `NextQuestInChain` = %u but quest %u does not exist, quest chain will not work.",
                     qinfo->GetQuestId(),qinfo->NextQuestInChain ,qinfo->NextQuestInChain );
                 qinfo->NextQuestInChain = 0;
             }
             else
-                mQuestTemplates[qinfo->NextQuestInChain]->prevChainQuests.push_back(qinfo->GetQuestId());
+                _questTemplates[qinfo->NextQuestInChain]->prevChainQuests.push_back(qinfo->GetQuestId());
         }
 
-        if (qinfo->CompleteEmote && !sEmotesStore.LookupEntry(qinfo->CompleteEmote))
+        if (qinfo->_emoteOnComplete && !sEmotesStore.LookupEntry(qinfo->_emoteOnComplete))
         {
-            TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->CompleteEmote, qinfo->QuestId);
-            qinfo->CompleteEmote = 0;
+            TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->_emoteOnComplete, qinfo->QuestId);
+            qinfo->_emoteOnComplete = 0;
         }
 
         for (uint8 i = 0; i < QUEST_EMOTE_COUNT; i++)
@@ -4274,7 +4307,7 @@ void ObjectMgr::LoadQuests()
         // fill additional data stores
         if(qinfo->PrevQuestId)
         {
-            if (mQuestTemplates.find(abs(qinfo->GetPrevQuestId())) == mQuestTemplates.end())
+            if (_questTemplates.find(abs(qinfo->GetPrevQuestId())) == _questTemplates.end())
             {
                 TC_LOG_ERROR("sql.sql","Quest %d has PrevQuestId %i, but no such quest", qinfo->GetQuestId(), qinfo->GetPrevQuestId());
             }
@@ -4286,14 +4319,14 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->NextQuestId)
         {
-            if (mQuestTemplates.find(abs(qinfo->GetNextQuestId())) == mQuestTemplates.end())
+            if (_questTemplates.find(abs(qinfo->GetNextQuestId())) == _questTemplates.end())
             {
                 TC_LOG_ERROR("sql.sql","Quest %d has NextQuestId %i, but no such quest", qinfo->GetQuestId(), qinfo->GetNextQuestId());
             }
             else
             {
                 int32 signedQuestId = qinfo->NextQuestId < 0 ? -int32(qinfo->GetQuestId()) : int32(qinfo->GetQuestId());
-                mQuestTemplates[abs(qinfo->GetNextQuestId())]->prevQuests.push_back(signedQuestId);
+                _questTemplates[abs(qinfo->GetNextQuestId())]->prevQuests.push_back(signedQuestId);
             }
         }
 
@@ -4335,7 +4368,7 @@ void ObjectMgr::LoadQuests()
         }
     }
 
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " quests definitions", mQuestTemplates.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " quests definitions", _questTemplates.size());
 }
 
 void ObjectMgr::LoadQuestLocales()
@@ -4375,8 +4408,8 @@ void ObjectMgr::LoadQuestLocales()
             AddLocaleString(fields[1 + 10 * (i - 1)].GetString(), locale, data.Title);
             AddLocaleString(fields[1 + 10 * (i - 1) + 1].GetString(), locale, data.Details);
             AddLocaleString(fields[1 + 10 * (i - 1) + 2].GetString(), locale, data.Objectives);
-            AddLocaleString(fields[1 + 10 * (i - 1) + 3].GetString(), locale, data.OfferRewardText);
-            AddLocaleString(fields[1 + 10 * (i - 1) + 4].GetString(), locale, data.RequestItemsText);
+            AddLocaleString(fields[1 + 10 * (i - 1) + 3].GetString(), locale, data._offerRewardText);
+            AddLocaleString(fields[1 + 10 * (i - 1) + 4].GetString(), locale, data._requestItemsText);
             AddLocaleString(fields[1 + 10 * (i - 1) + 5].GetString(), locale, data.EndText);
 
             for (uint8 k = 0; k < 4; ++k)
@@ -5183,14 +5216,14 @@ InstanceTemplateAddon const* ObjectMgr::GetInstanceTemplateAddon(uint32 mapID)
 void ObjectMgr::AddGossipText(GossipText *pGText)
 {
     ASSERT( pGText->Text_ID );
-    ASSERT( mGossipText.find(pGText->Text_ID) == mGossipText.end() );
-    mGossipText[pGText->Text_ID] = pGText;
+    ASSERT( _gossipTextStore.find(pGText->Text_ID) == _gossipTextStore.end() );
+    _gossipTextStore[pGText->Text_ID] = pGText;
 }
 
 BattlegroundTypeId ObjectMgr::GetBattleMasterBG(uint32 entry) const
 {
-    auto itr = mBattleMastersMap.find(entry);
-    if (itr != mBattleMastersMap.end())
+    auto itr = _battleMastersStore.find(entry);
+    if (itr != _battleMastersStore.end())
         return itr->second;
 
     TC_LOG_WARN("misc", "ObjectMgr::GetGossipText could not found battleground type %u, defaulting to warsong gulch", entry);
@@ -5200,7 +5233,7 @@ BattlegroundTypeId ObjectMgr::GetBattleMasterBG(uint32 entry) const
 GossipText *ObjectMgr::GetGossipText(uint32 Text_ID)
 {
     GossipTextMap::const_iterator itr;
-    for (itr = mGossipText.begin(); itr != mGossipText.end(); ++itr)
+    for (itr = _gossipTextStore.begin(); itr != _gossipTextStore.end(); ++itr)
     {
         if(itr->second->Text_ID == Text_ID)
             return itr->second;
@@ -5210,10 +5243,10 @@ GossipText *ObjectMgr::GetGossipText(uint32 Text_ID)
 
 void ObjectMgr::LoadGossipText()
 {
-    for (auto itr : mGossipText)
+    for (auto itr : _gossipTextStore)
         delete itr.second;
 
-    mGossipText.clear();
+    _gossipTextStore.clear();
 
     GossipText *pGText;
     QueryResult result = WorldDatabase.Query("SELECT ID, "
@@ -5412,7 +5445,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
 
 void ObjectMgr::LoadQuestAreaTriggers()
 {
-    mQuestAreaTriggerMap.clear();                           // need for reload case
+    _questAreaTriggerStore.clear();                           // need for reload case
 
     QueryResult result = WorldDatabase.Query( "SELECT id,quest FROM areatrigger_involvedrelation" );
 
@@ -5459,7 +5492,7 @@ void ObjectMgr::LoadQuestAreaTriggers()
             // continue; - quest modified to required objective and trigger can be allowed.
         }
 
-        mQuestAreaTriggerMap[trigger_ID] = quest_ID;
+        _questAreaTriggerStore[trigger_ID] = quest_ID;
 
     } while( result->NextRow() );
 
@@ -5467,9 +5500,136 @@ void ObjectMgr::LoadQuestAreaTriggers()
     
 }
 
+QuestGreeting const* ObjectMgr::GetQuestGreeting(ObjectGuid guid) const
+{
+    auto itr = _questGreetingStore.find(guid.GetTypeId());
+    if (itr == _questGreetingStore.end())
+        return nullptr;
+
+    auto questItr = itr->second.find(guid.GetEntry());
+    if (questItr == itr->second.end())
+        return nullptr;
+
+    return &questItr->second;
+}
+
+void ObjectMgr::LoadQuestGreetings()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    _questGreetingStore.clear(); // need for reload case
+
+                                 //                                                0   1          2                3             4
+    QueryResult result = WorldDatabase.Query("SELECT ID, Type, GreetEmoteType, GreetEmoteDelay, Greeting FROM quest_greeting");
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 quest greetings. DB table `quest_greeting` is empty.");
+        return;
+    }
+
+    _questGreetingStore.rehash(result->GetRowCount());
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 id = fields[0].GetUInt32();
+        uint8 type = fields[1].GetUInt8();
+        // overwrite
+        switch (type)
+        {
+        case 0: // Creature
+            type = TYPEID_UNIT;
+            if (!sObjectMgr->GetCreatureTemplate(id))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `quest_greeting`: creature template (entry: %u) does not exist.", id);
+                continue;
+            }
+            break;
+        case 1: // GameObject
+            type = TYPEID_GAMEOBJECT;
+            if (!sObjectMgr->GetGameObjectTemplate(id))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `quest_greeting`: gameobject template (entry: %u) does not exist.", id);
+                continue;
+            }
+            break;
+        default:
+            TC_LOG_ERROR("sql.sql", "Table `quest_greeting`: unknown type = %u for entry = %u. Skipped.", type, id);
+            continue;
+        }
+
+        uint16 greetEmoteType = fields[2].GetUInt16();
+
+        if (greetEmoteType > 0 && !sEmotesStore.LookupEntry(greetEmoteType))
+        {
+            TC_LOG_DEBUG("sql.sql", "Table `quest_greeting`: entry %u has greetEmoteType = %u but emote does not exist. Set to 0.", id, greetEmoteType);
+            greetEmoteType = 0;
+        }
+
+        uint32 greetEmoteDelay = fields[3].GetUInt32();
+        std::string greeting = fields[4].GetString();
+
+        _questGreetingStore[type][id] = QuestGreeting(greetEmoteType, greetEmoteDelay, greeting);
+
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u quest_greeting in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::LoadQuestGreetingsLocales()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    _questGreetingLocaleStore.clear();                              // need for reload case
+
+                                                                    //                                               0     1      2       3
+    QueryResult result = WorldDatabase.Query("SELECT ID, Type, Locale, Greeting FROM quest_greeting_locale");
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 quest_greeting locales. DB table `quest_greeting_locale` is empty.");
+        return;
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 id = fields[0].GetUInt32();
+        uint8 type = fields[1].GetUInt8();
+        // overwrite
+        switch (type)
+        {
+        case 0: // Creature
+            type = TYPEID_UNIT;
+            break;
+        case 1: // GameObject
+            type = TYPEID_GAMEOBJECT;
+            break;
+        default:
+            break;
+        }
+
+        std::string localeName = fields[2].GetString();
+        std::string greeting = fields[3].GetString();
+
+        QuestGreetingLocale& data = _questGreetingLocaleStore[MAKE_PAIR32(id, type)];
+        LocaleConstant locale = GetLocaleByName(localeName);
+        if (locale == LOCALE_enUS)
+            continue;
+
+        AddLocaleString(greeting, locale, data.greeting);
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u quest greeting locale strings in %u ms", uint32(_questGreetingLocaleStore.size()), GetMSTimeDiffToNow(oldMSTime));
+}
+
 void ObjectMgr::LoadTavernAreaTriggers()
 {
-    mTavernAreaTriggerSet.clear();                          // need for reload case
+    _tavernAreaTriggerStore.clear();                          // need for reload case
 
     QueryResult result = WorldDatabase.Query("SELECT id FROM areatrigger_tavern");
 
@@ -5497,7 +5657,7 @@ void ObjectMgr::LoadTavernAreaTriggers()
             continue;
         }
 
-        mTavernAreaTriggerSet.insert(Trigger_ID);
+        _tavernAreaTriggerStore.insert(Trigger_ID);
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u tavern triggers", count );
@@ -5506,7 +5666,7 @@ void ObjectMgr::LoadTavernAreaTriggers()
 
 void ObjectMgr::LoadAreaTriggerScripts()
 {
-    mAreaTriggerScripts.clear();                            // need for reload case
+    _areaTriggerScriptStore.clear();                            // need for reload case
     QueryResult result = WorldDatabase.Query("SELECT entry, ScriptName FROM areatrigger_scripts");
 
     uint32 count = 0;
@@ -5533,7 +5693,7 @@ void ObjectMgr::LoadAreaTriggerScripts()
             TC_LOG_ERROR("FIXME","Area trigger (ID:%u) does not exist in `AreaTrigger.dbc`.",Trigger_ID);
             continue;
         }
-        mAreaTriggerScripts[Trigger_ID] = GetScriptId(scriptName);
+        _areaTriggerScriptStore[Trigger_ID] = GetScriptId(scriptName);
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u areatrigger scripts", count );
@@ -5900,7 +6060,7 @@ void ObjectMgr::RemoveGraveYardLink(uint32 id, uint32 zoneId, uint32 team, bool 
 
 void ObjectMgr::LoadAreaTriggerTeleports()
 {
-    mAreaTriggers.clear();                                  // need for reload case
+    _areaTriggerStore.clear();                                  // need for reload case
 
     uint32 count = 0;
 
@@ -5950,7 +6110,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
             continue;
         }
 
-        mAreaTriggers[Trigger_ID] = at;
+        _areaTriggerStore[Trigger_ID] = at;
 
     } while( result->NextRow() );
 
@@ -5960,7 +6120,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
 
 void ObjectMgr::LoadAccessRequirements()
 {
-    mAccessRequirements.clear();                                  // need for reload case
+    _accessRequirementStore.clear();                                  // need for reload case
 
     uint32 count = 0;
 
@@ -6064,7 +6224,7 @@ void ObjectMgr::LoadAccessRequirements()
                 TC_LOG_ERROR("sql.sql","access_requirement - text %u does not exist.",ar.questFailedText);
         }
 
-        mAccessRequirements[requiremt_ID] = ar;
+        _accessRequirementStore[requiremt_ID] = ar;
 
     } while( result->NextRow() );
 
@@ -6076,7 +6236,7 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
 {
     const MapEntry *mapEntry = sMapStore.LookupEntry(Map);
     if(!mapEntry) return nullptr;
-    for (const auto & mAreaTrigger : mAreaTriggers)
+    for (const auto & mAreaTrigger : _areaTriggerStore)
     {
         if(int32(mAreaTrigger.second.target_mapId) == mapEntry->entrance_map)
         {
@@ -6090,16 +6250,16 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
 
 AreaTrigger const* ObjectMgr::GetAreaTrigger(uint32 trigger) const
 {
-    auto itr = mAreaTriggers.find(trigger);
-    if (itr != mAreaTriggers.end())
+    auto itr = _areaTriggerStore.find(trigger);
+    if (itr != _areaTriggerStore.end())
         return &itr->second;
     return nullptr;
 }
 
 AccessRequirement const* ObjectMgr::GetAccessRequirement(uint32 requirement) const
 {
-    auto itr = mAccessRequirements.find(requirement);
-    if (itr != mAccessRequirements.end())
+    auto itr = _accessRequirementStore.find(requirement);
+    if (itr != _accessRequirementStore.end())
         return &itr->second;
     return nullptr;
 }
@@ -6109,7 +6269,7 @@ AccessRequirement const* ObjectMgr::GetAccessRequirement(uint32 requirement) con
  */
 AreaTrigger const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
 {
-    for (const auto & mAreaTrigger : mAreaTriggers)
+    for (const auto & mAreaTrigger : _areaTriggerStore)
     {
         if(mAreaTrigger.second.target_mapId == Map)
         {
@@ -6731,7 +6891,7 @@ void ObjectMgr::LoadReputationOnKill()
             }
         }
 
-        mRepOnKill[creature_id] = repOnKill;
+        _repOnKillStore[creature_id] = repOnKill;
 
         ++count;
     } while (result->NextRow());
@@ -6873,7 +7033,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, char const* table)
         uint32 id    = fields[0].GetUInt32();
         uint32 quest = fields[1].GetUInt32();
 
-        if(mQuestTemplates.find(quest) == mQuestTemplates.end())
+        if(_questTemplates.find(quest) == _questTemplates.end())
         {
             TC_LOG_ERROR("sql.sql","Table `%s: Quest %u listed for entry %u does not exist.",table,quest,id);
             continue;
@@ -6946,7 +7106,7 @@ void ObjectMgr::LoadCreatureQuestEnders()
 
 void ObjectMgr::LoadReservedPlayersNames()
 {
-    m_ReservedNames.clear();                                // need for reload case
+    _reservedNamesStore.clear();                                // need for reload case
 
     QueryResult result = WorldDatabase.Query("SELECT name FROM reserved_name");
 
@@ -6966,7 +7126,7 @@ void ObjectMgr::LoadReservedPlayersNames()
         std::string name= fields[0].GetString();
         if(normalizePlayerName(name))
         {
-            m_ReservedNames.insert(name);
+            _reservedNamesStore.insert(name);
             ++count;
         }
     } while ( result->NextRow() );
@@ -7112,7 +7272,7 @@ PetNameInvalidReason ObjectMgr::CheckPetName( const std::string& name )
 
 void ObjectMgr::LoadBattleMastersEntry()
 {
-    mBattleMastersMap.clear();                              // need for reload case
+    _battleMastersStore.clear();                              // need for reload case
 
     QueryResult result = WorldDatabase.Query( "SELECT entry, bg_template FROM battlemaster_entry" );
 
@@ -7134,7 +7294,7 @@ void ObjectMgr::LoadBattleMastersEntry()
         uint32 entry = fields[0].GetUInt32();
         uint32 bgTypeId  = fields[1].GetUInt32();
 
-        mBattleMastersMap[entry] = BattlegroundTypeId(bgTypeId);
+        _battleMastersStore[entry] = BattlegroundTypeId(bgTypeId);
 
     } while( result->NextRow() );
 
@@ -7397,8 +7557,8 @@ bool ObjectMgr::CheckDeclinedNames( std::wstring mainpart, DeclinedName const& n
 
 uint32 ObjectMgr::GetAreaTriggerScriptId(uint32 trigger_id)
 {
-    AreaTriggerScriptMap::const_iterator i = mAreaTriggerScripts.find(trigger_id);
-    if(i!= mAreaTriggerScripts.end())
+    AreaTriggerScriptMap::const_iterator i = _areaTriggerScriptStore.find(trigger_id);
+    if(i!= _areaTriggerScriptStore.end())
         return i->second;
     return 0;
 }
