@@ -333,13 +333,13 @@ class CreatureGameObjectScriptRegistrySwapHooks
         AIFunctionMapWorker(T&& worker)
             : _worker(std::forward<T>(worker)) { }
 
-        void Visit(std::unordered_map<uint64, ObjectType*>& objects)
+        void Visit(std::unordered_map<ObjectGuid, ObjectType*>& objects)
         {
             _worker(objects);
         }
 
         template<typename O>
-        void Visit(std::unordered_map<uint64, O*>&) { }
+        void Visit(std::unordered_map<ObjectGuid, O*>&) { }
 
     private:
         W _worker;
@@ -457,7 +457,7 @@ class CreatureGameObjectScriptRegistrySwapHooks
     template<typename T>
     static void VisitObjectsToSwapOnMap(Map* map, std::unordered_set<uint32> const& idsToRemove, T visitor)
     {
-        auto evaluator = [&](std::unordered_map<uint64, ObjectType*>& objects)
+        auto evaluator = [&](std::unordered_map<ObjectGuid, ObjectType*>& objects)
         {
             for (auto object : objects)
             {

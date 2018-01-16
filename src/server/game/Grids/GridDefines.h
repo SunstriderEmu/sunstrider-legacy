@@ -82,7 +82,7 @@ typedef NGrid<MAX_NUMBER_OF_CELLS, Player, AllWorldObjectTypes, AllGridObjectTyp
 
 typedef TypeMapContainer<AllGridObjectTypes> GridTypeMapContainer;
 typedef TypeMapContainer<AllWorldObjectTypes> WorldTypeMapContainer;
-typedef TypeUnorderedMapContainer<AllMapStoredObjectTypes, uint64> MapStoredObjectTypesContainer;
+typedef TypeUnorderedMapContainer<AllMapStoredObjectTypes, ObjectGuid> MapStoredObjectTypesContainer;
 
 template<const uint32 LIMIT>
 struct CoordPair
