@@ -1905,6 +1905,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         float GetMeleeCritFromAgility();
         float GetDodgeFromAgility();
         float GetSpellCritFromIntellect();
+        float GetMissPercentageFromDefense() const;
         float OCTRegenHPPerSpirit();
         float OCTRegenMPPerSpirit();
         float GetRatingCoefficient(CombatRating cr) const;

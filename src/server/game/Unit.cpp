@@ -2121,7 +2121,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
     int32 const attackerWeaponSkill = GetWeaponSkillValue(attType, victim);
     int32 const victimDefenseSkill = victim->GetDefenseSkillValue(this);
 
-    float miss_chance = MeleeSpellMissChance(victim, attType, int32(GetWeaponSkillValue(attType, victim)) - int32(victim->GetDefenseSkillValue(this)), 0);
+    float miss_chance = MeleeSpellMissChance(victim, attType, attackerWeaponSkill - victimMaxSkillValueForLevel, 0);
 
     // Critical hit chance
     float crit_chance = GetUnitCriticalChanceAgainst(attType, victim);
@@ -2363,47 +2363,53 @@ bool Unit::IsSpellBlocked(Unit* victim, SpellInfo const *spellProto, WeaponAttac
 // Melee based spells can be miss, parry or dodge on this step
 // Crit or block - determined on damage calculation phase! (and can be both in some time)
 // http://wowwiki.wikia.com/wiki/Weapon_skill
-float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, int32 skillDiff, uint32 spellId) const
+float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, int32 skillDiff, uint32 spellId) const
 {
     // Calculate hit chance (more correct for chance mod)
-    int32 HitChance;
+    float missChance = victim->GetUnitMissChance();
 
-    if (spellId || attType == RANGED_ATTACK || !HaveOffhandWeapon() || (GetTypeId() == TYPEID_UNIT && ToCreature()->IsWorldBoss()))
-        HitChance = 95.0f; 
+    // melee attacks while dual wielding have +19% chance to miss
+    if (!spellId && HaveOffhandWeapon() && attType != RANGED_ATTACK)
+        missChance += 19.0f;
+
+    // bonus from skills is 0.04%
+    int32 diff = -skillDiff;
+    if (victim->GetTypeId() == TYPEID_PLAYER)
+        missChance += diff > 0 ? diff * 0.04 : diff * 0.02;
     else
-        HitChance = 76.0f;
-
-    // Hit chance depends from victim auras
-    if(attType == RANGED_ATTACK)
-        HitChance += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE);
-    else
-        HitChance += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE);
-
-    // Spellmod from SPELLMOD_RESIST_MISS_CHANCE - Example spell 28842
-    if(spellId)
     {
-        if(Player *modOwner = GetSpellModOwner())
-            modOwner->ApplySpellMod(spellId, SPELLMOD_RESIST_MISS_CHANCE, HitChance);
+        missChance += diff > 10 ? 2 + (diff - 10) * 0.4 : diff * 0.1; // http://wowwiki.wikia.com/wiki/Weapon_skill
+        //further reduce miss chance for low levels
+        float levelFactor = victim->GetLevelForTarget(this);
+        if (levelFactor < 10.f)
+            missChance *= (levelFactor / 10.f);
     }
 
-    // Miss = 100 - hit
-    float miss_chance = 100.0f - HitChance;
+    // Spellmod from SPELLMOD_RESIST_MISS_CHANCE - Example spell 28842
+    if (spellId)
+    {
+        float resistMissChance = 100.0f;
+        if (Player *modOwner = GetSpellModOwner())
+            modOwner->ApplySpellMod(spellId, SPELLMOD_RESIST_MISS_CHANCE, resistMissChance);
+        missChance -= resistMissChance - 100.0f;
+    }
 
     // Bonuses from attacker aura and ratings
     if (attType == RANGED_ATTACK)
-        miss_chance -= m_modRangedHitChance;
+        missChance -= m_modRangedHitChance;
     else
-        miss_chance -= m_modMeleeHitChance;
+        missChance -= m_modMeleeHitChance;
 
-    int32 diff = -skillDiff;
-    if(pVictim->GetTypeId()==TYPEID_PLAYER)
-        miss_chance += diff > 0 ? diff * 0.04 : diff * 0.02;
+    // Limit miss chance to 60%
+    missChance = std::min(missChance, 60.0f);
+
+    // miss chance from SPELL_AURA_MOD_ATTACKER_xxx_HIT_CHANCE can exceed 60% miss cap (eg aura 50240)
+    if(attType == RANGED_ATTACK)
+        missChance -= victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE);
     else
-        miss_chance += diff > 10 ? 2 + (diff - 10) * 0.4 : diff * 0.1; // http://wowwiki.wikia.com/wiki/Weapon_skill
+        missChance -= victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE);
 
-    // Limit miss chance from 0 to 60%
-    RoundToInterval(miss_chance, 0.f, 60.f);
-    return miss_chance;
+    return missChance;
 }
 
 
@@ -2452,12 +2458,11 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
     else
         attackerWeaponSkill = int32(GetWeaponSkillValue(attType, victim));
 
-//    int32 skillDiff = attackerWeaponSkill - int32(victim->GetMaxSkillValueForLevel(this));
-    int32 fullSkillDiff = attackerWeaponSkill - int32(victim->GetDefenseSkillValue(this));
+    int32 skillDiff = attackerWeaponSkill - int32(victim->GetMaxSkillValueForLevel(this));
 
     uint32 roll = GetMap()->urand(0, 9999);
 
-    uint32 missChance = uint32(MeleeSpellMissChance(victim, attType, fullSkillDiff, spellInfo->Id)*100.0f);
+    uint32 missChance = uint32(MeleeSpellMissChance(victim, attType, skillDiff, spellInfo->Id)*100.0f);
     // Roll miss
     uint32 tmp = missChance;
     if (roll < tmp)
@@ -2913,6 +2918,16 @@ float Unit::GetUnitParryChance(WeaponAttackType attType, Unit const* victim) con
     else
         chance -= GetTotalAuraModifier(SPELL_AURA_MOD_EXPERTISE) / 4.0f;
     return std::max(chance, 0.0f);
+}
+
+float Unit::GetUnitMissChance() const
+{
+    float miss_chance = 5.0f;
+
+    if (Player const* player = ToPlayer())
+        miss_chance += player->GetMissPercentageFromDefense();
+
+    return miss_chance;
 }
 
 float Unit::GetUnitBlockChance(WeaponAttackType attType, Unit const* victim) const

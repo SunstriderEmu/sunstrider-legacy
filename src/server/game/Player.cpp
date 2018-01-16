@@ -4890,6 +4890,17 @@ uint32 Player::GetShieldBlockValue() const
     return uint32(value);
 }
 
+float Player::GetMissPercentageFromDefense() const
+{
+    float diminishing = 0.0f, nondiminishing = 0.0f;
+    // Modify value from defense skill (only bonus from defense rating diminishes)
+    nondiminishing += (int32(GetSkillValue(SKILL_DEFENSE)) - int32(GetMaxSkillValueForLevel())) * 0.04f;
+    diminishing += (GetRatingBonusValue(CR_DEFENSE_SKILL) * 0.04f);
+
+    // apply diminishing formula to diminishing miss chance
+    return CalculateDiminishingReturns(miss_cap, GetClass(), nondiminishing, diminishing);
+}
+
 float Player::GetMeleeCritFromAgility()
 {
     uint32 level = GetLevel();
