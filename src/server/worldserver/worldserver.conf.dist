@@ -273,43 +273,40 @@ InstanceCrashRecovery.Enable = 0
 #        Enable Kick cheater
 #        Default: 0 - off
 #                 1 - on
-#
-#    Anticheat.Movement.AlarmCount
-#        Count alarms after that player kicked
-#        Default: 5
-#
-#    Anticheat.Movement.AlarmTime
-#        Maximum time between alarms before reseting AlarmCount
-#        Default: 5000 (ms)
-#
+##
 #    Anticheat.Movement.BanType
-#        Default : 0
+#        1 - Ban character
+#        2 - Ban IP
+#        Default: 0 (mask)
 #
 #    Anticheat.Movement.BanTime
-#        Default : 90 (days)
+#        Default: 90 (days)
 #
 #    Anticheat.Movement.Gm
 #        Enable anticheat for gamematers
-#        Default : false
+#        Default: false
 #
 #    Anticheat.Movement.Kill
 #        Default : false
 #
 #    Anticheat.Movement.Warn
 #        Global GM warning
-#         Default : True
+#        Default: True
+#    
+#    Anticheat.Movement.Warn.Cooldown
+#        Minimum time between two warnings
+#        Default: 120 (seconds)
 #
 ###################################################################################################################
 
 Anticheat.Movement.Enable = 1
 Anticheat.Movement.Kick = 0
-Anticheat.Movement.AlarmCount = 5
-Anticheat.Movement.AlarmTime = 5000
 Anticheat.Movement.BanType = 0
 Anticheat.Movement.BanTime = 90
 Anticheat.Movement.Gm = false
 Anticheat.Movement.Kill = false
 Anticheat.Movement.Warn = true
+Anticheat.Movement.Warn.Cooldown = 120
 
 ###################################################################################################################
 # SERVER SETTINGS

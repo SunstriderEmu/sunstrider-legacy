@@ -578,14 +578,13 @@ void World::LoadConfigSettings(bool reload)
     // movement anticheat
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_ENABLE] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Enable", true);
 
-    m_configs[CONFIG_ANTICHEAT_MOVEMENT_ALARM_COUNT] = sConfigMgr->GetIntDefault("Anticheat.Movement.AlarmCount", 5);
-    m_configs[CONFIG_ANTICHEAT_MOVEMENT_ALARM_TIME] = sConfigMgr->GetIntDefault("Anticheat.Movement.AlarmTime", 5000);
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_KICK] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Kick", false);;
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_BAN] = sConfigMgr->GetIntDefault("Anticheat.Movement.BanType", 0);
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_BAN_TIME] = sConfigMgr->GetIntDefault("Anticheat.Movement.BanTime", 90);
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_GM] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Gm", false);
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_KILL] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Kill", false);
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_WARN_GM] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Warn", true);
+    m_configs[CONFIG_ANTICHEAT_MOVEMENT_WARN_GM_COOLDOWN] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Warn.Cooldown", 120);
 
     m_wardenBanTime                         = sConfigMgr->GetStringDefault("Warden.BanTime","180d");
 

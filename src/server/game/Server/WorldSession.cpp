@@ -120,7 +120,7 @@ m_TutorialsChanged(false),
 _warden(nullptr),
 forceExit(false),
 expireTime(60000), // 1 min after socket loss, session is deleted
-anticheat(this)
+anticheat(new MovementAntiCheat(this))
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
@@ -146,13 +146,14 @@ WorldSession::~WorldSession()
         m_Socket = nullptr;
     }
 
-    if (_warden)
-        delete _warden;
+     delete _warden;
 
     ///- empty incoming packet queue
     WorldPacket* packet = NULL;
     while (_recvQueue.next(packet))
         delete packet;
+
+    delete anticheat;
 
     LoginDatabase.AsyncPQuery("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
     CharacterDatabase.AsyncPQuery("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
@@ -393,7 +394,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         //sScriptMgr->OnPacketReceive(this, *packet);
                         opHandle->Call(this, *packet);
                         LogUnprocessedTail(packet);
-                        anticheat.OnClientPacketProcessed(*packet);
+                        anticheat->OnClientPacketProcessed(*packet);
                     }
                     break;
                 case STATUS_NEVER:

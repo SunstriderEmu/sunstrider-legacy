@@ -491,7 +491,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         }
     }
 
-    _player->GetSession()->anticheat.OnPlayerMoved(plrMover, movementInfo, OpcodeClient(opcode));
+    _player->GetSession()->anticheat->OnPlayerMoved(plrMover, movementInfo, OpcodeClient(opcode));
 }
 
 /*
@@ -691,7 +691,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
     /* Do we really need to send the data to everyone? Seemed to work better */
     _player->SendMessageToSet(&data, false);
 
-    anticheat.OnPlayerKnockBack(_player);
+    anticheat->OnPlayerKnockBack(_player);
 }
 
 //CMSG_MOVE_HOVER_ACK

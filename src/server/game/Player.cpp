@@ -1872,7 +1872,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         //else
         //    return false;
     }
-    GetSession()->anticheat.OnPlayerTeleport(this);
+    GetSession()->anticheat->OnPlayerTeleport(this);
     return true;
 }
 
@@ -23244,7 +23244,7 @@ bool Player::SetFlying(bool apply, bool packetOnly /* = false */)
     data << uint32(0);          //! movement counter
     SendDirectMessage(&data);
 
-    GetSession()->anticheat.OnPlayerSetFlying(this, apply);
+    GetSession()->anticheat->OnPlayerSetFlying(this, apply);
 
     if (packetOnly || Unit::SetFlying(apply))
     {
@@ -23389,9 +23389,9 @@ void Player::SetMover(Unit* target)
 {
     //if target is a player, notify anticheat
     if (Player* targetPlayer = target->ToPlayer())
-        targetPlayer->GetSession()->anticheat.OnPlayerMoverChanged(targetPlayer->m_unitMovedByMe->m_playerMovingMe, this);
+        targetPlayer->GetSession()->anticheat->OnPlayerMoverChanged(targetPlayer->m_unitMovedByMe->m_playerMovingMe, this);
     //also notify for ourselves
-    GetSession()->anticheat.OnPlayerMoverChanged(m_unitMovedByMe, target);
+    GetSession()->anticheat->OnPlayerMoverChanged(m_unitMovedByMe, target);
 
     m_unitMovedByMe->m_playerMovingMe = nullptr;
     m_unitMovedByMe = target;

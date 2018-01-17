@@ -12068,7 +12068,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype)
     float oldSpeed = GetSpeedRate(mtype);
     SetSpeedRate(mtype, speed);
     if (Player* p = ToPlayer())
-        p->GetSession()->anticheat.OnPlayerSpeedChanged(p, oldSpeed, speed);
+        p->GetSession()->anticheat->OnPlayerSpeedChanged(p, oldSpeed, speed);
 }
 
 /* return true speed */
@@ -16151,6 +16151,8 @@ bool Unit::SetWaterWalking(bool enable, bool /*packetOnly = false */)
     else
         RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
 
+    if (Player* p = ToPlayer())
+        p->GetSession()->anticheat->OnPlayerWaterWalk(p);
     return true;
 }
 
@@ -16163,6 +16165,9 @@ bool Unit::SetFeatherFall(bool enable, bool /*packetOnly = false */)
         AddUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
     else
         RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+
+    if (Player* p = ToPlayer())
+        p->GetSession()->anticheat->OnPlayerSlowfall(p);
 
     return true;
 }
@@ -16191,6 +16196,9 @@ bool Unit::SetHover(bool enable, bool /*packetOnly = false*/)
             UpdateHeight(newZ);
         }
     }
+
+    if (Player* p = ToPlayer())
+        p->GetSession()->anticheat->OnPlayerSlowfall(p);
 
     return true;
 }
