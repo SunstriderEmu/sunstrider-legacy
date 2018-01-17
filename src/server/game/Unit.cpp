@@ -1488,7 +1488,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, CalcDamageInfo *damageInfo, Weapo
         if (immunedMask & (1 << i))
             continue;
 
-        //temp fix for TC code until they update, don't loop for creatures
+        //sun: speedup, creatures only have one damage type
         if (i > 0 && GetTypeId() == TYPEID_UNIT)
             break;
 

@@ -1102,8 +1102,16 @@ void Creature::UpdateAttackPowerAndDamage(bool ranged)
 }
 
 
-void Creature::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 /*damageIndex*/) const
+void Creature::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 damageIndex /* = 0*/) const
 {
+    // creatures only have one damage
+    if (damageIndex != 0)
+    {
+        minDamage = 0.0f;
+        maxDamage = 0.0f;
+        return;
+    }
+
     float variance = 1.0f;
     UnitMods unitMod;
     switch (attType)
