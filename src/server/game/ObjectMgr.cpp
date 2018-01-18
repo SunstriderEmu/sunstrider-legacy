@@ -1501,12 +1501,21 @@ void ObjectMgr::LoadCreatures()
             continue;
         }
 
+        if (data.displayid != 0)
+        {
+            if (!sCreatureDisplayInfoStore.LookupEntry(data.displayid))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `creature` have creature (SpawnId: %u Entry: %u) with invalid displayid %u, set to 0.", guid, data.id, data.displayid);
+                data.displayid = 0;
+            }
+        }
+
         // -1 random, 0 no equipment,
         if (data.equipmentId != 0)
         {
             if (!GetEquipmentInfo(data.id, data.equipmentId))
             {
-                TC_LOG_ERROR("sql.sql","Table `creature` have creature (Entry: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", data.id, data.equipmentId);
+                TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u Entry: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", guid, data.id, data.equipmentId);
                 data.equipmentId = -1;
             }
         }
