@@ -777,7 +777,7 @@ void ObjectMgr::LoadCreatureAddons()
         CreatureData const* creData = GetCreatureData(guid);
         if (!creData)
         {
-            TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) does not exist but has a record in `creature_addon`", guid);
+            TC_LOG_ERROR("sql.sql", "Creature (SpawnId: %u) does not exist but has a record in `creature_addon`", guid);
             continue;
         }
 
@@ -787,7 +787,7 @@ void ObjectMgr::LoadCreatureAddons()
         if (creData->movementType == WAYPOINT_MOTION_TYPE && !creatureAddon.path_id)
         {
             const_cast<CreatureData*>(creData)->movementType = IDLE_MOTION_TYPE;
-            TC_LOG_ERROR("sql.sql", "Creature (GUID %u) has movement type set to WAYPOINT_MOTION_TYPE but no path assigned", guid);
+            TC_LOG_ERROR("sql.sql", "Creature (SpawnId %u) has movement type set to WAYPOINT_MOTION_TYPE but no path assigned", guid);
         }
 
         creatureAddon.mount   = fields[2].GetUInt32();
@@ -804,12 +804,12 @@ void ObjectMgr::LoadCreatureAddons()
             SpellInfo const* AdditionalSpellInfo = sSpellMgr->GetSpellInfo(uint32(atol(token)));
             if (!AdditionalSpellInfo)
             {
-                TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) has wrong spell %u defined in `auras` field in `creature_addon`.", guid, uint32(atol(token)));
+                TC_LOG_ERROR("sql.sql", "Creature (SpawnId: %u) has wrong spell %u defined in `auras` field in `creature_addon`.", guid, uint32(atol(token)));
                 continue;
             }
 #ifdef LICH_KING
             if (AdditionalSpellInfo->HasAuraEffect(SPELL_AURA_CONTROL_VEHICLE))
-                TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) has SPELL_AURA_CONTROL_VEHICLE aura %u defined in `auras` field in `creature_addon`.", guid, uint32(atol(*itr)));
+                TC_LOG_ERROR("sql.sql", "Creature (SpawnId: %u) has SPELL_AURA_CONTROL_VEHICLE aura %u defined in `auras` field in `creature_addon`.", guid, uint32(atol(*itr)));
 #endif
             creatureAddon.auras[i++] = uint32(atol(token));
         }
@@ -818,19 +818,19 @@ void ObjectMgr::LoadCreatureAddons()
         {
             if (!sCreatureDisplayInfoStore.LookupEntry(creatureAddon.mount))
             {
-                TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) has invalid displayInfoId (%u) for mount defined in `creature_addon`", guid, creatureAddon.mount);
+                TC_LOG_ERROR("sql.sql", "Creature (SpawnId: %u) has invalid displayInfoId (%u) for mount defined in `creature_addon`", guid, creatureAddon.mount);
                 creatureAddon.mount = 0;
             }
         }
 
         if (!sEmotesStore.LookupEntry(creatureAddon.emote))
         {
-            TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) has invalid emote (%u) defined in `creature_addon`.", guid, creatureAddon.emote);
+            TC_LOG_ERROR("sql.sql", "Creature (SpawnId: %u) has invalid emote (%u) defined in `creature_addon`.", guid, creatureAddon.emote);
             creatureAddon.emote = 0;
         }
 
         if(_creatureDataStore.find(guid)==_creatureDataStore.end())
-            TC_LOG_ERROR("sql.sql","Creature (GUID: %u) does not exist but has a record in `creature_addon`",guid);
+            TC_LOG_ERROR("sql.sql","Creature (SpawnId: %u) does not exist but has a record in `creature_addon`",guid);
 
         ++count;
     }
@@ -1457,11 +1457,19 @@ void ObjectMgr::LoadCreatures()
         CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
         if (!cInfo)
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) with not existed creature entry %u, skipped.", guid, data.id);
+            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) with not existed creature entry %u, skipped.", guid, data.id);
             continue;
         }
 
-        data.spawnPoint.WorldRelocate(fields[2].GetUInt16(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat(), fields[8].GetFloat());
+        uint32 mapId = fields[2].GetUInt16();
+        MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
+        if (!mapEntry)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) spawned on non existent map %u, skipped.", guid, mapId);
+            continue;
+        }
+
+        data.spawnPoint.WorldRelocate(mapId, fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat(), fields[8].GetFloat());
         data.displayid      = fields[ 3].GetUInt32();
         data.equipmentId    = fields[ 4].GetInt8();
         data.spawntimesecs  = fields[ 9].GetUInt32();
@@ -1480,12 +1488,16 @@ void ObjectMgr::LoadCreatures()
         data.instanceEventId = fields[18].GetDouble();
 #endif
         data.scriptId = GetScriptId(fields[19].GetString());
-        data.spawnGroupData = &_spawnGroupDataStore[0];
+        //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
+        if(mapEntry->Instanceable())
+            data.spawnGroupData = &_spawnGroupDataStore[1]; //Legacy group
+        else
+            data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
         uint32 PoolId = fields[20].GetUInt32();
 
         if(heroicCreatures.find(data.id)!=heroicCreatures.end())
         {
-            TC_LOG_ERROR("sql.sql","Table `creature` has creature (GUID: %u) that listed as heroic template in `creature_template_substitution`, skipped.",guid );
+            TC_LOG_ERROR("sql.sql","Table `creature` has creature (SpawnId: %u) that listed as heroic template in `creature_template_substitution`, skipped.",guid );
             continue;
         }
 
@@ -1501,20 +1513,20 @@ void ObjectMgr::LoadCreatures()
 
         if (data.movementType >= MAX_DB_MOTION_TYPE)
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u Entry: %u) with wrong movement generator type (%u), ignored and set to IDLE.", guid, data.id, data.movementType);
+            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u Entry: %u) with wrong movement generator type (%u), ignored and set to IDLE.", guid, data.id, data.movementType);
             data.movementType = IDLE_MOTION_TYPE;
         }
 
         if(data.spawndist < 0.0f)
         {
-            TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u Entry: %u) with `spawndist`< 0, set to 0.",guid,data.id );
+            TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u Entry: %u) with `spawndist`< 0, set to 0.",guid,data.id );
             data.spawndist = 0.0f;
         }
         else if(data.movementType == RANDOM_MOTION_TYPE)
         {
             if(data.spawndist == 0.0f)
             {
-                TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u Entry: %u) with `MovementType`=1 (random movement) but with `spawndist`=0, replace by idle movement type (0).",guid,data.id );
+                TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u Entry: %u) with `MovementType`=1 (random movement) but with `spawndist`=0, replace by idle movement type (0).",guid,data.id );
                 data.movementType = IDLE_MOTION_TYPE;
             }
         }
@@ -1522,7 +1534,7 @@ void ObjectMgr::LoadCreatures()
         {
             if(data.spawndist != 0.0f)
             {
-                TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u Entry: %u) with `MovementType`=0 (idle) have `spawndist`<>0, set to 0.",guid,data.id );
+                TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u Entry: %u) with `MovementType`=0 (idle) have `spawndist`<>0, set to 0.",guid,data.id );
                 data.spawndist = 0.0f;
             }
         }
@@ -1614,7 +1626,7 @@ void ObjectMgr::LoadGameObjects()
         GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
         if (!gInfo)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (GUID: %u) with not existed gameobject entry %u, skipped.", guid, entry);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (SpawnId: %u) with not existed gameobject entry %u, skipped.", guid, entry);
             continue;
         }
 
@@ -1626,21 +1638,28 @@ void ObjectMgr::LoadGameObjects()
             case GAMEOBJECT_TYPE_SPELL_FOCUS:
                 break;
             default:
-                TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry %u GoType: %u) doesn't have a displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
+                TC_LOG_ERROR("sql.sql", "Gameobject (SpawnId: %u Entry %u GoType: %u) doesn't have a displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
                 break;
             }
         }
 
         if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
         {
-            TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry %u GoType: %u) has an invalid displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
+            TC_LOG_ERROR("sql.sql", "Gameobject (SpawnId: %u Entry %u GoType: %u) has an invalid displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
             continue;
         }
 
         GameObjectData& data = _gameObjectDataStore[guid];
 
         data.id             = entry;
-        data.spawnPoint.WorldRelocate(fields[2].GetUInt16(), fields[3].GetFloat(), fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat());
+        uint32 mapId = fields[2].GetUInt16();
+        MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
+        if (!mapEntry)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) spawned on a non-existed map (Id: %u), skip", guid, data.id, data.spawnPoint.GetMapId());
+            continue;
+        }
+        data.spawnPoint.WorldRelocate(mapId, fields[3].GetFloat(), fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat());
         data.rotation       = G3D::Quat(fields[ 7].GetFloat(), fields[ 8].GetFloat(), fields[ 9].GetFloat(), fields[10].GetFloat());
         data.spawntimesecs  = fields[11].GetInt32();
         data.animprogress   = fields[12].GetUInt8();
@@ -1649,61 +1668,58 @@ void ObjectMgr::LoadGameObjects()
         data.spawnMask      = fields[14].GetUInt8();
         int16 gameEvent     = fields[15].GetInt16();
         data.ScriptId = GetScriptId(fields[16].GetString());
-        data.spawnGroupData = &_spawnGroupDataStore[0];
+        //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
+        if (mapEntry->Instanceable())
+            data.spawnGroupData = &_spawnGroupDataStore[1]; //Legacy group
+        else
+            data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
         uint32 PoolId = fields[17].GetUInt32();
-
-        MapEntry const* mapEntry = sMapStore.LookupEntry(data.spawnPoint.GetMapId());
-        if (!mapEntry)
-        {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) spawned on a non-existed map (Id: %u), skip", guid, data.id, data.spawnPoint.GetMapId());
-            continue;
-        }
 
         if (data.spawntimesecs == 0 && gInfo->IsDespawnAtAction())
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with `spawntimesecs` (0) value, but the gameobejct is marked as despawnable at action.", guid, data.id);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) with `spawntimesecs` (0) value, but the gameobejct is marked as despawnable at action.", guid, data.id);
         }
 
         if (data.go_state >= MAX_GO_STATE)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid `state` (%u) value, skip", guid, data.id, data.go_state);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) with invalid `state` (%u) value, skip", guid, data.id, data.go_state);
             continue;
         }
 
         if (std::abs(data.spawnPoint.GetOrientation()) > 2 * float(M_PI))
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with abs(`orientation`) > 2*PI (orientation is expressed in radians), normalized.", guid, data.id);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) with abs(`orientation`) > 2*PI (orientation is expressed in radians), normalized.", guid, data.id);
             data.spawnPoint.m_orientation = Position::NormalizeOrientation(data.spawnPoint.GetOrientation());
         }
 
         if (data.rotation.x < -1.0f || data.rotation.x > 1.0f)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationX (%f) value, skip", guid, data.id, data.rotation.x);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) with invalid rotationX (%f) value, skip", guid, data.id, data.rotation.x);
             continue;
         }
 
         if (data.rotation.y < -1.0f || data.rotation.y > 1.0f)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationY (%f) value, skip", guid, data.id, data.rotation.y);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) with invalid rotationY (%f) value, skip", guid, data.id, data.rotation.y);
             continue;
         }
 
         if (data.rotation.z < -1.0f || data.rotation.z > 1.0f)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationZ (%f) value, skip", guid, data.id, data.rotation.z);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) with invalid rotationZ (%f) value, skip", guid, data.id, data.rotation.z);
             continue;
         }
 
         if (data.rotation.w < -1.0f || data.rotation.w > 1.0f)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationW (%f) value, skip", guid, data.id, data.rotation.w);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) with invalid rotationW (%f) value, skip", guid, data.id, data.rotation.w);
             continue;
         }
 
 #ifdef LICH_KING
         if (data.phaseMask == 0)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with `phaseMask`=0 (not visible for anyone), set to 1.", guid, data.id);
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) with `phaseMask`=0 (not visible for anyone), set to 1.", guid, data.id);
             data.phaseMask = 1;
         }
 #endif
@@ -3583,7 +3599,7 @@ void ObjectMgr::LoadQuests()
     //   9                    10                 11                     12                   13                     14                   15                16
         "RepObjectiveFaction, RepObjectiveValue, RequiredMinRepFaction, RequiredMinRepValue, RequiredMaxRepFaction, RequiredMaxRepValue, SuggestedPlayers, LimitTime,"
     //   17          18            19           20           21           22              23                24         25            26
-        "QuestFlags, SpecialFlags, CharTitleId, PrevQuestId, NextQuestId, ExclusiveGroup, _rewardNextQuest, SrcItemId, SrcItemCount, SrcSpell,"
+        "QuestFlags, SpecialFlags, CharTitleId, PrevQuestId, NextQuestId, ExclusiveGroup, NextQuestInChain, SrcItemId, SrcItemCount, SrcSpell,"
     //   27     28       29          30       31              32              33              34
         "Title, Details, Objectives, EndText, ObjectiveText1, ObjectiveText2, ObjectiveText3, ObjectiveText4,"
         "ReqItemId1, ReqItemId2, ReqItemId3, ReqItemId4, ReqItemCount1, ReqItemCount2, ReqItemCount3, ReqItemCount4,"
@@ -4487,14 +4503,14 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
                 GameObjectData const* data = GetGameObjectData(tmp.RespawnGameobject.GOGuid);
                 if(!data)
                 {
-                    TC_LOG_ERROR("sql.sql","Table `%s` has invalid gameobject (GUID: %u) in SCRIPT_COMMAND_RESPAWN_GAMEOBJECT for script id %u", tablename, tmp.RespawnGameobject.GOGuid, tmp.id);
+                    TC_LOG_ERROR("sql.sql","Table `%s` has invalid gameobject (SpawnId: %u) in SCRIPT_COMMAND_RESPAWN_GAMEOBJECT for script id %u", tablename, tmp.RespawnGameobject.GOGuid, tmp.id);
                     continue;
                 }
 
                 GameObjectTemplate const* info = GetGameObjectTemplate(data->id);
                 if(!info)
                 {
-                    TC_LOG_ERROR("sql.sql","Table `%s` has gameobject with invalid entry (GUID: %u Entry: %u) in SCRIPT_COMMAND_RESPAWN_GAMEOBJECT for script id %u",tablename, tmp.RespawnGameobject.GOGuid, data->id, tmp.id);
+                    TC_LOG_ERROR("sql.sql","Table `%s` has gameobject with invalid entry (SpawnId: %u Entry: %u) in SCRIPT_COMMAND_RESPAWN_GAMEOBJECT for script id %u",tablename, tmp.RespawnGameobject.GOGuid, data->id, tmp.id);
                     continue;
                 }
 
@@ -4515,14 +4531,14 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
                 GameObjectData const* data = GetGameObjectData(tmp.ToggleDoor.GOGuid);
                 if(!data)
                 {
-                    TC_LOG_ERROR("sql.sql","Table `%s` has invalid gameobject (GUID: %u) in %s for script id %u",tablename, tmp.ToggleDoor.GOGuid,(tmp.command==SCRIPT_COMMAND_OPEN_DOOR ? "SCRIPT_COMMAND_OPEN_DOOR" : "SCRIPT_COMMAND_CLOSE_DOOR"),tmp.id);
+                    TC_LOG_ERROR("sql.sql","Table `%s` has invalid gameobject (SpawnId: %u) in %s for script id %u",tablename, tmp.ToggleDoor.GOGuid,(tmp.command==SCRIPT_COMMAND_OPEN_DOOR ? "SCRIPT_COMMAND_OPEN_DOOR" : "SCRIPT_COMMAND_CLOSE_DOOR"),tmp.id);
                     continue;
                 }
 
                 GameObjectTemplate const* info = GetGameObjectTemplate(data->id);
                 if(!info)
                 {
-                    TC_LOG_ERROR("sql.sql","Table `%s` has gameobject with invalid entry (GUID: %u Entry: %u) in %s for script id %u",tablename, tmp.ToggleDoor.GOGuid,data->id,(tmp.command==SCRIPT_COMMAND_OPEN_DOOR ? "SCRIPT_COMMAND_OPEN_DOOR" : "SCRIPT_COMMAND_CLOSE_DOOR"),tmp.id);
+                    TC_LOG_ERROR("sql.sql","Table `%s` has gameobject with invalid entry (SpawnId: %u Entry: %u) in %s for script id %u",tablename, tmp.ToggleDoor.GOGuid,data->id,(tmp.command==SCRIPT_COMMAND_OPEN_DOOR ? "SCRIPT_COMMAND_OPEN_DOOR" : "SCRIPT_COMMAND_CLOSE_DOOR"),tmp.id);
                     continue;
                 }
 
@@ -4645,7 +4661,7 @@ void ObjectMgr::LoadGameObjectScripts()
     for(ScriptMapMap::const_iterator itr = sGameObjectScripts.begin(); itr != sGameObjectScripts.end(); ++itr)
     {
         if(!GetGameObjectData(itr->first))
-            TC_LOG_ERROR("sql.sql","Table `gameobject_scripts` has not existing gameobject (GUID: %u) as script id",itr->first);
+            TC_LOG_ERROR("sql.sql","Table `gameobject_scripts` has not existing gameobject (SpawnId: %u) as script id",itr->first);
     }
 }
 
@@ -7989,7 +8005,7 @@ void ObjectMgr::LoadCreatureGossip()
 
         if (!GetCreatureData(guid))
         {
-            TC_LOG_ERROR("sql.sql","Table `creature_gossip` have not existed creature (GUID: %u) entry, ignore. ",guid);
+            TC_LOG_ERROR("sql.sql","Table `creature_gossip` have not existed creature (SpawnId: %u) entry, ignore. ",guid);
             continue;
         }
 
@@ -7997,7 +8013,7 @@ void ObjectMgr::LoadCreatureGossip()
         /// if there are none.
         if (bounds.first == bounds.second)
         {
-            TC_LOG_ERROR("sql.sql","Table `creature_gossip` for creature (GUID: %u) have wrong menuid (%u), ignore. ", guid, menuid);
+            TC_LOG_ERROR("sql.sql","Table `creature_gossip` for creature (SpawnId: %u) have wrong menuid (%u), ignore. ", guid, menuid);
             continue;
         }
 
