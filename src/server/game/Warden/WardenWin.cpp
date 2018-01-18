@@ -304,7 +304,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
         if (sWorld->getConfig(CONFIG_WARDEN_KICK))
             Client->KickPlayer();
 
-        Client->anticheat->OnWardenDetect();
         return;
     }
 
@@ -326,7 +325,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
             found = true;
             if (sWorld->getConfig(CONFIG_WARDEN_DB_LOG))
                 LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'Timing check', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUID().GetCounter() : 0, Client->GetAccountId(), time(NULL));
-            Client->anticheat->OnWardenDetect();
         }
 
         uint32 newClientTicks;
@@ -375,7 +373,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         ban_reason << "[" << rd->id << "] ";
                     }
 
-                    Client->anticheat->OnWardenDetect();
                     continue;
                 }
 
@@ -395,7 +392,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     
                     found = true;
                     buff.rpos(buff.rpos() + rd->Length);
-                    Client->anticheat->OnWardenDetect();
                     continue;
                 }
 
@@ -423,7 +419,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
                             ban = true;
                             ban_reason << "[" << rd->id << "] ";
                         }
-                        Client->anticheat->OnWardenDetect();
                     }
 
                     if (type == MODULE_CHECK) {
@@ -437,7 +432,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
                             ban = true;
                             ban_reason << "[" << rd->id << "] ";
                         }
-                        Client->anticheat->OnWardenDetect();
                     }
 
                     if (type == DRIVER_CHECK) {
@@ -451,7 +445,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
                             ban = true;
                             ban_reason << "[" << rd->id << "] ";
                         }
-                        Client->anticheat->OnWardenDetect();
                     }
 
                     found = true;
@@ -487,8 +480,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         ban = true;
                         ban_reason << "[" << rd->id << "] ";
                     }
-
-                    Client->anticheat->OnWardenDetect();
                     continue;
                 }
 
@@ -524,8 +515,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         ban = true;
                         ban_reason << "[" << rd->id << "] ";
                     }
-
-                    Client->anticheat->OnWardenDetect();
                     continue;
                 }
 
@@ -543,7 +532,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         ban_reason << "[" << rd->id << "] ";
                     }
                     
-                    Client->anticheat->OnWardenDetect();
                     buff.rpos(buff.rpos() + 20);            // 20 bytes SHA1
                     continue;
                 }
