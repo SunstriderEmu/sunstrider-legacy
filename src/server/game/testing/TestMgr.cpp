@@ -211,6 +211,7 @@ bool TestMgr::GoToTest(Player* player, uint32 testId) const
     WorldLocation const& loc = testCase->GetLocation();
     
     player->SaveRecallPosition();
+    player->RemoveFromGroup();
     player->UnbindInstance(testMap->GetId(), testMap->GetDifficulty());
     player->SetTeleportingToTest(testMap->GetInstanceId());
     player->TeleportTo(loc, TELE_TO_TEST_MODE);
