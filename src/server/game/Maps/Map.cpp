@@ -2601,11 +2601,11 @@ DynamicObject* Map::GetDynamicObject(ObjectGuid const& guid)
 
 Transport* Map::GetTransport(ObjectGuid const& guid)
 {
-    if (!guid.IsMOTransport())
-        return NULL;
+    if (!guid.IsMOTransport() && !guid.IsTransport())
+        return nullptr;
 
     GameObject* go = GetGameObject(guid);
-    return go ? go->ToTransport() : NULL;
+    return go ? go->ToTransport() : nullptr;
 }
 
 void Map::UpdateIteratorBack(Player* player)

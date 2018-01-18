@@ -95,6 +95,7 @@ private:
     std::atomic<bool> _updating;
 };
 
+//TODO: Static transport position are completely broken right now
 class TC_GAME_API StaticTransport : public Transport
 {
 public:

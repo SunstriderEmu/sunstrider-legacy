@@ -882,7 +882,8 @@ bool StaticTransport::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* m
     if (spawnid)
         m_spawnId = spawnid;
 
-    //this->SetKeepActive(true);
+    if(m_name == "Subway") //I'd like to remove this but we need a way to keep the position updating when no players are nearby
+        this->SetKeepActive(true); 
     return true;
 }
 
@@ -1020,8 +1021,13 @@ void StaticTransport::UpdatePosition(float x, float y, float z, float o)
     if (!GetMap()->IsGridLoaded(x, y)) // sunwell: should not happen, but just in case
         GetMap()->LoadGrid(x, y);
 
+    //currently broken so, let client handle position for now
+#ifdef LICH_KING
+    //I'm pretty sure we're not supposed to send anything on BC
     GetMap()->GameObjectRelocation(this, x, y, z, o); // this also relocates the model
-    UpdatePassengerPositions();
+#endif
+    //SummonCreature(VISUAL_WAYPOINT, { x, y, z }, TEMPSUMMON_TIMED_DESPAWN, 10000);
+    //UpdatePassengerPositions();
 }
 
 void StaticTransport::UpdatePassengerPositions()
