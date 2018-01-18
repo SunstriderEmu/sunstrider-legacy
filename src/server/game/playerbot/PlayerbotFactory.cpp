@@ -137,8 +137,8 @@ void PlayerbotFactory::InitPet()
             return;
 
         vector<uint32> ids;
-        CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
-        for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin(); i != creatureTemplateContainer->end(); ++i)
+        CreatureTemplateContainer const& creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
+        for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer.begin(); i != creatureTemplateContainer.end(); ++i)
         {
             CreatureTemplate const& co = i->second;
             if (!co.IsTameable(false))
@@ -571,8 +571,8 @@ void PlayerbotFactory::InitEquipment(bool incremental)
 
         do
         {
-            ItemTemplateContainer const* itemTemplates = sObjectMgr->GetItemTemplateStore();
-            for (ItemTemplateContainer::const_iterator i = itemTemplates->begin(); i != itemTemplates->end(); ++i)
+            ItemTemplateContainer const& itemTemplates = sObjectMgr->GetItemTemplateStore();
+            for (ItemTemplateContainer::const_iterator i = itemTemplates.begin(); i != itemTemplates.end(); ++i)
             {
                 uint32 itemId = i->first;
                 ItemTemplate const* proto = &i->second;
@@ -681,8 +681,8 @@ void PlayerbotFactory::InitSecondEquipmentSet()
 
     do
     {
-        ItemTemplateContainer const* itemTemplates = sObjectMgr->GetItemTemplateStore();
-        for (ItemTemplateContainer::const_iterator i = itemTemplates->begin(); i != itemTemplates->end(); ++i)
+        ItemTemplateContainer const& itemTemplates = sObjectMgr->GetItemTemplateStore();
+        for (ItemTemplateContainer::const_iterator i = itemTemplates.begin(); i != itemTemplates.end(); ++i)
         {
             uint32 itemId = i->first;
             ItemTemplate const* proto = &i->second;
@@ -768,8 +768,8 @@ void PlayerbotFactory::InitBags()
 {
     vector<uint32> ids;
 
-    ItemTemplateContainer const* itemTemplates = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator i = itemTemplates->begin(); i != itemTemplates->end(); ++i)
+    ItemTemplateContainer const& itemTemplates = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator i = itemTemplates.begin(); i != itemTemplates.end(); ++i)
     {
         uint32 itemId = i->first;
         ItemTemplate const* proto = &i->second;
@@ -1035,7 +1035,7 @@ void PlayerbotFactory::InitAvailableSpells()
 {
     /* old code
 
-    CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
+    CreatureTemplateContainer const& creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin(); i != creatureTemplateContainer->end(); ++i)
     {
         CreatureTemplate const& co = i->second;
@@ -1296,9 +1296,9 @@ void PlayerbotFactory::InitMounts()
 
 void PlayerbotFactory::InitPotions()
 {
-    map<uint32, vector<uint32> > items;
-    ItemTemplateContainer const* itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator i = itemTemplateContainer->begin(); i != itemTemplateContainer->end(); ++i)
+    map<uint32, vector<uint32>> items;
+    ItemTemplateContainer const& itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator i = itemTemplateContainer.begin(); i != itemTemplateContainer.end(); ++i)
     {
 //        ItemTemplate const& itemTemplate = i->second;
         uint32 itemId = i->first;
@@ -1356,8 +1356,8 @@ void PlayerbotFactory::InitPotions()
 void PlayerbotFactory::InitFood()
 {
     map<uint32, vector<uint32> > items;
-    ItemTemplateContainer const* itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator i = itemTemplateContainer->begin(); i != itemTemplateContainer->end(); ++i)
+    ItemTemplateContainer const& itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator i = itemTemplateContainer.begin(); i != itemTemplateContainer.end(); ++i)
     {
 //        ItemTemplate const& itemTemplate = i->second;
         uint32 itemId = i->first;
@@ -1453,8 +1453,8 @@ Item* PlayerbotFactory::StoreItem(uint32 itemId, uint32 count)
 void PlayerbotFactory::InitInventoryTrade()
 {
     vector<uint32> ids;
-    ItemTemplateContainer const* itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator i = itemTemplateContainer->begin(); i != itemTemplateContainer->end(); ++i)
+    ItemTemplateContainer const& itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator i = itemTemplateContainer.begin(); i != itemTemplateContainer.end(); ++i)
     {
 //        ItemTemplate const& itemTemplate = i->second;
         uint32 itemId = i->first;
@@ -1522,8 +1522,8 @@ void PlayerbotFactory::InitInventoryEquip()
         desiredQuality--;
     }
 
-    ItemTemplateContainer const* itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator i = itemTemplateContainer->begin(); i != itemTemplateContainer->end(); ++i)
+    ItemTemplateContainer const& itemTemplateContainer = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator i = itemTemplateContainer.begin(); i != itemTemplateContainer.end(); ++i)
     {
 //        ItemTemplate const& itemTemplate = i->second;
         uint32 itemId = i->first;
@@ -1588,8 +1588,8 @@ void PlayerbotFactory::InitGlyphs()
         return;
 
     list<uint32> glyphs;
-    ItemTemplateContainer const* itemTemplates = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator i = itemTemplates->begin(); i != itemTemplates->end(); ++i)
+    ItemTemplateContainer const& itemTemplates = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator i = itemTemplates.begin(); i != itemTemplates.end(); ++i)
     {
         uint32 itemId = i->first;
         ItemTemplate const* proto = &i->second;

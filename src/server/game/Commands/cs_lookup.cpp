@@ -135,8 +135,8 @@ bool ChatHandler::HandleLookupCreatureCommand(const char* args)
 
     uint32 counter = 0;
 
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
-    for (const auto & itr : *ctc)
+    CreatureTemplateContainer const& ctc = sObjectMgr->GetCreatureTemplates();
+    for (const auto & itr : ctc)
     {
         uint32 id = itr.second.Entry;
         CreatureTemplate const* cInfo = &(itr.second);
@@ -366,8 +366,8 @@ bool ChatHandler::HandleLookupItemCommand(const char* args)
     uint32 counter = 0;
 
     // Search in `item_template`
-    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (const auto & it : *its)
+    ItemTemplateContainer const& its = sObjectMgr->GetItemTemplateStore();
+    for (const auto & it : its)
     {
         uint32 id = it.first;
         ItemTemplate const *pProto = &(it.second);
@@ -561,15 +561,15 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
 
     uint32 counter = 0 ;
 
-    ObjectMgr::QuestMap const& qTemplates = sObjectMgr->GetQuestTemplates();
+    ObjectMgr::QuestContainer const& qTemplates = sObjectMgr->GetQuestTemplates();
     for (const auto & qTemplate : qTemplates)
     {
-        Quest * qinfo = qTemplate.second;
+        auto qinfo = &qTemplate.second;
 
         LocaleConstant loc_idx = GetSessionDbcLocale();
         if ( loc_idx >= 0 )
         {
-            QuestLocale const *il = sObjectMgr->GetQuestLocale(qinfo->GetQuestId());
+            auto il = sObjectMgr->GetQuestLocale(qinfo->GetQuestId());
             if (il)
             {
                 if (il->Title.size() > loc_idx && !il->Title[loc_idx].empty())
@@ -643,9 +643,9 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
             }
 
             if (m_session)
-                PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),title.c_str(),statusStr);
+                PSendSysMessage(LANG_QUEST_LIST_CHAT, qinfo->GetQuestId(), qinfo->GetQuestId(), title.c_str(), statusStr);
             else
-                PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),title.c_str(),statusStr);
+                PSendSysMessage(LANG_QUEST_LIST_CONSOLE, qinfo->GetQuestId(), title.c_str(), statusStr);
 
             ++counter;
         }

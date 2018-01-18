@@ -48,7 +48,7 @@ struct GameTele
     std::wstring wnameLow;
 };
 
-typedef std::unordered_map<uint32, GameTele > GameTeleContainer;
+typedef std::unordered_map<uint32, GameTele> GameTeleContainer;
 
 enum eScriptFlags
 {    
@@ -612,19 +612,19 @@ class TC_GAME_API ObjectMgr
 
         typedef std::unordered_map<uint32, Item*> ItemMap;
 
-        typedef std::set< Group * > GroupSet;
+        typedef std::set<Group*> GroupSet;
 
-        typedef std::unordered_map<uint32, Guild *> GuildMap;
+        typedef std::unordered_map<uint32, Guild*> GuildMap;
 
         typedef std::unordered_map<uint32, ArenaTeam*> ArenaTeamMap;
 
-        typedef std::unordered_map<uint32, Quest*> QuestMap;
+        typedef std::unordered_map<uint32, Quest> QuestContainer;
 
         typedef std::unordered_map<uint32, AreaTrigger> AreaTriggerMap;
 
         typedef std::unordered_map<uint32, uint32> AreaTriggerScriptMap;
 
-        typedef std::unordered_map<uint32, AccessRequirement> AccessRequirementMap;
+        typedef std::unordered_map<uint32, AccessRequirement> AccessRequirementContainer;
 
         typedef std::unordered_map<uint32, ReputationOnKillEntry> RepOnKillMap;
 
@@ -680,7 +680,7 @@ class TC_GAME_API ObjectMgr
         ArenaTeamMap::iterator GetArenaTeamMapBegin() { return mArenaTeamMap.begin(); }
         ArenaTeamMap::iterator GetArenaTeamMapEnd()   { return mArenaTeamMap.end(); }
 
-        CreatureTemplateContainer const* GetCreatureTemplates() const { return &_creatureTemplateStore; }
+        CreatureTemplateContainer const& GetCreatureTemplates() const { return _creatureTemplateStore; }
         CreatureTemplate const* GetCreatureTemplate( uint32 id );
         CreatureModelInfo const* GetCreatureModelInfo( uint32 modelid );
         //return a new displayId with same gender and race as baseModel, if possible. Else return model info for displayID. Race NYI
@@ -692,7 +692,7 @@ class TC_GAME_API ObjectMgr
         CreatureAddon const* GetCreatureTemplateAddon(uint32 entry) const;
 
         ItemTemplate const* GetItemTemplate(uint32 id);
-        ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }
+        ItemTemplateContainer const& GetItemTemplateStore() const { return _itemTemplateStore; }
         ItemExtendedCostEntry const* GetItemExtendedCost(uint32 id) const;
 
         InstanceTemplate const* GetInstanceTemplate(uint32 map);
@@ -702,10 +702,9 @@ class TC_GAME_API ObjectMgr
 
         PetLevelInfo const* GetPetLevelInfo(uint32 creature_id, uint32 level) const;
 
-        PlayerClassInfo const* GetPlayerClassInfo(uint32 class_) const
+        PlayerClassInfo const* GetPlayerClassInfo(uint32 class_) const 
         {
-            if(class_ >= MAX_CLASSES) return nullptr;
-            return _playerClassInfo[class_];
+            return class_ < MAX_CLASSES ? _playerClassInfo[class_].get() : nullptr; 
         }
         void GetPlayerClassLevelInfo(uint32 class_,uint32 level, PlayerClassLevelInfo* info) const;
 
@@ -716,12 +715,8 @@ class TC_GAME_API ObjectMgr
         void GetTaxiPath( uint32 source, uint32 destination, uint32 &path, uint32 &cost);
         uint32 GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt_team = false);
 
-        Quest const* GetQuestTemplate(uint32 quest_id) const
-        {
-            auto itr = _questTemplates.find(quest_id);
-            return itr != _questTemplates.end() ? itr->second : nullptr;
-        }
-        QuestMap const& GetQuestTemplates() const { return _questTemplates; }
+        Quest const* GetQuestTemplate(uint32 quest_id) const;
+        QuestContainer const& GetQuestTemplates() const { return _questTemplates; }
 
         uint32 GetQuestForAreaTrigger(uint32 Trigger_ID) const
         {
@@ -966,10 +961,7 @@ class TC_GAME_API ObjectMgr
 
         BroadcastText const* GetBroadcastText(uint32 id) const
         {
-            auto itr = _broadcastTextStore.find(id);
-            if (itr != _broadcastTextStore.end())
-                return &itr->second;
-            return nullptr;
+            return Trinity::Containers::MapGetValuePtr(_broadcastTextStore, id);
         }
 
         SpawnData const* GetSpawnData(SpawnObjectType type, ObjectGuid::LowType guid)
@@ -986,9 +978,7 @@ class TC_GAME_API ObjectMgr
         CreatureDataContainer const& GetAllCreatureData() const { return _creatureDataStore; }
         CreatureData const* GetCreatureData(ObjectGuid::LowType guid) const
         {
-            auto itr = _creatureDataStore.find(guid);
-            if(itr==_creatureDataStore.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_creatureDataStore, guid);
         }
         CreatureData& NewOrExistCreatureData(ObjectGuid::LowType guid) { return _creatureDataStore[guid]; }
         void DeleteCreatureData(ObjectGuid::LowType guid);
@@ -1000,61 +990,40 @@ class TC_GAME_API ObjectMgr
         }
         CreatureLocale const* GetCreatureLocale(uint32 entry) const
         {
-            auto itr = _creatureLocaleStore.find(entry);
-            if(itr==_creatureLocaleStore.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_creatureLocaleStore, entry);
         }
         GameObjectLocale const* GetGameObjectLocale(uint32 entry) const
         {
-            auto itr = _gameObjectLocaleStore.find(entry);
-            if(itr==_gameObjectLocaleStore.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_gameObjectLocaleStore, entry);
         }
         ItemLocale const* GetItemLocale(uint32 entry) const
         {
-            auto itr = mItemLocaleMap.find(entry);
-            if(itr==mItemLocaleMap.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_itemLocaleStore, entry);
         }
         QuestLocale const* GetQuestLocale(uint32 entry) const
         {
-            auto itr = mQuestLocaleMap.find(entry);
-            if(itr==mQuestLocaleMap.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_questLocaleStore, entry);
         }
         NpcTextLocale const* GetNpcTextLocale(uint32 entry) const
         {
-            auto itr = mGossipTextLocaleMap.find(entry);
-            if(itr==mGossipTextLocaleMap.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(mGossipTextLocaleMap, entry);
         }
         PageTextLocale const* GetPageTextLocale(uint32 entry) const
         {
-            auto itr = mPageTextLocaleMap.find(entry);
-            if(itr==mPageTextLocaleMap.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(mPageTextLocaleMap, entry);
         }
         GossipMenuItemsLocale const* GetGossipMenuItemsLocale(uint16 menuId, uint16 optionIndex) const
         {
-            auto itr = _gossipMenuItemsLocaleStore.find(MAKE_PAIR32(menuId, optionIndex));
-            if(itr==_gossipMenuItemsLocaleStore.end()) 
-                return nullptr;
-
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_gossipMenuItemsLocaleStore, MAKE_PAIR32(menuId, optionIndex));
         }
         PointOfInterestLocale const* GetPointOfInterestLocale(uint32 poi_id) const
         {
-            auto itr = _pointOfInterestLocaleStore.find(poi_id);
-            if (itr == _pointOfInterestLocaleStore.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_pointOfInterestLocaleStore, poi_id);
         }
 
         GameObjectData const* GetGameObjectData(ObjectGuid::LowType guid) const
         {
-            auto itr = _gameObjectDataStore.find(guid);
-            if(itr == _gameObjectDataStore.end()) 
-                return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_gameObjectDataStore, guid);
         }
 
         GameObjectDataContainer const& GetGameObjectDataMap() const
@@ -1067,16 +1036,12 @@ class TC_GAME_API ObjectMgr
 
         QuestGreetingLocale const* GetQuestGreetingLocale(uint32 id) const
         {
-            QuestGreetingLocaleContainer::const_iterator itr = _questGreetingLocaleStore.find(id);
-            if (itr == _questGreetingLocaleStore.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_questGreetingLocaleStore, id);
         }
 
         TrinityStringLocale const* GetTrinityStringLocale(int32 entry) const
         {
-            auto itr = _trinityStringStore.find(entry);
-            if( itr == _trinityStringStore.end()) return nullptr;
-            return &itr->second;
+            return Trinity::Containers::MapGetValuePtr(_trinityStringStore, entry);
         }
 
         static void AddLocaleString(std::string const& s, LocaleConstant locale, StringVector& data);
@@ -1189,20 +1154,12 @@ class TC_GAME_API ObjectMgr
 
         TrainerSpellData const* GetNpcTrainerSpells(uint32 entry) const
         {
-            auto  iter = m_mCacheTrainerSpellMap.find(entry);
-            if(iter == m_mCacheTrainerSpellMap.end())
-                return nullptr;
-
-            return &iter->second;
+            return Trinity::Containers::MapGetValuePtr(m_mCacheTrainerSpellMap, entry);
         }
 
         VendorItemData const* GetNpcVendorItemList(uint32 entry) const
         {
-            auto  iter = m_mCacheVendorItemMap.find(entry);
-            if(iter == m_mCacheVendorItemMap.end())
-                return nullptr;
-
-            return &iter->second;
+            return Trinity::Containers::MapGetValuePtr(m_mCacheVendorItemMap, entry);
         }
         void AddVendorItem(uint32 entry,ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, bool savetodb = true); // for event
         bool RemoveVendorItem(uint32 entry,ItemTemplate const *proto, bool savetodb = true); // for event
@@ -1271,7 +1228,7 @@ class TC_GAME_API ObjectMgr
 		}
 		std::map<HighGuid, std::unique_ptr<ObjectGuidGeneratorBase>> _guidGenerators;
 
-        QuestMap            _questTemplates;
+        QuestContainer            _questTemplates;
 
         typedef std::unordered_map<uint32, GossipText*> GossipTextMap;
         typedef std::unordered_map<uint32, uint32> QuestAreaTriggerMap;
@@ -1296,7 +1253,7 @@ class TC_GAME_API ObjectMgr
         QuestGreetingContainer _questGreetingStore;
         AreaTriggerMap      _areaTriggerStore;
         AreaTriggerScriptMap  _areaTriggerScriptStore;
-        AccessRequirementMap  _accessRequirementStore;
+        AccessRequirementContainer  _accessRequirementStore;
 
         RepOnKillMap        _repOnKillStore;
 
@@ -1342,16 +1299,15 @@ class TC_GAME_API ObjectMgr
         void ConvertCreatureAddonAuras(CreatureAddon* addon, char const* table, char const* guidEntryStr);
         void LoadQuestRelationsHelper(QuestRelations& map,char const* table);
 
-        typedef std::map<uint32,PetLevelInfo*> PetLevelInfoMap;
-        // PetLevelInfoMap[creature_id][level]
-        PetLevelInfoMap petInfo;                            // [creature_id][level]
+        typedef std::unordered_map<uint32 /*creatureId*/, std::unique_ptr<PetLevelInfo[] /*level*/>> PetLevelInfoContainer;
+        PetLevelInfoContainer _petInfoStore;                            // [creature_id][level]
 
         CreatureBaseStatsContainer _creatureBaseStatsStore;
 
-        PlayerClassInfo* _playerClassInfo[MAX_CLASSES];
+        std::unique_ptr<PlayerClassInfo> _playerClassInfo[MAX_CLASSES];
 
         void BuildPlayerLevelInfo(uint8 race, uint8 class_, uint8 level, PlayerLevelInfo* plinfo) const;
-        PlayerInfo* _playerInfo[MAX_RACES][MAX_CLASSES];
+        std::unique_ptr<PlayerInfo> _playerInfo[MAX_RACES][MAX_CLASSES];
 
         typedef std::map<uint32,uint32> BaseXPMap;          // [area level][base xp]
         BaseXPMap mBaseXPTable;
@@ -1368,8 +1324,8 @@ class TC_GAME_API ObjectMgr
         CreatureLocaleContainer _creatureLocaleStore;
         GameObjectDataContainer _gameObjectDataStore;
         GameObjectLocaleContainer _gameObjectLocaleStore;
-        ItemLocaleContainer mItemLocaleMap;
-        QuestLocaleContainer mQuestLocaleMap;
+        ItemLocaleContainer _itemLocaleStore;
+        QuestLocaleContainer _questLocaleStore;
         NpcTextLocaleContainer mGossipTextLocaleMap;
         PageTextLocaleContainer mPageTextLocaleMap;
         TrinityStringLocaleContainer _trinityStringStore;

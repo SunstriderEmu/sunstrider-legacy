@@ -48,7 +48,7 @@ Quest::Quest(Field * questRecord)
     PrevQuestId = questRecord[i++].GetInt32();
     NextQuestId = questRecord[i++].GetInt32();
     ExclusiveGroup = questRecord[i++].GetInt32();
-    NextQuestInChain = questRecord[i++].GetUInt32();
+    _rewardNextQuest = questRecord[i++].GetUInt32();
     SrcItemId = questRecord[i++].GetUInt32();
     SrcItemCount = questRecord[i++].GetUInt8();
     SrcSpell = questRecord[i++].GetUInt32();

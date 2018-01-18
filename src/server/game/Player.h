@@ -197,7 +197,8 @@ struct PlayerClassInfo
 {
     PlayerClassInfo() : levelInfo(nullptr) { }
 
-    PlayerClassLevelInfo* levelInfo;                        //[level-1] 0..MaxPlayerLevel-1
+    //[level-1] 0..MaxPlayerLevel-1
+    std::unique_ptr<PlayerClassLevelInfo[]> levelInfo;
 };
 
 struct PlayerLevelInfo
@@ -231,7 +232,7 @@ struct PlayerInfo
     PlayerCreateInfoSkills skills;
     std::list<uint16> action[4];
 
-    PlayerLevelInfo* levelInfo;                             //[level-1] 0..MaxPlayerLevel-1
+    std::unique_ptr<PlayerLevelInfo[]> levelInfo;
 };
 
 struct PvPInfo

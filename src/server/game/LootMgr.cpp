@@ -1258,8 +1258,8 @@ void LoadLootTemplates_Creature()
 
     // remove real entries and check existence loot
 
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
-    for (const auto & itr : *ctc)
+    CreatureTemplateContainer const& ctc = sObjectMgr->GetCreatureTemplates();
+    for (const auto & itr : ctc)
     {
         if(CreatureTemplate const* cInfo = &(itr.second))
         {
@@ -1285,8 +1285,8 @@ void LoadLootTemplates_Disenchant()
     LootTemplates_Disenchant.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (const auto & it : *its)
+    ItemTemplateContainer const& its = sObjectMgr->GetItemTemplateStore();
+    for (const auto & it : its)
     {
         if(ItemTemplate const* proto = &(it.second))
         {
@@ -1356,8 +1356,8 @@ void LoadLootTemplates_Item()
     LootTemplates_Item.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (const auto & it : *its)
+    ItemTemplateContainer const& its = sObjectMgr->GetItemTemplateStore();
+    for (const auto & it : its)
         if(ItemTemplate const* proto = &(it.second))
             if(ids_set.count(proto->ItemId))
                 ids_set.erase(proto->ItemId);
@@ -1372,8 +1372,8 @@ void LoadLootTemplates_Pickpocketing()
     LootTemplates_Pickpocketing.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
-    for (const auto & itr : *ctc)
+    CreatureTemplateContainer const& ctc = sObjectMgr->GetCreatureTemplates();
+    for (const auto & itr : ctc)
     {
         if(CreatureTemplate const* cInfo = &(itr.second))
         {
@@ -1399,8 +1399,8 @@ void LoadLootTemplates_Prospecting()
     LootTemplates_Prospecting.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (const auto & it : *its)
+    ItemTemplateContainer const& its = sObjectMgr->GetItemTemplateStore();
+    for (const auto & it : its)
         if(ItemTemplate const* proto = &(it.second))
             if(ids_set.count(proto->ItemId))
                 ids_set.erase(proto->ItemId);
@@ -1415,7 +1415,7 @@ void LoadLootTemplates_QuestMail()
     LootTemplates_QuestMail.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    ObjectMgr::QuestMap const& questMap = sObjectMgr->GetQuestTemplates();
+    ObjectMgr::QuestContainer const& questMap = sObjectMgr->GetQuestTemplates();
     for(const auto & itr : questMap)
         if(ids_set.count(itr.first))
             ids_set.erase(itr.first);
@@ -1430,8 +1430,8 @@ void LoadLootTemplates_Skinning()
     LootTemplates_Skinning.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
-    for (const auto & itr : *ctc)
+    CreatureTemplateContainer const& ctc = sObjectMgr->GetCreatureTemplates();
+    for (const auto & itr : ctc)
     {
         if(CreatureTemplate const* cInfo = &(itr.second))
         {

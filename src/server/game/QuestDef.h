@@ -201,7 +201,7 @@ class Quest
         int32  GetPrevQuestId() const { return PrevQuestId; }
         int32  GetNextQuestId() const { return NextQuestId; }
         int32  GetExclusiveGroup() const { return ExclusiveGroup; }
-        uint32 GetNextQuestInChain() const { return NextQuestInChain; }
+        uint32 GetNextQuestInChain() const { return _rewardNextQuest; }
         uint32 GetCharTitleId() const { return CharTitleId; }
         uint32 GetSrcItemId() const { return SrcItemId; }
         uint32 GetSrcItemCount() const { return SrcItemCount; }
@@ -315,7 +315,7 @@ class Quest
         int32  PrevQuestId;
         int32  NextQuestId;
         int32  ExclusiveGroup;
-        uint32 NextQuestInChain;
+        uint32 _rewardNextQuest;
         uint32 SrcItemId;
         uint32 SrcItemCount;
         uint32 SrcSpell;

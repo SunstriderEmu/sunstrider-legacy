@@ -595,8 +595,8 @@ bool ChatHandler::HandleAddItemSetCommand(const char* args)
 
     bool found = false;
 
-    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (const auto & it : *its)
+    ItemTemplateContainer const& its = sObjectMgr->GetItemTemplateStore();
+    for (const auto & it : its)
     {
         ItemTemplate const *pProto = &(it.second);
         if (!pProto)

@@ -181,8 +181,8 @@ bool GuildTaskMgr::CreateKillTask(uint32 owner, uint32 guildId)
         return false;
 
     vector<uint32> ids;
-    CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
-    for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin(); i != creatureTemplateContainer->end(); ++i)
+    CreatureTemplateContainer const& creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
+    for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer.begin(); i != creatureTemplateContainer.end(); ++i)
     {
         CreatureTemplate const& co = i->second;
         if (co.rank != CREATURE_ELITE_RARE)

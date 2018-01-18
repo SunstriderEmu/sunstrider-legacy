@@ -7033,7 +7033,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     {
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, oldZoneId);
 #ifdef LICH_KING
-        sBattlefieldMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
+        sBattlefieldMgr->HandlePlayerLeaveZone(this, oldZoneId);
         sBattlefieldMgr->HandlePlayerEnterZone(this, newZone);
 #endif
     }

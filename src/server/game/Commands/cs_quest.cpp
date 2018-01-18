@@ -30,8 +30,8 @@ bool ChatHandler::HandleQuestAddCommand(const char* args)
     }
 
     // check item starting quest (it can work incorrectly if added without item in inventory)
-    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (const auto & it : *its)
+    ItemTemplateContainer const& its = sObjectMgr->GetItemTemplateStore();
+    for (const auto & it : its)
     {
         ItemTemplate const *pProto = &(it.second);
         if (!pProto)
