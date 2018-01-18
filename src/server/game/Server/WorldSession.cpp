@@ -237,6 +237,7 @@ void WorldSession::SendPacket(WorldPacket* packet)
 /// Add an incoming packet to the queue
 void WorldSession::QueuePacket(WorldPacket* new_packet)
 {
+    anticheat->OnClientPacketReceived(*new_packet);
     _recvQueue.add(new_packet);
 }
 
@@ -394,7 +395,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         //sScriptMgr->OnPacketReceive(this, *packet);
                         opHandle->Call(this, *packet);
                         LogUnprocessedTail(packet);
-                        anticheat->OnClientPacketProcessed(*packet);
                     }
                     break;
                 case STATUS_NEVER:

@@ -17,6 +17,7 @@
 #include "Pet.h"
 #include "Chat.h"
 #include "AntiCheatMgr.h"
+#include "GameTime.h"
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
 
@@ -397,10 +398,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     if (mover->GetGUID() != _player->GetGUID())
         movementInfo.flags &= ~MOVEMENTFLAG_WALKING;
 
-    uint32 mstime = GetMSTime();
+    uint32 mstime = GameTime::GetGameTimeMS();
     /*----------------------*/
     if (m_clientTimeDelay == 0)
-        m_clientTimeDelay = mstime > movementInfo.time ? std::min(mstime - movementInfo.time, (uint32)100) : 0;
+        m_clientTimeDelay = mstime - movementInfo.time; //sun: will do some underflow but apparently that's working well enough for logic using it later
 
     // sunwell: do not allow to move with UNIT_FLAG_REMOVE_CLIENT_CONTROL
     if (mover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
