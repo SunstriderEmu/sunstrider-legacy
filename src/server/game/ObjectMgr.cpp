@@ -1829,11 +1829,12 @@ void ObjectMgr::LoadSpawnGroups()
             TC_LOG_ERROR("sql.sql", "Spawn data with ID (%u,%u) not found, but is listed as a member of spawn group %u!", uint32(spawnType), spawnId, groupId);
             continue;
         }
+        /* sun: Disabled, we now use groupId 1 as default for some creature
         else if (data->spawnGroupData->groupId)
         {
             TC_LOG_ERROR("sql.sql", "Spawn with ID (%u,%u) is listed as a member of spawn group %u, but is already a member of spawn group %u. Skipping.", uint32(spawnType), spawnId, groupId, data->spawnGroupData->groupId);
             continue;
-        }
+        }*/
         auto it = _spawnGroupDataStore.find(groupId);
         if (it == _spawnGroupDataStore.end())
         {
@@ -4228,12 +4229,6 @@ void ObjectMgr::LoadQuests()
             }
             else
                 nextQuestItr->second.prevChainQuests.push_back(qinfo->GetQuestId());
-        }
-
-        if (qinfo->_emoteOnComplete && !sEmotesStore.LookupEntry(qinfo->_emoteOnComplete))
-        {
-            TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->_emoteOnComplete, qinfo->QuestId);
-            qinfo->_emoteOnComplete = 0;
         }
 
         // fill additional data stores
