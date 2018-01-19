@@ -2049,7 +2049,7 @@ class TC_GAME_API Unit : public WorldObject
         int32 CalculateSpellDuration(SpellInfo const* spellProto, uint8 effect_index, Unit const* target);
         float CalculateLevelPenalty(SpellInfo const* spellProto) const;
         void ModSpellCastTime(SpellInfo const* spellProto, int32 & castTime, Spell * spell);
-        int32 CalculateAOEDamageReduction(int32 damage, uint32 schoolMask, Unit* caster) const;
+        int32 CalculateAOEAvoidance(int32 damage, uint32 schoolMask, ObjectGuid const& casterGuid) const;
 
         void AddFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
         void RemoveFollower(FollowerReference* /*pRef*/) { /* nothing to do yet */ }

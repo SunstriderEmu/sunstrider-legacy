@@ -12281,11 +12281,11 @@ void Unit::UpdatePetCombatState()
 
 //======================================================================
 
-int32 Unit::CalculateAOEDamageReduction(int32 damage, uint32 schoolMask, Unit* caster) const
+int32 Unit::CalculateAOEAvoidance(int32 damage, uint32 schoolMask, ObjectGuid const& casterGuid) const
 {
     damage = int32(float(damage) * GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE, schoolMask));
 #ifdef LICH_KING
-    if (caster && caster->GetTypeId() == TYPEID_UNIT)
+    if (casterGuid.IsAnyTypeCreature())
         damage = int32(float(damage) * GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_CREATURE_AOE_DAMAGE_AVOIDANCE, schoolMask));
 #endif
     return damage;

@@ -7905,7 +7905,7 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier,
                 // sunwell: Area Auras, AoE Targetting spells AND Chain Target spells (cleave etc.)
                 if (m_spellInfo->Effects[i].IsAreaAuraEffect() || m_spellInfo->Effects[i].IsTargetingArea() || (m_spellInfo->Effects[i].ChainTarget > 1 && m_spellInfo->DmgClass != SPELL_DAMAGE_CLASS_MAGIC))
                 {
-                    m_damage = unit->CalculateAOEDamageReduction(m_damage, m_spellInfo->SchoolMask, m_caster);
+                    m_damage = unit->CalculateAOEAvoidance(m_damage, m_spellInfo->SchoolMask, m_caster->GetGUID());
 
                     // Handle area damage cap
                     //gamepedia: "Since patch 2.2.0, most area effect damage effects have an 'area damage cap' which limits the potency of the spell if used against a large number of targets simultaneously"
