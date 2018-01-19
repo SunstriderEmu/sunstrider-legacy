@@ -46,7 +46,7 @@ void CombatAI::Reset()
     events.Reset();
 }
 
-void CombatAI::JustDied(Unit* killer)
+void CombatAI::JustDied(Unit* /*killer*/)
 {
     for (SpellVct::iterator i = spells.begin(); i != spells.end(); ++i)
         if (AISpellInfo[*i].condition == AICOND_DIE)

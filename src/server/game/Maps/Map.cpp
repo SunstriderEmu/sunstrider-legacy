@@ -3045,8 +3045,11 @@ std::string const& InstanceMap::GetScriptName() const
     return sObjectMgr->GetScriptName(i_script_id);
 }
 
-void InstanceMap::PermBindAllPlayers(Player *player)
+void InstanceMap::PermBindAllPlayers()
 {
+    if (!IsDungeon())
+        return;
+
     InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
     if(!save)
     {
@@ -3054,25 +3057,43 @@ void InstanceMap::PermBindAllPlayers(Player *player)
         return;
     }
 
-    Group *group = player->GetGroup();
     // group members outside the instance group don't get bound
     for(auto & itr : m_mapRefManager)
     {
-        Player* plr = itr.GetSource();
+        Player* player = itr.GetSource();
+        // never instance bind GMs with GM mode enabled
+        if (player->IsGameMaster())
+            continue;
+
         // players inside an instance cannot be bound to other instances
         // some players may already be permanently bound, in this case nothing happens
-        InstancePlayerBind *bind = plr->GetBoundInstance(save->GetMapId(), save->GetDifficulty());
-        if(!bind || !bind->perm)
+        InstancePlayerBind* bind = player->GetBoundInstance(save->GetMapId(), save->GetDifficulty());
+        if (bind && bind->perm)
         {
-            plr->BindToInstance(save, true);
+            if (bind->save && bind->save->GetInstanceId() != save->GetInstanceId())
+            {
+                TC_LOG_ERROR("maps", "Player (GUID: %u, Name: %s) is in instance map (Name: %s, Entry: %u, Difficulty: %u, ID: %u) that is being bound, but already has a save for the map on ID %u!", player->GetGUID().GetCounter(), player->GetName().c_str(), GetMapName(), save->GetMapId(), save->GetDifficulty(), save->GetInstanceId(), bind->save->GetInstanceId());
+            }
+            else if (!bind->save)
+            {
+                TC_LOG_ERROR("maps", "Player (GUID: %u, Name: %s) is in instance map (Name: %s, Entry: %u, Difficulty: %u, ID: %u) that is being bound, but already has a bind (without associated save) for the map!", player->GetGUID().GetCounter(), player->GetName().c_str(), GetMapName(), save->GetMapId(), save->GetDifficulty(), save->GetInstanceId());
+            }
+        }
+        else
+        {
+            player->BindToInstance(save, true);
             WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 4);
             data << uint32(0);
-            plr->SendDirectMessage(&data);
-        }
+            player->SendDirectMessage(&data);
+#ifdef LICH_KING
+            player->GetSession()->SendCalendarRaidLockout(save, true);
+#endif
 
-        // if the leader is not in the instance the group will not get a perm bind
-        if(group && group->GetLeaderGUID() == plr->GetGUID())
-            group->BindToInstance(save, true);
+            // if group leader is in instance, group also gets bound
+            if (Group* group = player->GetGroup())
+                if (group->GetLeaderGUID() == player->GetGUID())
+                    group->BindToInstance(save, true);
+        }
     }
 }
 
@@ -3441,6 +3462,10 @@ bool Map::Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable()
 bool Map::IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
 bool Map::IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
 bool Map::IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
+bool Map::IsRaidOrHeroicDungeon() const
+{
+    return IsRaid() || i_spawnMode > DUNGEON_DIFFICULTY_NORMAL;
+}
 bool Map::IsWorldMap() const { return i_mapEntry && i_mapEntry->IsWorldMap(); }
 
 bool Map::IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }

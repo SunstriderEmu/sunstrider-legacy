@@ -17,7 +17,7 @@ class TC_GAME_API PetAI : public CreatureAI
         PetAI(Creature *c);
 
         void EnterEvadeMode(EvadeReason /* why */) override;
-        void JustDied(Unit* who) override { _stopAttack(); }
+        void JustDied(Unit* /*who*/) override { _stopAttack(); }
 
         void UpdateAI(const uint32) override;
         static int Permissible(const Creature *);

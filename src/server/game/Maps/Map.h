@@ -364,6 +364,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         bool IsDungeon() const;
         bool IsNonRaidDungeon() const;
         bool IsRaid() const;
+        bool IsRaidOrHeroicDungeon() const;
         bool IsWorldMap() const;
         bool IsHeroic() const;
 
@@ -816,7 +817,7 @@ class TC_GAME_API InstanceMap : public Map
         uint32 GetScriptId() { return i_script_id; }
         std::string const& GetScriptName() const;
         InstanceScript* GetInstanceScript() { return i_data; }
-        void PermBindAllPlayers(Player *player);
+        void PermBindAllPlayers();
         void UnloadAll() override;
         void HandleCrash() override;
         EnterState CannotEnter(Player* player) override;

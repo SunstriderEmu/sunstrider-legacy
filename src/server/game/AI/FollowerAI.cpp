@@ -111,7 +111,7 @@ void FollowerAI::MoveInLineOfSight(Unit* pWho)
     }
 }
 
-void FollowerAI::JustDied(Unit* pKiller)
+void FollowerAI::JustDied(Unit* /*pKiller*/)
 {
     if (!HasFollowState(STATE_FOLLOW_INPROGRESS) || !m_uiLeaderGUID || !m_pQuestForFollow)
         return;

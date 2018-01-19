@@ -14728,7 +14728,7 @@ void Unit::RemoveAurasAtChanneledTarget(SpellInfo const* spellInfo, Unit * caste
 
 /*-----------------------TRINITY-----------------------------*/
 
-void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
+/*static*/ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
 {
     pVictim->SetHealth(0);
 
@@ -14852,7 +14852,8 @@ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
                 pVictim->CastSpell(pVictim, 27827, args);
                 //pVictim->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); // should not be attackable
                 SpiritOfRedemption = true;
-                (pVictim->ToPlayer())->SetSpiritRedeptionKiller(attacker->GetGUID());
+                if(attacker)
+                    (pVictim->ToPlayer())->SetSpiritRedeptionKiller(attacker->GetGUID());
                 break;
             }
         }
@@ -14939,7 +14940,7 @@ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
         }
 
         // Call KilledUnit for creatures, this needs to be called after the lootable flag is set
-        if (attacker && attacker->GetTypeId() == TYPEID_UNIT && attacker->->IsAIEnabled) 
+        if (attacker && attacker->GetTypeId() == TYPEID_UNIT && attacker->IsAIEnabled) 
         {
             (attacker->ToCreature())->AI()->KilledUnit(pVictim);
         }
@@ -14994,23 +14995,14 @@ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
             if (pInstance)
                 pInstance->OnCreatureKill(cVictim);
 
-            Map *m = cVictim->GetMap();
-            Player *creditedPlayer = attacker->GetCharmerOrOwnerPlayerOrPlayerItself();
+            Map* instanceMap = cVictim->GetMap();
             // TODO: do instance binding anyway if the charmer/owner is offline
-
-            if(m->IsDungeon() && (creditedPlayer || attacker == cVictim))
+            if(instanceMap->IsDungeon() && ((attacker && attacker->GetCharmerOrOwnerPlayerOrPlayerItself()) || attacker == cVictim))
             {
-                if(m->IsRaid() || m->IsHeroic())
+                if (instanceMap->IsRaidOrHeroicDungeon())
                 {
                     if(cVictim->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
-                    {
-                        // if the boss killed itself we still need to bind players to the instance
-                        if (!creditedPlayer && m->HavePlayers())
-                            creditedPlayer = m->GetPlayers().getFirst()->GetSource();
-
-                        if (creditedPlayer)
-                            ((InstanceMap *)m)->PermBindAllPlayers(creditedPlayer);
-                    }
+                        instanceMap->ToInstanceMap()->PermBindAllPlayers();
                 }
                 else
                 {
