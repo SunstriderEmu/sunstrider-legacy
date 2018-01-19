@@ -847,7 +847,7 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spellId)
 
 uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
-    if (pVictim->IsImmunedToDamage(spellProto))
+    if (attacker && pVictim->IsImmunedToDamage(spellProto))
     {
         attacker->SendSpellDamageImmune(pVictim, spellProto->Id);
         return 0;
@@ -858,14 +858,14 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
         pVictim->ToCreature()->AI()->DamageTaken(attacker, damage);
     }
 
-    if(attacker->GetTypeId()== TYPEID_UNIT && attacker->ToCreature()->IsAIEnabled)
+    if(attacker && attacker->IsAIEnabled)
         if (attacker->IsAIEnabled)
-            attacker->ToCreature()->AI()->DamageDealt(pVictim, damage, damagetype);
+            attacker->GetAI()->DamageDealt(pVictim, damage, damagetype);
 
     if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
         return 0;
 
-    if (pVictim->GetTypeId() == TYPEID_PLAYER && attacker != pVictim)
+    if (attacker && pVictim->GetTypeId() == TYPEID_PLAYER && attacker != pVictim)
     {
         if (attacker != pVictim)
         {
@@ -906,19 +906,19 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
     }
     
     // Spell 37224: This hack should be removed one day
-    if (attacker->HasAuraEffect(37224) && spellProto && spellProto->SpellFamilyFlags == 0x1000000000LL && spellProto->SpellIconID == 2562)
+    if (attacker && attacker->HasAuraEffect(37224) && spellProto && spellProto->SpellFamilyFlags == 0x1000000000LL && spellProto->SpellIconID == 2562)
         damage += 30;
     
     //You don't lose health from damage taken from another player while in a sanctuary
     //You still see it in the combat log though
-    if(pVictim != attacker && attacker->GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
+    if(attacker && pVictim != attacker && attacker->GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
     {
         if(pVictim->IsInSanctuary())
             return 0;
     }
 
     //Script Event damage taken
-    if( pVictim->GetTypeId()== TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled )
+    if(attacker && pVictim->GetTypeId() == TYPEID_UNIT && pVictim->IsAIEnabled)
     {
         // Set tagging
         if(!pVictim->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED) && !(pVictim->ToCreature())->IsPet())
@@ -976,7 +976,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
 
     // duel ends when player has 1 or less hp
     bool duel_hasEnded = false;
-    if(pVictim->GetTypeId() == TYPEID_PLAYER && (pVictim->ToPlayer())->duel && damage >= (health-1))
+    if(attacker && pVictim->GetTypeId() == TYPEID_PLAYER && (pVictim->ToPlayer())->duel && damage >= (health-1))
     {
         // prevent kill only if killed in duel and killed by opponent or opponent controlled creature
         if((pVictim->ToPlayer())->duel->opponent == attacker || (pVictim->ToPlayer())->duel->opponent->GetGUID() == attacker->GetOwnerGUID())
@@ -986,7 +986,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
     }
 
     // Rage from Damage made (only from direct weapon damage)
-    if( cleanDamage && damagetype==DIRECT_DAMAGE && attacker != pVictim && attacker->GetTypeId() == TYPEID_PLAYER && (attacker->GetPowerType() == POWER_RAGE))
+    if(attacker && cleanDamage && damagetype==DIRECT_DAMAGE && attacker != pVictim && attacker->GetTypeId() == TYPEID_PLAYER && (attacker->GetPowerType() == POWER_RAGE))
     {
         uint32 weaponSpeedHitFactor;
 
@@ -1020,7 +1020,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
         }
     }
 
-    if(pVictim->GetTypeId() == TYPEID_PLAYER && attacker->GetTypeId() == TYPEID_PLAYER)
+    if(attacker && pVictim->GetTypeId() == TYPEID_PLAYER && attacker->GetTypeId() == TYPEID_PLAYER)
     {
         if(Battleground *bg = pVictim->ToPlayer()->GetBattleground())
         {
@@ -1032,7 +1032,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
         }
     }
 
-    if (pVictim->GetTypeId() == TYPEID_UNIT && !(pVictim->ToCreature())->IsPet())
+    if (attacker && pVictim->GetTypeId() == TYPEID_UNIT && !(pVictim->ToCreature())->IsPet())
     {
         if(!(pVictim->ToCreature())->hasLootRecipient())
             (pVictim->ToCreature())->SetLootRecipient(attacker);
@@ -1070,7 +1070,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
                 pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DIRECT_DAMAGE, spellProto ? spellProto->Id : 0);
         }
 
-        if (pVictim->GetTypeId() != TYPEID_PLAYER)
+        if (attacker && pVictim->GetTypeId() != TYPEID_PLAYER)
         {
             if(spellProto && IsDamageToThreatSpell(spellProto)) {
                 //TC_LOG_INFO("DealDamage (IsDamageToThreatSpell), AddThreat : %f * 2 = %f",damage,damage*2);
@@ -1091,14 +1091,14 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
             }
 
             // random durability for items (HIT TAKEN)
-            if (roll_chance_f(sWorld->GetRate(RATE_DURABILITY_LOSS_DAMAGE)))
+            if (attacker && roll_chance_f(sWorld->GetRate(RATE_DURABILITY_LOSS_DAMAGE)))
             {
-              EquipmentSlots slot = EquipmentSlots(attacker->GetMap()->urand(0,EQUIPMENT_SLOT_END-1));
+                EquipmentSlots slot = EquipmentSlots(attacker->GetMap()->urand(0,EQUIPMENT_SLOT_END-1));
                 (pVictim->ToPlayer())->DurabilityPointLossForEquipSlot(slot);
             }
         }
 
-        if(attacker->GetTypeId()==TYPEID_PLAYER)
+        if(attacker && attacker->GetTypeId()==TYPEID_PLAYER)
         {
             // random durability for items (HIT DONE)
             if (roll_chance_f(sWorld->GetRate(RATE_DURABILITY_LOSS_DAMAGE)))
@@ -14595,30 +14595,37 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellInfo const* procSpell, u
 
     //TC_LOG_INFO("FIXME","IsTriggeredAtSpellProcEvent6");
     // Check if current equipment allows aura to proc
-    if(!isVictim && GetTypeId() == TYPEID_PLAYER)
+    if(!isVictim && GetTypeId() == TYPEID_PLAYER && procSpell->EquippedItemClass != -1)
     {
-        if(spellProto->EquippedItemClass == ITEM_CLASS_WEAPON)
+        if (!procSpell->HasAttribute(SPELL_ATTR3_IGNORE_PROC_SUBCLASS_MASK))
         {
             Item *item = nullptr;
-            if(attType == BASE_ATTACK)
-                item = (this->ToPlayer())->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-            else if (attType == OFF_ATTACK)
+            if (procSpell->EquippedItemClass == ITEM_CLASS_WEAPON)
+            {
+                if (ToPlayer()->IsInFeralForm())
+                    return false;
+
+                if (attType == BASE_ATTACK)
+                    item = (this->ToPlayer())->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                else if (attType == OFF_ATTACK)
+                    item = (this->ToPlayer())->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+                else
+                    item = (this->ToPlayer())->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
+
+                if (!(this->ToPlayer())->IsUseEquipedWeapon(attType == BASE_ATTACK))
+                    return false;
+
+                if (!item || item->IsBroken() || item->GetTemplate()->Class != ITEM_CLASS_WEAPON || !((1 << item->GetTemplate()->SubClass) & spellProto->EquippedItemSubClassMask))
+                    return false;
+            }
+            else if (spellProto->EquippedItemClass == ITEM_CLASS_ARMOR)
+            {
+                // Check if player is wearing shield
                 item = (this->ToPlayer())->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            else
-                item = (this->ToPlayer())->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
+            }
 
-            if (!(this->ToPlayer())->IsUseEquipedWeapon(attType==BASE_ATTACK))
-                return false;
-
-            if(!item || item->IsBroken() || item->GetTemplate()->Class != ITEM_CLASS_WEAPON || !((1<<item->GetTemplate()->SubClass) & spellProto->EquippedItemSubClassMask))
-                return false;
-        }
-        else if(spellProto->EquippedItemClass == ITEM_CLASS_ARMOR)
-        {
-            // Check if player is wearing shield
-            Item *item = (this->ToPlayer())->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            if(!item || item->IsBroken() || item->GetTemplate()->Class != ITEM_CLASS_ARMOR || !((1<<item->GetTemplate()->SubClass) & spellProto->EquippedItemSubClassMask))
-                return false;
+            if (!item || item->IsBroken() || !item->IsFitToSpellRequirements(procSpell))
+                return 0;
         }
     }
     //TC_LOG_INFO("FIXME","IsTriggeredAtSpellProcEvent7");
@@ -14726,7 +14733,7 @@ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
     pVictim->SetHealth(0);
 
     // find player: owner of controlled `this` or `this` itself maybe
-    Player *player = attacker->GetCharmerOrOwnerPlayerOrPlayerItself();
+    Player* player = attacker ? attacker->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
     Creature* creature = pVictim->ToCreature();
 
     bool bRewardIsAllowed = true;
@@ -14874,7 +14881,8 @@ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
             (pVictim->ToPlayer())->SendDirectMessage(&data);
         }
         // Call KilledUnit for creatures
-        if (attacker->GetTypeId() == TYPEID_UNIT && (attacker->ToCreature())->IsAIEnabled) {
+        if (attacker && attacker->GetTypeId() == TYPEID_UNIT && (attacker->ToCreature())->IsAIEnabled) 
+        {
             (attacker->ToCreature())->AI()->KilledUnit(pVictim);
 
             auto attackers = pVictim->GetAttackers();
@@ -14886,7 +14894,8 @@ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
             }
         }
             
-        if (attacker->GetTypeId() == TYPEID_PLAYER) {
+        if (attacker && attacker->GetTypeId() == TYPEID_PLAYER) 
+        {
             if (ObjectGuid minipet_guid = attacker->GetCritterGUID())
             {
                 if (Creature* minipet = ObjectAccessor::GetCreature(*attacker, minipet_guid))
@@ -14930,11 +14939,12 @@ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
         }
 
         // Call KilledUnit for creatures, this needs to be called after the lootable flag is set
-        if (attacker->GetTypeId() == TYPEID_UNIT && (attacker->ToCreature())->IsAIEnabled) {
+        if (attacker && attacker->GetTypeId() == TYPEID_UNIT && attacker->->IsAIEnabled) 
+        {
             (attacker->ToCreature())->AI()->KilledUnit(pVictim);
         }
             
-        if (attacker->GetTypeId() == TYPEID_PLAYER)
+        if (attacker && attacker->GetTypeId() == TYPEID_PLAYER)
         {
             if (ObjectGuid minipet_guid = attacker->GetCritterGUID())
             {
@@ -14942,20 +14952,21 @@ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
                     if (minipet->IsAIEnabled)
                         minipet->AI()->MasterKilledUnit(pVictim);
             }
-            if (Pet* pet = attacker->ToPlayer()->GetPet()) {
+            if (Pet* pet = attacker->ToPlayer()->GetPet()) 
+            {
                 if (pet->IsAIEnabled)
                     pet->AI()->MasterKilledUnit(pVictim);
             }
-            for (ObjectGuid slot : attacker->m_SummonSlot) {
+            for (ObjectGuid slot : attacker->m_SummonSlot) 
+            {
                 if (Creature* totem = ObjectAccessor::GetCreature(*attacker, slot))
                     totem->AI()->MasterKilledUnit(pVictim);
             }
         }
 
         // Call creature just died function
-        if (cVictim->IsAIEnabled) {
+        if (cVictim->IsAIEnabled) 
             cVictim->AI()->JustDied(attacker);
-        }
 
         if (TempSummon* summon = creature->ToTempSummon())
             if (Unit* summoner = summon->GetSummoner())
@@ -14971,7 +14982,7 @@ void Unit::Kill(Unit* attacker, Unit *pVictim, bool durabilityLoss)
         }
         
         // Log down if worldboss
-        if (cVictim->IsWorldBoss() && (cVictim->GetMap()->IsRaid() || cVictim->GetMap()->IsWorldMap()))
+        if (attacker && cVictim->IsWorldBoss() && (cVictim->GetMap()->IsRaid() || cVictim->GetMap()->IsWorldMap()))
         {
             attacker->LogBossDown(cVictim);
         }

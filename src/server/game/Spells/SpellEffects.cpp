@@ -1511,7 +1511,7 @@ void Spell::EffectDummy(uint32 i)
                                 cr->AI()->AttackStart(m_caster);
                             }
                         }
-                        m_caster->Kill(unitTarget, false); // Just for the "burst" animation on death....
+                        Unit::Kill(m_caster, unitTarget, false); // Just for the "burst" animation on death....
                         ( unitTarget->ToCreature() )->RemoveCorpse();
                     }
                     if (unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->GetEntry() == 20501)
@@ -1525,7 +1525,7 @@ void Spell::EffectDummy(uint32 i)
                                 cr->AI()->AttackStart(m_caster);
                             }
                         }
-                        m_caster->Kill(unitTarget, false); // Just for the "burst" animation on death....
+                        Unit::Kill(m_caster, unitTarget, false); // Just for the "burst" animation on death....
                         ( unitTarget->ToCreature() )->RemoveCorpse();
                     }
                     
@@ -1744,7 +1744,7 @@ void Spell::EffectDummy(uint32 i)
                     if (!pCreature)
                         return;
 
-                    unitTarget->Kill(unitTarget, false);
+                    Unit::Kill(unitTarget, unitTarget, false);
                     if (unitTarget->GetTypeId() == TYPEID_UNIT)
                         (unitTarget->ToCreature())->RemoveCorpse();
 
@@ -6316,7 +6316,7 @@ void Spell::EffectStuck(uint32 /*i*/)
     Spell spell(pTarget, spellInfo, TRIGGERED_FULL_MASK);
     spell.SendSpellCooldown();
     
-    pTarget->Kill(pTarget, false);
+    Unit::Kill(pTarget, pTarget, false);
     // Teleport to nearest graveyard
     pTarget->RepopAtGraveyard();
 }
