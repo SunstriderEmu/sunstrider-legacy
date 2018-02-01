@@ -54,7 +54,7 @@ bool Channel::IsBannedByGM(ObjectGuid const guid)
 {
     uint64 accountId = sCharacterCache->GetCharacterAccountIdByGuid(guid);
     if (!accountId) {
-        TC_LOG_ERROR("FIXME","Channel::IsBanned: Unknown account for player " UI64FMTD , guid);
+        TC_LOG_ERROR("misc","Channel::IsBanned: Unknown account for player %u", guid.GetCounter());
         return false;
     }
     

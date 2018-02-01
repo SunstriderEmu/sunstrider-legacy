@@ -184,8 +184,6 @@ class TC_GAME_API SmartAI : public CreatureAI
         }
         void StartDespawn() { mDespawnState = 2; }
 
-        void RemoveAuras();
-
         void OnSpellClick(Unit* clicker, bool& result) override;
 
         void SetWPPauseTimer(uint32 time) { _waypointPauseTimer = time; }

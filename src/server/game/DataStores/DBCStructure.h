@@ -37,6 +37,8 @@ struct AreaTableEntry
 
     // helpers
     bool IsSanctuary() const;
+
+    bool IsFlyable() const;
 };
 
 struct AreaTriggerEntry
@@ -645,6 +647,15 @@ struct MapEntry
         return true;
     }
 
+    bool IsContinent() const
+    {
+        return MapID == 0 || MapID == 1 || MapID == 530 
+#ifdef LICH_KING
+            || MapID == 571
+#endif
+            ;
+    }
+
     bool IsMountAllowed() const
     {
         return !IsDungeon() ||
@@ -793,7 +804,7 @@ struct SpellEntry
     uint32    Category;                                     // 1
     //uint32     castUI                                     // 2 not used
     uint32    Dispel;                                       // 3
-    Mechanics    Mechanic;                                     // 4
+    Mechanics Mechanic;                                     // 4
     uint32    Attributes;                                   // 5
     uint32    AttributesEx;                                 // 6
     uint32    AttributesEx2;                                // 7
@@ -807,10 +818,10 @@ struct SpellEntry
     uint32    TargetCreatureType;                           // 15
     uint32    RequiresSpellFocus;                           // 16
     uint32    FacingCasterFlags;                            // 17
-    AuraStateType CasterAuraState;                              // 18
-    uint32    TargetAuraState;                              // 19
-    uint32    CasterAuraStateNot;                           // 20
-    uint32    TargetAuraStateNot;                           // 21
+    AuraStateType CasterAuraState;                          // 18
+    AuraStateType TargetAuraState;                          // 19
+    AuraStateType CasterAuraStateNot;                       // 20
+    AuraStateType TargetAuraStateNot;                       // 21
     uint32    CastingTimeIndex;                             // 22
     uint32    RecoveryTime;                                 // 23
     uint32    CategoryRecoveryTime;                         // 24

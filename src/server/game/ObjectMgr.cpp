@@ -447,7 +447,7 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
                                              //           
                                              "InhabitType, HealthModifier, ManaModifier, ArmorModifier, DamageModifier, ExperienceModifier, RacialLeader, RegenHealth, "
                                              //   
-                                             "mechanic_immune_mask, flags_extra, creature_template.ScriptName "
+                                             "mechanic_immune_mask, spell_school_immune_mask, flags_extra, creature_template.ScriptName "
                                              "FROM creature_template");
 
     if (!result)
@@ -541,6 +541,7 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.RacialLeader   = fields[f++].GetBool();
     creatureTemplate.RegenHealth    = fields[f++].GetBool();
     creatureTemplate.MechanicImmuneMask = fields[f++].GetUInt32();
+    creatureTemplate.SpellSchoolImmuneMask = fields[f++].GetUInt32();
     creatureTemplate.flags_extra        = fields[f++].GetUInt32();
     creatureTemplate.ScriptID           = GetScriptId(fields[f++].GetCString());
 }
@@ -3531,15 +3532,15 @@ void ObjectMgr::LoadGroups()
                 group = GetGroupByLeader(leaderGuid);
                 if(!group)
                 {
-                    TC_LOG_ERROR("FIXME","Incorrect entry in group_member table : no group with leader %d for member %d!", fields[3].GetUInt32(), fields[0].GetUInt32());
+                    TC_LOG_ERROR("sql.sql","Incorrect entry in group_member table : no group with leader %d for member %d!", fields[3].GetUInt32(), fields[0].GetUInt32());
                     CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%d'", fields[0].GetUInt32());
                     continue;
                 }
             }
 
-            if(!group->LoadMemberFromDB(fields[0].GetUInt32(), fields[2].GetUInt8(), fields[1].GetBool()))
+            if(!group->LoadMemberFromDB(fields[0].GetUInt32(), fields[2].GetUInt16(), fields[1].GetBool()))
             {
-                TC_LOG_ERROR("FIXME","Incorrect entry in group_member table : member %d cannot be added to player %d's group!", fields[0].GetUInt32(), fields[3].GetUInt32());
+                TC_LOG_ERROR("sql.sql","Incorrect entry in group_member table : member %d cannot be added to player %d's group!", fields[0].GetUInt32(), fields[3].GetUInt32());
                 CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%d'", fields[0].GetUInt32());
             }
         }while( result->NextRow() );
@@ -3583,12 +3584,12 @@ void ObjectMgr::LoadGroups()
                 group = GetGroupByLeader(leaderGuid);
                 if(!group)
                 {
-                    TC_LOG_ERROR("FIXME","Incorrect entry in group_instance table : no group with leader %d", fields[0].GetUInt32());
+                    TC_LOG_ERROR("sql.sql","Incorrect entry in group_instance table : no group with leader %d", fields[0].GetUInt32());
                     continue;
                 }
             }
 
-            InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(fields[1].GetUInt32(), fields[2].GetUInt32(), Difficulty(fields[4].GetUInt8()), (time_t)fields[5].GetUInt64(), (fields[6].GetUInt64() == 0), true);
+            InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(fields[1].GetUInt16(), fields[2].GetUInt32(), Difficulty(fields[4].GetUInt8()), (time_t)fields[5].GetUInt32(), (fields[6].GetUInt64() == 0), true);
             group->BindToInstance(save, fields[3].GetBool(), true);
         }while( result->NextRow() );
     }
@@ -5134,20 +5135,12 @@ void ObjectMgr::LoadInstanceTemplate()
 
 InstanceTemplate const* ObjectMgr::GetInstanceTemplate(uint32 mapID)
 {
-    InstanceTemplateContainer::const_iterator itr = _instanceTemplateStore.find(uint16(mapID));
-    if (itr != _instanceTemplateStore.end())
-        return &(itr->second);
-
-    return nullptr;
+    return Trinity::Containers::MapGetValuePtr(_instanceTemplateStore, uint16(mapID));
 }
 
 InstanceTemplateAddon const* ObjectMgr::GetInstanceTemplateAddon(uint32 mapID)
 {
-    InstanceTemplateAddonContainer::const_iterator itr = _instanceTemplateAddonStore.find(uint16(mapID));
-    if (itr != _instanceTemplateAddonStore.end())
-        return &(itr->second);
-
-    return nullptr;
+    return Trinity::Containers::MapGetValuePtr(_instanceTemplateAddonStore, uint16(mapID));
 }
 
 void ObjectMgr::AddGossipText(GossipText *pGText)
@@ -7543,9 +7536,9 @@ bool PlayerCondition::Meets(Player const * player) const
         }
         case CONDITION_OLD_AD_COMMISSION_AURA:
         {
-            Unit::AuraMap const& auras = player->GetAuras();
+            auto const& auras = player->GetAppliedAuras();
             for(const auto & aura : auras)
-                if ((aura.second->GetSpellInfo()->Attributes & 0x1000010) && aura.second->GetSpellInfo()->HasVisual(3580))
+                if ((aura.second->GetBase()->GetSpellInfo()->Attributes & 0x1000010) && aura.second->GetBase()->GetSpellInfo()->HasVisual(3580))
                     return true;
             return false;
         }
@@ -8663,12 +8656,20 @@ void ObjectMgr::LoadSpellTemplates()
     std::string request_override = select_fields_str + std::string(", customAttributesFlags FROM spell_template_override ORDER BY entry");
     QueryResult result = WorldDatabase.Query(request.c_str());
     QueryResult result_override = WorldDatabase.Query(request_override.c_str());
-    if (!result) {
-        TC_LOG_INFO("server.loading","Table spell_template is empty!");
-        return;
+    if (!result) 
+    {
+        TC_LOG_ERROR("server.loading", "Table spell_template loading failed");
+        ABORT();
     }
 
-    do {
+    if (!result_override) 
+    {
+        TC_LOG_INFO("server.loading", "Table spell_template_override loading faield");
+        ABORT();
+    }
+
+    do 
+    {
         fields = result->Fetch();
         id = fields[0].GetUInt32();        
         auto itr = spellTemplates.find(id);
@@ -8683,7 +8684,7 @@ void ObjectMgr::LoadSpellTemplates()
         spell->Id = fields[0].GetUInt32();
         spell->Category = fields[1].GetUInt32();
         spell->Dispel = fields[2].GetUInt32();
-        spell->Mechanic = (Mechanics) fields[3].GetUInt32();
+        spell->Mechanic = Mechanics(fields[3].GetUInt32());
         spell->Attributes = fields[4].GetUInt32();
         spell->AttributesEx = fields[5].GetUInt32();
         spell->AttributesEx2 = fields[6].GetUInt32();
@@ -8697,10 +8698,10 @@ void ObjectMgr::LoadSpellTemplates()
         spell->TargetCreatureType = fields[14].GetUInt32();
         spell->RequiresSpellFocus = fields[15].GetUInt32();
         spell->FacingCasterFlags = fields[16].GetUInt32();
-        spell->CasterAuraState = (AuraStateType) fields[17].GetUInt32();
-        spell->TargetAuraState = fields[18].GetUInt32();
-        spell->CasterAuraStateNot = fields[19].GetUInt32();
-        spell->TargetAuraStateNot = fields[20].GetUInt32();
+        spell->CasterAuraState = AuraStateType(fields[17].GetUInt32());
+        spell->TargetAuraState = AuraStateType(fields[18].GetUInt32());
+        spell->CasterAuraStateNot = AuraStateType(fields[19].GetUInt32());
+        spell->TargetAuraStateNot = AuraStateType(fields[20].GetUInt32());
         spell->CastingTimeIndex = fields[21].GetUInt32();
         spell->RecoveryTime = fields[22].GetUInt32();
         spell->CategoryRecoveryTime = fields[23].GetUInt32();
@@ -8785,247 +8786,261 @@ void ObjectMgr::LoadSpellTemplates()
         count++;
     } while (result->NextRow());
 
-    // Load overrides
-    if (result_override)
+    do 
     {
-        do {
-            fields = result_override->Fetch();
-            id = fields[0].GetUInt32();
-            auto itr = spellTemplates.find(id);
-            SpellEntry* spell = nullptr;
-            if (itr != spellTemplates.end()) { // Already existing
-                spell = itr->second;
-            }
-            else 
-            {
-                //we allow new spell in overrides for serverside spells
-                spell = new SpellEntry();
-                spell->Id = id;
-            }
+        fields = result_override->Fetch();
+        id = fields[0].GetUInt32();
+        auto itr = spellTemplates.find(id);
+        SpellEntry* spell = nullptr;
+        bool newSpell = false;
+        if (itr != spellTemplates.end()) { // Already existing
+            spell = itr->second;
+        }
+        else 
+        {
+            //we allow new spell in overrides for serverside spells
+            spell = new SpellEntry();
+            spell->Id = id;
+            newSpell = true;
+        }
 
-            for (uint32 i = 1; i <= 171; i++)
+        for (uint32 i = 1; i <= 171; i++)
+        {
+            if (fields[i].IsNull())
             {
-                if (fields[i].IsNull())
-                    continue;
-
-                switch (i)
+                if (newSpell)
                 {
-                case 1: spell->Category = fields[1].GetUInt32(); break;
-                case 2: spell->Dispel = fields[2].GetUInt32(); break;
-                case 3: spell->Mechanic = (Mechanics)fields[3].GetUInt32(); break;
-                case 4: spell->Attributes = fields[4].GetUInt32(); break;
-                case 5: spell->AttributesEx = fields[5].GetUInt32(); break;
-                case 6: spell->AttributesEx2 = fields[6].GetUInt32(); break;
-                case 7: spell->AttributesEx3 = fields[7].GetUInt32(); break;
-                case 8: spell->AttributesEx4 = fields[8].GetUInt32(); break;
-                case 9: spell->AttributesEx5 = fields[9].GetUInt32(); break;
-                case 10: spell->AttributesEx6 = fields[10].GetUInt32(); break;
-                case 11: spell->Stances = fields[11].GetUInt32(); break;
-                case 12: spell->StancesNot = fields[12].GetUInt32(); break;
-                case 13: spell->Targets = fields[13].GetUInt32(); break;
-                case 14: spell->TargetCreatureType = fields[14].GetUInt32(); break;
-                case 15: spell->RequiresSpellFocus = fields[15].GetUInt32(); break;
-                case 16: spell->FacingCasterFlags = fields[16].GetUInt32(); break;
-                case 17: spell->CasterAuraState = (AuraStateType)fields[17].GetUInt32(); break;
-                case 18: spell->TargetAuraState = fields[18].GetUInt32(); break;
-                case 19: spell->CasterAuraStateNot = fields[19].GetUInt32(); break;
-                case 20: spell->TargetAuraStateNot = fields[20].GetUInt32(); break;
-                case 21: spell->CastingTimeIndex = fields[21].GetUInt32(); break;
-                case 22: spell->RecoveryTime = fields[22].GetUInt32(); break;
-                case 23: spell->CategoryRecoveryTime = fields[23].GetUInt32(); break;
-                case 24: spell->InterruptFlags = fields[24].GetUInt32(); break;
-                case 25: spell->AuraInterruptFlags = fields[25].GetUInt32(); break;
-                case 26: spell->ChannelInterruptFlags = fields[26].GetUInt32(); break;
-                case 27: spell->ProcFlags = fields[27].GetUInt32(); break;
-                case 28: spell->procChance = fields[28].GetUInt32(); break;
-                case 29: spell->procCharges = fields[29].GetUInt32(); break;
-                case 30: spell->MaxLevel = fields[30].GetUInt32(); break;
-                case 31: spell->BaseLevel = fields[31].GetUInt32(); break;
-                case 32: spell->SpellLevel = fields[32].GetUInt32(); break;
-                case 33: spell->DurationIndex = fields[33].GetUInt32(); break;
-                case 34: spell->PowerType = fields[34].GetUInt32(); break;
-                case 35: spell->ManaCost = fields[35].GetUInt32(); break;
-                case 36: spell->ManaCostPerlevel = fields[36].GetUInt32(); break;
-                case 37: spell->manaPerSecond = fields[37].GetUInt32(); break;
-                case 38: spell->ManaPerSecondPerLevel = fields[38].GetUInt32(); break;
-                case 39: spell->rangeIndex = fields[39].GetUInt32(); break;
-                case 40: spell->speed = fields[40].GetFloat(); break;
-                case 41: spell->StackAmount = fields[41].GetUInt32(); break;
-                case 42: spell->Totem[0] = fields[42].GetUInt32(); break;
-                case 43: spell->Totem[1] = fields[43].GetUInt32(); break;
-                case 44: //Reagent start
-                case 45:
-                case 46:
-                case 47:
-                case 48:
-                case 49:
-                case 50:
-                case 51:
-                    spell->Reagent[i - 44] = fields[i].GetInt32(); break;
-                case 52: //ReagentCount start
-                case 53:
-                case 54:
-                case 55:
-                case 56:
-                case 57:
-                case 58:
-                case 59:
-                    spell->ReagentCount[i - 52] = fields[i].GetUInt32(); break;
-                case 60: spell->EquippedItemClass = fields[60].GetInt32(); break;
-                case 61: spell->EquippedItemSubClassMask = fields[61].GetInt32(); break;
-                case 62: spell->EquippedItemInventoryTypeMask = fields[62].GetInt32(); break;
-                case 63:
-                case 64:
-                case 65:
-                    spell->Effect[i - 63] = fields[i].GetUInt32(); break;
-                case 66:
-                case 67:
-                case 68:
-                    spell->EffectDieSides[i - 66] = fields[i].GetInt32(); break;
-                case 69:
-                case 70:
-                case 71:
-                    spell->EffectBaseDice[i - 69] = fields[i].GetInt32(); break;
-                case 72:
-                case 73:
-                case 74:
-                    spell->EffectDicePerLevel[i - 72] = fields[i].GetFloat(); break;
-                case 75:
-                case 76:
-                case 77:
-                    spell->EffectRealPointsPerLevel[i - 75] = fields[i].GetFloat(); break;
-                case 78:
-                case 79:
-                case 80:
-                    spell->EffectBasePoints[i - 78] = fields[i].GetInt32(); break;
-                case 81:
-                case 82:
-                case 83:
-                    spell->EffectMechanic[i - 81] = fields[i].GetUInt32(); break;
-                case 84:
-                case 85:
-                case 86:
-                    spell->EffectImplicitTargetA[i - 84] = fields[i].GetUInt32(); break;
-                case 87:
-                case 88:
-                case 89:
-                    spell->EffectImplicitTargetB[i - 87] = fields[i].GetUInt32(); break;
-                case 90:
-                case 91:
-                case 92:
-                    spell->EffectRadiusIndex[i - 90] = fields[i].GetUInt32(); break;
-                case 93:
-                case 94:
-                case 95:
-                    spell->EffectApplyAuraName[i - 93] = fields[i].GetUInt32(); break;
-                case 96:
-                case 97:
-                case 98:
-                    spell->EffectAmplitude[i - 96] = fields[i].GetUInt32(); break;
-                case 99:
-                case 100:
-                case 101:
-                    spell->EffectValueMultiplier[i - 99] = fields[i].GetFloat(); break;
-                case 102:
-                case 103:
-                case 104:
-                    spell->EffectChainTarget[i - 102] = fields[i].GetUInt32(); break;
-                case 105:
-                case 106:
-                case 107:
-                    spell->EffectItemType[i - 105] = fields[i].GetUInt32(); break;
-                case 108:
-                case 109:
-                case 110:
-                    spell->EffectMiscValue[i - 108] = fields[i].GetInt32(); break;
-                case 111:
-                case 112:
-                case 113:
-                    spell->EffectMiscValueB[i - 111] = fields[i].GetInt32(); break;
-                case 114:
-                case 115:
-                case 116:
-                    spell->EffectTriggerSpell[i - 114] = fields[i].GetUInt32(); break;
-                case 117:
-                case 118:
-                case 119:
-                    spell->EffectPointsPerComboPoint[i - 117] = fields[i].GetFloat(); break;
-                case 120: spell->SpellVisual = fields[120].GetUInt32(); break;
-                case 121: spell->SpellIconID = fields[121].GetUInt32(); break;
-                case 122: spell->activeIconID = fields[122].GetUInt32(); break;
-                case 123: break; //some string fiels here.. don't bother with them
-                case 124: break;
-                case 125: break;
-                case 126: break;
-                case 127: break;
-                case 128: break;
-                case 129: break;
-                case 130: break;
-                case 131: break;
-                case 132: break;
-                case 133: break;
-                case 134: break;
-                case 135: break;
-                case 136: break;
-                case 137: break;
-                case 138: break;
-                case 139: break;
-                case 140: break;
-                case 141: break;
-                case 142: break;
-                case 143: break;
-                case 144: break;
-                case 145: break;
-                case 146: break;
-                case 147: break;
-                case 148: break;
-                case 149: break;
-                case 150: break;
-                case 151: break;
-                case 152: break;
-                case 153: break;
-                case 154: break;
-                case 155: spell->ManaCostPercentage = fields[155].GetUInt32(); break;
-                case 156: spell->StartRecoveryCategory = fields[156].GetUInt32(); break;
-                case 157: spell->StartRecoveryTime = fields[157].GetUInt32(); break;
-                case 158: spell->MaxTargetLevel = fields[158].GetUInt32(); break;
-                case 159: spell->SpellFamilyName = fields[159].GetUInt32(); break;
-                case 160: spell->SpellFamilyFlags = fields[160].GetUInt64(); break;
-                case 161: spell->MaxAffectedTargets = fields[161].GetUInt32(); break;
-                case 162: spell->DmgClass = fields[162].GetUInt32(); break;
-                case 163: spell->PreventionType = fields[163].GetUInt32(); break;
-                case 164:
-                case 165:
-                case 166:
-                    spell->EffectDamageMultiplier[i - 164] = fields[i].GetFloat(); break;
-                case 167: spell->TotemCategory[0] = fields[167].GetUInt32(); break;
-                case 168: spell->TotemCategory[1] = fields[168].GetUInt32(); break;
-                case 169: spell->AreaId = fields[169].GetUInt32(); break;
-                case 170: spell->SchoolMask = fields[170].GetUInt32(); break;
-                case 171: spell->CustomAttributesFlags = fields[171].GetUInt32(); break;
-                default:
-                    ASSERT(false); //logic failure
+                    TC_LOG_ERROR("sql.sql", "spell_template_override has new spell %u with some NULL fields. All fields should be filled for new spells. Skipping.", id);
+                    delete spell;
+                    break;
                 }
+
+                continue;
             }
+
+            switch (i)
+            {
+            case 1: spell->Category = fields[i].GetUInt32(); break;
+            case 2: spell->Dispel = fields[i].GetUInt32(); break;
+            case 3: spell->Mechanic = Mechanics(fields[i].GetUInt32()); break;
+            case 4: spell->Attributes = fields[i].GetUInt32(); break;
+            case 5: spell->AttributesEx = fields[i].GetUInt32(); break;
+            case 6: spell->AttributesEx2 = fields[i].GetUInt32(); break;
+            case 7: spell->AttributesEx3 = fields[i].GetUInt32(); break;
+            case 8: spell->AttributesEx4 = fields[i].GetUInt32(); break;
+            case 9: spell->AttributesEx5 = fields[i].GetUInt32(); break;
+            case 10: spell->AttributesEx6 = fields[i].GetUInt32(); break;
+            case 11: spell->Stances = fields[i].GetUInt32(); break;
+            case 12: spell->StancesNot = fields[i].GetUInt32(); break;
+            case 13: spell->Targets = fields[i].GetUInt32(); break;
+            case 14: spell->TargetCreatureType = fields[i].GetUInt32(); break;
+            case 15: spell->RequiresSpellFocus = fields[i].GetUInt32(); break;
+            case 16: spell->FacingCasterFlags = fields[i].GetUInt32(); break;
+            case 17: spell->CasterAuraState = AuraStateType(fields[i].GetUInt32()); break;
+            case 18: spell->TargetAuraState = AuraStateType(fields[i].GetUInt32()); break;
+            case 19: spell->CasterAuraStateNot = AuraStateType(fields[i].GetUInt32()); break;
+            case 20: spell->TargetAuraStateNot = AuraStateType(fields[i].GetUInt32()); break;
+            case 21: spell->CastingTimeIndex = fields[i].GetUInt32(); break;
+            case 22: spell->RecoveryTime = fields[i].GetUInt32(); break;
+            case 23: spell->CategoryRecoveryTime = fields[i].GetUInt32(); break;
+            case 24: spell->InterruptFlags = fields[i].GetUInt32(); break;
+            case 25: spell->AuraInterruptFlags = fields[i].GetUInt32(); break;
+            case 26: spell->ChannelInterruptFlags = fields[i].GetUInt32(); break;
+            case 27: spell->ProcFlags = fields[i].GetUInt32(); break;
+            case 28: spell->procChance = fields[i].GetUInt32(); break;
+            case 29: spell->procCharges = fields[i].GetUInt32(); break;
+            case 30: spell->MaxLevel = fields[i].GetUInt32(); break;
+            case 31: spell->BaseLevel = fields[i].GetUInt32(); break;
+            case 32: spell->SpellLevel = fields[i].GetUInt32(); break;
+            case 33: spell->DurationIndex = fields[i].GetUInt32(); break;
+            case 34: spell->PowerType = fields[i].GetUInt32(); break;
+            case 35: spell->ManaCost = fields[i].GetUInt32(); break;
+            case 36: spell->ManaCostPerlevel = fields[i].GetUInt32(); break;
+            case 37: spell->manaPerSecond = fields[i].GetUInt32(); break;
+            case 38: spell->ManaPerSecondPerLevel = fields[i].GetUInt32(); break;
+            case 39: spell->rangeIndex = fields[i].GetUInt32(); break;
+            case 40: spell->speed = fields[i].GetFloat(); break;
+            case 41: spell->StackAmount = fields[i].GetUInt32(); break;
+            case 42: spell->Totem[0] = fields[i].GetUInt32(); break;
+            case 43: spell->Totem[1] = fields[i].GetUInt32(); break;
+            case 44: //Reagent start
+            case 45:
+            case 46:
+            case 47:
+            case 48:
+            case 49:
+            case 50:
+            case 51:
+                spell->Reagent[i - 44] = fields[i].GetInt32(); break;
+            case 52: //ReagentCount start
+            case 53:
+            case 54:
+            case 55:
+            case 56:
+            case 57:
+            case 58:
+            case 59:
+                spell->ReagentCount[i - 52] = fields[i].GetUInt32(); break;
+            case 60: spell->EquippedItemClass = fields[i].GetInt32(); break;
+            case 61: spell->EquippedItemSubClassMask = fields[i].GetInt32(); break;
+            case 62: spell->EquippedItemInventoryTypeMask = fields[i].GetInt32(); break;
+            case 63:
+            case 64:
+            case 65:
+                spell->Effect[i - 63] = fields[i].GetUInt32(); break;
+            case 66:
+            case 67:
+            case 68:
+                spell->EffectDieSides[i - 66] = fields[i].GetInt32(); break;
+            case 69:
+            case 70:
+            case 71:
+                spell->EffectBaseDice[i - 69] = fields[i].GetInt32(); break;
+            case 72:
+            case 73:
+            case 74:
+                spell->EffectDicePerLevel[i - 72] = fields[i].GetFloat(); break;
+            case 75:
+            case 76:
+            case 77:
+                spell->EffectRealPointsPerLevel[i - 75] = fields[i].GetFloat(); break;
+            case 78:
+            case 79:
+            case 80:
+                spell->EffectBasePoints[i - 78] = fields[i].GetInt32(); break;
+            case 81:
+            case 82:
+            case 83:
+                spell->EffectMechanic[i - 81] = fields[i].GetUInt32(); break;
+            case 84:
+            case 85:
+            case 86:
+                spell->EffectImplicitTargetA[i - 84] = fields[i].GetUInt32(); break;
+            case 87:
+            case 88:
+            case 89:
+                spell->EffectImplicitTargetB[i - 87] = fields[i].GetUInt32(); break;
+            case 90:
+            case 91:
+            case 92:
+                spell->EffectRadiusIndex[i - 90] = fields[i].GetUInt32(); break;
+            case 93:
+            case 94:
+            case 95:
+                spell->EffectApplyAuraName[i - 93] = fields[i].GetUInt32(); break;
+            case 96:
+            case 97:
+            case 98:
+                spell->EffectAmplitude[i - 96] = fields[i].GetUInt32(); break;
+            case 99:
+            case 100:
+            case 101:
+                spell->EffectValueMultiplier[i - 99] = fields[i].GetFloat(); break;
+            case 102:
+            case 103:
+            case 104:
+                spell->EffectChainTarget[i - 102] = fields[i].GetUInt32(); break;
+            case 105:
+            case 106:
+            case 107:
+                spell->EffectItemType[i - 105] = fields[i].GetUInt32(); break;
+            case 108:
+            case 109:
+            case 110:
+                spell->EffectMiscValue[i - 108] = fields[i].GetInt32(); break;
+            case 111:
+            case 112:
+            case 113:
+                spell->EffectMiscValueB[i - 111] = fields[i].GetInt32(); break;
+            case 114:
+            case 115:
+            case 116:
+                spell->EffectTriggerSpell[i - 114] = fields[i].GetUInt32(); break;
+            case 117:
+            case 118:
+            case 119:
+                spell->EffectPointsPerComboPoint[i - 117] = fields[i].GetFloat(); break;
+            case 120: spell->SpellVisual = fields[i].GetUInt32(); break;
+            case 121: spell->SpellIconID = fields[i].GetUInt32(); break;
+            case 122: spell->activeIconID = fields[i].GetUInt32(); break;
+            case 123:  
+            case 124: 
+            case 125: 
+            case 126: 
+            case 127: 
+            case 128: 
+            case 129: 
+            case 130: 
+            case 131: 
+            case 132: 
+            case 133: 
+            case 134: 
+            case 135: 
+            case 136: 
+            case 137: 
+            case 138: 
+                strcpy(spell->SpellName[i - 123], fields[i].GetCString()); break;
+            case 139:
+            case 140:
+            case 141:
+            case 142:
+            case 143:
+            case 144:
+            case 145:
+            case 146:
+            case 147:
+            case 148:
+            case 149:
+            case 150:
+            case 151:
+            case 152:
+            case 153:
+            case 154:
+                strcpy(spell->Rank[i - 139], fields[i].GetCString()); break;
+            case 155: spell->ManaCostPercentage = fields[i].GetUInt32(); break;
+            case 156: spell->StartRecoveryCategory = fields[i].GetUInt32(); break;
+            case 157: spell->StartRecoveryTime = fields[i].GetUInt32(); break;
+            case 158: spell->MaxTargetLevel = fields[i].GetUInt32(); break;
+            case 159: spell->SpellFamilyName = fields[i].GetUInt32(); break;
+            case 160: spell->SpellFamilyFlags = fields[i].GetUInt64(); break;
+            case 161: spell->MaxAffectedTargets = fields[i].GetUInt32(); break;
+            case 162: spell->DmgClass = fields[i].GetUInt32(); break;
+            case 163: spell->PreventionType = fields[i].GetUInt32(); break;
+            case 164:
+            case 165:
+            case 166:
+                spell->EffectDamageMultiplier[i - 164] = fields[i].GetFloat(); break;
+            case 167: spell->TotemCategory[0] = fields[i].GetUInt32(); break;
+            case 168: spell->TotemCategory[1] = fields[i].GetUInt32(); break;
+            case 169: spell->AreaId = fields[i].GetUInt32(); break;
+            case 170: spell->SchoolMask = fields[i].GetUInt32(); break;
+            case 171: spell->CustomAttributesFlags = fields[i].GetUInt32(); break;
+            default:
+                ASSERT(false); //logic failure
+            }
+        }
          
+        if(newSpell)
             spellTemplates[id] = spell;
-            count_overrides++;
-        } while (result_override->NextRow());
-    }
+        count_overrides++;
+    } while (result_override->NextRow());
     
-    for (auto & spellTemplate : spellTemplates) {
+    for (auto & spellTemplate : spellTemplates) 
+    {
         SpellEntry const* spell = spellTemplate.second;
         if(spell && spell->Category)
             sSpellsByCategoryStore[spell->Category].insert(spellTemplate.first);
     }
 
-    for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j) {
+    for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j) 
+    {
         SkillLineAbilityEntry const *skillLine = sSkillLineAbilityStore.LookupEntry(j);
-
         if(!skillLine)
             continue;
+
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->spellId);
-        if(spellInfo && (spellInfo->Attributes & 0x1D0) == 0x1D0) {
+        if(spellInfo && (spellInfo->Attributes & 0x1D0) == 0x1D0) 
+        {
             for (uint32 i = 1; i < sCreatureFamilyStore.GetNumRows(); ++i)
             {
                 CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(i);
@@ -9039,6 +9054,7 @@ void ObjectMgr::LoadSpellTemplates()
             }
         }
     }
+
     //(re) apply custom attr
     sSpellMgr->LoadSpellCustomAttr();
 

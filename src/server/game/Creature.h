@@ -220,6 +220,7 @@ struct CreatureTemplate
     float   ModExperience;
     bool    RegenHealth;
     uint32  MechanicImmuneMask;
+    uint32  SpellSchoolImmuneMask;
     uint32  flags_extra;
     uint32  ScriptID;
     uint32  QuestPoolId;
@@ -553,6 +554,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsOutOfThreatArea(Unit* pVictim) const;
         bool IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster) override;
         bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const override;
+        void LoadTemplateImmunities();
         void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/) override;
         void UpdateProhibitedSchools(uint32 const diff);
         bool IsSpellSchoolMaskProhibited(SpellSchoolMask /*idSchoolMask*/);
@@ -856,6 +858,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool IsEscortNPC(bool onlyIfActive = true);
 
+        bool CanGiveExperience() const;
+
         void AtEnterCombat() override;
         void AtExitCombat() override;
 
@@ -891,7 +895,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         ReactStates m_reactState;                           // for AI, not charmInfo
         void RegenerateHealth();
         void Regenerate(Powers power);
-        uint32 m_regenTimer;
         uint32 m_areaCombatTimer;
         uint32 m_relocateTimer;
         void AreaCombat();

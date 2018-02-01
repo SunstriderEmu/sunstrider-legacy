@@ -297,9 +297,11 @@ class TC_GAME_API ChatHandler
         bool HandleReloadSpellAreaCommand(const char* args);
         bool HandleReloadSpellRequiredCommand(const char* args);
         bool HandleReloadSpellElixirCommand(const char* args);
+        bool HandleReloadSpellGroupsCommand(const char* args);
+        bool HandleReloadSpellGroupStackRulesCommand(const char* args);
         bool HandleReloadSpellLearnSpellCommand(const char* args);
         bool HandleReloadSpellLinkedSpellCommand(const char* args);
-        bool HandleReloadSpellProcEventCommand(const char* args);
+        bool HandleReloadSpellProcCommand(const char* args);
         bool HandleReloadSpellScriptsCommand(const char* args);
         bool HandleReloadSpellTargetPositionCommand(const char* args);
         bool HandleReloadSpellThreatsCommand(const char* args);
@@ -647,7 +649,6 @@ class TC_GAME_API ChatHandler
         bool HandleDebugCinematic(const char* args);
         bool HandleDebugItemByPos(const char* args);
         bool HandleDebugItemLevelSum(const char* args);
-        bool HandleDebugAurasList(const char* args);
         bool HandleGetMoveFlagsCommand(const char* args);
         bool HandleSetMoveFlagsCommand(const char* args);
         

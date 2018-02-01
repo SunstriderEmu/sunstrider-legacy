@@ -154,9 +154,9 @@ void OutdoorPvPZM::HandleKillImpl(Player *plr, Unit * killed)
         return;
 
     if(plr->GetTeam() == ALLIANCE && (killed->ToPlayer())->GetTeam() != ALLIANCE)
-        plr->CastSpell(plr,ZM_AlliancePlayerKillReward, TRIGGERED_FULL_MASK);
+        plr->CastSpell(plr,ZM_AlliancePlayerKillReward, true);
     else if(plr->GetTeam() == HORDE && (killed->ToPlayer())->GetTeam() != HORDE)
-        plr->CastSpell(plr,ZM_HordePlayerKillReward, TRIGGERED_FULL_MASK);
+        plr->CastSpell(plr,ZM_HordePlayerKillReward, true);
 }
 
 void OutdoorPvPZM::BuffTeam(uint32 team)
@@ -166,7 +166,7 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
         for(ObjectGuid itr : m_players[0])
         {
             if(Player * plr = ObjectAccessor::FindPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
+                if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF, true);
         }
         for(ObjectGuid itr : m_players[1])
         {
@@ -179,7 +179,7 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
         for(ObjectGuid itr : m_players[1])
         {
             if(Player * plr = ObjectAccessor::FindPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
+                if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF, true);
         }
         for(ObjectGuid itr : m_players[0])
         {
@@ -360,12 +360,12 @@ bool OPvPCapturePointZM_GraveYard::HandleGossipOption(Player *plr, ObjectGuid gu
             return true;
         if(itr->second == ZM_ALLIANCE_FIELD_SCOUT)
         {
-            cr->CastSpell(plr,ZM_BATTLE_STANDARD_A, TRIGGERED_FULL_MASK);
+            cr->CastSpell(plr,ZM_BATTLE_STANDARD_A, true);
             m_FlagCarrierGUID = plr->GetGUID();
         }
         else if(itr->second == ZM_HORDE_FIELD_SCOUT)
         {
-            cr->CastSpell(plr,ZM_BATTLE_STANDARD_H, TRIGGERED_FULL_MASK);
+            cr->CastSpell(plr,ZM_BATTLE_STANDARD_H, true);
             m_FlagCarrierGUID = plr->GetGUID();
         }
         UpdateTowerState();

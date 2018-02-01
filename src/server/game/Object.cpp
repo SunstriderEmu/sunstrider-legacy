@@ -31,6 +31,7 @@
 #include "ZoneScript.h"
 #include "OutdoorPvPMgr.h"
 #include "CinematicMgr.h"
+#include "SpellAuraEffects.h"
 
 #include "TemporarySummon.h"
 #include "DynamicTree.h"
@@ -79,13 +80,13 @@ Object::~Object( )
         if(IsInWorld())
         {
             ///- Do NOT call RemoveFromWorld here, if the object is a player it will crash
-            TC_LOG_ERROR("misc","Object::~Object - guid=" UI64FMTD ", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
+            TC_LOG_ERROR("misc","Object::~Object - guid=%u, typeid=%d deleted but still in world!!", GetGUID().GetCounter(), GetTypeId());
             ABORT();
         }
 
         if (m_objectUpdated)
         {
-            TC_LOG_FATAL("misc", "Object::~Object " UI64FMTD " deleted but still in update list!!", GetGUID());
+            TC_LOG_FATAL("misc", "Object::~Object %u deleted but still in update list!!", GetGUID().GetCounter());
             ABORT();
         }
 
@@ -973,23 +974,6 @@ Map const* WorldObject::GetBaseMap() const
     return m_currMap->GetParent();
 }
 
-/*
-uint32 WorldObject::GetZoneId() const
-{
-    return GetBaseMap()->GetZoneId(m_positionX,m_positionY,m_positionZ);
-}
-
-uint32 WorldObject::GetAreaId() const
-{
-    return GetBaseMap()->GetAreaId(m_positionX,m_positionY,m_positionZ);
-}
-
-void WorldObject::GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const
-{
-    GetBaseMap()->GetZoneAndAreaId(zoneid, areaid, m_positionX, m_positionY, m_positionZ);
-}
-*/
-
 InstanceScript* WorldObject::GetInstanceScript()
 {
     Map *map = GetMap();
@@ -1098,7 +1082,6 @@ bool WorldObject::IsWithinDistInMap(WorldObject const* obj, float dist2compare, 
     return obj && IsInMap(obj) && InSamePhase(obj) && _IsWithinDist(obj, dist2compare, is3D, incOwnRadius, incTargetRadius);
 }
 
-
 bool WorldObject::IsWithinDist3d(float x, float y, float z, float dist) const
 {
     return IsInDist(x, y, z, dist + GetCombatReach());
@@ -1117,6 +1100,13 @@ bool WorldObject::IsWithinDist2d(float x, float y, float dist) const
 bool WorldObject::IsWithinDist2d(const Position* pos, float dist) const
 {
     return IsInDist2d(pos, dist + GetCombatReach());
+}
+
+bool WorldObject::IsSelfOrInSameMap(WorldObject const* obj) const
+{
+    if (this == obj)
+        return true;
+    return IsInMap(obj);
 }
 
 bool WorldObject::IsWithinLOSInMap(const WorldObject* obj, LineOfSightChecks checks, VMAP::ModelIgnoreFlags ignoreFlags) const
@@ -1691,7 +1681,7 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) co
     Unit const* unitTarget = obj->ToUnit();
     if (unitTarget)
     {
-        if (unitTarget->HasAuraEffect(18461, 0)) //vanish dummy spell, 2.5s duration after vanish
+        if (unitTarget->HasAura(18461)) //vanish dummy spell, 2.5s duration after vanish
             return false;
 
         //use combat reach of target unit instead of our own, else rogue won't be able to approach some big units
@@ -1896,10 +1886,10 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if(petType == SUMMON_PET && pet->LoadPetFromDB(this, entry))
     {
         // Remove Demonic Sacrifice auras (known pet)
-        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+        auto const& auraClassScripts = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
         for(auto itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
         {
-            if((*itr)->GetModifier()->m_miscvalue==2228)
+            if((*itr)->GetMiscValue()==2228)
             {
                 RemoveAurasDueToSpell((*itr)->GetId());
                 itr = auraClassScripts.begin();
@@ -1986,10 +1976,10 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if(petType == SUMMON_PET)
     {
         // Remove Demonic Sacrifice auras (known pet)
-        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+        auto const& auraClassScripts = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
         for(auto itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
         {
-            if((*itr)->GetModifier()->m_miscvalue==2228)
+            if((*itr)->GetMiscValue()==2228)
             {
                 RemoveAurasDueToSpell((*itr)->GetId());
                 itr = auraClassScripts.begin();

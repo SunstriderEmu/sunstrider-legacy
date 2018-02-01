@@ -93,7 +93,7 @@ bool AcceptQuestShareAction::Execute(Event event)
         // there and there is no default case also.
 
         if( qInfo->GetSrcSpell() > 0 )
-            _bot->CastSpell(_bot, qInfo->GetSrcSpell(), TRIGGERED_FULL_MASK);
+            _bot->CastSpell(_bot, qInfo->GetSrcSpell(), true);
 
         ai->TellMaster("Quest accepted");
         return true;

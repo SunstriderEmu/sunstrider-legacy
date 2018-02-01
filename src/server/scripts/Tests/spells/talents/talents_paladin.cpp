@@ -356,7 +356,7 @@ public:
 			// Blessing of freedom
 			res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_FREEDOM_RNK_1);
 			TEST_ASSERT(res == SPELL_CAST_OK);
-			Aura* aura = player->GetAura(ClassSpells::Paladin::BLESSING_OF_FREEDOM_RNK_1, EFFECT_0);
+			Aura* aura = player->GetAura(ClassSpells::Paladin::BLESSING_OF_FREEDOM_RNK_1);
 			TEST_ASSERT(aura->GetDuration() == 14 * SECOND * IN_MILLISECONDS);
 		}
 	};
@@ -517,7 +517,7 @@ public:
 			LearnTalent(player, Talents::Paladin::IMPROVED_HOLY_SHIELD_RNK_2);
 			uint32 res = player->CastSpell(player, ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
 			TEST_ASSERT(res == SPELL_CAST_OK);
-			Aura* aura = player->GetAura(ClassSpells::Paladin::HOLY_SHIELD_RNK_4, EFFECT_0);
+			Aura* aura = player->GetAura(ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetCharges() == 8);
 		}

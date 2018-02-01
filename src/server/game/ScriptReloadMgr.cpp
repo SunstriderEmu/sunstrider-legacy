@@ -895,10 +895,10 @@ private:
             return;
         }
 
-        // Limit the git revision hash to 7 characters.
+        // Limit the git revision hash to 9 characters. (sun: extended to 9 to match our revision system)
         std::string module_revision((*module)->GetScriptModuleRevisionHash());
-        if (module_revision.size() >= 7)
-            module_revision = module_revision.substr(0, 7);
+        if (module_revision.size() >= 9)
+            module_revision = module_revision.substr(0, 9);
 
         std::string const module_name = (*module)->GetScriptModule();
         TC_LOG_INFO("scripts.hotswap", ">> Loaded script module \"%s\" (\"%s\" - %s).",

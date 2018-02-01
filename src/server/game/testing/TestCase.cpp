@@ -22,6 +22,7 @@
 TestCase::TestCase(TestStatus status, bool needMap) :
     _failed(false),
     _testsCount(0),
+
     _testMapInstanceId(0),
     _diff(REGULAR_DIFFICULTY),
     _map(nullptr),
@@ -965,7 +966,7 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
         Wait(5 * SECOND*IN_MILLISECONDS);
 
     Wait(1);
-    Aura* aura = target->GetAuraWithCaster(spellID, caster->GetGUID());
+    Aura* aura = target->GetAura(spellID, caster->GetGUID());
     INTERNAL_ASSERT_INFO("Target has not %u aura with caster %u after spell successfully casted", spellID, caster->GetGUID().GetCounter());
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
@@ -977,7 +978,7 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
 
     //make sure aura expired
     INTERNAL_ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
-    INTERNAL_TEST_ASSERT(!target->HasAuraWithCaster(spellID, 0, caster->GetGUID()));
+    INTERNAL_TEST_ASSERT(!target->HasAura(spellID, caster->GetGUID()));
 
     int32 dotDamageToTarget = AI->GetDotDamage(target, spellID);
 	TC_LOG_TRACE("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedAmount: %i", spellID, dotDamageToTarget, expectedAmount);
@@ -1203,21 +1204,6 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID)
     }
 }
 
-void TestCase::_EnsureHasAura(Unit* target, int32 spellID, uint8 effectIndex)
-{
-    bool hasAura = target->HasAuraEffect(spellID, effectIndex);
-    if (spellID > 0)
-    {
-        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
-        INTERNAL_TEST_ASSERT(hasAura);
-    }
-    else 
-    {
-        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
-        INTERNAL_TEST_ASSERT(!hasAura);
-    }
-}
-
 void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond)
 {
     uint32 cooldown = caster->GetSpellCooldownDelay(castSpellID);
@@ -1225,9 +1211,9 @@ void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 c
     INTERNAL_TEST_ASSERT(cooldown == cooldownSecond);
 }
 
-void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 durationMS)
+void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS)
 {
-    Aura* aura = target->GetAura(spellID, effect);
+    Aura* aura = target->GetAura(spellID);
     INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
@@ -1236,9 +1222,9 @@ void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex 
     INTERNAL_TEST_ASSERT(auraDuration == durationMS);
 }
 
-void TestCase::_TestAuraStack(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 stacks, bool stack)
+void TestCase::_TestAuraStack(Unit* target, uint32 spellID, uint32 stacks, bool stack)
 {
-    Aura* aura = target->GetAura(spellID, effect);
+    Aura* aura = target->GetAura(spellID);
     INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
@@ -1269,7 +1255,7 @@ std::string TestCase::StringifySpellCastResult(SpellCastResult result)
     case SPELL_FAILED_ALREADY_HAVE_CHARM: str = "SPELL_FAILED_ALREADY_HAVE_CHARM"; break;
     case SPELL_FAILED_ALREADY_HAVE_SUMMON: str = "SPELL_FAILED_ALREADY_HAVE_SUMMON"; break;
     case SPELL_FAILED_ALREADY_OPEN: str = "SPELL_FAILED_ALREADY_OPEN"; break;
-    case SPELL_FAILED_MORE_POWERFUL_SPELL_ACTIVE: str = "SPELL_FAILED_MORE_POWERFUL_SPELL_ACTIVE"; break;
+    case SPELL_FAILED_AURA_BOUNCED: str = "SPELL_FAILED_AURA_BOUNCED"; break;
     case SPELL_FAILED_AUTOTRACK_INTERRUPTED: str = "SPELL_FAILED_AUTOTRACK_INTERRUPTED"; break;
     case SPELL_FAILED_BAD_IMPLICIT_TARGETS: str = "SPELL_FAILED_BAD_IMPLICIT_TARGETS"; break;
     case SPELL_FAILED_BAD_TARGETS: str = "SPELL_FAILED_BAD_TARGETS"; break;

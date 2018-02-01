@@ -87,15 +87,33 @@ enum ITEM_FLAGS
     ITEM_FLAG_CONJURED                       = 0x00000002,
     ITEM_FLAG_OPENABLE                       = 0x00000004,
     ITEM_FLAG_WRAPPED                        = 0x00000008,
+    //TC ITEM_FLAG_DEPRECATED = 0x00000010, // Cannot equip or use
+    //TC ITEM_FLAG_NO_USER_DESTROY                   = 0x00000020, // Item can not be destroyed, except by using spell (item can be reagent for spell)
+    //TC ITEM_FLAG_PLAYERCAST = 0x00000040, // Item's spells are castable by players
+    ITEM_FLAG_NO_EQUIP_COOLDOWN              = 0x00000080, // No default 30 seconds cooldown when equipped
+    //TC ITEM_FLAG_MULTI_LOOT_QUEST = 0x00000100,
     ITEM_FLAG_WRAPPER                        = 0x00000200, // used or not used wrapper
+    //TC ITEM_FLAG_USES_RESOURCES = 0x00000400,
     ITEM_FLAG_PARTY_LOOT                     = 0x00000800, // determines if item is party loot or not
+    //TC ITEM_FLAG_ITEM_PURCHASE_RECORD = 0x00001000, // Item can be returned to vendor for its original cost (extended cost) //none on BC
     ITEM_FLAG_CHARTER                        = 0x00002000, // arena/guild charter
+    //TC ITEM_FLAG_HAS_TEXT = 0x00004000, // Only readable items have this (but not all)
+    //TC ITEM_FLAG_NO_DISENCHANT = 0x00008000,
+    //TC ITEM_FLAG_REAL_DURATION = 0x00010000,
+    //TC ITEM_FLAG_NO_CREATOR = 0x00020000,
+    //TC ITEM_FLAG_IS_PROSPECTABLE = 0x00040000, // Item can be prospected
     ITEM_FLAG_UNIQUE_EQUIPPED                = 0x00080000,
+    //TC ITEM_FLAG_IGNORE_FOR_AURAS = 0x00100000,
     ITEM_FLAG_USEABLE_IN_ARENA               = 0x00200000,
     ITEM_FLAG_THROWABLE                      = 0x00400000, // not used in game for check trow possibility, only for item in game tooltip
     ITEM_FLAG_SPECIALUSE                     = 0x00800000, // last used flag in 2.3.0
+    ITEM_FLAG_HAS_QUEST_GLOW                 = 0x01000000,
+    ITEM_FLAG_HIDE_UNUSABLE_RECIPE           = 0x02000000, // Profession recipes: can only be looted if you meet requirements and don't already know it
+    ITEM_FLAG_NOT_USEABLE_IN_ARENA           = 0x04000000, // Item cannot be used in arena
+#ifdef LICH_KING
     ITEM_FLAG_BOA                            = 0x08000000, // bind on account
-    ITEM_FLAG_MILLABLE                       = 0x20000000
+    ITEM_FLAG_MILLABLE                       = 0x20000000,
+#endif
 };
 
 enum BAG_FAMILY_MASK

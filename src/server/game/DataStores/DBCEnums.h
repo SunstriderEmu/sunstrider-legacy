@@ -72,6 +72,10 @@ enum AreaFlags
     AREA_FLAG_LOWLEVEL         = 0x00100000,                 // used for some starting areas with area_level <=15
     AREA_FLAG_INSIDE           = 0x02000000,
     AREA_FLAG_OUTSIDE          = 0x04000000,
+#ifdef LICH_KING
+    AREA_FLAG_WINTERGRASP_2    = 0x08000000,                // Can Hearth And Resurrect From Area
+    AREA_FLAG_NO_FLY_ZONE      = 0x20000000                 // Marks zones where you cannot fly
+#endif
 };
 
 enum Difficulty : uint32

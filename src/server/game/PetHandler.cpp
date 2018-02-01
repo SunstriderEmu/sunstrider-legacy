@@ -212,7 +212,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
             }
 
             auto spell = new Spell(pet, spellInfo, TRIGGERED_NONE);
-            int16 result = spell->PetCanCast(unit_target);
+            int16 result = spell->CheckPetCast(unit_target);
 
                                                             //auto turn to target unless possessed
             if(unit_target && result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->IsPossessed())
@@ -344,7 +344,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if(!charmInfo)
     {
-        TC_LOG_ERROR("network","WorldSession::HandlePetAction: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        TC_LOG_ERROR("network","WorldSession::HandlePetAction: object %u is considered pet-like but doesn't have a charminfo!", pet->GetGUID().GetCounter());
         return;
     }
 
@@ -369,7 +369,7 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recvData)
     ObjectGuid guid;
     recvData >> guid;
 
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_PET_STOP_ATTACK for GUID " UI64FMTD "", guid);
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_PET_STOP_ATTACK for GUID %u", guid.GetCounter());
 
     Unit* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, guid);
 
@@ -493,7 +493,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if(!charmInfo)
     {
-        TC_LOG_ERROR("network","WorldSession::HandlePetSetAction: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        TC_LOG_ERROR("network","WorldSession::HandlePetSetAction: object %u is considered pet-like but doesn't have a charminfo!", pet->GetGUID().GetCounter());
         return;
     }
 
@@ -720,7 +720,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if(!charmInfo)
     {
-        TC_LOG_ERROR("network","WorldSession::HandlePetUnlearnOpcode: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        TC_LOG_ERROR("network","WorldSession::HandlePetUnlearnOpcode: object %u is considered pet-like but doesn't have a charminfo!", pet->GetGUID().GetCounter());
         return;
     }
 
@@ -794,7 +794,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if(!charmInfo)
     {
-        TC_LOG_ERROR("network","WorldSession::HandlePetSpellAutocastOpcod: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        TC_LOG_ERROR("network","WorldSession::HandlePetSpellAutocastOpcod: object %u is considered pet-like but doesn't have a charminfo!", pet->GetGUID().GetCounter());
         return;
     }
 
@@ -857,7 +857,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     auto spell = new Spell(caster, spellInfo, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
     spell->m_targets = targets;
 
-    SpellCastResult result = spell->PetCanCast(nullptr);
+    SpellCastResult result = spell->CheckPetCast(nullptr);
     if (spellid == 33395) { //Water elemental Freeze HACKZ
         result = spell->CheckRange(true);
     }

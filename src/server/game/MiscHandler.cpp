@@ -85,7 +85,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
         unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_GOSSIP);
         if (!unit)
         {
-            TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - " UI64FMTD " not found or you can't interact with him.", guid);
+            TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - %u not found or you can't interact with him.", guid.GetCounter());
             return;
         }
     }
@@ -94,13 +94,13 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
         go = _player->GetGameObjectIfCanInteractWith(guid);
         if (!go)
         {
-            TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - " UI64FMTD " not found.", guid);
+            TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - %u not found.", guid.GetCounter());
             return;
         }
     }
     else
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - unsupported " UI64FMTD ".", guid);
+        TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - unsupported %u.", guid.GetCounter());
         return;
     }
 
@@ -1335,8 +1335,8 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
             spammer->addSpamReport(_player->GetGUID(), description.c_str());
     }
 
-    TC_LOG_DEBUG("network", "REPORT SPAM: type %u, " UI64FMTD ", unk1 %u, unk2 %u, unk3 %u, unk4 %u, message %s",
-        ComplaintType, spammer_guid, unk1, unk2, unk3, unk4, description.c_str());
+    TC_LOG_DEBUG("network", "REPORT SPAM: type %u, %u, unk1 %u, unk2 %u, unk3 %u, unk4 %u, message %s",
+        ComplaintType, spammer_guid.GetCounter(), unk1, unk2, unk3, unk4, description.c_str());
 }
 
 void WorldSession::HandleRealmSplitOpcode( WorldPacket & recvData )

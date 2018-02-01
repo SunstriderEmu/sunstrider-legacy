@@ -23,32 +23,32 @@ class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicO
         void AddToWorld() override;
         void RemoveFromWorld() override;
 
-        bool Create(ObjectGuid::LowType guidlow, Unit *caster, uint32 spellId, uint32 effIndex, Position const& pos, int32 duration, float radius, DynamicObjectType type);
+        bool CreateDynamicObject(ObjectGuid::LowType guidlow, Unit *caster, uint32 spellId, Position const& pos, float radius, DynamicObjectType type);
         void Update(uint32 p_time) override;
 		void Remove();
 		uint32 GetSpellId() const { return GetUInt32Value(DYNAMICOBJECT_SPELLID); }
-		uint32 GetEffIndex() const { return m_effIndex; }
-		uint32 GetDuration() const { return m_aliveDuration; }
-		//void SetDuration(int32 newDuration);
+        SpellInfo const* GetSpellInfo() const;
+        void SetDuration(int32 newDuration);
+        int32 GetDuration() const;
         ObjectGuid GetCasterGUID() const { return GetGuidValue(DYNAMICOBJECT_CASTER); }
-		Unit* GetCaster() const;
 		float GetRadius() const { return GetFloatValue(DYNAMICOBJECT_RADIUS); }
-        bool IsAffecting(Unit *unit) const { return m_affected.find(unit->GetGUID()) != m_affected.end(); }
-        void AddAffected(Unit *unit);
-        void RemoveAffected(Unit *unit) { m_affected.erase(unit->GetGUID()); }
         void Delay(int32 delaytime);
+        void SetAura(Aura* aura);
+        void RemoveAura();
 
 		void SetCasterViewpoint();
 		void RemoveCasterViewpoint();
 
-    protected:
-		uint32 m_effIndex;
-		int32  m_aliveDuration;
-		uint32 m_updateTimer;
-		int32 _duration; // for non-aura dynobjects
-        AffectedSet m_affected;
-		DynamicObjectType m_type;
+        void BindToCaster();
+        void UnbindFromCaster();
 
+        Unit* GetCaster() const { return _caster; }
+
+    protected:
+        Unit* _caster;
+        Aura* _aura;
+        Aura* _removedAura;
+        int32 _duration; // for non-aura dynobjects
 		bool _isViewpoint;
 };
 #endif

@@ -1,5 +1,6 @@
 #include "Chat.h"
 #include "Language.h"
+#include "SpellAuraEffects.h"
 
 bool ChatHandler::HandleListCreatureCommand(const char* args)
 {
@@ -354,8 +355,8 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
 
 bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
 {
-    Unit *unit = GetSelectedUnit();
-    if(!unit)
+    Unit* unit = GetSelectedUnit();
+    if (!unit)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
@@ -365,29 +366,43 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
     char const* talentStr = GetTrinityString(LANG_TALENT);
     char const* passiveStr = GetTrinityString(LANG_PASSIVE);
 
-    Unit::AuraMap const& uAuras = unit->GetAuras();
-    PSendSysMessage(LANG_COMMAND_TARGET_LISTAURAS, uAuras.size());
-    for (auto itr = uAuras.begin(); itr != uAuras.end(); ++itr)
+    Unit::AuraApplicationMap const& auras = unit->GetAppliedAuras();
+    PSendSysMessage(LANG_COMMAND_TARGET_LISTAURAS, auras.size());
+    for (Unit::AuraApplicationMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
     {
-        bool talent = GetTalentSpellCost(itr->second->GetId()) > 0;
-        PSendSysMessage(LANG_COMMAND_TARGET_AURADETAIL, itr->second->GetId(), itr->second->GetEffIndex(),
-            itr->second->GetModifier()->m_auraname, itr->second->GetDuration(), itr->second->GetMaxDuration(),
-            itr->second->GetSpellInfo()->SpellName[GetSessionDbcLocale()],
-            (itr->second->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
-            itr->second->GetCasterGUID().IsPlayer() ? "player" : "creature",itr->second->GetCasterGUID().GetCounter());
+        bool talent = GetTalentSpellCost(itr->second->GetBase()->GetId()) > 0;
+
+        AuraApplication const* aurApp = itr->second;
+        Aura const* aura = aurApp->GetBase();
+        char const* name = aura->GetSpellInfo()->SpellName[GetSessionDbcLocale()];
+
+        std::ostringstream ss_name;
+ //       ss_name << "|cffffffff|Hspell:" << aura->GetId() << "|h[" << name << "]|h|r"; //message does not appear, what's wrong? link format is the same on LK and BC
+        ss_name << name;
+
+        PSendSysMessage(LANG_COMMAND_TARGET_AURADETAIL, aura->GetId(), (GetSession() ? ss_name.str().c_str() : name),
+            aurApp->GetEffectMask(), aura->GetCharges(), aura->GetStackAmount(), aurApp->GetSlot(),
+            aura->GetDuration(), aura->GetMaxDuration(), (aura->IsPassive() ? passiveStr : ""),
+            (talent ? talentStr : ""), aura->GetCasterGUID().IsPlayer() ? "player" : "creature",
+            aura->GetCasterGUID().GetCounter());
+
+        //not working... why?
+        /*std::ostringstream test;
+        test << "|cffffffff|Hspell:" << aura->GetId() << "|h[" << name << "]|h|r";
+        SendSysMessage(test.str().c_str());*/
     }
-    for (int i = 0; i < TOTAL_AURAS; i++)
+
+    for (uint16 i = 0; i < TOTAL_AURAS; ++i)
     {
-        Unit::AuraList const& uAuraList = unit->GetAurasByType(AuraType(i));
-        if (uAuraList.empty()) continue;
-        PSendSysMessage(LANG_COMMAND_TARGET_LISTAURATYPE, uAuraList.size(), i);
-        for (auto itr : uAuraList)
-        {
-            bool talent = GetTalentSpellCost(itr->GetId()) > 0;
-            PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, itr->GetId(), itr->GetEffIndex(),
-                itr->GetSpellInfo()->SpellName[GetSessionDbcLocale()],(itr->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
-                itr->GetCasterGUID().IsPlayer() ? "player" : "creature",itr->GetCasterGUID().GetCounter());
-        }
+        Unit::AuraEffectList const& auraList = unit->GetAuraEffectsByType(AuraType(i));
+        if (auraList.empty())
+            continue;
+
+        PSendSysMessage(LANG_COMMAND_TARGET_LISTAURATYPE, auraList.size(), i);
+
+        for (Unit::AuraEffectList::const_iterator itr = auraList.begin(); itr != auraList.end(); ++itr)
+            PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, (*itr)->GetId(), (*itr)->GetEffIndex(), (*itr)->GetAmount());
     }
+
     return true;
 }

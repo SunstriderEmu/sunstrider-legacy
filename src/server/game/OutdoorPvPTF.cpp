@@ -89,7 +89,7 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
         for(ObjectGuid itr : m_players[0])
         {
             if(Player * plr = ObjectAccessor::FindPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
+                if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF, true);
         }
         for(ObjectGuid itr : m_players[1])
         {
@@ -102,7 +102,7 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
         for(ObjectGuid itr : m_players[1])
         {
             if(Player * plr = ObjectAccessor::FindPlayer(itr))
-                if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
+                if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF, true);
         }
         for(ObjectGuid itr : m_players[0])
         {
@@ -222,12 +222,12 @@ void OutdoorPvPTF::HandlePlayerEnterZone(Player * plr, uint32 zone)
     if(plr->GetTeam() == ALLIANCE)
     {
         if(m_AllianceTowersControlled >= TF_TOWER_NUM)
-            plr->CastSpell(plr,TF_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
+            plr->CastSpell(plr,TF_CAPTURE_BUFF, true);
     }
     else
     {
         if(m_HordeTowersControlled >= TF_TOWER_NUM)
-            plr->CastSpell(plr,TF_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
+            plr->CastSpell(plr,TF_CAPTURE_BUFF, true);
     }
     OutdoorPvP::HandlePlayerEnterZone(plr,zone);
 }

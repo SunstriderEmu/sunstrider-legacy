@@ -106,6 +106,30 @@ enum UnitClass : uint32
 
 #define CLASSMASK_WAND_USERS ((1<<(CLASS_PRIEST-1))|(1<<(CLASS_MAGE-1))|(1<<(CLASS_WARLOCK-1)))
 
+enum SpellFamilyNames
+{
+    SPELLFAMILY_GENERIC     = 0,
+    SPELLFAMILY_UNK1        = 1,                            // events, holidays
+    // 2 - unused
+    SPELLFAMILY_MAGE        = 3,
+    SPELLFAMILY_WARRIOR     = 4,
+    SPELLFAMILY_WARLOCK     = 5,
+    SPELLFAMILY_PRIEST      = 6,
+    SPELLFAMILY_DRUID       = 7,
+    SPELLFAMILY_ROGUE       = 8,
+    SPELLFAMILY_HUNTER      = 9,
+    SPELLFAMILY_PALADIN     = 10,
+    SPELLFAMILY_SHAMAN      = 11,
+    SPELLFAMILY_UNK2        = 12,
+    SPELLFAMILY_POTION      = 13,
+#ifdef LICH_KING
+    // 14 - unused
+    SPELLFAMILY_DEATHKNIGHT = 15,
+    // 16 - unused
+    SPELLFAMILY_PET         = 17
+#endif
+};
+
 #define PLAYER_MAX_BATTLEGROUND_QUEUES 3
 
 enum ReputationRank : uint32
@@ -284,7 +308,7 @@ enum SpellAttr0
 {
     SPELL_ATTR0_UNK0                           = 0x00000001,           // 0
     SPELL_ATTR0_RANGED                         = 0x00000002,           // 1 All ranged abilities have this flag
-    SPELL_ATTR0_ON_NEXT_SWING_1                = 0x00000004,           // 2 on next swing
+    SPELL_ATTR0_ON_NEXT_SWING                  = 0x00000004,           // 2 on next swing
     SPELL_ATTR0_UNK3                           = 0x00000008,           // 3 not set in 2.4.2 //TC: SPELL_ATTR0_IS_REPLENISHMENT
     SPELL_ATTR0_ABILITY                        = 0x00000010,           // 4 client puts 'ability' instead of 'spell' in game strings for these spells
     SPELL_ATTR0_TRADESPELL                     = 0x00000020,           // 5 trade spells (recipes), will be added by client to a sublist of profession spell
@@ -337,7 +361,7 @@ enum SpellAttr1
     SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE = 0x00010000,           // 16 unaffected by school immunity
     SPELL_ATTR1_UNAUTOCASTABLE_BY_PET       = 0x00020000,           // 17
     SPELL_ATTR1_UNK18                       = 0x00040000,           // 18
-    SPELL_ATTR1_CANT_TARGET_SELF            = 0x00080000,           // 19
+    SPELL_ATTR1_CANT_TARGET_SELF            = 0x00080000,           // 19 sun: spell can actually be casted at self but not apply to self, such as 39298
     SPELL_ATTR1_REQ_COMBO_POINTS1           = 0x00100000,           // 20 Req combo points on target
     SPELL_ATTR1_UNK21                       = 0x00200000,           // 21
     SPELL_ATTR1_REQ_COMBO_POINTS2           = 0x00400000,           // 22 Req combo points on target
@@ -382,7 +406,7 @@ enum SpellAttr2
     SPELL_ATTR2_UNK25                      = 0x02000000,           // 25
 	SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE = 0x04000000,           // 26 unaffected by school immunity
     SPELL_ATTR2_UNK27                      = 0x08000000,           // 27
-    SPELL_ATTR2_UNK28                      = 0x10000000,           // 28
+    SPELL_ATTR2_IGNORE_ITEM_CHECK          = 0x10000000,           // 28 Spell is cast without checking item requirements (charges/reagents/totem)
     SPELL_ATTR2_CANT_CRIT                  = 0x20000000,           // 29 Spell can't crit
     SPELL_ATTR2_TRIGGERED_CAN_TRIGGER_PROC = 0x40000000,           // 30 spell can trigger even if triggered
     SPELL_ATTR2_FOOD_BUFF                  = 0x80000000,           // 31 food, well-fed, and a few others
@@ -390,38 +414,38 @@ enum SpellAttr2
 
 enum SpellAttr3
 {
-    SPELL_ATTR3_UNK0                       = 0x00000001,           // 0
-    SPELL_ATTR3_IGNORE_PROC_SUBCLASS_MASK  = 0x00000002,           // 1 Ignores subclass mask check when checking proc
-    SPELL_ATTR3_UNK2                       = 0x00000004,           // 2
-    SPELL_ATTR3_BLOCKABLE_SPELL            = 0x00000008,           // 3 Only dmg class melee in 3.1.3
-    SPELL_ATTR3_IGNORE_RESURRECTION_TIMER  = 0x00000010,           // 4 Druid Rebirth only this spell have this flag
-    SPELL_ATTR3_UNK5                       = 0x00000020,           // 5
-    SPELL_ATTR3_UNK6                       = 0x00000040,           // 6
-    SPELL_ATTR3_STACK_FOR_DIFF_CASTERS     = 0x00000080,           // 7 separate stack for every caster
-    SPELL_ATTR3_ONLY_TARGET_PLAYERS        = 0x00000100,           // 8 can only target players
-    SPELL_ATTR3_UNK9                       = 0x00000200,           // 9 //TC : SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2
-    SPELL_ATTR3_MAIN_HAND                  = 0x00000400,           // 10 Main hand weapon required
-    SPELL_ATTR3_BATTLEGROUND               = 0x00000800,           // 11 Can casted only on battleground
-    SPELL_ATTR3_ONLY_TARGET_GHOSTS         = 0x00001000,           // 12
-    SPELL_ATTR3_DONT_DISPLAY_CHANNEL_BAR   = 0x00002000,           // 13 Clientside attribute - will not display channeling bar
-    SPELL_ATTR3_IS_HONORLESS_TARGET        = 0x00004000,           // 14 "Honorless Target" only this spells have this flag
-    SPELL_ATTR3_UNK15                      = 0x00008000,           // 15 Auto Shoot, Shoot, Throw,  - this is autoshot flag
-    SPELL_ATTR3_CANT_TRIGGER_PROC          = 0x00010000,           // 16 confirmed with many patchnotes
-    SPELL_ATTR3_NO_INITIAL_AGGRO           = 0x00020000,           // 17 no initial aggro
-    SPELL_ATTR3_IGNORE_HIT_RESULT          = 0x00040000,           // 18 Spell should always hit its target
-    SPELL_ATTR3_DISABLE_PROC               = 0x00080000,           // 19 during aura proc no spells can trigger (20178, 20375)
-    SPELL_ATTR3_DEATH_PERSISTENT           = 0x00100000,           // 20 Death persistent spells
-    SPELL_ATTR3_UNK21                      = 0x00200000,           // 21
-    SPELL_ATTR3_REQ_WAND                   = 0x00400000,           // 22 Req wand
-    SPELL_ATTR3_UNK23                      = 0x00800000,           // 23
-    SPELL_ATTR3_REQ_OFFHAND                = 0x01000000,           // 24 Req offhand weapon
-    SPELL_ATTR3_TREAT_AS_PERIODIC          = 0x02000000,           // 25 Makes the spell appear as periodic in client combat logs - used by spells that trigger another spell on each tick
-    SPELL_ATTR3_UNK26                      = 0x04000000,           // 26 //TC: SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED. auras with this attribute can proc from triggered spell casts with SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2 (67736 + 52999)
-    SPELL_ATTR3_DRAIN_SOUL                 = 0x08000000,           // 27
-    SPELL_ATTR3_UNK28                      = 0x10000000,           // 28
-    SPELL_ATTR3_NO_DONE_BONUS              = 0x20000000,           // 29 Ignore caster spellpower and done damage mods?  client doesn't apply spellmods for those spells
-    SPELL_ATTR3_DONT_DISPLAY_RANGE         = 0x40000000,           // 30 client doesn't display range in tooltip for those spells
-    SPELL_ATTR3_UNK31                      = 0x80000000,           // 31
+    SPELL_ATTR3_UNK0                         = 0x00000001,           // 0
+    SPELL_ATTR3_IGNORE_PROC_SUBCLASS_MASK    = 0x00000002,           // 1 Ignores subclass mask check when checking proc
+    SPELL_ATTR3_UNK2                         = 0x00000004,           // 2
+    SPELL_ATTR3_BLOCKABLE_SPELL              = 0x00000008,           // 3 Only dmg class melee in 3.1.3
+    SPELL_ATTR3_IGNORE_RESURRECTION_TIMER    = 0x00000010,           // 4 Druid Rebirth only this spell have this flag
+    SPELL_ATTR3_UNK5                         = 0x00000020,           // 5
+    SPELL_ATTR3_UNK6                         = 0x00000040,           // 6
+    SPELL_ATTR3_STACK_FOR_DIFF_CASTERS       = 0x00000080,           // 7 separate stack for every caster
+    SPELL_ATTR3_ONLY_TARGET_PLAYERS          = 0x00000100,           // 8 can only target players
+    SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2 = 0x00000200,           //  9 triggered from effect?
+    SPELL_ATTR3_MAIN_HAND                    = 0x00000400,           // 10 Main hand weapon required
+    SPELL_ATTR3_BATTLEGROUND                 = 0x00000800,           // 11 Can casted only on battleground
+    SPELL_ATTR3_ONLY_TARGET_GHOSTS           = 0x00001000,           // 12
+    SPELL_ATTR3_DONT_DISPLAY_CHANNEL_BAR     = 0x00002000,           // 13 Clientside attribute - will not display channeling bar
+    SPELL_ATTR3_IS_HONORLESS_TARGET          = 0x00004000,           // 14 "Honorless Target" only this spells have this flag
+    SPELL_ATTR3_UNK15                        = 0x00008000,           // 15 Auto Shoot, Shoot, Throw,  - this is autoshot flag
+    SPELL_ATTR3_CANT_TRIGGER_PROC            = 0x00010000,           // 16 confirmed with many patchnotes
+    SPELL_ATTR3_NO_INITIAL_AGGRO             = 0x00020000,           // 17 no initial aggro
+    SPELL_ATTR3_IGNORE_HIT_RESULT            = 0x00040000,           // 18 Spell should always hit its target
+    SPELL_ATTR3_DISABLE_PROC                 = 0x00080000,           // 19 during aura proc no spells can trigger (20178, 20375)
+    SPELL_ATTR3_DEATH_PERSISTENT             = 0x00100000,           // 20 Death persistent spells
+    SPELL_ATTR3_UNK21                        = 0x00200000,           // 21
+    SPELL_ATTR3_REQ_WAND                     = 0x00400000,           // 22 Req wand
+    SPELL_ATTR3_UNK23                        = 0x00800000,           // 23
+    SPELL_ATTR3_REQ_OFFHAND                  = 0x01000000,           // 24 Req offhand weapon
+    SPELL_ATTR3_TREAT_AS_PERIODIC            = 0x02000000,           // 25 Makes the spell appear as periodic in client combat logs - used by spells that trigger another spell on each tick
+    SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED      = 0x04000000,           // 26 auras with this attribute can proc from triggered spell casts with SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2 (67736 + 52999)
+    SPELL_ATTR3_DRAIN_SOUL                   = 0x08000000,           // 27
+    SPELL_ATTR3_UNK28                        = 0x10000000,           // 28
+    SPELL_ATTR3_NO_DONE_BONUS                = 0x20000000,           // 29 Ignore caster spellpower and done damage mods?  client doesn't apply spellmods for those spells
+    SPELL_ATTR3_DONT_DISPLAY_RANGE           = 0x40000000,           // 30 client doesn't display range in tooltip for those spells
+    SPELL_ATTR3_UNK31                        = 0x80000000,           // 31
 };
 
 enum SpellAttr4
@@ -452,7 +476,7 @@ enum SpellAttr4
     SPELL_ATTR4_UNK23                      = 0x00800000,           // 23
     SPELL_ATTR4_AUTOSHOT                   = 0x01000000,           // 24
     SPELL_ATTR4_IS_PET_SCALING             = 0x02000000,           // 25 pet scaling auras
-    SPELL_ATTR4_CAST_ONLY_IN_OUTLAND       = 0x04000000,           // 26 Can only be used in Outland.
+    SPELL_ATTR4_CAST_ONLY_IN_OUTLAND       = 0x04000000,           // 26 Can only be used in Outland. Only for flying mounts
     SPELL_ATTR4_UNK27                      = 0x08000000,           // 27
     SPELL_ATTR4_UNK28                      = 0x10000000,           // 28
     SPELL_ATTR4_UNK29                      = 0x20000000,           // 29
@@ -856,14 +880,14 @@ enum GhostVisibilityType
 };
 
 // Spell aura states
-enum AuraStateType
+enum AuraStateType : uint32
 {   // (C) used in caster aura state     (T) used in target aura state
     // (c) used in caster aura state-not (t) used in target aura state-not
     AURA_STATE_NONE                         = 0,            // C   |
     AURA_STATE_DEFENSE                      = 1,            // C   |
     AURA_STATE_HEALTHLESS_20_PERCENT        = 2,            // CcT |
     AURA_STATE_BERSERKING                   = 3,            // C T |
-    //AURA_STATE_UNKNOWN4                   = 4,            //  c t| some limitation to charge spells (?) and target test spells (TC = AURA_STATE_FROZEN)
+    AURA_STATE_FROZEN                       = 4,            //  c t| some limitation to charge spells (?) and target test spells
     AURA_STATE_JUDGEMENT                    = 5,            // C   |
     //AURA_STATE_UNKNOWN6                   = 6,            //     | not used
     AURA_STATE_HUNTER_PARRY                 = 7,            // C   |
@@ -919,7 +943,7 @@ enum Mechanics : uint32
     MECHANIC_IMMUNE_SHIELD    = 29,                         // Divine (Blessing) Shield/Protection and Ice Block
     MECHANIC_SAPPED           = 30,
 
-    MECHANIC_TOTAL,
+    MAX_MECHANIC,
 };
 
 // Used for spell 42292 Immune Movement Impairment and Loss of Control (0x49967da6)

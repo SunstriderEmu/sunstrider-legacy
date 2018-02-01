@@ -19,6 +19,7 @@
 #include "Pet.h"
 #include "SpellAuras.h"
 #include "CharacterCache.h"
+#include "SpellAuraEffects.h"
 
 using namespace ai;
 using namespace std;
@@ -766,10 +767,10 @@ bool PlayerbotAI::HasAura(std::string name, Unit* unit)
 
     wstrToLower(wnamepart);
 
-    auto map = unit->GetAuras();
+    auto map = unit->GetAppliedAuras();
     for (auto i = map.begin(); i != map.end(); ++i)
     {
-        Aura const* aura  = i->second;
+        Aura const* aura  = i->second->GetBase();
         if (!aura)
             continue;
 
@@ -789,13 +790,10 @@ bool PlayerbotAI::HasAura(uint32 spellId, const Unit* unit)
     if (!spellId || !unit)
         return false;
 
-    for (uint32 effect = EFFECT_0; effect <= EFFECT_2; effect++)
-    {
-        Aura* aura = ((Unit*)unit)->GetAura(spellId, effect);
+    Aura* aura = ((Unit*)unit)->GetAura(spellId);
 
-        if (IsRealAura(bot, aura, (Unit*)unit))
-            return true;
-    }
+    if (IsRealAura(bot, aura, (Unit*)unit))
+        return true;
 
     return false;
 }
@@ -1094,10 +1092,10 @@ bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
 {
     for (uint32 type = SPELL_AURA_NONE; type < TOTAL_AURAS; ++type)
     {
-        auto const& auras = target->GetAurasByType((AuraType)type);
-        for (Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+        auto const& auras = target->GetAuraEffectsByType((AuraType)type);
+        for (std::list<AuraEffect*>::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
         {
-            const Aura *const aura = *itr;
+            const Aura* const aura = (*itr)->GetBase();
             const SpellInfo* entry = aura->GetSpellInfo();
 //            uint32 spellId = entry->Id;
 

@@ -15,11 +15,11 @@ bool SpellCastUsefulValue::Calculate()
     if (!spellInfo)
         return true; // there can be known alternatives
 
-    if (spellInfo->Attributes & SPELL_ATTR0_ON_NEXT_SWING_1 ||
+    if (spellInfo->Attributes & SPELL_ATTR0_ON_NEXT_SWING ||
         spellInfo->Attributes & SPELL_ATTR0_ON_NEXT_SWING_2)
     {
         Spell* spell = bot->GetCurrentSpell(CURRENT_MELEE_SPELL);
-        if (spell && spell->m_spellInfo->Id == spellid && spell->IsNextMeleeSwingSpell())
+        if (spell && spell->m_spellInfo->Id == spellid && spell->m_spellInfo->IsNextMeleeSwingSpell())
             return false;
     }
 

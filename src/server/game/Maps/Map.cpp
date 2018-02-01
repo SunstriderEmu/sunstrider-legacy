@@ -283,7 +283,7 @@ void Map::SwitchGridContainers(Creature* obj, bool on)
     CellCoord p = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
     if (!p.IsCoordValid())
     {
-        TC_LOG_ERROR("maps", "Map::SwitchGridContainers: Object " UI64FMTD " have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
+        TC_LOG_ERROR("maps", "Map::SwitchGridContainers: Object %s have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID().ToString().c_str(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
         return;
     }
 
@@ -545,7 +545,7 @@ bool Map::AddToMap(T* obj, bool checkTransport)
 
     if (!p.IsCoordValid())
     {
-        TC_LOG_ERROR("maps","Map::Add: Object " UI64FMTD " have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
+        TC_LOG_ERROR("maps","Map::Add: Object %s have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID().ToString().c_str(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
         return false;
     }
 
@@ -595,7 +595,7 @@ bool Map::AddToMap(MotionTransport* obj, bool /* checkTransport */)
     CellCoord p = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
     if (!p.IsCoordValid())
     {
-        TC_LOG_ERROR("maps", "Map::Add: Object " UI64FMTD " have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
+        TC_LOG_ERROR("maps", "Map::Add: Object %s have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID().ToString().c_str(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
         return false;
     }
 
@@ -2702,7 +2702,7 @@ std::list<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
             if(c)
                 creatureList.push_back(c);
             else
-                TC_LOG_ERROR("maps", "GetAllCreaturesFromPool : couldn't get unit with guid " UI64FMTD, guid);
+                TC_LOG_ERROR("maps", "GetAllCreaturesFromPool : couldn't get unit with guid %s", guid.ToString().c_str());
         }
     }
 
@@ -2924,7 +2924,7 @@ bool InstanceMap::AddPlayerToMap(Player *player)
     }
     
     // Remove auras that cannot be present in instance
-    player->RemoveAurasWithCustomAttribute(SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER);
+    player->RemoveAurasWithCustomAttribute(SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER);
 
     // this will acquire the same mutex so it cannot be in the previous block
     Map::AddPlayerToMap(player);

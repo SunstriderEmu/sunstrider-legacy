@@ -73,8 +73,8 @@ void GuardAI::EnterEvadeMode(EvadeReason why)
 
 void GuardAI::UpdateAI(const uint32 /*diff*/)
 {
-    if (i_creature.IsContestedGuard() && !i_creature.HasAuraEffect(18950,0)) //Invisibility and Stealth Detection
-        i_creature.CastSpell(&i_creature, 18950, TRIGGERED_FULL_MASK);
+    if (i_creature.IsContestedGuard() && !i_creature.HasAura(18950)) //Invisibility and Stealth Detection
+        i_creature.CastSpell(&i_creature, 18950, true);
 
     // update i_victimGuid if i_creature.GetVictim() !=0 and changed
     if(!UpdateVictim())

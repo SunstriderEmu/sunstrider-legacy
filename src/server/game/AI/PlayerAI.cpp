@@ -1,6 +1,7 @@
 
 #include "PlayerAI.h"
 #include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 
 static const uint8 NUM_TALENT_TREES = 3;
 static const uint8 NUM_SPEC_ICONICS = 3;
@@ -922,6 +923,21 @@ void PlayerAI::DoRangedAttackIfReady()
     if (!rangedAttackSpell)
         return;
 
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(rangedAttackSpell);
+    if (!spellInfo)
+        return;
+ 
+    Spell* spell = new Spell(me, spellInfo, TRIGGERED_CAST_DIRECTLY);
+    if (spell->CheckPetCast(victim) != SPELL_CAST_OK)
+    {
+        delete spell;
+        return;
+    }
+ 
+    SpellCastTargets targets;
+    targets.SetUnitTarget(victim);
+    spell->prepare(targets);
+
     me->CastSpell(victim, rangedAttackSpell, TRIGGERED_CAST_DIRECTLY);
     me->ResetAttackTimer(RANGED_ATTACK);
 }
@@ -1377,7 +1393,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
             switch (GetSpec())
             {
                 case SPEC_MAGE_ARCANE:
-                    if (Aura* abAura = me->GetAura(AURA_ARCANE_BLAST, 0))
+                    if (Aura* abAura = me->GetAura(AURA_ARCANE_BLAST))
                         if (abAura->GetStackAmount() >= 3)
                             VerifyAndPushSpellCast(spells, SPELL_ARCANE_MISSILES, TARGET_VICTIM, 7);
                     VerifyAndPushSpellCast(spells, SPELL_ARCANE_BLAST, TARGET_VICTIM, 5);
@@ -1405,8 +1421,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
 #endif
                     VerifyAndPushSpellCast(spells, SPELL_FROSTBOLT, TARGET_VICTIM, 3);
                     VerifyAndPushSpellCast(spells, SPELL_COLD_SNAP, TARGET_VICTIM, 5);
-                    if (me->GetVictim() && me->GetVictim()->IsFrozen())
-                    //TC if (me->GetVictim() && me->GetVictim()->HasAuraState(AURA_STATE_FROZEN, nullptr, me))
+                    if (me->GetVictim() && me->GetVictim()->HasAuraState(AURA_STATE_FROZEN, nullptr, me))
                         VerifyAndPushSpellCast(spells, SPELL_ICE_LANCE, TARGET_VICTIM, 5);
                     break;
             }

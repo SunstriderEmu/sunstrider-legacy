@@ -9,6 +9,7 @@
 #include "MapManager.h"
 #include "Formulas.h"
 #include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 #include "CreatureAI.h"
 #include "Unit.h"
 #include "Util.h"
@@ -85,7 +86,6 @@ Pet::Pet(Player* owner, PetType type)
         SetReactState(REACT_AGGRESSIVE);
 
     m_spells.clear();
-    m_Auras.clear();
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
     m_autospells.clear();
@@ -385,7 +385,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         if (getPetType() == HUNTER_PET)
             _LoadAuras(timediff); //sunstrider: special pet handling, we don't load aura saved too long ago since last dismiss
         if (map->IsBattleArena())
-            RemoveArenaAuras();
+            RemoveArenaAuras(false);
         CastPetAuras(current);
     }
     else {
@@ -432,6 +432,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         owner->ToPlayer()->SetLastPetNumber(petId);
     */
 
+    // must be after SetMinion (owner guid check)
+    LoadTemplateImmunities();
     m_loading = false;
     return true;
 }
@@ -557,9 +559,15 @@ void Pet::SavePetToDB(PetSaveMode mode)
 void Pet::DeleteFromDB(ObjectGuid::LowType guidlow)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    PreparedStatement* stmt;
+
     trans->PAppend("DELETE FROM character_pet WHERE id = '%u'", guidlow);
     trans->PAppend("DELETE FROM character_pet_declinedname WHERE id = '%u'", guidlow);
-    trans->PAppend("DELETE FROM pet_aura WHERE guid = '%u'", guidlow);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PET_AURAS);
+    stmt->setUInt32(0, guidlow);
+    trans->Append(stmt);
+
     trans->PAppend("DELETE FROM pet_spell WHERE guid = '%u'", guidlow);
     trans->PAppend("DELETE FROM pet_spell_cooldown WHERE guid = '%u'", guidlow);
     CharacterDatabase.CommitTransaction(trans);
@@ -1249,7 +1257,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetAttackTime(BASE_ATTACK, 1350);
 
                     // 2 parts T4 DPS Bonus: should be handled in future table spell_dbc
-                    if (owner->HasAuraEffect(37570))
+                    if (owner->HasAura(37570))
                         SetStat(STAT_STAMINA, GetStat(STAT_STAMINA) + 75);
                     break;
                 }
@@ -1494,7 +1502,6 @@ void Pet::_SaveSpells(SQLTransaction& trans)
 
 void Pet::_LoadAuras(uint32 timediff)
 {
-    m_Auras.clear();
     for (auto & m_modAura : m_modAuras)
         m_modAura.clear();
 
@@ -1502,122 +1509,146 @@ void Pet::_LoadAuras(uint32 timediff)
     for(int i = UNIT_FIELD_AURA; i <= UNIT_FIELD_AURASTATE; ++i)
         SetUInt32Value(i, 0);
 
-    QueryResult result = CharacterDatabase.PQuery("SELECT caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges FROM pet_aura WHERE guid = '%u'",m_charmInfo->GetPetNumber());
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_AURA);
+    stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+    PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
-    if(result)
+    if (result)
     {
         do
         {
-            Field *fields = result->Fetch();
-            ObjectGuid caster_guid = ObjectGuid(fields[0].GetUInt64());
+            int32 damage[3];
+            int32 baseDamage[3];
+            Field* fields = result->Fetch();
+            ObjectGuid caster_guid(fields[0].GetUInt64());
+            // NULL guid stored - pet is the caster of the spell - see Pet::_SaveAuras
+            if (!caster_guid)
+                caster_guid = GetGUID();
             uint32 spellid = fields[1].GetUInt32();
-            uint32 effindex = fields[2].GetUInt32();
-            uint32 stackcount= fields[3].GetUInt32();
-            int32 damage     = (int32)fields[4].GetUInt32();
-            int32 maxduration = (int32)fields[5].GetUInt32();
-            int32 remaintime = (int32)fields[6].GetUInt32();
-            int32 remaincharges = (int32)fields[7].GetUInt32();
+            uint8 effmask = fields[2].GetUInt8();
+            uint8 recalculatemask = fields[3].GetUInt8();
+            uint8 stackcount = fields[4].GetUInt8();
+            damage[0] = fields[5].GetInt32();
+            damage[1] = fields[6].GetInt32();
+            damage[2] = fields[7].GetInt32();
+            baseDamage[0] = fields[8].GetInt32();
+            baseDamage[1] = fields[9].GetInt32();
+            baseDamage[2] = fields[10].GetInt32();
+            int32 maxduration = fields[11].GetInt32();
+            int32 remaintime = fields[12].GetInt32();
+            uint8 remaincharges = fields[13].GetUInt8();
+            float critChance = fields[14].GetFloat();
+            bool applyResilience = fields[15].GetBool();
 
-            SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(spellid);
-            if(!spellproto)
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
+            if (!spellInfo)
             {
-                TC_LOG_ERROR("entities.pet","Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
-                continue;
-            }
-
-            if(effindex >= 3)
-            {
-                TC_LOG_ERROR("entities.pet","Invalid effect index (spellid %u, effindex %u), ignore.",spellid,effindex);
+                TC_LOG_ERROR("entities.pet", "Unknown aura (spellid %u), ignore.", spellid);
                 continue;
             }
 
             // negative effects should continue counting down after logout
-            if (remaintime != -1 && !spellproto->IsPositiveEffect(effindex) || spellproto->HasAttribute(SPELL_ATTR4_EXPIRE_OFFLINE))
+            if (remaintime != -1 && (!spellInfo->IsPositive() || spellInfo->HasAttribute(SPELL_ATTR4_EXPIRE_OFFLINE)))
             {
-                if(remaintime  <= int32(timediff))
+                if (remaintime / IN_MILLISECONDS <= int32(timediff))
                     continue;
 
-                remaintime -= timediff;
+                remaintime -= timediff * IN_MILLISECONDS;
             }
 
             // prevent wrong values of remaincharges
-            if(spellproto->ProcCharges)
+            if (spellInfo->ProcCharges)
             {
-                if(remaincharges <= 0 || remaincharges > spellproto->ProcCharges)
-                    remaincharges = spellproto->ProcCharges;
+                if (remaincharges <= 0 || remaincharges > spellInfo->ProcCharges)
+                    remaincharges = spellInfo->ProcCharges;
             }
             else
-                remaincharges = -1;
+                remaincharges = 0;
 
-            /// do not load single target auras (unless they were cast by the player)
-            if (caster_guid != GetGUID() && spellproto->IsSingleTarget())
-                continue;
-                
-            bool abort = false;
-            for (const auto & Effect : spellproto->Effects) { // Don't load these, they make the core crash sometimes
-                if (Effect.ApplyAuraName == SPELL_AURA_MOD_DETAUNT)
-                    abort = true;
-            }
-
-            Unit* owner = GetOwner(); 
-            // load negative auras only if player has recently dismissed his pet
-            if(owner && !owner->HasAuraEffect(SPELL_PET_RECENTLY_DISMISSED) && !spellproto->IsPositiveEffect(effindex))
-                continue;
-
-            if (abort)
-                continue;
-
-            for(uint32 i=0; i<stackcount; i++)
+            if (Aura* aura = Aura::TryCreate(spellInfo, effmask, this, nullptr, &baseDamage[0], nullptr, caster_guid))
             {
-                Aura* aura = CreateAura(spellproto, effindex, nullptr, this, nullptr);
-
-                if(!damage)
-                    damage = aura->GetModifier()->m_amount;
-                aura->SetLoadedState(caster_guid,damage,maxduration,remaintime,remaincharges);
-                AddAura(aura);
+                if (!aura->CanBeSaved())
+                {
+                    aura->Remove();
+                    continue;
+                }
+                aura->SetLoadedState(maxduration, remaintime, remaincharges, stackcount, recalculatemask, critChance, applyResilience, &damage[0]);
+                aura->ApplyForTargets();
+                TC_LOG_DEBUG("entities.pet", "Added aura spellid %u, effectmask %u", spellInfo->Id, effmask);
             }
-        }
-        while( result->NextRow() );
+        } while (result->NextRow());
     }
 }
 
 void Pet::_SaveAuras(SQLTransaction& trans)
 {
-    trans->PAppend("DELETE FROM pet_aura WHERE guid = '%u'", m_charmInfo->GetPetNumber());
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PET_AURAS);
+    stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+    trans->Append(stmt);
 
-    AuraMap const& auras = GetAuras();
-    if (auras.empty())
+    for (AuraMap::const_iterator itr = m_ownedAuras.begin(); itr != m_ownedAuras.end(); ++itr)
     {
-        CharacterDatabase.CommitTransaction(trans);
-        return;
-    }
-    
-    for(const auto & itr : auras)
-    {
-        Aura* aura = itr.second;
-        SpellInfo const *spellInfo = aura->GetSpellInfo();
-
-        //skip if passive
-        if(aura->IsPassive())
-            continue;
-
-        // skip all auras from spell that apply at cast SPELL_AURA_MOD_SHAPESHIFT or pet area auras.
-        for (const auto & Effect : spellInfo->Effects)
+        // windrunner: skip all auras from spell that apply at cast SPELL_AURA_MOD_SHAPESHIFT or pet area auras.
+        for (const auto & Effect : itr->second->GetSpellInfo()->Effects)
         {
             if (Effect.ApplyAuraName == SPELL_AURA_MOD_STEALTH ||
                 Effect.Effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER ||
-                Effect.Effect == SPELL_EFFECT_APPLY_AREA_AURA_PET )
+                Effect.Effect == SPELL_EFFECT_APPLY_AREA_AURA_PET)
                 continue;
         }
 
-        // don't save guid of caster in case we are caster of the spell - guid for pet is generated every pet load, so it won't match saved guid anyways
-        ObjectGuid casterGUID = (aura->GetCasterGUID() == GetGUID()) ? ObjectGuid::Empty : aura->GetCasterGUID();
+        // check if the aura has to be saved
+        if (!itr->second->CanBeSaved() /* TC || IsPetAura(itr->second)*/)
+            continue;
 
-        trans->PAppend("INSERT INTO pet_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges)"
-            "VALUES ('%u', '" UI64FMTD "', '%u', '%u', '%u', '%d', '%d', '%d', '%d')",
-            m_charmInfo->GetPetNumber(), casterGUID,(uint32)aura->GetId(), (uint32)aura->GetEffIndex(),
-            (uint32)aura->GetStackAmount(), aura->GetModifier()->m_amount,int(aura->GetMaxDuration()),
-            int(aura->GetDuration()),int(aura->m_procCharges));
+        Aura* aura = itr->second;
+
+        int32 damage[MAX_SPELL_EFFECTS];
+        int32 baseDamage[MAX_SPELL_EFFECTS];
+        uint8 effMask = 0;
+        uint8 recalculateMask = 0;
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (aura->GetEffect(i))
+            {
+                baseDamage[i] = aura->GetEffect(i)->GetBaseAmount();
+                damage[i] = aura->GetEffect(i)->GetAmount();
+                effMask |= (1 << i);
+                if (aura->GetEffect(i)->CanBeRecalculated())
+                    recalculateMask |= (1 << i);
+            }
+            else
+            {
+                baseDamage[i] = 0;
+                damage[i] = 0;
+            }
+        }
+
+        // don't save guid of caster in case we are caster of the spell - guid for pet is generated every pet load, so it won't match saved guid anyways
+        ObjectGuid casterGUID = (itr->second->GetCasterGUID() == GetGUID()) ? ObjectGuid::Empty : itr->second->GetCasterGUID();
+
+        uint8 index = 0;
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PET_AURA);
+        stmt->setUInt32(index++, m_charmInfo->GetPetNumber());
+        stmt->setUInt64(index++, casterGUID.GetRawValue());
+        stmt->setUInt32(index++, itr->second->GetId());
+        stmt->setUInt8(index++, effMask);
+        stmt->setUInt8(index++, recalculateMask);
+        stmt->setUInt8(index++, itr->second->GetStackAmount());
+        stmt->setInt32(index++, damage[0]);
+        stmt->setInt32(index++, damage[1]);
+        stmt->setInt32(index++, damage[2]);
+        stmt->setInt32(index++, baseDamage[0]);
+        stmt->setInt32(index++, baseDamage[1]);
+        stmt->setInt32(index++, baseDamage[2]);
+        stmt->setInt32(index++, itr->second->GetMaxDuration());
+        stmt->setInt32(index++, itr->second->GetDuration());
+        stmt->setUInt8(index++, itr->second->GetCharges());
+        stmt->setFloat(index++, itr->second->GetCritChance());
+        stmt->setBool(index++, itr->second->CanApplyResilience());
+
+        trans->Append(stmt);
     }
 }
 
@@ -2137,25 +2168,25 @@ void Pet::InitPetAuras(const uint32 Entry)
     }
 
     if(aura1)
-        CastSpell(this, aura1, TRIGGERED_FULL_MASK);
+        CastSpell(this, aura1, true);
     if(aura2)
-        CastSpell(this, aura2, TRIGGERED_FULL_MASK);
+        CastSpell(this, aura2, true);
     if(aura3)
-        CastSpell(this, aura3, TRIGGERED_FULL_MASK);
+        CastSpell(this, aura3, true);
 
     // Hunter Pets have multiple auras
     if(getPetType() == HUNTER_PET)
     {
-        CastSpell(this, 8875, TRIGGERED_FULL_MASK);    // Damage
-        CastSpell(this, 19580, TRIGGERED_FULL_MASK);   // Armor
-        CastSpell(this, 19581, TRIGGERED_FULL_MASK);   // HP
-        CastSpell(this, 19582, TRIGGERED_FULL_MASK);   // Speed
-        CastSpell(this, 19589, TRIGGERED_FULL_MASK);   // Power Regen
-        CastSpell(this, 19591, TRIGGERED_FULL_MASK);   // Critical Chance
-        CastSpell(this, 20784, TRIGGERED_FULL_MASK);   // Frenzy Chance
-        CastSpell(this, 34666, TRIGGERED_FULL_MASK);   // Hit Chance
-        CastSpell(this, 34667, TRIGGERED_FULL_MASK);   // Dodge Chance
-        CastSpell(this, 34675, TRIGGERED_FULL_MASK);   // Attack Speed
+        CastSpell(this, 8875, true);    // Damage
+        CastSpell(this, 19580, true);   // Armor
+        CastSpell(this, 19581, true);   // HP
+        CastSpell(this, 19582, true);   // Speed
+        CastSpell(this, 19589, true);   // Power Regen
+        CastSpell(this, 19591, true);   // Critical Chance
+        CastSpell(this, 20784, true);   // Frenzy Chance
+        CastSpell(this, 34666, true);   // Hit Chance
+        CastSpell(this, 34667, true);   // Dodge Chance
+        CastSpell(this, 34675, true);   // Attack Speed
     }
 }
 

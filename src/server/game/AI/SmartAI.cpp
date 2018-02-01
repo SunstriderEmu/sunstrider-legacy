@@ -502,31 +502,6 @@ void SmartAI::WaypointPathEnded(uint32 nodeId, uint32 pathId)
     }
 }
 
-
-void SmartAI::RemoveAuras()
-{
-    Unit::AuraMap& auras = me->GetAuras();
-    for(auto itr = auras.begin(); itr != auras.end();)
-    {
-        if (!itr->second->IsPassive() && itr->second->GetCasterGUID() != me->GetGUID())
-            me->RemoveAura(itr);
-        else
-            itr++;
-    }
-    /*
-    /// @fixme: duplicated logic in CreatureAI::_EnterEvadeMode (could use RemoveAllAurasExceptType)
-    Unit::AuraApplicationMap& appliedAuras = me->GetAppliedAuras();
-    for (Unit::AuraApplicationMap::iterator iter = appliedAuras.begin(); iter != appliedAuras.end();)
-    {
-        Aura const* aura = iter->second->GetBase();
-        if (!aura->IsPassive() && !aura->HasEffectType(SPELL_AURA_CLONE_CASTER) && aura->GetCasterGUID() != me->GetGUID())
-            me->RemoveAura(iter);
-        else
-            ++iter;
-    }
-    */
-}
-
 void SmartAI::EnterEvadeMode(EvadeReason why)
 {
     if (mEvadeDisabled)

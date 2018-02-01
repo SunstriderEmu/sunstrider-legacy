@@ -181,21 +181,21 @@ public:
 
 			// Slowing effects
 			player->AddAura(ClassSpells::Warrior::HAMSTRING_RNK_4, player);
-			Aura* hamstring = player->GetAura(ClassSpells::Warrior::HAMSTRING_RNK_4, EFFECT_0);
+			Aura* hamstring = player->GetAura(ClassSpells::Warrior::HAMSTRING_RNK_4);
 			if (!hamstring)
 				return;
 			TEST_ASSERT(hamstring->GetMaxDuration() < 7.6f);
 			player->RemoveAurasDueToSpell(ClassSpells::Warrior::HAMSTRING_RNK_4);
 
 			player->AddAura(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2, player);
-			Aura* poison = player->GetAura(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2, EFFECT_0);
+			Aura* poison = player->GetAura(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2);
 			if (!poison)
 				return;
 			TEST_ASSERT(poison->GetMaxDuration() < 6.1f);
 			player->RemoveAurasDueToSpell(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2);
 
 			player->AddAura(ClassSpells::Shaman::FROST_SHOCK_RNK_5, player);
-			Aura* shock = player->GetAura(ClassSpells::Shaman::FROST_SHOCK_RNK_5, EFFECT_0);
+			Aura* shock = player->GetAura(ClassSpells::Shaman::FROST_SHOCK_RNK_5);
 			if (!shock)
 				return;
 			TEST_ASSERT(shock->GetMaxDuration() < 4.1f);

@@ -880,22 +880,25 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_FIRST);
 
 
-    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_SET_DESERTER)) {
-        pCurrChar->CastSpell(pCurrChar, 26013, TRIGGERED_FULL_MASK);
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_SET_DESERTER)) 
+    {
+        pCurrChar->CastSpell(pCurrChar, 26013, true);
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_SET_DESERTER);
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'8' WHERE guid = %u", pCurrChar->GetGUID().GetCounter());
         if (pCurrChar->IsDead())
             pCurrChar->ResurrectPlayer(1.f);
     }
 
-    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_FLYS)) {
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_FLYS)) 
+    {
         pCurrChar->m_taxi.ResetTaximask();
         pCurrChar->InitTaxiNodesForLevel();
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_RESET_FLYS);
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'16' WHERE guid = %u", pCurrChar->GetGUID().GetCounter());
     }
 
-    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_ALL_REP)) {
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_ALL_REP)) 
+    {
         pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(942), 42999);
         pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(935), 42999);
         pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(936), 42999);

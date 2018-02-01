@@ -105,7 +105,7 @@ bool ChatHandler::HandleDebugBatchAttack(const char* args)
                 p->AttackerStateUpdate(victim, type);
         } else {
             for(uint32 i = 0; i < count; i++)
-                p->CastSpell(victim, 75, TRIGGERED_FULL_MASK); //shoot
+                p->CastSpell(victim, 75, true); //shoot
         }
     } else {
         PSendSysMessage("No victim");
@@ -1149,23 +1149,6 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
     }
     
     return false;
-}
-
-bool ChatHandler::HandleDebugAurasList(const char* args)
-{
-    Unit* unit = GetSelectedUnit();
-    if (!unit)
-        unit = m_session->GetPlayer();
-    
-    PSendSysMessage("Aura list:");
-    Unit::AuraMap& tAuras = unit->GetAuras();
-    for (auto & tAura : tAuras)
-    {
-        SpellInfo const* spellProto = tAura.second->GetSpellInfo();
-        PSendSysMessage("%u - %s (stack: %u) - Effect %u - Value %u %s", spellProto->Id, spellProto->SpellName[sWorld->GetDefaultDbcLocale()], tAura.second->GetStackAmount(), tAura.second->GetEffIndex(), tAura.second->GetModifierValue(), tAura.second->IsActive() ? "" : "[inactive]");
-    }
-    
-    return true;
 }
 
 bool ChatHandler::HandleDebugResetDailyQuests(const char* args)

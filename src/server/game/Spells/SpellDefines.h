@@ -7,8 +7,7 @@
 
 class Item;
 class Aura;
-//compat TC
-typedef Aura AuraEffect;
+class AuraEffect;
 
 enum SpellInterruptFlags : uint32
 {
@@ -16,7 +15,10 @@ enum SpellInterruptFlags : uint32
     SPELL_INTERRUPT_FLAG_PUSH_BACK    = 0x02, // push back
     SPELL_INTERRUPT_FLAG_INTERRUPT    = 0x04, // interrupt
     SPELL_INTERRUPT_FLAG_AUTOATTACK   = 0x08, // no
-    SPELL_INTERRUPT_FLAG_DAMAGE       = 0x10  // _complete_ interrupt on direct damage?
+    SPELL_INTERRUPT_FLAG_DAMAGE       = 0x10  // _complete_ interrupt on direct damage
+#ifdef LICH_KING
+    //SPELL_INTERRUPT_UNK               = 0x20                // unk, 564 of 727 spells having this spell start with "Glyph"
+#endif
 };
 
 enum SpellChannelInterruptFlags : uint32
@@ -100,8 +102,9 @@ enum SpellValueMod : uint32
     SPELLVALUE_BASE_POINT0,
     SPELLVALUE_BASE_POINT1,
     SPELLVALUE_BASE_POINT2,
-    SPELLVALUE_MAX_TARGETS,
     SPELLVALUE_MOD_RADIUS,
+    SPELLVALUE_MAX_TARGETS,
+    SPELLVALUE_AURA_STACK,
 };
 
 

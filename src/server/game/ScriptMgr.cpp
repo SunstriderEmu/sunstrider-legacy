@@ -352,7 +352,7 @@ class CreatureGameObjectScriptRegistrySwapHooks
 
         bool Execute(uint64 /*e_time*/, uint32 /*p_time*/) override
         {
-            owner_->CastSpell(owner_, SPELL_HOTSWAP_VISUAL_SPELL_EFFECT, TRIGGERED_FULL_MASK);
+            owner_->CastSpell(owner_, SPELL_HOTSWAP_VISUAL_SPELL_EFFECT, true);
             return true;
         }
 

@@ -209,9 +209,9 @@ bool SpellScript::EffectHandler::CheckEffect(SpellInfo const* spellEntry, SpellE
     return _SpellScript::EffectNameCheck::Check(spellEntry, localEffIndex);
 }
 
-void SpellScript::EffectHandler::Call(SpellScript* spellScript, SpellEffIndex localEffIndex)
+void SpellScript::EffectHandler::Call(SpellScript* spellScript, SpellEffIndex localEffIndex, int32& damage)
 {
-    (spellScript->*pEffectHandlerScript)(localEffIndex);
+    (spellScript->*pEffectHandlerScript)(localEffIndex, damage);
 }
 
 SpellScript::HitHandler::HitHandler(SpellHitFnType _pHitHandlerScript)
@@ -679,7 +679,6 @@ SpellValue const* SpellScript::GetSpellValue()
 
 bool AuraScript::_Validate(SpellInfo const* entry)
 {
-    /*
     for (auto itr = DoCheckAreaTarget.begin(); itr != DoCheckAreaTarget.end(); ++itr)
         if (!entry->HasAreaAuraEffect() && !entry->HasEffect(SPELL_EFFECT_PERSISTENT_AREA_AURA) && !entry->HasEffect(SPELL_EFFECT_APPLY_AURA))
             TC_LOG_ERROR("scripts", "Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `DoCheckAreaTarget` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
@@ -691,7 +690,7 @@ bool AuraScript::_Validate(SpellInfo const* entry)
     for (auto itr = AfterDispel.begin(); itr != AfterDispel.end(); ++itr)
         if (!entry->HasEffect(SPELL_EFFECT_APPLY_AURA) && !entry->HasAreaAuraEffect())
             TC_LOG_ERROR("scripts", "Spell `%u` of script `%s` does not have apply aura effect - handler bound to hook `AfterDispel` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
-    */
+
     for (auto itr = OnEffectApply.begin(); itr != OnEffectApply.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
             TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectApply` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
@@ -716,7 +715,6 @@ bool AuraScript::_Validate(SpellInfo const* entry)
         if (!(*itr).GetAffectedEffectsMask(entry))
             TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `OnEffectUpdatePeriodic` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
 
-    /*
     for (auto itr = DoEffectCalcAmount.begin(); itr != DoEffectCalcAmount.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
             TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `DoEffectCalcAmount` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
@@ -776,11 +774,10 @@ bool AuraScript::_Validate(SpellInfo const* entry)
     for (auto itr = AfterEffectProc.begin(); itr != AfterEffectProc.end(); ++itr)
         if (!(*itr).GetAffectedEffectsMask(entry))
             TC_LOG_ERROR("scripts", "Spell `%u` Effect `%s` of script `%s` did not match dbc effect data - handler bound to hook `AfterEffectProc` of AuraScript won't be executed", entry->Id, (*itr).ToString().c_str(), m_scriptName->c_str());
-*/
+
     return _SpellScript::_Validate(entry);
 }
 
-/*
 AuraScript::CheckAreaTargetHandler::CheckAreaTargetHandler(AuraCheckAreaTargetFnType _pHandlerScript)
 {
     pHandlerScript = _pHandlerScript;
@@ -800,7 +797,6 @@ void AuraScript::AuraDispelHandler::Call(AuraScript* auraScript, DispelInfo* _di
 {
     (auraScript->*pHandlerScript)(_dispelInfo);
 }
-*/
 
 AuraScript::EffectBase::EffectBase(uint8 _effIndex, uint16 _effName)
     : _SpellScript::EffectAuraNameCheck(_effName), _SpellScript::EffectHook(SpellEffIndex(_effIndex))
@@ -838,7 +834,6 @@ void AuraScript::EffectUpdatePeriodicHandler::Call(AuraScript* auraScript, AuraE
     (auraScript->*pEffectHandlerScript)(aurEff);
 }
 
-/*
 AuraScript::EffectCalcAmountHandler::EffectCalcAmountHandler(AuraEffectCalcAmountFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)
     : AuraScript::EffectBase(_effIndex, _effName)
 {
@@ -871,7 +866,7 @@ void AuraScript::EffectCalcSpellModHandler::Call(AuraScript* auraScript, AuraEff
 {
     (auraScript->*pEffectHandlerScript)(aurEff, spellMod);
 }
-*/
+
 AuraScript::EffectApplyHandler::EffectApplyHandler(AuraEffectApplicationModeFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName, AuraEffectHandleModes _mode)
     : AuraScript::EffectBase(_effIndex, _effName)
 {
@@ -884,7 +879,7 @@ void AuraScript::EffectApplyHandler::Call(AuraScript* auraScript, AuraEffect con
     if (_mode & mode)
         (auraScript->*pEffectHandlerScript)(_aurEff, _mode);
 }
-/*
+
 AuraScript::EffectAbsorbHandler::EffectAbsorbHandler(AuraEffectAbsorbFnType _pEffectHandlerScript, uint8 _effIndex)
     : AuraScript::EffectBase(_effIndex, SPELL_AURA_SCHOOL_ABSORB)
 {
@@ -928,6 +923,17 @@ bool AuraScript::CheckProcHandler::Call(AuraScript* auraScript, ProcEventInfo& e
     return (auraScript->*_HandlerScript)(eventInfo);
 }
 
+AuraScript::CheckEffectProcHandler::CheckEffectProcHandler(AuraCheckEffectProcFnType handlerScript, uint8 effIndex, uint16 effName)
+    : AuraScript::EffectBase(effIndex, effName)
+{
+    _HandlerScript = handlerScript;
+}
+
+bool AuraScript::CheckEffectProcHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+{
+    return (auraScript->*_HandlerScript)(aurEff, eventInfo);
+}
+
 AuraScript::AuraProcHandler::AuraProcHandler(AuraProcFnType handlerScript)
 {
     _HandlerScript = handlerScript;
@@ -948,7 +954,7 @@ void AuraScript::EffectProcHandler::Call(AuraScript* auraScript, AuraEffect cons
 {
     (auraScript->*_EffectHandlerScript)(aurEff, eventInfo);
 }
-*/
+
 bool AuraScript::_Load(Aura* aura)
 {
     m_aura = aura;
@@ -1044,7 +1050,7 @@ Unit* AuraScript::GetUnitOwner() const
     return m_aura->GetUnitOwner();
 }
 
-/*DynamicObject* AuraScript::GetDynobjOwner() const
+DynamicObject* AuraScript::GetDynobjOwner() const
 {
     return m_aura->GetDynobjOwner();
 }
@@ -1053,19 +1059,16 @@ void AuraScript::Remove(uint32 removeMode)
 {
     m_aura->Remove((AuraRemoveMode)removeMode);
 }
-*/
 
 Aura* AuraScript::GetAura() const
 {
     return m_aura;
 }
 
-/*
 AuraObjectType AuraScript::GetType() const
 {
     return m_aura->GetType();
 }
-*/
 
 int32 AuraScript::GetDuration() const
 {
@@ -1074,15 +1077,13 @@ int32 AuraScript::GetDuration() const
 
 void AuraScript::SetDuration(int32 duration, bool withMods)
 {
-    m_aura->SetDuration(duration/*TC , withMods*/);
+    m_aura->SetDuration(duration, withMods);
 }
 
-/*
 void AuraScript::RefreshDuration()
 {
     m_aura->RefreshDuration();
 }
-*/
 
 time_t AuraScript::GetApplyTime() const
 {
@@ -1099,12 +1100,10 @@ void AuraScript::SetMaxDuration(int32 duration)
     m_aura->SetMaxDuration(duration);
 }
 
-/*
 int32 AuraScript::CalcMaxDuration() const
 {
     return m_aura->CalcMaxDuration();
 }
-*/
 
 bool AuraScript::IsExpired() const
 {
@@ -1151,12 +1150,10 @@ void AuraScript::SetStackAmount(uint8 num)
     m_aura->SetStackAmount(num);
 }
 
-/*
 bool AuraScript::ModStackAmount(int32 num, AuraRemoveMode removeMode)
 {
     return m_aura->ModStackAmount(num, removeMode);
 }
-*/
 
 bool AuraScript::IsPassive() const
 {
@@ -1168,7 +1165,6 @@ bool AuraScript::IsDeathPersistent() const
     return m_aura->IsDeathPersistent();
 }
 
-/*/
 bool AuraScript::HasEffect(uint8 effIndex) const
 {
     return m_aura->HasEffect(effIndex);
@@ -1183,7 +1179,6 @@ bool AuraScript::HasEffectType(AuraType type) const
 {
     return m_aura->HasEffectType(type);
 }
-*/
 
 Unit* AuraScript::GetTarget() const
 {

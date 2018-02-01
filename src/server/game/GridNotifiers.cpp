@@ -419,7 +419,7 @@ bool AnyFriendlyUnitInObjectRangeCheck::operator()(Unit* u)
     if (!u->IsInMap(i_obj) || !u->InSamePhase(i_obj) || !u->IsWithinDoubleVerticalCylinder(i_obj, searchRadius, searchRadius))
         return false;
 
-    if (!i_funit->IsFriendlyTo(u))
+    if (!i_funit->IsFriendlyTo(u) || i_funit->IsTotem()) //exclude totems from aoe
         return false;
 
     return !i_playerOnly || u->GetTypeId() == TYPEID_PLAYER;
@@ -428,7 +428,7 @@ bool AnyFriendlyUnitInObjectRangeCheck::operator()(Unit* u)
 bool AnyFriendlyUnitInObjectRangeCheckWithRangeReturned::operator()(Unit* u, float& range)
 {
     range = i_obj->GetDistance(u);
-    if (u->IsAlive() && i_range > range && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
+    if (u->IsAlive() && i_range > range && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER) && !u->IsTotem())
         return true;
     else
         return false;
@@ -436,7 +436,7 @@ bool AnyFriendlyUnitInObjectRangeCheckWithRangeReturned::operator()(Unit* u, flo
 
 bool NearestFriendlyUnitInObjectRangeCheck::operator()(Unit* u)
 {
-    if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && (!i_furthest || !i_obj->IsWithinDistInMap(u, i_minRange)) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
+    if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && (!i_furthest || !i_obj->IsWithinDistInMap(u, i_minRange)) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER) && !u->IsTotem())
     {
         if (!i_furthest)
             i_range = i_obj->GetDistance(u);
@@ -500,6 +500,7 @@ bool AnyAoETargetUnitInObjectRangeCheck::operator()(Unit* u)
 CallOfHelpCreatureInRangeDo::CallOfHelpCreatureInRangeDo(Unit* funit, Unit* enemy, float range)
     : i_funit(funit), i_enemy(enemy), i_range(range)
 { }
+
 void CallOfHelpCreatureInRangeDo::operator()(Creature* u)
 {
     if (u == i_funit)
@@ -595,7 +596,7 @@ bool FriendlyMissingBuffInRange::operator()(Unit* u)
 bool FriendlyMissingBuffInRangeOutOfCombat::operator()(Unit* u)
 {
     if (u->IsAlive() && !u->IsInCombat() && i_obj->IsFriendlyTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-        !(u->HasAuraEffect(i_spell)) && i_obj != u)
+        !(u->HasAura(i_spell)) && i_obj != u)
     {
         return true;
     }

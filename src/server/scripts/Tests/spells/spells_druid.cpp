@@ -49,7 +49,7 @@ public:
 
 			// Duration & CD
 			CastBarkskin(druid);
-			Aura* aura = druid->GetAura(ClassSpells::Druid::BARKSKIN_RNK_1, EFFECT_0);
+			Aura* aura = druid->GetAura(ClassSpells::Druid::BARKSKIN_RNK_1);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetDuration() == 12 * SECOND * IN_MILLISECONDS);
             TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::BARKSKIN_RNK_1, 1 * MINUTE);
@@ -148,7 +148,7 @@ public:
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
 			uint32 const startHealth = druid2->GetHealth();
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, EFFECT_0, 6 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 6 * SECOND * IN_MILLISECONDS);
             TEST_CAST(druid, druid2, ClassSpells::Druid::WRATH_RNK_10);
 			Wait(500); // wrath hit
 			TEST_ASSERT(druid2->GetHealth() == startHealth);
@@ -165,13 +165,13 @@ public:
 			// 3s
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, EFFECT_0, 3 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 3 * SECOND * IN_MILLISECONDS);
 			druid2->RemoveAurasDueToSpell(ClassSpells::Druid::CYCLONE_RNK_1);
 
 			// 1.5s
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, EFFECT_0, 1500);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 1500);
 
 			// Immune
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
@@ -264,7 +264,7 @@ public:
 
 			// Faerie Fire 
             TEST_CAST(player, rogue, ClassSpells::Druid::FAERIE_FIRE_RNK_5);
-			Aura* aura = rogue->GetAura(ClassSpells::Druid::FAERIE_FIRE_RNK_5, EFFECT_0);
+			Aura* aura = rogue->GetAura(ClassSpells::Druid::FAERIE_FIRE_RNK_5);
 			TEST_ASSERT(aura != nullptr);
 			ASSERT_INFO("Rogue has %u armor, expected: %i", rogue->GetArmor(), expectedRogueArmor);
 			TEST_ASSERT(int32(rogue->GetArmor()) == expectedRogueArmor);
@@ -309,7 +309,7 @@ public:
                     break;
             }
             TEST_ASSERT(hasAura);
-            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Druid::HIBERNATE_RNK_3, EFFECT_0, durationSeconds * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Druid::HIBERNATE_RNK_3, durationSeconds * IN_MILLISECONDS);
 			enemy->RemoveAurasDueToSpell(ClassSpells::Druid::HIBERNATE_RNK_3);
 		}
 
@@ -458,7 +458,7 @@ public:
 			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
 
 			// Duration & CD
-            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::INNERVATE_RNK_1, EFFECT_0, 20 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::INNERVATE_RNK_1, 20 * SECOND * IN_MILLISECONDS);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::INNERVATE_RNK_1, 6 * MINUTE);
 
 			// Mana regen
@@ -707,7 +707,7 @@ public:
 			}
             TEST_ASSERT(hasAura);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
-			Aura* aura = rogue->GetAura(ClassSpells::Druid::BASH_RNK_3, EFFECT_0);
+			Aura* aura = rogue->GetAura(ClassSpells::Druid::BASH_RNK_3);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetDuration() == 4 * SECOND * IN_MILLISECONDS);
 		}
@@ -767,11 +767,11 @@ public:
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, 10 * MINUTE);
 
 			// Aura
-			Aura* aura3m = creature3m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, EFFECT_0);
+			Aura* aura3m = creature3m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
 			TEST_ASSERT(aura3m != nullptr);
-			Aura* aura6m = creature6m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, EFFECT_0);
+			Aura* aura6m = creature6m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
 			TEST_ASSERT(aura6m != nullptr);
-			Aura* aura11m = creature11m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, EFFECT_0);
+			Aura* aura11m = creature11m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
 			TEST_ASSERT(aura11m == nullptr);
 
 			// Aura duration
@@ -930,11 +930,11 @@ public:
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
 
 			// Aura
-			Aura* aura3m = player3m->GetAura(ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6, EFFECT_0);
+			Aura* aura3m = player3m->GetAura(ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
 			TEST_ASSERT(aura3m != nullptr);
-			Aura* aura6m = creature6m->GetAura(ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6, EFFECT_0);
+			Aura* aura6m = creature6m->GetAura(ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
 			TEST_ASSERT(aura6m != nullptr);
-			Aura* aura15m = creature15m->GetAura(ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6, EFFECT_0);
+			Aura* aura15m = creature15m->GetAura(ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
 			TEST_ASSERT(aura15m == nullptr);
 
 			// Aura duration
@@ -977,7 +977,7 @@ public:
             TEST_CAST(druid, druid, ClassSpells::Druid::ENRAGE_RNK_1);
 			ASSERT_INFO("Form: %u, armor: %u, expected: %u", spellFormId, druid->GetArmor(), expectedArmor);
 			TEST_ASSERT(druid->GetArmor() == expectedArmor);
-			Aura* aura = druid->GetAura(ClassSpells::Druid::ENRAGE_RNK_1, EFFECT_0);
+			Aura* aura = druid->GetAura(ClassSpells::Druid::ENRAGE_RNK_1);
 			TEST_ASSERT(aura->GetDuration() == 10 * SECOND * IN_MILLISECONDS);
 			Wait(2000);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 4 * 10);
@@ -1038,7 +1038,7 @@ public:
 			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, expectedFRCritHeal, true);
 
             TEST_CAST(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4);
-			Aura* aura = druid->GetAura(ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, EFFECT_0);
+			Aura* aura = druid->GetAura(ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetDuration() == 10 * SECOND * IN_MILLISECONDS);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, 3 * MINUTE);
@@ -1107,7 +1107,7 @@ public:
 			// Acquire threat, aura duration, cooldown
             TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_CAST(druid, creature, ClassSpells::Druid::GROWL_RNK_1);
-			Aura* aura = creature->GetAura(ClassSpells::Druid::GROWL_RNK_1, EFFECT_1);
+			Aura* aura = creature->GetAura(ClassSpells::Druid::GROWL_RNK_1);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetDuration() == 3 * SECOND * IN_MILLISECONDS);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::GROWL_RNK_1, 10 * SECOND);
@@ -1184,13 +1184,13 @@ public:
                         break;
                 }
                 TEST_ASSERT(hasAura);
-				Aura* aura = creature->GetAura(ClassSpells::Druid::LACERATE_RNK_1, EFFECT_0);
+				Aura* aura = creature->GetAura(ClassSpells::Druid::LACERATE_RNK_1);
 				TEST_ASSERT(aura != nullptr);
 				// add lacerate stack
                 uint32 retry = 0;
 				while (lacerateStack > aura->GetStackAmount()) {
                     TEST_CAST(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-					aura = creature->GetAura(ClassSpells::Druid::LACERATE_RNK_1, EFFECT_0);
+					aura = creature->GetAura(ClassSpells::Druid::LACERATE_RNK_1);
 					TEST_ASSERT(aura != nullptr);
                     retry++;
                     ASSERT_INFO("Max retries reached");
@@ -1303,10 +1303,10 @@ public:
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
 
 			// Stun
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4, EFFECT_0, 3 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4, 3 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
 
 			// Damage
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4_PROC, EFFECT_0, 18 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4_PROC, 18 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
 			float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
 			float const pounceBleedCoeff = 0.18f;
 			uint32 const pounceBleedTotal = ClassSpellsDamage::Druid::POUNCE_RNK_4_TOTAL + AP * pounceBleedCoeff;
@@ -1395,7 +1395,7 @@ public:
 			TEST_POWER_COST(druid, creature, ClassSpells::Druid::RAKE_RNK_5, POWER_ENERGY, expectedRakeEnergy);
 
 			// Aura
-			Aura* aura = creature->GetAura(ClassSpells::Druid::RAKE_RNK_5, EFFECT_1);
+			Aura* aura = creature->GetAura(ClassSpells::Druid::RAKE_RNK_5);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetDuration() == 9 * SECOND * IN_MILLISECONDS);
 
@@ -1645,7 +1645,7 @@ public:
             TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::TIGERS_FURY_RNK_4, 1 * SECOND);
 
             // Aura
-            Aura* aura = druid->GetAura(ClassSpells::Druid::TIGERS_FURY_RNK_4, EFFECT_0);
+            Aura* aura = druid->GetAura(ClassSpells::Druid::TIGERS_FURY_RNK_4);
             TEST_ASSERT(aura != nullptr);
             TEST_ASSERT(aura->GetDuration() == 6 * SECOND * IN_MILLISECONDS);
 
@@ -1749,7 +1749,7 @@ public:
             TEST_POWER_COST(druid, warrior, ClassSpells::Druid::ABOLISH_POISON_RNK_1, POWER_MANA, expectedAbolishPoisonMana);
 
             // Aura duration
-            Aura* aura = warrior->GetAura(ClassSpells::Druid::ABOLISH_POISON_RNK_1, EFFECT_0);
+            Aura* aura = warrior->GetAura(ClassSpells::Druid::ABOLISH_POISON_RNK_1);
             TEST_ASSERT(aura != nullptr);
             TEST_ASSERT(aura->GetDuration() == 8 * SECOND * IN_MILLISECONDS);
 
@@ -1875,7 +1875,7 @@ public:
             TEST_ASSERT(caster->GetItemCount(reagentId, false) == 0);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(victim, spellId, EFFECT_0, 1 * HOUR * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(victim, spellId, 1 * HOUR * IN_MILLISECONDS);
 
             // Stats, resistances & armor
             TEST_ASSERT(Between<uint32>(victim->GetArmor(), expectedArmor - 1, expectedArmor + 1));
@@ -1998,7 +1998,7 @@ public:
             TEST_POWER_COST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, POWER_MANA, expectedLifebloomMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, EFFECT_0, 7 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, 7 * SECOND * IN_MILLISECONDS);
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
 
             // Spell coeffs
@@ -2053,7 +2053,7 @@ public:
             TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(victim, spellId, EFFECT_0, 30 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(victim, spellId, 30 * MINUTE * IN_MILLISECONDS);
 
             // Stats, resistances & armor
             TEST_ASSERT(victim->GetArmor() == expectedArmor);
@@ -2211,7 +2211,7 @@ public:
             Wait(2000);
 
             // Aura
-            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::REGROWTH_RNK_10, EFFECT_1, 21 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::REGROWTH_RNK_10, 21 * SECOND * IN_MILLISECONDS);
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::REGROWTH_RNK_10);
 
             // Spell coeffs
@@ -2355,7 +2355,7 @@ public:
             TEST_POWER_COST(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, POWER_MANA, expectedTranquilityMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, EFFECT_0, 8 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, 8 * SECOND * IN_MILLISECONDS);
 
             // Spell coeffs
             float const TranquilityCastTime = 8.0f;

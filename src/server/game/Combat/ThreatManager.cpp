@@ -7,6 +7,7 @@
 #include "Unit.h"
 #include "UnitAI.h"
 #include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "ObjectAccessor.h"
@@ -358,7 +359,7 @@ void ThreatManager::AddThreat(Unit* target, float amount, SpellInfo const* spell
     ThreatReference* ref = new ThreatReference(this, target, amount);
     PutThreatListRef(target->GetGUID(), ref);
     target->GetThreatManager().PutThreatenedByMeRef(_owner->GetGUID(), ref);
-    if (!ref->IsOffline() && !_ownerEngaged)
+
     {
         _ownerEngaged = true;
 
@@ -597,8 +598,11 @@ void ThreatManager::ForwardThreatForAssistingMe(Unit* assistant, float baseAmoun
 {
     if (spell && spell->HasAttribute(SPELL_ATTR1_NO_THREAT)) // shortcut, none of the calls would do anything
         return;
+    if (_threatenedByMe.empty())
+        return;
+    float const perTarget = baseAmount / _threatenedByMe.size(); // Threat is divided evenly among all targets (LibThreat sourced)
     for (auto const& pair : _threatenedByMe)
-        pair.second->GetOwner()->GetThreatManager().AddThreat(assistant, baseAmount, spell, ignoreModifiers);
+        pair.second->GetOwner()->GetThreatManager().AddThreat(assistant, perTarget, spell, ignoreModifiers);
 }
 
 void ThreatManager::RemoveMeFromThreatLists()

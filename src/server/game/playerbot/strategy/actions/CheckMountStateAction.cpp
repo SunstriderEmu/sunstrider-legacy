@@ -2,6 +2,8 @@
 #include "../../playerbot.h"
 #include "SpellAuras.h"
 #include "CheckMountStateAction.h"
+#include "Unit.h"
+#include "SpellAuraEffects.h"
 
 using namespace ai;
 
@@ -35,9 +37,11 @@ bool CheckMountStateAction::Mount()
     Player* master = GetMaster();
     ai->RemoveShapeshift();
 
-    Unit::AuraEffectList const& auras = master->GetAurasByType(SPELL_AURA_MOUNTED);
-    if (auras.empty()) return false;
-    const SpellInfo* masterSpell = auras.front()->GetSpellInfo();
+    Unit::AuraEffectList const& auras = master->GetAuraEffectsByType(SPELL_AURA_MOUNTED);
+    if (auras.empty()) 
+        return false;
+
+    const SpellInfo* masterSpell = auras.front()->GetBase()->GetSpellInfo();
     int32 masterSpeed = max(masterSpell->Effects[1].BasePoints, masterSpell->Effects[2].BasePoints);
 
     map<uint32, map<int32, vector<uint32> > > allSpells;

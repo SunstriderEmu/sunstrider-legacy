@@ -187,7 +187,7 @@ void WorldSession::HandleMoveWorldportAck()
 
     // honorless target
     if(GetPlayer()->pvpInfo.IsHostile)
-        GetPlayer()->CastSpell(GetPlayer(), 2479, TRIGGERED_FULL_MASK);
+        GetPlayer()->CastSpell(GetPlayer(), 2479, true);
     // in friendly area
     else if (GetPlayer()->IsPvP() && !GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP))
         GetPlayer()->UpdatePvP(false, false);
@@ -240,7 +240,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     {
         // honorless target
         if (plMover->pvpInfo.IsHostile)
-            plMover->CastSpell(plMover, 2479, TRIGGERED_FULL_MASK);
+            plMover->CastSpell(plMover, 2479, true);
 
         // in friendly area
         else if (plMover->IsPvP() && !plMover->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP))
@@ -492,7 +492,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         }
     }
 
-    _player->GetSession()->anticheat->OnPlayerMoved(plrMover, movementInfo, OpcodeClient(opcode));
+    _player->GetSession()->anticheat->OnPlayerMoved(mover, movementInfo, OpcodeClient(opcode));
 }
 
 /*
@@ -600,7 +600,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
     if(movedUnit)
         _player->SetMover(movedUnit);
     else
-        TC_LOG_ERROR("network", "Player " UI64FMTD " - WorldSession::HandleSetActiveMoverOpcode could not find player with guid " UI64FMTD, _player->GetGUID(), guid);
+        TC_LOG_ERROR("network", "Player %u - WorldSession::HandleSetActiveMoverOpcode could not find player with guid %u", _player->GetGUID().GetCounter(), guid.GetCounter());
 }
 
 //CMSG_MOVE_NOT_ACTIVE_MOVER

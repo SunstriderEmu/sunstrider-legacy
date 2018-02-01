@@ -318,23 +318,10 @@ void Engine::addStrategy(std::string name)
     Init();
 }
 
-void Engine::addStrategies(std::string first, ...)
+void Engine::addStrategies(std::initializer_list<std::string> args)
 {
-    addStrategy(first);
-
-    va_list vl;
-    va_start(vl, first);
-
-    const char* cur;
-    do
-    {
-        cur = va_arg(vl, const char*);
-        if (cur)
-            addStrategy(cur);
-    }
-    while (cur);
-
-    va_end(vl);
+    for (auto i : args) 
+        addStrategy(i);
 }
 
 bool Engine::removeStrategy(std::string name)

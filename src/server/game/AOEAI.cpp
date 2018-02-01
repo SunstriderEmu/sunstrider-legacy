@@ -29,6 +29,6 @@ void AOEAI::AttackStart(Unit *who)
 
 void AOEAI::UpdateAI(const uint32 diff)
 {
-    if(!me->HasAuraEffect(me->m_spells[0]))
+    if(!me->HasAuraEffect(me->m_spells[0], EFFECT_0))
         me->CastSpell(me, me->m_spells[0], TRIGGERED_NONE);
 }

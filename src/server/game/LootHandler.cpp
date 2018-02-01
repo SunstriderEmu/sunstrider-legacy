@@ -293,7 +293,7 @@ void WorldSession::HandleLootReleaseOpcode( WorldPacket & recvData )
             return;
         }
     }
-    TC_LOG_DEBUG("network.opcode", "Player %u tried to release loot " UI64FMTD " but wasn't looting it (was looting " UI64FMTD ")", GetPlayer()->GetGUID().GetCounter(), guid, lguid);
+    TC_LOG_DEBUG("network.opcode", "Player %u tried to release loot %u but wasn't looting it (was looting %u)", GetPlayer()->GetGUID().GetCounter(), guid.GetCounter(), lguid.GetCounter());
 }
 
 void WorldSession::DoLootRelease(ObjectGuid lguid)

@@ -1435,11 +1435,17 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after all SpellEntry's alterations
     sSpellMgr->LoadSpellInfoStore(false);
 
+    TC_LOG_INFO("server.loading", "Loading SpellInfo custom attributes...");
+    sSpellMgr->LoadSpellInfoCustomAttributes(); //must be after LoadSkillLineAbilityMap
+
     TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." ); //must be after SpellInfo
     sSpellMgr->LoadSpellElixirs();
 
     TC_LOG_INFO("server.loading", "Loading Spell Rank Data...." ); //must be after LoadSkillLineAbilityMap and after SpellInfo
     sSpellMgr->LoadSpellRanks();
+
+    TC_LOG_INFO("server.loading", "Loading Spell Group types...");
+    sSpellMgr->LoadSpellGroups();
 
     TC_LOG_INFO("server.loading", "Loading Spell Learn Skills..." );
     sSpellMgr->LoadSpellLearnSkills();                        // must be after LoadSpellChains and after SpellInfo
@@ -1453,8 +1459,11 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Threat Spells Definitions..."); //must be after SpellInfo
     sSpellMgr->LoadSpellThreats();
 
-    TC_LOG_INFO("server.loading", "Loading Spell Proc Event conditions..." ); //must be after spellInfo
-    sSpellMgr->LoadSpellProcEvents();
+    TC_LOG_INFO("server.loading", "Loading Spell Group Stack Rules...");
+    sSpellMgr->LoadSpellGroupStackRules();
+
+    TC_LOG_INFO("server.loading", "Loading Spell Proc conditions and data...");
+    sSpellMgr->LoadSpellProcs();
 
     TC_LOG_INFO("server.loading", "Loading Script Names...");
     sObjectMgr->LoadScriptNames();
@@ -1561,7 +1570,7 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Linked Respawn...");
     sObjectMgr->LoadLinkedRespawn();                     // must be after LoadCreatures(), LoadGameObjects()
 
-    TC_LOG_INFO("server.loading","Loading Transport templates...");
+    TC_LOG_INFO("server.loading", "Loading Transport templates...");
     sTransportMgr->LoadTransportTemplates();
 
     TC_LOG_INFO("server.loading", "Loading Objects Pooling Data...");
@@ -1798,29 +1807,29 @@ void World::SetInitialWorldSettings()
     mail_timer_expires = ( (DAY * IN_MILLISECONDS) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
 
     ///- Initialize MapManager
-    TC_LOG_INFO("server.loading", "Starting Map System" );
+    TC_LOG_INFO("server.loading", "Starting Map System");
     sMapMgr->Initialize();
 
     // Load Warden Data
-    TC_LOG_INFO("server.loading","Loading Warden Data..." );
+    TC_LOG_INFO("server.loading","Loading Warden Data...");
     WardenDataStorage.Init();
 
     ///- Initialize Battlegrounds
-    TC_LOG_INFO("server.loading", "Starting Battleground System" );
+    TC_LOG_INFO("server.loading", "Starting Battleground System");
     sBattlegroundMgr->LoadBattlegroundTemplates();
     sBattlegroundMgr->InitAutomaticArenaPointDistribution();
 
     ///- Initialize outdoor pvp
-    TC_LOG_INFO("server.loading", "Starting Outdoor PvP System" );
+    TC_LOG_INFO("server.loading", "Starting Outdoor PvP System");
     sOutdoorPvPMgr->InitOutdoorPvP();
 
-    TC_LOG_INFO("server.loading", "Loading Transports..." );
+    TC_LOG_INFO("server.loading", "Loading Transports...");
     if (!getConfig(CONFIG_DEBUG_DISABLE_TRANSPORTS))
         sTransportMgr->SpawnContinentTransports();
     else
         TC_LOG_INFO("server.loading", "Transports are disabled");
 
-    TC_LOG_INFO("server.loading","Deleting expired bans..." );
+    TC_LOG_INFO("server.loading","Deleting expired bans...");
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
     TC_LOG_INFO("server.loading","Calculate next daily quest reset time..." );

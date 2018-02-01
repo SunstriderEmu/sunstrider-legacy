@@ -128,14 +128,14 @@ void Totem::InitSummon()
     {
         switch (m_type)
         {
-            case TOTEM_PASSIVE: CastSpell(this, GetSpell(), TRIGGERED_FULL_MASK); break;
-            case TOTEM_STATUE:  CastSpell(GetOwner(), GetSpell(), TRIGGERED_FULL_MASK); break; //TC does not do this one, is there a reason?
+            case TOTEM_PASSIVE: CastSpell(this, GetSpell(), true); break;
+            case TOTEM_STATUE:  CastSpell(GetOwner(), GetSpell(), true); break; //TC does not do this one, is there a reason?
         }
     }
 
     // Some totems can have both instant effect and passive spell
     if (GetSpell(1))
-        CastSpell(this, GetSpell(1), TRIGGERED_FULL_MASK);
+        CastSpell(this, GetSpell(1), true);
 
 #ifndef LICH_KING
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);

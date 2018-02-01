@@ -70,7 +70,7 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1, POWER_MANA, expectedFearWardMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, EFFECT_0, 3 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, 3 * MINUTE * IN_MILLISECONDS);
 
             // Cooldown
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, 3 * MINUTE);
@@ -114,10 +114,10 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::INNER_FIRE_RNK_7, POWER_MANA, expectedInnerFireMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::INNER_FIRE_RNK_7, EFFECT_0, 10 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::INNER_FIRE_RNK_7, 10 * MINUTE * IN_MILLISECONDS);
 
             // Charges
-            TEST_AURA_CHARGE(priest, ClassSpells::Priest::INNER_FIRE_RNK_7, EFFECT_0, 20);
+            TEST_AURA_CHARGE(priest, ClassSpells::Priest::INNER_FIRE_RNK_7, 20);
 
             // Armor
             TEST_ASSERT(priest->GetArmor() == expectedArmor);
@@ -134,7 +134,7 @@ public:
                 if (data.damageInfo.HitOutCome != MELEE_HIT_NORMAL && data.damageInfo.HitOutCome != MELEE_HIT_CRIT)
                     continue;
                 hits++;
-                Aura* aura = priest->GetAura(ClassSpells::Priest::INNER_FIRE_RNK_7, EFFECT_0);
+                Aura* aura = priest->GetAura(ClassSpells::Priest::INNER_FIRE_RNK_7);
                 if (hits < 20)
                 {
                     TEST_ASSERT(aura != nullptr);
@@ -181,7 +181,7 @@ public:
             TEST_ASSERT(priest->GetItemCount(17056, false) == 0);
 
             // Aura
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::LEVITATE_RNK_1, EFFECT_0, 2 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::LEVITATE_RNK_1, 2 * MINUTE * IN_MILLISECONDS);
 
             // Cancel on damage taken
             rogue->Attack(priest, true);
@@ -503,7 +503,7 @@ public:
             TEST_ASSERT(warrior->GetMaxHealth() == expectedHealth);
 
             // Aura
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, EFFECT_0, 30 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, 30 * MINUTE * IN_MILLISECONDS);
         }
     };
 
@@ -537,8 +537,8 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, POWER_MANA, expectedPowerWordShieldMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, EFFECT_0, 30 * SECOND * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(priest, 6788, EFFECT_0, 15 * SECOND * IN_MILLISECONDS); // Weakened Aura
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, 30 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest, 6788, 15 * SECOND * IN_MILLISECONDS); // Weakened Aura
 
             // Cooldown
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, 4 * SECOND);
@@ -568,11 +568,11 @@ public:
 
                 if (totalDamage < expectedAbsorb)
                 {
-                    TEST_HAS_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, EFFECT_0);
+                    TEST_HAS_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
                     continue;
                 }
 
-                TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, EFFECT_0);
+                TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
                 uint32 expectedHealth = priest->GetMaxHealth() - (totalDamage - expectedAbsorb);
                 TEST_ASSERT(priest->GetHealth() == expectedHealth);
                 break;
@@ -607,8 +607,8 @@ public:
             TEST_ASSERT(priest->GetItemCount(reagentId, false) == 0);
 
             // Aura
-            TEST_AURA_MAX_DURATION(warrior, spellId, EFFECT_0, 1 * HOUR * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(priest, spellId, EFFECT_0, 1 * HOUR * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, spellId, 1 * HOUR * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest, spellId, 1 * HOUR * IN_MILLISECONDS);
 
             // Health
             TEST_ASSERT(priest->GetMaxHealth() == expectedPriestHealth);
@@ -670,7 +670,7 @@ public:
             TEST_POWER_COST(priest, creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, POWER_MANA, expectedShackleUndeadMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, EFFECT_0, 50 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, 50 * SECOND * IN_MILLISECONDS);
 
             creature2->Attack(priest, false);
             for (int count = 0; count < 10; count++)
@@ -681,8 +681,8 @@ public:
                     continue;
                 }
                 TEST_CAST(priest, creature2, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
-                TEST_HAS_AURA(creature2, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, EFFECT_0);
-                TEST_HAS_NOT_AURA(creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, EFFECT_0);
+                TEST_HAS_AURA(creature2, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3);
+                TEST_HAS_NOT_AURA(creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3);
             }
         }
     };
@@ -792,7 +792,7 @@ public:
             TEST_POWER_COST(priest, warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, POWER_MANA, expectedAbolishDiseaseMana);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, EFFECT_0, 20 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, 20 * SECOND * IN_MILLISECONDS);
 
             Wait(500);
             int8 count = 0;
@@ -1272,15 +1272,15 @@ public:
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, 10 * SECOND);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, EFFECT_0, 30 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 30 * SECOND * IN_MILLISECONDS);
 
             // Charge
-            TEST_AURA_CHARGE(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, EFFECT_0, 5);
+            TEST_AURA_CHARGE(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 5);
 
             // Changed target and 1 charge less
             priest2->Attack(warlock, true);
             Wait(500);
-            TEST_AURA_CHARGE(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, EFFECT_0, 4);
+            TEST_AURA_CHARGE(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 4);
 
             // Heal
             auto AI = warlock->GetTestingPlayerbotAI();
@@ -1452,7 +1452,7 @@ public:
             uint32 startThreat = creature->GetThreatManager().GetThreat(priest);
 
             TEST_ASSERT(startThreat > creature->GetThreatManager().GetThreat(tank));
-            ASSERT_INFO("Wrong target. tank threat: %u, priest threat: %u", creature->GetThreatManager().GetThreat(tank), creature->GetThreatManager().GetThreat(priest));
+            ASSERT_INFO("Wrong target. tank threat: %f, priest threat: %f", creature->GetThreatManager().GetThreat(tank), creature->GetThreatManager().GetThreat(priest));
             TEST_ASSERT(creature->GetTarget() == priest->GetGUID());
 
             // Fade
@@ -1460,7 +1460,7 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FADE_RNK_7, POWER_MANA, expectedFadeMana);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FADE_RNK_7, EFFECT_0, 10 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FADE_RNK_7, 10 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FADE_RNK_7, 30 * SECOND);

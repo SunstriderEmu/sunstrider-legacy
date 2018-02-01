@@ -136,12 +136,12 @@ bool Group::LoadGroupFromDB(ObjectGuid leaderGuid, QueryResult result, bool load
     m_dungeonDifficulty = Difficulty((*result)[14].GetUInt8());
     if (uint32(m_dungeonDifficulty) >= MAX_DIFFICULTY)
     {
-        TC_LOG_ERROR("misc", "Group " UI64FMTD " has invalid dungeon difficulty %u, resetting to default value instead.", leaderGuid, m_dungeonDifficulty);
+        TC_LOG_ERROR("misc", "Group %u has invalid dungeon difficulty %u, resetting to default value instead.", leaderGuid.GetCounter(), m_dungeonDifficulty);
         m_dungeonDifficulty = REGULAR_DIFFICULTY;
     }
 
     m_mainTank = ObjectGuid(HighGuid::Player, (*result)[0].GetUInt32());
-    m_mainAssistant = ObjectGuid((*result)[1].GetUInt64()); //todo: switch this to uint32
+    m_mainAssistant = ObjectGuid(HighGuid::Player, (*result)[1].GetUInt32());
     m_lootMethod = (LootMethod)(*result)[2].GetUInt8();
     m_looterGuid = ObjectGuid(HighGuid::Player, (*result)[3].GetUInt32());
     m_lootThreshold = (ItemQualities)(*result)[4].GetUInt8();

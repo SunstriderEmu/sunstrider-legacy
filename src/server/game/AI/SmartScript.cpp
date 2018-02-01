@@ -423,7 +423,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (!IsUnit(target))
                     continue;
 
-                    if (!(e.action.cast.castFlags & SMARTCAST_AURA_NOT_PRESENT) || !target->ToUnit()->HasAuraEffect(e.action.cast.spell))
+                    if (!(e.action.cast.castFlags & SMARTCAST_AURA_NOT_PRESENT) || !target->ToUnit()->HasAura(e.action.cast.spell))
                     {
                         TriggerCastFlags triggerFlag = TRIGGERED_NONE;
                         if (e.action.cast.castFlags & SMARTCAST_TRIGGERED)
@@ -463,7 +463,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         }
                     }
                     else
-                        TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: " UI64FMTD " Entry: %u Type: %u) already has the aura", e.action.cast.spell, target->GetGUID(), target->GetEntry(), uint32(target->GetTypeId()));
+                        TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: %s Entry: %u Type: %u) already has the aura", e.action.cast.spell, target->GetGUID().ToString().c_str(), target->GetEntry(), uint32(target->GetTypeId()));
             }
 
             break;
@@ -482,7 +482,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (!IsUnit(target))
                     continue;
 
-                if (!(e.action.cast.castFlags & SMARTCAST_AURA_NOT_PRESENT) || !target->ToUnit()->HasAuraEffect(e.action.cast.spell))
+                if (!(e.action.cast.castFlags & SMARTCAST_AURA_NOT_PRESENT) || !target->ToUnit()->HasAura(e.action.cast.spell))
                 {
                     if (e.action.cast.castFlags & SMARTCAST_INTERRUPT_PREVIOUS)
                         tempLastInvoker->InterruptNonMeleeSpells(false);
@@ -501,7 +501,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         tempLastInvoker->GetGUID().GetCounter(), e.action.cast.spell, target->GetGUID().GetCounter(), e.action.cast.castFlags);
                 }
                 else
-                    TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: " UI64FMTD " Entry: %u Type: %u) already has the aura", e.action.cast.spell, target->GetGUID(), target->GetEntry(), uint32(target->GetTypeId()));
+                    TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: %s Entry: %u Type: %u) already has the aura", e.action.cast.spell, target->GetGUID().ToString().c_str(), target->GetEntry(), uint32(target->GetTypeId()));
             }
 
             break;
@@ -917,7 +917,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             instance->SetData64(e.action.setInstanceData64.field, targets.front()->GetGUID());
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_SET_INST_DATA64: Field: %u, data: " UI64FMTD,
-                e.action.setInstanceData64.field, targets.front()->GetGUID());
+                e.action.setInstanceData64.field, targets.front()->GetGUID().GetRawValue());
 
 
             break;
@@ -1147,8 +1147,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     else
                         target->PlayDirectSound(sound, onlySelf ? target->ToPlayer() : nullptr);
 
-                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_RANDOM_SOUND: target: %s (" UI64FMTD " ), sound: %u, onlyself: %s",
-                        target->GetName().c_str(), target->GetGUID(), sound, onlySelf ? "true" : "false");
+                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_RANDOM_SOUND: target: %s (%s), sound: %u, onlyself: %s",
+                        target->GetName().c_str(), target->GetGUID().ToString().c_str(), sound, onlySelf ? "true" : "false");
                 }
             }
         }
@@ -2031,7 +2031,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (!IsUnit(target))
                         continue;
 
-                    if (!(e.action.cast.castFlags & SMARTCAST_AURA_NOT_PRESENT) || !target->ToUnit()->HasAuraEffect(e.action.cast.spell))
+                    if (!(e.action.cast.castFlags & SMARTCAST_AURA_NOT_PRESENT) || !target->ToUnit()->HasAura(e.action.cast.spell))
                     {
                         if (!interruptedSpell && e.action.cast.castFlags & SMARTCAST_INTERRUPT_PREVIOUS)
                         {
@@ -2051,7 +2051,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         casterUnit->CastSpell(target->ToUnit(), e.action.cast.spell, triggerFlag);
                     }
                     else
-                        TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: " UI64FMTD " Entry: %u Type: %u) already has the aura", e.action.cast.spell, target->GetGUID(), target->GetEntry(), uint32(target->GetTypeId()));
+                        TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: %s Entry: %u Type: %u) already has the aura", e.action.cast.spell, target->GetGUID().ToString().c_str(), target->GetEntry(), uint32(target->GetTypeId()));
                 }
             }
 
@@ -3824,10 +3824,10 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
         }
         case SMART_EVENT_AFFECTED_BY_MECHANIC:
         {
-            auto auraList = me->GetAuras();
+            auto auraList = me->GetAppliedAuras();
             for (auto itr : auraList)
             {
-                if (itr.second->GetSpellInfo()->GetAllEffectsMechanicMask() & e.event.affectedByMechanic.mechanicMask)
+                if (itr.second->GetBase()->GetSpellInfo()->GetAllEffectsMechanicMask() & e.event.affectedByMechanic.mechanicMask)
                 {
                     ProcessTimedAction(e, e.event.affectedByMechanic.repeat, e.event.affectedByMechanic.repeat);
                     break;

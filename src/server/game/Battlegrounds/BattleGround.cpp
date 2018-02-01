@@ -259,10 +259,10 @@ void Battleground::Update(time_t diff)
                         sh = ObjectAccessor::GetCreature(*plr, itr.first);
                         // only for visual effect
                         if (sh)
-                            sh->CastSpell(sh, SPELL_SPIRIT_HEAL, TRIGGERED_FULL_MASK);   // Spirit Heal, effect 117
+                            sh->CastSpell(sh, SPELL_SPIRIT_HEAL, true);   // Spirit Heal, effect 117
                     }
 
-                    plr->CastSpell(plr, SPELL_RESURRECTION_VISUAL, TRIGGERED_FULL_MASK);   // Resurrection visual
+                    plr->CastSpell(plr, SPELL_RESURRECTION_VISUAL, true);   // Resurrection visual
                     m_ResurrectQueue.push_back(*itr2);
                 }
                 (itr.second).clear();
@@ -283,7 +283,7 @@ void Battleground::Update(time_t diff)
             if(!plr)
                 continue;
             plr->ResurrectPlayer(1.0f);
-            plr->CastSpell(plr, SPELL_SPIRIT_HEAL_MANA, TRIGGERED_FULL_MASK);
+            plr->CastSpell(plr, SPELL_SPIRIT_HEAL_MANA, true);
             plr->GetMap()->ConvertCorpseToBones(itr);
         }
         m_ResurrectQueue.clear();
@@ -438,7 +438,7 @@ void Battleground::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
         if(!team) team = plr->GetTeam();
 
         if(team == TeamID)
-            plr->CastSpell(plr, SpellID, TRIGGERED_FULL_MASK);
+            plr->CastSpell(plr, SpellID, true);
     }
 }
 
@@ -593,7 +593,7 @@ void Battleground::EndBattleground(uint32 winner)
             TC_LOG_DEBUG("arena","Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, _arenaTeamIds[TEAM_ALLIANCE], _arenaTeamIds[TEAM_HORDE], winner_arena_team->GetId(), final_winner_rating, final_loser_rating, winner_change);
             for (auto itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr) {
                 if (Player* player = ObjectAccessor::FindPlayer(itr->first)) {
-                    TC_LOG_DEBUG("arena","Statistics for %s (GUID: " UI64FMTD ", Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName().c_str(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
+                    TC_LOG_DEBUG("arena","Statistics for %s (GUID: %u, Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName().c_str(), itr->first.GetCounter(), player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
                     //LogsDatabase.PExecute("INSERT INTO arena_match_player (match_id, player_guid, player_name, team, ip, heal, damage, killing_blows) VALUES (%u, " UI64FMTD ", '%s', %u, '%s', %u, %u, %u)", matchId, itr->first, player->GetName(), player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
                     uint32 team = GetPlayerTeam(itr->first);
                     if (team == ALLIANCE) {
@@ -986,7 +986,7 @@ void Battleground::RewardQuest(Player *plr)
             return;
     }
 
-    plr->CastSpell(plr, quest, TRIGGERED_FULL_MASK);
+    plr->CastSpell(plr, quest, true);
 }
 
 void Battleground::BlockMovement(Player *plr)
@@ -1267,21 +1267,21 @@ void Battleground::AddPlayer(Player *plr)
     if(IsArena())
     {
         plr->RemoveArenaSpellCooldowns();
-        plr->RemoveArenaAuras();
+        plr->RemoveArenaAuras(false);
         plr->RemoveAllEnchantments(TEMP_ENCHANTMENT_SLOT, true);
         if(team == ALLIANCE)                                // gold
         {
             if(plr->GetTeam() == HORDE)
-                plr->CastSpell(plr, SPELL_HORDE_GOLD_FLAG, TRIGGERED_FULL_MASK);
+                plr->CastSpell(plr, SPELL_HORDE_GOLD_FLAG, true);
             else
-                plr->CastSpell(plr, SPELL_ALLIANCE_GOLD_FLAG, TRIGGERED_FULL_MASK);
+                plr->CastSpell(plr, SPELL_ALLIANCE_GOLD_FLAG, true);
         }
         else                                                // green
         {
             if(plr->GetTeam() == HORDE)
-                plr->CastSpell(plr, SPELL_HORDE_GREEN_FLAG, TRIGGERED_FULL_MASK);
+                plr->CastSpell(plr, SPELL_HORDE_GREEN_FLAG, true);
             else
-                plr->CastSpell(plr, SPELL_ALLIANCE_GREEN_FLAG, TRIGGERED_FULL_MASK);
+                plr->CastSpell(plr, SPELL_ALLIANCE_GREEN_FLAG, true);
         }
 
         plr->DestroyConjuredItems(true);
@@ -1298,7 +1298,7 @@ void Battleground::AddPlayer(Player *plr)
     else
     {
         if(GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
-            plr->CastSpell(plr, SPELL_PREPARATION, TRIGGERED_FULL_MASK);   // reduces all mana cost of spells.
+            plr->CastSpell(plr, SPELL_PREPARATION, true);   // reduces all mana cost of spells.
     }
 
     // setup BG group membership
@@ -1467,7 +1467,7 @@ void Battleground::AddPlayerToResurrectQueue(ObjectGuid npc_guid, ObjectGuid pla
     if(!plr)
         return;
 
-    plr->CastSpell(plr, SPELL_WAITING_FOR_RESURRECT, TRIGGERED_FULL_MASK);
+    plr->CastSpell(plr, SPELL_WAITING_FOR_RESURRECT, true);
 }
 
 void Battleground::RemovePlayerFromResurrectQueue(ObjectGuid player_guid)
@@ -1715,7 +1715,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
     // correct cast speed
     pCreature->SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
 
-    //pCreature->CastSpell(pCreature, SPELL_SPIRIT_HEAL_CHANNEL, TRIGGERED_FULL_MASK);
+    //pCreature->CastSpell(pCreature, SPELL_SPIRIT_HEAL_CHANNEL, true);
 
     return true;
 }

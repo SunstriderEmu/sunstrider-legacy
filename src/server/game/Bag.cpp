@@ -165,7 +165,7 @@ void Bag::StoreItem( uint8 slot, Item *pItem, bool /*update*/ )
 {
     if(slot > MAX_BAG_SIZE)
     {
-        TC_LOG_ERROR("FIXME","Player GUID " UI64FMTD " tried to manipulate packets and crash the server.", GetOwnerGUID());
+        TC_LOG_ERROR("misc","Player GUID %u tried to manipulate packets and crash the server.", GetOwnerGUID().GetCounter());
         return;
     }
 

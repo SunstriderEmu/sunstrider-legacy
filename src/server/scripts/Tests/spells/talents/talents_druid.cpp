@@ -547,7 +547,7 @@ public:
 			uint32 res = player->CastSpell(target, spellId);
 			ASSERT_INFO("Druid couldnt cast %u, result: %u", spellId, res);
 			TEST_ASSERT(res == SPELL_CAST_OK);
-			Aura* aura = target->GetAura(spellId, EFFECT_0);
+			Aura* aura = target->GetAura(spellId);
 			TEST_ASSERT(aura != nullptr);
 			ASSERT_INFO("Victim doesnt have aura with duration %u, but: %u", auraTime, aura->GetDuration());
 			TEST_ASSERT(aura->GetDuration() == auraTime);
@@ -830,7 +830,7 @@ public:
 
 			// Faerie Fire Feral
             TEST_CAST(player, rogue, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5);
-			Aura* aura = rogue->GetAura(ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5, EFFECT_0);
+			Aura* aura = rogue->GetAura(ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5);
 			TEST_ASSERT(aura != nullptr);
 			ASSERT_INFO("Rogue has %u armor, expected: %i", rogue->GetArmor(), expectedRogueArmor);
 			TEST_ASSERT(int32(rogue->GetArmor()) == expectedRogueArmor);
@@ -988,7 +988,7 @@ public:
 				uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_MASK);
 				ASSERT_INFO("Spell casting failed with reason %u", result);
 				TEST_ASSERT(result == SPELL_CAST_OK);
-				Aura* aura = target->GetAura(spellID, EFFECT_1);
+				Aura* aura = target->GetAura(spellID);
 				TEST_ASSERT(aura != nullptr);
 				TEST_ASSERT(aura->GetDuration() == 12 * SECOND * IN_MILLISECONDS);
 				Wait(1000);

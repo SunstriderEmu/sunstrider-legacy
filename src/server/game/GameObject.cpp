@@ -608,10 +608,7 @@ void GameObject::Update(uint32 diff)
                 if (trapTarget)
                 {
                     CastSpell(trapTarget, goInfo->trap.spellId, TRIGGERED_FULL_MASK, GetOwnerGUID());
-                    if(owner)
-                        if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
-                            owner->ProcSkillsAndAuras(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
-                    
+
                     m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
 
                     if(NeedDespawn)
@@ -1674,9 +1671,9 @@ void GameObject::Use(Unit* user)
                     return;
                     
                 if (info->entry == 181621) {
-                    if (caster->HasAuraEffect(18693))
+                    if (caster->HasAura(18693))
                         spellId = 34150;
-                    else if (caster->HasAuraEffect(18692))
+                    else if (caster->HasAura(18692))
                         spellId = 34149;
                 }
 
@@ -1836,7 +1833,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, TriggerCastFlags trig
     if (self)
     {
         if (target)
-            return target->CastSpell(target, spellInfo->Id, TRIGGERED_FULL_MASK);
+            return target->CastSpell(target, spellInfo->Id, true);
         return SPELL_FAILED_UNKNOWN;
     }
 

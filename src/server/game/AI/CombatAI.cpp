@@ -50,7 +50,7 @@ void CombatAI::JustDied(Unit* /*killer*/)
 {
     for (SpellVct::iterator i = spells.begin(); i != spells.end(); ++i)
         if (AISpellInfo[*i].condition == AICOND_DIE)
-            me->CastSpell(killer, *i, TRIGGERED_FULL_MASK);
+            me->CastSpell(killer, *i, true);
 }
 
 void CombatAI::JustEngagedWith(Unit* who)

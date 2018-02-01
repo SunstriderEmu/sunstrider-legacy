@@ -2,15 +2,31 @@
 #ifndef TRINITY_SPELLAURADEFINES_H
 #define TRINITY_SPELLAURADEFINES_H
 
-#define MAX_AURAS                       56
+#ifdef LICH_KING
+#define MAX_AURAS 255                         // Client-side limit
+#else
+#define MAX_AURAS 56
+#endif
 #define MAX_POSITIVE_AURAS_PLAYERS      40
 #define MAX_POSITIVE_AURAS_CREATURES    16
 
 enum AURA_FLAGS
 {
-    AFLAG_NEGATIVE          = 0x09,
-    AFLAG_POSITIVE          = 0x1F,
-    AFLAG_MASK              = 0xFF
+    AFLAG_NONE                   = 0x00,
+    AFLAG_EFF_INDEX_0            = 0x01,
+    AFLAG_EFF_INDEX_1            = 0x02,
+    AFLAG_EFF_INDEX_2            = 0x04,
+    //not sure about AFLAG_CASTER, may be LICH_KING
+    AFLAG_CASTER                 = 0x08, //corecraft says: "Note: All currently observed data has this toggled on and at least one of the three previous"
+#ifdef LICH_KING
+    AFLAG_POSITIVE               = 0x10,
+    AFLAG_DURATION               = 0x20,
+    AFLAG_ANY_EFFECT_AMOUNT_SENT = 0x40, // used with AFLAG_EFF_INDEX_0/1/2
+    AFLAG_NEGATIVE               = 0x80
+#else
+    AFLAG_CANCELABLE             = 0x10,  //sunstrider: Client does not allow canceling those
+#endif
+
 };
 
 //m_schoolAbsorb
@@ -40,10 +56,12 @@ enum AuraEffectHandleModes
 
 enum AuraRemoveMode
 {
-    AURA_REMOVE_BY_DEFAULT,
-    AURA_REMOVE_BY_STACK,                                   // at replace by semillar aura
+    AURA_REMOVE_NONE = 0,
+    AURA_REMOVE_BY_DEFAULT = 1,                             // scripted remove, remove by stack with aura with different ids and sc aura remove
+    //AURA_REMOVE_BY_STACK,                                   // at replace by semillar aura
     AURA_REMOVE_BY_CANCEL,
-    AURA_REMOVE_BY_DISPEL,
+    AURA_REMOVE_BY_ENEMY_SPELL,       // dispel and absorb aura destroy
+    AURA_REMOVE_BY_EXPIRE,            // aura duration has ended
     AURA_REMOVE_BY_DEATH
 };
 
@@ -187,7 +205,7 @@ enum AuraType : uint32
     SPELL_AURA_MOD_HEALING_DONE = 135,
     SPELL_AURA_MOD_HEALING_DONE_PERCENT = 136,
     SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE = 137,
-    SPELL_AURA_MOD_HASTE = 138,
+    SPELL_AURA_MOD_MELEE_HASTE = 138,
     SPELL_AURA_FORCE_REACTION = 139,
     SPELL_AURA_MOD_RANGED_HASTE = 140,
     SPELL_AURA_MOD_RANGED_AMMO_HASTE = 141,
@@ -211,7 +229,7 @@ enum AuraType : uint32
     SPELL_AURA_NO_PVP_CREDIT = 159,
     SPELL_AURA_MOD_AOE_AVOIDANCE = 160,
     SPELL_AURA_MOD_HEALTH_REGEN_IN_COMBAT = 161,
-    SPELL_AURA_POWER_BURN_MANA = 162,
+    SPELL_AURA_POWER_BURN = 162,
     SPELL_AURA_MOD_CRIT_DAMAGE_BONUS = 163,
     SPELL_AURA_164 = 164,
     SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS = 165,
@@ -241,7 +259,7 @@ enum AuraType : uint32
     SPELL_AURA_MOD_RATING = 189,
     SPELL_AURA_MOD_FACTION_REPUTATION_GAIN = 190,
     SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED = 191,
-    SPELL_AURA_HASTE_MELEE = 192,
+    SPELL_AURA_MOD_MELEE_RANGED_HASTE = 192,
     SPELL_AURA_MELEE_SLOW = 193,
     SPELL_AURA_MOD_DEPRICATED_1  = 194,                     // not used now, old SPELL_AURA_MOD_SPELL_DAMAGE_OF_INTELLECT
     SPELL_AURA_MOD_DEPRICATED_2  = 195,                     // not used now, old SPELL_AURA_MOD_SPELL_HEALING_OF_INTELLECT
@@ -312,6 +330,12 @@ enum AuraType : uint32
     SPELL_AURA_APPLY_EXTRA_FLAG = 260, //Sunstrider custom (replace this with dummy spells ?)
     SPELL_AURA_261 = 261,
     TOTAL_AURAS=262
+};
+
+enum AuraObjectType
+{
+    UNIT_AURA_TYPE,
+    DYNOBJ_AURA_TYPE
 };
 
 enum AreaAuraType : unsigned int

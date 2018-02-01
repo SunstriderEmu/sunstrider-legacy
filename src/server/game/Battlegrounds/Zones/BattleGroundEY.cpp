@@ -168,7 +168,7 @@ void BattlegroundEY::CheckSomeoneJoinedPoint()
                 Player *plr = ObjectAccessor::FindPlayer(m_PlayersNearPoint[EY_POINTS_MAX][j]);
                 if(!plr)
                 {
-                    TC_LOG_ERROR("battleground","BattlegroundEY: Player " UI64FMTD " not found!", m_PlayersNearPoint[EY_POINTS_MAX][j]);
+                    TC_LOG_ERROR("battleground","BattlegroundEY: Player %u not found!", m_PlayersNearPoint[EY_POINTS_MAX][j].GetCounter());
                     ++j;
                     continue;
                 }
@@ -208,7 +208,7 @@ void BattlegroundEY::CheckSomeoneLeftPoint()
                 Player *plr = ObjectAccessor::FindPlayer(m_PlayersNearPoint[i][j]);
                 if (!plr)
                 {
-                    TC_LOG_ERROR("battleground","BattlegroundEY: Player " UI64FMTD " not found!", m_PlayersNearPoint[i][j]);
+                    TC_LOG_ERROR("battleground","BattlegroundEY: Player %u not found!", m_PlayersNearPoint[i][j].GetCounter());
                     //move not existed player to "free space" - this will cause many error showing in log, but it is a very important bug
                     m_PlayersNearPoint[EY_POINTS_MAX].push_back(m_PlayersNearPoint[i][j]);
                     m_PlayersNearPoint[i].erase(m_PlayersNearPoint[i].begin() + j);
@@ -595,8 +595,8 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
     Source->RemoveAurasDueToSpell(BG_EY_NETHERSTORM_FLAG_SPELL);
     m_FlagState = BG_EY_FLAG_STATE_ON_GROUND;
     m_FlagsTimer = BG_EY_FLAG_RESPAWN_TIME;
-    Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, TRIGGERED_FULL_MASK);
-    Source->CastSpell(Source, BG_EY_PLAYER_DROPPED_FLAG_SPELL, TRIGGERED_FULL_MASK);
+    Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, true);
+    Source->CastSpell(Source, BG_EY_PLAYER_DROPPED_FLAG_SPELL, true);
     if(Source->GetTeam() == ALLIANCE)
         SendMessageToAll(LANG_BG_EY_DROPPED_FLAG, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
     else
@@ -634,7 +634,7 @@ void BattlegroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     SpawnBGObject(BG_EY_OBJECT_FLAG_NETHERSTORM, RESPAWN_ONE_DAY);
     SetFlagPicker(Source->GetGUID());
     //get flag aura on player
-    Source->CastSpell(Source, BG_EY_NETHERSTORM_FLAG_SPELL, TRIGGERED_FULL_MASK);
+    Source->CastSpell(Source, BG_EY_NETHERSTORM_FLAG_SPELL, true);
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 
     SendMessageToAll(LANG_BG_EY_HAS_TAKEN_FLAG, type, Source);

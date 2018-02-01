@@ -2,7 +2,6 @@
 #ifndef SC_PRECOMPILED_H
 #define SC_PRECOMPILED_H
 
-#include <memory>
 #include "CreatureAIImpl.h"
 #include "Util.h"
 #include "Transaction.h"
@@ -29,16 +28,14 @@
 #include "MotionMaster.h"
 #include "Map.h"
 #include "Log.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 #ifdef TESTS
     #include "TestCase.h"
     #include "TestPlayer.h"
     #include "ClassSpells.h"
     #include "Pet.h"
-#endif
-
-#ifdef _WIN32
-#include <windows.h>
 #endif
 
 #endif

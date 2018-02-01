@@ -143,27 +143,6 @@ namespace Trinity
         void Visit(CreatureMapType &);
     };
 
-    struct TC_GAME_API DynamicObjectUpdater
-    {
-        DynamicObject &i_dynobject;
-        Unit* i_check;
-        DynamicObjectUpdater(DynamicObject &dynobject, Unit* caster) : i_dynobject(dynobject)
-        {
-            i_check = caster;
-            Unit* owner = i_check->GetOwner();
-            if(owner)
-                i_check = owner;
-        }
-
-        template<class T> inline void Visit(GridRefManager<T>  &) {}
-        #ifdef WIN32
-        template<> inline void Visit<Player>(PlayerMapType &);
-        template<> inline void Visit<Creature>(CreatureMapType &);
-        #endif
-
-        void VisitHelper(Unit* target);
-    };
-
     // SEARCHERS & LIST SEARCHERS & WORKERS
 
     // WorldObject searchers & workers
@@ -681,6 +660,50 @@ namespace Trinity
             float i_range, i_minRange;
             bool i_playerOnly, i_furthest;
     };
+    
+    class TC_GAME_API AnyGroupedUnitInObjectRangeCheck
+    {
+    public:
+        AnyGroupedUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool raid, bool playerOnly = false, bool incOwnRadius = true, bool incTargetRadius = true)
+            : _source(obj), _refUnit(funit), _range(range), _raid(raid), _playerOnly(playerOnly), i_incOwnRadius(incOwnRadius), i_incTargetRadius(incTargetRadius) { }
+
+        bool operator()(Unit* u) const
+        {
+            if (_playerOnly && u->GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (_raid)
+            {
+                if (!_refUnit->IsInRaidWith(u))
+                    return false;
+            }
+            else if (!_refUnit->IsInPartyWith(u))
+                return false;
+
+            if (_refUnit->IsHostileTo(u))
+                return false;
+
+            if (!u->IsAlive() || u->IsTotem()) //exclude totems
+                return false;
+
+            float searchRadius = _range;
+            if (i_incOwnRadius)
+                searchRadius += _source->GetCombatReach();
+            if (i_incTargetRadius)
+                searchRadius += u->GetCombatReach();
+
+            return u->IsInMap(_source) && u->InSamePhase(_source) && u->IsWithinDoubleVerticalCylinder(_source, searchRadius, searchRadius);
+        }
+
+    private:
+        WorldObject const* _source;
+        Unit const* _refUnit;
+        float _range;
+        bool _raid;
+        bool _playerOnly;
+        bool i_incOwnRadius;
+        bool i_incTargetRadius;
+    };
 
     class TC_GAME_API AnyUnitInObjectRangeCheck
     {
@@ -736,6 +759,27 @@ namespace Trinity
     struct TC_GAME_API AnyDeadUnitCheck
     {
         bool operator()(Unit* u);
+    };
+
+    class UnitAuraCheck
+    {
+    public:
+        UnitAuraCheck(bool present, uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty) : _present(present), _spellId(spellId), _casterGUID(casterGUID) { }
+
+        bool operator()(Unit* unit) const
+        {
+            return unit->HasAura(_spellId, _casterGUID) == _present;
+        }
+
+        bool operator()(WorldObject* object) const
+        {
+            return object->ToUnit() && object->ToUnit()->HasAura(_spellId, _casterGUID) == _present;
+        }
+
+    private:
+        bool _present;
+        uint32 _spellId;
+        ObjectGuid _casterGUID;
     };
 
     // Creature checks
@@ -1012,7 +1056,6 @@ namespace Trinity
             float i_range;
     };
 
-    
     class TC_GAME_API NearestAssistCreatureInCreatureRangeCheck
     {
         public:

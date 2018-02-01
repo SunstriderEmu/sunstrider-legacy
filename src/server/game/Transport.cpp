@@ -654,8 +654,7 @@ void MotionTransport::DelayedTeleportTransport()
                     {
                         s->SendChannelUpdate(0);
                         s->SendInterrupted(0);
-                        caster->RemoveAurasByCasterSpell(s->GetSpellInfo()->Id, caster->GetGUID());
-                        //caster->RemoveOwnedAura(s->GetSpellInfo()->Id, caster->GetGUID());
+                        caster->RemoveOwnedAura(s->GetSpellInfo()->Id, caster->GetGUID());
                     }
             obj->AddObjectToRemoveList();
             break;

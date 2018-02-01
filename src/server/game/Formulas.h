@@ -82,35 +82,40 @@ namespace Trinity
             }
         }
 
-        inline uint32 Gain(Player *pl, Unit *u)
+        inline uint32 Gain(Player* player, Unit* u)
         {
-            if(u->GetTypeId()==TYPEID_UNIT && (
-                (u->ToCreature())->IsTotem() || (u->ToCreature())->IsPet() || (u->ToCreature())->IsCritter() ||
-                ((u->ToCreature())->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL) ))
-                return 0;
+            Creature* creature = u->ToCreature();
+            uint32 gain = 0;
 
-            uint32 xp_gain= BaseGain(pl->GetLevel(), u->GetLevel(), GetContentLevelsForMapAndZone(u->GetMapId(),u->GetZoneId()));
-            if( xp_gain == 0 )
-                return 0;
-
-            if(u->GetTypeId()==TYPEID_UNIT)
+            if (!creature || creature->CanGiveExperience())
             {
-                if ((u->ToCreature())->isElite()) {
-                    // Elites in instances have a 2.75x XP bonus instead of the regular 2x world bonus.
-                    if (u->GetMap() && u->GetMap()->IsDungeon())
-                        xp_gain *= 2.75f;
-                    else
-                        xp_gain *= 2.0f;
-                }
+                float xpMod = 1.0f;
 
-                xp_gain *= (u->ToCreature())->GetCreatureTemplate()->ModExperience;
+                gain = BaseGain(player->GetLevel(), u->GetLevel(), GetContentLevelsForMapAndZone(u->GetMapId(), u->GetZoneId()));
+
+                if (gain && creature)
+                {
+                    if (creature->isElite())
+                    {
+                        // Elites in instances have a 2.75x XP bonus instead of the regular 2x world bonus.
+                        if (u->GetMap()->IsDungeon())
+                            xpMod *= 2.75f;
+                        else
+                            xpMod *= 2.0f;
+                    }
+
+                    xpMod *= creature->GetCreatureTemplate()->ModExperience;
+                }
+                if (player->hasCustomXpRate())
+                    xpMod *= player->getCustomXpRate();
+                else
+                    xpMod *= sWorld->GetRate(RATE_XP_KILL);
+
+                gain = uint32(gain * xpMod);
             }
 
-            //apply custom xp rate if the player has chosen one, else use the global x rate
-            if (pl->hasCustomXpRate())
-                return (uint32)(xp_gain*pl->getCustomXpRate());
-            else
-                return (uint32)(xp_gain*sWorld->GetRate(RATE_XP_KILL));
+            //TC sScriptMgr->OnGainCalculation(gain, player, u);
+            return gain;
         }
 
         inline uint32 xp_Diff(uint32 lvl)

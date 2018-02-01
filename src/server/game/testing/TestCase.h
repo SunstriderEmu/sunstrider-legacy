@@ -25,7 +25,7 @@ class TempSummon;
 
 //input info for next TEST_ASSERT check
 #define ASSERT_INFO(expr, ...) _AssertInfo(expr, ## __VA_ARGS__)
-#define TEST_ASSERT( expr ) Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr); _ResetAssertInfo()
+#define TEST_ASSERT( expr ) { Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr); _ResetAssertInfo(); }
 
 template<class T>
 bool Between(T value, T from, T to)
@@ -122,22 +122,20 @@ public:
     */
     #define FORCE_CAST( ... ) { _SetCaller(__FILE__, __LINE__);  _ForceCast(__VA_ARGS__); _ResetCaller(); }
 
-    /* Usage
+    /* Usage:
     TEST_HAS_AURA(target, spellID)
-    TEST_HAS_AURA(target, spellID, effectIndex)
     */
     #define TEST_HAS_AURA( ... ) { _SetCaller(__FILE__, __LINE__); _EnsureHasAura(__VA_ARGS__); _ResetCaller(); }
-    /* Usage
+    /* Usage:
     TEST_HAS_NOT_AURA(target, spellID)
-    TEST_HAS_NOT_AURA(target, spellID, effectIndex)
     */
     #define TEST_HAS_NOT_AURA( ... ) { _SetCaller(__FILE__, __LINE__); _EnsureHasNotAura(__VA_ARGS__); _ResetCaller(); }
 
     //check if target has aura and if duration match given duration
-    #define TEST_AURA_MAX_DURATION(target, spellID, effect, durationMS) { _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, effect, durationMS); _ResetCaller(); }
+    #define TEST_AURA_MAX_DURATION(target, spellID, durationMS) { _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, durationMS); _ResetCaller(); }
 
-    #define TEST_AURA_STACK(target, spellID, effect, stacks) { _SetCaller(__FILE__, __LINE__); _TestAuraStack(target, spellID, effect, stacks, true); _ResetCaller(); }
-    #define TEST_AURA_CHARGE(target, spellID, effect, stacks) { _SetCaller(__FILE__, __LINE__); _TestAuraStack(target, spellID, effect, stacks, false); _ResetCaller(); }
+    #define TEST_AURA_STACK(target, spellID, stacks) { _SetCaller(__FILE__, __LINE__); _TestAuraStack(target, spellID, stacks, true); _ResetCaller(); }
+    #define TEST_AURA_CHARGE(target, spellID, stacks) { _SetCaller(__FILE__, __LINE__); _TestAuraStack(target, spellID, stacks, false); _ResetCaller(); }
 
     std::vector<uint32 /*SpellMissInfo count*/> GetHitChance(TestPlayer* caster, Unit* target, uint32 spellID);
     float CalcChance(uint32 iterations, const std::function<bool()>& f);
@@ -212,13 +210,10 @@ protected:
     void _EquipItem(TestPlayer* p, uint32 itemID);
     //if negative, ensure has NOT aura
     void _EnsureHasAura(Unit* target, int32 spellID);
-    //if negative, ensure has NOT aura
-    void _EnsureHasAura(Unit* target, int32 spellID, uint8 effectIndex);
     void _EnsureHasNotAura(Unit* target, int32 spellID) { _EnsureHasAura(target, -spellID); }
-    void _EnsureHasNotAura(Unit* target, int32 spellID, uint8 effectIndex) { _EnsureHasAura(target, -spellID, effectIndex);  }
     void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond);
-    void _TestAuraMaxDuration(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 durationMS);
-    void _TestAuraStack(Unit* target, uint32 spellID, SpellEffIndex effect, uint32 stacks, bool stack);
+    void _TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS);
+    void _TestAuraStack(Unit* target, uint32 spellID,uint32 stacks, bool stack);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
     void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
 

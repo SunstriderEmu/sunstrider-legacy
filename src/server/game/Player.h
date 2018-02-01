@@ -101,18 +101,19 @@ struct PlayerSpell
 
 struct SpellModifier
 {
-    SpellModOp   op   : 8;
-    SpellModType type : 8;
-    int16 charges     : 16;
+    SpellModifier(Aura* _ownerAura) : op(SPELLMOD_DAMAGE), type(SPELLMOD_FLAT), value(0), mask(), spellId(0), ownerAura(_ownerAura) { }
+
+    SpellModOp   op;
+    SpellModType type;
+
     int32 value;
     uint64 mask;
     uint32 spellId;
-    uint32 effectId;
-    Spell const* lastAffected;
+    Aura* const ownerAura;
 };
 
 typedef std::unordered_map<uint16, PlayerSpell*> PlayerSpellMap;
-typedef std::list<SpellModifier*> SpellModList;
+typedef std::unordered_set<SpellModifier*> SpellModContainer;
 
 struct SpellCooldown
 {
@@ -657,7 +658,7 @@ enum PlayerFieldByte2Flags
 #define MAX_TITLE_INDEX     (KNOWN_TITLES_SIZE*64)          // 3 uint64 fields
 
 #ifndef LICH_KING
-enum LootType
+enum LootType : uint8
 {
     LOOT_NONE                   = 0,
 
@@ -671,7 +672,7 @@ enum LootType
     LOOT_FISHINGHOLE            = 8                         // unsupported by client, sending LOOT_FISHING instead
 };
 #else
-enum LootType
+enum LootType : uint8
 {
     LOOT_NONE                   = 0,
 
@@ -1606,7 +1607,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void Regenerate(Powers power);
         void RegenerateHealth();
         void ResetAllPowers();
-        void setRegenTimer(uint32 time) {m_regenTimer = time;}
+        void setRegenTimerCount(uint32 time) { m_regenTimerCount = time; }
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
 
         void UpdateWeaponDependentCritAuras(WeaponAttackType attackType);
@@ -1733,14 +1734,13 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         PlayerSpellMap const& GetSpellMap() const { return m_spells; }
         PlayerSpellMap      & GetSpellMap()       { return m_spells; }
 
-        //delete mod pointer on unapply
         void AddSpellMod(SpellModifier*& mod, bool apply);
-        int32 GetTotalFlatMods(uint32 spellId, SpellModOp op);
-        int32 GetTotalPctMods(uint32 spellId, SpellModOp op);
         bool IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod, Spell const* spell = nullptr);
-        template <class T> void ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell = nullptr);
-        void RemoveSpellMods(Spell const* spell);
-        void RestoreSpellMods(Spell const* spell);
+        template <class T> 
+        void ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* spell = nullptr);
+        static void ApplyModToSpell(SpellModifier* mod, Spell* spell);
+        static bool HasSpellModApplied(SpellModifier* mod, Spell* spell);
+        void SetSpellModTakingSpell(Spell* spell, bool apply);
 
         bool HasSpellCooldown(uint32 spell_id) const
         {
@@ -1757,7 +1757,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         static uint32 const infinityCooldownDelayCheck = MONTH/2;
 
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
-        void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = nullptr, bool infinityCooldown = false);
+        void StartCooldown(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = nullptr, bool onHold = false);
         void SendCooldownEvent(SpellInfo const *spellInfo, uint32 itemId = 0, Spell* spell = nullptr, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
@@ -2025,7 +2025,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void UpdateDefense();
         void UpdateWeaponSkill (WeaponAttackType attType);
-        void UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, MeleeHitOutcome outcome, bool defence);
+        void UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool defence);
 
         //step = skill tier (I guess)
         void SetSkill(uint32 id, uint16 step, uint16 currVal, uint16 maxVal);
@@ -2054,6 +2054,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool IsAtGroupRewardDistance(WorldObject const* pRewardSource) const;
         bool RewardPlayerAndGroupAtKill(Unit* pVictim);
         void RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewardSource);
+        bool IsHonorOrXPTarget(Unit* victim) const;
 
         FactionStateList m_factions;
         ForcedReactions m_forcedReactions;
@@ -2156,8 +2157,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void ApplyItemEquipSpell(Item *item, bool apply, bool form_change = false);
         void ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change = false);
         void UpdateEquipSpellsAtFormChange();
-        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellInfo const *spellInfo = nullptr);
-        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellInfo const *spell = nullptr);
+        void CastItemCombatSpell(DamageInfo const& damageInfo);
+        void CastItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemTemplate const* proto);
 
         void SendInitWorldStates(bool force = false, uint32 forceZoneId = 0);
         void SendUpdateWorldState(uint32 Field, uint32 Value);
@@ -2257,6 +2258,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         WorldObject* m_seer;
         void SetFallInformation(uint32 time, float z);
         void HandleFall(MovementInfo const& movementInfo);
+
+        //only for TC compat
+        bool CanFlyInZone(uint32 mapid, uint32 zone, SpellInfo const* bySpell) const { return true; }
 
         bool SetDisableGravity(bool disable, bool packetOnly /* = false */) override;
         bool SetFlying(bool apply, bool packetOnly = false) override;
@@ -2435,7 +2439,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HasTitle(CharTitlesEntry const* title) const { return HasTitle(title->bit_index); }
         void SetTitle(CharTitlesEntry const* title, bool notify = false, bool setCurrentTitle = false);
         void RemoveTitle(CharTitlesEntry const* title, bool notify = true);
-        
+
+        Spell* m_spellModTakingSpell;
+
         uint8 GetRace() const { return m_race; }
         uint8 GetGender() const { return m_gender; }
         void SetGender(uint8 gender) { m_gender = gender; }
@@ -2498,6 +2504,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         uint8 m_bgAfkReportedCount;
         time_t m_bgAfkReportedTimer;
+        uint32 m_regenTimerCount;
         uint32 m_contestedPvPTimer;
 
         uint32 m_bgTeam;    // what side the player will be added to
@@ -2616,8 +2623,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         float m_auraBaseFlatMod[BASEMOD_END];
         float m_auraBasePctMod[BASEMOD_END];
-        SpellModList m_spellMods[MAX_SPELLMOD];
-        int32 m_SpellModRemoveCount;
+        SpellModContainer m_spellMods[MAX_SPELLMOD];
         EnchantDurationList m_enchantDuration;
         ItemDurationList m_itemDuration;
 
@@ -2644,7 +2650,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool   m_DailyQuestChanged;
         time_t m_lastDailyQuestTime;
 
-        uint32 m_regenTimer;
         uint32 m_hostileReferenceCheckTimer;
         uint32 m_drunkTimer;
         uint16 m_drunk;
@@ -2774,121 +2779,4 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 void AddItemsSetItem(Player*player,Item *item);
 void RemoveItemsSetItem(Player*player,ItemTemplate const *proto);
 
-template <class T>
-void Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
-{
-    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo)
-        return;
-
-    float totalmul = 1.0f;
-    int32 totalflat = 0;
-
-    /*TC 
-    // Drop charges for triggering spells instead of triggered ones
-    if (m_spellModTakingSpell)
-        spell = m_spellModTakingSpell;
-        */
-    /* TC, for when we get Player::ApplyModToSpell
-    switch (op)
-    {
-        // special case, if a mod makes spell instant, only consume that mod
-        case SPELLMOD_CASTING_TIME:
-        {
-            SpellModifier* modInstantSpell = nullptr;
-            for (SpellModifier* mod : m_spellMods[op])
-            {
-                if (!IsAffectedBySpellmod(spellInfo, mod, spell))
-                    continue;
-
-                if (mod->type == SPELLMOD_PCT && basevalue < T(10000) && mod->value <= -100)
-                {
-                    modInstantSpell = mod;
-                    break;
-                }
-            }
-
-            if (modInstantSpell)
-            {
-                Player::ApplyModToSpell(modInstantSpell, spell);
-                basevalue = T(0);
-                return;
-            }
-            break;
-        }
-        // special case if two mods apply 100% critical chance, only consume one
-        case SPELLMOD_CRITICAL_CHANCE:
-        {
-            SpellModifier* modCritical = nullptr;
-            for (SpellModifier* mod : m_spellMods[op])
-            {
-                if (!IsAffectedBySpellmod(spellInfo, mod, spell))
-                    continue;
-
-                if (mod->type == SPELLMOD_FLAT && mod->value >= 100)
-                {
-                    modCritical = mod;
-                    break;
-                }
-            }
-
-            if (modCritical)
-            {
-                Player::ApplyModToSpell(modCritical, spell);
-                basevalue = T(100);
-                return;
-            }
-            break;
-        }
-        default:
-        break;
-    }
-    */
-
-    for (auto mod : m_spellMods[op])
-    {
-        if(!IsAffectedBySpellmod(spellInfo,mod,spell))
-            continue;
-
-        switch (mod->type)
-        {
-        case SPELLMOD_FLAT:
-            totalflat += mod->value;
-            break;
-        case SPELLMOD_PCT:
-            // skip percent mods for null basevalue (most important for spell mods with charges )
-            if (basevalue == T(0))
-            {
-                //HACKZ //Frost Warding + Molten Shields
-                if (mod->spellId == 11189 || mod->spellId == 28332 || mod->spellId == 11094 || mod->spellId == 13043)
-                    basevalue = 100;
-                else
-                    continue;
-            }
-            // special case (skip >10sec spell casts for instant cast setting)
-            if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
-                continue;
-
-            totalmul += CalculatePct(1.0f, mod->value);
-            break;
-        }
-
-        if (mod->charges > 0 )
-        {
-            if( !(spellInfo->SpellFamilyName == 8 && (spellInfo->SpellFamilyFlags & 0x200000000LL)))
-                --mod->charges;
-
-            if (mod->charges == 0)
-            {
-                mod->charges = -1;
-                mod->lastAffected = spell;
-                if(!mod->lastAffected)
-                    mod->lastAffected = FindCurrentSpellBySpellId(spellId);
-                ++m_SpellModRemoveCount;
-            }
-        }
-    }
-
-    basevalue = T(float(basevalue + totalflat) * totalmul);
-}
 #endif

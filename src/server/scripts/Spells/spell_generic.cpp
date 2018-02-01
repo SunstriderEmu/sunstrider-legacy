@@ -7,6 +7,41 @@ enum CannibalizeSpells
     SPELL_CANNIBALIZE_TRIGGERED = 20578
 };
 
+class spell_gen_proc_below_pct_damaged : public SpellScriptLoader
+{
+public:
+    spell_gen_proc_below_pct_damaged(char const* name) : SpellScriptLoader(name) { }
+
+    class spell_gen_proc_below_pct_damaged_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_gen_proc_below_pct_damaged_AuraScript);
+
+        bool CheckProc(ProcEventInfo& eventInfo)
+        {
+            DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+            if (!damageInfo || !damageInfo->GetDamage())
+                return false;
+
+            int32 pct = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
+
+            if (eventInfo.GetActionTarget()->HealthBelowPctDamaged(pct, damageInfo->GetDamage()))
+                return true;
+
+            return false;
+        }
+
+        void Register() override
+        {
+            DoCheckProc += AuraCheckProcFn(spell_gen_proc_below_pct_damaged_AuraScript::CheckProc);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_gen_proc_below_pct_damaged_AuraScript();
+    }
+};
+
 class spell_gen_cannibalize : public SpellScriptLoader
 {
 public:
@@ -40,7 +75,7 @@ public:
             return SPELL_CAST_OK;
         }
 
-        void HandleDummy(SpellEffIndex /*effIndex*/)
+        void HandleDummy(SpellEffIndex /*effIndex*/, int32& /*damage*/)
         {
             GetCaster()->CastSpell(GetCaster(), SPELL_CANNIBALIZE_TRIGGERED, TRIGGERED_NONE);
         }
@@ -58,7 +93,78 @@ public:
     }
 };
 
+// 20594 - Dwarf racial stoneform - Only armor and poison resistance are in aura effects on BC, need to add both bleed and disease
+class spell_racial_stoneform : public SpellScriptLoader
+{
+public:
+    spell_racial_stoneform() : SpellScriptLoader("spell_racial_stoneform") { }
+
+    class spell_racial_stoneform_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_racial_stoneform_AuraScript)
+
+        void HandleEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            GetSpellInfo()->ApplyDispelImmune(GetTarget(), DISPEL_DISEASE, true);
+            GetSpellInfo()->ApplyMechanicImmune(GetTarget(), (1 << MECHANIC_BLEED), true);
+        }
+
+        void HandleEffectRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            GetSpellInfo()->ApplyDispelImmune(GetTarget(), DISPEL_DISEASE, false);
+            GetSpellInfo()->ApplyMechanicImmune(GetTarget(), (1 << MECHANIC_BLEED), false);
+        }
+
+        void Register()
+        {
+            AfterEffectApply += AuraEffectApplyFn(spell_racial_stoneform_AuraScript::HandleEffectApply, EFFECT_1, SPELL_AURA_DISPEL_IMMUNITY, AURA_EFFECT_HANDLE_REAL);
+            AfterEffectRemove += AuraEffectRemoveFn(spell_racial_stoneform_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_DISPEL_IMMUNITY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_racial_stoneform_AuraScript();
+    }
+};
+
+class spell_archimonde_doomfire : public SpellScriptLoader
+{
+public:
+    spell_archimonde_doomfire() : SpellScriptLoader("spell_archimonde_doomfire") { }
+
+    class spell_archimonde_doomfire_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_archimonde_doomfire_AuraScript)
+
+        //MARCH PA + utiliser le tick count pour les degats + prendre les degats du spell parent
+        void PeriodicTick(AuraEffect const* aurEff)
+        {
+            int32 dmg = aurEff->GetAmount() - aurEff->GetTickNumber() * 150;
+            if (dmg < 0)
+                return;
+            CastSpellExtraArgs args(GetTarget()->GetGUID());
+            args.AddSpellBP0(int32(dmg));
+            GetTarget()->CastSpell(GetTarget(), 31969, args);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_archimonde_doomfire_AuraScript::PeriodicTick, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_archimonde_doomfire_AuraScript();
+    }
+};
+
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_cannibalize();
+    new spell_racial_stoneform();
+    new spell_gen_proc_below_pct_damaged("spell_item_commendation_of_kaelthas");
+    new spell_archimonde_doomfire();
 }

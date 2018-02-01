@@ -314,7 +314,7 @@ void OPvPCapturePoint::UpdateActivePlayerProximityCheck()
             }
             else
             {
-                TC_LOG_ERROR("FIXME","Player (" UI64FMTD ") offline, bit still in outdoor pvp, this should never happen.",(*itr));
+                TC_LOG_ERROR("FIXME","Player (%u) offline, bit still in outdoor pvp, this should never happen.",(*itr).GetCounter());
             } 
         }
     }

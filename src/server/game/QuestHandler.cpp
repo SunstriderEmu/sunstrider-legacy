@@ -172,7 +172,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
             _player->PlayerTalkClass->SendCloseGossip();
 
             if( qInfo->GetSrcSpell() > 0 )
-                _player->CastSpell( _player, qInfo->GetSrcSpell(), TRIGGERED_FULL_MASK);
+                _player->CastSpell( _player, qInfo->GetSrcSpell(), true);
 
             return;
         }

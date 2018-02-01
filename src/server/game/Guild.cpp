@@ -102,7 +102,7 @@ bool Guild::create(ObjectGuid lGuid, std::string gname)
     CreateRank(initiate,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
 
     if (!AddMember(lGuid, (uint32)GR_GUILDMASTER, trans)) {
-        TC_LOG_ERROR("guild", "Player " UI64FMTD " not added to guild %u!", lGuid, Id);
+        TC_LOG_ERROR("guild", "Player %u not added to guild %u!", lGuid.GetCounter(), Id);
         return false;
     }
     

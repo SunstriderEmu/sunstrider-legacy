@@ -118,14 +118,16 @@ bool ChatHandler::HandleReloadAllSpellCommand(const char*)
     HandleReloadSkillDiscoveryTemplateCommand("a");
     HandleReloadSkillExtraItemTemplateCommand("a");
     HandleReloadSpellAffectCommand("a");
+    HandleReloadSpellGroupsCommand("a");
     HandleReloadSpellRequiredCommand("a");
     HandleReloadSpellElixirCommand("a");
     HandleReloadSpellLearnSpellCommand("a");
     HandleReloadSpellLinkedSpellCommand("a");
-    HandleReloadSpellProcEventCommand("a");
+    HandleReloadSpellProcCommand("a");
     HandleReloadSpellTargetPositionCommand("a");
     HandleReloadSpellThreatsCommand("a");
     HandleReloadSpellPetAurasCommand("a");
+    HandleReloadSpellGroupStackRulesCommand("a");
     HandleReloadSpellDisabledCommand("a");
     return true;
 }
@@ -473,6 +475,22 @@ bool ChatHandler::HandleReloadSpellElixirCommand(const char*)
     return true;
 }
 
+bool ChatHandler::HandleReloadSpellGroupsCommand(const char* args)
+{
+    TC_LOG_INFO("misc", "Re-Loading Spell Groups...");
+    sSpellMgr->LoadSpellGroups();
+    SendGlobalGMSysMessage("DB table `spell_group` (spell groups) reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadSpellGroupStackRulesCommand(const char* args)
+{
+    TC_LOG_INFO("misc", "Re-Loading Spell Group Stack Rules...");
+    sSpellMgr->LoadSpellGroupStackRules();
+    SendGlobalGMSysMessage("DB table `spell_group_stack_rules` (spell stacking definitions) reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadSpellLearnSpellCommand(const char*)
 {
     TC_LOG_INFO( "command", "Re-Loading Spell Learn Spells..." );
@@ -489,11 +507,11 @@ bool ChatHandler::HandleReloadSpellLinkedSpellCommand(const char*)
     return true;
 }
 
-bool ChatHandler::HandleReloadSpellProcEventCommand(const char*)
+bool ChatHandler::HandleReloadSpellProcCommand(const char*)
 {
     TC_LOG_INFO( "command", "Re-Loading Spell Proc Event conditions..." );
-    sSpellMgr->LoadSpellProcEvents();
-    SendGlobalGMSysMessage("DB table `spell_proc_event` (spell proc trigger requirements) reloaded.");
+    sSpellMgr->LoadSpellProcs();
+    SendGlobalGMSysMessage("DB table `spell_proc` (spell proc trigger requirements) reloaded.");
     return true;
 }
 

@@ -322,7 +322,7 @@ void InstanceSaveManager::LoadResetTimes()
         {
             Field* fields = result->Fetch();
             uint32 instance = fields[1].GetUInt32();
-            time_t resettime = time_t(fields[0].GetUInt32() + 2 * HOUR);
+            time_t resettime = time_t(fields[0].GetUInt64() + 2 * HOUR);
             auto itr = instResetTime.find(instance);
             if (itr != instResetTime.end() && itr->second.second != resettime)
             {

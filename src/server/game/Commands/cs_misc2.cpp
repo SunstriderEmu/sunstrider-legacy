@@ -51,7 +51,7 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
         return false;
     }
 
-    if (chr->HasAuraEffect(9454)) // Char is freezed by GM
+    if (chr->HasAura(9454)) // Char is freezed by GM
     {
         SendSysMessage("Impossible when you are frozen.");
         SetSentErrorMessage(true);

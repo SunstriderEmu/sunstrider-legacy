@@ -87,7 +87,7 @@ public:
             TEST_ASSERT(warrior->GetPower(POWER_RAGE) == expectedRage);
             // Stun
             Wait(250);
-            TEST_AURA_MAX_DURATION(priest2, ClassSpells::Warrior::CHARGE_RNK_3_STUN, EFFECT_0, 1 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest2, ClassSpells::Warrior::CHARGE_RNK_3_STUN, 1 * SECOND * IN_MILLISECONDS);
 
             Wait(1000);
             // Warrior still running after charge
@@ -133,7 +133,7 @@ public:
             TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::HAMSTRING_RNK_4, POWER_RAGE, expectedHamstringRage);
 
             // Duration & CD
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::HAMSTRING_RNK_4, EFFECT_1, 15 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::HAMSTRING_RNK_4, 15 * SECOND * IN_MILLISECONDS);
 
             // Speed
             TEST_ASSERT(creature->GetSpeed(MOVE_RUN) == expectedSpeed);
@@ -259,7 +259,7 @@ public:
             TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::MOCKING_BLOW_RNK_6) == 2 * MINUTE);
 
             // Aura
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, EFFECT_1, 6 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, 6 * SECOND * IN_MILLISECONDS);
 
             // Taunt
             TEST_ASSERT(creature->GetTarget() == warrior->GetGUID());
@@ -408,7 +408,7 @@ public:
             EQUIP_ITEM(warrior, 34247); // Apolyon, the Soul-Render
 
             // Aura
-            Aura* aura = warrior->GetAura(ClassSpells::Warrior::RETALIATION_RNK_1, EFFECT_0);
+            Aura* aura = warrior->GetAura(ClassSpells::Warrior::RETALIATION_RNK_1);
             TEST_ASSERT(aura != nullptr);
             TEST_ASSERT(aura->GetMaxDuration() == 15 * SECOND * IN_MILLISECONDS);
             TEST_ASSERT(aura->GetCharges() == 30);
@@ -440,7 +440,7 @@ public:
                 if (aura->GetCharges() == 0)
                 {
                     warrior->AddAura(ClassSpells::Warrior::RETALIATION_RNK_1, warrior);
-                    aura = warrior->GetAura(ClassSpells::Warrior::RETALIATION_RNK_1, EFFECT_0);
+                    aura = warrior->GetAura(ClassSpells::Warrior::RETALIATION_RNK_1);
                     TEST_ASSERT(aura != nullptr);
                 }
                 warrior->SetFullHealth();
@@ -477,7 +477,7 @@ public:
         {
             if (victim->HasAura(ClassSpells::Warrior::THUNDER_CLAP_RNK_7))
             {
-                TEST_AURA_MAX_DURATION(victim, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, EFFECT_1, 30 * SECOND * IN_MILLISECONDS);
+                TEST_AURA_MAX_DURATION(victim, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, 30 * SECOND * IN_MILLISECONDS);
                 TEST_ASSERT(victim->GetAttackTimer(BASE_ATTACK) == expectedAS);
                 count++;
             }
@@ -574,8 +574,8 @@ public:
             TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8, POWER_RAGE, expectedBattleShoutRage);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8, EFFECT_0, 2 * MINUTE * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(hunter, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8, EFFECT_0, 2 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8, 2 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(hunter, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8, 2 * MINUTE * IN_MILLISECONDS);
 
             // Range
             TEST_ASSERT(!ally2->HasAura(ClassSpells::Warrior::BATTLE_SHOUT_RNK_8));
@@ -642,7 +642,7 @@ public:
             TestImmunity(warrior, warlock, ClassSpells::Warlock::FEAR_RNK_3);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BERSERKER_RAGE_RNK_1, EFFECT_0, 10 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BERSERKER_RAGE_RNK_1, 10 * SECOND * IN_MILLISECONDS);
 
             // Cooldown duration
             TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::BERSERKER_RAGE_RNK_1) == 30 * SECOND);
@@ -732,11 +732,11 @@ public:
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, 10 * MINUTE);
 
             // Aura
-            Aura* aura3m = creature3m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, EFFECT_0);
+            Aura* aura3m = creature3m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1);
             TEST_ASSERT(aura3m != nullptr);
-            Aura* aura6m = creature6m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, EFFECT_0);
+            Aura* aura6m = creature6m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1);
             TEST_ASSERT(aura6m != nullptr);
-            Aura* aura11m = creature11m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, EFFECT_0);
+            Aura* aura11m = creature11m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1);
             TEST_ASSERT(aura11m == nullptr);
 
             // Aura duration
@@ -855,8 +855,8 @@ public:
             TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, POWER_RAGE, expectedCommandingShoutRage);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, EFFECT_0, 2 * MINUTE * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(hunter, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, EFFECT_0, 2 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, 2 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(hunter, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, 2 * MINUTE * IN_MILLISECONDS);
 
             // Range
             TEST_ASSERT(!ally2->HasAura(ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1));
@@ -911,8 +911,8 @@ public:
             TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, POWER_RAGE, expectedDemoralizingShoutRage);
 
             // Aura
-            TEST_AURA_MAX_DURATION(player3m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, EFFECT_0, 30 * SECOND  * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, EFFECT_0, 30 * SECOND  * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(player3m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, 30 * SECOND  * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, 30 * SECOND  * IN_MILLISECONDS);
 
             // Range
             TEST_ASSERT(!creature15m->HasAura(ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7));
@@ -1062,7 +1062,7 @@ public:
 
             // Stun
             Wait(250);
-            TEST_AURA_MAX_DURATION(priest2, ClassSpells::Warrior::INTERCEPT_RNK_5_TRIGGER, EFFECT_0, 3 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest2, ClassSpells::Warrior::INTERCEPT_RNK_5_TRIGGER, 3 * SECOND * IN_MILLISECONDS);
 
             Wait(1000);
             // Warrior still running after Intercept
@@ -1097,8 +1097,8 @@ public:
         {
             if (priest->HasAura(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1))
             {
-                TEST_HAS_NOT_AURA(priest, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER, EFFECT_0);
-                TEST_AURA_MAX_DURATION(priest, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, EFFECT_1, 8 * SECOND * IN_MILLISECONDS);
+                TEST_HAS_NOT_AURA(priest, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER);
+                TEST_AURA_MAX_DURATION(priest, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, 8 * SECOND * IN_MILLISECONDS);
                 count++;
             }
         }
@@ -1127,7 +1127,7 @@ public:
             TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1) == 3 * MINUTE);
 
             // Trigger on target
-            TEST_AURA_MAX_DURATION(priest1, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER, EFFECT_0, 8 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest1, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER, 8 * SECOND * IN_MILLISECONDS);
             // https://youtu.be/9DA10SgPsj4?t=1m14s
             // Target should have only one debuff
             TEST_ASSERT(!priest1->HasAura(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1));
@@ -1249,7 +1249,7 @@ public:
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::RECKLESSNESS_RNK_1);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::RECKLESSNESS_RNK_1, EFFECT_0, 15 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::RECKLESSNESS_RNK_1, 15 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
             TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::RECKLESSNESS_RNK_1) == 30 * MINUTE);
@@ -1383,7 +1383,7 @@ public:
             TEST_ASSERT(enemy70->IsDead());
 
             // Aura
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::VICTORY_RUSH_RNK_1, EFFECT_0, 20 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::VICTORY_RUSH_RNK_1, 20 * SECOND * IN_MILLISECONDS);
             TEST_CAST(warrior, creature, ClassSpells::Warrior::VICTORY_RUSH_RNK_1);
             TEST_ASSERT(!warrior->HasAura(ClassSpells::Warrior::VICTORY_RUSH_RNK_1));
 
@@ -1528,7 +1528,7 @@ public:
             TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::BLOODRAGE_RNK_1) == 1 * MINUTE);
 
             // Aura
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BLOODRAGE_RNK_1_TRIGGER, EFFECT_0, 10 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BLOODRAGE_RNK_1_TRIGGER, 10 * SECOND * IN_MILLISECONDS);
 
             // Rage gain
             TEST_ASSERT(warrior->GetPower(POWER_RAGE) == 10 * 10);
@@ -1599,7 +1599,7 @@ public:
             TEST_POWER_COST(warrior, rogue, ClassSpells::Warrior::DISARM_RNK_1, POWER_RAGE, expectedDisarmRage);
 
             // Aura
-            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warrior::DISARM_RNK_1, EFFECT_0, 10 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warrior::DISARM_RNK_1, 10 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::DISARM_RNK_1, 1 * MINUTE);
@@ -1675,7 +1675,7 @@ public:
             TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::INTERVENE_RNK_1) == 30 * SECOND);
 
             // Aura
-            TEST_AURA_MAX_DURATION(shaman, ClassSpells::Warrior::INTERVENE_RNK_1, EFFECT_1, 10 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(shaman, ClassSpells::Warrior::INTERVENE_RNK_1, 10 * SECOND * IN_MILLISECONDS);
 
             // Take an attack
             Wait(3000);
@@ -1908,7 +1908,7 @@ public:
             // Aura
             warrior->ModifyPower(POWER_RAGE, 100); //shield block costs 10 rage
             warrior->CastSpell(warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1);
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, EFFECT_0, 5 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, 5 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
             TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1) == 5 * SECOND);
@@ -1951,7 +1951,7 @@ public:
 
             // Aura
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1);
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, EFFECT_0, 10 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, 10 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
             TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SHIELD_WALL_RNK_1) == 30 * MINUTE);
@@ -2029,7 +2029,7 @@ public:
             TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, POWER_RAGE, expectedSpellReflectionRage);
 
             // Aura
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, EFFECT_0, 5 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, 5 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
             TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SPELL_REFLECTION_RNK_1) == 10 * SECOND);
@@ -2118,7 +2118,7 @@ public:
             TEST_POWER_COST(warrior, victim, ClassSpells::Warrior::SUNDER_ARMOR_RNK_6, POWER_RAGE, expectedSunderArmorRage);
             ASSERT_INFO("Sunder Armor %i stacks -> start armor: %u, current armor: %u, expected: %u", sunderArmorStack, startArmor, victim->GetArmor(), expectedArmor);
             TEST_ASSERT(victim->GetArmor() == expectedArmor);
-            Aura* aura = victim->GetAura(ClassSpells::Warrior::SUNDER_ARMOR_RNK_6, EFFECT_0);
+            Aura* aura = victim->GetAura(ClassSpells::Warrior::SUNDER_ARMOR_RNK_6);
             TEST_ASSERT(aura != nullptr);
             TEST_ASSERT(aura->GetStackAmount() == sunderArmorStack);
             TEST_ASSERT(aura->GetMaxDuration() == 30 * SECOND * IN_MILLISECONDS);
@@ -2187,7 +2187,7 @@ public:
 
             // Acquire threat, aura duration, cooldown
             TEST_CAST(warrior, creature, ClassSpells::Warrior::TAUNT_RNK_1);
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::TAUNT_RNK_1, EFFECT_1, 3 * SECOND  * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::TAUNT_RNK_1, 3 * SECOND  * IN_MILLISECONDS);
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::TAUNT_RNK_1, 10 * SECOND);
             TEST_ASSERT(creature->GetThreatManager().GetThreat(warrior) == warlockThreat);
 

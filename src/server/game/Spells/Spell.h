@@ -13,6 +13,7 @@ class Aura;
 enum SpellCastResult : int;
 class SpellScript;
 class SpellEvent;
+enum LootType : uint8;
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 #define MAX_SPELL_RANGE_TOLERANCE 3.0f
@@ -213,11 +214,13 @@ struct SpellValue
 
         RadiusMod = 1.0f;
         MaxAffectedTargets = proto->MaxAffectedTargets;
+        AuraStackAmount = 1;
     }
 
     uint32 MaxAffectedTargets;
     int32 EffectBasePoints[MAX_SPELL_EFFECTS];
     float RadiusMod;
+    uint8 AuraStackAmount;
 };
 
 enum SpellState
@@ -238,6 +241,7 @@ enum SpellEffectHandleMode
     SPELL_EFFECT_HANDLE_HIT_TARGET, //process on hit, for each target affected. Ex: Aura apply
 };
 
+typedef std::vector<std::pair<uint32, ObjectGuid>> DispelList;
 
 // special structure containing data for channel target spells
 struct ChannelTargetData
@@ -372,7 +376,6 @@ class TC_GAME_API Spell
         void EffectUnlearnSpecialization(uint32 i);
         void EffectHealPct(uint32 i);
         void EffectEnergisePct(uint32 i);
-        void EffectTriggerSpellWithValue(uint32 i);
         void EffectTriggerRitualOfSummoning(uint32 i);
         void EffectKillCredit(uint32 i);
         void EffectQuestFail(uint32 i);
@@ -380,6 +383,8 @@ class TC_GAME_API Spell
         void EffectPlaySound(uint32 i);
         void EffectPlayMusic(uint32 i);
         void EffectForceCastWithValue(uint32 i);
+
+        typedef std::unordered_set<Aura*> UsedSpellMods;
 
         Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags, ObjectGuid originalCasterGUID = ObjectGuid::Empty, Spell** triggeringContainer = nullptr, bool skipCheck = false);
         ~Spell();
@@ -410,25 +415,25 @@ class TC_GAME_API Spell
         void SearchAreaTargets(std::list<WorldObject*>& targets, float range, Position const* position, Unit* referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionContainer* condList);
         void SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, SpellTargetSelectionCategories selectCategory, ConditionContainer* condList, bool isChainHeal);
 
-        inline uint32 prepare(Unit* const target, Aura const* triggeredByAura = nullptr)
+        inline uint32 prepare(Unit* const target, AuraEffect const* triggeredByAura = nullptr)
         {
             SpellCastTargets targets;
             targets.SetUnitTarget(target);
             return prepare(targets, triggeredByAura);
         }
         //return SpellCastResult
-        uint32 prepare(SpellCastTargets const& targets, Aura const* triggeredByAura = nullptr);
+        uint32 prepare(SpellCastTargets const& targets, AuraEffect const* triggeredByAura = nullptr);
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
+        void _cast(bool skipCheck = false);
         void finish(bool ok = true, bool cancelChannel = true);
         void TakePower();
         void TakeAmmo();
         void TakeReagents();
         void TakeCastItem();
-        void TriggerSpell();
-        SpellCastResult CheckCast(bool strict);
-        SpellCastResult PetCanCast(Unit* target);
+        SpellCastResult CheckCast(bool strict, uint32* param1 = nullptr, uint32* param2 = nullptr);
+        SpellCastResult CheckPetCast(Unit* target);
         bool CanAutoCast(Unit* target);
 
         // handlers
@@ -438,12 +443,12 @@ class TC_GAME_API Spell
         void _handle_immediate_phase();
         void _handle_finish_phase();
 
-        SpellCastResult CheckItems();
+        SpellCastResult CheckItems(uint32* param1, uint32* param2);
         SpellCastResult CheckRange(bool strict);
         SpellCastResult CheckPower();
-        SpellCastResult CheckCasterAuras() const;
+        SpellCastResult CheckCasterAuras(uint32* param1) const;
 
-        int32 CalculateDamage(uint8 i, Unit* target) { return m_caster->CalculateSpellDamage(m_spellInfo,i,m_currentBasePoints[i],target); }
+        int32 CalculateDamage(uint8 i, Unit* target) { return m_caster->CalculateSpellDamage(nullptr, m_spellInfo,i, &m_currentBasePoints[i]); }
         int32 CalculatePowerCost();
 
         bool HaveTargetsForEffect(uint8 effect) const;
@@ -457,8 +462,6 @@ class TC_GAME_API Spell
         void WriteSpellGoTargets( WorldPacket * data );
         void WriteAmmoToPacket( WorldPacket * data );
 
-        Unit* SelectMagnetTarget();
-        void HandleHitTriggerAura();
         bool CheckTarget(Unit* target, uint32 eff);
 
         bool CheckEffectTarget(Unit const* target, uint32 eff) const;
@@ -477,7 +480,6 @@ class TC_GAME_API Spell
         void SendChannelUpdate(uint32 time, uint32 spellId); //only update if channeling given spell
         void SendChannelStart(uint32 duration);
         void SendResurrectRequest(Player* target);
-        void SendPlaySpellVisual(uint32 SpellID);
 
         void HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i, SpellEffectHandleMode mode);
         void HandleFlatThreat();
@@ -489,26 +491,24 @@ class TC_GAME_API Spell
         ObjectGuid m_castItemGUID;
         uint8 m_cast_count;
         SpellCastTargets m_targets;
+        WorldObject const* m_originalTarget; //sunstrider addition, this stores the first target given to CastSpell
+        WorldObject const* GetOriginalTarget() const { return m_originalTarget; }
         bool m_skipCheck;
+
+        UsedSpellMods m_appliedMods;
 
         int32 GetCastTime() const { return m_casttime; }
         bool IsAutoRepeat() const { return m_autoRepeat; }
         void SetAutoRepeat(bool rep) { m_autoRepeat = rep; }
         void ReSetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
-        bool IsNextMeleeSwingSpell() const
-        {
-            return m_spellInfo->Attributes & (SPELL_ATTR0_ON_NEXT_SWING_1|SPELL_ATTR0_ON_NEXT_SWING_2);
-        }
-        static bool IsNextMeleeSwingSpell(SpellInfo const* spellInfo)
-        {
-            return spellInfo && spellInfo->Attributes & (SPELL_ATTR0_ON_NEXT_SWING_1|SPELL_ATTR0_ON_NEXT_SWING_2);
-        }
         bool IsTriggered() const;
         bool IsIgnoringCooldowns() const;
         bool IsProcDisabled() const;
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
         bool IsAutoActionResetSpell() const;
         bool IsPositive(bool hostileTarget = false) const;
+
+        bool IsTriggeredByAura(SpellInfo const* auraSpellInfo) const { return (auraSpellInfo == m_triggeredByAuraSpell); }
 
         bool IsDeletable() const { return !m_referencedFromCurrentSpell && !m_executedCurrently; }
         void SetReferencedFromCurrent(bool yes) { m_referencedFromCurrentSpell = yes; }
@@ -532,18 +532,12 @@ class TC_GAME_API Spell
 
         bool UpdatePointers();                              // must be used at call Spell code after time delay (non triggered spell cast/update spell call/etc)
 
-        bool IsAffectedBy(SpellInfo const *spellInfo, uint32 effectId);
-
         bool CheckTargetCreatureType(Unit* target) const;
-
-        void AddTriggeredSpell(SpellInfo const* spell) { m_TriggerSpells.push_back(spell); }
 
         void CleanupTargetList();
 
         void SetSpellValue(SpellValueMod mod, int32 value);
         
-        void setRemoveReflect() { m_removeReflect = true; }
-
         bool DoesApplyAuraName(uint32 name);
 
         void LoadScripts();
@@ -600,6 +594,7 @@ class TC_GAME_API Spell
         WorldLocation* destTarget;
 
         int32 damage;
+        SpellMissInfo targetMissInfo;
         SpellEffectHandleMode effectHandleMode;
         // this is set in Spell Hit, but used in Apply Aura handler
         DiminishingLevels m_diminishLevel;
@@ -611,13 +606,13 @@ class TC_GAME_API Spell
         int32 m_damage;           // Damge   in effects count here
         int32 m_healing;          // Healing in effects count here
 
-        //******************************************
+        // ******************************************
         // Spell trigger system
-        //******************************************
-        bool   m_canTrigger;                  // Can start trigger (m_IsTriggeredSpell can`t use for this)
+        // ******************************************
+        uint32 m_procAttacker;                // Attacker trigger flags
+        uint32 m_procVictim;                  // Victim   trigger flags
+        uint32 m_hitMask;
         void   prepareDataForTriggerSystem();
-        void   prepareHitProcData(uint32& procAttacker, uint32& procVictim, bool hostileTarget);
-        bool   m_removeReflect;
 
         //*****************************************
         // Spell target subsystem
@@ -666,6 +661,7 @@ class TC_GAME_API Spell
         SpellMissInfo DoSpellHitOnUnit(Unit *unit, uint32 effectMask);
         void DoAllEffectOnTarget(GOTargetInfo *target);
         void DoAllEffectOnTarget(ItemTargetInfo *target);
+        void DoTriggersOnSpellHit(Unit* unit, uint8 effMask);
         bool UpdateChanneledTargetList();
         bool IsValidDeadOrAliveTarget(Unit const* target) const;
         void HandleLaunchPhase();
@@ -680,7 +676,7 @@ class TC_GAME_API Spell
         void CallScriptAfterCastHandlers();
         SpellCastResult CallScriptCheckCastHandlers();
         void PrepareScriptHitHandlers();
-        bool CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMode mode);
+        bool CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMode mode, int32& damage);
         void CallScriptBeforeHitHandlers();
         void CallScriptOnHitHandlers();
         void CallScriptAfterHitHandlers();
@@ -692,10 +688,20 @@ class TC_GAME_API Spell
         // -------------------------------------------
 
         //List For Triggered Spells
-        typedef std::vector<SpellInfo const*> TriggerSpells;
-        TriggerSpells m_TriggerSpells;
-        typedef std::vector< std::pair<SpellInfo const*, int32> > ChanceTriggerSpells;
-        ChanceTriggerSpells m_ChanceTriggerSpells;
+        struct HitTriggerSpell
+        {
+            HitTriggerSpell(SpellInfo const* spellInfo, SpellInfo const* auraSpellInfo, int32 procChance) :
+                triggeredSpell(spellInfo), triggeredByAura(auraSpellInfo), chance(procChance) { }
+
+            SpellInfo const* triggeredSpell;
+            SpellInfo const* triggeredByAura;
+            // uint8 triggeredByEffIdx          This might be needed at a later stage - No need known for now
+            int32 chance;
+        };
+        bool CanExecuteTriggersOnHit(uint8 effMask, SpellInfo const* triggeredByAura = nullptr) const;
+        void PrepareTriggersExecutedOnHit();
+        typedef std::vector<HitTriggerSpell> HitTriggerSpellList;
+        HitTriggerSpellList m_hitTriggerSpells;
 
 		// effect helpers
 		void SummonGuardian(uint32 effectIndex, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons);
@@ -714,6 +720,8 @@ class TC_GAME_API Spell
         // we can't store original aura link to prevent access to deleted auras
         // and in same time need aura data and after aura deleting.
         SpellInfo const* m_triggeredByAuraSpell;
+        // used in effects handlers
+        Aura* m_spellAura;
 
         uint8 m_auraScaleMask;
 
@@ -777,7 +785,7 @@ namespace Trinity
                         if(!i_caster->IsFriendlyTo( itr->GetSource()))
                             continue;
 
-                        if(i_spell.m_spellInfo->HasAttribute(SPELL_ATTR_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource())
+                        if(i_spell.m_spellInfo->HasAttribute(SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource())
                             continue;
 
                         break;
@@ -938,20 +946,6 @@ class TC_GAME_API SpellEvent : public BasicEvent
     protected:
         Spell* m_Spell;
 };
-
-//procs for reflects + remove reflect
-class TC_GAME_API ReflectEvent : public BasicEvent
-{
-public:
-    ReflectEvent(Unit* caster, ObjectGuid targetGUID, const SpellInfo* spellInfo) : _caster(caster), _targetGUID(targetGUID), _spellInfo(spellInfo) { }
-    bool Execute(uint64 e_time, uint32 p_time) override;
-
-protected:
-	Unit* _caster;
-    ObjectGuid _targetGUID;
-    const SpellInfo* _spellInfo;
-};
-
 
 #endif
 

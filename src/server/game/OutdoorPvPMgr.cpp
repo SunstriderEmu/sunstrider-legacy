@@ -37,20 +37,19 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        TC_LOG_ERROR("FIXME","OutdoorPvP : HP init failed.");
+        TC_LOG_ERROR("misc", "OutdoorPvP : HP init failed.");
         delete pOP;
     }
     else
     {
         m_OutdoorPvPSet.push_back(pOP);
     }
-
 
     pOP = new OutdoorPvPNA;
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        TC_LOG_ERROR("FIXME","OutdoorPvP : NA init failed.");
+        TC_LOG_ERROR("misc", "OutdoorPvP : NA init failed.");
         delete pOP;
     }
     else
@@ -58,12 +57,11 @@ void OutdoorPvPMgr::InitOutdoorPvP()
         m_OutdoorPvPSet.push_back(pOP);
     }
 
-
     pOP = new OutdoorPvPTF;
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        TC_LOG_ERROR("FIXME","OutdoorPvP : TF init failed.");
+        TC_LOG_ERROR("misc", "OutdoorPvP : TF init failed.");
         delete pOP;
     }
     else
@@ -75,7 +73,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        TC_LOG_ERROR("FIXME","OutdoorPvP : ZM init failed.");
+        TC_LOG_ERROR("misc", "OutdoorPvP : ZM init failed.");
         delete pOP;
     }
     else
@@ -87,7 +85,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        TC_LOG_ERROR("FIXME","OutdoorPvP : SI init failed.");
+        TC_LOG_ERROR("misc", "OutdoorPvP : SI init failed.");
         delete pOP;
     }
     else
@@ -99,7 +97,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        TC_LOG_ERROR("FIXME","OutdoorPvP : EP init failed.");
+        TC_LOG_ERROR("misc", "OutdoorPvP : EP init failed.");
         delete pOP;
     }
     else

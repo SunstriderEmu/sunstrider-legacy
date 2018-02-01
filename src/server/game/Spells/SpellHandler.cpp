@@ -16,6 +16,7 @@
 #include "TemporarySummon.h"
 #include "ScriptMgr.h"
 #include "GameObjectAI.h"
+#include "SpellAuraEffects.h"
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
@@ -78,6 +79,13 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         pUser->InArena())
     {
         pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH,pItem,nullptr);
+        return;
+    }
+
+    // don't allow items banned in arena
+    if ((proto->Flags & ITEM_FLAG_NOT_USEABLE_IN_ARENA) && pUser->InArena())
+    {
+        pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH, pItem, nullptr);
         return;
     }
 
@@ -362,10 +370,11 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     // non channeled case
     // don't allow remove non positive spells
     // don't allow cancelling passive auras (some of them are visible)
-    if (!spellInfo->IsPositive() /* || spellInfo->IsPassive()*/)
+    if (!spellInfo->IsPositive() || spellInfo->IsPassive())
         return;
 
-    _player->RemoveAurasDueToSpellByCancel(spellId);
+    // maybe should only remove one buff when there are multiple?
+    _player->RemoveOwnedAura(spellId, ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
 }
 
 void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
@@ -403,7 +412,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
         return;
     }
 
-    pet->RemoveAurasDueToSpell(spellId);
+    pet->RemoveOwnedAura(spellId, ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
 
     pet->AddCreatureSpellCooldown(spellId);
 }
@@ -481,7 +490,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
         return;
 
     // Get creator of the unit (SPELL_AURA_CLONE_CASTER does not stack)
-    Unit* creator = unit->GetAurasByType(SPELL_AURA_CLONE_CASTER).front()->GetCaster();
+    Unit* creator = unit->GetAuraEffectsByType(SPELL_AURA_CLONE_CASTER).front()->GetCaster();
     if (!creator)
         return;
 

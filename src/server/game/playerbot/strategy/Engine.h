@@ -66,7 +66,7 @@ namespace ai
 
         void Init();
         void addStrategy(std::string name);
-        void addStrategies(std::string first, ...);
+        void addStrategies(std::initializer_list<std::string> args);
         bool removeStrategy(std::string name);
         bool HasStrategy(std::string name);
         void removeAllStrategies();

@@ -60,7 +60,7 @@ bool ArenaTeam::Create(ObjectGuid captainGuid, uint32 type, std::string ArenaTea
         "('%u', '%u', '%u', '%u', '%u', '%u', '%u')", Id, stats.rating, stats.WeekGames, stats.wins_week, stats.SeasonGames, stats.wins_season, stats.rank);
 
     CharacterDatabase.CommitTransaction(trans);
-    TC_LOG_DEBUG("arena","New ArenaTeam created [Id: %u] [Type: %u] [Captain GUID: " UI64FMTD "]", GetId(), GetType(), GetCaptain());
+    TC_LOG_DEBUG("arena","New ArenaTeam created [Id: %u] [Type: %u] [Captain GUID: %u]", GetId(), GetType(), GetCaptain().GetCounter());
     
     std::string ip = "unknown";
     if (Player* captain = ObjectAccessor::FindPlayer(GetCaptain()))
@@ -257,7 +257,7 @@ void ArenaTeam::SetCaptain(ObjectGuid guid)
     if(newcaptain)
     {
         newcaptain->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 1 + (GetSlot() * 6), 0);
-        TC_LOG_DEBUG("arena", "Player: %s [GUID: " UI64FMTD "] promoted player : %s[GUID:" UI64FMTD "] to leader of arena team[Id:%u][Type:%u].", oldcaptain ? oldcaptain->GetName().c_str() : "", oldcaptain ? oldcaptain->GetGUID() : 0, newcaptain->GetName().c_str(), newcaptain->GetGUID(), GetId(), GetType());
+        TC_LOG_DEBUG("arena", "Player: %s [GUID: %u] promoted player : %s[GUID: %u] to leader of arena team[Id:%u][Type:%u].", oldcaptain ? oldcaptain->GetName().c_str() : "", oldcaptain ? oldcaptain->GetGUID().GetCounter() : 0, newcaptain->GetName().c_str(), newcaptain->GetGUID().GetCounter(), GetId(), GetType());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
             GetId(), uint32(AT_EV_PROMOTE), GetType(), guid.GetCounter(), newcaptain->GetSession()->GetRemoteAddress().c_str(), time(nullptr));
     }

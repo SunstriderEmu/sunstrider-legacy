@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "Unit.h"
 #include "Player.h"
@@ -24,6 +5,7 @@
 #include "Creature.h"
 #include "SharedDefines.h"
 #include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 
  /*#######################################
  ########                         ########
@@ -238,7 +220,7 @@ void Unit::UpdateDamageDoneMods(WeaponAttackType attackType)
 
         //apply damage to already equipped weapon
         for (UnitMods mod = UNIT_MOD_DAMAGE_MAINHAND; mod <= UNIT_MOD_DAMAGE_RANGED; mod = (UnitMods)(mod + 1))
-            ToPlayer()->HandleStatFlatModifier(mod, TOTAL_VALUE, float(GetModifierValue()), apply);
+            ToPlayer()->HandleStatFlatModifier(mod, TOTAL_VALUE, float(GetAmount()), apply);
     }
     */
 }
@@ -296,7 +278,7 @@ void Unit::UpdateDamagePctDoneMods(WeaponAttackType attackType)
         {
             //apply damage to already equipped weapon
             for(UnitMods mod = UNIT_MOD_DAMAGE_MAINHAND; mod <= UNIT_MOD_DAMAGE_RANGED; mod = (UnitMods)(mod +1))
-                m_target->ToPlayer()->HandleStatModifier(mod, TOTAL_PCT, float(GetModifierValue()),apply);
+                m_target->ToPlayer()->HandleStatModifier(mod, TOTAL_PCT, float(GetAmount()),apply);
         }
     */
 }
@@ -431,8 +413,8 @@ void Player::UpdateArmor()
     value  = GetFlatModifierValue(unitMod, BASE_VALUE);    // base armor (from items)
     value *= GetPctModifierValue(unitMod, BASE_PCT);            // armor percent from items
     
-    // Enrage
-    if (GetAura(5229,0))
+    // Enrage hack
+    if (GetAura(5229))
     {
         switch(m_form)
         {
@@ -451,12 +433,11 @@ void Player::UpdateArmor()
     value += GetFlatModifierValue(unitMod, TOTAL_VALUE);
 
     //add dynamic flat mods
-    AuraList const& mResbyIntellect = GetAurasByType(SPELL_AURA_MOD_RESISTANCE_OF_STAT_PERCENT);
-    for(auto i : mResbyIntellect)
+    AuraEffectList const& mResbyIntellect = GetAuraEffectsByType(SPELL_AURA_MOD_RESISTANCE_OF_STAT_PERCENT);
+    for (AuraEffectList::const_iterator i = mResbyIntellect.begin(); i != mResbyIntellect.end(); ++i)
     {
-        Modifier const* mod = i->GetModifier();
-        if(mod->m_miscvalue & SPELL_SCHOOL_MASK_NORMAL)
-            value += int32(GetStat(Stats(i->GetMiscBValue())) * i->GetModifierValue() / 100.0f);
+        if ((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
+            value += CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount());
     }
 
     value *= GetPctModifierValue(unitMod, TOTAL_PCT);
@@ -585,25 +566,10 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
             {
                 //Check if Predatory Strikes is skilled
                 float mLevelMult = 0.0;
-                switch(m_form)
+                if (IsInFeralForm())
                 {
-                    case FORM_CAT:
-                    case FORM_BEAR:
-                    case FORM_DIREBEAR:
-                    case FORM_MOONKIN:
-                    {
-                        Unit::AuraList const& mDummy = GetAurasByType(SPELL_AURA_DUMMY);
-                        for(auto itr : mDummy)
-                        {
-                            // Predatory Strikes
-                            if (itr->GetSpellInfo()->SpellIconID == 1563)
-                            {
-                                mLevelMult = itr->GetModifier()->m_amount / 100.0f;
-                                break;
-                            }
-                        }
-                        break;
-                    }
+                    if (AuraEffect const* levelMod = GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_DRUID, 1563, EFFECT_0))
+                        mLevelMult = CalculatePct(1.0f, levelMod->GetAmount());
                 }
 
                 switch(m_form)
@@ -634,9 +600,9 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
     //add dynamic flat mods
     if( ranged && (GetClassMask() & CLASSMASK_WAND_USERS)==0)
     {
-        AuraList const& mRAPbyIntellect = GetAurasByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_OF_STAT_PERCENT);
-        for(auto i : mRAPbyIntellect)
-            attPowerMod += int32(GetStat(Stats(i->GetModifier()->m_miscvalue)) * i->GetModifierValue() / 100.0f);
+        AuraEffectList const& mRAPbyStat = GetAuraEffectsByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_OF_STAT_PERCENT);
+        for (AuraEffect const* aurEff : mRAPbyStat)
+            attPowerMod += CalculatePct(GetStat(Stats(aurEff->GetMiscValue())), aurEff->GetAmount());
     }
 #ifdef LICH_KING
     else
@@ -647,7 +613,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
 
         AuraEffectList const& mAPbyArmor = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR);
         for (AuraEffectList::const_iterator iter = mAPbyArmor.begin(); iter != mAPbyArmor.end(); ++iter)
-            // always: ((*i)->GetModifier()->m_miscvalue == 1 == SPELL_SCHOOL_MASK_NORMAL)
+            // always: ((*i)->GetMiscValue() == 1 == SPELL_SCHOOL_MASK_NORMAL)
             attPowerMod += int32(GetArmor() / (*iter)->GetAmount());
     }
 #endif
@@ -674,7 +640,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
             UpdateDamagePhysical(OFF_ATTACK);
         if(GetClass() == CLASS_SHAMAN 
 #ifdef LICH_KING
-            || getClass() == CLASS_PALADIN) 
+            || GetClass() == CLASS_PALADIN) 
 #endif
             )                      // mental quickness
             UpdateSpellDamageAndHealingBonus();
@@ -929,16 +895,11 @@ void Player::UpdateExpertise(WeaponAttackType attack)
 
     Item *weapon = GetWeaponForAttack(attack);
 
-    AuraList const& expAuras = GetAurasByType(SPELL_AURA_MOD_EXPERTISE);
-    for(auto expAura : expAuras)
+    expertise += GetTotalAuraModifier(SPELL_AURA_MOD_EXPERTISE, [weapon](AuraEffect const* aurEff) -> bool
     {
-        // item neutral spell
-        if(expAura->GetSpellInfo()->EquippedItemClass == -1)
-            expertise += expAura->GetModifierValue();
-        // item dependent spell
-        else if(weapon && weapon->IsFitToSpellRequirements(expAura->GetSpellInfo()))
-            expertise += expAura->GetModifierValue();
-    }
+        return aurEff->GetSpellInfo()->IsItemFitToSpellRequirements(weapon);
+    });
+
 
     if(expertise < 0)
         expertise = 0;
@@ -963,19 +924,16 @@ void Player::UpdateManaRegen()
     float power_regen_mp5 = GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f;
 
     // Get bonus from SPELL_AURA_MOD_MANA_REGEN_FROM_STAT aura
-    AuraList const& regenAura = GetAurasByType(SPELL_AURA_MOD_MANA_REGEN_FROM_STAT);
-    for(auto i : regenAura)
-    {
-        Modifier const* mod = i->GetModifier();
-        power_regen_mp5 += GetStat(Stats(mod->m_miscvalue)) * i->GetModifierValue() / 500.0f;
-    }
+    AuraEffectList const& regenAura = GetAuraEffectsByType(SPELL_AURA_MOD_MANA_REGEN_FROM_STAT);
+    for (AuraEffectList::const_iterator i = regenAura.begin(); i != regenAura.end(); ++i)
+        power_regen_mp5 += GetStat(Stats((*i)->GetMiscValue())) * (*i)->GetAmount() / 500.0f;
 
     // Bonus from some dummy auras
-    AuraList const& mDummyAuras = GetAurasByType(SPELL_AURA_PERIODIC_DUMMY);
+    auto const& mDummyAuras = GetAuraEffectsByType(SPELL_AURA_PERIODIC_DUMMY);
     for(auto mDummyAura : mDummyAuras)
         if(mDummyAura->GetId() == 34074)                          // Aspect of the Viper
         {
-            power_regen_mp5 += mDummyAura->GetModifier()->m_amount * Intellect / 500.0f;
+            power_regen_mp5 += mDummyAura->GetAmount() * Intellect / 500.0f;
             // Add regen bonus from level in this dummy
             power_regen_mp5 += GetLevel() * 35 / 100;
         }
@@ -993,7 +951,7 @@ void Player::_ApplyAllStatBonuses()
 {
     SetCanModifyStats(false);
 
-    _ApplyAllAuraMods();
+    _ApplyAllAuraStatMods();
     _ApplyAllItemMods();
 
     SetCanModifyStats(true);
@@ -1006,7 +964,7 @@ void Player::_RemoveAllStatBonuses()
     SetCanModifyStats(false);
 
     _RemoveAllItemMods();
-    _RemoveAllAuraMods();
+    _RemoveAllAuraStatMods();
 
     SetCanModifyStats(true);
 
@@ -1409,8 +1367,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             }
 #endif
             bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.22f * mod;
-            //TC if (AuraEffect* aurEff = owner->GetAuraEffectOfRankedSpell(34453, EFFECT_1, owner->GetGUID())) // Animal Handler
-            if (AuraEffect* aurEff = owner->GetAuraOfRankedSpell(34453, owner->GetGUID(), ObjectGuid::Empty, EFFECT_1_MASK)) // Animal Handler
+            if (AuraEffect* aurEff = owner->GetAuraEffectOfRankedSpell(34453, EFFECT_1, owner->GetGUID())) // Animal Handler
             {
                 AddPct(bonusAP, aurEff->GetAmount());
                 AddPct(val, aurEff->GetAmount());

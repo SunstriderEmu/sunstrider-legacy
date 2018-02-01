@@ -793,24 +793,12 @@ bool ChatHandler::HandleAuraCommand(const char* args)
         return false;
     }
 
-    uint32 spellID = (uint32)atoi(px);
-    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( spellID );
+    // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
+    uint32 spellID = extractSpellIdFromLink((char*)args);
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     if(spellInfo)
-    {
-        for(uint32 i = 0;i<3;i++)
-        {
-            uint8 eff = spellInfo->Effects[i].Effect;
-            if (eff>=TOTAL_SPELL_EFFECTS)
-                continue;
-            if(spellInfo->Effects[eff].IsAreaAuraEffect()           ||
-                eff == SPELL_EFFECT_APPLY_AURA  ||
-                eff == SPELL_EFFECT_PERSISTENT_AREA_AURA )
-            {
-                Aura *Aur = CreateAura(spellInfo, i, nullptr, target);
-                target->AddAura(Aur);
-            }
-        }
-    }
+        Aura::TryRefreshStackOrCreate(spellInfo, MAX_EFFECT_MASK, target, target);
 
     return true;
 }
@@ -1775,29 +1763,15 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
             }
         }
 
-        //stop movement and disable spells
-        uint32 spellID = 9454;
-        //m_session->GetPlayer()->CastSpell(player,spellID, TRIGGERED_NONE);
-        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( spellID );
-        if(spellInfo) //TODO: Change the duration of the aura to -1 instead of 5000000
+        Aura* freeze = player->AddAura(9454, player);
+        if (freeze)
         {
-            for(uint32 i = 0;i<3;i++)
-            {
-                uint8 eff = spellInfo->Effects[i].Effect;
-                if (eff>=TOTAL_SPELL_EFFECTS)
-                    continue;
-                if( eff == SPELL_EFFECT_APPLY_AREA_AURA_PARTY || eff == SPELL_EFFECT_APPLY_AURA ||
-                    eff == SPELL_EFFECT_PERSISTENT_AREA_AURA || eff == SPELL_EFFECT_APPLY_AREA_AURA_FRIEND ||
-                    eff == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY)
-                {
-                    Aura *Aur = CreateAura(spellInfo, i, nullptr, player);
-                    player->AddAura(Aur);
-                }
-            }
+            freeze->SetDuration(-1);
+            PSendSysMessage(LANG_COMMAND_FREEZE, player->GetName().c_str());
+            // save player
+            player->SaveToDB();
+            return true;
         }
-
-        //save player
-        player->SaveToDB();
     }
     return true;
 }
@@ -1897,7 +1871,7 @@ bool ChatHandler::HandlePossessCommand(const char* args)
     if(!pUnit)
         return false;
 
-    m_session->GetPlayer()->CastSpell(pUnit, 530, TRIGGERED_FULL_MASK);
+    m_session->GetPlayer()->CastSpell(pUnit, 530, true);
     return true;
 }
 
@@ -1919,7 +1893,7 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
     if (!pUnit)
         return false;
 
-    m_session->GetPlayer()->CastSpell(pUnit, 6277, TRIGGERED_FULL_MASK);
+    m_session->GetPlayer()->CastSpell(pUnit, 6277, true);
     return true;
 }
 

@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "Common.h"
 #include "Log.h"
@@ -34,6 +15,7 @@
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 #include "Language.h"
 #include "Util.h"
 #include "ScriptMgr.h"
@@ -70,11 +52,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
     if(!IsReplaying() && langDesc->skill_id != 0 && !_player->HasSkill(langDesc->skill_id))
     {
         // also check SPELL_AURA_COMPREHEND_LANGUAGE (client offers option to speak in that language)
-        Unit::AuraList const& langAuras = _player->GetAurasByType(SPELL_AURA_COMPREHEND_LANGUAGE);
+        auto const& langAuras = _player->GetAuraEffectsByType(SPELL_AURA_COMPREHEND_LANGUAGE);
         bool foundAura = false;
         for(auto langAura : langAuras)
         {
-            if(langAura->GetModifier()->m_miscvalue == int32(lang))
+            if(langAura->GetMiscValue() == int32(lang))
             {
                 foundAura = true;
                 break;
@@ -126,9 +108,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             }
 
             // but overwrite it by SPELL_AURA_MOD_LANGUAGE auras (only single case used)
-            Unit::AuraList const& ModLangAuras = _player->GetAurasByType(SPELL_AURA_MOD_LANGUAGE);
+            auto const& ModLangAuras = _player->GetAuraEffectsByType(SPELL_AURA_MOD_LANGUAGE);
             if(!ModLangAuras.empty())
-                lang = ModLangAuras.front()->GetModifier()->m_miscvalue;
+                lang = ModLangAuras.front()->GetMiscValue();
         }
 
         //Flood control for these channels only

@@ -413,11 +413,11 @@ void BattlegroundAV::Update(time_t diff)
                 if(Player* plr = ObjectAccessor::FindPlayer(itr.first)) {
                     for (ObjectGuid & m_allianceMarshal : m_allianceMarshals) {
                         if (Creature *marshal = plr->GetMap()->GetCreature(m_allianceMarshal))
-                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), TRIGGERED_FULL_MASK);
+                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
                     for (ObjectGuid & m_hordeMarshal : m_hordeMarshals) {
                         if (Creature *marshal = plr->GetMap()->GetCreature(m_hordeMarshal))
-                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), TRIGGERED_FULL_MASK);
+                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
                     break;
                 }
@@ -489,14 +489,14 @@ void BattlegroundAV::Update(time_t diff)
             if(Player* plr = ObjectAccessor::FindPlayer(itr.first)) {
                 for (ObjectGuid & m_allianceMarshal : m_allianceMarshals) {
                     if (Creature *marshal = plr->GetMap()->GetCreature(m_allianceMarshal)) {
-                        if (!marshal->HasAuraEffect(GetAuraFromMarshalEntry(marshal->GetEntry())))
-                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), TRIGGERED_FULL_MASK);
+                        if (!marshal->HasAura(GetAuraFromMarshalEntry(marshal->GetEntry())))
+                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
                 }
                 for (ObjectGuid & m_hordeMarshal : m_hordeMarshals) {
                     if (Creature *marshal = plr->GetMap()->GetCreature(m_hordeMarshal)) {
-                        if (!marshal->HasAuraEffect(GetAuraFromMarshalEntry(marshal->GetEntry())))
-                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), TRIGGERED_FULL_MASK);
+                        if (!marshal->HasAura(GetAuraFromMarshalEntry(marshal->GetEntry())))
+                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
                 }
                 break;
@@ -627,7 +627,7 @@ void BattlegroundAV::HandleAreaTrigger(Player *Source, uint32 Trigger)
     }
 
     if(SpellId)
-        Source->CastSpell(Source, SpellId, TRIGGERED_FULL_MASK);
+        Source->CastSpell(Source, SpellId, true);
 }
 
 void BattlegroundAV::UpdatePlayerScore(Player* Source, uint32 type, uint32 value)

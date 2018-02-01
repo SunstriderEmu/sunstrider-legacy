@@ -323,7 +323,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
             mEventMap[source_type][temp.entryOrGuid] = eventList;
         }
         // store the new event
-        mEventMap[source_type][temp.entryOrGuid].push_back(temp);
+        mEventMap[source_type][temp.entryOrGuid].push_back(std::move(temp));
     }
     while (result->NextRow());
 
@@ -798,7 +798,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             }
             case SMART_EVENT_AFFECTED_BY_MECHANIC:
             {
-                if (e.event.affectedByMechanic.mechanicMask >= (1 << MECHANIC_TOTAL))
+                if (e.event.affectedByMechanic.mechanicMask >= (1 << MAX_MECHANIC))
                 {
                     SMARTAI_DB_ERROR(e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses invalid mechanic mask %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.event.affectedByMechanic.mechanicMask);
                     return false;

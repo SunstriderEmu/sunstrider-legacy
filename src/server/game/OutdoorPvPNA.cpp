@@ -34,9 +34,9 @@ void OutdoorPvPNA::HandleKillImpl(Player* plr, Unit* killed)
     if (killed->GetTypeId() == TYPEID_PLAYER && plr->GetTeam() != (killed->ToPlayer())->GetTeam()) {
         plr->KilledMonsterCredit(NA_CREDIT_MARKER, ObjectGuid::Empty);
         if (plr->GetTeam() == TEAM_ALLIANCE)
-            plr->CastSpell(plr, NA_KILL_TOKEN_ALLIANCE, TRIGGERED_FULL_MASK);
+            plr->CastSpell(plr, NA_KILL_TOKEN_ALLIANCE, true);
         else
-            plr->CastSpell(plr, NA_KILL_TOKEN_HORDE, TRIGGERED_FULL_MASK);
+            plr->CastSpell(plr, NA_KILL_TOKEN_HORDE, true);
     }
 }
 
@@ -85,7 +85,7 @@ void OutdoorPvPNA::BuffTeam(uint32 team)
         for(ObjectGuid itr : m_players[0]) {
             if (Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if (plr->IsInWorld())
-                    plr->CastSpell(plr, NA_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
+                    plr->CastSpell(plr, NA_CAPTURE_BUFF, true);
             }
         }
         for(ObjectGuid itr : m_players[1]) {
@@ -99,7 +99,7 @@ void OutdoorPvPNA::BuffTeam(uint32 team)
         for (ObjectGuid itr : m_players[1]) {
             if (Player * plr = ObjectAccessor::FindPlayer(itr)) {
                 if (plr->IsInWorld())
-                    plr->CastSpell(plr, NA_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
+                    plr->CastSpell(plr, NA_CAPTURE_BUFF, true);
             }
         }
         for (ObjectGuid itr : m_players[0]) {
@@ -256,7 +256,7 @@ void OutdoorPvPNA::HandlePlayerEnterZone(Player* plr, uint32 zone)
 {
     // add buffs
     if (plr->GetTeam() == m_obj->m_ControllingFaction)
-        plr->CastSpell(plr, NA_CAPTURE_BUFF, TRIGGERED_FULL_MASK);
+        plr->CastSpell(plr, NA_CAPTURE_BUFF, true);
 
     OutdoorPvP::HandlePlayerEnterZone(plr, zone);
 }

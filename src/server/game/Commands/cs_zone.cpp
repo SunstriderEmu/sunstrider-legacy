@@ -16,7 +16,7 @@ bool ChatHandler::HandleZoneBuffCommand(const char* args)
     for (const auto & player : players) {
         p = player.second;
         if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId())
-            p->CastSpell(p, atoi(bufid), TRIGGERED_FULL_MASK);
+            p->CastSpell(p, atoi(bufid), true);
     }
 
     return true;

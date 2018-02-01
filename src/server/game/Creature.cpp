@@ -34,7 +34,9 @@
 #include "Spell.h"
 #include "InstanceScript.h"
 #include "Transport.h"
+#include "SpellAuraEffects.h"
 #include "PoolMgr.h"
+#include "SpellAuraEffects.h"
 
 void TrainerSpellData::Clear()
 {
@@ -170,7 +172,6 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_respawnradius(0.0f),
     m_reactState(REACT_AGGRESSIVE), 
     m_transportCheckTimer(1000),
-    m_regenTimer(2000),
     m_defaultMovementType(IDLE_MOTION_TYPE), 
     m_equipmentId(0), 
     m_originalEquipmentId(0),
@@ -561,6 +562,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
 
     //TrinityCore has this LoadCreatureAddon();
     UpdateMovementFlags();
+    LoadTemplateImmunities();
 
     GetThreatManager().UpdateOnlineStates(true, true);
     return true;
@@ -778,16 +780,11 @@ void Creature::Update(uint32 diff)
                 }
             }
 
-            if(IsAIEnabled)
+            if (IsAIEnabled && !IsInEvadeMode())
             {
-                // do not allow the AI to be changed during update
-                m_AI_locked = true;
-                if (!IsInEvadeMode())
-                {
-                    i_AI->UpdateAI(diff);
-
-                    HandleUnreachableTarget(diff);
-                }
+                m_AI_locked = true; // do not allow the AI to be changed during update
+                i_AI->UpdateAI(diff);
+                HandleUnreachableTarget(diff);
                 m_AI_locked = false;
             }
 
@@ -900,10 +897,10 @@ void Creature::Regenerate(Powers power)
         {
             addvalue = 24 * sWorld->GetRate(RATE_POWER_FOCUS);
 
-            AuraList const& ModPowerRegenPCTAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
+            auto const& ModPowerRegenPCTAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
             for (auto ModPowerRegenPCTAura : ModPowerRegenPCTAuras)
-                if (ModPowerRegenPCTAura->GetModifier()->m_miscvalue == POWER_FOCUS)
-                    addvalue *= (ModPowerRegenPCTAura->GetModifierValue() + 100) / 100.0f;
+                if (ModPowerRegenPCTAura->GetMiscValue() == POWER_FOCUS)
+                    addvalue *= (ModPowerRegenPCTAura->GetAmount() + 100) / 100.0f;
             break;
         }
         case POWER_ENERGY:
@@ -1119,31 +1116,8 @@ Unit* Creature::SelectVictim(bool evade /*= true*/)
 {
     Unit* target = nullptr;
 
-    ThreatManager& mgr = GetThreatManager();
-
-    if (mgr.CanHaveThreatList())
-    {
-        target = mgr.SelectVictim();
-        while (!target)
-        {
-            Unit* newTarget = nullptr;
-            // nothing found to attack - try to find something we're in combat with (but don't have a threat entry for yet) and start attacking it
-            for (auto const& pair : GetCombatManager().GetPvECombatRefs())
-            {
-                newTarget = pair.second->GetOther(this);
-                if (!mgr.IsThreatenedBy(newTarget, true))
-                {
-                    mgr.AddThreat(newTarget, 0.0f, nullptr, true, true);
-                    break;
-                }
-                else
-                    newTarget = nullptr;
-            }
-            if (!newTarget)
-                break;
-            target = mgr.SelectVictim();
-        }
-    }
+    if (CanHaveThreatList())
+        target = GetThreatManager().SelectVictim();
     else if (!HasReactState(REACT_PASSIVE))
     {
         // We're a player pet, probably
@@ -1184,15 +1158,6 @@ Unit* Creature::SelectVictim(bool evade /*= true*/)
     if (GetVehicle())
         return nullptr;
 #endif
-
-    // search nearby enemy before enter evade mode
-    if (HasReactState(REACT_AGGRESSIVE))
-    {
-        target = SelectNearestTargetInAttackDistance(m_CombatDistance ? m_CombatDistance : ATTACK_DISTANCE);
-
-        if (target && _IsTargetAcceptable(target) && CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
-            return target;
-    }
 
     Unit::AuraEffectList const& iAuras = GetAuraEffectsByType(SPELL_AURA_MOD_INVISIBILITY);
     if (!iAuras.empty())
@@ -2348,6 +2313,42 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn, Seconds const& forceRespawn
     }
 }
 
+void Creature::LoadTemplateImmunities()
+{
+    // uint32 max used for "spell id", the immunity system will not perform SpellInfo checks against invalid spells
+    // used so we know which immunities were loaded from template
+    static uint32 const placeholderSpellId = std::numeric_limits<uint32>::max();
+
+    // unapply template immunities (in case we're updating entry)
+    for (uint32 i = MECHANIC_NONE + 1; i < MAX_MECHANIC; ++i)
+        ApplySpellImmune(placeholderSpellId, IMMUNITY_MECHANIC, i, false);
+
+    for (uint32 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
+        ApplySpellImmune(placeholderSpellId, IMMUNITY_SCHOOL, 1 << i, false);
+
+    // don't inherit immunities for hunter pets
+    if (GetOwnerGUID().IsPlayer() && IsHunterPet())
+        return;
+
+    if (uint32 mask = GetCreatureTemplate()->MechanicImmuneMask)
+    {
+        for (uint32 i = MECHANIC_NONE + 1; i < MAX_MECHANIC; ++i)
+        {
+            if (mask & (1 << (i - 1)))
+                ApplySpellImmune(placeholderSpellId, IMMUNITY_MECHANIC, i, true);
+        }
+    }
+
+    if (uint32 mask = GetCreatureTemplate()->SpellSchoolImmuneMask)
+    {
+        for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
+        {
+            if (mask & (1 << i))
+                ApplySpellImmune(placeholderSpellId, IMMUNITY_SCHOOL, 1 << i, true);
+        }
+    }
+}
+
 bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster)
 {
     if (!spellInfo)
@@ -2371,12 +2372,6 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster)
 
 bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
 {
-    if (spellInfo->Effects[index].Mechanic && GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Effects[index].Mechanic - 1))) 
-        return true;
-
-    if (spellInfo->Mechanic && GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Mechanic - 1)))
-        return true;
-
     if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellInfo->Effects[index].Effect == SPELL_EFFECT_HEAL)
         return true;
 
@@ -2870,7 +2865,7 @@ bool Creature::InitCreatureAddon(bool reload)
         }
 
         // skip already applied aura
-        if(HasAuraEffect(id))
+        if(HasAura(id))
         {
             if(!reload)
                 TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u) in `auras` field.",GetSpawnId(),GetEntry(),id);
@@ -2878,7 +2873,7 @@ bool Creature::InitCreatureAddon(bool reload)
             continue;
         }
 
-        AddAura(id,this);
+        AddAura(id, this);
         TC_LOG_DEBUG("entities.unit", "Spell: %u added to creature (GUID: %u Entry: %u)", id, GetSpawnId(), GetEntry());
     }
     return true;
@@ -3642,6 +3637,14 @@ void Creature::ClearTextRepeatGroup(uint8 textGroup)
     auto groupItr = m_textRepeat.find(textGroup);
     if (groupItr != m_textRepeat.end())
         groupItr->second.clear();
+}
+
+bool Creature::CanGiveExperience() const
+{
+    return !IsCritter()
+        && !IsPet()
+        && !IsTotem()
+        && !(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL);
 }
 
 void Creature::AtEnterCombat()

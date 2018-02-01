@@ -73,7 +73,7 @@ bool ChatHandler::HandleCastBatchCommand(const char* args)
     }
 
     for(int i = 0; i < count; i++)
-        m_session->GetPlayer()->CastSpell(target, spell, TRIGGERED_FULL_MASK);
+        m_session->GetPlayer()->CastSpell(target, spell, true);
 
     return true;
 }

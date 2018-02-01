@@ -709,7 +709,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
 
                 bool talent = (talentCost > 0);
                 bool passive = spellInfo->IsPassive();
-                bool active = target && (target->HasAuraEffect(id,0) || target->HasAuraEffect(id,1) || target->HasAuraEffect(id,2));
+                bool active = target && target->HasAura(id);
 
                 // unit32 used to prevent interpreting uint8 as char at output
                 // find rank of learned spell for learning spell, or talent rank
