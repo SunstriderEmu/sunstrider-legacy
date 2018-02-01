@@ -1,6 +1,7 @@
 #include "SpellMgr.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
+#include "templates.h"
 
 
 // Serpent-Coil Braid item (30720)
@@ -45,5 +46,6 @@ public:
 
 void AddSC_item_spell_scripts()
 {
-
+    new spell_item_improved_mana_gems();
+    new spell_gen_proc_below_pct_damaged("spell_item_commendation_of_kaelthas");
 }

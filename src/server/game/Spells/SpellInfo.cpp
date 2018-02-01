@@ -1550,10 +1550,8 @@ bool SpellInfo::HasVisual(uint32 visual) const
 
 SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* target, bool implicit) const
 {
-    /* sun: Disabled, this is wrong. For example with spell 39298, spell should be able to be casted at self, but self should not be an affected target. (So I guess this attributes only has sense with aoe spells)
     if (AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF && caster == target)
         return SPELL_FAILED_BAD_TARGETS;
-        */
 
     // check visibility - ignore stealth for implicit (area) targets
     if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && !caster->CanSeeOrDetect(target, implicit))

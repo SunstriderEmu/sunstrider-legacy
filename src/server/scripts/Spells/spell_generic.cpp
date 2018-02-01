@@ -1,45 +1,11 @@
 #include "SpellMgr.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
+#include "templates.h"
 
 enum CannibalizeSpells
 {
     SPELL_CANNIBALIZE_TRIGGERED = 20578
-};
-
-class spell_gen_proc_below_pct_damaged : public SpellScriptLoader
-{
-public:
-    spell_gen_proc_below_pct_damaged(char const* name) : SpellScriptLoader(name) { }
-
-    class spell_gen_proc_below_pct_damaged_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_gen_proc_below_pct_damaged_AuraScript);
-
-        bool CheckProc(ProcEventInfo& eventInfo)
-        {
-            DamageInfo* damageInfo = eventInfo.GetDamageInfo();
-            if (!damageInfo || !damageInfo->GetDamage())
-                return false;
-
-            int32 pct = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
-
-            if (eventInfo.GetActionTarget()->HealthBelowPctDamaged(pct, damageInfo->GetDamage()))
-                return true;
-
-            return false;
-        }
-
-        void Register() override
-        {
-            DoCheckProc += AuraCheckProcFn(spell_gen_proc_below_pct_damaged_AuraScript::CheckProc);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_gen_proc_below_pct_damaged_AuraScript();
-    }
 };
 
 class spell_gen_cannibalize : public SpellScriptLoader
@@ -160,11 +126,9 @@ public:
     }
 };
 
-
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_cannibalize();
     new spell_racial_stoneform();
-    new spell_gen_proc_below_pct_damaged("spell_item_commendation_of_kaelthas");
     new spell_archimonde_doomfire();
 }

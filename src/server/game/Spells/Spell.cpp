@@ -3268,25 +3268,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if(!unitList.empty())
         {
-            if (m_spellValue->MaxAffectedTargets)
-            {
-                if(m_spellInfo->Id == 5246)     //Intimidating Shout
-                    unitList.remove(m_targets.GetUnitTarget());
-
-                if(m_spellValue->MaxAffectedTargets == 1 && m_spellInfo->Attributes & SPELL_ATTR0_UNK11) //Prefer not victim ?
-                {
-                    if(unitList.size() > 1)
-                        unitList.remove(m_caster->GetVictim());
-                }
-                Trinity::Containers::RandomResize(unitList, m_spellValue->MaxAffectedTargets);
-            }
-            else if (m_spellInfo->Id == 27285)  // Seed of Corruption proc spell
-                unitList.remove(m_targets.GetUnitTarget());
-            else if (m_spellInfo->Id == 44866)  // Kalecgos spectral blast
-                unitList.remove(m_targets.GetUnitTarget());
-            else if (m_spellInfo->Id == 42480 || m_spellInfo->Id == 42479)  // Protective Ward (Zul'aman)
-                unitList.remove(m_targets.GetUnitTarget());
-            else if (m_spellInfo->Id == 45150) {
+            if (m_spellInfo->Id == 45150) {
                 for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
                     if ((*itr)->IsPet())
                         unitList.remove(*itr);

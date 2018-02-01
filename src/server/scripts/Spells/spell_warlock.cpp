@@ -126,6 +126,34 @@ public:
     }
 };
 
+// -27285 - Seed of Corruption proc - exclude aura target
+class spell_warl_seed_of_corruption_proc : public SpellScriptLoader
+{
+public:
+    spell_warl_seed_of_corruption_proc() : SpellScriptLoader("spell_warl_seed_of_corruption_proc") { }
+
+    class spell_warl_seed_of_corruption_proc_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warl_seed_of_corruption_proc_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            if (GetExplTargetUnit())
+                targets.remove(GetExplTargetUnit());
+        }
+
+        void Register() override
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warl_seed_of_corruption_proc_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_warl_seed_of_corruption_proc_SpellScript();
+    }
+};
+
 // -27243 - Seed of corruption
 class spell_warl_seed_of_corruption : public SpellScriptLoader
 {
@@ -178,4 +206,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_pyroclasm();
     new spell_warl_drainsoul();
     new spell_warl_seed_of_corruption();
+    new spell_warl_seed_of_corruption_proc();
 }
