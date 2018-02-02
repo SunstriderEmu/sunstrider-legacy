@@ -138,8 +138,9 @@ public:
 
         void FilterTargets(std::list<WorldObject*>& targets)
         {
-            if (GetExplTargetUnit())
-                targets.remove(GetExplTargetUnit());
+            if (ObjectGuid guid = GetSpell()->m_targets.GetOrigUnitTargetGUID())
+                if (Unit* u = ObjectAccessor::GetUnit(*GetCaster(), guid))
+                    targets.remove(u);
         }
 
         void Register() override
