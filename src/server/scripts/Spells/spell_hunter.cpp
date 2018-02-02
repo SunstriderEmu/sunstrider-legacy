@@ -199,9 +199,9 @@ public:
         void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
         {
             PreventDefaultAction();
-            if (!eventInfo.GetProcSpell())
+            if (!eventInfo.GetProcSpell() || !GetCaster())
                 return;
-            WorldObject const* wTarget = eventInfo.GetProcSpell()->GetOriginalTarget();
+            WorldObject const* wTarget = ObjectAccessor::GetUnit(*GetCaster(), eventInfo.GetProcSpell()->m_targets.GetOrigUnitTargetGUID());
             if(Unit const* target = wTarget->ToUnit())
                 GetCaster()->CastSpell(target, SPELL_HUNTER_ENTRAPMENT_PROC, aurEff);
         }
