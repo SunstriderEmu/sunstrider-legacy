@@ -812,7 +812,7 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
         {
             switch (dummySpell->Id)
             {
-                // Eye of Eye
+            // Eye of Eye
             case 9799:
             case 25988:
             {
@@ -966,61 +966,6 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
             // cast ??? Arcane Bolt if Exalted by Scryers*/
             case 46569:
                 return false;                           // disable for while
-            }
-            break;
-        }
-        case SPELLFAMILY_MAGE:
-        {
-            // Magic Absorption
-            if (dummySpell->SpellIconID == 459)             // only this spell have SpellIconID == 459 and dummy aura
-            {
-                if (triggerCaster->GetPowerType() != POWER_MANA)
-                    return false;
-
-                break;
-            }
-            // Master of Elements
-            if (dummySpell->SpellIconID == 1920)
-            {
-                if (!procSpell)
-                    return false;
-            }
-            // Incanter's Regalia set (add trigger chance to Mana Shield)
-            if (dummySpell->SpellFamilyFlags & 0x0000000000008000LL)
-            {
-                if (triggerCaster->GetTypeId() != TYPEID_PLAYER)
-                    return false;
-
-                if (!triggerCaster->HasAura(37424))
-                    return false;
-
-                break;
-            }
-            switch (dummySpell->Id)
-            {
-                // Ignite
-            case 11119:
-            case 11120:
-            case 12846:
-            case 12847:
-            case 12848:
-            {
-                if (procSpell && procSpell->Id == 34913) // No Ignite proc's from Molten Armor
-                    return false;
-
-                switch (dummySpell->Id)
-                {
-                case 11119: break;
-                case 11120: break;
-                case 12846: break;
-                case 12847: break;
-                case 12848: break;
-                default:
-                    TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non handled spell id: %u (IG)", dummySpell->Id);
-                    return false;
-                }
-                break;
-            }
             }
             break;
         }

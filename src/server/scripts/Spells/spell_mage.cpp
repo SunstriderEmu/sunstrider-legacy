@@ -45,6 +45,95 @@ enum MageSpells
 #endif
 };
 
+// -29441 - Magic Absorption
+class spell_mage_magic_absorption : public SpellScriptLoader
+{
+public:
+    spell_mage_magic_absorption() : SpellScriptLoader("spell_mage_magic_absorption") { }
+
+    class spell_mage_magic_absorption_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_magic_absorption_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_MAGE_MAGIC_ABSORPTION_MANA });
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+
+            Unit* caster = eventInfo.GetActionTarget();
+            CastSpellExtraArgs args(aurEff);
+            args.AddSpellBP0(CalculatePct(caster->GetMaxPower(POWER_MANA), aurEff->GetAmount()));
+            caster->CastSpell(caster, SPELL_MAGE_MAGIC_ABSORPTION_MANA, args);
+        }
+
+        void Register() override
+        {
+            OnEffectProc += AuraEffectProcFn(spell_mage_magic_absorption_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_magic_absorption_AuraScript();
+    }
+};
+
+// -29074 - Master of Elements
+class spell_mage_master_of_elements : public SpellScriptLoader
+{
+public:
+    spell_mage_master_of_elements() : SpellScriptLoader("spell_mage_master_of_elements") { }
+
+    class spell_mage_master_of_elements_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_master_of_elements_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_MAGE_MASTER_OF_ELEMENTS_ENERGIZE });
+        }
+
+        bool CheckProc(ProcEventInfo& eventInfo)
+        {
+            DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+            if (!damageInfo || !damageInfo->GetSpellInfo())
+                return false;
+
+            return true;
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+
+            int32 mana = eventInfo.GetDamageInfo()->GetSpellInfo()->CalcPowerCost(GetTarget(), eventInfo.GetDamageInfo()->GetSchoolMask());
+            mana = CalculatePct(mana, aurEff->GetAmount());
+
+            if (mana > 0)
+            {
+                CastSpellExtraArgs args(aurEff);
+                args.AddSpellBP0(mana);
+                GetTarget()->CastSpell(GetTarget(), SPELL_MAGE_MASTER_OF_ELEMENTS_ENERGIZE, args);
+            }
+        }
+
+        void Register() override
+        {
+            DoCheckProc += AuraCheckProcFn(spell_mage_master_of_elements_AuraScript::CheckProc);
+            OnEffectProc += AuraEffectProcFn(spell_mage_master_of_elements_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_master_of_elements_AuraScript();
+    }
+};
+
 // -543  - Fire Ward
 // -6143 - Frost Ward
 class spell_mage_fire_frost_ward : public SpellScriptLoader
@@ -135,62 +224,6 @@ public:
     }
 };
 
-// -1463 - Mana Shield
-class spell_mage_mana_shield : public SpellScriptLoader
-{
-public:
-    spell_mage_mana_shield() : SpellScriptLoader("spell_mage_mana_shield") { }
-
-    class spell_mage_mana_shield_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_mage_mana_shield_AuraScript);
-
-        bool Validate(SpellInfo const* spellInfo) override
-        {
-            return ValidateSpellInfo({ SPELL_MAGE_ARCANE_SURGE });
-        }
-
-        void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
-        {
-            canBeRecalculated = false;
-            if (Unit* caster = GetCaster())
-            {
-#ifdef LICH_KING
-                // +80.53% from sp bonus
-                float bonus = 0.8053f;
-#else
-
-                // +50% from +spd bonus, to confirm
-                float bonus = 0.5f;
-#endif
-
-                bonus *= caster->SpellBaseHealingBonusDone(GetSpellInfo()->GetSchoolMask());
-                bonus *= caster->CalculateSpellpowerCoefficientLevelPenalty(GetSpellInfo());
-
-                amount += int32(bonus);
-            }
-        }
-
-        /*void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-        {
-            Unit* caster = eventInfo.GetActionTarget();
-            caster->CastSpell(caster, SPELL_MAGE_ARCANE_SURGE, aurEff);
-        }*/
-
-        void Register() override
-        {
-            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_mana_shield_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_MANA_SHIELD);
-
-            //OnEffectProc += AuraEffectProcFn(spell_mage_mana_shield_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_MANA_SHIELD);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_mage_mana_shield_AuraScript();
-    }
-};
-
 // -11185 - Improved Blizzard
 class spell_mage_imp_blizzard : public SpellScriptLoader
 {
@@ -225,10 +258,212 @@ public:
     }
 };
 
+// 37424 - Improved Mana Shield (Incanter's Regalia set 4 pieces)
+class spell_mage_improved_mana_shield : public SpellScriptLoader
+{
+public:
+    spell_mage_improved_mana_shield() : SpellScriptLoader("spell_mage_improved_mana_shield") { }
+
+    class spell_mage_improved_mana_shield_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_improved_mana_shield_AuraScript);
+
+        bool Validate(SpellInfo const* spellInfo) override
+        {
+            return ValidateSpellInfo({ SPELL_MAGE_ARCANE_SURGE });
+        }
+
+        bool CheckProc(ProcEventInfo& eventInfo)
+        {
+            return GetTarget()->HasAuraType(SPELL_AURA_MANA_SHIELD);
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            Unit* caster = eventInfo.GetActionTarget();
+            caster->CastSpell(caster, SPELL_MAGE_ARCANE_SURGE, aurEff);
+        }
+
+        void Register() override
+        {
+            OnEffectProc += AuraEffectProcFn(spell_mage_improved_mana_shield_AuraScript::HandleProc, EFFECT_1, SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+            DoCheckProc += AuraCheckProcFn(spell_mage_improved_mana_shield_AuraScript::CheckProc);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_improved_mana_shield_AuraScript();
+    }
+};
+
+// -1463 - Mana Shield
+class spell_mage_mana_shield : public SpellScriptLoader
+{
+public:
+    spell_mage_mana_shield() : SpellScriptLoader("spell_mage_mana_shield") { }
+
+    class spell_mage_mana_shield_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_mana_shield_AuraScript);
+
+        void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+        {
+            canBeRecalculated = false;
+            if (Unit* caster = GetCaster())
+            {
+#ifdef LICH_KING
+                // +80.53% from sp bonus
+                float bonus = 0.8053f;
+#else
+
+                // +50% from +spd bonus, to confirm
+                float bonus = 0.5f;
+#endif
+
+                bonus *= caster->SpellBaseHealingBonusDone(GetSpellInfo()->GetSchoolMask());
+                bonus *= caster->CalculateSpellpowerCoefficientLevelPenalty(GetSpellInfo());
+
+                amount += int32(bonus);
+            }
+        }
+
+        void Register() override
+        {
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_mana_shield_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_MANA_SHIELD);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_mana_shield_AuraScript();
+    }
+};
+
+// -11119 - Ignite
+class spell_mage_ignite : public SpellScriptLoader
+{
+public:
+    spell_mage_ignite() : SpellScriptLoader("spell_mage_ignite") { }
+
+    class spell_mage_ignite_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_ignite_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_MAGE_IGNITE });
+        }
+
+        bool CheckProc(ProcEventInfo& eventInfo)
+        {
+            return eventInfo.GetDamageInfo() && eventInfo.GetProcTarget();
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+
+            SpellInfo const* igniteDot = sSpellMgr->AssertSpellInfo(SPELL_MAGE_IGNITE);
+            int32 pct = 8 * GetSpellInfo()->GetRank();
+
+            ASSERT(igniteDot->GetMaxTicks() > 0);
+            int32 amount = int32(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), pct) / igniteDot->GetMaxTicks());
+            amount += eventInfo.GetProcTarget()->GetRemainingPeriodicAmount(eventInfo.GetActor()->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+
+            CastSpellExtraArgs args(aurEff);
+            args.AddSpellBP0(amount);
+            GetTarget()->CastSpell(eventInfo.GetProcTarget(), SPELL_MAGE_IGNITE, args);
+        }
+
+        void Register() override
+        {
+            DoCheckProc += AuraCheckProcFn(spell_mage_ignite_AuraScript::CheckProc);
+            OnEffectProc += AuraEffectProcFn(spell_mage_ignite_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_ignite_AuraScript();
+    }
+};
+
+// 11129 - Combustion
+class spell_mage_combustion : public SpellScriptLoader
+{
+public:
+    spell_mage_combustion() : SpellScriptLoader("spell_mage_combustion") { }
+
+    class spell_mage_combustion_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_combustion_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_MAGE_COMBUSTION_PROC });
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            if (GetCharges() == 0)
+                eventInfo.GetActor()->RemoveAurasDueToSpell(SPELL_MAGE_COMBUSTION_PROC);
+        }
+
+        void Register() override
+        {
+            OnEffectProc += AuraEffectProcFn(spell_mage_combustion_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_combustion_AuraScript();
+    }
+};
+
+// 28682 - Combustion proc
+class spell_mage_combustion_proc : public SpellScriptLoader
+{
+public:
+    spell_mage_combustion_proc() : SpellScriptLoader("spell_mage_combustion_proc") { }
+
+    class spell_mage_combustion_proc_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_combustion_proc_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_MAGE_COMBUSTION });
+        }
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            GetTarget()->RemoveAurasDueToSpell(SPELL_MAGE_COMBUSTION);
+        }
+
+        void Register() override
+        {
+            AfterEffectRemove += AuraEffectRemoveFn(spell_mage_combustion_proc_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_ADD_FLAT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_combustion_proc_AuraScript();
+    }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_fire_frost_ward();
     new spell_mage_ice_barrier();
+    new spell_mage_improved_mana_shield();
     new spell_mage_mana_shield();
     new spell_mage_imp_blizzard();
+    new spell_mage_magic_absorption();
+    new spell_mage_master_of_elements();
+    new spell_mage_ignite();
+    new spell_mage_combustion();
+    new spell_mage_combustion_proc();
 }
