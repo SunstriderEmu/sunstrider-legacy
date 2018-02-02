@@ -3268,12 +3268,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if(!unitList.empty())
         {
-            if (m_spellInfo->Id == 45150) {
-                for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
-                    if ((*itr)->IsPet())
-                        unitList.remove(*itr);
-                }
-            } else if (m_spellInfo->Id == 32375) {
+           if (m_spellInfo->Id == 32375) {
                 for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
                     if ((*itr)->GetTypeId() == TYPEID_UNIT && (*itr)->ToCreature()->IsTotem())
                         unitList.remove(*itr);
