@@ -3119,6 +3119,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                 if (caster && caster->GetTypeId() == TYPEID_PLAYER) {
                     if (Unit* charmed = caster->ToPlayer()->GetCharm()) {
                         charmed->RemoveCharmedBy(caster);
+                        charmed->RemoveAura(30019);
                         caster->CastSpell(caster, 30529, true);
                     }
                 }

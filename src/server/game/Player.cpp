@@ -18198,33 +18198,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, RemovePet
     }
 }
 
-/*
-void Player::Uncharm()
-{
-    Unit* charm = GetCharm();
-    if(!charm)
-        return;
-
-    if(charm->GetTypeId() == TYPEID_UNIT && (charm->ToCreature())->IsPet()
-        && ((Pet*)charm)->getPetType() == POSSESSED_PET)
-    {
-        ((Pet*)charm)->Remove(PET_SAVE_AS_DELETED);
-    }
-    else
-    {
-        charm->RemoveAurasByType(SPELL_AURA_MOD_CHARM);
-        charm->RemoveAurasByType(SPELL_AURA_MOD_POSSESS_PET);
-        charm->RemoveAurasByType(SPELL_AURA_MOD_POSSESS);
-    }
-
-    if(GetCharmGUID())
-    {
-        TC_LOG_ERROR("entities.player","CRASH ALARM! Player %s is not able to uncharm unit (Entry: %u, Type: %u)", GetName().c_str(), charm->GetEntry(), charm->GetTypeId());
-    }
-}
-*/
-
-void Player::StopCastingCharm()
+void Player::StopCastingCharm(Aura* except /*= nullptr*/)
 {
 #ifdef LICH_KING
     if (IsGhouled())
@@ -18248,7 +18222,7 @@ void Player::StopCastingCharm()
 #endif
     }
     if (GetCharmGUID())
-        charm->RemoveCharmAuras();
+        charm->RemoveCharmAuras(except);
 
     if (GetCharmGUID())
     {
@@ -22522,15 +22496,15 @@ void Player::HandleFallUnderMap()
     }
 }
 
-void Player::StopCastingBindSight()
+void Player::StopCastingBindSight(Aura* except /* = nullptr*/)
 {
     if(WorldObject* target = GetViewpoint())
     {
         if(target->isType(TYPEMASK_UNIT))
         {
-            ((Unit*)target)->RemoveAurasByType(SPELL_AURA_BIND_SIGHT, GetGUID());
-            ((Unit*)target)->RemoveAurasByType(SPELL_AURA_MOD_POSSESS, GetGUID());
-            ((Unit*)target)->RemoveAurasByType(SPELL_AURA_MOD_POSSESS_PET, GetGUID());
+            ((Unit*)target)->RemoveAurasByType(SPELL_AURA_BIND_SIGHT, GetGUID(), except);
+            ((Unit*)target)->RemoveAurasByType(SPELL_AURA_MOD_POSSESS, GetGUID(), except);
+            ((Unit*)target)->RemoveAurasByType(SPELL_AURA_MOD_POSSESS_PET, GetGUID(), except);
         }
     }
 }

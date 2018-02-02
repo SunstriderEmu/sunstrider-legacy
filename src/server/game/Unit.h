@@ -1771,7 +1771,7 @@ class TC_GAME_API Unit : public WorldObject
         void RemovePlayerFromVision(Player* plr);
         bool HasSharedVision() const { return !m_sharedVision.empty(); }
         void RemoveBindSightAuras();
-        void RemoveCharmAuras();
+        void RemoveCharmAuras(Aura* except = nullptr);
 
         Pet* CreateTamedPetFrom(Creature* creatureTarget, uint32 spell_id = 0);
         Pet* CreateTamedPetFrom(uint32 creatureEntry, uint32 spell_id = 0);

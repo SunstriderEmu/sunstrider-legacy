@@ -1171,8 +1171,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void AddToWorld() override;
         void RemoveFromWorld() override;
 
-		void StopCastingCharm();
-        void StopCastingBindSight();
+		void StopCastingCharm(Aura* except = nullptr);
+        void StopCastingBindSight(Aura* except = nullptr);
 
         void SetTeleportingToTest(uint32 instanceId);
         uint32 GetTeleportingToTest() const { return m_teleportToTestInstanceId; }

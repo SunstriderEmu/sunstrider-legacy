@@ -5440,11 +5440,11 @@ void Unit::RemoveBindSightAuras()
     RemoveAurasByType(SPELL_AURA_BIND_SIGHT);
 }
 
-void Unit::RemoveCharmAuras()
+void Unit::RemoveCharmAuras(Aura* except /*= nullptr*/)
 {
-    RemoveAurasByType(SPELL_AURA_MOD_CHARM);
-    RemoveAurasByType(SPELL_AURA_MOD_POSSESS_PET);
-    RemoveAurasByType(SPELL_AURA_MOD_POSSESS);
+    RemoveAurasByType(SPELL_AURA_MOD_CHARM, ObjectGuid::Empty, except);
+    RemoveAurasByType(SPELL_AURA_MOD_POSSESS_PET, ObjectGuid::Empty, except);
+    RemoveAurasByType(SPELL_AURA_MOD_POSSESS, ObjectGuid::Empty, except);
 }
 
 void Unit::UnsummonAllTotems()
@@ -11493,15 +11493,15 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     // Charmer stop charming
     if (playerCharmer)
     {
-        playerCharmer->StopCastingCharm();
-        playerCharmer->StopCastingBindSight();
+        playerCharmer->StopCastingCharm(aurApp->GetBase()); //sun, exclude this aura, else spell such as 30019 (Control Piece) will delete itself
+        playerCharmer->StopCastingBindSight(aurApp->GetBase());
     }
 
     // Charmed stop charming
     if (GetTypeId() == TYPEID_PLAYER)
     {
-        ToPlayer()->StopCastingCharm();
-        ToPlayer()->StopCastingBindSight();
+        ToPlayer()->StopCastingCharm(aurApp->GetBase()); //sun, exclude this aura, else spell such as 30019 (Control Piece) will delete itself
+        ToPlayer()->StopCastingBindSight(aurApp->GetBase());
     }
 
     // StopCastingCharm may remove a possessed pet?
