@@ -401,7 +401,7 @@ Aura::Aura(SpellInfo const* spellproto, WorldObject* owner, Unit *caster, Item* 
 m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_casterGuid(casterGUID ? casterGUID : caster->GetGUID()),
 m_timeCla(1000), m_castItemGuid(castItem ? castItem->GetGUID() : ObjectGuid::Empty),
 m_isAreaAura(false), m_owner(owner),
-m_isPersistent(false), m_updateTargetMapInterval(0), m_dropEvent(nullptr),
+m_isPersistent(false), m_updateTargetMapInterval(0), m_dropEvent(nullptr), m_heartBeatTimer(0),
 m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE), m_spellInfo(spellproto),
 m_active(false), m_currentBasePoints(0), m_channelData(nullptr), m_isSingleTarget(false),
 m_procCooldown(std::chrono::steady_clock::time_point::min())
@@ -429,6 +429,8 @@ m_procCooldown(std::chrono::steady_clock::time_point::min())
         SaveCasterInfo(caster);
     }
 
+    if (m_spellInfo->HasAttribute(SPELL_ATTR0_HEARTBEAT_RESIST_CHECK))
+        m_heartBeatTimer = m_maxDuration / 4;
 }
 
 uint8 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint8 availableEffectMask, WorldObject* owner)
@@ -655,6 +657,9 @@ void Aura::UpdateOwner(uint32 diff, WorldObject* owner)
     }
 
     Update(diff, caster);
+
+    if (m_heartBeatTimer)
+        HeartbeatResistance(diff, caster);
 
     if (m_updateTargetMapInterval <= int32(diff))
         UpdateTargetMap(caster);
@@ -1589,6 +1594,40 @@ void Aura::TriggerProcOnEvent(uint8 procEffectMask, AuraApplication* aurApp, Pro
         Remove();
 }
 
+void Aura::HeartbeatResistance(uint32 diff, Unit* caster)
+{
+    //Patch 2.0.1 (05-Dec-2006): In PvP, Crowd Control effects will last no longer than 12 seconds instead of the full duration, with a chance of a heartbeat resist. 
+    Unit* target = GetOwner()->ToUnit();
+    if (!target || !caster)
+        return;
+
+    SpellSchoolMask schoolMask = m_spellInfo->GetSchoolMask();
+    // Skip auras with schoolmask NORMAL
+    if (schoolMask == SPELL_SCHOOL_MASK_NORMAL)
+        return;
+
+    if (m_heartBeatTimer <= diff)
+    {
+        //sun: should it target players too for BC? apparently not https://www.reddit.com/r/wowservers/comments/5hp8hb/netherwing_mechanics_5_closed_alpha_testing/
+        if (caster->GetTypeId() == TYPEID_PLAYER && target->GetTypeId() == TYPEID_UNIT)
+        {
+            uint32 resistance = target->GetResistance(GetFirstSchoolInMask(schoolMask));
+            //this formula is from https://github.com/TrinityCore/TrinityCore/pull/20206
+            //5% + some more chance based on resistance
+            uint32 breakPct = uint32(resistance / powf(float(target->GetLevel()), 1.441f) * 0.10 * 100) + 5;
+
+            if (roll_chance_i(breakPct))
+            {
+                Remove();
+                //TC_LOG_DEBUG("spells", "Aura::HeartbeatResistance: Breaking creature aura %u. Seconds passed %u with chance %u.", m_spellInfo->Id, m_heartBeatTimer, breakPct);
+            }
+        }
+
+        m_heartBeatTimer = m_maxDuration / 4;
+    }
+    else
+        m_heartBeatTimer -= diff;
+}
 
 void Aura::_DeleteRemovedApplications()
 {

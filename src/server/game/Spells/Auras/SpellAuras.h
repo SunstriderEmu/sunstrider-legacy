@@ -247,6 +247,8 @@ public:
     void SetUsingCharges(bool val) { m_isUsingCharges = val; }
     bool IsUsingCharges() const { return m_isUsingCharges; }
 
+    void HeartbeatResistance(uint32 diff, Unit* caster);
+
     // AuraScript
     void LoadScripts();
     bool CallScriptCheckAreaTargetHandlers(Unit* target);
@@ -328,6 +330,8 @@ protected:
     ApplicationMap m_applications;
 
     ChargeDropEvent* m_dropEvent;
+
+    uint32 m_heartBeatTimer;                        // Heartbeat resist timer
 
     std::chrono::steady_clock::time_point m_procCooldown;
 
