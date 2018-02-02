@@ -1209,6 +1209,80 @@ uint32 SpellInfo::GetMaxTicks() const
     return 6;
 }
 
+int32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, Spell* spell) const
+{
+    // Spell drain all exist power on cast (Only paladin lay of Hands)
+    if (HasAttribute(SPELL_ATTR1_DRAIN_ALL_POWER))
+    {
+        // If power type - health drain all
+        if (PowerType == POWER_HEALTH)
+            return caster->GetHealth();
+        // Else drain all power
+        if (PowerType < MAX_POWERS)
+            return caster->GetPower(Powers(PowerType));
+        TC_LOG_ERROR("spells", "Spell::CalculateManaCost: Unknown power type '%d' in spell %d", PowerType, Id);
+        return 0;
+    }
+
+    // Base powerCost
+    int32 powerCost = ManaCost;
+    // PCT cost from total amount
+    if (ManaCostPercentage)
+    {
+        switch (PowerType)
+        {
+            // health as power used
+        case POWER_HEALTH:
+            powerCost += int32(CalculatePct(caster->GetCreateHealth(), ManaCostPercentage));
+            break;
+        case POWER_MANA:
+            powerCost += int32(CalculatePct(caster->GetCreateMana(), ManaCostPercentage));
+            break;
+        case POWER_RAGE:
+        case POWER_FOCUS:
+        case POWER_ENERGY:
+        case POWER_HAPPINESS:
+            powerCost += int32(CalculatePct(caster->GetMaxPower(Powers(PowerType)), ManaCostPercentage));
+            break;
+        default:
+            TC_LOG_ERROR("spells", "CalculateManaCost: Unknown power type '%d' in spell %d", PowerType, Id);
+            return 0;
+        }
+    }
+    SpellSchools school = GetFirstSchoolInMask(schoolMask);
+    // Flat mod from caster auras by spell school
+    powerCost += caster->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + school);
+
+    // Shiv - costs 20 + weaponSpeed*10 energy (apply only to non-triggered spell with energy cost)
+    if (HasAttribute(SPELL_ATTR4_SPELL_VS_EXTEND_COST))
+        powerCost += caster->GetAttackTime(OFF_ATTACK) / 100;
+
+    // Apply cost mod by spell
+    if (Player* modOwner = caster->GetSpellModOwner())
+        modOwner->ApplySpellMod(Id, SPELLMOD_COST, powerCost, spell);
+
+    if (!caster->IsControlledByPlayer())
+    {
+        if (HasAttribute(SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION))
+        {
+            GtNPCManaCostScalerEntry const* spellScaler = sGtNPCManaCostScalerStore.LookupEntry(SpellLevel - 1);
+            GtNPCManaCostScalerEntry const* casterScaler = sGtNPCManaCostScalerStore.LookupEntry(caster->GetLevel() - 1);
+            if (spellScaler && casterScaler)
+                powerCost *= casterScaler->ratio / spellScaler->ratio;
+        }
+        /* OLD CALC
+        if (Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION)
+        powerCost = int32(powerCost / (1.117f* SpellLevel / caster->GetLevel() - 0.1327f));
+        */
+    }
+
+    // PCT mod from user auras by school
+    powerCost = int32(powerCost * (1.0f + caster->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + school)));
+    if (powerCost < 0)
+        powerCost = 0;
+    return powerCost;
+}
+
 uint32 SpellInfo::GetRecoveryTime() const
 {
     return RecoveryTime > CategoryRecoveryTime ? RecoveryTime : CategoryRecoveryTime;

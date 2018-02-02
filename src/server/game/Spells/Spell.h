@@ -453,7 +453,6 @@ class TC_GAME_API Spell
         SpellCastResult CheckCasterAuras(uint32* param1) const;
 
         int32 CalculateDamage(uint8 i, Unit* target) { return m_caster->CalculateSpellDamage(nullptr, m_spellInfo,i, &m_currentBasePoints[i]); }
-        int32 CalculatePowerCost();
 
         bool HaveTargetsForEffect(uint8 effect) const;
         void Delayed();

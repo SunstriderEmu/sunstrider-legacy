@@ -504,6 +504,8 @@ public:
     uint32 CalcCastTime(Spell* spell = nullptr) const;
     uint32 GetRecoveryTime() const;
 
+    int32 CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, Spell* spell = nullptr) const;
+
     bool IsRanked() const;
     uint8 GetRank() const;
     SpellInfo const* GetFirstRankSpell() const;

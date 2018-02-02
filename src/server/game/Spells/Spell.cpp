@@ -3344,8 +3344,8 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
 
     LoadScripts();
 
-    // Fill cost data
-    m_powerCost = CalculatePowerCost(); //TC has:   m_powerCost = m_CastItem ? 0 : m_spellInfo->CalcPowerCost(m_caster, m_spellSchoolMask, this);
+    // Fill cost data (do not use power for item casts)
+    m_powerCost = m_CastItem ? 0 : m_spellInfo->CalcPowerCost(m_caster, m_spellSchoolMask, this);
 
     // Set combo point requirement
     if ((_triggeredCastFlags & TRIGGERED_IGNORE_COMBO_POINTS) || m_CastItem)
@@ -6891,83 +6891,6 @@ std::pair<float, float> Spell::GetMinMaxRange(bool strict)
     maxRange += rangeMod;
 
     return std::pair<float, float>(minRange, maxRange);
-}
-
-int32 Spell::CalculatePowerCost()
-{
-    // item cast not used power
-    if(m_CastItem)
-        return 0;
-
-    // Spell drain all exist power on cast (Only paladin lay of Hands)
-    if (m_spellInfo->HasAttribute(SPELL_ATTR1_DRAIN_ALL_POWER))
-    {
-        // If power type - health drain all
-        if (m_spellInfo->PowerType == POWER_HEALTH)
-            return m_caster->GetHealth();
-        // Else drain all power
-        if (m_spellInfo->PowerType < MAX_POWERS)
-            return m_caster->GetPower(Powers(m_spellInfo->PowerType));
-        TC_LOG_ERROR("spells","Spell::CalculateManaCost: Unknown power type '%d' in spell %d", m_spellInfo->PowerType, m_spellInfo->Id);
-        return 0;
-    }
-
-    // Base powerCost
-    int32 powerCost = m_spellInfo->ManaCost;
-    // PCT cost from total amount
-    if (m_spellInfo->ManaCostPercentage)
-    {
-        switch (m_spellInfo->PowerType)
-        {
-            // health as power used
-            case POWER_HEALTH:
-                powerCost += m_spellInfo->ManaCostPercentage * m_caster->GetCreateHealth() / 100;
-                break;
-            case POWER_MANA:
-                powerCost += m_spellInfo->ManaCostPercentage * m_caster->GetCreateMana() / 100;
-                break;
-            case POWER_RAGE:
-            case POWER_FOCUS:
-            case POWER_ENERGY:
-            case POWER_HAPPINESS:
-                //            case POWER_RUNES:
-                powerCost += m_spellInfo->ManaCostPercentage * m_caster->GetMaxPower(Powers(m_spellInfo->PowerType)) / 100;
-                break;
-            default:
-                TC_LOG_ERROR("FIXME","Spell::CalculateManaCost: Unknown power type '%d' in spell %d", m_spellInfo->PowerType, m_spellInfo->Id);
-                return 0;
-        }
-    }
-    SpellSchools school = GetFirstSchoolInMask(m_spellSchoolMask);
-    // Flat mod from caster auras by spell school
-    powerCost += m_caster->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + school);
-    // Shiv - costs 20 + weaponSpeed*10 energy (apply only to non-triggered spell with energy cost)
-    if ( m_spellInfo->HasAttribute(SPELL_ATTR4_SPELL_VS_EXTEND_COST) )
-        powerCost += m_caster->GetAttackTime(OFF_ATTACK)/100;
-    // Apply cost mod by spell
-    if(Player* modOwner = m_caster->GetSpellModOwner())
-        modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, powerCost, this);
-
-    if (!m_caster->IsControlledByPlayer())
-    {
-        if (m_spellInfo->HasAttribute(SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION))
-        {
-            GtNPCManaCostScalerEntry const* spellScaler = sGtNPCManaCostScalerStore.LookupEntry(m_spellInfo->SpellLevel - 1);
-            GtNPCManaCostScalerEntry const* casterScaler = sGtNPCManaCostScalerStore.LookupEntry(m_caster->GetLevel() - 1);
-            if (spellScaler && casterScaler)
-                powerCost *= casterScaler->ratio / spellScaler->ratio;
-        }
-        /* OLD CALC
-        if (m_spellInfo->Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION)
-            powerCost = int32(powerCost / (1.117f* m_spellInfo->SpellLevel / m_caster->GetLevel() - 0.1327f));
-        */
-    }
-
-    // PCT mod from user auras by school
-    powerCost = int32(powerCost * (1.0f+m_caster->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+school)));
-    if (powerCost < 0)
-        powerCost = 0;
-    return powerCost;
 }
 
 SpellCastResult Spell::CheckPower()
