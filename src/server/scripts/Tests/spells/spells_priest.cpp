@@ -1440,7 +1440,7 @@ public:
             // Setup
             tank->SetMaxHealth(30000);
             tank->SetFullHealth();
-            TEST_CAST(tank, tank, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            FORCE_CAST(tank, tank, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
             EQUIP_ITEM(tank, 34185); // Shield
             tank->SetPower(POWER_RAGE, 100 * 10);
             tank->Attack(creature, true);
@@ -1448,7 +1448,8 @@ public:
             TEST_ASSERT(creature->GetTarget() == tank->GetGUID());
 
             // Threat
-            TEST_CAST(priest, creature, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            FORCE_CAST(priest, creature, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            Wait(2000);
             uint32 startThreat = creature->GetThreatManager().GetThreat(priest);
 
             TEST_ASSERT(startThreat > creature->GetThreatManager().GetThreat(tank));
@@ -1470,9 +1471,15 @@ public:
             uint32 expectedThreat = startThreat - fadeFactor;
             TEST_ASSERT(creature->GetThreatManager().GetThreat(priest) == expectedThreat);
 
+            // http://wowwiki.wikia.com/wiki/Fade?oldid=1431850
+            // When Fade's duration expires, the **next threat-generating action** will generate normal threat plus all the threat that was originally Faded from the target.
             Wait(11000);
             TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::FADE_RNK_7);
             TEST_ASSERT(creature->GetThreatManager().GetThreat(priest) == expectedThreat);
+
+            FORCE_CAST(priest, creature, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            Wait(2000);
+            TEST_ASSERT(creature->GetThreatManager().GetThreat(priest) > expectedThreat);
         }
     };
 
