@@ -44,8 +44,50 @@ public:
     }
 };
 
+enum PetHealing
+{
+    SPELL_HEALTH_LINK = 37382
+};
+
+// 37381 - Pet Healing
+// Hunter T5 2P Bonus
+// Warlock T5 2P Bonus
+class spell_item_pet_healing : public AuraScript
+{
+    PrepareAuraScript(spell_item_pet_healing);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_HEALTH_LINK });
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+        if (!damageInfo || !damageInfo->GetDamage())
+            return;
+
+        Unit* actor = eventInfo.GetActor();
+        Unit* target = actor->GetPet();
+        if (!target)
+            return;
+
+        CastSpellExtraArgs args(aurEff);
+        args.AddSpellBP0(CalculatePct(damageInfo->GetDamage(), aurEff->GetAmount()));
+        eventInfo.GetActor()->CastSpell(target, SPELL_HEALTH_LINK, args);
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_item_pet_healing::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
+
 void AddSC_item_spell_scripts()
 {
     new spell_item_improved_mana_gems();
     new spell_gen_proc_below_pct_damaged("spell_item_commendation_of_kaelthas");
+    RegisterAuraScript(spell_item_pet_healing);
 }

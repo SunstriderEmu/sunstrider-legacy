@@ -6642,56 +6642,6 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
                 }
                 break;
             }
-            case SPELLFAMILY_WARLOCK:
-            {
-                switch (GetSpellInfo()->Id)
-                {
-                // Nightfall
-                case 18094:
-                case 18095:
-                {
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 17941;
-                    break;
-                }
-                //Soul Leech
-                case 30293:
-                case 30295:
-                case 30296:
-                {
-                    // health
-                    basepoints0 = int32(damage*triggeredByAura->GetAmount() / 100);
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 30294;
-                    break;
-                }
-                // Shadowflame (Voidheart Raiment set bonus)
-                case 37377:
-                {
-                    triggered_spell_id = 37379;
-                    break;
-                }
-                // Pet Healing (Corruptor Raiment or Rift Stalker Armor)
-                case 37381:
-                {
-                    triggerTarget = triggerCaster->GetPet();
-                    if (!triggerTarget)
-                        return;
-
-                    // heal amount
-                    basepoints0 = damage * triggeredByAura->GetAmount() / 100;
-                    triggered_spell_id = 37382;
-                    break;
-                }
-                // Shadowflame Hellfire (Voidheart Raiment set bonus)
-                case 39437:
-                {
-                    triggered_spell_id = 37378;
-                    break;
-                }
-                }
-                break;
-            }
             case SPELLFAMILY_PRIEST:
             {
                 // Vampiric Touch

@@ -799,7 +799,6 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
     Aura* triggeredByAura = aurApp->GetBase();
     Item* castItem = triggeredByAura->GetCastItemGUID() && aurApp->GetBase()->GetCaster()->GetTypeId() == TYPEID_PLAYER
         ? (aurApp->GetBase()->GetCaster()->ToPlayer())->GetItemByGuid(triggeredByAura->GetCastItemGUID()) : nullptr;
-    uint32 procEx = eventInfo.GetHitMask();
     SpellInfo const* dummySpell = aurApp->GetBase()->GetSpellInfo();
 
     if(aurApp->GetBase()->GetSpellInfo()->HasAuraEffect(SPELL_AURA_DUMMY)
@@ -966,22 +965,6 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
             // cast ??? Arcane Bolt if Exalted by Scryers*/
             case 46569:
                 return false;                           // disable for while
-            }
-            break;
-        }
-        case SPELLFAMILY_WARLOCK:
-        {
-            switch (dummySpell->Id)
-            {
-            // Pet Healing (Corruptor Raiment or Rift Stalker Armor)
-            case 37381:
-            {
-                triggerTarget = triggerCaster->GetPet();
-                if (!triggerTarget)
-                    return false;
-
-                break;
-            }
             }
             break;
         }

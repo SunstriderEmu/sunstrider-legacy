@@ -9,6 +9,10 @@ enum WarlockSpells
     SPELL_WARLOCK_PYROCLASM_PROC           = 18093,
     SPELL_WARLOCK_DRAIN_SOUL_ENERGIZE      = 18371,
     SPELL_WARLOCK_SEED_OF_CORRUPTION_PROC  = 27285,
+    SPELL_WARLOCK_NIGHTFALL_PROC           = 17941,
+    SPELL_WARLOCK_SOUL_LEECH_HEAL          = 30294,
+    SPELL_WARLOCK_SHADOWFLAME              = 37378,
+    SPELL_WARLOCK_FLAMESHADOW              = 37379,
 };
 
 // -18096 - Pyroclasm (talent)
@@ -202,10 +206,126 @@ public:
     }
 };
 
+// -18094 - Nightfall talent 
+// "Gives your Corruption and Drain Life spells a 2 % chance to cause you to enter a Shadow Trance state after damaging the opponent.
+//  The Shadow Trance state reduces the casting time of your next Shadow Bolt spell by 100%."
+class spell_warl_nightfall : public SpellScriptLoader
+{
+public:
+    spell_warl_nightfall() : SpellScriptLoader("spell_warl_nightfall") { }
+
+    class spell_warl_nightfall_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warl_nightfall_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_WARLOCK_NIGHTFALL_PROC });
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+            GetCaster()->CastSpell(GetTarget(), SPELL_WARLOCK_NIGHTFALL_PROC, aurEff);
+        }
+
+        void Register() override
+        {
+            OnEffectProc += AuraEffectProcFn(spell_warl_nightfall_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_warl_nightfall_AuraScript();
+    }
+};
+
+// -30293 - Soul Leech
+class spell_warl_soul_leech : public SpellScriptLoader
+{
+public:
+    spell_warl_soul_leech() : SpellScriptLoader("spell_warl_soul_leech") { }
+
+    class spell_warl_soul_leech_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warl_soul_leech_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_WARLOCK_SOUL_LEECH_HEAL });
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+            DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+            if (!damageInfo || !damageInfo->GetDamage())
+                return;
+
+            Unit* caster = eventInfo.GetActor();
+            CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
+            args.AddSpellBP0(CalculatePct(damageInfo->GetDamage(), aurEff->GetAmount()));
+            caster->CastSpell(caster, SPELL_WARLOCK_SOUL_LEECH_HEAL, args);
+        }
+
+        void Register() override
+        {
+            OnEffectProc += AuraEffectProcFn(spell_warl_soul_leech_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_warl_soul_leech_AuraScript();
+    }
+};
+
+// 37377 - Shadowflame
+// 39437 - Shadowflame Hellfire and RoF
+template <uint32 TriggerSpellId>
+class spell_warl_t4_2p_bonus : public SpellScriptLoader
+{
+public:
+    spell_warl_t4_2p_bonus(char const* ScriptName) : SpellScriptLoader(ScriptName) { }
+
+    template <uint32 Trigger>
+    class spell_warl_t4_2p_bonus_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warl_t4_2p_bonus_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ Trigger });
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+            Unit* caster = eventInfo.GetActor();
+            caster->CastSpell(caster, Trigger, aurEff);
+        }
+
+        void Register() override
+        {
+            OnEffectProc += AuraEffectProcFn(spell_warl_t4_2p_bonus_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_warl_t4_2p_bonus_AuraScript<TriggerSpellId>();
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_pyroclasm();
     new spell_warl_drainsoul();
     new spell_warl_seed_of_corruption();
     new spell_warl_seed_of_corruption_proc();
+    new spell_warl_nightfall();
+    new spell_warl_soul_leech();
+    new spell_warl_t4_2p_bonus<SPELL_WARLOCK_FLAMESHADOW>("spell_warl_t4_2p_bonus_shadow");
+    new spell_warl_t4_2p_bonus<SPELL_WARLOCK_SHADOWFLAME>("spell_warl_t4_2p_bonus_fire");
 }
