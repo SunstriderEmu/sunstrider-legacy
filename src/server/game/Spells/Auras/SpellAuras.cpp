@@ -969,45 +969,8 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
             }
             break;
         }
-        case SPELLFAMILY_WARRIOR:
-        {
-            // Retaliation
-            if (dummySpell->SpellFamilyFlags == 0x0000000800000000LL)
-            {
-                // check attack comes not from behind
-                if (!triggerCaster->HasInArc(M_PI, triggerTarget) || triggerCaster->HasUnitState(UNIT_STATE_STUNNED))
-                    return false;
-                break;
-            }
-            else if (dummySpell->SpellIconID == 1697)  // Second Wind
-            {
-                // only for spells and hit/crit (trigger start always) and not start from self casted spells (5530 Mace Stun Effect for example)
-                if (procSpell == nullptr || !(procEx & (PROC_HIT_NORMAL | PROC_HIT_CRITICAL)) || triggerCaster == triggerTarget)
-                    return false;
-                // Need stun or root mechanic
-                if (procSpell->Mechanic != MECHANIC_ROOT && procSpell->Mechanic != MECHANIC_STUN)
-                {
-                    int32 i;
-                    for (i = 0; i < 3; i++)
-                        if (procSpell->Effects[i].Mechanic == MECHANIC_ROOT || procSpell->Effects[i].Mechanic == MECHANIC_STUN)
-                            break;
-                    if (i == 3)
-                        return false;
-                }
-            }
-            break;
-        }
         case SPELLFAMILY_WARLOCK:
         {
-            // Seed of Corruption (Mobs cast) - no die req
-            if (dummySpell->SpellFamilyFlags == 0x00LL && dummySpell->SpellIconID == 1932)
-            {
-                // No Chain Procs
-                if (procSpell && procSpell->Id == 32865)
-                    return false;
-
-                return true;
-            }
             switch (dummySpell->Id)
             {
             // Pet Healing (Corruptor Raiment or Rift Stalker Armor)

@@ -6363,7 +6363,6 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
         SpellInfo const * procSpell = eventInfo.GetSpellInfo();
         AuraEffect* triggeredByAura = this;
         uint32 damage = eventInfo.GetDamageInfo() ? eventInfo.GetDamageInfo()->GetDamage() : 0;
-        uint32 procEx = eventInfo.GetHitMask();
         uint8 effIndex = triggeredByAura->GetEffIndex();
         int32 triggerAmount = triggeredByAura->GetAmount();
 
@@ -6640,30 +6639,6 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
                     }
                     return;
                 }
-                }
-                break;
-            }
-            case SPELLFAMILY_WARRIOR:
-            {
-                // Retaliation
-                if (GetSpellInfo()->SpellFamilyFlags == 0x0000000800000000LL)
-                {
-                    triggered_spell_id = 22858;
-                    break;
-                }
-                else if (GetSpellInfo()->SpellIconID == 1697)  // Second Wind
-                {
-                    switch (GetSpellInfo()->Id)
-                    {
-                    case 29838: triggered_spell_id = 29842; break;
-                    case 29834: triggered_spell_id = 29841; break;
-                    default:
-                        TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non handled spell id: %u (SW)", GetSpellInfo()->Id);
-                        return;
-                    }
-
-                    triggerTarget = triggerCaster;
-                    break;
                 }
                 break;
             }
