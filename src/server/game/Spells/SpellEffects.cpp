@@ -2791,23 +2791,22 @@ void Spell::EffectTeleportUnits(uint32 i)
         return;
     }
     // Init dest coordinates
-    // Init dest coordinates
-    uint32 mapid = destTarget->GetMapId();
-    if (mapid == MAPID_INVALID)
-        mapid = unitTarget->GetMapId();
-    float x, y, z, orientation;
-    destTarget->GetPosition(x, y, z, orientation);
+    WorldLocation targetDest(*destTarget);
+    if (targetDest.GetMapId() == MAPID_INVALID)
+        targetDest.m_mapId = unitTarget->GetMapId();
 
+    if (!targetDest.GetOrientation() && m_targets.GetUnitTarget())
+        targetDest.SetOrientation(m_targets.GetUnitTarget()->GetOrientation());
     // Teleport and Transform kj outro
-    // Orientation exist in db but is not used wtf?!
+    // Orientation exist in db but is not used?
     if (m_spellInfo->Id == 46473)
-        orientation = 6.22f;
+        targetDest.SetOrientation(6.22f);
 
     // Teleport
+    if (targetDest.GetMapId() == unitTarget->GetMapId())
+        unitTarget->NearTeleportTo(targetDest, unitTarget == m_caster);
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
-        (unitTarget->ToPlayer())->TeleportTo(mapid, x, y, z, orientation, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
-    else if (mapid == unitTarget->GetMapId())
-        unitTarget->NearTeleportTo(x, y, z, orientation, unitTarget == m_caster);
+        (unitTarget->ToPlayer())->TeleportTo(targetDest, (unitTarget == m_caster ? TELE_TO_SPELL : 0));
     else
     {
         TC_LOG_ERROR("spells", "Spell::EffectTeleportUnits - spellId %u attempted to teleport creature to a different map.", m_spellInfo->Id);
