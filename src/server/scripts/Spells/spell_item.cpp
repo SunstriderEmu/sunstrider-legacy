@@ -119,10 +119,39 @@ class spell_item_frozen_shadoweave : public AuraScript
     }
 };
 
+// Item 23004 - Idol of Longevity
+// 28847 - Healing Touch Refund
+enum IdolOfLongevity
+{
+    SPELL_HEALING_TOUCH_MANA = 28848
+};
+
+class spell_item_healing_touch_refund : public AuraScript
+{
+    PrepareAuraScript(spell_item_healing_touch_refund);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_HEALING_TOUCH_MANA });
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        eventInfo.GetActor()->CastSpell(nullptr, SPELL_HEALING_TOUCH_MANA, aurEff);
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_item_healing_touch_refund::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
 void AddSC_item_spell_scripts()
 {
     new spell_item_improved_mana_gems();
     new spell_gen_proc_below_pct_damaged("spell_item_commendation_of_kaelthas");
     RegisterAuraScript(spell_item_pet_healing);
     RegisterAuraScript(spell_item_frozen_shadoweave);
+    RegisterAuraScript(spell_item_healing_touch_refund);
 }

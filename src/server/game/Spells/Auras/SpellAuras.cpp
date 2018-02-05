@@ -968,49 +968,11 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
             }
             break;
         }
-        case SPELLFAMILY_DRUID:
-        {
-            switch (dummySpell->Id)
-            {
-                // Druid Tier 6 Trinket
-            case 40442:
-            {
-                if (!procSpell)
-                    return false;
-
-                float  chance;
-
-                // Starfire
-                if (procSpell->SpellFamilyFlags & 0x0000000000000004LL)
-                {
-                    chance = 25.f;
-                }
-                // Rejuvenation
-                else if (procSpell->SpellFamilyFlags & 0x0000000000000010LL)
-                {
-                    chance = 25.f;
-                }
-                // Mangle (cat/bear)
-                else if (procSpell->SpellFamilyFlags & 0x0000044000000000LL)
-                {
-                    chance = 40.f;
-                }
-                else
-                    return false;
-
-                if (!roll_chance_f(chance))
-                    return false;
-
-                break;
-            }
-            }
-            break;
-        }
         case SPELLFAMILY_ROGUE:
         {
             switch (dummySpell->Id)
             {
-                // Deadly Throw Interrupt
+            // Deadly Throw Interrupt
             case 32748:
             {
                 // Prevent cast Deadly Throw Interrupt on self from last effect (apply dummy) of Deadly Throw
@@ -1153,26 +1115,6 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
                 break;
             }
             break;
-        case SPELLFAMILY_DRUID:
-        {
-            // Druid Forms Trinket
-            if (auraSpellInfo->Id == 37336)
-            {
-                switch (triggerCaster->m_form)
-                {
-                case 0:
-                case FORM_CAT:
-                case FORM_BEAR:
-                case FORM_DIREBEAR:
-                case FORM_TREE:
-                case FORM_MOONKIN:
-                    break;
-                default:
-                    return false;
-                }
-            }
-            break;
-        }
         case SPELLFAMILY_PALADIN:
         {
             // Blessed Life

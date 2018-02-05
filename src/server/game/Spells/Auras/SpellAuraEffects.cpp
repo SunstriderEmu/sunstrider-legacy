@@ -6642,61 +6642,6 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
                 }
                 break;
             }
-            case SPELLFAMILY_DRUID:
-            {
-                switch (GetSpellInfo()->Id)
-                {
-                // Healing Touch (Dreamwalker Raiment set)
-                case 28719:
-                {
-                    // mana back
-                    basepoints0 = int32(procSpell->ManaCost * 30 / 100);
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 28742;
-                    break;
-                }
-                // Healing Touch Refund (Idol of Longevity trinket)
-                case 28847:
-                {
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 28848;
-                    break;
-                }
-                // Mana Restore (Malorne Raiment set / Malorne Regalia set)
-                case 37288:
-                case 37295:
-                {
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 37238;
-                    break;
-                }
-                // Druid Tier 6 Trinket
-                case 40442:
-                {
-                    // Starfire
-                    if (procSpell->SpellFamilyFlags & 0x0000000000000004LL)
-                    {
-                        triggered_spell_id = 40445;
-                    }
-                    // Rejuvenation
-                    else if (procSpell->SpellFamilyFlags & 0x0000000000000010LL)
-                    {
-                        triggered_spell_id = 40446;
-                    }
-                    // Mangle (cat/bear)
-                    else if (procSpell->SpellFamilyFlags & 0x0000044000000000LL)
-                    {
-                        triggered_spell_id = 40452;
-                    }
-                    else
-                        return;
-
-                    triggerTarget = triggerCaster;
-                    break;
-                }
-                }
-                break;
-            }
             case SPELLFAMILY_ROGUE:
             {
                 switch (GetSpellInfo()->Id)
@@ -7187,30 +7132,6 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
                         triggerTarget = triggerCaster;
                         if (basepoints0 == 0)
                             return;
-                    }
-                    break;
-                }
-                //=====================================================================
-                // Druid
-                // ====================================================================
-                // Druid Forms Trinket  trigger = 18350
-                //=====================================================================
-                case SPELLFAMILY_DRUID:
-                {
-                    // Druid Forms Trinket
-                    if (auraSpellInfo->Id == 37336)
-                    {
-                        switch (triggerCaster->m_form)
-                        {
-                        case 0:              triggered_spell_id = 37344; break;
-                        case FORM_CAT:       triggered_spell_id = 37341; break;
-                        case FORM_BEAR:
-                        case FORM_DIREBEAR:  triggered_spell_id = 37340; break;
-                        case FORM_TREE:      triggered_spell_id = 37342; break;
-                        case FORM_MOONKIN:   triggered_spell_id = 37343; break;
-                        default:
-                            return;
-                        }
                     }
                     break;
                 }
