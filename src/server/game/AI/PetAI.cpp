@@ -1,5 +1,6 @@
 
 #include "PetAI.h"
+#include "AIException.h"
 #include "Errors.h"
 #include "Pet.h"
 #include "Player.h"
@@ -25,7 +26,8 @@ int PetAI::Permissible(const Creature *creature)
 
 PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK), distanceCheckTimer(3000), _forceAttackBreakable(nullptr)
 {
-    m_AllySet.clear();
+    if (!me->GetCharmInfo())
+        throw InvalidAIException("Creature doesn't have a valid charm info");
     UpdateAllies();
 }
 
