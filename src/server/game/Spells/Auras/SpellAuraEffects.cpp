@@ -6642,40 +6642,6 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
                 }
                 break;
             }
-            case SPELLFAMILY_ROGUE:
-            {
-                switch (GetSpellInfo()->Id)
-                {
-                    // Deadly Throw Interrupt
-                case 32748:
-                {
-                    triggered_spell_id = 32747;
-                    break;
-                }
-                }
-                // Quick Recovery
-                if (GetSpellInfo()->SpellIconID == 2116)
-                {
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 31663;
-                    break;
-                }
-                break;
-            }
-            case SPELLFAMILY_HUNTER:
-            {
-                // Thrill of the Hunt
-                if (GetSpellInfo()->SpellIconID == 2236)
-                {
-                    if (!procSpell)
-                        return;
-
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 34720;
-                    break;
-                }
-                break;
-            }
             case SPELLFAMILY_PALADIN:
             {
                 // Seal of Righteousness - melee proc dummy

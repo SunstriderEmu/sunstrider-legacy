@@ -12,6 +12,11 @@ enum HunterSpells
     SPELL_HUNTER_BESTIAL_WRATH                      = 19574,
     SPELL_HUNTER_IMPROVED_MEND_PET                  = 24406,
     SPELL_HUNTER_ENTRAPMENT_PROC                    = 19185,
+    SPELL_HUNTER_KILL_COMMAND_HUNTER                = 34027,
+    SPELL_HUNTER_THRILL_OF_THE_HUNT_MANA            = 34720,
+    SPELL_HUNTER_READINESS                          = 23989,
+    SPELL_HUNTER_MISDIRECTION                       = 34477,
+    SPELL_HUNTER_MISDIRECTION_PROC                  = 35079,
 };
 
 //TODO: should this be moved to DB?
@@ -218,10 +223,72 @@ public:
     }
 };
 
+// -34497 - Thrill of the Hunt
+class spell_hun_thrill_of_the_hunt : public SpellScriptLoader
+{
+public:
+    spell_hun_thrill_of_the_hunt() : SpellScriptLoader("spell_hun_thrill_of_the_hunt") { }
+
+    class spell_hun_thrill_of_the_hunt_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_hun_thrill_of_the_hunt_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_HUNTER_THRILL_OF_THE_HUNT_MANA });
+        }
+
+        bool CheckProc(ProcEventInfo& /*eventInfo*/)
+        {
+            float chance = 0;
+            switch (GetSpellInfo()->Id)
+            {
+            case 34497: chance = 33.33f; break; //rank 1
+            case 34498: chance = 66.66f; break; //rank 2
+            case 34499: return true;            //rank 3, 100%
+            default:
+                return false;
+            }
+
+
+            return roll_chance_i(chance);
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+            SpellInfo const* spellInfo = eventInfo.GetSpellInfo();
+            if (!spellInfo)
+                return;
+
+            Unit* caster = eventInfo.GetActor();
+            int32 amount = CalculatePct(static_cast<int32>(spellInfo->CalcPowerCost(caster, spellInfo->GetSchoolMask())), 40);
+            if (!amount)
+                return;
+
+            CastSpellExtraArgs args(aurEff);
+            args.AddSpellBP0(amount);
+            caster->CastSpell(nullptr, SPELL_HUNTER_THRILL_OF_THE_HUNT_MANA, args);
+        }
+
+        void Register() override
+        {
+            DoCheckProc += AuraCheckProcFn(spell_hun_thrill_of_the_hunt_AuraScript::CheckProc);
+            OnEffectProc += AuraEffectProcFn(spell_hun_thrill_of_the_hunt_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_hun_thrill_of_the_hunt_AuraScript();
+    }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hunt_imprv_aspect_viper();
     new spell_hun_improved_mend_pet();
     new spell_hunt_hunters_mark();
     new spell_hun_entrapment();
+    new spell_hun_thrill_of_the_hunt();
 }

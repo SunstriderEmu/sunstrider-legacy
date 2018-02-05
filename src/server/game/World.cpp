@@ -1462,9 +1462,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Spell Group Stack Rules...");
     sSpellMgr->LoadSpellGroupStackRules();
 
-    TC_LOG_INFO("server.loading", "Loading Spell Proc conditions and data...");
-    sSpellMgr->LoadSpellProcs();
-
     TC_LOG_INFO("server.loading", "Loading Script Names...");
     sObjectMgr->LoadScriptNames();
 
@@ -1625,7 +1622,10 @@ void World::SetInitialWorldSettings()
     sSpellMgr->LoadSpellTargetPositions();
 
     TC_LOG_INFO("server.loading", "Loading SpellAffect definitions..." );
-    sSpellMgr->LoadSpellAffects();
+    sSpellMgr->LoadSpellAffects(); 
+
+    TC_LOG_INFO("server.loading", "Loading Spell Proc conditions and data...");
+    sSpellMgr->LoadSpellProcs(); //must be after LoadSpellAffects 
 
     TC_LOG_INFO("server.loading", "Loading spell pet auras..." );
     sSpellMgr->LoadSpellPetAuras();

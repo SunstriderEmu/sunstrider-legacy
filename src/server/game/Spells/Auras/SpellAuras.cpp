@@ -968,35 +968,6 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
             }
             break;
         }
-        case SPELLFAMILY_ROGUE:
-        {
-            switch (dummySpell->Id)
-            {
-            // Deadly Throw Interrupt
-            case 32748:
-            {
-                // Prevent cast Deadly Throw Interrupt on self from last effect (apply dummy) of Deadly Throw
-                if (triggerCaster == triggerTarget)
-                    return false;
-
-                break;
-            }
-            }
-            // Quick Recovery
-            if (dummySpell->SpellIconID == 2116)
-            {
-                if (!procSpell)
-                    return false;
-
-                // only rogue's finishing moves (maybe need additional checks)
-                if (procSpell->SpellFamilyName != SPELLFAMILY_ROGUE ||
-                    (procSpell->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE_FINISHING_MOVE) == 0)
-                    return false;
-
-                break;
-            }
-            break;
-        }
         case SPELLFAMILY_PALADIN:
         {
             switch (dummySpell->Id)
