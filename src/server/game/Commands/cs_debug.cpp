@@ -627,50 +627,59 @@ bool ChatHandler::HandleDebugThreatListCommand(const char * args)
         for (auto const& pair : threatenedByMe)
         {
             Unit* unit = pair.second->GetOwner();
-            PSendSysMessage("   %u.   %s   (current guid %u,spawnID %u)  - threat %f", ++count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), unit->GetTypeId() == TYPEID_UNIT ? unit->ToCreature()->GetSpawnId() : 0, pair.second->GetThreat());
+            PSendSysMessage("   %u.   %s   (GUID %u, SpawnID %u)  - threat %f", ++count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), unit->GetTypeId() == TYPEID_UNIT ? unit->ToCreature()->GetSpawnId() : 0, pair.second->GetThreat());
         }
         SendSysMessage("End of threatened-by-me list.");
     }
 
-    if (!mgr.CanHaveThreatList())
-       PSendSysMessage("%s (guid %u) cannot have a threat list.", target->GetName().c_str(), target->GetGUID().GetCounter());
-    else if (mgr.IsEngaged())
+    if (mgr.CanHaveThreatList())
     {
-        count = 0;
-        PSendSysMessage("Threat list of %s (guid %u, spawnID %u)", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
-        for (ThreatReference const* ref : mgr.GetSortedThreatList())
+        if (!mgr.IsThreatListEmpty(true))
         {
-            Unit* unit = ref->GetVictim();
-            char const* onlineStr;
-            switch (ref->GetOnlineState())
+            if (mgr.IsEngaged())
+                PSendSysMessage("Threat list of %s (GUID %u, SpawnID %u):", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
+            else
+                PSendSysMessage("%s (GUID %u, SpawnID %u) is not engaged, but still has a threat list? Well, here it is:", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
+
+            count = 0;
+            for (ThreatReference const* ref : mgr.GetSortedThreatList())
             {
-            case ThreatReference::ONLINE_STATE_SUPPRESSED:
-                onlineStr = " [SUPPRESSED]";
-                break;
-            case ThreatReference::ONLINE_STATE_OFFLINE:
-                onlineStr = " [OFFLINE]";
-                break;
-            default:
-                onlineStr = "";
+                Unit* unit = ref->GetVictim();
+                char const* onlineStr;
+                switch (ref->GetOnlineState())
+                {
+                case ThreatReference::ONLINE_STATE_SUPPRESSED:
+                    onlineStr = " [SUPPRESSED]";
+                    break;
+                case ThreatReference::ONLINE_STATE_OFFLINE:
+                    onlineStr = " [OFFLINE]";
+                    break;
+                default:
+                    onlineStr = "";
+                }
+                char const* tauntStr;
+                switch (ref->GetTauntState())
+                {
+                case ThreatReference::TAUNT_STATE_TAUNT:
+                    tauntStr = " [TAUNT]";
+                    break;
+                case ThreatReference::TAUNT_STATE_DETAUNT:
+                    tauntStr = " [DETAUNT]";
+                    break;
+                default:
+                    tauntStr = "";
+                }
+                PSendSysMessage("   %u.   %s   (GUID %u)  - threat %f%s%s", ++count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), ref->GetThreat(), tauntStr, onlineStr);
             }
-            char const* tauntStr;
-            switch (ref->GetTauntState())
-            {
-            case ThreatReference::TAUNT_STATE_TAUNT:
-                tauntStr = " [TAUNT]";
-                break;
-            case ThreatReference::TAUNT_STATE_DETAUNT:
-                tauntStr = " [DETAUNT]";
-                break;
-            default:
-                tauntStr = "";
-            }
-            PSendSysMessage("   %u.   %s   (guid %u)  - threat %f%s%s", ++count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), ref->GetThreat(), tauntStr, onlineStr);
+            SendSysMessage("End of threat list.");
         }
-        SendSysMessage("End of threat list.");
+        else if (!mgr.IsEngaged())
+            PSendSysMessage("%s (GUID %u, SpawnID %u) is not currently engaged.", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
+        else
+            PSendSysMessage("%s (GUID %u, SpawnID %u) seems to be engaged, but does not have a threat list??", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
     }
     else
-        PSendSysMessage("%s (guid %u, spawnID %u) is not currently engaged.", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
+        PSendSysMessage("%s (GUID %u) cannot have a threat list.", target->GetName().c_str(), target->GetGUID().GetCounter());
     return true;
 }
 
