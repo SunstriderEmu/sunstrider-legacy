@@ -84,10 +84,45 @@ class spell_item_pet_healing : public AuraScript
     }
 };
 
+enum FrozenShadoweave
+{
+    SPELL_SHADOWMEND = 39373
+};
+
+// 39372 - Frozen Shadoweave
+// Frozen Shadoweave set 3p bonus
+class spell_item_frozen_shadoweave : public AuraScript
+{
+    PrepareAuraScript(spell_item_frozen_shadoweave);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_SHADOWMEND });
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+        DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+        if (!damageInfo || !damageInfo->GetDamage())
+            return;
+
+        Unit* caster = eventInfo.GetActor();
+        CastSpellExtraArgs args(aurEff);
+        args.AddSpellBP0(CalculatePct(damageInfo->GetDamage(), aurEff->GetAmount()));
+        caster->CastSpell(nullptr, SPELL_SHADOWMEND, args);
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_item_frozen_shadoweave::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
 
 void AddSC_item_spell_scripts()
 {
     new spell_item_improved_mana_gems();
     new spell_gen_proc_below_pct_damaged("spell_item_commendation_of_kaelthas");
     RegisterAuraScript(spell_item_pet_healing);
+    RegisterAuraScript(spell_item_frozen_shadoweave);
 }

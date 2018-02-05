@@ -968,61 +968,6 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
             }
             break;
         }
-        case SPELLFAMILY_PRIEST:
-        {
-            // Vampiric Touch
-            if (dummySpell->SpellFamilyFlags & 0x0000040000000000LL)
-            {
-                if (!triggerTarget || !triggerTarget->IsAlive())
-                    return false;
-
-                // triggerTarget is caster of aura
-                if (triggeredByAura->GetCasterGUID() != triggerTarget->GetGUID())
-                    return false;
-
-                return true;                                // no hidden cooldown
-            }
-            switch (dummySpell->Id)
-            {
-            // Vampiric Embrace
-            case 15286:
-            {
-                if (!triggerTarget || !triggerTarget->IsAlive())
-                    return false;
-
-                // pVictim is caster of aura
-                if (triggeredByAura->GetCasterGUID() != triggerTarget->GetGUID())
-                    return false;
-
-                return true;                                // no hidden cooldown
-            }
-            // Priest Tier 6 Trinket (Ashtongue Talisman of Acumen)
-            case 40438:
-            {
-                if (!procSpell)
-                    return false;
-
-                // Shadow Word: Pain
-                if (procSpell->SpellFamilyFlags & 0x0000000000008000LL)
-                    ;
-                // Renew
-                else if (procSpell->SpellFamilyFlags & 0x0000000000000040LL)
-                    ;
-                else
-                    return false;
-
-                break;
-            }
-            // Frozen Shadoweave (Shadow's Embrace set) warning! its not only priest set
-            case 39372:
-            {
-                if (!procSpell || (procSpell->GetSchoolMask() & (SPELL_SCHOOL_MASK_FROST | SPELL_SCHOOL_MASK_SHADOW)) == 0)
-                    return false;
-                break;
-            }
-            }
-            break;
-        }
         case SPELLFAMILY_DRUID:
         {
             switch (dummySpell->Id)

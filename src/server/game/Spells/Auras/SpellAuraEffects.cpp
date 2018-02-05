@@ -867,10 +867,10 @@ bool AuraEffect::IsAffectedOnSpell(SpellInfo const* spell) const
     if (!spell)
         return false;
 
-    // Check family name and EffectClassMask
+    // Check family name and EffectClassMask (sun: SpellClassMask does not exists on BC but we fill this fake field with spell_affect table)
     uint64 familyClassMask = m_spellInfo->Effects[m_effIndex].SpellClassMask;
 #ifndef LICH_KING
-    //not 100% sure about this, this was in windrunner logic, but this seems to work (example spell 27074). BC is using this field as non existent SpellClassMask on BC?
+    //sun: BC is using this field as non existent SpellClassMask on BC?
     if (!familyClassMask)
         familyClassMask = m_spellInfo->Effects[m_effIndex].ItemType; 
 #endif
@@ -6638,78 +6638,6 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
                         break;
                     }
                     return;
-                }
-                }
-                break;
-            }
-            case SPELLFAMILY_PRIEST:
-            {
-                // Vampiric Touch
-                if (GetSpellInfo()->SpellFamilyFlags & 0x0000040000000000LL)
-                {
-                    // energize amount
-                    basepoints0 = triggeredByAura->GetAmount()*damage / 100;
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.AddSpellBP0(int32(basepoints0));
-                    args.SetTriggeringAura(triggeredByAura);
-                    args.SetCastItem(castItem);
-                    triggerTarget->CastSpell(triggerTarget, 34919, args);
-                    return;                                // no hidden cooldown
-                }
-                switch (GetSpellInfo()->Id)
-                {
-                // Vampiric Embrace
-                case 15286:
-                {
-                    // heal amount
-                    basepoints0 = triggeredByAura->GetAmount()*damage / 100;
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.AddSpellBP0(int32(basepoints0));
-                    args.SetTriggeringAura(triggeredByAura);
-                    args.SetCastItem(castItem);
-                    triggerTarget->CastSpell(triggerTarget, 15290, args);
-                    return;                                // no hidden cooldown
-                }
-                // Priest Tier 6 Trinket (Ashtongue Talisman of Acumen)
-                case 40438:
-                {
-                    // Shadow Word: Pain
-                    if (procSpell->SpellFamilyFlags & 0x0000000000008000LL)
-                        triggered_spell_id = 40441;
-                    // Renew
-                    else if (procSpell->SpellFamilyFlags & 0x0000000000000040LL)
-                        triggered_spell_id = 40440;
-                    else
-                        return;
-
-                    triggerTarget = triggerCaster;
-                    break;
-                }
-                // Oracle Healing Bonus ("Garments of the Oracle" set)
-                case 26169:
-                {
-                    // heal amount
-                    basepoints0 = int32(damage * 10 / 100);
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 26170;
-                    break;
-                }
-                // Frozen Shadoweave (Shadow's Embrace set) warning! its not only priest set
-                case 39372:
-                {
-                    // heal amount
-                    basepoints0 = int32(damage * 2 / 100);
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 39373;
-                    break;
-                }
-                // Vestments of Faith (Priest Tier 3) - 4 pieces bonus
-                case 28809:
-                {
-                    triggered_spell_id = 28810;
-                    break;
                 }
                 }
                 break;
