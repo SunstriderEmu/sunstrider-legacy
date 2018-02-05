@@ -133,9 +133,6 @@ class TC_GAME_API SmartAI : public CreatureAI
         // Called when creature gets charmed by another unit
         void OnCharmed(Unit* charmer, bool apply) override;
 
-        // Called when victim is in line of sight
-        bool CanAIAttack(Unit const* who) const override;
-
         // Used in scripts to share variables
         void DoAction(const int32 param = 0) override;
 
