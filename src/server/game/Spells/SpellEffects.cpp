@@ -4750,7 +4750,7 @@ void Spell::EffectWeaponDmg(uint32 i)
     // multiple weapon dmg effect workaround
     // execute only the last weapon damage
     // and handle all effects at once
-    for (int j = 0; j < MAX_SPELL_EFFECTS; j++)
+    for (uint8 j = 0; j < MAX_SPELL_EFFECTS; j++)
     {
         switch (m_spellInfo->Effects[j].Effect)
         {
@@ -4921,6 +4921,7 @@ void Spell::EffectWeaponDmg(uint32 i)
             break;
         case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
             weaponDamagePercentMod *= float(CalculateDamage(j, unitTarget)) / 100.0f;
+            break;
         default:
             break;                                      // not weapon damage effect, just skip
         }
@@ -4977,12 +4978,16 @@ void Spell::EffectWeaponDmg(uint32 i)
     if (totalDamagePercentMod != 1.0f)
         weaponDamage = int32(weaponDamage * totalDamagePercentMod);
 
+    // apply spellmod to Done damage
+    if (Player* modOwner = m_caster->GetSpellModOwner())
+        modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DAMAGE, weaponDamage);
+
     // prevent negative damage
-    uint32 eff_damage = uint32(weaponDamage > 0 ? weaponDamage : 0);
+    weaponDamage = std::max(weaponDamage, 0);
 
     // Add melee damage bonuses (also check for negative)
-    uint32 damageBonusDone = m_caster->MeleeDamageBonusDone(unitTarget, eff_damage, m_attackType, m_spellInfo);
-    m_damage += unitTarget->MeleeDamageBonusTaken(m_caster, damageBonusDone, m_attackType, m_spellInfo);
+    weaponDamage = m_caster->MeleeDamageBonusDone(unitTarget, weaponDamage, m_attackType, m_spellInfo);
+    m_damage += unitTarget->MeleeDamageBonusTaken(m_caster, weaponDamage, m_attackType, m_spellInfo);
 }
 
 void Spell::EffectThreat(uint32 /*i*/)
