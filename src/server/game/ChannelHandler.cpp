@@ -1,5 +1,6 @@
 #include "ObjectMgr.h"                                      // for normalizePlayerName
 #include "ChannelMgr.h"
+#include "Channel.h"
 
 void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
 {
@@ -10,8 +11,13 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
     recvPacket >> channel_id >> unknown1 >> hasVoice;
     recvPacket >> channelname;
 
-    if(channelname.empty())
+    if (channelname.empty() || isdigit(channelname[0]))
+    {
+        WorldPacket data(SMSG_CHANNEL_NOTIFY, 1 + channelname.size());
+        data << uint8(CHAT_INVALID_NAME_NOTICE) << channelname;
+        SendPacket(&data);
         return;
+    }
         
     if (strcmp(channelname.c_str(), "gmworlda") == 0 && !_player->IsGameMaster())
         return;
