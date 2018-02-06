@@ -2748,11 +2748,6 @@ int32 Unit::GetMechanicResistChance(const SpellInfo *spell)
 // Melee based spells hit result calculations
 SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo)
 {
-    // Spells with SPELL_ATTR3_IGNORE_HIT_RESULT will additionally fully ignore
-    // resist and deflect chances
-    if (spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
-        return SPELL_MISS_NONE;
-
     WeaponAttackType attType = BASE_ATTACK;
 
     if (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
@@ -2925,7 +2920,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
 SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, Item* castItem)
 {
     // Can`t miss on dead target (on skinning for example)
-    if (!pVictim->IsAlive() || spell->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
+    if ((!pVictim->IsAlive() && pVictim->GetTypeId() != TYPEID_PLAYER))
         return SPELL_MISS_NONE;
         
     // Always 1% resist chance. Send this as SPELL_MISS_MISS (note that this is not BC blizzlike, this was changed in WotLK).
@@ -3049,6 +3044,9 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const* spellInfo, bo
     if (ToCreature() && ToCreature()->IsTotem())
         if (Unit *owner = GetOwner())
             return owner->SpellHitResult(pVictim, spellInfo, canReflect, castItem);
+
+    if (spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
+        return SPELL_MISS_NONE;
 
     // Return evade for units in evade mode
     if (pVictim->GetTypeId()==TYPEID_UNIT && pVictim->ToCreature()->IsEvadingAttacks())
@@ -7192,30 +7190,27 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit
                 return true;
     }
 
-    if (uint32 aura = spellInfo->Effects[index].ApplyAuraName)
+    if (!spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
     {
-        SpellImmuneList const& list = m_spellImmune[IMMUNITY_STATE];
-        for (auto itr : list)
-            if (itr.type == aura 
-#ifdef LICH_KING
-                && (itr->spellId != 64848 || spellInfo->Effects[index].MiscValue == POWER_MANA)
-#endif
-                )
-                if (!spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
-                    //sunwell if (itr->blockType == SPELL_BLOCK_TYPE_ALL || spellInfo->IsPositive()) // sunwell: added for pet scaling
-                        return true;
+        if (uint32 aura = spellInfo->Effects[index].ApplyAuraName)
+        {
+            SpellImmuneList const& list = m_spellImmune[IMMUNITY_STATE];
+            for (auto itr : list)
+                if (itr.type == aura)
+                    return true;
 
 #ifdef LICH_KING
-        if (!spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
-        {
-            // Check for immune to application of harmful magical effects
-            AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
-            for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
-                if (((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) &&        // Check school
-                    ((caster && !IsFriendlyTo(caster)) || !spellInfo->IsPositiveEffect(index))) // Harmful
-                    return true;
-        }
+            if (!spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
+            {
+                // Check for immune to application of harmful magical effects
+                AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
+                for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
+                    if (((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) &&        // Check school
+                        ((caster && !IsFriendlyTo(caster)) || !spellInfo->IsPositiveEffect(index))) // Harmful
+                        return true;
+            }
 #endif
+        }
     }
 
     return false;
