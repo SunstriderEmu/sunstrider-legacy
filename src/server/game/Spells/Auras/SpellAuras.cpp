@@ -797,8 +797,6 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
 
     SpellInfo const * procSpell = eventInfo.GetSpellInfo();
     Aura* triggeredByAura = aurApp->GetBase();
-    Item* castItem = triggeredByAura->GetCastItemGUID() && aurApp->GetBase()->GetCaster()->GetTypeId() == TYPEID_PLAYER
-        ? (aurApp->GetBase()->GetCaster()->ToPlayer())->GetItemByGuid(triggeredByAura->GetCastItemGUID()) : nullptr;
     SpellInfo const* dummySpell = aurApp->GetBase()->GetSpellInfo();
 
     if(aurApp->GetBase()->GetSpellInfo()->HasAuraEffect(SPELL_AURA_DUMMY)
@@ -968,56 +966,6 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
             }
             break;
         }
-        case SPELLFAMILY_SHAMAN:
-        {
-            switch (dummySpell->Id)
-            {
-            // Windfury Weapon (Passive) 1-5 Ranks
-            case 33757:
-            {
-                if (triggerCaster->GetTypeId() != TYPEID_PLAYER)
-                    return false;
-
-                if (!castItem || !castItem->IsEquipped())
-                    return false;
-
-                if (triggeredByAura && castItem->GetGUID() != triggeredByAura->GetCastItemGUID())
-                    return false;
-
-                return true;
-            }
-            // Shaman Tier 6 Trinket
-            case 40463:
-            {
-                if (!procSpell)
-                    return false;
-
-                float chance = 0.0f;
-                if (procSpell->SpellFamilyFlags & 0x0000000000000001LL)
-                    chance = 15.f;
-                else if (procSpell->SpellFamilyFlags & 0x0000000000000080LL)
-                    chance = 10.f;
-                else if (procSpell->SpellFamilyFlags & 0x0000001000000000LL)
-                    chance = 50.f;
-                else
-                    return false;
-
-                if (!roll_chance_f(chance))
-                    return false;
-                break;
-            }
-            }
-
-            // Lightning Overload
-            if (dummySpell->SpellIconID == 2018)            // only this spell have SpellFamily Shaman SpellIconID == 2018 and dummy aura
-            {
-                if (!procSpell || triggerCaster->GetTypeId() != TYPEID_PLAYER || !triggerTarget)
-                    return false;
-
-                return true;
-            }
-            break;
-        }
         default:
             break;
         }
@@ -1109,7 +1057,7 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
         {
             switch (procSpell->Id)
             {
-                // Enlightenment (trigger only from mana cost spells)
+            // Enlightenment (trigger only from mana cost spells)
             case 35095:
             {
                 if ((procSpell->PowerType != POWER_MANA) || (procSpell->ManaCost == 0 && procSpell->ManaCostPercentage == 0 && procSpell->ManaCostPerlevel == 0))

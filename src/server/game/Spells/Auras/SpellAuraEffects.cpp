@@ -6363,7 +6363,6 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
         SpellInfo const * procSpell = eventInfo.GetSpellInfo();
         AuraEffect* triggeredByAura = this;
         uint32 damage = eventInfo.GetDamageInfo() ? eventInfo.GetDamageInfo()->GetDamage() : 0;
-        uint8 effIndex = triggeredByAura->GetEffIndex();
         int32 triggerAmount = triggeredByAura->GetAmount();
 
         switch (GetAuraType())
@@ -6642,197 +6641,6 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
                     }
                     break;
                 }
-                case SPELLFAMILY_SHAMAN:
-                {
-                    switch (GetSpellInfo()->Id)
-                    {
-                    // Totemic Power (The Earthshatterer set)
-                    case 28823:
-                    {
-                        if (!triggerTarget)
-                            return;
-
-                        // Set class defined buff
-                        switch (triggerTarget->GetClass())
-                        {
-                        case CLASS_PALADIN:
-                        case CLASS_PRIEST:
-                        case CLASS_SHAMAN:
-                        case CLASS_DRUID:
-                            triggered_spell_id = 28824;     // Increases the friendly target's mana regeneration by $s1 per 5 sec. for $d.
-                            break;
-                        case CLASS_MAGE:
-                        case CLASS_WARLOCK:
-                            triggered_spell_id = 28825;     // Increases the friendly target's spell damage and healing by up to $s1 for $d.
-                            break;
-                        case CLASS_HUNTER:
-                        case CLASS_ROGUE:
-                            triggered_spell_id = 28826;     // Increases the friendly target's attack power by $s1 for $d.
-                            break;
-                        case CLASS_WARRIOR:
-                            triggered_spell_id = 28827;     // Increases the friendly target's armor
-                            break;
-                        default:
-                            return;
-                        }
-                        break;
-                    }
-                    // Lesser Healing Wave (Totem of Flowing Water Relic)
-                    case 28849:
-                    {
-                        triggerTarget = triggerCaster;
-                        triggered_spell_id = 28850;
-                        break;
-                    }
-                    // Windfury Weapon (Passive) 1-5 Ranks
-                    case 33757:
-                    {
-                        uint32 spellId;
-                        switch (castItem->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
-                        {
-                        case 283: spellId = 33757; break;   //1 Rank
-                        case 284: spellId = 33756; break;   //2 Rank
-                        case 525: spellId = 33755; break;   //3 Rank
-                        case 1669:spellId = 33754; break;   //4 Rank
-                        case 2636:spellId = 33727; break;   //5 Rank
-                        default:
-                        {
-                            TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non handled item enchantment (rank?) %u for spell id: %u (Windfury)",
-                                castItem->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)), GetSpellInfo()->Id);
-                            return;
-                        }
-                        }
-
-                        SpellInfo const* windfurySpellEntry = sSpellMgr->GetSpellInfo(spellId);
-                        if (!windfurySpellEntry)
-                        {
-                            TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non existed spell id: %u (Windfury)", spellId);
-                            return;
-                        }
-
-                        int32 extra_attack_power = triggerCaster->CalculateSpellDamage(triggerTarget, windfurySpellEntry, 0, &windfurySpellEntry->Effects[0].BasePoints);
-
-                        // Off-Hand case
-                        if (castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
-                        {
-                            // Value gained from additional AP
-                            basepoints0 = int32(extra_attack_power / 14.0f * triggerCaster->GetAttackTime(OFF_ATTACK) / 1000 / 2);
-                            triggered_spell_id = 33750;
-                        }
-                        // Main-Hand case
-                        else
-                        {
-                            // Value gained from additional AP
-                            basepoints0 = int32(extra_attack_power / 14.0f * triggerCaster->GetAttackTime(BASE_ATTACK) / 1000);
-                            triggered_spell_id = 25504;
-                        }
-
-                        // Attack Twice
-                        for (uint32 i = 0; i < 2; ++i)
-                        {
-                            CastSpellExtraArgs args;
-                            args.TriggerFlags = TRIGGERED_FULL_MASK;
-                            args.AddSpellBP0(int32(basepoints0));
-                            args.SetTriggeringAura(triggeredByAura);
-                            args.SetCastItem(castItem);
-                            triggerCaster->CastSpell(triggerTarget, triggered_spell_id, args);
-                        }
-
-                        return;
-                    }
-                    // Shaman Tier 6 Trinket
-                    case 40463:
-                    {
-                        if (!procSpell)
-                            return;
-
-                        if (procSpell->SpellFamilyFlags & 0x0000000000000001LL)
-                            triggered_spell_id = 40465;         // Lightning Bolt
-                        else if (procSpell->SpellFamilyFlags & 0x0000000000000080LL)
-                            triggered_spell_id = 40465;         // Lesser Healing Wave
-                        else if (procSpell->SpellFamilyFlags & 0x0000001000000000LL)
-                            triggered_spell_id = 40466;         // Stormstrike
-                        else
-                            return;
-
-                        triggerTarget = triggerCaster;
-                        break;
-                    }
-                    }
-
-                    // Earth Shield
-                    if (GetSpellInfo()->SpellFamilyFlags == 0x40000000000LL)
-                    {
-                        // heal
-                        triggerTarget = triggerCaster;
-                        basepoints0 = triggeredByAura->GetAmount();
-                        triggered_spell_id = 379;
-                        break;
-                    }
-                    // Lightning Overload
-                    if (GetSpellInfo()->SpellIconID == 2018)            // only this spell have SpellFamily Shaman SpellIconID == 2018 and dummy aura
-                    {
-                        if (!procSpell)
-                            return;
-
-                        uint32 spellId = 0;
-                        // Every Lightning Bolt and Chain Lightning spell have duplicate vs half damage and zero cost
-                        switch (procSpell->Id)
-                        {
-                            // Lightning Bolt
-                        case   403: spellId = 45284; break;     // Rank  1
-                        case   529: spellId = 45286; break;     // Rank  2
-                        case   548: spellId = 45287; break;     // Rank  3
-                        case   915: spellId = 45288; break;     // Rank  4
-                        case   943: spellId = 45289; break;     // Rank  5
-                        case  6041: spellId = 45290; break;     // Rank  6
-                        case 10391: spellId = 45291; break;     // Rank  7
-                        case 10392: spellId = 45292; break;     // Rank  8
-                        case 15207: spellId = 45293; break;     // Rank  9
-                        case 15208: spellId = 45294; break;     // Rank 10
-                        case 25448: spellId = 45295; break;     // Rank 11
-                        case 25449: spellId = 45296; break;     // Rank 12
-                                                                // Chain Lightning
-                        case   421: spellId = 45297; break;     // Rank  1
-                        case   930: spellId = 45298; break;     // Rank  2
-                        case  2860: spellId = 45299; break;     // Rank  3
-                        case 10605: spellId = 45300; break;     // Rank  4
-                        case 25439: spellId = 45301; break;     // Rank  5
-                        case 25442: spellId = 45302; break;     // Rank  6
-                        default:
-                            TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non handled spell id: %u (LO)", procSpell->Id);
-                            return;
-                        }
-                        // No thread generated mod
-                        auto mod = new SpellModifier(GetBase());
-                        mod->op = SPELLMOD_THREAT;
-                        mod->value = -100;
-                        mod->type = SPELLMOD_PCT;
-                        mod->spellId = GetSpellInfo()->Id;
-                        mod->mask = 0x0000000000000003LL;
-                        (triggerCaster->ToPlayer())->AddSpellMod(mod, true);
-
-                        // Remove cooldown (Chain Lightning - have Category Recovery time)
-                        if (procSpell->SpellFamilyFlags & 0x0000000000000002LL)
-                            (triggerCaster->ToPlayer())->RemoveSpellCooldown(spellId);
-
-                        // Hmmm.. in most case spells already set half basepoints but...
-                        // Lightning Bolt (2-10 rank) have full basepoint and half bonus from level
-                        // As on wiki:
-                        // BUG: Rank 2 to 10 (and maybe 11) of Lightning Bolt will proc another Bolt with FULL damage (not halved). This bug is known and will probably be fixed soon.
-                        // So - no add changes :)
-                        CastSpellExtraArgs args;
-                        args.TriggerFlags = TRIGGERED_FULL_MASK;
-                        args.SetTriggeringAura(triggeredByAura);
-                        args.SetCastItem(castItem);
-                        triggerCaster->CastSpell(triggerTarget, spellId, args);
-
-                        (triggerCaster->ToPlayer())->AddSpellMod(mod, false);
-
-                        return;
-                    }
-                    break;
-                }
                 case SPELLFAMILY_POTION:
                 {
                     if (GetSpellInfo()->Id == 17619)
@@ -6932,40 +6740,11 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
                         }
                         break;
                     }
-                    case SPELLFAMILY_SHAMAN:
-                    {
-                        if (auraSpellInfo->SpellIconID == 2013) //Nature's Guardian
-                        {
-                            // Check health condition - should drop to less 30% (damage deal after this!)
-                            if (!(10 * (int32(triggerCaster->GetHealth() - damage)) < 3 * triggerCaster->GetMaxHealth()))
-                                return;
-
-                            if (triggerTarget && triggerTarget->IsAlive())
-                                triggerTarget->GetThreatManager().ModifyThreatByPercent(triggerCaster, -10);
-
-                            basepoints0 = triggerAmount * triggerCaster->GetMaxHealth() / 100;
-                            triggered_spell_id = 31616;
-                            triggerTarget = triggerCaster;
-                        }
-                        break;
-                    }
                     // default
                     default:
                         break;
                     }
                 }
-
-                switch (triggered_spell_id)
-                {
-                    // Shamanistic Rage triggered spell
-                    case 30824:
-                    {
-                        basepoints0 = int32(triggerCaster->GetTotalAttackPowerValue(BASE_ATTACK, triggerTarget) * triggerAmount / 100);
-                        triggered_spell_id = 30824;
-                        break;
-                    }
-                }
-
             }
         }
     }
