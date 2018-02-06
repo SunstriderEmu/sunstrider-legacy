@@ -6012,9 +6012,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
         if (spellProto->Id == 12654)
             return pdamage;
         break;
-    case SPELLFAMILY_PALADIN:
-        if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && spellProto->SpellIconID == 25 && spellProto->HasAttribute(SPELL_ATTR4_UNK23))
-            return pdamage;
     }
 
     if(!spellProto || !victim || damagetype == DIRECT_DAMAGE )

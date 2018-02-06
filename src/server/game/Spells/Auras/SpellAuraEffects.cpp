@@ -145,8 +145,8 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS] =
     &AuraEffect::HandleAuraWaterWalk,                             //104 SPELL_AURA_WATER_WALK
     &AuraEffect::HandleAuraFeatherFall,                           //105 SPELL_AURA_FEATHER_FALL
     &AuraEffect::HandleAuraHover,                                 //106 SPELL_AURA_HOVER
-    &AuraEffect::HandleNoImmediateEffect,                         //107 SPELL_AURA_ADD_FLAT_MODIFIER
-    &AuraEffect::HandleNoImmediateEffect,                         //108 SPELL_AURA_ADD_PCT_MODIFIER
+    &AuraEffect::HandleNoImmediateEffect,                         //107 SPELL_AURA_ADD_FLAT_MODIFIER implemented in AuraEffect::CalculateSpellMod()
+    &AuraEffect::HandleNoImmediateEffect,                         //108 SPELL_AURA_ADD_PCT_MODIFIER implemented in AuraEffect::CalculateSpellMod()
     &AuraEffect::HandleNoImmediateEffect,                         //109 SPELL_AURA_ADD_TARGET_TRIGGER
     &AuraEffect::HandleModPowerRegenPCT,                          //110 SPELL_AURA_MOD_POWER_REGEN_PERCENT implemented in Player::Regenerate, Creature::Regenerate
     &AuraEffect::HandleNoImmediateEffect,                         //111 SPELL_AURA_ADD_CASTER_HIT_TRIGGER NOT IMPLEMENTED
@@ -6368,833 +6368,605 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
 
         switch (GetAuraType())
         {
-        case SPELL_AURA_DUMMY: 
-        case SPELL_AURA_MANA_SHIELD: 
-        {
-            //old HandleDummyAuraProc
-            switch (GetSpellInfo()->SpellFamilyName)
+            case SPELL_AURA_DUMMY: 
+            case SPELL_AURA_MANA_SHIELD: 
             {
-            case SPELLFAMILY_GENERIC:
-            {
-                switch (GetSpellInfo()->Id)
+                //old HandleDummyAuraProc
+                switch (GetSpellInfo()->SpellFamilyName)
                 {
-                // Eye of Eye
-                case 9799:
-                case 25988:
+                case SPELLFAMILY_GENERIC:
                 {
-                    // return damage % to attacker but < 50% own total health
-                    basepoints0 = triggeredByAura->GetAmount()*int32(damage) / 100;
-                    if (basepoints0 > triggerCaster->GetMaxHealth() / 2)
-                        basepoints0 = triggerCaster->GetMaxHealth() / 2;
-
-                    triggered_spell_id = 25997;
-                    break;
-                }
-                // Sweeping Strikes
-                case 12328:
-                case 18765:
-                case 35429:
-                {
-                    triggerTarget = triggerCaster->SelectNearbyTarget();
-                    if (!triggerTarget)
-                        return;
-
-                    triggered_spell_id = 26654;
-                    basepoints0 = damage;
-                    break;
-                }
-                // Unstable Power
-                case 24658:
-                {
-                    // Need remove one 24659 aura
-                    triggerCaster->RemoveSingleAuraFromStack(24659);
-                    return;
-                }
-                // Restless Strength
-                case 24661:
-                {
-                    // Need remove one 24662 aura
-                    triggerCaster->RemoveSingleAuraFromStack(24662);
-                    return;
-                }
-                // Adaptive Warding (Frostfire Regalia set)
-                case 28764:
-                {
-                    switch (GetFirstSchoolInMask(procSpell->GetSchoolMask()))
+                    switch (GetSpellInfo()->Id)
                     {
-                    case SPELL_SCHOOL_FIRE:   triggered_spell_id = 28765; break;
-                    case SPELL_SCHOOL_NATURE: triggered_spell_id = 28768; break;
-                    case SPELL_SCHOOL_FROST:  triggered_spell_id = 28766; break;
-                    case SPELL_SCHOOL_SHADOW: triggered_spell_id = 28769; break;
-                    case SPELL_SCHOOL_ARCANE: triggered_spell_id = 28770; break;
-                    default:
-                        return;
-                    }
-
-                    triggerTarget = triggerCaster;
-                    break;
-                }
-                // Obsidian Armor (Justice Bearer`s Pauldrons shoulder)
-                case 27539:
-                {
-                    switch (GetFirstSchoolInMask(procSpell->GetSchoolMask()))
+                    // Eye of Eye
+                    case 9799:
+                    case 25988:
                     {
-                    case SPELL_SCHOOL_NORMAL:
-                        return;                   // ignore
-                    case SPELL_SCHOOL_HOLY:   triggered_spell_id = 27536; break;
-                    case SPELL_SCHOOL_FIRE:   triggered_spell_id = 27533; break;
-                    case SPELL_SCHOOL_NATURE: triggered_spell_id = 27538; break;
-                    case SPELL_SCHOOL_FROST:  triggered_spell_id = 27534; break;
-                    case SPELL_SCHOOL_SHADOW: triggered_spell_id = 27535; break;
-                    case SPELL_SCHOOL_ARCANE: triggered_spell_id = 27540; break;
-                    default:
-                        return;
-                    }
+                        // return damage % to attacker but < 50% own total health
+                        basepoints0 = triggeredByAura->GetAmount()*int32(damage) / 100;
+                        if (basepoints0 > triggerCaster->GetMaxHealth() / 2)
+                            basepoints0 = triggerCaster->GetMaxHealth() / 2;
 
-                    triggerTarget = triggerCaster;
-                    break;
-                }
-                // Mana Leech (Passive) (Priest Pet Aura)
-                case 28305:
-                {
-                    // Cast on owner
-                    triggerTarget = triggerCaster;
-                    if (!triggerTarget)
-                        return;
-
-                    basepoints0 = int32(damage * 2.5f); // The mana gained from Shadowfiends' attack is 250% of the damage dealt by the fiend. (Making the formula [Dmg dealt*2.5])
-                    triggered_spell_id = 34650; // Mana Leech (energize)
-                    break;
-                }
-                // Mark of Malice
-                case 33493:
-                {
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 33494;
-                    break;
-                }
-                // Twisted Reflection (boss spell)
-                case 21063:
-                    triggered_spell_id = 21064;
-                    break;
-                // Vampiric Aura (boss spell)
-                case 38196:
-                {
-                    basepoints0 = 3 * damage;               // 300%
-                    if (basepoints0 < 0)
-                        return;
-
-                    triggered_spell_id = 31285;
-                    triggerTarget = triggerCaster;
-                    break;
-                }
-                // Aura of Madness (Darkmoon Card: Madness trinket)
-                //=====================================================
-                // 39511 Sociopath: +35 strength (Paladin, Rogue, Druid, Warrior)
-                // 40997 Delusional: +70 attack power (Rogue, Hunter, Paladin, Warrior, Druid)
-                // 40998 Kleptomania: +35 agility (Warrior, Rogue, Paladin, Hunter, Druid)
-                // 40999 Megalomania: +41 damage/healing (Druid, Shaman, Priest, Warlock, Mage, Paladin)
-                // 41002 Paranoia: +35 spell/melee/ranged crit strike rating (All classes)
-                // 41005 Manic: +35 haste (spell, melee and ranged) (All classes)
-                // 41009 Narcissism: +35 intellect (Druid, Shaman, Priest, Warlock, Mage, Paladin, Hunter)
-                // 41011 Martyr Complex: +35 stamina (All classes)
-                // 41406 Dementia: Every 5 seconds either gives you +5% damage/healing. (Druid, Shaman, Priest, Warlock, Mage, Paladin)
-                // 41409 Dementia: Every 5 seconds either gives you -5% damage/healing. (Druid, Shaman, Priest, Warlock, Mage, Paladin)
-                case 39446:
-                {
-                    // Select class defined buff
-                    switch (triggerCaster->GetClass())
-                    {
-                    case CLASS_PALADIN:                 // 39511,40997,40998,40999,41002,41005,41009,41011,41409
-                    case CLASS_DRUID:                   // 39511,40997,40998,40999,41002,41005,41009,41011,41409
-                    {
-                        uint32 RandomSpell[] = { 39511,40997,40998,40999,41002,41005,41009,41011,41409 };
-                        triggered_spell_id = RandomSpell[triggerCaster->GetMap()->irand(0, sizeof(RandomSpell) / sizeof(uint32) - 1)];
+                        triggered_spell_id = 25997;
                         break;
                     }
-                    case CLASS_ROGUE:                   // 39511,40997,40998,41002,41005,41011
-                    case CLASS_WARRIOR:                 // 39511,40997,40998,41002,41005,41011
+                    // Sweeping Strikes
+                    case 12328:
+                    case 18765:
+                    case 35429:
                     {
-                        uint32 RandomSpell[] = { 39511,40997,40998,41002,41005,41011 };
-                        triggered_spell_id = RandomSpell[triggerCaster->GetMap()->irand(0, sizeof(RandomSpell) / sizeof(uint32) - 1)];
-                        break;
-                    }
-                    case CLASS_PRIEST:                  // 40999,41002,41005,41009,41011,41406,41409
-                    case CLASS_SHAMAN:                  // 40999,41002,41005,41009,41011,41406,41409
-                    case CLASS_MAGE:                    // 40999,41002,41005,41009,41011,41406,41409
-                    case CLASS_WARLOCK:                 // 40999,41002,41005,41009,41011,41406,41409
-                    {
-                        uint32 RandomSpell[] = { 40999,41002,41005,41009,41011,41406,41409 };
-                        triggered_spell_id = RandomSpell[triggerCaster->GetMap()->irand(0, sizeof(RandomSpell) / sizeof(uint32) - 1)];
-                        break;
-                    }
-                    case CLASS_HUNTER:                  // 40997,40999,41002,41005,41009,41011,41406,41409
-                    {
-                        uint32 RandomSpell[] = { 40997,40999,41002,41005,41009,41011,41406,41409 };
-                        triggered_spell_id = RandomSpell[triggerCaster->GetMap()->irand(0, sizeof(RandomSpell) / sizeof(uint32) - 1)];
-                        break;
-                    }
-                    default:
-                        return;
-                    }
-
-                    triggerTarget = triggerCaster;
-                    if (roll_chance_i(10))
-                        (triggerCaster->ToPlayer())->Say("This is Madness!", LANG_UNIVERSAL);
-                    break;
-                }
-                /*
-                // TODO: need find item for aura and triggered spells
-                // Sunwell Exalted Caster Neck (??? neck)
-                // cast ??? Light's Wrath if Exalted by Aldor
-                // cast ??? Arcane Bolt if Exalted by Scryers*/
-
-                case 45481:
-                {
-                    // Get Aldor reputation rank
-                    if ((triggerCaster->ToPlayer())->GetReputationRank(932) == REP_EXALTED)
-                    {
-                        triggerTarget = triggerCaster;
-                        triggered_spell_id = 45479;
-                        break;
-                    }
-                    // Get Scryers reputation rank
-                    if ((triggerCaster->ToPlayer())->GetReputationRank(934) == REP_EXALTED)
-                    {
-                        if (triggerCaster->IsFriendlyTo(triggerTarget))
+                        triggerTarget = triggerCaster->SelectNearbyTarget();
+                        if (!triggerTarget)
                             return;
 
-                        triggered_spell_id = 45429;
+                        triggered_spell_id = 26654;
+                        basepoints0 = damage;
                         break;
                     }
-                    return;
-                }
-                // Sunwell Exalted Melee Neck (Shattered Sun Pendant of Might neck)
-                // cast 45480 Light's Strength if Exalted by Aldor
-                // cast 45428 Arcane Strike if Exalted by Scryers
-                case 45482:
-                {
-                    if (triggerCaster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    // Get Aldor reputation rank
-                    if ((triggerCaster->ToPlayer())->GetReputationRank(932) == REP_EXALTED)
+                    // Unstable Power
+                    case 24658:
                     {
-                        triggerTarget = triggerCaster;
-                        triggered_spell_id = 45480;
-                        break;
-                    }
-                    // Get Scryers reputation rank
-                    if ((triggerCaster->ToPlayer())->GetReputationRank(934) == REP_EXALTED)
-                    {
-                        triggered_spell_id = 45428;
-                        break;
-                    }
-                    return;
-                }
-                // Sunwell Exalted Tank Neck (Shattered Sun Pendant of Resolve neck)
-                // cast 45431 Arcane Insight if Exalted by Aldor
-                // cast 45432 Light's Ward if Exalted by Scryers
-                case 45483:
-                {
-                    if (triggerCaster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    // Get Aldor reputation rank
-                    if ((triggerCaster->ToPlayer())->GetReputationRank(932) == REP_EXALTED)
-                    {
-                        triggerTarget = triggerCaster;
-                        triggered_spell_id = 45432;
-                        break;
-                    }
-                    // Get Scryers reputation rank
-                    if ((triggerCaster->ToPlayer())->GetReputationRank(934) == REP_EXALTED)
-                    {
-                        triggerTarget = triggerCaster;
-                        triggered_spell_id = 45431;
-                        break;
-                    }
-                    return;
-                }
-                // Sunwell Exalted Healer Neck (Shattered Sun Pendant of Restoration neck)
-                // cast 45478 Light's Salvation if Exalted by Aldor
-                // cast 45430 Arcane Surge if Exalted by Scryers
-                case 45484:
-                {
-                    if (triggerCaster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    // Get Aldor reputation rank
-                    if ((triggerCaster->ToPlayer())->GetReputationRank(932) == REP_EXALTED)
-                    {
-                        triggerTarget = triggerCaster;
-                        triggered_spell_id = 45478;
-                        break;
-                    }
-                    // Get Scryers reputation rank
-                    if ((triggerCaster->ToPlayer())->GetReputationRank(934) == REP_EXALTED)
-                    {
-                        triggered_spell_id = 45430;
-                        break;
-                    }
-                    return;
-                }
-                }
-                break;
-            }
-            case SPELLFAMILY_PALADIN:
-            {
-                // Seal of Righteousness - melee proc dummy
-                if (GetSpellInfo()->SpellFamilyFlags & 0x000000008000000LL && triggeredByAura->GetEffIndex() == 0)
-                {
-                    if (triggerCaster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    uint32 spellId;
-                    switch (triggeredByAura->GetId())
-                    {
-                    case 21084: spellId = 25742; break;     // Rank 1
-                    case 20287: spellId = 25740; break;     // Rank 2
-                    case 20288: spellId = 25739; break;     // Rank 3
-                    case 20289: spellId = 25738; break;     // Rank 4
-                    case 20290: spellId = 25737; break;     // Rank 5
-                    case 20291: spellId = 25736; break;     // Rank 6
-                    case 20292: spellId = 25735; break;     // Rank 7
-                    case 20293: spellId = 25713; break;     // Rank 8
-                    case 27155: spellId = 27156; break;     // Rank 9
-                    default:
-                        TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non handled possibly SoR (Id = %u)", triggeredByAura->GetId());
+                        // Need remove one 24659 aura
+                        triggerCaster->RemoveSingleAuraFromStack(24659);
                         return;
                     }
-                    Item *item = (triggerCaster->ToPlayer())->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                    float speed = (item ? item->GetTemplate()->Delay : BASE_ATTACK_TIME) / 1000.0f;
-
-                    float damageBasePoints;
-                    if (item && item->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
-                        // two hand weapon
-                        damageBasePoints = 1.20f*triggeredByAura->GetAmount() * 1.2f * 1.03f * speed / 100.0f + 1;
-                    else
-                        // one hand weapon/no weapon
-                        damageBasePoints = 0.85f*ceil(triggeredByAura->GetAmount() * 1.2f * 1.03f * speed / 100.0f) - 1;
-
-                    int32 damagePoint = int32(damageBasePoints + 0.03f * (triggerCaster->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE) + triggerCaster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE)) / 2.0f) + 1;
-
-                    // apply damage bonuses manually
-                    if (damagePoint >= 0)
+                    // Restless Strength
+                    case 24661:
                     {
-                        damagePoint = triggerCaster->SpellDamageBonusDone(triggerTarget, GetSpellInfo(), damagePoint, SPELL_DIRECT_DAMAGE);
-                        damagePoint = triggerTarget->SpellDamageBonusTaken(triggerCaster, GetSpellInfo(), damagePoint, SPELL_DIRECT_DAMAGE);
-                    }
-
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.AddSpellBP0(int32(damagePoint));
-                    args.SetTriggeringAura(triggeredByAura);
-                    triggerCaster->CastSpell(triggerTarget, spellId, args);
-                    return;                                // no hidden cooldown
-                }
-                // Seal of Blood do damage trigger
-                if (GetSpellInfo()->SpellFamilyFlags & 0x0000040000000000LL)
-                {
-                    switch (triggeredByAura->GetEffIndex())
-                    {
-                    case 0:
-                        triggered_spell_id = 31893;
-                        break;
-                    case 1:
-                    {
-                        // damage
-                        damage += triggerCaster->CalculateDamage(BASE_ATTACK, false, true) * 35 / 100; // add spell damage from prev effect (35%)
-                        basepoints0 = triggeredByAura->GetAmount() * damage / 100;
-
-                        triggerTarget = triggerCaster;
-
-                        triggered_spell_id = 32221;
-                        break;
-                    }
-                    }
-                }
-
-                switch (GetSpellInfo()->Id)
-                {
-                // Holy Power (Redemption Armor set)
-                case 28789:
-                {
-                    if (!triggerTarget)
-                        return;
-
-                    // Set class defined buff
-                    switch (triggerTarget->GetClass())
-                    {
-                    case CLASS_PALADIN:
-                    case CLASS_PRIEST:
-                    case CLASS_SHAMAN:
-                    case CLASS_DRUID:
-                        triggered_spell_id = 28795;     // Increases the friendly target's mana regeneration by $s1 per 5 sec. for $d.
-                        break;
-                    case CLASS_MAGE:
-                    case CLASS_WARLOCK:
-                        triggered_spell_id = 28793;     // Increases the friendly target's spell damage and healing by up to $s1 for $d.
-                        break;
-                    case CLASS_HUNTER:
-                    case CLASS_ROGUE:
-                        triggered_spell_id = 28791;     // Increases the friendly target's attack power by $s1 for $d.
-                        break;
-                    case CLASS_WARRIOR:
-                        triggered_spell_id = 28790;     // Increases the friendly target's armor
-                        break;
-                    default:
+                        // Need remove one 24662 aura
+                        triggerCaster->RemoveSingleAuraFromStack(24662);
                         return;
                     }
-                    break;
-                }
-                //Seal of Vengeance
-                case 31801:
-                {
-                    if (effIndex != 0)                       // effect 1,2 used by seal unleashing code
-                        return;
-
-                    triggered_spell_id = 31803;
-                    // On target with 5 stacks of Holy Vengeance direct damage is done
-                    auto const& auras = triggerTarget->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
-
-                    for (auto aura : auras)
+                    // Adaptive Warding (Frostfire Regalia set)
+                    case 28764:
                     {
-                        if (aura->GetId() == 31803 && aura->GetCasterGUID() == triggerCaster->GetGUID())
+                        switch (GetFirstSchoolInMask(procSpell->GetSchoolMask()))
                         {
-                            // 10% of tick done as direct damage
-                            if (aura->GetBase()->GetStackAmount() == 5)
-                            {
-                                int32 directDamage = triggerCaster->SpellDamageBonusDone(triggerTarget, aura->GetSpellInfo(), aura->GetAmount(), DOT) / 2;
-                                damage = triggerTarget->SpellDamageBonusTaken(triggerCaster, aura->GetSpellInfo(), directDamage, DOT) / 2;
-                                CastSpellExtraArgs args;
-                                args.TriggerFlags = TRIGGERED_FULL_MASK;
-                                args.AddSpellBP0(int32(directDamage));
-                                args.SetTriggeringAura(triggeredByAura);
-                                triggerCaster->CastSpell(triggerTarget, 42463, args);
-                            }
+                        case SPELL_SCHOOL_FIRE:   triggered_spell_id = 28765; break;
+                        case SPELL_SCHOOL_NATURE: triggered_spell_id = 28768; break;
+                        case SPELL_SCHOOL_FROST:  triggered_spell_id = 28766; break;
+                        case SPELL_SCHOOL_SHADOW: triggered_spell_id = 28769; break;
+                        case SPELL_SCHOOL_ARCANE: triggered_spell_id = 28770; break;
+                        default:
+                            return;
+                        }
+
+                        triggerTarget = triggerCaster;
+                        break;
+                    }
+                    // Obsidian Armor (Justice Bearer`s Pauldrons shoulder)
+                    case 27539:
+                    {
+                        switch (GetFirstSchoolInMask(procSpell->GetSchoolMask()))
+                        {
+                        case SPELL_SCHOOL_NORMAL:
+                            return;                   // ignore
+                        case SPELL_SCHOOL_HOLY:   triggered_spell_id = 27536; break;
+                        case SPELL_SCHOOL_FIRE:   triggered_spell_id = 27533; break;
+                        case SPELL_SCHOOL_NATURE: triggered_spell_id = 27538; break;
+                        case SPELL_SCHOOL_FROST:  triggered_spell_id = 27534; break;
+                        case SPELL_SCHOOL_SHADOW: triggered_spell_id = 27535; break;
+                        case SPELL_SCHOOL_ARCANE: triggered_spell_id = 27540; break;
+                        default:
+                            return;
+                        }
+
+                        triggerTarget = triggerCaster;
+                        break;
+                    }
+                    // Mana Leech (Passive) (Priest Pet Aura)
+                    case 28305:
+                    {
+                        // Cast on owner
+                        triggerTarget = triggerCaster;
+                        if (!triggerTarget)
+                            return;
+
+                        basepoints0 = int32(damage * 2.5f); // The mana gained from Shadowfiends' attack is 250% of the damage dealt by the fiend. (Making the formula [Dmg dealt*2.5])
+                        triggered_spell_id = 34650; // Mana Leech (energize)
+                        break;
+                    }
+                    // Mark of Malice
+                    case 33493:
+                    {
+                        triggerTarget = triggerCaster;
+                        triggered_spell_id = 33494;
+                        break;
+                    }
+                    // Twisted Reflection (boss spell)
+                    case 21063:
+                        triggered_spell_id = 21064;
+                        break;
+                    // Vampiric Aura (boss spell)
+                    case 38196:
+                    {
+                        basepoints0 = 3 * damage;               // 300%
+                        if (basepoints0 < 0)
+                            return;
+
+                        triggered_spell_id = 31285;
+                        triggerTarget = triggerCaster;
+                        break;
+                    }
+                    // Aura of Madness (Darkmoon Card: Madness trinket)
+                    //=====================================================
+                    // 39511 Sociopath: +35 strength (Paladin, Rogue, Druid, Warrior)
+                    // 40997 Delusional: +70 attack power (Rogue, Hunter, Paladin, Warrior, Druid)
+                    // 40998 Kleptomania: +35 agility (Warrior, Rogue, Paladin, Hunter, Druid)
+                    // 40999 Megalomania: +41 damage/healing (Druid, Shaman, Priest, Warlock, Mage, Paladin)
+                    // 41002 Paranoia: +35 spell/melee/ranged crit strike rating (All classes)
+                    // 41005 Manic: +35 haste (spell, melee and ranged) (All classes)
+                    // 41009 Narcissism: +35 intellect (Druid, Shaman, Priest, Warlock, Mage, Paladin, Hunter)
+                    // 41011 Martyr Complex: +35 stamina (All classes)
+                    // 41406 Dementia: Every 5 seconds either gives you +5% damage/healing. (Druid, Shaman, Priest, Warlock, Mage, Paladin)
+                    // 41409 Dementia: Every 5 seconds either gives you -5% damage/healing. (Druid, Shaman, Priest, Warlock, Mage, Paladin)
+                    case 39446:
+                    {
+                        // Select class defined buff
+                        switch (triggerCaster->GetClass())
+                        {
+                        case CLASS_PALADIN:                 // 39511,40997,40998,40999,41002,41005,41009,41011,41409
+                        case CLASS_DRUID:                   // 39511,40997,40998,40999,41002,41005,41009,41011,41409
+                        {
+                            uint32 RandomSpell[] = { 39511,40997,40998,40999,41002,41005,41009,41011,41409 };
+                            triggered_spell_id = RandomSpell[triggerCaster->GetMap()->irand(0, sizeof(RandomSpell) / sizeof(uint32) - 1)];
                             break;
                         }
-                    }
-                    break;
-                }
-                // Spiritual Att.
-                case 31785:
-                case 33776:
-                {
-                    // heal amount
-                    basepoints0 = triggeredByAura->GetAmount()*std::min(damage, triggerCaster->GetMaxHealth() - triggerCaster->GetHealth()) / 100;
-                    triggerTarget = triggerCaster;
-
-                    if (basepoints0)
-                        triggered_spell_id = 31786;
-                    break;
-                }
-                // Paladin Tier 6 Trinket (Ashtongue Talisman of Zeal)
-                case 40470:
-                {
-                    // Flash of light/Holy light
-                    if (procSpell->SpellFamilyFlags & 0x00000000C0000000LL)
-                    {
-                        triggered_spell_id = 40471;
-                    }
-                    // Judgement
-                    else if (procSpell->SpellFamilyFlags & 0x0000000000800000LL)
-                    {
-                        triggered_spell_id = 40472;
-                    }
-                    else
-                        return;
-
-                    break;
-                }
-                }
-                break;
-            }
-            case SPELLFAMILY_SHAMAN:
-            {
-                switch (GetSpellInfo()->Id)
-                {
-                // Totemic Power (The Earthshatterer set)
-                case 28823:
-                {
-                    if (!triggerTarget)
-                        return;
-
-                    // Set class defined buff
-                    switch (triggerTarget->GetClass())
-                    {
-                    case CLASS_PALADIN:
-                    case CLASS_PRIEST:
-                    case CLASS_SHAMAN:
-                    case CLASS_DRUID:
-                        triggered_spell_id = 28824;     // Increases the friendly target's mana regeneration by $s1 per 5 sec. for $d.
-                        break;
-                    case CLASS_MAGE:
-                    case CLASS_WARLOCK:
-                        triggered_spell_id = 28825;     // Increases the friendly target's spell damage and healing by up to $s1 for $d.
-                        break;
-                    case CLASS_HUNTER:
-                    case CLASS_ROGUE:
-                        triggered_spell_id = 28826;     // Increases the friendly target's attack power by $s1 for $d.
-                        break;
-                    case CLASS_WARRIOR:
-                        triggered_spell_id = 28827;     // Increases the friendly target's armor
-                        break;
-                    default:
-                        return;
-                    }
-                    break;
-                }
-                // Lesser Healing Wave (Totem of Flowing Water Relic)
-                case 28849:
-                {
-                    triggerTarget = triggerCaster;
-                    triggered_spell_id = 28850;
-                    break;
-                }
-                // Windfury Weapon (Passive) 1-5 Ranks
-                case 33757:
-                {
-                    uint32 spellId;
-                    switch (castItem->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
-                    {
-                    case 283: spellId = 33757; break;   //1 Rank
-                    case 284: spellId = 33756; break;   //2 Rank
-                    case 525: spellId = 33755; break;   //3 Rank
-                    case 1669:spellId = 33754; break;   //4 Rank
-                    case 2636:spellId = 33727; break;   //5 Rank
-                    default:
-                    {
-                        TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non handled item enchantment (rank?) %u for spell id: %u (Windfury)",
-                            castItem->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)), GetSpellInfo()->Id);
-                        return;
-                    }
-                    }
-
-                    SpellInfo const* windfurySpellEntry = sSpellMgr->GetSpellInfo(spellId);
-                    if (!windfurySpellEntry)
-                    {
-                        TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non existed spell id: %u (Windfury)", spellId);
-                        return;
-                    }
-
-                    int32 extra_attack_power = triggerCaster->CalculateSpellDamage(triggerTarget, windfurySpellEntry, 0, &windfurySpellEntry->Effects[0].BasePoints);
-
-                    // Off-Hand case
-                    if (castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
-                    {
-                        // Value gained from additional AP
-                        basepoints0 = int32(extra_attack_power / 14.0f * triggerCaster->GetAttackTime(OFF_ATTACK) / 1000 / 2);
-                        triggered_spell_id = 33750;
-                    }
-                    // Main-Hand case
-                    else
-                    {
-                        // Value gained from additional AP
-                        basepoints0 = int32(extra_attack_power / 14.0f * triggerCaster->GetAttackTime(BASE_ATTACK) / 1000);
-                        triggered_spell_id = 25504;
-                    }
-
-                    // Attack Twice
-                    for (uint32 i = 0; i < 2; ++i)
-                    {
-                        CastSpellExtraArgs args;
-                        args.TriggerFlags = TRIGGERED_FULL_MASK;
-                        args.AddSpellBP0(int32(basepoints0));
-                        args.SetTriggeringAura(triggeredByAura);
-                        args.SetCastItem(castItem);
-                        triggerCaster->CastSpell(triggerTarget, triggered_spell_id, args);
-                    }
-
-                    return;
-                }
-                // Shaman Tier 6 Trinket
-                case 40463:
-                {
-                    if (!procSpell)
-                        return;
-
-                    if (procSpell->SpellFamilyFlags & 0x0000000000000001LL)
-                        triggered_spell_id = 40465;         // Lightning Bolt
-                    else if (procSpell->SpellFamilyFlags & 0x0000000000000080LL)
-                        triggered_spell_id = 40465;         // Lesser Healing Wave
-                    else if (procSpell->SpellFamilyFlags & 0x0000001000000000LL)
-                        triggered_spell_id = 40466;         // Stormstrike
-                    else
-                        return;
-
-                    triggerTarget = triggerCaster;
-                    break;
-                }
-                }
-
-                // Earth Shield
-                if (GetSpellInfo()->SpellFamilyFlags == 0x40000000000LL)
-                {
-                    // heal
-                    triggerTarget = triggerCaster;
-                    basepoints0 = triggeredByAura->GetAmount();
-                    triggered_spell_id = 379;
-                    break;
-                }
-                // Lightning Overload
-                if (GetSpellInfo()->SpellIconID == 2018)            // only this spell have SpellFamily Shaman SpellIconID == 2018 and dummy aura
-                {
-                    if (!procSpell)
-                        return;
-
-                    uint32 spellId = 0;
-                    // Every Lightning Bolt and Chain Lightning spell have duplicate vs half damage and zero cost
-                    switch (procSpell->Id)
-                    {
-                        // Lightning Bolt
-                    case   403: spellId = 45284; break;     // Rank  1
-                    case   529: spellId = 45286; break;     // Rank  2
-                    case   548: spellId = 45287; break;     // Rank  3
-                    case   915: spellId = 45288; break;     // Rank  4
-                    case   943: spellId = 45289; break;     // Rank  5
-                    case  6041: spellId = 45290; break;     // Rank  6
-                    case 10391: spellId = 45291; break;     // Rank  7
-                    case 10392: spellId = 45292; break;     // Rank  8
-                    case 15207: spellId = 45293; break;     // Rank  9
-                    case 15208: spellId = 45294; break;     // Rank 10
-                    case 25448: spellId = 45295; break;     // Rank 11
-                    case 25449: spellId = 45296; break;     // Rank 12
-                                                            // Chain Lightning
-                    case   421: spellId = 45297; break;     // Rank  1
-                    case   930: spellId = 45298; break;     // Rank  2
-                    case  2860: spellId = 45299; break;     // Rank  3
-                    case 10605: spellId = 45300; break;     // Rank  4
-                    case 25439: spellId = 45301; break;     // Rank  5
-                    case 25442: spellId = 45302; break;     // Rank  6
-                    default:
-                        TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non handled spell id: %u (LO)", procSpell->Id);
-                        return;
-                    }
-                    // No thread generated mod
-                    auto mod = new SpellModifier(GetBase());
-                    mod->op = SPELLMOD_THREAT;
-                    mod->value = -100;
-                    mod->type = SPELLMOD_PCT;
-                    mod->spellId = GetSpellInfo()->Id;
-                    mod->mask = 0x0000000000000003LL;
-                    (triggerCaster->ToPlayer())->AddSpellMod(mod, true);
-
-                    // Remove cooldown (Chain Lightning - have Category Recovery time)
-                    if (procSpell->SpellFamilyFlags & 0x0000000000000002LL)
-                        (triggerCaster->ToPlayer())->RemoveSpellCooldown(spellId);
-
-                    // Hmmm.. in most case spells already set half basepoints but...
-                    // Lightning Bolt (2-10 rank) have full basepoint and half bonus from level
-                    // As on wiki:
-                    // BUG: Rank 2 to 10 (and maybe 11) of Lightning Bolt will proc another Bolt with FULL damage (not halved). This bug is known and will probably be fixed soon.
-                    // So - no add changes :)
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.SetTriggeringAura(triggeredByAura);
-                    args.SetCastItem(castItem);
-                    triggerCaster->CastSpell(triggerTarget, spellId, args);
-
-                    (triggerCaster->ToPlayer())->AddSpellMod(mod, false);
-
-                    return;
-                }
-                break;
-            }
-            case SPELLFAMILY_POTION:
-            {
-                if (GetSpellInfo()->Id == 17619)
-                {
-                    if (procSpell->SpellFamilyName == SPELLFAMILY_POTION)
-                    {
-                        for (uint8 i = 0; i < 3; i++)
+                        case CLASS_ROGUE:                   // 39511,40997,40998,41002,41005,41011
+                        case CLASS_WARRIOR:                 // 39511,40997,40998,41002,41005,41011
                         {
-                            if (procSpell->Effects[i].Effect == SPELL_EFFECT_HEAL)
-                            {
-                                triggered_spell_id = 21399;
-                            }
-                            else if (procSpell->Effects[i].Effect == SPELL_EFFECT_ENERGIZE)
-                            {
-                                triggered_spell_id = 21400;
-                            }
-                            else continue;
-                            basepoints0 = triggerCaster->CalculateSpellDamage(triggerCaster, procSpell, i, &procSpell->Effects[i].BasePoints) * 0.4f;
+                            uint32 RandomSpell[] = { 39511,40997,40998,41002,41005,41011 };
+                            triggered_spell_id = RandomSpell[triggerCaster->GetMap()->irand(0, sizeof(RandomSpell) / sizeof(uint32) - 1)];
+                            break;
+                        }
+                        case CLASS_PRIEST:                  // 40999,41002,41005,41009,41011,41406,41409
+                        case CLASS_SHAMAN:                  // 40999,41002,41005,41009,41011,41406,41409
+                        case CLASS_MAGE:                    // 40999,41002,41005,41009,41011,41406,41409
+                        case CLASS_WARLOCK:                 // 40999,41002,41005,41009,41011,41406,41409
+                        {
+                            uint32 RandomSpell[] = { 40999,41002,41005,41009,41011,41406,41409 };
+                            triggered_spell_id = RandomSpell[triggerCaster->GetMap()->irand(0, sizeof(RandomSpell) / sizeof(uint32) - 1)];
+                            break;
+                        }
+                        case CLASS_HUNTER:                  // 40997,40999,41002,41005,41009,41011,41406,41409
+                        {
+                            uint32 RandomSpell[] = { 40997,40999,41002,41005,41009,41011,41406,41409 };
+                            triggered_spell_id = RandomSpell[triggerCaster->GetMap()->irand(0, sizeof(RandomSpell) / sizeof(uint32) - 1)];
+                            break;
+                        }
+                        default:
+                            return;
+                        }
+
+                        triggerTarget = triggerCaster;
+                        if (roll_chance_i(10))
+                            (triggerCaster->ToPlayer())->Say("This is Madness!", LANG_UNIVERSAL);
+                        break;
+                    }
+                    /*
+                    // TODO: need find item for aura and triggered spells
+                    // Sunwell Exalted Caster Neck (??? neck)
+                    // cast ??? Light's Wrath if Exalted by Aldor
+                    // cast ??? Arcane Bolt if Exalted by Scryers*/
+
+                    case 45481:
+                    {
+                        // Get Aldor reputation rank
+                        if ((triggerCaster->ToPlayer())->GetReputationRank(932) == REP_EXALTED)
+                        {
+                            triggerTarget = triggerCaster;
+                            triggered_spell_id = 45479;
+                            break;
+                        }
+                        // Get Scryers reputation rank
+                        if ((triggerCaster->ToPlayer())->GetReputationRank(934) == REP_EXALTED)
+                        {
+                            if (triggerCaster->IsFriendlyTo(triggerTarget))
+                                return;
+
+                            triggered_spell_id = 45429;
+                            break;
+                        }
+                        return;
+                    }
+                    // Sunwell Exalted Melee Neck (Shattered Sun Pendant of Might neck)
+                    // cast 45480 Light's Strength if Exalted by Aldor
+                    // cast 45428 Arcane Strike if Exalted by Scryers
+                    case 45482:
+                    {
+                        if (triggerCaster->GetTypeId() != TYPEID_PLAYER)
+                            return;
+
+                        // Get Aldor reputation rank
+                        if ((triggerCaster->ToPlayer())->GetReputationRank(932) == REP_EXALTED)
+                        {
+                            triggerTarget = triggerCaster;
+                            triggered_spell_id = 45480;
+                            break;
+                        }
+                        // Get Scryers reputation rank
+                        if ((triggerCaster->ToPlayer())->GetReputationRank(934) == REP_EXALTED)
+                        {
+                            triggered_spell_id = 45428;
+                            break;
+                        }
+                        return;
+                    }
+                    // Sunwell Exalted Tank Neck (Shattered Sun Pendant of Resolve neck)
+                    // cast 45431 Arcane Insight if Exalted by Aldor
+                    // cast 45432 Light's Ward if Exalted by Scryers
+                    case 45483:
+                    {
+                        if (triggerCaster->GetTypeId() != TYPEID_PLAYER)
+                            return;
+
+                        // Get Aldor reputation rank
+                        if ((triggerCaster->ToPlayer())->GetReputationRank(932) == REP_EXALTED)
+                        {
+                            triggerTarget = triggerCaster;
+                            triggered_spell_id = 45432;
+                            break;
+                        }
+                        // Get Scryers reputation rank
+                        if ((triggerCaster->ToPlayer())->GetReputationRank(934) == REP_EXALTED)
+                        {
+                            triggerTarget = triggerCaster;
+                            triggered_spell_id = 45431;
+                            break;
+                        }
+                        return;
+                    }
+                    // Sunwell Exalted Healer Neck (Shattered Sun Pendant of Restoration neck)
+                    // cast 45478 Light's Salvation if Exalted by Aldor
+                    // cast 45430 Arcane Surge if Exalted by Scryers
+                    case 45484:
+                    {
+                        if (triggerCaster->GetTypeId() != TYPEID_PLAYER)
+                            return;
+
+                        // Get Aldor reputation rank
+                        if ((triggerCaster->ToPlayer())->GetReputationRank(932) == REP_EXALTED)
+                        {
+                            triggerTarget = triggerCaster;
+                            triggered_spell_id = 45478;
+                            break;
+                        }
+                        // Get Scryers reputation rank
+                        if ((triggerCaster->ToPlayer())->GetReputationRank(934) == REP_EXALTED)
+                        {
+                            triggered_spell_id = 45430;
+                            break;
+                        }
+                        return;
+                    }
+                    }
+                    break;
+                }
+                case SPELLFAMILY_SHAMAN:
+                {
+                    switch (GetSpellInfo()->Id)
+                    {
+                    // Totemic Power (The Earthshatterer set)
+                    case 28823:
+                    {
+                        if (!triggerTarget)
+                            return;
+
+                        // Set class defined buff
+                        switch (triggerTarget->GetClass())
+                        {
+                        case CLASS_PALADIN:
+                        case CLASS_PRIEST:
+                        case CLASS_SHAMAN:
+                        case CLASS_DRUID:
+                            triggered_spell_id = 28824;     // Increases the friendly target's mana regeneration by $s1 per 5 sec. for $d.
+                            break;
+                        case CLASS_MAGE:
+                        case CLASS_WARLOCK:
+                            triggered_spell_id = 28825;     // Increases the friendly target's spell damage and healing by up to $s1 for $d.
+                            break;
+                        case CLASS_HUNTER:
+                        case CLASS_ROGUE:
+                            triggered_spell_id = 28826;     // Increases the friendly target's attack power by $s1 for $d.
+                            break;
+                        case CLASS_WARRIOR:
+                            triggered_spell_id = 28827;     // Increases the friendly target's armor
+                            break;
+                        default:
+                            return;
+                        }
+                        break;
+                    }
+                    // Lesser Healing Wave (Totem of Flowing Water Relic)
+                    case 28849:
+                    {
+                        triggerTarget = triggerCaster;
+                        triggered_spell_id = 28850;
+                        break;
+                    }
+                    // Windfury Weapon (Passive) 1-5 Ranks
+                    case 33757:
+                    {
+                        uint32 spellId;
+                        switch (castItem->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
+                        {
+                        case 283: spellId = 33757; break;   //1 Rank
+                        case 284: spellId = 33756; break;   //2 Rank
+                        case 525: spellId = 33755; break;   //3 Rank
+                        case 1669:spellId = 33754; break;   //4 Rank
+                        case 2636:spellId = 33727; break;   //5 Rank
+                        default:
+                        {
+                            TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non handled item enchantment (rank?) %u for spell id: %u (Windfury)",
+                                castItem->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)), GetSpellInfo()->Id);
+                            return;
+                        }
+                        }
+
+                        SpellInfo const* windfurySpellEntry = sSpellMgr->GetSpellInfo(spellId);
+                        if (!windfurySpellEntry)
+                        {
+                            TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non existed spell id: %u (Windfury)", spellId);
+                            return;
+                        }
+
+                        int32 extra_attack_power = triggerCaster->CalculateSpellDamage(triggerTarget, windfurySpellEntry, 0, &windfurySpellEntry->Effects[0].BasePoints);
+
+                        // Off-Hand case
+                        if (castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
+                        {
+                            // Value gained from additional AP
+                            basepoints0 = int32(extra_attack_power / 14.0f * triggerCaster->GetAttackTime(OFF_ATTACK) / 1000 / 2);
+                            triggered_spell_id = 33750;
+                        }
+                        // Main-Hand case
+                        else
+                        {
+                            // Value gained from additional AP
+                            basepoints0 = int32(extra_attack_power / 14.0f * triggerCaster->GetAttackTime(BASE_ATTACK) / 1000);
+                            triggered_spell_id = 25504;
+                        }
+
+                        // Attack Twice
+                        for (uint32 i = 0; i < 2; ++i)
+                        {
                             CastSpellExtraArgs args;
                             args.TriggerFlags = TRIGGERED_FULL_MASK;
                             args.AddSpellBP0(int32(basepoints0));
                             args.SetTriggeringAura(triggeredByAura);
                             args.SetCastItem(castItem);
-                            triggerCaster->CastSpell(triggerCaster, triggered_spell_id, args);
+                            triggerCaster->CastSpell(triggerTarget, triggered_spell_id, args);
                         }
+
                         return;
                     }
-                }
-            }
-            default:
-                break;
-            }
-            break;
-        }
-        case SPELL_AURA_PROC_TRIGGER_SPELL: 
-        {
-            //old HandleProcTriggerSpell
-            SpellInfo const* auraSpellInfo = triggeredByAura->GetSpellInfo();
-
-            if (unknownTriggerSpell)
-            {
-                switch (auraSpellInfo->SpellFamilyName)
-                {
-                    //=====================================================================
-                    // Generic class
-                    // ====================================================================
-                    // .....
-                    //=====================================================================
-                case SPELLFAMILY_GENERIC:
-                    if (auraSpellInfo->Id == 43820)   // Charm of the Witch Doctor (Amani Charm of the Witch Doctor trinket)
+                    // Shaman Tier 6 Trinket
+                    case 40463:
                     {
-                        // Pct value stored in dummy
-                        basepoints0 = triggerTarget->GetCreateHealth() * auraSpellInfo->Effects[1].BasePoints / 100;
+                        if (!procSpell)
+                            return;
+
+                        if (procSpell->SpellFamilyFlags & 0x0000000000000001LL)
+                            triggered_spell_id = 40465;         // Lightning Bolt
+                        else if (procSpell->SpellFamilyFlags & 0x0000000000000080LL)
+                            triggered_spell_id = 40465;         // Lesser Healing Wave
+                        else if (procSpell->SpellFamilyFlags & 0x0000001000000000LL)
+                            triggered_spell_id = 40466;         // Stormstrike
+                        else
+                            return;
+
+                        triggerTarget = triggerCaster;
                         break;
                     }
-                    else if (auraSpellInfo->Id == 27522 || auraSpellInfo->Id == 46939)   // Black bow of the Betrayer
+                    }
+
+                    // Earth Shield
+                    if (GetSpellInfo()->SpellFamilyFlags == 0x40000000000LL)
                     {
-                        // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
-                        if (triggerCaster->IsAlive())
+                        // heal
+                        triggerTarget = triggerCaster;
+                        basepoints0 = triggeredByAura->GetAmount();
+                        triggered_spell_id = 379;
+                        break;
+                    }
+                    // Lightning Overload
+                    if (GetSpellInfo()->SpellIconID == 2018)            // only this spell have SpellFamily Shaman SpellIconID == 2018 and dummy aura
+                    {
+                        if (!procSpell)
+                            return;
+
+                        uint32 spellId = 0;
+                        // Every Lightning Bolt and Chain Lightning spell have duplicate vs half damage and zero cost
+                        switch (procSpell->Id)
                         {
-                            CastSpellExtraArgs args;
-                            args.TriggerFlags = TRIGGERED_FULL_MASK;
-                            args.SetTriggeringAura(triggeredByAura);
-                            args.SetCastItem(castItem);
-                            triggerCaster->CastSpell(triggerCaster, 29471, args);
+                            // Lightning Bolt
+                        case   403: spellId = 45284; break;     // Rank  1
+                        case   529: spellId = 45286; break;     // Rank  2
+                        case   548: spellId = 45287; break;     // Rank  3
+                        case   915: spellId = 45288; break;     // Rank  4
+                        case   943: spellId = 45289; break;     // Rank  5
+                        case  6041: spellId = 45290; break;     // Rank  6
+                        case 10391: spellId = 45291; break;     // Rank  7
+                        case 10392: spellId = 45292; break;     // Rank  8
+                        case 15207: spellId = 45293; break;     // Rank  9
+                        case 15208: spellId = 45294; break;     // Rank 10
+                        case 25448: spellId = 45295; break;     // Rank 11
+                        case 25449: spellId = 45296; break;     // Rank 12
+                                                                // Chain Lightning
+                        case   421: spellId = 45297; break;     // Rank  1
+                        case   930: spellId = 45298; break;     // Rank  2
+                        case  2860: spellId = 45299; break;     // Rank  3
+                        case 10605: spellId = 45300; break;     // Rank  4
+                        case 25439: spellId = 45301; break;     // Rank  5
+                        case 25442: spellId = 45302; break;     // Rank  6
+                        default:
+                            TC_LOG_ERROR("spell", "Unit::HandleDummyAuraProc: non handled spell id: %u (LO)", procSpell->Id);
+                            return;
                         }
-                        if (triggerTarget && triggerTarget->IsAlive()) 
+                        // No thread generated mod
+                        auto mod = new SpellModifier(GetBase());
+                        mod->op = SPELLMOD_THREAT;
+                        mod->value = -100;
+                        mod->type = SPELLMOD_PCT;
+                        mod->spellId = GetSpellInfo()->Id;
+                        mod->mask = 0x0000000000000003LL;
+                        (triggerCaster->ToPlayer())->AddSpellMod(mod, true);
+
+                        // Remove cooldown (Chain Lightning - have Category Recovery time)
+                        if (procSpell->SpellFamilyFlags & 0x0000000000000002LL)
+                            (triggerCaster->ToPlayer())->RemoveSpellCooldown(spellId);
+
+                        // Hmmm.. in most case spells already set half basepoints but...
+                        // Lightning Bolt (2-10 rank) have full basepoint and half bonus from level
+                        // As on wiki:
+                        // BUG: Rank 2 to 10 (and maybe 11) of Lightning Bolt will proc another Bolt with FULL damage (not halved). This bug is known and will probably be fixed soon.
+                        // So - no add changes :)
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.SetTriggeringAura(triggeredByAura);
+                        args.SetCastItem(castItem);
+                        triggerCaster->CastSpell(triggerTarget, spellId, args);
+
+                        (triggerCaster->ToPlayer())->AddSpellMod(mod, false);
+
+                        return;
+                    }
+                    break;
+                }
+                case SPELLFAMILY_POTION:
+                {
+                    if (GetSpellInfo()->Id == 17619)
+                    {
+                        if (procSpell->SpellFamilyName == SPELLFAMILY_POTION)
                         {
-                            if (triggerTarget->GetPowerType() == POWER_MANA && triggerTarget->GetPower(POWER_MANA) > 8)
+                            for (uint8 i = 0; i < 3; i++)
+                            {
+                                if (procSpell->Effects[i].Effect == SPELL_EFFECT_HEAL)
+                                {
+                                    triggered_spell_id = 21399;
+                                }
+                                else if (procSpell->Effects[i].Effect == SPELL_EFFECT_ENERGIZE)
+                                {
+                                    triggered_spell_id = 21400;
+                                }
+                                else continue;
+                                basepoints0 = triggerCaster->CalculateSpellDamage(triggerCaster, procSpell, i, &procSpell->Effects[i].BasePoints) * 0.4f;
+                                CastSpellExtraArgs args;
+                                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                                args.AddSpellBP0(int32(basepoints0));
+                                args.SetTriggeringAura(triggeredByAura);
+                                args.SetCastItem(castItem);
+                                triggerCaster->CastSpell(triggerCaster, triggered_spell_id, args);
+                            }
+                            return;
+                        }
+                    }
+                }
+                default:
+                    break;
+                }
+                break;
+            }
+            case SPELL_AURA_PROC_TRIGGER_SPELL: 
+            {
+                //old HandleProcTriggerSpell
+                SpellInfo const* auraSpellInfo = triggeredByAura->GetSpellInfo();
+
+                if (unknownTriggerSpell)
+                {
+                    switch (auraSpellInfo->SpellFamilyName)
+                    {
+                        //=====================================================================
+                        // Generic class
+                        // ====================================================================
+                        // .....
+                        //=====================================================================
+                    case SPELLFAMILY_GENERIC:
+                        if (auraSpellInfo->Id == 43820)   // Charm of the Witch Doctor (Amani Charm of the Witch Doctor trinket)
+                        {
+                            // Pct value stored in dummy
+                            basepoints0 = triggerTarget->GetCreateHealth() * auraSpellInfo->Effects[1].BasePoints / 100;
+                            break;
+                        }
+                        else if (auraSpellInfo->Id == 27522 || auraSpellInfo->Id == 46939)   // Black bow of the Betrayer
+                        {
+                            // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
+                            if (triggerCaster->IsAlive())
                             {
                                 CastSpellExtraArgs args;
                                 args.TriggerFlags = TRIGGERED_FULL_MASK;
                                 args.SetTriggeringAura(triggeredByAura);
                                 args.SetCastItem(castItem);
-                                triggerCaster->CastSpell(triggerCaster, 27526, args);
+                                triggerCaster->CastSpell(triggerCaster, 29471, args);
                             }
-                        }
-                        return;
-                    }
-                    break;
-                //=====================================================================
-                // Priest
-                //=====================================================================
-                // Greater Heal Refund         trigger = 18350
-                // Blessed Recovery (Rank 1-3) trigger = 18350
-                // Shadowguard (1-7)           trigger = 28376
-                //=====================================================================
-                case SPELLFAMILY_PRIEST:
-                {
-                    // Blessed Recovery
-                    if (auraSpellInfo->SpellIconID == 1875)
-                    {
-                        basepoints0 = damage * triggerAmount / 100 / 3;
-                        triggerTarget = triggerCaster;
-                        if (basepoints0 == 0)
-                            return;
-                    }
-                    break;
-                }
-                case SPELLFAMILY_PALADIN:
-                {
-                    // Healing Discount
-                    if (auraSpellInfo->Id == 37705)
-                    {
-                        triggerTarget = triggerCaster;
-                    }
-                    // Illumination
-                    else if (auraSpellInfo->SpellIconID == 241)
-                    {
-                        if (!procSpell)
-                            return;
-                        // procspell is triggered spell but we need mana cost of original casted spell
-                        uint32 originalSpellId = procSpell->Id;
-                        // Holy Shock
-                        if (procSpell->SpellFamilyFlags & 0x1000000000000LL) // Holy Shock heal
-                        {
-                            switch (procSpell->Id)
+                            if (triggerTarget && triggerTarget->IsAlive()) 
                             {
-                            case 25914: originalSpellId = 20473; break;
-                            case 25913: originalSpellId = 20929; break;
-                            case 25903: originalSpellId = 20930; break;
-                            case 27175: originalSpellId = 27174; break;
-                            case 33074: originalSpellId = 33072; break;
-                            default:
-                                TC_LOG_ERROR("spell", "Unit::HandleProcTriggerSpell: Spell %u not handled in HShock", procSpell->Id);
-                                return;
+                                if (triggerTarget->GetPowerType() == POWER_MANA && triggerTarget->GetPower(POWER_MANA) > 8)
+                                {
+                                    CastSpellExtraArgs args;
+                                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                                    args.SetTriggeringAura(triggeredByAura);
+                                    args.SetCastItem(castItem);
+                                    triggerCaster->CastSpell(triggerCaster, 27526, args);
+                                }
                             }
-                        }
-                        SpellInfo const *originalSpell = sSpellMgr->GetSpellInfo(originalSpellId);
-                        if (!originalSpell)
-                        {
-                            TC_LOG_ERROR("spell", "Unit::HandleProcTriggerSpell: Spell %u unknown but selected as original in Illu", originalSpellId);
                             return;
                         }
-                        // percent stored in effect 1 (class scripts) base points
-                        basepoints0 = originalSpell->ManaCost*(auraSpellInfo->Effects[1].BasePoints + 1) / 100;
-                        triggered_spell_id = 20272;
-                        triggerTarget = triggerCaster;
-                    }
-                }
-                case SPELLFAMILY_SHAMAN:
-                {
-                    if (auraSpellInfo->SpellIconID == 2013) //Nature's Guardian
+                        break;
+                    //=====================================================================
+                    // Priest
+                    //=====================================================================
+                    // Greater Heal Refund         trigger = 18350
+                    // Blessed Recovery (Rank 1-3) trigger = 18350
+                    // Shadowguard (1-7)           trigger = 28376
+                    //=====================================================================
+                    case SPELLFAMILY_PRIEST:
                     {
-                        // Check health condition - should drop to less 30% (damage deal after this!)
-                        if (!(10 * (int32(triggerCaster->GetHealth() - damage)) < 3 * triggerCaster->GetMaxHealth()))
-                            return;
-
-                        if (triggerTarget && triggerTarget->IsAlive())
-                            triggerTarget->GetThreatManager().ModifyThreatByPercent(triggerCaster, -10);
-
-                        basepoints0 = triggerAmount * triggerCaster->GetMaxHealth() / 100;
-                        triggered_spell_id = 31616;
-                        triggerTarget = triggerCaster;
+                        // Blessed Recovery
+                        if (auraSpellInfo->SpellIconID == 1875)
+                        {
+                            basepoints0 = damage * triggerAmount / 100 / 3;
+                            triggerTarget = triggerCaster;
+                            if (basepoints0 == 0)
+                                return;
+                        }
+                        break;
                     }
-                    break;
-                }
-                // default
-                default:
-                    break;
-                }
-            }
+                    case SPELLFAMILY_SHAMAN:
+                    {
+                        if (auraSpellInfo->SpellIconID == 2013) //Nature's Guardian
+                        {
+                            // Check health condition - should drop to less 30% (damage deal after this!)
+                            if (!(10 * (int32(triggerCaster->GetHealth() - damage)) < 3 * triggerCaster->GetMaxHealth()))
+                                return;
 
-            switch (triggered_spell_id)
-            {
-            // Shamanistic Rage triggered spell
-            case 30824:
-            {
-                basepoints0 = int32(triggerCaster->GetTotalAttackPowerValue(BASE_ATTACK, triggerTarget) * triggerAmount / 100);
-                triggered_spell_id = 30824;
-                break;
-            }
-            }
+                            if (triggerTarget && triggerTarget->IsAlive())
+                                triggerTarget->GetThreatManager().ModifyThreatByPercent(triggerCaster, -10);
 
-            switch (auraSpellInfo->SpellFamilyName)
-            {
-            case SPELLFAMILY_PALADIN:
-                // Judgement of Light and Judgement of Wisdom
-                if (auraSpellInfo->SpellFamilyFlags & 0x0000000000080000LL)
+                            basepoints0 = triggerAmount * triggerCaster->GetMaxHealth() / 100;
+                            triggered_spell_id = 31616;
+                            triggerTarget = triggerCaster;
+                        }
+                        break;
+                    }
+                    // default
+                    default:
+                        break;
+                    }
+                }
+
+                switch (triggered_spell_id)
                 {
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.SetTriggeringAura(triggeredByAura);
-                    args.SetCastItem(castItem);
-                    triggerTarget->CastSpell(triggerTarget, triggered_spell_id, args);
-                    return;                        // no hidden cooldown
+                    // Shamanistic Rage triggered spell
+                    case 30824:
+                    {
+                        basepoints0 = int32(triggerCaster->GetTotalAttackPowerValue(BASE_ATTACK, triggerTarget) * triggerAmount / 100);
+                        triggered_spell_id = 30824;
+                        break;
+                    }
                 }
-                break;
-            default:
-                break;
-            }
 
-        }
+            }
         }
     }
     if (SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id))

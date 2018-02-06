@@ -854,7 +854,7 @@ void SpellMgr::LoadSpellProcs()
         procEntry.SchoolMask = 0;
         procEntry.ProcFlags = spellInfo->ProcFlags;
         procEntry.SpellFamilyName = 0;
-        procEntry.SpellFamilyMask = 0; //sun: added this, else we use a non init variable and get a random value
+        procEntry.SpellFamilyMask = 0; //sun: added this, else we use a non init variable and get a random value (not true on TC since they use a flag96 that auto init to 0)
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (spellInfo->Effects[i].IsEffect() && isTriggerAura[spellInfo->Effects[i].ApplyAuraName])
                 procEntry.SpellFamilyMask |= spellInfo->Effects[i].SpellClassMask;

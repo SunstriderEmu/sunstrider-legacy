@@ -968,49 +968,6 @@ bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
             }
             break;
         }
-        case SPELLFAMILY_PALADIN:
-        {
-            switch (dummySpell->Id)
-            {
-                // Spiritual Att.
-            case 31785:
-            case 33776:
-            {
-                // if healed by another unit (pVictim)
-                if (triggerCaster == triggerTarget)
-                    return false;
-
-                break;
-            }
-            // Paladin Tier 6 Trinket (Ashtongue Talisman of Zeal)
-            case 40470:
-            {
-                if (!procSpell)
-                    return false;
-
-                float  chance;
-
-                // Flash of light/Holy light
-                if (procSpell->SpellFamilyFlags & 0x00000000C0000000LL)
-                {
-                    chance = 15.f;
-                }
-                // Judgement
-                else if (procSpell->SpellFamilyFlags & 0x0000000000800000LL)
-                {
-                    chance = 50.f;
-                }
-                else
-                    return false;
-
-                if (!roll_chance_f(chance))
-                    return false;
-
-                break;
-            }
-            }
-            break;
-        }
         case SPELLFAMILY_SHAMAN:
         {
             switch (dummySpell->Id)
