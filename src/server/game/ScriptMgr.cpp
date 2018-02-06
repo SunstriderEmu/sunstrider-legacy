@@ -411,7 +411,7 @@ class CreatureGameObjectScriptRegistrySwapHooks
         if (creature->IsAlive())
             creature->ClearUnitState(UNIT_STATE_EVADE);
 
-        bool const created = creature->AIM_Initialize();
+        bool const created = creature->AIM_Create();
         ASSERT(created,
             "Creating the AI should never fail here!");
         (void)created;
@@ -422,6 +422,7 @@ class CreatureGameObjectScriptRegistrySwapHooks
         if (!creature->IsAlive())
             return;
 
+        creature->AI_InitializeAndEnable();
         creature->AI()->EnterEvadeMode();
 
         // Cast a dummy visual spell asynchronously here to signal

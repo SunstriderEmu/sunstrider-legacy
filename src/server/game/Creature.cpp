@@ -987,30 +987,38 @@ bool Creature::AIM_Destroy()
     return true;
 }
 
-bool Creature::AIM_Initialize(CreatureAI* ai)
+bool Creature::AIM_Create(CreatureAI* ai /*= nullptr*/)
 {
     // make sure nothing can change the AI during AI update
-    if(m_AI_locked)
+    if (m_AI_locked)
     {
-        TC_LOG_ERROR("scripts","AIM_Initialize: failed to init for creature entry %u (DB GUID: %u), locked.", GetEntry(), GetSpawnId());
+        TC_LOG_ERROR("scripts", "AIM_Initialize: failed to init for creature entry %u (DB GUID: %u), locked.", GetEntry(), GetSpawnId());
         return false;
     }
 
     Motion_Initialize();
 
-    AIM_Destroy();
-
     i_AI = ai ? ai : FactorySelector::SelectAI(this);
+}
+
+void Creature::AI_InitializeAndEnable()
+{
     IsAIEnabled = true;     // Keep this when getting rid of old system
     i_AI->InitializeAI();
-    
+
 #ifdef LICH_KING
     // Initialize vehicle
     if (GetVehicleKit())
         GetVehicleKit()->Reset();
 #endif
-    
-    return true;
+}
+
+bool Creature::AIM_Initialize(CreatureAI* ai)
+{
+    if (!AIM_Create(ai))
+        return false;
+ 
+    AI_InitializeAndEnable();
 }
 
 bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData *data, bool dynamic)
