@@ -841,7 +841,7 @@ bool ChatHandler::HandleReloadSpellTemplates(const char* args)
     //also reload those tables as they can alter spell info too
     sSpellMgr->LoadSpellLinked();
     sSpellMgr->LoadSpellAffects();
-    sSpellMgr->LoadSpellTalentRanks()
+    sSpellMgr->LoadSpellTalentRanks();
 
     SendGlobalGMSysMessage("DB table `spell_template` (spell definitions) reloaded.");
     return true;
