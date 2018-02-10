@@ -126,9 +126,171 @@ public:
     }
 };
 
+// 28764 - Adaptive Warding (Frostfire Regalia Set)
+enum AdaptiveWarding
+{
+    SPELL_GEN_ADAPTIVE_WARDING_FIRE     = 28765,
+    SPELL_GEN_ADAPTIVE_WARDING_NATURE   = 28768,
+    SPELL_GEN_ADAPTIVE_WARDING_FROST    = 28766,
+    SPELL_GEN_ADAPTIVE_WARDING_SHADOW   = 28769,
+    SPELL_GEN_ADAPTIVE_WARDING_ARCANE   = 28770
+};
+
+class spell_gen_adaptive_warding : public AuraScript
+{
+    PrepareAuraScript(spell_gen_adaptive_warding);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_GEN_ADAPTIVE_WARDING_FIRE,
+                SPELL_GEN_ADAPTIVE_WARDING_NATURE,
+                SPELL_GEN_ADAPTIVE_WARDING_FROST,
+                SPELL_GEN_ADAPTIVE_WARDING_SHADOW,
+                SPELL_GEN_ADAPTIVE_WARDING_ARCANE
+            });
+    }
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+        if (!damageInfo || !damageInfo->GetSpellInfo())
+            return false;
+
+        // find Mage Armor
+        if (!GetTarget()->GetAuraEffect(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT, SPELLFAMILY_MAGE, 0x10000000))
+            return false;
+
+        switch (GetFirstSchoolInMask(eventInfo.GetSchoolMask()))
+        {
+        case SPELL_SCHOOL_NORMAL:
+        case SPELL_SCHOOL_HOLY:
+            return false;
+        default:
+            break;
+        }
+        return true;
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+
+        uint32 spellId = 0;
+        switch (GetFirstSchoolInMask(eventInfo.GetSchoolMask()))
+        {
+        case SPELL_SCHOOL_FIRE:
+            spellId = SPELL_GEN_ADAPTIVE_WARDING_FIRE;
+            break;
+        case SPELL_SCHOOL_NATURE:
+            spellId = SPELL_GEN_ADAPTIVE_WARDING_NATURE;
+            break;
+        case SPELL_SCHOOL_FROST:
+            spellId = SPELL_GEN_ADAPTIVE_WARDING_FROST;
+            break;
+        case SPELL_SCHOOL_SHADOW:
+            spellId = SPELL_GEN_ADAPTIVE_WARDING_SHADOW;
+            break;
+        case SPELL_SCHOOL_ARCANE:
+            spellId = SPELL_GEN_ADAPTIVE_WARDING_ARCANE;
+            break;
+        default:
+            return;
+        }
+        GetTarget()->CastSpell(GetTarget(), spellId, aurEff);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_gen_adaptive_warding::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_gen_adaptive_warding::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
+enum ObsidianArmor
+{
+    SPELL_GEN_OBSIDIAN_ARMOR_HOLY       = 27536,
+    SPELL_GEN_OBSIDIAN_ARMOR_FIRE       = 27533,
+    SPELL_GEN_OBSIDIAN_ARMOR_NATURE     = 27538,
+    SPELL_GEN_OBSIDIAN_ARMOR_FROST      = 27534,
+    SPELL_GEN_OBSIDIAN_ARMOR_SHADOW     = 27535,
+    SPELL_GEN_OBSIDIAN_ARMOR_ARCANE     = 27540
+};
+
+// 27539 - Obsidian Armor
+class spell_gen_obsidian_armor : public AuraScript
+{
+    PrepareAuraScript(spell_gen_obsidian_armor);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_GEN_OBSIDIAN_ARMOR_HOLY,
+                SPELL_GEN_OBSIDIAN_ARMOR_FIRE,
+                SPELL_GEN_OBSIDIAN_ARMOR_NATURE,
+                SPELL_GEN_OBSIDIAN_ARMOR_FROST,
+                SPELL_GEN_OBSIDIAN_ARMOR_SHADOW,
+                SPELL_GEN_OBSIDIAN_ARMOR_ARCANE
+            });
+    }
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+        if (!damageInfo || !damageInfo->GetSpellInfo())
+            return false;
+
+        if (GetFirstSchoolInMask(eventInfo.GetSchoolMask()) == SPELL_SCHOOL_NORMAL)
+            return false;
+
+        return true;
+    }
+
+    void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+
+        uint32 spellId = 0;
+        switch (GetFirstSchoolInMask(eventInfo.GetSchoolMask()))
+        {
+        case SPELL_SCHOOL_HOLY:
+            spellId = SPELL_GEN_OBSIDIAN_ARMOR_HOLY;
+            break;
+        case SPELL_SCHOOL_FIRE:
+            spellId = SPELL_GEN_OBSIDIAN_ARMOR_FIRE;
+            break;
+        case SPELL_SCHOOL_NATURE:
+            spellId = SPELL_GEN_OBSIDIAN_ARMOR_NATURE;
+            break;
+        case SPELL_SCHOOL_FROST:
+            spellId = SPELL_GEN_OBSIDIAN_ARMOR_FROST;
+            break;
+        case SPELL_SCHOOL_SHADOW:
+            spellId = SPELL_GEN_OBSIDIAN_ARMOR_SHADOW;
+            break;
+        case SPELL_SCHOOL_ARCANE:
+            spellId = SPELL_GEN_OBSIDIAN_ARMOR_ARCANE;
+            break;
+        default:
+            return;
+        }
+        GetTarget()->CastSpell(GetTarget(), spellId, aurEff);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_gen_obsidian_armor::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_gen_obsidian_armor::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_cannibalize();
     new spell_racial_stoneform();
     new spell_archimonde_doomfire();
+    RegisterAuraScript(spell_gen_adaptive_warding);
+    RegisterAuraScript(spell_gen_obsidian_armor);
 }

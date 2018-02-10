@@ -291,12 +291,6 @@ public:
                 spellId = sSpellMgr->GetSpellWithRank(SPELL_SHAMAN_CHAIN_LIGHTNING_OVERLOAD_R1, spellInfo->GetRank());
             }
 
-            
-            
-            
-            
-            
-
             eventInfo.GetActor()->CastSpell(eventInfo.GetProcTarget(), spellId, aurEff);
         }
 

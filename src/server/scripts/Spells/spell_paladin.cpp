@@ -683,6 +683,58 @@ public:
     }
 };
 
+// -9799 - Eye for an Eye
+class spell_pal_eye_for_an_eye : public SpellScriptLoader
+{
+public:
+    spell_pal_eye_for_an_eye() : SpellScriptLoader("spell_pal_eye_for_an_eye") { }
+
+    class spell_pal_eye_for_an_eye_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_pal_eye_for_an_eye_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_PALADIN_EYE_FOR_AN_EYE_DAMAGE });
+        }
+
+        bool CheckProc(ProcEventInfo& eventInfo)
+        {
+            SpellInfo const * procSpell = eventInfo.GetSpellInfo();
+            // prevent damage back from weapon special attacks
+            if (!procSpell || procSpell->DmgClass != SPELL_DAMAGE_CLASS_MAGIC)
+                return false;
+
+            return true;
+        }
+
+        void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+            DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+            if (!damageInfo || !damageInfo->GetDamage())
+                return;
+
+            // return damage % to attacker but < 50% own total health
+            int32 damage = std::min(CalculatePct(static_cast<int32>(damageInfo->GetDamage()), aurEff->GetAmount()), static_cast<int32>(GetTarget()->GetMaxHealth()) / 2);
+            CastSpellExtraArgs args(aurEff);
+            args.AddSpellBP0(damage);
+            GetTarget()->CastSpell(eventInfo.GetProcTarget(), SPELL_PALADIN_EYE_FOR_AN_EYE_DAMAGE, args);
+        }
+
+        void Register() override
+        {
+            DoCheckProc += AuraCheckProcFn(spell_pal_eye_for_an_eye_AuraScript::CheckProc);
+            OnEffectProc += AuraEffectProcFn(spell_pal_eye_for_an_eye_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_pal_eye_for_an_eye_AuraScript();
+    }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_judgement_of_command();
@@ -697,4 +749,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_item_healing_discount();
     new spell_pal_judgement_regen<SPELL_PALADIN_JUDGEMENT_OF_LIGHT_HEAL>("spell_pal_judgement_of_light_heal");
     new spell_pal_judgement_regen<SPELL_PALADIN_JUDGEMENT_OF_WISDOM_MANA>("spell_pal_judgement_of_wisdom_mana");
+    new spell_pal_eye_for_an_eye();
 }

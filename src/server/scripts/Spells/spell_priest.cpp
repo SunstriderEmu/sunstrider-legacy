@@ -472,6 +472,59 @@ public:
     }
 };
 
+
+// 28305 - Mana Leech (Passive) (Priest Pet Aura)
+class spell_pri_mana_leech : public SpellScriptLoader
+{
+public:
+    spell_pri_mana_leech() : SpellScriptLoader("spell_pri_mana_leech") { }
+
+    class spell_pri_mana_leech_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_pri_mana_leech_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_PRIEST_MANA_LEECH_PROC });
+        }
+
+        bool CheckProc(ProcEventInfo& /*eventInfo*/)
+        {
+            _procTarget = GetTarget()->GetOwner();
+            return _procTarget != nullptr;
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+#ifdef LICH_KING
+            GetTarget()->CastSpell(_procTarget, SPELL_PRIEST_MANA_LEECH_PROC, aurEff);
+#else
+            if (!eventInfo.GetDamageInfo())
+                return;
+            //http://wowwiki.wikia.com/wiki/Shadowfiend?oldid=1630551
+            uint32 const damage = eventInfo.GetDamageInfo()->GetDamage() * 2.5f; // The mana gained from Shadowfiends' attack is 250% of the damage dealt by the fiend.
+            CastSpellExtraArgs args(aurEff);
+            args.AddSpellBP0(damage);
+            GetTarget()->CastSpell(_procTarget, SPELL_PRIEST_MANA_LEECH_PROC, args);
+#endif
+        }
+
+        void Register() override
+        {
+            DoCheckProc += AuraCheckProcFn(spell_pri_mana_leech_AuraScript::CheckProc);
+            OnEffectProc += AuraEffectProcFn(spell_pri_mana_leech_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+
+        Unit* _procTarget = nullptr;
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_pri_mana_leech_AuraScript();
+    }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_shadowfiend();
@@ -483,4 +536,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_item_t6_trinket();
     new spell_pri_aq_3p_bonus();
     new spell_pri_t3_4p_bonus();
+    new spell_pri_mana_leech();
 }

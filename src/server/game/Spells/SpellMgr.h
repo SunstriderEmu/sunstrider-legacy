@@ -868,8 +868,6 @@ class TC_GAME_API SpellMgr
         }
         static bool CanSpellTriggerProcOnEvent(SpellProcEntry const& procEntry, ProcEventInfo& eventInfo);
 
-        //static bool IsSpellProcEventCanTriggeredBy( SpellProcEntry const * spellProcEvent, uint32 EventProcFlag, SpellInfo const * procSpell, uint32 ProcFlags, uint32 procExtra, bool active);
-
         SpellEnchantProcEntry const* GetSpellEnchantProcEvent(uint32 enchId) const
         {
             return Trinity::Containers::MapGetValuePtr(mSpellEnchantProcEventMap, enchId);

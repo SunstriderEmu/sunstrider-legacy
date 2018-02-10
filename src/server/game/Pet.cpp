@@ -1254,7 +1254,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     int32 bonus_dmg = (int32(owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW)* 0.0657f));  // shadowfiend 65.7% per 10 hits so 6.57 per hit
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel) + bonus_dmg)); //correct value unknown
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 3.0f / 2.0f) + bonus_dmg)); //correct value unknown
-                    SetAttackTime(BASE_ATTACK, 1350);
+                    SetAttackTime(BASE_ATTACK, 1350); // The Shadowfiend grants up to 11 hits per use, making its attack speed between 1.26 - 1.36 seconds per hit.
 
                     // 2 parts T4 DPS Bonus: should be handled in future table spell_dbc
                     if (owner->HasAura(37570))
