@@ -789,100 +789,6 @@ void Aura::PrepareProcToTrigger(AuraApplication* aurApp, ProcEventInfo& eventInf
     AddProcCooldown(now + procEntry->Cooldown);
 }
 
-//return if proc can go further, must be moved to SpellScripts
-bool OldWindrunnerHacks(AuraApplication* aurApp, ProcEventInfo& eventInfo)
-{
-    Unit* triggerCaster = aurApp->GetTarget();
-
-    SpellInfo const * procSpell = eventInfo.GetSpellInfo();
-    Aura* triggeredByAura = aurApp->GetBase();
-
-    if (aurApp->GetBase()->GetSpellInfo()->HasAuraEffect(SPELL_AURA_PROC_TRIGGER_SPELL))
-    { //old HandleProcTriggerSpell
-
-        SpellInfo const* auraSpellInfo = triggeredByAura->GetSpellInfo();
-        switch (auraSpellInfo->SpellFamilyName)
-        {
-        case SPELLFAMILY_PALADIN:
-        {
-            // Blessed Life
-            if (auraSpellInfo->SpellIconID == 2137)
-            {
-                switch (auraSpellInfo->Id)
-                {
-                case 31828: // Rank 1
-                case 31829: // Rank 2
-                case 31830: // Rank 3
-                            //TC_LOG_DEBUG("spell","Blessed life trigger!");
-                    break;
-                default:
-                    TC_LOG_ERROR("spell", "Unit::HandleProcTriggerSpell: Spell %u miss possibly Blessed Life", auraSpellInfo->Id);
-                    return false;
-                }
-            }
-            // Healing Discount
-            if (auraSpellInfo->Id == 37705)
-            {
-                // triggers Healing Trance
-                switch (triggerCaster->GetClass())
-                {
-                case CLASS_PALADIN:break;
-                case CLASS_DRUID:  break;
-                case CLASS_PRIEST: break;
-                case CLASS_SHAMAN: break;
-                default: return false;
-                }
-            }
-            // Illumination
-            else if (auraSpellInfo->SpellIconID == 241)
-            {
-                if (!procSpell)
-                    return false;
-                // procspell is triggered spell but we need mana cost of original casted spell
-                uint32 originalSpellId = procSpell->Id;
-                // Holy Shock
-                if (procSpell->SpellFamilyFlags & 0x1000000000000LL) // Holy Shock heal
-                {
-                    switch (procSpell->Id)
-                    {
-                    case 25914:break;
-                    case 25913:break;
-                    case 25903:break;
-                    case 27175:break;
-                    case 33074:break;
-                    default:
-                        TC_LOG_ERROR("spell", "Unit::HandleProcTriggerSpell: Spell %u not handled in HShock", procSpell->Id);
-                        return false;
-                    }
-                }
-                SpellInfo const *originalSpell = sSpellMgr->GetSpellInfo(originalSpellId);
-                if (!originalSpell)
-                {
-                    TC_LOG_ERROR("spell", "Unit::HandleProcTriggerSpell: Spell %u unknown but selected as original in Illu", originalSpellId);
-                    return false;
-                }
-            }
-        }
-        }
-
-        if (procSpell)
-        {
-            switch (procSpell->Id)
-            {
-            // Enlightenment (trigger only from mana cost spells)
-            case 35095:
-            {
-                if ((procSpell->PowerType != POWER_MANA) || (procSpell->ManaCost == 0 && procSpell->ManaCostPercentage == 0 && procSpell->ManaCostPerlevel == 0))
-                    return false;
-                break;
-            }
-            }
-        }
-    }
-   
-    return true;
-}
-
 uint8 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo, std::chrono::steady_clock::time_point now) const
 {
     SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(GetId());
@@ -938,10 +844,6 @@ uint8 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo,
     // AuraScript Hook
     bool check = const_cast<Aura*>(this)->CallScriptCheckProcHandlers(aurApp, eventInfo);
     if (!check)
-        return 0;
-
-    bool oldWindrunnerHacks = OldWindrunnerHacks(aurApp, eventInfo);
-    if (!oldWindrunnerHacks)
         return 0;
 
     // At least one effect has to pass checks to proc aura

@@ -6353,62 +6353,14 @@ void AuraEffect::HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEve
     Unit* triggerTarget = eventInfo.GetProcTarget();
 
     uint32 triggered_spell_id = GetSpellInfo()->Effects[GetEffIndex()].TriggerSpell;
-    bool unknownTriggerSpell = !triggered_spell_id || sSpellMgr->GetSpellInfo(triggered_spell_id) == nullptr;
-    int32 basepoints0 = 0;
     Item* castItem = GetBase()->GetCastItemGUID() && GetBase()->GetCaster()->GetTypeId() == TYPEID_PLAYER
         ? (GetBase()->GetCaster()->ToPlayer())->GetItemByGuid(GetBase()->GetCastItemGUID()) : nullptr;
 
-    //hack fest (when removing this, remove OldWindrunnerHacks in parallel)
-    {
-        AuraEffect* triggeredByAura = this;
-        uint32 damage = eventInfo.GetDamageInfo() ? eventInfo.GetDamageInfo()->GetDamage() : 0;
-        int32 triggerAmount = triggeredByAura->GetAmount();
-
-        switch (GetAuraType())
-        {
-            case SPELL_AURA_PROC_TRIGGER_SPELL: 
-            {
-                //old HandleProcTriggerSpell
-                SpellInfo const* auraSpellInfo = triggeredByAura->GetSpellInfo();
-
-                if (unknownTriggerSpell)
-                {
-                    switch (auraSpellInfo->SpellFamilyName)
-                    {
-                    //=====================================================================
-                    // Priest
-                    //=====================================================================
-                    // Greater Heal Refund         trigger = 18350
-                    // Blessed Recovery (Rank 1-3) trigger = 18350
-                    // Shadowguard (1-7)           trigger = 28376
-                    //=====================================================================
-                    case SPELLFAMILY_PRIEST:
-                    {
-                        // Blessed Recovery
-                        if (auraSpellInfo->SpellIconID == 1875)
-                        {
-                            basepoints0 = damage * triggerAmount / 100 / 3;
-                            triggerTarget = triggerCaster;
-                            if (basepoints0 == 0)
-                                return;
-                        }
-                        break;
-                    }
-                    // default
-                    default:
-                        break;
-                    }
-                }
-            }
-        }
-    }
     if (SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id))
     {
         TC_LOG_DEBUG("spells", "AuraEffect::HandleProcTriggerSpellAuraProc: Triggering spell %u from aura %u proc", triggeredSpellInfo->Id, GetId());
 
         CastSpellExtraArgs args(this);
-        if (basepoints0)
-            args.AddSpellBP0(int32(basepoints0));
         if (castItem)
             args.SetCastItem(castItem);
 

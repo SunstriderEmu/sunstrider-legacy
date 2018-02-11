@@ -286,6 +286,27 @@ class spell_gen_obsidian_armor : public AuraScript
     }
 };
 
+// 35095 - Enlightenment (trigger only from mana cost spells)
+// No idea what this is for, this a condition ported from old core proc system
+class spell_gen_enlightenment : public AuraScript
+{
+    PrepareAuraScript(spell_gen_enlightenment);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        SpellInfo const * procSpell = eventInfo.GetSpellInfo(); 
+        if ((procSpell->PowerType != POWER_MANA) || (procSpell->ManaCost == 0 && procSpell->ManaCostPercentage == 0 && procSpell->ManaCostPerlevel == 0))
+            return false;
+
+        return true;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_gen_enlightenment::CheckProc);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_cannibalize();
@@ -293,4 +314,5 @@ void AddSC_generic_spell_scripts()
     new spell_archimonde_doomfire();
     RegisterAuraScript(spell_gen_adaptive_warding);
     RegisterAuraScript(spell_gen_obsidian_armor);
+    RegisterAuraScript(spell_gen_enlightenment);
 }

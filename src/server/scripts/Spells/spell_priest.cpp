@@ -525,6 +525,55 @@ public:
     }
 };
 
+// -27811 - Blessed Recovery
+class spell_pri_blessed_recovery : public SpellScriptLoader
+{
+public:
+    spell_pri_blessed_recovery() : SpellScriptLoader("spell_pri_blessed_recovery") { }
+
+    class spell_pri_blessed_recovery_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_pri_blessed_recovery_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_PRIEST_BLESSED_RECOVERY_R1 });
+        }
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+            DamageInfo* dmgInfo = eventInfo.GetDamageInfo();
+            if (!dmgInfo || !dmgInfo->GetDamage())
+                return;
+
+            Unit* target = eventInfo.GetActionTarget();
+            uint32 triggerSpell = sSpellMgr->GetSpellWithRank(SPELL_PRIEST_BLESSED_RECOVERY_R1, aurEff->GetSpellInfo()->GetRank());
+            SpellInfo const* triggerInfo = sSpellMgr->AssertSpellInfo(triggerSpell);
+
+            int32 bp = CalculatePct(static_cast<int32>(dmgInfo->GetDamage()), aurEff->GetAmount());
+
+            ASSERT(triggerInfo->GetMaxTicks() > 0);
+            bp /= triggerInfo->GetMaxTicks();
+            bp += target->GetRemainingPeriodicAmount(target->GetGUID(), triggerSpell, SPELL_AURA_PERIODIC_HEAL);
+
+            CastSpellExtraArgs args(aurEff);
+            args.AddSpellBP0(bp);
+            target->CastSpell(target, triggerSpell, args);
+        }
+
+        void Register() override
+        {
+            OnEffectProc += AuraEffectProcFn(spell_pri_blessed_recovery_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_pri_blessed_recovery_AuraScript();
+    }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_shadowfiend();
@@ -537,4 +586,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_aq_3p_bonus();
     new spell_pri_t3_4p_bonus();
     new spell_pri_mana_leech();
+    new spell_pri_blessed_recovery();
 }
