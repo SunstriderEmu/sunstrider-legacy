@@ -1762,12 +1762,6 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
             return SPELL_FAILED_TARGET_CANNOT_BE_RESURRECTED;
 #endif
 
-    // sunwell: check if stronger aura is active
-    /* Todo spel strongerauras
-    if (IsStrongerAuraActive(caster, unitTarget))
-        return SPELL_FAILED_AURA_BOUNCED;
-        */
-
     return SPELL_CAST_OK;
 }
 
