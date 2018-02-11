@@ -117,7 +117,7 @@ public:
         void Register() override
         {
             DoCheckProc += AuraCheckProcFn(spell_dru_dreamwalker_raiment_2_AuraScript::CheckProc);
-            OnEffectProc += AuraEffectProcFn(spell_dru_dreamwalker_raiment_2_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+            OnEffectProc += AuraEffectProcFn(spell_dru_dreamwalker_raiment_2_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
         }
     };
 
@@ -151,7 +151,7 @@ public:
 
         void Register() override
         {
-            OnEffectProc += AuraEffectProcFn(spell_dru_dreamwalker_raiment_6_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+            OnEffectProc += AuraEffectProcFn(spell_dru_dreamwalker_raiment_6_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
         }
     };
 

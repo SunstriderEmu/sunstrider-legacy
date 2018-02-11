@@ -1417,11 +1417,12 @@ void SpellMgr::LoadSpellRanks()
             continue;
         }
         // check if chain is long enough
+        /*sun: allow chain with size 1... some spells 60-70 spells have only one ranks and it's be useful to allow handling them as the others
         if (rankChain.size() < 2)
         {
             TC_LOG_ERROR("sql.sql", "There is only 1 spell rank for identifier(first_spell_id) %u in `spell_ranks`, entry is not needed!", lastSpell);
             continue;
-        }
+        }*/
         int32 curRank = 0;
         bool valid = true;
         // check spells in chain

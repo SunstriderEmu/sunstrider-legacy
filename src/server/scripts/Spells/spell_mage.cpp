@@ -298,6 +298,7 @@ public:
 };
 
 // -1463 - Mana Shield
+// Improved mana shield is handled in 37424 aura
 class spell_mage_mana_shield : public SpellScriptLoader
 {
 public:

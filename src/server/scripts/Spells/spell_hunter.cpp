@@ -284,6 +284,66 @@ public:
     }
 };
 
+// 34477 - Misdirection
+class spell_hun_misdirection : public SpellScriptLoader
+{
+public:
+    spell_hun_misdirection() : SpellScriptLoader("spell_hun_misdirection") { }
+
+    class spell_hun_misdirection_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_hun_misdirection_AuraScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_HUNTER_MISDIRECTION_PROC });
+        }
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEFAULT || !GetTarget()->HasAura(SPELL_HUNTER_MISDIRECTION_PROC))
+                GetTarget()->GetThreatManager().UnregisterRedirectThreat(SPELL_HUNTER_MISDIRECTION);
+        }
+
+        void Register() override
+        {
+            AfterEffectRemove += AuraEffectRemoveFn(spell_hun_misdirection_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_hun_misdirection_AuraScript();
+    }
+};
+
+// 35079 - Misdirection (Proc)
+class spell_hun_misdirection_proc : public SpellScriptLoader
+{
+public:
+    spell_hun_misdirection_proc() : SpellScriptLoader("spell_hun_misdirection_proc") { }
+
+    class spell_hun_misdirection_proc_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_hun_misdirection_proc_AuraScript);
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            GetTarget()->GetThreatManager().UnregisterRedirectThreat(SPELL_HUNTER_MISDIRECTION);
+        }
+
+        void Register() override
+        {
+            AfterEffectRemove += AuraEffectRemoveFn(spell_hun_misdirection_proc_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_hun_misdirection_proc_AuraScript();
+    }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hunt_imprv_aspect_viper();
@@ -291,4 +351,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hunt_hunters_mark();
     new spell_hun_entrapment();
     new spell_hun_thrill_of_the_hunt();
+    new spell_hun_misdirection();
+    new spell_hun_misdirection_proc();
 }

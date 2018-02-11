@@ -76,16 +76,10 @@ public:
             return SPELL_FAILED_DONT_REPORT;
 
         }
-        void HandleDummy(SpellEffIndex /*effIndex*/, int32& /*damage*/)
-        {
-            if (Unit* unitTarget = GetHitUnit())
-                GetCaster()->CastSpell(unitTarget, GetEffectValue(), true);
-        }
 
         void Register() override
         {
             OnCheckCast += SpellCheckCastFn(spell_pal_judgement_of_command_SpellScript::CheckTarget);
-            OnEffectHitTarget += SpellEffectFn(spell_pal_judgement_of_command_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
         }
     };
 
@@ -643,46 +637,6 @@ public:
     }
 };
 
-// 20185, 20186 - Judgement of Light, Judgement of Wisdom
-template <uint32 spellId>
-class spell_pal_judgement_regen : public SpellScriptLoader
-{
-public:
-    spell_pal_judgement_regen(char const* ScriptName) : SpellScriptLoader(ScriptName) { }
-
-    template <uint32 spellId>
-    class spell_pal_judgement_regen_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_pal_judgement_regen_AuraScript);
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            return ValidateSpellInfo({ spellId });
-        }
-
-        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-        {
-            PreventDefaultAction();
-
-            Unit* caster = eventInfo.GetProcTarget();
-
-            CastSpellExtraArgs args(aurEff);
-            args.OriginalCaster = GetCasterGUID();
-            caster->CastSpell(nullptr, spellId, args);
-        }
-
-        void Register() override
-        {
-            OnEffectProc += AuraEffectProcFn(spell_pal_judgement_regen_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_pal_judgement_regen_AuraScript<spellId>();
-    }
-};
-
 // -9799 - Eye for an Eye
 class spell_pal_eye_for_an_eye : public SpellScriptLoader
 {
@@ -747,7 +701,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_seal_of_righteousness();
     new spell_pal_illumination();
     new spell_pal_item_healing_discount();
-    new spell_pal_judgement_regen<SPELL_PALADIN_JUDGEMENT_OF_LIGHT_HEAL>("spell_pal_judgement_of_light_heal");
-    new spell_pal_judgement_regen<SPELL_PALADIN_JUDGEMENT_OF_WISDOM_MANA>("spell_pal_judgement_of_wisdom_mana");
     new spell_pal_eye_for_an_eye();
 }
