@@ -2158,7 +2158,7 @@ class TC_GAME_API Unit : public WorldObject
         uint32 GetRemainingPeriodicAmount(ObjectGuid caster, uint32 spellId, AuraType auraType, uint8 effectIndex = 0) const;
 
         int32 SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, Unit* pVictim = nullptr);
-        int32 SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask, bool isDoT = false);
+        int32 SpellBaseDamageBonusTaken(SpellInfo const* spellInfo, bool isDoT = false);
         float SpellDamagePctDone(Unit* victim, SpellInfo const *spellProto, DamageEffectType damagetype);
 
         uint32 SpellDamageBonusDone(Unit *pVictim, SpellInfo const *spellProto, uint32 damage, DamageEffectType damagetype, Optional<float> const& donePctTotal = {}, uint32 stack = 1);
@@ -2167,12 +2167,12 @@ class TC_GAME_API Unit : public WorldObject
         // SPELL_AURA_MOD_HEALING_DONE + SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT + SPELL_AURA_MOD_SPELL_HEALING_OF_ATTACK_POWER + hacks
         int32 SpellBaseHealingBonusDone(SpellSchoolMask schoolMask);
         // SPELL_AURA_MOD_HEALING + hacks
-        int32 SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask);
+        int32 SpellBaseHealingBonusTaken(SpellInfo const* spellProto);
         //Includes SPELL_AURA_MOD_HEALING_DONE_PERCENT + lots of hacks
         float SpellHealingPctDone(Unit* victim, SpellInfo const *spellProto);
 
         /* Alter healamount with healing bonus taken
-        This includes : SPELL_AURA_MOD_HEALING_PCT, SPELL_AURA_MOD_HEALING_PCT, SpellBaseHealingBonusTaken SPELLMOD_BONUS_MULTIPLIER, and lots of hacks
+        This includes : SPELL_AURA_MOD_HEALING_PCT, SPELL_AURA_MOD_HEALING_PCT, SPELLMOD_BONUS_MULTIPLIER, and lots of hacks
         */
         uint32 SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack = 1);
         /* Alter healamount with healing bonus done for victim

@@ -5885,7 +5885,6 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, ui
     if (!spellProto || damagetype == DIRECT_DAMAGE)
         return pdamage;
 
-    int32 TakenTotal = 0;
     float TakenTotalMod = 1.0f;
 
 #ifdef LICH_KING
@@ -5960,23 +5959,6 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, ui
             });
         }
 #endif
-        int32 TakenAdvertisedBenefit = SpellBaseDamageBonusTaken(spellProto->GetSchoolMask(), damagetype == DOT);
-        float coeff = 0;
-        if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
-            coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
-
-        // Default calculation
-        if (TakenAdvertisedBenefit)
-        {
-            if (coeff <= 0.0f)
-            {
-                Unit const* calc = caster ? caster : this;
-                coeff = calc->CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
-            }
-            // level penalty still applied on Taken bonus - is it blizzlike?
-            float factorMod = CalculateSpellpowerCoefficientLevelPenalty(spellProto) * stack;
-            TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod);
-        }
     }
 
   
@@ -5998,7 +5980,7 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, ui
     }
 #endif
 
-    float tmpDamage = (float(pdamage) + TakenTotal) * TakenTotalMod;
+    float tmpDamage = pdamage * TakenTotalMod;
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
@@ -6019,23 +6001,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
         
     if (spellProto->HasAttribute(SPELL_ATTR3_NO_DONE_BONUS))
         return pdamage;
-
-    int32 BonusDamage = 0;
-    if( GetTypeId()==TYPEID_UNIT )
-    {
-        // Pets just add their bonus damage to their spell damage
-        // note that their spell damage is just gain of their own auras
-        if ((this->ToCreature())->IsPet() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
-        {
-            BonusDamage = ((Pet*)this)->GetBonusDamage();
-        }
-        // For totems get damage bonus from owner (statue isn't totem in fact)
-        else if ((this->ToCreature())->IsTotem() && ((Totem*)this)->GetTotemType()!=TOTEM_STATUE)
-        {
-            if(Unit* owner = GetOwner())
-                return owner->SpellDamageBonusDone(victim, spellProto, pdamage, damagetype, donePctTotal, stack);
-        }
-    }
 
     // Done total percent damage auras
     float ApCoeffMod = 1.0f;
@@ -6095,7 +6060,18 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
 #endif
 
     // Taken/Done fixed damage bonus auras
-    int32 DoneAdvertisedBenefit = SpellBaseDamageBonusDone(spellProto->GetSchoolMask()) + BonusDamage;
+    int32 DoneAdvertisedBenefit = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
+    // modify spell power by victim's SPELL_AURA_MOD_DAMAGE_TAKEN auras (eg Amplify/Dampen Magic)
+    //TC DoneAdvertisedBenefit += victim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_DAMAGE_TAKEN, spellProto->GetSchoolMask());
+    DoneAdvertisedBenefit += victim->SpellBaseDamageBonusTaken(spellProto);
+
+    // Pets just add their bonus damage to their spell damage
+    // note that their spell damage is just gain of their own auras
+    if (HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+        DoneAdvertisedBenefit += static_cast<Guardian const*>(this)->GetBonusDamage();
+    else if ((this->ToCreature())->IsTotem() && ((Totem*)this)->GetTotemType() != TOTEM_STATUE)
+        if (Unit* owner = GetOwner())
+            return owner->SpellDamageBonusDone(victim, spellProto, pdamage, damagetype, donePctTotal, stack);
 
     float coeff = 0.0f;
     if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
@@ -6123,13 +6099,19 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
             }
         }
     }
-    else {
-        coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
+    else 
+    {
+        // No bonus damage for SPELL_DAMAGE_CLASS_NONE class spells by default
+        if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
+            return uint32(std::max(pdamage * DoneTotalMod, 0.0f));
     }
 
     // Default calculation
     if (coeff && DoneAdvertisedBenefit)
     {
+        if (coeff <= 0.f) //sun: added the = here, is this right? else we don't even use the default coef if there is no data in spell_bonus_data table?
+            coeff = CalculateDefaultCoefficient(spellProto, damagetype);  // As wowwiki says: C = (Cast Time / 3.5)
+
         float factorMod = CalculateSpellpowerCoefficientLevelPenalty(spellProto) * stack;
 
         if (Player* modOwner = GetSpellModOwner())
@@ -6288,14 +6270,14 @@ int32 Unit::SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, Unit* pVictim)
     return DoneAdvertisedBenefit;
 }
 
-int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask, bool isDoT)
+int32 Unit::SpellBaseDamageBonusTaken(SpellInfo const* spellInfo, bool isDoT)
 {
     int32 TakenAdvertisedBenefit = 0;
 
     AuraEffectList const& mDamageTaken = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_TAKEN);
 
     for(auto i : mDamageTaken)
-        if ((i->GetMiscValue() & schoolMask) != 0)
+        if ((i->GetMiscValue() & spellInfo->GetSchoolMask()) != 0)
         {
             /* SunWell core has this additional check. May be useful one day, can't investigate it right now. If not, replace this whole function with " return GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_DAMAGE_TAKEN, schoolMask);"
             // sunwell: if we have DoT damage type and aura has charges, check if it affects DoTs
@@ -6660,47 +6642,11 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
         AddPct(TakenTotalMod, Tenacity->GetAmount());
 #endif
 
-    // Healing Done
-    int32 TakenTotal = 0;
-
     // Taken fixed damage bonus auras
-    int32 TakenAdvertisedBenefit = SpellBaseHealingBonusTaken(spellProto->GetSchoolMask());
+    int32 TakenAdvertisedBenefit = 0;
 
     //MIGHTY HACKS BLOCK
     {
-        // Blessing of Light dummy effects healing taken from Holy Light and Flash of Light
-        if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && (spellProto->SpellFamilyFlags & 0x00000000C0000000LL))
-        {
-            AuraEffectList const& mDummyAuras = GetAuraEffectsByType(SPELL_AURA_DUMMY);
-
-            for (auto mDummyAura : mDummyAuras)
-            {
-                if (mDummyAura->GetSpellInfo()->HasVisual(9180))
-                {
-                    // Flash of Light
-                    if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL) && mDummyAura->GetEffIndex() == 1)
-                        TakenAdvertisedBenefit += mDummyAura->GetAmount();
-                    // Holy Light
-                    else if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL) && mDummyAura->GetEffIndex() == 0)
-                        TakenAdvertisedBenefit += mDummyAura->GetAmount();
-                }
-                // Libram of the Lightbringer
-                else if (mDummyAura->GetSpellInfo()->Id == 34231)
-                {
-                    // Holy Light
-                    if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL))
-                        TakenAdvertisedBenefit += mDummyAura->GetAmount();
-                }
-                // Blessed Book of Nagrand || Libram of Light || Libram of Divinity
-                else if (mDummyAura->GetSpellInfo()->Id == 32403 || mDummyAura->GetSpellInfo()->Id == 28851 || mDummyAura->GetSpellInfo()->Id == 28853)
-                {
-                    // Flash of Light
-                    if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL))
-                        TakenAdvertisedBenefit += mDummyAura->GetAmount();
-                }
-            }
-        }
-
         // Healing Wave cast (these are dummy auras)
         if (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags & 0x0000000000000040LL)
         {
@@ -6720,29 +6666,13 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
     }
 
 #ifdef LICH_KING
-    // Nourish cast, glyph of nourish
-    if (spellProto->SpellFamilyName == SPELLFAMILY_DRUID && spellProto->SpellFamilyFlags[1] & 0x2000000 && caster)
+    // Nourish cast
+    if (spellProto->SpellFamilyName == SPELLFAMILY_DRUID && spellProto->SpellFamilyFlags[1] & 0x2000000)
     {
-        bool any = false;
-        bool hasglyph = caster->GetAuraEffectDummy(62971);
-        AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_PERIODIC_HEAL);
-
-        for (AuraList::const_iterator i = auras.begin(); i != auras.end(); ++i)
-        {
-            if (((*i)->GetCasterGUID() == caster->GetGUID()))
-            {
-                SpellInfo const *spell = (*i)->GetSpellInfo();
-                // Rejuvenation, Regrowth, Lifebloom, or Wild Growth
-                if (!any && spell->SpellFamilyFlags.HasFlag(0x50, 0x4000010, 0))
-                {
-                    TakenTotalMod *= 1.2f;
-                    any = true;
-                }
-
-                if (hasglyph)
-                    TakenTotalMod += 0.06f;
-            }
-        }
+        // Rejuvenation, Regrowth, Lifebloom, or Wild Growth
+        if (GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, 0x50, 0x4000010, 0))
+            // increase healing by 20%
+            TakenTotalMod *= 1.2f;
     }
 
     if (damagetype == DOT)
@@ -6762,24 +6692,6 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
     if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
         coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
 
-    // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
-    if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
-    {
-        healamount = uint32(std::max((float(healamount) * TakenTotalMod), 0.0f));
-        return healamount;
-    }
-
-    // Default calculation
-    if (TakenAdvertisedBenefit)
-    {
-        if (coeff <= 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
-
-        // level penalty still applied on Taken bonus - is it blizzlike?
-        float factorMod = CalculateSpellpowerCoefficientLevelPenalty(spellProto) * int32(stack);
-        TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod);
-    }
-
 #ifdef LICH_KING
     if (caster)
     {
@@ -6792,30 +6704,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
     }
 #endif
 
-    for (const auto & Effect : spellProto->Effects)
-    {
-        switch (Effect.ApplyAuraName)
-        {
-            // Bonus healing does not apply to these spells
-            case SPELL_AURA_PERIODIC_LEECH:
-            case SPELL_AURA_PERIODIC_HEALTH_FUNNEL:
-                TakenTotal = 0;
-                break;
-        }
-        if (Effect.Effect == SPELL_EFFECT_HEALTH_LEECH)
-            TakenTotal = 0;
-    }
-
-#ifdef LICH_KING
-    // No positive taken bonus, custom attr
-    if ((spellProto->HasAttribute(SPELL_ATTR6_LIMIT_PCT_HEALING_MODS) || spellProto->HasAttribute(SPELL_ATTR0_CU_NO_POSITIVE_TAKEN_BONUS)) && TakenTotalMod > 1.0f)
-    {
-        TakenTotal = 0;
-        TakenTotalMod = 1.0f;
-    }
-#endif
-
-    float heal = float(int32(healamount) + TakenTotal) * TakenTotalMod;
+    float heal = healamount * TakenTotalMod;
     return uint32(std::max(heal, 0.0f));
 }
 
@@ -6857,57 +6746,49 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, ui
 
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
+    // modify spell power by victim's SPELL_AURA_MOD_HEALING auras (eg Amplify/Dampen Magic)
+    //TC DoneAdvertisedBenefit += victim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_HEALING, spellProto->GetSchoolMask());
+    DoneAdvertisedBenefit += SpellBaseHealingBonusTaken(spellProto);
 
-#ifdef LICH_KING
-    switch (spellProto->SpellFamilyName)
-    {
-    case SPELLFAMILY_DEATHKNIGHT:
-        // Impurity
-        if (AuraEffect *aurEff = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 1986, 0))
-            AddPct(ApCoeffMod, aurEff->GetAmount());
-
-        break;
-    }
-
-    // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
-    if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
-        return healamount;
-
-#endif
+    // Pets just add their bonus damage to their spell damage
+    // note that their spell damage is just gain of their own auras
+    if (HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+        DoneAdvertisedBenefit += static_cast<Guardian const*>(this)->GetBonusDamage();
 
     // Check for table values
     float coeff = 0.f;
     if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
     {
+        WeaponAttackType const attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
+        float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
+        APbonus += GetTotalAttackPowerValue(attType);
+
         if (damagetype == DOT)
         {
             coeff = bonus->dot_damage;
             if (bonus->ap_dot_bonus > 0)
-                DoneTotal += int32(bonus->ap_dot_bonus * ApCoeffMod * stack * GetTotalAttackPowerValue(
-                        (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK, victim)
-                    );
+                DoneTotal += int32(bonus->ap_dot_bonus * stack * ApCoeffMod * APbonus);
         }
         else
         {
             coeff = bonus->direct_damage;
             if (bonus->ap_bonus > 0)
-                DoneTotal += int32(bonus->ap_bonus * ApCoeffMod * stack * GetTotalAttackPowerValue(
-                    (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK, victim));
+                DoneTotal += int32(bonus->ap_dot_bonus * stack * ApCoeffMod * APbonus);
         }
     }
     else
     {
         // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
         if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
-            return healamount;
-
-        //default coef
-        coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);  // As wowwiki says: C = (Cast Time / 3.5)
+            return uint32(std::max(healamount * DoneTotalMod, 0.0f));
     }
 
     // Default calculation
-    if (coeff && DoneAdvertisedBenefit)
+    if (DoneAdvertisedBenefit)
     {
+        if (coeff <= 0.f) //sun: added equal here, else we don't even use a default coef if there is no data in spell_bonus_data?
+            coeff = CalculateDefaultCoefficient(spellProto, damagetype);
+
         float factorMod = CalculateSpellpowerCoefficientLevelPenalty(spellProto) * stack;
         if (Player* modOwner = GetSpellModOwner())
         {
@@ -6975,14 +6856,14 @@ int32 Unit::SpellBaseHealingBonusDone(SpellSchoolMask schoolMask)
     return AdvertisedBenefit;
 }
 
-int32 Unit::SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask)
+int32 Unit::SpellBaseHealingBonusTaken(SpellInfo const* spellProto)
 {
     int32 AdvertisedBenefit = 0;
     AuraEffectList const& mDamageTaken = GetAuraEffectsByType(SPELL_AURA_MOD_HEALING);
 
     for(auto i : mDamageTaken)
     {
-        if((i->GetMiscValue() & schoolMask) != 0)
+        if((i->GetMiscValue() & spellProto->GetSchoolMask()) != 0)
             AdvertisedBenefit += i->GetAmount();
 
         //HACK
@@ -6992,6 +6873,41 @@ int32 Unit::SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask)
                 AdvertisedBenefit += int32(0.25f * (i->GetCaster()->ToPlayer())->GetStat(STAT_SPIRIT));
         }
     }
+
+
+    // Blessing of Light dummy effects healing taken from Holy Light and Flash of Light
+    if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && (spellProto->SpellFamilyFlags & 0x00000000C0000000LL))
+    {
+        AuraEffectList const& mDummyAuras = GetAuraEffectsByType(SPELL_AURA_DUMMY);
+
+        for (auto mDummyAura : mDummyAuras)
+        {
+            if (mDummyAura->GetSpellInfo()->HasVisual(9180))
+            {
+                // Flash of Light
+                if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL) && mDummyAura->GetEffIndex() == 1)
+                    AdvertisedBenefit += mDummyAura->GetAmount();
+                // Holy Light
+                else if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL) && mDummyAura->GetEffIndex() == 0)
+                    AdvertisedBenefit += mDummyAura->GetAmount();
+            }
+            // Libram of the Lightbringer
+            else if (mDummyAura->GetSpellInfo()->Id == 34231)
+            {
+                // Holy Light
+                if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL))
+                    AdvertisedBenefit += mDummyAura->GetAmount();
+            }
+            // Blessed Book of Nagrand || Libram of Light || Libram of Divinity
+            else if (mDummyAura->GetSpellInfo()->Id == 32403 || mDummyAura->GetSpellInfo()->Id == 28851 || mDummyAura->GetSpellInfo()->Id == 28853)
+            {
+                // Flash of Light
+                if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL))
+                    AdvertisedBenefit += mDummyAura->GetAmount();
+            }
+        }
+    }
+
     return AdvertisedBenefit;
 }
 
@@ -7003,11 +6919,6 @@ uint32 Unit::GetSchoolImmunityMask() const
     for (auto itr : schoolList)
         mask |= itr.type;
 
-    /* TC
-    SpellImmuneContainer const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
-    for (auto itr = schoolList.begin(); itr != schoolList.end(); ++itr)
-        mask |= itr->first;
-        */
     return mask;
 }
 
