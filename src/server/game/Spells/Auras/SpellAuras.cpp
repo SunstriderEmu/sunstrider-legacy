@@ -384,8 +384,20 @@ void AuraApplication::ClientUpdate(bool remove)
 
     if (remove)
     {
-        //TODO: currently if there is a new spell in slot casted by another caster, previous caster will see previous timer... what should we send?
         ASSERT(!_target->GetVisibleAura(_slot));
+
+        //we need to clear info for this aura, else if another aura of the same id is put in the same slot, the owner of the removed aura will continue to see the previous timer
+        if (Unit const* caster = GetBase()->GetCaster())
+        {
+            if (Player const* player = caster->ToPlayer())
+            {
+                uint32 id = GetBase()->GetId();
+                WorldPacket data(SMSG_CLEAR_EXTRA_AURA_INFO, (8 + 4));
+                data << _target->GetPackGUID();
+                data << uint32(id);
+                player->SendDirectMessage(&data);
+            }
+        }
         return;
     }
 

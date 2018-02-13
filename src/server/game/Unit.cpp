@@ -3074,6 +3074,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const* spellInfo, bo
     // Try victim reflect spell
     if (canReflect)
     {
+        //TODO: handle Frost Warding talent (reflect chance)
         int32 reflectchance = pVictim->GetTotalAuraModifier(SPELL_AURA_REFLECT_SPELLS);
         reflectchance += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_REFLECT_SPELLS_SCHOOL, spellInfo->GetSchoolMask());
 
