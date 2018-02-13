@@ -47,10 +47,10 @@ struct TC_GAME_API EscortAI : public ScriptedAI
         // CreatureAI functions
 		EscortAI(Creature *c);
 
+        void InitializeAI() override;
         void MoveInLineOfSight(Unit*) override;
         void JustDied(Unit*) override;
         void FailQuest();
-        void JustAppeared() override;
         void ReturnToLastPoint();
         void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) override;
         void UpdateAI(const uint32) override;

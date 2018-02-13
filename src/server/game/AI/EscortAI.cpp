@@ -55,7 +55,7 @@ void EscortAI::JustDied(Unit* /*killer*/)
     FailQuest();
 }
 
-void EscortAI::JustAppeared()
+void EscortAI::InitializeAI()
 {
     _escortState = STATE_ESCORT_NONE;
 
@@ -70,8 +70,6 @@ void EscortAI::JustAppeared()
 
     //Re-Enable questgiver flag
     me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-
-    Reset();
 }
 
 void EscortAI::ReturnToLastPoint()
