@@ -2614,7 +2614,7 @@ float Unit::CalculateSpellpowerCoefficientLevelPenalty(SpellInfo const* spellPro
  		
     float lvlFactor = (float(spellProto->MaxLevel) + 6.0f) / float(GetLevel());		
  		
-    return (100.0f - lvlPenalty) * lvlFactor / 100.0f;
+    return std::min(1.0f, (100.0f - lvlPenalty) * lvlFactor / 100.0f);
 #endif
 }
 
@@ -6679,9 +6679,6 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
     }
 #endif
 
-    float coeff = 0;
-    if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
-        coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
 
 #ifdef LICH_KING
     if (caster)
