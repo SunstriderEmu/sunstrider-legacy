@@ -83,11 +83,12 @@ namespace FactorySelector
     MovementGenerator* SelectMovementGenerator(Unit* unit)
     {
         MovementGeneratorType type = IDLE_MOTION_TYPE;
-        if (unit->GetTypeId() == TYPEID_UNIT)
+        if (Creature* creature = unit->ToCreature())
         {
-            type = unit->ToCreature()->GetDefaultMovementType();
+            if (!creature->GetPlayerMovingMe())
+                type = unit->ToCreature()->GetDefaultMovementType();
             //sunstrider: override default WAYPOINT_MOTION_TYPE type if no waypoint path id found for creature (or WAYPOINT_MOTION_TYPE will fail anyway)
-            if (type == WAYPOINT_MOTION_TYPE && unit->ToCreature()->GetWaypointPath() == 0)
+            if (type == WAYPOINT_MOTION_TYPE && creature->GetWaypointPath() == 0)
                 type = IDLE_MOTION_TYPE;
         }
 

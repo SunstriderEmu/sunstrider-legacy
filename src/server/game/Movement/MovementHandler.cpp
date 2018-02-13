@@ -598,7 +598,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
             */
     Unit* movedUnit = ObjectAccessor::GetUnit(*_player, guid);
     if(movedUnit)
-        _player->SetMover(movedUnit);
+        _player->SetMovedUnit(movedUnit);
     else
         TC_LOG_ERROR("network", "Player %u - WorldSession::HandleSetActiveMoverOpcode could not find player with guid %u", _player->GetGUID().GetCounter(), guid.GetCounter());
 }

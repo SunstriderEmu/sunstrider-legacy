@@ -20510,7 +20510,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     if(HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || IsInFlight())
         AddUnitMovementFlag(MOVEMENTFLAG_PLAYER_FLYING);
 
-    SetMover(this);
+    SetMovedUnit(this);
 }
 
 void Player::SendInitialPacketsAfterAddToMap()
@@ -22087,7 +22087,7 @@ void Player::SetClientControl(Unit* target, uint8 allowMove)
         SetViewpoint(target, allowMove);
 
     if (allowMove)
-        SetMover(target);
+        SetMovedUnit(target);
 }
 
 void Player::UpdateZoneDependentAuras( uint32 newZone )
@@ -23465,7 +23465,7 @@ void Player::SetFallInformation(uint32 time, float z)
     m_lastFallZ = z;
 }
 
-void Player::SetMover(Unit* target)
+void Player::SetMovedUnit(Unit* target)
 {
     //if target is a player, notify anticheat
     if (Player* targetPlayer = target->ToPlayer())
@@ -23474,8 +23474,12 @@ void Player::SetMover(Unit* target)
     GetSession()->anticheat->OnPlayerMoverChanged(m_unitMovedByMe, target);
 
     m_unitMovedByMe->m_playerMovingMe = nullptr;
+    if (m_unitMovedByMe->GetTypeId() == TYPEID_UNIT)
+        m_unitMovedByMe->GetMotionMaster()->Initialize();
     m_unitMovedByMe = target;
     m_unitMovedByMe->m_playerMovingMe = this;
+    if (m_unitMovedByMe->GetTypeId() == TYPEID_UNIT)
+        m_unitMovedByMe->GetMotionMaster()->Initialize();
 }
 
 void Player::SetViewpoint(WorldObject* target, bool apply)

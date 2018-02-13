@@ -2288,7 +2288,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetClientControl(Unit* target, uint8 allowMove);
 
         //Set target as moved by this player
-        void SetMover(Unit* target);
+        void SetMovedUnit(Unit* target);
 
 		void SetSeer(WorldObject* target) { m_seer = target; }
 		void SetViewpoint(WorldObject* target, bool apply);
