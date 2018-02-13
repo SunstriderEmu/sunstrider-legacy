@@ -6,6 +6,7 @@
 #include "RandomPlayerbotFactory.h"
 #include "PlayerbotFactory.h"
 #include "CharacterCache.h"
+#include "SpellHistory.h"
 
 #include <boost/math/special_functions/erf.hpp>
 
@@ -1206,9 +1207,12 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID)
 
 void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond)
 {
-    uint32 cooldown = caster->GetSpellCooldownDelay(castSpellID);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
+    INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    uint32 cooldown = caster->GetSpellHistory()->GetRemainingCooldown(spellInfo);
     INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName().c_str(), cooldown, castSpellID, cooldownSecond);
-    INTERNAL_TEST_ASSERT(cooldown == cooldownSecond);
+    INTERNAL_TEST_ASSERT(cooldown == cooldownSecond * IN_MILLISECONDS);
 }
 
 void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS)

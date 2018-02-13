@@ -212,9 +212,6 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
 
     m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
 
-    m_CreatureSpellCooldowns.clear();
-    m_CreatureCategoryCooldowns.clear();
-    m_GlobalCooldown = 0;
     DisableReputationGain = false;
 }
 
@@ -692,14 +689,8 @@ void Creature::Update(uint32 diff)
 
             GetThreatManager().Update(diff);
 
-            if (m_GlobalCooldown <= diff)
-                m_GlobalCooldown = 0;
-            else
-                m_GlobalCooldown -= diff;
-
             m_timeSinceSpawn += diff;
 
-            UpdateProhibitedSchools(diff);
             DecreaseTimer(m_stealthAlertCooldown, diff);
 
             //From TC. Removed as this is VERY costly in cpu time for little to no gain
@@ -2388,53 +2379,6 @@ bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, 
     return Unit::IsImmunedToSpellEffect(spellInfo, index, caster);
 }
 
-void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
-{
-    if (idSchoolMask & SPELL_SCHOOL_MASK_NORMAL)
-        m_prohibitedSchools[SPELL_SCHOOL_NORMAL] = unTimeMs;
-    if (idSchoolMask & SPELL_SCHOOL_MASK_HOLY)
-        m_prohibitedSchools[SPELL_SCHOOL_HOLY] = unTimeMs;
-    if (idSchoolMask & SPELL_SCHOOL_MASK_FIRE)
-        m_prohibitedSchools[SPELL_SCHOOL_FIRE] = unTimeMs;
-    if (idSchoolMask & SPELL_SCHOOL_MASK_NATURE)
-        m_prohibitedSchools[SPELL_SCHOOL_NATURE] = unTimeMs;
-    if (idSchoolMask & SPELL_SCHOOL_MASK_FROST)
-        m_prohibitedSchools[SPELL_SCHOOL_FROST] = unTimeMs;
-    if (idSchoolMask & SPELL_SCHOOL_MASK_SHADOW)
-        m_prohibitedSchools[SPELL_SCHOOL_ARCANE] = unTimeMs;
-    if (idSchoolMask & SPELL_SCHOOL_MASK_ARCANE)
-        m_prohibitedSchools[SPELL_SCHOOL_ARCANE] = unTimeMs;
-}
-
-void Creature::UpdateProhibitedSchools(uint32 const diff)
-{
-    for (uint32 & m_prohibitedSchool : m_prohibitedSchools) {
-        if (m_prohibitedSchool == 0)
-            continue;
-
-        if (m_prohibitedSchool <= diff) {
-            m_prohibitedSchool = 0;
-            continue;
-        }
-
-        m_prohibitedSchool -= diff;
-    }
-}
-
-bool Creature::IsSpellSchoolMaskProhibited(SpellSchoolMask idSchoolMask)
-{
-    bool prohibited = false;
-
-    for (int i = 0; i < MAX_SPELL_SCHOOL; i++) {
-        if ((idSchoolMask & (1 << i)) && m_prohibitedSchools[i] > 0) {
-            prohibited = true;
-            break;
-        }
-    }
-
-    return prohibited;
-}
-
 SpellInfo const *Creature::reachWithSpellAttack(Unit *pVictim)
 {
     if(!pVictim)
@@ -2894,52 +2838,6 @@ void Creature::SendZoneUnderAttackMessage(Player* attacker)
 {
     uint32 enemy_team = attacker->GetTeam();
     sWorld->SendZoneUnderAttack(GetZoneId(), (enemy_team==ALLIANCE ? HORDE : ALLIANCE));
-}
-
-void Creature::_AddCreatureSpellCooldown(uint32 spell_id, time_t end_time)
-{
-    m_CreatureSpellCooldowns[spell_id] = end_time;
-}
-
-void Creature::_AddCreatureCategoryCooldown(uint32 category, time_t apply_time)
-{
-    m_CreatureCategoryCooldowns[category] = apply_time;
-}
-
-void Creature::AddCreatureSpellCooldown(uint32 spellid)
-{
-    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellid);
-    if(!spellInfo)
-        return;
-
-    uint32 cooldown = spellInfo->GetRecoveryTime();
-    if(cooldown)
-        _AddCreatureSpellCooldown(spellid, time(nullptr) + cooldown/1000);
-
-    if(spellInfo->GetCategory())
-        _AddCreatureCategoryCooldown(spellInfo->GetCategory(), time(nullptr));
-
-    m_GlobalCooldown = spellInfo->StartRecoveryTime;
-}
-
-bool Creature::HasCategoryCooldown(uint32 spell_id) const
-{
-    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
-    if(!spellInfo)
-        return false;
-
-    // check global cooldown if spell affected by it
-    if (spellInfo->StartRecoveryCategory > 0 && m_GlobalCooldown > 0)
-        return true;
-
-    auto itr = m_CreatureCategoryCooldowns.find(spellInfo->GetCategory());
-    return(itr != m_CreatureCategoryCooldowns.end() && time_t(itr->second + (spellInfo->CategoryRecoveryTime / 1000)) > time(nullptr));
-}
-
-bool Creature::HasSpellCooldown(uint32 spell_id) const
-{
-    auto itr = m_CreatureSpellCooldowns.find(spell_id);
-    return (itr != m_CreatureSpellCooldowns.end() && itr->second > time(nullptr)) || HasCategoryCooldown(spell_id);
 }
 
 bool Creature::HasSpell(uint32 spellID) const

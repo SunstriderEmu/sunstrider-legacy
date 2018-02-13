@@ -44,6 +44,7 @@ class Totem;
 class PetAura;
 class BigNumber;
 class Unit;
+class SpellHistory;
 
 #define WORLD_TRIGGER   12999
 
@@ -1006,22 +1007,6 @@ struct GlobalCooldown
     uint32 cast_time;
 };
 
-typedef std::unordered_map<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
-
-class GlobalCooldownMgr                                     // Shared by Player and CharmInfo
-{
-    public:
-        GlobalCooldownMgr() {}
-
-    public:
-        bool HasGlobalCooldown(SpellInfo const* spellInfo) const;
-        void AddGlobalCooldown(SpellInfo const* spellInfo, uint32 gcd);
-        void CancelGlobalCooldown(SpellInfo const* spellInfo);
-
-    private:
-        GlobalCooldownList m_GlobalCooldowns;
-};
-
 typedef UnitActionBarEntry CharmSpellInfo;
 
 enum Rotation
@@ -1091,8 +1076,6 @@ class TC_GAME_API CharmInfo
         void ToggleCreatureAutocast(SpellInfo const* spellInfo, bool apply);
         CharmSpellInfo* GetCharmSpell(uint8 index) { return &(_charmspells[index]); }
 
-        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
-
 		void SetIsCommandAttack(bool val);
 		bool IsCommandAttack();
 		void SetIsCommandFollow(bool val);
@@ -1124,8 +1107,6 @@ class TC_GAME_API CharmInfo
 		float _stayX;
 		float _stayY;
 		float _stayZ;
-
-        GlobalCooldownMgr m_GlobalCooldownMgr;
 };
 
 // for clearing special attacks
@@ -1914,7 +1895,6 @@ class TC_GAME_API Unit : public WorldObject
         float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
 
         void SetCurrentCastedSpell(Spell * pSpell);
-        virtual void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/ ) { }
         void InterruptSpell(uint32 spellType, bool withDelayed = true, bool withInstant = true);
         void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
 
@@ -1947,6 +1927,9 @@ class TC_GAME_API Unit : public WorldObject
         virtual bool IsFocusing(Spell const* /*focusSpell*/ = nullptr, bool /*withDelay*/ = false) { return false; }
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
+
+        SpellHistory* GetSpellHistory() { return m_spellHistory; }
+        SpellHistory const* GetSpellHistory() const { return m_spellHistory; }
 
         uint32 m_addDmgOnce;
         ObjectGuid m_SummonSlot[MAX_SUMMON_SLOT];
@@ -2425,6 +2408,8 @@ class TC_GAME_API Unit : public WorldObject
         bool m_duringRemoveFromWorld; // lock made to not add stuff after begining removing from world
 
         float m_CombatDistance;
+
+        SpellHistory* m_spellHistory;
     private:
         void ProcSkillsAndReactives(bool isVictim, Unit* procTarget, uint32 typeMask, uint32 hitMask, WeaponAttackType attType);
 

@@ -14,6 +14,7 @@
 #include "Pet.h"
 #include "Language.h"
 #include "PetAI.h"
+#include "SpellHistory.h"
 
 void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spellid, uint16 flag, ObjectGuid guid2)
 {
@@ -174,14 +175,9 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
         case ACT_PASSIVE:                                   //0x01
         case ACT_ENABLED:                                   //0xc1    spell
         {
-            Unit* unit_target;
+            Unit* unit_target = nullptr;
             if(guid2)
                 unit_target = ObjectAccessor::GetUnit(*_player,guid2);
-            else
-                unit_target = nullptr;
-
-            if ((pet->ToCreature())->GetGlobalCooldown() > 0)
-                return;
 
             // do not cast unknown spells
             SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellid );
@@ -228,7 +224,6 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
 
             if(result == SPELL_CAST_OK)
             {
-                (pet->ToCreature())->AddCreatureSpellCooldown(spellid);
                 if ((pet->ToCreature())->IsPet())
                     ((Pet*)pet)->CheckLearning(spellid);
 
@@ -282,8 +277,8 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
                 else
                     pet->SendPetCastFail(spellid, result);
 
-                if(!(pet->ToCreature())->HasSpellCooldown(spellid))
-                    GetPlayer()->SendClearCooldown(spellid, pet);
+                if (!pet->GetSpellHistory()->HasCooldown(spellid))
+                    pet->GetSpellHistory()->ResetCooldown(spellid, true);
 
                 spell->finish(false);
                 delete spell;
@@ -841,15 +836,11 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     if(!caster->HasSpell(spellid) || spellInfo->IsPassive())
         return;
 
-    if (spellInfo->StartRecoveryCategory > 0) //Check if spell is affected by GCD
-        if (caster->GetTypeId() == TYPEID_UNIT && (caster->ToCreature())->GetGlobalCooldown() > 0)
-        {
-            caster->SendPetCastFail(spellid, SPELL_FAILED_NOT_READY);
-            return;
-        }
-
     SpellCastTargets targets;
     targets.Read(recvPacket, caster);
+#ifdef LICH_KING
+    HandleClientCastFlags(recvPacket, castFlags, targets);
+#endif
 
     caster->ClearUnitState(UNIT_STATE_FOLLOW);
     bool triggered = spellid == 33395; //Freeze
@@ -867,7 +858,6 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
         if(caster->GetTypeId() == TYPEID_UNIT)
         {
             Creature* pet = caster->ToCreature();
-            pet->AddCreatureSpellCooldown(spellid);
             if(pet->IsPet())
             {
                 Pet* p = (Pet*)pet;
@@ -886,16 +876,9 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     else
     {
         caster->SendPetCastFail(spellid, result);
-        if(caster->GetTypeId() == TYPEID_PLAYER)
-        {
-            if(!(caster->ToPlayer())->HasSpellCooldown(spellid))
-                GetPlayer()->SendClearCooldown(spellid, caster);
-        }
-        else
-        {
-            if(!(caster->ToCreature())->HasSpellCooldown(spellid))
-                GetPlayer()->SendClearCooldown(spellid, caster);
-        }
+
+        if (!caster->GetSpellHistory()->HasCooldown(spellid))
+            caster->GetSpellHistory()->ResetCooldown(spellid, true);
 
         spell->finish(false);
         delete spell;

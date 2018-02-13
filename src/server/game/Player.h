@@ -121,8 +121,6 @@ struct SpellCooldown
     uint16 itemid;
 };
 
-typedef std::map<uint32, SpellCooldown> SpellCooldowns;
-
 enum TrainerSpellState
 {
     TRAINER_SPELL_GREEN = 0,
@@ -1741,36 +1739,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         static void ApplyModToSpell(SpellModifier* mod, Spell* spell);
         void SetSpellModTakingSpell(Spell* spell, bool apply);
 
-        bool HasSpellCooldown(uint32 spell_id) const
-        {
-            auto itr = m_spellCooldowns.find(spell_id);
-            return itr != m_spellCooldowns.end() && itr->second.end > time(nullptr);
-        }
-        uint32 GetSpellCooldownDelay(uint32 spell_id) const
-        {
-            auto itr = m_spellCooldowns.find(spell_id);
-            time_t t = time(nullptr);
-            return itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0;
-        }
-        static uint32 const infinityCooldownDelay = MONTH;  // used for set "infinity cooldowns" for spells and check
-        static uint32 const infinityCooldownDelayCheck = MONTH/2;
-
-        void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
-        void StartCooldown(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = nullptr, bool onHold = false);
-        void SendCooldownEvent(SpellInfo const *spellInfo, uint32 itemId = 0, Spell* spell = nullptr, bool setCooldown = true);
-        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
-        void RemoveSpellCooldown(uint32 spell_id, bool update = false);
-        void RemoveArenaSpellCooldowns();
-        void RemoveAllSpellCooldown();
-        void SendClearCooldown(uint32 spell_id, Unit* target);
-
-        void _LoadSpellCooldowns(PreparedQueryResult result);
-        void _SaveSpellCooldowns(SQLTransaction trans);
-
-        // global cooldown
-        void AddGlobalCooldown(SpellInfo const *spellInfo, Spell const *spell, bool allowTinyCd = false);
-        bool HasGlobalCooldown(SpellInfo const *spellInfo) const;
-        void RemoveGlobalCooldown(SpellInfo const *spellInfo);
+        void RemoveArenaSpellCooldowns(bool removeActivePetCooldowns = false);
 
         void setResurrectRequestData(ObjectGuid guid, uint32 mapId, float X, float Y, float Z, uint32 health, uint32 mana)
         {
@@ -2610,8 +2579,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         PlayerMails m_mail;
         PlayerSpellMap m_spells;
         //TC PlayerTalentMap* m_talents[MAX_TALENT_SPECS];
-        SpellCooldowns m_spellCooldowns;
-        std::map<uint32, uint32> m_globalCooldowns; // whole start recovery category stored in one
 
         uint32 m_timeSyncCounter;
         uint32 m_timeSyncTimer;

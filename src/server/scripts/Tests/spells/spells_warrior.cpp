@@ -1,6 +1,7 @@
 #include "../ClassSpellsDamage.h"
 #include "../ClassSpellsCoeff.h"
 #include "PlayerbotAI.h"
+#include "SpellHistory.h"
 
 class TestCaseWarrior : public TestCase
 {
@@ -19,13 +20,13 @@ public:
 
         ASSERT_INFO("Stance %u", stanceSpellId);
         TEST_CAST(warrior, victim, testSpellId, res, TriggerCastFlags(TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_CASTER_AURASTATE));
-        warrior->RemoveAllSpellCooldown();
+        warrior->GetSpellHistory()->ResetAllCooldowns();
     }
 
     void TestRequiresMeleeWeapon(TestPlayer* warrior, Unit* victim, uint32 testSpellId, bool twoHand, SpellCastResult result = SPELL_FAILED_EQUIPPED_ITEM_CLASS)
     {
         RemoveAllEquipedItems(warrior);
-        warrior->RemoveAllSpellCooldown();
+        warrior->GetSpellHistory()->ResetAllCooldowns();
         TEST_CAST(warrior, victim, testSpellId, result);
 
         if (twoHand)
@@ -256,7 +257,7 @@ public:
             TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, POWER_RAGE, expectedMockingBlowRage);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::MOCKING_BLOW_RNK_6) == 2 * MINUTE);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, 2 * MINUTE);
 
             // Aura
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, 6 * SECOND * IN_MILLISECONDS);
@@ -505,7 +506,7 @@ public:
             TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, POWER_RAGE, expectedThunderClapRage);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::THUNDER_CLAP_RNK_7) == 4 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, 4 * SECOND);
 
             // 4 affected max, aura duration, slower attacks
             float const ThunderClapFactor = 0.9f;
@@ -645,7 +646,7 @@ public:
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BERSERKER_RAGE_RNK_1, 10 * SECOND * IN_MILLISECONDS);
 
             // Cooldown duration
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::BERSERKER_RAGE_RNK_1) == 30 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::BERSERKER_RAGE_RNK_1, 30 * SECOND);
 
             // Reset
             warrior->SetPower(POWER_RAGE, 0);
@@ -1058,7 +1059,7 @@ public:
             TEST_POWER_COST(warrior, priest2, ClassSpells::Warrior::INTERCEPT_RNK_5, POWER_RAGE, expectedInterceptRageCost);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::INTERCEPT_RNK_5) == 30 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::INTERCEPT_RNK_5, 30 * SECOND);
 
             // Stun
             Wait(250);
@@ -1124,7 +1125,7 @@ public:
             TEST_POWER_COST(warrior, priest1, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, POWER_RAGE, expectedIntidimidatingShoutRageCost);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1) == 3 * MINUTE);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, 3 * MINUTE);
 
             // Trigger on target
             TEST_AURA_MAX_DURATION(priest1, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER, 8 * SECOND * IN_MILLISECONDS);
@@ -1187,7 +1188,7 @@ public:
             TEST_POWER_COST(warrior, priest, ClassSpells::Warrior::PUMMEL_RNK_2, POWER_RAGE, expectedPummelRageCost);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::PUMMEL_RNK_2) == 10 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::PUMMEL_RNK_2, 10 * SECOND);
 
             Wait(100);
             // Make sure it hits
@@ -1252,7 +1253,7 @@ public:
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::RECKLESSNESS_RNK_1, 15 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::RECKLESSNESS_RNK_1) == 30 * MINUTE);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::RECKLESSNESS_RNK_1, 30 * MINUTE);
 
             // Damage taken increase
             warrior->SetMaxHealth(5000000);
@@ -1453,7 +1454,7 @@ public:
             TEST_ASSERT(creature4->GetHealth() == startHealth4);
 
             // Max 4, rage cost & cooldown
-            warrior->RemoveAllSpellCooldown();
+            warrior->GetSpellHistory()->ResetAllCooldowns();
             Creature* creature5 = SpawnCreature(8, true);
             Creature* creature6 = SpawnCreature(8, true);
             uint32 const startHealth5 = creature5->GetHealth();
@@ -1466,7 +1467,7 @@ public:
             int count = 0;
             uint32 const expectedWhirldwindRage = 25 * 10;
             TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, POWER_RAGE, expectedWhirldwindRage);
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::WHIRLWIND_RNK_1) == 10 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::WHIRLWIND_RNK_1, 10 * SECOND);
             TestCount(creature1, startHealth1, count);
             TestCount(creature2, startHealth2, count);
             TestCount(creature3, startHealth3, count);
@@ -1525,7 +1526,7 @@ public:
             TEST_ASSERT(warrior->GetHealth() == expectedHealth);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::BLOODRAGE_RNK_1) == 1 * MINUTE);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::BLOODRAGE_RNK_1, 1 * MINUTE);
 
             // Aura
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BLOODRAGE_RNK_1_TRIGGER, 10 * SECOND * IN_MILLISECONDS);
@@ -1672,7 +1673,7 @@ public:
             TEST_POWER_COST(warrior, shaman, ClassSpells::Warrior::INTERVENE_RNK_1, POWER_RAGE, expectedInterveneRage);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::INTERVENE_RNK_1) == 30 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::INTERVENE_RNK_1, 30 * SECOND);
 
             // Aura
             TEST_AURA_MAX_DURATION(shaman, ClassSpells::Warrior::INTERVENE_RNK_1, 10 * SECOND * IN_MILLISECONDS);
@@ -1765,7 +1766,7 @@ public:
             TestRevengeTrigger(warrior, rogue);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::REVENGE_RNK_8) == 5 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::REVENGE_RNK_8, 5 * SECOND);
 
             // Damage
             float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5));
@@ -1817,7 +1818,7 @@ public:
             // TODO: dazes target
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SHIELD_BASH_RNK_4) == 12 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::SHIELD_BASH_RNK_4, 12 * SECOND);
 
             Wait(100);
             // Make sure it hits
@@ -1911,7 +1912,7 @@ public:
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, 5 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1) == 5 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, 5 * SECOND);
         }
     };
 
@@ -1954,7 +1955,7 @@ public:
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, 10 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SHIELD_WALL_RNK_1) == 30 * MINUTE);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, 30 * MINUTE * IN_MILLISECONDS);
 
             // 75% less damage
             float const shieldWallFactor = 1 - 0.75f;
@@ -2032,7 +2033,7 @@ public:
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, 5 * SECOND * IN_MILLISECONDS);
 
             // Cooldown
-            TEST_ASSERT(warrior->GetSpellCooldownDelay(ClassSpells::Warrior::SPELL_REFLECTION_RNK_1) == 10 * SECOND);
+            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, 10 * SECOND * IN_MILLISECONDS);
 
             // Reflect
             warrior->SetFullHealth();

@@ -1,5 +1,6 @@
 #include "../ClassSpellsDamage.h"
 #include "../ClassSpellsCoeff.h"
+#include "SpellHistory.h"
 
 class BarkskinTest : public TestCaseScript
 {
@@ -13,7 +14,7 @@ public:
 
 		void CastBarkskin(TestPlayer* druid)
 		{
-			druid->RemoveAllSpellCooldown();
+            druid->GetSpellHistory()->ResetAllCooldowns();
             TEST_CAST(druid, druid, ClassSpells::Druid::BARKSKIN_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 		}
 
@@ -364,7 +365,7 @@ public:
 
 		void CastHurricane(TestPlayer* druid, Unit* target)
 		{
-			druid->RemoveAllSpellCooldown();
+			druid->GetSpellHistory()->ResetAllCooldowns();
             TEST_CAST(druid, target, ClassSpells::Druid::HURRICANE_RNK_4, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 		}
 
@@ -971,7 +972,7 @@ public:
 
 		void TestEnrage(TestPlayer* druid, uint32 spellFormId, float armorReduction)
 		{
-			druid->RemoveAllSpellCooldown();
+			druid->GetSpellHistory()->ResetAllCooldowns();
             TEST_CAST(druid, druid, spellFormId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			uint32 expectedArmor = druid->GetArmor() * (1 - armorReduction);
             TEST_CAST(druid, druid, ClassSpells::Druid::ENRAGE_RNK_1);
@@ -1024,7 +1025,7 @@ public:
 
 		void TestFrenziedRegeneration(TestPlayer* druid, uint32 spellFormId)
 		{
-			druid->RemoveAllSpellCooldown();
+			druid->GetSpellHistory()->ResetAllCooldowns();
 
             TEST_CAST(druid, druid, spellFormId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			uint32 health = 1;
@@ -2106,11 +2107,11 @@ public:
         void TestRebirth(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 reagentId, uint32 expectedHealth, uint32 expectedMana)
         {
             victim->KillSelf(true);
-            caster->RemoveAllSpellCooldown();
+            caster->GetSpellHistory()->ResetAllCooldowns();
             caster->AddItem(reagentId, 1);
             TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
             //victim->AcceptRessurectRequest();
-            TEST_ASSERT(caster->GetSpellCooldownDelay(spellId) == 20 * MINUTE);
+            TEST_HAS_COOLDOWN(caster, spellId, 20 * MINUTE * IN_MILLISECONDS);
             TEST_ASSERT(victim->GetHealth() == expectedHealth);
             TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
         }

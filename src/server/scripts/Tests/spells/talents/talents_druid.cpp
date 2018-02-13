@@ -1,7 +1,7 @@
 #include "../../ClassSpellsDamage.h"
 #include "../../ClassSpellsCoeff.h"
 #include "PlayerbotAI.h"
-
+#include "SpellHistory.h"
 
 // Helpers to get shapeshift base damage
 // http://wowwiki.wikia.com/wiki/Attack_power?oldid=1715193
@@ -847,7 +847,7 @@ public:
 			Wait(2000); // GCD
 
 			// Mage can't invisible
-			player->RemoveAllSpellCooldown();
+            player->GetSpellHistory()->ResetAllCooldowns();
             TEST_CAST(player, mage, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5);
             TEST_CAST(mage, mage, ClassSpells::Mage::INVISIBILITY_RNK_1, SPELL_FAILED_CASTER_AURASTATE);
 		}
@@ -1672,7 +1672,7 @@ public:
 
 		void TestSwiftmend(TestPlayer* player, uint32 spellId, uint32 expectedHealth)
 		{
-			player->RemoveAllSpellCooldown();
+			player->GetSpellHistory()->ResetAllCooldowns();
 			player->SetHealth(1);
 			uint32 res = player->CastSpell(player, spellId);
 			TEST_ASSERT(res == SPELL_CAST_OK);

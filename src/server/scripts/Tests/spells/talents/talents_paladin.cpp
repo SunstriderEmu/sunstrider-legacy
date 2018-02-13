@@ -1,6 +1,7 @@
 #include "../../ClassSpellsDamage.h"
 #include "../../ClassSpellsCoeff.h"
 #include "PlayerbotAI.h"
+#include "SpellHistory.h"
 
 class SalvationTest : public TestCaseScript
 {
@@ -150,7 +151,7 @@ public:
 			// Assert armor not from items is not taken into account
 			player->AddAura(33079, player); // Scroll of Protection V - 300 armor
 			player->RemoveAurasDueToSpell(20236); // Remove Lay on Hands proc aura
-			player->RemoveAllSpellCooldown();
+			player->GetSpellHistory()->ResetAllCooldowns();
 			res = player->CastSpell(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4);
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
@@ -855,7 +856,7 @@ public:
 		void TestSealMana(TestPlayer* player, Creature* creature, uint32 sealSpellId, uint32 sealManaCost)
 		{
 			player->Regenerate(POWER_MANA);
-			player->RemoveAllSpellCooldown();
+			player->GetSpellHistory()->ResetAllCooldowns();
 			uint32 const startMana = player->GetPower(POWER_MANA);
 
 			int32 const judgementMana = 147;

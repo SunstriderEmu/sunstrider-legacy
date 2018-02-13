@@ -91,7 +91,6 @@ class TC_GAME_API Pet : public Guardian
         void CastPetAura(PetAura const* aura);
 
         void _LoadSpellCooldowns();
-        void _SaveSpellCooldowns();
         void _LoadAuras(uint32 timediff);
         void _SaveAuras(SQLTransaction& trans);
         void _LoadSpells();

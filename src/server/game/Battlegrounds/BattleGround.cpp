@@ -1290,9 +1290,7 @@ void Battleground::AddPlayer(Player *plr)
         if(GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
         {
             plr->CastSpell(plr, SPELL_ARENA_PREPARATION, TRIGGERED_FULL_MASK);
-
-            plr->SetHealth(plr->GetMaxHealth());
-            plr->SetPower(POWER_MANA, plr->GetMaxPower(POWER_MANA));
+            plr->ResetAllPowers();
         }
     }
     else

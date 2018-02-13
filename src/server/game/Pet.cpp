@@ -15,6 +15,7 @@
 #include "Util.h"
 #include "Creature.h"
 #include "PetDefines.h"
+#include "SpellHistory.h"
 
 #define SPELL_WATER_ELEMENTAL_WATERBOLT 31707
 #define SPELL_PET_RECENTLY_DISMISSED 47531
@@ -86,8 +87,6 @@ Pet::Pet(Player* owner, PetType type)
         SetReactState(REACT_AGGRESSIVE);
 
     m_spells.clear();
-    m_CreatureSpellCooldowns.clear();
-    m_CreatureCategoryCooldowns.clear();
     m_autospells.clear();
     m_declinedname = nullptr;
     //m_isActive = true;
@@ -490,7 +489,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     _SaveSpells(trans);
-    _SaveSpellCooldowns();
+    GetSpellHistory()->SaveToDB<Pet>(trans);
     if(getPetType() == HUNTER_PET)
         _SaveAuras(trans);
 
@@ -1388,69 +1387,11 @@ void Pet::_LoadSpellCooldowns()
     if (GetEntry() == 510) // Don't load cooldowns for mage water elem
         return;
     
-    m_CreatureSpellCooldowns.clear();
-    m_CreatureCategoryCooldowns.clear();
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SPELL_COOLDOWN);
+    stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+    PreparedQueryResult cooldownsResult = CharacterDatabase.Query(stmt);
 
-    QueryResult result = CharacterDatabase.PQuery("SELECT spell, time FROM pet_spell_cooldown WHERE guid = '%u'",m_charmInfo->GetPetNumber());
-
-    if(result)
-    {
-        time_t curTime = time(nullptr);
-
-        WorldPacket data(SMSG_SPELL_COOLDOWN, (8+1+result->GetRowCount()*8));
-        data << GetGUID();
-        data << uint8(0x0);                                 // flags (0x1, 0x2)
-
-        do
-        {
-            Field *fields = result->Fetch();
-
-            uint32 spell_id = fields[0].GetUInt32();
-            time_t db_time  = (time_t)fields[1].GetUInt64();
-
-            if(!sSpellMgr->GetSpellInfo(spell_id))
-            {
-                TC_LOG_ERROR("entities.pet","Pet %u have unknown spell %u in `pet_spell_cooldown`, skipping.",m_charmInfo->GetPetNumber(),spell_id);
-                continue;
-            }
-
-            // skip outdated cooldown
-            if(db_time <= curTime)
-                continue;
-
-            data << uint32(spell_id);
-            data << uint32(uint32(db_time-curTime)*1000);   // in m.secs
-
-            _AddCreatureSpellCooldown(spell_id,db_time);
-        }
-        while( result->NextRow() );
-
-        if(!m_CreatureSpellCooldowns.empty() && GetOwner())
-        {
-            (GetOwner()->ToPlayer())->SendDirectMessage(&data);
-        }
-    }
-}
-
-void Pet::_SaveSpellCooldowns()
-{
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM pet_spell_cooldown WHERE guid = '%u'", m_charmInfo->GetPetNumber());
-
-    time_t curTime = time(nullptr);
-
-    // remove oudated and save active
-    for(auto itr = m_CreatureSpellCooldowns.begin();itr != m_CreatureSpellCooldowns.end();)
-    {
-        if(itr->second <= curTime)
-            m_CreatureSpellCooldowns.erase(itr++);
-        else
-        {
-            trans->PAppend("INSERT INTO pet_spell_cooldown (guid,spell,time) VALUES ('%u', '%u', '" UI64FMTD "')", m_charmInfo->GetPetNumber(), itr->first, uint64(itr->second));
-            ++itr;
-        }
-    }
-    CharacterDatabase.CommitTransaction(trans);
+    GetSpellHistory()->LoadFromDB<Pet>(cooldownsResult);
 }
 
 void Pet::_LoadSpells()

@@ -555,9 +555,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster) override;
         bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const override;
         void LoadTemplateImmunities();
-        void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/) override;
-        void UpdateProhibitedSchools(uint32 const diff);
-        bool IsSpellSchoolMaskProhibited(SpellSchoolMask /*idSchoolMask*/);
         bool isElite() const
         {
             if(IsPet())
@@ -600,12 +597,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         SpellSchoolMask GetMeleeDamageSchoolMask(WeaponAttackType /*attackType*/ = BASE_ATTACK, uint8 /*damageIndex*/ = 0) const override { return m_meleeDamageSchoolMask; }
         void SetMeleeDamageSchool(SpellSchools school) { m_meleeDamageSchoolMask = SpellSchoolMask(1 << school); }
-
-        void _AddCreatureSpellCooldown(uint32 spell_id, time_t end_time);
-        void _AddCreatureCategoryCooldown(uint32 category, time_t apply_time);
-        void AddCreatureSpellCooldown(uint32 spellid);
-        bool HasSpellCooldown(uint32 spell_id) const;
-        bool HasCategoryCooldown(uint32 spell_id) const;
 
         bool HasSpell(uint32 spellID) const override;
 
@@ -674,9 +665,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         SpellInfo const* reachWithSpellCure(Unit *pVictim);
 
         uint32 m_spells[MAX_CREATURE_SPELLS];
-        CreatureSpellCooldowns m_CreatureSpellCooldowns;
-        CreatureSpellCooldowns m_CreatureCategoryCooldowns;
-        uint32 m_GlobalCooldown;
 
         bool IsWithinSightDist(Unit const* u) const;
         /* Return if creature can aggro and start attacking target, depending on faction, distance, LoS, if target is attackable, ...
@@ -760,8 +748,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetTransportHomePosition(const Position &pos) { m_transportHomePosition.Relocate(pos); }
         void GetTransportHomePosition(float& x, float& y, float& z, float& ori) const { m_transportHomePosition.GetPosition(x, y, z, ori); }
         Position const& GetTransportHomePosition() const { return m_transportHomePosition; }
-
-        uint32 GetGlobalCooldown() const { return m_GlobalCooldown; }
 
         uint32 GetWaypointPath() const { return _waypointPathId; }
         void LoadPath(uint32 pathid) { _waypointPathId = pathid; }
@@ -919,11 +905,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         
         uint32 m_creaturePoolId;
         
-        //std::vector<uint64> m_allowedToLoot;
-        
         uint64 m_timeSinceSpawn;                            // (msecs) elapsed time since (re)spawn
-        
-        uint32 m_prohibitedSchools[7];
         
         bool m_isBeingEscorted;
 

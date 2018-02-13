@@ -2,6 +2,7 @@
 #include "PlayerAI.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "SpellHistory.h"
 
 static const uint8 NUM_TALENT_TREES = 3;
 static const uint8 NUM_SPEC_ICONICS = 3;
@@ -814,8 +815,7 @@ PlayerAI::TargetedSpell PlayerAI::VerifySpellCast(uint32 spellId, Unit* target)
     if (!spellInfo)
         return {};
 
-    if(me->HasGlobalCooldown(spellInfo))
-    //TC if (me->GetSpellHistory()->HasGlobalCooldown(spellInfo))
+    if (me->GetSpellHistory()->HasGlobalCooldown(spellInfo))
         return {};
 
     auto spell = new Spell(me, spellInfo, TRIGGERED_NONE);

@@ -46,6 +46,7 @@
 #include "GameObjectAI.h"
 #include "InstanceScript.h"
 #include "LogsDatabaseAccessor.h"
+#include "SpellHistory.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -511,9 +512,7 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                 if (!found) {
                     SendCastResult(SPELL_FAILED_TARGET_AURASTATE);
                     if (m_caster->GetTypeId() == TYPEID_PLAYER) {
-                        m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id);
-
-                        m_caster->ToPlayer()->SendClearCooldown(m_spellInfo->Id, m_caster);
+                        m_caster->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, true);
                     }
                     return;
                 }
@@ -1195,11 +1194,8 @@ void Spell::EffectDummy(uint32 i)
                         if (spellInfo)
                         {
                             if(spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && spellInfo->SpellFamilyFlags & 0x26000000860LL)
-                            {
-                                (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
+                                m_caster->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, true);
 
-                                m_caster->ToPlayer()->SendClearCooldown(classspell, m_caster);
-                            }
                         } else { TC_LOG_ERROR("FIXME","EffectDummy: spellInfo for spell %u not found (case 14185)",classspell); }
                     }
                     return;
@@ -1917,9 +1913,7 @@ void Spell::EffectDummy(uint32 i)
                             (spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST) &&
                             spellInfo->Id != 11958 && spellInfo->GetRecoveryTime() > 0 )
                         {
-                            (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
-
-                            m_caster->ToPlayer()->SendClearCooldown(classspell, m_caster);
+                            m_caster->GetSpellHistory()->ResetCooldown(classspell, true);
                         }
                     }
                     return;
@@ -2175,11 +2169,8 @@ void Spell::EffectDummy(uint32 i)
                             return;
 
                         if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->Id != 23989 && spellInfo->GetRecoveryTime() > 0 )
-                        {
-                            (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
+                            m_caster->GetSpellHistory()->ResetCooldown(classspell, true);
 
-                            m_caster->ToPlayer()->SendClearCooldown(classspell, m_caster);
-                        }
                     }
                     return;
                 }
@@ -2239,14 +2230,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         // clear cooldown at fail
                         if(m_caster->GetTypeId()==TYPEID_PLAYER)
-                        {
-                            (m_caster->ToPlayer())->RemoveSpellCooldown(m_spellInfo->Id);
-
-                            WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-                            data << uint32(m_spellInfo->Id);
-                            data << uint64(m_caster->GetGUID());
-                            (m_caster->ToPlayer())->SendDirectMessage(&data);
-                        }
+                            m_caster->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, true);
 
                         SendCastResult(SPELL_FAILED_BAD_TARGETS);
                         return;
@@ -2557,8 +2541,9 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
                 if (spellInfo)
                 {
                     // reset cooldown on it if needed
-                    if ((m_caster->ToPlayer())->HasSpellCooldown(spellInfo->Id))
-                        (m_caster->ToPlayer())->RemoveSpellCooldown(spellInfo->Id);
+
+                    if (!m_caster->GetSpellHistory()->IsReady(spellInfo))
+                        m_caster->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, false);
 
                     m_caster->CastSpell(unitTarget, spellInfo->Id, true);
                 }
@@ -2705,21 +2690,21 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
     m_caster->CastSpell(targets, spellInfo->Id, args);
 }
 
-void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
+void Spell::EffectTriggerMissileSpell(uint32 effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET
         && effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    uint32 triggered_spell_id = m_spellInfo->Effects[effect_idx].TriggerSpell;
+    uint32 triggered_spell_id = m_spellInfo->Effects[effIndex].TriggerSpell;
 
     // normal case
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
 
     if(!spellInfo)
     {
-        TC_LOG_ERROR("FIXME","EffectTriggerMissileSpell of spell %u (eff: %u): triggering unknown spell id %u",
-            m_spellInfo->Id,effect_idx,triggered_spell_id);
+        TC_LOG_ERROR("spells","EffectTriggerMissileSpell of spell %u (eff: %u): triggering unknown spell id %u",
+            m_spellInfo->Id, effIndex, triggered_spell_id);
         return;
     }
     
@@ -2756,20 +2741,31 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
     }
 
     if (m_CastItem)
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id);
-
-
-    // Remove spell cooldown (not category) if spell triggering spell with cooldown and same category
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->CategoryRecoveryTime && spellInfo->CategoryRecoveryTime
-        && m_spellInfo->GetCategory() == spellInfo->GetCategory())
-        m_caster->ToPlayer()->RemoveSpellCooldown(spellInfo->Id);
-
-    auto spell = new Spell(m_caster, spellInfo, TriggerCastFlags(TRIGGERED_IGNORE_GCD|TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD|TRIGGERED_IGNORE_CAST_IN_PROGRESS|TRIGGERED_CAST_DIRECTLY), m_originalCasterGUID );
+        TC_LOG_DEBUG("spells","WORLD: cast Item spellId - %i", spellInfo->Id);
 
     SpellCastTargets targets;
-    targets.SetDst(m_targets.GetDstPos()->GetPosition());
-    spell->m_CastItem = m_CastItem;
-    spell->prepare(targets, nullptr);
+    if (effectHandleMode == SPELL_EFFECT_HANDLE_HIT_TARGET)
+    {
+        if (!spellInfo->NeedsToBeTriggeredByCaster(m_spellInfo))
+            return;
+        targets.SetUnitTarget(unitTarget);
+    }
+    else //if (effectHandleMode == SPELL_EFFECT_HANDLE_HIT)
+    {
+        if (spellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) && (m_spellInfo->Effects[effIndex].GetProvidedTargetMask() & TARGET_FLAG_UNIT_MASK))
+            return;
+
+        if (spellInfo->GetExplicitTargetMask() & TARGET_FLAG_DEST_LOCATION)
+            targets.SetDst(m_targets);
+
+        targets.SetUnitTarget(m_caster);
+    }
+
+    CastSpellExtraArgs args(m_originalCasterGUID);
+    args.SetTriggerFlags(TriggerCastFlags(TRIGGERED_IGNORE_GCD | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_CAST_DIRECTLY));
+    args.SetCastItem(m_CastItem);
+
+    m_caster->CastSpell(targets, spellInfo->Id, args);
 }
 
 void Spell::EffectTeleportUnits(uint32 i)
@@ -3939,6 +3935,8 @@ void Spell::EffectSummonChangeItem(uint32 i)
                 m_targets.SetItemTarget(nullptr);
 
             m_CastItem = nullptr;
+            m_castItemGUID.Clear();
+            m_castItemEntry = 0;
 
             player->StoreItem( dest, pNewItem, true);
             player->SendNewItem(pNewItem, 1, true, false);
@@ -3959,6 +3957,8 @@ void Spell::EffectSummonChangeItem(uint32 i)
                 m_targets.SetItemTarget(nullptr);
 
             m_CastItem = nullptr;
+            m_castItemGUID.Clear();
+            m_castItemEntry = 0;
 
             player->BankItem( dest, pNewItem, true);
             return;
@@ -3977,6 +3977,8 @@ void Spell::EffectSummonChangeItem(uint32 i)
                 m_targets.SetItemTarget(nullptr);
 
             m_CastItem = nullptr;
+            m_castItemGUID.Clear();
+            m_castItemEntry = 0;
 
             player->EquipItem( dest, pNewItem, true);
             player->AutoUnequipOffhandIfNeed();
@@ -5030,16 +5032,17 @@ void Spell::EffectInterruptCast(uint32 effIndex)
     // also exist case: apply cooldown to interrupted cast only and to all spells
     for (uint32 idx = CURRENT_FIRST_NON_MELEE_SPELL; idx < CURRENT_MAX_SPELL; idx++)
     {
-        if (unitTarget->GetCurrentSpell(idx))
+        if (Spell* spell = unitTarget->GetCurrentSpell(idx))
         {
+            SpellInfo const* curSpellInfo = spell->m_spellInfo;
             // check if we can interrupt spell
             if ( (unitTarget->m_currentSpells[idx]->getState() == SPELL_STATE_CASTING || (unitTarget->m_currentSpells[idx]->getState() == SPELL_STATE_PREPARING && unitTarget->m_currentSpells[idx]->GetCastTime() > 0.0f)) && unitTarget->m_currentSpells[idx]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT && unitTarget->m_currentSpells[idx]->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE )
             {
                 if(m_originalCaster)
                 {
                     int32 duration = m_spellInfo->GetDuration();
-                    duration = unitTarget->ModSpellDuration(m_spellInfo, unitTarget, duration, false, 1 << effIndex);
-                    unitTarget->ProhibitSpellSchool(unitTarget->m_currentSpells[idx]->m_spellInfo->GetSchoolMask(), duration);
+                    unitTarget->GetSpellHistory()->LockSpellSchool(curSpellInfo->GetSchoolMask(), unitTarget->ModSpellDuration(m_spellInfo, unitTarget, duration, false, 1 << effIndex));
+                    Unit::ProcSkillsAndAuras(m_originalCaster, unitTarget, PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_HIT, PROC_HIT_INTERRUPT, nullptr, nullptr, nullptr);
                 }
                 unitTarget->InterruptSpell(idx, false);
             }

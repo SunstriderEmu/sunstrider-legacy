@@ -1,5 +1,6 @@
 #include "../../ClassSpellsDamage.h"
 #include "../../ClassSpellsCoeff.h"
+#include "SpellHistory.h"
 
 class ImprovedLifeTapTest : public TestCaseScript
 {
@@ -351,7 +352,7 @@ public:
 
 		uint32 GetRemainingMana(TestPlayer* player, uint32 summon, uint32 startMana, uint32 manaCost)
 		{
-			player->RemoveAllSpellCooldown();
+			player->GetSpellHistory()->ResetAllCooldowns();
 			uint32 feldom = player->CastSpell(player, ClassSpells::Warlock::FEL_DOMINATION_RNK_1);
 			Wait(1 * SECOND * IN_MILLISECONDS);
 			TEST_ASSERT(feldom == SPELL_CAST_OK);
@@ -538,7 +539,7 @@ public:
 
 		uint32 GetRemainingMana(TestPlayer* player, uint32 summon, uint32 startMana, uint32 manaCost)
 		{
-			player->RemoveAllSpellCooldown();
+			player->GetSpellHistory()->ResetAllCooldowns();
 			uint32 feldom = player->CastSpell(player, ClassSpells::Warlock::FEL_DOMINATION_RNK_1);
 			Wait(1 * SECOND * IN_MILLISECONDS);
 			TEST_ASSERT(feldom == SPELL_CAST_OK);

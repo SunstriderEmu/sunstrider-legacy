@@ -485,6 +485,7 @@ class TC_GAME_API Spell
         int32 m_currentBasePoints[3];                       // cache SpellInfo::EffectBasePoints and use for set custom base points
         Item* m_CastItem;
         ObjectGuid m_castItemGUID;
+        uint32 m_castItemEntry;
         uint8 m_cast_count;
         SpellCastTargets m_targets;
         bool m_skipCheck;

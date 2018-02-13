@@ -2189,8 +2189,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
         basePoints += int32(level * basePointsPerLevel);
     }
 
-#ifdef LICH_KING
-    // roll in a range <1;EffectDieSides> as of patch 3.3.3
+    // roll in a range <1;EffectDieSides> as of patch 3.3.3 (whats the diff for BC?)
     switch (randomPoints)
     {
     case 0: break;
@@ -2204,11 +2203,6 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
         basePoints += randvalue;
         break;
     }
-#else
-    /** Dice rolls are from 1 to DieSides */
-    if (randomPoints)
-        basePoints += irand(1, randomPoints);
-#endif
 
     float value = float(basePoints);
 

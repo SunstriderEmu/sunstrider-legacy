@@ -34,6 +34,7 @@
 #include "Containers.h"
 #include "SpellScript.h"
 #include "GameObjectAI.h"
+#include "SpellHistory.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -642,6 +643,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags,
         _triggeredCastFlags = TriggerCastFlags(uint32(_triggeredCastFlags) | TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_CAST_DIRECTLY);
     //m_AreaAura = false;
     m_CastItem = nullptr;
+    m_castItemEntry = 0;
 
     unitTarget = nullptr;
     itemTarget = nullptr;
@@ -844,48 +846,6 @@ void Spell::SelectSpellTargets()
         {
             switch (m_spellInfo->Id)
             {
-            case 20577:                         // Cannibalize
-            {
-                // non-standard target selection
-                float max_range = m_spellInfo->GetMaxRange(false, m_caster->GetSpellModOwner(), this);
-                WorldObject* result = nullptr;
-
-                Trinity::CannibalizeObjectCheck u_check(m_caster, max_range);
-                Trinity::WorldObjectSearcher<Trinity::CannibalizeObjectCheck > searcher(m_caster, result, u_check);
-                Cell::VisitGridObjects(m_caster, searcher, max_range);
-                if (!result)
-                    Cell::VisitWorldObjects(m_caster, searcher, max_range);
-
-                if (result)
-                {
-                    switch (result->GetTypeId())
-                    {
-                    case TYPEID_UNIT:
-                    case TYPEID_PLAYER:
-                        AddUnitTarget((Unit*)result, 1 << i);
-                        break;
-                    case TYPEID_CORPSE:
-                        /* todo spelltargets m_targets.SetCorpseTarget((Corpse*)result); */
-                        if (Player* owner = ObjectAccessor::FindPlayer(((Corpse*)result)->GetOwnerGUID()))
-                            AddUnitTarget(owner, 1 << i);
-                        break;
-                    }
-                }
-                else
-                {
-                    // clear cooldown at fail
-                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    {
-                        (m_caster->ToPlayer())->RemoveSpellCooldown(m_spellInfo->Id);
-
-                        m_caster->ToPlayer()->SendClearCooldown(m_spellInfo->Id, m_caster);
-                    }
-
-                    SendCastResult(SPELL_FAILED_NO_EDIBLE_CORPSES);
-                    finish(false);
-                }
-                break;
-            }
             case 40160: // Throw Bomb
             {
                 GameObject* go = m_caster->FindNearestGameObject(185861, 100.0f);
@@ -3280,10 +3240,16 @@ void Spell::DoAllEffectOnTarget(ItemTargetInfo *target)
 
 uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* triggeredByAura)
 {
-    if(m_CastItem)
+    if (m_CastItem)
+    {
         m_castItemGUID = m_CastItem->GetGUID();
+        m_castItemEntry = m_CastItem->GetEntry();
+    }
     else
-        m_castItemGUID = ObjectGuid::Empty;
+    {
+        m_castItemGUID.Clear();
+        m_castItemEntry = ObjectGuid::Empty;
+    }
 
     InitExplicitTargets(targets);
 
@@ -3473,10 +3439,8 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
                     if (m_caster->GetGUID() != target && m_caster->GetTypeId() == TYPEID_UNIT)
                         m_caster->ToCreature()->FocusTarget(this, uTarget);
 
-        if(m_caster->GetTypeId() == TYPEID_PLAYER)
-            (m_caster->ToPlayer())->AddGlobalCooldown(m_spellInfo,this);
-            
-        TriggerGlobalCooldown();
+        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_GCD))
+            TriggerGlobalCooldown();
 
         if(    !m_casttime 
             && !m_castItemGUID     //item: first cast may destroy item and second cast causes crash
@@ -3544,9 +3508,6 @@ void Spell::cancel()
         {
         } break;
     }
-
-    if(m_caster->GetTypeId() == TYPEID_PLAYER)
-        (m_caster->ToPlayer())->RemoveGlobalCooldown(m_spellInfo);
 
     m_caster->RemoveDynObject(m_spellInfo->Id);
     m_caster->RemoveGameObject(m_spellInfo->Id, true);
@@ -3794,7 +3755,7 @@ void Spell::_cast(bool skipCheck /*= false*/)
 
         //Clear spell cooldowns after every spell is cast if .cheat cooldown is enabled.
         if (modOwner->GetCommandStatus(CHEAT_COOLDOWN))
-            modOwner->RemoveSpellCooldown(m_spellInfo->Id, true); //TC m_caster->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, true);
+            m_caster->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, true);
     }
 
     if (m_spellInfo->HasAttribute(SPELL_ATTR0_CU_LINK_CAST))
@@ -4051,107 +4012,7 @@ void Spell::_handle_finish_phase()
 
 void Spell::SendSpellCooldown()
 {
-    if(m_caster->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    Player* _player = m_caster->ToPlayer();
-    if (!_player)
-    {
-        // Handle pet cooldowns here if needed instead of in PetAI to avoid hidden cooldown restarts
-        Creature* _creature = m_caster->ToCreature();
-        if (_creature && _creature->IsPet())
-            _creature->AddCreatureSpellCooldown(m_spellInfo->Id);
-
-        return;
-    }
-
-    // Add cooldown for max (disable spell)
-    // Cooldown started on SendCooldownEvent call
-    if (m_spellInfo->IsCooldownStartedOnEvent())
-    {
-        _player->AddSpellCooldown(m_spellInfo->Id, 0, time(nullptr) - 1);
-        return;
-    }
-
-    // init cooldown values
-    uint32 cat   = 0;
-    int32 rec    = -1;
-    int32 catrec = -1;
-
-    // some special item spells without correct cooldown in SpellInfo
-    // cooldown information stored in item prototype
-    // This used in same way in WorldSession::HandleItemQuerySingleOpcode data sending to client.
-
-    if(m_CastItem)
-    {
-        ItemTemplate const* proto = m_CastItem->GetTemplate();
-        if(proto)
-        {
-            for(const auto & Spell : proto->Spells)
-            {
-                if(Spell.SpellId == m_spellInfo->Id)
-                {
-                    cat    = Spell.SpellCategory;
-                    rec    = Spell.SpellCooldown;
-                    catrec = Spell.SpellCategoryCooldown;
-                    break;
-                }
-            }
-        }
-    }
-
-    // if no cooldown found above then base at DBC data
-    if(rec < 0 && catrec < 0)
-    {
-        cat = m_spellInfo->GetCategory();
-        rec = m_spellInfo->RecoveryTime;
-        catrec = m_spellInfo->CategoryRecoveryTime;
-    }
-
-    // shoot spells used equipped item cooldown values already assigned in GetAttackTime(RANGED_ATTACK)
-    // prevent 0 cooldowns set by another way
-    if (rec <= 0 && catrec <= 0 && (cat == 76 || cat == 351))
-        rec = _player->GetAttackTime(RANGED_ATTACK);
-
-    // Now we have cooldown data (if found any), time to apply mods
-    if(rec > 0)
-        _player->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COOLDOWN, rec, this);
-
-    if(catrec > 0)
-        _player->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COOLDOWN, catrec, this);
-
-    // replace negative cooldowns by 0
-    if (rec < 0) rec = 0;
-    if (catrec < 0) catrec = 0;
-
-    // no cooldown after applying spell mods
-    if( rec == 0 && catrec == 0)
-        return;
-
-    time_t curTime = time(nullptr);
-
-    time_t catrecTime = catrec ? curTime+catrec/1000 : 0;   // in secs
-    time_t recTime    = rec ? curTime+rec/1000 : catrecTime;// in secs
-
-    // self spell cooldown
-    if(recTime > 0)
-        _player->AddSpellCooldown(m_spellInfo->Id, m_CastItem ? m_CastItem->GetEntry() : 0, recTime);
-
-    // category spells
-    if (catrec > 0)
-    {
-        SpellCategoryStore::const_iterator i_scstore = sSpellsByCategoryStore.find(cat);
-        if (i_scstore != sSpellsByCategoryStore.end())
-        {
-            for(uint32 i_scset : i_scstore->second)
-            {
-                if(i_scset == m_spellInfo->Id)             // skip main spell, already handled above
-                    continue;
-
-                _player->AddSpellCooldown(m_spellInfo->Id, m_CastItem ? m_CastItem->GetEntry() : 0, catrecTime);
-            }
-        }
-    }
+    m_caster->GetSpellHistory()->HandleCooldowns(m_spellInfo, m_CastItem, this);
 }
 
 void Spell::update(uint32 difftime)
@@ -5197,6 +5058,8 @@ void Spell::TakeCastItem()
             m_targets.SetItemTarget(nullptr);
 
         m_CastItem = nullptr;
+        m_castItemGUID.Clear();
+        m_castItemEntry = 0;
     }
 }
 
@@ -5319,6 +5182,8 @@ void Spell::TakeReagents()
                 }
 
                 m_CastItem = nullptr;
+                m_castItemGUID.Clear();
+                m_castItemEntry = 0;
             }
         }
 
@@ -5409,8 +5274,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 return SPELL_FAILED_NOT_READY;
         }
 #endif
-
-        if (!IsIgnoringCooldowns() && m_caster->GetTypeId() == TYPEID_PLAYER && ((m_caster->ToPlayer())->HasSpellCooldown(m_spellInfo->Id)))
+        if (!m_caster->GetSpellHistory()->IsReady(m_spellInfo, m_castItemEntry, IsIgnoringCooldowns()))
         {
             if (m_triggeredByAuraSpell)
                 return SPELL_FAILED_DONT_REPORT;
@@ -5692,12 +5556,6 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
 
     if(!IsTriggered())
     {
-        // check creature prohibited spell school case
-        /*if (m_caster->GetTypeId() == TYPEID_UNIT 
-            && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE
-            && m_caster->ToCreature()->IsSpellSchoolMaskProhibited(m_spellInfo->GetSchoolMask()))
-            return SPELL_FAILED_NOT_READY;*/
-
         // only allow triggered spells if at an ended battleground
         if( m_caster->GetTypeId() == TYPEID_PLAYER)
             if(Battleground * bg = (m_caster->ToPlayer())->GetBattleground())
@@ -6626,9 +6484,14 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
         m_targets.SetUnitTarget(target);
     }
 
-    // cooldown
-    if (Creature const* creatureCaster = m_caster->ToCreature())
-        if (creatureCaster->HasSpellCooldown(m_spellInfo->Id))
+    // check cooldown
+    if (Creature* creatureCaster = m_caster->ToCreature())
+        if (!creatureCaster->GetSpellHistory()->IsReady(m_spellInfo))
+            return SPELL_FAILED_NOT_READY;
+
+    // Check if spell is affected by GCD
+    if (m_spellInfo->StartRecoveryCategory > 0)
+        if (m_caster->GetCharmInfo() && m_caster->GetSpellHistory()->HasGlobalCooldown(m_spellInfo))
             return SPELL_FAILED_NOT_READY;
 
     SpellCastResult result = CheckCast(true);
@@ -7410,11 +7273,21 @@ bool Spell::UpdatePointers()
     else
     {
         m_originalCaster = ObjectAccessor::GetUnit(*m_caster,m_originalCasterGUID);
-        if(m_originalCaster && !m_originalCaster->IsInWorld()) m_originalCaster = nullptr;
+        if(m_originalCaster && !m_originalCaster->IsInWorld()) 
+            m_originalCaster = nullptr;
     }
 
-    if(m_castItemGUID && m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (m_castItemGUID && m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
         m_CastItem = (m_caster->ToPlayer())->GetItemByGuid(m_castItemGUID);
+        // cast item not found, somehow the item is no longer where we expected
+        if (!m_CastItem)
+            return false;
+
+        // check if the item is really the same, in case it has been wrapped for example
+        if (m_castItemEntry != m_CastItem->GetEntry())
+            return false;
+    }
 
     m_targets.Update(m_caster);
 
@@ -8062,15 +7935,20 @@ bool Spell::DoesApplyAuraName(uint32 name)
     return (m_spellInfo->Effects[0].ApplyAuraName == name || m_spellInfo->Effects[1].ApplyAuraName == name || m_spellInfo->Effects[2].ApplyAuraName == name);
 }
 
+// Global cooldowns management
+enum GCDLimits
+{
+    MIN_GCD = 1000,
+    MAX_GCD = 1500
+};
+
 bool Spell::HasGlobalCooldown()
 {
-    // global cooldown have only player or controlled units
-    if (m_caster->GetCharmInfo())
-        return m_caster->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(m_spellInfo);
-    /*else if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        return ((Player*)m_caster)->GetGlobalCooldownMgr().HasGlobalCooldown(m_spellInfo);*/
-    else
+    // Only players or controlled units have global cooldown
+    if (m_caster->GetTypeId() != TYPEID_PLAYER && !m_caster->GetCharmInfo())
         return false;
+
+    return m_caster->GetSpellHistory()->HasGlobalCooldown(m_spellInfo);
 }
 
 void Spell::TriggerGlobalCooldown()
@@ -8083,29 +7961,32 @@ void Spell::TriggerGlobalCooldown()
             return;
     }
 
+    // Only players or controlled units have global cooldown
+    if (m_caster->GetTypeId() != TYPEID_PLAYER && !m_caster->GetCharmInfo())
+        return;
+
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_COOLDOWN))
+            return;
+
     // global cooldown can't leave range 1..1.5 secs (if it it)
     // exist some spells (mostly not player directly casted) that have < 1 sec and > 1.5 sec global cooldowns
     // but its as test show not affected any spell mods.
-    if (m_spellInfo->StartRecoveryTime >= 1000 && m_spellInfo->StartRecoveryTime <= 1500)
+    if (m_spellInfo->StartRecoveryTime >= MIN_GCD && m_spellInfo->StartRecoveryTime <= MAX_GCD)
     {
+#ifdef LICH_KING
         // gcd modifier auras applied only to self spells and only player have mods for this
-        /*if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            ((Player*)m_caster)->ApplySpellMod(m_spellInfo->Id, SPELLMOD_GLOBAL_COOLDOWN, gcd, this);*/
+       if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)m_caster)->ApplySpellMod(m_spellInfo->Id, SPELLMOD_GLOBAL_COOLDOWN, gcd, this);
+#endif
 
         // apply haste rating
         gcd = int32(float(gcd) * m_caster->GetFloatValue(UNIT_MOD_CAST_SPEED));
-
-        if (gcd < 1000)
-            gcd = 1000;
-        else if (gcd > 1500)
-            gcd = 1500;
+        RoundToInterval<int32>(gcd, MIN_GCD, MAX_GCD);
     }
 
     // global cooldown have only player or controlled units
-    if (m_caster->GetCharmInfo())
-        m_caster->GetCharmInfo()->GetGlobalCooldownMgr().AddGlobalCooldown(m_spellInfo, gcd);
-    /*else if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)m_caster)->GetGlobalCooldownMgr().AddGlobalCooldown(m_spellInfo, gcd);*/
+    m_caster->GetSpellHistory()->AddGlobalCooldown(m_spellInfo, gcd);
 }
 
 void Spell::CancelGlobalCooldown()
@@ -8113,17 +7994,16 @@ void Spell::CancelGlobalCooldown()
     if (!m_spellInfo->StartRecoveryTime)
         return;
 
-    // cancel global cooldown when interrupting current cast
+    // Cancel global cooldown when interrupting current cast
     if (m_caster->GetCurrentSpell(CURRENT_GENERIC_SPELL) != this)
         return;
 
-    // global cooldown have only player or controlled units
-    if (m_caster->GetCharmInfo())
-        m_caster->GetCharmInfo()->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);
-    /*else if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)m_caster)->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);*/
-}
+    // Only players or controlled units have global cooldown
+    if (m_caster->GetTypeId() != TYPEID_PLAYER && !m_caster->GetCharmInfo())
+        return;
 
+    m_caster->GetSpellHistory()->CancelGlobalCooldown(m_spellInfo);
+}
 
 namespace Trinity
 {

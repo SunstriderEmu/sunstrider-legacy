@@ -32,6 +32,7 @@
 #include "CellImpl.h"
 #include "SpellScript.h"
 #include "ScriptMgr.h"
+#include "SpellHistory.h"
 
 AuraApplication::AuraApplication(Unit* target, Unit* caster, Aura* aura, uint8 effMask) :
     _target(target), _base(aura), _removeMode(AURA_REMOVE_NONE), _slot(MAX_AURAS), _positive(false),
@@ -2291,8 +2292,7 @@ void Aura::_ApplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp
         if (m_spellInfo->IsCooldownStartedOnEvent())
         {
             Item* castItem = m_castItemGuid ? caster->ToPlayer()->GetItemByGuid(m_castItemGuid) : nullptr;
-            caster->ToPlayer()->StartCooldown(m_spellInfo, castItem ? castItem->GetEntry() : 0, nullptr, true);
-            //TC caster->GetSpellHistory()->StartCooldown(m_spellInfo, castItem ? castItem->GetEntry() : 0, nullptr, true);
+            caster->GetSpellHistory()->StartCooldown(m_spellInfo, castItem ? castItem->GetEntry() : 0, nullptr, true);
         }
     }
 }
@@ -2322,9 +2322,7 @@ void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraA
     // reset cooldown state for spells
     if (caster && GetSpellInfo()->IsCooldownStartedOnEvent())
         // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existed cases)
-        //TC caster->GetSpellHistory()->SendCooldownEvent(GetSpellInfo());
-        if(Player* p = caster->ToPlayer())
-            p->SendCooldownEvent(GetSpellInfo());
+       caster->GetSpellHistory()->SendCooldownEvent(GetSpellInfo());
 }
 
 // removes aura from all targets

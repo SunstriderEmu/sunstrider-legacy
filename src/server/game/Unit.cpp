@@ -38,6 +38,7 @@
 #include "PlayerAI.h"
 #include "CharacterCache.h"
 #include "AntiCheatMgr.h"
+#include "SpellHistory.h"
 
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
@@ -328,7 +329,8 @@ _last_isunderwater_status(false),
 m_duringRemoveFromWorld(false),
 m_disabledRegen(false),
 m_cleanupDone(false), 
-m_regenTimer(0)
+m_regenTimer(0),
+m_spellHistory(new SpellHistory(this))
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
@@ -451,9 +453,8 @@ Unit::~Unit()
 
     delete i_motionMaster;
     delete movespline;
-
-    if(m_charmInfo) 
-        delete m_charmInfo;
+    delete m_charmInfo;
+    delete m_spellHistory;
 
     assert(!m_duringRemoveFromWorld);
     assert(!m_attacking);
@@ -2010,7 +2011,7 @@ uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 
         // Shadow of Death - set cheat death on cooldown
         if ((*i)->GetSpellInfo()->Id == 40251 && damageInfo.GetVictim()->GetHealth() <= damageInfo.GetDamage())
         {
-            (damageInfo.GetVictim()->ToPlayer())->AddSpellCooldown(31231, 0, time(nullptr) + 60);
+            (damageInfo.GetVictim()->ToPlayer())->GetSpellHistory()->AddCooldown(31231, 0, std::chrono::seconds(60));
             break;
         }
     }
@@ -2038,7 +2039,7 @@ uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 
         if (damageInfo.GetVictim()->GetTypeId() == TYPEID_PLAYER && absorbAurEff->GetSpellInfo()->SpellFamilyName == SPELLFAMILY_ROGUE && absorbAurEff->GetSpellInfo()->SpellIconID == 2109)
         {
             Player* playerVictim = damageInfo.GetVictim()->ToPlayer();
-            if (playerVictim->HasSpellCooldown(31231))
+            if (playerVictim->GetSpellHistory()->HasCooldown(31231))
                 continue;
             if (playerVictim->GetHealth() <= damageInfo.GetDamage())
             {
@@ -2046,7 +2047,7 @@ uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 
                 if (roll_chance_i(chance))
                 {
                     playerVictim->CastSpell(playerVictim, 31231, true);
-                    playerVictim->AddSpellCooldown(31231, 0, time(nullptr) + 60);
+                    playerVictim->GetSpellHistory()->AddCooldown(31231, 0, std::chrono::seconds(60));
 
                     // with health > 10% lost health until health==10%, in other case no losses
                     uint32 health10 = playerVictim->GetMaxHealth() / 10;
@@ -3763,6 +3764,8 @@ void Unit::_UpdateSpells( uint32 time )
                 ++dnext1;
         }
     }
+
+    m_spellHistory->Update();
 }
 
 void Unit::_UpdateAutoRepeatSpell()
@@ -4167,7 +4170,6 @@ void Unit::AddGameObject(GameObject* gameObj)
     m_gameObj.push_back(gameObj);
     gameObj->SetOwnerGUID(GetGUID());
 
-    /* TC 
     if (gameObj->GetSpellId())
     {
         SpellInfo const* createBySpell = sSpellMgr->GetSpellInfo(gameObj->GetSpellId());
@@ -4176,7 +4178,6 @@ void Unit::AddGameObject(GameObject* gameObj)
             // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existing cases)
             GetSpellHistory()->StartCooldown(createBySpell, 0, nullptr, true);
     }
-    */
 }
 
 void Unit::RemoveGameObject(GameObject* gameObj, bool del)
@@ -4189,7 +4190,8 @@ void Unit::RemoveGameObject(GameObject* gameObj, bool del)
         SpellInfo const* createBySpell = sSpellMgr->GetSpellInfo(gameObj->GetSpellId());
         // Need activate spell use for owner
         if (createBySpell && createBySpell->IsCooldownStartedOnEvent())
-            (this->ToPlayer())->SendCooldownEvent(createBySpell);
+            // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existing cases)
+            GetSpellHistory()->SendCooldownEvent(createBySpell);
     }
     gameObj->SetOwnerGUID(ObjectGuid::Empty);
     m_gameObj.remove(gameObj);
@@ -5201,11 +5203,9 @@ void Unit::SetMinion(Minion *minion, bool apply)
             minion->SetPowerType(POWER_ENERGY);
 
         // Send infinity cooldown - client does that automatically but after relog cooldown needs to be set again
-        /* TC
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(minion->GetUInt32Value(UNIT_CREATED_BY_SPELL));
         if (spellInfo && (spellInfo->IsCooldownStartedOnEvent()))
             GetSpellHistory()->StartCooldown(spellInfo, 0, nullptr, true);
-            */
     }
     else
     {
@@ -5241,14 +5241,8 @@ void Unit::SetMinion(Minion *minion, bool apply)
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(minion->GetUInt32Value(UNIT_CREATED_BY_SPELL));
         // Remove infinity cooldown
-        /* TC
         if (spellInfo && (spellInfo->IsCooldownStartedOnEvent()))
             GetSpellHistory()->SendCooldownEvent(spellInfo);
-        */
-        if(spellInfo && spellInfo->IsCooldownStartedOnEvent())
-            if(Player* player = ToPlayer())
-                player->SendCooldownEvent(spellInfo);
-
 
         //if (minion->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
         {
@@ -6069,7 +6063,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
     // note that their spell damage is just gain of their own auras
     if (HasUnitTypeMask(UNIT_MASK_GUARDIAN))
         DoneAdvertisedBenefit += static_cast<Guardian const*>(this)->GetBonusDamage();
-    else if ((this->ToCreature())->IsTotem() && ((Totem*)this)->GetTotemType() != TOTEM_STATUE)
+    else if (IsTotem() && ToTotem()->GetTotemType() != TOTEM_STATUE)
         if(owner != this)
             return owner->SpellDamageBonusDone(victim, spellProto, pdamage, damagetype, donePctTotal, stack);
 
@@ -11810,25 +11804,6 @@ bool Unit::CanReachWithMeleeAttack(Unit* pVictim, float flat_mod /*= 0.0f*/) con
 bool Unit::IsCCed() const
 {
     return (IsAlive() && (IsFeared() || IsCharmed() || HasUnitState(UNIT_STATE_STUNNED) || HasUnitState(UNIT_STATE_CONFUSED)));
-}
-
-////////////////////////////////////////////////////////////
-// Methods of class GlobalCooldownMgr
-
-bool GlobalCooldownMgr::HasGlobalCooldown(SpellInfo const* spellInfo) const
-{
-    auto itr = m_GlobalCooldowns.find(spellInfo->StartRecoveryCategory);
-    return itr != m_GlobalCooldowns.end() && itr->second.duration && GetMSTimeDiff(itr->second.cast_time, GetMSTime()) < itr->second.duration;
-}
-
-void GlobalCooldownMgr::AddGlobalCooldown(SpellInfo const* spellInfo, uint32 gcd)
-{
-    m_GlobalCooldowns[spellInfo->StartRecoveryCategory] = GlobalCooldown(gcd, GetMSTime());
-}
-
-void GlobalCooldownMgr::CancelGlobalCooldown(SpellInfo const* spellInfo)
-{
-    m_GlobalCooldowns[spellInfo->StartRecoveryCategory].duration = 0;
 }
 
 void Unit::RestoreDisplayId()

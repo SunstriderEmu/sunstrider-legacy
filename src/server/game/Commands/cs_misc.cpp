@@ -10,6 +10,7 @@
 #include "CellImpl.h"
 #include "AccountMgr.h"
 #include "ScriptMgr.h"
+#include "SpellHistory.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -441,7 +442,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
 
     if (!*args)
     {
-        target->RemoveAllSpellCooldown();
+        target->GetSpellHistory()->ResetAllCooldowns();
         PSendSysMessage(LANG_REMOVEALL_COOLDOWN, target->GetName().c_str());
     }
     else
@@ -458,11 +459,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
             return false;
         }
 
-        WorldPacket data( SMSG_CLEAR_COOLDOWN, (4+8) );
-        data << uint32(spell_id);
-        data << uint64(target->GetGUID());
-        target->SendDirectMessage(&data);
-        target->RemoveSpellCooldown(spell_id);
+        target->GetSpellHistory()->ResetCooldown(spell_id, true);
         PSendSysMessage(LANG_REMOVE_COOLDOWN, spell_id, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName().c_str());
     }
     return true;

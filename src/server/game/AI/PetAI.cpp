@@ -11,6 +11,7 @@
 #include "Creature.h"
 #include "World.h"
 #include "Util.h"
+#include "SpellHistory.h"
 
 int PetAI::Permissible(const Creature *creature)
 {
@@ -426,7 +427,7 @@ void PetAI::UpdateAI(const uint32 diff)
         }
     }
 
-    if (i_pet.GetGlobalCooldown() == 0 && !i_pet.HasUnitState(UNIT_STATE_CASTING))
+    if (!i_pet.HasUnitState(UNIT_STATE_CASTING))
     {
         bool inCombat = me->GetVictim();
         m_targetSpellStore.clear();
@@ -442,10 +443,12 @@ void PetAI::UpdateAI(const uint32 diff)
             if (!spellInfo)
                 continue;
 
-            /* TC
-            if (me->GetCharmInfo() && me->GetSpellHistory()->HasGlobalCooldown(spellInfo))
+            if (me->GetSpellHistory()->HasGlobalCooldown(spellInfo))
                 continue;
-                */
+
+            // check spell cooldown
+            if (!me->GetSpellHistory()->IsReady(spellInfo))
+                continue;
 
             // ignore some combinations of combat state and combat/noncombat spells
             if (!inCombat)
