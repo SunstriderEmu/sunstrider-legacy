@@ -92,18 +92,28 @@ void Corpse::SaveToDB()
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     DeleteFromDB(trans);
 
-    /* 
-    TODO CORPSE
-    std::ostringstream ss;
-    ss  << "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instanceId) VALUES ("
-        << GetGUID().GetCounter() << ", " << GetOwnerGUID().GetCounter() << ", " << GetPositionX() << ", " << GetPositionY() << ", " << GetPositionZ() << ", "
-        << GetOrientation() << ", "  << GetZoneId() << ", "  << GetMapId() << ", '";
-    for(uint16 i = 0; i < m_valuesCount; i++ )
-        ss << GetUInt32Value(i) << " ";
-    ss << "'," << uint64(m_time) <<", " << uint32(GetType()) << ", " << int(GetInstanceId()) << ")";
-    trans->Append( ss.str().c_str() );
+    uint16 index = 0;
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CORPSE);
+    stmt->setUInt32(index++, GetOwnerGUID().GetCounter());                            // guid
+    stmt->setFloat(index++, GetPositionX());                                         // posX
+    stmt->setFloat(index++, GetPositionY());                                         // posY
+    stmt->setFloat(index++, GetPositionZ());                                         // posZ
+    stmt->setFloat(index++, GetOrientation());                                       // orientation
+    stmt->setUInt16(index++, GetMapId());                                             // mapId
+    stmt->setUInt32(index++, GetUInt32Value(CORPSE_FIELD_DISPLAY_ID));                // displayId
+    stmt->setString(index++, _ConcatFields(CORPSE_FIELD_ITEM, EQUIPMENT_SLOT_END));   // itemCache
+    stmt->setUInt32(index++, GetUInt32Value(CORPSE_FIELD_BYTES_1));                   // bytes1
+    stmt->setUInt32(index++, GetUInt32Value(CORPSE_FIELD_BYTES_2));                   // bytes2
+    stmt->setUInt32(index++, GetUInt32Value(CORPSE_FIELD_GUILD));                     // guildId
+    stmt->setUInt8(index++, GetUInt32Value(CORPSE_FIELD_FLAGS));                     // flags
+    stmt->setUInt8(index++, GetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS));             // dynFlags
+    stmt->setUInt32(index++, uint32(m_time));                                         // time
+    stmt->setUInt8(index++, GetType());                                              // corpseType
+    stmt->setUInt32(index++, GetInstanceId());                                        // instanceId
+    stmt->setUInt32(index++, GetPhaseMask());                                         // phaseMask
+    trans->Append(stmt);
+
     CharacterDatabase.CommitTransaction(trans);
-    */
 }
 
 ObjectGuid Corpse::GetOwnerGUID() const { return GetGuidValue(CORPSE_FIELD_OWNER); }
@@ -115,82 +125,10 @@ void Corpse::DeleteFromDB(SQLTransaction& trans)
 
 void Corpse::DeleteFromDB(ObjectGuid const& ownerGuid, SQLTransaction& trans)
 {
-    /* TODO CORPSE
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CORPSE);
     stmt->setUInt32(0, ownerGuid.GetCounter());
     CharacterDatabase.ExecuteOrAppend(trans, stmt);
-    */
 }
-/*
-bool Corpse::LoadFromDB(uint32 guid, QueryResult result, uint32 InstanceId)
-{
-    bool external = (result != nullptr);
-    if (!external)
-        //                                        0          1          2          3           4   5    6    7           8
-        result = CharacterDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map,data,time,corpse_type,instanceId FROM corpse WHERE guid = '%u'",guid);
-
-    if( ! result )
-    {
-        TC_LOG_ERROR("FIXME","ERROR: Corpse (GUID: %u) not found in table `corpse`, can't load. ",guid);
-        return false;
-    }
-
-    Field *fields = result->Fetch();
-
-    if(!LoadFromDB(guid,fields))
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool Corpse::LoadFromDB(uint32 guid, Field *fields)
-{
-    //                                          0          1          2          3           4   5    6    7           8
-    //result = CharacterDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map,data,time,corpse_type,instanceId FROM corpse WHERE guid = '%u'",guid);
-    float positionX = fields[0].GetFloat();
-    float positionY = fields[1].GetFloat();
-    float positionZ = fields[2].GetFloat();
-    float ort       = fields[3].GetFloat();
-    uint32 mapid    = fields[4].GetUInt32();
-
-    if(!LoadValues( fields[5].GetCString() ))
-    {
-        TC_LOG_ERROR("FIXME","ERROR: Corpse #%d have broken data in `data` field. Can't be loaded.",guid);
-        return false;
-    }
-
-    m_time             = time_t(fields[6].GetUInt64());
-    m_type             = CorpseType(fields[7].GetUInt8());
-    if(m_type >= MAX_CORPSE_TYPE)
-    {
-        TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %d) have wrong corpse type, not load.",GetGUID().GetCounter(),GetOwnerGUID().GetCounter());
-        return false;
-    }
-    uint32 instanceid  = fields[8].GetUInt32();
-
-    // overwrite possible wrong/corrupted guid
-    SetGuidValue(OBJECT_FIELD_GUID, ObjectGuid(HighGuid::Corpse, 0, guid));
-
-    // place
-    SetInstanceId(instanceid);
-    SetMapId(mapid);
-    Relocate(positionX,positionY,positionZ,ort);
-
-    if(!IsPositionValid())
-    {
-        TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
-            GetGUID().GetCounter(),GetOwnerGUID().GetCounter(),GetPositionX(),GetPositionY());
-        return false;
-    }
-
-    m_grid = Trinity::ComputeGridCoord(GetPositionX(), GetPositionY());
-
-    return true;
-}
-*/
-
 
 bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
 {

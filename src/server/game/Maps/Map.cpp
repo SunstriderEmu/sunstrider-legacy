@@ -1718,11 +1718,6 @@ float Map::GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, fl
     return INVALID_HEIGHT;
 }
 
-bool Map::GetLiquidLevelBelow(float x, float y, float z, float& liquidLevel, float maxSearchDist) const
-{
-    return false; //TODO
-}
-
 float Map::GetHeight(uint32 phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, bool walkableOnly /*= false*/) const
 {
     return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist, walkableOnly), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask)); //walkableOnly not implemented in dynamicTree
@@ -3574,7 +3569,6 @@ time_t Map::GetLinkedRespawnTime(ObjectGuid guid) const
 
 void Map::LoadCorpseData()
 {
-    /*
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CORPSES);
     stmt->setUInt32(0, GetId());
     stmt->setUInt32(1, GetInstanceId());
@@ -3607,18 +3601,15 @@ void Map::LoadCorpseData()
         AddCorpse(corpse);
 
     } while (result->NextRow());
-    */
 }
 
 void Map::DeleteCorpseData()
 {
     // DELETE FROM corpse WHERE mapId = ? AND instanceId = ?
-    /*
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CORPSES_FROM_MAP);
     stmt->setUInt32(0, GetId());
     stmt->setUInt32(1, GetInstanceId());
     CharacterDatabase.Execute(stmt);
-    */
 }
 
 void Map::AddCorpse(Corpse* corpse)
@@ -3661,12 +3652,11 @@ Corpse* Map::ConvertCorpseToBones(ObjectGuid const& ownerGuid, bool insignia /*=
     RemoveCorpse(corpse);
 
     // remove corpse from DB
-    /*
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     corpse->DeleteFromDB(trans);
     CharacterDatabase.CommitTransaction(trans);
-    */
-    Corpse* bones = NULL;
+
+    Corpse* bones = nullptr;
 
     // create the bones only if the map and the grid is loaded at the corpse's location
     // ignore bones creating option in case insignia

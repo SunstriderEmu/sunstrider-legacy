@@ -1395,9 +1395,6 @@ void World::SetInitialWorldSettings()
     uint32 realm_zone = getConfig(CONFIG_REALM_ZONE);
     LoginDatabase.PExecute("UPDATE realmlist SET icon = %u, timezone = %u WHERE id = '%d'", server_type, realm_zone, realm.Id.Realm);
 
-    ///- Remove the bones after a restart
-    CharacterDatabase.PExecute("DELETE FROM corpse WHERE corpse_type = '0'");
-
     ///- Load the DBC files
     TC_LOG_INFO("server.loading","Initialize data stores...");
     LoadDBCStores(m_dataPath);
@@ -1472,7 +1469,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadInstanceTemplate();
 
     // sunwell: Global Storage, should be loaded asap
-    TC_LOG_INFO("server.loading", "Load Global Player Data...");
+    TC_LOG_INFO("server.loading", "Loading character cache store...");
     sCharacterCache->LoadCharacterCacheStorage();
 
     ///- Clean up and pack instances

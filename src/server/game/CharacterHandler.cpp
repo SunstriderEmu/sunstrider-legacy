@@ -202,6 +202,10 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt32(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_BG_DATA, stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CORPSE_LOCATION);
+    stmt->setUInt64(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION, stmt);
+
     return res;
 }
 
@@ -834,7 +838,7 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
         pCurrChar->UpdateArenaTitles();
 
     // Place character in world (and load zone) before some object loading
-    //TODO CORPSE pCurrChar->LoadCorpse(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION));
+    pCurrChar->LoadCorpse(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION));
 
     // setting Ghost+speed if dead
     if (pCurrChar->m_deathState != ALIVE)
