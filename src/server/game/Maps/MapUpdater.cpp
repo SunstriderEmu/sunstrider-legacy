@@ -130,8 +130,10 @@ void MapUpdater::LoopWorkerThread(std::atomic<bool>* enable_instance_updates_loo
 
         _loop_queue.WaitAndPop(request);
 
-        if (_cancelationToken) {
-            loopMapFinished();
+        if (_cancelationToken) 
+        {
+            if(request)
+                loopMapFinished();
             return;
         }
 
@@ -157,8 +159,10 @@ void MapUpdater::OnceWorkerThread()
 
         _once_queue.WaitAndPop(request);
 
-        if (_cancelationToken) {
-            onceMapFinished();
+        if (_cancelationToken) 
+        {
+            if(request)
+                onceMapFinished();
             return;
         }
 
@@ -173,6 +177,7 @@ void MapUpdater::OnceWorkerThread()
 void MapUpdater::onceMapFinished()
 {
     std::lock_guard<std::mutex> lock(_lock);
+    ASSERT(pending_once_maps > 0);
     --pending_once_maps;
     if(pending_once_maps == 0)
         _onces_finished_condition.notify_all();
@@ -181,6 +186,7 @@ void MapUpdater::onceMapFinished()
 void MapUpdater::loopMapFinished()
 {
     std::lock_guard<std::mutex> lock(_lock);
+    ASSERT(pending_loop_maps > 0);
     --pending_loop_maps;
     if(pending_loop_maps == 0)
         _loops_finished_condition.notify_all();
