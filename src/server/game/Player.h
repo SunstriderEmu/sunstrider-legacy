@@ -1739,7 +1739,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         template <class T> 
         void ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* spell = nullptr);
         static void ApplyModToSpell(SpellModifier* mod, Spell* spell);
-        static bool HasSpellModApplied(SpellModifier* mod, Spell* spell);
         void SetSpellModTakingSpell(Spell* spell, bool apply);
 
         bool HasSpellCooldown(uint32 spell_id) const

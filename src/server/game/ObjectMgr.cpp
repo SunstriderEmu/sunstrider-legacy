@@ -8646,7 +8646,7 @@ void ObjectMgr::LoadSpellTemplates()
         "effectRadiusIndex2, effectRadiusIndex3, effectApplyAuraName1, effectApplyAuraName2, effectApplyAuraName3, effectAmplitude1, effectAmplitude2, effectAmplitude3, effectMultipleValue1, "
         "effectMultipleValue2, effectMultipleValue3, effectChainTarget1, effectChainTarget2, effectChainTarget3, effectItemType1, effectItemType2, effectItemType3, effectMiscValue1, effectMiscValue2, "
         "effectMiscValue3, effectMiscValueB1, effectMiscValueB2, effectMiscValueB3, effectTriggerSpell1, effectTriggerSpell2, effectTriggerSpell3, effectPointsPerComboPoint1, effectPointsPerComboPoint2, "
-        "effectPointsPerComboPoint3, spellVisual, spellIconID, activeIconID, spellName1, spellName2, spellName3, spellName4, spellName5, spellName6, spellName7, spellName8, "
+        "effectPointsPerComboPoint3, spellVisual, spellIconID, activeIconID, priority, spellName1, spellName2, spellName3, spellName4, spellName5, spellName6, spellName7, spellName8, "
         "spellName9, spellName10, spellName11, spellName12, spellName13, spellName14, spellName15, spellName16, rank1, rank2, rank3, rank4, rank5, rank6, rank7, rank8, rank9, rank10, "
         "rank11, rank12, rank13, rank14, rank15, rank16, ManaCostPercentage, startRecoveryCategory, startRecoveryTime, "
         "maxTargetLevel, spellFamilyName, spellFamilyFlags, maxAffectedTargets, dmgClass, preventionType, dmgMultiplier1, dmgMultiplier2, dmgMultiplier3, "
@@ -8756,29 +8756,30 @@ void ObjectMgr::LoadSpellTemplates()
         spell->SpellVisual = fields[120].GetUInt32();
         spell->SpellIconID = fields[121].GetUInt32();
         spell->activeIconID = fields[122].GetUInt32();
+        spell->spellPriority = fields[123].GetUInt32();
         for (uint8 i = 0; i < 16; i++) {
-            strcpy(spell->SpellName[i], fields[i+123].GetCString());
+            strcpy(spell->SpellName[i], fields[i+124].GetCString());
             if (strcmp(spell->SpellName[i], "0.000000") == 0)
                 strcpy(spell->SpellName[i], "");
-            strcpy(spell->Rank[i], fields[i+139].GetCString());
+            strcpy(spell->Rank[i], fields[i+140].GetCString());
             if (strcmp(spell->Rank[i], "0.000000") == 0)
                 strcpy(spell->Rank[i], "");
         }
-        spell->ManaCostPercentage = fields[155].GetUInt32();
-        spell->StartRecoveryCategory = fields[156].GetUInt32();
-        spell->StartRecoveryTime = fields[157].GetUInt32();
-        spell->MaxTargetLevel = fields[158].GetUInt32();
-        spell->SpellFamilyName = fields[159].GetUInt32();
-        spell->SpellFamilyFlags = fields[160].GetUInt64();
-        spell->MaxAffectedTargets = fields[161].GetUInt32();
-        spell->DmgClass = fields[162].GetUInt32();
-        spell->PreventionType = fields[163].GetUInt32();
+        spell->ManaCostPercentage = fields[156].GetUInt32();
+        spell->StartRecoveryCategory = fields[157].GetUInt32();
+        spell->StartRecoveryTime = fields[158].GetUInt32();
+        spell->MaxTargetLevel = fields[159].GetUInt32();
+        spell->SpellFamilyName = fields[160].GetUInt32();
+        spell->SpellFamilyFlags = fields[161].GetUInt64();
+        spell->MaxAffectedTargets = fields[162].GetUInt32();
+        spell->DmgClass = fields[163].GetUInt32();
+        spell->PreventionType = fields[164].GetUInt32();
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
-            spell->EffectDamageMultiplier[i] = fields[i+164].GetFloat();
-        spell->TotemCategory[0] = fields[167].GetUInt32();
-        spell->TotemCategory[1] = fields[168].GetUInt32();
-        spell->AreaId = fields[169].GetUInt32();
-        spell->SchoolMask = fields[170].GetUInt32();
+            spell->EffectDamageMultiplier[i] = fields[i+165].GetFloat();
+        spell->TotemCategory[0] = fields[168].GetUInt32();
+        spell->TotemCategory[1] = fields[169].GetUInt32();
+        spell->AreaId = fields[170].GetUInt32();
+        spell->SchoolMask = fields[171].GetUInt32();
         spell->CustomAttributesFlags = 0; //only loaded in spell_template_override
 
         spellTemplates[id] = spell;
@@ -8963,8 +8964,8 @@ void ObjectMgr::LoadSpellTemplates()
             case 120: spell->SpellVisual = fields[i].GetUInt32(); break;
             case 121: spell->SpellIconID = fields[i].GetUInt32(); break;
             case 122: spell->activeIconID = fields[i].GetUInt32(); break;
-            case 123:  
-            case 124: 
+            case 123: spell->spellPriority = fields[i].GetUInt32(); break;
+            case 124:  
             case 125: 
             case 126: 
             case 127: 
@@ -8979,8 +8980,8 @@ void ObjectMgr::LoadSpellTemplates()
             case 136: 
             case 137: 
             case 138: 
-                strcpy(spell->SpellName[i - 123], fields[i].GetCString()); break;
-            case 139:
+            case 139: 
+                strcpy(spell->SpellName[i - 124], fields[i].GetCString()); break;
             case 140:
             case 141:
             case 142:
@@ -8996,25 +8997,26 @@ void ObjectMgr::LoadSpellTemplates()
             case 152:
             case 153:
             case 154:
-                strcpy(spell->Rank[i - 139], fields[i].GetCString()); break;
-            case 155: spell->ManaCostPercentage = fields[i].GetUInt32(); break;
-            case 156: spell->StartRecoveryCategory = fields[i].GetUInt32(); break;
-            case 157: spell->StartRecoveryTime = fields[i].GetUInt32(); break;
-            case 158: spell->MaxTargetLevel = fields[i].GetUInt32(); break;
-            case 159: spell->SpellFamilyName = fields[i].GetUInt32(); break;
-            case 160: spell->SpellFamilyFlags = fields[i].GetUInt64(); break;
-            case 161: spell->MaxAffectedTargets = fields[i].GetUInt32(); break;
-            case 162: spell->DmgClass = fields[i].GetUInt32(); break;
-            case 163: spell->PreventionType = fields[i].GetUInt32(); break;
-            case 164:
+            case 155:
+                strcpy(spell->Rank[i - 140], fields[i].GetCString()); break;
+            case 156: spell->ManaCostPercentage = fields[i].GetUInt32(); break;
+            case 157: spell->StartRecoveryCategory = fields[i].GetUInt32(); break;
+            case 158: spell->StartRecoveryTime = fields[i].GetUInt32(); break;
+            case 159: spell->MaxTargetLevel = fields[i].GetUInt32(); break;
+            case 160: spell->SpellFamilyName = fields[i].GetUInt32(); break;
+            case 161: spell->SpellFamilyFlags = fields[i].GetUInt64(); break;
+            case 162: spell->MaxAffectedTargets = fields[i].GetUInt32(); break;
+            case 163: spell->DmgClass = fields[i].GetUInt32(); break;
+            case 164: spell->PreventionType = fields[i].GetUInt32(); break;
             case 165:
             case 166:
-                spell->EffectDamageMultiplier[i - 164] = fields[i].GetFloat(); break;
-            case 167: spell->TotemCategory[0] = fields[i].GetUInt32(); break;
-            case 168: spell->TotemCategory[1] = fields[i].GetUInt32(); break;
-            case 169: spell->AreaId = fields[i].GetUInt32(); break;
-            case 170: spell->SchoolMask = fields[i].GetUInt32(); break;
-            case 171: spell->CustomAttributesFlags = fields[i].GetUInt32(); break;
+            case 167:
+                spell->EffectDamageMultiplier[i - 165] = fields[i].GetFloat(); break;
+            case 168: spell->TotemCategory[0] = fields[i].GetUInt32(); break;
+            case 169: spell->TotemCategory[1] = fields[i].GetUInt32(); break;
+            case 170: spell->AreaId = fields[i].GetUInt32(); break;
+            case 171: spell->SchoolMask = fields[i].GetUInt32(); break;
+            case 172: spell->CustomAttributesFlags = fields[i].GetUInt32(); break;
             default:
                 ASSERT(false); //logic failure
             }

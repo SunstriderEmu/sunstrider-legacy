@@ -18471,6 +18471,10 @@ bool Player::IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod
     if (mod->op == SPELLMOD_DURATION && spellInfo->GetDuration() == -1)
         return false;
 
+    // mod crit to spells that can't crit
+    if (mod->op == SPELLMOD_CRITICAL_CHANCE && !spellInfo->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
+        return false;
+
     return spellInfo->IsAffectedBySpellMod(mod);
 }
 
@@ -18484,107 +18488,47 @@ void Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* s
     float totalmul = 1.0f;
     int32 totalflat = 0;
 
-    // Drop charges for triggering spells instead of triggered ones
-    if (m_spellModTakingSpell)
-        spell = m_spellModTakingSpell;
-
-    switch (op)
+    auto calculateSpellMod = [&](SpellModifier* mod)
     {
-        // special case, if a mod makes spell instant, only consume that mod
-    case SPELLMOD_CASTING_TIME:
-    {
-        SpellModifier* modInstantSpell = nullptr;
-        for (SpellModifier* mod : m_spellMods[op])
-        {
-            if (!IsAffectedBySpellmod(spellInfo, mod, spell))
-                continue;
-
-            if (mod->type == SPELLMOD_PCT && basevalue < T(10000) && mod->value <= -100)
-            {
-                modInstantSpell = mod;
-                break;
-            }
-        }
-
-        if (modInstantSpell)
-        {
-            Player::ApplyModToSpell(modInstantSpell, spell);
-            basevalue = T(0);
-            return;
-        }
-        break;
-    }
-    // special case if two mods apply 100% critical chance, only consume one
-    case SPELLMOD_CRITICAL_CHANCE:
-    {
-        SpellModifier* modCritical = nullptr;
-        for (SpellModifier* mod : m_spellMods[op])
-        {
-            if (!IsAffectedBySpellmod(spellInfo, mod, spell))
-                continue;
-
-            if (mod->type == SPELLMOD_FLAT && mod->value >= 100)
-            {
-                modCritical = mod;
-                break;
-            }
-        }
-
-        if (modCritical)
-        {
-            Player::ApplyModToSpell(modCritical, spell);
-            basevalue = T(100);
-            return;
-        }
-        break;
-    }
-    default:
-        break;
-    }
-
-    for (auto mod : m_spellMods[op])
-    {
-        if (!IsAffectedBySpellmod(spellInfo, mod, spell))
-            continue;
-
         switch (mod->type)
         {
         case SPELLMOD_FLAT:
             totalflat += mod->value;
             break;
         case SPELLMOD_PCT:
-            // skip percent mods for null basevalue (most important for spell mods with charges )
-            if (basevalue == T(0))
-            {
-                //HACKZ //Frost Warding + Molten Shields
-                if (mod->spellId == 11189 || mod->spellId == 28332 || mod->spellId == 11094 || mod->spellId == 13043)
-                    basevalue = 100;
-                else
-                    continue;
-            }
-            // special case (skip >10sec spell casts for instant cast setting)
-            if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
-                continue;
-            else if (!Player::HasSpellModApplied(mod, spell))
-            {
-                // special case for Surge of Light, don't apply critical chance reduction if other mods not applied (ie procs while casting another spell)
-                // (Surge of Light is the only PCT_MOD on critical chance)
-                if (op == SPELLMOD_CRITICAL_CHANCE)
-                    continue;
-#ifdef LICH_KING
-                // special case for Backdraft, dont' apply GCD reduction if cast time reduction wasn't applied (ie when Backlash is consumed first)
-                // (Backdraft is the only PCT_MOD on global cooldown)
-                else if (op == SPELLMOD_GLOBAL_COOLDOWN)
-                    continue;
-#endif
-            }
+            // special case (skip > 10sec spell casts for instant cast setting)
+            if (op == SPELLMOD_CASTING_TIME && mod->value <= -100 && basevalue >= T(10000))
+                return;
 
             totalmul += CalculatePct(1.0f, mod->value);
             break;
         }
 
         Player::ApplyModToSpell(mod, spell);
+    };
+
+    // Drop charges for triggering spells instead of triggered ones
+    if (m_spellModTakingSpell)
+        spell = m_spellModTakingSpell;
+
+    SpellModifier* chargedMod = nullptr;
+    for (SpellModifier* mod : m_spellMods[op])
+    {
+        if (!IsAffectedBySpellmod(spellInfo, mod, spell))
+            continue;
+
+        if (mod->ownerAura->IsUsingCharges())
+        {
+            if (!chargedMod || (chargedMod->ownerAura->GetSpellInfo()->Priority < mod->ownerAura->GetSpellInfo()->Priority))
+                chargedMod = mod;
+            continue;
+        }
+
+        calculateSpellMod(mod);
     }
+
+    if (chargedMod)
+        calculateSpellMod(chargedMod);
 
     basevalue = T(float(basevalue + totalflat) * totalmul);
 }
@@ -18652,14 +18596,6 @@ void Player::AddSpellMod(SpellModifier*& mod, bool apply)
         m_spellMods[mod->op].insert(mod);
     else
         m_spellMods[mod->op].erase(mod);
-}
-
-bool Player::HasSpellModApplied(SpellModifier* mod, Spell* spell)
-{
-    if (!spell)
-        return false;
-
-    return spell->m_appliedMods.count(mod->ownerAura) != 0;
 }
 
 void Player::ApplyModToSpell(SpellModifier* mod, Spell* spell)

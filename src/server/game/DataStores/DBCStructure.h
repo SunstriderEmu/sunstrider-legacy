@@ -873,7 +873,7 @@ struct SpellEntry
                                                             // 123 not used
     uint32    SpellIconID;                                  // 124
     uint32    activeIconID;                                 // 125
-    //uint32    spellPriority;                              // 126
+    uint32    spellPriority;                                // 126
     char*     SpellName[16];                                // 127-142
     //uint32    SpellNameFlag;                              // 143
     char*     Rank[16];                                     // 144-159
