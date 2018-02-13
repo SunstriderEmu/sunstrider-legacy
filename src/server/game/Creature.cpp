@@ -999,6 +999,7 @@ bool Creature::AIM_Create(CreatureAI* ai /*= nullptr*/)
     Motion_Initialize();
 
     i_AI = ai ? ai : FactorySelector::SelectAI(this);
+    return true;
 }
 
 void Creature::AI_InitializeAndEnable()
@@ -1019,6 +1020,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
         return false;
  
     AI_InitializeAndEnable();
+    return true;
 }
 
 bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData *data, bool dynamic)

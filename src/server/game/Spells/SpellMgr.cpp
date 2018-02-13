@@ -2698,11 +2698,15 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
     if (!(spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL))
         return false;
 
-    bool doDamage = false;
+    bool excludedEffect = false;
     for(const auto& Effect : spell->Effects)
     {
         if( Effect.Effect == 0 )
             continue;
+
+        // No value and not interrupt cast or crowd control without SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY flag
+        if (!Effect.CalcValue() && !((Effect.Effect == SPELL_EFFECT_INTERRUPT_CAST || spell->HasAttribute(SPELL_ATTR0_CU_AURA_CC)) && !spell->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)))
+            return false;
 
         //always binary if at least a control effect
         if(    Effect.ApplyAuraName == SPELL_AURA_MOD_CONFUSE
@@ -2719,16 +2723,29 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
         // else not binary if spell does damage
         if(    Effect.Effect == SPELL_EFFECT_SCHOOL_DAMAGE
             || Effect.Effect == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE
+            || Effect.Effect == SPELL_EFFECT_WEAPON_DAMAGE
+            || Effect.Effect == SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL
+            || Effect.Effect == SPELL_EFFECT_NORMALIZED_WEAPON_DMG
+            || Effect.Effect == SPELL_EFFECT_WEAPON_PERCENT_DAMAGE
             || Effect.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE
             || Effect.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE_PERCENT
-            || Effect.ApplyAuraName == SPELL_AURA_PROC_TRIGGER_DAMAGE
-            || Effect.ApplyAuraName == SPELL_AURA_PERIODIC_LEECH ) // Also be partial resistable
+            || Effect.ApplyAuraName == SPELL_AURA_PROC_TRIGGER_DAMAGE 
+            || Effect.ApplyAuraName == SPELL_AURA_PERIODIC_LEECH  // Also be partial resistable
+
+            //also exclude dummy spells
+            || Effect.ApplyAuraName == SPELL_AURA_DUMMY 
+            || Effect.ApplyAuraName == SPELL_AURA_PERIODIC_DUMMY 
+
+            //also exclude triggers
+            || Effect.Effect == SPELL_EFFECT_TRIGGER_SPELL 
+            || Effect.Effect == SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
+            ) 
         {
-            doDamage = true;
+            excludedEffect = true;
         } 
     }
 
-    bool binary = !doDamage;
+    bool binary = !excludedEffect;
     return binary;
 }
 
@@ -2948,6 +2965,22 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
 
             switch (spellInfo->Effects[j].Effect)
             {
+            case SPELL_EFFECT_SCHOOL_DAMAGE:
+            case SPELL_EFFECT_HEALTH_LEECH:
+            case SPELL_EFFECT_HEAL:
+            case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+            case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+            case SPELL_EFFECT_WEAPON_DAMAGE:
+            case SPELL_EFFECT_POWER_BURN:
+            case SPELL_EFFECT_HEAL_MECHANICAL:
+            case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+            case SPELL_EFFECT_HEAL_PCT:
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_CAN_CRIT;
+                break;
+            }
+            
+            switch (spellInfo->Effects[j].Effect)
+            {
                 case SPELL_EFFECT_SCHOOL_DAMAGE:
                 case SPELL_EFFECT_WEAPON_DAMAGE:
                 case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
@@ -3110,35 +3143,75 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
 
         if (SpellMgr::IsBinaryMagicResistanceSpell(spellInfo))
             spellInfo->AttributesCu |= SPELL_ATTR0_CU_BINARY_SPELL;
+    }
 
-        // addition for binary spells, ommit spells triggering other spells
-        if (spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL)) //sunstrider: this is the opposite condition than the trinity code, I believe they got it backwards
+    // addition for binary spells, omit spells triggering other spells
+    for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
+    {
+        spellInfo = mSpellInfoMap[i];
+        if (!spellInfo)
+            continue;
+
+        if (!spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL)) //sunstrider: this is the opposite condition than the trinity code, I believe they got it backwards
+            continue;
+
+        bool allNonBinary = true;
+        bool overrideAttr = false;
+        for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
-            bool allNonBinary = true;
-            bool overrideAttr = false;
-            for (uint8 k = 0; k < MAX_SPELL_EFFECTS; ++k)
+            if (spellInfo->Effects[j].IsAura() && spellInfo->Effects[j].TriggerSpell)
             {
-                if (spellInfo->Effects[k].IsAura() && spellInfo->Effects[k].TriggerSpell)
+                switch (spellInfo->Effects[j].ApplyAuraName)
                 {
-                    switch (spellInfo->Effects[k].ApplyAuraName)
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    if (SpellInfo const* triggerSpell = sSpellMgr->GetSpellInfo(spellInfo->Effects[j].TriggerSpell))
                     {
-                    case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-                    case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
-                        if (SpellInfo const* triggerSpell = sSpellMgr->GetSpellInfo(spellInfo->Effects[k].TriggerSpell))
-                        {
-                            overrideAttr = true;
-                            if (triggerSpell->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL))
-                                allNonBinary = false;
-                        }
-                        break;
-                    default:
-                        break;
+                        overrideAttr = true;
+                        if (triggerSpell->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL))
+                            allNonBinary = false;
                     }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        if (overrideAttr && allNonBinary)
+            spellInfo->AttributesCu &= ~SPELL_ATTR0_CU_BINARY_SPELL;
+    }
+
+    // remove attribute from spells that can't crit
+    // and mark triggering spell (instead of triggered spell) for spells with SPELL_ATTR4_INHERIT_CRIT_FROM_AURA
+    for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
+    {
+        spellInfo = mSpellInfoMap[i];
+        if (!spellInfo)
+            continue;
+
+        if (spellInfo->HasAttribute(SPELL_ATTR2_CANT_CRIT))
+            spellInfo->AttributesCu &= ~SPELL_ATTR0_CU_CAN_CRIT;
+        else if (spellInfo->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
+        {
+            bool found = false;
+            for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+            {
+                switch (spellInfo->Effects[j].ApplyAuraName)
+                {
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    if (SpellInfo* triggerSpell = const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(spellInfo->Effects[j].TriggerSpell)))
+                        if (triggerSpell->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
+                            found = true;
+                    break;
+                default:
+                    continue;
                 }
             }
 
-            if (overrideAttr && allNonBinary)
-                spellInfo->AttributesCu &= ~SPELL_ATTR0_CU_BINARY_SPELL;
+            if (found)
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_CAN_CRIT;
         }
     }
 

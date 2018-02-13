@@ -6070,7 +6070,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
     if (HasUnitTypeMask(UNIT_MASK_GUARDIAN))
         DoneAdvertisedBenefit += static_cast<Guardian const*>(this)->GetBonusDamage();
     else if ((this->ToCreature())->IsTotem() && ((Totem*)this)->GetTotemType() != TOTEM_STATUE)
-        if (Unit* owner = GetOwner())
+        if(owner != this)
             return owner->SpellDamageBonusDone(victim, spellProto, pdamage, damagetype, donePctTotal, stack);
 
     float coeff = 0.0f;
@@ -6300,14 +6300,14 @@ float Unit::SpellCritChanceDone(SpellInfo const *spellProto, SpellSchoolMask sch
         if(Unit* owner = GetOwner())
             return owner->SpellCritChanceDone(spellProto, schoolMask, attackType);
 
-        return false;
+        return 0.0f;
     }
 
-    if((spellProto->HasAttribute(SPELL_ATTR2_CANT_CRIT)))
-        return false;
+    if (spellProto->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
+        return 0.0f;
     
     if (spellProto->HasEffectByEffectMask(SPELL_EFFECT_HEALTH_LEECH))
-        return false;
+        return 0.0f;
 
     float crit_chance = 0.0f;
     switch(spellProto->DmgClass)
@@ -6356,7 +6356,7 @@ float Unit::SpellCritChanceDone(SpellInfo const *spellProto, SpellSchoolMask sch
 float Unit::SpellCritChanceTaken(Unit const* caster, SpellInfo const* spellInfo, SpellSchoolMask schoolMask, float doneChance, WeaponAttackType attackType /*= BASE_ATTACK*/) const
 {
     // not critting spell
-    if (spellInfo->HasAttribute(SPELL_ATTR2_CANT_CRIT))
+    if (spellInfo->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
         return 0.0f;
 
     float crit_chance = doneChance;
@@ -6641,9 +6641,6 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
     if (AuraEffect const* Tenacity = GetAuraEffect(58549, 0))
         AddPct(TakenTotalMod, Tenacity->GetAmount());
 #endif
-
-    // Taken fixed damage bonus auras
-    int32 TakenAdvertisedBenefit = 0;
 
     //MIGHTY HACKS BLOCK
     {

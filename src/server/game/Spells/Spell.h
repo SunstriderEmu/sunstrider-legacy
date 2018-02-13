@@ -211,20 +211,13 @@ private:
 
 struct SpellValue
 {
-    explicit SpellValue(SpellInfo const *proto)
-    {
-        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            EffectBasePoints[i] = proto->Effects[i].BasePoints;
+    explicit SpellValue(SpellInfo const* spellInfo);
 
-        RadiusMod = 1.0f;
-        MaxAffectedTargets = proto->MaxAffectedTargets;
-        AuraStackAmount = 1;
-    }
-
-    uint32 MaxAffectedTargets;
-    int32 EffectBasePoints[MAX_SPELL_EFFECTS];
-    float RadiusMod;
-    uint8 AuraStackAmount;
+    uint32  MaxAffectedTargets;
+    int32   EffectBasePoints[MAX_SPELL_EFFECTS];
+    float   RadiusMod;
+    uint8   AuraStackAmount;
+    float   CriticalChance;
 };
 
 enum SpellState

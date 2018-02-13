@@ -26,7 +26,7 @@ enum SpellCustomAttributes
     SPELL_ATTR0_CU_AURA_HOT                      = 0x00000010,
     SPELL_ATTR0_CU_AURA_DOT                      = 0x00000020,
     SPELL_ATTR0_CU_AURA_CC                       = 0x00000040,
-    //reuse                                      = 0x00000080,
+    SPELL_ATTR0_CU_CAN_CRIT                      = 0x00000080,
     SPELL_ATTR0_CU_DIRECT_DAMAGE                 = 0x00000100,
     SPELL_ATTR0_CU_PICKPOCKET                    = 0x00000200,
     SPELL_ATTR0_CU_LINK_CAST                     = 0x00000400,

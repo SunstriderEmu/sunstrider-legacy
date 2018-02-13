@@ -1954,16 +1954,17 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 
     SpellCastTargets targets;
     targets.SetUnitTarget(target);
-    if (triggeredSpellInfo->IsChannelCategorySpell() && GetBase()->GetChannelTargetData()) //TODO AuraApp: probably incorrect
+    if (triggeredSpellInfo->IsChannelCategorySpell() && GetBase()->GetChannelTargetData())
     {
         targets.SetDstChannel(GetBase()->GetChannelTargetData()->spellDst);
         targets.SetObjectTargetChannel(GetBase()->GetChannelTargetData()->channelGUID);
     }
 
-    CastSpellExtraArgs args;
-    args.TriggerFlags = TRIGGERED_FULL_MASK;
-    args.SetTriggeringAura(this);
+    CastSpellExtraArgs args(this);
     args.SetOriginalCaster(originalCasterGUID);
+    if (GetSpellInfo()->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
+        args.AddSpellMod(SPELLVALUE_CRIT_CHANCE, int32(GetBase()->GetCritChance() * 100.0f)); // @todo: ugly x100 remove when basepoints are double
+
     triggerCaster->CastSpell(targets, triggerSpellId, args);
 }
 
@@ -1977,6 +1978,9 @@ void AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit*
             CastSpellExtraArgs args(this);
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 args.AddSpellMod(SpellValueMod(SPELLVALUE_BASE_POINT0 + i), GetAmount());
+            if (GetSpellInfo()->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
+                args.AddSpellMod(SPELLVALUE_CRIT_CHANCE, int32(GetBase()->GetCritChance() * 100.0f)); // @todo: ugly x100 remove when basepoints are double
+
             triggerCaster->CastSpell(target, triggerSpellId, args);
             TC_LOG_DEBUG("spells", "AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
         }
@@ -2421,6 +2425,11 @@ bool AuraEffect::CheckEffectProc(AuraApplication* aurApp, ProcEventInfo& eventIn
                 return false;
         break;
     }
+    case SPELL_AURA_MOD_SPELL_CRIT_CHANCE:
+        // skip spells that can't crit
+        if (!spellInfo || !spellInfo->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
+            return false;
+        break;
     default:
         break;
     }
