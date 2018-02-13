@@ -2767,6 +2767,27 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
             return false;
     }
 
+    switch (SpellFamilyName)
+    {
+    case SPELLFAMILY_MAGE:
+        // Amplify Magic, Dampen Magic
+        if (SpellFamilyFlags == 0x00002000)
+            return true;
+        // Arcane Missiles
+        if (SpellFamilyFlags == 0x00000800)
+            return false;
+    case SPELLFAMILY_ROGUE:
+        switch (Id)
+        {
+        // Slice and Dice. Prevents breaking Stealth
+        case 5171:      // Slice and Dice (Rank 1)
+        case 6774:      // Slice and Dice (Rank 2)
+            return true;
+        default:
+            break;
+        }
+    }
+
     switch (Mechanic)
     {
     case MECHANIC_IMMUNE_SHIELD:
@@ -2785,6 +2806,7 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
             case SPELL_AURA_MOD_STEALTH:
                 return true;
             case SPELL_AURA_CHANNEL_DEATH_ITEM:
+            case SPELL_AURA_EMPATHY:
                 return false;
             }
         }

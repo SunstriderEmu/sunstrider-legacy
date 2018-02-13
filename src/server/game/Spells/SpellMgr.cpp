@@ -3173,15 +3173,6 @@ void SpellMgr::LoadSpellInfoCorrections()
 
         switch (spellInfo->Id)
         {
-        case 27003:
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
-        case 31041: // Roar's Mangle
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
-        case 33745: // Rank 1 Lacerate (Druid)
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
         case 379: //earth shield heal effect
         case 33076: //Prayer of mending
         case 33110: //Prayer of mending
@@ -3204,34 +3195,21 @@ void SpellMgr::LoadSpellInfoCorrections()
         case 45150:                             // Meteor Slash
             spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
             break;
+        case 27003: // rake
+        case 31041: // Roar's Mangle
+        case 33745: // Rank 1 Lacerate (Druid)
         case 12723: // Sweeping Strikes proc
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
         case 45236:
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
         case 45232:
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
         case 45256:
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
         case 45329: // Sacrolash Show nova
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
         case 45347: // Sacrolash SPELL_DARK_TOUCHED
         case 45271:
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
         case 46771: // SPELL_FLAME_SEAR
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
         case 41173:
         case 41093:
         case 41084:
         case 34580: //Impale
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            break;
         case 45248:
             spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
             break;

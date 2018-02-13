@@ -1962,8 +1962,11 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 
     CastSpellExtraArgs args(this);
     args.SetOriginalCaster(originalCasterGUID);
+#ifdef LICH_KING
+    //don't know what to do with this on BC but this attribute was already existing. Auras can't crit so this attributes is probably not exact at TC.
     if (GetSpellInfo()->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
         args.AddSpellMod(SPELLVALUE_CRIT_CHANCE, int32(GetBase()->GetCritChance() * 100.0f)); // @todo: ugly x100 remove when basepoints are double
+#endif
 
     triggerCaster->CastSpell(targets, triggerSpellId, args);
 }
@@ -1978,9 +1981,11 @@ void AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit*
             CastSpellExtraArgs args(this);
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 args.AddSpellMod(SpellValueMod(SPELLVALUE_BASE_POINT0 + i), GetAmount());
+#ifdef LICH_KING
+            //don't know what to do with this on BC but this attribute was already existing. Auras can't crit so this attributes is probably not exact at TC.
             if (GetSpellInfo()->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
                 args.AddSpellMod(SPELLVALUE_CRIT_CHANCE, int32(GetBase()->GetCritChance() * 100.0f)); // @todo: ugly x100 remove when basepoints are double
-
+#endif
             triggerCaster->CastSpell(target, triggerSpellId, args);
             TC_LOG_DEBUG("spells", "AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
         }
