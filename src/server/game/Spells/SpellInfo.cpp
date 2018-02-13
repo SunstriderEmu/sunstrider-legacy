@@ -878,6 +878,37 @@ bool SpellInfo::IsHighRankOf(SpellInfo const* spellInfo) const
     return false;
 }
 
+void SpellInfo::_InitializeExplicitTargetMask()
+{
+    bool srcSet = false;
+    bool dstSet = false;
+    uint32 targetMask = Targets;
+    // prepare target mask using effect target entries
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (!Effects[i].IsEffect())
+            continue;
+
+        targetMask |= Effects[i].TargetA.GetExplicitTargetMask(srcSet, dstSet);
+        targetMask |= Effects[i].TargetB.GetExplicitTargetMask(srcSet, dstSet);
+
+        // add explicit target flags based on spell effects which have EFFECT_IMPLICIT_TARGET_EXPLICIT and no valid target provided
+        if (Effects[i].GetImplicitTargetType() != EFFECT_IMPLICIT_TARGET_EXPLICIT)
+            continue;
+
+        // extend explicit target mask only if valid targets for effect could not be provided by target types
+        uint32 effectTargetMask = Effects[i].GetMissingTargetMask(srcSet, dstSet, targetMask);
+
+        // don't add explicit object/dest flags when spell has no max range
+        if (GetMaxRange(true) == 0.0f && GetMaxRange(false) == 0.0f)
+            effectTargetMask &= ~(TARGET_FLAG_UNIT_MASK | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_CORPSE_MASK | TARGET_FLAG_DEST_LOCATION);
+
+        targetMask |= effectTargetMask;
+    }
+
+    ExplicitTargetMask = targetMask;
+}
+
 void SpellInfo::_LoadSpellDiminishInfo()
 {
     auto diminishingGroupCompute = [this](bool triggered) -> DiminishingGroup

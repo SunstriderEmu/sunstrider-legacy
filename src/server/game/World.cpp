@@ -1435,6 +1435,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after all SpellEntry's alterations
     sSpellMgr->LoadSpellInfoStore(false);
 
+    TC_LOG_INFO("server.loading", "Loading SpellInfo corrections...");
+    sSpellMgr->LoadSpellInfoCorrections();
+
     TC_LOG_INFO("server.loading", "Loading SpellInfo custom attributes...");
     sSpellMgr->LoadSpellInfoCustomAttributes(); //must be after LoadSkillLineAbilityMap
 

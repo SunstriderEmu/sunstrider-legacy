@@ -586,6 +586,7 @@ public:
 private:
     void _LoadImmunityInfo();
     void _LoadSpellDiminishInfo();
+    void _InitializeExplicitTargetMask();
 
     static bool _IsPositiveTarget(uint32 targetA, uint32 targetB);
     uint32 _GetExplicitTargetMask() const;

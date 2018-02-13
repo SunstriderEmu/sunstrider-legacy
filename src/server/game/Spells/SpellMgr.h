@@ -1029,6 +1029,7 @@ class TC_GAME_API SpellMgr
         void LoadSpellInfoStore(bool reload = false);
         void UnloadSpellInfoStore();
         void UnloadSpellInfoImplicitTargetConditionLists();
+        void LoadSpellInfoCorrections();
         void LoadSpellInfoCustomAttributes(); //Some custom attributes are also added in SpellMgr::LoadSpellLinked()
         void LoadSpellAreas();
         void LoadSpellInfoImmunities();

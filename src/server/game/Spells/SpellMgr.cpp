@@ -2698,6 +2698,10 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
     if (!(spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL))
         return false;
 
+    // spells ignoring hit result should not be binary
+    if (spell->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
+        return false;
+
     bool excludedEffect = false;
     for(const auto& Effect : spell->Effects)
     {
@@ -3034,6 +3038,16 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
             }
         }
 
+#ifdef LICH_KING
+        // Remove normal school mask to properly calculate damage
+        // There is no such spell on BC
+        if ((spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL) && (spellInfo->SchoolMask & SPELL_SCHOOL_MASK_MAGIC))
+        {
+            spellInfo->SchoolMask &= ~SPELL_SCHOOL_MASK_NORMAL;
+            spellInfo->AttributesCu |= SPELL_ATTR0_CU_SCHOOLMASK_NORMAL_WITH_MAGIC;
+        }
+#endif
+
         if (!spellInfo->_IsPositiveEffect(EFFECT_0, true))
             spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
 
@@ -3045,6 +3059,117 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
 
         if (spellInfo->SpellVisual == 3879)
             spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
+
+        switch (spellInfo->SpellFamilyName)
+        {
+        case SPELLFAMILY_WARRIOR:
+            // Shout / Piercing Howl
+            if (spellInfo->SpellFamilyFlags & 0x20000)
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
+            break;
+        case SPELLFAMILY_DRUID:
+            // Roar
+            if (spellInfo->SpellFamilyFlags & 0x8)
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
+            break;
+        case SPELLFAMILY_GENERIC:
+            // Stoneclaw Totem effect
+            if (spellInfo->Id == 5729)
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
+            break;
+        default:
+            break;
+        }
+
+        spellInfo->_InitializeExplicitTargetMask();
+
+        if (SpellMgr::IsBinaryMagicResistanceSpell(spellInfo))
+            spellInfo->AttributesCu |= SPELL_ATTR0_CU_BINARY_SPELL;
+    }
+
+    // addition for binary spells, omit spells triggering other spells
+    for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
+    {
+        spellInfo = mSpellInfoMap[i];
+        if (!spellInfo)
+            continue;
+
+        if (!spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL)) //sunstrider: this is the opposite condition than the trinity code, I believe they got it backwards
+            continue;
+
+        bool allNonBinary = true;
+        bool overrideAttr = false;
+        for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+        {
+            if (spellInfo->Effects[j].IsAura() && spellInfo->Effects[j].TriggerSpell)
+            {
+                switch (spellInfo->Effects[j].ApplyAuraName)
+                {
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    if (SpellInfo const* triggerSpell = sSpellMgr->GetSpellInfo(spellInfo->Effects[j].TriggerSpell))
+                    {
+                        overrideAttr = true;
+                        if (triggerSpell->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL))
+                            allNonBinary = false;
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        if (overrideAttr && allNonBinary)
+            spellInfo->AttributesCu &= ~SPELL_ATTR0_CU_BINARY_SPELL;
+    }
+
+    // remove attribute from spells that can't crit
+    // and mark triggering spell (instead of triggered spell) for spells with SPELL_ATTR4_INHERIT_CRIT_FROM_AURA
+    for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
+    {
+        spellInfo = mSpellInfoMap[i];
+        if (!spellInfo)
+            continue;
+
+        if (spellInfo->HasAttribute(SPELL_ATTR2_CANT_CRIT))
+            spellInfo->AttributesCu &= ~SPELL_ATTR0_CU_CAN_CRIT;
+        else if (spellInfo->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
+        {
+            bool found = false;
+            for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+            {
+                switch (spellInfo->Effects[j].ApplyAuraName)
+                {
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    if (SpellInfo* triggerSpell = const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(spellInfo->Effects[j].TriggerSpell)))
+                        if (triggerSpell->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
+                            found = true;
+                    break;
+                default:
+                    continue;
+                }
+            }
+
+            if (found)
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_CAN_CRIT;
+        }
+    }
+
+    TC_LOG_INFO("server.loading", ">> Loaded SpellInfo custom attributes in %u ms", GetMSTimeDiffToNow(oldMSTime));
+}
+
+void SpellMgr::LoadSpellInfoCorrections()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    SpellInfo* spellInfo = nullptr;
+    for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
+    {
+        spellInfo = mSpellInfoMap[i];
+        if (!spellInfo)
+            continue;
 
         switch (spellInfo->Id)
         {
@@ -3140,82 +3265,9 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
             spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
             break;
         }
-
-        if (SpellMgr::IsBinaryMagicResistanceSpell(spellInfo))
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_BINARY_SPELL;
     }
 
-    // addition for binary spells, omit spells triggering other spells
-    for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
-    {
-        spellInfo = mSpellInfoMap[i];
-        if (!spellInfo)
-            continue;
-
-        if (!spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL)) //sunstrider: this is the opposite condition than the trinity code, I believe they got it backwards
-            continue;
-
-        bool allNonBinary = true;
-        bool overrideAttr = false;
-        for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-        {
-            if (spellInfo->Effects[j].IsAura() && spellInfo->Effects[j].TriggerSpell)
-            {
-                switch (spellInfo->Effects[j].ApplyAuraName)
-                {
-                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
-                    if (SpellInfo const* triggerSpell = sSpellMgr->GetSpellInfo(spellInfo->Effects[j].TriggerSpell))
-                    {
-                        overrideAttr = true;
-                        if (triggerSpell->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL))
-                            allNonBinary = false;
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-
-        if (overrideAttr && allNonBinary)
-            spellInfo->AttributesCu &= ~SPELL_ATTR0_CU_BINARY_SPELL;
-    }
-
-    // remove attribute from spells that can't crit
-    // and mark triggering spell (instead of triggered spell) for spells with SPELL_ATTR4_INHERIT_CRIT_FROM_AURA
-    for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
-    {
-        spellInfo = mSpellInfoMap[i];
-        if (!spellInfo)
-            continue;
-
-        if (spellInfo->HasAttribute(SPELL_ATTR2_CANT_CRIT))
-            spellInfo->AttributesCu &= ~SPELL_ATTR0_CU_CAN_CRIT;
-        else if (spellInfo->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
-        {
-            bool found = false;
-            for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-            {
-                switch (spellInfo->Effects[j].ApplyAuraName)
-                {
-                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
-                    if (SpellInfo* triggerSpell = const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(spellInfo->Effects[j].TriggerSpell)))
-                        if (triggerSpell->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
-                            found = true;
-                    break;
-                default:
-                    continue;
-                }
-            }
-
-            if (found)
-                spellInfo->AttributesCu |= SPELL_ATTR0_CU_CAN_CRIT;
-        }
-    }
-
-    TC_LOG_INFO("server.loading", ">> Loaded SpellInfo custom attributes in %u ms", GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded SpellInfo corrections in %u ms", GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SpellMgr::LoadSpellAreas()
