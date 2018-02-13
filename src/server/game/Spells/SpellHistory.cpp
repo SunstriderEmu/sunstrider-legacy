@@ -211,7 +211,11 @@ void SpellHistory::WritePacket<Pet>(WorldPacket& packet) const
 
     for (auto const& spellCooldown : _spellCooldowns)
     {
+#ifdef LICH_KING
         packet << uint32(spellCooldown.first);              // spell ID
+#else
+        packet << uint16(spellCooldown.first);              // spell ID
+#endif
         packet << uint16(spellCooldown.second.CategoryId);  // spell category
         if (!spellCooldown.second.OnHold)
         {
@@ -248,7 +252,11 @@ void SpellHistory::WritePacket<Player>(WorldPacket& packet) const
 
     for (auto const& spellCooldown : _spellCooldowns)
     {
+#ifdef LICH_KING
         packet << uint32(spellCooldown.first);
+#else
+        packet << uint16(spellCooldown.first);
+#endif
         packet << uint16(spellCooldown.second.ItemId);        // cast item id
         packet << uint16(spellCooldown.second.CategoryId);    // spell category
 

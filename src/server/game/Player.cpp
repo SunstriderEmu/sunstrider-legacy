@@ -2839,7 +2839,11 @@ void Player::SendInitialSpells()
         if(!itr->second->active || itr->second->disabled)
             continue;
 
+#ifdef LICH_KING
+        data << uint32(itr->first);
+#else
         data << uint16(itr->first);
+#endif
         data << uint16(0);                                  // it's not slot id
 
         spellCount +=1;
@@ -2851,7 +2855,7 @@ void Player::SendInitialSpells()
    
     SendDirectMessage(&data);
 
-    TC_LOG_DEBUG("entities.player", "CHARACTER: Sent Initial Spells" );
+    //TC_LOG_DEBUG("entities.player", "CHARACTER: Sent Initial Spells" );
 }
 
 void Player::RemoveMail(uint32 id)
@@ -18248,9 +18252,8 @@ void Player::PetSpellInitialize()
     }
     data.put<uint8>(spellsCountPos, addlist);
 
-
-    data << uint8(0);                                       // cooldowns count
-    //data << uint32(0x6010) << uint64(0);                    // for each cooldown (bc format, dunno about LK)
+    //Cooldowns
+    pet->GetSpellHistory()->WritePacket<Pet>(data);
 
     SendDirectMessage(&data);
 }
