@@ -3456,10 +3456,6 @@ void Spell::cancel()
     if(m_spellState == SPELL_STATE_FINISHED)
         return;
 
-    SetReferencedFromCurrent(false);
-    if(m_selfContainer && *m_selfContainer == this)
-        *m_selfContainer = nullptr;
-
     uint32 oldState = m_spellState;
     m_spellState = SPELL_STATE_FINISHED;
     //TC_LOG_DEBUG("FIXME","Spell %u - State : SPELL_STATE_FINISHED",m_spellInfo->Id);
@@ -3508,6 +3504,10 @@ void Spell::cancel()
         {
         } break;
     }
+
+    SetReferencedFromCurrent(false);
+    if (m_selfContainer && *m_selfContainer == this)
+        *m_selfContainer = nullptr;
 
     m_caster->RemoveDynObject(m_spellInfo->Id);
     m_caster->RemoveGameObject(m_spellInfo->Id, true);
