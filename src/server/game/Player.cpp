@@ -20739,6 +20739,7 @@ void Player::LearnDefaultSkills()
 {
     // learn default race/class skills
     PlayerInfo const* info = sObjectMgr->GetPlayerInfo(GetRace(), GetClass());
+    ASSERT(info);
     for (PlayerCreateInfoSkills::const_iterator itr = info->skills.begin(); itr != info->skills.end(); ++itr)
     {
         uint32 skillId = itr->SkillId;
@@ -20809,6 +20810,7 @@ void Player::LearnDefaultSpells(bool loading)
 {
     // learn default race/class spells
     PlayerInfo const *info = sObjectMgr->GetPlayerInfo(GetRace(),GetClass());
+    ASSERT(info);
     std::list<CreateSpellPair>::const_iterator spell_itr;
     for (spell_itr = info->spell.begin(); spell_itr!=info->spell.end(); ++spell_itr)
     {
