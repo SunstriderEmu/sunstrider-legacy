@@ -6736,7 +6736,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, ui
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
     // modify spell power by victim's SPELL_AURA_MOD_HEALING auras (eg Amplify/Dampen Magic)
     //TC DoneAdvertisedBenefit += victim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_HEALING, spellProto->GetSchoolMask());
-    DoneAdvertisedBenefit += SpellBaseHealingBonusTaken(spellProto);
+    DoneAdvertisedBenefit += victim->SpellBaseHealingBonusTaken(spellProto);
 
     // Pets just add their bonus damage to their spell damage
     // note that their spell damage is just gain of their own auras

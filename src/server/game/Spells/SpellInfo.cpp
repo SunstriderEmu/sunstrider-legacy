@@ -2175,7 +2175,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     int32 basePoints = bp ? *bp : BasePoints;
     int32 randomPoints = int32(DieSides);
 
-    if (caster)
+    if (caster && basePointsPerLevel)
     {
         //Cap caster level with MaxLevel (upper) and BaseLevel (lower), then get the difference between that level and the spell level
         int32 level = int32(caster->GetLevel());
