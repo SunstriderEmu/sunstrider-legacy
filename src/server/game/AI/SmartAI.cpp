@@ -550,17 +550,22 @@ void SmartAI::MoveInLineOfSight(Unit* who)
 
 void SmartAI::InitializeAI()
 {
+    GetScript()->OnInitialize(me);
+
     mDespawnTime = 0;
     mDespawnState = 0;
     _escortState = SMART_ESCORT_NONE;
 
     me->SetVisible(true);
 
+    if (!me->IsDead())
+    {
+        GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);
+        GetScript()->OnReset();
+    }
+
     if (me->GetFaction() != me->GetCreatureTemplate()->faction)
         me->RestoreFaction();
-
-    GetScript()->OnReset();
-    GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);
 
     mFollowGuid.Clear();//do not reset follower on Reset(), we need it after combat evade
     mFollowDist = 0;
@@ -703,8 +708,6 @@ void SmartAI::PassengerBoarded(Unit* who, int8 seatId, bool apply)
 
 void SmartAI::InitializeAI()
 {
-    GetScript()->OnInitialize(me);
-
     JustReachedHome();
 }
 
@@ -894,9 +897,9 @@ void SmartAI::StopFollow(bool complete)
     GetScript()->ProcessEventsFor(SMART_EVENT_FOLLOW_COMPLETED, player);
 }
 
-void SmartAI::SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker)
+void SmartAI::SetTimedActionList(SmartScriptHolder& e, uint32 entry, Unit* invoker)
 {
-    GetScript()->SetScript9(e, entry, invoker);
+    GetScript()->SetTimedActionList(e, entry, invoker);
 }
 
 void SmartAI::OnGameEvent(bool start, uint16 eventId)
@@ -994,9 +997,9 @@ void SmartGameObjectAI::SetData(uint32 id, uint32 value, Unit* setter)
     GetScript()->ProcessEventsFor(SMART_EVENT_DATA_SET, setter, id, value);
 }
 
-void SmartGameObjectAI::SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker)
+void SmartGameObjectAI::SetTimedActionList(SmartScriptHolder& e, uint32 entry, Unit* invoker)
 {
-    GetScript()->SetScript9(e, entry);
+    GetScript()->SetTimedActionList(e, entry);
 }
 
 void SmartGameObjectAI::OnGameEvent(bool start, uint16 eventId)

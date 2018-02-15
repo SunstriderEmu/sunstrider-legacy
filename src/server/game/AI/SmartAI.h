@@ -52,7 +52,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void SetFollow(Unit* target, float dist = 0.0f, float angle = 0.0f, uint32 credit = 0, uint32 end = 0, uint32 creditType = 0);
         void StopFollow(bool complete);
 
-        void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker);
+        void SetTimedActionList(SmartScriptHolder& e, uint32 entry, Unit* invoker);
         SmartScript* GetScript() { return &mScript; }
         bool IsEscortInvokerInRange();
 
@@ -268,7 +268,7 @@ class TC_GAME_API SmartGameObjectAI : public GameObjectAI
         void QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         void Destroyed(Player* player, uint32 eventId) override;
         void SetData(uint32 id, uint32 value, Unit* setter = nullptr) override;
-        void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker);
+        void SetTimedActionList(SmartScriptHolder& e, uint32 entry, Unit* invoker);
         void OnGameEvent(bool start, uint16 eventId) override;
         void OnStateChanged(GOState state, Unit* unit) override;
         void OnLootStateChanged(LootState state, Unit* unit) override;
