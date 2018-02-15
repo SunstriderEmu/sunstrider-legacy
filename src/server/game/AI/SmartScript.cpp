@@ -1073,6 +1073,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         {
             for (WorldObject* target : targets)
             {
+                //sun difference, always give invoker, not if only if invoker is smartAI too
                 if (IsCreature(target))
                     target->ToCreature()->AI()->SetData(e.action.setData.field, e.action.setData.data, me);
                 else if (IsGameObject(target))
@@ -1968,7 +1969,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 }
                 else if (GameObject* goTarget = target->ToGameObject())
                 {
-                    if (IsSmartGO(goTarget))
+                    if (IsSmart(goTarget))
                         CAST_AI(SmartGameObjectAI, goTarget->AI())->SetTimedActionList(e, e.action.timedActionList.id, GetLastInvoker());
                 }
             }
@@ -2092,7 +2093,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 }
                 else if (GameObject* goTarget = target->ToGameObject())
                 {
-                    if (IsSmartGO(goTarget))
+                    if (IsSmart(goTarget))
                         CAST_AI(SmartGameObjectAI, goTarget->AI())->SetTimedActionList(e, id, GetLastInvoker());
                 }
             }
@@ -2116,7 +2117,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 }
                 else if (GameObject* goTarget = target->ToGameObject())
                 {
-                    if (IsSmartGO(goTarget))
+                    if (IsSmart(goTarget))
                         CAST_AI(SmartGameObjectAI, goTarget->AI())->SetTimedActionList(e, id, GetLastInvoker());
                 }
             }
@@ -4288,4 +4289,43 @@ Unit* SmartScript::GetLastInvoker(Unit* invoker)
         return ObjectAccessor::GetUnit(*invoker, mLastInvoker);
 
     return nullptr;
+}
+
+bool SmartScript::IsSmart(Creature* c, bool silent) const
+{
+    if (!c)
+        return false;
+
+    bool smart = true;
+    if (c && c->GetAIName() != "SmartAI")
+        smart = false;
+
+    if (!smart && !silent)
+        TC_LOG_ERROR("sql.sql", "SmartScript: Action target Creature (GUID: %u Entry: %u) is not using SmartAI, action called by Creature (GUID: %u Entry: %u) skipped to prevent crash.", c ? c->GetSpawnId() : 0, c ? c->GetEntry() : 0, me ? me->GetSpawnId() : 0, me ? me->GetEntry() : 0);
+
+    return smart;
+}
+
+bool SmartScript::IsSmart(GameObject* g, bool silent) const
+{
+    if (!g)
+        return false;
+
+    bool smart = true;
+    if (g && g->GetAIName() != "SmartGameObjectAI")
+        smart = false;
+
+    if (!smart && !silent)
+        TC_LOG_ERROR("sql.sql", "SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action called by GameObject (GUID: %u Entry: %u) skipped to prevent crash.", g ? g->GetSpawnId() : 0, g ? g->GetEntry() : 0, go ? go->GetSpawnId() : 0, go ? go->GetEntry() : 0);
+
+    return smart;
+}
+
+bool SmartScript::IsSmart(bool silent) const
+{
+    if (me)
+        return IsSmart(me, silent);
+    if (go)
+        return IsSmart(go, silent);
+    return false;
 }
