@@ -424,11 +424,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             case SPELL_AURA_PERIODIC_DAMAGE:
             case SPELL_AURA_PERIODIC_LEECH:
                 if (GetBase()->GetType() == UNIT_AURA_TYPE)
-                    amount = caster->SpellDamageBonusDone(GetBase()->GetUnitOwner(), GetSpellInfo(), amount, DOT, GetBase()->GetDonePct());
+                    amount = caster->SpellDamageBonusDone(GetBase()->GetUnitOwner(), GetSpellInfo(), amount, DOT, GetEffIndex(), GetBase()->GetDonePct());
                 break;
             case SPELL_AURA_PERIODIC_HEAL:
                 if (GetBase()->GetType() == UNIT_AURA_TYPE)
-                    amount = caster->SpellHealingBonusDone(GetBase()->GetUnitOwner(), GetSpellInfo(), amount, DOT, GetBase()->GetDonePct());
+                    amount = caster->SpellHealingBonusDone(GetBase()->GetUnitOwner(), GetSpellInfo(), amount, DOT, GetEffIndex(), GetBase()->GetDonePct());
                 break;
             default:
                 break;
@@ -964,7 +964,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, uint3
     {
         // leave only target depending bonuses, rest is handled in calculate amount
         if (GetBase()->GetType() == DYNOBJ_AURA_TYPE)
-            damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, {}, GetBase()->GetStackAmount());
+            damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, GetEffIndex(), {}, GetBase()->GetStackAmount());
 
         // Curse of Agony damage-per-tick calculation
         if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags & 0x0000000000000400LL) && GetSpellInfo()->SpellIconID == 544)
@@ -1094,7 +1094,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
     // Script Hook For HandlePeriodicDamageAurasTick -- Allow scripts to change the Damage pre class mitigation calculations
     //sScriptMgr->ModifyPeriodicDamageAurasTick(target, caster, pdamage);
 
-    pdamage = caster->SpellDamageBonusDone(m_target, GetSpellInfo(), pdamage, DOT);
+    pdamage = caster->SpellDamageBonusDone(m_target, GetSpellInfo(), pdamage, DOT, GetEffIndex());
     pdamage = m_target->SpellDamageBonusTaken(caster, GetSpellInfo(), pdamage, DOT);
 
     // talent Soul Siphon add bonus to Drain Life spells
@@ -1200,7 +1200,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
         }
     }
 
-    uint32 heal = caster->SpellHealingBonusDone(caster, spellProto, uint32(new_damage * multiplier), DOT);
+    uint32 heal = caster->SpellHealingBonusDone(caster, spellProto, uint32(new_damage * multiplier), DOT, GetEffIndex(), { }, GetBase()->GetStackAmount()););
     heal = caster->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT);
 
     HealInfo healInfo(caster, caster, heal, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
@@ -1239,7 +1239,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, uint32 
     {
         // dynobj auras must always have a caster
         if (GetBase()->GetType() == DYNOBJ_AURA_TYPE)
-            damage = ASSERT_NOTNULL(caster)->SpellHealingBonusDone(target, GetSpellInfo(), damage, DOT, {}, GetBase()->GetStackAmount());
+            damage = ASSERT_NOTNULL(caster)->SpellHealingBonusDone(target, GetSpellInfo(), damage, DOT, GetEffIndex(), {}, GetBase()->GetStackAmount());
     }
 
     damage = target->SpellHealingBonusTaken(caster, GetSpellInfo(), damage, DOT);
@@ -3261,7 +3261,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     {
                         int32 amount = _amount;
                         if(caster)
-                            amount = caster->SpellHealingBonusDone(m_target, GetSpellInfo(), _amount, HEAL);
+                            amount = caster->SpellHealingBonusDone(m_target, GetSpellInfo(), _amount, HEAL, GetEffIndex());
 
                         CastSpellExtraArgs args;
                         args.TriggerFlags = TRIGGERED_FULL_MASK;
@@ -6390,7 +6390,7 @@ void AuraEffect::HandleProcTriggerDamageAuraProc(AuraApplication* aurApp, ProcEv
     }
 
     SpellNonMeleeDamage damageInfo(target, triggerTarget, GetId(), GetSpellInfo()->SchoolMask);
-    uint32 damage = target->SpellDamageBonusDone(triggerTarget, GetSpellInfo(), GetAmount(), SPELL_DIRECT_DAMAGE, {});
+    uint32 damage = target->SpellDamageBonusDone(triggerTarget, GetSpellInfo(), GetAmount(), SPELL_DIRECT_DAMAGE, GetEffIndex(), {});
     damage = triggerTarget->SpellDamageBonusTaken(target, GetSpellInfo(), damage, SPELL_DIRECT_DAMAGE);
     target->CalculateSpellDamageTaken(&damageInfo, damage, GetSpellInfo());
     Unit::DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);

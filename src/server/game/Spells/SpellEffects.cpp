@@ -749,7 +749,7 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
 
         if (m_originalCaster && damage > 0 && addBonusDamage)
         {
-            damage = m_originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, {});
+            damage = m_originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, effect_idx, {});
             damage = unitTarget->SpellDamageBonusTaken(m_originalCaster, m_spellInfo, damage, SPELL_DIRECT_DAMAGE);
 
         }
@@ -1984,7 +1984,7 @@ void Spell::EffectDummy(uint32 i)
                 if(Player* modOwner = m_caster->GetSpellModOwner())
                     modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, cost,this);
 
-                int32 dmg = m_caster->SpellDamageBonusDone(m_caster, m_spellInfo, uint32(cost > 0 ? cost : 0), SPELL_DIRECT_DAMAGE, {});
+                int32 dmg = m_caster->SpellDamageBonusDone(m_caster, m_spellInfo, uint32(cost > 0 ? cost : 0), SPELL_DIRECT_DAMAGE, i, {});
                 dmg = m_caster->SpellDamageBonusTaken(m_caster, m_spellInfo, dmg, SPELL_DIRECT_DAMAGE);
 
                 if(int32(m_caster->GetHealth()) > dmg)
@@ -3023,7 +3023,7 @@ void Spell::EffectPowerDrain(uint32 i)
     uint32 curPower = unitTarget->GetPower(drain_power);
 
     //add spell damage bonus
-    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, {});
+    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, i, {});
     damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, damage, SPELL_DIRECT_DAMAGE);
 
     // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
@@ -3155,7 +3155,7 @@ void Spell::EffectPowerBurn(uint32 i)
     m_damage += new_damage;
 }
 
-void Spell::EffectHeal( uint32 /*i*/ )
+void Spell::EffectHeal(uint32 effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
         return;
@@ -3256,7 +3256,7 @@ void Spell::EffectHeal( uint32 /*i*/ )
         }
         else
         {
-            addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, addhealth, HEAL, {});
+            addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, addhealth, HEAL, effIndex, {});
         }
         addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL);
 
@@ -3264,7 +3264,7 @@ void Spell::EffectHeal( uint32 /*i*/ )
     }
 }
 
-void Spell::EffectHealPct( uint32 /*i*/ )
+void Spell::EffectHealPct(uint32 effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -3282,13 +3282,13 @@ void Spell::EffectHealPct( uint32 /*i*/ )
     if (m_spellInfo->Id == 39703)
         unitTarget = caster;
 
-    uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(damage), HEAL);
+    uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(damage), HEAL, effIndex);
     heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL);
 
     m_healing += heal;
 }
 
-void Spell::EffectHealMechanical( uint32 /*i*/ )
+void Spell::EffectHealMechanical(uint32 effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -3304,7 +3304,7 @@ void Spell::EffectHealMechanical( uint32 /*i*/ )
         return;
 
     //"Also, it seems to be affected by +healing as my lvl 48 shaman with +123 healing just used this for 811 heal to my mechanical dragonling."
-    uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, uint32(damage), HEAL);
+    uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, uint32(damage), HEAL, effIndex);
 
     m_healing += unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL);
 }
@@ -3317,7 +3317,7 @@ void Spell::EffectHealthLeech(uint32 effIndex)
     if (!unitTarget || !unitTarget->IsAlive() || damage < 0)
         return;
 
-    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE);
+    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
     damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE);
 
     float healMultiplier = m_spellInfo->Effects[effIndex].CalcValueMultiplier(m_originalCaster, this);
@@ -3328,7 +3328,7 @@ void Spell::EffectHealthLeech(uint32 effIndex)
     uint32 healthGain = uint32(-unitTarget->GetHealthGain(-damage) * healMultiplier);
     if(m_caster->IsAlive())
     {
-        healthGain = m_caster->SpellHealingBonusDone(unitTarget, m_spellInfo, healthGain, HEAL);
+        healthGain = m_caster->SpellHealingBonusDone(unitTarget, m_spellInfo, healthGain, HEAL, effIndex);
         healthGain = m_caster->SpellHealingBonusTaken(m_caster, m_spellInfo, healthGain, HEAL);
 
         HealInfo healInfo(m_caster, m_caster, healthGain, m_spellInfo, m_spellSchoolMask);

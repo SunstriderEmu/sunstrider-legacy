@@ -2144,7 +2144,7 @@ class TC_GAME_API Unit : public WorldObject
         int32 SpellBaseDamageBonusTaken(SpellInfo const* spellInfo, bool isDoT = false);
         float SpellDamagePctDone(Unit* victim, SpellInfo const *spellProto, DamageEffectType damagetype);
 
-        uint32 SpellDamageBonusDone(Unit *pVictim, SpellInfo const *spellProto, uint32 damage, DamageEffectType damagetype, Optional<float> const& donePctTotal = {}, uint32 stack = 1);
+        uint32 SpellDamageBonusDone(Unit *pVictim, SpellInfo const *spellProto, uint32 damage, DamageEffectType damagetype, uint8 effIndex, Optional<float> const& donePctTotal = {}, uint32 stack = 1);
         uint32 SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 pdamage, DamageEffectType damagetype);
         
         // SPELL_AURA_MOD_HEALING_DONE + SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT + SPELL_AURA_MOD_SPELL_HEALING_OF_ATTACK_POWER + hacks
@@ -2161,7 +2161,7 @@ class TC_GAME_API Unit : public WorldObject
         /* Alter healamount with healing bonus done for victim
         This includes : SpellBaseHealingBonusDone, SPELLMOD_BONUS_MULTIPLIER, ApplySpellMod, SpellHealingPctDone, and lots of hacks
         */
-        uint32 SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, Optional<float> const& donePctTotal = {}, uint32 stack = 1);
+        uint32 SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, uint8 effIndex, Optional<float> const& donePctTotal = {}, uint32 stack = 1);
 
         uint32 MeleeDamageBonusDone(Unit* pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const* spellProto = nullptr, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL);
         uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackType attType, SpellInfo const* spellProto = nullptr, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL);

@@ -966,7 +966,7 @@ void SpellMgr::LoadSpellElixirs()
 }
 
 
-void SpellMgr::LoadSpellBonusess()
+void SpellMgr::LoadSpellBonuses()
 {
     uint32 oldMSTime = GetMSTime();
 

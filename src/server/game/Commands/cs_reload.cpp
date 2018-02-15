@@ -438,7 +438,7 @@ bool ChatHandler::HandleReloadSkillFishingBaseLevelCommand(const char* /*args*/)
 bool ChatHandler::HandleReloadSpellBonusesCommand(const char*)
 {
     TC_LOG_INFO("command", "Re-Loading Spell Bonuses definitions...");
-    sSpellMgr->LoadSpellBonusess();
+    sSpellMgr->LoadSpellBonuses();
     SendGlobalGMSysMessage("DB table `spell_bonus_data` reloaded.");
     return true;
 }

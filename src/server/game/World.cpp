@@ -1454,7 +1454,7 @@ void World::SetInitialWorldSettings()
     sSpellMgr->LoadSpellLearnSpells();
 
     TC_LOG_INFO("server.loading", "Loading Spell Bonus Data...");
-    sSpellMgr->LoadSpellBonusess();
+    sSpellMgr->LoadSpellBonuses();
 
     TC_LOG_INFO("server.loading", "Loading Threat Spells Definitions..."); //must be after SpellInfo
     sSpellMgr->LoadSpellThreats();

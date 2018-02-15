@@ -967,7 +967,7 @@ class TC_GAME_API SpellMgr
         // Spell threat table
         SpellThreatEntry const* GetSpellThreatEntry(uint32 spellID) const;
 
-        typedef std::map<uint32, SpellThreatEntry> SpellThreatMap;
+        typedef std::unordered_map<uint32, SpellThreatEntry> SpellThreatMap;
 
         PetAura const* GetPetAura(uint16 spell_id)
         {
@@ -1014,7 +1014,7 @@ class TC_GAME_API SpellMgr
         void LoadSpellGroupStackRules();
         void LoadSpellProcs();
         void LoadSpellThreats();
-        void LoadSpellBonusess();
+        void LoadSpellBonuses();
         void LoadSkillLineAbilityMap();
         void LoadSpellPetAuras();
         /** Change SpellEntry entries with custom values. This MUST be done before loading spellInfo's, else it will have no effect. 
