@@ -1077,7 +1077,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
 
     // dynobj auras must always have a caster
     if (GetSpellInfo()->Effects[GetEffIndex()].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA &&
-        caster->SpellHitResult(m_target, GetSpellInfo(), false) != SPELL_MISS_NONE)
+        ASSERT_NOTNULL(caster)->SpellHitResult(m_target, GetSpellInfo(), false) != SPELL_MISS_NONE)
         return;
 
     // Check for immune
@@ -1094,11 +1094,12 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
     // Script Hook For HandlePeriodicDamageAurasTick -- Allow scripts to change the Damage pre class mitigation calculations
     //sScriptMgr->ModifyPeriodicDamageAurasTick(target, caster, pdamage);
 
-    pdamage = caster->SpellDamageBonusDone(m_target, GetSpellInfo(), pdamage, DOT, GetEffIndex());
+    if (GetBase()->GetType() == DYNOBJ_AURA_TYPE)
+        pdamage = ASSERT_NOTNULL(caster)->SpellDamageBonusDone(m_target, GetSpellInfo(), pdamage, DOT, GetEffIndex());
     pdamage = m_target->SpellDamageBonusTaken(caster, GetSpellInfo(), pdamage, DOT);
 
     // talent Soul Siphon add bonus to Drain Life spells
-    if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags & 0x8))
+    if (caster && GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags & 0x8))
     {
         // find talent max bonus percentage
         Unit::AuraEffectList const& mClassScriptAuras = caster->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
@@ -1165,8 +1166,9 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
     TC_LOG_DEBUG("spells", "PeriodicTick: %u (TypeId: %u) health leech of %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
         GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId(), absorb);
 
-    caster->SendSpellNonMeleeDamageLog(m_target, GetId(), pdamage, GetSpellInfo()->GetSchoolMask(), absorb, resist, false, 0);
-
+    // SendSpellNonMeleeDamageLog expects non-absorbed/non-resisted damage
+    if (caster)
+        caster->SendSpellNonMeleeDamageLog(m_target, GetId(), pdamage, GetSpellInfo()->GetSchoolMask(), absorb, resist, false, 0);
 
     Unit* target = m_target;                        // aura can be deleted in DealDamage
     SpellInfo const* spellProto = GetSpellInfo();
@@ -1191,6 +1193,10 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
     int32 new_damage = Unit::DealDamage(caster, target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, false);
     Unit::ProcSkillsAndAuras(caster, target, procAttacker, procVictim, PROC_SPELL_TYPE_DAMAGE, PROC_SPELL_PHASE_NONE, hitMask, nullptr, &damageInfo, nullptr);
 
+    // process caster heal from now on (must be in world)
+    if (!caster || !caster->IsAlive())
+        return;
+
     if (!target->IsAlive() && caster->IsNonMeleeSpellCast(false))
     {
         for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
@@ -1200,7 +1206,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
         }
     }
 
-    uint32 heal = caster->SpellHealingBonusDone(caster, spellProto, uint32(new_damage * multiplier), DOT, GetEffIndex(), { }, GetBase()->GetStackAmount()););
+    uint32 heal = caster->SpellHealingBonusDone(caster, spellProto, uint32(new_damage * multiplier), DOT, GetEffIndex(), { }, GetBase()->GetStackAmount());
     heal = caster->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT);
 
     HealInfo healInfo(caster, caster, heal, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
@@ -1610,6 +1616,8 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                 // Flame Quills
                 case 34229:
                 {
+                    if (!caster)
+                        return;
                     // cast 24 spells 34269-34289, 34314-34316
                     for (uint32 spell_id = 34269; spell_id != 34290; ++spell_id)
                         caster->CastSpell(target, spell_id, TRIGGERED_FULL_MASK);
@@ -1759,6 +1767,8 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                 // Restoration
                 case 23493:
                 {
+                    if (!caster)
+                        return;
                     int32 heal = target->GetMaxHealth() / 10;
                     HealInfo healInfo(target, target, heal, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
                     caster->HealBySpell(healInfo);

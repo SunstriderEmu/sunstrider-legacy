@@ -737,10 +737,18 @@ bool ChatHandler::HandleDamageCommand(const char * args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spellid = extractSpellIdFromLink((char*)args);
-    if(!spellid || !sSpellMgr->GetSpellInfo(spellid))
+    if(!spellid)
         return false;
 
-    m_session->GetPlayer()->SpellNonMeleeDamageLog(target, spellid, damage, false);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
+    if (!spellInfo)
+        return false;
+
+    Player* attacker = GetSession()->GetPlayer();
+    SpellNonMeleeDamage dmgInfo(attacker, target, spellid, spellInfo->GetSchoolMask());
+    Unit::DealDamageMods(dmgInfo.target, dmgInfo.damage, &dmgInfo.absorb);
+    attacker->SendSpellNonMeleeDamageLog(&dmgInfo);
+    attacker->DealSpellDamage(&dmgInfo, true);
     return true;
 }
 

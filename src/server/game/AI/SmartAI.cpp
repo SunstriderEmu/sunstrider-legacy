@@ -999,7 +999,7 @@ void SmartGameObjectAI::SetData(uint32 id, uint32 value, Unit* setter)
 
 void SmartGameObjectAI::SetTimedActionList(SmartScriptHolder& e, uint32 entry, Unit* invoker)
 {
-    GetScript()->SetTimedActionList(e, entry);
+    GetScript()->SetTimedActionList(e, entry, invoker);
 }
 
 void SmartGameObjectAI::OnGameEvent(bool start, uint16 eventId)

@@ -1593,7 +1593,6 @@ class TC_GAME_API Unit : public WorldObject
         int32 HealBySpell(HealInfo& healInfo, bool critical = false, SpellMissInfo missInfo = SPELL_MISS_NONE);
         //void SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool critical = false);
         void SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Powers powertype);
-        uint32 SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool IsTriggeredSpell = false, bool useSpellDamage = true);
 
         // CastSpell's third arg can be a variety of things - check out CastSpellExtraArgs' constructors! Returns SpellCastResult
         uint32 CastSpell(SpellCastTargets const& targets, uint32 spellId, CastSpellExtraArgs const& args = {});

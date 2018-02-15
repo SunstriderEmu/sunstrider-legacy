@@ -333,7 +333,7 @@ class spell_pal_seal_of_vengeance : public SpellScriptLoader
                     return;
 
                 SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(DamageSpell);
-                int32 amount = caster->SpellDamageBonusDone(target, spellInfo, sealDot->GetAmount(), DOT) / 2;
+                int32 amount = caster->SpellDamageBonusDone(target, spellInfo, sealDot->GetAmount(), DOT, aurEff->GetEffIndex()) / 2;
 
                 CastSpellExtraArgs args(aurEff);
                 args.AddSpellBP0(amount);

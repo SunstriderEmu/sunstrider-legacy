@@ -1089,20 +1089,6 @@ uint32 Unit::CastSpell(Position const& dest, uint32 spellId, CastSpellExtraArgs 
     return CastSpell(targets, spellId, args);
 }
 
-// Obsolete func need remove, here only for compatibility vs another patches
-uint32 Unit::SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool IsTriggeredSpell, bool useSpellDamage)
-{
-    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    SpellNonMeleeDamage damageInfo(this, pVictim, spellInfo->Id, spellInfo->SchoolMask);
-    damage = SpellDamageBonusDone(pVictim, spellInfo, damage, SPELL_DIRECT_DAMAGE);
-    damage = pVictim->SpellDamageBonusTaken(this, spellInfo, damage, SPELL_DIRECT_DAMAGE);
-
-    CalculateSpellDamageTaken(&damageInfo, damage, spellInfo);
-    SendSpellNonMeleeDamageLog(&damageInfo);
-    DealSpellDamage(&damageInfo, true);
-    return damageInfo.damage;
-}
-
 void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellInfo const *spellInfo, WeaponAttackType attackType, bool crit)
 {
     if (damage < 0)
