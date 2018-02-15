@@ -5680,6 +5680,21 @@ void Unit::SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Po
     SendMessageToSet(&data, true);
 }
 
+void Unit::EnergizeBySpell(Unit* victim, uint32 spellId, int32 damage, Powers powerType)
+{
+    if (SpellInfo const* info = sSpellMgr->GetSpellInfo(spellId))
+        EnergizeBySpell(victim, info, damage, powerType);
+}
+
+void Unit::EnergizeBySpell(Unit* victim, SpellInfo const* spellInfo, int32 damage, Powers powerType, bool sendLog)
+{
+    if (sendLog)
+        SendEnergizeSpellLog(victim, spellInfo->Id, damage, powerType);
+    // needs to be called after sending spell log
+    victim->ModifyPower(powerType, damage);
+    victim->GetThreatManager().ForwardThreatForAssistingMe(this, float(damage) / 2, spellInfo, true);
+}
+
 uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectType damagetype, uint32 CastingTime) const
 {
     // Not apply this to creature casted spells with casttime == 0

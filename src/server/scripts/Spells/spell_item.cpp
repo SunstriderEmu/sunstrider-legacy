@@ -441,12 +441,10 @@ class spell_item_mana_drain : public AuraScript
         Unit* caster = eventInfo.GetActor();
         Unit* target = eventInfo.GetActionTarget();
 
-        //caster will receive 8+8 if target has mana... it this correct? Would make more sense if caster always received 8 mana regardless of caster power type
-        if (caster->IsAlive())
-            caster->CastSpell(caster, SPELL_MANA_DRAIN_ENERGIZE, aurEff);
-
         if (target && target->IsAlive() && target->GetPowerType() == POWER_MANA)
             caster->CastSpell(target, SPELL_MANA_DRAIN_LEECH, aurEff);
+        else
+            caster->CastSpell(caster, SPELL_MANA_DRAIN_ENERGIZE, aurEff);
     }
 
     void Register() override

@@ -187,7 +187,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectKillCredit,                               //134 SPELL_EFFECT_KILL_CREDIT              misc value is creature entry
     &Spell::EffectNULL,                                     //135 SPELL_EFFECT_CALL_PET
     &Spell::EffectHealPct,                                  //136 SPELL_EFFECT_HEAL_PCT
-    &Spell::EffectEnergisePct,                              //137 SPELL_EFFECT_ENERGIZE_PCT
+    &Spell::EffectEnergizePct,                              //137 SPELL_EFFECT_ENERGIZE_PCT
     &Spell::EffectNULL,                                     //138 SPELL_EFFECT_138                      Leap
     &Spell::EffectUnused,                                   //139 SPELL_EFFECT_139                      unused
     &Spell::EffectForceCast,                                //140 SPELL_EFFECT_FORCE_CAST
@@ -3009,18 +3009,16 @@ void Spell::EffectPowerDrain(uint32 i)
     if(m_spellInfo->Effects[i].MiscValue < 0 || m_spellInfo->Effects[i].MiscValue >= MAX_POWERS)
         return;
 
-    Powers drain_power = Powers(m_spellInfo->Effects[i].MiscValue);
+    Powers powerType = Powers(m_spellInfo->Effects[i].MiscValue);
 
     if(!unitTarget)
         return;
     if(!unitTarget->IsAlive())
         return;
-    if(unitTarget->GetPowerType() != drain_power)
+    if(unitTarget->GetPowerType() != powerType)
         return;
     if(damage < 0)
         return;
-
-    uint32 curPower = unitTarget->GetPower(drain_power);
 
     //add spell damage bonus
     damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, i, {});
@@ -3028,36 +3026,29 @@ void Spell::EffectPowerDrain(uint32 i)
 
     // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
     uint32 power = damage;
-    if ( drain_power == POWER_MANA && unitTarget->GetTypeId() == TYPEID_PLAYER )
+    if (powerType == POWER_MANA && unitTarget->GetTypeId() == TYPEID_PLAYER )
         power -= (unitTarget->ToPlayer())->GetSpellCritDamageReduction(power);
 
-    int32 new_damage;
-    if(curPower < power)
-        new_damage = curPower;
-    else
-        new_damage = power;
+    int32 newDamage = -(unitTarget->ModifyPower(powerType, -int32(power)));
         
     if (m_spellInfo->Id == 27526) {
         if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->GetVictim())
             unitTarget = m_caster->GetVictim();
     }
-    
-    unitTarget->ModifyPower(drain_power,-new_damage);
 
-    if(drain_power == POWER_MANA)
+    float gainMultiplier = 0.0f;
+    // Don't restore from self drain
+    if (m_caster != unitTarget)
     {
-        float manaMultiplier = m_spellInfo->Effects[i].CalcValueMultiplier(m_originalCaster, this);
-        if (manaMultiplier == 0.0f)
-            manaMultiplier = 1.0f;
+        gainMultiplier = m_spellInfo->Effects[i].CalcValueMultiplier(m_originalCaster, this);
+        if (gainMultiplier == 0.0f)
+            gainMultiplier = 1.0f;
 
-        int32 gain = int32(new_damage * manaMultiplier);
+        int32 gain = int32(newDamage * gainMultiplier);
 
-        m_caster->ModifyPower(POWER_MANA, gain);
-        //send log
-        m_caster->SendEnergizeSpellLog(m_caster, m_spellInfo->Id,gain,POWER_MANA);
-
-        ExecuteLogEffectTakeTargetPower(i, unitTarget, drain_power, new_damage, manaMultiplier);
+        m_caster->EnergizeBySpell(m_caster, m_spellInfo, gain, powerType, false); //sun: don't send energize log, already handled in ExecuteLogEffectTakeTargetPower
     }
+    ExecuteLogEffectTakeTargetPower(i, unitTarget, powerType, newDamage, gainMultiplier);
 }
 
 void Spell::EffectSendEvent(uint32 effIndex)
@@ -3542,9 +3533,7 @@ void Spell::EffectEnergize(uint32 i)
     if(unitTarget->GetMaxPower(power) == 0)
         return;
 
-    unitTarget->ModifyPower(power,damage);
-    m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
-    m_caster->GetThreatManager().ForwardThreatForAssistingMe(unitTarget, float(damage) * 0.5f, m_spellInfo, true);
+    m_caster->EnergizeBySpell(unitTarget, m_spellInfo, damage, power);
 
     // Mad Alchemist's Potion
     if (m_spellInfo->Id == 45051)
@@ -3594,7 +3583,7 @@ void Spell::EffectEnergize(uint32 i)
     }
 }
 
-void Spell::EffectEnergisePct(uint32 i)
+void Spell::EffectEnergizePct(uint32 i)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -3607,13 +3596,17 @@ void Spell::EffectEnergisePct(uint32 i)
 
     Powers power = Powers(m_spellInfo->Effects[i].MiscValue);
 
+#ifdef LICH_KING
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->getPowerType() != power && !m_spellInfo->HasAttribute(SPELL_ATTR7_CAN_RESTORE_SECONDARY_POWER))
+        return;
+#endif
+
     uint32 maxPower = unitTarget->GetMaxPower(power);
     if(maxPower == 0)
         return;
 
-    uint32 gain = damage * maxPower / 100;
-    unitTarget->ModifyPower(power, gain);
-    m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
+    uint32 gain = CalculatePct(maxPower, damage);
+    m_caster->EnergizeBySpell(unitTarget, m_spellInfo, gain, power);
 }
 
 void Spell::SendLoot(ObjectGuid guid, LootType loottype)
