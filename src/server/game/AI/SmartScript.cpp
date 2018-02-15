@@ -2589,8 +2589,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
     if (e.link && e.link != e.event_id)
     {
-        SmartScriptHolder linked = FindLinkedEvent(e.link);
-        if (linked.GetActionType() && linked.GetEventType() == SMART_EVENT_LINK)
+        SmartScriptHolder& linked = SmartAIMgr::FindLinkedEvent(mEvents, e.link);
+        if (linked)
             ProcessEvent(linked, unit, var0, var1, bvar, spell, gob);
         else
             TC_LOG_ERROR("sql.sql","SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Link Event %u not found or invalid, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.link);
@@ -3374,7 +3374,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             uint32 count = me->GetVictim()->GetAuraCount(e.event.aura.spell);
             if (count < e.event.aura.count)
                 return;
-            ProcessTimedAction(e, e.event.aura.repeatMin, e.event.aura.repeatMax);
+            ProcessTimedAction(e, e.event.aura.repeatMin, e.event.aura.repeatMax, me->GetVictim());
             break;
         }
         case SMART_EVENT_CHARMED:

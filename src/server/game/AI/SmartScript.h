@@ -282,21 +282,6 @@ class TC_GAME_API SmartScript
                 }
             }
         }
-        SmartScriptHolder FindLinkedEvent(uint32 link)
-        {
-            if (!mEvents.empty())
-            {
-                for (auto & mEvent : mEvents)
-                {
-                    if (mEvent.event_id == link)
-                    {
-                        return mEvent;
-                    }
-                }
-            }
-            SmartScriptHolder s;
-            return s;
-        }
 };
 
 #endif
