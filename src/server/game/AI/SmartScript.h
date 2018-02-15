@@ -226,7 +226,7 @@ class TC_GAME_API SmartScript
         uint32 GetLastProcessedActionId() { return mLastProcessedActionId; }
 
         //TIMED_ACTIONLIST (script type 9 aka script9)
-        void SetScript9(SmartScriptHolder& e, uint32 entry);
+        void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker);
         Unit* GetLastInvoker(Unit* invoker = nullptr);
         ObjectGuid mLastInvoker;
         uint32 mLastProcessedActionId;
@@ -244,6 +244,7 @@ class TC_GAME_API SmartScript
         SmartAIEventList mEvents;
         SmartAIEventList mInstallEvents;
         SmartAIEventList mTimedActionList;
+        ObjectGuid mTimedActionListInvoker;
         bool isProcessingTimedActionList;
         Creature* me;
         ObjectGuid meOrigGUID;

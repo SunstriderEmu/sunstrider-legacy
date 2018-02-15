@@ -62,7 +62,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void WaypointPathEnded(uint32 nodeId, uint32 pathId) override;
 
         // Called when creature is spawned or respawned
-        void JustAppeared() override;
+        void InitializeAI() override;
 
         // Called at reaching home after evade, InitializeAI(), EnterEvadeMode() for resetting variables
         void JustReachedHome() override;

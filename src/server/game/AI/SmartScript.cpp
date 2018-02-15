@@ -3944,9 +3944,12 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
             case SMART_EVENT_VICTIM_NOT_IN_LOS:
             case SMART_EVENT_AFFECTED_BY_MECHANIC:
             {
-                ProcessEvent(e);
                 if (e.GetScriptType() == SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)
                 {
+                    Unit* invoker9 = nullptr;
+                    if (me && mTimedActionListInvoker)
+                        invoker9 = ObjectAccessor::GetUnit(*me, mTimedActionListInvoker);
+                    ProcessEvent(e, invoker9);
                     e.enableTimed = false;//disable event if it is in an ActionList and was processed once
                     for (auto & i : mTimedActionList)
                     {
@@ -3957,7 +3960,8 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
                             break;
                         }
                     }
-                }
+                } else 
+                    ProcessEvent(e);
                 break;
             }
         }
@@ -4249,7 +4253,7 @@ Unit* SmartScript::DoFindClosestOrFurthestFriendlyInRange(float range, bool play
     return target;
 }
 
-void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry)
+void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker)
 {
     //do NOT clear mTimedActionList if it's being iterated because it will invalidate the iterator and delete
     // any SmartScriptHolder contained like the "e" parameter passed to this function
@@ -4262,6 +4266,7 @@ void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry)
     mTimedActionList = sSmartScriptMgr->GetScript(entry, SMART_SCRIPT_TYPE_TIMED_ACTIONLIST);
     if (mTimedActionList.empty())
         return;
+    mTimedActionListInvoker = invoker ? invoker->GetGUID() : ObjectGuid::Empty;
     for (auto i = mTimedActionList.begin(); i != mTimedActionList.end(); ++i)
     {
         i->enableTimed = i == mTimedActionList.begin();//enable processing only for the first action
