@@ -307,6 +307,41 @@ class spell_gen_enlightenment : public AuraScript
     }
 };
 
+class spell_gen_creature_permanent_feign_death : public AuraScript
+{
+    PrepareAuraScript(spell_gen_creature_permanent_feign_death);
+
+    void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* target = GetTarget();
+        target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+        target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);
+        target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+        target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+
+        if (Creature* creature = target->ToCreature())
+            creature->SetReactState(REACT_PASSIVE);
+    }
+
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* target = GetTarget();
+        target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+        target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+        target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+        target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);
+
+        if (Creature* creature = target->ToCreature())
+            creature->InitializeReactState();
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_gen_creature_permanent_feign_death::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_gen_creature_permanent_feign_death::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_cannibalize();
@@ -315,4 +350,5 @@ void AddSC_generic_spell_scripts()
     RegisterAuraScript(spell_gen_adaptive_warding);
     RegisterAuraScript(spell_gen_obsidian_armor);
     RegisterAuraScript(spell_gen_enlightenment);
+    RegisterAuraScript(spell_gen_creature_permanent_feign_death);
 }

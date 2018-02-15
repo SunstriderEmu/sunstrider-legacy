@@ -2903,16 +2903,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                 }
                 return;
             }
-            case 29266: //Permanent Feign Death
-            {
-                m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
-                m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);
-                m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-                m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                if (m_target->ToCreature())
-                    m_target->ToCreature()->SetReactState(REACT_PASSIVE);
-                break;
-            }
             case 32014: //archimonde bump
             {
                 GetBase()->SetDuration(GetBase()->GetDuration() * 3);
