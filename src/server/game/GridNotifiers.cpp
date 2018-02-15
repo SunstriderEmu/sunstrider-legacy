@@ -471,9 +471,6 @@ bool NearestAttackableUnitInObjectRangeCheck::operator()(Unit* u)
 AnyAoETargetUnitInObjectRangeCheck::AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, SpellInfo const* spellInfo /*= nullptr*/, bool incOwnRadius /*= true*/, bool incTargetRadius /*= true*/)
     : i_obj(obj), i_funit(funit), _spellInfo(spellInfo), i_range(range), i_incOwnRadius(incOwnRadius), i_incTargetRadius(incTargetRadius)
 {
-    if (!_spellInfo)
-        if (DynamicObject const* dynObj = i_obj->ToDynObject())
-            _spellInfo = sSpellMgr->GetSpellInfo(dynObj->GetSpellId());
 }
 
 bool AnyAoETargetUnitInObjectRangeCheck::operator()(Unit* u)
