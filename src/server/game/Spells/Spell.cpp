@@ -3292,7 +3292,7 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
     m_caster->m_Events.AddEvent(_spellEvent, m_caster->m_Events.CalculateTime(1));
 
     //Another spell in progress ?
-    if(m_caster->IsNonMeleeSpellCast(false, true) && m_cast_count && !(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS))
+    if(m_caster->IsNonMeleeSpellCast(false, true, true, m_spellInfo->Id == 75) && m_cast_count && !(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS))
     {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
         finish(false,false);
