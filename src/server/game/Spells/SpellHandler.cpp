@@ -307,6 +307,22 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     SpellCastTargets targets;
     targets.Read(recvPacket, _player);
 
+    // Not sure needed on BC
+    // Client is resending autoshot cast opcode when other spell is cast during shoot rotation
+    // Skip it to prevent "interrupt" message
+    // Also check targets! target may have changed and we need to interrupt current spell
+    if (spellInfo->IsAutoRepeatRangedSpell())
+    {
+        if (Spell* spell = _player->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
+        {
+            if (spell->m_spellInfo == spellInfo && spell->m_targets.GetUnitTargetGUID() == targets.GetUnitTargetGUID())
+            {
+                recvPacket.rfinish();
+                return;
+            }
+        }
+    }
+
     // auto-selection buff level base at target level (in spellInfo)
     if(targets.GetUnitTarget())
     {
