@@ -41,7 +41,7 @@ GameObject::GameObject() : WorldObject(false), MapObject(),
     m_goValue(),
     m_respawnTime(0),
     m_respawnDelayTime(25),
-    m_despawnTime(0),
+    m_despawnDelay(0),
     m_lootState(GO_NOT_READY),
     m_spawnedByDefault(true),
     m_usetimes(0),
@@ -396,6 +396,14 @@ void GameObject::Update(uint32 diff)
     else if (!AIM_Initialize())
         TC_LOG_ERROR("misc","Could not initialize GameObjectAI");
 
+    if (m_despawnDelay)
+    {
+        if (m_despawnDelay > diff)
+            m_despawnDelay -= diff;
+        else
+            DespawnOrUnsummon();
+    }
+
     switch (m_lootState)
     {
         case GO_NOT_READY:
@@ -582,7 +590,7 @@ void GameObject::Update(uint32 diff)
                 }
                 else if (GetOwnerGUID())
                 { // We got a owner but it was not found? Possible case: Hunter traps from disconnected players
-                    m_despawnTime = 1; //trigger despawn
+                    m_despawnDelay = 1; //trigger despawn
                 }
                 else // environmental & bg traps
                 {
@@ -624,7 +632,7 @@ void GameObject::Update(uint32 diff)
                 }
             }
 
-            if ((m_charges && m_usetimes >= m_charges) || (m_despawnTime && m_despawnTime <= time(nullptr)))
+            if (m_charges && m_usetimes >= m_charges)
                 SetLootState(GO_JUST_DEACTIVATED);          // can be despawned or destroyed
 
 
@@ -711,7 +719,6 @@ void GameObject::Update(uint32 diff)
             }
 
             loot.clear();
-            m_despawnTime = 0;
             SetLootState(GO_READY);
 
             if(!m_respawnDelayTime)
@@ -1116,7 +1123,7 @@ Unit* GameObject::GetOwner() const
 
 void GameObject::SaveRespawnTime(uint32 forceDelay, bool savetodb)
 {
-    if (m_goData && m_respawnTime > time(nullptr) && m_spawnedByDefault)
+    if (m_goData && (forceDelay || m_respawnTime > GameTime::GetGameTime()) && m_spawnedByDefault)
     {
         if (m_respawnCompatibilityMode)
         {
@@ -1945,7 +1952,7 @@ void GameObject::AddUse()
      ++m_usetimes;
      
     if(GetGoType() == GAMEOBJECT_TYPE_CHEST)
-        SetDespawnTimer(CHEST_DESPAWN_TIME);
+        DespawnOrUnsummon(Milliseconds(CHEST_DESPAWN_TIME));
 }
 
 void GameObject::SetRespawnTime(int32 respawn)
@@ -1954,9 +1961,19 @@ void GameObject::SetRespawnTime(int32 respawn)
     m_respawnDelayTime = respawn > 0 ? respawn : 0;
 }
 
-void GameObject::SetDespawnTimer(uint32 timer)
+void GameObject::DespawnOrUnsummon(Milliseconds const& delay)
 {
-    m_despawnTime = time(nullptr) + timer;
+    if (delay > Milliseconds::zero())
+    {
+        if (!m_despawnDelay || m_despawnDelay > delay.count())
+            m_despawnDelay = delay.count();
+    }
+    else
+    {
+        if (m_goData && m_respawnDelayTime)
+            SaveRespawnTime(m_respawnDelayTime);
+        Delete();
+    }
 }
 
 float GameObject::GetInteractionDistance() const

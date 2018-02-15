@@ -656,10 +656,10 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
             else
                 return now;
         }
-        time_t GetDespawnTime() const { return m_despawnTime; }
+        uint32 GetDespawnDelay() const { return m_despawnDelay; }
 
         //Force despawn after specified time 
-        void SetDespawnTimer(uint32 timer); 
+        void DespawnOrUnsummon(Milliseconds const& delay = 0ms);
         void SetRespawnTime(int32 respawn);
         void Respawn();
         bool isSpawned() const
@@ -808,7 +808,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         uint32      m_spellId;
         time_t      m_respawnTime;                          // (secs) time of next respawn (or despawn if GO have owner()),
         uint32      m_respawnDelayTime;                     // (secs) if 0 then current GO state no dependent from timer
-        time_t      m_despawnTime;                          // (secs) programmed despawn time
+        uint32      m_despawnDelay;                         // ms despawn delay
         LootState   m_lootState;
         bool        m_spawnedByDefault;
         time_t      m_cooldownTime;                         // used as internal reaction delay time store (not state change reaction).
