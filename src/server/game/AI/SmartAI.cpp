@@ -562,6 +562,7 @@ void SmartAI::InitializeAI()
     {
         GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);
         GetScript()->OnReset();
+        JustReachedHome();
     }
 
     if (me->GetFaction() != me->GetCreatureTemplate()->faction)
@@ -704,11 +705,6 @@ void SmartAI::PassengerBoarded(Unit* who, int8 seatId, bool apply)
     TC_LOG_ERROR("misc","SmartAI::PassengerBoarded was called while core isn't compiled for LK");
 #endif
     GetScript()->ProcessEventsFor(apply ? SMART_EVENT_PASSENGER_BOARDED : SMART_EVENT_PASSENGER_REMOVED, who, uint32(seatId), 0, apply);
-}
-
-void SmartAI::InitializeAI()
-{
-    JustReachedHome();
 }
 
 void SmartAI::OnCharmed(Unit* charmer, bool apply)
