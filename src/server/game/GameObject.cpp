@@ -401,7 +401,7 @@ void GameObject::Update(uint32 diff)
         if (m_despawnDelay > diff)
             m_despawnDelay -= diff;
         else
-            DespawnOrUnsummon();
+            DespawnOrUnsummon(0ms, m_despawnRespawnTime);
     }
 
     switch (m_lootState)
@@ -1961,17 +1961,21 @@ void GameObject::SetRespawnTime(int32 respawn)
     m_respawnDelayTime = respawn > 0 ? respawn : 0;
 }
 
-void GameObject::DespawnOrUnsummon(Milliseconds const& delay)
+void GameObject::DespawnOrUnsummon(Milliseconds const& delay, Seconds const& forceRespawnTime)
 {
-    if (delay > Milliseconds::zero())
+    if (delay > 0ms)
     {
         if (!m_despawnDelay || m_despawnDelay > delay.count())
+        {
             m_despawnDelay = delay.count();
+            m_despawnRespawnTime = forceRespawnTime;
+        }
     }
     else
     {
-        if (m_goData && m_respawnDelayTime)
-            SaveRespawnTime(m_respawnDelayTime);
+        uint32 const respawnDelay = (forceRespawnTime > 0s) ? forceRespawnTime.count() : m_respawnDelayTime;
+        if (m_goData && respawnDelay)
+            SaveRespawnTime(respawnDelay);
         Delete();
     }
 }
