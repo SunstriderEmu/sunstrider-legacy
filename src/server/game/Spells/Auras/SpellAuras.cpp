@@ -977,7 +977,6 @@ void Aura::TriggerProcOnEvent(uint8 procEffectMask, AuraApplication* aurApp, Pro
 
 void Aura::HeartbeatResistance(uint32 diff, Unit* caster)
 {
-    //Patch 2.0.1 (05-Dec-2006): In PvP, Crowd Control effects will last no longer than 12 seconds instead of the full duration, with a chance of a heartbeat resist. 
     Unit* target = GetOwner()->ToUnit();
     if (!target || !caster)
         return;
