@@ -471,6 +471,16 @@ class TC_GAME_API Spell
         void SendSpellGo();
         void SendSpellCooldown();
         void SendLogExecute();
+        void ExecuteLogEffectTakeTargetPower(uint8 effIndex, Unit* target, uint32 powerType, uint32 powerTaken, float gainMultiplier);
+        void ExecuteLogEffectExtraAttacks(uint8 effIndex, Unit* victim, uint32 attCount);
+        void ExecuteLogEffectInterruptCast(uint8 effIndex, Unit* victim, uint32 spellId);
+        void ExecuteLogEffectDurabilityDamage(uint8 effIndex, Unit* victim, int32 itemId, int32 slot);
+        void ExecuteLogEffectOpenLock(uint8 effIndex, Object* obj);
+        void ExecuteLogEffectCreateItem(uint8 effIndex, uint32 entry);
+        void ExecuteLogEffectDestroyItem(uint8 effIndex, uint32 entry);
+        void ExecuteLogEffectSummonObject(uint8 effIndex, WorldObject* obj);
+        void ExecuteLogEffectUnsummonObject(uint8 effIndex, WorldObject* obj);
+        void ExecuteLogEffectResurrect(uint8 effIndex, Unit* target);
         void SendInterrupted(uint8 result);
         void SendChannelUpdate(uint32 time);
         void SendChannelUpdate(uint32 time, uint32 spellId); //only update if channeling given spell
@@ -534,9 +544,7 @@ class TC_GAME_API Spell
         void SetSpellValue(SpellValueMod mod, int32 value);
         
         bool DoesApplyAuraName(uint32 name);
-
-        void LoadScripts();
-
+        
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();
@@ -577,7 +585,6 @@ class TC_GAME_API Spell
         bool m_referencedFromCurrentSpell;                  // mark as references to prevent deleted and access by dead pointers
         bool m_executedCurrently;                           // mark as executed to prevent deleted and access by dead pointers
         bool m_needComboPoints;
-        bool m_needSpellLog;                                // need to send spell log?
         uint8 m_applyMultiplierMask;                        // by effect: damage multiplier needed?
 
         float m_damageMultipliers[MAX_SPELL_EFFECTS];                       // by effect: damage multiplier
@@ -665,7 +672,11 @@ class TC_GAME_API Spell
         void PrepareTargetProcessing();
         void FinishTargetProcessing();
 
-        bool _scriptsLoaded;
+        // spell execution log
+        void InitEffectExecuteData(uint8 effIndex);
+        void AssertEffectExecuteData() const;
+
+        void LoadScripts();
         void CallScriptBeforeCastHandlers();
         void CallScriptOnCastHandlers();
         void CallScriptAfterCastHandlers();
@@ -719,6 +730,8 @@ class TC_GAME_API Spell
         Aura* m_spellAura;
 
         uint8 m_auraScaleMask;
+
+        ByteBuffer* m_effectExecuteData[MAX_SPELL_EFFECTS];
 
         // sunwell:
         bool _spellTargetsSelected;

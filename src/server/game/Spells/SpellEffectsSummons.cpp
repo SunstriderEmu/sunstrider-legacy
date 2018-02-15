@@ -190,6 +190,8 @@ void Spell::EffectSummonType(uint32 effIndex)
                     summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
                 }
 
+                ExecuteLogEffectSummonObject(effIndex, summon);
+
                 //lolhack section
                 switch (m_spellInfo->Id)
                 {
@@ -323,8 +325,7 @@ void Spell::EffectSummonType(uint32 effIndex)
     if (summon)
     {
         summon->SetCreatorGUID(m_originalCaster->GetGUID());
-        //TC ExecuteLogEffectSummonObject(effIndex, summon);
-
+        ExecuteLogEffectSummonObject(effIndex, summon);
     }
 }
 
@@ -416,10 +417,10 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         }
         
 
-        //sunstrider: removed for now, this breaks any aura added in AI inits/reset scripting hooks
+        //sunstrider: removed, this breaks any aura added in AI inits/reset scripting hooks
         //summon->AI()->EnterEvadeMode();
 
-        //TC ExecuteLogEffectSummonObject(i, summon);
+        ExecuteLogEffectSummonObject(i, summon);
     }
 }
 
