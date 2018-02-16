@@ -124,6 +124,13 @@ void Spell::EffectSummonType(uint32 effIndex)
         case SUMMON_TYPE_GUARDIAN2:
         case SUMMON_TYPE_MINION:
             SummonGuardian(effIndex, entry, properties, numSummons);
+            //sun: attack target
+            if (properties->Category == SUMMON_CATEGORY_ALLY)
+                if (m_caster->GetVictim())
+                {
+                    if (m_caster->GetDistance(m_caster->GetVictim()) < 40.0f) //arbitrary distance, not based on any source
+                        summon->EngageWithTarget(m_caster->GetVictim());
+                }
             break;
 #ifdef LICH_KING
             // Summons a vehicle, but doesn't force anyone to enter it (see SUMMON_CATEGORY_VEHICLE)
@@ -389,6 +396,9 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         if (!summon)
             return;
 
+        if (summon->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+            ((Guardian*)summon)->InitStatsForLevel(level);
+
         if (properties && properties->Category == SUMMON_CATEGORY_ALLY)
             summon->SetFaction(caster->GetFaction());
 
@@ -417,8 +427,13 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         }
         
 
-        //sunstrider: removed, this breaks any aura added in AI inits/reset scripting hooks
+        //sunstrider: removed, this breaks any aura added in AI inits/reset scripting hooks. Instead, trigger move follow here.
         //summon->AI()->EnterEvadeMode();
+        if (Unit* owner = summon->GetCharmerOrOwner())
+        {
+            summon->GetMotionMaster()->Clear(false);
+            summon->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, summon->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+        }
 
         ExecuteLogEffectSummonObject(i, summon);
     }

@@ -176,8 +176,8 @@ void CreatureAI::EnterEvadeMode(EvadeReason why)
 
 #ifdef LICH_KING
     if (!me->GetVehicle()) // otherwise me will be in evade mode forever
-    {
 #endif
+    {
         if (Unit* owner = me->GetCharmerOrOwner())
         {
             me->GetMotionMaster()->Clear(false);
@@ -187,9 +187,7 @@ void CreatureAI::EnterEvadeMode(EvadeReason why)
         {
             me->GetMotionMaster()->MoveTargetedHome();
         }
-#ifdef LICH_KING
     }
-#endif
 
     Reset();
 
