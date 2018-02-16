@@ -567,9 +567,9 @@ int prompt(
         #ifdef G3D_OSX
                 if (useGui){
                     //Will default to text prompt if numChoices > 4
-          int result = guiPrompt(windowTitle, prompt, choice, numChoices);
-          fprintf(stderr, "%d\n", result);
-          return result;
+		  int result = guiPrompt(windowTitle, prompt, choice, numChoices);
+		  fprintf(stderr, "%d\n", result);
+		  return result;
                 }
         #endif
 #else

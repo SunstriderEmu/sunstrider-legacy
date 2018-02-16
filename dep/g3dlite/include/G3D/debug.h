@@ -42,7 +42,7 @@ inline bool isValidHeapPointer(const void* x) {
             (x != (void*)0xcccccccc) && (x != (void*)0xdeadbeef) && (x != (void*)0xfeeefeee) &&
             (x != (void*)0xcdcdcdcd) && (x != (void*)0xabababab) && (x != (void*)0xfdfdfdfd);
     #else
-        return x != nullptr;
+        return x != NULL;
     #endif
 }
 
@@ -57,7 +57,7 @@ inline bool isValidPointer(const void* x) {
             (x != (void*)0xcccccccc) && (x != (void*)0xdeadbeef) && (x != (void*)0xfeeefeee) &&
             (x != (void*)0xcdcdcdcd) && (x != (void*)0xabababab) && (x != (void*)0xfdfdfdfd);
     #else
-        return x != nullptr;
+        return x != NULL;
     #endif
 }
 

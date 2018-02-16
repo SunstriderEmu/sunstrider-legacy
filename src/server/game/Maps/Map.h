@@ -259,9 +259,9 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         //Returns INVALID_HEIGHT if nothing found. walkableOnly NYI
         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, bool walkableOnly = false) const;
         float GetHeight(uint32 phasemask, Position const& pos, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const { return GetHeight(phasemask, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), vmap, maxSearchDist); }
-        void RemoveGameObjectModel(const GameObjectModel& model) { _dynamicTree.remove(model); }
-        void InsertGameObjectModel(const GameObjectModel& model) { _dynamicTree.insert(model); }
-        bool ContainsGameObjectModel(const GameObjectModel& model) const { return _dynamicTree.contains(model);}
+        void RemoveGameObjectModel(GameObjectModel const& model) { _dynamicTree.remove(model); }
+        void InsertGameObjectModel(GameObjectModel const& model) { _dynamicTree.insert(model); }
+        bool ContainsGameObjectModel(GameObjectModel const& model) const { return _dynamicTree.contains(model);}
         float GetGameObjectFloor(uint32 phasemask, float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const
         {
             return _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask);

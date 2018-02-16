@@ -75,7 +75,7 @@ public:
     }
 
     inline Vector2int16 operator*(const int s) const {
-        return Vector2int16( (G3D::int16) (x * s), (G3D::int16) (y * s));
+        return Vector2int16(x * s, y * s);
     }
 
     inline Vector2int16& operator+=(const Vector2int16& other) {
@@ -121,11 +121,11 @@ public:
     }
 
     Vector2int16 max(const Vector2int16& v) const {
-        return Vector2int16( (G3D::int16)  iMax(x, v.x), (G3D::int16) iMax(y, v.y));
+        return Vector2int16(iMax(x, v.x), iMax(y, v.y));
     }
 
     Vector2int16 min(const Vector2int16& v) const {
-        return Vector2int16( (G3D::int16) iMin(x, v.x), (G3D::int16) iMin(y, v.y));
+        return Vector2int16(iMin(x, v.x), iMin(y, v.y));
     }
 
     void serialize(class BinaryOutput& bo) const;

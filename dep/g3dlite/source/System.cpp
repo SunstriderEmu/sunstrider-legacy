@@ -188,7 +188,7 @@ void System::init() {
 
     // Get the operating system name (also happens to read some other information)
 #    ifdef G3D_WINDOWS
-        HRESULT r = OleInitialize(NULL);
+	    HRESULT r = OleInitialize(NULL);
         // Note that this overrides some of the values computed above
         bool success = RegistryUtil::readInt32
             ("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", 
@@ -202,17 +202,17 @@ void System::init() {
             arch = "x86 Intel";
             break;
     
-        case PROCESSOR_ARCHITECTURE_AMD64:
-            arch = "x64 Intel/AMD";
-            break;
+		case PROCESSOR_ARCHITECTURE_AMD64:
+			arch = "x64 Intel/AMD";
+			break;
 
-        case PROCESSOR_ARCHITECTURE_ARM:
-            arch = "ARM";
-            break;
+		case PROCESSOR_ARCHITECTURE_ARM:
+			arch = "ARM";
+			break;
 
         default:
             arch = "Unknown";
-            break;
+			break;
         }
 
         m_numCores = systemInfo.dwNumberOfProcessors;
@@ -498,7 +498,7 @@ MARK_LOG();
 MARK_LOG();
 logPrintf("%s\n", msg.c_str());
         throw FileNotFound(full, msg);
-        // alwaysAssertM(false, msg);
+        alwaysAssertM(false, msg);
     }
 MARK_LOG();
 
@@ -1689,12 +1689,12 @@ std::string System::currentTimeString() {
 
 // Windows 64-bit
 void System::cpuid(CPUIDFunction func, uint32& eax, uint32& ebx, uint32& ecx, uint32& edx) {
-    int regs[4] = {eax, ebx, ecx, edx};
-    __cpuid(regs, func);
-    eax = regs[0];
-    ebx = regs[1];
-    ecx = regs[2];
-    edx = regs[3];
+	int regs[4] = {eax, ebx, ecx, edx};
+	__cpuid(regs, func);
+	eax = regs[0];
+	ebx = regs[1];
+	ecx = regs[2];
+	edx = regs[3];
 }
 
 #else

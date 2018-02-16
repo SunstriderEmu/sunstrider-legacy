@@ -890,7 +890,7 @@ void FilePath::parse
 
         if (i != std::string::npos) {
             // Make sure it is after the last slash!
-        size_t j = findLastSlash(f);
+	    size_t j = findLastSlash(f);
             if ((j == std::string::npos) || (i > j)) {
                 ext = f.substr(i + 1, f.size() - i - 1);
                 f = f.substr(0, i);
