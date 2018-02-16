@@ -2906,11 +2906,9 @@ void SpellMgr::LoadSpellInfoStore(bool reload /* = false */)
                 continue;
 
             //replace old object by a new one, but keep it's adress, so that code having already pointers to some SpellInfos can continue.
+            //May creates memory leaks...
             if (mSpellInfoMap[i])
-            {
-                delete mSpellInfoMap[i];
                 *mSpellInfoMap[i] = std::move(SpellInfo(itr->second));
-            }
             else
                 mSpellInfoMap[i] = new SpellInfo(itr->second);
         }
