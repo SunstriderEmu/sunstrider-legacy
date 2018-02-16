@@ -210,16 +210,29 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
             auto spell = new Spell(pet, spellInfo, TRIGGERED_NONE);
             int16 result = spell->CheckPetCast(unit_target);
 
-                                                            //auto turn to target unless possessed
+            //auto turn to target unless possessed
             if(unit_target && result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->IsPossessed())
             {
-                pet->SetInFront(unit_target);
-                if( unit_target->GetTypeId() == TYPEID_PLAYER )
-                    pet->SendUpdateToPlayer( unit_target->ToPlayer() );
-                if(Unit* powner = pet->GetCharmerOrOwner())
-                    if(powner->GetTypeId() == TYPEID_PLAYER)
-                        pet->SendUpdateToPlayer(powner->ToPlayer());
-                result = -1;
+                if (unit_target)
+                {
+                    if (!pet->IsFocusing())
+                        pet->SetInFront(unit_target);
+                    if (Player* player = unit_target->ToPlayer())
+                        pet->SendUpdateToPlayer(player);
+                }
+                else if (Unit* unit_target2 = spell->m_targets.GetUnitTarget())
+                {
+                    if (!pet->IsFocusing())
+                        pet->SetInFront(unit_target2);
+                    if (Player* player = unit_target2->ToPlayer())
+                        pet->SendUpdateToPlayer(player);
+                }
+
+                if (Unit* powner = pet->GetCharmerOrOwner())
+                    if (Player* player = powner->ToPlayer())
+                        pet->SendUpdateToPlayer(player);
+
+                result = SPELL_CAST_OK;
             }
 
             if(result == SPELL_CAST_OK)

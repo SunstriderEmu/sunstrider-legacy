@@ -189,7 +189,7 @@ bool ChatHandler::HandleInstanceSetBossStateCommand(const char* args)
             return false;
         }
         pInstance->SetBossState(encounterId, EncounterState(state));
-        PSendSysMessage("Set instance boss state %u = %u (%s).", encounterId, state, InstanceScript::GetBossStateName(encounterId));
+        PSendSysMessage("Set instance boss state %u = %u (%s).", encounterId, state, InstanceScript::GetBossStateName(state));
     }
     else
     {
@@ -223,7 +223,7 @@ bool ChatHandler::HandleInstanceGetBossStateCommand(const char* args)
             return false;
         }
         uint32 state = pInstance->GetBossState(encounterId);
-        PSendSysMessage("Instance boss state %u = %u (%s).", encounterId, state, InstanceScript::GetBossStateName(encounterId));
+        PSendSysMessage("Instance boss state %u = %u (%s).", encounterId, state, InstanceScript::GetBossStateName(state));
     }
     else 
     {

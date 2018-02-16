@@ -3399,6 +3399,19 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
         }
     }
 
+
+    // focus if not controlled creature
+    if (m_caster->GetTypeId() == TYPEID_UNIT && !m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
+    {
+        if (!(m_spellInfo->IsNextMeleeSwingSpell() || IsAutoRepeat()))
+        {
+            if (m_targets.GetObjectTarget() && m_caster != m_targets.GetObjectTarget())
+                m_caster->ToCreature()->FocusTarget(this, m_targets.GetObjectTarget());
+            else if (m_spellInfo->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
+                m_caster->ToCreature()->FocusTarget(this, nullptr);
+        }
+    }
+
     // set timer base at cast time
     ReSetTimer();
 
@@ -3435,13 +3448,6 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
         m_selfContainer = &(m_caster->m_currentSpells[GetCurrentContainer()]);
         SendSpellStart();
         
-        // set target for proper facing
-        if (m_casttime && !(_triggeredCastFlags & TRIGGERED_IGNORE_SET_FACING))
-            if (ObjectGuid target = m_targets.GetUnitTargetGUID())
-                if(Unit* uTarget = ObjectAccessor::GetUnit(*m_caster,target))
-                    if (m_caster->GetGUID() != target && m_caster->GetTypeId() == TYPEID_UNIT)
-                        m_caster->ToCreature()->FocusTarget(this, uTarget);
-
         if (!(_triggeredCastFlags & TRIGGERED_IGNORE_GCD))
             TriggerGlobalCooldown();
 
@@ -3451,6 +3457,11 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
             cast(true);
     }
     return uint32(SPELL_CAST_OK);
+}
+
+bool Spell::IsFocusDisabled() const
+{
+    return ((_triggeredCastFlags & TRIGGERED_IGNORE_SET_FACING) || (m_spellInfo->IsChanneled() && !m_spellInfo->HasAttribute(SPELL_ATTR1_CHANNEL_TRACK_TARGET)));
 }
 
 void Spell::cancel()
@@ -3678,6 +3689,13 @@ void Spell::_cast(bool skipCheck /*= false*/)
         }
     }
 
+    // if the spell allows the creature to turn while casting, then adjust server-side orientation to face the target now
+    // client-side orientation is handled by the client itself, as the cast target is targeted due to Creature::FocusTarget
+    if (m_caster->GetTypeId() == TYPEID_UNIT && !m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
+        if (!m_spellInfo->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
+            if (WorldObject* objTarget = m_targets.GetObjectTarget())
+                m_caster->SetInFront(objTarget);
+
     if (!_spellTargetsSelected)
         SelectSpellTargets();
 
@@ -3720,6 +3738,10 @@ void Spell::_cast(bool skipCheck /*= false*/)
 
     //SendCastResult(castResult);
     SendSpellGo();                                          // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
+
+    if (!m_spellInfo->IsChanneled())
+        if (Creature* creatureCaster = m_caster->ToCreature())
+            creatureCaster->ReleaseFocus(this);
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
     if (m_spellInfo->Id == 2094 || m_spellInfo->Id == 14181)       // Delay Blind for 150ms to fake retail lag
@@ -4175,14 +4197,9 @@ void Spell::finish(bool ok, bool cancelChannel)
 
     if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
         (m_caster->ToCreature())->AI()->OnSpellFinish(m_caster, m_spellInfo->Id, m_targets.GetUnitTarget(), ok);
-        
-    if (m_caster->GetTypeId() == TYPEID_UNIT)
-    {
-        if (m_caster->ToCreature())
-        {
-            m_caster->ToCreature()->ReleaseFocus(this);
-        }
-    }
+
+    if (Creature* creatureCaster = m_caster->ToCreature())
+        creatureCaster->ReleaseFocus(this);
 
     if(!ok)
         return;
@@ -4889,7 +4906,7 @@ void Spell::SendChannelUpdate(uint32 time)
 {
     if(time == 0)
     {
-        m_caster->SetGuidValue(UNIT_FIELD_CHANNEL_OBJECT, ObjectGuid::Empty);
+        m_caster->SetChannelObjectGuid(ObjectGuid::Empty);
         m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, 0);
     }
 
@@ -4910,31 +4927,10 @@ void Spell::SendChannelUpdate(uint32 time, uint32 spellId)
 
 void Spell::SendChannelStart(uint32 duration)
 {
-    WorldObject* target = nullptr;
-
-    // select first not resisted target from target list for _0_ effect
-    if(!m_UniqueTargetInfo.empty())
-    {
-        for(auto & itr : m_UniqueTargetInfo)
-        {
-            if( (itr.effectMask & (1<<0)) && itr.reflectResult==SPELL_MISS_NONE && itr.targetGUID != m_caster->GetGUID())
-            {
-                target = ObjectAccessor::GetUnit(*m_caster, itr.targetGUID);
-                break;
-            }
-        }
-    }
-    else if(!m_UniqueGOTargetInfo.empty())
-    {
-        for(auto & itr : m_UniqueGOTargetInfo)
-        {
-            if(itr.effectMask & (1<<0) )
-            {
-                target = ObjectAccessor::GetGameObject(*m_caster, itr.targetGUID);
-                break;
-            }
-        }
-    }
+    ObjectGuid channelTarget = m_targets.GetObjectTargetGUID();
+    if (!channelTarget && !m_spellInfo->NeedsExplicitUnitTarget())
+        if (m_UniqueTargetInfo.size() + m_UniqueGOTargetInfo.size() == 1)   // this is for TARGET_SELECT_CATEGORY_NEARBY
+            channelTarget = !m_UniqueTargetInfo.empty() ? m_UniqueTargetInfo.front().targetGUID : m_UniqueGOTargetInfo.front().targetGUID;
 
     WorldPacket data( MSG_CHANNEL_START, (8+4+4) );
     data << m_caster->GetPackGUID();
@@ -4944,8 +4940,15 @@ void Spell::SendChannelStart(uint32 duration)
     m_caster->SendMessageToSet(&data,true);
 
     m_timer = duration;
-    if(target)
-        m_caster->SetGuidValue(UNIT_FIELD_CHANNEL_OBJECT, target->GetGUID());
+    if (channelTarget)
+    {
+        m_caster->SetChannelObjectGuid(channelTarget);
+
+        if (channelTarget != m_caster->GetGUID())
+            if (Creature* creatureCaster = m_caster->ToCreature())
+                if (!creatureCaster->IsFocusing(this))
+                    creatureCaster->FocusTarget(this, ObjectAccessor::GetWorldObject(*creatureCaster, channelTarget));
+    }
     m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, m_spellInfo->Id);
 }
 

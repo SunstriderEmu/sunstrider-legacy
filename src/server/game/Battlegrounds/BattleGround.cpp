@@ -1702,7 +1702,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
 
     //pCreature->SetDeathState(DEAD);
 
-    pCreature->SetGuidValue(UNIT_FIELD_CHANNEL_OBJECT, pCreature->GetGUID());
+    pCreature->SetChannelObjectGuid(pCreature->GetGUID());
     // aura
     pCreature->SetUInt32Value(UNIT_FIELD_AURA, SPELL_SPIRIT_HEAL_CHANNEL);
     pCreature->SetUInt32Value(UNIT_FIELD_AURAFLAGS, 0x00000009);
