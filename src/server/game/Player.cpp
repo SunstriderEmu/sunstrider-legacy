@@ -12524,27 +12524,27 @@ void Player::RemoveItemFromBuyBackSlot( uint32 slot, bool del )
     }
 }
 
-void Player::SendEquipError( uint8 msg, Item* pItem, Item *pItem2 )
+void Player::SendEquipError(uint8 msg, Item* pItem, Item *pItem2)
 {
-    WorldPacket data( SMSG_INVENTORY_CHANGE_FAILURE, (msg == EQUIP_ERR_CANT_EQUIP_LEVEL_I ? 22 : 18) );
+    WorldPacket data(SMSG_INVENTORY_CHANGE_FAILURE, (msg == EQUIP_ERR_CANT_EQUIP_LEVEL_I ? 22 : (msg == EQUIP_ERR_OK ? 1 : 18)));
     data << uint8(msg);
-
-    if(msg)
+    if(msg != EQUIP_ERR_OK)
     {
-        data << uint64(pItem ? pItem->GetGUID() : 0);
-        data << uint64(pItem2 ? pItem2->GetGUID() : 0);
+        data << uint64(pItem ? pItem->GetGUID() : ObjectGuid::Empty);
+        data << uint64(pItem2 ? pItem2->GetGUID() : ObjectGuid::Empty);
         data << uint8(0);                                  // bag type subclass, used with  
                                                            // EQUIP_ERR_EVENT_AUTOEQUIP_BIND_CONFIRM and
                                                            // EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG2
-
-        if(msg == EQUIP_ERR_CANT_EQUIP_LEVEL_I)
+        switch(msg)
         {
+        case EQUIP_ERR_CANT_EQUIP_LEVEL_I:
             uint32 level = 0;
             if(pItem)
                 if(ItemTemplate const* proto =  pItem->GetTemplate())
                     level = proto->RequiredLevel;
 
             data << uint32(level);                          // new 2.4.0
+            break;
         }
     }
     SendDirectMessage(&data);
