@@ -436,6 +436,12 @@ private:
 	}
 };
 
+enum GOSummonType
+{
+   GO_SUMMON_TIMED_OR_CORPSE_DESPAWN = 0,    // despawns after a specified time OR when the summoner dies
+   GO_SUMMON_TIMED_DESPAWN           = 1     // despawns after a specified time
+};
+
 class TC_GAME_API WorldObject : public Object, public WorldLocation
 {
     public:
@@ -594,7 +600,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         Map const* GetBaseMap() const;
 		TempSummon* SummonCreature(uint32 id, Position const& pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0) const;
 		TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0) const;
-        GameObject* SummonGameObject(uint32 entry, Position const& pos, G3D::Quat const& rot, uint32 respawnTime) const;
+        GameObject* SummonGameObject(uint32 entry, Position const& pos, G3D::Quat const& rot, uint32 respawnTime, GOSummonType summonType = GO_SUMMON_TIMED_OR_CORPSE_DESPAWN) const;
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, G3D::Quat const& rot, uint32 respawnTime /* s */);
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = nullptr);
 

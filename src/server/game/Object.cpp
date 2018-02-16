@@ -1995,7 +1995,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     return pet;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, G3D::Quat const& rot, uint32 respawnTime) const
+GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, G3D::Quat const& rot, uint32 respawnTime, GOSummonType summonType) const
 {
     if(!IsInWorld())
         return nullptr;
@@ -2015,7 +2015,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, G3D
         return nullptr;
     }
     go->SetRespawnTime(respawnTime);
-    if(GetTypeId()==TYPEID_PLAYER || GetTypeId()==TYPEID_UNIT) //not sure how to handle this
+    if (GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && summonType == GO_SUMMON_TIMED_OR_CORPSE_DESPAWN)) //not sure how to handle this
         ((Unit*)this)->AddGameObject(go);
     else
         go->SetSpawnedByDefault(false);
