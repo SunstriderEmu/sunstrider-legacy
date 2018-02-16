@@ -8790,6 +8790,7 @@ void ObjectMgr::LoadSpellTemplates()
     do 
     {
         fields = result_override->Fetch();
+        ASSERT(result_override->GetFieldCount() == 173);
         id = fields[0].GetUInt32();
         auto itr = spellTemplates.find(id);
         SpellEntry* spell = nullptr;
@@ -8807,7 +8808,7 @@ void ObjectMgr::LoadSpellTemplates()
                 maxSpellId = id;    
         }
 
-        for (uint32 i = 1; i <= 171; i++)
+        for (uint32 i = 1; i < result_override->GetFieldCount(); i++)
         {
             if (fields[i].IsNull())
             {
