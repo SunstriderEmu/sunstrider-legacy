@@ -832,7 +832,7 @@ void SmartAI::SetCombatMove(bool on)
                 me->CastStop();
             }
         }
-        else if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE)
+        else if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE || me->IsInCombat()) //sun: also clear if in combat. We don't want creatures to continue patrolling when entering combat with combat movement disabled
         {
             if (me->HasUnitState(UNIT_STATE_CONFUSED_MOVE | UNIT_STATE_FLEEING_MOVE))
                 return;
