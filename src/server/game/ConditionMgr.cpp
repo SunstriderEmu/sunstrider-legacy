@@ -1666,7 +1666,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
 
             if ((cond->SourceGroup > MAX_EFFECT_MASK) || !cond->SourceGroup)
             {
-                TC_LOG_ERROR("sql.sql", "%s in `condition` table, has incorrect SourceGroup %u (spell effectMask) set, ignoring.", cond->SourceGroup, cond->ToString().c_str());
+                TC_LOG_ERROR("sql.sql", "%s in `condition` table, has incorrect SourceGroup %u (spell effectMask) set, ignoring.", cond->ToString().c_str(), cond->SourceGroup);
                 return false;
             }
 

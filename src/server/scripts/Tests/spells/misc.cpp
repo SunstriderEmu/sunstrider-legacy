@@ -50,7 +50,7 @@ public:
         TestPlayer* p2;
         Creature* target;
 
-        void TestStack(uint32 id1, uint32 id2 = 0, bool not = false, bool sameCaster = false)
+        void TestStack(uint32 id1, uint32 id2 = 0, bool _not = false, bool sameCaster = false)
         {
             if (!id2)
                 id2 = id1;
@@ -70,7 +70,7 @@ public:
             if (id1 == id2)
             {
                 uint32 auraCount = target->GetAuraCount(id1);
-                if (not)
+                if (_not)
                 {
                     ASSERT_INFO("Testing if %u NOT stacks with %u. Aura %u has wrong count %u (should be 1)", id1, id2, id1, auraCount);
                     TEST_ASSERT(auraCount == 1)
@@ -85,7 +85,7 @@ public:
             {
                 bool hasAura1 = target->HasAura(id1);
                 bool hasAura2 = target->HasAura(id2);
-                if (not)
+                if (_not)
                 {
                     ASSERT_INFO("Testing if %u NOT stacks with %u. Target should not have aura %u", id1, id2, id1);
                     TEST_ASSERT(!hasAura1);
