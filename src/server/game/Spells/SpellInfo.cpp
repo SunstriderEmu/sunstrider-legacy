@@ -2890,7 +2890,7 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
                                 {
                                     // if non-positive trigger cast targeted to positive target this main cast is non-positive
                                     // this will place this spell auras as debuffs
-                                    if(_IsPositiveTarget(spellTriggeredProto->Effects[effIndex].TargetA.GetTarget(),spellTriggeredProto->Effects[effIndex].TargetB.GetTarget()) && !spellTriggeredProto->IsPositiveEffect(i))
+                                    if(_IsPositiveTarget(spellTriggeredProto->Effects[effIndex].TargetA.GetTarget(), spellTriggeredProto->Effects[effIndex].TargetB.GetTarget()) && !spellTriggeredProto->IsPositiveEffect(i))
                                         return false;
                                 }
                             }

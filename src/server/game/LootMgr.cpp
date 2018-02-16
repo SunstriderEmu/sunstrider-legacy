@@ -133,7 +133,7 @@ void LootStore::LoadLootTable()
         // (condition + cond_value1/2) are converted into single conditionId
         uint16 conditionId = sObjectMgr->GetConditionId(condition, cond_value1, cond_value2);
 
-        auto  storeitem = new LootStoreItem(item, chanceOrQuestChance, group, conditionId, mincountOrRef, maxcount);
+        LootStoreItem* storeitem = new LootStoreItem(item, chanceOrQuestChance, group, conditionId, mincountOrRef, maxcount);
 
         if (!storeitem->IsValid(*this, entry))            // Validity checks
         {

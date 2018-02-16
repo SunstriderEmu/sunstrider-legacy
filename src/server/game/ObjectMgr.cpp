@@ -8803,6 +8803,8 @@ void ObjectMgr::LoadSpellTemplates()
             spell = new SpellEntry();
             spell->Id = id;
             newSpell = true;
+            if(id > maxSpellId)
+                maxSpellId = id;    
         }
 
         for (uint32 i = 1; i <= 171; i++)
