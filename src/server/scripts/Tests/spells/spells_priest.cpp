@@ -1489,6 +1489,84 @@ public:
     }
 };
 
+class MindBlastTest : public TestCaseScript
+{
+public:
+    MindBlastTest() : TestCaseScript("spells priest mind_blast") { }
+
+    class MindBlastTestImpt : public TestCase
+    {
+    public:
+        MindBlastTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+
+            // Mana cost
+            uint32 const expectedMindBlastMana = 450;
+            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, POWER_MANA, expectedMindBlastMana);
+
+            // Cooldown
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::MIND_BLAST_RNK_11, 8 * SECOND);
+
+            // Heal
+            float const mindControlCastTime = 1.5f;
+            float const mindControlCoeff = mindControlCastTime / 3.5f;
+            uint32 const bonusSpell = 292 * mindControlCoeff;
+            uint32 const mindControlMin = ClassSpellsDamage::Priest::MIND_BLAST_RNK_11_MIN + bonusSpell;
+            uint32 const mindControlMax = ClassSpellsDamage::Priest::MIND_BLAST_RNK_11_MAX + bonusSpell;
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, mindControlMin, mindControlMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, mindControlMin * 1.5f, mindControlMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<MindBlastTestImpt>();
+    }
+};
+
+class MindControlTest : public TestCaseScript
+{
+public:
+    MindControlTest() : TestCaseScript("spells priest mind_control") { }
+
+    class MindControlTestImpt : public TestCase
+    {
+    public:
+        MindControlTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* enemy = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            float const baseAttackSpeed = enemy->GetAttackTimer(BASE_ATTACK);
+            float const expectedAttackSpeed = baseAttackSpeed * 1.25f;
+
+            // Mana cost
+            uint32 const expectedMindControlMana = 750;
+            TEST_POWER_COST(priest, enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, POWER_MANA, expectedMindControlMana);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, 10 * SECOND * IN_MILLISECONDS);
+
+            // Attack Speed +25%
+            TEST_ASSERT(enemy->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<MindControlTestImpt>();
+    }
+};
+
 void AddSC_test_spells_priest()
 {
     // Discipline: 10/10
@@ -1518,4 +1596,6 @@ void AddSC_test_spells_priest()
     new SmiteTest();
     // Shadow: /
     new FadeTest();
+    new MindBlastTest();
+    new MindControlTest();
 }

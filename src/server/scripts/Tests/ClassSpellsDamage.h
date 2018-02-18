@@ -252,6 +252,9 @@ namespace ClassSpellsDamage
             RENEW_RNK_12_TOTAL = 1110,
             SMITE_RNK_10_MIN = 549,
             SMITE_RNK_10_MAX = 616,
+            // Shadow
+            MIND_BLAST_RNK_11_MIN = 711,
+            MIND_BLAST_RNK_11_MAX = 752,
 		};
 	};
 
