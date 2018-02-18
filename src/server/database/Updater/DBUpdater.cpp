@@ -293,8 +293,10 @@ bool DBUpdater<T>::Populate(DatabaseWorkerPool<T>& pool)
             }
             case LOCATION_DOWNLOAD:
             {
+                const char* filename = base.filename().generic_string().c_str();
+                const char* workdir = boost::filesystem::current_path().generic_string().c_str();
                 TC_LOG_ERROR("sql.updates", ">> File \"%s\" is missing, download it from \"https://github.com/kelno/sunstrider/releases\"" \
-                    " uncompress it and place the file world_(a_variable_name).sql where your worldserver binary is located.", base.filename().generic_string().c_str());
+                    " uncompress it and place the file \"%s\" where your worldserver binary is located (\"%s\").", filename, filename, workdir);
                 break;
             }
         }
