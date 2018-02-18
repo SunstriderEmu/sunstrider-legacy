@@ -342,6 +342,69 @@ class spell_gen_creature_permanent_feign_death : public AuraScript
     }
 };
 
+enum EluneCandle
+{
+    // Creatures
+    NPC_OMEN = 15467,
+
+    // Spells
+    SPELL_ELUNE_CANDLE_OMEN_HEAD = 26622,
+    SPELL_ELUNE_CANDLE_OMEN_CHEST = 26624,
+    SPELL_ELUNE_CANDLE_OMEN_HAND_R = 26625,
+    SPELL_ELUNE_CANDLE_OMEN_HAND_L = 26649,
+    SPELL_ELUNE_CANDLE_NORMAL = 26636
+};
+
+class spell_gen_elune_candle : public SpellScript
+{
+    PrepareSpellScript(spell_gen_elune_candle);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_ELUNE_CANDLE_OMEN_HEAD,
+                SPELL_ELUNE_CANDLE_OMEN_CHEST,
+                SPELL_ELUNE_CANDLE_OMEN_HAND_R,
+                SPELL_ELUNE_CANDLE_OMEN_HAND_L,
+                SPELL_ELUNE_CANDLE_NORMAL
+            });
+    }
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        uint32 spellId = 0;
+
+        if (GetHitUnit()->GetEntry() == NPC_OMEN)
+        {
+            switch (urand(0, 3))
+            {
+            case 0:
+                spellId = SPELL_ELUNE_CANDLE_OMEN_HEAD;
+                break;
+            case 1:
+                spellId = SPELL_ELUNE_CANDLE_OMEN_CHEST;
+                break;
+            case 2:
+                spellId = SPELL_ELUNE_CANDLE_OMEN_HAND_R;
+                break;
+            case 3:
+                spellId = SPELL_ELUNE_CANDLE_OMEN_HAND_L;
+                break;
+            }
+        }
+        else
+            spellId = SPELL_ELUNE_CANDLE_NORMAL;
+
+        GetCaster()->CastSpell(GetHitUnit(), spellId, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_gen_elune_candle::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_cannibalize();
@@ -351,4 +414,5 @@ void AddSC_generic_spell_scripts()
     RegisterAuraScript(spell_gen_obsidian_armor);
     RegisterAuraScript(spell_gen_enlightenment);
     RegisterAuraScript(spell_gen_creature_permanent_feign_death);
+    RegisterSpellScript(spell_gen_elune_candle);
 }

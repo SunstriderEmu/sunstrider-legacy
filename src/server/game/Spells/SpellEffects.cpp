@@ -808,12 +808,6 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
                     break;
                 }
-                // Elune's Candle
-                case 26374:
-                {
-                    m_caster->CastSpell(unitTarget, RAND(26622, 26623, 26624, 26625, 26636, 26649), true);
-                    break;
-                }
                 // Melodious Rapture (quest 6661)
                 case 21050:
                 {
