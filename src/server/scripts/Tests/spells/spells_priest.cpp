@@ -1567,6 +1567,109 @@ public:
     }
 };
 
+class MindVisionTest : public TestCaseScript
+{
+public:
+    MindVisionTest() : TestCaseScript("spells priest mind_vision") { }
+
+    class MindVisionTestImpt : public TestCase
+    {
+    public:
+        MindVisionTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 70.0f);
+            TestPlayer* warrior70m = SpawnPlayer(CLASS_WARRIOR, RACE_ORC, 70, spawn); // in priest's sight
+            spawn.MoveInFront(spawn, 70.0f);
+            TestPlayer* rogue140m = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn); // out of priest's sight
+
+            // Mana cost
+            uint32 const expectedMindVisionMana = 150;
+            TEST_POWER_COST(priest, warrior70m, ClassSpells::Priest::MIND_VISION_RNK_2, POWER_MANA, expectedMindVisionMana);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior70m, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
+
+            // Check jumping targets even out of sight works
+            FORCE_CAST(priest, rogue140m, ClassSpells::Priest::MIND_VISION_RNK_2, SPELL_MISS_NONE);
+            TEST_HAS_AURA(rogue140m, ClassSpells::Priest::MIND_VISION_RNK_2);
+            TEST_HAS_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
+
+            // Aura isnt removed by stealth
+            TEST_CAST(rogue140m, rogue140m, ClassSpells::Rogue::STEALTH_RNK_4);
+            TEST_HAS_AURA(rogue140m, ClassSpells::Priest::MIND_VISION_RNK_2);
+
+            // Break if in another instance
+            rogue140m->TeleportTo(37, 128.205002, 135.136002, 236.025055, 0); // Teleport to Azshara Crater
+            Wait(1000);
+            TEST_HAS_NOT_AURA(rogue140m, ClassSpells::Priest::MIND_VISION_RNK_2);
+            TEST_HAS_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<MindVisionTestImpt>();
+    }
+};
+
+class PrayerOfShadowProtectionTest : public TestCaseScript
+{
+public:
+    PrayerOfShadowProtectionTest() : TestCaseScript("spells priest prayer_of_shadow_protection") { }
+
+    class PrayerOfShadowProtectionTestImpt : public TestCase
+    {
+    public:
+        PrayerOfShadowProtectionTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void TestPrayerOfShadowProtection(TestPlayer* priest, Unit* warrior, uint32 spellId, uint32 reagentId, uint32 manaCost, uint32 shadowResistanceBonus, uint32 priestStartShadowResistance, uint32 warriorStartShadowResistance)
+        {
+            uint32 expectedPriestSR = priestStartShadowResistance + shadowResistanceBonus;
+            uint32 expectedWarriorSR = warriorStartShadowResistance + shadowResistanceBonus;
+
+            // Mana cost
+            priest->AddItem(reagentId, 1); // Reagent
+            TEST_POWER_COST(priest, warrior, spellId, POWER_MANA, manaCost);
+            TEST_ASSERT(priest->GetItemCount(reagentId, false) == 0);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(warrior, spellId, 20 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest, spellId, 20 * MINUTE* IN_MILLISECONDS);
+
+            // Shadow Resistance
+            TEST_ASSERT(priest->GetResistance(SPELL_SCHOOL_SHADOW) == expectedPriestSR);
+            TEST_ASSERT(warrior->GetResistance(SPELL_SCHOOL_SHADOW) == expectedWarriorSR);
+        }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_ORC);
+
+            GroupPlayer(priest, warrior);
+
+            uint32 const startPriestSR = priest->GetResistance(SPELL_SCHOOL_SHADOW);
+            uint32 const startWarriorSR = warrior->GetResistance(SPELL_SCHOOL_SHADOW);
+
+            uint32 const SACRED_CANDLE = 17029;
+
+            TestPrayerOfShadowProtection(priest, warrior, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_2, SACRED_CANDLE, 1300, 60, startPriestSR, startWarriorSR);
+            TestPrayerOfShadowProtection(priest, warrior, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, SACRED_CANDLE, 1620, 70, startPriestSR, startWarriorSR);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<PrayerOfShadowProtectionTestImpt>();
+    }
+};
+
 void AddSC_test_spells_priest()
 {
     // Discipline: 10/10
@@ -1598,4 +1701,6 @@ void AddSC_test_spells_priest()
     new FadeTest();
     new MindBlastTest();
     new MindControlTest();
+    new MindVisionTest();
+    new PrayerOfShadowProtectionTest();
 }
