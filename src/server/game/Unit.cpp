@@ -6111,7 +6111,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
     }
 
     // Default calculation
-    if (coeff && DoneAdvertisedBenefit)
+    if (/*coeff &&*/ DoneAdvertisedBenefit)
     {
         if (coeff <= 0.f) //sun: added the = here, is this right? else we don't even use the default coef if there is no data in spell_bonus_data table?
             coeff = CalculateDefaultCoefficient(spellProto, damagetype);  // As wowwiki says: C = (Cast Time / 3.5)
