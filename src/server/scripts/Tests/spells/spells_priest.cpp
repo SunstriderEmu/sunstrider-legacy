@@ -1659,8 +1659,8 @@ public:
 
             uint32 const SACRED_CANDLE = 17029;
 
-            TestPrayerOfShadowProtection(priest, warrior, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_2, SACRED_CANDLE, 1300, 60, startPriestSR, startWarriorSR);
-            TestPrayerOfShadowProtection(priest, warrior, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, SACRED_CANDLE, 1620, 70, startPriestSR, startWarriorSR);
+            TestPrayerOfShadowProtection(priest, warrior, ClassSpells::Priest::PRAYER_OF_SHADOW_PROTECTION_RNK_1, SACRED_CANDLE, 1300, 60, startPriestSR, startWarriorSR);
+            TestPrayerOfShadowProtection(priest, warrior, ClassSpells::Priest::PRAYER_OF_SHADOW_PROTECTION_RNK_2, SACRED_CANDLE, 1620, 70, startPriestSR, startWarriorSR);
         }
     };
 

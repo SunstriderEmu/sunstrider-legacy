@@ -2982,6 +2982,7 @@ namespace ClassSpells
             MIND_VISION_RNK_1 = 2096,
             MIND_VISION_RNK_2 = 10909,
             PRAYER_OF_SHADOW_PROTECTION_RNK_1 = 27683,
+            PRAYER_OF_SHADOW_PROTECTION_RNK_2 = 39374,
             PSYCHIC_SCREAM_RNK_1 = 8122,
             PSYCHIC_SCREAM_RNK_2 = 8124,
             PSYCHIC_SCREAM_RNK_3 = 10888,
