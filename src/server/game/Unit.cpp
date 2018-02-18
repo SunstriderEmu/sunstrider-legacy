@@ -6307,7 +6307,7 @@ float Unit::SpellCritChanceDone(SpellInfo const *spellProto, SpellSchoolMask sch
         return 0.0f;
     }
 
-    if (spellProto->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
+    if (!spellProto->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
         return 0.0f;
     
     if (spellProto->HasEffectByEffectMask(SPELL_EFFECT_HEALTH_LEECH))
@@ -6360,7 +6360,7 @@ float Unit::SpellCritChanceDone(SpellInfo const *spellProto, SpellSchoolMask sch
 float Unit::SpellCritChanceTaken(Unit const* caster, SpellInfo const* spellInfo, SpellSchoolMask schoolMask, float doneChance, WeaponAttackType attackType /*= BASE_ATTACK*/) const
 {
     // not critting spell
-    if (spellInfo->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
+    if (!spellInfo->HasAttribute(SPELL_ATTR0_CU_CAN_CRIT))
         return 0.0f;
 
     float crit_chance = doneChance;
