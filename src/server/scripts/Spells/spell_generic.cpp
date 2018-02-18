@@ -371,7 +371,7 @@ class spell_gen_elune_candle : public SpellScript
             });
     }
 
-    void HandleScript(SpellEffIndex /*effIndex*/)
+    void HandleScript(SpellEffIndex /*effIndex*/, int32& /*damage*/)
     {
         uint32 spellId = 0;
 
