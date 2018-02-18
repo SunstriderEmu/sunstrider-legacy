@@ -1207,7 +1207,7 @@ enum GameObjectFlags
     GO_FLAG_TRANSPORT        = 0x00000008,                   //any kind of transport? Object can transport (elevator, boat, car)
     GO_FLAG_NOT_SELECTABLE   = 0x00000010,                   //not selectable even in GM mode
     GO_FLAG_NODESPAWN        = 0x00000020,                   //never despawn, typically for doors, they just change state
-    GO_FLAG_AI_OBSTACLE      = 0x00000040,                    //makes the client register the object in something called AIObstacleMgr, unknown what it does
+    GO_FLAG_AI_OBSTACLE      = 0x00000040,                   //makes the client register the object in something called AIObstacleMgr, unknown what it does
 #ifdef LICH_KING
     GO_FLAG_FREEZE_ANIMATION = 0x00000080,
     GO_FLAG_DAMAGED          = 0x00000200,

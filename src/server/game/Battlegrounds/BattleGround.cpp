@@ -1598,7 +1598,7 @@ void Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
             
             if (!obj->IsInWorld()) //sunstrider: TC code tries to add it to map a second time in some cases
                 map->AddToMap(obj);
-            else if(!respawntime)
+            else if(!respawntime) //Immediately recreate object at client (else player would have to move for the object to appear)
                 obj->UpdateObjectVisibility(true);
         }
 }

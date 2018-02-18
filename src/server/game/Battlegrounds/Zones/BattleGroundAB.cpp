@@ -290,7 +290,7 @@ void BattlegroundAB::_CreateBanner(uint8 node, uint8 type, uint8 teamIndex, bool
     SpawnBGObject(obj, RESPAWN_IMMEDIATELY);
 
     // handle aura with banner
-    if( !type )
+    if (!type)
         return;
     obj = node * 8 + ((type == BG_AB_NODE_TYPE_OCCUPIED) ? (5 + teamIndex) : 7);
     SpawnBGObject(obj, RESPAWN_IMMEDIATELY);

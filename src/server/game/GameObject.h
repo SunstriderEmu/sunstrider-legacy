@@ -368,141 +368,20 @@ struct GameObjectTemplate
     };
 
     //helpers 
-    
-    uint32 GetAutoCloseTime() const
-    {
-        uint32 autoCloseTime = 0;
-        switch (type)
-        {
-        case GAMEOBJECT_TYPE_DOOR:          autoCloseTime = door.autoCloseTime; break;
-        case GAMEOBJECT_TYPE_BUTTON:        autoCloseTime = button.autoCloseTime; break;
-        case GAMEOBJECT_TYPE_TRAP:          autoCloseTime = trap.autoCloseTime; break;
-        case GAMEOBJECT_TYPE_GOOBER:        autoCloseTime = goober.autoCloseTime; break;
-        case GAMEOBJECT_TYPE_TRANSPORT:     autoCloseTime = transport.autoCloseTime; break;
-        case GAMEOBJECT_TYPE_AREADAMAGE:    autoCloseTime = areadamage.autoCloseTime; break;
-        default: break;
-        }
-        return autoCloseTime /* sunwell: changed to milliseconds/ IN_MILLISECONDS*/;              // prior to 3.0.3, conversion was / 0x10000;
-    }
-
-    bool IsDespawnAtAction() const
-    {
-        switch (type)
-        {
-        case GAMEOBJECT_TYPE_CHEST:  return chest.consumable != 0;
-        case GAMEOBJECT_TYPE_GOOBER: return goober.consumable != 0;
-        default: return false;
-        }
-    }
-
-    bool IsUsableMounted() const
-    {
-        switch (type)
-        {
-            case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.allowMounted != 0;
-            case GAMEOBJECT_TYPE_TEXT: return text.allowMounted != 0;
-            case GAMEOBJECT_TYPE_GOOBER: return goober.allowMounted != 0;
-            case GAMEOBJECT_TYPE_SPELLCASTER: return spellcaster.allowMounted != 0;
-            default: return false;
-        }
-    }
-
-    uint32 GetLootId() const
-    {
-        switch (type)
-        {
-            case GAMEOBJECT_TYPE_CHEST:       return chest.lootId;
-            case GAMEOBJECT_TYPE_FISHINGHOLE: return fishinghole.lootId;
-            case GAMEOBJECT_TYPE_FISHINGNODE: return fishnode.lootId;
-            default: return 0;
-        }
-    }
-
-    uint32 GetCharges() const                               // despawn at uses amount
-    {
-        switch (type)
-        {
-            //case GAMEOBJECT_TYPE_TRAP:        return trap.charges;
-            case GAMEOBJECT_TYPE_GUARDPOST:   return guardpost.charges;
-            case GAMEOBJECT_TYPE_SPELLCASTER: return spellcaster.charges;
-            default: return 0;
-        }
-    }
-
-    uint32 GetGossipMenuId() const
-    {
-        switch (type)
-        {
-            case GAMEOBJECT_TYPE_QUESTGIVER:    return questgiver.gossipID;
-            case GAMEOBJECT_TYPE_GOOBER:        return goober.gossipID;
-            default: return 0;
-        }
-    }
-
-    uint32 GetCooldown() const                              // Cooldown preventing goober and traps to cast spell
-    {
-        switch (type)
-        {
-            case GAMEOBJECT_TYPE_TRAP:        return trap.cooldown;
-            case GAMEOBJECT_TYPE_GOOBER:      return goober.cooldown;
-            default: return 0;
-        }
-    }
-
-    bool GetDespawnPossibility() const                      // despawn at targeting of cast?
-    {
-        switch (type)
-        {
-        case GAMEOBJECT_TYPE_DOOR:       return door.noDamageImmune != 0;
-        case GAMEOBJECT_TYPE_BUTTON:     return button.noDamageImmune != 0;
-        case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.noDamageImmune != 0;
-        case GAMEOBJECT_TYPE_GOOBER:     return goober.noDamageImmune != 0;
-        case GAMEOBJECT_TYPE_FLAGSTAND:  return flagstand.noDamageImmune != 0;
-        case GAMEOBJECT_TYPE_FLAGDROP:   return flagdrop.noDamageImmune != 0;
-        default: return true;
-        }
-    }
-
-    uint32 GetLinkedGameObjectEntry() const
-    {
-        switch (type)
-        {
-        case GAMEOBJECT_TYPE_CHEST:       return chest.linkedTrapId;
-        case GAMEOBJECT_TYPE_SPELL_FOCUS: return spellFocus.linkedTrapId;
-        case GAMEOBJECT_TYPE_GOOBER:      return goober.linkedTrapId;
-        default: return 0;
-        }
-    }
-
-    uint32 GetLockId() const
-    {
-        switch (type)
-        {
-            case GAMEOBJECT_TYPE_DOOR:       return door.lockId;
-            case GAMEOBJECT_TYPE_BUTTON:     return button.lockId;
-            case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.lockId;
-            case GAMEOBJECT_TYPE_CHEST:      return chest.lockId;
-            case GAMEOBJECT_TYPE_TRAP:       return trap.lockId;
-            case GAMEOBJECT_TYPE_GOOBER:     return goober.lockId;
-            case GAMEOBJECT_TYPE_AREADAMAGE: return areadamage.lockId;
-            case GAMEOBJECT_TYPE_CAMERA:     return camera.lockId;
-            case GAMEOBJECT_TYPE_FLAGSTAND:  return flagstand.lockId;
-            case GAMEOBJECT_TYPE_FISHINGHOLE:return fishinghole.lockId;
-            case GAMEOBJECT_TYPE_FLAGDROP:   return flagdrop.lockId;
-            default: return 0;
-        }
-    }
-
-    uint32 GetEventScriptId() const
-    {
-        switch (type)
-        {
-        case GAMEOBJECT_TYPE_GOOBER:        return goober.eventId;
-        case GAMEOBJECT_TYPE_CHEST:         return chest.eventId;
-        case GAMEOBJECT_TYPE_CAMERA:        return camera.eventID;
-        default: return 0;
-        }
-    }
+    uint32 GetAutoCloseTime() const;
+    bool IsDespawnAtAction() const;
+    bool IsUsableMounted() const;
+    uint32 GetLootId() const;
+    // despawn at uses amount
+    uint32 GetCharges() const;                               
+    uint32 GetGossipMenuId() const;
+    // Cooldown preventing goober and traps to cast spell
+    uint32 GetCooldown() const;
+    // despawn at targeting of cast?
+    bool GetDespawnPossibility() const;
+    uint32 GetLinkedGameObjectEntry() const;
+    uint32 GetLockId() const;
+    uint32 GetEventScriptId() const;
 
     std::string AIName;
     uint32 ScriptId;
