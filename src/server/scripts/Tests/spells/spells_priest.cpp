@@ -1514,13 +1514,13 @@ public:
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::MIND_BLAST_RNK_11, 8 * SECOND);
 
             // Heal
-            float const mindControlCastTime = 1.5f;
-            float const mindControlCoeff = mindControlCastTime / 3.5f;
-            uint32 const bonusSpell = 292 * mindControlCoeff;
-            uint32 const mindControlMin = ClassSpellsDamage::Priest::MIND_BLAST_RNK_11_MIN + bonusSpell;
-            uint32 const mindControlMax = ClassSpellsDamage::Priest::MIND_BLAST_RNK_11_MAX + bonusSpell;
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, mindControlMin, mindControlMax, false);
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, mindControlMin * 1.5f, mindControlMax * 1.5f, true);
+            float const mindBlastCastTime = 1.5f;
+            float const mindBlastCoeff = mindBlastCastTime / 3.5f;
+            uint32 const bonusSpell = 292 * mindBlastCoeff;
+            uint32 const mindBlastMin = ClassSpellsDamage::Priest::MIND_BLAST_RNK_11_MIN + bonusSpell;
+            uint32 const mindBlastMax = ClassSpellsDamage::Priest::MIND_BLAST_RNK_11_MAX + bonusSpell;
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, mindBlastMin, mindBlastMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, mindBlastMin * 1.5f, mindBlastMax * 1.5f, true);
         }
     };
 
