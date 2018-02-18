@@ -6768,9 +6768,6 @@ SpellCastResult Spell::CheckItems(uint32* param1 /*= nullptr*/, uint32* param2 /
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return SPELL_CAST_OK;
 
-    if (m_spellInfo->HasAttribute(SPELL_ATTR2_IGNORE_ITEM_CHECK))
-        return SPELL_CAST_OK;
-
     uint32 itemid, itemcount;
     Player* p_caster = m_caster->ToPlayer();
 
