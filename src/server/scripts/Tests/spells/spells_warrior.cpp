@@ -449,7 +449,7 @@ public:
 
             uint32 givenMin;
             uint32 givenMax;
-            GetDamagePerSpellsTo(warrior, enemy, ClassSpells::Warrior::RETALIATION_RNK_1_PROC, givenMin, givenMax);
+            GetDamagePerSpellsTo(warrior, enemy, ClassSpells::Warrior::RETALIATION_RNK_1_PROC, givenMin, givenMax, false);
             TC_LOG_TRACE("test.unit_test", "givenMin: %u, givenMax: %u, expectedMin: %u, expectedMax: %u", givenMin, givenMax, expectedMin, expectedMax);
             TEST_ASSERT(givenMin < expectedMax);
             TEST_ASSERT(givenMax > expectedMin);
@@ -1413,18 +1413,17 @@ public:
     class WhirlwindTestImpt : public TestCaseWarrior
     {
     public:
-        WhirlwindTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        WhirlwindTestImpt() : TestCaseWarrior(STATUS_INCOMPLETE, true) { }
 
-        void TestCount(Unit* victim, uint32 startHealth, int count)
+        bool HasLostHealth(Unit* victim, uint32 startHealth)
         {
-            if (victim->GetHealth() < startHealth)
-                count++;
+            return victim->GetHealth() < startHealth;
         }
 
         void Test() override
         {
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
-            Creature* creature1 = SpawnCreature(8, true);
+            Creature* creature1 = SpawnCreature();
 
             // Stances & weapon
             TestRequiresStance(warrior, creature1, false, ClassSpells::Warrior::WHIRLWIND_RNK_1);
@@ -1435,45 +1434,54 @@ public:
 
             // Range
             creature1->SetFullHealth();
-            Creature* creature2 = SpawnCreature(8, true);
-            Creature* creature3 = SpawnCreature(8, true);
+            Creature* creature2 = SpawnCreature();
+            Creature* creature3 = SpawnCreature();
             Position spawn(_location);
             spawn.MoveInFront(spawn, 12.0f);
-            Creature* creature4 = SpawnCreatureWithPosition(spawn);
+            Creature* furtherCreature = SpawnCreatureWithPosition(spawn);
 
             uint32 const startHealth1 = creature1->GetHealth();
             uint32 const startHealth2 = creature2->GetHealth();
             uint32 const startHealth3 = creature3->GetHealth();
-            uint32 const startHealth4 = creature4->GetHealth();
+            uint32 const startHealthFurther = furtherCreature->GetHealth();
 
             for (uint32 i = 0; i < 50; i++)
                 TEST_CAST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
             TEST_ASSERT(creature1->GetHealth() < startHealth1);
             TEST_ASSERT(creature2->GetHealth() < startHealth2);
             TEST_ASSERT(creature3->GetHealth() < startHealth3);
-            TEST_ASSERT(creature4->GetHealth() == startHealth4);
+            TEST_ASSERT(furtherCreature->GetHealth() == startHealthFurther);
 
             // Max 4, rage cost & cooldown
             warrior->GetSpellHistory()->ResetAllCooldowns();
-            Creature* creature5 = SpawnCreature(8, true);
-            Creature* creature6 = SpawnCreature(8, true);
+            Creature* creature4 = SpawnCreature();
+            Creature* creature5 = SpawnCreature();
+            uint32 const startHealth4 = creature4->GetHealth();
             uint32 const startHealth5 = creature5->GetHealth();
-            uint32 const startHealth6 = creature6->GetHealth();
 
             creature1->SetFullHealth();
             creature2->SetFullHealth();
             creature3->SetFullHealth();
 
-            int count = 0;
+            //Test power cost + cooldown + target count
+            uint32 count = 0; 
             uint32 const expectedWhirldwindRage = 25 * 10;
             TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, POWER_RAGE, expectedWhirldwindRage);
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::WHIRLWIND_RNK_1, 10 * SECOND);
-            TestCount(creature1, startHealth1, count);
-            TestCount(creature2, startHealth2, count);
-            TestCount(creature3, startHealth3, count);
-            TestCount(creature5, startHealth5, count);
-            TestCount(creature6, startHealth6, count);
-            TEST_ASSERT(count <= 4);
+            count += uint32(HasLostHealth(creature1, startHealth1));
+            count += uint32(HasLostHealth(creature2, startHealth1));
+            count += uint32(HasLostHealth(creature3, startHealth1));
+            //creature 4 is spawned further away
+            count += uint32(HasLostHealth(creature4, startHealth1));
+            count += uint32(HasLostHealth(creature5, startHealth1));
+            TEST_ASSERT(count <= 4);  // FAILS HERE!
+
+            //Kill all creatures to clear space for damage test
+            creature2->KillSelf();
+            creature3->KillSelf();
+            furtherCreature->KillSelf();
+            creature4->KillSelf();
+            creature5->KillSelf();
 
             // Damage
             float const normalizedSwordSpeed = 2.4f;
