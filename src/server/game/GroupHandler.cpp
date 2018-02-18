@@ -38,7 +38,6 @@ void WorldSession::SendPartyResult(PartyOperation operation, const std::string& 
 
 void WorldSession::_HandleGroupInviteOpcode(Player* player, std::string membername)
 {
-
     // player trying to invite himself (most likely cheating)
     if (player == GetPlayer())
     {
@@ -253,7 +252,7 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recvData)
     //can't uninvite yourself
     if(guid == GetPlayer()->GetGUID())
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleGroupUninviteGuidOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
+        TC_LOG_ERROR("network","WorldSession::HandleGroupUninviteGuidOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
         return;
     }
 
@@ -295,7 +294,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
     // can't uninvite yourself
     if(GetPlayer()->GetName() == membername)
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleGroupUninviteOpcode: member %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
+        TC_LOG_ERROR("network","WorldSession::HandleGroupUninviteOpcode: member %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
         return;
     }
 
@@ -315,7 +314,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
     //can't uninvite leader
     if(guid == grp->GetLeaderGUID())
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleGroupUninviteOpcode: assistant %s(%d) tried to uninvite leader from the group.", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
+        TC_LOG_ERROR("network","WorldSession::HandleGroupUninviteOpcode: assistant %s(%d) tried to uninvite leader from the group.", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
         return;
     }
 
@@ -1010,6 +1009,69 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
 #endif
 
     SendPacket(&data);
+}
+
+//sun: adapted from cmangos code
+void WorldSession::HandleGroupSwapSubGroupOpcode(WorldPacket& recv_data)
+{
+    std::string playerName1, playerName2;
+
+    recv_data >> playerName1;
+    recv_data >> playerName2;
+
+    if (!normalizePlayerName(playerName1))
+    {
+        SendPartyResult(PARTY_OP_SWAP, playerName1, PARTY_RESULT_CANT_FIND_TARGET);
+        return;
+    }
+    if (!normalizePlayerName(playerName2))
+    {
+        SendPartyResult(PARTY_OP_SWAP, playerName1, PARTY_RESULT_CANT_FIND_TARGET);
+        return;
+    }
+
+    Group* group = GetPlayer()->GetGroup();
+    if (!group || !group->isRaidGroup())
+        return;
+
+    if (!group->IsLeader(GetPlayer()->GetGUID()) &&
+        !group->IsAssistant(GetPlayer()->GetGUID()))
+        return;
+
+    //get guid, member may be offline
+    auto getGuid = [&group](std::string const& playerName)
+    {
+        if (Player* player = ObjectAccessor::FindConnectedPlayerByName(playerName.c_str()))
+            return player->GetGUID();
+        else
+        {
+            if (ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(playerName))
+                return guid;
+            else
+                return ObjectGuid::Empty;
+        }
+    };
+
+    ObjectGuid guid1 = getGuid(playerName1);
+    ObjectGuid guid2 = getGuid(playerName2);
+
+    if(!guid1 || !guid2)
+    {
+        SendPartyResult(PARTY_OP_SWAP, playerName1, PARTY_RESULT_CANT_FIND_TARGET);
+        return;
+    }
+
+    uint8 groupId1 = group->GetMemberGroup(guid1);
+    uint8 groupId2 = group->GetMemberGroup(guid2);
+
+    if (groupId1 == MAX_RAID_SUBGROUPS + 1 || groupId2 == MAX_RAID_SUBGROUPS + 1)
+        return;
+
+    if (groupId1 == groupId2)
+        return;
+
+    group->ChangeMembersGroup(guid1, groupId2);
+    group->ChangeMembersGroup(guid2, groupId1);
 }
 
 /*!*/void WorldSession::HandleRequestRaidInfoOpcode( WorldPacket & /*recvData*/ )

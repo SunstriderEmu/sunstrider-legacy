@@ -569,6 +569,7 @@ class TC_GAME_API WorldSession
         void HandleLootMethodOpcode(WorldPacket& recvPacket);
         void HandleLootRoll( WorldPacket &recvData );
         void HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData );
+        void HandleGroupSwapSubGroupOpcode(WorldPacket& recv_data);
         void HandleRaidTargetUpdateOpcode( WorldPacket & recvData );
         void HandleRaidReadyCheckOpcode( WorldPacket & recvData );
         void HandleRaidReadyCheckFinishedOpcode( WorldPacket & recvData );
