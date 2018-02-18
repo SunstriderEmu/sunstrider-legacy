@@ -3427,6 +3427,7 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
 
     //Containers for channeled spells have to be set
     // Why check duration? 29350: channelled triggers channelled
+    //sun: if after changes, TRIGGERED_CAST_DIRECTLY works for channeled, also fix _TestPowerCost
     if((_triggeredCastFlags & TRIGGERED_CAST_DIRECTLY) && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
         cast(true);
     else

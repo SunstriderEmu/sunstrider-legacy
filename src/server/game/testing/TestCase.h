@@ -114,7 +114,7 @@ public:
     */
     #define TEST_CAST( ... ) { _SetCaller(__FILE__, __LINE__);  _TestCast(__VA_ARGS__); _ResetCaller(); }
 
-    /* Cast a spell with forced hit result. Fails test if spell fail to launch. (SpellMissInfo)
+    /* Cast a spell with forced hit result (SpellMissInfo). Fails test if spell fail to launch.
     Usage:
     FORCE_CAST(caster, victim, spellID)
     FORCE_CAST(caster, victim, spellID, forcedMissInfo)

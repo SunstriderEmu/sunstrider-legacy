@@ -206,9 +206,20 @@ void TestCase::_TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpe
 
 void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost)
 {
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
+    INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 	caster->SetPower(powerType, expectedPowerCost);
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
     _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+    //special case for channeled spell, spell system currently does not allow casting them instant
+    if (spellInfo->IsChanneled() || !spellInfo->GetMaxDuration())
+    {
+        caster->DisableRegeneration(true);
+        Wait(spellInfo->CalcCastTime() + 1); //may not be exact if spell has modifiers :/
+        caster->DisableRegeneration(false);
+    }
+
     uint32 remainingPower = caster->GetPower(powerType);
 	INTERNAL_ASSERT_INFO("Caster has %u power remaining after spell %u", remainingPower, castSpellID);
 	INTERNAL_TEST_ASSERT(remainingPower == 0);
