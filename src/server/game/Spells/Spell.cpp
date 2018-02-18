@@ -3452,7 +3452,6 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
             TriggerGlobalCooldown();
 
         if(    !m_casttime 
-            && !m_castItemGUID     //item: first cast may destroy item and second cast causes crash
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
             cast(true);
     }
