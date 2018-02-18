@@ -255,6 +255,8 @@ namespace ClassSpellsDamage
             // Shadow
             MIND_BLAST_RNK_11_MIN = 711,
             MIND_BLAST_RNK_11_MAX = 752,
+            SHADOW_WORD_DEATH_RNK_2_MIN = 572,
+            SHADOW_WORD_DEATH_RNK_2_MAX = 664,
 		};
 	};
 

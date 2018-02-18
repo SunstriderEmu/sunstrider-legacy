@@ -1,6 +1,7 @@
 #include "../ClassSpellsDamage.h"
 #include "../ClassSpellsCoeff.h"
 #include "PlayerbotAI.h"
+#include "SpellHistory.h"
 
 class DispelMagicTest : public TestCaseScript
 {
@@ -1544,7 +1545,6 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* enemy = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
-            Creature* dummy = SpawnCreature();
 
             float const baseAttackSpeed = enemy->GetAttackTimer(BASE_ATTACK);
             float const expectedAttackSpeed = baseAttackSpeed * 1.25f;
@@ -1676,6 +1676,222 @@ public:
     }
 };
 
+class PsychicScreamTest : public TestCaseScript
+{
+public:
+    PsychicScreamTest() : TestCaseScript("spells priest psychic_scream") { }
+
+    class PsychicScreamTestImpt : public TestCase
+    {
+    public:
+        PsychicScreamTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        bool isFeared(Unit* victim)
+        {
+            return victim->HasAura(ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+        }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* enemy1 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            TestPlayer* enemy2 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            TestPlayer* enemy3 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            TestPlayer* enemy4 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 10.0f);
+            TestPlayer* enemyFurther = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
+
+            // Mana
+            uint32 const expectedPsychicScreamMana = 210;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, POWER_MANA, expectedPsychicScreamMana);
+
+            // Cooldown
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 30 * SECOND);
+
+            // Auras & range
+            TEST_AURA_MAX_DURATION(enemy1, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 8 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(enemy2, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 8 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(enemy3, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 8 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(enemy4, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 8 * SECOND * IN_MILLISECONDS);
+            TEST_HAS_NOT_AURA(enemyFurther, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+
+            // Reset auras & cd
+            priest->GetSpellHistory()->ResetAllCooldowns();
+            enemy1->RemoveAurasDueToSpell(ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+            enemy2->RemoveAurasDueToSpell(ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+            enemy3->RemoveAurasDueToSpell(ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+            enemy4->RemoveAurasDueToSpell(ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+            enemyFurther->KillSelf(); // not needed anymore
+
+            // Max 5 enemies touched
+            TestPlayer* enemy5 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            TestPlayer* enemy6 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            priest->SetPower(POWER_MANA, expectedPsychicScreamMana);
+            priest->ForceSpellHitResult(SPELL_MISS_NONE);
+            FORCE_CAST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+            priest->ResetForceSpellHitResult();
+
+            uint32 count = 0;
+            count += uint32(isFeared(enemy1));
+            count += uint32(isFeared(enemy2));
+            count += uint32(isFeared(enemy3));
+            count += uint32(isFeared(enemy4));
+            count += uint32(isFeared(enemy5));
+            count += uint32(isFeared(enemy6));
+            TEST_ASSERT(count == 5);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<PsychicScreamTestImpt>();
+    }
+};
+
+class ShadowProtectionTest : public TestCaseScript
+{
+public:
+    ShadowProtectionTest() : TestCaseScript("spells priest shadow_protection") { }
+
+    class ShadowProtectionTestImpt : public TestCase
+    {
+    public:
+        ShadowProtectionTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_ORC);
+
+            uint32 shadowResistanceBonus = 70;
+            uint32 expectedShadowResistance = warrior->GetResistance(SPELL_SCHOOL_SHADOW) + shadowResistanceBonus;
+
+            // Mana cost
+            uint32 const expectedShadowProtectionMana = 810;
+            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, POWER_MANA, expectedShadowProtectionMana);
+
+            // Health
+            ASSERT_INFO("Shadow resistance: %u, expected: %u", warrior->GetResistance(SPELL_SCHOOL_SHADOW), expectedShadowResistance);
+            TEST_ASSERT(warrior->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowResistance);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, 10 * MINUTE * IN_MILLISECONDS);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowProtectionTestImpt>();
+    }
+};
+
+class ShadowWordDeathTest : public TestCaseScript
+{
+public:
+    ShadowWordDeathTest() : TestCaseScript("spells priest shadow_word_death") { }
+
+    class ShadowWordDeathTestImpt : public TestCase
+    {
+    public:
+        ShadowWordDeathTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_TROLL);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+
+            float const shadowWordDeathCastTime = 1.5f;
+            float const shadowWordDeathCoeff = shadowWordDeathCastTime / 3.5f;
+            uint32 const bonusSpell = 292 * shadowWordDeathCoeff;
+            uint32 const shadowWordDeathMin = ClassSpellsDamage::Priest::SHADOW_WORD_DEATH_RNK_2_MIN + bonusSpell;
+            uint32 const shadowWordDeathMax = ClassSpellsDamage::Priest::SHADOW_WORD_DEATH_RNK_2_MAX + bonusSpell;
+
+            warrior->DisableRegeneration(true);
+            priest->DisableRegeneration(true);
+            EnableCriticals(priest, false);
+
+            // Both have same starting health
+            uint32 const priestStartHealth = 4 * shadowWordDeathMin;
+            priest->SetMaxHealth(priestStartHealth);
+            priest->SetHealth(priestStartHealth);
+
+            uint32 const warriorStartHealth = 3 * shadowWordDeathMin;
+            warrior->SetMaxHealth(warriorStartHealth);
+            warrior->SetHealth(warriorStartHealth);
+
+            // Get damage on SWD & Mana cost
+            priest->GetSpellHistory()->ResetAllCooldowns();
+            priest->ForceSpellHitResult(SPELL_MISS_NONE);
+            uint32 const expectedShadowWordDeathMana = 309;
+            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, POWER_MANA, expectedShadowWordDeathMana);
+            priest->SetPower(POWER_MANA, 2000);
+
+            // Cooldown
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, 12 * SECOND);
+
+            // Damage = backlash
+            Wait(1000);
+            uint32 damage = warriorStartHealth - warrior->GetHealth();
+            uint32 backlash = priestStartHealth - priest->GetHealth();
+            TEST_ASSERT(damage == backlash);
+
+            // Backlash absorbed by shield
+            priest->GetSpellHistory()->ResetAllCooldowns();
+            uint32 priestHealth = priest->GetHealth();
+            FORCE_CAST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
+            FORCE_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            TEST_ASSERT(priest->GetHealth() == priestHealth);
+            priest->RemoveAurasDueToSpell(ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
+
+            // On spell reflect: priest takes damage and backlash
+            priest->GetSpellHistory()->ResetAllCooldowns();
+            uint32 warriorHealth = warrior->GetHealth();
+            FORCE_CAST(warrior, warrior, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
+            EQUIP_ITEM(warrior, 34185); // Shield
+            warrior->SetPower(POWER_RAGE, 100 * 10);
+            FORCE_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
+            Wait(1000);
+            FORCE_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            TEST_ASSERT(warrior->GetHealth() == warriorHealth);
+
+            // No backlash on kill
+            priest->GetSpellHistory()->ResetAllCooldowns();
+            priestHealth = priest->GetHealth();
+            FORCE_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            TEST_ASSERT(warrior->IsDead());
+            TEST_ASSERT(priest->GetHealth() == priestHealth);
+
+            // No durability damage on suicide
+            priest->GetSpellHistory()->ResetAllCooldowns();
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            Wait(1000);
+            TEST_ASSERT(priest->IsDead());
+            Item* sunflare = priest->GetItemByPos(INVTYPE_WEAPONMAINHAND);
+            uint32 sunflareDurability = sunflare->GetUInt32Value(ITEM_FIELD_DURABILITY);
+            uint32 sunflareMaxDurability = sunflare->GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
+            TEST_ASSERT(sunflareDurability == sunflareMaxDurability);
+            priest->ResetForceSpellHitResult();
+
+            // Damage
+            // Enough health to survive
+            uint32 health = 10000000;
+            priest->SetMaxHealth(health);
+            priest->SetHealth(health);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin, shadowWordDeathMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin * 1.5f, shadowWordDeathMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowWordDeathTestImpt>();
+    }
+};
+
 void AddSC_test_spells_priest()
 {
     // Discipline: 10/10
@@ -1709,4 +1925,7 @@ void AddSC_test_spells_priest()
     new MindControlTest();
     new MindVisionTest();
     new PrayerOfShadowProtectionTest();
+    new PsychicScreamTest();
+    new ShadowProtectionTest();
+    new ShadowWordDeathTest();
 }

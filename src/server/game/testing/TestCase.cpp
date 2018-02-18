@@ -211,9 +211,11 @@ void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 	caster->SetPower(powerType, expectedPowerCost);
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
+    caster->ForceSpellHitResult(SPELL_MISS_NONE);
     _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+    caster->ResetForceSpellHitResult();
     //special case for channeled spell, spell system currently does not allow casting them instant
-    if (spellInfo->IsChanneled() || !spellInfo->GetMaxDuration())
+    if (spellInfo->IsChanneled())
     {
         caster->DisableRegeneration(true);
         Wait(spellInfo->CalcCastTime() + 1); //may not be exact if spell has modifiers :/
