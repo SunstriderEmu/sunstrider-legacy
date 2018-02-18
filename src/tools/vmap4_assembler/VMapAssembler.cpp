@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -29,12 +29,12 @@ int main(int argc, char* argv[])
     std::string src = "Buildings";
     std::string dest = "vmaps";
 
-    if (argc != 3)
+    if (argc > 3)
     {
         std::cout << "usage: " << argv[0] << " <raw data dir> <vmap dest dir>" << std::endl;
         return 1;
     }
-    else 
+    else
     {
         if (argc > 1)
             src = argv[1];

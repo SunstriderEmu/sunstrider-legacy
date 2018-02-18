@@ -817,6 +817,7 @@ WorldObject::WorldObject(bool isWorldObject) :
     m_executed_notifies(0),
     mSemaphoreTeleport(false),
     m_isActive(false),
+    m_isFarVisible(false),
     m_isTempWorldObject(false),
     m_transport(nullptr),
     m_phaseMask(PHASEMASK_NORMAL)
@@ -880,6 +881,14 @@ void WorldObject::SetKeepActive( bool on )
         else if(GetTypeId() == TYPEID_DYNAMICOBJECT)
             map->RemoveFromForceActive((DynamicObject*)this);
     }
+}
+
+void WorldObject::SetFarVisible(bool on)
+{
+    if (GetTypeId() == TYPEID_PLAYER)
+        return;
+
+    m_isFarVisible = on;
 }
 
 void WorldObject::CleanupsBeforeDelete(bool /*finalCleanup*/)
@@ -1439,7 +1448,7 @@ void WorldObject::AddObjectToRemoveList()
 
 float WorldObject::GetVisibilityRange() const
 {
-    if (isActiveObject() && !ToPlayer())
+    if (IsFarVisible() && !ToPlayer())
         return MAX_VISIBILITY_DISTANCE;
     else if (GetTypeId() == TYPEID_GAMEOBJECT)
 #ifdef LICH_KING
@@ -1476,7 +1485,7 @@ float WorldObject::GetSightRange(const WorldObject* target) const
     {
         if (ToPlayer())
         {
-            if (target && target->isActiveObject() && !target->ToPlayer())
+            if (target && target->IsFarVisible() && !target->ToPlayer())
                 return MAX_VISIBILITY_DISTANCE;
             else if (ToPlayer()->GetCinematicMgr()->IsOnCinematic())
                 return MAX_VISIBILITY_DISTANCE;

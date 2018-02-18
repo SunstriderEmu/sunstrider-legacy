@@ -4330,3 +4330,19 @@ bool Map::IsSpawnGroupActive(uint32 groupId) const
     // either manual spawn group and toggled, or not manual spawn group and not toggled...
     return (_toggledSpawnGroupIds.find(groupId) != _toggledSpawnGroupIds.end()) != !(data->flags & SPAWNGROUP_FLAG_MANUAL_SPAWN);
 }
+
+void Map::RemoveGameObjectModel(GameObjectModel const& model) 
+{ 
+    _dynamicTree.remove(model); 
+}
+
+void Map::InsertGameObjectModel(GameObjectModel const& model) 
+{ 
+    DEBUG_ASSERT(!_dynamicTree.contains(model));
+    _dynamicTree.insert(model); 
+}
+
+bool Map::ContainsGameObjectModel(GameObjectModel const& model) const 
+{ 
+    return _dynamicTree.contains(model); 
+}
