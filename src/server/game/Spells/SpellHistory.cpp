@@ -480,6 +480,7 @@ void SpellHistory::ResetAllCooldowns()
 
     _categoryCooldowns.clear();
     _spellCooldowns.clear();
+    _globalCooldowns.clear(); //sun: also reset global cooldowns
 }
 
 bool SpellHistory::HasCooldown(SpellInfo const* spellInfo, uint32 itemId /*= 0*/, bool ignoreCategoryCooldown /*= false*/) const

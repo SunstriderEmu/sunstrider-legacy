@@ -3712,7 +3712,7 @@ void Spell::EffectOpenLock(uint32 effIndex)
     uint32 lockId = 0;
     ObjectGuid guid;
     
-    //Hand of Iruxos
+    //Hand of Iruxos HACK
     if (m_spellInfo->Id == 18762 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->KilledMonsterCredit(11937, ObjectGuid::Empty);
 
