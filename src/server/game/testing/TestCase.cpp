@@ -678,9 +678,9 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     uint32 dealtMin;
     uint32 dealtMax;
     if(damage)
-        GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, sampleSize);
+        GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
     else 
-        GetHealingPerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, sampleSize);
+        GetHealingPerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
 
     TC_LOG_TRACE("test.unit_test", "spellId: %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", spellID, dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
 
@@ -789,7 +789,7 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
     return totalDamage;
 }
 
-void TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, uint32 expectedCount)
+void TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -814,6 +814,9 @@ void TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 sp
 
         //use only spells that hit target
         if (itr.missInfo != SPELL_MISS_NONE)
+            continue;
+
+        if (crit && itr.crit != crit.get())
             continue;
 
         minHeal = std::min(minHeal, itr.healing);
@@ -890,7 +893,7 @@ void TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAtta
     }
 }
 
-void TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage, uint32 expectedCount)
+void TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -916,6 +919,9 @@ void TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
 
         //use only spells that hit target
         if (itr.missInfo != SPELL_MISS_NONE)
+            continue;
+
+        if (crit && itr.crit != crit.get())
             continue;
 
         uint32 damage = itr.damageInfo.damage;
