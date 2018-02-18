@@ -35,9 +35,9 @@ void Assert(char const* file, int line, char const* function, char const* messag
 
 void DebugAssert(char const* file, int line, char const* function, char const* message)
 {
+#ifdef TRINITY_DEBUG
     fprintf(stderr, "\n%s:%i in %s ASSERTION FAILED:\n  %s\n",
         file, line, function, message);
-#ifdef TRINITY_DEBUG
     abort();
 #endif
 }
