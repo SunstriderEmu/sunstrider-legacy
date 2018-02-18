@@ -1587,6 +1587,12 @@ public:
             spawn.MoveInFront(spawn, 70.0f);
             TestPlayer* rogue140m = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn); // out of priest's sight
 
+            // Assert visibility
+            TEST_ASSERT(priest->HaveAtClient(warrior70m));
+            TEST_ASSERT(!priest->HaveAtClient(rogue140m));
+            TEST_ASSERT(warrior70m->HaveAtClient(priest));
+            TEST_ASSERT(warrior70m->HaveAtClient(rogue140m));
+
             // Mana cost
             uint32 const expectedMindVisionMana = 150;
             TEST_POWER_COST(priest, warrior70m, ClassSpells::Priest::MIND_VISION_RNK_2, POWER_MANA, expectedMindVisionMana);
