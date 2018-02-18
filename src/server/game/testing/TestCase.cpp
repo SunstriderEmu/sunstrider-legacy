@@ -55,7 +55,7 @@ Position TestCase::GetDefaultPositionForMap(uint32 mapId)
     case 1:  //Kalimdor
         pos = Position(2946.0f, -4791.0f, 236.0f);
     case 13: //Test
-        pos = Position(67.0f, -70.0f, -144.0f);
+        pos = Position(-223.97f, 0.23f, -423.2f);
         break;
     case 209: //Zul'Farrak
         pos = Position(1228.0f, 827.0f, 9.0f);
