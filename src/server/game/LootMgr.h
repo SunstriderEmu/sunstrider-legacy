@@ -12,7 +12,11 @@ enum RollType
 {
     ROLL_PASS         = 0,
     ROLL_NEED         = 1,
-    ROLL_GREED        = 2
+    ROLL_GREED        = 2,
+#ifdef LICH_KING
+    ROLL_DISENCHANT   = 3,
+#endif
+    MAX_ROLL_TYPE,
 };
 
 #define MAX_NR_LOOT_ITEMS 16
@@ -31,10 +35,13 @@ enum LootMethod
 
 enum PermissionTypes
 {
-    ALL_PERMISSION    = 0,
-    GROUP_PERMISSION  = 1,
-    MASTER_PERMISSION = 2,
-    NONE_PERMISSION   = 3
+    ALL_PERMISSION              = 0,
+    GROUP_PERMISSION            = 1,
+    MASTER_PERMISSION           = 2,
+    RESTRICTED_PERMISSION       = 3,
+    ROUND_ROBIN_PERMISSION      = 4,
+    OWNER_PERMISSION            = 5,
+    NONE_PERMISSION             = 6
 };
 
 class Player;
@@ -69,6 +76,7 @@ struct LootItem
     uint32  randomSuffix;
     int32   randomPropertyId;
     ConditionContainer conditions;                               // additional loot condition
+    ObjectGuid rollWinnerGUID;                              // Stores the guid of person who won loot, if his bags are full only he can see the item in loot list!
     uint16  conditionId       :16;                          // old conditions, allow compiler pack structure
     uint8   count             : 8;
     bool    is_looted         : 1;
@@ -77,6 +85,7 @@ struct LootItem
     bool    is_underthreshold : 1;
     bool    is_counted        : 1;
     bool    needs_quest       : 1;                          // quest drop
+    bool    follow_loot_rules : 1;
 
     // Constructor, copies most fields from LootStoreItem, generates random count and random suffixes/properties
     // Should be called for non-reference LootStoreItem entries only (mincountOrRef > 0)

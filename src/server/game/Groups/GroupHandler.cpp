@@ -9,6 +9,7 @@
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "Group.h"
+#include "GroupMgr.h"
 #include "ObjectAccessor.h"
 #include "MapManager.h"
 #include "SocialMgr.h"
@@ -200,15 +201,23 @@ void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recvData*/ )
     // forming a new group, create it
     if(!group->IsCreated())
     {
-        if( leader )
-            group->RemoveInvite(leader);
-        group->Create(group->GetLeaderGUID(), group->GetLeaderName(), trans);
-        sObjectMgr->AddGroup(group);
+        // This can happen if the leader is zoning. To be removed once delayed actions for zoning are implemented
+        if (!leader)
+        {
+            group->RemoveAllInvites();
+            return;
+        }
+
+        ASSERT(leader);
+        group->RemoveInvite(leader);
+        group->Create(leader, trans);
+        sGroupMgr->AddGroup(group);
     }
 
     // everything's fine, do it, PLAYER'S GROUP IS SET IN ADDMEMBER!!!
-    if(!group->AddMember(GetPlayer()->GetGUID(), GetPlayer()->GetName(), trans))
+    if(!group->AddMember(GetPlayer(), trans))
         return;
+
     CharacterDatabase.CommitTransaction(trans);
 
     group->BroadcastGroupUpdate();
@@ -269,7 +278,7 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recvData)
 
     if(grp->IsMember(guid))
     {
-        Player::RemoveFromGroup(grp,guid);
+        Player::RemoveFromGroup(grp, guid, GROUP_REMOVEMETHOD_KICK, GetPlayer()->GetGUID());
         return;
     }
 
@@ -320,11 +329,9 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 
     if(guid)
     {
-        Player::RemoveFromGroup(grp,guid);
+        Player::RemoveFromGroup(grp, guid, GROUP_REMOVEMETHOD_KICK, GetPlayer()->GetGUID());
         return;
     }
-
-    grp->CleanInvited();
 
     if(Player* plr = grp->GetInvited(membername))
     {
@@ -393,7 +400,7 @@ void WorldSession::HandleLootMethodOpcode( WorldPacket & recvData )
 
     // everything's fine, do it
     group->SetLootMethod((LootMethod)lootMethod);
-    group->SetLooterGuid(lootMaster);
+    group->SetMasterLooterGuid(lootMaster);
     group->SetLootThreshold((ItemQualities)lootThreshold);
     group->SendUpdate();
 }
@@ -403,12 +410,15 @@ void WorldSession::HandleLootRoll( WorldPacket &recvData )
     if(!GetPlayer()->GetGroup())
         return;
 
-    ObjectGuid Guid;
-    uint32 NumberOfPlayers;
-    uint8  Choise;
-    recvData >> Guid;                                      //guid of the item rolled
-    recvData >> NumberOfPlayers;
-    recvData >> Choise;                                    //0: pass, 1: need, 2: greed
+    ObjectGuid guid;
+    uint32 itemSlot;
+    uint8  rollType;
+    recvData >> guid;                                      //guid of the item rolled
+    recvData >> itemSlot;
+    recvData >> rollType;                                    //0: pass, 1: need, 2: greed
+
+    if (rollType >= MAX_ROLL_TYPE)
+        return;
 
     //TC_LOG_DEBUG("network.opcode","WORLD RECIEVE CMSG_LOOT_ROLL, From:%u, Numberofplayers:%u, Choise:%u", (uint32)Guid, NumberOfPlayers, Choise);
 
@@ -417,7 +427,20 @@ void WorldSession::HandleLootRoll( WorldPacket &recvData )
         return;
 
     // everything's fine, do it
-    group->CountRollVote(GetPlayer()->GetGUID(), Guid, NumberOfPlayers, Choise);
+    group->CountRollVote(GetPlayer()->GetGUID(), guid, rollType);
+
+#ifdef LICH_KING
+
+    switch (rollType)
+    {
+    case ROLL_NEED:
+        GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ROLL_NEED, 1);
+        break;
+    case ROLL_GREED:
+        GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ROLL_GREED, 1);
+        break;
+    }
+#endif
 }
 
 void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
@@ -498,7 +521,7 @@ void WorldSession::HandleRaidTargetUpdateOpcode( WorldPacket & recvData )
 
         ObjectGuid guid;
         recvData >> guid;
-        group->SetTargetIcon(icon, guid);
+        group->SetTargetIcon(icon, _player->GetGUID(), guid);
     }
 }
 
@@ -547,11 +570,16 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
         return;
     /********************/
 
-    // everything's fine, do it
-    if (Player* player = ObjectAccessor::FindConnectedPlayerByName(name.c_str()))
-        group->ChangeMembersGroup(player, groupNr);
+    ObjectGuid guid;
+    if (Player* movedPlayer = ObjectAccessor::FindConnectedPlayerByName(name))
+        guid = movedPlayer->GetGUID();
     else
-        group->ChangeMembersGroup(sCharacterCache->GetCharacterGuidByName(name.c_str()), groupNr);
+        guid = sCharacterCache->GetCharacterGuidByName(name);
+
+    if (guid.IsEmpty())
+        return;
+
+    group->ChangeMembersGroup(guid, groupNr);
 }
 
 void WorldSession::HandleGroupAssistantLeaderOpcode( WorldPacket & recvData )
@@ -560,18 +588,15 @@ void WorldSession::HandleGroupAssistantLeaderOpcode( WorldPacket & recvData )
     if(!group)
         return;
 
-    ObjectGuid guid;
-    uint8 flag;
-    recvData >> guid;
-    recvData >> flag;
-
-    /** error handling **/
-    if(!group->IsLeader(GetPlayer()->GetGUID()))
+    if (!group->IsLeader(GetPlayer()->GetGUID()))
         return;
-    /********************/
 
-    // everything's fine, do it
-    group->SetAssistant(guid, (flag==0?false:true));
+    ObjectGuid guid;
+    bool apply;
+    recvData >> guid;
+    recvData >> apply;
+
+    group->SetGroupMemberFlag(guid, apply, MEMBER_FLAG_ASSISTANT);
 }
 
 void WorldSession::HandlePartyAssignmentOpcode( WorldPacket & recvData )
@@ -580,25 +605,29 @@ void WorldSession::HandlePartyAssignmentOpcode( WorldPacket & recvData )
     if(!group)
         return;
 
-    uint8 flag1, flag2;
-    ObjectGuid guid;
-    recvData >> flag1 >> flag2;
-    recvData >> guid;
-    // if(flag1) Main Assist
-    //     0x4
-    // if(flag2) Main Tank
-    //     0x2
-
-    /** error handling **/
-    if(!group->IsLeader(GetPlayer()->GetGUID()))
+    if (!group->IsLeader(GetPlayer()->GetGUID()))
         return;
-    /********************/
 
-    // everything's fine, do it
-    if(flag1 == 1)
-        group->SetMainAssistant(guid);
-    if(flag2 == 1)
-        group->SetMainTank(guid);
+    uint8 assignment;
+    bool apply;
+    ObjectGuid guid;
+    recvData >> assignment >> apply;
+    recvData >> guid;
+
+    switch (assignment)
+    {
+    case GROUP_ASSIGN_MAINASSIST:
+        group->RemoveUniqueGroupMemberFlag(MEMBER_FLAG_MAINASSIST);
+        group->SetGroupMemberFlag(guid, apply, MEMBER_FLAG_MAINASSIST);
+        break;
+    case GROUP_ASSIGN_MAINTANK:
+        group->RemoveUniqueGroupMemberFlag(MEMBER_FLAG_MAINTANK);           // Remove main assist flag from current if any.
+        group->SetGroupMemberFlag(guid, apply, MEMBER_FLAG_MAINTANK);
+    default:
+        break;
+    }
+
+    group->SendUpdate();
 }
 
 void WorldSession::HandleRaidReadyCheckOpcode( WorldPacket & recvData )

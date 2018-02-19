@@ -1409,15 +1409,16 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Item* GetItemFromBuyBackSlot( uint32 slot );
         void RemoveItemFromBuyBackSlot( uint32 slot, bool del );
         uint32 GetMaxKeyringSize() const { return KEYRING_SLOT_END-KEYRING_SLOT_START; }
-        void SendEquipError( uint8 msg, Item* pItem, Item *pItem2 );
-        void SendBuyError( uint8 msg, Creature* pCreature, uint32 item, uint32 param );
-        void SendSellError( uint8 msg, Creature* pCreature, ObjectGuid guid, uint32 param );
+        //itemid has no effect on BC
+        void SendEquipError(uint8 msg, Item* pItem, Item *pItem2, uint32 itemid = 0) const;
+        void SendBuyError(uint8 msg, Creature* pCreature, uint32 item, uint32 param );
+        void SendSellError(uint8 msg, Creature* pCreature, ObjectGuid guid, uint32 param );
         void AddWeaponProficiency(uint32 newflag) { m_WeaponProficiency |= newflag; }
         void AddArmorProficiency(uint32 newflag) { m_ArmorProficiency |= newflag; }
         uint32 GetWeaponProficiency() const { return m_WeaponProficiency; }
         uint32 GetArmorProficiency() const { return m_ArmorProficiency; }
         bool IsInFeralForm() const { return m_form == FORM_CAT || m_form == FORM_BEAR || m_form == FORM_DIREBEAR; }
-        bool IsUseEquipedWeapon( bool mainhand ) const
+        bool IsUseEquipedWeapon(bool mainhand) const
         {
             // disarm applied only to mainhand weapon
             return !IsInFeralForm() && (!mainhand || !HasFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISARMED) );
@@ -1795,6 +1796,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetDelayedTeleportFlag(bool setting) { m_bHasDelayedTeleport = setting; }
         void ScheduleDelayedOperation(uint32 operation) { if (operation < DELAYED_END) m_DelayedOperations |= operation; }
 
+        bool IsInstanceLoginGameMasterException() const;
+
         void UpdateAfkReport(time_t currTime);
         void UpdatePvPFlag(time_t currTime);
         void SetContestedPvP(Player* attackedPlayer = nullptr);
@@ -1812,8 +1815,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool IsInSameGroupWith(Player const* p) const;
         bool IsInSameRaidWith(Player const* p) const { return p==this || (GetGroup() != nullptr && GetGroup() == p->GetGroup()); }
         void UninviteFromGroup();
-        static void RemoveFromGroup(Group* group, ObjectGuid guid);
-        void RemoveFromGroup() { RemoveFromGroup(GetGroup(),GetGUID()); }
+        static void RemoveFromGroup(Group* group, ObjectGuid guid, RemoveMethod method = GROUP_REMOVEMETHOD_DEFAULT, ObjectGuid kicker = ObjectGuid::Empty, char const* reason = nullptr);
+        void RemoveFromGroup(RemoveMethod method = GROUP_REMOVEMETHOD_DEFAULT) { RemoveFromGroup(GetGroup(), GetGUID(), method); }
         void SendUpdateToOutOfRangeGroupMembers();
 
         void SetInGuild(uint32 guildId);
@@ -1838,8 +1841,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdateArenaTitleForRank(uint8 rank, bool add);
 
         void SetDifficulty(Difficulty dungeon_difficulty, bool sendToPlayer = true, bool asGroup = false);
-        //arg has no effect for now
+        void SetDungeonDifficulty(Difficulty dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
+        //arg has no effect for BC
         Difficulty GetDifficulty(bool isRaid = false) const { return m_dungeonDifficulty; }
+        Difficulty GetDungeonDifficulty() const { return m_dungeonDifficulty; } //TC compat
+        Difficulty GetRaidDifficulty() const { return REGULAR_DIFFICULTY; } //TC compat
 
         bool UpdateSkill(uint32 skill_id, uint32 step);
         bool UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step);
@@ -2362,6 +2368,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendRaidInfo();
         void SendSavedInstances();
         bool Satisfy(AccessRequirement const*, uint32 target_map, bool report = false);
+        bool CheckInstanceValidity(bool /*isLogin*/);
 
         /*********************************************************/
         /***                   GROUP SYSTEM                    ***/
@@ -2385,8 +2392,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HasLevelInRangeForTeleport() const;
         
         // Battleground Group System
+        inline void SetBattlegroundOrBattlefieldRaid(Group* group, int8 subgroup = -1) { SetBattlegroundRaid(group, subgroup); } //Compat tc
         void SetBattlegroundRaid(Group* group, int8 subgroup = -1);
         void RemoveFromBattlegroundRaid();
+        inline void RemoveFromBattlegroundOrBattlefieldRaid() { RemoveFromBattlegroundRaid(); }; //TC COMPAT
         Group* GetOriginalGroup() { return m_originalGroup.getTarget(); }
         GroupReference& GetOriginalGroupRef() { return m_originalGroup; }
         uint8 GetOriginalSubGroup() const { return m_originalGroup.getSubGroup(); }

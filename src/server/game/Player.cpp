@@ -28,6 +28,7 @@
 #include "CreatureAI.h"
 #include "Formulas.h"
 #include "Group.h"
+#include "GroupMgr.h"
 #include "Guild.h"
 #include "Pet.h"
 #include "SpellAuras.h"
@@ -2469,41 +2470,35 @@ bool Player::IsInSameGroupWith(Player const* p) const
 }
 
 ///- If the player is invited, remove him. If the group if then only 1 person, disband the group.
-/// \todo Shouldn't we also check if there is no other invitees before disbanding the group?
 void Player::UninviteFromGroup()
 {
     Group* group = GetGroupInvite();
-    if(!group)
+    if (!group)
         return;
 
     group->RemoveInvite(this);
 
-    if(group->GetMembersCount() <= 1)                   // group has just 1 member => disband
+    if (group->IsCreated())
     {
-        if(group->IsCreated())
-        {
+        if (group->GetMembersCount() <= 1) // group has just 1 member => disband
             group->Disband(true);
-            sObjectMgr->RemoveGroup(group);
-        }
-        else
+    }
+    else
+    {
+        if (group->GetInviteeCount() <= 1)
+        {
             group->RemoveAllInvites();
-
-        delete group;
+            delete group;
+        }
     }
 }
 
-void Player::RemoveFromGroup(Group* group, ObjectGuid guid)
+void Player::RemoveFromGroup(Group* group, ObjectGuid guid, RemoveMethod method /*= GROUP_REMOVEMETHOD_DEFAULT*/, ObjectGuid kicker /*= ObjectGuid::Empty*/, char const* reason /*= nullptr*/)
 {
-    if(group)
-    {
-        if (group->RemoveMember(guid, 0) <= 1)
-        {
-            // group->Disband(); already disbanded in RemoveMember
-            sObjectMgr->RemoveGroup(group);
-            delete group;
-            // removemember sets the player's group pointer to NULL
-        }
-    }
+    if (!group)
+        return;
+
+    group->RemoveMember(guid, method, kicker, reason);
 }
 
 void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 RestXP)
@@ -3835,15 +3830,12 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
     LeaveAllArenaTeams(playerguid);
 
     // the player was uninvited already on logout so just remove from group
-
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GROUP_MEMBER);
     stmt->setUInt32(0, guid);
     PreparedQueryResult resultGroup = CharacterDatabase.Query(stmt);
     if(resultGroup)
     {
-        ObjectGuid leaderGuid = ObjectGuid(HighGuid::Player, (*resultGroup)[0].GetUInt32());
-        Group* group = sObjectMgr->GetGroupByLeader(leaderGuid);
-        if(group)
+        if (Group* group = sGroupMgr->GetGroupByDbStoreId((*resultGroup)[0].GetUInt32()))
             RemoveFromGroup(group, playerguid);
     }
 
@@ -3939,7 +3931,6 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
             trans->PAppend("DELETE FROM character_gifts WHERE guid = '%u'", guid);
             trans->PAppend("DELETE FROM character_homebind WHERE guid = '%u'", guid);
             trans->PAppend("DELETE FROM character_instance WHERE guid = '%u'", guid);
-            trans->PAppend("DELETE FROM group_instance WHERE leaderGuid = '%u'", guid);
             trans->PAppend("DELETE FROM character_inventory WHERE guid = '%u'", guid);
             trans->PAppend("DELETE FROM character_queststatus WHERE guid = '%u'", guid);
             trans->PAppend("DELETE FROM character_reputation WHERE guid = '%u'", guid);
@@ -8158,13 +8149,13 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
                         {
                             case GROUP_LOOT:
                                 // we dont use a recipient, because any char at the correct distance can open a chest
-                                group->GroupLoot(this->GetGUID(), loot, (WorldObject*) go);
+                                group->GroupLoot(loot, (WorldObject*) go);
                                 break;
                             case NEED_BEFORE_GREED:
-                                group->NeedBeforeGreed(this->GetGUID(), loot, (WorldObject*) go);
+                                group->NeedBeforeGreed(loot, (WorldObject*) go);
                                 break;
                             case MASTER_LOOT:
-                                group->MasterLoot(this->GetGUID(), loot, (WorldObject*) go);
+                                group->MasterLoot(loot, (WorldObject*) go);
                                 break;
                             default:
                                 break;
@@ -8338,13 +8329,13 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
                     {
                         case GROUP_LOOT:
                             // GroupLoot delete items over threshold (threshold even not implemented), and roll them. Items with quality<threshold, round robin
-                            group->GroupLoot(recipient->GetGUID(), loot, creature);
+                            group->GroupLoot(loot, creature);
                             break;
                         case NEED_BEFORE_GREED:
-                            group->NeedBeforeGreed(recipient->GetGUID(), loot, creature);
+                            group->NeedBeforeGreed(loot, creature);
                             break;
                         case MASTER_LOOT:
-                            group->MasterLoot(recipient->GetGUID(), loot, creature);
+                            group->MasterLoot(loot, creature);
                             break;
                         default:
                             break;
@@ -12524,7 +12515,7 @@ void Player::RemoveItemFromBuyBackSlot( uint32 slot, bool del )
     }
 }
 
-void Player::SendEquipError(uint8 msg, Item* pItem, Item *pItem2)
+void Player::SendEquipError(uint8 msg, Item* pItem, Item *pItem2, uint32 /*itemid*/) const
 {
     WorldPacket data(SMSG_INVENTORY_CHANGE_FAILURE, (msg == EQUIP_ERR_CANT_EQUIP_LEVEL_I ? 22 : (msg == EQUIP_ERR_OK ? 1 : 18)));
     data << uint8(msg);
@@ -15685,6 +15676,10 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     StoreRaidMapDifficulty();
 #endif
 
+    // now that map position is determined, check instance validity
+    if (!CheckInstanceValidity(true) /*&& !IsInstanceLoginGameMasterException()*/) //sun, removed second condition, don't want gm treated differently from player when gm mode is off
+        m_InstanceValid = false;
+
     // if the player is in an instance and it has been reset in the meantime teleport him to the entrance
     if (GetInstanceId() && !sInstanceSaveMgr->GetInstanceSave(GetInstanceId()))
     {
@@ -16650,13 +16645,10 @@ void Player::_LoadSpells(PreparedQueryResult result)
 
 void Player::_LoadGroup(PreparedQueryResult result)
 {
-    //QueryResult result = CharacterDatabase.PQuery("SELECT leaderGuid FROM group_member WHERE memberGuid='%u'", GetGUID().GetCounter());
+    //QueryResult* result = CharacterDatabase.PQuery("SELECT guid FROM group_member WHERE memberGuid=%u", GetGUID().GetCounter());
     if(result)
     {
-        ObjectGuid leaderGuid = ObjectGuid(HighGuid::Player, (*result)[0].GetUInt32());
-
-        Group* group = sObjectMgr->GetGroupByLeader(leaderGuid);
-        if(group)
+        if (Group* group = sGroupMgr->GetGroupByDbStoreId((*result)[0].GetUInt32()))
         {
             uint8 subgroup = group->GetMemberGroup(GetGUID());
             SetGroup(group, subgroup);
@@ -16667,6 +16659,9 @@ void Player::_LoadGroup(PreparedQueryResult result)
             }
         }
     }
+
+    if (!GetGroup() || !GetGroup()->IsLeader(GetGUID()))
+        RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GROUP_LEADER);
 }
 
 void Player::_LoadBoundInstances(PreparedQueryResult result)
@@ -16981,6 +16976,59 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
             return false;
         }
     }
+    return true;
+}
+
+bool Player::CheckInstanceValidity(bool /*isLogin*/)
+{
+    // game masters' instances are always valid
+    if (IsGameMaster())
+        return true;
+
+    // non-instances are always valid
+    Map* map = FindMap();
+    if (!map || !map->IsDungeon())
+        return true;
+
+    // raid instances require the player to be in a raid group to be valid
+    if (map->IsRaid() && !sWorld->getBoolConfig(CONFIG_INSTANCE_IGNORE_RAID))
+        if (!GetGroup() || !GetGroup()->isRaidGroup())
+            return false;
+
+    if (Group* group = GetGroup())
+    {
+        // check if player's group is bound to this instance
+        InstanceGroupBind* bind = group->GetBoundInstance(map->GetDifficulty(), map->GetId());
+        if (!bind || !bind->save || bind->save->GetInstanceId() != map->GetInstanceId())
+            return false;
+
+        Map::PlayerList const& players = map->GetPlayers();
+        if (!players.isEmpty())
+            for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+            {
+                if (Player* otherPlayer = it->GetSource())
+                {
+                    if (otherPlayer->IsGameMaster())
+                        continue;
+                    if (!otherPlayer->m_InstanceValid) // ignore players that currently have a homebind timer active
+                        continue;
+                    if (group != otherPlayer->GetGroup())
+                        return false;
+                }
+            }
+    }
+    else
+    {
+        // instance is invalid if we are not grouped and there are other players
+        if (map->GetPlayersCountExceptGMs() > 1)
+            return false;
+
+        // check if the player is bound to this instance
+        InstancePlayerBind* bind = GetBoundInstance(map->GetId(), map->GetDifficulty());
+        if (!bind || !bind->save || bind->save->GetInstanceId() != map->GetInstanceId())
+            return false;
+    }
+
     return true;
 }
 

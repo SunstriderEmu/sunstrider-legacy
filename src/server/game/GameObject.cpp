@@ -15,6 +15,7 @@
 #include "Database/DatabaseEnv.h"
 #include "MapManager.h"
 #include "LootMgr.h"
+#include "GroupMgr.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
@@ -54,7 +55,10 @@ GameObject::GameObject() : WorldObject(false), MapObject(),
     m_spawnId(0),
     manual_unlock(false),
     m_prevGoState(GO_STATE_ACTIVE),
-    m_respawnCompatibilityMode(false)
+    m_respawnCompatibilityMode(false),
+    lootingGroupLowGUID(0),
+    m_groupLootTimer(0)
+
 {
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
@@ -195,9 +199,11 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
             else if (index == GAMEOBJECT_FLAGS)
             {
                 uint32 _flags = m_uint32Values[GAMEOBJECT_FLAGS];
-          /*TODO LOOT      if (GetGoType() == GAMEOBJECT_TYPE_CHEST)
+                /*TODO LOOT
+                if (GetGoType() == GAMEOBJECT_TYPE_CHEST)
                     if (GetGOInfo()->chest.groupLootRules && !IsLootAllowedFor(target))
-                        flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE; */
+                        flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE;
+                        */
 
                 fieldBuffer << _flags;
             }
@@ -652,20 +658,17 @@ void GameObject::Update(uint32 diff)
                     }
                     break;
                 case GAMEOBJECT_TYPE_CHEST:
-                    if(m_groupLootTimer && lootingGroupLeaderGUID)
+                    if (m_groupLootTimer)
                     {
-                        if(diff <= m_groupLootTimer)
+                        if (m_groupLootTimer <= diff)
                         {
-                            m_groupLootTimer -= diff;
-                        }
-                        else
-                        {
-                            Group* group = sObjectMgr->GetGroupByLeader(lootingGroupLeaderGUID);
+                            Group* group = sGroupMgr->GetGroupByGUID(lootingGroupLowGUID);
                             if (group)
-                                group->EndRoll();
+                                group->EndRoll(&loot, GetMap());
                             m_groupLootTimer = 0;
-                            lootingGroupLeaderGUID.Clear();
+                            lootingGroupLowGUID = 0;
                         }
+                        else m_groupLootTimer -= diff;
                     }
                     break;
                 default:
@@ -1072,6 +1075,66 @@ void GameObject::UpdateModel()
     if (m_model)
         GetMap()->InsertGameObjectModel(*m_model);
 }
+
+/*
+Player* GameObject::GetLootRecipient() const
+{
+    if (!m_lootRecipient)
+        return nullptr;
+    return ObjectAccessor::FindConnectedPlayer(m_lootRecipient);
+}
+
+Group* GameObject::GetLootRecipientGroup() const
+{
+    if (!m_lootRecipientGroup)
+        return nullptr;
+    return sGroupMgr->GetGroupByGUID(m_lootRecipientGroup);
+}
+
+void GameObject::SetLootRecipient(Unit* unit, Group* group)
+{
+    // set the player whose group should receive the right
+    // to loot the creature after it dies
+    // should be set to nullptr after the loot disappears
+
+    if (!unit)
+    {
+        m_lootRecipient.Clear();
+        m_lootRecipientGroup = group ? group->GetLowGUID() : 0;
+        return;
+    }
+
+    if (unit->GetTypeId() != TYPEID_PLAYER && !unit->IsVehicle())
+        return;
+
+    Player* player = unit->GetCharmerOrOwnerPlayerOrPlayerItself();
+    if (!player)                                             // normal creature, no player involved
+        return;
+
+    m_lootRecipient = player->GetGUID();
+
+    // either get the group from the passed parameter or from unit's one
+    if (group)
+        m_lootRecipientGroup = group->GetLowGUID();
+    else if (Group* unitGroup = player->GetGroup())
+        m_lootRecipientGroup = unitGroup->GetLowGUID();
+}
+
+bool GameObject::IsLootAllowedFor(Player const* player) const
+{
+    if (!m_lootRecipient && !m_lootRecipientGroup)
+        return true;
+
+    if (player->GetGUID() == m_lootRecipient)
+        return true;
+
+    Group const* playerGroup = player->GetGroup();
+    if (!playerGroup || playerGroup != GetLootRecipientGroup()) // if we dont have a group we arent the recipient
+        return false;                                           // if go doesnt have group bound it means it was solo killed by someone else
+
+    return true;
+}
+*/
 
 GameObject* GameObject::GetGameObject(WorldObject& object, ObjectGuid guid)
 {

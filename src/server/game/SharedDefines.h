@@ -2611,6 +2611,16 @@ enum ScriptType : uint32
     SCRIPT_TYPE_SPELL       = 1
 };
 
+enum RemoveMethod : uint8
+{
+    GROUP_REMOVEMETHOD_DEFAULT  = 0,
+    GROUP_REMOVEMETHOD_KICK     = 1,
+    GROUP_REMOVEMETHOD_LEAVE    = 2,
+#ifdef LICH_KING
+    GROUP_REMOVEMETHOD_KICK_LFG = 3
+#endif
+};
+
 enum ActivateTaxiReply : uint32
 {
     ERR_TAXIOK                      = 0,

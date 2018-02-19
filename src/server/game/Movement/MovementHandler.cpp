@@ -163,9 +163,9 @@ void WorldSession::HandleMoveWorldportAck()
         }
     }
 
-    if(mEntry->IsRaid() && mInstance)
+    if(mInstance)
     {
-        if(reset_notify)
+        if(reset_notify && mEntry->IsRaid())
         {
 #ifdef LICH_KING
             FIXME; //LK has this message for dungeon as well
@@ -174,6 +174,10 @@ void WorldSession::HandleMoveWorldportAck()
             GetPlayer()->SendInstanceResetWarning(GetPlayer()->GetMapId(), timeleft); // greeting at the entrance of the resort raid instance
 #endif
         }
+
+        // check if instance is valid
+        if (!GetPlayer()->CheckInstanceValidity(false))
+            GetPlayer()->m_InstanceValid = false;
     }
 
     // mount allow check

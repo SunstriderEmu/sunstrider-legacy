@@ -645,15 +645,7 @@ class TC_GAME_API ObjectMgr
         bool IsGameObjectStaticTransport(uint32 entry);
 
         void LoadGameObjectTemplate();
-        void AddGameObjectTemplate(GameObjectTemplate *goinfo);
-
-        Group* GetGroupByLeader(ObjectGuid guid) const;
-        void AddGroup(Group* group) { mGroupSet.insert( group ); }
-        void RemoveGroup(Group* group) { mGroupSet.erase( group ); }
-        GroupSet::iterator GetGroupSetBegin() { return mGroupSet.begin(); }
-        GroupSet::iterator GetGroupSetEnd()   { return mGroupSet.end(); }
-
-
+        
         bool IsGuildLeader(ObjectGuid const&guid) const;
 
         Guild* GetGuildByLeader(ObjectGuid const&guid) const;
@@ -776,7 +768,6 @@ class TC_GAME_API ObjectMgr
 
         void LoadGuilds();
         void LoadArenaTeams();
-        void LoadGroups();
         void LoadQuests();
         void LoadQuestRelations()
         {
@@ -1237,7 +1228,6 @@ class TC_GAME_API ObjectMgr
         typedef std::set<uint32> TavernAreaTriggerSet;
         typedef std::set<uint32> GameObjectForQuestSet;
 
-        GroupSet            mGroupSet; //groups are identified by leader guid
         GuildMap            mGuildMap;
         ArenaTeamMap        mArenaTeamMap;
 

@@ -569,9 +569,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         bool m_isTempWorldObject;
 
-        uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
-        ObjectGuid lootingGroupLeaderGUID;                      // used to find group which is looting corpse
-
 		void DestroyForNearbyPlayers();
 		virtual void UpdateObjectVisibility(bool forced = true);
 		virtual void UpdateObjectVisibilityOnCreate()

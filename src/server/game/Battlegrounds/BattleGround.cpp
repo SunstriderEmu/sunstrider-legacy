@@ -1137,7 +1137,7 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
         // remove from raid group if player is member
         if (Group* group = GetBgRaid(team))
         {
-            if (!group->RemoveMember(guid, 0))               // group was disbanded
+            if (!group->RemoveMember(guid))               // group was disbanded
                 SetBgRaid(team, nullptr);
         }
         DecreaseInvitedCount(team);
@@ -1898,7 +1898,7 @@ void Battleground::AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team)
     {
         group = new Group;
         SetBgRaid(team, group);
-        group->Create(player->GetGUID(), player->GetName(), trans);
+        group->Create(player, trans);
     }
     else                                            // raid already exist
     {
@@ -1913,7 +1913,7 @@ void Battleground::AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team)
         }
         else
         {
-            group->AddMember(player->GetGUID(), player->GetName(), trans);
+            group->AddMember(player, trans);
             if (Group* originalGroup = player->GetOriginalGroup())
                 if (originalGroup->IsLeader(playerGuid))
                 {

@@ -12,6 +12,7 @@
 #include "World.h"
 #include "WorldSession.h"
 #include "Group.h"
+#include "GroupMgr.h"
 #include "Guild.h"
 #include "ArenaTeam.h"
 #include "Transport.h"
@@ -135,10 +136,6 @@ ObjectMgr::~ObjectMgr()
 
     _areaTriggerStore.clear();
 
-    // free group and guild objects
-    for (auto itr : mGroupSet)
-        delete itr;
-
     for (auto & itr : mGuildMap)
         delete itr.second;
 
@@ -163,15 +160,6 @@ ObjectMgr::~ObjectMgr()
         itr.second = nullptr;
     }
     
-}
-
-Group * ObjectMgr::GetGroupByLeader(ObjectGuid guid) const
-{
-    for(auto itr : mGroupSet)
-        if (itr->GetLeaderGUID() == guid)
-            return itr;
-
-    return nullptr;
 }
 
 Guild * ObjectMgr::GetGuildById(const uint32 GuildId)
@@ -3481,123 +3469,6 @@ void ObjectMgr::LoadArenaTeams()
     TC_LOG_INFO("server.loading", ">> Loaded %u arenateam definitions", count );
 }
 
-void ObjectMgr::LoadGroups()
-{
-    // -- loading groups --
-    Group *group = nullptr;
-    ObjectGuid leaderGuid = ObjectGuid::Empty;
-    uint32 count = 0;
-    //                                                     0         1              2           3           4              5      6      7      8      9      10     11     12     13      14          15
-    QueryResult result = CharacterDatabase.Query("SELECT mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, isRaid, difficulty, leaderGuid FROM groups");
-
-    if( !result )
-    {
-        TC_LOG_INFO("server.loading", ">> Loaded %u group definitions", count );
-        return;
-    }
-
-    do
-    {
-        Field *fields = result->Fetch();
-        ++count;
-        leaderGuid = ObjectGuid(HighGuid::Player, fields[15].GetUInt32());
-
-        group = new Group;
-        if(!group->LoadGroupFromDB(leaderGuid, result, false))
-        {
-            group->Disband();
-            delete group;
-            continue;
-        }
-        AddGroup(group);
-    }while( result->NextRow() );
-
-    TC_LOG_INFO("server.loading", ">> Loaded %u group definitions", count );
-
-    // -- loading members --
-    count = 0;
-    group = nullptr;
-    leaderGuid = ObjectGuid::Empty;
-    //                                        0           1          2         3
-    result = CharacterDatabase.Query("SELECT memberGuid, assistant, subgroup, leaderGuid FROM group_member ORDER BY leaderGuid");
-    if (result)
-    {
-        do
-        {
-            Field *fields = result->Fetch();
-            count++;
-            leaderGuid = ObjectGuid(HighGuid::Player, fields[3].GetUInt32());
-            if(!group || group->GetLeaderGUID() != leaderGuid)
-            {
-                group = GetGroupByLeader(leaderGuid);
-                if(!group)
-                {
-                    TC_LOG_ERROR("sql.sql","Incorrect entry in group_member table : no group with leader %d for member %d!", fields[3].GetUInt32(), fields[0].GetUInt32());
-                    CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%d'", fields[0].GetUInt32());
-                    continue;
-                }
-            }
-
-            if(!group->LoadMemberFromDB(fields[0].GetUInt32(), fields[2].GetUInt16(), fields[1].GetBool()))
-            {
-                TC_LOG_ERROR("sql.sql","Incorrect entry in group_member table : member %d cannot be added to player %d's group!", fields[0].GetUInt32(), fields[3].GetUInt32());
-                CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%d'", fields[0].GetUInt32());
-            }
-        }while( result->NextRow() );
-    }
-
-    // clean groups
-    // TODO: maybe delete from the DB before loading in this case
-    for(auto itr = mGroupSet.begin(); itr != mGroupSet.end();)
-    {
-        if((*itr)->GetMembersCount() < 2)
-        {
-            (*itr)->Disband();
-            delete *itr;
-            mGroupSet.erase(itr++);
-        }
-        else
-            ++itr;
-    }
-
-    // -- loading instances --
-    count = 0;
-    group = nullptr;
-    leaderGuid = ObjectGuid::Empty;
-    result = CharacterDatabase.Query(
-        //      0           1    2         3          4           5
-        "SELECT leaderGuid, map, instance, permanent, difficulty, resettime, "
-        // 6
-        "(SELECT COUNT(*) FROM character_instance WHERE guid = leaderGuid AND instance = group_instance.instance AND permanent = 1 LIMIT 1) "
-        "FROM group_instance LEFT JOIN instance ON instance = id ORDER BY leaderGuid"
-    );
-
-    if (result)
-    {
-        do
-        {
-            Field *fields = result->Fetch();
-            count++;
-            leaderGuid = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
-            if(!group || group->GetLeaderGUID() != leaderGuid)
-            {
-                group = GetGroupByLeader(leaderGuid);
-                if(!group)
-                {
-                    TC_LOG_ERROR("sql.sql","Incorrect entry in group_instance table : no group with leader %d", fields[0].GetUInt32());
-                    continue;
-                }
-            }
-
-            InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(fields[1].GetUInt16(), fields[2].GetUInt32(), Difficulty(fields[4].GetUInt8()), (time_t)fields[5].GetUInt32(), (fields[6].GetUInt64() == 0), true);
-            group->BindToInstance(save, fields[3].GetBool(), true);
-        }while( result->NextRow() );
-    }
-
-    TC_LOG_INFO("server.loading", ">> Loaded %u group-instance binds total", count );
-    TC_LOG_INFO("server.loading", ">> Loaded %u group members total", count );
-}
-
 void ObjectMgr::LoadQuests()
 {
     // For reload case
@@ -6267,6 +6138,10 @@ void ObjectMgr::SetHighestGuids()
     {
         _guildId = (*result)[0].GetUInt32()+1;
     }
+
+    result = CharacterDatabase.Query("SELECT MAX(guid) FROM groups");
+    if (result)
+        sGroupMgr->SetGroupDbStoreSize((*result)[0].GetUInt32() + 1);
 
     //db guids are actually spawnIds
     result = WorldDatabase.Query("SELECT MAX(guid) FROM creature");

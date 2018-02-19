@@ -948,9 +948,11 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     // announce group about member online (must be after add to player list to receive announce to self)
     if (Group *group = pCurrChar->GetGroup())
     {
-        //pCurrChar->groupInfo.group->SendInit(this); // useless
         group->CheckLeader(pCurrChar->GetGUID(), false); //check leader login
         group->SendUpdate();
+#ifdef LICH_KING
+        group->ResetMaxEnchantingLevel();
+#endif
     }
 
     // show time before shutdown if shutdown planned.

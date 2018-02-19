@@ -1,28 +1,10 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "WorldSession.h"
 #include "Log.h"
 #include "Database/DatabaseEnv.h"
 #include "Player.h"
 #include "WorldPacket.h"
+#include "GroupMgr.h"
 #include "ObjectMgr.h"
 #include "World.h"
 
@@ -56,17 +38,17 @@ static void AttemptJoin(Player* _player)
         if(!plr->GetGroup())
         {
             auto  group = new Group;
-            if(!group->Create(plr->GetGUID(), plr->GetName(), trans))
+            if(!group->Create(plr, trans))
             {
                 delete group;
                 continue;
             }
 
-            sObjectMgr->AddGroup(group);
+            sGroupMgr->AddGroup(group);
         }
 
         // stop at success join
-        if(plr->GetGroup()->AddMember(_player->GetGUID(), _player->GetName(), trans))
+        if(plr->GetGroup()->AddMember(_player, trans))
         {
             if( sWorld->getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
                 _player->LeaveLFGChannel();
@@ -113,17 +95,17 @@ static void AttemptAddMore(Player* _player)
         if(!_player->GetGroup())
         {
             auto  group = new Group;
-            if(!group->Create(_player->GetGUID(), _player->GetName(), trans))
+            if(!group->Create(_player, trans))
             {
                 delete group;
                 return;                                     // can't create group (??)
             }
 
-            sObjectMgr->AddGroup(group);
+            sGroupMgr->AddGroup(group);
         }
 
         // stop at join fail (full)
-        if(!_player->GetGroup()->AddMember(plr->GetGUID(), plr->GetName(), trans) )
+        if(!_player->GetGroup()->AddMember(plr, trans) )
         {
             if( sWorld->getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
                 _player->LeaveLFGChannel();

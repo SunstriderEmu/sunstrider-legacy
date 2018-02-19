@@ -494,9 +494,9 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
     uint8 slotid;
     ObjectGuid lootguid, target_playerguid;
 
-    recvData >> lootguid >> slotid >> target_playerguid;
+    recvData >> lootguid >> slotid >> target_playerguid; //BC & LK ok
 
-    if(!_player->GetGroup() || _player->GetGroup()->GetLooterGuid() != _player->GetGUID())
+    if (!_player->GetGroup() || _player->GetGroup()->GetMasterLooterGuid() != _player->GetGUID() || _player->GetGroup()->GetLootMethod() != MASTER_LOOT)
     {
         _player->SendLootError(lootguid, LOOT_ERROR_DIDNT_KILL);
         return;
@@ -509,22 +509,23 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
         _player->SendLootError(lootguid, LOOT_ERROR_PLAYER_NOT_FOUND);
         return;
     }
-        
-    if (_player->GetMapId() != target->GetMapId())
+
+    if (_player->GetLootGUID() != lootguid)
     {
-        _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER); 
+        _player->SendLootError(lootguid, LOOT_ERROR_DIDNT_KILL);
+        return;
+    }
+
+    if (!_player->IsInRaidWith(target) || !_player->IsInMap(target))
+    {
+        _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER);
+        TC_LOG_INFO("entities.player.cheat", "MasterLootItem: Player %s tried to give an item to ineligible player %s !", GetPlayer()->GetName().c_str(), target->GetName().c_str());
         return;
     }
 
     if (_player->IsAtGroupRewardDistance(target))
     {
         _player->SendLootError(lootguid, LOOT_ERROR_TOO_FAR); 
-        return;
-    }
-
-    if(_player->GetLootGUID() != lootguid)
-    {
-        _player->SendLootError(lootguid, LOOT_ERROR_DIDNT_KILL);
         return;
     }
 
@@ -553,17 +554,20 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
         return;
     }
 
-    if (slotid > pLoot->items.size())
+    if (slotid >= pLoot->items.size() + pLoot->quest_items.size())
     {
-        TC_LOG_ERROR("misc","AutoLootItem: Player %s might be using a hack! (slot %u, size %u)",GetPlayer()->GetName().c_str(), slotid, (uint32)pLoot->items.size());
+        TC_LOG_ERROR("misc","AutoLootItem: Player %s might be using a hack! (slot %u, size %u)",
+            GetPlayer()->GetName().c_str(), slotid, (uint32)pLoot->items.size());
         return;
     }
 
-    LootItem& item = pLoot->items[slotid];
+    LootItem& item = slotid >= pLoot->items.size() ? pLoot->quest_items[slotid - pLoot->items.size()] : pLoot->items[slotid];
 
     ItemPosCountVec dest;
     uint8 msg = target->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, item.itemid, item.count );
-    if ( msg != EQUIP_ERR_OK )
+    if (item.follow_loot_rules && !item.AllowedForPlayer(target))
+        msg = EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
+    if (msg != EQUIP_ERR_OK)
     {
         if (msg == EQUIP_ERR_CANT_CARRY_MORE_OF_THIS)
             _player->SendLootError(lootguid, LOOT_ERROR_MASTER_UNIQUE_ITEM);
@@ -577,13 +581,17 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
     }
 
     // not move item from loot to target inventory
-    Item * newitem = target->StoreNewItem( dest, item.itemid, true, item.randomPropertyId );
-    target->SendNewItem(newitem, uint32(item.count), false, false, true );
+    Item * newitem = target->StoreNewItem(dest, item.itemid, true, item.randomPropertyId);
+    target->SendNewItem(newitem, uint32(item.count), false, false, true);
+#ifdef LICH_KING
+    target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM, item.itemid, item.count);
+    target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE, loot->loot_type, item.count);
+    target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM, item.itemid, item.count)
+#endif
 
     // mark as looted
     item.count=0;
     item.is_looted=true;
-
 
     pLoot->NotifyItemRemoved(slotid);
     --pLoot->unlootedCount;

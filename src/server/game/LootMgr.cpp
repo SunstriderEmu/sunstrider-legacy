@@ -323,6 +323,7 @@ LootItem::LootItem(LootStoreItem const& li)
 
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
     freeforall  = proto && (proto->Flags & ITEM_FLAG_PARTY_LOOT);
+    follow_loot_rules = false; //TC proto && (proto->FlagsCu & ITEM_FLAGS_CU_FOLLOW_LOOT_RULES);
 
     needs_quest = li.needs_quest;
 
@@ -333,6 +334,7 @@ LootItem::LootItem(LootStoreItem const& li)
     is_blocked = 0;
     is_underthreshold = 0;
     is_counted = 0;
+    rollWinnerGUID = ObjectGuid::Empty;
 }
 
 // Basic checks for player/item compatibility - if false no chance to see the item in the loot
@@ -552,7 +554,7 @@ QuestItemList* Loot::FillQuestLoot(Player* player)
     for(uint8 i = 0; i < quest_items.size(); i++)
     {
         LootItem &item = quest_items[i];
-        if(!item.is_looted && item.AllowedForPlayer(player) )
+        if (!item.is_looted && (item.AllowedForPlayer(player) || (item.follow_loot_rules && player->GetGroup() && ((player->GetGroup()->GetLootMethod() == MASTER_LOOT && player->GetGroup()->GetMasterLooterGuid() == player->GetGUID()) || player->GetGroup()->GetLootMethod() != MASTER_LOOT))))
         {
             ql->push_back(QuestItem(i));
 
@@ -562,8 +564,8 @@ QuestItemList* Loot::FillQuestLoot(Player* player)
             // increase once if one looter only, looter-times if free for all
             if (item.freeforall || !item.is_blocked)
                 ++unlootedCount;
-
-            item.is_blocked = true;
+            if (!player->GetGroup() || (player->GetGroup()->GetLootMethod() != GROUP_LOOT && player->GetGroup()->GetLootMethod() != ROUND_ROBIN))
+                item.is_blocked = true;
 
             if (items.size() + ql->size() == MAX_NR_LOOT_ITEMS)
                 break;
@@ -762,12 +764,19 @@ ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
 
 ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
 {
+    if (lv.permission == NONE_PERMISSION)
+    {
+        b << uint32(0);                                     // gold
+        b << uint8(0);                                      // item count
+        return b;
+    }
+
     Loot &l = lv.loot;
 
     uint8 itemsShown = 0;
 
     //gold
-    b << uint32(lv.permission!=NONE_PERMISSION ? l.gold : 0);
+    b << uint32(l.gold);                                    //gold
 
     size_t count_pos = b.wpos();                            // pos of item count byte
     b << uint8(0);                                          // item count placeholder
@@ -806,7 +815,6 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             }
             break;
         }
-        case NONE_PERMISSION:
         default:
             return b;                                       // nothing output more
     }

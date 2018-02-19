@@ -20,6 +20,7 @@
 #include "GitRevision.h"
 #include "GlobalEvents.h"
 #include "GridNotifiersImpl.h"
+#include "GroupMgr.h"
 #include "InstanceSaveMgr.h"
 #include "ItemEnchantmentMgr.h"
 #include "Language.h"
@@ -1675,7 +1676,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadArenaTeams();
 
     TC_LOG_INFO("server.loading", "Loading Groups..." );
-    sObjectMgr->LoadGroups();
+    sGroupMgr->LoadGroups();
 
     TC_LOG_INFO("server.loading", "Loading ReservedNames..." );
     sObjectMgr->LoadReservedPlayersNames();
@@ -2073,8 +2074,8 @@ void World::Update(time_t diff)
     RecordTimeDiff("UpdateSessions");
 
     // Update groups
-    for (auto itr = sObjectMgr->GetGroupSetBegin(); itr != sObjectMgr->GetGroupSetEnd(); ++itr)
-        (*itr)->Update(diff);
+    sGroupMgr->Update(diff);
+
     RecordTimeDiff("UpdateGroups");
 
     /// <li> Handle weather updates when the timer has passed

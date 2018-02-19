@@ -812,7 +812,6 @@ WorldObject::WorldObject(bool isWorldObject) :
     m_zoneId(0),
     m_areaId(0),
     m_staticFloorZ(VMAP_INVALID_HEIGHT),
-    m_groupLootTimer(0),
     m_notifyflags(0),
     m_executed_notifies(0),
     mSemaphoreTeleport(false),

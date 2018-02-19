@@ -590,6 +590,15 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void SaveRespawnTime(uint32 forceDelay = 0, bool savetodb = true) override;
 
         Loot        loot;
+        /*
+        Player* GetLootRecipient() const;
+        Group* GetLootRecipientGroup() const;
+        void SetLootRecipient(Unit* unit, Group* group = nullptr);
+        bool IsLootAllowedFor(Player const* player) const;
+        bool HasLootRecipient() const { return !m_lootRecipient.IsEmpty() || m_lootRecipientGroup; }
+        */
+        uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
+        ObjectGuid::LowType lootingGroupLowGUID;
 
         bool HasQuest(uint32 quest_id) const override;
         bool HasInvolvedQuest(uint32 quest_id) const override;

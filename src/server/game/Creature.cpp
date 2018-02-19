@@ -12,6 +12,7 @@
 #include "Player.h"
 #include "Opcodes.h"
 #include "Log.h"
+#include "GroupMgr.h"
 #include "LootMgr.h"
 #include "MapManager.h"
 #include "CreatureAI.h"
@@ -167,8 +168,12 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     lootForPickPocketed(false), 
     lootForBody(false), 
     m_lootMoney(0), 
-    m_lootRecipientGroup(0),
-    m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25),
+    m_lootRecipientGroup(0), 
+    m_groupLootTimer(0),
+    lootingGroupLowGUID(0),
+    m_corpseRemoveTime(0),
+    m_respawnTime(0), 
+    m_respawnDelay(25),
     m_corpseDelay(60), 
     m_respawnradius(0.0f),
     m_reactState(REACT_AGGRESSIVE), 
@@ -663,7 +668,7 @@ void Creature::Update(uint32 diff)
             }
             else
             {
-                if (m_groupLootTimer && lootingGroupLeaderGUID)
+                if (m_groupLootTimer && lootingGroupLowGUID)
                 {
                     if(diff <= m_groupLootTimer)
                     {
@@ -671,11 +676,11 @@ void Creature::Update(uint32 diff)
                     }
                     else
                     {
-                        Group* group = sObjectMgr->GetGroupByLeader(lootingGroupLeaderGUID);
+                        Group* group = sGroupMgr->GetGroupByGUID(lootingGroupLowGUID);
                         if (group)
-                            group->EndRoll();
+                            group->EndRoll(&loot, GetMap());
                         m_groupLootTimer = 0;
-                        lootingGroupLeaderGUID.Clear();
+                        lootingGroupLowGUID = 0;
                     }
                 }
             }
@@ -1369,7 +1374,7 @@ Group* Creature::GetLootRecipientGroup() const
     if (!m_lootRecipient)
         return nullptr;
 
-    return sObjectMgr->GetGroupByLeader(ObjectGuid(HighGuid::Player, m_lootRecipientGroup));
+    return sGroupMgr->GetGroupByGUID(m_lootRecipientGroup);
 }
 
 // return true if this creature is tapped by the player or by a member of his group.
