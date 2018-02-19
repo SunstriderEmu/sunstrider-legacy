@@ -85,7 +85,7 @@ bool Group::Create(ObjectGuid guid, std::string const& name, SQLTransaction tran
 
     if(!isBGGroup())
     {
-        Player *leader = ObjectAccessor::FindPlayer(guid);
+        Player* leader = ObjectAccessor::FindConnectedPlayer(guid);
         if(leader) 
             m_dungeonDifficulty = Difficulty(leader->GetDifficulty());
 
