@@ -11165,15 +11165,20 @@ void Unit::SetControlled(bool apply, UnitState state)
                 return;
         }
 
-        if (HasAuraType(SPELL_AURA_MOD_STUN))
-            SetStunned(true);
-        if (HasAuraType(SPELL_AURA_MOD_ROOT))
-            SetRooted(true);
-        if (HasAuraType(SPELL_AURA_MOD_CONFUSE))
-            SetConfused(true);
-        if (HasAuraType(SPELL_AURA_MOD_FEAR))
-            SetFeared(true);
+        ApplyControlStatesIfNeeded();
     }
+}
+
+void Unit::ApplyControlStatesIfNeeded()
+{
+    if (HasUnitState(UNIT_STATE_STUNNED) || HasAuraType(SPELL_AURA_MOD_STUN))
+        SetStunned(true);
+    if (HasUnitState(UNIT_STATE_ROOT) || HasAuraType(SPELL_AURA_MOD_ROOT))
+        SetRooted(true);
+    if (HasUnitState(UNIT_STATE_CONFUSED) || HasAuraType(SPELL_AURA_MOD_CONFUSE))
+        SetConfused(true);
+    if (HasUnitState(UNIT_STATE_FLEEING) || HasAuraType(SPELL_AURA_MOD_FEAR))
+        SetFeared(true);
 }
 
 void Unit::SetStunned(bool apply)
@@ -11313,12 +11318,11 @@ void Unit::SetFeared(bool apply)
         }
     }
 
-    if (Player* player = ToPlayer())
+    // block / allow control to real player in control (eg charmer)
+    if (GetTypeId() == TYPEID_PLAYER)
     {
-        if (apply)
-            player->SetClientControl(this, false);
-        else if (!HasUnitState(UNIT_STATE_LOST_CONTROL))
-            player->SetClientControl(this, true);
+        if (m_playerMovingMe)
+            m_playerMovingMe->SetClientControl(this, !apply);
     }
 }
 
@@ -11342,12 +11346,11 @@ void Unit::SetConfused(bool apply)
         }
     }
 
-    if (Player* player = ToPlayer())
+    // block / allow control to real player in control (eg charmer)
+    if (GetTypeId() == TYPEID_PLAYER)
     {
-        if (apply)
-            player->SetClientControl(this, false);
-        else if (!HasUnitState(UNIT_STATE_LOST_CONTROL))
-            player->SetClientControl(this, true);
+        if (m_playerMovingMe)
+            m_playerMovingMe->SetClientControl(this, !apply);
     }
 }
 
@@ -11517,6 +11520,8 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
                 break;
         }
     }
+
+    AddUnitState(UNIT_STATE_CHARMED);
     return true;
 }
 
@@ -11641,15 +11646,20 @@ void Unit::RemoveCharmedBy(Unit* charmer)
             IsAIEnabled = false;
         }
 
-        if (!HasUnitState(UNIT_STATE_LOST_CONTROL))
-            player->SetClientControl(this, true);
+        player->SetClientControl(this, true);
     }
+
+    EngageWithTarget(charmer);
 
     // a guardian should always have charminfo
     if(playerCharmer && this != charmer->GetFirstControlled())
         playerCharmer->SendRemoveControlBar();
     else if (GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !IsGuardian()))
         DeleteCharmInfo();
+
+    // reset confused movement for example
+    ApplyControlStatesIfNeeded();
+    ClearUnitState(UNIT_STATE_CHARMED);
 }
 
 void Unit::RestoreFaction()
