@@ -11,7 +11,7 @@ public:
     class DispelMagicTestImpt : public TestCase
     {
     public:
-        DispelMagicTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        DispelMagicTestImpt() : TestCase(STATUS_PASSING, true) { }
 
         void Test() override
         {
@@ -23,6 +23,11 @@ public:
             TEST_CAST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, SPELL_FAILED_NOTHING_TO_DISPEL, TRIGGERED_IGNORE_GCD);
             TEST_CAST(priest, enemy1, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, SPELL_FAILED_NOTHING_TO_DISPEL, TRIGGERED_IGNORE_GCD);
 
+            // Test mana cost
+            TEST_CAST(enemy1, priest, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
+            uint32 const expectedDispelMagicMana = 366;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, POWER_MANA, expectedDispelMagicMana);
+
             // Setup
             TEST_CAST(enemy1, enemy1, ClassSpells::Priest::DIVINE_SPIRIT_RNK_5, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
             TEST_CAST(enemy1, enemy1, ClassSpells::Priest::FEAR_WARD_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
@@ -31,17 +36,30 @@ public:
             TEST_CAST(enemy2, priest, ClassSpells::Druid::MOONFIRE_RNK_12, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
             TEST_CAST(enemy2, priest, ClassSpells::Druid::INSECT_SWARM_RNK_6, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
 
-            // Offensive dispel
-            uint32 const expectedDispelMagicMana = 366;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, POWER_MANA, expectedDispelMagicMana);
-            TEST_HAS_NOT_AURA(priest, ClassSpells::Druid::INSECT_SWARM_RNK_6);
-            TEST_HAS_NOT_AURA(priest, ClassSpells::Druid::MOONFIRE_RNK_12);
+            TEST_HAS_AURA(enemy1, ClassSpells::Priest::DIVINE_SPIRIT_RNK_5);
+            TEST_HAS_AURA(enemy1, ClassSpells::Priest::FEAR_WARD_RNK_1);
+            TEST_HAS_AURA(enemy1, ClassSpells::Priest::INNER_FIRE_RNK_7);
             TEST_HAS_AURA(priest, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10);
+            TEST_HAS_AURA(priest, ClassSpells::Druid::MOONFIRE_RNK_12);
+            TEST_HAS_AURA(priest, ClassSpells::Druid::INSECT_SWARM_RNK_6);
+
+            // Note: Auras are dispelled in random order (No 100% sure for defensive, it may be last in first out)
             // Defensive dispel
-            TEST_CAST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2);
-            TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::INNER_FIRE_RNK_7);
-            TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::FEAR_WARD_RNK_1);
-            TEST_HAS_AURA(priest, ClassSpells::Priest::DIVINE_SPIRIT_RNK_5);
+            priest->ResetAllPowers();
+            TEST_CAST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
+            uint32 remainingBuffs =   uint32(priest->HasAura(ClassSpells::Druid::INSECT_SWARM_RNK_6))
+                                    + uint32(priest->HasAura(ClassSpells::Druid::MOONFIRE_RNK_12))
+                                    + uint32(priest->HasAura(ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10));
+            ASSERT_INFO("Testing defensive dispel, check if priest has correctly lost 2 aura");
+            TEST_ASSERT(remainingBuffs == 1);
+
+            // Offensive dispel (random order confirmed in BC arena videos)
+            TEST_CAST(priest, enemy1, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
+            remainingBuffs =  uint32(enemy1->HasAura(ClassSpells::Priest::INNER_FIRE_RNK_7))
+                            + uint32(enemy1->HasAura(ClassSpells::Priest::FEAR_WARD_RNK_1))
+                            + uint32(enemy1->HasAura(ClassSpells::Priest::DIVINE_SPIRIT_RNK_5));
+            ASSERT_INFO("Testing offensive dispel, check if target has correctly lost 2 aura");
+            TEST_ASSERT(remainingBuffs == 1);
         }
     };
 

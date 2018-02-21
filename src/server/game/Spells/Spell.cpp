@@ -5574,7 +5574,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
         }
     }
 
-    if (!hasNonDispelEffect && !hasDispellableAura && dispelMask && !IsTriggered())
+    if (!hasNonDispelEffect && !hasDispellableAura && dispelMask && _triggeredCastFlags != TRIGGERED_FULL_MASK)
     {
         if (Unit* dispelTarget = m_targets.GetUnitTarget())
         {
