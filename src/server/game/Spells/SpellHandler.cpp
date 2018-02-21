@@ -212,28 +212,53 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
     if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))// wrapped?
     {
-        QueryResult result = CharacterDatabase.PQuery("SELECT entry, flags FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUID().GetCounter());
-        if (result)
-        {
-            Field *fields = result->Fetch();
-            uint32 entry = fields[0].GetUInt32();
-            uint32 flags = fields[1].GetUInt32();
-
-            pItem->SetGuidValue(ITEM_FIELD_GIFTCREATOR, ObjectGuid::Empty);
-            pItem->SetEntry(entry);
-            pItem->SetUInt32Value(ITEM_FIELD_FLAGS, flags);
-            pItem->SetState(ITEM_CHANGED, pUser);
-        }
-        else
-        {
-            TC_LOG_ERROR("network","Wrapped item %u don't have record in character_gifts table and will deleted", pItem->GetGUID().GetCounter());
-            pUser->DestroyItem(pItem->GetBagSlot(), pItem->GetSlot(), true);
-            return;
-        }
-        CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUID().GetCounter());
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_GIFT_BY_ITEM);
+        stmt->setUInt32(0, pItem->GetGUID().GetCounter());
+        _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt)
+            .WithPreparedCallback(std::bind(&WorldSession::HandleOpenWrappedItemCallback, this, pItem->GetPos(), pItem->GetGUID(), std::placeholders::_1)));
     }
     else
-        pUser->SendLoot(pItem->GetGUID(),LOOT_CORPSE);
+        pUser->SendLoot(pItem->GetGUID(), LOOT_CORPSE);
+}
+
+void WorldSession::HandleOpenWrappedItemCallback(uint16 pos, ObjectGuid itemGuid, PreparedQueryResult result)
+{
+    if (!GetPlayer())
+        return;
+
+    Item* item = GetPlayer()->GetItemByPos(pos);
+    if (!item)
+        return;
+
+    if (item->GetGUID() != itemGuid || !item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED)) // during getting result, gift was swapped with another item
+        return;
+
+    if (!result)
+    {
+        TC_LOG_ERROR("network", "Wrapped item %u don't have record in character_gifts table and will deleted", itemGuid.GetCounter());
+        GetPlayer()->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+        return;
+    }
+
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+    Field* fields = result->Fetch();
+    uint32 entry = fields[0].GetUInt32();
+    uint32 flags = fields[1].GetUInt32();
+
+    item->SetGuidValue(ITEM_FIELD_GIFTCREATOR, ObjectGuid::Empty);
+    item->SetEntry(entry);
+    item->SetUInt32Value(ITEM_FIELD_FLAGS, flags);
+    item->SetUInt32Value(ITEM_FIELD_MAXDURABILITY, item->GetTemplate()->MaxDurability);
+    item->SetState(ITEM_CHANGED, GetPlayer());
+
+    GetPlayer()->SaveInventoryAndGoldToDB(trans);
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GIFT);
+    stmt->setUInt32(0, itemGuid.GetCounter());
+    trans->Append(stmt);
+
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )

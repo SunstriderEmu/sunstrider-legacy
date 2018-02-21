@@ -3403,7 +3403,7 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
     if(num_to_add)
     {
         // create the new item and store it
-        Item* pItem = player->StoreNewItem( dest, newitemid, true, Item::GenerateItemRandomPropertyId(newitemid),pProto);
+        Item* pItem = player->StoreNewItem( dest, newitemid, true, Item::GenerateItemRandomPropertyId(newitemid));
 
         // was it successful? return error if not
         if(!pItem)

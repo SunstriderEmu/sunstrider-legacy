@@ -9,6 +9,7 @@
 #include "Database/DatabaseEnv.h"
 #include "GameObjectAI.h"
 #include <G3D/Quat.h>
+#include "Loot.h"
 
 class StaticTransport;
 class MotionTransport;
@@ -503,7 +504,20 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void SaveToDB(uint32 mapid, uint8 spawnMask);
         bool LoadFromDB(uint32 spawnId, Map* map, bool addToMap, bool = true); // arg4 is unused, only present to match the signature on Creature
         void DeleteFromDB();
+
+        LootState getLootState() const { return m_lootState; }
+        // Note: unit is only used when s = GO_ACTIVATED
         void SetLootState(LootState state, Unit* unit = nullptr);
+
+        uint16 GetLootMode() const { return m_LootMode; }
+        bool HasLootMode(uint16 lootMode) const { return (m_LootMode & lootMode) != 0; }
+        void SetLootMode(uint16 lootMode) { m_LootMode = lootMode; }
+        void AddLootMode(uint16 lootMode) { m_LootMode |= lootMode; }
+        void RemoveLootMode(uint16 lootMode) { m_LootMode &= ~lootMode; }
+        void ResetLootMode() { m_LootMode = LOOT_MODE_DEFAULT; }
+        void SetLootGenerationTime();
+        uint32 GetLootGenerationTime() const { return m_lootGenerationTime; }
+
         uint32 GetLockId() const
         {
             if (manual_unlock)
@@ -554,7 +568,10 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void Delete();
         void SetSpellId(uint32 id) { m_spellId = id;}
         uint32 GetSpellId() const { return m_spellId;}
-        void getFishLoot(Loot *loot);
+        void getFishLoot(Loot* loot, Player* loot_owner);
+#ifdef LICH_KING
+        void getFishLootJunk(Loot* loot, Player* loot_owner);
+#endif
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetUInt32Value(GAMEOBJECT_TYPE_ID)); }
         void SetGoType(GameobjectTypes type) { SetUInt32Value(GAMEOBJECT_TYPE_ID, type); }
         uint32 GetGoState() const { return GetUInt32Value(GAMEOBJECT_STATE); }
@@ -569,8 +586,6 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void EnableCollision(bool enable);
 
         void Use(Unit* user);
-
-        LootState getLootState() const { return m_lootState; }
 
         void AddToSkillupList(ObjectGuid::LowType PlayerGuidLow) { m_SkillupList.push_back(PlayerGuidLow); }
         bool IsInSkillupList(ObjectGuid::LowType PlayerGuidLow) const
@@ -589,14 +604,13 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void SaveRespawnTime(uint32 forceDelay = 0, bool savetodb = true) override;
 
-        Loot        loot;
-        /*
+        Loot loot;
         Player* GetLootRecipient() const;
         Group* GetLootRecipientGroup() const;
         void SetLootRecipient(Unit* unit, Group* group = nullptr);
         bool IsLootAllowedFor(Player const* player) const;
         bool HasLootRecipient() const { return !m_lootRecipient.IsEmpty() || m_lootRecipientGroup; }
-        */
+
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         ObjectGuid::LowType lootingGroupLowGUID;
 
@@ -720,6 +734,11 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void UpdateModel();                                 // updates model in case displayId were changed
 
         Position m_stationaryPosition;
+
+        ObjectGuid m_lootRecipient;
+        uint32 m_lootRecipientGroup;
+        uint16 m_LootMode;                                  // bitmask, default LOOT_MODE_DEFAULT, determines what loot will be lootable
+        uint32 m_lootGenerationTime;
     private:
 		void RemoveFromOwner();
 

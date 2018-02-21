@@ -1091,20 +1091,6 @@ bool ChatHandler::HandleDebugGetLootRecipient(const char* /*args*/)
     return true;
 }
 
-bool ChatHandler::HandleDebugRemoveLootItem(const char* args)
-{
-    ARGS_CHECK
-    Creature* target = GetSelectedCreature();
-    if (!target)
-        return false;
-        
-    uint32 itemId = uint32(atoi(args));
-    target->loot.RemoveItem(itemId);
-    PSendSysMessage("Item removed.");
-        
-    return true;
-}
-
 bool ChatHandler::HandleDebugStealthLevel(const char* args)
 {
     Unit *target = GetSelectedUnit();

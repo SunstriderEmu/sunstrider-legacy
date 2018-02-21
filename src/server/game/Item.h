@@ -6,6 +6,7 @@
 #include "LootMgr.h"
 #include "ItemPrototype.h"
 #include "Transaction.h"
+#include "Loot.h"
 
 class SpellInfo;
 class Bag;
@@ -180,8 +181,8 @@ bool ItemCanGoIntoBag(ItemTemplate const *proto, ItemTemplate const *pBagProto);
 class TC_GAME_API Item : public Object
 {
     public:
-        static Item* CreateItem( uint32 item, uint32 count, Player const* player = nullptr, ItemTemplate const *proto = nullptr );
-        Item* CloneItem( uint32 count, Player const* player = nullptr ) const;
+        static Item* CreateItem(uint32 item, uint32 count, Player const* player = nullptr);
+        Item* CloneItem(uint32 count, Player const* player = nullptr) const;
 
         Item ( );
 

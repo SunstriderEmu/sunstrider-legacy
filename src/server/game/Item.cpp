@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #include "Common.h"
 #include "Item.h"
 #include "ObjectMgr.h"
@@ -29,6 +9,7 @@
 #include "SpellMgr.h"
 #include "Bag.h"
 #include "ScriptMgr.h"
+#include "LootItemStorage.h"
 
 void AddItemsSetItem(Player*player,Item *item)
 {
@@ -355,16 +336,26 @@ void Item::SaveToDB(SQLTransaction trans)
 
             trans->Append(stmt);
 
-             if ((uState == ITEM_CHANGED) && HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
-                trans->PAppend("UPDATE character_gifts SET guid = '%u' WHERE item_guid = '%u'",GetOwnerGUID().GetCounter(), GetGUID().GetCounter());
+            if ((uState == ITEM_CHANGED) && HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GIFT_OWNER);
+                stmt->setUInt32(0, GetOwnerGUID().GetCounter());
+                stmt->setUInt32(1, guid);
+                trans->Append(stmt);
+            }
         } break;
         case ITEM_REMOVED:
         {
             if (GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) > 0 )
                 trans->PAppend("DELETE FROM item_text WHERE id = '%u'", GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID));
+
             trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", guid);
             if(HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
                 trans->PAppend("DELETE FROM character_gifts WHERE item_guid = '%u'", GetGUID().GetCounter());
+
+            // Delete the items if this is a container
+            if (!loot.isLooted())
+                sLootItemStorage->RemoveStoredLootForContainer(GetGUID().GetCounter());
 
             delete this;
             return;
@@ -483,6 +474,10 @@ bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
 void Item::DeleteFromDB()
 {
     CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'",GetGUID().GetCounter());
+
+    // Delete the items if this is a container
+    if (!loot.isLooted())
+        sLootItemStorage->RemoveStoredLootForContainer(GetGUID().GetCounter());
 }
 
 void Item::DeleteFromInventoryDB(SQLTransaction trans)
@@ -936,25 +931,24 @@ void Item::SendTimeUpdate(Player* owner)
     owner->SendDirectMessage(&data);
 }
 
-Item* Item::CreateItem( uint32 item, uint32 count, Player const* player, ItemTemplate const *pProto )
+Item* Item::CreateItem(uint32 item, uint32 count, Player const* player)
 {
-    if ( count < 1 )
+    if (count < 1)
         return nullptr;                                        //don't create item at zero count
 
-    if( !pProto )
-        pProto = sObjectMgr->GetItemTemplate( item );
+    ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item);
 
-    if( pProto )
+    if (pProto)
     {
-        if ( count > pProto->Stackable )
+        if (count > pProto->Stackable)
             count = pProto->Stackable;
 
         assert(count !=0 && "pProto->Stackable==0 but checked at loading already");
 
-        Item *pItem = NewItemOrBag( pProto );
-        if( pItem->Create(sObjectMgr->GetGenerator<HighGuid::Item>().Generate(), item, player,pProto) )
+        Item *pItem = NewItemOrBag(pProto);
+        if (pItem->Create(sObjectMgr->GetGenerator<HighGuid::Item>().Generate(), item, player, pProto))
         {
-            pItem->SetCount( count );
+            pItem->SetCount(count);
             return pItem;
         }
         else
@@ -965,7 +959,7 @@ Item* Item::CreateItem( uint32 item, uint32 count, Player const* player, ItemTem
 
 Item* Item::CloneItem( uint32 count, Player const* player ) const
 {
-    Item* newItem = CreateItem( GetEntry(), count, player, GetTemplate() );
+    Item* newItem = CreateItem(GetEntry(), count, player);
     if(!newItem)
         return nullptr;
 

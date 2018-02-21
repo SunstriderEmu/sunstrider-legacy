@@ -28,6 +28,7 @@
 #include "Log.h"
 #include "LogsDatabaseAccessor.h"
 #include "LootMgr.h"
+#include "LootItemStorage.h"
 #include "M2Stores.h"
 #include "Management/MMapFactory.h"
 #include "Management/MMapManager.h"
@@ -1766,6 +1767,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading","Loading SmartAI scripts...");
     sSmartScriptMgr->LoadSmartAIFromDB();
+
+    TC_LOG_INFO("server.loading", "Loading Item loot...");
+    sLootItemStorage->LoadStorageFromDB();
 
     ///- Initialize game time and timers
     TC_LOG_INFO("server.loading", "Initialize game time and timers");

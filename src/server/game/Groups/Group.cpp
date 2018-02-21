@@ -1693,13 +1693,13 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
         slot = &(*witr);
     }
 
-    //LK OK                                             // guess size
+    //LK OK                                           // guess size
     WorldPacket data(SMSG_GROUP_LIST, (1 + 1 + 1 + 1 + 8 + 4 + GetMembersCount() * 20));
-    data << (uint8)m_groupType;                         // group type
+    data << uint8(m_groupType);                       // group type
 #ifndef LICH_KING
-    data << (uint8)(isBGGroup() ? 1 : 0);               // 2.0.x, isBattlegroundGroup?
+    data << uint8(isBGGroup() ? 1 : 0);               // 2.0.x
 #endif
-    data << (uint8)(slot->group);                       // groupid
+    data << uint8(slot->group);                       // groupid
     data << uint8(slot->flags);
 #ifdef LICH_KING
     data << (uint8)(slot->roles); //lfg role
@@ -1727,25 +1727,25 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot* slot)
         onlineState = onlineState | ((isBGGroup()) ? MEMBER_STATUS_PVP : 0);
 
         data << citr2->name;
-        data << (uint64)citr2->guid;
-        data << (uint8)(onlineState);
-        data << (uint8)(citr2->group);                  // groupid
-        data << uint8(citr2->flags);                     // See enum GroupMemberFlags
+        data << uint64(citr2->guid);
+        data << uint8(onlineState);
+        data << uint8(citr2->group);                  // groupid
+        data << uint8(citr2->flags);                    // See enum GroupMemberFlags
 #ifdef LICH_KING
-        data << (uint8)(citr2->roles);
+        data << uint8(citr2->roles);
 #endif
     }
 
     data << uint64(m_leaderGuid);                       // leader guid
     if (GetMembersCount() - 1)
     {
-        data << (uint8)m_lootMethod;                    // loot method
+        data << uint8(m_lootMethod);                    // loot method
         if (m_lootMethod == MASTER_LOOT)
             data << uint64(m_masterLooterGuid);         // master looter guid
         else
             data << uint64(0);
-        data << (uint8)m_lootThreshold;                 // loot threshold
-        data << (uint8)m_dungeonDifficulty;             // Heroic Mod Group
+        data << uint8(m_lootThreshold);                 // loot threshold
+        data << uint8(m_dungeonDifficulty);             // Heroic Mod Group
 #ifdef LICH_KING
         data << uint8(m_raidDifficulty);                // Raid Difficulty
         data << uint8(m_raidDifficulty >= RAID_DIFFICULTY_10MAN_HEROIC);    // 3.3 Dynamic Raid Difficulty - 0 normal/1 heroic

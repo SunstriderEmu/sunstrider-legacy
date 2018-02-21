@@ -834,7 +834,7 @@ bool ConditionMgr::IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, 
     std::map<uint32, bool> ElseGroupStore;
     for (auto condition : conditions)
     {
-        TC_LOG_DEBUG("condition", "ConditionMgr::IsPlayerMeetToConditionList %s val1: %u", condition->ToString().c_str(), condition->ConditionValue1);
+        TC_LOG_DEBUG("condition", "ConditionMgr::IsObjectMeetToConditionList %s val1: %u", condition->ToString().c_str(), condition->ConditionValue1);
         if (condition->isLoaded())
         {
             //! Find ElseGroup in ElseGroupStore
@@ -855,7 +855,7 @@ bool ConditionMgr::IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, 
                 }
                 else
                 {
-                    TC_LOG_DEBUG("condition", "ConditionMgr::IsPlayerMeetToConditionList %s Reference template -%u not found",
+                    TC_LOG_DEBUG("condition", "ConditionMgr::IsObjectMeetToConditionList %s Reference template -%u not found",
                         condition->ToString().c_str(), condition->ReferenceId); // checked at loading, should never happen
                 }
 
@@ -1050,7 +1050,7 @@ void ConditionMgr::LoadConditions(bool isReload)
 //        LootTemplates_Mail.ResetConditions();
 //        LootTemplates_Milling.ResetConditions();
         LootTemplates_Pickpocketing.ResetConditions();
-//        LootTemplates_Reference.ResetConditions();
+        LootTemplates_Reference.ResetConditions();
         LootTemplates_Skinning.ResetConditions();
         LootTemplates_Disenchant.ResetConditions();
         LootTemplates_Prospecting.ResetConditions();
@@ -1605,7 +1605,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
         }
         case CONDITION_SOURCE_TYPE_REFERENCE_LOOT_TEMPLATE:
         {
-/*            if (!LootTemplates_Reference.HaveLootFor(cond->SourceGroup))
+            if (!LootTemplates_Reference.HaveLootFor(cond->SourceGroup))
             {
                 TC_LOG_ERROR("sql.sql", "%s SourceGroup in `condition` table, does not exist in `reference_loot_template`, ignoring.", cond->ToString().c_str());
                 return false;
@@ -1618,7 +1618,6 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 TC_LOG_ERROR("sql.sql", "%s SourceType, SourceEntry in `condition` table, does not exist in `item_template`, ignoring.", cond->ToString().c_str());
                 return false;
             }
-            */
             break;
         }
         case CONDITION_SOURCE_TYPE_SKINNING_LOOT_TEMPLATE:

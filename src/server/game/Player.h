@@ -655,57 +655,6 @@ enum PlayerFieldByte2Flags
 #define KNOWN_TITLES_SIZE   3
 #define MAX_TITLE_INDEX     (KNOWN_TITLES_SIZE*64)          // 3 uint64 fields
 
-#ifndef LICH_KING
-enum LootType : uint8
-{
-    LOOT_NONE                   = 0,
-
-    LOOT_CORPSE                 = 1,
-    LOOT_SKINNING               = 2,
-    LOOT_FISHING                = 3,
-    LOOT_PICKPOCKETING          = 4,                        // unsupported by client, sending LOOT_SKINNING instead
-    LOOT_DISENCHANTING          = 5,                        // unsupported by client, sending LOOT_SKINNING instead
-    LOOT_PROSPECTING            = 6,                        // unsupported by client, sending LOOT_SKINNING instead
-    LOOT_INSIGNIA               = 7,                        // unsupported by client, sending LOOT_SKINNING instead
-    LOOT_FISHINGHOLE            = 8                         // unsupported by client, sending LOOT_FISHING instead
-};
-#else
-enum LootType : uint8
-{
-    LOOT_NONE                   = 0,
-
-    LOOT_CORPSE                 = 1,
-    LOOT_PICKPOCKETING          = 2,
-    LOOT_FISHING                = 3,
-    LOOT_DISENCHANTING          = 4,
-                                                            // ignored always by client
-    LOOT_SKINNING               = 6,
-    LOOT_PROSPECTING            = 7,
-    LOOT_MILLING                = 8,
-
-    LOOT_FISHINGHOLE            = 20,                       // unsupported by client, sending LOOT_FISHING instead
-    LOOT_INSIGNIA               = 21,                       // unsupported by client, sending LOOT_CORPSE instead
-    LOOT_FISHING_JUNK           = 22                        // unsupported by client, sending LOOT_FISHING instead
-};
-#endif
-
-enum LootError
-{
-    LOOT_ERROR_DIDNT_KILL               = 0,    // You don't have permission to loot that corpse.
-    LOOT_ERROR_TOO_FAR                  = 4,    // You are too far away to loot that corpse.
-    LOOT_ERROR_BAD_FACING               = 5,    // You must be facing the corpse to loot it.
-    LOOT_ERROR_LOCKED                   = 6,    // Someone is already looting that corpse.
-    LOOT_ERROR_NOTSTANDING              = 8,    // You need to be standing up to loot something!
-    LOOT_ERROR_STUNNED                  = 9,    // You can't loot anything while stunned!
-    LOOT_ERROR_PLAYER_NOT_FOUND         = 10,   // Player not found
-    LOOT_ERROR_PLAY_TIME_EXCEEDED       = 11,   // Maximum play time exceeded
-    LOOT_ERROR_MASTER_INV_FULL          = 12,   // That player's inventory is full
-    LOOT_ERROR_MASTER_UNIQUE_ITEM       = 13,   // Player has too many of that item already
-    LOOT_ERROR_MASTER_OTHER             = 14,   // Can't assign item to that player
-    LOOT_ERROR_ALREADY_PICKPOCKETED     = 15,   // Your target has already had its pockets picked
-    LOOT_ERROR_NOT_WHILE_SHAPESHIFTED   = 16    // You can't do that while shapeshifted.
-};
-
 enum MirrorTimerType
 {
     FATIGUE_TIMER      = 0,
@@ -1356,21 +1305,24 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         }
         InventoryResult CanStoreItems( std::vector<Item*> const& items, uint32 count) const;
-        InventoryResult CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemTemplate const *proto = nullptr ) const;
-        InventoryResult CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bool not_loading = true ) const;
-        InventoryResult CanUnequipItems( uint32 item, uint32 count ) const;
-        InventoryResult CanUnequipItem( uint16 src, bool swap ) const;
-        InventoryResult CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, Item *pItem, bool swap, bool not_loading = true ) const;
-        InventoryResult CanUseItem( Item *pItem, bool not_loading = true ) const;
-        bool HasItemTotemCategory( uint32 TotemCategory ) const;
-        bool CanUseItem( ItemTemplate const *pItem );
-        InventoryResult CanUseAmmo( uint32 item ) const;
-        Item* StoreNewItem( ItemPosCountVec const& pos, uint32 item, bool update,int32 randomPropertyId = 0, ItemTemplate const *proto = nullptr );
-        Item* StoreItem( ItemPosCountVec const& pos, Item *pItem, bool update );
-        Item* EquipNewItem( uint16 pos, uint32 item, bool update, ItemTemplate const *proto = nullptr );
-        Item* EquipItem( uint16 pos, Item *pItem, bool update );
+        InventoryResult CanEquipNewItem(uint8 slot, uint16 &dest, uint32 item, bool swap) const;
+        InventoryResult CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, bool not_loading = true) const;
+        InventoryResult CanUnequipItems(uint32 item, uint32 count) const;
+        InventoryResult CanUnequipItem(uint16 src, bool swap) const;
+        InventoryResult CanBankItem(uint8 bag, uint8 slot, ItemPosCountVec& dest, Item *pItem, bool swap, bool not_loading = true) const;
+        InventoryResult CanUseItem(Item *pItem, bool not_loading = true) const;
+        bool HasItemTotemCategory(uint32 TotemCategory) const;
+        bool CanUseItem(ItemTemplate const *pItem);
+        InventoryResult CanUseAmmo(uint32 item) const;
+        Item* StoreNewItem(ItemPosCountVec const& pos, uint32 item, bool update, int32 randomPropertyId = 0, GuidSet const& allowedLooters = GuidSet());
+        Item* StoreItem(ItemPosCountVec const& pos, Item *pItem, bool update);
+        Item* EquipNewItem(uint16 pos, uint32 item, bool update);
+        Item* EquipItem(uint16 pos, Item *pItem, bool update);
         void AutoUnequipOffhandIfNeed();
         bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count, ItemTemplate const *proto = nullptr);
+        void AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast = false);
+        void AutoStoreLoot(uint32 loot_id, LootStore const& store, bool broadcast = false) { AutoStoreLoot(NULL_BAG, NULL_SLOT, loot_id, store, broadcast); }
+        void StoreLootItem(uint8 lootSlot, Loot* loot);
         uint32 GetEquipedItemsLevelSum();
         //Add item count to player, return pointer to item in variable item
         Item* AddItem(uint32 itemId, uint32 count);

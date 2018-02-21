@@ -63,6 +63,9 @@ GameObject::GameObject() : WorldObject(false), MapObject(),
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
 
+    m_lootRecipientGroup = 0;
+    m_lootGenerationTime = 0;
+
 #ifdef LICH_KING
     m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_POSITION | UPDATEFLAG_ROTATION);
 #else
@@ -71,6 +74,7 @@ GameObject::GameObject() : WorldObject(false), MapObject(),
 
     m_valuesCount = GAMEOBJECT_END;
 
+    ResetLootMode(); // restore default loot mode
     m_stationaryPosition.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
@@ -117,7 +121,7 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
     if (!target)
         return;
 
-    bool forcedFlags = GetGoType() == GAMEOBJECT_TYPE_CHEST && GetGOInfo()->chest.groupLootRules; //todo loot && HasLootRecipient();
+    bool forcedFlags = GetGoType() == GAMEOBJECT_TYPE_CHEST && GetGOInfo()->chest.groupLootRules && HasLootRecipient();
     bool targetIsGM = target->IsGameMaster();
 
     ByteBuffer fieldBuffer;
@@ -199,11 +203,9 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
             else if (index == GAMEOBJECT_FLAGS)
             {
                 uint32 _flags = m_uint32Values[GAMEOBJECT_FLAGS];
-                /*TODO LOOT
                 if (GetGoType() == GAMEOBJECT_TYPE_CHEST)
                     if (GetGOInfo()->chest.groupLootRules && !IsLootAllowedFor(target))
-                        flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE;
-                        */
+                        _flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE;
 
                 fieldBuffer << _flags;
             }
@@ -802,19 +804,47 @@ void GameObject::Delete()
         AddObjectToRemoveList();
 }
 
-void GameObject::getFishLoot(Loot *fishloot)
+void GameObject::getFishLoot(Loot *fishloot, Player* loot_owner)
 {
     fishloot->clear();
 
-    uint32 subzone = GetAreaId();
+    uint32 zone, subzone;
+    uint32 defaultzone = 1;
+    GetZoneAndAreaId(zone, subzone);
 
     // if subzone loot exist use it
-    if(LootTemplates_Fishing.HaveLootFor(subzone))
-        fishloot->FillLoot(subzone, LootTemplates_Fishing, nullptr);
-    // else use zone loot
-    else
-        fishloot->FillLoot(GetZoneId(), LootTemplates_Fishing, nullptr);
+    fishloot->FillLoot(subzone, LootTemplates_Fishing, loot_owner, true, true);
+    if (fishloot->empty())  //use this becase if zone or subzone has set LOOT_MODE_JUNK_FISH,Even if no normal drop, fishloot->FillLoot return true. it wrong.
+    {
+        //subzone no result,use zone loot
+        fishloot->FillLoot(zone, LootTemplates_Fishing, loot_owner, true, true);
+        //use zone 1 as default, somewhere fishing got nothing,becase subzone and zone not set, like Off the coast of Storm Peaks.
+        if (fishloot->empty())
+            fishloot->FillLoot(defaultzone, LootTemplates_Fishing, loot_owner, true, true);
+    }
 }
+
+#ifdef LICH_KING
+void GameObject::getFishLootJunk(Loot* fishloot, Player* loot_owner)
+{
+    fishloot->clear();
+
+    uint32 zone, subzone;
+    uint32 defaultzone = 1;
+    GetZoneAndAreaId(zone, subzone);
+
+    // if subzone loot exist use it
+    fishloot->FillLoot(subzone, LootTemplates_Fishing, loot_owner, true, true, LOOT_MODE_JUNK_FISH);
+    if (fishloot->empty())  //use this becase if zone or subzone has normal mask drop, then fishloot->FillLoot return true.
+    {
+        //use zone loot
+        fishloot->FillLoot(zone, LootTemplates_Fishing, loot_owner, true, true, LOOT_MODE_JUNK_FISH);
+        if (fishloot->empty())
+            //use zone 1 as default
+            fishloot->FillLoot(defaultzone, LootTemplates_Fishing, loot_owner, true, true, LOOT_MODE_JUNK_FISH);
+    }
+}
+#endif
 
 void GameObject::SaveToDB()
 {
@@ -1005,6 +1035,11 @@ void GameObject::SetLootState(LootState state, Unit* unit)
     }*/
 }
 
+void GameObject::SetLootGenerationTime()
+{
+    m_lootGenerationTime = GameTime::GetGameTime();
+}
+
 void GameObject::SetGoState(GOState state, Unit* invoker /* = nullptr */)
 {
     SetUInt32Value(GAMEOBJECT_STATE, state);
@@ -1076,7 +1111,6 @@ void GameObject::UpdateModel()
         GetMap()->InsertGameObjectModel(*m_model);
 }
 
-/*
 Player* GameObject::GetLootRecipient() const
 {
     if (!m_lootRecipient)
@@ -1134,7 +1168,6 @@ bool GameObject::IsLootAllowedFor(Player const* player) const
 
     return true;
 }
-*/
 
 GameObject* GameObject::GetGameObject(WorldObject& object, ObjectGuid guid)
 {
@@ -1254,7 +1287,6 @@ void GameObject::Respawn()
         m_respawnTime = time(nullptr);
         GetMap()->RemoveRespawnTime(SPAWN_TYPE_GAMEOBJECT, m_spawnId, true);
     }
-    this->loot.ClearRemovedItemsList();
 }
 
 bool GameObject::ActivateToQuest( Player *pTarget)const

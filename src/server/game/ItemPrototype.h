@@ -85,7 +85,7 @@ enum ITEM_FLAGS
 {
     ITEM_FLAG_SOULBOUND                      = 0x00000001,
     ITEM_FLAG_CONJURED                       = 0x00000002,
-    ITEM_FLAG_OPENABLE                       = 0x00000004,
+    ITEM_FLAG_HAS_LOOT                       = 0x00000004,
     ITEM_FLAG_WRAPPED                        = 0x00000008,
     //TC ITEM_FLAG_DEPRECATED = 0x00000010, // Cannot equip or use
     //TC ITEM_FLAG_NO_USER_DESTROY                   = 0x00000020, // Item can not be destroyed, except by using spell (item can be reagent for spell)
@@ -94,14 +94,14 @@ enum ITEM_FLAGS
     //TC ITEM_FLAG_MULTI_LOOT_QUEST = 0x00000100,
     ITEM_FLAG_WRAPPER                        = 0x00000200, // used or not used wrapper
     //TC ITEM_FLAG_USES_RESOURCES = 0x00000400,
-    ITEM_FLAG_PARTY_LOOT                     = 0x00000800, // determines if item is party loot or not
+    ITEM_FLAG_MULTI_DROP                     = 0x00000800, // determines if item is party loot or not
     //TC ITEM_FLAG_ITEM_PURCHASE_RECORD = 0x00001000, // Item can be returned to vendor for its original cost (extended cost) //none on BC
     ITEM_FLAG_CHARTER                        = 0x00002000, // arena/guild charter
     //TC ITEM_FLAG_HAS_TEXT = 0x00004000, // Only readable items have this (but not all)
     //TC ITEM_FLAG_NO_DISENCHANT = 0x00008000,
     //TC ITEM_FLAG_REAL_DURATION = 0x00010000,
     //TC ITEM_FLAG_NO_CREATOR = 0x00020000,
-    //TC ITEM_FLAG_IS_PROSPECTABLE = 0x00040000, // Item can be prospected
+    ITEM_FLAG_IS_PROSPECTABLE                = 0x00040000, // Item can be prospected
     ITEM_FLAG_UNIQUE_EQUIPPED                = 0x00080000,
     //TC ITEM_FLAG_IGNORE_FOR_AURAS = 0x00100000,
     ITEM_FLAG_USEABLE_IN_ARENA               = 0x00200000,
@@ -614,6 +614,14 @@ struct ItemTemplate
 
         return false;
     }
+
+    bool IsCurrencyToken() const { return (BagFamily & BAG_FAMILY_MASK_CURRENCY_TOKENS) != 0; }
+    bool IsPotion() const { return Class == ITEM_CLASS_CONSUMABLE && SubClass == ITEM_SUBCLASS_POTION; }
+#ifdef LICH_KING
+    bool IsWeaponVellum() const { return Class == ITEM_CLASS_TRADE_GOODS && SubClass == ITEM_SUBCLASS_WEAPON_ENCHANTMENT; }
+    bool IsArmorVellum() const { return Class == ITEM_CLASS_TRADE_GOODS && SubClass == ITEM_SUBCLASS_ARMOR_ENCHANTMENT; }
+#endif
+    bool IsConjuredConsumable() const { return Class == ITEM_CLASS_CONSUMABLE && (Flags & ITEM_FLAG_CONJURED); }
 
     uint32 GetMaxStackSize() const
     {

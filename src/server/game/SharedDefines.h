@@ -17,6 +17,19 @@ enum SpellEffIndex : uint8
 #define EFFECT_FIRST_FOUND 254
 #define EFFECT_ALL 255
 
+// loot modes for creatures and gameobjects, bitmask!
+enum LootModes
+{
+    LOOT_MODE_DEFAULT                  = 0x1,
+    LOOT_MODE_HARD_MODE_1              = 0x2,
+    LOOT_MODE_HARD_MODE_2              = 0x4,
+    LOOT_MODE_HARD_MODE_3              = 0x8,
+    LOOT_MODE_HARD_MODE_4              = 0x10,
+#ifdef LICH_KING
+    LOOT_MODE_JUNK_FISH                = 0x8000
+#endif
+};
+
 enum Expansions
 {
     EXPANSION_CLASSIC                  = 0,
@@ -2245,6 +2258,8 @@ enum CorpseDynFlags
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS   15007
 #define SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_5s     6119
 #define SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_0s     6123
+
+#define PLAYER_CORPSE_LOOT_ENTRY 1
 
 enum WeatherType : uint32
 {

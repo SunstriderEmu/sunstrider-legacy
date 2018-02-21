@@ -265,7 +265,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "cin",            SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugCinematic,               "" },
         { "getitembypos",   SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugItemByPos,               "" },
         { "getitemlevelsum",SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugItemLevelSum,            "" },
-        { "removelootitem" ,SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugRemoveLootItem,          "" },
         { "pvpannounce",    SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugPvPAnnounce,             "" },
         { "stealth",        SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugStealthLevel,            "" },
         { "detect",         SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugAttackDistance,          "" },

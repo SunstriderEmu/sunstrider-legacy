@@ -165,8 +165,6 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 }
 
 Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
-    lootForPickPocketed(false), 
-    lootForBody(false), 
     m_lootMoney(0), 
     m_lootRecipientGroup(0), 
     m_groupLootTimer(0),
@@ -211,6 +209,7 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_respawnCompatibilityMode(false),
     m_triggerJustAppeared(false),
     m_boundaryCheckTime(2500), 
+    _pickpocketLootRestore(0),
     m_combatPulseTime(0), 
     m_combatPulseDelay(0)
 {
@@ -221,6 +220,7 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
 
     m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
 
+    ResetLootMode(); // restore default loot mode
     DisableReputationGain = false;
 }
 
@@ -1390,7 +1390,7 @@ bool Creature::isTappedBy(Player const* player) const
     return true;
 }
 
-void Creature::SetLootRecipient(Unit *unit)
+void Creature::SetLootRecipient(Unit *unit, bool withGroup)
 {
     // set the player whose group should receive the right
     // to loot the creature after it dies
@@ -1409,8 +1409,13 @@ void Creature::SetLootRecipient(Unit *unit)
         return;
 
     m_lootRecipient = player->GetGUID();
-    if (Group* group = player->GetGroup())
-        m_lootRecipientGroup = group->GetLeaderGUID();
+    if (withGroup)
+    {
+        if (Group* group = player->GetGroup())
+            m_lootRecipientGroup = group->GetLowGUID();
+    }
+    else
+        m_lootRecipientGroup = ObjectGuid::Empty;
 
     SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
 }
@@ -2223,8 +2228,6 @@ void Creature::Respawn(bool force /* = false */)
         if (!IsInWorld())
             AddToWorld();
 
-        this->loot.ClearRemovedItemsList();
-
         if (GetDeathState() == DEAD)
         {
             if (m_spawnId)
@@ -2232,8 +2235,8 @@ void Creature::Respawn(bool force /* = false */)
 
             TC_LOG_DEBUG("entities.creature", "Respawning...");
             m_respawnTime = 0;
-            lootForPickPocketed = false;
-            lootForBody = false;
+            ResetPickPocketRefillTimer();
+            loot.clear();
 
             if (m_originalEntry != GetEntry())
                 UpdateEntry(m_originalEntry);
@@ -3325,6 +3328,16 @@ bool Creature::IsMovementPreventedByCasting() const
         return true;
 
     return false;
+}
+
+void Creature::StartPickPocketRefillTimer()
+{
+    _pickpocketLootRestore = GameTime::GetGameTime() + 10 * MINUTE; /*sWorld->getIntConfig(CONFIG_CREATURE_PICKPOCKET_REFILL)*/;
+}
+
+bool Creature::CanGeneratePickPocketLoot() const
+{
+    return _pickpocketLootRestore <= GameTime::GetGameTime();
 }
 
 bool Creature::IsFocusing(Spell const* focusSpell, bool withDelay)

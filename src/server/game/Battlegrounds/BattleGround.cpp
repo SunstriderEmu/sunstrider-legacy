@@ -917,7 +917,7 @@ void Battleground::RewardMark(Player* plr, uint32 count)
             count -= no_space_count;
 
         if(!dest.empty())                // can add some
-            if(Item* item = plr->StoreNewItem( dest, mark, true, 0, pProto))
+            if(Item* item = plr->StoreNewItem( dest, mark, true, 0))
                 plr->SendNewItem(item,count,false,true);
 
         if(no_space_count > 0)
@@ -935,7 +935,7 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
     if(!markProto)
         return;
 
-    if(Item* markItem = Item::CreateItem(mark,count,plr,markProto))
+    if(Item* markItem = Item::CreateItem(mark,count,plr))
     {
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         // save new item before send

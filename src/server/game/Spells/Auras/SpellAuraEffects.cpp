@@ -1706,9 +1706,9 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                 // Personalized Weather
                 case 46736: triggerSpellId = 46737; break;
                 case 29528: triggerSpellId = 28713; break;
-                    // Feed Captured Animal
+                // Feed Captured Animal
                 case 29917: triggerSpellId = 29916; break;
-                    // Extract Gas
+                // Extract Gas
                 case 30427:
                 {
                     if (!caster)
@@ -1728,7 +1728,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                         }
                         Loot *loot = &creature->loot;
                         loot->clear();
-                        loot->FillLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, player);
+                        loot->FillLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, player, true);
                         for (uint8 i = 0; i < loot->items.size(); i++)
                         {
                             LootItem *item = loot->LootItemInSlot(i, player);

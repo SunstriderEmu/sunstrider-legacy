@@ -30,7 +30,7 @@ Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES)
 
     m_time = time(nullptr);
 
-    lootForBody = false;
+    lootRecipient = nullptr;
 }
 
 Corpse::~Corpse()

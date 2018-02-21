@@ -8,6 +8,7 @@
 #include "LootMgr.h"
 #include "CreatureGroups.h"
 #include "Duration.h"
+#include "Loot.h"
 
 #include <list>
 #include <string>
@@ -651,15 +652,24 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         virtual void DeleteFromDB();                        // overwrited in Pet
 
         Loot loot;
-        bool lootForPickPocketed;
-        bool lootForBody;
-        Player *GetLootRecipient() const;
+        void StartPickPocketRefillTimer();
+        void ResetPickPocketRefillTimer() { _pickpocketLootRestore = 0; }
+        bool CanGeneratePickPocketLoot() const;
+        ObjectGuid GetLootRecipientGUID() const { return m_lootRecipient; }
+        Player* GetLootRecipient() const;
         Group* GetLootRecipientGroup() const;
         bool hasLootRecipient() const { return m_lootRecipient != 0 || m_lootRecipientGroup; }
         bool isTappedBy(Player const* player) const;                          // return true if the creature is tapped by the player or a member of his party.
 
-        void SetLootRecipient (Unit* unit);
+        void SetLootRecipient(Unit* unit, bool withGroup = true);
         void AllLootRemovedFromCorpse();
+
+        uint16 GetLootMode() const { return m_LootMode; }
+        bool HasLootMode(uint16 lootMode) { return (m_LootMode & lootMode) != 0; }
+        void SetLootMode(uint16 lootMode) { m_LootMode = lootMode; }
+        void AddLootMode(uint16 lootMode) { m_LootMode |= lootMode; }
+        void RemoveLootMode(uint16 lootMode) { m_LootMode &= ~lootMode; }
+        void ResetLootMode() { m_LootMode = LOOT_MODE_DEFAULT; }
 
         SpellInfo const* reachWithSpellAttack(Unit *pVictim);
         SpellInfo const* reachWithSpellCure(Unit *pVictim);
@@ -871,10 +881,12 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 m_lootMoney;
         ObjectGuid m_lootRecipient;
         uint32 m_lootRecipientGroup; //group identified by leader
+
         /* This is only filled for worldbosses with every players with threat > 0  */
         std::set<uint32> m_playerInThreatListAtDeath;
 
         /// Timers
+        time_t _pickpocketLootRestore;
         uint32 m_corpseRemoveTime;                          // (msecs)timer for death or corpse disappearance
         time_t m_respawnTime;                               // (secs) time of next respawn
         uint32 m_respawnDelay;                              // (secs) delay between corpse disappearance and respawning
@@ -942,6 +954,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjectMgr::GetCreatureTemplate(GetEntry())
         CreatureData const* m_creatureData;
         CreatureAddon const* m_creatureInfoAddon;
+
+        uint16 m_LootMode;                                  // Bitmask (default: LOOT_MODE_DEFAULT) that determines what loot will be lootable
 
         /* Spell focus system */
         Spell const* m_focusSpell;   // Locks the target during spell cast for proper facing
