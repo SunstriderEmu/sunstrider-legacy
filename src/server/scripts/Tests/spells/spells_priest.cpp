@@ -1095,7 +1095,7 @@ public:
     class HolyFireTestImpt : public TestCase
     {
     public:
-        HolyFireTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        HolyFireTestImpt() : TestCase(STATUS_PASSING, true) { }
 
         void Test() override
         {
@@ -1266,7 +1266,7 @@ public:
     class PrayerOfMendingTestImpt : public TestCase
     {
     public:
-        PrayerOfMendingTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        PrayerOfMendingTestImpt() : TestCase(STATUS_PASSING, true) { }
 
         void Test() override
         {
@@ -1283,39 +1283,36 @@ public:
             TEST_CAST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, SPELL_FAILED_BAD_TARGETS);
             GroupPlayer(priest, warlock);
 
-            // Mana cost
             uint32 const expectedPrayerOfMendingMana = 390;
             TEST_POWER_COST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, POWER_MANA, expectedPrayerOfMendingMana);
 
-            // Cooldown
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, 10 * SECOND);
 
-            // Aura duration
             TEST_AURA_MAX_DURATION(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 30 * SECOND * IN_MILLISECONDS);
 
-            // Charge
             TEST_AURA_CHARGE(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 5);
 
             // Changed target and 1 charge less
-            priest2->Attack(warlock, true);
-            Wait(500);
+            priest2->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            priest2->AttackerStateUpdate(warlock);
+            Wait(1);
             TEST_AURA_CHARGE(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 4);
 
             // Heal
-            auto AI = warlock->GetTestingPlayerbotAI();
+            auto AI = priest->GetTestingPlayerbotAI(); //on retail, healing appears done by target on combat journal
             auto healingToTarget = AI->GetHealingDoneInfo(warlock);
+            TEST_ASSERT(healingToTarget != nullptr);
             //SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1);
             TEST_ASSERT(healingToTarget->size() == 1);
 
             uint32 heal = healingToTarget->begin()->healing;
 
-            float const prayerOfMendingCastTime = 1.5f;
-            float const prayerOfMendingCoeff = prayerOfMendingCastTime / 3.5f / 2.0f;
+            float const prayerOfMendingCoeff = ClassSpellsCoeff::Priest::PRAYER_OF_MENDING;
             uint32 const bonusHeal = 550 * prayerOfMendingCoeff;
             uint32 const prayerOfMending = ClassSpellsDamage::Priest::PRAYER_OF_MENDING_RNK_1 + bonusHeal;
 
             ASSERT_INFO("Heal: %u, expected: %u", heal, prayerOfMending);
-            TEST_ASSERT(heal == prayerOfMending);
+            TEST_ASSERT(Between(heal, prayerOfMending - 1, prayerOfMending + 1));
         }
     };
 
