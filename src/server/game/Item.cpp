@@ -278,7 +278,7 @@ void Item::UpdateDuration(Player* owner, uint32 diff)
     SetState(ITEM_CHANGED);                                 // save new time in database
 }
 
-void Item::SaveToDB(SQLTransaction trans)
+void Item::SaveToDB(SQLTransaction& trans)
 {
     ObjectGuid::LowType guid = GetGUID().GetCounter();
     switch (uState)
@@ -471,16 +471,23 @@ bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
     return true;
 }
 
-void Item::DeleteFromDB()
+/*static*/ void Item::DeleteFromDB(SQLTransaction& trans, ObjectGuid::LowType itemGuid)
 {
-    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'",GetGUID().GetCounter());
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
+    stmt->setUInt32(0, itemGuid);
+    trans->Append(stmt);
+}
+
+void Item::DeleteFromDB(SQLTransaction& trans)
+{
+    DeleteFromDB(trans, GetGUID().GetCounter());
 
     // Delete the items if this is a container
     if (!loot.isLooted())
         sLootItemStorage->RemoveStoredLootForContainer(GetGUID().GetCounter());
 }
 
-void Item::DeleteFromInventoryDB(SQLTransaction trans)
+void Item::DeleteFromInventoryDB(SQLTransaction& trans)
 {
     trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'",GetGUID().GetCounter());
 }
@@ -581,7 +588,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
     // item can have not null only one from field values
     if((itemProto->RandomProperty) && (itemProto->RandomSuffix))
     {
-        TC_LOG_ERROR("FIXME","Item template %u have RandomProperty==%u and RandomSuffix==%u, but must have one from field =0",itemProto->ItemId,itemProto->RandomProperty,itemProto->RandomSuffix);
+        TC_LOG_ERROR("sql.sql","Item template %u have RandomProperty==%u and RandomSuffix==%u, but must have one from field =0",itemProto->ItemId,itemProto->RandomProperty,itemProto->RandomSuffix);
         return 0;
     }
 
@@ -592,7 +599,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
         ItemRandomPropertiesEntry const *random_id = sItemRandomPropertiesStore.LookupEntry(randomPropId);
         if(!random_id)
         {
-            TC_LOG_ERROR("FIXME","Enchantment id #%u used but it doesn't have records in 'ItemRandomProperties.dbc'",randomPropId);
+            TC_LOG_ERROR("sql.sql","Enchantment id #%u used but it doesn't have records in 'ItemRandomProperties.dbc'",randomPropId);
             return 0;
         }
 
@@ -605,7 +612,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
         ItemRandomSuffixEntry const *random_id = sItemRandomSuffixStore.LookupEntry(randomPropId);
         if(!random_id)
         {
-            TC_LOG_ERROR("FIXME","Enchantment id #%u used but it doesn't have records in sItemRandomSuffixStore.",randomPropId);
+            TC_LOG_ERROR("sql.sql","Enchantment id #%u used but it doesn't have records in sItemRandomSuffixStore.",randomPropId);
             return 0;
         }
 
@@ -665,7 +672,7 @@ void Item::SetState(ItemUpdateState state, Player *forplayer)
     if (uState == ITEM_NEW && state == ITEM_REMOVED)
     {
         // pretend the item never existed
-        RemoveFromUpdateQueueOf(forplayer);
+        RemoveItemFromUpdateQueueOf(forplayer);
         delete this;
         return;
     }
@@ -673,8 +680,10 @@ void Item::SetState(ItemUpdateState state, Player *forplayer)
     if (state != ITEM_UNCHANGED)
     {
         // new items must stay in new state until saved
-        if (uState != ITEM_NEW) uState = state;
-        AddToUpdateQueueOf(forplayer);
+        if (uState != ITEM_NEW) 
+            uState = state;
+
+        AddItemToUpdateQueueOf(forplayer);
     }
     else
     {
@@ -685,7 +694,7 @@ void Item::SetState(ItemUpdateState state, Player *forplayer)
     }
 }
 
-void Item::AddToUpdateQueueOf(Player *player)
+void Item::AddItemToUpdateQueueOf(Player *player)
 {
     if (IsInUpdateQueue()) return;
 
@@ -694,14 +703,14 @@ void Item::AddToUpdateQueueOf(Player *player)
         player = GetOwner();
         if (!player)
         {
-            TC_LOG_ERROR("FIXME","Item::AddToUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!",GetOwnerGUID().GetCounter());
+            TC_LOG_ERROR("item","Item::AddItemToUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!",GetOwnerGUID().GetCounter());
             return;
         }
     }
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        TC_LOG_ERROR("FIXME","Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!",GetOwnerGUID().GetCounter(), player->GetGUID().GetCounter());
+        TC_LOG_ERROR("item","Item::AddItemToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!",GetOwnerGUID().GetCounter(), player->GetGUID().GetCounter());
         return;
     }
 
@@ -711,7 +720,7 @@ void Item::AddToUpdateQueueOf(Player *player)
     uQueuePos = player->m_itemUpdateQueue.size()-1;
 }
 
-void Item::RemoveFromUpdateQueueOf(Player *player)
+void Item::RemoveItemFromUpdateQueueOf(Player *player)
 {
     if (!IsInUpdateQueue()) return;
 
@@ -720,14 +729,14 @@ void Item::RemoveFromUpdateQueueOf(Player *player)
         player = GetOwner();
         if (!player)
         {
-            TC_LOG_ERROR("FIXME","Item::RemoveFromUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!",GetOwnerGUID().GetCounter());
+            TC_LOG_ERROR("item","Item::RemoveItemFromUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!",GetOwnerGUID().GetCounter());
             return;
         }
     }
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        TC_LOG_ERROR("FIXME","Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!",GetOwnerGUID().GetCounter(), player->GetGUID().GetCounter());
+        TC_LOG_ERROR("item","Item::RemoveItemFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!",GetOwnerGUID().GetCounter(), player->GetGUID().GetCounter());
         return;
     }
 

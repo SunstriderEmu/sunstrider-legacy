@@ -1106,8 +1106,8 @@ struct BGData
 class TC_GAME_API Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
-    friend void Item::AddToUpdateQueueOf(Player *player);
-    friend void Item::RemoveFromUpdateQueueOf(Player *player);
+    friend void Item::AddItemToUpdateQueueOf(Player *player);
+    friend void Item::RemoveItemFromUpdateQueueOf(Player *player);
     public:
         explicit Player (WorldSession *session);
         ~Player ( ) override;

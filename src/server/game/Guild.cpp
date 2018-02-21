@@ -1841,7 +1841,7 @@ Item* Guild::_StoreItem( uint8 tab, uint8 slot, Item *pItem, uint32 count, bool 
         if(!clone)
         {
             pItem->RemoveFromWorld();
-            pItem->DeleteFromDB();
+            pItem->DeleteFromDB(trans);
             delete pItem;
         }
 

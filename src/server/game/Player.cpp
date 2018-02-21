@@ -4058,7 +4058,11 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
             trans->Append(stmt);
 
             trans->PAppend("DELETE FROM gm_tickets WHERE playerGuid = '%u'", guid);
-            trans->PAppend("DELETE FROM item_instance WHERE owner_guid = '%u'", guid);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE_BY_OWNER);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+
             trans->PAppend("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'", guid, guid);
             trans->PAppend("DELETE FROM mail WHERE receiver = '%u'", guid);
             trans->PAppend("DELETE FROM mail_items WHERE receiver = '%u'", guid);
@@ -11803,7 +11807,7 @@ void Player::MoveItemFromInventory(uint8 bag, uint8 slot, bool update)
     {
         ItemRemovedQuestCheck(it->GetEntry(),it->GetCount());
         RemoveItem( bag,slot,update);
-        it->RemoveFromUpdateQueueOf(this);
+        it->RemoveItemFromUpdateQueueOf(this);
         if(it->IsInWorld())
         {
             it->RemoveFromWorld();

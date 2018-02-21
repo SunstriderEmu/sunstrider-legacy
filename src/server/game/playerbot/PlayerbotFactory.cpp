@@ -648,7 +648,7 @@ void PlayerbotFactory::InitEquipment(bool incremental)
             if (newItem)
             {
                 newItem->AddToWorld();
-                newItem->AddToUpdateQueueOf(bot);
+                newItem->AddItemToUpdateQueueOf(bot);
                 bot->AutoUnequipOffhandIfNeed();
                 EnchantItem(newItem);
                 break;
@@ -757,7 +757,7 @@ void PlayerbotFactory::InitSecondEquipmentSet()
             {
                 EnchantItem(newItem);
                 newItem->AddToWorld();
-                newItem->AddToUpdateQueueOf(bot);
+                newItem->AddItemToUpdateQueueOf(bot);
                 break;
             }
         }
@@ -803,7 +803,7 @@ void PlayerbotFactory::InitBags()
             if (newItem)
             {
                 newItem->AddToWorld();
-                newItem->AddToUpdateQueueOf(bot);
+                newItem->AddItemToUpdateQueueOf(bot);
                 break;
             }
         }
@@ -905,7 +905,7 @@ bool PlayerbotFactory::CanEquipUnseenItem(uint8 slot, uint16 &dest, uint32 item)
     if (pItem)
     {
         InventoryResult result = bot->CanEquipItem(slot, dest, pItem, true, false);
-        pItem->RemoveFromUpdateQueueOf(bot);
+        pItem->RemoveItemFromUpdateQueueOf(bot);
         delete pItem;
         return result == EQUIP_ERR_OK;
     }

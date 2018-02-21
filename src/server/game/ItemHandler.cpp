@@ -602,7 +602,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
                 {
                     _player->ItemRemovedQuestCheck( pItem->GetEntry(), pItem->GetCount());
                     _player->RemoveItem( pItem->GetBagSlot(), pItem->GetSlot(), true);
-                    pItem->RemoveFromUpdateQueueOf(_player);
+                    pItem->RemoveItemFromUpdateQueueOf(_player);
                     _player->AddItemToBuyBackSlot( pItem );
 
                     LogsDatabaseAccessor::BuyOrSellItemToVendor(LogsDatabaseAccessor::TRANSACTION_SELL, _player, pItem, pCreature);
@@ -1155,7 +1155,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
     if(item->GetState()==ITEM_NEW)                          // save new item, to have alway for `character_gifts` record in `item_instance`
     {
         // after save it will be impossible to remove the item from the queue
-        item->RemoveFromUpdateQueueOf(_player);
+        item->RemoveItemFromUpdateQueueOf(_player);
         item->SaveToDB(trans);                                   // item gave inventory record unchanged and can be save standalone
     }
     CharacterDatabase.CommitTransaction(trans);

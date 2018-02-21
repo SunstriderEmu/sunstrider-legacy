@@ -198,10 +198,11 @@ class TC_GAME_API Item : public Object
         bool IsSoulBound() const;
         bool IsBindedNotWith(ObjectGuid guid) const { return IsSoulBound() && GetOwnerGUID()!= guid; }
         bool IsBoundByEnchant() const;
-        virtual void SaveToDB(SQLTransaction trans);
+        virtual void SaveToDB(SQLTransaction& trans);
         virtual bool LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid);
-        virtual void DeleteFromDB();
-        void DeleteFromInventoryDB(SQLTransaction trans);
+        virtual void DeleteFromDB(SQLTransaction& trans);
+        static void DeleteFromDB(SQLTransaction& trans, ObjectGuid::LowType itemGuid);
+        void DeleteFromInventoryDB(SQLTransaction& trans);
 
         Bag* ToBag() { if (IsBag()) return reinterpret_cast<Bag*>(this); else return nullptr; }
         Bag const* ToBag() const { if (IsBag()) return reinterpret_cast<Bag const*>(this); else return nullptr; }
@@ -261,8 +262,8 @@ class TC_GAME_API Item : public Object
         // Update States
         ItemUpdateState GetState() const { return uState; }
         void SetState(ItemUpdateState state, Player *forplayer = nullptr);
-        void AddToUpdateQueueOf(Player *player);
-        void RemoveFromUpdateQueueOf(Player *player);
+        void AddItemToUpdateQueueOf(Player *player);
+        void RemoveItemFromUpdateQueueOf(Player *player);
         bool IsInUpdateQueue() const { return uQueuePos != -1; }
         uint16 GetQueuePos() const { return uQueuePos; }
         void FSetState(ItemUpdateState state)               // forced

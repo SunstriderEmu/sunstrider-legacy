@@ -45,7 +45,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const * item)
 
     uint16 dest;
     InventoryResult result = bot->CanEquipItem(NULL_SLOT, dest, pItem, true, false);
-    pItem->RemoveFromUpdateQueueOf(bot);
+    pItem->RemoveItemFromUpdateQueueOf(bot);
     delete pItem;
 
     if( result != EQUIP_ERR_OK )
