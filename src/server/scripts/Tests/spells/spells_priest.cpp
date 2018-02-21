@@ -1119,7 +1119,7 @@ public:
             // DoT -- wrong DoT Coeff
             float const holyFireDoTCoeff = ClassSpellsCoeff::Priest::HOLY_FIRE_DOT;
             uint32 const bonusDoTSP = 292 * holyFireDoTCoeff;
-            uint32 const holyFireDoT = 5.0f * floor((ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_TOTAL + bonusDoTSP) / 5.0f);
+            uint32 const holyFireDoT = (ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_TOTAL + bonusDoTSP);
             TEST_DOT_DAMAGE(priest, creature, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDoT, true);
         }
     };

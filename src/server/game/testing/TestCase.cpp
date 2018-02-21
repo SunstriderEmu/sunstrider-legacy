@@ -568,7 +568,15 @@ void TestCase::LearnTalent(TestPlayer* p, uint32 spellID)
 void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode, TriggerCastFlags triggeredFlags)
 {
     uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
-	INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %s", spellID, StringifySpellCastResult(res).c_str());
+    if (expectedCode == SPELL_CAST_OK)
+    {
+        INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %s", spellID, StringifySpellCastResult(res).c_str());
+    }
+    else
+    {
+        INTERNAL_ASSERT_INFO("Caster cast %u returned unexpected result %s", spellID, StringifySpellCastResult(res).c_str());
+    }
+
 	INTERNAL_TEST_ASSERT(res == uint32(expectedCode));
 }
 
