@@ -1800,8 +1800,8 @@ void GameObject::Use(Unit* user)
 
             Player* targetPlayer = ObjectAccessor::FindPlayer(player->GetTarget());
 
-            // accept only use by player from same group for caster except caster itself
-            if(!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameGroupWith(player))
+            // accept only use by player from same raid for caster except caster itself
+            if(!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameRaidWith(player))
                 return;
 
             //required lvl checks!
@@ -1911,7 +1911,7 @@ void GameObject::Use(Unit* user)
 
     // spell target is user of GO
     SpellCastTargets targets;
-    targets.SetUnitTarget( user );
+    targets.SetUnitTarget(user);
 
     spell->prepare(targets);
 }
