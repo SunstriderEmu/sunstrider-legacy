@@ -2511,9 +2511,10 @@ void Group::_homebindIfInstance(Player *player)
     {
         // leaving the group in an instance, the homebind timer is started
         // sun: only leave if you're not bound to this instance, else player will only have to enter again
+        //      also exclude leader to avoid kicking him when a two players group disband
         InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(player->GetInstanceId());
         InstancePlayerBind *playerBind = save ? player->GetBoundInstance(save->GetMapId(), save->GetDifficulty()) : NULL;
-        if(!playerBind || !playerBind->perm)
+        if(GetLeaderGUID() != player->GetGUID() && (!playerBind || !playerBind->perm))
             player->m_InstanceValid = false;
     }
 }
