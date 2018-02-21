@@ -7374,6 +7374,10 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
 
     if (IsTriggered())
     {
+        // if spell is triggered, need to check for LOS disable on the aura triggering it and inherit that behaviour
+        if (m_triggeredByAuraSpell && (m_triggeredByAuraSpell->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS)/* || DisableMgr::IsDisabledFor(DISABLE_TYPE_SPELL, m_triggeredByAuraSpell->Id, nullptr, SPELL_DISABLE_LOS)*/))
+            return true;
+
         if (!m_caster->IsInMap(target)) // sunwell: crashfix, avoid IsWithinLOS on another map! >_>
             return true;
 
@@ -7458,7 +7462,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
             }
             else 
             {
-                if (target != m_caster && !target->IsWithinLOSInMap(caster))
+                if (target != m_caster && !target->IsWithinLOSInMap(caster, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
                     return false;
             }
         }
