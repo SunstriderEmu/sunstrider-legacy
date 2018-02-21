@@ -112,7 +112,7 @@ namespace ClassSpellsCoeff
 		const float MIND_FLAY_TICK = 0.19f;
 		const float SHADOW_GUARD = 0.8009f;
 		const float SHADOW_WORD_DEATH = 0.4286f;
-		const float SHADOW_WORD_PAIN = 0.11f;
+		const float SHADOW_WORD_PAIN = 1.1f;
 		const float SHADOWFIEND = 0.65f;
 		const float TOUCH_OF_WEAKNESS = 0.1f;
 		const float VAMPIRIC_TOUCH = 1.0f;

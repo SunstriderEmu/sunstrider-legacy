@@ -2,6 +2,7 @@
 #include "../ClassSpellsCoeff.h"
 #include "PlayerbotAI.h"
 #include "SpellHistory.h"
+#include <limits>
 
 class DispelMagicTest : public TestCaseScript
 {
@@ -1809,7 +1810,7 @@ public:
     class ShadowWordDeathTestImpt : public TestCase
     {
     public:
-        ShadowWordDeathTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ShadowWordDeathTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
 
         void Test() override
         {
@@ -1862,7 +1863,7 @@ public:
             TEST_ASSERT(priest->GetHealth() == priestHealth);
             priest->RemoveAurasDueToSpell(ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
 
-            // On spell reflect: priest takes damage and backlash
+            // On spell reflect: priest takes damage and backlash <- BUG HERE
             priest->GetSpellHistory()->ResetAllCooldowns();
             uint32 warriorHealth = warrior->GetHealth();
             FORCE_CAST(warrior, warrior, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
@@ -1907,6 +1908,161 @@ public:
     }
 };
 
+class ShadowWordPainTest : public TestCaseScript
+{
+public:
+    ShadowWordPainTest() : TestCaseScript("spells priest shadow_word_pain") { }
+
+    class ShadowWordPainTestImpt : public TestCase
+    {
+    public:
+        ShadowWordPainTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+
+            // Mana cost
+            uint32 const expectedShadowWordPainMana = 575;
+            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, POWER_MANA, expectedShadowWordPainMana);
+
+            // Damage
+            float const shadowWordPainCoeff = ClassSpellsCoeff::Priest::SHADOW_WORD_PAIN;
+            uint32 const spellBonus = 292 * shadowWordPainCoeff;
+            uint32 const shadowWordPainTotal = ClassSpellsDamage::Priest::SHADOW_WORD_PAIN_RNK_10_TOTAL + spellBonus;
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, shadowWordPainTotal, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowWordPainTestImpt>();
+    }
+};
+
+class ShadowfiendTest : public TestCaseScript
+{
+public:
+    ShadowfiendTest() : TestCaseScript("spells priest shadowfiend") { }
+
+    class ShadowfiendTestImpt : public TestCase
+    {
+    public:
+        ShadowfiendTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        /*
+        Data:
+        - http://wowwiki.wikia.com/wiki/Shadowfiend?oldid=1581560
+        - https://github.com/FeenixServerProject/Archangel_2.4.3_Bugtracker/issues/2590
+        - Corecraft: 65% shadow spell coeff / Adding 90% melee and ranged attacker's miss chance auras
+        */
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 20.0f);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
+            warrior->SetMaxHealth(std::numeric_limits<int>::max());
+            warrior->SetHealth(warrior->GetMaxHealth());
+
+            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+
+            // Mana cost
+            uint32 const expectedShadowFiendMana = 157;
+            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::SHADOWFIEND_RNK_1, POWER_MANA, expectedShadowFiendMana);
+            priest->SetMaxPower(POWER_MANA, std::numeric_limits<int>::max());
+
+            // Cooldown
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOWFIEND_RNK_1, 5 * MINUTE);
+
+            Guardian* shadowfiend = priest->GetGuardianPet();
+            TEST_ASSERT(shadowfiend != nullptr);
+            shadowfiend->ForceMeleeHitResult(MELEE_HIT_MISS);
+
+            // Summon in melee range of target
+            TEST_ASSERT(warrior->GetDistance(shadowfiend) < 5);
+
+            // Attacking target
+            Wait(10);
+            TEST_ASSERT(shadowfiend->GetVictim() == warrior);
+
+            // Damage
+            uint32 const spellBonus = 292 * 0.65f;
+            uint32 expectedShadowfiendMin = 100 + spellBonus;
+            uint32 expectedShadowfiendMax = 121 + spellBonus;
+            uint32 sampleSize;
+            uint32 absoluteAllowedError;
+            _GetApproximationParams(sampleSize, absoluteAllowedError, expectedShadowfiendMin, expectedShadowfiendMax);
+
+            auto AI = priest->GetTestingPlayerbotAI();
+            shadowfiend->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            for (uint32 i = 0; i < sampleSize; i++) {
+                shadowfiend->AttackerStateUpdate(warrior, BASE_ATTACK);
+                TC_LOG_DEBUG("test.unit_test", "hit: %u", i);
+            }
+            shadowfiend->ForceMeleeHitResult(MELEE_HIT_MISS);
+
+            auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
+            if (!damageToTarget || damageToTarget->empty())
+                TEST_ASSERT(false);
+
+            uint32 totalMana = 0;
+            uint32 total = 0;
+            uint32 count = 0;
+            for (auto itr : *damageToTarget)
+            {
+                if (itr.damageInfo.HitOutCome != MELEE_HIT_NORMAL)
+                    TEST_ASSERT(false);
+
+                TEST_ASSERT(itr.damageInfo.Damages[0].DamageSchoolMask == SPELL_SCHOOL_MASK_SHADOW);
+                uint32 damage = itr.damageInfo.Damages[0].Damage;
+                uint32 mana = itr.damageInfo.Damages[0].Damage * 2.5f;
+                TC_LOG_DEBUG("test.unit_test", "damage: %u, mana gained: %u", damage, mana);
+                total += damage;
+                totalMana += damage * 2.5f;
+                count++;
+            }
+
+            ASSERT_INFO("count: %u, sample: %u", count, sampleSize);
+            TEST_ASSERT(count == sampleSize);
+
+            TC_LOG_DEBUG("test.unit_test", "total: %u, mana: %u", total, totalMana);
+
+            // Mana regen: 250% of damage dealt
+            uint32 expectedMana = total * 2.5f;
+            ASSERT_INFO("Mana: %u, expected: %u, sampleSize: %u", priest->GetPower(POWER_MANA), expectedMana, sampleSize);
+            TEST_ASSERT(priest->GetPower(POWER_MANA) == expectedMana);
+
+            // Damage take 65% of owner's shadow spell power
+
+            // Damage
+
+            // Has Shadow Armor
+            TEST_HAS_AURA(shadowfiend, 34424);
+
+            // Resistance: 150 but 250 for shadow
+            TEST_ASSERT(shadowfiend->GetResistance(SPELL_SCHOOL_ARCANE) >= 150);
+            TEST_ASSERT(shadowfiend->GetResistance(SPELL_SCHOOL_FIRE) >= 150);
+            TEST_ASSERT(shadowfiend->GetResistance(SPELL_SCHOOL_FROST) >= 150);
+            TEST_ASSERT(shadowfiend->GetResistance(SPELL_SCHOOL_NATURE) >= 150);
+            TEST_ASSERT(shadowfiend->GetResistance(SPELL_SCHOOL_SHADOW) >= 250);
+
+            // Attack speed 1.5
+            TEST_ASSERT(shadowfiend->GetAttackTime(BASE_ATTACK) == 1500);
+            shadowfiend->ResetForceMeleeHitResult();
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowfiendTestImpt>();
+    }
+};
+
 void AddSC_test_spells_priest()
 {
     // Discipline: 10/10
@@ -1943,4 +2099,6 @@ void AddSC_test_spells_priest()
     new PsychicScreamTest();
     new ShadowProtectionTest();
     new ShadowWordDeathTest();
+    new ShadowWordPainTest();
+    new ShadowfiendTest();
 }
