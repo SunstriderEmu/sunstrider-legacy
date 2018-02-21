@@ -1517,7 +1517,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
             || (m_spellInfo->Effects[effIndex].Effect >= SPELL_EFFECT_SUMMON_OBJECT_SLOT1 && m_spellInfo->Effects[effIndex].Effect <= SPELL_EFFECT_SUMMON_OBJECT_SLOT4)
             )
         {
-            pos = m_caster->GetFirstWalkableCollisionPosition(dist, angle, false);
+            pos = m_caster->GetFirstWalkableCollisionPosition(dist, angle);
         } else {
             if (m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_LEAP
                 || m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_TELEPORT_UNITS

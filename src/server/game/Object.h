@@ -421,11 +421,14 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         bool GetCollisionPosition(Position from, float x, float y, float z, Position& resultPos, float modifyDist = -CONTACT_DISTANCE);
         /* get first collision position with ground or valid terrain under it. Trinity name : GetFirstCollisionPosition
            angle = relative angle from current orientation */
-        Position GetFirstWalkableCollisionPosition(float dist, float angle, bool keepZ = false);
+        Position GetFirstWalkableCollisionPosition(float dist, float angle);
         /** move to first collision position with ground or valid terrain under it
             angle = relative angle from current orientation
         */
-        void MovePositionToFirstWalkableCollision(Position &pos, float dist, float angle, bool keepZ = false);
+        void MovePositionToFirstWalkableCollision(Position &pos, float dist, float angle);
+        inline void MovePositionToFirstCollision(Position &pos, float dist, float angle) { return MovePositionToFirstWalkableCollision(pos, dist, angle); } //TC compat
+        bool ComputeCollisionPosition(Position const& startPosition, Position const& endPosition, float& x, float& y, float& z) const;
+
         Position GetRandomNearPosition(float radius);
         Position GetNearPosition(float dist, float angle);
 
@@ -437,6 +440,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void UpdateAllowedPositionZ(float x, float y, float &z, float maxDist = 50.0f) const;
         //Set Z to closest allowed position, depending on given fly/swim/waterwalk abilities given
         static void UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
+        float SelectBestZForDestination(float x, float y, float z, bool excludeCollisionHeight) const;
 
         void GetRandomPoint( const Position &pos, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
 		Position GetRandomPoint(Position const &srcPos, float distance) const;

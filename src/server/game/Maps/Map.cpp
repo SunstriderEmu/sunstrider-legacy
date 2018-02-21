@@ -2194,22 +2194,22 @@ float Map::GetCeil(float x, float y, float z, float maxSearchDist, float collisi
     return VMAP::VMapFactory::createOrGetVMapManager()->getCeil(GetId(), x, y, z + collisionHeight, maxSearchDist);
 }
 
-float Map::GetCeil(uint32 phasemask, float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const
+float Map::GetCeil(uint32 phasemask, float x, float y, float z, float maxSearchDist /*= DEFAULT_HEIGHT_SEARCH*/, float collisionHeight/* = 0.0f*/) const
 {
     return std::min<float>(GetCeil(x, y, z, maxSearchDist, collisionHeight), GetGameObjectCeil(phasemask, x, y, z, maxSearchDist, collisionHeight));
 }
 
-float Map::GetCeil(uint32 phasemask, Position const& pos, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const
+float Map::GetCeil(uint32 phasemask, Position const& pos, float maxSearchDist /*= DEFAULT_HEIGHT_SEARCH*/, float collisionHeight /*= 0.0f*/) const
 {
     return GetCeil(phasemask, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), maxSearchDist, collisionHeight);
 }
 
-float Map::GetCeil(Position const& pos, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const
+float Map::GetCeil(Position const& pos, float maxSearchDist /*= DEFAULT_HEIGHT_SEARCH*/, float collisionHeight /*= 0.0f*/) const
 {
     return GetCeil(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), maxSearchDist, collisionHeight);
 }
 
-float Map::GetGameObjectCeil(uint32 phasemask, float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const
+float Map::GetGameObjectCeil(uint32 phasemask, float x, float y, float z, float maxSearchDist /*= DEFAULT_HEIGHT_SEARCH*/, float collisionHeight /*= 0.0f*/) const
 {
     return _dynamicTree.getCeil(x, y, z + collisionHeight, maxSearchDist, phasemask);
 }

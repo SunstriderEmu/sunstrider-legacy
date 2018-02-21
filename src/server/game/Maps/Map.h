@@ -256,7 +256,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         float GetGridMapHeight(float x, float y) const;
         float GetVMapFloor(float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const;
         /* Get map level (checking vmaps) or liquid level at given point */
-        float GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground = nullptr, bool swim = false, float collisionHeight = DEFAULT_COLLISION_HEIGHT, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
+        float GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground = nullptr, bool swim = false, float collisionHeight = 2.03128f, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const; // 2.03128f = DEFAULT_COLLISION_HEIGHT in Object.h
         bool IsPlayerWalkable(Position pos) const;
         //Returns INVALID_HEIGHT if nothing found. walkableOnly NYI
         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f, bool walkableOnly = false) const;
