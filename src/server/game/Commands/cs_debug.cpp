@@ -103,11 +103,13 @@ bool ChatHandler::HandleDebugBatchAttack(const char* args)
         {
             for(uint32 i = 0; i < count; i++)
                 p->AttackerStateUpdate(victim, type);
-        } else {
+        } else 
+        {
             for(uint32 i = 0; i < count; i++)
                 p->CastSpell(victim, 75, true); //shoot
         }
-    } else {
+    } else 
+    {
         PSendSysMessage("No victim");
     }
 
