@@ -13187,7 +13187,7 @@ Position Unit::GetLeapPosition(float dist)
         for (int8 j = 1; j >= 0; j--)
         {
             //search at given z then at z + maxSearchDist
-            float mapHeight = GetMap()->GetHeight(PHASEMASK_NORMAL, destx, desty, destz + j * (maxSearchDist / 2.0f), true, maxSearchDist / 2.0f, true);
+            float mapHeight = GetMap()->GetHeight(PHASEMASK_NORMAL, destx, desty, destz + j * (maxSearchDist / 2.0f), true, maxSearchDist / 2.0f, GetCollisionHeight(), true);
             if (mapHeight != INVALID_HEIGHT)
             {
                 //if no collision
@@ -13227,7 +13227,7 @@ Position Unit::GetLeapPosition(float dist)
     else if (this->IsFalling())
     {
         //try to find a ground not far
-        float mapHeight = GetMap()->GetHeight(PHASEMASK_NORMAL, currentPos.GetPositionX(), currentPos.GetPositionY(), currentPos.GetPositionZ(), true, 15.0f, true);
+        float mapHeight = GetMap()->GetHeight(PHASEMASK_NORMAL, currentPos.GetPositionX(), currentPos.GetPositionY(), currentPos.GetPositionZ(), true, 15.0f, GetCollisionHeight(), true);
         if (mapHeight != INVALID_HEIGHT)
             targetPos.m_positionZ = mapHeight + 1.0f;
     }

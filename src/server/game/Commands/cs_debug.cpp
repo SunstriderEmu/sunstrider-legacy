@@ -1226,7 +1226,7 @@ bool ChatHandler::HandleDebugMapHeight(const char* args)
         teleport = atoi(sTeleport);
 
     Player* p = GetSession()->GetPlayer();
-    float mapHeight = p->GetMap()->GetHeight(PHASEMASK_NORMAL, p->GetPositionX(), p->GetPositionY(), p->GetPositionZ(), true, 100.0f, walkableOnly);
+    float mapHeight = p->GetMap()->GetHeight(PHASEMASK_NORMAL, p->GetPositionX(), p->GetPositionY(), p->GetPositionZ(), true, 100.0f, 0.0f, walkableOnly);
     if (mapHeight == INVALID_HEIGHT)
     {
         SendSysMessage("No valid height found within 100 yards below");

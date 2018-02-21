@@ -1692,12 +1692,12 @@ bool Map::IsPlayerWalkable(Position pos) const
     return true;
 }
 
-float Map::GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/, float collisionHeight /*= DEFAULT_COLLISION_HEIGHT*/) const
+float Map::GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/, float collisionHeight /*= DEFAULT_COLLISION_HEIGHT*/, float maxSearchDist /*= DEFAULT_HEIGHT_SEARCH*/) const
 {
     if (const_cast<Map*>(this)->GetGrid(x, y))
     {
         // we need ground level (including grid height version) for proper return water level in point
-        float ground_z = GetHeight(x, y, z + collisionHeight, true, 50.0f);
+        float ground_z = GetHeight(phasemask, x, y, z + collisionHeight, true, maxSearchDist, collisionHeight);
         if (ground)
             *ground = ground_z;
 
@@ -1718,9 +1718,9 @@ float Map::GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, fl
     return INVALID_HEIGHT;
 }
 
-float Map::GetHeight(uint32 phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, bool walkableOnly /*= false*/) const
+float Map::GetHeight(uint32 phasemask, float x, float y, float z, bool checkVMap /*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, float collisionHeight, bool walkableOnly /*= false*/) const
 {
-    return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist, walkableOnly), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask)); //walkableOnly not implemented in dynamicTree
+    return std::max<float>(GetHeight(x, y, z, checkVMap, maxSearchDist, collisionHeight, walkableOnly), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask)); //walkableOnly not implemented in dynamicTree
 }
 
 Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject)
@@ -1743,14 +1743,14 @@ Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, Worl
                 float dist = 10.0f;
                 bool hit = staticTrans->m_model->intersectRay(r, dist, true, phase, VMAP::ModelIgnoreFlags::Nothing);
                 if (hit)
-                    if (GetHeight(/*phase,*/ x, y, z, true, 30.0f) < (v.z - dist + 1.0f))
+                    if (GetHeight(phase, { x, y, z }, true, 30.0f) < (v.z - dist + 1.0f))
                         return staticTrans->ToTransport();
             }
 
     return nullptr;
 }
 
-float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, bool walkableOnly /* = false */) const
+float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, float collisionHeight, bool walkableOnly /* = false */) const
 {
     // find raw .map surface under Z coordinates
     float mapHeight = INVALID_HEIGHT;
@@ -1775,7 +1775,7 @@ float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchD
     float vmapHeight = VMAP_INVALID_HEIGHT_VALUE;
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
     if (vmgr->isHeightCalcEnabled())
-        vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f, maxSearchDist);   // look from a bit higher pos to find the floor
+        vmapHeight = vmgr->getHeight(GetId(), x, y, z + collisionHeight, maxSearchDist);   // look from a bit higher pos to find the floor
     
     // no valid vmap height found, we're done, return map height
     if(vmapHeight == VMAP_INVALID_HEIGHT_VALUE)
@@ -1857,6 +1857,19 @@ float Map::GetMinHeight(float x, float y) const
         return grid->getMinHeight(x, y);
     
     return -500.0f;
+}
+
+float Map::GetGridMapHeight(float x, float y) const
+{
+    if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
+        return gmap->getHeight(x, y);
+
+    return VMAP_INVALID_HEIGHT_VALUE;
+}
+
+float Map::GetVMapFloor(float x, float y, float z, float maxSearchDist, float collisionHeight) const
+{
+    return VMAP::VMapFactory::createOrGetVMapManager()->getHeight(GetId(), x, y, z + collisionHeight, maxSearchDist);
 }
 
 inline bool IsOutdoorWMO(uint32 mogpFlags, int32 adtId, int32 rootId, int32 groupId, WMOAreaTableEntry const* wmoEntry, AreaTableEntry const* atEntry, uint32 mapId)

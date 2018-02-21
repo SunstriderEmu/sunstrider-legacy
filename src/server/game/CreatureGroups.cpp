@@ -328,7 +328,7 @@ Position CreatureGroup::CalculateMemberDestination(Creature* member, Position co
 
     dest.m_positionX = leaderPos.GetPositionX() + cos(followAngle + pathAngle) * followDist;
     dest.m_positionY = leaderPos.GetPositionY() + sin(followAngle + pathAngle) * followDist;
-    float height = member->GetMap()->GetHeight(dest.m_positionX, dest.m_positionY, leaderPos.GetPositionZ() + 5.0f, true, 10.0f, true);;
+    float height = member->GetMap()->GetHeight(dest.m_positionX, dest.m_positionY, leaderPos.GetPositionZ() + 5.0f, true, 10.0f, member->GetCollisionHeight(), true);
     if (height != INVALID_HEIGHT)
         dest.m_positionZ = height;
     else //no valid height found, try closer

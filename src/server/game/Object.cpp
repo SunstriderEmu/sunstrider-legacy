@@ -2879,10 +2879,7 @@ float WorldObject::GetMapWaterOrGroundLevel(float x, float y, float z, float* gr
 
 float WorldObject::GetMapHeight(float x, float y, float z, bool vmap/* = true*/, float distanceToSearch/* = DEFAULT_HEIGHT_SEARCH*/) const
 {
-    if (z != MAX_HEIGHT)
-        z += GetCollisionHeight();
-
-    return GetMap()->GetHeight(GetPhaseMask(), x, y, z, vmap, distanceToSearch);
+    return GetMap()->GetHeight(GetPhaseMask(), x, y, z, vmap, distanceToSearch, GetCollisionHeight());
 }
 
 ObjectGuid Object::GetGUID() const { return GetGuidValue(OBJECT_FIELD_GUID); }
