@@ -8445,21 +8445,25 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
 
         if(loot_type == LOOT_PICKPOCKETING)
         {
-            if (creature->CanGeneratePickPocketLoot())
+            if (loot->loot_type != LOOT_PICKPOCKETING)
             {
-                creature->StartPickPocketRefillTimer();
-                loot->clear();
+                if (creature->CanGeneratePickPocketLoot())
+                {
+                    creature->StartPickPocketRefillTimer();
+                    loot->clear();
 
-                if (uint32 lootid = creature->GetCreatureTemplate()->pickpocketLootId)
-                    loot->FillLoot(lootid, LootTemplates_Pickpocketing, this, true);
+                    if (uint32 lootid = creature->GetCreatureTemplate()->pickpocketLootId)
+                        loot->FillLoot(lootid, LootTemplates_Pickpocketing, this, true);
 
-                // Generate extra money for pick pocket loot
-                const uint32 a = GetMap()->urand(0, creature->GetLevel()/2);
-                const uint32 b = GetMap()->urand(0, GetLevel()/2);
-                loot->gold = uint32(10 * (a + b) * sWorld->GetRate(RATE_DROP_MONEY));
-            } else {
-                SendLootError(guid, LOOT_ERROR_ALREADY_PICKPOCKETED);
-                return;
+                    // Generate extra money for pick pocket loot
+                    const uint32 a = GetMap()->urand(0, creature->GetLevel() / 2);
+                    const uint32 b = GetMap()->urand(0, GetLevel() / 2);
+                    loot->gold = uint32(10 * (a + b) * sWorld->GetRate(RATE_DROP_MONEY));
+                }
+                else {
+                    SendLootError(guid, LOOT_ERROR_ALREADY_PICKPOCKETED);
+                    return;
+                } // else - still has pickpocket loot generated & not fully taken
             }
         }
         else
