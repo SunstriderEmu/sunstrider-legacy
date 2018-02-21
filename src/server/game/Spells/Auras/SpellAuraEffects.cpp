@@ -1522,7 +1522,8 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 {
     uint32 triggerSpellId = GetSpellInfo()->Effects[GetEffIndex()].TriggerSpell;
     SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId);
-    Unit* triggerCaster = triggeredSpellInfo ? (triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? caster : target) : caster;
+    //Unit* triggerCaster = triggeredSpellInfo ? (triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? caster : target) : caster;
+    Unit* triggerCaster = caster; //sun: why should be use target as caster? this breaks spell such as Spore Cloud (34168). Experimently disabled previous line
     ObjectGuid originalCasterGUID = GetCasterGUID();
     //old hacks time
     {
@@ -1534,7 +1535,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
             {
                 switch (m_spellInfo->Id)
                 {
-                    // Lightning Shield (The Earthshatterer set trigger after cast Lighting Shield)
+                // Lightning Shield (The Earthshatterer set trigger after cast Lighting Shield)
                 case 28820:
                 {
                     // Need remove self if Lightning Shield not active
@@ -1964,7 +1965,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 
     SpellCastTargets targets;
     targets.SetUnitTarget(target);
-    if (triggeredSpellInfo->IsChannelCategorySpell() && GetBase()->GetChannelTargetData())
+    if (triggeredSpellInfo && triggeredSpellInfo->IsChannelCategorySpell() && GetBase()->GetChannelTargetData())
     {
         targets.SetDstChannel(GetBase()->GetChannelTargetData()->spellDst);
         targets.SetObjectTargetChannel(GetBase()->GetChannelTargetData()->channelGUID);
@@ -1986,7 +1987,8 @@ void AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit*
     uint32 triggerSpellId = GetSpellInfo()->Effects[m_effIndex].TriggerSpell;
     if (SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId))
     {
-        if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? caster : target)
+        //if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? caster : target)
+        if (Unit* triggerCaster = caster) //sun: see HandlePeriodicTriggerSpellAuraTick
         {
             CastSpellExtraArgs args(this);
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -2101,7 +2103,7 @@ void AuraEffect::PeriodicTick(AuraApplication* aurApp, Unit* caster)
     }
 
 #ifdef TESTS
-    if (caster &&caster->GetTypeId() == TYPEID_PLAYER)
+    if (caster && caster->GetTypeId() == TYPEID_PLAYER)
         if (auto playerBotAI = caster->ToPlayer()->GetPlayerbotAI())
             playerBotAI->PeriodicTick(target, realDamage, GetId());
 #endif
