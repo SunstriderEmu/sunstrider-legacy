@@ -37,6 +37,11 @@ public:
     Returns -G3D::finf() if nothing found
     */
     float getHeight(float x, float y, float z, float maxSearchDist, uint32 phasemask) const;
+    /**
+    Returns closest z position upwards within maxSearchDist
+    Returns -G3D::finf() if nothing found
+    */
+    float getCeil(float x, float y, float z, float maxSearchDist, uint32 phasemask) const;
 
     void insert(const GameObjectModel&);
     void remove(const GameObjectModel&);

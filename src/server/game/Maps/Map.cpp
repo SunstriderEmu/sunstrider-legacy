@@ -2176,6 +2176,30 @@ void Map::GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, flo
             zoneid = area->zone;
 }
 
+float Map::GetCeil(float x, float y, float z, float maxSearchDist, float collisionHeight) const
+{
+    return VMAP::VMapFactory::createOrGetVMapManager()->getCeil(GetId(), x, y, z + collisionHeight, maxSearchDist);
+}
+
+float Map::GetCeil(uint32 phasemask, float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const
+{
+    return std::min<float>(GetCeil(x, y, z, maxSearchDist, collisionHeight), GetGameObjectCeil(phasemask, x, y, z, maxSearchDist, collisionHeight));
+}
+
+float Map::GetCeil(uint32 phasemask, Position const& pos, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const
+{
+    return GetCeil(phasemask, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), maxSearchDist, collisionHeight);
+}
+
+float Map::GetCeil(Position const& pos, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const
+{
+    return GetCeil(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), maxSearchDist, collisionHeight);
+}
+
+float Map::GetGameObjectCeil(uint32 phasemask, float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const
+{
+    return _dynamicTree.getCeil(x, y, z + collisionHeight, maxSearchDist, phasemask);
+}
 
 bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask, LineOfSightChecks checks, VMAP::ModelIgnoreFlags ignoreFlags) const
 {

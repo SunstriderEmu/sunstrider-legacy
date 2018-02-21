@@ -259,12 +259,18 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         //Returns INVALID_HEIGHT if nothing found. walkableOnly NYI
         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, bool walkableOnly = false) const;
         float GetHeight(uint32 phasemask, Position const& pos, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const { return GetHeight(phasemask, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), vmap, maxSearchDist); }
+        float GetCeil(uint32 phasemask, float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const;
+        float GetCeil(uint32 phasemask, Position const& pos, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const;
+        float GetCeil(Position const& pos, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const;
+        float GetCeil(float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const;
+        float GetGameObjectCeil(uint32 phasemask, float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const;
+
         void RemoveGameObjectModel(GameObjectModel const& model);
         void InsertGameObjectModel(GameObjectModel const& model);
         bool ContainsGameObjectModel(GameObjectModel const& model) const;
-        float GetGameObjectFloor(uint32 phasemask, float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const
+        float GetGameObjectFloor(uint32 phasemask, float x, float y, float z, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, float collisionHeight = 0.0f) const
         {
-            return _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask);
+            return _dynamicTree.getHeight(x, y, z, maxSearchDist + collisionHeight, phasemask);
         }
         Transport* GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject = nullptr);
 
