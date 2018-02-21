@@ -333,17 +333,16 @@ typedef std::unordered_map<uint32, EquipmentInfoContainerInternal> EquipmentInfo
 struct CreatureData : public SpawnData
 {
     CreatureData() : SpawnData(SPAWN_TYPE_CREATURE) { }
-
-    uint32 displayid;
-    int8 equipmentId;
-    float spawndist;
-    uint32 currentwaypoint;
-    uint32 curhealth;
-    uint32 curmana;
-    uint8 movementType;
-    uint32 poolId; //old windrunner link system
-    uint32 scriptId;
-    uint32 instanceEventId; // If spawned in raid, don't respawn if corresponding instance event is != NOT_STARTED (creature_encounter_respawn table)
+    uint32 displayid = 0;
+    int8 equipmentId = 0;
+    float spawndist = 0;
+    uint32 currentwaypoint = 0;
+    uint32 curhealth = 0;
+    uint32 curmana = 0;
+    uint8 movementType = 0;
+    uint32 poolId = 0; //old windrunner link system
+    uint32 scriptId = 0;
+    uint32 instanceEventId = 0; // If spawned in raid, don't respawn if corresponding instance event is != NOT_STARTED (creature_encounter_respawn table)
 };
 
 // from `creature_addon` table
