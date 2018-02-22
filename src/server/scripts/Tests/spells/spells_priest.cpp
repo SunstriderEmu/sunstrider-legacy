@@ -109,6 +109,68 @@ public:
     }
 };
 
+class FeedbackTest : public TestCaseScript
+{
+public:
+    FeedbackTest() : TestCaseScript("spells priest feedback") { }
+
+    class FeedbackTestImpt : public TestCase
+    {
+    public:
+        FeedbackTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+
+            EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
+            priest->DisableRegeneration(true);
+            mage->DisableRegeneration(true);
+            mage->SetPower(POWER_MANA, 200);
+            Wait(1);
+
+            // Mana cost, aura & cd
+            uint32 const expectedFeedbackMana = 705;
+            priest->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, POWER_MANA, expectedFeedbackMana);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEEDBACK_RNK_6, 3 * MINUTE);
+            TEST_HAS_AURA(priest, ClassSpells::Priest::FEEDBACK_RNK_6);
+
+            // Fail
+            uint32 const rogueHealth = rogue->GetHealth();
+            rogue->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_CAST(rogue, priest, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10);
+            rogue->ResetForceSpellHitResult();
+            TEST_ASSERT(rogue->GetHealth() == rogueHealth);
+
+            // Burn mana + damage
+            uint32 const expectedmageHealth = mage->GetHealth() - 165;
+            uint32 const expectedMageMana = mage->GetPower(POWER_MANA) - 165;
+            mage->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            Wait(1000);
+            ASSERT_INFO("initial mana: 200, current mana: %u, expected: %u", mage->GetPower(POWER_MANA), expectedMageMana);
+            TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedMageMana);
+            TEST_ASSERT(mage->GetHealth() == expectedmageHealth);
+
+            TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            Wait(1000);
+            ASSERT_INFO("initial mana: 35, current mana: %u, expected: %u", mage->GetPower(POWER_MANA), expectedMageMana - 35);
+            TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedMageMana - 35);
+            TEST_ASSERT(mage->GetHealth() == expectedmageHealth - 35);
+            mage->ResetForceSpellHitResult();
+            priest->ResetForceSpellHitResult();
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<FeedbackTestImpt>();
+    }
+};
+
 class InnerFireTest : public TestCaseScript
 {
 public:
@@ -1583,6 +1645,71 @@ public:
     }
 };
 
+class MindSootheTest : public TestCaseScript
+{
+public:
+    MindSootheTest() : TestCaseScript("spells priest mind_soothe") { }
+
+    class MindSootheTestImpt : public TestCase
+    {
+    public:
+        MindSootheTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            Position spawn(_location);
+            spawn.MoveInFront(_location, 35.0f);
+            Creature* humanoid = SpawnCreatureWithPosition(spawn, 22874);
+            Creature* beast = SpawnCreatureWithPosition(spawn, 22885);
+
+            TEST_CAST(priest, beast, ClassSpells::Priest::MIND_SOOTHE_RNK_4, SPELL_FAILED_BAD_TARGETS);
+            beast->KillSelf();
+
+            // Find base aggro range
+            uint32 count = 0;
+            float x = priest->GetPositionX() + 1.0f;
+            while (!humanoid->GetVictim() && count < 500) {
+                float x = priest->GetPositionX() + 1.0f;
+                priest->TeleportTo(priest->GetMapId(), x, priest->GetPositionY(), priest->GetPositionZ(), priest->GetOrientation());
+                Wait(1);
+                count++;
+            }
+            float const aggro = humanoid->GetDistance(priest);
+            TC_LOG_DEBUG("test.unit_test", "aggro: %f", aggro);
+
+            // Reset to find aggro range with Mind Soothe
+            priest->TeleportTo(_location);
+            humanoid->AI()->EnterEvadeMode();
+            Wait(5000);
+
+            // Mana cost
+            uint32 const expectedMindSootheMana = 120;
+            TEST_POWER_COST(priest, humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, POWER_MANA, expectedMindSootheMana);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, 15 * SECOND * IN_MILLISECONDS);
+
+            count = 0;
+            while (!humanoid->GetVictim() && count < 500) {
+                float x = priest->GetPositionX() + 1.0f;
+                priest->TeleportTo(priest->GetMapId(), x, priest->GetPositionY(), priest->GetPositionZ(), priest->GetOrientation());
+                Wait(1);
+                count++;
+            }
+            float const reducedAggro = humanoid->GetDistance(priest);
+            TC_LOG_DEBUG("test.unit_test", "reduced aggro: %f", reducedAggro);
+
+            TEST_ASSERT((aggro - reducedAggro) <= 10.0f)
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<MindSootheTestImpt>();
+    }
+};
+
 class MindVisionTest : public TestCaseScript
 {
 public:
@@ -1951,7 +2078,7 @@ public:
     class ShadowfiendTestImpt : public TestCase
     {
     public:
-        ShadowfiendTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        ShadowfiendTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         /*
         Data:
@@ -2061,6 +2188,7 @@ void AddSC_test_spells_priest()
     // Discipline: 10/10
     new DispelMagicTest();
     new FearWardTest();
+    new FeedbackTest();
     new InnerFireTest();
     new LevitateTest();
     new ManaBurnTest();
@@ -2087,6 +2215,7 @@ void AddSC_test_spells_priest()
     new FadeTest();
     new MindBlastTest();
     new MindControlTest();
+    new MindSootheTest();
     new MindVisionTest();
     new PrayerOfShadowProtectionTest();
     new PsychicScreamTest();
