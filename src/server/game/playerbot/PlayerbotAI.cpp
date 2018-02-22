@@ -1425,9 +1425,9 @@ void PlayerbotTestingAI::CastedDamageSpell(Unit* target, SpellNonMeleeDamage dam
     spellDamageDone[target->GetGUID()].push_back(std::move(info));
 }
 
-void PlayerbotTestingAI::DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo, SpellSchoolMask schoolmask)
+void PlayerbotTestingAI::DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo)
 {
-    WhiteDamageDoneInfo info(damageInfo, schoolmask);
+    WhiteDamageDoneInfo info(damageInfo);
     whiteDamageDone[target->GetGUID()].push_back(std::move(info));
 }
 

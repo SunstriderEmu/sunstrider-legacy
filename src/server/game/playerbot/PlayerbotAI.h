@@ -167,7 +167,7 @@ public:
     virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) { }
     virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) { }
     virtual void SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID) { }
-    virtual void DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo, SpellSchoolMask schoolmask) { }
+    virtual void DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo) { }
 
 private:
     void _fillGearScoreData(Player *player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore);
@@ -210,7 +210,7 @@ public:
     virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) override;
     virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) override;
     virtual void SpellDamageDealt(Unit* target, uint32 damage, uint32 spellID) override;
-    virtual void DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo, SpellSchoolMask schoolmask) override;
+    virtual void DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo) override;
 
     void ResetSpellCounters();
 
@@ -225,15 +225,16 @@ public:
         SpellMissInfo missInfo;
         bool crit;
     };
+
     struct WhiteDamageDoneInfo
     {
-        WhiteDamageDoneInfo(CalcDamageInfo* damageInfo, SpellSchoolMask schoolmask) :
-            damageInfo(*damageInfo), schoolmask(schoolmask)
+        WhiteDamageDoneInfo(CalcDamageInfo* damageInfo) :
+            damageInfo(*damageInfo)
         {}
 
         CalcDamageInfo damageInfo;
-        SpellSchoolMask schoolmask;
     };
+
     struct HealingDoneInfo
     {
         uint32 spellID;
@@ -242,6 +243,7 @@ public:
         SpellMissInfo missInfo;
         bool crit;
     };
+
     struct TickInfo
     {
         uint32 spellID;

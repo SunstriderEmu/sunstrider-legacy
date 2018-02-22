@@ -1951,7 +1951,7 @@ public:
     class ShadowfiendTestImpt : public TestCase
     {
     public:
-        ShadowfiendTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ShadowfiendTestImpt() : TestCase(STATUS_INCOMPLETE) { }
 
         /*
         Data:
