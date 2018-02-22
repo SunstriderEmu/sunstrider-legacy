@@ -1990,59 +1990,52 @@ public:
             Wait(10);
             TEST_ASSERT(shadowfiend->GetVictim() == warrior);
 
-            // Damage
+            // Damage coeff + Mana returned is 2.5 * damage + damage is shadow
             uint32 const spellBonus = 292 * 0.65f;
-            uint32 expectedShadowfiendMin = 100 + spellBonus;
-            uint32 expectedShadowfiendMax = 121 + spellBonus;
+            uint32 expectedShadowfiendMin = ClassSpellsDamage::Priest::SHADOWFIEND_RNK_1_MIN + spellBonus;
+            uint32 expectedShadowfiendMax = ClassSpellsDamage::Priest::SHADOWFIEND_RNK_1_MAX + spellBonus;
+
             uint32 sampleSize;
             uint32 absoluteAllowedError;
             _GetApproximationParams(sampleSize, absoluteAllowedError, expectedShadowfiendMin, expectedShadowfiendMax);
 
             auto AI = priest->GetTestingPlayerbotAI();
+            uint32 priestOldMana = priest->GetPower(POWER_MANA);
+
+            uint32 minDamage = std::numeric_limits<uint32>::max();
+            uint32 maxDamage = 0;
+
             shadowfiend->ForceMeleeHitResult(MELEE_HIT_NORMAL);
             for (uint32 i = 0; i < sampleSize; i++) {
                 shadowfiend->AttackerStateUpdate(warrior, BASE_ATTACK);
-                TC_LOG_DEBUG("test.unit_test", "hit: %u", i);
+
+                auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
+                TEST_ASSERT(damageToTarget->size() == i + 1);
+                auto& data = damageToTarget->back();
+
+                TEST_ASSERT(data.damageInfo.Damages[0].DamageSchoolMask == SPELL_SCHOOL_MASK_SHADOW);
+
+                uint32 damage = data.damageInfo.Damages[0].Damage;
+                uint32 priestCurrentMana = priestOldMana + damage * 2.5f;
+                TEST_ASSERT(priest->GetPower(POWER_MANA) == priestCurrentMana);
+
+                priestOldMana = priestCurrentMana;
+                minDamage = std::min(minDamage, damage);
+                maxDamage = std::max(maxDamage, damage);
             }
             shadowfiend->ForceMeleeHitResult(MELEE_HIT_MISS);
 
-            auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
-            if (!damageToTarget || damageToTarget->empty())
-                TEST_ASSERT(false);
-
-            uint32 totalMana = 0;
-            uint32 total = 0;
-            uint32 count = 0;
-            for (auto itr : *damageToTarget)
-            {
-                if (itr.damageInfo.HitOutCome != MELEE_HIT_NORMAL)
-                    TEST_ASSERT(false);
-
-                TEST_ASSERT(itr.damageInfo.Damages[0].DamageSchoolMask == SPELL_SCHOOL_MASK_SHADOW);
-                uint32 damage = itr.damageInfo.Damages[0].Damage;
-                uint32 mana = itr.damageInfo.Damages[0].Damage * 2.5f;
-                TC_LOG_DEBUG("test.unit_test", "damage: %u, mana gained: %u", damage, mana);
-                total += damage;
-                totalMana += damage * 2.5f;
-                count++;
-            }
-
-            ASSERT_INFO("count: %u, sample: %u", count, sampleSize);
-            TEST_ASSERT(count == sampleSize);
-
-            TC_LOG_DEBUG("test.unit_test", "total: %u, mana: %u", total, totalMana);
-
-            // Mana regen: 250% of damage dealt
-            uint32 expectedMana = total * 2.5f;
-            ASSERT_INFO("Mana: %u, expected: %u, sampleSize: %u", priest->GetPower(POWER_MANA), expectedMana, sampleSize);
-            TEST_ASSERT(priest->GetPower(POWER_MANA) == expectedMana);
-
-            // Damage take 65% of owner's shadow spell power
-
             // Damage
+            uint32 allowedMin = expectedShadowfiendMin > absoluteAllowedError ? expectedShadowfiendMin - absoluteAllowedError : 0; //protect against underflow
+            uint32 allowedMax = expectedShadowfiendMax + absoluteAllowedError;
 
-            // Has Shadow Armor
+            TEST_ASSERT(expectedShadowfiendMax <= allowedMax);
+            TEST_ASSERT(expectedShadowfiendMin >= allowedMin);
+
+            // Has Shadow Armor, 90% dodge
             TEST_HAS_AURA(shadowfiend, 34424);
+            TEST_ASSERT(warrior->GetUnitDodgeChance(BASE_ATTACK, shadowfiend) >= 90.0f);
+            TEST_ASSERT(warrior->GetUnitDodgeChance(RANGED_ATTACK, shadowfiend) >= 90.0f);
 
             // Resistance: 150 but 250 for shadow
             TEST_ASSERT(shadowfiend->GetResistance(SPELL_SCHOOL_ARCANE) >= 150);
