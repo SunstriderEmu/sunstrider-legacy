@@ -133,7 +133,9 @@ public:
     */
     #define TEST_HAS_NOT_AURA( ... ) { _SetCaller(__FILE__, __LINE__); _EnsureHasNotAura(__VA_ARGS__); _ResetCaller(); }
 
-    //check if target has aura and if duration match given duration
+    /* check if target has aura and if duration match given duration
+    durationMS: can be either uint32 or std::chrono::duration (such as Milliseconds)
+    */
     #define TEST_AURA_MAX_DURATION(target, spellID, durationMS) { _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, durationMS); _ResetCaller(); }
 
     #define TEST_AURA_STACK(target, spellID, stacks) { _SetCaller(__FILE__, __LINE__); _TestAuraStack(target, spellID, stacks, true); _ResetCaller(); }
@@ -170,6 +172,9 @@ public:
     //Cast given spell and check its power cost
     #define TEST_POWER_COST(caster, target, castSpellID, powerType, expectedPowerCost) { _SetCaller(__FILE__, __LINE__); _TestPowerCost(caster, target, castSpellID, powerType, expectedPowerCost); _ResetCaller(); }
 
+    /* Check remaining cooldown for given spellID
+    cooldownSecond: can be either uint32 or std::chrono::duration (such as Seconds)
+    */
     #define TEST_HAS_COOLDOWN(caster, spellID, cooldownSecond) { _SetCaller(__FILE__, __LINE__); _TestHasCooldown(caster, spellID, cooldownSecond); _ResetCaller(); }
 
     //crit: get only spells that made crit / only spells that not
@@ -215,7 +220,9 @@ protected:
     void _EnsureHasAura(Unit* target, int32 spellID);
     void _EnsureHasNotAura(Unit* target, int32 spellID) { _EnsureHasAura(target, -spellID); }
     void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond);
+    inline void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, Seconds s) { _TestHasCooldown(caster, castSpellID, uint32(Milliseconds(s).count())); }
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS);
+    inline void _TestAuraMaxDuration(Unit* target, uint32 spellID, Milliseconds ms) { _TestAuraMaxDuration(target, spellID, uint32(ms.count())); }
     void _TestAuraStack(Unit* target, uint32 spellID,uint32 stacks, bool stack);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
     void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
