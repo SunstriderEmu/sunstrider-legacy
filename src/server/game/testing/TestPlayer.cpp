@@ -7,3 +7,12 @@ void TestPlayer::SetMapAtCreation(PlayerInfo const* info)
     SetMap(sMapMgr->CreateMap(169, this)); //emerald dream
     UpdatePositionData();
 }
+
+void TestPlayer::Update(uint32 time)
+{
+    //since we don't handle session for test players, handle teleports here
+    if (IsBeingTeleported())
+        GetPlayerbotAI()->HandleTeleportAck();
+
+    Player::Update(time);
+}

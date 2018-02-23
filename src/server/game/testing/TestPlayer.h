@@ -15,6 +15,8 @@ public:
     virtual void SaveGoldToDB(SQLTransaction trans) override {}
     virtual void SaveDataFieldToDB() override {}
     virtual void SetMapAtCreation(PlayerInfo const* info) override;
+
+    void Update(uint32 time) override;
 };
 
 #endif //TEST_PLAYER_H
