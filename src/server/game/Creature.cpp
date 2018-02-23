@@ -1680,8 +1680,11 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
     m_respawnTime = GetMap()->GetCreatureRespawnTime(m_spawnId);
 
     // Is the creature script objecting to us spawning? If yes, delay by a little bit (then re-check in ::Update)
-    if (m_respawnCompatibilityMode && !m_respawnTime && !sScriptMgr->CanSpawn(spawnId, GetEntry(), GetCreatureData(), map))
-        m_respawnTime = time(nullptr) + urand(4, 7);
+    if (!m_respawnTime && !map->IsSpawnGroupActive(data->spawnGroupData->groupId))
+    {
+        ASSERT(m_respawnCompatibilityMode, "Creature (SpawnID %u) trying to load in inactive spawn group %s.", spawnId, data->spawnGroupData->name.c_str());
+        m_respawnTime = GameTime::GetGameTime() + urand(4, 7);
+    }
 
     if (m_respawnTime)                          // respawn on Update
     {

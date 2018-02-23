@@ -618,7 +618,8 @@ enum SMART_ACTION
     SMART_ACTION_SCENE_PLAY                         = 129,    // don't use on 3.3.5a
     SMART_ACTION_SCENE_CANCEL                       = 130,    // don't use on 3.3.5a
     SMART_ACTION_SPAWN_SPAWNGROUP                   = 131,    // Group ID, min secs, max secs, spawnflags
-    SMART_ACTION_DESPAWN_SPAWNGROUP                  = 132,    // Group ID, min secs, max secs, spawnflags
+    SMART_ACTION_DESPAWN_SPAWNGROUP                 = 132,    // Group ID, min secs, max secs, spawnflags
+    SMART_ACTION_RESPAWN_BY_SPAWNID                 = 133,    // spawnType, spawnId
 
     /*
     range reserved for TC updates
@@ -1234,6 +1235,12 @@ struct SmartAction
 
         struct
         {
+            uint32 spawnType;
+            uint32 spawnId;
+        } respawnData;
+
+        struct
+        {
             uint32 groupId;
             uint32 minDelay;
             uint32 maxDelay;
@@ -1299,9 +1306,7 @@ enum SMARTAI_TARGETS
     SMART_TARGET_CLOSEST_CREATURE               = 19,   // CreatureEntry(0any), maxDist, dead?
     SMART_TARGET_CLOSEST_GAMEOBJECT             = 20,   // entry(0any), maxDist
     SMART_TARGET_CLOSEST_PLAYER                 = 21,   // maxDist
-#ifdef LICH_KING
     SMART_TARGET_ACTION_INVOKER_VEHICLE         = 22,   // Unit's vehicle who caused this Event to occur
-#endif
     SMART_TARGET_OWNER_OR_SUMMONER              = 23,   // Unit's owner or summoner, Use Owner/Charmer of this unit
     SMART_TARGET_THREAT_LIST                    = 24,   // All units on creature's threat list, maxdist
     SMART_TARGET_CLOSEST_ENEMY                  = 25,   // maxDist, playerOnly
