@@ -1238,7 +1238,7 @@ void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 c
     INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
     uint32 cooldown = caster->GetSpellHistory()->GetRemainingCooldown(spellInfo);
-    INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName().c_str(), cooldown, castSpellID, cooldownSecond);
+    INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName().c_str(), cooldown, castSpellID, cooldownSecond * IN_MILLISECONDS);
     INTERNAL_TEST_ASSERT(cooldown == cooldownSecond * IN_MILLISECONDS);
 }
 

@@ -220,7 +220,7 @@ protected:
     void _EnsureHasAura(Unit* target, int32 spellID);
     void _EnsureHasNotAura(Unit* target, int32 spellID) { _EnsureHasAura(target, -spellID); }
     void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond);
-    inline void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, Seconds s) { _TestHasCooldown(caster, castSpellID, uint32(Milliseconds(s).count())); }
+    inline void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, Seconds s) { _TestHasCooldown(caster, castSpellID, uint32(s.count())); }
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS);
     inline void _TestAuraMaxDuration(Unit* target, uint32 spellID, Milliseconds ms) { _TestAuraMaxDuration(target, spellID, uint32(ms.count())); }
     void _TestAuraStack(Unit* target, uint32 spellID,uint32 stacks, bool stack);
