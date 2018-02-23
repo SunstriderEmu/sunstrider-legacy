@@ -120,13 +120,6 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<Cre
             if (!map->IsSpawnGroupActive(group->groupId))
                 continue;
 
-        // If script is blocking spawn, don't spawn but queue for a re-check in a little bit
-        if (!(group->flags & SPAWNGROUP_FLAG_COMPATIBILITY_MODE) && !sScriptMgr->CanSpawn(guid, cdata->id, cdata, map))
-        {
-            map->SaveRespawnTime(SPAWN_TYPE_CREATURE, guid, cdata->id, time(nullptr) + urand(4, 7), map->GetZoneId(cdata->spawnPoint), Trinity::ComputeGridCoord(cdata->spawnPoint.GetPositionX(), cdata->spawnPoint.GetPositionY()).GetId(), false);
-            continue;
-        }
-
         Creature* obj = new Creature;
         
         //TC_LOG_INFO("FIXME","DEBUG: LoadHelper from table: %s for (guid: %u) Loading",table,guid);

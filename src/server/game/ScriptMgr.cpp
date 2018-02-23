@@ -1443,44 +1443,6 @@ void ScriptMgr::OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId
     tmpscript->OnRelocate(transport, waypointId, mapId, x, y, z); */
 }
 
-bool ScriptMgr::CanSpawn(ObjectGuid::LowType spawnId, uint32 entry, CreatureData const* cData, Map const* map)
-{
-    ASSERT(map);
-    CreatureTemplate const* baseTemplate = sObjectMgr->GetCreatureTemplate(entry);
-    ASSERT(baseTemplate);
-
-    // find out which template we'd be using
-    CreatureTemplate const* actTemplate = baseTemplate;
-#ifdef LICH_KING
-    for (uint8 diff = uint8(map->GetSpawnMode()); diff > 0;)
-    {
-        if (uint32 diffEntry = baseTemplate->DifficultyEntry[diff - 1])
-            if (CreatureTemplate const* diffTemplate = sObjectMgr->GetCreatureTemplate(diffEntry))
-            {
-                actTemplate = diffTemplate;
-                break;
-            }
-        if (diff >= RAID_DIFFICULTY_10MAN_HEROIC && map->IsRaid())
-            diff -= 2;
-        else
-            diff -= 1;
-}
-#else
-    if(map->IsHeroic())
-        if (uint32 diffEntry = baseTemplate->difficulty_entry_1)
-            if (CreatureTemplate const* diffTemplate = sObjectMgr->GetCreatureTemplate(diffEntry))
-                actTemplate = diffTemplate;
-
-#endif
-
-    uint32 scriptId = baseTemplate->ScriptID;
-    if (cData && cData->scriptId)
-        scriptId = cData->scriptId;
-
-    GET_SCRIPT_RET(CreatureScript, scriptId, tmpscript, true);
-    return tmpscript->CanSpawn(spawnId, entry, baseTemplate, actTemplate, cData, map);
-}
-
 CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
 {
     ASSERT(creature);

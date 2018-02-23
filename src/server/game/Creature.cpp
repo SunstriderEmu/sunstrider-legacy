@@ -602,11 +602,16 @@ void Creature::Update(uint32 diff)
             break;
         case DEAD:
         {
+            if (!m_respawnCompatibilityMode)
+            {
+                TC_LOG_ERROR("entities.unit", "Creature (GUID: %u Entry: %u) in wrong state: DEAD (3)", GetGUID().GetCounter(), GetEntry());
+                break;
+            }
             time_t now = time(nullptr);
             if( m_respawnTime <= now )
             {
-                // First check if there are any scripts that object to us respawning
-                if (!sScriptMgr->CanSpawn(GetSpawnId(), GetEntry(), GetCreatureData(), GetMap()))
+                // Delay respawn if spawn group is not active
+                if(m_creatureData && !GetMap()->IsSpawnGroupActive(m_creatureData->spawnGroupData->groupId))
                 {
                     m_respawnTime = now + urand(4, 7);
                     break; // Will be rechecked on next Update call after delay expires
@@ -1634,7 +1639,7 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
 
     if(!data)
     {
-        TC_LOG_ERROR("sql.sql","Creature (GUID: %u) not found in table `creature`, can't load. ", spawnId);
+        TC_LOG_ERROR("sql.sql","Creature (SpawnID : %u) not found in table `creature`, can't load. ", spawnId);
         return false;
     }
     
@@ -1653,10 +1658,10 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
     m_respawnDelay = data->spawntimesecs;
 
     // Is the creature script objecting to us spawning? If yes, delay by a little bit (then re-check in ::Update)
-    if (!m_respawnCompatibilityMode && !m_respawnTime && !sScriptMgr->CanSpawn(spawnId, data->id, data, map))
+    if (!m_respawnTime && !map->IsSpawnGroupActive(data->spawnGroupData->groupId))
     {
-        SaveRespawnTime(urand(4, 7));
-        return false;
+        ASSERT(m_respawnCompatibilityMode, "Creature (SpawnID %u) trying to load in inactive spawn group %s.", spawnId, data->spawnGroupData->name.c_str());
+        m_respawnTime = GameTime::GetGameTime() + urand(4, 7);
     }
 
     if(!Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL /*data->phaseMask*/, data->id, data->spawnPoint, data, !m_respawnCompatibilityMode))
@@ -1664,7 +1669,7 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
 
     if(!IsPositionValid())
     {
-        TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",GetGUID().GetCounter(),GetEntry(),GetPositionX(),GetPositionY());
+        TC_LOG_ERROR("sql.sql","ERROR: Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",GetGUID().GetCounter(),GetEntry(),GetPositionX(),GetPositionY());
         return false;
     }
     //We should set first home position, because then AI calls home movement
