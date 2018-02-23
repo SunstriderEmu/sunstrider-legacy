@@ -162,7 +162,7 @@ public:
     class HeroicStrikeTestImpt : public TestCaseWarrior
     {
     public:
-        HeroicStrikeTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        HeroicStrikeTestImpt() : TestCaseWarrior(STATUS_PARTIAL, true) { }
 
         void Test() override
         {
@@ -290,7 +290,7 @@ public:
     class OverpowerTestImpt : public TestCaseWarrior
     {
     public:
-        OverpowerTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        OverpowerTestImpt() : TestCaseWarrior(STATUS_PARTIAL, true) { }
 
         void Test() override
         {
@@ -387,7 +387,7 @@ public:
     class RetaliationTestImpt : public TestCaseWarrior
     {
     public:
-        RetaliationTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        RetaliationTestImpt() : TestCaseWarrior(STATUS_PARTIAL, true) { }
 
         void Test() override
         {
@@ -1799,7 +1799,7 @@ public:
     class ShieldBashTestImpt : public TestCaseWarrior
     {
     public:
-        ShieldBashTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        ShieldBashTestImpt() : TestCaseWarrior(STATUS_PARTIAL, true) { }
 
         void Test() override
         {

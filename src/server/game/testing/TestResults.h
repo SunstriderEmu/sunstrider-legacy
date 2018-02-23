@@ -2,6 +2,7 @@
 #define TESTRESULTS_H
 
 #include "TestCase.h"
+#include "Optional.h"
 
 class TestCase;
 
@@ -38,7 +39,7 @@ private:
     uint32 _ignored;
     std::string _usedPattern;
 
-    TestResultList GetFilteredResult(bool success, TestStatus status) const;
+    TestResultList GetFilteredResult(bool success, std::initializer_list<TestStatus> const& statuses) const;
     static void HandlePrintResults(std::stringstream& ss, std::string desc, TestResultList container);
 
     TestResultList _successes;

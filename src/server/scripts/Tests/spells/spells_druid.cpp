@@ -10,7 +10,7 @@ public:
 	class BarkskinTestImpt : public TestCase
 	{
 	public:
-		BarkskinTestImpt() : TestCase(STATUS_PASSING, true) { }
+		BarkskinTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
 		void CastBarkskin(TestPlayer* druid)
 		{
@@ -199,7 +199,7 @@ public:
 	class EntanglingRootsTestImpt : public TestCase
 	{
 	public:
-		EntanglingRootsTestImpt() : TestCase(STATUS_PASSING, true) { }
+		EntanglingRootsTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
 		void Test() override
 		{
@@ -1853,7 +1853,7 @@ public:
     class GiftOfTheWildTestImpt : public TestCase
     {
     public:
-        GiftOfTheWildTestImpt() : TestCase(STATUS_PASSING, true) { }
+        GiftOfTheWildTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
         void TestOfTheWild(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint8 statBonus, uint8 resistanceBonus, uint16 armorBonus, uint32 reagentId)
         {

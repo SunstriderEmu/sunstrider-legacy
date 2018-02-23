@@ -478,7 +478,7 @@ public:
 	class DemonicAegisTestImpt : public TestCase
 	{
 	public:
-		DemonicAegisTestImpt() : TestCase(STATUS_PASSING, true) { }
+		DemonicAegisTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
 		void Test() override
 		{
@@ -600,7 +600,7 @@ public:
 	class DemonicSacrificeTestImpt : public TestCase
 	{
 	public:
-		DemonicSacrificeTestImpt() : TestCase(STATUS_PASSING, true) { }
+		DemonicSacrificeTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
 		void SacrificePet(TestPlayer* player, uint32 summon, uint32 aura, uint32 previousAura = 0)
 		{

@@ -42,7 +42,7 @@ public:
 	class MagicAbsorptionTestImpt : public TestCase
 	{
 	public:
-		MagicAbsorptionTestImpt() : TestCase(STATUS_PASSING, true) { }
+		MagicAbsorptionTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
 		void Test() override
 		{
@@ -547,7 +547,7 @@ public:
 	class ArcticWindsTestImpt : public TestCase
 	{
 	public:
-		ArcticWindsTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ArcticWindsTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
 		void Test() override
 		{

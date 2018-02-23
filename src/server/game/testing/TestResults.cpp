@@ -55,22 +55,16 @@ void TestResults::TestFinished(TestCase const& test)
         _successes.emplace_back(std::move(result));
 }
 
-std::list<TestResult> TestResults::GetFilteredResult(bool success, TestStatus status) const
+std::list<TestResult> TestResults::GetFilteredResult(bool success, std::initializer_list<TestStatus> const& statuses) const
 {
     std::list<TestResult> filtered;
-    if (success)
-    {
-        for (auto itr : _successes)
+    auto const& iterateList = success ? _successes : _failures;
+    for (auto itr : iterateList)
+        for (auto status : statuses)
             if (itr.GetStatus() == status)
                 filtered.push_back(itr);
-    }
-    else 
-    {
-        for (auto itr : _failures)
-            if (itr.GetStatus() == status)
-                filtered.push_back(itr);
-    }
-    return filtered;
+
+    return std::move(filtered);
 }
 
 void TestResults::HandlePrintResults(std::stringstream& ss, std::string desc, TestResultList container)
@@ -94,26 +88,31 @@ std::string TestResults::ToString()
     ss << " " << std::endl; //empty line are ignored by core
     if (_totalTestsRan > 0)
     {
+        auto partialSuccessCount = GetFilteredResult(true, { STATUS_PARTIAL }).size();
+
         ss << " " << _totalTestsRan << " | Total tests ran (" << _ignored << " ignored)" << std::endl;
-        ss << " " << successes << " | Successes" << std::endl;
+        ss << " " << successes << " | Successes";
+        if (partialSuccessCount)
+            ss << " (partial: " << partialSuccessCount << ")";
+        ss << std::endl;
         ss << " " << failures  << " | Failures" << std::endl;
         ss << " " << std::endl;
         if(!failures)
             ss << R"( All tests passed \o/)" << std::endl;
 
         //show successes with each test status
-        auto unexpectedSuccesses = GetFilteredResult(true, STATUS_KNOWN_BUG);
+        auto unexpectedSuccesses = GetFilteredResult(true, { STATUS_KNOWN_BUG });
         HandlePrintResults(ss, "Success (unexpected):", unexpectedSuccesses);
-        auto incompleteSuccess = GetFilteredResult(true, STATUS_INCOMPLETE);
+        auto incompleteSuccess = GetFilteredResult(true, { STATUS_INCOMPLETE });
         HandlePrintResults(ss, "Success (incompletes):", incompleteSuccess);
         //not showing expected successes
 
         //show failures with each test status
-        auto regressions = GetFilteredResult(false, STATUS_PASSING);
+        auto regressions = GetFilteredResult(false, { STATUS_PASSING, STATUS_PARTIAL });
         HandlePrintResults(ss, "Failures (regressions):", regressions);
-        auto knownBugs = GetFilteredResult(false, STATUS_KNOWN_BUG);
+        auto knownBugs = GetFilteredResult(false, { STATUS_KNOWN_BUG });
         HandlePrintResults(ss, "Failures (known bugs):", knownBugs);
-        auto incompleteFailures = GetFilteredResult(false, STATUS_INCOMPLETE);
+        auto incompleteFailures = GetFilteredResult(false, { STATUS_INCOMPLETE });
         HandlePrintResults(ss, "Failures (incomplete):", incompleteFailures);
     }
     else {

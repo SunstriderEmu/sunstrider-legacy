@@ -44,7 +44,7 @@ public:
     class StackingTestImpl : public TestCase
     {
     public:
-        StackingTestImpl() : TestCase(STATUS_PASSING, true) {  }
+        StackingTestImpl() : TestCase(STATUS_PARTIAL, true) {  }
 
         TestPlayer* p1;
         TestPlayer* p2;

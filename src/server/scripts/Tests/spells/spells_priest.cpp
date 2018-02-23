@@ -185,7 +185,7 @@ public:
     class LevitateTestImpt : public TestCase
     {
     public:
-        LevitateTestImpt() : TestCase(STATUS_PASSING, true) { }
+        LevitateTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
         void Test() override
         {

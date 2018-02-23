@@ -137,7 +137,7 @@ public:
 	class InsectSwarmTestImpt : public TestCase
 	{
 	public:
-		InsectSwarmTestImpt() : TestCase(STATUS_PASSING, true) { }
+		InsectSwarmTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
 		void Test() override
 		{
@@ -915,7 +915,7 @@ public:
 	class SurvivalOfTheFittestTestImpt : public TestCase
 	{
 	public:
-		SurvivalOfTheFittestTestImpt() : TestCase(STATUS_PASSING, true) { }
+		SurvivalOfTheFittestTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
 		void TestStat(TestPlayer* player, Stats stat, uint32 expectedStat)
 		{
@@ -1222,7 +1222,7 @@ public:
 	class NaturalistTestImpt : public TestCase
 	{
 	public:
-		NaturalistTestImpt() : TestCase(STATUS_PASSING, true) { }
+		NaturalistTestImpt() : TestCase(STATUS_PARTIAL, true) { }
 
 		void Test() override
 		{
