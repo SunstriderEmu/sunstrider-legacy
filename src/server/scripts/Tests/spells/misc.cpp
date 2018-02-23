@@ -16,14 +16,14 @@ public:
         void Test() override
         {
             TestPlayer* p = SpawnRandomPlayer(POWER_ENERGY);
-            Wait(1 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(1));
             GameObject* obj = p->SummonGameObject(2061, p->GetPosition(), G3D::Quat(), 0); //campire
             TEST_ASSERT(obj != nullptr);
             obj->SetOwnerGUID(ObjectGuid::Empty); //remove owner, environmental traps don't have any
 
             //just test if player has taken any damage
             uint32 initialHealth = p->GetHealth();
-            Wait(10 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(10));
             uint32 newHealth = p->GetHealth();
             TEST_ASSERT(newHealth < initialHealth);
         }

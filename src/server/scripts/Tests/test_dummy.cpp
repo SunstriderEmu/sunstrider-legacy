@@ -19,14 +19,14 @@ public:
             //std::string str(m->GetMapName());
             //sWorld->SendGlobalText("DUMMY BEFORE WAIT");
             Creature* summon = SpawnCreature();
-            Wait(10 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(10));
             TestPlayer* p = SpawnRandomPlayer();
-            Wait(5 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(5));
             p->CastSpell(summon, 133, false);
             p->Say("YOLO!", LANG_UNIVERSAL);
-            Wait(3 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(3));
             summon->Say("lol");
-            Wait(2 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(2));
             //sWorld->SendGlobalText("DUMMY AFTER WAIT");
             //sWorld->SendGlobalText(str.c_str());
             //TEST_ASSERT(urand(0, 1) == 1);
@@ -52,44 +52,44 @@ public:
         void Test() override
         {
             TestPlayer* p = SpawnRandomPlayer(POWER_ENERGY);
-            Wait(5 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(5));
             p->Say("ENERGY!", LANG_UNIVERSAL);
 
             _location.m_positionX += 5.0f;
             p = SpawnRandomPlayer(POWER_MANA);
-            Wait(5 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(5));
             p->Say("MANA!", LANG_UNIVERSAL);
 
             _location.m_positionX += 5.0f;
             p = SpawnRandomPlayer(POWER_RAGE);
-            Wait(5 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(5));
             p->Say("RAGE!", LANG_UNIVERSAL);
 
             _location.m_positionX += 5.0f;
             p = SpawnRandomPlayer(CLASS_MAGE);
-            Wait(5 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(5));
             p->Say("Mage!", LANG_UNIVERSAL);
 
             _location.m_positionX += 5.0f;
             p = SpawnRandomPlayer(CLASS_PRIEST);
-            Wait(5 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(5));
             p->Say("Priest!", LANG_UNIVERSAL);
 
             _location.m_positionX += 5.0f;
             p = SpawnRandomPlayer(RACE_DRAENEI);
-            Wait(5 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(5));
             p->Say("Draenei!", LANG_UNIVERSAL);
 
             _location.m_positionX += 5.0f;
             p = SpawnRandomPlayer(RACE_DWARF);
-            Wait(5 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(5));
             p->Say("Dwarf!", LANG_UNIVERSAL);
             RandomizePlayer(p);
 
-            Wait(1 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(1));
             p->HandleEmoteCommand(EMOTE_STATE_DANCE);
 
-            Wait(15 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(15));
             TEST_ASSERT(true);
         }
     };

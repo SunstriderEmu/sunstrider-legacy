@@ -80,7 +80,7 @@ public:
         void Test() override
         {
             TEST_ASSERT(1 == 1);
-            Wait(5 * SECOND * IN_MILLISECONDS);
+            Wait(Seconds(5));
             //TEST_ASSERT(0 == 1);
         }
     };

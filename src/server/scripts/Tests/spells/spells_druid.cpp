@@ -53,7 +53,7 @@ public:
 			Aura* aura = druid->GetAura(ClassSpells::Druid::BARKSKIN_RNK_1);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetDuration() == 12 * SECOND * IN_MILLISECONDS);
-            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::BARKSKIN_RNK_1, 1 * MINUTE);
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::BARKSKIN_RNK_1, Minutes(1));
 
 			// Pushback
 			uint32 startHealth = 2500;
@@ -149,7 +149,7 @@ public:
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
 			uint32 const startHealth = druid2->GetHealth();
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 6 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, Seconds(6));
             TEST_CAST(druid, druid2, ClassSpells::Druid::WRATH_RNK_10);
 			Wait(500); // wrath hit
 			TEST_ASSERT(druid2->GetHealth() == startHealth);
@@ -166,13 +166,13 @@ public:
 			// 3s
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 3 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, Seconds(3));
 			druid2->RemoveAurasDueToSpell(ClassSpells::Druid::CYCLONE_RNK_1);
 
 			// 1.5s
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
 			Wait(1500); // Cyclone cast time
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, 1500);
+            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, Milliseconds(1500));
 
 			// Immune
             TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
@@ -299,7 +299,7 @@ public:
 	public:
 		HibernateTestImpt() : TestCase(STATUS_PASSING, true) { }
 
-		void TestDuration(TestPlayer* druid, Unit* enemy, float durationSeconds)
+		void TestDuration(TestPlayer* druid, Unit* enemy, Milliseconds durationMS)
 		{
             bool hasAura = false;
             for (uint32 retry = 0; retry < 10; retry++)
@@ -310,7 +310,7 @@ public:
                     break;
             }
             TEST_ASSERT(hasAura);
-            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Druid::HIBERNATE_RNK_3, durationSeconds * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Druid::HIBERNATE_RNK_3, Milliseconds(durationMS));
 			enemy->RemoveAurasDueToSpell(ClassSpells::Druid::HIBERNATE_RNK_3);
 		}
 
@@ -324,10 +324,10 @@ public:
 			Creature* dragonkin = SpawnCreature(20, true); // dragonkin dummy
 
 			// PvE
-			TestDuration(druid, beast, 40);
+			TestDuration(druid, beast, Milliseconds(40000));
 
 			// Only one target at a time
-			TestDuration(druid, dragonkin, 40);
+            TestDuration(druid, dragonkin, Milliseconds(40000));
 			TEST_ASSERT(!beast->HasAura(ClassSpells::Druid::HIBERNATE_RNK_3));
 
 			Wait(5000);
@@ -337,9 +337,9 @@ public:
 			TEST_CAST(enemy, enemy, ClassSpells::Druid::CAT_FORM_RNK_1);
 			Wait(1000);
 			// Diminishing return
-			TestDuration(druid, enemy, 10.0f); // 10s
-			TestDuration(druid, enemy, 5.0f); // 5s
-			TestDuration(druid, enemy, 2.5f); // 2.5s
+			TestDuration(druid, enemy, Milliseconds(10000)); // 10s
+			TestDuration(druid, enemy, Milliseconds(5000)); // 5s
+			TestDuration(druid, enemy, Milliseconds(2500)); // 2.5s
 			// Immune
 			uint32 expectedHibernateMana = 150;
 			TEST_POWER_COST(druid, enemy, ClassSpells::Druid::HIBERNATE_RNK_3, POWER_MANA, expectedHibernateMana);
@@ -396,7 +396,7 @@ public:
 			ASSERT_INFO("Duration: %i", spellInfo->GetDuration());
 			Wait(100);
 			TEST_ASSERT(spellInfo->GetDuration() == 10 * SECOND *  IN_MILLISECONDS);
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::HURRICANE_RNK_4, 1 * MINUTE);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::HURRICANE_RNK_4, Minutes(1));
 			uint32 expectedAttackSpeed = rogueAttackSpeed * 1.25f;
 			ASSERT_INFO("WS: %u, expected:%u", rogue->GetAttackTimer(BASE_ATTACK), expectedAttackSpeed);
 			TEST_ASSERT(rogue->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
@@ -459,8 +459,8 @@ public:
 			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
 
 			// Duration & CD
-            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::INNERVATE_RNK_1, 20 * SECOND * IN_MILLISECONDS);
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::INNERVATE_RNK_1, 6 * MINUTE);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::INNERVATE_RNK_1, Seconds(20));
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::INNERVATE_RNK_1, Minutes(6));
 
 			// Mana regen
 			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
@@ -765,7 +765,7 @@ public:
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
 
 			// Cooldown
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, 10 * MINUTE);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Minutes(10));
 
 			// Aura
 			Aura* aura3m = creature3m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
@@ -879,7 +879,7 @@ public:
 			TEST_ASSERT(druid->GetPower(POWER_ENERGY) == 0);
 			ASSERT_INFO("Before: %f, current: %f, expected: %f", threat, creature->GetThreatManager().GetThreat(druid), expectedThreat);
 			TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == expectedThreat);
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::COWER_RNK_5, 10 * SECOND * IN_MILLISECONDS);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::COWER_RNK_5, Seconds(10));
 		}
 	};
 
@@ -1042,7 +1042,7 @@ public:
 			Aura* aura = druid->GetAura(ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetDuration() == 10 * SECOND * IN_MILLISECONDS);
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, 3 * MINUTE);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, Minutes(3));
 			Wait(1000);
 			uint32 expectedRage = rage - 10 * 10;
 			ASSERT_INFO("Rage: %u, expected: %u", druid->GetPower(POWER_RAGE), expectedRage);
@@ -1111,7 +1111,7 @@ public:
 			Aura* aura = creature->GetAura(ClassSpells::Druid::GROWL_RNK_1);
 			TEST_ASSERT(aura != nullptr);
 			TEST_ASSERT(aura->GetDuration() == 3 * SECOND * IN_MILLISECONDS);
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::GROWL_RNK_1, 10 * SECOND);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::GROWL_RNK_1, Seconds(10));
 			TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == warlockThreat);
 
 			// Keep aggro
@@ -1304,10 +1304,10 @@ public:
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
 
 			// Stun
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4, 3 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4, Seconds(3)); //target still has aura from previous TEST_POWER_COST
 
 			// Damage
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4_PROC, 18 * SECOND * IN_MILLISECONDS); //target still has aura from previous TEST_POWER_COST
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4_PROC, Seconds(18)); //target still has aura from previous TEST_POWER_COST
 			float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
 			float const pounceBleedCoeff = 0.18f;
 			uint32 const pounceBleedTotal = ClassSpellsDamage::Druid::POUNCE_RNK_4_TOTAL + AP * pounceBleedCoeff;
@@ -1359,7 +1359,7 @@ public:
             TEST_HAS_NOT_AURA(druid, ClassSpells::Druid::PROWL_RNK_3);
 
 			// Cooldown
-            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::PROWL_RNK_3, 10 * SECOND);
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::PROWL_RNK_3, Seconds(10));
 		}
 	};
 
@@ -1643,7 +1643,7 @@ public:
             TEST_POWER_COST(druid, creature, ClassSpells::Druid::TIGERS_FURY_RNK_4, POWER_ENERGY, expectedTigersFuryEnergy);
 
             // Cooldown
-            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::TIGERS_FURY_RNK_4, 1 * SECOND);
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::TIGERS_FURY_RNK_4, Seconds(1));
 
             // Aura
             Aura* aura = druid->GetAura(ClassSpells::Druid::TIGERS_FURY_RNK_4);
@@ -1876,7 +1876,7 @@ public:
             TEST_ASSERT(caster->GetItemCount(reagentId, false) == 0);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(victim, spellId, 1 * HOUR * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(victim, spellId, Hours(1));
 
             // Stats, resistances & armor
             TEST_ASSERT(Between<uint32>(victim->GetArmor(), expectedArmor - 1, expectedArmor + 1));
@@ -1999,7 +1999,7 @@ public:
             TEST_POWER_COST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, POWER_MANA, expectedLifebloomMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, 7 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, Seconds(7));
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
 
             // Spell coeffs
@@ -2054,7 +2054,7 @@ public:
             TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(victim, spellId, 30 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(victim, spellId, Minutes(30 * MINUTE));
 
             // Stats, resistances & armor
             TEST_ASSERT(victim->GetArmor() == expectedArmor);
@@ -2111,7 +2111,7 @@ public:
             caster->AddItem(reagentId, 1);
             TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
             //victim->AcceptRessurectRequest();
-            TEST_HAS_COOLDOWN(caster, spellId, 20 * MINUTE * IN_MILLISECONDS);
+            TEST_HAS_COOLDOWN(caster, spellId, Minutes(20));
             TEST_ASSERT(victim->GetHealth() == expectedHealth);
             TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
         }
@@ -2212,7 +2212,7 @@ public:
             Wait(2000);
 
             // Aura
-            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::REGROWTH_RNK_10, 21 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::REGROWTH_RNK_10, Seconds(21));
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::REGROWTH_RNK_10);
 
             // Spell coeffs
@@ -2356,7 +2356,7 @@ public:
             TEST_POWER_COST(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, POWER_MANA, expectedTranquilityMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, 8 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, Seconds(8));
 
             // Spell coeffs
             float const TranquilityCastTime = 8.0f;

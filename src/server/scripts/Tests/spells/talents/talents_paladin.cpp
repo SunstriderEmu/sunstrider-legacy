@@ -141,7 +141,7 @@ public:
 			LearnTalent(player, Talents::Paladin::IMPROVED_LAY_ON_HANDS_RNK_2);
 			uint32 res = player->CastSpell(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4);
 			TEST_ASSERT(res == SPELL_CAST_OK);
-            TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4, 40 * MINUTE);
+            TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4, Minutes(40));
 			uint32 const newShieldArmor = player->GetArmor() - startingArmor;
 			uint32 const expectedShieldArmor = shieldArmor * 1.3f;
 			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
@@ -351,7 +351,7 @@ public:
 			LearnTalent(player, Talents::Paladin::GUARDIANS_FAVOR_RNK_2);
 			uint32 res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_PROTECTION_RNK_3);
 			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::BLESSING_OF_PROTECTION_RNK_3, 3 * MINUTE);
+			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::BLESSING_OF_PROTECTION_RNK_3, Minutes(3));
 			Wait(1500);
 
 			// Blessing of freedom
@@ -452,7 +452,7 @@ public:
 			LearnTalent(player, Talents::Paladin::IMPROVED_HAMMER_OF_JUSTICE_RNK_3);
 			uint32 res = player->CastSpell(dummyTarget, ClassSpells::Paladin::HAMMER_OF_JUSTICE_RNK_4);
 			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::HAMMER_OF_JUSTICE_RNK_4, 45 * SECOND);
+			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::HAMMER_OF_JUSTICE_RNK_4, Seconds(45));
 		}
 	};
 
@@ -485,7 +485,7 @@ public:
 			uint32 startAttackTime = player->GetAttackTime(BASE_ATTACK);
 			uint32 res = player->CastSpell(player, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
 			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2, 4 * MINUTE);
+			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2, Minutes(4));
 			TEST_ASSERT(player->GetAttackTime(BASE_ATTACK) == startAttackTime);
 		}
 	};
@@ -674,7 +674,7 @@ public:
 
 			res = player->CastSpell(enemy, ClassSpells::Paladin::JUDGEMENT_RNK_1);
 			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::JUDGEMENT_RNK_1, 8 * SECOND);
+			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::JUDGEMENT_RNK_1, Seconds(8));
 		}
 	};
 

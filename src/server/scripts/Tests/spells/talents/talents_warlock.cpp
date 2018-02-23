@@ -354,11 +354,11 @@ public:
 		{
 			player->GetSpellHistory()->ResetAllCooldowns();
 			uint32 feldom = player->CastSpell(player, ClassSpells::Warlock::FEL_DOMINATION_RNK_1);
-			Wait(1 * SECOND * IN_MILLISECONDS);
+			Wait(Seconds(1));
 			TEST_ASSERT(feldom == SPELL_CAST_OK);
 
 			uint32 res = player->CastSpell(player, summon);
-			Wait(5 * SECOND * IN_MILLISECONDS);
+			Wait(Seconds(5));
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();
 			TEST_ASSERT(pet != nullptr);
@@ -541,11 +541,11 @@ public:
 		{
 			player->GetSpellHistory()->ResetAllCooldowns();
 			uint32 feldom = player->CastSpell(player, ClassSpells::Warlock::FEL_DOMINATION_RNK_1);
-			Wait(1 * SECOND * IN_MILLISECONDS);
+			Wait(Seconds(1));
 			TEST_ASSERT(feldom == SPELL_CAST_OK);
 
 			uint32 res = player->CastSpell(player, summon);
-			Wait(1 * SECOND * IN_MILLISECONDS);
+			Wait(Seconds(1));
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();
 			TEST_ASSERT(pet != nullptr);
@@ -605,7 +605,7 @@ public:
 		void SacrificePet(TestPlayer* player, uint32 summon, uint32 aura, uint32 previousAura = 0)
 		{
 			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
-			Wait(1 * SECOND * IN_MILLISECONDS);
+			Wait(Seconds(1));
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();
 			TEST_ASSERT(pet != nullptr);
@@ -613,7 +613,7 @@ public:
                 TEST_HAS_NOT_AURA(player, previousAura);
 
 			res = player->CastSpell(player, ClassSpells::Warlock::DEMONIC_SACRIFICE_RNK_1, TRIGGERED_FULL_MASK);
-			Wait(1 * SECOND * IN_MILLISECONDS);
+			Wait(Seconds(1));
 			TEST_ASSERT(res == SPELL_CAST_OK);
 
             TEST_HAS_AURA(player, aura);
@@ -672,7 +672,7 @@ public:
 			player->DisableRegeneration(false);
 			player->SetHealth(1);
 
-			Wait(10 * SECOND * IN_MILLISECONDS);
+			Wait(Seconds(10));
 			const float regen = floor(player->OCTRegenHPPerSpirit());
 			uint32 totalHealth = player->GetMaxHealth();
 			uint32 expectedHealth = 1 + floor(10 * regen + 2 * totalHealth * 0.01f);
@@ -873,7 +873,7 @@ public:
 		void AssertDemonicKnowledge(TestPlayer* player, uint32 summon, float spellPower)
 		{
 			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
-			Wait(1 * SECOND * IN_MILLISECONDS);
+			Wait(Seconds(1));
 			TEST_ASSERT(res == SPELL_CAST_OK);
 			Pet* pet = player->GetPet();
 			TEST_ASSERT(pet != nullptr);

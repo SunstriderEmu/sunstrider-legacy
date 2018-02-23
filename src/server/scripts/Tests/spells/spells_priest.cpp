@@ -90,10 +90,10 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1, POWER_MANA, expectedFearWardMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, 3 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3))
 
             // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, 3 * MINUTE);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3));
 
             // Fear
             TEST_CAST(warlock, priest, ClassSpells::Warlock::FEAR_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
@@ -135,7 +135,7 @@ public:
             uint32 const expectedFeedbackMana = 705;
             priest->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, POWER_MANA, expectedFeedbackMana);
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEEDBACK_RNK_6, 3 * MINUTE);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEEDBACK_RNK_6, Minutes(3));
             TEST_HAS_AURA(priest, ClassSpells::Priest::FEEDBACK_RNK_6);
 
             // Fail
@@ -619,11 +619,11 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, POWER_MANA, expectedPowerWordShieldMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, 30 * SECOND * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(priest, 6788, 15 * SECOND * IN_MILLISECONDS); // Weakened Aura
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, Seconds(30));
+            TEST_AURA_MAX_DURATION(priest, 6788, Seconds(15)); // Weakened Aura
 
             // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, 4 * SECOND);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, Seconds(4));
 
             // Absorb
             priest->SetFullHealth();
@@ -752,7 +752,7 @@ public:
             TEST_POWER_COST(priest, creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, POWER_MANA, expectedShackleUndeadMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, 50 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, Seconds(50));
 
             creature2->Attack(priest, false);
             for (int count = 0; count < 10; count++)
@@ -874,7 +874,7 @@ public:
             TEST_POWER_COST(priest, warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, POWER_MANA, expectedAbolishDiseaseMana);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, 20 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, Seconds(20));
 
             Wait(500);
             int8 count = 0;
@@ -1349,9 +1349,9 @@ public:
             uint32 const expectedPrayerOfMendingMana = 390;
             TEST_POWER_COST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, POWER_MANA, expectedPrayerOfMendingMana);
 
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, 10 * SECOND);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, Seconds(10));
 
-            TEST_AURA_MAX_DURATION(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 30 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, Seconds(30));
 
             TEST_AURA_CHARGE(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 5);
 
@@ -1540,10 +1540,10 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FADE_RNK_7, POWER_MANA, expectedFadeMana);
 
             // Aura duration
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FADE_RNK_7, 10 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FADE_RNK_7, Seconds(10));
 
             // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FADE_RNK_7, 30 * SECOND);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FADE_RNK_7, Seconds(30));
 
             // Effect
             uint32 const fadeFactor = 1500;
@@ -1590,7 +1590,7 @@ public:
             TEST_POWER_COST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, POWER_MANA, expectedMindBlastMana);
 
             // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::MIND_BLAST_RNK_11, 8 * SECOND);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::MIND_BLAST_RNK_11, Seconds(8));
 
             // Heal
             float const mindBlastCastTime = 1.5f;
@@ -1632,7 +1632,7 @@ public:
             TEST_POWER_COST(priest, enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, POWER_MANA, expectedMindControlMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, 10 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, Seconds(10));
 
             // Attack Speed +25%
             TEST_ASSERT(enemy->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
@@ -1688,7 +1688,7 @@ public:
             TEST_POWER_COST(priest, humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, POWER_MANA, expectedMindSootheMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, 15 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15));
 
             count = 0;
             while (!humanoid->GetVictim() && count < 500) {
@@ -1850,13 +1850,13 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, POWER_MANA, expectedPsychicScreamMana);
 
             // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 30 * SECOND);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(30));
 
             // Auras & range
-            TEST_AURA_MAX_DURATION(enemy1, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 8 * SECOND * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(enemy2, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 8 * SECOND * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(enemy3, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 8 * SECOND * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(enemy4, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, 8 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(enemy1, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
+            TEST_AURA_MAX_DURATION(enemy2, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
+            TEST_AURA_MAX_DURATION(enemy3, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
+            TEST_AURA_MAX_DURATION(enemy4, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
             TEST_HAS_NOT_AURA(enemyFurther, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
 
             // Reset auras & cd
@@ -1974,7 +1974,7 @@ public:
             priest->SetPower(POWER_MANA, 2000);
 
             // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, 12 * SECOND);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, Seconds(12));
 
             // Damage = backlash
             Wait(1000);
@@ -2104,7 +2104,7 @@ public:
             priest->SetMaxPower(POWER_MANA, std::numeric_limits<int>::max());
 
             // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOWFIEND_RNK_1, 5 * MINUTE);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOWFIEND_RNK_1, Minutes(5));
 
             Guardian* shadowfiend = priest->GetGuardianPet();
             TEST_ASSERT(shadowfiend != nullptr);

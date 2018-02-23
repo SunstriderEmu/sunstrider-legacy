@@ -835,7 +835,7 @@ public:
 			ASSERT_INFO("Rogue has %u armor, expected: %i", rogue->GetArmor(), expectedRogueArmor);
 			TEST_ASSERT(int32(rogue->GetArmor()) == expectedRogueArmor);
 			TEST_ASSERT(aura->GetDuration() == 40 * SECOND * IN_MILLISECONDS);
-            TEST_HAS_COOLDOWN(player, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5, 6 * SECOND);
+            TEST_HAS_COOLDOWN(player, ClassSpells::Druid::FAERIE_FIRE_FERAL_RNK_5, Seconds(6));
 			Wait(2000);
 
 			// Rogue can't stealth
