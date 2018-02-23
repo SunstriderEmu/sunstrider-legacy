@@ -2775,6 +2775,7 @@ namespace ClassSpells
             FEEDBACK_RNK_4 = 19274,
             FEEDBACK_RNK_5 = 19275,
             FEEDBACK_RNK_6 = 25441,
+            FEEDBACK_RNK_6_TRIGGER = 25440,
             INNER_FIRE_RNK_1 = 588,
             INNER_FIRE_RNK_2 = 7128,
             INNER_FIRE_RNK_3 = 602,
