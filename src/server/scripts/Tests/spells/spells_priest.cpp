@@ -1664,7 +1664,7 @@ public:
             while (!target->GetVictim())
             {
                 dist += 1.0f;
-                priest->TeleportTo(priest->GetMapId(), baseX + dist, priest->GetPositionY(), priest->GetPositionZ());
+                priest->TeleportTo(priest->GetMapId(), baseX + dist, priest->GetPositionY(), priest->GetPositionZ(), priest->GetOrientation());
                 Wait(1); //try with a second Wait(1) if humanoid still won't aggro priest
                 TEST_ASSERT(dist < maxDistance);
             }
@@ -1696,7 +1696,7 @@ public:
             TEST_POWER_COST(priest, humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, POWER_MANA, expectedMindSootheMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15);
+            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15));
 
             float const reducedAggroRange = GetAggroRange(priest, humanoid, spawnDistance);
 
