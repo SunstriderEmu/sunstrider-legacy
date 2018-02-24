@@ -2853,6 +2853,7 @@ namespace ClassSpells
             DESPERATE_PRAYER_RNK_5 = 19241,
             DESPERATE_PRAYER_RNK_6 = 19242,
             DESPERATE_PRAYER_RNK_7 = 19243,
+            DESPERATE_PRAYER_RNK_8 = 25437,
             FLASH_HEAL_RNK_1 = 2061,
             FLASH_HEAL_RNK_2 = 9472,
             FLASH_HEAL_RNK_3 = 9473,

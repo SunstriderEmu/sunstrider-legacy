@@ -233,9 +233,12 @@ namespace ClassSpellsDamage
             MANA_BURN_RNK_7_MIN = 1021,
             MANA_BURN_RNK_7_MAX = 1079,
             POWER_WORD_SHIELD_RNK_12 = 1265,
+            STARSHARDS_RNK_8_TOTAL = 785,
             // Holy
             BINDING_HEAL_RNK_1_MIN = 1053,
             BINDING_HEAL_RNK_1_MAX = 1350,
+            DESPERATE_PRAYER_RNK_8_MIN = 1637,
+            DESPERATE_PRAYER_RNK_8_MAX = 1924,
             FLASH_HEAL_RNK_9_MIN = 1116,
             FLASH_HEAL_RNK_9_MAX = 1295,
             GREATER_HEAL_RNK_7_MIN = 2414,

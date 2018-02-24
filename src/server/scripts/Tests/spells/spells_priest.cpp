@@ -775,6 +775,52 @@ public:
     }
 };
 
+class StarshardsTest : public TestCaseScript
+{
+public:
+    StarshardsTest() : TestCaseScript("spells priest starshards") { }
+
+    class StarshardsTestImpt : public TestCase
+    {
+    public:
+        StarshardsTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_NIGHTELF);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+
+            // Mana cost
+            uint32 const expectedStarshardsMana = 0;
+            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, POWER_MANA, expectedStarshardsMana);
+
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::STARSHARDS_RNK_8, Seconds(30));
+
+            /*
+            Damage (test fails here)
+            About spell coeff:
+                - Base calculation says 100% (see below)
+                - DrDamage says 100%
+                - WoW Wiki lists 83.5% - http://wowwiki.wikia.com/wiki/Spell_power_coefficient?oldid=1549180
+                - Dwarf priest says 100% - https://dwarfpriest.wordpress.com/2007/10/16/priest-racial-spell-changes-in-23/
+                -> We choose base calculation (100%)
+            */
+            float const starshardsDuration = 15.0f;
+            float const starshardsCoeff = starshardsDuration / 15.0f;
+            uint32 const spellBonus = 292 * starshardsCoeff;
+            uint32 const starshardsTotal = ClassSpellsDamage::Priest::STARSHARDS_RNK_8_TOTAL + spellBonus;
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, starshardsTotal, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<StarshardsTestImpt>();
+    }
+};
+
 class AbolishDiseaseTest : public TestCaseScript
 {
 public:
@@ -1033,10 +1079,57 @@ public:
     }
 };
 
+class DesperatePrayerTest : public TestCaseScript
+{
+public:
+    DesperatePrayerTest() : TestCaseScript("spells priest desperate_prayer") { }
+
+    class DesperatePrayerTestImpt : public TestCase
+    {
+    public:
+        DesperatePrayerTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_DWARF);
+            TestPlayer* ally = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+
+            ally->DisableRegeneration(true);
+            const int allyHealth = 1;
+            ally->SetHealth(allyHealth);
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+
+            // Mana cost
+            uint32 const expectedDesperatePrayerMana = 0;
+            TEST_POWER_COST(priest, ally, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, POWER_MANA, expectedDesperatePrayerMana);
+
+            // Only heals caster
+            TEST_ASSERT(ally->GetHealth() == allyHealth);
+
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, Minutes(10));
+
+            // Heal
+            float const desperatePrayerCastTime = 1.5f;
+            float const desperatePrayerCoeff = desperatePrayerCastTime / 3.5f;
+            uint32 const bonusHeal = 550 * desperatePrayerCoeff;
+            uint32 const desperatePrayerMin = ClassSpellsDamage::Priest::DESPERATE_PRAYER_RNK_8_MIN + bonusHeal;
+            uint32 const desperatePrayerMax = ClassSpellsDamage::Priest::DESPERATE_PRAYER_RNK_8_MAX + bonusHeal;
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, desperatePrayerMin, desperatePrayerMax, false);
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, desperatePrayerMin * 1.5f, desperatePrayerMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<DesperatePrayerTestImpt>();
+    }
+};
+
 class FlashHealTest : public TestCaseScript
 {
 public:
-    FlashHealTest() : TestCaseScript("spells priest greater_heal") { }
+    FlashHealTest() : TestCaseScript("spells priest flash_heal") { }
 
     class FlashHealTestImpt : public TestCase
     {
@@ -1054,13 +1147,13 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, POWER_MANA, expectedFlashHealMana);
 
             // Heal
-            float const greaterHealCastTime = 1.5f;
-            float const greaterHealCoeff = greaterHealCastTime / 3.5f;
-            uint32 const bonusHeal = 550 * greaterHealCoeff;
-            uint32 const greaterHealMin = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MIN + bonusHeal;
-            uint32 const greaterHealMax = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MAX + bonusHeal;
-            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, greaterHealMin, greaterHealMax, false);
-            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, greaterHealMin * 1.5f, greaterHealMax * 1.5f, true);
+            float const flashHealCastTime = 1.5f;
+            float const flashHealCoeff = flashHealCastTime / 3.5f;
+            uint32 const bonusHeal = 550 * flashHealCoeff;
+            uint32 const flashHealMin = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MIN + bonusHeal;
+            uint32 const flashHealMax = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MAX + bonusHeal;
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, flashHealMin, flashHealMax, false);
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, flashHealMin * 1.5f, flashHealMax * 1.5f, true);
         }
     };
 
@@ -1653,7 +1746,7 @@ public:
     class MindSootheTestImpt : public TestCase
     {
     public:
-        MindSootheTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+        MindSootheTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
 
         float GetAggroRange(TestPlayer* priest, Creature* target, float maxDistance)
         {
@@ -1666,6 +1759,7 @@ public:
                 dist += 1.0f;
                 priest->TeleportTo(priest->GetMapId(), baseX + dist, priest->GetPositionY(), priest->GetPositionZ(), priest->GetOrientation());
                 Wait(1); //try with a second Wait(1) if humanoid still won't aggro priest
+                Wait(1000);
                 TEST_ASSERT(dist < maxDistance);
             }
             return target->GetDistance(priest);
@@ -1682,6 +1776,7 @@ public:
 
             // Only cast on humanoid
             TEST_CAST(priest, beast, ClassSpells::Priest::MIND_SOOTHE_RNK_4, SPELL_FAILED_BAD_TARGETS);
+            beast->DespawnOrUnsummon();
 
             // Get initial aggro range
             float const aggroRange = GetAggroRange(priest, humanoid, spawnDistance);
@@ -1698,10 +1793,13 @@ public:
             // Aura
             TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15));
 
+            Wait(Milliseconds(1500));
             float const reducedAggroRange = GetAggroRange(priest, humanoid, spawnDistance);
 
+            float const mindSootheRangeEffect = aggroRange - reducedAggroRange;
+            TC_LOG_DEBUG("test.unit_test", "aggroRange: %f, reduced: %f, diff: %f", aggroRange, reducedAggroRange, mindSootheRangeEffect);
             TEST_ASSERT(reducedAggroRange < aggroRange);
-            TEST_ASSERT((aggroRange - reducedAggroRange) <= 10.0f)
+            TEST_ASSERT(Between<float>(mindSootheRangeEffect, aggroRange - 11.0f, aggroRange - 9.0f));
         }
     };
 
@@ -2198,10 +2296,12 @@ void AddSC_test_spells_priest()
     new PowerWordShieldTest();
     new PrayerOfFortitudeTest();
     new ShackleUndeadTest();
+    new StarshardsTest();
     // Holy: 13/13
     new AbolishDiseaseTest();
     new BindingHealTest();
     new CureDiseaseTest();
+    new DesperatePrayerTest();
     new FlashHealTest();
     new GreaterHealTest();
     new HealTest();
