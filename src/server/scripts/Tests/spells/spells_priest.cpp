@@ -1655,52 +1655,53 @@ public:
     public:
         MindSootheTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
 
+        float GetAggroRange(TestPlayer* priest, Creature* target, float maxDistance)
+        {
+            TEST_ASSERT(target->GetVictim() == nullptr); //target must not have target when we start
+            //teleport priest gradually closer to target and stop when target has aggroed priest
+            uint32 dist = 0.0f;
+            float baseX = priest->GetPositionX();
+            while (!target->GetVictim())
+            {
+                dist += 1.0f;
+                priest->TeleportTo(priest->GetMapId(), baseX + dist, priest->GetPositionY(), priest->GetPositionZ());
+                Wait(1); //try with a second Wait(1) if humanoid still won't aggro priest
+                TEST_ASSERT(dist < maxDistance);
+            }
+            return target->GetDistance(priest);
+        }
+
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             Position spawn(_location);
-            spawn.MoveInFront(_location, 35.0f);
+            float const spawnDistance = 40.0f;
+            spawn.MoveInFront(_location, spawnDistance);
             Creature* humanoid = SpawnCreatureWithPosition(spawn, 22874);
             Creature* beast = SpawnCreatureWithPosition(spawn, 22885);
 
+            // Only cast on humanoid
             TEST_CAST(priest, beast, ClassSpells::Priest::MIND_SOOTHE_RNK_4, SPELL_FAILED_BAD_TARGETS);
-            beast->KillSelf();
 
-            // Find base aggro range
-            uint32 count = 0;
-            float x = priest->GetPositionX() + 1.0f;
-            while (!humanoid->GetVictim() && count < 500) {
-                float x = priest->GetPositionX() + 1.0f;
-                priest->TeleportTo(priest->GetMapId(), x, priest->GetPositionY(), priest->GetPositionZ(), priest->GetOrientation());
-                Wait(1);
-                count++;
-            }
-            float const aggro = humanoid->GetDistance(priest);
-            TC_LOG_DEBUG("test.unit_test", "aggro: %f", aggro);
+            // Get initial aggro range
+            float const aggroRange = GetAggroRange(priest, humanoid, spawnDistance);
 
             // Reset to find aggro range with Mind Soothe
             priest->TeleportTo(_location);
             humanoid->AI()->EnterEvadeMode();
-            Wait(5000);
+            Wait(Seconds(5));
 
             // Mana cost
             uint32 const expectedMindSootheMana = 120;
             TEST_POWER_COST(priest, humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, POWER_MANA, expectedMindSootheMana);
 
             // Aura
-            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15));
+            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15);
 
-            count = 0;
-            while (!humanoid->GetVictim() && count < 500) {
-                float x = priest->GetPositionX() + 1.0f;
-                priest->TeleportTo(priest->GetMapId(), x, priest->GetPositionY(), priest->GetPositionZ(), priest->GetOrientation());
-                Wait(1);
-                count++;
-            }
-            float const reducedAggro = humanoid->GetDistance(priest);
-            TC_LOG_DEBUG("test.unit_test", "reduced aggro: %f", reducedAggro);
+            float const reducedAggroRange = GetAggroRange(priest, humanoid, spawnDistance);
 
-            TEST_ASSERT((aggro - reducedAggro) <= 10.0f)
+            TEST_ASSERT(reducedAggroRange < aggroRange);
+            TEST_ASSERT((aggroRange - reducedAggroRange) <= 10.0f)
         }
     };
 
