@@ -1661,6 +1661,81 @@ public:
     }
 };
 
+class HexOfWeaknessTest : public TestCaseScript
+{
+public:
+    HexOfWeaknessTest() : TestCaseScript("spells priest hex_of_weakness") { }
+
+    class HexOfWeaknessTestImpt : public TestCase
+    {
+    public:
+        HexOfWeaknessTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            TestPlayer* healRogue = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
+
+            // Mana cost, aura & cd
+            uint32 const expectedHexOfWeaknessMana = 295;
+            TEST_POWER_COST(priest, rogue, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, POWER_MANA, expectedHexOfWeaknessMana);
+            TEST_HAS_AURA(rogue, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7);
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, Minutes(2));
+
+            // Healing reduced by 20%
+            float const hexOfWeaknessHealMalus = 0.80f;
+            float const greaterHealCastTime = 3.0f;
+            float const greaterHealCoeff = greaterHealCastTime / 3.5f;
+            uint32 const greaterHealMin = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN * hexOfWeaknessHealMalus;
+            uint32 const greaterHealMax = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX * hexOfWeaknessHealMalus;
+            TEST_DIRECT_HEAL(healRogue, rogue, ClassSpells::Priest::GREATER_HEAL_RNK_7, greaterHealMin, greaterHealMax, false);
+            TEST_DIRECT_HEAL(healRogue, rogue, ClassSpells::Priest::GREATER_HEAL_RNK_7, greaterHealMin * 1.5f, greaterHealMax * 1.5f, true);
+
+            // MH, OH, spells
+            EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+            Wait(1500);
+            EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+            Wait(1);
+            // Damage -- Issue here, Hex of Weakness lower the damage too much
+            int const hexOfWeaknessDamageMalus = 35;
+            int const sinisterStrikeBonus = 98;
+            float const normalizedSwordSpeed = 2.4f;
+            float const AP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5f));
+            // Sinister strike
+            uint32 const weaponMinDamage = 214 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - hexOfWeaknessDamageMalus;
+            uint32 const weaponMaxDamage = 398 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - hexOfWeaknessDamageMalus;
+            uint32 const expectedSinisterStrikeMin = weaponMinDamage * armorFactor;
+            uint32 const expectedSinisterStrikeMax = weaponMaxDamage * armorFactor;
+            uint32 const expectedSinisterStrikeCritMin = weaponMinDamage * 2.0f * armorFactor;
+            uint32 const expectedSinisterStrikeCritMax = weaponMaxDamage * 2.0f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeMin, expectedSinisterStrikeMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeCritMin, expectedSinisterStrikeCritMax, true);
+            // MH -- 214 - 398
+            float const wgMHSpeed = 2.8f;
+            uint32 const expectedMHMin = (214 - hexOfWeaknessDamageMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
+            uint32 const expectedMHMax = (398 - hexOfWeaknessDamageMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
+            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin, expectedMHMax, false);
+            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin * 2.0f, expectedMHMax * 2.0f, true);
+            // OH -- 107 - 199
+            float const wgOHSpeed = 1.4f;
+            uint32 const expectedOHMin = (107 - hexOfWeaknessDamageMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
+            uint32 const expectedOHMax = (199 - hexOfWeaknessDamageMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
+            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin, expectedOHMax, false);
+            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin * 2.0f, expectedOHMax * 2.0f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<HexOfWeaknessTestImpt>();
+    }
+};
+
 class MindBlastTest : public TestCaseScript
 {
 public:
@@ -2282,9 +2357,101 @@ public:
     }
 };
 
+class TouchOfWeaknessTest : public TestCaseScript
+{
+public:
+    TouchOfWeaknessTest() : TestCaseScript("spells priest touch_of_weakness") { }
+
+    class TouchOfWeaknessTestImpt : public TestCase
+    {
+    public:
+        TouchOfWeaknessTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
+
+            // Mana cost, aura & cd
+            uint32 const expectedTouchOfWeaknessMana = 235;
+            priest->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, POWER_MANA, expectedTouchOfWeaknessMana);
+            TEST_HAS_AURA(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, Minutes(10));
+
+            // Fail on spell
+            mage->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            mage->ResetForceSpellHitResult();
+            TEST_HAS_AURA(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
+            TEST_HAS_NOT_AURA(mage, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER);
+
+            // Success
+            rogue->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            rogue->AttackerStateUpdate(priest);
+            Wait(1000);
+            rogue->AttackStop();
+            rogue->ResetForceMeleeHitResult();
+            priest->ResetForceSpellHitResult();
+            TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
+            TEST_HAS_AURA(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER);
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, Minutes(2));
+
+            // MH, OH, spells
+            EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+            Wait(1500);
+            EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+            Wait(1);
+            // Damage -- Issue here, Touch of Weakness lower the damage too much
+            int const touchOfWeaknessMalus = 35;
+            int const sinisterStrikeBonus = 98;
+            float const normalizedSwordSpeed = 2.4f;
+            float const AP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5f));
+            // Sinister strike
+            uint32 const weaponMinDamage = 214 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - touchOfWeaknessMalus;
+            uint32 const weaponMaxDamage = 398 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - touchOfWeaknessMalus;
+            uint32 const expectedSinisterStrikeMin = weaponMinDamage * armorFactor;
+            uint32 const expectedSinisterStrikeMax = weaponMaxDamage * armorFactor;
+            uint32 const expectedSinisterStrikeCritMin = weaponMinDamage * 2.0f * armorFactor;
+            uint32 const expectedSinisterStrikeCritMax = weaponMaxDamage * 2.0f * armorFactor;
+            TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeMin, expectedSinisterStrikeMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeCritMin, expectedSinisterStrikeCritMax, true);
+            // MH -- 214 - 398
+            float const wgMHSpeed = 2.8f;
+            uint32 const expectedMHMin = (214 - touchOfWeaknessMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
+            uint32 const expectedMHMax = (398 - touchOfWeaknessMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
+            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin, expectedMHMax, false);
+            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin * 2.0f, expectedMHMax * 2.0f, true);
+            // OH -- 107 - 199
+            float const wgOHSpeed = 1.4f;
+            uint32 const expectedOHMin = (107 - touchOfWeaknessMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
+            uint32 const expectedOHMax = (199 - touchOfWeaknessMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
+            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin, expectedOHMax, false);
+            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin * 2.0f, expectedOHMax * 2.0f, true);
+
+            // Damage
+            float const touchOfWeaknessCoeff = ClassSpellsCoeff::Priest::TOUCH_OF_WEAKNESS;
+            uint32 const spellBonus = 292 * touchOfWeaknessCoeff;
+            uint32 const touchOfWeaknessDmg = ClassSpellsDamage::Priest::TOUCH_OF_WEAKNESS_RNK_7 + spellBonus;
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, touchOfWeaknessDmg, touchOfWeaknessDmg, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, touchOfWeaknessDmg * 1.5f, touchOfWeaknessDmg * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<TouchOfWeaknessTestImpt>();
+    }
+};
+
 void AddSC_test_spells_priest()
 {
-    // Discipline: 10/10
+    // Discipline: 11/11
     new DispelMagicTest();
     new FearWardTest();
     new FeedbackTest();
@@ -2312,8 +2479,9 @@ void AddSC_test_spells_priest()
     new RenewTest();
     new ResurrectionTest();
     new SmiteTest();
-    // Shadow: /
+    // Shadow: 13/13
     new FadeTest();
+    new HexOfWeaknessTest();
     new MindBlastTest();
     new MindControlTest();
     new MindSootheTest();
@@ -2324,4 +2492,5 @@ void AddSC_test_spells_priest()
     new ShadowWordDeathTest();
     new ShadowWordPainTest();
     new ShadowfiendTest();
+    new TouchOfWeaknessTest();
 }

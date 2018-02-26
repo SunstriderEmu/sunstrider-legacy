@@ -263,6 +263,7 @@ namespace ClassSpellsDamage
             SHADOW_WORD_PAIN_RNK_10_TOTAL = 1236,
             SHADOWFIEND_RNK_1_MIN = 110,
             SHADOWFIEND_RNK_1_MAX = 121,
+            TOUCH_OF_WEAKNESS_RNK_7 = 80,
 		};
 	};
 
