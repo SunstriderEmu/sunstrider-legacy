@@ -842,7 +842,13 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                     return false;
                 }
             }
-        }
+            case SMART_ACTION_ENABLE_TEMP_GOBJ:
+                if (!e.action.enableTempGO.duration)
+                {
+                    TC_LOG_ERROR("sql.sql", "Entry %u SourceType %u Event %u Action %u does not specify duration", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
+                    return false;
+                }
+            }
     }
 
     if(e.GetEventType() >= SMART_EVENT_END)
