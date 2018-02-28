@@ -457,6 +457,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint32 GetZoneId() const { return m_zoneId; }
         uint32 GetAreaId() const { return m_areaId; }
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const { zoneid = m_zoneId, areaid = m_areaId; }
+        bool IsOutdoors() const { return m_outdoors; }
 
         //for trinitycore compatibility
         uint32 GetPhaseMask() const { return m_phaseMask; }
@@ -575,10 +576,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
 		void DestroyForNearbyPlayers();
 		virtual void UpdateObjectVisibility(bool forced = true);
-		virtual void UpdateObjectVisibilityOnCreate()
-		{
-			UpdateObjectVisibility(true);
-		}
+        virtual void UpdateObjectVisibilityOnCreate() { UpdateObjectVisibility(true); }
         
         MovementInfo m_movementInfo;
         
@@ -645,6 +643,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint32 m_zoneId;
         uint32 m_areaId;
         float m_staticFloorZ;
+        bool m_outdoors;
 
         virtual bool CanNeverSee(WorldObject const* obj) const;
         virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }

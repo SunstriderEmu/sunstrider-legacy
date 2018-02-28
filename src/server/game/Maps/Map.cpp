@@ -1872,7 +1872,7 @@ float Map::GetVMapFloor(float x, float y, float z, float maxSearchDist, float co
     return VMAP::VMapFactory::createOrGetVMapManager()->getHeight(GetId(), x, y, z + collisionHeight, maxSearchDist);
 }
 
-inline bool IsOutdoorWMO(uint32 mogpFlags, int32 adtId, int32 rootId, int32 groupId, WMOAreaTableEntry const* wmoEntry, AreaTableEntry const* atEntry, uint32 mapId)
+inline bool IsOutdoorWMO(uint32 mogpFlags, WMOAreaTableEntry const* wmoEntry, AreaTableEntry const* atEntry, uint32 mapId)
 {
     // If this flag is set we are outdoors and can mount up
     if (mogpFlags & 0x8000)
@@ -1884,7 +1884,23 @@ inline bool IsOutdoorWMO(uint32 mogpFlags, int32 adtId, int32 rootId, int32 grou
     // If flag 0x800 is set and we are in non-flyable areas we cannot mount up even if we are physically outdoors
     if (mapId != 530 && (mogpFlags & 0x800))
         return false;
-    
+
+    if (wmoEntry && atEntry)
+    {
+        if (atEntry->flags & AREA_FLAG_OUTSIDE)
+            return true;
+        if (atEntry->flags & AREA_FLAG_INSIDE)
+            return false;
+    }
+
+    if (wmoEntry)
+    {
+        if (wmoEntry->Flags & 4)
+            return true;
+        if (wmoEntry->Flags & 2)
+            return false;
+    }
+
     // If this flag is set we are physically outdoors, mounting up is allowed if previous check failed
     return mogpFlags & 0x8;
 }
@@ -1905,7 +1921,7 @@ bool Map::IsOutdoors(float x, float y, float z) const
         TC_LOG_DEBUG("maps","Got WMOAreaTableEntry! flag %u, areaid %u", wmoEntry->Flags, wmoEntry->areaId);
         atEntry = sAreaTableStore.LookupEntry(wmoEntry->areaId);
     }
-    return IsOutdoorWMO(mogpFlags, adtId, rootId, groupId, wmoEntry, atEntry, i_mapEntry->MapID);
+    return IsOutdoorWMO(mogpFlags, wmoEntry, atEntry, i_mapEntry->MapID);
 }
 
 bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const
@@ -1958,7 +1974,7 @@ uint32 Map::GetAreaId(float x, float y, float z, bool *isOutdoors) const
     if (isOutdoors) //pointer can be null
     {
         if (haveAreaInfo)
-            *isOutdoors = IsOutdoorWMO(mogpFlags, adtId, rootId, groupId, wmoEntry, atEntry, i_mapEntry->MapID);
+            *isOutdoors = IsOutdoorWMO(mogpFlags, wmoEntry, atEntry, i_mapEntry->MapID);
         else
             *isOutdoors = true;
     }
@@ -2069,14 +2085,16 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
 
     // area lookup
     AreaTableEntry const* areaEntry = nullptr;
+    WMOAreaTableEntry const* wmoEntry = nullptr;
     if (vmapData.areaInfo && (z <= mapHeight || mapHeight <= vmapData.floorZ))
-        if (WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(vmapData.areaInfo->rootId, vmapData.areaInfo->adtId, vmapData.areaInfo->groupId))
+        if (wmoEntry = GetWMOAreaTableEntryByTripple(vmapData.areaInfo->rootId, vmapData.areaInfo->adtId, vmapData.areaInfo->groupId))
             areaEntry = sAreaTableStore.LookupEntry(wmoEntry->areaId);
 
     if (areaEntry)
     {
-        data.floorZ = vmapData.floorZ;
         data.areaId = areaEntry->ID;
+        data.floorZ = vmapData.floorZ;
+        data.outdoors = IsOutdoorWMO(vmapData.areaInfo->mogpFlags, wmoEntry, areaEntry);
     }
     else
     {
@@ -2091,6 +2109,9 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
 
         if (data.areaId)
             areaEntry = sAreaTableStore.LookupEntry(data.areaId);
+
+        data.floorZ = mapHeight;
+        data.outdoors = true; // @todo default true taken from old GetAreaId check, maybe review
     }
 
     // liquid processing

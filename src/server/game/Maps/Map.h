@@ -97,6 +97,7 @@ struct PositionFullTerrainStatus
 
     uint32 areaId;
     float floorZ;
+    bool outdoors;
     ZLiquidStatus liquidStatus;
     Optional<AreaInfo> areaInfo;
     Optional<LiquidData> liquidInfo;

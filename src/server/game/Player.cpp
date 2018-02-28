@@ -5948,13 +5948,10 @@ void Player::CheckAreaExploreAndOutdoor()
     if (IsInFlight())
         return;
 
-    bool isOutdoor;
-    uint32 areaId = GetBaseMap()->GetAreaId(GetPositionX(), GetPositionY(), GetPositionZ(), &isOutdoor);
-    AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(areaId);
-
-    if (!isOutdoor)
+    if (!IsOutdoors())
         RemoveAurasWithAttribute(SPELL_ATTR0_OUTDOORS_ONLY);
-    else if (isOutdoor) {
+    else 
+    {
         // Check if we need to reapply outdoor only passive spells
         const PlayerSpellMap& sp_list = GetSpellMap();
         for (const auto & itr : sp_list) {
@@ -5969,6 +5966,8 @@ void Player::CheckAreaExploreAndOutdoor()
         }
     }
 
+    uint32 const areaId = GetAreaId();
+    AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(areaId);
     if (!areaEntry)
         return;
 

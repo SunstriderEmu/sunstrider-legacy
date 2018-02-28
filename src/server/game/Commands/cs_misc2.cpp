@@ -699,7 +699,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
 
     if (have_vmap)
     {
-        if (map->IsOutdoors(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ()))
+        if (obj->IsOutdoors())
             PSendSysMessage("You are outdoors");
         else
             PSendSysMessage("You are indoor");
