@@ -2331,6 +2331,10 @@ class TC_GAME_API Unit : public WorldObject
 
         float GetCollisionHeight() const override;
 
+        void FeignDeathDetected(Unit const* by);
+        bool IsFeighDeathDetected(Unit const* by) const;
+        void ResetFeignDeathDetected();
+
     protected:
         explicit Unit (bool isWorldObject);
 
@@ -2415,6 +2419,8 @@ class TC_GAME_API Unit : public WorldObject
         float m_CombatDistance;
 
         SpellHistory* m_spellHistory;
+
+        GuidSet m_feignDeathDetectedBy;
     private:
         void ProcSkillsAndReactives(bool isVictim, Unit* procTarget, uint32 typeMask, uint32 hitMask, WeaponAttackType attType);
 

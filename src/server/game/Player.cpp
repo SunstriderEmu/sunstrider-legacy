@@ -18040,6 +18040,18 @@ void Player::SendAutoRepeatCancel()
 #endif
 }
 
+void Player::SendFeignDeathResisted() const
+{
+#ifdef LICH_KING
+    WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
+    data << target->GetGUID();
+    data << uint8(0); //or 1
+#else
+    WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 0);
+#endif
+    GetSession()->SendPacket(&data);
+}
+
 void Player::PlaySound(uint32 Sound, bool OnlySelf)
 {
     WorldPacket data(SMSG_PLAY_SOUND, 4);

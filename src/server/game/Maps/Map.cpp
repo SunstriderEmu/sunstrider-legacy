@@ -2098,7 +2098,7 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
     {
         data.areaId = areaEntry->ID;
         data.floorZ = vmapData.floorZ;
-        data.outdoors = IsOutdoorWMO(vmapData.areaInfo->mogpFlags, wmoEntry, areaEntry);
+        data.outdoors = IsOutdoorWMO(vmapData.areaInfo->mogpFlags, wmoEntry, areaEntry, GetId());
     }
     else
     {

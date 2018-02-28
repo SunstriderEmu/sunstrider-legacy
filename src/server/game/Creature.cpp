@@ -2042,7 +2042,8 @@ CanAttackResult Creature::CanCreatureAttack(Unit const* target, bool force /*= t
         return CAN_ATTACK_RESULT_TARGET_EVADE;
 
     // feign death case
-    if (!force && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {
+    if (!force && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH) && !target->IsFeighDeathDetected(this))
+    {
         if ((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
             return CAN_ATTACK_RESULT_FEIGN_DEATH;
         // if this == player or owner == player check other conditions
@@ -2777,7 +2778,8 @@ bool Creature::_IsTargetAcceptable(Unit const* target) const
     if (target->HasUnitState(UNIT_STATE_DIED))
     {
         // guards can detect fake death
-        if (IsGuard() && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH))
+        if ((IsGuard() && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH))
+            || target->IsFeighDeathDetected(this))
             return true;
         else
             return false;

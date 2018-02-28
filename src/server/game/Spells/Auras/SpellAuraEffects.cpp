@@ -4177,43 +4177,75 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
     if (m_target->GetTypeId() != TYPEID_PLAYER)
         return;
 
+    m_target->ResetFeignDeathDetected();
     if (apply)
     {
-        /*
-        WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
-        data<<m_target->GetGUID();
-        data<<uint8(0);
-        m_target->SendMessageToSet(&data,true);
-        */
-
-        std::list<Unit*> targets;
-        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityRange());
-        Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(m_target, targets, u_check);
-        Cell::VisitAllObjects(m_target, searcher, m_target->GetMap()->GetVisibilityRange());
-
-        /* first pass, interrupt spells and check for units attacking the misdirection target */
-        for (auto & target : targets)
+        //code adapted from CMangos
+        bool disengage = true;
+        if (apply && m_target->GetCharmerOrOwnerPlayerOrPlayerItself())
         {
-            if (!target->HasUnitState(UNIT_STATE_CASTING))
-                continue;
-
-            for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+            const Unit::AttackerSet& attackers = m_target->GetAttackers();
+            for (Unit::AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end(); ++itr)
             {
-                if (target->GetCurrentSpell(i)
-                    && target->GetCurrentSpell(i)->m_targets.GetUnitTargetGUID() == m_target->GetGUID())
+                Unit* opponent = (*itr);
+                if (opponent && !opponent->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
                 {
-                    target->InterruptSpell(CurrentSpellTypes(i), false);
+                    if (m_target->MagicSpellHitResult(opponent, GetSpellInfo()) != SPELL_MISS_NONE)
+                    {
+                        m_target->FeignDeathDetected(opponent);
+                        // m_target->SendSpellMiss(opponent, GetSpellInfo()->Id, SPELL_MISS_RESIST); //does not work, need fix
+                        disengage = false;
+                        break;
+                    }
                 }
             }
         }
-        if (m_target->GetMap()->IsDungeon()) // feign death does not remove combat in dungeons
+
+        if (disengage)
         {
-            m_target->AttackStop();
-            if (Player* targetPlayer = m_target->ToPlayer())
-                targetPlayer->SendAttackSwingCancelAttack();
+            std::list<Unit*> targets;
+            Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityRange());
+            Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(m_target, targets, u_check);
+            Cell::VisitAllObjects(m_target, searcher, m_target->GetMap()->GetVisibilityRange());
+
+            /* first pass, interrupt spells and check for units attacking the misdirection target */
+            for (auto & target : targets)
+            {
+                if (!target->HasUnitState(UNIT_STATE_CASTING))
+                    continue;
+
+                for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+                {
+                    if (target->GetCurrentSpell(i)
+                        && target->GetCurrentSpell(i)->m_targets.GetUnitTargetGUID() == m_target->GetGUID())
+                    {
+                        target->InterruptSpell(CurrentSpellTypes(i), false);
+                    }
+                }
+            }
+
+            if (m_target->GetMap()->IsDungeon()) // feign death does not remove combat in dungeons
+            {
+                m_target->AttackStop();
+                if (Player* targetPlayer = m_target->ToPlayer())
+                    targetPlayer->SendAttackSwingCancelAttack();
+            }
+            else
+                m_target->CombatStop(false, false);
+
+            if (Creature* creature = m_target->ToCreature())
+                creature->SetReactState(REACT_PASSIVE);
         }
-        else
-            m_target->CombatStop(false, false);
+        else 
+        {
+            if (Player* p = m_target->GetCharmerOrOwnerPlayerOrPlayerItself())
+                p->SendFeignDeathResisted();
+
+            if (m_target->GetTypeId() == TYPEID_PLAYER)
+                static_cast<Player*>(m_target)->SendAttackSwingCancelAttack();
+
+            m_target->AttackStop();
+        }
 
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION); //drop flag in bg
 
@@ -4230,19 +4262,9 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
         m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);   // blizz like 2.0.x
         m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD); // blizz like 2.0.x
         m_target->AddUnitState(UNIT_STATE_DIED);
-
-        if (Creature* creature = m_target->ToCreature())
-            creature->SetReactState(REACT_PASSIVE);
     }
     else
     {
-        /*
-        WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
-        data<<m_target->GetGUID();
-        data<<uint8(1);
-        m_target->SendMessageToSet(&data,true);
-        */
-
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29); // blizz like 2.0.x
         m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);  // blizz like 2.0.x
         m_target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);  // blizz like 2.0.x

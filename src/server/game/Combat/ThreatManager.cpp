@@ -76,7 +76,7 @@ ThreatReference::OnlineState ThreatReference::SelectOnlineState()
     // first, check all offline conditions
     if (!_owner->CanSeeOrDetect(_victim)) // not in map/phase, or stealth/invis
         return ONLINE_STATE_OFFLINE;
-    if (_victim->HasUnitState(UNIT_STATE_DIED)) // feign death
+    if (_victim->HasUnitState(UNIT_STATE_DIED) && !_victim->IsFeighDeathDetected(_owner)) // feign death
         return ONLINE_STATE_OFFLINE;
     if (!FlagsAllowFighting(_owner, _victim) || !FlagsAllowFighting(_victim, _owner))
         return ONLINE_STATE_OFFLINE;

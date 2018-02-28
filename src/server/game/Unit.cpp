@@ -4862,10 +4862,11 @@ void Unit::CombatStop(bool includingCast, bool mutualPvP)
     if(includingCast && IsNonMeleeSpellCast(false))
         InterruptNonMeleeSpells(false);
 
+    if (GetTypeId() == TYPEID_PLAYER)
+        (this->ToPlayer())->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
+
     AttackStop();
     RemoveAllAttackers();
-    if( GetTypeId()==TYPEID_PLAYER )
-        (this->ToPlayer())->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
 
     if (mutualPvP)
         ClearInCombat();
@@ -15367,4 +15368,19 @@ void Unit::TriggerAurasProcOnEvent(ProcEventInfo& eventInfo, AuraApplicationProc
 
     if (disableProcs)
         SetCantProc(false);
+}
+
+void Unit::FeignDeathDetected(Unit const* by)
+{
+    m_feignDeathDetectedBy.emplace(by->GetGUID());
+}
+
+bool Unit::IsFeighDeathDetected(Unit const* by) const
+{
+    return m_feignDeathDetectedBy.find(by->GetGUID()) != m_feignDeathDetectedBy.end();
+}
+
+void Unit::ResetFeignDeathDetected()
+{
+    m_feignDeathDetectedBy.clear();
 }

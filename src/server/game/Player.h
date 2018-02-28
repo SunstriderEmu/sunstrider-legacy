@@ -1878,6 +1878,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendAttackSwingNotInRange();
         void SendAttackSwingBadFacingAttack();
         void SendAutoRepeatCancel();
+        void SendFeignDeathResisted() const;
         void SendExplorationExperience(uint32 Area, uint32 Experience);
 
         void SendDungeonDifficulty(bool IsInGroup);
