@@ -102,17 +102,6 @@ void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
 }
 
 template<class T, typename D>
-bool TargetedMovementGenerator<T, D>::IsWithinAllowedDist(T* owner, float x, float y, float z)
-{
-    float allowedDist = GetAllowedDist(owner);
-
-    if (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->CanFly())
-        return _target->IsWithinDist3d(x, y, z, allowedDist);
-    else
-        return _target->IsWithinDist2d(x, y, allowedDist);
-}
-
-template<class T, typename D>
 float TargetedMovementGenerator<T, D>::GetAllowedDist(T* owner)
 {
     //More distance let have better performance, less distance let have more sensitive reaction at target move.
@@ -149,12 +138,9 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
     if (owner->GetTypeId() == TYPEID_UNIT)
     {
         if (_path && _path->GetPathType() & (PATHFIND_INCOMPLETE | PATHFIND_NOPATH))
-        {
             owner->ToCreature()->SetCannotReachTarget(true);
-        }
-        else {
+        else
             owner->ToCreature()->SetCannotReachTarget(false);
-        }
     }
 
     _timer.Update(time_diff);
@@ -166,11 +152,11 @@ bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
         if (owner->movespline->onTransport)
             if (TransportBase* transport = owner->GetTransport())
                 transport->CalculatePassengerPosition(dest.x, dest.y, dest.z);
-        
-        _recalculateTravel = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
+
+        _recalculateTravel = !GetTarget()->IsWithinDist3d(dest.x, dest.y, dest.z, GetAllowedDist(owner));
         // then, if the target is in range, check also Line of Sight. Consider target has moved if out of sight.
         if (!_recalculateTravel)
-            _recalculateTravel = !_target->IsWithinLOSInMap(owner, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2);
+            _recalculateTravel = !GetTarget()->IsWithinLOSInMap(owner, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2);
     }
 
     bool someoneMoved = (owner->GetExactDistSq(&lastOwnerXYZ) >= 0.1f*0.1f) || (_target->GetExactDistSq(&lastTargetXYZ) >= 0.1f*0.1f);

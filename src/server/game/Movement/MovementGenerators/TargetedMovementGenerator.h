@@ -60,8 +60,6 @@ class TC_GAME_API TargetedMovementGenerator : public MovementGeneratorMedium< T,
 
         void UnitSpeedChanged() { _speedChanged = true; }
         virtual bool HasLostTarget(T*) const { return false; }
-        /** return true target position is within allowed distance of the owner */
-        bool IsWithinAllowedDist(T* owner, float x, float y, float z);
         float GetAllowedDist(T* owner);
         float GetOffset() { return _offset; }
         void SetOffset(float offset);
