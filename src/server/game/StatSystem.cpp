@@ -366,14 +366,15 @@ bool Player::UpdateAllStats()
         SetStat(Stats(i), (int32)value);
     }
 
-    UpdateAttackPowerAndDamage();
-    UpdateAttackPowerAndDamage(true);
     UpdateArmor();
+    UpdateAttackPowerAndDamage(false);
+    UpdateAttackPowerAndDamage(true);
     UpdateMaxHealth();
 
     for(uint8 i = POWER_MANA; i < MAX_POWERS; i++)
         UpdateMaxPower(Powers(i));
 
+    UpdateAllRatings();
     UpdateAllCritPercentages();
     UpdateAllSpellCritChances();
     UpdateDefenseBonusesMod();
@@ -855,6 +856,24 @@ void Player::UpdateDodgePercentage()
     value += GetRatingBonusValue(CR_DODGE);
     value = value < 0.0f ? 0.0f : value;
     SetStatFloatValue(PLAYER_DODGE_PERCENTAGE, value);
+}
+
+void Player::UpdateMeleeHitChances()
+{
+    m_modMeleeHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
+    m_modMeleeHitChance += GetRatingBonusValue(CR_HIT_MELEE);
+}
+
+void Player::UpdateRangedHitChances()
+{
+    m_modRangedHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
+    m_modRangedHitChance += GetRatingBonusValue(CR_HIT_RANGED);
+}
+
+void Player::UpdateSpellHitChances()
+{
+    m_modSpellHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_HIT_CHANCE);
+    m_modSpellHitChance += GetRatingBonusValue(CR_HIT_SPELL);
 }
 
 void Player::UpdateSpellCritChance(uint32 school)

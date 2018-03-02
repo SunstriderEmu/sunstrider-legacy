@@ -5593,9 +5593,20 @@ void AuraEffect::HandleModHitChance(AuraApplication const* aurApp, uint8 mode, b
     if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
         return;
 
-    Unit* m_target = aurApp->GetTarget();
-    m_target->m_modMeleeHitChance += apply ? GetAmount() : -GetAmount();
-    m_target->m_modRangedHitChance += apply ? GetAmount() : -GetAmount();
+    Unit* target = aurApp->GetTarget();
+
+    // handle stack rules
+    if (target->GetTypeId() == TYPEID_PLAYER)
+    {
+        target->ToPlayer()->UpdateMeleeHitChances();
+        target->ToPlayer()->UpdateRangedHitChances();
+    }
+    else
+    {
+        float value = target->GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
+        target->m_modMeleeHitChance = value;
+        target->m_modRangedHitChance = value;
+    }
 }
 
 void AuraEffect::HandleModSpellHitChance(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5603,8 +5614,12 @@ void AuraEffect::HandleModSpellHitChance(AuraApplication const* aurApp, uint8 mo
     if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
         return;
 
-    Unit* m_target = aurApp->GetTarget();
-    m_target->m_modSpellHitChance += apply ? GetAmount() : -GetAmount();
+    Unit* target = aurApp->GetTarget();
+
+    if (target->GetTypeId() == TYPEID_PLAYER)
+        target->ToPlayer()->UpdateSpellHitChances();
+    else
+        target->m_modSpellHitChance += (apply) ? GetAmount() : (-GetAmount());
 }
 
 void AuraEffect::HandleModSpellCritChance(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5614,13 +5629,9 @@ void AuraEffect::HandleModSpellCritChance(AuraApplication const* aurApp, uint8 m
 
     Unit* m_target = aurApp->GetTarget();
     if (m_target->GetTypeId() == TYPEID_PLAYER)
-    {
         (m_target->ToPlayer())->UpdateAllSpellCritChances();
-    }
     else
-    {
         m_target->m_baseSpellCritChance += apply ? GetAmount() : -GetAmount();
-    }
 }
 
 void AuraEffect::HandleModSpellCritChanceShool(AuraApplication const* aurApp, uint8 mode, bool apply) const

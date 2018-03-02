@@ -340,6 +340,9 @@ Player::Player(WorldSession *session) :
 
     _activeCheats = CHEAT_NONE;
 
+    for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
+        m_baseRatingValue[i] = 0;
+
     #ifdef PLAYERBOT
     // playerbot mod
     m_playerbotAI = nullptr;
@@ -4993,7 +4996,7 @@ float Player::GetSpellCritFromIntellect()
     return crit*100.0f;
 }
 
-float Player::GetRatingCoefficient(CombatRating cr) const
+float Player::GetRatingMultiplier(CombatRating cr) const
 {
     uint32 level = GetLevel();
 
@@ -5008,7 +5011,7 @@ float Player::GetRatingCoefficient(CombatRating cr) const
 
 float Player::GetRatingBonusValue(CombatRating cr) const
 {
-    return float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) / GetRatingCoefficient(cr);
+    return float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) / GetRatingMultiplier(cr);
 }
 
 uint32 Player::GetMeleeCritDamageReduction(uint32 damage) const
@@ -5096,124 +5099,131 @@ float Player::OCTRegenMPPerSpirit()
     return regen;
 }
 
-void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
+void Player::ApplyRatingMod(CombatRating combatRating, int32 value, bool apply)
 {
-    ApplyModUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr, value, apply);
+    float oldRating = m_baseRatingValue[combatRating];
+    m_baseRatingValue[combatRating] += (apply ? value : -value);
 
-    float RatingCoeffecient = GetRatingCoefficient(cr);
-    float RatingChange = 0.0f;
-
-    bool affectStats = CanModifyStats();
-    
-    switch (cr)
+    // explicit affected values
+    float const multiplier = GetRatingMultiplier(combatRating);
+    float const oldVal = oldRating * multiplier;
+    float const newVal = m_baseRatingValue[combatRating] * multiplier;
+    switch (combatRating)
     {
-        case CR_WEAPON_SKILL:                               // Implemented in Unit::RollMeleeOutcomeAgainst
-        case CR_DEFENSE_SKILL:
-            UpdateDefenseBonusesMod();
-            break;
-        case CR_DODGE:
-            UpdateDodgePercentage();
-            break;
-        case CR_PARRY:
-            UpdateParryPercentage();
-            break;
-        case CR_BLOCK:
-            UpdateBlockPercentage();
-            break;
-        case CR_HIT_MELEE:
-            RatingChange = value / RatingCoeffecient;
-            m_modMeleeHitChance += apply ? RatingChange : -RatingChange;
-            break;
-        case CR_HIT_RANGED:
-            RatingChange = value / RatingCoeffecient;
-            m_modRangedHitChance += apply ? RatingChange : -RatingChange;
-            break;
-        case CR_HIT_SPELL:
-            RatingChange = value / RatingCoeffecient;
-            m_modSpellHitChance += apply ? RatingChange : -RatingChange;
-            break;
-        case CR_CRIT_MELEE:
-            if(affectStats)
-            {
-                UpdateCritPercentage(BASE_ATTACK);
-                UpdateCritPercentage(OFF_ATTACK);
-            }
-            break;
-        case CR_CRIT_RANGED:
-            if(affectStats)
-                UpdateCritPercentage(RANGED_ATTACK);
-            break;
-        case CR_CRIT_SPELL:
-            if(affectStats)
-                UpdateAllSpellCritChances();
-            break;
-        case CR_HIT_TAKEN_MELEE:                            // Implemented in Unit::MeleeMissChanceCalc
-        case CR_HIT_TAKEN_RANGED:
-            break;
-        case CR_HIT_TAKEN_SPELL:                            // Implemented in Unit::MagicSpellHitResult
-            break;
-        case CR_CRIT_TAKEN_MELEE:                           // Implemented in Unit::RollMeleeOutcomeAgainst (only for chance to crit)
-        case CR_CRIT_TAKEN_RANGED:
-            break;
-        case CR_CRIT_TAKEN_SPELL:                           // Implemented in Unit::SpellCriticalDamageBonus (only for chance to crit)
-            break;
         case CR_HASTE_MELEE:
+            ApplyAttackTimePercentMod(BASE_ATTACK, oldVal, false);
+            ApplyAttackTimePercentMod(OFF_ATTACK, oldVal, false);
+            ApplyAttackTimePercentMod(BASE_ATTACK, newVal, true);
+            ApplyAttackTimePercentMod(OFF_ATTACK, newVal, true);
+            break;
         case CR_HASTE_RANGED:
+            ApplyAttackTimePercentMod(RANGED_ATTACK, oldVal, false);
+            ApplyAttackTimePercentMod(RANGED_ATTACK, newVal, true);
+            break;
         case CR_HASTE_SPELL:
-            UpdateHasteRating(cr,value,apply);
-            break;
-        case CR_WEAPON_SKILL_MAINHAND:                      // Implemented in Unit::RollMeleeOutcomeAgainst
-        case CR_WEAPON_SKILL_OFFHAND:
-        case CR_WEAPON_SKILL_RANGED:
-            break;
-        case CR_EXPERTISE:
-            if(affectStats)
-            {
-                UpdateExpertise(BASE_ATTACK);
-                UpdateExpertise(OFF_ATTACK);
-            }
+            ApplyCastTimePercentMod(oldVal, false);
+            ApplyCastTimePercentMod(newVal, true);
             break;
         default:
             break;
     }
+
+    UpdateRating(combatRating);
 }
 
-void Player::UpdateHasteRating(CombatRating cr, int32 value, bool apply)
+void Player::UpdateRating(CombatRating cr)
 {
-    if(cr > CR_HASTE_SPELL || cr < CR_HASTE_MELEE)
-    {
-        TC_LOG_ERROR("entities.player","UpdateHasteRating called with invalid combat rating %u",cr);
-        return;
-    }
+    int32 amount = m_baseRatingValue[cr];
+    // Apply bonus from SPELL_AURA_MOD_RATING_FROM_STAT
+    // stat used stored in miscValueB for this aura
+    AuraEffectList const& modRatingFromStat = GetAuraEffectsByType(SPELL_AURA_MOD_RATING_FROM_STAT);
+    for (AuraEffect const* aurEff : modRatingFromStat)
+        if (aurEff->GetMiscValue() & (1 << cr))
+            amount += int32(CalculatePct(GetStat(Stats(aurEff->GetMiscValueB())), aurEff->GetAmount()));
 
-    float RatingCoeffecient = GetRatingCoefficient(cr);
+    if (amount < 0)
+        amount = 0;
+    SetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr, uint32(amount));
 
-    // calc rating before new rating was applied
-    uint32 oldRating = GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr) - (apply ? value : -value);
-    // Current mod
-    float oldMod = oldRating/RatingCoeffecient;
-    float newMod = GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)/RatingCoeffecient;
-    switch(cr)
+    bool affectStats = CanModifyStats();
+
+    switch (cr)
     {
-    case CR_HASTE_MELEE:
-        //unapply previous haste rating
-        ApplyAttackTimePercentMod(BASE_ATTACK,oldMod,false);
-        ApplyAttackTimePercentMod(OFF_ATTACK,oldMod,false);
-        //apply new mod
-        ApplyAttackTimePercentMod(BASE_ATTACK,newMod,true);
-        ApplyAttackTimePercentMod(OFF_ATTACK,newMod,true);
+    case CR_WEAPON_SKILL:                               // Implemented in Unit::RollMeleeOutcomeAgainst
+    case CR_DEFENSE_SKILL:
+        UpdateDefenseBonusesMod();
         break;
+    case CR_DODGE:
+        UpdateDodgePercentage();
+        break;
+    case CR_PARRY:
+        UpdateParryPercentage();
+        break;
+    case CR_BLOCK:
+        UpdateBlockPercentage();
+        break;
+    case CR_HIT_MELEE:
+        UpdateMeleeHitChances();
+        break;
+    case CR_HIT_RANGED:
+        UpdateRangedHitChances();
+        break;
+    case CR_HIT_SPELL:
+        UpdateSpellHitChances();
+        break;
+    case CR_CRIT_MELEE:
+        if (affectStats)
+        {
+            UpdateCritPercentage(BASE_ATTACK);
+            UpdateCritPercentage(OFF_ATTACK);
+        }
+        break;
+    case CR_CRIT_RANGED:
+        if (affectStats)
+            UpdateCritPercentage(RANGED_ATTACK);
+        break;
+    case CR_CRIT_SPELL:
+        if (affectStats)
+            UpdateAllSpellCritChances();
+        break;
+    case CR_HIT_TAKEN_MELEE:                            // Implemented in Unit::MeleeMissChanceCalc
+    case CR_HIT_TAKEN_RANGED:
+        break;
+    case CR_HIT_TAKEN_SPELL:                            // Implemented in Unit::MagicSpellHitResult
+        break;
+    case CR_CRIT_TAKEN_MELEE:                           // Implemented in Unit::RollMeleeOutcomeAgainst (only for chance to crit)
+    case CR_CRIT_TAKEN_RANGED:
+        break;
+    case CR_CRIT_TAKEN_SPELL:                           // Implemented in Unit::SpellCriticalBonus (only for chance to crit)
+        break;
+    case CR_HASTE_MELEE:                                // Implemented in Player::ApplyRatingMod
     case CR_HASTE_RANGED:
-        ApplyAttackTimePercentMod(RANGED_ATTACK, oldMod, false);
-        ApplyAttackTimePercentMod(RANGED_ATTACK, newMod, true);
-        break;
     case CR_HASTE_SPELL:
-        ApplyCastTimePercentMod(oldMod,false);
-        ApplyCastTimePercentMod(newMod,true);
         break;
-    default:
+    case CR_WEAPON_SKILL_MAINHAND:                      // Implemented in Unit::RollMeleeOutcomeAgainst
+    case CR_WEAPON_SKILL_OFFHAND:
+    case CR_WEAPON_SKILL_RANGED:
         break;
+    case CR_EXPERTISE:
+        if (affectStats)
+        {
+            UpdateExpertise(BASE_ATTACK);
+            UpdateExpertise(OFF_ATTACK);
+        }
+        break;
+#ifdef LICH_KING
+    case CR_ARMOR_PENETRATION:
+        if (affectStats)
+            UpdateArmorPenetration(amount);
+        break;
+#endif
     }
+}
+
+void Player::UpdateAllRatings()
+{
+    for (uint8 cr = 0; cr < MAX_COMBAT_RATING; ++cr)
+        UpdateRating(CombatRating(cr));
 }
 
 void Player::SetRegularAttackTime()

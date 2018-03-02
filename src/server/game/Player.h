@@ -1823,21 +1823,22 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
         void UpdateShieldBlockValue();
         void UpdateSpellDamageAndHealingBonus();
+        void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
+        void UpdateRating(CombatRating cr);
+        void UpdateAllRatings();    
 
         void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 damageIndex) const override;
         SpellSchoolMask GetMeleeDamageSchoolMask(WeaponAttackType attackType = BASE_ATTACK, uint8 damageIndex = 0) const override;
         bool HasWand() const;
 
         void UpdateDefenseBonusesMod();
-        void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
-        void UpdateHasteRating(CombatRating cr, int32 value, bool apply);
         float GetMeleeCritFromAgility();
         float GetDodgeFromAgility();
         float GetSpellCritFromIntellect();
         float GetMissPercentageFromDefense() const;
         float OCTRegenHPPerSpirit();
         float OCTRegenMPPerSpirit();
-        float GetRatingCoefficient(CombatRating cr) const;
+        float GetRatingMultiplier(CombatRating cr) const;
         float GetRatingBonusValue(CombatRating cr) const;
         uint32 GetMeleeCritDamageReduction(uint32 damage) const;
         uint32 GetRangedCritDamageReduction(uint32 damage) const;
@@ -1850,6 +1851,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdateAllCritPercentages();
         void UpdateParryPercentage();
         void UpdateDodgePercentage();
+        void UpdateMeleeHitChances();
+        void UpdateRangedHitChances();
+        void UpdateSpellHitChances();
+
         void UpdateAllSpellCritChances();
         void UpdateSpellCritChance(uint32 school);
         void UpdateExpertise(WeaponAttackType attType);
@@ -2552,6 +2557,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         float m_auraBaseFlatMod[BASEMOD_END];
         float m_auraBasePctMod[BASEMOD_END];
+        int16 m_baseRatingValue[MAX_COMBAT_RATING];
         SpellModContainer m_spellMods[MAX_SPELLMOD];
         EnchantDurationList m_enchantDuration;
         ItemDurationList m_itemDuration;
