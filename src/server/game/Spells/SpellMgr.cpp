@@ -3252,8 +3252,45 @@ void SpellMgr::LoadSpellInfoCorrections()
         if (!spellInfo)
             continue;
 
+        // Fix range for trajectory triggered spell
         for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
+            if (spellInfo->Effects[j].IsEffect() && (spellInfo->Effects[j].TargetA.GetTarget() == TARGET_DEST_TRAJ || spellInfo->Effects[j].TargetB.GetTarget() == TARGET_DEST_TRAJ))
+            {
+                // Get triggered spell if any
+                if (SpellInfo* spellInfoTrigger = const_cast<SpellInfo*>(GetSpellInfo(spellInfo->Effects[j].TriggerSpell)))
+                {
+#ifdef LICH_KING
+                    float maxRangeMain = spellInfo->RangeEntry ? spellInfo->RangeEntry->maxRangeHostile : 0.0f;
+                    float maxRangeTrigger = spellInfoTrigger->RangeEntry ? spellInfoTrigger->RangeEntry->maxRangeHostile : 0.0f;
+#else
+                    float maxRangeMain = spellInfo->RangeEntry ? spellInfo->RangeEntry->maxRange : 0.0f;
+                    float maxRangeTrigger = spellInfoTrigger->RangeEntry ? spellInfoTrigger->RangeEntry->minRange : 0.0f;
+#endif
+
+                    // check if triggered spell has enough max range to cover trajectory
+                    if (maxRangeTrigger < maxRangeMain)
+                        spellInfoTrigger->RangeEntry = spellInfo->RangeEntry;
+                }
+            }
+        }
+
+        for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+        {
+            switch (spellInfo->Effects[j].Effect)
+            {
+            case SPELL_EFFECT_CHARGE:
+#ifdef LICH_KING
+            case SPELL_EFFECT_CHARGE_DEST:
+            case SPELL_EFFECT_JUMP:
+            case SPELL_EFFECT_JUMP_DEST:
+            case SPELL_EFFECT_LEAP_BACK:
+#endif
+                if (!spellInfo->Speed && !spellInfo->SpellFamilyName)
+                    spellInfo->Speed = SPEED_CHARGE;
+                break;
+            }
+
             // Area auras may not target area (they're self cast)
             if (spellInfo->Effects[j].IsAreaAuraEffect() && spellInfo->Effects[j].IsTargetingArea())
             {
@@ -3261,6 +3298,13 @@ void SpellMgr::LoadSpellInfoCorrections()
                 spellInfo->Effects[j].TargetB = SpellImplicitTargetInfo(0);
             }
         }
+
+        if (spellInfo->ActiveIconID == 2158)  // flight
+            spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
+
+        // allows those to calculate proper crit chance, that needs to be passed on to triggered spell
+        if (spellInfo->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA) && spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE)
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
     }
 
     TC_LOG_INFO("server.loading", ">> Loaded SpellInfo corrections in %u ms", GetMSTimeDiffToNow(oldMSTime));
