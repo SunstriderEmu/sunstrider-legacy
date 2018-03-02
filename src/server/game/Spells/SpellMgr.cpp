@@ -3246,6 +3246,23 @@ void SpellMgr::LoadSpellInfoCorrections()
         }
     }
 
+    for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
+    {
+        SpellInfo* spellInfo = mSpellInfoMap[i];
+        if (!spellInfo)
+            continue;
+
+        for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+        {
+            // Area auras may not target area (they're self cast)
+            if (spellInfo->Effects[j].IsAreaAuraEffect() && spellInfo->Effects[j].IsTargetingArea())
+            {
+                spellInfo->Effects[j].TargetA = SpellImplicitTargetInfo(TARGET_UNIT_CASTER);
+                spellInfo->Effects[j].TargetB = SpellImplicitTargetInfo(0);
+            }
+        }
+    }
+
     TC_LOG_INFO("server.loading", ">> Loaded SpellInfo corrections in %u ms", GetMSTimeDiffToNow(oldMSTime));
 }
 

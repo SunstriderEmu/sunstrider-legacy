@@ -5,7 +5,7 @@ if (MSVC)
   # (And yes, this is a verified, unresolved bug with MSVC... *sigh*)
   #
   # Note: This workaround was verified to be required on MSVC 2017 as well
-  set(COTIRE_PCH_MEMORY_SCALING_FACTOR 500)
+  set(COTIRE_PCH_MEMORY_SCALING_FACTOR 600)
 endif()
 
 include(cotire)
