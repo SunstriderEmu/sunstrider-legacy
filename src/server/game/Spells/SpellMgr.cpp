@@ -3252,6 +3252,8 @@ void SpellMgr::LoadSpellInfoCorrections()
         if (!spellInfo)
             continue;
 
+#ifdef LICH_KING 
+        //no effect on BC
         // Fix range for trajectory triggered spell
         for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
@@ -3260,13 +3262,8 @@ void SpellMgr::LoadSpellInfoCorrections()
                 // Get triggered spell if any
                 if (SpellInfo* spellInfoTrigger = const_cast<SpellInfo*>(GetSpellInfo(spellInfo->Effects[j].TriggerSpell)))
                 {
-#ifdef LICH_KING
                     float maxRangeMain = spellInfo->RangeEntry ? spellInfo->RangeEntry->maxRangeHostile : 0.0f;
                     float maxRangeTrigger = spellInfoTrigger->RangeEntry ? spellInfoTrigger->RangeEntry->maxRangeHostile : 0.0f;
-#else
-                    float maxRangeMain = spellInfo->RangeEntry ? spellInfo->RangeEntry->maxRange : 0.0f;
-                    float maxRangeTrigger = spellInfoTrigger->RangeEntry ? spellInfoTrigger->RangeEntry->minRange : 0.0f;
-#endif
 
                     // check if triggered spell has enough max range to cover trajectory
                     if (maxRangeTrigger < maxRangeMain)
@@ -3274,6 +3271,7 @@ void SpellMgr::LoadSpellInfoCorrections()
                 }
             }
         }
+#endif
 
         for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
