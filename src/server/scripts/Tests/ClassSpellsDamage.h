@@ -237,6 +237,8 @@ namespace ClassSpellsDamage
             // Holy
             BINDING_HEAL_RNK_1_MIN = 1053,
             BINDING_HEAL_RNK_1_MAX = 1350,
+            CHASTISE_RNK_6_MIN = 370,
+            CHASTISE_RNK_6_MAX = 430,
             DESPERATE_PRAYER_RNK_8_MIN = 1637,
             DESPERATE_PRAYER_RNK_8_MAX = 1924,
             FLASH_HEAL_RNK_9_MIN = 1116,

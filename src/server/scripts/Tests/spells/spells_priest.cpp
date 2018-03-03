@@ -974,6 +974,61 @@ public:
     }
 };
 
+class ChastiseTest : public TestCaseScript
+{
+public:
+    ChastiseTest() : TestCaseScript("spells priest chastise") { }
+
+    class ChastiseTestImpt : public TestCase
+    {
+    public:
+        ChastiseTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_DWARF);
+
+            Creature* humanoid = SpawnCreature(724, true);  // Burly Rockjaw Trogg
+            Creature* beast = SpawnCreature(705, true);     // Ragged Young Wolf
+
+            // Only cast on humanoid
+            TEST_CAST(priest, beast, ClassSpells::Priest::CHASTISE_RNK_1, SPELL_FAILED_BAD_TARGETS);
+            beast->DespawnOrUnsummon();
+
+            // Mana cost
+            uint32 const expectedChastiseMana = 50;
+            TEST_POWER_COST(priest, humanoid, ClassSpells::Priest::CHASTISE_RNK_1, POWER_MANA, expectedChastiseMana);
+
+            // Does not trigger GCD
+            TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+
+            // Aura
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::CHASTISE_RNK_1, Seconds(30));
+            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::CHASTISE_RNK_1, Seconds(2));
+            TEST_ASSERT(!humanoid->CanFreeMove());
+            humanoid->DespawnOrUnsummon();
+
+            // Damage -- Bug Here, spell coeff too big
+            // Note: got a feeling that it crits way too much
+            Creature* dummy = SpawnCreature();
+            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+            // DrDamage says 0.142 which is the calculation with castTime = 0.5
+            float const chastiseCastTime = 0.5f;
+            float const chastiseCoeff = chastiseCastTime / 3.5f;
+            uint32 const bonusSpell = 292 * chastiseCoeff;
+            uint32 const chastiseMin = ClassSpellsDamage::Priest::CHASTISE_RNK_6_MIN + bonusSpell;
+            uint32 const chastiseMax = ClassSpellsDamage::Priest::CHASTISE_RNK_6_MAX + bonusSpell;
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, chastiseMin, chastiseMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, chastiseMin * 1.5f, chastiseMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ChastiseTestImpt>();
+    }
+};
+
 class CureDiseaseTest : public TestCaseScript
 {
 public:
@@ -1576,7 +1631,7 @@ public:
             uint32 const expectedSmiteMana = 385;
             TEST_POWER_COST(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, POWER_MANA, expectedSmiteMana);
 
-            // Heal
+            // Damage
             float const smiteCastTime = 2.5f;
             float const smiteCoeff = smiteCastTime / 3.5f;
             uint32 const bonusHeal = 292 * smiteCoeff;
@@ -2464,9 +2519,10 @@ void AddSC_test_spells_priest()
     new PrayerOfFortitudeTest();
     new ShackleUndeadTest();
     new StarshardsTest();
-    // Holy: 13/13
+    // Holy: 14/14
     new AbolishDiseaseTest();
     new BindingHealTest();
+    new ChastiseTest();
     new CureDiseaseTest();
     new DesperatePrayerTest();
     new FlashHealTest();
