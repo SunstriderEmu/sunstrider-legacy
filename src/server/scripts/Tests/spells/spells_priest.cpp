@@ -4,6 +4,79 @@
 #include "SpellHistory.h"
 #include <limits>
 
+class ConsumeMagicTest : public TestCaseScript
+{
+public:
+    ConsumeMagicTest() : TestCaseScript("spells priest consume_magic") { }
+
+    class ConsumeMagicTestImpt : public TestCase
+    {
+    public:
+        ConsumeMagicTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void ConsumeMagic(TestPlayer* caster, TriggerCastFlags triggerCastFlags = TRIGGERED_NONE)
+        {
+            caster->SetPower(POWER_MANA, 0);
+            caster->AddAura(ClassSpells::Priest::INNER_FIRE_RNK_1, caster);
+            TEST_CAST(caster, caster, ClassSpells::Priest::CONSUME_MAGIC_RNK_1, SPELL_CAST_OK, triggerCastFlags);
+        }
+
+        void Test() override
+        {
+            uint32 priestLevel = 70;
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, priestLevel);
+
+            priest->DisableRegeneration(true);
+            Wait(1);
+
+            // Only on Priest's spells
+            priest->AddAura(ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8, priest);
+            TEST_CAST(priest, priest, ClassSpells::Priest::CONSUME_MAGIC_RNK_1, SPELL_FAILED_CASTER_AURASTATE);
+            TEST_HAS_AURA(priest, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8);
+            priest->RemoveAurasDueToSpell(ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8);
+
+            // Cooldown
+            ConsumeMagic(priest);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::CONSUME_MAGIC_RNK_1, Minutes(2));
+
+            // Test mana gain
+            uint32 consumeMagicSpellLevel = 20;
+            uint32 consumeMagicBase = 120;
+            uint32 consumeMagicMax = 35;
+            float consumeMagicManaPerLevel = 10.8;
+            uint32 expectedMin = consumeMagicBase + consumeMagicManaPerLevel * (priestLevel - consumeMagicSpellLevel);
+            uint32 expectedMax = expectedMin + consumeMagicMax;
+
+            uint32 sampleSize;
+            uint32 maxPredictionError;
+            _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
+
+            uint32 minGain = std::numeric_limits<uint32>::max();
+            uint32 maxGain = 0;
+
+            for (uint32 i = 0; i < sampleSize; i++)
+            {
+                ConsumeMagic(priest, TriggerCastFlags(TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_GCD));
+                uint32 priestMana = priest->GetPower(POWER_MANA);
+
+                minGain = std::min(minGain, priestMana);
+                maxGain = std::max(maxGain, priestMana);
+            }
+
+            uint32 allowedMin = expectedMin > maxPredictionError ? expectedMin - maxPredictionError : 0; // protect against underflow
+            uint32 allowedMax = expectedMax + maxPredictionError;
+
+            TEST_ASSERT(minGain >= allowedMin);
+            TEST_ASSERT(maxGain <= allowedMax);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ConsumeMagicTestImpt>();
+    }
+};
+
 class DispelMagicTest : public TestCaseScript
 {
 public:
@@ -2507,6 +2580,7 @@ public:
 void AddSC_test_spells_priest()
 {
     // Discipline: 11/11
+    new ConsumeMagicTest();
     new DispelMagicTest();
     new FearWardTest();
     new FeedbackTest();
