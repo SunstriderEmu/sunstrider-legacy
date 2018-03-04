@@ -258,6 +258,8 @@ namespace ClassSpellsDamage
             SMITE_RNK_10_MIN = 549,
             SMITE_RNK_10_MAX = 616,
             // Shadow
+            DEVOURING_PLAGUE_RNK_7_TOTAL = 1216,
+            DEVOURING_PLAGUE_RNK_7_TICK = 152,
             MIND_BLAST_RNK_11_MIN = 711,
             MIND_BLAST_RNK_11_MAX = 752,
             SHADOW_WORD_DEATH_RNK_2_MIN = 572,

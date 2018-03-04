@@ -1721,6 +1721,53 @@ public:
     }
 };
 
+class DevouringPlagueTest : public TestCaseScript
+{
+public:
+    DevouringPlagueTest() : TestCaseScript("spells priest devouring_plague") { }
+
+    class DevouringPlagueTestImpt : public TestCase
+    {
+    public:
+        DevouringPlagueTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_UNDEAD_PLAYER);
+            Creature* dummy = SpawnCreature();
+
+            priest->DisableRegeneration(true);
+            priest->SetHealth(1);
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 183 SP & 550 BH
+
+            // Mana cost
+            uint32 const expectedDevouringPlagueMana = 1145;
+            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, POWER_MANA, expectedDevouringPlagueMana);
+            TEST_AURA_MAX_DURATION(dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, Seconds(24));
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, Minutes(3));
+
+            // Damage
+            float const dvouringPlagueDotTime = 24.0f;
+            float const devouringPlagueCoeff = dvouringPlagueDotTime / 15 / 2;
+            uint32 const spellBonus = 183 * devouringPlagueCoeff;
+
+            int const devouringPlagueTickCount = 8;
+            uint32 const devouringPlagueTick = ClassSpellsDamage::Priest::DEVOURING_PLAGUE_RNK_7_TICK + spellBonus / devouringPlagueTickCount;
+            uint32 const devouringPlagueTotal = devouringPlagueTick * devouringPlagueTickCount;
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, devouringPlagueTotal, true);
+
+            // Heal
+            TEST_ASSERT(priest->GetHealth() == 1 + devouringPlagueTotal);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<DevouringPlagueTestImpt>();
+    }
+};
+
 class FadeTest : public TestCaseScript
 {
 public:
@@ -2610,6 +2657,7 @@ void AddSC_test_spells_priest()
     new ResurrectionTest();
     new SmiteTest();
     // Shadow: 13/13
+    new DevouringPlagueTest();
     new FadeTest();
     new HexOfWeaknessTest();
     new MindBlastTest();
