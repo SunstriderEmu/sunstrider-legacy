@@ -2117,7 +2117,7 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
     }
 
     if (vmapData.areaInfo)
-        data.outdoors = IsOutdoorWMO(vmapData.areaInfo->mogpFlags, wmoEntry, areaEntry);
+        data.outdoors = IsOutdoorWMO(vmapData.areaInfo->mogpFlags, wmoEntry, areaEntry, GetId());
     else
         data.outdoors = true; // @todo default true taken from old GetAreaId check, maybe review
 

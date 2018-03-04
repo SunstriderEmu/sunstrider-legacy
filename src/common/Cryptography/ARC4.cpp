@@ -36,7 +36,7 @@ ARC4::ARC4(uint8* seed, uint32 len) : m_ctx(EVP_CIPHER_CTX_new())
 
 ARC4::~ARC4()
 {
-    EVP_CIPHER_CTX_free(&m_ctx);
+    EVP_CIPHER_CTX_free(m_ctx);
 }
 
 void ARC4::Init(uint8* seed)
