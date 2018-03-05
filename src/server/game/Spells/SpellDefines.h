@@ -150,6 +150,9 @@ enum TriggerCastFlags : uint32
 
     // debug flags (used with .cast triggered commands)
     TRIGGERED_IGNORE_EQUIPPED_ITEM_REQUIREMENT      = 0x00080000,   //! Will ignore equipped item requirements
+    //?
+    //sunstrider custom
+    TRIGGERED_IGNORE_SPEED                          = 0x00200000,
     TRIGGERED_FULL_DEBUG_MASK                       = 0xFFFFFFFF
 };
 

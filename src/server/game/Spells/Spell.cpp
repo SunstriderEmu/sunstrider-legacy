@@ -698,7 +698,7 @@ uint64 Spell::CalculateDelayMomentForDst() const
             if (speed > 0.0f)
                 return (uint64)floor(m_targets.GetDist2d() / speed * 1000.0f);
         }
-        else if (m_spellInfo->Speed > 0.0f)
+        else if (!(_triggeredCastFlags & TRIGGERED_IGNORE_SPEED) && m_spellInfo->Speed > 0.0f)
         {
             // We should not subtract caster size from dist calculation (fixes execution time desync with animation on client, eg. Malleable Goo cast by PP)
             float dist = m_caster->GetExactDist(*m_targets.GetDstPos());
@@ -961,7 +961,7 @@ void Spell::SelectSpellTargets()
             if (speed > 0.0f)
                 m_delayTrajectory = (uint64)floor(m_targets.GetDist2d() / speed * 1000.0f);
         }
-        else if (m_spellInfo->Speed > 0.0f)
+        else if (!(_triggeredCastFlags & TRIGGERED_IGNORE_SPEED) && m_spellInfo->Speed > 0.0f)
         {
             float dist = m_caster->GetExactDist(m_targets.GetDstPos());
             m_delayTrajectory = (uint64)floor(dist / m_spellInfo->Speed * 1000.0f);
@@ -2280,7 +2280,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
 
                                                      // Spell have speed - need calculate incoming time
                                                      // Incoming time is zero for self casts. At least I think so.
-    if (m_spellInfo->Speed > 0.0f && m_caster != target)
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_SPEED) && m_spellInfo->Speed > 0.0f && m_caster != target)
     {
         // calculate spell incoming interval
         // TODO: this is a hack
@@ -2365,7 +2365,7 @@ void Spell::AddGOTarget(GameObject* go, uint32 effectMask)
     target.processed = false;                              // Effects not apply on target
 
                                                            // Spell have speed - need calculate incoming time
-    if (m_spellInfo->Speed > 0.0f)
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_SPEED) && m_spellInfo->Speed > 0.0f)
     {
         // calculate spell incoming interval
         float dist = m_caster->GetDistance(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ());
@@ -3751,7 +3751,7 @@ void Spell::_cast(bool skipCheck /*= false*/)
         m_delayMoment = uint64(150);
     }
 
-    else if (m_spellInfo->Speed > 0.0f && !m_spellInfo->IsChanneled())
+    else if ((!(_triggeredCastFlags & TRIGGERED_IGNORE_SPEED) && m_spellInfo->Speed > 0.0f) && !m_spellInfo->IsChanneled())
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
