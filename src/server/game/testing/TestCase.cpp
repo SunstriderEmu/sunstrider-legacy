@@ -616,6 +616,7 @@ float myErfInv2(float x) {
 
     return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
 }
+
 void TestCase::_GetPercentApproximationParams(uint32& sampleSize, float& resultingAbsoluteTolerance, float const expectedResult, float const absoluteTolerance)
 {
     INTERNAL_ASSERT_INFO("Invalid input tolerance %f", absoluteTolerance);
@@ -1093,7 +1094,71 @@ void TestCase::GroupPlayer(TestPlayer* leader, Player* player)
     }
 }
 
-void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError)
+void TestCase::_TestSpellHitChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo)
+{
+    INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive caster");
+    INTERNAL_TEST_ASSERT(caster->IsAlive());
+    INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive victim");
+    INTERNAL_TEST_ASSERT(victim->IsAlive());
+
+    uint32 startingHealth = victim->GetHealth();
+    uint32 startingMaxHealth = victim->GetMaxHealth();
+
+    victim->SetMaxHealth(std::numeric_limits<uint32>::max());
+
+    float const absoluteTolerance = 0.02f;
+    uint32 sampleSize;
+    float resultingAbsoluteTolerance;
+    _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResultPercent / 100.0f, absoluteTolerance);
+
+    for (uint32 i = 0; i < sampleSize; i++)
+    {
+        victim->SetFullHealth();
+        caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+    }
+
+    Wait(1); //wait an update before restoring health, some procs may have occured
+
+    victim->SetMaxHealth(startingMaxHealth);
+    victim->SetHealth(startingHealth);
+
+    _TestSpellOutcomePercentage(caster, victim, spellID, missInfo, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
+}
+
+void TestCase::_TestMeleeHitChance(TestPlayer* caster, TestPlayer* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
+{
+    INTERNAL_ASSERT_INFO("_TestMeleeHitChance only support alive caster");
+    INTERNAL_TEST_ASSERT(caster->IsAlive());
+    INTERNAL_ASSERT_INFO("_TestMeleeHitChance only support alive victim");
+    INTERNAL_TEST_ASSERT(victim->IsAlive());
+    INTERNAL_ASSERT_INFO("_TestMeleeHitChance can only be used with BASE_ATTACK and OFF_ATTACK");
+    INTERNAL_TEST_ASSERT(weaponAttackType <= OFF_ATTACK);
+
+    uint32 startingHealth = victim->GetHealth();
+    uint32 startingMaxHealth = victim->GetMaxHealth();
+
+    victim->SetMaxHealth(std::numeric_limits<uint32>::max());
+
+    float const absoluteTolerance = 0.02f;
+    uint32 sampleSize;
+    float resultingAbsoluteTolerance;
+    _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResultPercent / 100.0f, absoluteTolerance);
+
+    for (uint32 i = 0; i < sampleSize; i++)
+    {
+        victim->SetFullHealth();
+        caster->AttackerStateUpdate(victim, weaponAttackType);
+    }
+
+    Wait(1); //wait an update before restoring health, some procs may have occured
+
+    victim->SetMaxHealth(startingMaxHealth);
+    victim->SetHealth(startingHealth);
+
+    _TestMeleeOutcomePercentage(caster, victim, weaponAttackType, meleeHitOutcome, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
+}
+
+void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError, uint32 sampleSize /*= 0*/)
 {
     auto AI = attacker->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -1102,10 +1167,12 @@ void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, W
     auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
     if (!damageToTarget || damageToTarget->empty())
     {
-        TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
+        TC_LOG_WARN("test.unit_test", "_TestMeleeOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
         return;
     }
+
     uint32 success = 0;
+    uint32 attacks = 0; //total attacks with correct type
     //uint32 total = 0;
     for (auto itr : *damageToTarget)
     {
@@ -1117,18 +1184,26 @@ void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, W
         if (itr.damageInfo.AttackType != weaponAttackType)
             continue;
 
+        attacks++;
+
         if (itr.damageInfo.HitOutCome != meleeHitOutcome)
             continue;
 
         success++;
     }
 
+    if (sampleSize)
+    {
+        INTERNAL_ASSERT_INFO("_TestMeleeOutcomePercentage found %u results instead of expected sample size %u", attacks, sampleSize);
+        INTERNAL_TEST_ASSERT(attacks == sampleSize)
+    }
+
     float const result = success / float(damageToTarget->size()) * 100;;
-    INTERNAL_ASSERT_INFO("TestMeleeOutcomePercentage: expected result: %f, result: %f", expectedResult, result);
+    INTERNAL_ASSERT_INFO("_TestMeleeOutcomePercentage: expected result: %f, result: %f", expectedResult, result);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
-void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, SpellMissInfo missInfo, float expectedResult, float allowedError)
+void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, SpellMissInfo missInfo, float expectedResult, float allowedError, uint32 sampleSize /*= 0*/)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -1137,12 +1212,18 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     if (!damageToTarget || damageToTarget->empty())
     {
-        TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
+        TC_LOG_WARN("test.unit_test", "_TestSpellOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
         return;
     }
 
+    if (sampleSize)
+    {
+        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", damageToTarget->size(), sampleSize, spellId);
+        INTERNAL_TEST_ASSERT(damageToTarget->size() == sampleSize)
+    }
+
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo was prompted for non existing spell ID %u", spellId);
+    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage was prompted for non existing spell ID %u", spellId);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
     uint32 count = 0;
@@ -1157,7 +1238,7 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
         count++;
     }
 
-    float const result = count / float(damageToTarget->size() * 100.0f);
+    float const result = (count / float(damageToTarget->size())) * 100.0f;
     INTERNAL_ASSERT_INFO("TestSpellOutcomePercentage on spell %u: expected result: %f, result: %f", spellId, expectedResult, result);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }

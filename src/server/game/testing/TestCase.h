@@ -133,7 +133,7 @@ public:
     */
     #define TEST_HAS_NOT_AURA( ... ) { _SetCaller(__FILE__, __LINE__); _EnsureHasNotAura(__VA_ARGS__); _ResetCaller(); }
 
-    /* check if target has aura and if duration match given duration
+    /* check if target has aura and if maximum duration match given duration
     durationMS: can be either uint32 or std::chrono::duration (such as Milliseconds)
     */
     #define TEST_AURA_MAX_DURATION(target, spellID, durationMS) { _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, durationMS); _ResetCaller(); }
@@ -162,9 +162,18 @@ public:
     #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount, crit) { _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedAmount, crit); _ResetCaller(); }
   
     #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount); _ResetCaller(); }
-    // Test the percentage of a melee hit outcome
+
+    /* Cast given spells a bunch of time from caster on victim, and test if results are chance% given missInfo
+    chance: 0-100
+    */
+    #define TEST_SPELL_HIT_CHANCE(caster, victim, spellID, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo); _ResetCaller(); }
+    /* Triggers attack from caster on victim, and test if results are chance% given missInfo
+    chance: 0-100
+    */
+    #define TEST_MELEE_HIT_CHANCE(caster, victim, weaponAttackType, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestMeleeHitChance(caster, victim, weaponAttackType, chance, missInfo); _ResetCaller(); }
+    // Test the percentage of a melee hit outcome for already done attacks
     #define TEST_MELEE_OUTCOME_PERCENTAGE(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestMeleeOutcomePercentage(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError);  _ResetCaller(); }
-    // Test the percentage of a spell hit outcome
+        // Test the percentage of a spell hit outcome for already done attacks
     #define TEST_SPELL_OUTCOME_PERCENTAGE(attacker, victim, spellId, missType, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestSpellOutcomePercentage(attacker, victim, spellId, missType, expectedResult, allowedError);  _ResetCaller(); }
 
     #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) { _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller(); }
@@ -177,7 +186,7 @@ public:
     */
     #define TEST_HAS_COOLDOWN(caster, spellID, cooldownSecond) { _SetCaller(__FILE__, __LINE__); _TestHasCooldown(caster, spellID, cooldownSecond); _ResetCaller(); }
 
-    //crit: get only spells that made crit / only spells that not
+    //crit: get only spells that made crit / only spells that did not
     void GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount = 0);
     void GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount = 0);
     void GetWhiteDamageDoneTo(TestPlayer* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt, uint32 expectedCount = 0);
@@ -211,8 +220,19 @@ protected:
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit);
     void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
-    void _TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError);
-    void _TestSpellOutcomePercentage(TestPlayer* attacker, Unit* victim, uint32 spellId, SpellMissInfo hitInfo, float expectedResult, float allowedError);
+    /* if sampleSize != 0, check if results count = sampleSize
+    expectedResult: 0 - 100
+    allowedError: 0 - 100
+    */
+    void _TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError, uint32 sampleSize = 0);
+    /* if sampleSize != 0, check if results count = sampleSize
+    expectedResult: 0 - 100
+    allowedError: 0 - 100
+    */
+    void _TestSpellOutcomePercentage(TestPlayer* attacker, Unit* victim, uint32 spellId, SpellMissInfo hitInfo, float expectedResult, float allowedError, uint32 sampleSize = 0);
+    void _TestSpellHitChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float chance, SpellMissInfo missInfo);
+    void _TestMeleeHitChance(TestPlayer* caster, TestPlayer* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
+
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, Powers powerType, uint32 expectedPowerCost);
     void _EquipItem(TestPlayer* p, uint32 itemID);
@@ -231,7 +251,7 @@ protected:
     static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);
     //Returns how much iterations and how much tolerance you should allow for given:
     //expectedResult: % from absoluteTolerance*2 to 1.0f
-    //absoluteTolerance: % from 0.0f to 1.0f
+    //absoluteTolerance: % from 0.0f to 1.0f. Error tolerance.
     void _GetPercentApproximationParams(uint32& sampleSize, float& resultingAbsoluteTolerance, float const expectedResult, float const absoluteTolerance = 0.01f);
 
 private:
