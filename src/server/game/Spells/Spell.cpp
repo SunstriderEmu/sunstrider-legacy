@@ -7072,9 +7072,15 @@ SpellCastResult Spell::CheckItems(uint32* param1 /*= nullptr*/, uint32* param2 /
             case SPELL_EFFECT_WEAPON_DAMAGE:
             case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
             {
-                if(m_caster->GetTypeId() != TYPEID_PLAYER) return SPELL_FAILED_TARGET_NOT_PLAYER;
-                if( m_attackType != RANGED_ATTACK )
+                if(m_caster->GetTypeId() != TYPEID_PLAYER) 
+                    return SPELL_FAILED_TARGET_NOT_PLAYER;
+
+                if (m_attackType != RANGED_ATTACK)
                     break;
+
+                if (_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST) //sun: needed by tests
+                    break;
+
                 Item *pItem = (m_caster->ToPlayer())->GetWeaponForAttack(m_attackType);
                 if(!pItem || pItem->IsBroken())
                     return SPELL_FAILED_EQUIPPED_ITEM;
