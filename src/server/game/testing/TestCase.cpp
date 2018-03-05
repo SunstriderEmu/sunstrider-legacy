@@ -767,7 +767,7 @@ float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spel
     INTERNAL_ASSERT_INFO("GetChannelDamageTo was prompted for non existing spell ID %u", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
-    auto damageToTarget = AI->GetDamageDoneInfo(victim);
+    auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("GetChannelDamageTo found no data for this victim (%s)", victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
@@ -862,7 +862,7 @@ void TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAtta
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
-    auto damageToTarget = AI->GetWhiteDamageDoneInfo(victim);
+    auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
@@ -920,7 +920,7 @@ void TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
-    auto damageToTarget = AI->GetDamageDoneInfo(victim);
+    auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo found no data for this victim (%s)", victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
@@ -1099,7 +1099,7 @@ void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, W
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
-    auto damageToTarget = AI->GetWhiteDamageDoneInfo(victim);
+    auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
     if (!damageToTarget || damageToTarget->empty())
     {
         TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
@@ -1134,7 +1134,7 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
-    auto damageToTarget = AI->GetDamageDoneInfo(victim);
+    auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     if (!damageToTarget || damageToTarget->empty())
     {
         TC_LOG_WARN("test.unit_test", "GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());

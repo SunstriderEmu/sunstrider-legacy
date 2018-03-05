@@ -283,7 +283,7 @@ public:
             for (uint32 i = 0; i < 150; i++)
             {
                 rogue->AttackerStateUpdate(priest, BASE_ATTACK);
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(priest);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(priest);
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
                 if (data.damageInfo.HitOutCome != MELEE_HIT_NORMAL && data.damageInfo.HitOutCome != MELEE_HIT_CRIT)
@@ -705,7 +705,7 @@ public:
             for (uint32 i = 0; i < 150; i++)
             {
                 rogue->AttackerStateUpdate(priest, BASE_ATTACK);
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(priest);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(priest);
 
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
@@ -2554,7 +2554,7 @@ public:
             for (uint32 i = 0; i < sampleSize; i++) {
                 shadowfiend->AttackerStateUpdate(warrior, BASE_ATTACK);
 
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(warrior);
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
 

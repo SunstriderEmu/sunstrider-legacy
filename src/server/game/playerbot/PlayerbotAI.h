@@ -163,11 +163,11 @@ public:
     // sunstrider addition for testing: Called at any Damage to any victim (before damage apply)
     //virtual void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) { }
     //virtual void DamageTaken(Unit *done_by, uint32 & /*damage*/, DamageEffectType /*damageType*/) { }
-    virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) { }
-    virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) { }
-    virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) { }
-    virtual void SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID) { }
-    virtual void DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo) { }
+    virtual void CastedDamageSpell(Unit const* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) const { }
+    virtual void CastedHealingSpell(Unit const* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) const { }
+    virtual void PeriodicTick(Unit const* target, int32 amount, uint32 spellID) const { }
+    virtual void DoneWhiteDamage(Unit const* target, CalcDamageInfo const* damageInfo) const { }
+    virtual void SpellDamageDealt(Unit const* target, uint32 damage, uint32 spellID) const { };
 
 private:
     void _fillGearScoreData(Player *player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore);
@@ -206,11 +206,11 @@ public:
     virtual ~PlayerbotTestingAI() {}
 
     void UpdateAIInternal(uint32 elapsed) override;
-    virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) override;
-    virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) override;
-    virtual void PeriodicTick(Unit* target, int32 amount, uint32 spellID) override;
-    virtual void SpellDamageDealt(Unit* target, uint32 damage, uint32 spellID) override;
-    virtual void DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo) override;
+    virtual void CastedDamageSpell(Unit const* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) const override;
+    virtual void CastedHealingSpell(Unit const* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) const override;
+    virtual void PeriodicTick(Unit const* target, int32 amount, uint32 spellID) const override;
+    virtual void DoneWhiteDamage(Unit const* target, CalcDamageInfo const* damageInfo) const override;
+    virtual void SpellDamageDealt(Unit const* target, uint32 damage, uint32 spellID) const override;
 
     void ResetSpellCounters();
 
@@ -226,9 +226,9 @@ public:
         bool crit;
     };
 
-    struct WhiteDamageDoneInfo
+    struct MeleeDamageDoneInfo
     {
-        WhiteDamageDoneInfo(CalcDamageInfo* damageInfo) :
+        MeleeDamageDoneInfo(CalcDamageInfo const* damageInfo) :
             damageInfo(*damageInfo)
         {}
 
@@ -251,18 +251,20 @@ public:
     };
 
     //Get DoT damage, resists and absorbs ignored
-    int32 GetDotDamage(Unit* to, uint32 spellID);
-    //These will always return the non crit damages
-    std::vector<SpellDamageDoneInfo> const* GetDamageDoneInfo(Unit* target);
-    std::vector<HealingDoneInfo> const* GetHealingDoneInfo(Unit* target);
-    std::vector<WhiteDamageDoneInfo> const* GetWhiteDamageDoneInfo(Unit* target);
+    int32 GetDotDamage(Unit const* to, uint32 spellID) const;
+    //Get spells damage info for this caster on given target. Note that ranged attacks are also spells
+    std::vector<SpellDamageDoneInfo> const* GetSpellDamageDoneInfo(Unit const* target) const;
+    //Get healing spells info for this caster on given target.
+    std::vector<HealingDoneInfo> const* GetHealingDoneInfo(Unit const* target) const;
+    //Return main and offhand damages for this caster on given target. Does NOT includes ranged damage, those are in GetSpellDamageDoneInfo
+    std::vector<MeleeDamageDoneInfo> const* GetMeleeDamageDoneInfo(Unit const* target) const;
 
 private:
    
-    std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<SpellDamageDoneInfo>> spellDamageDone;
-    std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<WhiteDamageDoneInfo>> whiteDamageDone;
-    std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<HealingDoneInfo>> healingDone;
-    std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<TickInfo>> ticksDone;
+    mutable std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<SpellDamageDoneInfo>> spellDamageDone;
+    mutable std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<MeleeDamageDoneInfo>> meleeDamageDone;
+    mutable std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<HealingDoneInfo>> healingDone;
+    mutable std::unordered_map<ObjectGuid /*targetGUID*/, std::vector<TickInfo>> ticksDone;
 
 };
 

@@ -660,7 +660,7 @@ public:
             for (uint32 i = 0; i < 75; i++)
             {
                 rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(warrior);
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
                 uint32 damage = 0;
@@ -1274,7 +1274,7 @@ public:
             {
                 TEST_ASSERT(warrior->HasAura(ClassSpells::Warrior::RECKLESSNESS_RNK_1));
                 TEST_CAST(warrior, creature, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-                auto damageToTarget = AI->GetDamageDoneInfo(creature);
+                auto damageToTarget = AI->GetSpellDamageDoneInfo(creature);
                 auto& data = damageToTarget->back();
                 if (data.spellID != ClassSpells::Warrior::HEROIC_STRIKE_RNK_10)
                     continue;
@@ -1722,7 +1722,7 @@ public:
             for (uint32 i = 0; i < 500; i++)
             {
                 rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(warrior);
                 ASSERT_INFO("After 500 hits: dodge: %i, parry: %i, block: %i", int(dodge), int(parry), int(block));
                 TEST_ASSERT(i != 499);
                 TEST_ASSERT(damageToTarget->size() == i + 1);
