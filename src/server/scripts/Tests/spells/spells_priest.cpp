@@ -894,6 +894,59 @@ public:
     }
 };
 
+class SymbolOfHopeTest : public TestCaseScript
+{
+public:
+    SymbolOfHopeTest() : TestCaseScript("spells priest symbol_of_hope") { }
+
+    class SymbolOfHopeTestImpt : public TestCase
+    {
+    public:
+        SymbolOfHopeTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_DRAENEI);
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
+
+            GroupPlayer(priest, mage);
+
+            float const symbolOfHopeBonus = (5.0f * (priest->GetLevel() - 10) + 33) / 5.0f;
+
+            float const expectedPriestStartMPS = priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) + symbolOfHopeBonus;
+            float const expectedPriestStartMPSFSR = priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) + symbolOfHopeBonus;
+
+            float const expectedMageStartMPS = mage->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) + symbolOfHopeBonus;
+            float const expectedMageStartMPSFSR = mage->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) + symbolOfHopeBonus;
+
+            uint32 const expectedSymbolOfHopeManaCost = 15;
+            priest->SetPower(POWER_MANA, expectedSymbolOfHopeManaCost);
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1);
+            // Mana cost
+            TEST_ASSERT(priest->GetPower(POWER_MANA) == 0);
+            // Aura duration
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, Seconds(15));
+            TEST_AURA_MAX_DURATION(mage, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, Seconds(15));
+            // Cooldown
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, Minutes(5));
+            Wait(1000);
+            // MPS
+            TEST_ASSERT(priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) == expectedPriestStartMPS);
+            TEST_ASSERT(priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) == expectedPriestStartMPSFSR);
+            TEST_ASSERT(mage->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) == expectedMageStartMPS);
+            TEST_ASSERT(mage->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) == expectedMageStartMPSFSR);
+
+            
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SymbolOfHopeTestImpt>();
+    }
+};
+
 class AbolishDiseaseTest : public TestCaseScript
 {
 public:
@@ -2735,6 +2788,7 @@ void AddSC_test_spells_priest()
     new PrayerOfFortitudeTest();
     new ShackleUndeadTest();
     new StarshardsTest();
+    new SymbolOfHopeTest();
     // Holy: 14/14
     new AbolishDiseaseTest();
     new BindingHealTest();
