@@ -199,7 +199,7 @@ public:
 	class EntanglingRootsTestImpt : public TestCase
 	{
 	public:
-		EntanglingRootsTestImpt() : TestCase(STATUS_PARTIAL, true) { }
+		EntanglingRootsTestImpt() : TestCase(STATUS_PASSING, true) { }
 
 		void Test() override
 		{
@@ -214,23 +214,21 @@ public:
 
 			// Mana cost
 			uint32 const expectedEntanglingRootsMana = 160;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, POWER_MANA, expectedEntanglingRootsMana);
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, POWER_MANA, expectedEntanglingRootsMana);
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, Seconds(27));
 
 			// Is rooted
 			TEST_ASSERT(creature->IsInRoots());
 
 			// Spell coefficient
-			float const starfireSpellCoeff = 27.0f / 15.0f / 9.0f;
-			uint32 const starfireBonusSP = starfireSpellCoeff * staffSP;
+			float const entanglingRootsSpellCoeff = 27.0f / 15.0f / 9.0f;
+			uint32 const entanglingRootsBonusSP = entanglingRootsSpellCoeff * staffSP;
 
 			// Damage
 			float const EntanglingRootsTick = ClassSpellsDamage::Druid::ENTANGLING_ROOTS_RNK_7_TOTAL / 9;
-			uint32 const expectedEntanglingRootsTick = floor(EntanglingRootsTick + starfireBonusSP);
+			uint32 const expectedEntanglingRootsTick = floor(EntanglingRootsTick + entanglingRootsBonusSP);
 			uint32 const expectedEntanglingRootsDmg = expectedEntanglingRootsTick * 9;
 			TEST_DOT_DAMAGE(druid, creature, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, expectedEntanglingRootsDmg, false);
-
-			// TODO: Aura duration
-			// TODO: Diminishing returns
 		}
 	};
 
@@ -244,7 +242,7 @@ class FaerieFireTest : public TestCaseScript
 {
 public:
 
-	FaerieFireTest() : TestCaseScript("talents spells faerie_feral") { }
+	FaerieFireTest() : TestCaseScript("spells druid faerie_fire") { }
 
 	class FaerieFireTestImpt : public TestCase
 	{
@@ -253,7 +251,7 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
 			Position spawnPosition(_location);
 			spawnPosition.MoveInFront(_location, 3.0f);
@@ -261,15 +259,15 @@ public:
 			TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawnPosition);
 
 			EQUIP_ITEM(rogue, 34211); // S4 Chest
-			int32 const expectedRogueArmor = rogue->GetArmor() - 610;
+            uint32 const expectedRogueArmor = rogue->GetArmor() - 610;
 
 			// Faerie Fire 
-            TEST_CAST(player, rogue, ClassSpells::Druid::FAERIE_FIRE_RNK_5);
-			Aura* aura = rogue->GetAura(ClassSpells::Druid::FAERIE_FIRE_RNK_5);
-			TEST_ASSERT(aura != nullptr);
+            druid->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_CAST(druid, rogue, ClassSpells::Druid::FAERIE_FIRE_RNK_5);
+            druid->ResetForceSpellHitResult();
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Druid::FAERIE_FIRE_RNK_5, Seconds(40));
 			ASSERT_INFO("Rogue has %u armor, expected: %i", rogue->GetArmor(), expectedRogueArmor);
-			TEST_ASSERT(int32(rogue->GetArmor()) == expectedRogueArmor);
-			TEST_ASSERT(aura->GetDuration() == 40 * SECOND * IN_MILLISECONDS);
+			TEST_ASSERT(rogue->GetArmor() == expectedRogueArmor);
 			Wait(2000);
 
 			// Rogue can't stealth
@@ -277,7 +275,7 @@ public:
 
 			// Mage can't invisible
 			uint32 expectedFaerieFireMana = 145;
-			TEST_POWER_COST(player, mage, ClassSpells::Druid::FAERIE_FIRE_RNK_5, POWER_MANA, expectedFaerieFireMana);
+			TEST_POWER_COST(druid, mage, ClassSpells::Druid::FAERIE_FIRE_RNK_5, POWER_MANA, expectedFaerieFireMana);
             TEST_CAST(mage, mage, ClassSpells::Mage::INVISIBILITY_RNK_1, SPELL_FAILED_CASTER_AURASTATE);
 		}
 	};
@@ -292,24 +290,18 @@ class HibernateTest : public TestCaseScript
 {
 public:
 
-	HibernateTest() : TestCaseScript("talents spells hibernate") { }
+	HibernateTest() : TestCaseScript("spells druid hibernate") { }
 
 	class HibernateTestImpt : public TestCase
 	{
 	public:
 		HibernateTestImpt() : TestCase(STATUS_PASSING, true) { }
 
-		void TestDuration(TestPlayer* druid, Unit* enemy, Milliseconds durationMS)
+		void HibernateDuration(TestPlayer* druid, Unit* enemy, Milliseconds durationMS)
 		{
-            bool hasAura = false;
-            for (uint32 retry = 0; retry < 10; retry++)
-            {
-                TEST_CAST(druid, enemy, ClassSpells::Druid::HIBERNATE_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-                hasAura = enemy->HasAura(ClassSpells::Druid::HIBERNATE_RNK_3);
-                if(hasAura)
-                    break;
-            }
-            TEST_ASSERT(hasAura);
+            druid->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_CAST(druid, enemy, ClassSpells::Druid::HIBERNATE_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            druid->ResetForceSpellHitResult();
             TEST_AURA_MAX_DURATION(enemy, ClassSpells::Druid::HIBERNATE_RNK_3, Milliseconds(durationMS));
 			enemy->RemoveAurasDueToSpell(ClassSpells::Druid::HIBERNATE_RNK_3);
 		}
@@ -319,31 +311,29 @@ public:
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
 			Position spawnPosition(_location);
-			spawnPosition.MoveInFront(_location, 3.0f);
-			Creature* beast = SpawnCreature(26, true); // beast dummy
-			Creature* dragonkin = SpawnCreature(20, true); // dragonkin dummy
+			spawnPosition.MoveInFront(_location, 20.0f);
+			Creature* beast = SpawnCreature(21408, true); // Felfire Diemetradon
+			Creature* dragonkin = SpawnCreature(21722, true); // Enslaved Netherwing Drake
 
 			// PvE
-			TestDuration(druid, beast, Milliseconds(40000));
+            HibernateDuration(druid, beast, Milliseconds(40000));
 
 			// Only one target at a time
-            TestDuration(druid, dragonkin, Milliseconds(40000));
-			TEST_ASSERT(!beast->HasAura(ClassSpells::Druid::HIBERNATE_RNK_3));
-
-			Wait(5000);
+            HibernateDuration(druid, dragonkin, Milliseconds(40000));
+            TEST_HAS_NOT_AURA(beast, ClassSpells::Druid::HIBERNATE_RNK_3);
 
 			// PvP
 			TestPlayer* enemy = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF, 70, spawnPosition);
 			TEST_CAST(enemy, enemy, ClassSpells::Druid::CAT_FORM_RNK_1);
 			Wait(1000);
 			// Diminishing return
-			TestDuration(druid, enemy, Milliseconds(10000)); // 10s
-			TestDuration(druid, enemy, Milliseconds(5000)); // 5s
-			TestDuration(druid, enemy, Milliseconds(2500)); // 2.5s
+			HibernateDuration(druid, enemy, Milliseconds(10000)); // 10s
+			HibernateDuration(druid, enemy, Milliseconds(5000)); // 5s
+			HibernateDuration(druid, enemy, Milliseconds(2500)); // 2.5s
 			// Immune
 			uint32 expectedHibernateMana = 150;
 			TEST_POWER_COST(druid, enemy, ClassSpells::Druid::HIBERNATE_RNK_3, POWER_MANA, expectedHibernateMana);
-			TEST_ASSERT(!enemy->HasAura(ClassSpells::Druid::HIBERNATE_RNK_3));
+            TEST_HAS_NOT_AURA(enemy, ClassSpells::Druid::HIBERNATE_RNK_3);
 		}
 	};
 
@@ -363,18 +353,9 @@ public:
 	public:
 		HurricaneTestImpt() : TestCase(STATUS_PASSING, true) { }
 
-		void CastHurricane(TestPlayer* druid, Unit* target)
-		{
-			druid->GetSpellHistory()->ResetAllCooldowns();
-            TEST_CAST(druid, target, ClassSpells::Druid::HURRICANE_RNK_4, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
-		}
-
 		void Test() override
 		{
-			// Init barkskin druid
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-
-			// Init rogue
 			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
 
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
@@ -382,27 +363,21 @@ public:
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			druid->DisableRegeneration(true);
+			uint32 expectedRogueAttackSpeed = rogue->GetAttackTimer(BASE_ATTACK) * 1.25f;
 
-			// Mana cost
-			uint32 const expectedHurricaneMana = 1905;
-			TEST_POWER_COST(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, POWER_MANA, expectedHurricaneMana);
-
-			// Duration & CD & +25% melee speed
-
-			uint32 rogueAttackSpeed = rogue->GetAttackTimer(BASE_ATTACK);
-			CastHurricane(druid, rogue);
+            // Mana cost
+            uint32 const expectedHurricaneMana = 1905;
+            TEST_POWER_COST(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, POWER_MANA, expectedHurricaneMana);
+			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::HURRICANE_RNK_4, Minutes(1));
+            // Duration
 			SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(ClassSpells::Druid::HURRICANE_RNK_4);
 			TEST_ASSERT(spellInfo != nullptr);
-			ASSERT_INFO("Duration: %i", spellInfo->GetDuration());
-			Wait(100);
 			TEST_ASSERT(spellInfo->GetDuration() == 10 * SECOND *  IN_MILLISECONDS);
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::HURRICANE_RNK_4, Minutes(1));
-			uint32 expectedAttackSpeed = rogueAttackSpeed * 1.25f;
-			ASSERT_INFO("WS: %u, expected:%u", rogue->GetAttackTimer(BASE_ATTACK), expectedAttackSpeed);
-			TEST_ASSERT(rogue->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
+            // 25% AS
+			TEST_ASSERT(rogue->GetAttackTimer(BASE_ATTACK) == expectedRogueAttackSpeed);
 
 			// Damage
-			float const hurricaneSpellCoeff = 10 / 3.5 / 2 / 10;
+			float const hurricaneSpellCoeff = 10.0f / 3.5f / 2.0f / 10.0f;
 			uint32 const hurricaneBonusSP = hurricaneSpellCoeff * staffSP;
 			uint32 const expectedHurricaneDmg = ClassSpellsDamage::Druid::HURRICANE_RNK_4_TICK + hurricaneBonusSP;
 			TEST_CHANNEL_DAMAGE(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, ClassSpells::Druid::HURRICANE_RNK_4_PROC, 10, expectedHurricaneDmg);
@@ -425,7 +400,7 @@ public:
 	public:
 		InnervateTestImpt() : TestCase(STATUS_PASSING, true) { }
 
-		float CalculateInnervateSpiritRegen(TestPlayer* player)
+		float getSpiritRatioBasedRegen(TestPlayer* player, float spiritFactor = 1.0f)
 		{
 			uint32 level = player->GetLevel();
 			uint32 pclass = player->GetClass();
@@ -433,11 +408,10 @@ public:
 			if (level>GT_MAX_LEVEL)
 				level = GT_MAX_LEVEL;
 
-			GtRegenMPPerSptEntry const *moreRatio = sGtRegenMPPerSptStore.LookupEntry((pclass - 1)*GT_MAX_LEVEL + level - 1);
+			GtRegenMPPerSptEntry const *moreRatio = sGtRegenMPPerSptStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
 			TEST_ASSERT(moreRatio != nullptr);
 
-			float const innervateFactor = 5.0f;
-			float const spirit = player->GetStat(STAT_SPIRIT) * innervateFactor;
+			float const spirit = player->GetStat(STAT_SPIRIT) * spiritFactor;
 			float const regen = spirit * moreRatio->ratio;
 			return regen;
 		}
@@ -446,33 +420,20 @@ public:
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
-			uint32 totalMana = 10000;
-			druid->SetMaxPower(POWER_MANA, totalMana);
-
-			uint32 const regenTick = 2.0f * sqrt(druid->GetStat(STAT_INTELLECT)) * druid->OCTRegenMPPerSpirit();
-			uint32 const expectedInnervateRegenTick = 2.0f * sqrt(druid->GetStat(STAT_INTELLECT)) * CalculateInnervateSpiritRegen(druid);
+            float const innervateSpiritFactor = 5.0f;
+            float const regenPerSecondWithInnervate = sqrt(druid->GetStat(STAT_INTELLECT)) * getSpiritRatioBasedRegen(druid, innervateSpiritFactor);
 
 			// Power cost
-			uint32 expectedInnervateMana = 94;
-			druid->SetPower(POWER_MANA, expectedInnervateMana);
-            TEST_CAST(druid, druid, ClassSpells::Druid::INNERVATE_RNK_1);
-			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
+			uint32 expectedInnervateManaCost = 94;
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::INNERVATE_RNK_1, POWER_MANA, expectedInnervateManaCost);
 
 			// Duration & CD
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::INNERVATE_RNK_1, Seconds(20));
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::INNERVATE_RNK_1, Minutes(6));
 
-			// Mana regen
-			TEST_ASSERT(druid->GetPower(POWER_MANA) == 0);
-			Wait(18500);
-			uint32 expectedMana = 10 * expectedInnervateRegenTick;
-			ASSERT_INFO("Mana: %u, expected: %u", druid->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(druid->GetPower(POWER_MANA) == expectedMana);
-			Wait(2000);
-            TEST_HAS_NOT_AURA(druid, ClassSpells::Druid::INNERVATE_RNK_1);
-			expectedMana = 10 * expectedInnervateRegenTick + regenTick;
-			ASSERT_INFO("Mana: %u, expected: %u", druid->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(druid->GetPower(POWER_MANA) == expectedMana);
+            // Mana regen
+            TEST_ASSERT(druid->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) == regenPerSecondWithInnervate);
+            TEST_ASSERT(druid->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) == regenPerSecondWithInnervate);
 		}
 	};
 
@@ -504,8 +465,8 @@ public:
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
 			// Mana cost
-			uint32 const expectedMoonfireMana = 495;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::MOONFIRE_RNK_12, POWER_MANA, expectedMoonfireMana);
+			uint32 const expectedMoonfireManaCost = 495;
+			TEST_POWER_COST(druid, creature, ClassSpells::Druid::MOONFIRE_RNK_12, POWER_MANA, expectedMoonfireManaCost);
 
 			// Spell coefficient
 			float const moonfireCastTimeDuration = 1.5f; // GCD
@@ -593,7 +554,7 @@ public:
 	class ThornsTestImpt : public TestCase
 	{
 	public:
-		ThornsTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ThornsTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
 
 		void Test() override
 		{
@@ -610,13 +571,15 @@ public:
 			uint32 const expectedThornsMana = 400;
 			TEST_POWER_COST(druid, druid, ClassSpells::Druid::THORNS_RNK_7, POWER_MANA, expectedThornsMana);
 
-			// Damage
+			// Damage -- Bug: shouldn't have a spell coeff
 			uint32 const thornsDmg = 25;
 			uint32 expectedRogueHealth = rogue->GetHealth() - thornsDmg;
-			rogue->Attack(druid, true);
-			Wait(500);
-			TEST_ASSERT(rogue->GetHealth() == expectedRogueHealth);
+            TEST_ASSERT(rogue->IsFullHealth());
+            rogue->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            rogue->AttackerStateUpdate(druid, BASE_ATTACK);
 			rogue->AttackStop();
+            rogue->ResetForceMeleeHitResult();
+			TEST_ASSERT(rogue->GetHealth() == expectedRogueHealth);
 		}
 	};
 
@@ -639,7 +602,7 @@ public:
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
-			Creature* creature = SpawnCreature();
+			Creature* dummy = SpawnCreature();
 
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
@@ -649,7 +612,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedWrathMana = 255;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::WRATH_RNK_10, POWER_MANA, expectedWrathMana);
+			TEST_POWER_COST(druid, dummy, ClassSpells::Druid::WRATH_RNK_10, POWER_MANA, expectedWrathMana);
 
 			// Spell coefficient
 			float const wrathSpellCoeff = ClassSpellsCoeff::Druid::WRATH;
@@ -658,12 +621,12 @@ public:
 			// Damage
 			uint32 const expectedWrathMinDmg = ClassSpellsDamage::Druid::WRATH_RNK_10_MIN + wrathBonusSP;
 			uint32 const expectedWrathMaxDmg = ClassSpellsDamage::Druid::WRATH_RNK_10_MAX + wrathBonusSP;
-			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::WRATH_RNK_10, expectedWrathMinDmg, expectedWrathMaxDmg, false);
+			TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::WRATH_RNK_10, expectedWrathMinDmg, expectedWrathMaxDmg, false);
 
 			// Crit damage
 			uint32 const expectedWrathCritMinDmg = expectedWrathMinDmg * 1.5f;
 			uint32 const expectedWrathCritMaxDmg = expectedWrathMaxDmg * 1.5f;
-			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::WRATH_RNK_10, expectedWrathCritMinDmg, expectedWrathCritMaxDmg, true);
+			TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::WRATH_RNK_10, expectedWrathCritMinDmg, expectedWrathCritMaxDmg, true);
 		}
 	};
 
@@ -696,21 +659,9 @@ public:
 			Wait(1500); // GCD
 
 			// Rage & aura duration
-			uint32 const expectedBashRage = 10 * 10;
-            bool hasAura = false;
-            for(uint32 retry = 0; retry < 10; retry++)
-			{
-				druid->SetPower(POWER_RAGE, expectedBashRage);
-                TEST_CAST(druid, rogue, ClassSpells::Druid::BASH_RNK_3);
-                hasAura = rogue->HasAura(ClassSpells::Druid::BASH_RNK_3);
-                if (hasAura)
-                    break;
-			}
-            TEST_ASSERT(hasAura);
-			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
-			Aura* aura = rogue->GetAura(ClassSpells::Druid::BASH_RNK_3);
-			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetDuration() == 4 * SECOND * IN_MILLISECONDS);
+			uint32 const expectedBashRageCost = 10 * 10;
+            TEST_POWER_COST(druid, rogue, ClassSpells::Druid::BASH_RNK_3, POWER_RAGE, expectedBashRageCost);
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Druid::BASH_RNK_3, Seconds(4));
 		}
 	};
 
@@ -745,48 +696,38 @@ public:
 			TestPlayer* player6m = SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 1, spawn6m);
 			Creature* creature6m = SpawnCreatureWithPosition(spawn6m, 6);
 
-			Position spawn11m(_location);
-			spawn11m.MoveInFront(_location, 15.0f);
-			TestPlayer* player11m = SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 1, spawn11m);
-			Creature* creature11m = SpawnCreatureWithPosition(spawn11m, 6);
+			Position spawn15m(_location);
+			spawn15m.MoveInFront(_location, 15.0f);
+			TestPlayer* player15m = SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 1, spawn15m);
+			Creature* creature15m = SpawnCreatureWithPosition(spawn15m, 6);
 
 			// Setup
-			player3m->Attack(creature3m, true);
-			player6m->Attack(creature6m, true);
-			player11m->Attack(creature11m, true);
+            player3m->AttackerStateUpdate(creature3m, BASE_ATTACK);
+            player6m->AttackerStateUpdate(creature6m, BASE_ATTACK);
+            player15m->AttackerStateUpdate(creature15m, BASE_ATTACK);
 
 			TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
-			Wait(5000);
+			Wait(2000);
 
 			// Rage cost
-			uint32 const expectedChallengingRoarRage = 15 * 10;
-			druid->SetPower(POWER_RAGE, expectedChallengingRoarRage);
-            TEST_CAST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
-			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
-
-			// Cooldown
+            uint32 const expectedChallengingRoarRage = 15 * 10;
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, POWER_RAGE, expectedChallengingRoarRage);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Minutes(10));
 
 			// Aura
-			Aura* aura3m = creature3m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
-			TEST_ASSERT(aura3m != nullptr);
-			Aura* aura6m = creature6m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
-			TEST_ASSERT(aura6m != nullptr);
-			Aura* aura11m = creature11m->GetAura(ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
-			TEST_ASSERT(aura11m == nullptr);
-
-			// Aura duration
-			TEST_ASSERT(aura3m->GetDuration() == 6 * SECOND * IN_MILLISECONDS);
-			TEST_ASSERT(aura6m->GetDuration() == 6 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(creature3m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Seconds(6));
+            TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Seconds(6));
+            TEST_HAS_NOT_AURA(creature15m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
+            Wait(1);
 		
 			// Target changed
-			TEST_ASSERT(creature3m->GetTarget() == druid->GetGUID());
-			TEST_ASSERT(creature6m->GetTarget() == druid->GetGUID());
+			TEST_ASSERT(creature3m->GetVictim() == druid);
+			TEST_ASSERT(creature6m->GetVictim() == druid);
 
 			// Back to original target
-			Wait(6500);
-			TEST_ASSERT(creature3m->GetTarget() == player3m->GetGUID());
-			TEST_ASSERT(creature6m->GetTarget() == player6m->GetGUID());
+			Wait(8000);
+			TEST_ASSERT(creature3m->GetVictim() == player3m);
+			TEST_ASSERT(creature6m->GetVictim() == player6m);
 		}
 	};
 
