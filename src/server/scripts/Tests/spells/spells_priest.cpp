@@ -1264,13 +1264,11 @@ public:
     public:
         ElunesGraceTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
 
-        void assertMissChance(TestPlayer* attacker, TestPlayer* victim, uint32 sampleSize, float resultingAbsoluteTolerance, float expectedResult)
+        uint32 GetMeleeMissCount(PlayerbotTestingAI const* AI, TestPlayer const* attacker, TestPlayer const* victim, uint32 sampleSize)
         {
-            auto AI = attacker->GetTestingPlayerbotAI();
-            TEST_ASSERT(AI != nullptr);
-
-            auto damageToTarget = AI->GetWhiteDamageDoneInfo(victim);
-            TEST_ASSERT(damageToTarget && !damageToTarget->empty());
+            auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
+            TEST_ASSERT(damageToTarget != nullptr);
+            TEST_ASSERT(damageToTarget->size() == sampleSize);
 
             uint32 missCount = 0;
             for (auto itr : *damageToTarget)
@@ -1278,6 +1276,31 @@ public:
                 if (itr.damageInfo.HitOutCome == MELEE_HIT_MISS)
                     missCount++;
             }
+            return missCount;
+        }
+
+        uint32 GetRangedMissCount(PlayerbotTestingAI const* AI, TestPlayer const* attacker, TestPlayer const* victim, uint32 sampleSize)
+        {
+            auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
+            TEST_ASSERT(damageToTarget != nullptr);
+            TEST_ASSERT(damageToTarget->size() == sampleSize);
+
+            uint32 missCount = 0;
+            for (auto itr : *damageToTarget)
+            {
+                if (itr.missInfo == SPELL_MISS_MISS)
+                    missCount++;
+            }
+            return missCount;
+        }
+
+        void assertMissChance(TestPlayer* attacker, TestPlayer* victim, uint32 sampleSize, float resultingAbsoluteTolerance, float expectedResult, bool ranged)
+        {
+            auto AI = attacker->GetTestingPlayerbotAI();
+            TEST_ASSERT(AI != nullptr);
+
+            uint32 missCount = ranged ? GetRangedMissCount(AI, attacker, victim, sampleSize) : 
+                                        GetMeleeMissCount(AI, attacker, victim, sampleSize);
 
             float missPercentage = float(missCount) / float(sampleSize);
             TEST_ASSERT(Between<float>(expectedResult, missPercentage - resultingAbsoluteTolerance, missPercentage + resultingAbsoluteTolerance));
@@ -1299,7 +1322,7 @@ public:
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, Minutes(3));
 
             float const expectedResult = 0.25f; // PvP Hit 5% + Elune's Grace 20%
-            float const absoluteTolerance = 0.01f;
+            float const absoluteTolerance = 0.02f;
             uint32 sampleSize;
             float resultingAbsoluteTolerance;
             _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResult, absoluteTolerance);
@@ -1312,8 +1335,11 @@ public:
                 priest->SetFullHealth();
             }
 
-            assertMissChance(warrior, priest, sampleSize, resultingAbsoluteTolerance, expectedResult);
-            assertMissChance(hunter, priest, sampleSize, resultingAbsoluteTolerance, expectedResult);
+            Wait(1000); //wait for arrows to hit target
+
+            assertMissChance(warrior, priest, sampleSize, resultingAbsoluteTolerance, expectedResult, false);
+            //Fails here, only 200 ranged spells... maybe max 200 spells event at the same time?
+            assertMissChance(hunter, priest, sampleSize, resultingAbsoluteTolerance, expectedResult, true);
         }
     };
 
