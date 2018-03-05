@@ -4996,22 +4996,28 @@ float Player::GetSpellCritFromIntellect()
     return crit*100.0f;
 }
 
-float Player::GetRatingMultiplier(CombatRating cr) const
+//TC has GetRatingMultiplier but it does not work the same way, they use sGtOCTClassCombatRatingScalarStore
+float Player::GetRatingCoefficient(CombatRating cr) const
 {
     uint32 level = GetLevel();
 
-    if (level>GT_MAX_LEVEL) level = GT_MAX_LEVEL;
+    if (level > GT_MAX_LEVEL)
+        level = GT_MAX_LEVEL;
 
-    GtCombatRatingsEntry const *Rating = sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL+level-1);
-    if (Rating == nullptr)
+    GtCombatRatingsEntry const* rating = sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL+level-1);
+    if (rating == nullptr)
         return 1.0f;                                        // By default use minimum coefficient (not must be called)
 
-    return Rating->ratio;
+    return rating->ratio;
 }
 
 float Player::GetRatingBonusValue(CombatRating cr) const
 {
-    return float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) / GetRatingMultiplier(cr);
+#ifdef LICH_KING
+    return float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) * GetRatingMultiplier(cr);
+#else
+    return float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) / GetRatingCoefficient(cr);
+#endif
 }
 
 uint32 Player::GetMeleeCritDamageReduction(uint32 damage) const
@@ -5086,16 +5092,17 @@ float Player::OCTRegenMPPerSpirit()
     uint32 level = GetLevel();
     uint32 pclass = GetClass();
 
-    if (level>GT_MAX_LEVEL) level = GT_MAX_LEVEL;
+    if (level > GT_MAX_LEVEL) 
+        level = GT_MAX_LEVEL;
 
 //    GtOCTRegenMPEntry     const *baseRatio = sGtOCTRegenMPStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
-    GtRegenMPPerSptEntry  const *moreRatio = sGtRegenMPPerSptStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
-    if (moreRatio==nullptr)
+    GtRegenMPPerSptEntry const* moreRatio = sGtRegenMPPerSptStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
+    if (moreRatio == nullptr)
         return 0.0f;
 
     // Formula get from PaperDollFrame script
-    float spirit    = GetStat(STAT_SPIRIT);
-    float regen     = spirit * moreRatio->ratio;
+    float spirit   = GetStat(STAT_SPIRIT);
+    float regen    = spirit * moreRatio->ratio;
     return regen;
 }
 
@@ -5105,9 +5112,15 @@ void Player::ApplyRatingMod(CombatRating combatRating, int32 value, bool apply)
     m_baseRatingValue[combatRating] += (apply ? value : -value);
 
     // explicit affected values
+#ifdef LICH_KING
     float const multiplier = GetRatingMultiplier(combatRating);
     float const oldVal = oldRating * multiplier;
     float const newVal = m_baseRatingValue[combatRating] * multiplier;
+#else
+    float const coef = GetRatingCoefficient(combatRating);
+    float const oldVal = oldRating / coef;
+    float const newVal = m_baseRatingValue[combatRating] / coef;
+#endif
     switch (combatRating)
     {
         case CR_HASTE_MELEE:
