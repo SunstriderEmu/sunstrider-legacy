@@ -1315,49 +1315,7 @@ public:
     class ElunesGraceTestImpt : public TestCase
     {
     public:
-        ElunesGraceTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
-
-        uint32 GetMeleeMissCount(PlayerbotTestingAI const* AI, TestPlayer const* attacker, TestPlayer const* victim, uint32 sampleSize)
-        {
-            auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
-            TEST_ASSERT(damageToTarget != nullptr);
-            TEST_ASSERT(damageToTarget->size() == sampleSize);
-
-            uint32 missCount = 0;
-            for (auto itr : *damageToTarget)
-            {
-                if (itr.damageInfo.HitOutCome == MELEE_HIT_MISS)
-                    missCount++;
-            }
-            return missCount;
-        }
-
-        uint32 GetRangedMissCount(PlayerbotTestingAI const* AI, TestPlayer const* attacker, TestPlayer const* victim, uint32 sampleSize)
-        {
-            auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-            TEST_ASSERT(damageToTarget != nullptr);
-            TEST_ASSERT(damageToTarget->size() == sampleSize);
-
-            uint32 missCount = 0;
-            for (auto itr : *damageToTarget)
-            {
-                if (itr.missInfo == SPELL_MISS_MISS)
-                    missCount++;
-            }
-            return missCount;
-        }
-
-        void assertMissChance(TestPlayer* attacker, TestPlayer* victim, uint32 sampleSize, float resultingAbsoluteTolerance, float expectedResult, bool ranged)
-        {
-            auto AI = attacker->GetTestingPlayerbotAI();
-            TEST_ASSERT(AI != nullptr);
-
-            uint32 missCount = ranged ? GetRangedMissCount(AI, attacker, victim, sampleSize) : 
-                                        GetMeleeMissCount(AI, attacker, victim, sampleSize);
-
-            float missPercentage = float(missCount) / float(sampleSize);
-            TEST_ASSERT(Between<float>(expectedResult, missPercentage - resultingAbsoluteTolerance, missPercentage + resultingAbsoluteTolerance));
-        }
+        ElunesGraceTestImpt() : TestCase(STATUS_PASSING, true) { }
 
         void Test() override
         {
@@ -1365,34 +1323,17 @@ public:
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_ORC);
             TestPlayer* hunter = SpawnPlayer(CLASS_HUNTER, RACE_ORC);
 
-            priest->SetMaxHealth(std::numeric_limits<uint32>::max());
-            priest->SetHealth(priest->GetMaxHealth());
             Wait(1);
 
             uint32 expectedElunesGraceMana = 78;
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, POWER_MANA, expectedElunesGraceMana);
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, Seconds(15));
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, Minutes(3));
+            TEST_HAS_AURA(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1);
 
-            float const expectedResult = 0.25f; // PvP Hit 5% + Elune's Grace 20%
-            float const absoluteTolerance = 0.02f;
-            uint32 sampleSize;
-            float resultingAbsoluteTolerance;
-            _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResult, absoluteTolerance);
-
-            for (uint32 i = 0; i < sampleSize; i++)
-            {
-                TEST_HAS_AURA(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1);
-                warrior->AttackerStateUpdate(priest, BASE_ATTACK);
-                hunter->CastSpell(priest, 75, true); // Auto Shoot
-                priest->SetFullHealth();
-            }
-
-            Wait(1000); //wait for arrows to hit target
-
-            assertMissChance(warrior, priest, sampleSize, resultingAbsoluteTolerance, expectedResult, false);
-            //Fails here, only 200 ranged spells... maybe max 200 spells event at the same time?
-            assertMissChance(hunter, priest, sampleSize, resultingAbsoluteTolerance, expectedResult, true);
+            float const expectedResult = 25.f; // PvP Hit 5% + Elune's Grace 20%
+            TEST_SPELL_HIT_CHANCE(hunter, priest, ClassSpells::Hunter::AUTO_SHOT_RNK_1, expectedResult, SPELL_MISS_MISS);
+            TEST_MELEE_HIT_CHANCE(warrior, priest, BASE_ATTACK, expectedResult, MELEE_HIT_MISS);
         }
     };
 
