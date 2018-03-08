@@ -798,7 +798,7 @@ public:
 	class CowerTestImpt : public TestCase
 	{
 	public:
-		CowerTestImpt() : TestCase(STATUS_PASSING, true) { }
+		CowerTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
 
 		void Test() override
 		{
@@ -806,18 +806,19 @@ public:
 			Creature* creature = SpawnCreature();
 
             TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
-			druid->Attack(creature, true);
-			Wait(10000);
+            Wait(1500);
+            druid->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            for (int i = 0; i < 10; i++)
+                druid->AttackerStateUpdate(creature, BASE_ATTACK);
 			druid->AttackStop();
+            druid->ResetForceMeleeHitResult();
 
 			uint32 cowerPoints = 1170;
 			float const threat = creature->GetThreatManager().GetThreat(druid);
 			float const expectedThreat = threat - cowerPoints;
-			uint32 expectedCowerEnergy = 20;
 
-			druid->SetPower(POWER_ENERGY, expectedCowerEnergy);
-            TEST_CAST(druid, creature, ClassSpells::Druid::COWER_RNK_5);
-			TEST_ASSERT(druid->GetPower(POWER_ENERGY) == 0);
+			uint32 expectedCowerEnergy = 20;
+            TEST_POWER_COST(druid, creature, ClassSpells::Druid::COWER_RNK_5, POWER_ENERGY, expectedCowerEnergy);
 			ASSERT_INFO("Before: %f, current: %f, expected: %f", threat, creature->GetThreatManager().GetThreat(druid), expectedThreat);
 			TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == expectedThreat);
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::COWER_RNK_5, Seconds(10));
@@ -859,35 +860,24 @@ public:
 
 			int32 startAP3m = player3m->GetTotalAttackPowerValue(BASE_ATTACK);
 			int32 startAP6m = creature6m->GetTotalAttackPowerValue(BASE_ATTACK);
-			int32 expectedAP3m = (startAP3m - 240 > 0) ? startAP3m - 240 : 0;
-			int32 expectedAP6m = (startAP6m - 240 > 0) ? startAP6m - 240 : 0;
+			int32 expectedAP3m = std::max(startAP3m - 240, 0);
+			int32 expectedAP6m = std::max(startAP6m - 240, 0);
 
             TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
-			Wait(5000);
+			Wait(1500);
 
 			// Rage cost
 			uint32 const expectedDemoralizingRoarRage = 10 * 10;
-			druid->SetPower(POWER_RAGE, expectedDemoralizingRoarRage);
-            TEST_CAST(druid, druid, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
-			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 0);
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6, POWER_RAGE, expectedDemoralizingRoarRage);
 
 			// Aura
-			Aura* aura3m = player3m->GetAura(ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
-			TEST_ASSERT(aura3m != nullptr);
-			Aura* aura6m = creature6m->GetAura(ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
-			TEST_ASSERT(aura6m != nullptr);
-			Aura* aura15m = creature15m->GetAura(ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
-			TEST_ASSERT(aura15m == nullptr);
-
-			// Aura duration
-			TEST_ASSERT(aura3m->GetDuration() == 30 * SECOND * IN_MILLISECONDS);
-			TEST_ASSERT(aura6m->GetDuration() == 30 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(player3m, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6, Seconds(30));
+            TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6, Seconds(30));
+            TEST_HAS_NOT_AURA(creature15m, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
 
 			// AP loss
 			TEST_ASSERT(player3m->GetTotalAttackPowerValue(BASE_ATTACK) == expectedAP3m);
 			TEST_ASSERT(creature6m->GetTotalAttackPowerValue(BASE_ATTACK) == expectedAP6m);
-
-			// Back to original target
 			Wait(31000);
 			TEST_ASSERT(player3m->GetTotalAttackPowerValue(BASE_ATTACK) == startAP3m);
 			TEST_ASSERT(creature6m->GetTotalAttackPowerValue(BASE_ATTACK) == startAP6m);
@@ -909,18 +899,20 @@ public:
 	class EnrageTestImpt : public TestCase
 	{
 	public:
-		EnrageTestImpt() : TestCase(STATUS_PASSING, true) { }
+		EnrageTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
 
 		void TestEnrage(TestPlayer* druid, uint32 spellFormId, float armorReduction)
 		{
 			druid->GetSpellHistory()->ResetAllCooldowns();
             TEST_CAST(druid, druid, spellFormId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			uint32 expectedArmor = druid->GetArmor() * (1 - armorReduction);
+
             TEST_CAST(druid, druid, ClassSpells::Druid::ENRAGE_RNK_1);
 			ASSERT_INFO("Form: %u, armor: %u, expected: %u", spellFormId, druid->GetArmor(), expectedArmor);
 			TEST_ASSERT(druid->GetArmor() == expectedArmor);
-			Aura* aura = druid->GetAura(ClassSpells::Druid::ENRAGE_RNK_1);
-			TEST_ASSERT(aura->GetDuration() == 10 * SECOND * IN_MILLISECONDS);
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::ENRAGE_RNK_1, Minutes(1));
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::ENRAGE_RNK_1, Seconds(10));
+
 			Wait(2000);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == 4 * 10);
 			Wait(2000);
@@ -976,23 +968,24 @@ public:
 			InitTest(druid, health, rage);
 			uint32 expectedFRHeal = 10 * 10 * 250;
 			uint32 expectedFRCritHeal = 10 * 10 * 250 * 1.5f;
-			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, expectedFRHeal, false);
-			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, expectedFRCritHeal, true);
+			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, -expectedFRHeal, false);
+			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, -expectedFRCritHeal, true);
 
             TEST_CAST(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4);
-			Aura* aura = druid->GetAura(ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4);
-			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetDuration() == 10 * SECOND * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, Seconds(10));
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, Minutes(3));
 			Wait(1000);
+
 			uint32 expectedRage = rage - 10 * 10;
 			ASSERT_INFO("Rage: %u, expected: %u", druid->GetPower(POWER_RAGE), expectedRage);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == expectedRage);
+
 			Wait(4000);
 			expectedRage = rage - 5 * 10 * 10;
 			ASSERT_INFO("Rage: %u, expected: %u", druid->GetPower(POWER_RAGE), expectedRage);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == expectedRage);
 			Wait(5000);
+
 			expectedRage = rage - 10 * 10 * 10;
 			ASSERT_INFO("Rage: %u, expected: %u", druid->GetPower(POWER_RAGE), expectedRage);
 			TEST_ASSERT(druid->GetPower(POWER_RAGE) == expectedRage);
