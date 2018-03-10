@@ -1458,7 +1458,7 @@ bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond) const
     return true;
 }
 
-bool ConditionMgr::isSourceTypeValid(Condition* cond)
+bool ConditionMgr::isSourceTypeValid(Condition* cond) const
 {
     if (cond->SourceType == CONDITION_SOURCE_TYPE_NONE || cond->SourceType >= CONDITION_SOURCE_TYPE_MAX)
     {
