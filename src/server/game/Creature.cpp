@@ -361,6 +361,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
                 transport->CalculatePassengerPosition(x, y, z, &o);
         }
 
+        UpdateAllowedPositionZ(x, y, z);
         SetHomePosition(x, y, z, o);
         GetMap()->CreatureRelocation(this, x, y, z, o);
     }
@@ -1111,14 +1112,7 @@ bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, u
     InitCreatureAddon();
 
 #ifdef LICH_KING
-    //! Need to be called after LoadCreaturesAddon - MOVEMENTFLAG_HOVER is set there
-    if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-    {
-        z += GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
-
-        //! Relocate again with updated Z coord
-        Relocate(x, y, z, ang);
-    }
+    m_positionZ += GetHoverOffset();
 #endif
 
     //LastUsedScriptID = GetScriptId(); sunstrider: Moved to InitEntry
@@ -1678,7 +1672,7 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
         return false;
     }
     //We should set first home position, because then AI calls home movement
-    SetHomePosition(data->spawnPoint);
+    SetHomePosition(*this);
 
     m_deathState = ALIVE;
 
@@ -3538,8 +3532,8 @@ void Creature::UpdateMovementFlags()
     // Set the movement flags if the creature is in that mode. (Only fly if actually in air, only swim if in water, etc)
     float ground = GetFloorZ();
 
-    bool isInAir = (G3D::fuzzyGt(GetPositionZMinusOffset(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(GetPositionZMinusOffset(), ground - GROUND_HEIGHT_TOLERANCE)); // Can be underground too, prevent the falling
-    
+    bool isInAir = (G3D::fuzzyGt(GetPositionZ(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE)); // Can be underground too, prevent the falling
+
     if (CanFly() && isInAir && !IsFalling())
     {
         if (CanWalk())

@@ -1292,7 +1292,15 @@ Position WorldObject::GetRandomPoint(const Position &srcPos, float distance) con
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
-    z = GetMapHeight(x, y, z);
+    float new_z = GetMapHeight(x, y, z);
+    if (new_z > INVALID_HEIGHT)
+    {
+        z = new_z;
+#ifdef LICH_KING
+        if (isType(TYPEMASK_UNIT))
+            z += static_cast<Unit const*>(this)->GetHoverOffset();
+#endif
+    }
 }
 
 void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float maxDist) const
@@ -1325,6 +1333,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x
         float max_z = canSwim
             ? baseMap->GetWaterOrGroundLevel(phaseMask, x, y, z, &ground_z, !waterWalk)
             : ((ground_z = baseMap->GetHeight(phaseMask, x, y, z, true)));
+
         if (max_z > INVALID_HEIGHT)
         {
             if (z > max_z && fabs(z - max_z) < maxDist)
@@ -1350,7 +1359,7 @@ float WorldObject::SelectBestZForDestination(float x, float y, float z, bool exc
     if (Unit const* unit = ToUnit())
     {
         float const ground = GetFloorZ();
-        bool const isInAir = (G3D::fuzzyGt(unit->GetPositionZMinusOffset(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(unit->GetPositionZMinusOffset(), ground - GROUND_HEIGHT_TOLERANCE));
+        bool const isInAir = (G3D::fuzzyGt(unit->GetPositionZ(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(unit->GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE));
         if (unit->IsFlying() && isInAir)
             return z;
     }
@@ -2613,7 +2622,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 
                 *data << object->GetPositionX();
                 *data << object->GetPositionY();
-                *data << object->GetPositionZ() + (unit ? unit->GetHoverHeight() : 0.0f);
+                *data << object->GetPositionZ();
 
                 if (transport)
                 {
@@ -2625,7 +2634,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
                 {
                     *data << object->GetPositionX();
                     *data << object->GetPositionY();
-                    *data << object->GetPositionZ() + (unit ? unit->GetHoverHeight() : 0.0f);
+                    *data << object->GetPositionZ();
                 }
 
                 *data << object->GetOrientation();
@@ -2650,7 +2659,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             //X Y Z are at 0 for transports on bc for transports but whatever
             *data << object->GetStationaryX();
             *data << object->GetStationaryY();
-            *data << object->GetStationaryZ() + (unit ? unit->GetHoverHeight() : 0.0f);
+            *data << object->GetStationaryZ() + (unit ? unit->GetHoverOffset() : 0.0f);
             *data << object->GetStationaryO();
         }
     }

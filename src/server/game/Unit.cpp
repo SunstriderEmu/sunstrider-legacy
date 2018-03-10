@@ -12305,7 +12305,7 @@ TransportBase* Unit::GetDirectTransport() const
 
 void Unit::BuildMovementPacket(ByteBuffer *data) const
 {
-    Unit::BuildMovementPacket(Position(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation()), m_movementInfo.transport.pos, m_movementInfo, data);
+    Unit::BuildMovementPacket(Position(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation()), m_movementInfo.transport.pos, m_movementInfo, data);
 }
 
 void Unit::BuildMovementPacket(Position const& pos, Position const& transportPos, MovementInfo const& movementInfo, ByteBuffer* data)
@@ -12748,7 +12748,7 @@ void Unit::SetFacingTo(float ori, bool force)
         return;
 
     Movement::MoveSplineInit init(this);
-    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), false);
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ(), false);
     if (HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && GetTransGUID())
         init.DisableTransportPathTransformations(); // It makes no sense to target global orientation
     init.SetFacing(ori);
@@ -12763,18 +12763,9 @@ void Unit::SetFacingToObject(WorldObject const* object, bool force)
 
     /// @todo figure out under what conditions creature will move towards object instead of facing it where it currently is.
     Movement::MoveSplineInit init(this);
-    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), false);
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ(), false);
     init.SetFacing(GetAngle(object));   // when on transport, GetAngle will still return global coordinates (and angle) that needs transforming
     init.Launch();
-}
-
-float Unit::GetPositionZMinusOffset() const
-{
-    float offset = 0.0f;
-    if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-        offset = UNIT_DEFAULT_HOVERHEIGHT;
-
-    return GetPositionZ() - offset;
 }
 
 bool Unit::IsInDisallowedMountForm() const

@@ -2051,15 +2051,15 @@ class TC_GAME_API Unit : public WorldObject
         bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
         bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER); }
         bool IsFalling() const;
-        float GetHoverHeight() const { return IsHovering() ? 
-#ifdef LICH_KING
-            GetFloatValue(UNIT_FIELD_HOVERHEIGHT)
-#else
-            DEFAULT_HOVER_HEIGHT
-#endif
-            : 0.0f; 
-        }
 
+        float GetHoverOffset() const
+        {
+#ifdef LICH_KING
+            return HasUnitMovementFlag(MOVEMENTFLAG_HOVER) ? GetFloatValue(UNIT_FIELD_HOVERHEIGHT) : 0.0f;
+#else
+            return HasUnitMovementFlag(MOVEMENTFLAG_HOVER) ? DEFAULT_HOVER_HEIGHT : 0.0f;
+#endif
+        }
         virtual float GetFollowAngle() const { return static_cast<float>(M_PI/2); }
 
 		// Visibility system
@@ -2229,8 +2229,6 @@ class TC_GAME_API Unit : public WorldObject
         bool HasUnitMovementFlag(uint32 f) const { return (m_movementInfo.flags & f) == f; }
         uint32 GetUnitMovementFlags() const { return m_movementInfo.flags; }
         void SetUnitMovementFlags(uint32 f) { m_movementInfo.flags = f; }
-
-        float GetPositionZMinusOffset() const;
 
         void SetControlled(bool apply, UnitState state);
         void ApplyControlStatesIfNeeded();
