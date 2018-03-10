@@ -59,8 +59,6 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         bool UpdateVictim(bool evade = true);
 
-        bool CheckBoundary(Position const* who = nullptr) const;
-
     public:
         enum EvadeReason
         {
@@ -184,6 +182,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         void SetBoundary(CreatureBoundary const* boundary, bool negativeBoundaries = false);
 
         static bool IsInBounds(CreatureBoundary const& boundary, Position const* who);
+        bool IsInBoundary(Position const* who = nullptr) const;
 
         /// == Gossip system ================================
 

@@ -309,13 +309,13 @@ int32 CreatureAI::VisualizeBoundary(uint32 duration, Unit* owner, bool fill) con
     std::unordered_set<coordinate> outOfBounds;
 
     Position startPosition = owner->GetPosition();
-    if (!CheckBoundary(&startPosition))
+    if (!IsInBoundary(&startPosition))
     { // fall back to creature position
         startPosition = me->GetPosition();
-        if (!CheckBoundary(&startPosition))
+        if (!IsInBoundary(&startPosition))
         { // fall back to creature home position
             startPosition = me->GetHomePosition();
-            if (!CheckBoundary(&startPosition))
+            if (!IsInBoundary(&startPosition))
                 return LANG_CREATURE_NO_INTERIOR_POINT_FOUND;
         }
     }
@@ -338,7 +338,7 @@ int32 CreatureAI::VisualizeBoundary(uint32 duration, Unit* owner, bool fill) con
             if (alreadyChecked.find(next) == alreadyChecked.end()) // never check a coordinate twice
             {
                 Position nextPos(startPosition.GetPositionX() + next.first*BOUNDARY_VISUALIZE_STEP_SIZE, startPosition.GetPositionY() + next.second*BOUNDARY_VISUALIZE_STEP_SIZE, startPosition.GetPositionZ());
-                if (CheckBoundary(&nextPos))
+                if (IsInBoundary(&nextPos))
                     Q.push(next);
                 else
                 {
@@ -366,7 +366,7 @@ int32 CreatureAI::VisualizeBoundary(uint32 duration, Unit* owner, bool fill) con
     return boundsWarning ? LANG_CREATURE_MOVEMENT_MAYBE_UNBOUNDED : 0;
 }
 
-bool CreatureAI::CheckBoundary(Position const* who) const
+bool CreatureAI::IsInBoundary(Position const* who) const
 {
     if (!_boundary)
         return true;
@@ -388,7 +388,7 @@ bool CreatureAI::IsInBounds(CreatureBoundary const& boundary, Position const* po
 
 bool CreatureAI::CheckInRoom()
 {
-    if (CheckBoundary())
+    if (IsInBoundary())
         return true;
     else
     {

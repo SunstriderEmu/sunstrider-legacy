@@ -500,7 +500,7 @@ void BossAI::TeleportCheaters()
     for (auto const& pair : me->GetCombatManager().GetPvECombatRefs())
     {
         Unit* target = pair.second->GetOther(me);
-        if (target->IsControlledByPlayer() && !CheckBoundary(target))
+        if (target->IsControlledByPlayer() && !IsInBoundary(target))
             target->NearTeleportTo(x, y, z, 0);
     }
 }
@@ -539,7 +539,7 @@ void BossAI::UpdateAI(uint32 diff)
 
 bool BossAI::CanAIAttack(Unit const* target) const
 {
-    return CheckBoundary(target);
+    return IsInBoundary(target);
 }
 
 void BossAI::_DespawnAtEvade(Seconds delayToRespawn, Creature* who)
