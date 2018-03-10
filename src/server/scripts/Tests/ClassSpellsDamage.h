@@ -107,6 +107,16 @@ namespace ClassSpellsDamage
 
 			// Feral
 			CLAW_RNK_6 = 190,
+            FEROCIOUS_BITE_RNK_6_CP_1_MIN = 259,
+            FEROCIOUS_BITE_RNK_6_CP_1_MAX = 292,
+            FEROCIOUS_BITE_RNK_6_CP_2_MIN = 428,
+            FEROCIOUS_BITE_RNK_6_CP_2_MAX = 461,
+            FEROCIOUS_BITE_RNK_6_CP_3_MIN = 597,
+            FEROCIOUS_BITE_RNK_6_CP_3_MAX = 630,
+            FEROCIOUS_BITE_RNK_6_CP_4_MIN = 766,
+            FEROCIOUS_BITE_RNK_6_CP_4_MAX = 799,
+            FEROCIOUS_BITE_RNK_6_CP_5_MIN = 935,
+            FEROCIOUS_BITE_RNK_6_CP_5_MAX = 968,
 			LACERATE_RNK_1 = 31,
 			LACERATE_RNK_1_BLEED = 155,
 			MAUL_RNK_8 = 176,
