@@ -131,6 +131,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
     static std::vector<ChatCommand> serverCommandTable =
     {
         { "corpses",        SEC_GAMEMASTER2,     true, &ChatHandler::HandleServerCorpsesCommand,       "" },
+        { "debug",          SEC_PLAYER,          true, &ChatHandler::HandleServerDebugCommand,         "" },
         { "exit",           SEC_ADMINISTRATOR,   true, &ChatHandler::HandleServerExitCommand,          "" },
         { "idlerestart",    SEC_ADMINISTRATOR,   true,  nullptr,                                       "", serverIdleRestartCommandTable },
         { "idleshutdown",   SEC_ADMINISTRATOR,   true,  nullptr,                                       "", serverShutdownCommandTable },
