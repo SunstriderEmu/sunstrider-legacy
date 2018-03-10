@@ -3542,7 +3542,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             case FORM_DIREBEAR:
             {
                 // get furor proc chance
-                uint32 FurorChance = 0;
+                int32 FurorChance = 0;
                 Unit::AuraEffectList const& mDummy = m_target->GetAuraEffectsByType(SPELL_AURA_DUMMY);
                 for (auto i : mDummy)
                 {
@@ -3555,21 +3555,18 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
 
                 if (FurorChance)
                 {
-                    uint32 castSpellId = 0;
                     if (GetMiscValue() == FORM_CAT)
                     {
                         m_target->SetPower(POWER_ENERGY, 0);
-                        if (urand(1, 100) <= FurorChance)
-                            castSpellId = 17099;
+                        if (roll_chance_i(FurorChance))
+                            m_target->CastSpell(m_target, 17099, this);
                     }
                     else
                     {
                         m_target->SetPower(POWER_RAGE, 0);
-                        if (urand(1, 100) <= FurorChance)
-                            castSpellId = 17057;
+                        if (roll_chance_i(FurorChance))
+                            m_target->CastSpell(m_target, 17057, this);
                     }
-                    if (castSpellId)
-                        m_target->CastSpell(m_target, castSpellId, this);
                 }
                 break;
             }
@@ -3646,6 +3643,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
 
     if (m_target->GetTypeId() == TYPEID_PLAYER)
         (m_target->ToPlayer())->InitDataForForm();
+    else
+        m_target->UpdateDisplayPower();
 
     // force update as too quick shapeshifting and back
     // causes the value to stay the same serverside

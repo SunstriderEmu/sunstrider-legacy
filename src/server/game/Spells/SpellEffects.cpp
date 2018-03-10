@@ -3591,7 +3591,7 @@ void Spell::EffectEnergizePct(uint32 i)
     Powers power = Powers(m_spellInfo->Effects[i].MiscValue);
 
 #ifdef LICH_KING
-    if (unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->getPowerType() != power && !m_spellInfo->HasAttribute(SPELL_ATTR7_CAN_RESTORE_SECONDARY_POWER))
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->GetPowerType() != power && !m_spellInfo->HasAttribute(SPELL_ATTR7_CAN_RESTORE_SECONDARY_POWER))
         return;
 #endif
 

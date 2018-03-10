@@ -1348,10 +1348,12 @@ class TC_GAME_API Unit : public WorldObject
 
         Powers GetPowerType() const { return Powers(GetByteValue(UNIT_FIELD_BYTES_0, 3)); }
         void SetPowerType(Powers power);
+        void UpdateDisplayPower();
         uint32 GetPower(   Powers power) const { return GetUInt32Value(UNIT_FIELD_POWER1   +power); }
         uint32 GetMaxPower(Powers power) const { return GetUInt32Value(UNIT_FIELD_MAXPOWER1+power); }
         void SetPower(   Powers power, uint32 val);
-        void SetMaxPower(Powers power, uint32 val);
+        void SetMaxPower(Powers power, uint32 val); 
+        inline void SetFullPower(Powers power) { SetPower(power, GetMaxPower(power)); }
         int32 ModifyPower(Powers power, int32 val);
         int32 ModifyPowerPct(Powers power, float pct, bool apply = true);
         void ApplyPowerMod(Powers power, uint32 val, bool apply);

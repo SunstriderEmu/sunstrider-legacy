@@ -4423,32 +4423,76 @@ void Unit::SetPowerType(Powers new_powertype)
         }
     }
 
-    float powerMultiplier = 1.0f;
-    if (!IsPet())
-        if (Creature* creature = ToCreature())
-            powerMultiplier = creature->GetCreatureTemplate()->ModMana;
+    // Update max power
+    UpdateMaxPower(new_powertype);
 
+    // Update current power
     switch (new_powertype)
     {
-        default:
-        case POWER_MANA:
+        case POWER_MANA: // Keep the same (druid form switching...)
+        case POWER_ENERGY:
             break;
-        case POWER_RAGE:
-            SetMaxPower(POWER_RAGE, uint32(std::ceil(GetCreatePowers(POWER_RAGE) * powerMultiplier)));
+        case POWER_RAGE: // Reset to zero
             SetPower(POWER_RAGE, 0);
             break;
-        case POWER_FOCUS:
-            SetMaxPower(POWER_FOCUS, uint32(std::ceil(GetCreatePowers(POWER_FOCUS) * powerMultiplier)));
-            SetPower(POWER_FOCUS, uint32(std::ceil(GetCreatePowers(POWER_FOCUS) * powerMultiplier)));
+        case POWER_FOCUS: // Make it full
+            SetFullPower(new_powertype);
             break;
-        case POWER_ENERGY:
-            SetMaxPower(POWER_ENERGY, uint32(std::ceil(GetCreatePowers(POWER_ENERGY) * powerMultiplier)));
-            break;
-        case POWER_HAPPINESS:
-            SetMaxPower(POWER_HAPPINESS, uint32(std::ceil(GetCreatePowers(POWER_HAPPINESS) * powerMultiplier)));
-            SetPower(POWER_HAPPINESS, uint32(std::ceil(GetCreatePowers(POWER_HAPPINESS) * powerMultiplier)));
+        default:
             break;
     }
+}
+
+void Unit::UpdateDisplayPower()
+{
+    Powers displayPower = POWER_MANA;
+    switch (GetShapeshiftForm())
+    {
+    case FORM_GHOUL:
+    case FORM_CAT:
+        displayPower = POWER_ENERGY;
+        break;
+    case FORM_BEAR:
+    case FORM_DIREBEAR:
+        displayPower = POWER_RAGE;
+        break;
+    case FORM_TRAVEL:
+    case FORM_GHOSTWOLF:
+        displayPower = POWER_MANA;
+        break;
+    default:
+    {
+        if (GetTypeId() == TYPEID_PLAYER)
+        {
+            ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(GetClass());
+            if (cEntry && cEntry->powerType < MAX_POWERS)
+                displayPower = Powers(cEntry->powerType);
+        }
+        else if (GetTypeId() == TYPEID_UNIT)
+        {
+#ifdef LICH_KING
+            if (Vehicle* vehicle = GetVehicleKit())
+            {
+                if (PowerDisplayEntry const* powerDisplay = sPowerDisplayStore.LookupEntry(vehicle->GetVehicleInfo()->m_powerDisplayId))
+                    displayPower = Powers(powerDisplay->PowerType);
+                else if (getClass() == CLASS_ROGUE)
+                    displayPower = POWER_ENERGY;
+            }
+            else 
+#endif
+                if (Pet* pet = ToPet())
+            {
+                if (pet->getPetType() == HUNTER_PET) // Hunter pets have focus
+                    displayPower = POWER_FOCUS;
+                else if (pet->IsPetGhoul() || pet->IsRisenAlly()) // DK pets have energy
+                    displayPower = POWER_ENERGY;
+            }
+        }
+        break;
+    }
+    }
+
+    SetPowerType(displayPower);
 }
 
 FactionTemplateEntry const* Unit::GetFactionTemplateEntry() const
@@ -5193,13 +5237,9 @@ void Unit::SetMinion(Minion *minion, bool apply)
             for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
                 minion->SetSpeedRate(UnitMoveType(i), m_speed_rate[i]);
 
-        // Ghoul pets have energy instead of mana (is anywhere better place for this code?)
-        if (minion->IsPetGhoul() || minion->IsRisenAlly())
-            minion->SetPowerType(POWER_ENERGY);
-
         // Send infinity cooldown - client does that automatically but after relog cooldown needs to be set again
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(minion->GetUInt32Value(UNIT_CREATED_BY_SPELL));
-        if (spellInfo && (spellInfo->IsCooldownStartedOnEvent()))
+        if (spellInfo && spellInfo->IsCooldownStartedOnEvent())
             GetSpellHistory()->StartCooldown(spellInfo, 0, nullptr, true);
     }
     else

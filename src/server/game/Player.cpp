@@ -588,11 +588,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
     UpdateMaxHealth();                                      // Update max Health (for add bonus from stamina)
     SetFullHealth();
-    if (GetPowerType()==POWER_MANA)
-    {
-        UpdateMaxPower(POWER_MANA);                         // Update max Mana (for add bonus from intellect)
-        SetPower(POWER_MANA,GetMaxPower(POWER_MANA));
-    }
+    SetFullPower(POWER_MANA);
 
     // original spells
     LearnDefaultSkills();
@@ -2253,13 +2249,13 @@ void Player::ResetAllPowers()
     switch (GetPowerType())
     {
         case POWER_MANA:
-            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+            SetFullPower(POWER_MANA);
             break;
         case POWER_RAGE:
             SetPower(POWER_RAGE, 0);
             break;
         case POWER_ENERGY:
-            SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+            SetFullPower(POWER_ENERGY);
             break;
 #ifdef LICH_KING
         case POWER_RUNIC_POWER:
@@ -2746,12 +2742,7 @@ void Player::GiveLevel(uint32 level)
 
     // set current level health and mana/energy to maximum after applying all mods.
     SetFullHealth();
-    SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
-    SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
-    if(GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
-        SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
-    SetPower(POWER_FOCUS, 0);
-    SetPower(POWER_HAPPINESS, 0);
+    SetFullPower(POWER_MANA);
 
     // give level to summoned pet
     Pet* pet = GetPet();
@@ -2927,12 +2918,15 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
     // set current level health and mana/energy to maximum after applying all mods.
     SetFullHealth();
-    SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
-    SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+    SetFullPower(POWER_MANA);
+    SetFullPower(POWER_ENERGY);
     if(GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
-        SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
-    SetPower(POWER_FOCUS, 0);
+        SetFullPower(POWER_RAGE);
+    SetFullPower(POWER_FOCUS);
     SetPower(POWER_HAPPINESS, 0);
+#ifdef LICH_KING
+    SetPower(POWER_RUNIC_POWER, 0);
+#endif
 }
 
 void Player::SendInitialSpells()
@@ -15996,6 +15990,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     if( HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST) )
         m_deathState = DEAD;
 
+    UpdateDisplayPower();
     _LoadSpells(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SPELLS));
 
     // after spell load
@@ -16047,10 +16042,11 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // restore remembered power/health values (but not more max values)
     uint32 savedHealth = fields[LOAD_DATA_HEALTH].GetUInt32();
-    SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
-    for(uint32 i = 0; i < MAX_POWERS; ++i) {
+    SetHealth(savedHealth);
+    for(uint32 i = 0; i < MAX_POWERS; ++i) 
+    {
         uint32 savedPower = fields[LOAD_DATA_POWER1+i].GetUInt32();
-        SetPower(Powers(i),savedPower > GetMaxPower(Powers(i)) ? GetMaxPower(Powers(i)) : savedPower);
+        SetPower(static_cast<Powers>(i), savedPower);
     }
 
     // GM state
@@ -19144,29 +19140,7 @@ void Player::InitDataForForm(bool reapplyMods)
     else
         SetRegularAttackTime();
 
-    switch(m_form)
-    {
-        case FORM_CAT:
-        {
-            if(GetPowerType()!=POWER_ENERGY)
-                SetPowerType(POWER_ENERGY);
-            break;
-        }
-        case FORM_BEAR:
-        case FORM_DIREBEAR:
-        {
-            if(GetPowerType()!=POWER_RAGE)
-                SetPowerType(POWER_RAGE);
-            break;
-        }
-        default:                                            // 0, for example
-        {
-            ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(GetClass());
-            if(cEntry && cEntry->PowerType < MAX_POWERS && uint32(GetPowerType()) != cEntry->PowerType)
-                SetPowerType(Powers(cEntry->PowerType));
-            break;
-        }
-    }
+    UpdateDisplayPower();
 
     // update auras at form change, ignore this at mods reapply (.reset stats/etc) when form not change.
     if (!reapplyMods)
@@ -23307,18 +23281,11 @@ void Player::ProcessDelayedOperations()
     {
         ResurrectPlayer(0.0f, false);
 
-        if (GetMaxHealth() > m_resurrectHealth)
-            SetHealth(m_resurrectHealth);
-        else
-            SetFullHealth();
-
-        if (GetMaxPower(POWER_MANA) > m_resurrectMana)
-            SetPower(POWER_MANA, m_resurrectMana);
-        else
-            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+        SetHealth(m_resurrectHealth);
+        SetPower(POWER_MANA, m_resurrectMana);
 
         SetPower(POWER_RAGE, 0);
-        SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+        SetFullPower(POWER_ENERGY);
 
         SpawnCorpseBones();
     }
