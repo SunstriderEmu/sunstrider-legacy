@@ -258,11 +258,11 @@ class TC_GAME_API ConditionMgr
         static ConditionTypeInfo const StaticConditionTypeData[CONDITION_MAX];
 
     private:
-        bool isSourceTypeValid(Condition* cond);
-        bool addToLootTemplate(Condition* cond, LootTemplate* loot);
-        bool addToGossipMenus(Condition* cond);
-        bool addToGossipMenuItems(Condition* cond);
-        bool addToSpellImplicitTargetConditions(Condition* cond);
+        bool isSourceTypeValid(Condition* cond) const;
+        bool addToLootTemplate(Condition* cond, LootTemplate* loot) const;
+        bool addToGossipMenus(Condition* cond) const;
+        bool addToGossipMenuItems(Condition* cond) const;
+        bool addToSpellImplicitTargetConditions(Condition* cond) const;
         bool IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, ConditionContainer const& conditions) const;
 
         static void LogUselessConditionValue(Condition* cond, uint8 index, uint32 value);
