@@ -695,7 +695,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     for (uint32 i = 0; i < sampleSize; i++)
     {
         caster->ForceSpellHitResult(SPELL_MISS_NONE);
-        uint32 result = caster->CastSpell(target, spellID, true);
+        uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_DEBUG_MASK);
         caster->ResetForceSpellHitResult();
         INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
@@ -705,7 +705,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     uint32 dealtMin;
     uint32 dealtMax;
     if(damage)
-        GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
+        GetDamagePerSpellsTo( casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
     else 
         GetHealingPerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
 

@@ -6891,72 +6891,77 @@ SpellCastResult Spell::CheckItems(uint32* param1 /*= nullptr*/, uint32* param2 /
         focusObject = ok;                                   // game object found in range
     }
 
-    if (!(m_spellInfo->HasAttribute(SPELL_ATTR5_NO_REAGENT_WHILE_PREP) &&
-        m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION)))
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_EQUIPPED_ITEM_REQUIREMENT))
     {
-        for(uint32 i=0;i<8;i++)
+        if (!(m_spellInfo->HasAttribute(SPELL_ATTR5_NO_REAGENT_WHILE_PREP) &&
+            m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION)))
         {
-            if(m_spellInfo->Reagent[i] <= 0)
-                continue;
-
-            itemid    = m_spellInfo->Reagent[i];
-            itemcount = m_spellInfo->ReagentCount[i];
-
-            // if CastItem is also spell reagent
-            if( m_CastItem && m_CastItem->GetEntry() == itemid )
+            for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
             {
-                ItemTemplate const *proto = m_CastItem->GetTemplate();
-                if(!proto)
-                    return SPELL_FAILED_ITEM_NOT_READY;
-                for(int s=0;s<5;s++)
+                if (m_spellInfo->Reagent[i] <= 0)
+                    continue;
+
+                itemid = m_spellInfo->Reagent[i];
+                itemcount = m_spellInfo->ReagentCount[i];
+
+                // if CastItem is also spell reagent
+                if (m_CastItem && m_CastItem->GetEntry() == itemid)
                 {
-                    // CastItem will be used up and does not count as reagent
-                    int32 charges = m_CastItem->GetSpellCharges(s);
-                    if (proto->Spells[s].SpellCharges < 0 && abs(charges) < 2)
+                    ItemTemplate const *proto = m_CastItem->GetTemplate();
+                    if (!proto)
+                        return SPELL_FAILED_ITEM_NOT_READY;
+                    for (int s = 0; s < 5; s++)
                     {
-                        ++itemcount;
-                        break;
+                        // CastItem will be used up and does not count as reagent
+                        int32 charges = m_CastItem->GetSpellCharges(s);
+                        if (proto->Spells[s].SpellCharges < 0 && abs(charges) < 2)
+                        {
+                            ++itemcount;
+                            break;
+                        }
                     }
                 }
+                if (!p_caster->HasItemCount(itemid, itemcount))
+                    return SPELL_FAILED_ITEM_NOT_READY;      //0x54
             }
-            if( !p_caster->HasItemCount(itemid,itemcount) )
-                return SPELL_FAILED_ITEM_NOT_READY;      //0x54
         }
-    }
 
-    uint32 totems = 2;
-    for(uint32 i : m_spellInfo->Totem)
-    {
-        if(i != 0)
+        uint32 totems = 2;
+        for (uint32 i : m_spellInfo->Totem)
         {
-            if( p_caster->HasItemCount(i,1) )
+            if (i != 0)
             {
+                if (p_caster->HasItemCount(i, 1))
+                {
+                    totems -= 1;
+                    continue;
+                }
+            }
+            else
                 totems -= 1;
-                continue;
-            }
-        }else
-        totems -= 1;
-    }
-    if(totems != 0)
-        return SPELL_FAILED_TOTEMS;                  //0x7C
-
-    //Check items for TotemCategory
-    uint32 TotemCategory = 2;
-    for(uint32 i : m_spellInfo->TotemCategory)
-    {
-        if(i != 0)
-        {
-            if( p_caster->HasItemTotemCategory(i) )
-            {
-                TotemCategory -= 1;
-                continue;
-            }
         }
-        else
-            TotemCategory -= 1;
+        if (totems != 0)
+            return SPELL_FAILED_TOTEMS;                  //0x7C
+
+        //Check items for TotemCategory
+        uint32 TotemCategory = 2;
+        for (uint32 i : m_spellInfo->TotemCategory)
+        {
+            if (i != 0)
+            {
+                if (p_caster->HasItemTotemCategory(i))
+                {
+                    TotemCategory -= 1;
+                    continue;
+                }
+            }
+            else
+                TotemCategory -= 1;
+        }
+
+        if (TotemCategory != 0)
+            return SPELL_FAILED_TOTEM_CATEGORY;          //0x7B
     }
-    if(TotemCategory != 0)
-        return SPELL_FAILED_TOTEM_CATEGORY;          //0x7B
 
     // special checks for spell effects
     for(const auto & Effect : m_spellInfo->Effects)
