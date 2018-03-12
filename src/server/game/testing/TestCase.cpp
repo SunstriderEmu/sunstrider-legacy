@@ -681,6 +681,9 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     auto AI = caster->ToPlayer()->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    caster->InterruptNonMeleeSpells(true);
+    caster->m_Events.KillAllEvents(true); //also kill spells in flight
     AI->ResetSpellCounters();
 
     uint32 sampleSize;
