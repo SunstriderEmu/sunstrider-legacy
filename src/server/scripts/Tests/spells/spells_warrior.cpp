@@ -64,6 +64,7 @@ public:
             spawn.MoveInFront(_location, 30.0f);
             TestPlayer* priest3 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN, 70, spawn);
 
+            RemoveAllEquipedItems(warrior);
             warrior->DisableRegeneration(true);
             warrior->SetWalk(false); // run
 
@@ -72,8 +73,8 @@ public:
             TestRequiresStance(warrior, priest2, false, ClassSpells::Warrior::CHARGE_RNK_3, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
             TestRequiresStance(warrior, priest2, false, ClassSpells::Warrior::CHARGE_RNK_3, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
             TestRequiresStance(warrior, priest2, true, ClassSpells::Warrior::CHARGE_RNK_3, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
-            // Melee weapon
-            TestRequiresMeleeWeapon(warrior, priest2, ClassSpells::Warrior::CHARGE_RNK_3, true);
+            
+            warrior->TeleportTo(_location);
 
             // Range
             TEST_CAST(warrior, priest1, ClassSpells::Warrior::CHARGE_RNK_3, SPELL_FAILED_OUT_OF_RANGE);
