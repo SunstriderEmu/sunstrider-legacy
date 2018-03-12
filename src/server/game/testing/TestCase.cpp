@@ -698,7 +698,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
     }
 
-    Wait(10 * SECOND * IN_MILLISECONDS);
+    Wait(5 * SECOND * IN_MILLISECONDS);
     uint32 dealtMin;
     uint32 dealtMax;
     if(damage)
