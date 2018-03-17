@@ -3593,6 +3593,7 @@ namespace ClassSpells
             HELLFIRE_RNK_2 = 11683,
             HELLFIRE_RNK_3 = 11684,
             HELLFIRE_RNK_4 = 27213,
+            HELLFIRE_RNK_4_TRIGGER = 27214,
             IMMOLATE_RNK_1 = 348,
             IMMOLATE_RNK_2 = 707,
             IMMOLATE_RNK_3 = 1094,

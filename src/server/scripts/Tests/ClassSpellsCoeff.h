@@ -154,7 +154,7 @@ namespace ClassSpellsCoeff
 	{
 		// Affliction
 		const float CORRUPTION = 0.936f;
-		const float CURSE_OF_AGONY = 0.12f;
+		const float CURSE_OF_AGONY = 1.2f;
 		const float CURSE_OF_DOOM = 0.2f;
 		const float DARK_PACT = 0.96f;
 		const float DRAIN_LIFE = 0.7143f;

@@ -3,6 +3,191 @@
 
 #define SOUL_SHARD 6265
 
+class CorruptionTest : public TestCaseScript
+{
+public:
+    CorruptionTest() : TestCaseScript("spells warlock corruption") { }
+
+    class CorruptionTestImpt : public TestCase
+    {
+    public:
+        CorruptionTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            uint32 const expectedCorruptionManaCost = 370;
+            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, POWER_MANA, expectedCorruptionManaCost);
+
+            // Damage -- something's wrong with the spell coeff
+            float const spellCoefficient = ClassSpellsCoeff::Warlock::CORRUPTION;
+            float const tickAmount = 6.0f;
+            uint32 const expectedCorruptionTick = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TICK + spellPower * spellCoefficient / tickAmount;
+            uint32 const expectedCorruptionTotal = expectedCorruptionTick * tickAmount;
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionTotal, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CorruptionTestImpt>();
+    }
+};
+
+class CurseOfAgonyTest : public TestCaseScript
+{
+public:
+    CurseOfAgonyTest() : TestCaseScript("spells warlock curse_of_agony") { }
+
+    class CurseOfAgonyTestImpt : public TestCase
+    {
+    public:
+        CurseOfAgonyTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            uint32 const expectedCurseOfAgonyManaCost = 265;
+            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, POWER_MANA, expectedCurseOfAgonyManaCost);
+
+            // Damage -- something's wrong with the spell coeff
+            float const spellCoefficient = ClassSpellsCoeff::Warlock::CURSE_OF_AGONY;
+            float const expectedCoAMaxDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL + spellPower * spellCoefficient;
+            uint32 const expectedCoADamage = (4 * expectedCoAMaxDamage / 24.0f) + (4 * expectedCoAMaxDamage / 12.0f) + (4 * expectedCoAMaxDamage / 8.0f);
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CurseOfAgonyTestImpt>();
+    }
+};
+
+class RainOfFireTest : public TestCaseScript
+{
+public:
+    RainOfFireTest() : TestCaseScript("spells warlock rain_of_fire") { }
+
+    class RainOfFireTestImpt : public TestCase
+    {
+    public:
+        RainOfFireTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            uint32 const expectedRainOfFireManaCost = 1480;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, POWER_MANA, expectedRainOfFireManaCost);
+
+            // Damage -- seems to have a wrong coeff, DrDamage agrees with the following
+            float const duration = 8.0f;
+            float const spellCoeff = duration / 3.5f / 2.0f;
+
+            uint32 const spellLevel = 69;
+            float const dmgPerLevel = 0.8f;
+            float const dmgPerLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * dmgPerLevel;
+
+            uint32 const totalRainOfFire = 4.0f * (ClassSpellsDamage::Warlock::RAIN_OF_FIRE_RNK_5_TICK + dmgPerLevelGain) + spellPower * spellCoeff;
+            uint32 const expectedTickAmount = totalRainOfFire / 4.0f;
+            TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5_PROC, 4, expectedTickAmount);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<RainOfFireTestImpt>();
+    }
+};
+
+class HellfireTest : public TestCaseScript
+{
+public:
+    HellfireTest() : TestCaseScript("spells warlock hellfire") { }
+
+    class HellfireTestImpt : public TestCase
+    {
+    public:
+        HellfireTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            warlock->SetMaxHealth(uint32(10000000));
+            warlock->SetFullHealth();
+            warlock->DisableRegeneration(true);
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            // Sometimes the spell doesnt seem to be cast, resulting in test failing here
+            uint32 const expectedHellfireManaCost = 1665;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, POWER_MANA, expectedHellfireManaCost);
+
+            // Damage
+            float const duration = 15.0f;
+            float const spellCoeff = duration / 3.5f / 2.0f;
+            
+            uint32 const spellLevel = 68;
+            float const dmgPerLevel = 0.8f;
+            float const dmgPerLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * dmgPerLevel;
+
+            
+            uint32 const totalHellfire = 15.0f * (ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK + dmgPerLevelGain) + spellPower * spellCoeff;
+            uint32 const expectedTickAmount = totalHellfire / 15.0f;
+            TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::HELLFIRE_RNK_4, ClassSpells::Warlock::HELLFIRE_RNK_4_TRIGGER, 15, expectedTickAmount);
+
+            // Self damage -- bug here
+            uint32 const warlockStartHealth = warlock->GetHealth();
+            FORCE_CAST(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            Wait(15500);
+            uint32 const expectedWarlockHealth = warlockStartHealth - 15.0f * expectedTickAmount;
+            ASSERT_INFO("Start Health: %u, Current: %u - Expected: %u - Expected Tick: %u, Actual Tick: %u", warlockStartHealth, warlock->GetHealth(), expectedWarlockHealth, expectedTickAmount, uint32((warlockStartHealth - warlock->GetHealth()) / 15.0f));
+            TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
+
+            // No durability damage on suicide
+            warlock->SetMaxHealth(uint32(100));
+            FORCE_CAST(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            Wait(1500);
+            TEST_ASSERT(warlock->IsDead());
+            Item* sunflare = warlock->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            TEST_ASSERT(sunflare != nullptr);
+            uint32 sunflareDurability = sunflare->GetUInt32Value(ITEM_FIELD_DURABILITY);
+            uint32 sunflareMaxDurability = sunflare->GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
+            TEST_ASSERT(sunflareDurability == sunflareMaxDurability);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<HellfireTestImpt>();
+    }
+};
+
 class ImmolateTest : public TestCaseScript
 {
 public:
@@ -223,8 +408,14 @@ public:
 
 void AddSC_test_spells_warlock()
 {
+    // Affliction
+    new CorruptionTest();
+    new CurseOfAgonyTest();
+    // Destruction: 7/7
+    new HellfireTest();
     new ImmolateTest();
     new IncinerateTest();
+    new RainOfFireTest();
     new SearingPainTest();
     new ShadowBoltTest();
     new SoulFireTest();

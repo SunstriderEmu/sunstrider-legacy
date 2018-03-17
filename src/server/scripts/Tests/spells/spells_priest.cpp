@@ -2451,7 +2451,8 @@ public:
             FORCE_CAST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
             Wait(1000);
             TEST_ASSERT(priest->IsDead());
-            Item* sunflare = priest->GetItemByPos(INVTYPE_WEAPONMAINHAND);
+            Item* sunflare = priest->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            TEST_ASSERT(sunflare != nullptr);
             uint32 sunflareDurability = sunflare->GetUInt32Value(ITEM_FIELD_DURABILITY);
             uint32 sunflareMaxDurability = sunflare->GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
             TEST_ASSERT(sunflareDurability == sunflareMaxDurability);
