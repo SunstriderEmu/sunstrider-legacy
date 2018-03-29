@@ -7588,24 +7588,22 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, bool appl
 
     if (!apply)
     {
-        SetBaseWeaponDamage(attType, MINDAMAGE, BASE_MINDAMAGE, 0);
-        SetBaseWeaponDamage(attType, MAXDAMAGE, BASE_MAXDAMAGE, 0);
-
-        for (uint8 i = 1; i < MAX_ITEM_PROTO_DAMAGES; ++i)
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
         {
             SetBaseWeaponDamage(attType, MINDAMAGE, 0.f, i);
             SetBaseWeaponDamage(attType, MAXDAMAGE, 0.f, i);
+        }
+
+        if (attType == BASE_ATTACK)
+        {
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, BASE_MINDAMAGE);
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, BASE_MAXDAMAGE);
         }
     }
 
     if (proto->Delay && !IsInFeralForm())
     {
-        if (slot == EQUIPMENT_SLOT_RANGED)
-            SetAttackTime(RANGED_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
-        else if (slot == EQUIPMENT_SLOT_MAINHAND)
-            SetAttackTime(BASE_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
-        else if (slot == EQUIPMENT_SLOT_OFFHAND)
-            SetAttackTime(OFF_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
+        SetAttackTime(attType, apply ? proto->Delay : BASE_ATTACK_TIME);
     }
 
     // No need to modify any physical damage for ferals as it is calculated from stats only
@@ -11551,12 +11549,13 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
 
             if(IsAlive())
             {
-                ItemTemplate const *pProto = pItem->GetTemplate();
-
                 // item set bonuses applied only at equip and removed at unequip, and still active for broken items
-                if(pProto && pProto->ItemSet)
+                ItemTemplate const* pProto = ASSERT_NOTNULL(pItem->GetTemplate());
+                if(pProto->ItemSet)
                     AddItemsSetItem(this,pItem);
 
+                // remove here before _ApplyItemMods (for example to register correct damages of unequipped weapon)
+                m_items[slot] = nullptr;
                 _ApplyItemMods(pItem, slot, true);
 
                 if(pProto && IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
@@ -11748,15 +11747,17 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
         RemoveEnchantmentDurations(pItem);
         RemoveItemDurations(pItem);
 
-        if( bag == INVENTORY_SLOT_BAG_0 )
+        if (bag == INVENTORY_SLOT_BAG_0)
         {
-            if ( slot < INVENTORY_SLOT_BAG_END )
+            if (slot < INVENTORY_SLOT_BAG_END)
             {
-                ItemTemplate const *pProto = pItem->GetTemplate();
                 // item set bonuses applied only at equip and removed at unequip, and still active for broken items
+                ItemTemplate const* pProto = ASSERT_NOTNULL(pItem->GetTemplate());
+                if(pProto->ItemSet)
+                    RemoveItemsSetItem(this, pProto);
 
-                if(pProto && pProto->ItemSet)
-                    RemoveItemsSetItem(this,pProto);
+                // clear m_items so weapons for example can be registered as unequipped
+                m_items[slot] = nullptr;
 
                 _ApplyItemMods(pItem, slot, false, update);
 
@@ -11790,28 +11791,29 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
                 }
 #endif
             }
+            else
+                m_items[slot] = nullptr;
 
-            m_items[slot] = nullptr;
             SetUInt64Value((uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot*2)), 0);
 
-            if ( slot < EQUIPMENT_SLOT_END )
+            if (slot < EQUIPMENT_SLOT_END)
                 SetVisibleItemSlot(slot,nullptr);
         }
         else
         {
-            Bag *pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, bag );
-            if( pBag )
+            Bag* pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
+            if (pBag)
                 pBag->RemoveItem(slot, update);
         }
-        pItem->SetUInt64Value( ITEM_FIELD_CONTAINED, 0 );
+        pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, 0);
         // pItem->SetUInt64Value( ITEM_FIELD_OWNER, 0 ); not clear owner at remove (it will be set at store). This used in mail and auction code
         pItem->SetSlot( NULL_SLOT );
         if( IsInWorld() && update )
             pItem->SendUpdateToPlayer( this );
 
-        if( slot == EQUIPMENT_SLOT_MAINHAND )
+        if (slot == EQUIPMENT_SLOT_MAINHAND)
             UpdateExpertise(BASE_ATTACK);
-        else if( slot == EQUIPMENT_SLOT_OFFHAND )
+        else if (slot == EQUIPMENT_SLOT_OFFHAND)
             UpdateExpertise(OFF_ATTACK);
     }
 }
@@ -11931,7 +11933,9 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
                 SetVisibleItemSlot(slot,nullptr);
             }
 
-            m_items[slot] = nullptr;
+            // clear for rest of items (ie nonequippable)
+            if (slot >= INVENTORY_SLOT_BAG_END)
+                m_items[slot] = nullptr;
         }
         else if(Bag *pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, bag ))
             pBag->RemoveItem(slot, update);
