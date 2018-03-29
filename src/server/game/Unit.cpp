@@ -12264,7 +12264,7 @@ bool Unit::SetHover(bool enable, bool /*packetOnly = false*/)
     {
         RemoveUnitMovementFlag(MOVEMENTFLAG_HOVER);
         //! Dying creatures will MoveFall from setDeathState
-        if (hoverHeight && (!isDying() || GetTypeId() != TYPEID_UNIT))
+        if (hoverHeight && (!IsDying() || GetTypeId() != TYPEID_UNIT))
         {
             float newZ = GetPositionZ() - hoverHeight;
             UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);

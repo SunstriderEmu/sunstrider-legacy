@@ -10,6 +10,7 @@
 #include "SocialMgr.h"
 #include "Language.h"
 #include "CharacterCache.h"
+#include "BattlegroundMgr.h"
 
 void WorldSession::HandleInspectArenaTeamsOpcode(WorldPacket & recvData)
 {
@@ -168,7 +169,7 @@ void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recvData)
     uint32 ArenaTeamId;                                     // arena team id
     recvData >> ArenaTeamId;
 
-    ArenaTeam *at = sObjectMgr->GetArenaTeamById(ArenaTeamId);
+    ArenaTeam* at = sObjectMgr->GetArenaTeamById(ArenaTeamId);
     if(!at)
         return;
     if(_player->GetGUID() == at->GetCaptain() && at->GetMembersSize() > 1)
@@ -177,6 +178,20 @@ void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recvData)
         SendArenaTeamCommandResult(ERR_ARENA_TEAM_QUIT_S, "", "", ERR_ARENA_TEAM_LEADER_LEAVE_S);
         return;
     }
+
+    // Player cannot be removed during queues
+    if (BattlegroundQueueTypeId bgQueue = BattlegroundMgr::BGQueueTypeId(BATTLEGROUND_AA, at->GetType()))
+    {
+        GroupQueueInfo ginfo;
+        BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(bgQueue);
+        if (queue.GetPlayerGroupInfoData(_player->GetGUID(), &ginfo))
+            if (ginfo.IsInvitedToBGInstanceGUID)
+            {
+                SendArenaTeamCommandResult(ERR_ARENA_TEAM_QUIT_S, "", "", ERR_ARENA_TEAM_INTERNAL);
+                return;
+            }
+    }
+
     // arena team has only one member (=captain)
     if(_player->GetGUID() == at->GetCaptain())
     {
@@ -209,6 +224,16 @@ void WorldSession::HandleArenaTeamDisbandOpcode(WorldPacket & recvData)
 
     if(at->GetCaptain() != _player->GetGUID())
         return;
+
+    // Teams cannot be disbanded during queues
+    if (BattlegroundQueueTypeId bgQueue = BattlegroundMgr::BGQueueTypeId(BATTLEGROUND_AA, at->GetType()))
+    {
+        GroupQueueInfo ginfo;
+        BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(bgQueue);
+        if (queue.GetPlayerGroupInfoData(_player->GetGUID(), &ginfo))
+            if (ginfo.IsInvitedToBGInstanceGUID)
+                return;
+    }
 
     if (at->IsFighting())
         return;
@@ -249,11 +274,29 @@ void WorldSession::HandleArenaTeamRemoveOpcode(WorldPacket & recvData)
             return;
     }
 
+    // Captain cannot be removed
     if(at->GetCaptain() == member->Guid)
     {
         SendArenaTeamCommandResult(ERR_ARENA_TEAM_QUIT_S, "", "", ERR_ARENA_TEAM_LEADER_LEAVE_S);
         return;
     }
+
+    // Team cannot be removed during queues
+    if (BattlegroundQueueTypeId bgQueue = BattlegroundMgr::BGQueueTypeId(BATTLEGROUND_AA, at->GetType()))
+    {
+        GroupQueueInfo ginfo;
+        BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(bgQueue);
+        if (queue.GetPlayerGroupInfoData(_player->GetGUID(), &ginfo))
+            if (ginfo.IsInvitedToBGInstanceGUID)
+            {
+                SendArenaTeamCommandResult(ERR_ARENA_TEAM_QUIT_S, "", "", ERR_ARENA_TEAM_INTERNAL);
+                return;
+            }
+    }
+
+    // Player cannot be removed during fights
+    if (at->IsFighting())
+        return;
 
     at->DeleteMember(member->Guid);
 

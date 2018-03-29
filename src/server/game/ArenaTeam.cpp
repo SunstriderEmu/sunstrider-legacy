@@ -6,6 +6,7 @@
 #include "World.h"
 #include "LogsDatabaseAccessor.h"
 #include "CharacterCache.h"
+#include "BattlegroundMgr.h"
 
 ArenaTeam::ArenaTeam()
 {
@@ -265,12 +266,35 @@ void ArenaTeam::SetCaptain(ObjectGuid guid)
 
 void ArenaTeam::DeleteMember(ObjectGuid guid, bool cleanDb)
 {
-    Player *player = ObjectAccessor::FindPlayer(guid);
+    Player *player = ObjectAccessor::FindConnectedPlayer(guid);
+    Group* group = (player && player->GetGroup()) ? player->GetGroup() : nullptr;
     if (player && player->InArena())
         return;
     
     for (auto itr = Members.begin(); itr != Members.end(); ++itr)
     {
+        // Remove queues of members
+        if (Player* playerMember = ObjectAccessor::FindConnectedPlayer(itr->Guid))
+        {
+            if (group && playerMember->GetGroup() && group->GetGUID() == playerMember->GetGroup()->GetGUID())
+            {
+                if (BattlegroundQueueTypeId bgQueue = BattlegroundMgr::BGQueueTypeId(BATTLEGROUND_AA, GetType()))
+                {
+                    GroupQueueInfo ginfo;
+                    BattlegroundQueue& queue = sBattlegroundMgr->GetBattlegroundQueue(bgQueue);
+                    if (queue.GetPlayerGroupInfoData(playerMember->GetGUID(), &ginfo))
+                        if (!ginfo.IsInvitedToBGInstanceGUID)
+                        {
+                            WorldPacket data;
+                            playerMember->RemoveBattlegroundQueueId(bgQueue);
+                            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, nullptr, playerMember->GetBattlegroundQueueIndex(bgQueue), STATUS_NONE, 0, 0, 0, 0);
+                            queue.RemovePlayer(playerMember->GetGUID(), true);
+                            playerMember->GetSession()->SendPacket(&data);
+                        }
+                }
+            }
+        }
+
         if (itr->Guid == guid)
         {
             Members.erase(itr);
