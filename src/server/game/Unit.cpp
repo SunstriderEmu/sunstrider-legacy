@@ -2696,8 +2696,8 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, i
     else
         missChance -= m_modMeleeHitChance;
 
-    // Limit miss chance to 60%
-    missChance = std::min(missChance, 60.0f);
+    // miss chance from auras after calculating skill based miss
+    missChance -= GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
 
     // miss chance from SPELL_AURA_MOD_ATTACKER_xxx_HIT_CHANCE can exceed 60% miss cap (eg aura 50240)
     if(attType == RANGED_ATTACK)
