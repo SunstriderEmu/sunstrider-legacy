@@ -2204,7 +2204,9 @@ void Creature::SetDeathState(DeathState s)
         if (m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
 
-        if ((CanFly() || IsFlying()) && !HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
+        bool needsFalling = ((CanFly() || IsFlying() || IsHovering()) && !HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING));
+        SetHover(false);
+        if (needsFalling)
             GetMotionMaster()->MoveFall();
 
         Unit::SetDeathState(CORPSE);
@@ -3573,6 +3575,8 @@ void Creature::UpdateMovementFlags()
     {
         SetFlying(false);
         SetDisableGravity(false);
+        if (IsAlive() && (CanHover() || HasAuraType(SPELL_AURA_HOVER)))
+            SetHover(true);
     }
 
     if (!isInAir || CanFly())
