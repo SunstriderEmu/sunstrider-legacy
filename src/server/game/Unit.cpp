@@ -3048,7 +3048,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const* spellInfo, bo
     if (!spellInfo->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY) && spellInfo->HasOnlyDamageEffects() && pVictim->IsImmunedToDamage(spellInfo))
         return SPELL_MISS_IMMUNE;
 
-    // All positive spells can`t miss
+    // All positive spells can`t miss (unless immune)
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
     if (spellInfo->IsPositive(!IsFriendlyTo(pVictim)))
         return SPELL_MISS_NONE;
