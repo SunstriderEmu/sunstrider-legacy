@@ -3254,7 +3254,7 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
     {
-        SpellInfo* spellInfo = mSpellInfoMap[i];
+        spellInfo = mSpellInfoMap[i];
         if (!spellInfo)
             continue;
 

@@ -335,6 +335,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "creature_questender",         SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureQuestEndersCommand,     "" },
         { "creature_linked_respawn",     SEC_ADMINISTRATOR, true, &ChatHandler::HandleLinkedRespawnCommand,   "" },
         { "creature_loot_template",      SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadLootTemplatesCreatureCommand,   "" },
+        { "creature_movement_override",  SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureMovementOverrideCommand,"" },
         { "creature_model_info",         SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureModelInfoCommand,       "" },
         { "creature_text",               SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureTextCommand,            "" },
         { "creature_template",           SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureTemplateCommand,        "" },

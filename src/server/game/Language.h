@@ -905,6 +905,7 @@ enum TrinityStrings
 //    LANG_RECUP_ALREADY_DONE                = 11506,
 
     LANG_BUGGY_QUESTS_AUTOCOMPLETE      = 11900,
+    LANG_NPCINFO_MOVEMENT_DATA          = 11901,
 
     // NOT RESERVED IDS                   12000-1999999999
     // For other tables maybe             2000010000-2147483647 (max index)

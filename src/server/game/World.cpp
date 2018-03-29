@@ -1555,6 +1555,9 @@ void World::SetInitialWorldSettings()
 
         TC_LOG_INFO("server.loading", "Loading Creature Addon Data..." );
         sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
+
+        TC_LOG_INFO("server.loading", "Loading Creature Movement Overrides...");
+        sObjectMgr->LoadCreatureMovementOverrides();                 // must be after LoadCreatures()
     }
 
     if (!getConfig(CONFIG_DEBUG_DISABLE_GAMEOBJECTS_LOADING))

@@ -683,12 +683,14 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage(LANG_NPCINFO_POSITION,float(target->GetPositionX()), float(target->GetPositionY()), float(target->GetPositionZ()), float(target->GetOrientation()));
     PSendSysMessage("AIName: %s", target->GetAIName().c_str());
     PSendSysMessage("ScriptName: %s", target->GetScriptName().c_str());
+    PSendSysMessage(LANG_NPCINFO_MOVEMENT_DATA, target->GetMovementTemplate().ToString().c_str());
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
     PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
         if(CreatureTemplate const *master = sObjectMgr->GetCreatureTemplate(linked->id))
             PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(ObjectGuid(HighGuid::Unit, target->GetEntry(), target->GetSpawnId())), linked->id, master->Name.c_str());
-    PSendSysMessage("Movement flag: %u", target->GetUnitMovementFlags());
+
+
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
         SendSysMessage(LANG_NPCINFO_VENDOR);
 

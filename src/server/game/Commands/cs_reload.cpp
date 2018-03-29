@@ -263,6 +263,14 @@ bool ChatHandler::HandleReloadLootTemplatesCreatureCommand(const char*)
     return true;
 }
 
+bool ChatHandler::HandleReloadCreatureMovementOverrideCommand(const char*)
+{
+    TC_LOG_INFO("misc", "Re-Loading Creature movement overrides...");
+    sObjectMgr->LoadCreatureMovementOverrides();
+    SendGlobalGMSysMessage("DB table `creature_movement_override` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadLootTemplatesDisenchantCommand(const char*)
 {
     TC_LOG_INFO( "command","Re-Loading Loot Tables... (`disenchant_loot_template`)" );

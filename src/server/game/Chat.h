@@ -268,6 +268,7 @@ class TC_GAME_API ChatHandler
         bool HandleReloadGameobjectQuestEndersCommand(const char* args);
         bool HandleReloadCreatureModelInfoCommand(const char* args);
         bool HandleReloadLootTemplatesCreatureCommand(const char* args);
+        bool HandleReloadCreatureMovementOverrideCommand(const char* args);
         bool HandleReloadLootTemplatesDisenchantCommand(const char* args);
         bool HandleReloadLootTemplatesFishingCommand(const char* args);
         bool HandleReloadLootTemplatesGameobjectCommand(const char* args);
