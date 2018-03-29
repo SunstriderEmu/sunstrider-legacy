@@ -895,18 +895,23 @@ void SpellMgr::LoadSpellProcs()
 
             switch (spellInfo->Effects[i].ApplyAuraName)
             {
-                // Reflect auras should only proc off reflects
+            // Reflect auras should only proc off reflects
             case SPELL_AURA_REFLECT_SPELLS:
             case SPELL_AURA_REFLECT_SPELLS_SCHOOL:
                 procEntry.HitMask = PROC_HIT_REFLECT;
                 break;
-                // Only drop charge on crit
+            // Only drop charge on crit
             case SPELL_AURA_MOD_WEAPON_CRIT_PERCENT:
                 procEntry.HitMask = PROC_HIT_CRITICAL;
                 break;
-                // Only drop charge on block
+            // Only drop charge on block
             case SPELL_AURA_MOD_BLOCK_PERCENT:
                 procEntry.HitMask = PROC_HIT_BLOCK;
+                break;
+            // proc auras with another aura reducing hit chance (eg 63767) only proc on missed attack
+            case SPELL_AURA_MOD_HIT_CHANCE:
+                if (spellInfo->Effects[i].CalcValue() <= -100)
+                    procEntry.HitMask = PROC_HIT_MISS;
                 break;
             default:
                 continue;
