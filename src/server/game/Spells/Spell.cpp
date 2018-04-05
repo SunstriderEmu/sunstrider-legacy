@@ -2811,7 +2811,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
     }
 
-    if( missInfo != SPELL_MISS_EVADE && !m_caster->IsFriendlyTo(unit) && !IsPositive(hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
+    if( missInfo != SPELL_MISS_EVADE && !m_caster->IsFriendlyTo(unit) && !IsPositive() && m_caster->GetEntry() != WORLD_TRIGGER)
     {
         if(!IsTriggered()) //sun: prevent triggered spells to trigger pvp... a frost armor proc is not an offensive action
             m_caster->AttackedTarget(unit, m_spellInfo->HasInitialAggro());
@@ -3121,7 +3121,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
                 {
                     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                     {
-                        if ((effectMask & (1 << i)) && !aurSpellInfo->IsPositiveEffect(i))
+                        // mod duration only for effects applying aura!
+                        if ((aura_effmask & (1 << i)) && !aurSpellInfo->IsPositiveEffect(i))
                         {
                             positive = false;
                             break;
@@ -5202,7 +5203,7 @@ void Spell::HandleFlatThreat()
         float threat = flatMod / targetListSize;;
 
         //apply threat to every negative targets
-        if(!IsPositive(!m_caster->IsFriendlyTo(targetUnit)))
+        if(!IsPositive())
             targetUnit->GetThreatManager().AddThreat(m_caster, threat, m_spellInfo);
         else //or assist threat if friendly target
             m_caster->GetThreatManager().ForwardThreatForAssistingMe(targetUnit, threat, m_spellInfo);
@@ -5308,7 +5309,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
             {
                 // check correctness positive/negative cast target (pet cast real check and cheating check)
                 bool hostileTarget = m_caster->IsHostileTo(target);
-                if (IsPositive(hostileTarget))
+                if (IsPositive())
                 {
                     if (hostileTarget)
                         return SPELL_FAILED_BAD_TARGETS;
@@ -5351,7 +5352,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
 
 
             // prevent casting at immune friendly target
-            if (IsPositive(!m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo, m_caster))
+            if (IsPositive() && target->IsImmunedToSpell(m_spellInfo, m_caster))
                 return SPELL_FAILED_TARGET_AURASTATE;
 
         } //end "if(target != m_caster)" block
@@ -8497,9 +8498,9 @@ bool Spell::IsAutoActionResetSpell() const
     return true;
 }
 
-bool Spell::IsPositive(bool hostileTarget) const
+bool Spell::IsPositive() const
 {
-    return m_spellInfo->IsPositive(hostileTarget) && (!m_triggeredByAuraSpell || m_triggeredByAuraSpell->IsPositive(hostileTarget));
+    return m_spellInfo->IsPositive() && (!m_triggeredByAuraSpell || m_triggeredByAuraSpell->IsPositive());
 }
 
 bool Spell::IsTriggered() const

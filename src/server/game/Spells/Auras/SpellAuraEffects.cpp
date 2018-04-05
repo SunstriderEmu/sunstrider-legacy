@@ -1124,7 +1124,8 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
                 for (const auto & victimAura : victimAuras)
                 {
                     Aura* aura = victimAura.second->GetBase();
-                    if (victimAura.second->IsPositive())continue;
+                    if (victimAura.second->IsPositive())
+                        continue;
                     SpellInfo const* m_spell = aura->GetSpellInfo();
                     if (m_spell->SpellFamilyName != SPELLFAMILY_WARLOCK)
                         continue;

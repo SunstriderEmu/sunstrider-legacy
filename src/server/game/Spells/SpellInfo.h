@@ -498,7 +498,7 @@ public:
     bool IsAbilityLearnedWithProfession() const;
 
     /** Some spells, such as dispells, can be positive or negative depending on target */
-    bool IsPositive(bool hostileTarget = false) const;
+    bool IsPositive() const;
     /** Some effects, such as dispells, can be positive or negative depending on target */
     bool IsPositiveEffect(uint8 effIndex, bool hostileTarget = false) const;
 
@@ -588,14 +588,9 @@ private:
     void _LoadSpellDiminishInfo();
     void _InitializeExplicitTargetMask();
 
-    static bool _IsPositiveTarget(uint32 targetA, uint32 targetB);
     uint32 _GetExplicitTargetMask() const;
 
-    /* Internal check, will try to deduce result from spell effects + lots of hardcoded id's
-    Use "deep" to enable recursive search in triggered spells
-    */
-    bool _IsPositiveEffect(uint32 effIndex, bool deep = true) const;
-    bool _IsPositiveSpell() const;
+    void _InitializeSpellPositivity();
 
     // unloading helpers
     void _UnloadImplicitTargetConditionLists();

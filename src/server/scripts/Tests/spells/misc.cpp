@@ -235,8 +235,57 @@ public:
         return std::make_shared<StackingTestImpl>();
     }
 };
+
+class SpellPositivity : public TestCaseScript
+{
+public:
+
+    SpellPositivity() : TestCaseScript("spells positivity") { }
+
+    class SpellPositivityImpl : public TestCase
+    {
+    public:
+        SpellPositivityImpl() : TestCase(STATUS_PARTIAL, false) {  }
+
+        void Test() override
+        {
+            static std::list<std::pair<uint32, bool>> spellList = {
+                { 17624, false }, // Petrification
+                { 24740, true  }, // Wisp Costume
+                { 36897, false }, // Transporter Malfunction (race mutation to horde)
+                { 36899, false }, // Transporter Malfunction (race mutation to alliance)
+                { 36900, false }, // Soul Split: Evil!
+                { 36901, false }, // Soul Split: Good
+                { 36893, false }, // Transporter Malfunction (decrease size case)
+                { 36895, false }, // Transporter Malfunction (increase size case)
+                { 42792, false }, // Recently Dropped Flag (prevent cancel)
+                { 7268,  false }, // Arcane Missile
+            };
+
+            for (auto itr : spellList)
+            {
+                uint32 const spellId = itr.first;
+                bool const positive = itr.second;
+
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+                ASSERT_INFO("Failed to find spell %u", spellId);
+                TEST_ASSERT(spellInfo != nullptr);
+
+                ASSERT_INFO("Spell %u is positivity is %u when it should be %u", spellId, uint32(positive), uint32(spellInfo->IsPositive()));
+                TEST_ASSERT(spellInfo->IsPositive() == positive);
+            }
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SpellPositivityImpl>();
+    }
+};
+
 void AddSC_test_spells_misc()
 {
     new EnvironmentalTrapTest();
     new StackingRulesTest();
+    new SpellPositivity();
 }

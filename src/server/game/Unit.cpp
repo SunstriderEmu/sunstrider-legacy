@@ -3050,7 +3050,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const* spellInfo, bo
 
     // All positive spells can`t miss (unless immune)
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
-    if (spellInfo->IsPositive(!IsFriendlyTo(pVictim)))
+    if (spellInfo->IsPositive())
         return SPELL_MISS_NONE;
 
     if(this == pVictim)
@@ -6415,7 +6415,7 @@ float Unit::SpellCritChanceTaken(Unit const* caster, SpellInfo const* spellInfo,
         case SPELL_DAMAGE_CLASS_MAGIC:
         {
             // taken
-            if (!spellInfo->IsPositive(!caster->IsFriendlyTo(this)))
+            if (!spellInfo->IsPositive())
             {
                 // Modify critical chance by victim SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE
                 crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE, schoolMask);
@@ -8221,7 +8221,7 @@ int32 Unit::GetHealthGain(int32 dVal)
     return gain;
 }
 
-void Unit::ModSpellDurationTime(SpellInfo const* spellInfo, int32 & castTime, Spell * spell)
+void Unit::ModSpellDurationTime(SpellInfo const* spellInfo, int32& castTime, Spell * spell)
 {
     if (!spellInfo || castTime < 0)
         return;

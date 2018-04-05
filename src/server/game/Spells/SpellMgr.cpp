@@ -3060,14 +3060,7 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
         }
 #endif
 
-        if (!spellInfo->_IsPositiveEffect(EFFECT_0, true))
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
-
-        if (!spellInfo->_IsPositiveEffect(EFFECT_1, true))
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF1;
-
-        if (!spellInfo->_IsPositiveEffect(EFFECT_2, true))
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF2;
+        spellInfo->_InitializeSpellPositivity();
 
         if (spellInfo->SpellVisual == 3879)
             spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
