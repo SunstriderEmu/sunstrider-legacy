@@ -5532,7 +5532,7 @@ Unit* Unit::GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
         if (Unit* magnet = magnetAura->GetBase()->GetUnitOwner())
             if (spellInfo->CheckExplicitTarget(this, magnet) == SPELL_CAST_OK
                 //&& spellInfo->CheckTarget(this, magnet, false) == SPELL_CAST_OK
-                && _IsValidAttackTarget(magnet, spellInfo)
+                && IsValidAttackTarget(magnet, spellInfo)
                 /*&& IsWithinLOSInMap(magnet)*/)
             {
                 // sunwell: We should choose minimum between flight time and queue time as in reflect, however we dont know flight time at this point, use arbitrary small number
@@ -5568,7 +5568,7 @@ Unit* Unit::GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
     for (auto hitTriggerAura : hitTriggerAuras)
     {
         if (Unit* magnet = hitTriggerAura->GetCaster())
-            if (_IsValidAttackTarget(magnet, spellInfo) && magnet->IsWithinLOSInMap(this, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2)
+            if (IsValidAttackTarget(magnet, spellInfo) && magnet->IsWithinLOSInMap(this, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2)
                 && (!spellInfo || (spellInfo->CheckExplicitTarget(this, magnet) == SPELL_CAST_OK
                     && spellInfo->CheckTarget(this, magnet, false) == SPELL_CAST_OK)))
                 if (roll_chance_i(hitTriggerAura->GetAmount()))
@@ -7872,43 +7872,52 @@ bool Unit::IsTargetableForAttack(bool checkFakeDeath) const
     return !HasUnitState(UNIT_STATE_UNATTACKABLE) && (!checkFakeDeath || !HasUnitState(UNIT_STATE_DIED));
 }
 
-bool Unit::IsValidAttackTarget(Unit const* target) const
-{
-    return _IsValidAttackTarget(target, nullptr);
-}
-
 // function based on function Unit::CanAttack from 13850 client
-bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, WorldObject const* obj) const
+bool Unit::IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell /*= nullptr*/, WorldObject const* obj /*= nullptr*/) const
 {
     ASSERT(target);
 
     // some positive spells can be casted at hostile target
     bool isPositiveSpell = bySpell && bySpell->IsPositive();
 
-    // can't attack self
-    if (this == target)
+    // can't attack self (spells can, attribute check)
+    if (!bySpell && this == target)
         return false;
 
-    bool isWorldTrigger = (GetEntry() == WORLD_TRIGGER);
-    Unit const* attacker = isWorldTrigger ? GetAffectingPlayer() : this;
-    if (!attacker)
-        attacker = this;
-
-    // can't attack unattackable units or GMs
-    if (target->HasUnitState(UNIT_STATE_UNATTACKABLE)
-        || (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->IsGameMaster()))
+    // can't attack unattackable units
+    Unit const* unitTarget = target->ToUnit();
+    if (unitTarget && unitTarget->HasUnitState(UNIT_STATE_UNATTACKABLE))
         return false;
 
-#ifdef LICH_KING
-    // can't attack own vehicle or passenger
-    if (m_vehicle)
-        if (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target))
-            if (!attacker->IsHostileTo(target)) // sunwell: actually can attack own vehicle or passenger if it's hostile to us - needed for snobold in Gormok encounter
+    // can't attack GMs
+    if (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->IsGameMaster())
+        return false;
+
+    Unit const* unit = ToUnit();
+    // - remove this when gobject casting is enabled
+    bool isWorldTrigger = GetTypeId() == TYPEID_UNIT && (GetEntry() == WORLD_TRIGGER);
+    if (isWorldTrigger)
+        unit = GetAffectingPlayer();
+    // -
+
+    // visibility checks (only units)
+    /*
+    if (unit)
+    {
+        // can't attack invisible
+        if (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE))
+        {
+            bool const ignoreStealthCheck = (bySpell && bySpell->IsAffectingArea()) ||
+                (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->HasStealthAura() && IsInCombatWith(unitTarget));
+
+            if (!unit->CanSeeOrDetect(target, ignoreStealthCheck))
                 return false;
-#endif
+        }
+    }*/
 
     // visibility checks
     // skip visibility check for GO casts, needs removal when go cast is implemented. Also ignore for gameobject and dynauras
+    //GOBJECT CASTING REMOVE
     if (GetEntry() != WORLD_TRIGGER && (!obj || !obj->isType(TYPEMASK_GAMEOBJECT | TYPEMASK_DYNAMICOBJECT)))
     {
         // can't attack invisible
@@ -7925,8 +7934,14 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
                 if (!CanSeeOrDetect(target, ignoreStealthCheck))
                     return false;
             }
-}
+        }
     }
+
+
+    //GOBJECT CASTING REMOVE
+    // check if this is a world trigger cast - GOs are using world triggers to cast their spells, so we need to ignore their immunity flag here, this is a temp workaround, needs removal when go cast is implemented properly
+    if (((!isWorldTrigger && (!obj || !obj->isType(TYPEMASK_GAMEOBJECT | TYPEMASK_DYNAMICOBJECT))) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC)))
+        return false;
 
     // can't attack dead
     if ((!bySpell || !bySpell->IsAllowingDeadTarget()) && !target->IsAlive())
@@ -7934,65 +7949,63 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
 
     // can't attack untargetable 
     // sunstrider: only apply this to player, allow easier scripting
-    if (attacker->IsControlledByPlayer()
+    if (unit->IsControlledByPlayer()
         && (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_UNTARGETABLE))
-        && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+        && unitTarget && unitTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
-    if (Player const* playerAttacker = attacker->ToPlayer())
+    Player const* playerAttacker = ToPlayer();
+#ifdef LICH_KING
+    if (playerAttacker)
     {
-        if (playerAttacker->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_COMMENTATOR) /*|| playerAttacker->IsSpectator()*/)
+        if (playerAttacker->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_UBER))
             return false;
     }
+#endif
+
+    //sunstrider: for arena spectators
+    if (playerAttacker && playerAttacker->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_COMMENTATOR) /*|| playerAttacker->IsSpectator()*/)
+        return false;
 
     // check flags
     if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_TAXI_FLIGHT | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_UNK_16))
         return false;
 
+    // ignore immunity flags when assisting
     if (!bySpell || (isPositiveSpell && !bySpell->HasAttribute(SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG)))
     {
-        if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->IsImmuneToNPC())
+        if (unit && !unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && unitTarget && unitTarget->IsImmuneToNPC())
             return false;
 
-        if (!target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->IsImmuneToNPC())
+        if (unitTarget && !unitTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && unit && unit->IsImmuneToNPC())
             return false;
 
-        if (attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->IsImmuneToPC())
+        if (unit && unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && unitTarget && unitTarget->IsImmuneToPC())
             return false;
 
-        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->IsImmuneToPC())
+        if (unitTarget && unitTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && unit && unit->IsImmuneToPC())
             return false;
     }
 
-    // check if this is a world trigger cast - GOs are using world triggers to cast their spells, so we need to ignore their immunity flag here, this is a temp workaround, needs removal when go cast is implemented properly
-    if(((!isWorldTrigger && (!obj || !obj->isType(TYPEMASK_GAMEOBJECT | TYPEMASK_DYNAMICOBJECT))) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC)))
-        return false;
-
-    // CvC case - can attack each other only when one of them is hostile // Sunstrider: allow creatures to attack neutral creatures... that's a valid target, their exclusion on aggro shouldn't be done here
-    if (!attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
-        return attacker->GetReactionTo(target) <= REP_NEUTRAL || target->GetReactionTo(this) <= REP_NEUTRAL;
+    // CvC case - can attack each other only when one of them is hostile
+    if (ToUnit() && !HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->ToUnit() && !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+        return IsHostileTo(target) || target->IsHostileTo(this);
 
     // PvP, PvC, CvP case
     // can't attack friendly targets
-    ReputationRank repThisToTarget = attacker->GetReactionTo(target);
-    ReputationRank repTargetToThis;
-
-    if (repThisToTarget > REP_NEUTRAL
-        || (repTargetToThis = target->GetReactionTo(this)) > REP_NEUTRAL)
+    if (IsFriendlyTo(target) || target->IsFriendlyTo(this))
         return false;
+    
+    Player const* playerAffectingAttacker = ToUnit() && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? GetAffectingPlayer() : nullptr;
+    Player const* playerAffectingTarget = target->ToUnit() && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? target->GetAffectingPlayer() : nullptr;
 
     // Not all neutral creatures can be attacked (even some unfriendly faction does not react aggresive to you, like Sporaggar)
-    if (repThisToTarget == REP_NEUTRAL &&
-        repTargetToThis <= REP_NEUTRAL)
+    if ((playerAffectingAttacker && !playerAffectingTarget) || (!playerAffectingAttacker && playerAffectingTarget))
     {
-        Player* owner = GetAffectingPlayer();
-        const Unit *const thisUnit = owner ? owner : this;
-        if (!(target->GetTypeId() == TYPEID_PLAYER && thisUnit->GetTypeId() == TYPEID_PLAYER) &&
-            !(target->GetTypeId() == TYPEID_UNIT && thisUnit->GetTypeId() == TYPEID_UNIT))
-        {
-            Player const* player = target->GetTypeId() == TYPEID_PLAYER ? target->ToPlayer() : thisUnit->ToPlayer();
-            Unit const* creature = target->GetTypeId() == TYPEID_UNIT ? target : thisUnit;
+        Player const* player = playerAffectingAttacker ? playerAffectingAttacker : playerAffectingTarget;
 
+        if (Unit const* creature = playerAffectingAttacker ? target->ToUnit() : ToUnit())
+        {
             if (creature->IsContestedGuard() && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
                 return true;
 
@@ -8013,12 +8026,14 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
 
 #ifdef LICH_KING
     Creature const* creatureAttacker = ToCreature();
-    if (creatureAttacker && creatureAttacker->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER)
+    if (creatureAttacker && (creatureAttacker->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_TREAT_AS_RAID_UNIT))
         return false;
 #endif
 
-    Player const* playerAffectingAttacker = attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? GetAffectingPlayer() : nullptr;
-    Player const* playerAffectingTarget = target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? target->GetAffectingPlayer() : nullptr;
+    if (spellCheck && !IsValidSpellAttackTarget(target, bySpell, obj))
+        return false;
+
+    return true;
 
     // check duel - before sanctuary checks
     if (playerAffectingAttacker && playerAffectingTarget)
@@ -8027,31 +8042,29 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
 
     // PvP case - can't attack when attacker or target are in sanctuary
     // however, 13850 client doesn't allow to attack when one of the unit's has sanctuary flag and is pvp
-    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && (target->IsInSanctuary() || attacker->IsInSanctuary()))
+    if (unitTarget && unitTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && unit && unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && (unitTarget->IsInSanctuary() || unit->IsInSanctuary()))
         return false;
 
     // additional checks - only PvP case
     if (playerAffectingAttacker && playerAffectingTarget)
     {
-        if (target->IsPvP())
+        if (unitTarget->IsPvP())
             return true;
 
-        if (attacker->IsFFAPvP() && target->IsFFAPvP())
+        if (unit->IsFFAPvP() && unitTarget->IsFFAPvP())
             return true;
 
-        //This check is probably only true on LK //return attacker->HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK1) || target->HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK1);
-        return true;
+        /* LK only check ?
+        return unit->HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_UNK1) ||
+            unitTarget->HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_UNK1);
+            */
     }
+
     return true;
 }
 
-bool Unit::IsValidAssistTarget(Unit const* target) const
-{
-    return _IsValidAssistTarget(target, nullptr);
-}
-
 // function based on function Unit::CanAssist from 13850 client
-bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) const
+bool Unit::IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell /*= nullptr*/, bool spellCheck /*= true*/) const
 {
     ASSERT(target);
 
@@ -8059,62 +8072,72 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
     if (this == target)
         return true;
 
-    // can't assist unattackable units or GMs
-    if (target->HasUnitState(UNIT_STATE_UNATTACKABLE)
-       /* || (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->IsGameMaster()) */)
+    // can't assist unattackable units
+    Unit const* unitTarget = target->ToUnit();
+    if (unitTarget && unitTarget->HasUnitState(UNIT_STATE_UNATTACKABLE))
         return false;
 
+    // can't assist GMs
+    if (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->IsGameMaster())
+        return false;
+
+    Unit const* unit = ToUnit();
 #ifdef LICH_KING
     // can't assist own vehicle or passenger
-    if (m_vehicle)
-        if (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target))
+    if (unit && unitTarget && unit->GetVehicle())
+    {
+        if (unit->IsOnVehicle(unitTarget))
             return false;
+
+        if (unit->GetVehicleBase()->IsOnVehicle(unitTarget))
+            return false;
+}
 #endif
 
     // can't assist invisible
     if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE)) && !CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()))
         return false;
 
-    // can't assist untargetable
-    if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_UNTARGETABLE))
-        && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
-        return false;
-
     // can't assist dead
     if ((!bySpell || !bySpell->IsAllowingDeadTarget()) && !target->IsAlive())
         return false;
 
-    if (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG))
-    {
-        // sunwell: do not allow to assist non attackable units
-        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return false;
+    // can't assist untargetable
+    if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_UNTARGETABLE)) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+        return false;
 
-        if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+    // some negative spells can be casted at friendly target
+    bool isNegativeSpell = bySpell && !bySpell->IsPositive();
+    // check flags for negative spells
+    if (isNegativeSpell && unitTarget && unitTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_TAXI_FLIGHT | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_UNK_16))
+        return false;
+
+    if (isNegativeSpell || !bySpell || !bySpell->HasAttribute(SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG))
+    {
+        if (unit && unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
         {
-            if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
+            if (unitTarget && unitTarget->IsImmuneToPC())
                 return false;
         }
         else
         {
-            if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
+            if (unitTarget && unitTarget->IsImmuneToNPC())
                 return false;
         }
     }
 
     // can't assist non-friendly targets
-    if (GetReactionTo(target) < REP_NEUTRAL
-        && target->GetReactionTo(this) < REP_NEUTRAL
+    if (GetReactionTo(target) < REP_NEUTRAL && target->GetReactionTo(this) < REP_NEUTRAL 
 #ifdef LICH_KING
-        && (!ToCreature() || !(ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER))
+        && (!ToCreature() || !(ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_TREAT_AS_RAID_UNIT))
 #endif
         )
         return false;
 
     // PvP case
-    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+    if (unitTarget && unitTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
     {
-        Player const* targetPlayerOwner = target->GetAffectingPlayer();
+        Player const* targetPlayerOwner = unitTarget->GetAffectingPlayer();
         if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
         {
             Player const* selfPlayerOwner = GetAffectingPlayer();
@@ -8126,30 +8149,31 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
                     return false;
             }
             // can't assist player in ffa_pvp zone from outside
-            if (target->IsFFAPvP() && !IsFFAPvP())
+            if (unitTarget->IsFFAPvP() && unit && !unit->IsFFAPvP())
                 return false;
 
             // can't assist player out of sanctuary from sanctuary if has pvp enabled
-            if (target->IsPvP())
-                if (IsInSanctuary() && !target->IsInSanctuary())
+            if (unitTarget->IsPvP())
+                if (unit && unit->IsInSanctuary() && !unitTarget->IsInSanctuary())
                     return false;
         }
     }
     // PvC case - player can assist creature only if has specific type flags or if player is charmed by it
     // !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) &&
-    else if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE)
+    else if (unit && unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE)
         && (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG))
-        && !target->IsPvP()
-        && GetCharmerGUID() != target->GetGUID()
+        && (unitTarget && !unitTarget->IsPvP())
+        && (unit && unitTarget && unit->GetCharmerGUID() != unitTarget->GetGUID())
         )
     {
         if (Creature const* creatureTarget = target->ToCreature())
-            return 
+            return
 #ifdef LICH_KING
-                creatureTarget->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER || 
+            creatureTarget->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_TREAT_AS_RAID_UNIT ||
 #endif
-                creatureTarget->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_CAN_ASSIST;
+            creatureTarget->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_CAN_ASSIST;
     }
+
     return true;
 }
 

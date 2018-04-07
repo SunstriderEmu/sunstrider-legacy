@@ -3005,7 +3005,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
             }
         }
         
-        if (caster->_IsValidAttackTarget(unit, m_spellInfo))
+        if (caster->IsValidAttackTarget(unit, m_spellInfo))
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
         else if( !caster->IsFriendlyTo(unit) )
         {
@@ -3028,7 +3028,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
         {
             // for delayed spells ignore negative spells (after duel end) for friendly targets
             // TODO: this cause soul transfer bugged
-            if(m_spellInfo->Speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositive() && m_spellInfo->Id != 45034) // FIXME: Hack for Boundless Agony (Kalecgos)
+            if(m_spellInfo->Speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositive() && !m_caster->IsValidAssistTarget(unit, m_spellInfo) && m_spellInfo->Id != 45034) // FIXME: Hack for Boundless Agony (Kalecgos)
                 return SPELL_MISS_EVADE;
 
             // assisting case, healing and resurrection
@@ -8049,7 +8049,7 @@ namespace Trinity
         Unit* unitTarget = target->ToUnit();
         if (Corpse* corpseTarget = target->ToCorpse())
         {
-            // use ofter for party/assistance checks
+            // use owner for party/assistance checks
             if (Player* owner = ObjectAccessor::FindPlayer(corpseTarget->GetOwnerGUID()))
                 unitTarget = owner;
             else
@@ -8057,25 +8057,25 @@ namespace Trinity
         }
         if (unitTarget)
         {
-            bool targetIsTotem = unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->ToCreature()->IsTotem();
+            // do only faction checks here
             switch (_targetSelectionType)
             {
             case TARGET_CHECK_ENEMY:
-                if (targetIsTotem)
+                if (unitTarget->IsTotem())
                     return false;
-                if (!_caster->_IsValidAttackTarget(unitTarget, _spellInfo))
+                if (!_caster->IsValidAttackTarget(unitTarget, _spellInfo))
                     return false;
                 break;
             case TARGET_CHECK_ALLY:
-                if (targetIsTotem)
+                if (unitTarget->IsTotem())
                     return false;
-                if (!_caster->_IsValidAssistTarget(unitTarget, _spellInfo))
+                if (!_caster->IsValidAssistTarget(unitTarget, _spellInfo))
                     return false;
                 break;
             case TARGET_CHECK_PARTY:
-                if (targetIsTotem)
+                if (unitTarget->IsTotem())
                     return false;
-                if (!_caster->_IsValidAssistTarget(unitTarget, _spellInfo))
+                if (!_caster->IsValidAssistTarget(unitTarget, _spellInfo))
                     return false;
                 if (!_referer->IsInPartyWith(unitTarget))
                     return false;
@@ -8085,9 +8085,9 @@ namespace Trinity
                     return false;
                 // nobreak;
             case TARGET_CHECK_RAID:
-                if (targetIsTotem)
+                if (unitTarget->IsTotem())
                     return false;
-                if (!_caster->_IsValidAssistTarget(unitTarget, _spellInfo))
+                if (!_caster->IsValidAssistTarget(unitTarget, _spellInfo))
                     return false;
                 if (!_referer->IsInRaidWith(unitTarget))
                     return false;
