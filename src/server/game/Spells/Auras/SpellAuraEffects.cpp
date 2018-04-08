@@ -302,7 +302,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS] =
     &AuraEffect::HandleNULL                                       //261 SPELL_AURA_261 some phased state (44856 spell)
 };
 
-AuraEffect::AuraEffect(Aura* base, uint8 effIndex, int32 *baseAmount, Unit* caster) :
+AuraEffect::AuraEffect(Aura* base, uint8 effIndex, int32 const* baseAmount, Unit* caster) :
     m_base(base), m_spellInfo(base->GetSpellInfo()),
     m_baseAmount(baseAmount ? *baseAmount : m_spellInfo->Effects[effIndex].BasePoints),
     _amount(), m_spellmod(nullptr), _periodicTimer(0), _amplitude(0), _ticksDone(0), m_effIndex(effIndex),
@@ -333,7 +333,7 @@ void AuraEffect::GetTargetList(Container& targetContainer) const
 }
 
 template <typename Container>
-void AuraEffect::GetApplicationList(Container& applicationContainer) const
+void AuraEffect::GetApplicationVector(Container& applicationContainer) const
 {
     Aura::ApplicationMap const& targetMap = GetBase()->GetApplicationMap();
     for (auto appIter = targetMap.begin(); appIter != targetMap.end(); ++appIter)
@@ -669,7 +669,7 @@ void AuraEffect::ChangeAmount(int32 newAmount, bool mark, bool onStackOrReapply)
         return;
 
     std::vector<AuraApplication*> effectApplications;
-    GetApplicationList(effectApplications);
+    GetApplicationVector(effectApplications);
 
     for (AuraApplication* aurApp : effectApplications)
     {
@@ -2849,7 +2849,7 @@ void AuraEffect::Update(uint32 diff, Unit* caster)
         GetBase()->CallScriptEffectUpdatePeriodicHandlers(this);
 
         std::vector<AuraApplication*> effectApplications;
-        GetApplicationList(effectApplications);
+        GetApplicationVector(effectApplications);
 
         // tick on targets of effects
         for (AuraApplication* aurApp : effectApplications)
@@ -6469,6 +6469,6 @@ template TC_GAME_API void AuraEffect::GetTargetList(std::list<Unit*>&) const;
 template TC_GAME_API void AuraEffect::GetTargetList(std::deque<Unit*>&) const;
 template TC_GAME_API void AuraEffect::GetTargetList(std::vector<Unit*>&) const;
 
-template TC_GAME_API void AuraEffect::GetApplicationList(std::list<AuraApplication*>&) const;
-template TC_GAME_API void AuraEffect::GetApplicationList(std::deque<AuraApplication*>&) const;
-template TC_GAME_API void AuraEffect::GetApplicationList(std::vector<AuraApplication*>&) const;
+template TC_GAME_API void AuraEffect::GetApplicationVector(std::list<AuraApplication*>&) const;
+template TC_GAME_API void AuraEffect::GetApplicationVector(std::deque<AuraApplication*>&) const;
+template TC_GAME_API void AuraEffect::GetApplicationVector(std::vector<AuraApplication*>&) const;

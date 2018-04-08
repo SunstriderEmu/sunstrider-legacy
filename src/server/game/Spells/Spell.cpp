@@ -593,7 +593,9 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, TriggerCastFlags triggerFlags,
     m_triggeringContainer(triggeringContainer),
     m_referencedFromCurrentSpell(false),
     m_executedCurrently(false),
-    targetMissInfo(SPELL_MISS_NONE)
+    targetMissInfo(SPELL_MISS_NONE),
+    _spellAura(nullptr),
+    _dynObjAura(nullptr)
 {
     m_needComboPoints = m_spellInfo->NeedsComboPoints();
     m_delayStart = 0;
@@ -2564,9 +2566,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     uint32 procVictim = m_procVictim;
     uint32 hitMask = PROC_HIT_NONE;
 
-    //sunstrider: I'm not sure about this, it seems to me that spells applying auras on different targets should be applications of the same spell. Might need rework. This would fix spells such as 30019 not properly removed.
-    m_spellAura = nullptr; // Set aura to null for every target-make sure that pointer is not used for unit without aura applied
-
     //Spells with this flag cannot trigger if effect is casted on self
     // Slice and Dice, relentless strikes, eviscerate
     bool const canEffectTrigger = !m_spellInfo->HasAttribute(SPELL_ATTR3_CANT_TRIGGER_PROC) && unitTarget->CanProc() && (CanExecuteTriggersOnHit(mask) || missInfo == SPELL_MISS_IMMUNE || missInfo == SPELL_MISS_IMMUNE2);
@@ -3049,14 +3048,11 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
         }
     }
 
-    uint8 aura_effmask = 0;
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (effectMask & (1 << i) && m_spellInfo->Effects[i].IsUnitOwnedAuraEffect())
-            aura_effmask |= 1 << i;
+    uint8 aura_effmask = Aura::BuildEffectMaskForOwner(m_spellInfo, effectMask, unit);
 
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
-    bool const triggered = m_triggeredByAuraSpell != nullptr;
-    DiminishingGroup const diminishGroup = m_spellInfo->GetDiminishingReturnsGroupForSpell(triggered);
+    bool triggered = (m_triggeredByAuraSpell != nullptr);
+    DiminishingGroup diminishGroup = m_spellInfo->GetDiminishingReturnsGroupForSpell(triggered);
 
     DiminishingLevels diminishLevel = DIMINISHING_LEVEL_1;
     if(diminishGroup && aura_effmask)
@@ -3079,7 +3075,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
         // Select rank for aura with level requirements only in specific cases
         // Unit has to be target only of aura effect, both caster and target have to be players, target has to be other than unit target
         SpellInfo const* aurSpellInfo = m_spellInfo;
-        int32 basePoints[MAX_SPELL_EFFECTS];
+        int32 basePoints[MAX_SPELL_EFFECTS] = {};
         /* TC
         if (scaleAura)
         {
@@ -3100,18 +3096,38 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
         if (m_originalCaster)
         {
             bool refresh = false;
-            bool const resetPeriodicTimer = !(_triggeredCastFlags & TRIGGERED_DONT_RESET_PERIODIC_TIMER);
-            m_spellAura = Aura::TryRefreshStackOrCreate(aurSpellInfo, effectMask, unit,
-                m_originalCaster, (aurSpellInfo == m_spellInfo) ? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem, ObjectGuid::Empty, &refresh, resetPeriodicTimer);
-            if (m_spellAura)
+            if (!_spellAura)
+            {
+                bool const resetPeriodicTimer = !(_triggeredCastFlags & TRIGGERED_DONT_RESET_PERIODIC_TIMER);
+                uint8 const allAuraEffectMask = Aura::BuildEffectMaskForOwner(aurSpellInfo, MAX_EFFECT_MASK, unit);
+                int32 const* bp = basePoints;
+                if (aurSpellInfo == m_spellInfo)
+                    bp = m_spellValue->EffectBasePoints;
+
+                AuraCreateInfo createInfo(aurSpellInfo, allAuraEffectMask, unit);
+                createInfo
+                    .SetCaster(m_originalCaster)
+                    .SetBaseAmount(bp)
+                    .SetCastItem(m_CastItem)
+                    .SetPeriodicReset(resetPeriodicTimer)
+                    .SetOwnerEffectMask(aura_effmask)
+                    .IsRefresh = &refresh;
+
+                if (Aura* aura = Aura::TryRefreshStackOrCreate(createInfo))
+                    _spellAura = aura->ToUnitAura();
+            }
+            else
+                _spellAura->AddStaticApplication(unit, aura_effmask);
+
+            if (_spellAura)
             {
                 // Set aura stack amount to desired value
                 if (m_spellValue->AuraStackAmount > 1)
                 {
                     if (!refresh)
-                        m_spellAura->SetStackAmount(m_spellValue->AuraStackAmount);
+                        _spellAura->SetStackAmount(m_spellValue->AuraStackAmount);
                     else
-                        m_spellAura->ModStackAmount(m_spellValue->AuraStackAmount);
+                        _spellAura->ModStackAmount(m_spellValue->AuraStackAmount);
                 }
 
                 // Now Reduce spell duration using data received at spell hit
@@ -3130,12 +3146,13 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
                     }
                 }
 
-                int32 duration = m_spellAura->GetMaxDuration();
+                int32 duration = _spellAura->GetMaxDuration();
 
                 // unit is immune to aura if it was diminished to 0 duration
                 if (!positive && !unit->ApplyDiminishingToDuration(aurSpellInfo, triggered, duration, m_originalCaster, diminishLevel))
                 {
-                    m_spellAura->Remove();
+                    _spellAura->Remove();
+                    _spellAura = nullptr;
                     bool found = false;
                     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                         if (effectMask & (1 << i) && m_spellInfo->Effects[i].Effect != SPELL_EFFECT_APPLY_AURA)
@@ -3145,7 +3162,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
                 }
                 else
                 {
-                    static_cast<UnitAura*>(m_spellAura)->SetDiminishGroup(diminishGroup);
+                    _spellAura->SetDiminishGroup(diminishGroup);
 
                     duration = m_originalCaster->ModSpellDuration(aurSpellInfo, unit, duration, positive, effectMask);
 
@@ -3160,12 +3177,12 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask)
                         )
                         duration = int32(duration * m_originalCaster->GetFloatValue(UNIT_MOD_CAST_SPEED));
 
-                    if (duration != m_spellAura->GetMaxDuration())
+                    if (duration != _spellAura->GetMaxDuration())
                     {
-                        m_spellAura->SetMaxDuration(duration);
-                        m_spellAura->SetDuration(duration);
+                        _spellAura->SetMaxDuration(duration);
+                        _spellAura->SetDuration(duration);
                     }
-                    m_spellAura->_RegisterForTargets();
+                    _spellAura->_RegisterForTargets();
                 }
             }
         }
@@ -3981,8 +3998,6 @@ uint64 Spell::handle_delayed(uint64 t_offset)
 
 void Spell::_handle_immediate_phase()
 {
-    m_spellAura = nullptr;
-
     // initialize Diminishing Returns Data
     m_diminishLevel = DIMINISHING_LEVEL_1;
     HandleFlatThreat();

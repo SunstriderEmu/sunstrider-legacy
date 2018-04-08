@@ -2952,19 +2952,17 @@ void Spell::EffectApplyAura(uint32 effIndex)
 
     }
 
-    if (!m_spellAura)
+    if (!_spellAura)
         return;
 
-    ASSERT(unitTarget == m_spellAura->GetOwner());
-    m_spellAura->_ApplyEffectForTargets(effIndex);
-
+    _spellAura->_ApplyEffectForTargets(effIndex);
 
     // Prayer of Mending (jump animation), we need formal caster instead original for correct animation
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
     {
         CastSpellExtraArgs args;
         args.TriggerFlags = TRIGGERED_FULL_MASK;
-        args.SetTriggeringAura(m_spellAura->GetEffect(EFFECT_0));
+        args.SetTriggeringAura(_spellAura->GetEffect(EFFECT_0));
         args.SetOriginalCaster(m_originalCasterGUID);
         m_caster->CastSpell(unitTarget, 41637, args);
     }
@@ -3438,32 +3436,42 @@ void Spell::EffectPersistentAA(uint32 effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    if (!m_spellAura)
+    // only handle at last effect
+    for (uint8 i = effIndex + 1; i < MAX_SPELL_EFFECTS; ++i)
+        if (m_spellInfo->Effects[i].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+            return;
+
+    ASSERT(!_dynObjAura);
+
+    Unit* caster = m_caster->GetEntry() == WORLD_TRIGGER ? m_originalCaster : m_caster;
+    float radius = m_spellInfo->Effects[effIndex].CalcRadius(caster);
+
+    // Caster not in world, might be spell triggered from aura removal
+    if (!caster->IsInWorld())
+        return;
+
+    DynamicObject* dynObj = new DynamicObject(false);
+    if (!dynObj->CreateDynamicObject(caster->GetMap()->GenerateLowGuid<HighGuid::DynamicObject>(), caster, m_spellInfo->Id, *destTarget, radius, DYNAMIC_OBJECT_AREA_SPELL))
     {
-        Unit* caster = m_caster->GetEntry() == WORLD_TRIGGER ? m_originalCaster : m_caster;
-        float radius = m_spellInfo->Effects[effIndex].CalcRadius(caster);
-
-        // Caster not in world, might be spell triggered from aura removal
-        if (!caster->IsInWorld())
-            return;
-        DynamicObject* dynObj = new DynamicObject(false);
-        if (!dynObj->CreateDynamicObject(caster->GetMap()->GenerateLowGuid<HighGuid::DynamicObject>(), caster, m_spellInfo->Id, *destTarget, radius, DYNAMIC_OBJECT_AREA_SPELL))
-        {
-            delete dynObj;
-            return;
-        }
-
-        if (Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]))
-        {
-            m_spellAura = aura;
-            m_spellAura->_RegisterForTargets();
-        }
-        else
-            return;
+        delete dynObj;
+        return;
     }
 
-    ASSERT(m_spellAura->GetDynobjOwner());
-    m_spellAura->_ApplyEffectForTargets(effIndex);
+    AuraCreateInfo createInfo(m_spellInfo, MAX_EFFECT_MASK, dynObj);
+    createInfo
+        .SetCaster(caster)
+        .SetBaseAmount(m_spellValue->EffectBasePoints);
+
+    if (Aura* aura = Aura::TryCreate(createInfo))
+    {
+        _dynObjAura = aura->ToDynObjAura();
+        _dynObjAura->_RegisterForTargets();
+    }
+    else
+        return;
+
+    ASSERT(_dynObjAura->GetDynobjOwner());
+    _dynObjAura->_ApplyEffectForTargets(effIndex);
 }
 
 void Spell::EffectEnergize(uint32 i)
@@ -3996,10 +4004,10 @@ void Spell::EffectApplyAreaAura(uint32 effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!m_spellAura || !unitTarget)
+    if (!_spellAura || !unitTarget)
         return;
-    ASSERT(unitTarget == m_spellAura->GetOwner());
-    m_spellAura->_ApplyEffectForTargets(effIndex);
+
+    _spellAura->_ApplyEffectForTargets(effIndex);
 }
 
 void Spell::EffectLearnSpell(uint32 i)

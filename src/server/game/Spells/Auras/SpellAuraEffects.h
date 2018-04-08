@@ -2,22 +2,22 @@
 #ifndef TRINITY_SPELLAURAEFFECTS_H
 #define TRINITY_SPELLAURAEFFECTS_H
 
-class Unit;
-class AuraEffect;
-class Aura;
-
 #include "SpellAuras.h"
+
+class Aura;
+class AuraEffect;
+class Unit;
 
 typedef void(AuraEffect::*pAuraEffectHandler)(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
 class TC_GAME_API AuraEffect
 {
-    friend void Aura::_InitEffects(uint8 effMask, Unit* caster, int32* baseAmount);
-    friend Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint8 effMask, Unit* caster, int32* baseAmount, Item* castItem, ObjectGuid casterGUID, bool resetPeriodicTimer);
+    friend void Aura::_InitEffects(uint8 effMask, Unit* caster, int32 const* baseAmount);
     friend Aura::~Aura();
+    friend class Unit;
     private:
         ~AuraEffect();
-        explicit AuraEffect(Aura* base, uint8 effIndex, int32 *baseAmount, Unit* caster);
+        explicit AuraEffect(Aura* base, uint8 effIndex, int32 const* baseAmount, Unit* caster);
     public:
         Unit* GetCaster() const { return GetBase()->GetCaster(); }
         ObjectGuid GetCasterGUID() const { return GetBase()->GetCasterGUID(); }
@@ -27,7 +27,7 @@ class TC_GAME_API AuraEffect
         void GetTargetList(Container& targetContainer) const;
 
         template <typename Container>
-        void GetApplicationList(Container& applicationContainer) const;
+        void GetApplicationVector(Container& applicationContainer) const;
 
         SpellInfo const* GetSpellInfo() const { return m_spellInfo; }
         uint32 GetId() const { return m_spellInfo->Id; }

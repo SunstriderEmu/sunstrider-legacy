@@ -728,7 +728,8 @@ class TC_GAME_API Spell
         // and in same time need aura data and after aura deleting.
         SpellInfo const* m_triggeredByAuraSpell;
         // used in effects handlers
-        Aura* m_spellAura;
+        UnitAura* _spellAura;
+        DynObjAura* _dynObjAura;
 
         uint8 m_auraScaleMask;
 

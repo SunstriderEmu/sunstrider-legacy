@@ -802,8 +802,13 @@ bool ChatHandler::HandleAuraCommand(const char* args)
     uint32 spellID = extractSpellIdFromLink((char*)args);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    if(spellInfo)
-        Aura::TryRefreshStackOrCreate(spellInfo, MAX_EFFECT_MASK, target, target);
+    if (spellInfo)
+    {
+         AuraCreateInfo createInfo(spellInfo, MAX_EFFECT_MASK, target);
+        createInfo.SetCaster(target);
+
+        Aura::TryRefreshStackOrCreate(createInfo);
+    }
 
     return true;
 }
