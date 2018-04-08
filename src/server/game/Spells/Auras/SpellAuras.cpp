@@ -596,6 +596,7 @@ Aura* Aura::Create(AuraCreateInfo& createInfo)
     {
     case TYPEID_UNIT:
     case TYPEID_PLAYER:
+    {
         aura = new UnitAura(createInfo);
         // aura can be removed in Unit::_AddAura call
         if (aura->IsRemoved())
@@ -612,6 +613,7 @@ Aura* Aura::Create(AuraCreateInfo& createInfo)
         Unit* unit = createInfo._owner->ToUnit();
         aura->ToUnitAura()->AddStaticApplication(unit, effMask);
         break;
+    }
     case TYPEID_DYNAMICOBJECT:
         createInfo._auraEffectMask = Aura::BuildEffectMaskForOwner(createInfo._spellInfo, createInfo._auraEffectMask, createInfo._owner);
         ASSERT(createInfo._auraEffectMask);
@@ -2576,7 +2578,7 @@ UnitAura::UnitAura(AuraCreateInfo const& createInfo)
     m_AuraDRGroup = DIMINISHING_NONE;
     LoadScripts();
     _InitEffects(createInfo._auraEffectMask, createInfo.Caster, createInfo.BaseAmount);
-    if(!createInfo.fake)
+    if(!createInfo.Fake)
         GetUnitOwner()->_AddAura(this, createInfo.Caster);
 }
 

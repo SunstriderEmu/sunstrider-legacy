@@ -100,6 +100,8 @@ struct CasterInfo
 
 class TC_GAME_API Aura
 {
+    friend class Unit;
+
 public:
     typedef std::unordered_map<ObjectGuid, AuraApplication*> ApplicationMap;
 

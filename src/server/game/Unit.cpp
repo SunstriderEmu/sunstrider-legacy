@@ -321,7 +321,7 @@ bool DispelableAura::RollDispel() const
 
 Unit::Unit(bool isWorldObject)
 : WorldObject(isWorldObject), m_playerMovingMe(nullptr), i_motionMaster(new MotionMaster(this)), m_combatManager(this), m_threatManager(this),
-IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()), m_Diminishing(),
+IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()), m_Diminishing(), m_lastSanctuaryTime(0),
 i_AI(nullptr), i_disabledAI(nullptr), m_removedAurasCount(0), m_unitTypeMask(UNIT_MASK_NONE),
 _lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_procDeep(0),
 _last_in_water_status(false),
@@ -8030,11 +8030,6 @@ bool Unit::IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell /*= 
         return false;
 #endif
 
-    if (spellCheck && !IsValidSpellAttackTarget(target, bySpell, obj))
-        return false;
-
-    return true;
-
     // check duel - before sanctuary checks
     if (playerAffectingAttacker && playerAffectingTarget)
         if (playerAffectingAttacker->duel && playerAffectingAttacker->duel->opponent == playerAffectingTarget && playerAffectingAttacker->duel->startTime != 0)
@@ -8064,7 +8059,7 @@ bool Unit::IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell /*= 
 }
 
 // function based on function Unit::CanAssist from 13850 client
-bool Unit::IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell /*= nullptr*/, bool spellCheck /*= true*/) const
+bool Unit::IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell /*= nullptr*/) const
 {
     ASSERT(target);
 
@@ -13450,14 +13445,14 @@ Aura* Unit::_TryStackingOrRefreshingExistingAura(AuraCreateInfo& createInfo)
 
     // Check if these can stack anyway
     if (!createInfo.CasterGUID && !createInfo.GetSpellInfo()->IsStackableOnOneSlotWithDifferentCasters())
-        createInfo.casterGUID = createInfo.Caster->GetGUID();
+        createInfo.CasterGUID = createInfo.Caster->GetGUID();
 
     // passive and Incanter's Absorption and auras with different type can stack with themselves any number of times
     if (!createInfo.GetSpellInfo()->IsMultiSlotAura())
     {
         // check if cast item changed
         ObjectGuid castItemGUID;
-        if (createInfo.castItem)
+        if (createInfo.CastItem)
             castItemGUID = createInfo.CastItem->GetGUID();
 
         // find current aura from spell and change it's stackamount, or refresh it's duration

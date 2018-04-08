@@ -331,7 +331,7 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
             {
                 uint32 count = 0;
                 for (auto & ihit : m_UniqueTargetInfo)
-                    if (ihit.effectMask & (1 << effect_idx))
+                    if (ihit.EffectMask & (1 << effect_idx))
                         ++count;
 
                 damage /= count;                    // divide to all targets
@@ -889,7 +889,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     uint32 count = 0;
                     for(auto & ihit : m_UniqueTargetInfo)
-                        if(ihit.effectMask & (1<<i))
+                        if(ihit.EffectMask & (1<<i))
                             ++count;
 
                     damage = 12000; // maybe wrong value
@@ -899,9 +899,9 @@ void Spell::EffectDummy(uint32 i)
 
                      // now deal the damage
                     for(auto & ihit : m_UniqueTargetInfo)
-                        if(ihit.effectMask & (1<<i))
+                        if(ihit.EffectMask & (1<<i))
                             {
-                                Unit* casttarget = ObjectAccessor::GetUnit((*unitTarget), ihit.targetGUID);
+                                Unit* casttarget = ObjectAccessor::GetUnit((*unitTarget), ihit.TargetGUID);
                                 if(casttarget)
                                     Unit::DealDamage(m_caster, casttarget, damage, nullptr, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
                             }
@@ -2234,7 +2234,7 @@ void Spell::EffectDummy(uint32 i)
                     // Righteous Defense (step 2) (in old version 31980 dummy effect)
                     // Clear targets for eff 1
                     for(auto & ihit : m_UniqueTargetInfo)
-                        ihit.effectMask &= ~(1<<1);
+                        ihit.EffectMask &= ~(1<<1);
 
                     // select up to 3 random targets
                     Unit::AttackerSet const& attackers = unitTarget->GetAttackers();
@@ -3243,7 +3243,7 @@ void Spell::EffectHeal(uint32 effIndex)
         }
         addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL);
 
-        m_damage -= addhealth;
+        m_healing += addhealth;
     }
 }
 
@@ -5942,27 +5942,6 @@ void Spell::EffectSanctuary(uint32 /*i*/)
     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
         unitTarget->ToPlayer()->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
 
-    //stop spells currently cast against this target
-    std::list<Unit*> targets;
-    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityRange());
-    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(m_caster, targets, u_check);
-    Cell::VisitAllObjects(unitTarget, searcher, m_caster->GetMap()->GetVisibilityRange());
-
-    for(auto & target : targets)
-    {
-        if(!target->HasUnitState(UNIT_STATE_CASTING))
-            continue;
-
-        for(uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
-        {
-            if(target->GetCurrentSpell(i)
-            && target->GetCurrentSpell(i)->m_targets.GetUnitTargetGUID() == unitTarget->GetGUID())
-            {
-                target->InterruptSpell(i, true);
-            }
-        }
-    }
-
     if (unitTarget->GetTypeId() == TYPEID_PLAYER && !unitTarget->GetMap()->IsDungeon())
     {
         // stop all pve combat for players outside dungeons, suppress pvp combat
@@ -5975,11 +5954,12 @@ void Spell::EffectSanctuary(uint32 /*i*/)
             pair.second->SetThreat(0.0f);
     }
 
-    // Vanish allows to remove all threat and cast regular stealth so other spells can be used
+    // windrunner: Vanish allows to remove all threat and cast regular stealth so other spells can be used
     if(m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (m_spellInfo->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE_VANISH))
-    {
         m_caster->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
-    }
+
+    // makes spells cast before this time fizzle
+    unitTarget->m_lastSanctuaryTime = GameTime::GetGameTimeMS();
 }
 
 void Spell::EffectAddComboPoints(uint32 /*i*/)

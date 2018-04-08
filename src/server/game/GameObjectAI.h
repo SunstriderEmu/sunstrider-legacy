@@ -50,11 +50,18 @@ class TC_GAME_API GameObjectAI
         virtual void SetData(uint32 id, uint32 value, Unit* setter = nullptr) { }
         virtual void GetData(uint32 id) const { }
         virtual void EventInform(uint32 /*eventId*/) { }
-        virtual void SpellHit(Unit* /*unit*/, const SpellInfo* /*spellInfo*/) { }
 
         virtual void OnGameEvent(bool /*start*/, uint16 /*eventId*/) { }
         virtual void OnStateChanged(GOState /*state*/, Unit* /*unit*/) { }
         virtual void OnLootStateChanged(LootState /*state*/, Unit* /*unit*/) { }
+
+        // Called when hit by a spell
+        virtual void SpellHit(Unit* /*caster*/, SpellInfo const* /*spellInfo*/) { }
+        virtual void SpellHit(GameObject* /*caster*/, SpellInfo const* /*spellInfo*/) { }
+
+        // Called when spell hits a target
+        virtual void SpellHitTarget(Unit* /*target*/, SpellInfo const* /*spellInfo*/) { }
+        virtual void SpellHitTarget(GameObject* /*target*/, SpellInfo const* /*spellInfo*/) { }
 };
 
 class TC_GAME_API NullGameObjectAI : public GameObjectAI

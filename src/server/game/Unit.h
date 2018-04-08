@@ -1579,8 +1579,8 @@ class TC_GAME_API Unit : public WorldObject
 
         bool IsTargetableForAttack(bool checkFakeDeath = true) const;
 
-        bool IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell = nullptr, WorldObject const* obj = nullptr, bool spellCheck = true) const;
-        bool IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell = nullptr, bool spellCheck = true) const;
+        bool IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell = nullptr, WorldObject const* obj = nullptr) const;
+        bool IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell = nullptr) const;
 
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
@@ -2066,6 +2066,7 @@ class TC_GAME_API Unit : public WorldObject
 		void UpdateObjectVisibility(bool forced = true) override;
 
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
+        uint32 m_lastSanctuaryTime;
 
         int32 GetTotalAuraModifier(AuraType auratype) const;
         float GetTotalAuraMultiplier(AuraType auratype) const;

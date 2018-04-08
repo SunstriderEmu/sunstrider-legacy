@@ -7,6 +7,7 @@
 #include "Cell.h"
 #include "GridRefManager.h"
 #include "MapRefManager.h"
+#include "MPSCQueue.h"
 #include "MersenneTwister.h"
 #include "DynamicTree.h"
 #include "Models/GameObjectModel.h"
@@ -735,6 +736,9 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         // This will not affect any already-present creatures in the group
         void SetSpawnGroupInactive(uint32 groupId) { SetSpawnGroupActive(groupId, false); }
 
+        typedef std::function<void(Map*)> FarSpellCallback;
+        void AddFarSpellCallback(FarSpellCallback&& callback);
+
         // Type specific code for add/remove to/from grid
         template<class T>
             void AddToGrid(T*, Cell const&);
@@ -803,6 +807,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
 		std::unordered_set<Object*> _updateObjects;
         uint32 _lastMapUpdate;
+
+        MPSCQueue<FarSpellCallback> _farSpellCallbacks;
 
 		time_t i_gridExpiry;
 
