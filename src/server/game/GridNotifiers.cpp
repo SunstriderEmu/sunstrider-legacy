@@ -701,12 +701,12 @@ bool GameObjectFocusCheck::operator()(GameObject* go) const
     if (go->GetGOInfo()->type != GAMEOBJECT_TYPE_SPELL_FOCUS)
         return false;
 
-    if (go->GetGOInfo()->spellFocus.focusId != i_focusId)
+    if (go->GetGOInfo()->spellFocus.focusId != _focusId)
         return false;
 
     float dist = (float)((go->GetGOInfo()->spellFocus.dist) / 2);
 
-    return go->IsWithinDistInMap(i_unit, dist);
+    return go->IsWithinDistInMap(_caster, dist);
 }
 
 bool NearestGameObjectFishingHole::operator()(GameObject* go)

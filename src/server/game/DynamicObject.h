@@ -31,6 +31,7 @@ class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicO
         void SetDuration(int32 newDuration);
         int32 GetDuration() const;
         ObjectGuid GetCasterGUID() const { return GetGuidValue(DYNAMICOBJECT_CASTER); }
+        ObjectGuid GetOwnerGUID() const override { return GetCasterGUID(); }
 		float GetRadius() const { return GetFloatValue(DYNAMICOBJECT_RADIUS); }
         void Delay(int32 delaytime);
         void SetAura(Aura* aura);
@@ -43,6 +44,7 @@ class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicO
         void UnbindFromCaster();
 
         Unit* GetCaster() const { return _caster; }
+        uint32 GetFaction() const override;
 
     protected:
         Unit* _caster;

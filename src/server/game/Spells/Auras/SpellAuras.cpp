@@ -452,7 +452,7 @@ void AuraApplication::ClientUpdate(bool remove)
 }
 
 Aura::Aura(AuraCreateInfo const& createInfo) :
-m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_casterGuid(createInfo.CasterGUID.IsEmpty() ? createInfo.Caster->GetGUID() : createInfo.CasterGUID),
+m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_casterGuid(createInfo.CasterGUID),
 m_timeCla(1000), m_castItemGuid(createInfo.CastItem ? createInfo.CastItem->GetGUID() : ObjectGuid::Empty),
 m_isAreaAura(false), m_owner(createInfo._owner),
 m_isPersistent(false), m_updateTargetMapInterval(0), m_dropEvent(nullptr), m_heartBeatTimer(0),
@@ -556,8 +556,6 @@ Aura* Aura::TryRefreshStackOrCreate(AuraCreateInfo& createInfo)
 
 Aura* Aura::TryCreate(AuraCreateInfo& createInfo)
 {
-    ASSERT(createInfo.Caster || createInfo.CasterGUID);
-
     uint8 effMask = createInfo._auraEffectMask;
     if (createInfo._targetEffectMask)
         effMask = createInfo._targetEffectMask;
@@ -571,17 +569,25 @@ Aura* Aura::TryCreate(AuraCreateInfo& createInfo)
 
 Aura* Aura::Create(AuraCreateInfo& createInfo)
 {
-    ASSERT(createInfo.Caster || createInfo.CasterGUID);
-
     // try to get caster of aura
     if (createInfo.CasterGUID)
     {
-        if (createInfo._owner->GetGUID() == createInfo.CasterGUID)
-            createInfo.Caster = createInfo._owner->ToUnit();
+        // world gameobjects can't own auras and they send empty casterguid
+        // checked on sniffs with spell 22247
+        if (createInfo.CasterGUID.IsGameObject())
+        {
+            createInfo.Caster = nullptr;
+            createInfo.CasterGUID.Clear();
+        }
         else
-            createInfo.Caster = ObjectAccessor::GetUnit(*createInfo._owner, createInfo.CasterGUID);
+        {
+            if (createInfo._owner->GetGUID() == createInfo.CasterGUID)
+                createInfo.Caster = createInfo._owner->ToUnit();
+            else
+                createInfo.Caster = ObjectAccessor::GetUnit(*createInfo._owner, createInfo.CasterGUID);
+        }
     }
-    else
+    else if(createInfo.Caster)
         createInfo.CasterGUID = createInfo.Caster->GetGUID();
 
     // check if aura can be owned by owner

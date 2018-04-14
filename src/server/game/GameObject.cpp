@@ -399,6 +399,8 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
 
 void GameObject::Update(uint32 diff)
 {
+    m_Events.Update(diff);
+
     if (AI())
         AI()->UpdateAI(diff);
     else if (!AIM_Initialize())
@@ -614,7 +616,9 @@ void GameObject::Update(uint32 diff)
                     {
                         if (trapTarget)
                         {
-                            CastSpell(trapTarget, goInfo->trap.spellId, TRIGGERED_FULL_MASK, trapTarget->GetGUID());
+                            CastSpellExtraArgs args;
+                            args.SetOriginalCaster(trapTarget->GetGUID());
+                            CastSpell(trapTarget, goInfo->trap.spellId, args);
                             m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
                         }
                         break;
@@ -623,7 +627,10 @@ void GameObject::Update(uint32 diff)
 
                 if (trapTarget)
                 {
-                    CastSpell(trapTarget, goInfo->trap.spellId, TRIGGERED_FULL_MASK, GetOwnerGUID());
+                    CastSpellExtraArgs args;
+                    args.SetOriginalCaster(GetOwnerGUID());
+                    if (goInfo->trap.spellId)
+                        CastSpell(trapTarget, goInfo->trap.spellId, args);
 
                     m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
 
@@ -1216,11 +1223,6 @@ bool GameObject::IsTransport() const
     GameObjectTemplate const * gInfo = GetGOInfo();
     if(!gInfo) return false;
     return gInfo->type == GAMEOBJECT_TYPE_TRANSPORT || gInfo->type == GAMEOBJECT_TYPE_MO_TRANSPORT;
-}
-
-Unit* GameObject::GetOwner() const
-{
-    return ObjectAccessor::GetUnit(*this, GetOwnerGUID());
 }
 
 void GameObject::SaveRespawnTime(uint32 forceDelay, bool savetodb)
@@ -1922,6 +1924,7 @@ void GameObject::Use(Unit* user)
     spell->prepare(targets);
 }
 
+/*
 uint32 GameObject::CastSpell(Unit* target, uint32 spellId, TriggerCastFlags triggerFlag, ObjectGuid originalCaster)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -1975,6 +1978,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, TriggerCastFlags trig
         return trigger->CastSpell(target, spellId, args);
     }
 }
+*/
 
 void GameObject::EventInform(uint32 eventId)
 {

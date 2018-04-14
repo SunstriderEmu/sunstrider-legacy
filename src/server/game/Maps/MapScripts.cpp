@@ -17,7 +17,7 @@
 #include "World.h"
 
 /// Put scripts in the execution queue
-void Map::ScriptsStart(ScriptMapMap const& scripts, uint32 id, Object* source, Object* target, bool start)
+void Map::ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo>> const& scripts, uint32 id, Object* source, Object* target, bool start)
 {
     ///- Find the script map
     auto s = scripts.find(id);

@@ -345,7 +345,7 @@ void AuraEffect::GetApplicationVector(Container& applicationContainer) const
 
 int32 AuraEffect::CalculateAmount(Unit* caster)
 {
-    int32 amount = m_spellInfo->Effects[m_effIndex].CalcValue(caster, &m_baseAmount, nullptr);
+    int32 amount = m_spellInfo->Effects[m_effIndex].CalcValue(caster, &m_baseAmount);
 
     // check item enchant aura cast
     if (!amount && caster)
@@ -357,12 +357,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         ItemRandomSuffixEntry const* item_rand_suffix = sItemRandomSuffixStore.LookupEntry(abs(castItem->GetItemRandomPropertyId()));
                         if (item_rand_suffix)
                         {
-                            for (int k = 0; k < MAX_ITEM_ENCHANTMENT_EFFECTS; k++)
+                            for (uint8 k = 0; k < MAX_ITEM_ENCHANTMENT_EFFECTS; k++)
                             {
                                 SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(item_rand_suffix->enchant_id[k]);
                                 if (pEnchant)
                                 {
-                                    for (int t = 0; t < MAX_ITEM_ENCHANTMENT_EFFECTS; t++)
+                                    for (uint8 t = 0; t < MAX_ITEM_ENCHANTMENT_EFFECTS; t++)
                                         if (pEnchant->spellid[t] == m_spellInfo->Id)
                                     {
                                         amount = uint32((item_rand_suffix->prefix[k]*castItem->GetItemSuffixFactor()) / 10000);
@@ -919,7 +919,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, uint3
         {
             uint32 percent =
                 GetEffIndex() < 2 && GetSpellInfo()->Effects[GetEffIndex()].Effect == SPELL_EFFECT_DUMMY ?
-                caster->CalculateSpellDamage(target, GetSpellInfo(), GetEffIndex() + 1, &GetSpellInfo()->Effects[GetEffIndex() + 1].BasePoints) :
+                caster->CalculateSpellDamage(GetSpellInfo(), GetEffIndex() + 1, &GetSpellInfo()->Effects[GetEffIndex() + 1].BasePoints) :
                 100;
             if (target->GetHealth() * 100 >= target->GetMaxHealth()*percent)
             {
@@ -1116,7 +1116,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
                 // effect 1 m_amount
                 int32 maxPercent = mClassScriptAura->GetAmount();
                 // effect 0 m_amount
-                int32 stepPercent = caster->CalculateSpellDamage(caster, mClassScriptAura->GetSpellInfo(), 0, &mClassScriptAura->GetSpellInfo()->Effects[0].BasePoints);
+                int32 stepPercent = caster->CalculateSpellDamage(mClassScriptAura->GetSpellInfo(), 0, &mClassScriptAura->GetSpellInfo()->Effects[0].BasePoints);
 
                 // count affliction effects and calc additional damage in percentage
                 int32 modPercent = 0;
@@ -2204,7 +2204,7 @@ void AuraEffect::PeriodicDummyTick(AuraApplication* aurApp, Unit* caster, uint32
         // Regen amount is max (100% from spell) on 21% or less mana and min on 92.5% or greater mana (20% from spell)
         int mana = m_target->GetPower(POWER_MANA);
         int max_mana = m_target->GetMaxPower(POWER_MANA);
-        int32 base_regen = caster->CalculateSpellDamage(m_target, m_spellInfo, m_effIndex, &m_spellInfo->Effects[1].BasePoints);
+        int32 base_regen = caster->CalculateSpellDamage(m_spellInfo, m_effIndex, &m_spellInfo->Effects[1].BasePoints);
         float regen_pct = 1.20f - 1.1f * mana / max_mana;
         if (regen_pct > 1.0f) 
             regen_pct = 1.0f;
@@ -3585,7 +3585,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
                         if (itr.second->state == PLAYERSPELL_REMOVED) continue;
                         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr.first);
                         if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo->SpellIconID == 139)
-                            Rage_val += m_target->CalculateSpellDamage(m_target, spellInfo, 0, &spellInfo->Effects[0].BasePoints) * 10;
+                            Rage_val += m_target->CalculateSpellDamage(spellInfo, 0, &spellInfo->Effects[0].BasePoints) * 10;
                     }
                 }
 
