@@ -5196,7 +5196,7 @@ void Player::UpdateRating(CombatRating cr)
     case CR_HIT_TAKEN_MELEE:                            // Implemented in Unit::MeleeMissChanceCalc
     case CR_HIT_TAKEN_RANGED:
         break;
-    case CR_HIT_TAKEN_SPELL:                            // Implemented in Unit::MagicSpellHitResult
+    case CR_HIT_TAKEN_SPELL:                            // Implemented in WorldObject::MagicSpellHitResult
         break;
     case CR_CRIT_TAKEN_MELEE:                           // Implemented in Unit::RollMeleeOutcomeAgainst (only for chance to crit)
     case CR_CRIT_TAKEN_RANGED:
@@ -23943,6 +23943,26 @@ uint32 Player::GetRank() const
 void Player::InitTaxiNodesForLevel() 
 { 
     m_taxi.InitTaxiNodesForLevel(GetRace(), GetLevel()); 
+}
+
+bool Player::CanNoReagentCast(SpellInfo const* spellInfo) const
+{
+    // don't take reagents for spells with SPELL_ATTR5_NO_REAGENT_WHILE_PREP
+    if (spellInfo->HasAttribute(SPELL_ATTR5_NO_REAGENT_WHILE_PREP) &&
+        HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION))
+        return true;
+
+#ifdef LICH_KING
+    // Check no reagent use mask
+    flag96 noReagentMask;
+    noReagentMask[0] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1);
+    noReagentMask[1] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1 + 1);
+    noReagentMask[2] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1 + 2);
+    if (spellInfo->SpellFamilyFlags & noReagentMask)
+        return true;
+#endif
+
+    return false;
 }
 
 #ifdef TESTS

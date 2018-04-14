@@ -3089,13 +3089,16 @@ float WorldObject::GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const
 #ifdef LICH_KING
     if (spellInfo->RangeEntry->maxRangeFriend == spellInfo->RangeEntry->maxRangeHostile)
         return spellInfo->GetMaxRange();
-    if (target == NULL)
+#else
+    //sun: aoe trap spells such as "Frost Trap Aura" (13810) have self range only, while they do have an extended rage on LK. We need to make an exception for them to keep this TC code compatible.
+    if (GetTypeId() == TYPEID_GAMEOBJECT)
+        if (spellInfo->RangeEntry->ID == 1)
+            return 50000.0f;
+#endif
+    if (!target)
         return spellInfo->GetMaxRange(true);
 
     return spellInfo->GetMaxRange(!IsHostileTo(target));
-#else
-    return spellInfo->GetMaxRange();
-#endif
 }
 
 float WorldObject::GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const
@@ -3638,7 +3641,7 @@ ReputationRank WorldObject::GetFactionReactionTo(FactionTemplateEntry const* fac
         if (forceItr != targetPlayerOwner->m_forcedReactions.end())
             return forceItr->second;
 
-        if (!target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_IGNORE_REPUTATION))
+        if (target->ToUnit() && !target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_IGNORE_REPUTATION))
         {
             if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplateEntry->faction))
             {
