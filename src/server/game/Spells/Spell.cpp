@@ -2965,7 +2965,7 @@ bool Spell::UpdateChanneledTargetList()
                             }
                             // sunwell: Update Orientation server side (non players wont sent appropriate packets)
                             else if (unitCaster && m_spellInfo->HasAttribute(SPELL_ATTR1_CHANNEL_TRACK_TARGET))
-                                unitCaster->UpdateOrientation(m_caster->GetAngle(unit));
+                                unitCaster->UpdateOrientation(m_caster->GetAbsoluteAngle(unit));
                         }
                     }
                     else // aura is dispelled

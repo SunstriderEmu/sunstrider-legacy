@@ -234,7 +234,7 @@ void CreatureGroup::AddMember(Creature *member, MemberPosition* pos)
                 fInfo->follow_dist = pos->follow_dist;
             }
             else {
-                fInfo->follow_angle = m_leader->GetAngle(member) - m_leader->GetOrientation();
+                fInfo->follow_angle = m_leader->GetAbsoluteAngle(member) - m_leader->GetOrientation();
                 fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
             }
         }
@@ -361,7 +361,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
         return;
 
     float pathDist = m_leader->GetExactDist(x, y, z);
-    float pathAngle = m_leader->GetAngle(x, y);
+    float pathAngle = m_leader->GetAbsoluteAngle(x, y);
 
     for(auto & m_member : m_members)
     {

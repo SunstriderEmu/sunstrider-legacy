@@ -1174,7 +1174,7 @@ Position WorldObject::GetHitSpherePointFor(Position const& dest) const
     G3D::Vector3 vObj(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
     G3D::Vector3 contactPoint = vThis + (vObj - vThis).directionOrZero() * std::min(dest.GetExactDist(GetPosition()), GetCombatReach());
     
-    return Position(contactPoint.x, contactPoint.y, contactPoint.z, GetAngle(contactPoint.x, contactPoint.y));
+    return Position(contactPoint.x, contactPoint.y, contactPoint.z, GetAbsoluteAngle(contactPoint.x, contactPoint.y));
 }
 
 void WorldObject::GetHitSpherePointFor(Position const& dest, float& x, float& y, float& z) const
@@ -2275,7 +2275,7 @@ void WorldObject::GetContactPoint(const WorldObject* obj, float &x, float &y, fl
 {
     //on retail, creature follow approximatively at half the max melee distance
     float offset = (GetCombatReach() + obj->GetCombatReach()) / 2.0f + distance2d;
-    float angle = GetAngle(obj);
+    float angle = GetAbsoluteAngle(obj);
     x = GetPositionX() + offset * cos(angle);
     y = GetPositionY() + offset * sin(angle);
 
@@ -2445,7 +2445,7 @@ bool Position::HasInArc(float arc, const Position *obj, float border) const
     // move arc to range 0.. 2*pi
     arc = Trinity::NormalizeOrientation(arc);
 
-    float angle = GetAngle(obj);
+    float angle = GetAbsoluteAngle(obj);
     angle -= m_orientation;
 
     // move angle to range -pi ... +pi
@@ -2562,16 +2562,16 @@ Position Position::GetPositionWithOffset(Position const& offset) const
     return ret;
 }
 
-float Position::GetAngle(const Position *obj) const
+float Position::GetAbsoluteAngle(const Position *obj) const
 {
     if (!obj) 
         return 0;
 
-    return GetAngle(obj->GetPositionX(), obj->GetPositionY());
+    return GetAbsoluteAngle(obj->GetPositionX(), obj->GetPositionY());
 }
 
 // Return angle in range 0..2*pi
-float Position::GetAngle(const float x, const float y) const
+float Position::GetAbsoluteAngle(const float x, const float y) const
 {
     float dx = x - GetPositionX();
     float dy = y - GetPositionY();

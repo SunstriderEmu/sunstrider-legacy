@@ -1610,7 +1610,7 @@ void Spell::EffectDummy(uint32 i)
                     float fDestX, fDestY, fDestZ;
                     unitCaster->GetNearPoint(unitCaster, fDestX, fDestY, fDestZ, unitCaster->GetCombatReach(), 30.0f, 0.0f);
                     if (Creature* pWolf = unitCaster->SummonCreature(25324, fDestX, fDestY, fDestZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000))
-                        pWolf->GetMotionMaster()->MoveFollow(unitCaster, PET_FOLLOW_DIST, pWolf->GetAngle(unitCaster));
+                        pWolf->GetMotionMaster()->MoveFollow(unitCaster, PET_FOLLOW_DIST, pWolf->GetAbsoluteAngle(unitCaster));
                     return;
                 }
                 case 40834: // Flammes déchirantes

@@ -57,7 +57,7 @@ struct TC_GAME_API ObjectPosSelector
 
     bool CheckAngle(UsedPosList::value_type const& nextUsedPos, float sign, float angle ) const
     {
-        float angle_step2  = GetAngle(nextUsedPos.second);
+        float angle_step2  = GetAbsoluteAngle(nextUsedPos.second);
 
         float next_angle = nextUsedPos.first;
         if (nextUsedPos.second.sign * sign < 0)                       // last node from diff. list (-pi+alpha)
@@ -76,7 +76,7 @@ struct TC_GAME_API ObjectPosSelector
 
     bool NextAngleFor(UsedPosList::value_type const& usedPos, float sign, UsedPosType uptype, float &angle)
     {
-        float angle_step  = GetAngle(usedPos.second);
+        float angle_step  = GetAbsoluteAngle(usedPos.second);
 
         // next possible angle
         angle  = usedPos.first * usedPos.second.sign + angle_step * sign;
@@ -136,7 +136,7 @@ struct TC_GAME_API ObjectPosSelector
     UsedPosList::value_type const* nextUsedPos(UsedPosType uptype);
 
     // angle from used pos to next possible free pos
-    float GetAngle(UsedPos const& usedPos) const { return std::acos(m_dist/(usedPos.dist+usedPos.size+m_size)); }
+    float GetAbsoluteAngle(UsedPos const& usedPos) const { return std::acos(m_dist/(usedPos.dist+usedPos.size+m_size)); }
 
     float m_center_x;
     float m_center_y;

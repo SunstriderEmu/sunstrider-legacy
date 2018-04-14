@@ -401,7 +401,7 @@ void MotionMaster::MoveCloserAndStop(uint32 id, Unit* target, float distance)
     float distanceToTravel = _owner->GetExactDist2d(target) - distance;
     if (distanceToTravel > 0.0f)
     {
-        float angle = _owner->GetAngle(target);
+        float angle = _owner->GetAbsoluteAngle(target);
         float destx = _owner->GetPositionX() + distanceToTravel * std::cos(angle);
         float desty = _owner->GetPositionY() + distanceToTravel * std::sin(angle);
         MovePoint(id, destx, desty, target->GetPositionZ());
@@ -465,7 +465,7 @@ void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, floa
     float dist = 2 * moveTimeHalf * speedXY;
     //float max_heigt = -Movement::computeFallElevation(moveTimeHalf, false, -speedZ);
 
-    _owner->GetNearPoint(_owner, x, y, z, _owner->GetCombatReach(), dist, _owner->GetAngle(srcX, srcY) + M_PI);
+    _owner->GetNearPoint(_owner, x, y, z, _owner->GetCombatReach(), dist, _owner->GetAbsoluteAngle(srcX, srcY) + M_PI);
 
     Movement::MoveSplineInit init(_owner);
     init.MoveTo(x, y, z);
@@ -689,7 +689,7 @@ void MotionMaster::MoveDistract(float x, float y, uint32 timer)
             _owner->GetEntry(), _owner->GetGUID().GetCounter(), timer); */
     }
 
-    float angle = _owner->GetAngle(x,y);
+    float angle = _owner->GetAbsoluteAngle(x,y);
     Mutate(new DistractMovementGenerator(_owner, angle, timer), MOTION_SLOT_CONTROLLED);
 }
 

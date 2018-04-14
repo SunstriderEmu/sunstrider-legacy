@@ -50,7 +50,7 @@ bool QuestAction::ProcessQuests(WorldObject* questGiver)
     }
 
     if (!bot->isInFront(questGiver, M_PI / 2))
-        bot->SetFacingTo(bot->GetAngle(questGiver));
+        bot->SetFacingTo(bot->GetAbsoluteAngle(questGiver));
 
     bot->SetSelection(guid);
     bot->PrepareQuestMenu(guid);

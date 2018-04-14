@@ -584,7 +584,7 @@ void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z,
     if(attacker_number > 0) 
         --attacker_number;
 
-    float angle = GetAngle(obj) + (attacker_number ? (M_PI / 2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0);
+    float angle = GetAbsoluteAngle(obj) + (attacker_number ? (M_PI / 2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0);
     GetNearPoint(obj,x,y,z,obj->GetCombatReach(), distance2dMin+(distance2dMax-distance2dMin)*GetMap()->rand_norm(), angle);
 }
 
@@ -599,7 +599,7 @@ void Unit::StartAutoRotate(uint8 type, uint32 fulltime, double Angle, bool attac
     else
     {
         if(GetVictim())
-            RotateAngle = GetAngle(GetVictim());
+            RotateAngle = GetAbsoluteAngle(GetVictim());
         else
             RotateAngle = GetOrientation();
     }
@@ -11258,13 +11258,13 @@ bool Unit::SetHover(bool enable, bool /*packetOnly = false*/)
 void Unit::SetInFront(WorldObject const* target)
 {
     if (!HasUnitState(UNIT_STATE_CANNOT_TURN))
-        SetOrientation(GetAngle(target));
+        SetOrientation(GetAbsoluteAngle(target));
 }
 
 void Unit::SetInFront(float x, float y)
 {
     if(!HasUnitState(UNIT_STATE_CANNOT_TURN) && !IsUnitRotating()) 
-        SetOrientation(GetAngle(x,y));
+        SetOrientation(GetAbsoluteAngle(x,y));
 }
 
 bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
@@ -11752,7 +11752,7 @@ void Unit::SetFacingToObject(WorldObject const* object, bool force)
     /// @todo figure out under what conditions creature will move towards object instead of facing it where it currently is.
     Movement::MoveSplineInit init(this);
     init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ(), false);
-    init.SetFacing(GetAngle(object));   // when on transport, GetAngle will still return global coordinates (and angle) that needs transforming
+    init.SetFacing(GetAbsoluteAngle(object));   // when on transport, GetAbsoluteAngle will still return global coordinates (and angle) that needs transforming
     init.Launch();
 }
 

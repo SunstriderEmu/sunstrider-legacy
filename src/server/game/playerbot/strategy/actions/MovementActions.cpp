@@ -89,7 +89,7 @@ bool MovementAction::MoveTo(Unit* target, float distance)
     float tz = target->GetPositionZ();
 
     float distanceToTarget = bot->GetDistance(target);
-    float angle = bot->GetAngle(target);
+    float angle = bot->GetAbsoluteAngle(target);
     float needToGo = distanceToTarget - distance;
 
     float maxDistance = 2 * bot->GetSpeed(MOVE_RUN);
@@ -365,7 +365,7 @@ bool SetFacingTargetAction::Execute(Event event)
     if (!target)
         return false;
 
-    bot->SetFacingTo(bot->GetAngle(target));
+    bot->SetFacingTo(bot->GetAbsoluteAngle(target));
     ai->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
     return true;
 }

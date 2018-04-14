@@ -5,7 +5,7 @@
 StealthAlertMovementGenerator::StealthAlertMovementGenerator(Unit const* owner, Unit const* target, uint32 timer) : 
     m_timer(timer), 
     originalOrientation(owner->GetOrientation()), 
-    targetOrientation(owner->GetAngle(target)) 
+    targetOrientation(owner->GetAbsoluteAngle(target)) 
 { }
 
 bool StealthAlertMovementGenerator::Initialize(Unit* owner)
