@@ -7547,14 +7547,32 @@ void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
         HandleStatFlatModifier(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(proto->ArcaneRes), apply);
 
     WeaponAttackType attType = Player::GetAttackBySlot(slot);
-    if (attType != MAX_ATTACK && CanUseAttackType(attType))
-        _ApplyWeaponDamage(slot, proto, /*ssv,*/ apply);
+    if (attType != MAX_ATTACK)
+        _ApplyWeaponDamage(slot, proto, apply);
+
+#ifdef LICH_KING
+    // Druids get feral AP bonus from weapon dps (also use DPS from ScalingStatValue)
+    if (getClass() == CLASS_DRUID)
+    {
+        int32 dpsMod = 0;
+        int32 feral_bonus = 0;
+        if (ssv)
+        {
+            dpsMod = ssv->getDPSMod(proto->ScalingStatValue);
+            feral_bonus += ssv->getFeralBonus(proto->ScalingStatValue);
+        }
+
+        feral_bonus += proto->getFeralBonus(dpsMod);
+        if (feral_bonus)
+            ApplyFeralAPBonus(feral_bonus, apply);
+    }
+#endif
 }
 
 void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, bool apply)
 {
     WeaponAttackType attType = Player::GetAttackBySlot(slot);
-    if (attType == MAX_ATTACK)
+    if (!IsInFeralForm() && apply && !CanUseAttackType(attType))
         return;
 
     for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
@@ -11756,9 +11774,6 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
                 if(pProto->ItemSet)
                     RemoveItemsSetItem(this, pProto);
 
-                // clear m_items so weapons for example can be registered as unequipped
-                m_items[slot] = nullptr;
-
                 _ApplyItemMods(pItem, slot, false, update);
 
                 // remove held enchantments
@@ -11791,9 +11806,8 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
                 }
 #endif
             }
-            else
-                m_items[slot] = nullptr;
 
+            m_items[slot] = nullptr;
             SetUInt64Value((uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot*2)), 0);
 
             if (slot < EQUIPMENT_SLOT_END)
@@ -11933,9 +11947,7 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
                 SetVisibleItemSlot(slot,nullptr);
             }
 
-            // clear for rest of items (ie nonequippable)
-            if (slot >= INVENTORY_SLOT_BAG_END)
-                m_items[slot] = nullptr;
+            m_items[slot] = nullptr;
         }
         else if(Bag *pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, bag ))
             pBag->RemoveItem(slot, update);
