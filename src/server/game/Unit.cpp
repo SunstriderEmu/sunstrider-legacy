@@ -5931,7 +5931,9 @@ float Unit::SpellCritChanceTaken(Unit const* caster, SpellInfo const* spellInfo,
                 if (GetTypeId() == TYPEID_UNIT)
                 {
                     int32 const levelDiff = static_cast<int32>(GetLevelForTarget(caster)) - caster->GetLevel();
-                    crit_chance -= levelDiff * 0.7f;
+                    //sun: added condition, only supress if target level is higher. Not 100% sure about this but couldn't find anything saying it should increase crit if target level is lower
+                    if(levelDiff > 0)
+                        crit_chance -= levelDiff * 0.7f;
                 }
             }
         } break;
