@@ -2204,7 +2204,7 @@ Player* WorldObject::SelectNearestPlayer(float distance, bool alive) const
     return target;
 }
 
-void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float absAngle ) const
+void WorldObject::GetNearPoint2D(WorldObject const* searcher, float &x, float &y, float distance2d, float absAngle ) const
 {
     x = GetPositionX() + (GetCombatReach() + distance2d) * cos(absAngle);
     y = GetPositionY() + (GetCombatReach() + distance2d) * sin(absAngle);
@@ -2213,11 +2213,39 @@ void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float abs
     Trinity::NormalizeMapCoord(y);
 }
 
-void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle ) const
+void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float distance2d, float absAngle) const
 {
-    GetNearPoint2D(x,y,distance2d+searcher_size,absAngle);
+    GetNearPoint2D(searcher, x, y, distance2d, absAngle);
     z = GetPositionZ();
-    UpdateAllowedPositionZ(x, y, z, searcher_size);
+    (searcher ? searcher : this)->UpdateAllowedPositionZ(x, y, z);
+
+    // if detection disabled, return first point
+    if (!sWorld->getBoolConfig(CONFIG_DETECT_POS_COLLISION))
+        return;
+
+    // return if the point is already in LoS
+    if (IsWithinLOS(x, y, z))
+        return;
+
+    // remember first point
+    float first_x = x;
+    float first_y = y;
+    float first_z = z;
+
+    // loop in a circle to look for a point in LoS using small steps
+    for (float angle = float(M_PI) / 8; angle < float(M_PI) * 2; angle += float(M_PI) / 8)
+    {
+        GetNearPoint2D(searcher, x, y, distance2d, absAngle + angle);
+        z = GetPositionZ();
+        (searcher ? searcher : this)->UpdateAllowedPositionZ(x, y, z);
+        if (IsWithinLOS(x, y, z))
+            return;
+    }
+
+    // still not in LoS, give up and return first position found
+    x = first_x;
+    y = first_y;
+    z = first_z;
 }
 
 void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float angle)

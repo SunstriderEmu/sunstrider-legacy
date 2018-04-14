@@ -147,7 +147,7 @@ struct TC_GAME_API Position
     bool HasInLine(const WorldObject* target, float objSize, float width) const;
     std::string ToString() const;
 
-    // modulos a radian orientation to the range of 0..2PI
+    // constrain arbitrary radian orientation to interval [0,2*PI)
     static float NormalizeOrientation(float o)
     {
         // fmod only supports positive numbers. Thus we have

@@ -48,7 +48,7 @@ void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
     }
     else if (transportImplied)
     {
-        _target->GetNearPoint2D(x, y, owner->GetCombatReach() + _offset, _angle);
+        _target->GetNearPoint2D(nullptr, x, y, owner->GetCombatReach() + _offset, _angle);
         z = _target->GetPositionZ();
     } else
         // to at _offset distance from target and _angle from target facing
