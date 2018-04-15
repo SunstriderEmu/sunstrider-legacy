@@ -313,12 +313,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         ZLiquidStatus GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTypeMask, LiquidData *data = nullptr, float collisionHeight = 2.03128f) const;  // DEFAULT_COLLISION_HEIGHT in Object.h
         void GetFullTerrainStatusForPosition(float x, float y, float z, PositionFullTerrainStatus& data, uint8 reqLiquidType = MAP_ALL_LIQUIDS, float collisionHeight = 2.03128f) const; // DEFAULT_COLLISION_HEIGHT in Object.h
 
-        uint32 GetAreaId(float x, float y, float z, bool *isOutdoors) const;
-        bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;
-
-        bool IsOutdoors(float x, float y, float z) const;
-
-        uint8 GetTerrainType(float x, float y) const;
         float GetWaterLevel(float x, float y) const;
         //IsUnderWater is implied by this
         bool IsInWater(float x, float y, float z, LiquidData *data = nullptr) const;

@@ -205,17 +205,17 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         target = owner->ToPlayer()->GetVictim();
         if (target && CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
         {
-            target->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, this->GetFollowAngle());
+            target->GetClosePoint(px, py, pz, PET_FOLLOW_DIST, this->GetFollowAngle());
             UpdateAllowedPositionZ(px, py, pz); //prevent it spawning on flying targets
         }
         else {
             //spawn at owner instead
-            owner->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, this->GetFollowAngle());
+            owner->GetClosePoint(px, py, pz, PET_FOLLOW_DIST, this->GetFollowAngle());
             target = nullptr;
         }
     }
     else
-        owner->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, this->GetFollowAngle());
+        owner->GetClosePoint(px, py, pz, PET_FOLLOW_DIST, this->GetFollowAngle());
 
     Relocate(px, py, pz, owner->GetOrientation());
 
@@ -234,7 +234,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     {
         AIM_Initialize();
         float x, y, z;
-        owner->GetClosePoint(x, y, z, GetCombatReach(), PET_FOLLOW_DIST, GetFollowAngle());
+        owner->GetClosePoint(x, y, z, PET_FOLLOW_DIST, GetFollowAngle());
         Relocate(x, y, z, owner->GetOrientation());
 
         if (!IsPositionValid())

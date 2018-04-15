@@ -2258,17 +2258,17 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
-void WorldObject::GetChasePoint(float &x, float &y, float &z, float searcherSize, float distance2d, float angle) const
+void WorldObject::GetChasePoint(float &x, float &y, float &z, float distance2d, float angle) const
 {
     //NYI implemented, use regular GetClosePoint for now
     //Maybe look for Nost or Sunwell impl
-    GetClosePoint(x, y, z, searcherSize, distance2d, angle);
+    GetClosePoint(x, y, z, distance2d, angle);
 }
 
-void WorldObject::GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d, float angle) const
+void WorldObject::GetClosePoint(float &x, float &y, float &z, float distance2d, float angle) const
 {
     // angle calculated from current orientation
-    GetNearPoint(nullptr, x, y, z, searcherSize, distance2d, GetOrientation() + angle);
+    GetNearPoint(nullptr, x, y, z, distance2d, GetOrientation() + angle);
 }
 
 void WorldObject::GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d) const
@@ -3020,10 +3020,9 @@ float WorldObject::GetFloorZ() const
 
 float WorldObject::GetMapWaterOrGroundLevel(float x, float y, float z, float* ground/* = nullptr*/) const
 {
-    if (Unit const* unit = ToUnit())
-        return GetMap()->GetWaterOrGroundLevel(GetPhaseMask(), x, y, z, ground, !unit->HasAuraType(SPELL_AURA_WATER_WALK), GetCollisionHeight());
-
-    return z;
+    return GetMap()->GetWaterOrGroundLevel(GetPhaseMask(), x, y, z, ground,
+        isType(TYPEMASK_UNIT) ? !static_cast<Unit const*>(this)->HasAuraType(SPELL_AURA_WATER_WALK) : false,
+        GetCollisionHeight());
 }
 
 float WorldObject::GetMapHeight(float x, float y, float z, bool vmap/* = true*/, float distanceToSearch/* = DEFAULT_HEIGHT_SEARCH*/) const

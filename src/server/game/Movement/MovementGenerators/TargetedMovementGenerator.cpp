@@ -52,7 +52,7 @@ void TargetedMovementGenerator<T, D>::SetTargetLocation(T* owner)
         z = _target->GetPositionZ();
     } else
         // to at _offset distance from target and _angle from target facing
-        _target->GetClosePoint(x, y, z, owner->GetCombatReach(), _offset, _angle);
+        _target->GetClosePoint(x, y, z, _offset, _angle);
 
     if (!_path)
         _path = new PathGenerator(owner);

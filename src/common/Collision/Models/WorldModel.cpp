@@ -354,8 +354,7 @@ namespace VMAP
             vertices(vert.begin()), triangles(tris.begin()), hit(false) { }
         bool operator()(const G3D::Ray& ray, uint32 entry, float& distance, bool /*pStopAtFirstHit*/)
         {
-            bool result = IntersectTriangle(triangles[entry], vertices, ray, distance);
-            if (result)  hit=true;
+            hit = IntersectTriangle(triangles[entry], vertices, ray, distance);
             return hit;
         }
         std::vector<Vector3>::const_iterator vertices;
@@ -377,7 +376,6 @@ namespace VMAP
     {
         if (triangles.empty() || !iBound.contains(pos))
             return false;
-        GModelRayCallback callback(triangles, vertices);
         Vector3 rPos = pos - 0.1f * down;
         float dist = G3D::inf();
         G3D::Ray ray(rPos, down);

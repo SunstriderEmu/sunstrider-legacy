@@ -407,8 +407,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         void GetNearPoint2D(WorldObject const* searcher, float &x, float &y, float distance, float absAngle) const;
         void GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float distance2d, float absAngle) const;
-        void GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d = 0, float relAngle = 0) const;
-        void GetChasePoint(float &x, float &y, float &z, float searcherSize, float distance2d = 0, float relAngle = 0) const;
+        void GetClosePoint(float &x, float &y, float &z, float distance2d = 0, float relAngle = 0) const;
+        void GetChasePoint(float &x, float &y, float &z, float distance2d = 0, float relAngle = 0) const;
         void MovePosition(Position &pos, float dist, float angle);
         void GetGroundPoint(float &x, float &y, float &z, float dist, float angle);
         void GetGroundPointAroundUnit(float &x, float &y, float &z, float dist, float angle)

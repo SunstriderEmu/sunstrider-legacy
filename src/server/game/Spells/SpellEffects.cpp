@@ -1608,7 +1608,7 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     float fDestX, fDestY, fDestZ;
-                    unitCaster->GetNearPoint(unitCaster, fDestX, fDestY, fDestZ, unitCaster->GetCombatReach(), 30.0f, 0.0f);
+                    unitCaster->GetNearPoint(unitCaster, fDestX, fDestY, fDestZ, 30.0f, 0.0f);
                     if (Creature* pWolf = unitCaster->SummonCreature(25324, fDestX, fDestY, fDestZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000))
                         pWolf->GetMotionMaster()->MoveFollow(unitCaster, PET_FOLLOW_DIST, pWolf->GetAbsoluteAngle(unitCaster));
                     return;
@@ -6945,7 +6945,7 @@ void Spell::EffectResurrectPet(uint32 /*i*/)
         // Reposition the pet's corpse before reviving so as not to grab aggro
         // We can use a different, more accurate version of GetClosePoint() since we have a pet
         float x, y, z; // Will be used later to reposition the pet if we have one
-        _player->GetClosePoint(x, y, z, pet->GetCombatReach(), PET_FOLLOW_DIST, pet->GetFollowAngle());
+        _player->GetClosePoint(x, y, z, PET_FOLLOW_DIST, pet->GetFollowAngle());
         pet->NearTeleportTo(x, y, z, _player->GetOrientation());
         pet->Relocate(x, y, z, _player->GetOrientation()); // This is needed so SaveStayPosition() will get the proper coords.
     }

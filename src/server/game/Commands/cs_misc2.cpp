@@ -708,11 +708,12 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         int32 adtId, rootId, groupId;
         WMOAreaTableEntry const* wmoEntry = nullptr;
 
+        /*
         if (map->GetAreaInfo(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), mogpFlags, adtId, rootId, groupId))
         {
             if ((wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId)))
                 PSendSysMessage(LANG_GPS_WMO_DATA, wmoEntry->Id, wmoEntry->Flags, mogpFlags);
-        }
+        }*/
     }
     else PSendSysMessage("no VMAP available for area info");
 

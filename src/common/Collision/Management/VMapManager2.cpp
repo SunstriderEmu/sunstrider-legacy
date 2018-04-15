@@ -307,7 +307,7 @@ namespace VMAP
         return VMAP_INVALID_CEIL_VALUE;
     }
 
-    bool VMapManager2::getAreaInfo(unsigned int mapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const
+    bool VMapManager2::getAreaInfo(uint32 mapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const
     {
         if (!IsVMAPDisabledForPtr(mapId, VMAP_DISABLE_AREAFLAG))
         {
@@ -337,7 +337,7 @@ namespace VMAP
         return result;
     }
 
-    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidTypeMask, float& level, float& floor, LiquidType& type) const
+    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidTypeMask, float& level, float& floor, LiquidType& type, uint32& mogpFlags) const
     {
         if (IsVMAPDisabledForPtr(mapId, VMAP_DISABLE_LIQUIDSTATUS))
             return false;
@@ -353,6 +353,7 @@ namespace VMAP
                 ASSERT(floor < std::numeric_limits<float>::max());
                 ASSERT(info.hitModel);
                 type = info.hitModel->GetLiquidType();
+                mogpFlags = info.hitModel->GetMogpFlags();
                 if (reqLiquidTypeMask && !(GetLiquidFlagsPtr(type) & reqLiquidTypeMask))
                     return false;
                 ASSERT(info.hitInstance);
