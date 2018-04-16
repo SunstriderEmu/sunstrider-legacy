@@ -41,6 +41,7 @@ public:
 
     CharacterCacheEntry const* GetCharacterCacheByGuid(ObjectGuid::LowType guid) const;
     CharacterCacheEntry const* GetCharacterCacheByName(std::string const& name) const;
+    std::shared_ptr<std::string const> TryCreateCharacterWithName(std::string const& name) const;
 	bool HasCharacterCacheEntry(ObjectGuid::LowType guidLow) const;
 
     ObjectGuid GetCharacterGuidByName(std::string const& name) const;
