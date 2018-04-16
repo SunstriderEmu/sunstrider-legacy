@@ -443,7 +443,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                             if (e.action.cast.castFlags & SMARTCAST_COMBAT_MOVE)
                             {
                                 // If cast flag SMARTCAST_COMBAT_MOVE is set combat movement will not be allowed
-                                // unless target is outside spell range, out of mana, or LOS.
+                                // unless target is outside spell range, out of mana, silenced, out of LOS, ...
+                                // sun: logic is more generic than TC because we can simply use cast result!
 
                                 bool _allowMove = false;
                                 if(result != SPELL_CAST_OK)
