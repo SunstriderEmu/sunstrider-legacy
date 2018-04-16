@@ -33,7 +33,7 @@ enum SpellCustomAttributes
     SPELL_ATTR0_CU_LINK_HIT                      = 0x00000800,
     SPELL_ATTR0_CU_LINK_AURA                     = 0x00001000,
     SPELL_ATTR0_CU_LINK_REMOVE                   = 0x00002000,
-    //reuse                                      = 0x00004000,
+    SPELL_ATTR0_CU_ROLLING_PERIODIC              = 0x00004000,
     SPELL_ATTR0_CU_IGNORE_ARMOR                  = 0x00008000,
     SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS       = 0x00010000,
     //reuse                                      = 0x00020000,

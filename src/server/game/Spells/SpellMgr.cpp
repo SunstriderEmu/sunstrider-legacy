@@ -8,6 +8,7 @@
 #include "Spell.h"
 #include "BattleGroundMgr.h"
 #include "SpellInfo.h"
+#include "Containers.h"
 
 bool SpellMgr::IsPrimaryProfessionSkill(uint32 skill)
 {

@@ -5358,21 +5358,6 @@ float Unit::CalculateDefaultCoefficient(SpellInfo const *spellInfo, DamageEffect
     return (CastingTime / 3500.0f) * DotFactor;
 }
 
-uint32 Unit::GetRemainingPeriodicAmount(ObjectGuid caster, uint32 spellId, AuraType auraType, uint8 effectIndex) const
-{
-    uint32 amount = 0;
-    AuraEffectList const& periodicAuras = GetAuraEffectsByType(auraType);
-    for (AuraEffect const* aurEff : periodicAuras)
-    {
-        if (aurEff->GetCasterGUID() != caster || aurEff->GetId() != spellId || aurEff->GetEffIndex() != effectIndex || !aurEff->GetTotalTicks())
-            continue;
-        amount += uint32((aurEff->GetAmount() * static_cast<int32>(aurEff->GetRemainingTicks())) / aurEff->GetTotalTicks());
-        break;
-    }
-
-    return amount;
-}
-
 uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 pdamage, DamageEffectType damagetype)
 {
     if (!spellProto || damagetype == DIRECT_DAMAGE)

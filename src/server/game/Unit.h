@@ -2076,8 +2076,6 @@ class TC_GAME_API Unit : public WorldObject
         uint32 GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectType damagetype, uint32 CastingTime) const;
         float CalculateDefaultCoefficient(SpellInfo const *spellInfo, DamageEffectType damagetype) const;
 
-        uint32 GetRemainingPeriodicAmount(ObjectGuid caster, uint32 spellId, AuraType auraType, uint8 effectIndex = 0) const;
-
         int32 SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, Unit* pVictim = nullptr);
         int32 SpellBaseDamageBonusTaken(SpellInfo const* spellInfo, bool isDoT = false);
         float SpellDamagePctDone(Unit* victim, SpellInfo const *spellProto, DamageEffectType damagetype);
