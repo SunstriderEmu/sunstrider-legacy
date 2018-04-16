@@ -18,16 +18,24 @@ struct TC_GAME_API Position
 
     Position(G3D::Vector3 const& vect);
 
-    struct PositionXYZStreamer
+    struct XY;
+    struct XYZ;
+    struct XYZO;
+    struct PackedXYZ;
+
+    template <class Tag>
+    struct ConstStreamer
     {
-        explicit PositionXYZStreamer(Position& pos) : m_pos(&pos) {}
-        Position* m_pos;
+        explicit ConstStreamer(Position const& pos) : Pos(&pos) { }
+        Position const* Pos;
     };
 
-    struct PositionXYZOStreamer
+    template <class Tag>
+    struct Streamer
     {
-        explicit PositionXYZOStreamer(Position& pos) : m_pos(&pos) {}
-        Position* m_pos;
+        explicit Streamer(Position& pos) : Pos(&pos) { }
+        operator ConstStreamer<Tag>() const { return ConstStreamer<Tag>(*Pos); }
+        Position* Pos;
     };
 
     float m_positionX;
@@ -68,14 +76,14 @@ struct TC_GAME_API Position
         return *this;
     }
 
-    Position::PositionXYZStreamer PositionXYZStream()
-    {
-        return Position::PositionXYZStreamer(*this);
-    }
-    Position::PositionXYZOStreamer PositionXYZOStream()
-    {
-        return Position::PositionXYZOStreamer(*this);
-    }
+    Streamer<XY> PositionXYStream() { return Streamer<XY>(*this); }
+    ConstStreamer<XY> PositionXYStream() const { return ConstStreamer<XY>(*this); }
+    Streamer<XYZ> PositionXYZStream() { return Streamer<XYZ>(*this); }
+    ConstStreamer<XYZ> PositionXYZStream() const { return ConstStreamer<XYZ>(*this); }
+    Streamer<XYZO> PositionXYZOStream() { return Streamer<XYZO>(*this); }
+    ConstStreamer<XYZO> PositionXYZOStream() const { return ConstStreamer<XYZO>(*this); }
+    Streamer<PackedXYZ> PositionPackedXYZStream() { return Streamer<PackedXYZ>(*this); }
+    ConstStreamer<PackedXYZ> PositionPackedXYZStream() const { return ConstStreamer<PackedXYZ>(*this); }
 
     bool IsPositionValid() const;
 
@@ -178,10 +186,14 @@ struct TC_GAME_API Position
     }
 
 };
-TC_GAME_API ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
-TC_GAME_API ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);
-TC_GAME_API ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);
-TC_GAME_API ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
+
+TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XY> const& streamer);
+TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XY> const& streamer);
+TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XYZ> const& streamer);
+TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XYZ> const& streamer);
+TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XYZO> const& streamer);
+TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XYZO> const& streamer);
+TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::PackedXYZ> const& streamer);
 
 #define MAPID_INVALID 0xFFFFFFFF
 

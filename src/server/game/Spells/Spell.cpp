@@ -35,6 +35,7 @@
 #include "SpellScript.h"
 #include "GameObjectAI.h"
 #include "SpellHistory.h"
+#include "SpellPackets.h"
 
 extern SpellEffectHandlerFn SpellEffectHandlers[TOTAL_SPELL_EFFECTS];
 
@@ -200,45 +201,46 @@ void SpellCastTargets::Read(ByteBuffer& data, Unit* caster)
     Update(caster);
 }
 
-void SpellCastTargets::Write(ByteBuffer& data)
+void SpellCastTargets::Write(WorldPackets::Spells::SpellTargetData& data)
 {
-    data << uint32(m_targetMask);
+    data.Flags = m_targetMask;
 
     if (m_targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_MINIPET))
-        data.appendPackGUID(m_objectTargetGUID);
+        data.Unit = m_objectTargetGUID;
 
     if (m_targetMask & (TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM))
     {
+        data.Item = boost::in_place();
         if (m_itemTarget)
-            data << m_itemTarget->GetPackGUID();
-        else
-            data << uint8(0);
+            data.Item = m_itemTarget->GetGUID();
     }
 
     if (m_targetMask & TARGET_FLAG_SOURCE_LOCATION)
     {
+        data.SrcLocation = boost::in_place();
 #ifdef LICH_KING
-        data.appendPackGUID(m_src._transportGUID); // relative position guid here - transport for example
-        if (m_src._transportGUID)
-            data << m_src._transportOffset.PositionXYZStream();
+        data.SrcLocation->Transport = m_src._transportGUID;
+        if (!m_src._transportGUID.IsEmpty())
+            data.SrcLocation->Location = m_src._transportOffset;
         else
 #endif
-            data << m_src._position.PositionXYZStream();
+            data.SrcLocation->Location = m_src._position;
     }
 
     if (m_targetMask & TARGET_FLAG_DEST_LOCATION)
     {
+        data.DstLocation = boost::in_place();
 #ifdef LICH_KING
-        data.appendPackGUID(m_dst._transportGUID); // relative position guid here - transport for example
+        data.DstLocation->Transport = m_dst._transportGUID;
         if (m_dst._transportGUID)
-            data << m_dst._transportOffset.PositionXYZStream();
+            data.DstLocation->Location = m_dst._transportOffset;
         else
 #endif
-            data << m_dst._position.PositionXYZStream();
+            data.DstLocation->Location = m_dst._position;
     }
 
     if (m_targetMask & TARGET_FLAG_STRING)
-        data << m_strTarget;
+        data.Name = m_strTarget;
 }
 
 ObjectGuid SpellCastTargets::GetUnitTargetGUID() const
@@ -4503,37 +4505,44 @@ void Spell::SendSpellStart()
     if (m_spellInfo->HasAttribute(SPELL_ATTR0_RANGED))
         castFlags |= CAST_FLAG_AMMO;
 
-    WorldPacket data(SMSG_SPELL_START, (8+8+4+4+2));
-    if(m_CastItem)
-        data << m_CastItem->GetPackGUID();
+
+    WorldPackets::Spells::SpellStart packet;
+    WorldPackets::Spells::SpellCastData& castData = packet.Cast;
+
+    if (m_CastItem)
+        castData.CasterGUID = m_CastItem->GetGUID();
     else
-        data << m_caster->GetPackGUID();
+        castData.CasterGUID = m_caster->GetGUID();
 
-    data << m_caster->GetPackGUID();
-    data << uint32(m_spellInfo->Id);
-    data << uint8(m_cast_count);                            // single cast or multi 2.3 (0/1)
-    data << uint16(castFlags);
-    data << uint32(m_timer);
+    castData.CasterUnit = m_caster->GetGUID();
+    castData.CastID = m_cast_count;
+    castData.SpellID = m_spellInfo->Id;
+    castData.CastFlags = castFlags;
+    castData.CastTime = m_timer;
 
-    m_targets.Write(data);
+    m_targets.Write(castData.Target);
 
 #ifdef LICH_KING
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
-        data << uint32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
+        castData.RemainingPower = ASSERT_NOTNULL(m_caster->ToUnit())->GetPower(static_cast<Powers>(m_spellInfo->PowerType));
 #endif
 
-    if( castFlags & CAST_FLAG_AMMO )
-        WriteAmmoToPacket(&data);
+    if (castFlags & CAST_FLAG_AMMO)
+    {
+        castData.Ammo = boost::in_place();
+        UpdateSpellCastDataAmmo(*castData.Ammo);
+    }
 
 #ifdef LICH_KING
-    if (castFlags & CAST_FLAG_UNKNOWN_23)
+    if (castFlags & CAST_FLAG_IMMUNITY)
     {
-        data << uint32(0);
-        data << uint32(0);
+        castData.Immunities = boost::in_place();
+        castData.Immunities->School = schoolImmunityMask;
+        castData.Immunities->Value = mechanicImmunityMask;
     }
 #endif
 
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSet(packet.Write(), true);
 }
 
 void Spell::SendSpellGo()
@@ -4578,52 +4587,60 @@ void Spell::SendSpellGo()
 
 #endif
 
-    WorldPacket data(SMSG_SPELL_GO, 50);                    // guess size
-    if(m_CastItem)
-        data << m_CastItem->GetPackGUID();
+    WorldPackets::Spells::SpellGo packet;
+    WorldPackets::Spells::SpellCastData& castData = packet.Cast;
+
+    if (m_CastItem)
+        castData.CasterGUID = m_CastItem->GetGUID();
     else
-        data << m_caster->GetPackGUID();
+        castData.CasterGUID = m_caster->GetGUID();
 
-    data << m_caster->GetPackGUID();
-    data << uint32(m_spellInfo->Id);
-    data << uint16(castFlags);
-    data << uint32(GetMSTime());                            // timestamp
+    castData.CasterUnit = m_caster->GetGUID();
+    castData.CastID = m_cast_count;
+    castData.SpellID = m_spellInfo->Id;
+    castData.CastFlags = castFlags;
+    castData.CastTime = GameTime::GetGameTimeMS();
 
-    WriteSpellGoTargets(&data);
+    UpdateSpellCastDataTargets(castData);
 
-    m_targets.Write(data);
+    m_targets.Write(castData.Target);
 
 #ifdef LICH_KING
 
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
-        data << uint32(ASSERT_NOTNULL(m_caster->ToUnit())->GetPower((Powers)m_spellInfo->PowerType));
+        castData.RemainingPower = ASSERT_NOTNULL(m_caster->ToUnit())->GetPower(static_cast<Powers>(m_spellInfo->PowerType));
 
     if (castFlags & CAST_FLAG_RUNE_LIST)                   // rune cooldowns list
     {
-        //TODO: There is a crash caused by a spell with CAST_FLAG_RUNE_LIST casted by a creature
+        castData.RemainingRunes = boost::in_place();
+
+        /// @todo There is a crash caused by a spell with CAST_FLAG_RUNE_LIST cast by a creature
         //The creature is the mover of a player, so HandleCastSpellOpcode uses it as the caster
         if (Player* player = m_caster->ToPlayer())
         {
             uint8 runeMaskInitial = m_runesState;
             uint8 runeMaskAfterCast = player->GetRunesState();
-            data << uint8(runeMaskInitial);                     // runes state before
-            data << uint8(runeMaskAfterCast);                   // runes state after
+            castData.RemainingRunes->Start = runeMaskInitial; // runes state before
+            castData.RemainingRunes->Count = runeMaskAfterCast; // runes state after
+
             for (uint8 i = 0; i < MAX_RUNES; ++i)
             {
                 uint8 mask = (1 << i);
-                if (mask & runeMaskInitial && !(mask & runeMaskAfterCast))  // usable before andon cooldown now...
+                if ((mask & runeMaskInitial) && !(mask & runeMaskAfterCast))  // usable before and on cooldown now...
                 {
                     // float casts ensure the division is performed on floats as we need float result
-                    float baseCd = float(player->GetRuneBaseCooldown(i, true));
-                    data << uint8((baseCd - float(player->GetRuneCooldown(i))) / baseCd * 255); // rune cooldown passed
-                }
+                    float baseCd = float(player->GetRuneBaseCooldown(i));
+                    castData.RemainingRunes->Cooldowns.push_back(uint8((baseCd - float(player->GetRuneCooldown(i))) / baseCd * 255));
+}
             }
         }
     }
+
     if (castFlags & CAST_FLAG_ADJUST_MISSILE)
     {
-        data << m_targets.GetElevation();
-        data << uint32(m_delayTrajectory ? m_delayTrajectory : m_delayMoment);
+        castData.MissileTrajectory = boost::in_place();
+        castData.MissileTrajectory->Pitch = m_targets.GetElevation();
+        castData.MissileTrajectory->TravelTime = m_delayMoment;
     }
 #endif
 
@@ -4662,7 +4679,7 @@ void Spell::SendSpellGo()
         m_caster->SendMessageToSet(&data, true);
 }
 
-void Spell::WriteAmmoToPacket( WorldPacket * data )
+void Spell::UpdateSpellCastDataAmmo(WorldPackets::Spells::SpellAmmo& ammo)
 {
     uint32 ammoInventoryType = 0;
     uint32 ammoDisplayID = 0;
@@ -4766,68 +4783,49 @@ void Spell::WriteAmmoToPacket( WorldPacket * data )
         }
     }
 
-    *data << uint32(ammoDisplayID);
-    *data << uint32(ammoInventoryType);
+    ammo.DisplayID = ammoDisplayID;
+    ammo.InventoryType = ammoInventoryType;
 }
 
-void Spell::WriteSpellGoTargets( WorldPacket * data )
+void Spell::UpdateSpellCastDataTargets(WorldPackets::Spells::SpellCastData& data)
 {
+    data.HitTargets = boost::in_place();
+    data.MissStatus = boost::in_place();
+
     // This function also fill data for channeled spells:
     // m_needAliveTargetMask req for stop channelig if one target die
     for (TargetInfo& targetInfo : m_UniqueTargetInfo)
     {
         if (targetInfo.EffectMask == 0)                  // No effect apply - all immuned add state
-                                                         // possibly SPELL_MISS_IMMUNE2 for this??
+            // possibly SPELL_MISS_IMMUNE2 for this??
             targetInfo.MissCondition = SPELL_MISS_IMMUNE2;
-    }
 
-    // Hit and miss target counts are both uint8, that limits us to 255 targets for each
-    // sending more than 255 targets crashes the client (since count sent would be wrong)
-    // Spells like 40647 (with a huge radius) can easily reach this limit (spell might need
-    // target conditions but we still need to limit the number of targets sent and keeping
-    // correct count for both hit and miss).
-
-    uint32 hit = 0;
-    size_t hitPos = data->wpos();
-    *data << (uint8)0; // placeholder
-    for (auto ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end() && hit < 255; ++ihit)
-    {
-        if (ihit->MissCondition == SPELL_MISS_NONE)       // Add only hits
+        if (targetInfo.MissCondition == SPELL_MISS_NONE)       // Add only hits
         {
-            *data << uint64(ihit->TargetGUID);
+            data.HitTargets->push_back(targetInfo.TargetGUID);
+
             // sunwell: WTF is this? No channeled spell checked, no anything
-            //m_channelTargetEffectMask |= ihit->EffectMask;
-            ++hit;
+            //m_channelTargetEffectMask |= targetInfo.EffectMask;
         }
-    }
-
-    for (auto ighit = m_UniqueGOTargetInfo.begin(); ighit != m_UniqueGOTargetInfo.end() && hit < 255; ++ighit)
-    {
-        *data << uint64(ighit->TargetGUID);                 // Always hits
-        ++hit;
-    }
-
-    uint32 miss = 0;
-    size_t missPos = data->wpos();
-    *data << (uint8)0; // placeholder
-    for (auto ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end() && miss < 255; ++ihit)
-    {
-        if (ihit->MissCondition != SPELL_MISS_NONE)        // Add only miss
+        else // misses
         {
-            *data << uint64(ihit->TargetGUID);
-            *data << uint8(ihit->MissCondition);
-            if (ihit->MissCondition == SPELL_MISS_REFLECT)
-                *data << uint8(ihit->ReflectResult);
-            ++miss;
+            WorldPackets::Spells::SpellMissStatus missStatus;
+            missStatus.TargetGUID = targetInfo.TargetGUID;
+            missStatus.Reason = targetInfo.MissCondition;
+            if (targetInfo.MissCondition == SPELL_MISS_REFLECT)
+                missStatus.ReflectStatus = targetInfo.ReflectResult;
+
+            data.MissStatus->push_back(missStatus);
         }
     }
+
+    for (GOTargetInfo const& targetInfo : m_UniqueGOTargetInfo)
+        data.HitTargets->push_back(targetInfo.TargetGUID); // Always hits
+
     // Reset m_needAliveTargetMask for non channeled spell
     // sunwell: Why do we reset something that is not set??????
     //if (!m_spellInfo->IsChanneled())
     //    m_channelTargetEffectMask = 0;
-
-    data->put<uint8>(hitPos, (uint8)hit);
-    data->put<uint8>(missPos, (uint8)miss);
 }
 
 void Spell::SendLogExecute()

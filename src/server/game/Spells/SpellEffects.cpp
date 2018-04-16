@@ -2984,7 +2984,7 @@ void Spell::EffectApplyAura(uint32 effIndex)
     if (!unitTarget)
         return;
 
-    //HACKS
+    //HACKS (TODO: move those to scripts)
     {
         // Intervention shouldn't be used in a bg in preparation phase (possibility to get out of starting area with that spell)
         if (m_spellInfo->Id == 3411 && unitCaster && unitCaster->HasAura(44521))     // 44521 : bg preparation
