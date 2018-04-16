@@ -17,7 +17,7 @@ public:
         {
             TestPlayer* p = SpawnRandomPlayer(POWER_ENERGY);
             Wait(Seconds(1));
-            GameObject* obj = p->SummonGameObject(2061, p->GetPosition(), G3D::Quat(), 0); //campire
+            GameObject* obj = p->SummonGameObject(2061, p->GetPosition(), G3D::Quat(), 0); //campfire
             TEST_ASSERT(obj != nullptr);
             obj->SetOwnerGUID(ObjectGuid::Empty); //remove owner, environmental traps don't have any
 
