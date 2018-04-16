@@ -512,10 +512,10 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         virtual void CleanupsBeforeDelete(bool finalCleanup = true);  // used in destructor or explicitly before mass creature delete to remove cross-references to already deleted units
 
-        virtual void SendMessageToSet(WorldPacket *data, bool self);
-        virtual void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin = false, Player const* skipped_rcvr = nullptr);
-        virtual void SendMessageToSet(WorldPacket* data, Player* skipped_rcvr);
-        void BuildHeartBeatMsg( WorldPacket *data ) const;
+        virtual void SendMessageToSet(WorldPacket const* data, bool self);
+        virtual void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin = false, Player const* skipped_rcvr = nullptr);
+        virtual void SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr);
+        void BuildHeartBeatMsg(WorldPacket* data) const;
 
 		virtual uint8 GetLevelForTarget(WorldObject const* /*target*/) const { return 1; }
 

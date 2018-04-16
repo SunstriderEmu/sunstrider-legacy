@@ -704,11 +704,11 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         else
             PSendSysMessage("You are indoor");
 
+        /*
         uint32 mogpFlags;
         int32 adtId, rootId, groupId;
         WMOAreaTableEntry const* wmoEntry = nullptr;
 
-        /*
         if (map->GetAreaInfo(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), mogpFlags, adtId, rootId, groupId))
         {
             if ((wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId)))

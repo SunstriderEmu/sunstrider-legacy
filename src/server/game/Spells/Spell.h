@@ -5,6 +5,8 @@
 #include "GridDefines.h"
 #include "PathGenerator.h"
 #include "Position.h"
+#include "DBCEnums.h"
+#include "ConditionMgr.h"
 
 namespace WorldPackets
 {
@@ -16,13 +18,24 @@ namespace WorldPackets
     }
 }
 class Unit;
+class UnitAura;
 class Player;
 class GameObject;
+class DynamicObject;
+class DynObjAura;
 class Aura;
+class Item;
+class Object;
 enum SpellCastResult : int;
 class SpellScript;
 class SpellEvent;
 enum LootType : uint8;
+enum SpellCastTargetFlags : uint32;
+class SpellImplicitTargetInfo;
+enum SpellTargetCheckTypes : uint8;
+enum SpellTargetObjectTypes : uint8;
+enum SpellTargetSelectionCategories : uint8;
+enum CurrentSpellTypes : uint8;
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 #define MAX_SPELL_RANGE_TOLERANCE 3.0f
@@ -166,8 +179,8 @@ public:
     void ModDst(SpellDestination const& spellDest);
     void RemoveDst();
 
-    bool HasSrc() const { return GetTargetMask() & TARGET_FLAG_SOURCE_LOCATION; }
-    bool HasDst() const { return GetTargetMask() & TARGET_FLAG_DEST_LOCATION; }
+    bool HasSrc() const;
+    bool HasDst() const;
     bool HasTraj() const { return m_speed != 0; }
 
     float GetElevation() const { return m_elevation; }
@@ -510,7 +523,7 @@ class TC_GAME_API Spell
         bool IsIgnoringCooldowns() const;
         bool IsFocusDisabled() const;
         bool IsProcDisabled() const;
-        bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
+        bool IsChannelActive() const;
         bool IsAutoActionResetSpell() const;
         bool IsPositive() const;
 

@@ -170,11 +170,11 @@ std::string const& WorldSession::GetPlayerName() const
     return GetPlayer() ? GetPlayer()->GetName() : DefaultPlayerName;
 }
 
-void WorldSession::SendPacket(WorldPacket* packet)
+void WorldSession::SendPacket(WorldPacket const* packet)
 {
     ASSERT(packet->GetOpcode() != NULL_OPCODE);
 
-    #ifdef PLAYERBOT
+#ifdef PLAYERBOT
     // Playerbot mod: send packet to bot AI
     if (GetPlayer())
     {
@@ -183,12 +183,12 @@ void WorldSession::SendPacket(WorldPacket* packet)
         else if (GetPlayer()->GetPlayerbotMgr())
             GetPlayer()->GetPlayerbotMgr()->HandleMasterOutgoingPacket(*packet);
     }
-    #endif
+#endif
 
     if (!m_Socket)
         return;
 
-    #ifdef TRINITY_DEBUG
+#ifdef TRINITY_DEBUG
 
     // Code for network use statistic
     static uint64 sendPacketCount = 0;
@@ -222,7 +222,7 @@ void WorldSession::SendPacket(WorldPacket* packet)
         sendLastPacketBytes = packet->wpos();               // wpos is real written size
     }
 
-    #endif                                                  // !TRINITY_DEBUG
+#endif                                                  // !TRINITY_DEBUG
 
     //    sScriptMgr->OnPacketSend(this, *packet);
 

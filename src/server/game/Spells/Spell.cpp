@@ -243,6 +243,16 @@ void SpellCastTargets::Write(WorldPackets::Spells::SpellTargetData& data)
         data.Name = m_strTarget;
 }
 
+bool SpellCastTargets::HasSrc() const 
+{ 
+    return GetTargetMask() & TARGET_FLAG_SOURCE_LOCATION; 
+}
+
+bool SpellCastTargets::HasDst() const 
+{ 
+    return GetTargetMask() & TARGET_FLAG_DEST_LOCATION; 
+}
+
 ObjectGuid SpellCastTargets::GetUnitTargetGUID() const
 {
     if (m_objectTargetGUID.IsUnit())
@@ -4644,24 +4654,14 @@ void Spell::SendSpellGo()
     }
 #endif
 
-    if( castFlags & CAST_FLAG_AMMO )
-        WriteAmmoToPacket(&data);
+    if (castFlags & CAST_FLAG_AMMO)
+    {
+        castData.Ammo = boost::in_place();
+        UpdateSpellCastDataAmmo(*castData.Ammo);
+    }
 
 #ifdef LICH_KING
-    if (castFlags & CAST_FLAG_VISUAL_CHAIN)
-    {
-        data << uint32(0);
-        data << uint32(0);
-    }
-
-    if (m_targets.GetTargetMask() & TARGET_FLAG_DEST_LOCATION)
-    {
-        data << uint8(0);
-    }
-#endif
-
     // should be sent to self only
-#ifdef LICH_KING
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
     {
         if (Player* player = m_caster->GetAffectingPlayer())
@@ -4676,7 +4676,7 @@ void Spell::SendSpellGo()
     }
     else
 #endif
-        m_caster->SendMessageToSet(&data, true);
+        m_caster->SendMessageToSet(packet.Write(), true);
 }
 
 void Spell::UpdateSpellCastDataAmmo(WorldPackets::Spells::SpellAmmo& ammo)
@@ -8683,6 +8683,15 @@ bool Spell::IsAutoActionResetSpell() const
         return false;
 
     return true;
+}
+
+
+bool Spell::IsChannelActive() const
+{
+    if (m_caster->GetTypeId() == TYPEID_UNIT)
+        return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0;
+    else
+        return false;
 }
 
 bool Spell::IsPositive() const

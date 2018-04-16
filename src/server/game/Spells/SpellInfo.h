@@ -2,6 +2,8 @@
 #define _SPELLINFO_H
 
 #include "SharedDefines.h"
+#include "DBCStructure.h"
+
 #include <boost/container/flat_set.hpp>
 
 enum AuraType : unsigned int;
@@ -16,6 +18,10 @@ struct SpellChainNode;
 enum WeaponAttackType : unsigned int;
 struct SpellModifier;
 class Player;
+struct SpellDurationEntry;
+struct SpellRangeEntry;
+struct SpellRadiusEntry;
+struct SpellCastTimesEntry;
 
 enum SpellCustomAttributes
 {
@@ -52,7 +58,7 @@ enum SpellCustomAttributes
     SPELL_ATTR0_CU_NEGATIVE                      = SPELL_ATTR0_CU_NEGATIVE_EFF0 | SPELL_ATTR0_CU_NEGATIVE_EFF1 | SPELL_ATTR0_CU_NEGATIVE_EFF2
 };
 
-enum SpellCastTargetFlags
+enum SpellCastTargetFlags : uint32
 {
     TARGET_FLAG_NONE            = 0x00000000,
     TARGET_FLAG_UNUSED_1        = 0x00000001,               // not used
@@ -90,7 +96,7 @@ enum SpellCastTargetFlags
     TARGET_FLAG_ITEM_MASK = TARGET_FLAG_TRADE_ITEM | TARGET_FLAG_ITEM | TARGET_FLAG_GAMEOBJECT_ITEM
 };
 
-enum SpellTargetSelectionCategories
+enum SpellTargetSelectionCategories : uint8
 {
     TARGET_SELECT_CATEGORY_NYI,
     TARGET_SELECT_CATEGORY_DEFAULT,
@@ -111,7 +117,7 @@ enum SpellTargetReferenceTypes
     TARGET_REFERENCE_TYPE_DEST,
 };
 
-enum SpellTargetObjectTypes
+enum SpellTargetObjectTypes : uint8
 {
     TARGET_OBJECT_TYPE_NONE = 0,
     TARGET_OBJECT_TYPE_SRC,
@@ -127,7 +133,7 @@ enum SpellTargetObjectTypes
     TARGET_OBJECT_TYPE_CORPSE_ALLY,
 };
 
-enum SpellTargetCheckTypes
+enum SpellTargetCheckTypes : uint8
 {
     TARGET_CHECK_DEFAULT,
     TARGET_CHECK_ENTRY,

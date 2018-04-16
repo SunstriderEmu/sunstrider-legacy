@@ -974,7 +974,7 @@ class TC_GAME_API SpellMgr
             return Trinity::Containers::MapGetValuePtr(mSpellPetAuraMap, spell_id);
         }
         
-        const std::vector<int32> const* GetSpellLinked(int32 spell_id) const
+        std::vector<int32> const* GetSpellLinked(int32 spell_id) const
         {
             return Trinity::Containers::MapGetValuePtr(mSpellLinkedMap, spell_id);
         }

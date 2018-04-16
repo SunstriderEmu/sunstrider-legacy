@@ -208,5 +208,9 @@ enum TotemCategoryType
     TOTEM_CATEGORY_TYPE_SPANNER = 24
 };
 
+#define MAX_SPELL_EFFECTS 3
+#define MAX_EFFECT_MASK 7
+#define MAX_SPELL_REAGENTS 8
+
 #endif
 

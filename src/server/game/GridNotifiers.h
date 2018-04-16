@@ -101,12 +101,12 @@ namespace Trinity
 	struct TC_GAME_API MessageDistDeliverer
 	{
 		WorldObject* i_source;
-		WorldPacket* i_message;
+		WorldPacket const* i_message;
 		uint32 i_phaseMask;
 		float i_distSq;
 		Team team;
 		Player const* skipped_receiver;
-		MessageDistDeliverer(WorldObject* src, WorldPacket* msg, float dist, bool own_team_only = false, Player const* skipped = NULL)
+		MessageDistDeliverer(WorldObject* src, WorldPacket const* msg, float dist, bool own_team_only = false, Player const* skipped = NULL)
 			: i_source(src), i_message(msg), i_phaseMask(src->GetPhaseMask()), i_distSq(dist * dist)
 			, team(Team(0))
 			, skipped_receiver(skipped)

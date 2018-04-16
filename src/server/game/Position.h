@@ -6,6 +6,11 @@
 #include <cmath>
 
 class ByteBuffer;
+class WorldObject;
+namespace G3D
+{
+    class Vector3;
+};
 
 struct TC_GAME_API Position
 {
@@ -152,23 +157,11 @@ struct TC_GAME_API Position
     */
     bool IsWithinDoubleVerticalCylinder(Position const* center, float radius, float height) const;
     bool HasInArc(float arcangle, const Position *pos, float border = 2.0f) const;
-    bool HasInLine(const WorldObject* target, float objSize, float width) const;
+    bool HasInLine(Position const* pos, float objSize, float width) const;
     std::string ToString() const;
 
     // constrain arbitrary radian orientation to interval [0,2*PI)
-    static float NormalizeOrientation(float o)
-    {
-        // fmod only supports positive numbers. Thus we have
-        // to emulate negative numbers
-        if (o < 0)
-        {
-            float mod = o *-1;
-            mod = fmod(mod, 2.0f * static_cast<float>(M_PI));
-            mod = -mod + 2.0f * static_cast<float>(M_PI);
-            return mod;
-        }
-        return fmod(o, 2.0f * static_cast<float>(M_PI));
-    }
+    static float NormalizeOrientation(float o);
 
     bool operator==(Position const &a);
 
@@ -184,16 +177,7 @@ struct TC_GAME_API Position
         m_positionY = frontOf.m_positionY + dist * std::sin(frontOf.m_orientation);
         m_positionZ = frontOf.m_positionZ;
     }
-
 };
-
-TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XY> const& streamer);
-TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XY> const& streamer);
-TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XYZ> const& streamer);
-TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XYZ> const& streamer);
-TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XYZO> const& streamer);
-TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XYZO> const& streamer);
-TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::PackedXYZ> const& streamer);
 
 #define MAPID_INVALID 0xFFFFFFFF
 
@@ -226,6 +210,34 @@ class TC_GAME_API WorldLocation : public Position
         uint32 GetMapId() const { return m_mapId; }
 
         uint32 m_mapId;
+};
+
+TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XY> const& streamer);
+TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XY> const& streamer);
+TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XYZ> const& streamer);
+TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XYZ> const& streamer);
+TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XYZO> const& streamer);
+TC_GAME_API ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XYZO> const& streamer);
+TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::PackedXYZ> const& streamer);
+
+template <class Tag>
+struct TaggedPosition
+{
+    TaggedPosition(float x = 0.0f, float y = 0.0f, float z = 0.0f, float o = 0.0f) : Pos(x, y, z, o) { }
+    TaggedPosition(Position const& pos) : Pos(pos) { }
+
+    TaggedPosition& operator=(Position const& pos)
+    {
+        Pos.Relocate(pos);
+        return *this;
+    }
+
+    operator Position() const { return Pos; }
+
+    friend ByteBuffer& operator<<(ByteBuffer& buf, TaggedPosition const& tagged) { return buf << Position::ConstStreamer<Tag>(tagged.Pos); }
+    friend ByteBuffer& operator>>(ByteBuffer& buf, TaggedPosition& tagged) { return buf >> Position::Streamer<Tag>(tagged.Pos); }
+
+    Position Pos;
 };
 
 #endif

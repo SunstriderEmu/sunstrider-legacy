@@ -982,15 +982,17 @@ struct DeclinedName
 
 uint32 createProcHitMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missCondition);
 
-enum CurrentSpellTypes
+enum CurrentSpellTypes : uint8
 {
-    CURRENT_MELEE_SPELL = 0,
-    CURRENT_FIRST_NON_MELEE_SPELL = 1,                      // just counter
-    CURRENT_GENERIC_SPELL = 1,
-    CURRENT_AUTOREPEAT_SPELL = 2,
-    CURRENT_CHANNELED_SPELL = 3,
-    CURRENT_MAX_SPELL = 4                                   // just counter
+    CURRENT_MELEE_SPELL            = 0,
+    CURRENT_GENERIC_SPELL          = 1,
+    CURRENT_AUTOREPEAT_SPELL       = 2,
+    CURRENT_CHANNELED_SPELL        = 3,
+
+    CURRENT_MAX_SPELL              = 4                                   // just counter
 };
+
+#define CURRENT_FIRST_NON_MELEE_SPELL 1
 
 struct GlobalCooldown
 {
