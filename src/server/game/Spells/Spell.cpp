@@ -3154,7 +3154,7 @@ SpellMissInfo Spell::PreprocessSpellHit(Unit* unit, bool scaleAura, TargetInfo& 
             }
         }
 
-        hitInfo.AuraDuration = hitInfo.AuraSpellInfo->GetMaxDuration();
+        hitInfo.AuraDuration = Aura::CalcMaxDuration(hitInfo.AuraSpellInfo, origCaster);
 
         // unit is immune to aura if it was diminished to 0 duration
         if (!hitInfo.Positive && !unit->ApplyDiminishingToDuration(hitInfo.AuraSpellInfo, triggered, hitInfo.AuraDuration, origCaster, diminishLevel))
@@ -3887,13 +3887,14 @@ void Spell::handle_immediate()
             SendChannelStart(duration);
         }
         else if (duration == -1)
-        {
             SendChannelStart(duration);
-        }
-        m_spellState = SPELL_STATE_CASTING;
 
-        // GameObjects shouldn't cast channeled spells
-        ASSERT_NOTNULL(m_caster->ToUnit())->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
+        if (duration != 0)
+        {
+            m_spellState = SPELL_STATE_CASTING;
+            // GameObjects shouldn't cast channeled spells
+            ASSERT_NOTNULL(m_caster->ToUnit())->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
+        }
     }
 
     PrepareTargetProcessing();
