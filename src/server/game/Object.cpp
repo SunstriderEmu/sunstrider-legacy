@@ -4080,6 +4080,20 @@ Unit* WorldObject::GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spel
     return victim;
 }
 
+void WorldObject::SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo)
+{
+    WorldPacket data(SMSG_SPELLLOGMISS, (4 + 8 + 1 + 4 + 8 + 1)); //LK OK
+    data << uint32(spellID);
+    data << uint64(GetGUID());
+    data << uint8(0);                                       // can be 0 or 1
+    data << uint32(1);                                      // target count
+    // for(i = 0; i < target count; ++i)
+    data << uint64(target->GetGUID());                      // target GUID
+    data << uint8(missInfo);
+    // end loop
+    SendMessageToSet(&data, true);
+}
+
 ObjectGuid Object::GetGUID() const { return GetGuidValue(OBJECT_FIELD_GUID); }
 PackedGuid const& Object::GetPackGUID() const { return m_PackGUID; }
 uint32 Object::GetEntry() const { return GetUInt32Value(OBJECT_FIELD_ENTRY); }

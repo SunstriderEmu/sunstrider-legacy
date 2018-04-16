@@ -1580,7 +1580,6 @@ class TC_GAME_API Unit : public WorldObject
         void SendAttackStateUpdate(uint32 HitInfo, Unit *target, uint8 SwingType, SpellSchoolMask damageSchoolMask, uint32 Damage, uint32 AbsorbDamage, uint32 Resist, VictimState TargetState, uint32 BlockedAmount);
         void SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log);
         void SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage, SpellSchoolMask damageSchoolMask,uint32 AbsorbedDamage, uint32 Resist,bool PhysicalDamage, uint32 Blocked, bool CriticalHit = false);
-        void SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo);
         void SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo);
         void SendSpellDamageResist(Unit* target, uint32 spellId, bool debug = false);
         void SendSpellDamageImmune(Unit* target, uint32 spellId);

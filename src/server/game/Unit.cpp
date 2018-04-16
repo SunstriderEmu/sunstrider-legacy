@@ -4047,20 +4047,6 @@ void Unit::SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage,
         actor->TriggerAurasProcOnEvent(actionTarget, typeMaskActor, typeMaskActionTarget, spellTypeMask, spellPhaseMask, hitMask, spell, damageInfo, healInfo);
 }
 
-void Unit::SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo)
-{
-    WorldPacket data(SMSG_SPELLLOGMISS, (4+8+1+4+8+1));
-    data << uint32(spellID);
-    data << uint64(GetGUID());
-    data << uint8(0);                                       // can be 0 or 1
-    data << uint32(1);                                      // target count
-    // for(i = 0; i < target count; ++i)
-    data << uint64(target->GetGUID());                      // target GUID
-    data << uint8(missInfo);
-    // end loop
-    SendMessageToSet(&data, true);
-}
-
 void Unit::SendAttackStateUpdate(CalcDamageInfo *damageInfo)
 {
     uint32 count = 1;

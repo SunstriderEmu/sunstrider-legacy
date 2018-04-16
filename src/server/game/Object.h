@@ -593,6 +593,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual SpellMissInfo MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo) const;
         SpellMissInfo MagicSpellHitResult(Unit* victim, SpellInfo const* spellInfo, Item* castItem = nullptr) const;
         SpellMissInfo SpellHitResult(Unit* victim, SpellInfo const* spellInfo, bool canReflect = false, Item* castItem = nullptr) const;
+        void SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo);
 
 #ifdef TESTS
         SpellMissInfo _forceHitResult = SPELL_MISS_TOTAL;
