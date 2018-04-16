@@ -372,6 +372,7 @@ struct GameObjectTemplate
     uint32 GetAutoCloseTime() const;
     bool IsDespawnAtAction() const;
     bool IsUsableMounted() const;
+    bool IsIgnoringLOSChecks() const;
     uint32 GetLootId() const;
     // despawn at uses amount
     uint32 GetCharges() const;                               

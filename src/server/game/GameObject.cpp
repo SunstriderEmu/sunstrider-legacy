@@ -2265,6 +2265,19 @@ bool GameObjectTemplate::IsUsableMounted() const
     }
 }
 
+bool GameObjectTemplate::IsIgnoringLOSChecks() const
+{
+    switch (type)
+    {
+    case GAMEOBJECT_TYPE_BUTTON: return button.losOK == 0;
+    case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.losOK == 0;
+    case GAMEOBJECT_TYPE_CHEST: return chest.losOK == 0;
+    case GAMEOBJECT_TYPE_GOOBER: return goober.losOK == 0;
+    case GAMEOBJECT_TYPE_FLAGSTAND: return flagstand.losOK == 0;
+    default: return false;
+    }
+}
+
 uint32 GameObjectTemplate::GetLootId() const
 {
     switch (type)
