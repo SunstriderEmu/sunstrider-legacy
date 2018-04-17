@@ -2780,41 +2780,48 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
     case SPELLMOD_EFFECT2:
     case SPELLMOD_EFFECT3:
     {
-        ObjectGuid guid = target->GetGUID();
-
-        Unit::AuraApplicationMap & auras = target->GetAppliedAuras();
-        for (Unit::AuraApplicationMap::iterator iter = auras.begin(); iter != auras.end(); ++iter)
+        //sun: Also recalculate aura for player pets. This allows for talents to be applied immediately without resummoning.
+        auto RecalculateAuras = [&](Unit* target) 
         {
-            Aura* aura = iter->second->GetBase();
-            // only passive and permament auras-active auras should have amount set on spellcast and not be affected
-            // if aura is cast by others, it will not be affected
-            if ((aura->IsPassive() || aura->IsPermanent()) && aura->GetCasterGUID() == guid && aura->GetSpellInfo()->IsAffectedBySpellMod(m_spellmod))
+            ObjectGuid guid = target->GetGUID();
+            Unit::AuraApplicationMap & auras = target->GetAppliedAuras();
+            for (Unit::AuraApplicationMap::iterator iter = auras.begin(); iter != auras.end(); ++iter)
             {
-                if (GetMiscValue() == SPELLMOD_ALL_EFFECTS)
+                Aura* aura = iter->second->GetBase();
+                // only passive and permament auras-active auras should have amount set on spellcast and not be affected
+                // if aura is cast by others, it will not be affected
+                if ((aura->IsPassive() || aura->IsPermanent()) && aura->GetCasterGUID() == guid && aura->GetSpellInfo()->IsAffectedBySpellMod(m_spellmod))
                 {
-                    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                    if (GetMiscValue() == SPELLMOD_ALL_EFFECTS)
                     {
-                        if (AuraEffect* aurEff = aura->GetEffect(i))
+                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                        {
+                            if (AuraEffect* aurEff = aura->GetEffect(i))
+                                aurEff->RecalculateAmount();
+                        }
+                    }
+                    else if (GetMiscValue() == SPELLMOD_EFFECT1)
+                    {
+                        if (AuraEffect* aurEff = aura->GetEffect(0))
+                            aurEff->RecalculateAmount();
+                    }
+                    else if (GetMiscValue() == SPELLMOD_EFFECT2)
+                    {
+                        if (AuraEffect* aurEff = aura->GetEffect(1))
+                            aurEff->RecalculateAmount();
+                    }
+                    else //if (modOp == SPELLMOD_EFFECT3)
+                    {
+                        if (AuraEffect* aurEff = aura->GetEffect(2))
                             aurEff->RecalculateAmount();
                     }
                 }
-                else if (GetMiscValue() == SPELLMOD_EFFECT1)
-                {
-                    if (AuraEffect* aurEff = aura->GetEffect(0))
-                        aurEff->RecalculateAmount();
-                }
-                else if (GetMiscValue() == SPELLMOD_EFFECT2)
-                {
-                    if (AuraEffect* aurEff = aura->GetEffect(1))
-                        aurEff->RecalculateAmount();
-                }
-                else //if (modOp == SPELLMOD_EFFECT3)
-                {
-                    if (AuraEffect* aurEff = aura->GetEffect(2))
-                        aurEff->RecalculateAmount();
-                }
             }
-        }
+        };
+        RecalculateAuras(target);
+        if (target->GetTypeId() == TYPEID_PLAYER)
+            if (Pet* pet = target->GetPet())
+                RecalculateAuras(pet);
     }
     default:
         break;
