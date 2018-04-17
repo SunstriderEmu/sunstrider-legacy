@@ -2288,13 +2288,14 @@ public:
 
             // Spell coeffs
             float const TranquilityCastTime = 8.0f;
-            float const TranquilityCoeff = (TranquilityCastTime / 3.5f) / 2.0f;
+            //WoWiki says: The Tranquility coefficient scales with level, at level 52, it has a base coefficient of 26%, where as at 70, it has a base coefficient of 73%. Tested on March 4th, 2008.
+            //DrDamage says 0.762 for 70
+            float const TranquilityCoeff = 0.762f;
             uint32 const TranquilityBHBonus = maceBH * TranquilityCoeff;
             uint32 const TranquilityTickBHBonus = floor(TranquilityBHBonus / 4.0f);
 
             uint32 const expectedTranquilityTick = ClassSpellsDamage::Druid::TRANQUILITY_RNK_5_TICK + TranquilityTickBHBonus;
-            uint32 const expectedTranquilityTotal = 4 * expectedTranquilityTick;
-            TEST_CHANNEL_DAMAGE(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, ClassSpells::Druid::TRANQUILITY_RNK_5_PROC, 4, expectedTranquilityTotal);
+            TEST_CHANNEL_HEALING(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, ClassSpells::Druid::TRANQUILITY_RNK_5_PROC, 4, expectedTranquilityTick);
         }
     };
 

@@ -11506,9 +11506,9 @@ Item* Player::_StoreItem(uint16 pos, Item *pItem, uint32 count, bool clone, bool
         if( pItem2->GetTemplate()->Bonding == BIND_WHEN_PICKED_UP ||
             pItem2->GetTemplate()->Bonding == BIND_QUEST_ITEM ||
             (pItem2->GetTemplate()->Bonding == BIND_WHEN_EQUIPED && IsBagPos(pos)) )
-            pItem2->SetBinding( true );
+            pItem2->SetBinding(true);
 
-        pItem2->SetCount( pItem2->GetCount() + count );
+        pItem2->SetCount(pItem2->GetCount() + count);
         if( IsInWorld() && update )
             pItem2->SendUpdateToPlayer( this );
 
@@ -11572,8 +11572,6 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
                 if(pProto->ItemSet)
                     AddItemsSetItem(this,pItem);
 
-                // remove here before _ApplyItemMods (for example to register correct damages of unequipped weapon)
-                m_items[slot] = nullptr;
                 _ApplyItemMods(pItem, slot, true);
 
                 if(pProto && IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
@@ -11601,7 +11599,7 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
                 }
             }
 
-            if( IsInWorld() && update )
+            if (IsInWorld() && update)
             {
                 pItem->AddToWorld();
                 pItem->SendUpdateToPlayer( this );
