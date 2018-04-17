@@ -109,6 +109,7 @@ class TC_GAME_API MotionMaster
 
         bool empty() const { return (_top < 0); }
         int size() const { return _top + 1; }
+        _Ty topOrNull() const { return empty() ? nullptr : top(); }
         _Ty top() const
         {
             ASSERT(!empty());

@@ -39,6 +39,7 @@
 #include "CharacterCache.h"
 #include "AntiCheatMgr.h"
 #include "SpellHistory.h"
+#include "TargetedMovementGenerator.h"
 
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
@@ -7716,6 +7717,32 @@ void Unit::UpdateSpeed(UnitMoveType mtype)
         }
         default:
             break;
+    }
+
+    if (Creature* creature = ToCreature())
+    {
+        /* TC logic, why is this?
+        // for creature case, we check explicit if mob searched for assistance
+        if (creature->HasSearchedAssistance())
+            speed *= 0.66f;                                 // best guessed value, so this will be 33% reduction. Based off initial speed, mob can then "run", "walk fast" or "walk".
+        */
+
+        //adapt pet follow speed depending on distance from owner (if ooc)
+        if (creature->HasUnitTypeMask(UNIT_MASK_MINION) && !creature->IsInCombat())
+        {
+            MovementGenerator* top = creature->GetMotionMaster()->topOrNull();
+            if (top && top->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
+            {
+                Unit* followed = ASSERT_NOTNULL(dynamic_cast<FollowMovementGenerator<Creature>*>(top))->GetTarget();
+                if (followed && followed->GetGUID() == GetOwnerGUID() && !followed->IsInCombat())
+                {
+                    float ownerSpeed = followed->GetSpeedRate(mtype);
+                    if (speed < ownerSpeed || creature->IsWithinDist3d(followed, 10.0f))
+                        speed = ownerSpeed;
+                    speed *= std::min(std::max(1.0f, float(0.75f + (GetDistance(followed) - PET_FOLLOW_DIST) * 0.05f)), 1.3f);
+                }
+            }
+        }
     }
 
     // Apply strongest slow aura mod to speed
