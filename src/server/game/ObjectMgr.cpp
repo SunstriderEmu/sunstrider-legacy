@@ -2754,8 +2754,8 @@ void ObjectMgr::LoadPetLevelInfo()
 {
     // Loading levels data
     {
-        //                                                 0               1      2   3     4    5    6    7     8    9
-        QueryResult result  = WorldDatabase.Query("SELECT creature_entry, level, hp, mana, str, agi, sta, inte, spi, armor FROM pet_levelstats");
+        //                                                0               1      2   3     4    5    6    7     8    9      10       11
+        QueryResult result  = WorldDatabase.Query("SELECT creature_entry, level, hp, mana, str, agi, sta, inte, spi, armor, min_dmg, max_dmg FROM pet_levelstats");
 
         uint32 count = 0;
 
@@ -2801,6 +2801,8 @@ void ObjectMgr::LoadPetLevelInfo()
             pLevelInfo->health = fields[2].GetUInt16();
             pLevelInfo->mana   = fields[3].GetUInt16();
             pLevelInfo->armor  = fields[9].GetUInt32();
+            pLevelInfo->minDamage = fields[10].GetUInt16();
+            pLevelInfo->maxDamage = fields[11].GetUInt16();
 
             for (uint8 i = 0; i < MAX_STATS; i++)
                 pLevelInfo->stats[i] = fields[i+4].GetUInt16();

@@ -356,12 +356,18 @@ typedef std::unordered_map<uint16, InstanceTemplateAddon> InstanceTemplateAddonC
 
 struct PetLevelInfo
 {
-    PetLevelInfo() : health(0), mana(0) { for(unsigned short & stat : stats) stat = 0; }
+    PetLevelInfo() : health(0), mana(0), minDamage(0), maxDamage(0) 
+    { 
+        for(uint16& stat : stats)
+            stat = 0; 
+    }
 
     uint16 stats[MAX_STATS];
     uint16 health;
     uint16 mana;
-    uint16 armor;
+    uint32 armor;
+    uint16 minDamage;
+    uint16 maxDamage;
 };
 
 struct ReputationOnKillEntry

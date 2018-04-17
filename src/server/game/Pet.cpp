@@ -1189,19 +1189,22 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             uint32 fire = owner->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
             uint32 shadow = owner->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             uint32 val = (fire > shadow) ? fire : shadow;
+            if (val < 0)
+                val = 0;
 
             SetBonusDamage(int32(val * 0.15f));
-            //bonusAP += val * 0.57;
-                        
+
+            //default dmg values
             float minDmg = float(petlevel - (petlevel / 4));
             float maxDmg = float(petlevel + (petlevel / 4));
-            float factor = 1.0f;
-            
-            if (GetEntry() == ENTRY_FELGUARD) 
-                factor = 1.4f; //pure guess here, need the right value
+            if (pInfo) //db value if any
+            {
+                minDmg = pInfo->minDamage;
+                maxDmg = pInfo->maxDamage;
+            } 
 
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, minDmg * factor);
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxDmg * factor );
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, minDmg);
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxDmg);
 
             //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
 
