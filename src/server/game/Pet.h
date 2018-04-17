@@ -68,8 +68,8 @@ class TC_GAME_API Pet : public Guardian
         void SetLoyaltyLevel(LoyaltyLevel level);
         void GivePetXP(uint32 xp);
         void GivePetLevel(uint32 level);
+        void SynchronizeLevelWithOwner();
         //bool InitStatsForLevel(uint32 level);
-        void InitPetAuras(const uint32 Entry);
         bool HaveInDiet(ItemTemplate const* item) const;
         uint32 GetCurrentFoodBenefitLevel(uint32 itemlevel);
         void SetDuration(int32 dur) { m_duration = dur; }

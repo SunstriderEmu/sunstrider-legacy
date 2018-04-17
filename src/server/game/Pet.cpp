@@ -290,11 +290,11 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(nullptr));
     SetCreatorGUID(owner->GetGUID());
 
-    InitStatsForLevel( petlevel);
+    InitStatsForLevel(petlevel);
     SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, fields[5].GetUInt32());
 
-#ifdef LICH_KING
     SynchronizeLevelWithOwner();
+#ifdef LICH_KING
 
     // Set pet's position after setting level, its size depends on it
     float px, py, pz;
@@ -354,6 +354,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
     // since last save (in seconds)
     uint32 timediff = (time(nullptr) - fields[18].GetUInt32());
+    _LoadAuras(timediff); //sunstrider: special pet handling in there, we don't load aura saved too long ago since last dismiss
 
     if (!isTemporarySummon)
     {
@@ -379,9 +380,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
                 break;
         }
 #endif
-        LearnPetPassives();
-        if (getPetType() == HUNTER_PET)
-            _LoadAuras(timediff); //sunstrider: special pet handling, we don't load aura saved too long ago since last dismiss
+        LearnPetPassives(); //must be after _LoadAuras since _LoadAuras removes all auras
         if (map->IsBattleArena())
             RemoveArenaAuras(false);
         CastPetAuras(current);
@@ -2002,148 +2001,9 @@ bool Pet::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32
     if(getPetType() == MINI_PET)                            // always non-attackable
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-    InitPetAuras(Entry);
-
     GetThreatManager().Initialize();
 
     return true;
-}
-
-void Pet::InitPetAuras(const uint32 Entry)
-{
-    CreatureTemplate const *cInfo = sObjectMgr->GetCreatureTemplate(Entry);
-    if(!cInfo)
-        return;
-
-    uint32 aura1 = 0, aura2 = 0, aura3 = 0;
-
-    switch(cInfo->family)
-    {
-        // WARLOCK PETS:
-        case CREATURE_FAMILY_IMP:
-            aura1 = 18728;
-            aura2 = 18737;
-            aura3 = 18740;
-            break;
-        case CREATURE_FAMILY_FELHUNTER:
-            aura1 = 18730;
-            aura2 = 18738;
-            aura3 = 18739;
-            break;
-        case CREATURE_FAMILY_VOIDWALKER:
-            aura1 = 18727;
-            aura2 = 18735;
-            aura3 = 18742;
-            break;
-        case CREATURE_FAMILY_SUCCUBUS:
-            aura1 = 18729;
-            aura2 = 18736;
-            aura3 = 18741;
-            break;
-        case CREATURE_FAMILY_FELGUARD:
-            aura1 = 30147;
-            aura2 = 30148;
-            aura3 = 30149;
-            break;
-
-        // HUNTER PETS:
-        case CREATURE_FAMILY_HYENA:
-            aura1 = 17215;
-            break;
-        case CREATURE_FAMILY_BEAR:
-            aura1 = 17208;
-            break;
-        case CREATURE_FAMILY_SERPENT:
-            aura1 = 35386;
-            break;
-        case CREATURE_FAMILY_WOLF:
-            aura1 = 17223;
-            break;
-        case CREATURE_FAMILY_WARP_STALKER:
-            aura1 = 35254;
-            break;
-        case CREATURE_FAMILY_SPOREBAT:
-            aura1 = 35258;
-            break;
-        case CREATURE_FAMILY_DRAGONHAWK:
-            aura1 = 34887;
-            break;
-        case CREATURE_FAMILY_NETHER_RAY:
-            aura1 = 35253;
-            break;
-        case CREATURE_FAMILY_RAVAGER:
-            aura1 = 35257;
-            break;
-        case CREATURE_FAMILY_BOAR:
-            aura1 = 7000;
-            break;
-        case CREATURE_FAMILY_BAT:
-            aura1 = 17206;
-            break;
-        case CREATURE_FAMILY_CARRION_BIRD:
-            aura1 = 17209;
-            break;
-        case CREATURE_FAMILY_CAT:
-            aura1 = 17210;
-            break;
-        case CREATURE_FAMILY_SPIDER:
-            aura1 = 17219;
-            break;
-        case CREATURE_FAMILY_CROCOLISK:
-            aura1 = 17212;
-            break;
-        case CREATURE_FAMILY_CRAB:
-            aura1 = 17211;
-            break;
-        case CREATURE_FAMILY_GORILLA:
-            aura1 = 17214;
-            break;
-        case CREATURE_FAMILY_RAPTOR:
-            aura1 = 17217;
-            break;
-        case CREATURE_FAMILY_TALLSTRIDER:
-            aura1 = 17220;
-            break;
-        case CREATURE_FAMILY_SCORPID:
-            aura1 = 17218;
-            break;
-        case CREATURE_FAMILY_TURTLE:
-            aura1 = 17221;
-            break;
-        case CREATURE_FAMILY_OWL:
-            aura1 = 17216;
-            break;
-        case CREATURE_FAMILY_WIND_SERPENT:
-            aura1 = 17222;
-            break;
-        case CREATURE_FAMILY_DOOMGUARD:
-        case CREATURE_FAMILY_REMOTE_CONTROL:
-        case CREATURE_FAMILY_SEA_LION:
-        default:
-            return;
-    }
-
-    if(aura1)
-        CastSpell(this, aura1, true);
-    if(aura2)
-        CastSpell(this, aura2, true);
-    if(aura3)
-        CastSpell(this, aura3, true);
-
-    // Hunter Pets have multiple auras
-    if(getPetType() == HUNTER_PET)
-    {
-        CastSpell(this, 8875, true);    // Damage
-        CastSpell(this, 19580, true);   // Armor
-        CastSpell(this, 19581, true);   // HP
-        CastSpell(this, 19582, true);   // Speed
-        CastSpell(this, 19589, true);   // Power Regen
-        CastSpell(this, 19591, true);   // Critical Chance
-        CastSpell(this, 20784, true);   // Frenzy Chance
-        CastSpell(this, 34666, true);   // Hit Chance
-        CastSpell(this, 34667, true);   // Dodge Chance
-        CastSpell(this, 34675, true);   // Attack Speed
-    }
 }
 
 bool Pet::HasSpell(uint32 spell) const
@@ -2208,6 +2068,29 @@ void Pet::CastPetAura(PetAura const* aura)
     CastSpell(this, auraId, args);
 }
 
+void Pet::SynchronizeLevelWithOwner()
+{
+    Player* owner = GetOwner();
+
+    switch (getPetType())
+    {
+    // always same level
+    case SUMMON_PET:
+        GivePetLevel(owner->GetLevel());
+        break;
+    // can't be greater owner level
+    case HUNTER_PET:
+        if (GetLevel() > owner->GetLevel())
+            GivePetLevel(owner->GetLevel());
+#ifdef LICH_KING
+        else if (GetLevel() + 5 < owner->GetLevel())
+            GivePetLevel(owner->GetLevel() - 5);
+#endif
+        break;
+    default:
+        break;
+    }
+}
 Player* Pet::GetOwner() const
 {
     return Minion::GetOwner()->ToPlayer();

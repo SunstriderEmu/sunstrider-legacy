@@ -4669,7 +4669,7 @@ void Unit::SetMinion(Minion *minion, bool apply)
     {
         if (minion->GetOwnerGUID())
         {
-            TC_LOG_FATAL("entities.unit", "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), GetEntry());
+            TC_LOG_FATAL("entities.unit", "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), minion->GetOwnerGUID());
             return;
         }
 
@@ -7722,7 +7722,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype)
 
     if (Creature* creature = ToCreature())
     {
-        /* TC logic, why is this?
+        /* TC logic, why is this? (check Unit::AttackStop() in TC if enabling this)
         // for creature case, we check explicit if mob searched for assistance
         if (creature->HasSearchedAssistance())
             speed *= 0.66f;                                 // best guessed value, so this will be 33% reduction. Based off initial speed, mob can then "run", "walk fast" or "walk".
@@ -7795,18 +7795,12 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
         // and do it only for real sent packets and use run for run/mounted as client expected
         ++ToPlayer()->m_forced_speed_changes[mtype];
 
+        /* TC logic, disabled, pets will now have their speed increased in Unit::UpdateSpeed when owner is far away, this this is not needed anymore.
+        This was also breaking hunter talent "Bestial swiftness"
         if (m_speed_rate[mtype] >= 1.0f)
-        {
             if (!IsInCombat())
-            {
-                if (Guardian* pet = GetGuardianPet())
-                    pet->SetSpeedRate(mtype, m_speed_rate[mtype], sendUpdate);
-            }
-
-            if (ObjectGuid minipet_guid = GetCritterGUID())
-                if(Unit* minipet = ObjectAccessor::GetCreature(*this, minipet_guid))
-                    minipet->SetSpeedRate(mtype, m_speed_rate[mtype], sendUpdate);
-        }
+                if (Pet* pet = GetPet())
+                    pet->SetSpeedRate(mtype, m_speed_rate[mtype], sendUpdate);*/
     }
 
     if (!sendUpdate)

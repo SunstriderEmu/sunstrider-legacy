@@ -8749,25 +8749,23 @@ void ObjectMgr::LoadSpellTemplates()
             sSpellsByCategoryStore[spell->Category].insert(spellTemplate.first);
     }
 
-    for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j) 
+    for (SkillLineAbilityEntry const* skillLine : sSkillLineAbilityStore)
     {
-        SkillLineAbilityEntry const *skillLine = sSkillLineAbilityStore.LookupEntry(j);
-        if(!skillLine)
-            continue;
-
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->spellId);
-        if(spellInfo && (spellInfo->Attributes & 0x1D0) == 0x1D0) 
+        SpellEntry const* spellInfo = GetSpellTemplate(skillLine->spellId);
+        if (spellInfo && spellInfo->Attributes & SPELL_ATTR0_PASSIVE)
         {
-            for (uint32 i = 1; i < sCreatureFamilyStore.GetNumRows(); ++i)
+            for (CreatureFamilyEntry const* cFamily : sCreatureFamilyStore)
             {
-                CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(i);
-                if(!cFamily)
+                if (skillLine->skillId != cFamily->skillLine[0] && skillLine->skillId != cFamily->skillLine[1])
                     continue;
 
-                if(skillLine->skillId != cFamily->skillLine[0] && skillLine->skillId != cFamily->skillLine[1])
+                if (spellInfo->SpellLevel)
                     continue;
 
-                sPetFamilySpellsStore[i].insert(spellInfo->Id);
+                if (skillLine->AutolearnType != SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN)
+                    continue;
+
+                sPetFamilySpellsStore[cFamily->ID].insert(spellInfo->Id);
             }
         }
     }
