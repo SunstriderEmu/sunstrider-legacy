@@ -1608,7 +1608,7 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
         target = m_caster->GetCharmerOrOwner();
         break;
     case TARGET_UNIT_PET:
-        if (unitCaster)
+        if (Unit* unitCaster = m_caster->ToUnit())
         {
             target = unitCaster->GetGuardianPet();
             if (!target)
@@ -1616,7 +1616,7 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
         }
         break;
     case TARGET_UNIT_SUMMONER:
-        if (unitCaster)
+        if (Unit* unitCaster = m_caster->ToUnit())
             if (unitCaster->IsSummon())
                 target = unitCaster->ToTempSummon()->GetSummoner();
         break;
