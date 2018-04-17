@@ -110,7 +110,7 @@ void WorldSession::_HandleBattlegroundJoin(BattlegroundTypeId bgTypeId, uint32 i
             return;
         }
 
-        if (_player->InBattlegroundQueue() && bgTypeId == BATTLEGROUND_RB)
+        if (_player->InBattlegroundQueue(true) && bgTypeId == BATTLEGROUND_RB)
         {
             // player is already in queue, can't start random queue
             WorldPacket data;
@@ -128,6 +128,17 @@ void WorldSession::_HandleBattlegroundJoin(BattlegroundTypeId bgTypeId, uint32 i
             _player->SendDirectMessage(&data);
             return;
         }
+
+#ifdef LICH_KING
+        if (_player->isUsingLfg())
+        {
+            // player is using dungeon finder or raid finder
+            WorldPacket data;
+            sBattlegroundMgr->BuildGroupJoinedBattlegroundPacket(&data, ERR_LFG_CANT_USE_BATTLEGROUND);
+            _player->SendDirectMessage(&data);
+            return;
+        }
+#endif
 
         // check if already in queue
         if (_player->GetBattlegroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
