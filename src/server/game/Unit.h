@@ -10,8 +10,6 @@
 #include "SharedDefines.h"
 #include "ThreatManager.h"
 #include "CombatManager.h"
-#include "Movement/FollowerReference.h"
-#include "Movement/FollowerRefManager.h"
 #include "EventProcessor.h"
 #include "Movement/MotionMaster.h"
 #include "DBCStructure.h"
@@ -20,6 +18,7 @@
 #include "SpellDefines.h"
 #include "SpellInfo.h"
 #include "ItemPrototype.h"
+struct AbstractFollower;
 class UnitAI;
 class SpellCastTargets;
 class Aura;
@@ -427,7 +426,7 @@ enum UnitState : uint32
     UNIT_STATE_ALL_STATE           = 0xffffffff                      //(UNIT_STATE_STOPPED | UNIT_STATE_MOVING | UNIT_STATE_IN_COMBAT | UNIT_STATE_IN_FLIGHT)
 };
 
-enum UnitMoveType
+enum UnitMoveType : uint8
 {
     MOVE_WALK           = 0,
     MOVE_RUN            = 1,
@@ -1245,7 +1244,8 @@ class TC_GAME_API Unit : public WorldObject
         void SetCanDualWield(bool value) { m_canDualWield = value; }
         float GetCombatReach() const override { return m_floatValues[UNIT_FIELD_COMBATREACH]; }
         bool IsWithinCombatRange(Unit const* obj, float dist2compare) const;
-        bool IsWithinMeleeRange(Unit const* obj, float dist = MELEE_RANGE) const;
+        bool IsWithinMeleeRange(Unit const* obj) const { return IsWithinMeleeRangeAt(GetPosition(), obj); }
+        bool IsWithinMeleeRangeAt(Position const& pos, Unit const* obj) const;
         float GetMeleeRange(Unit const* target) const;
         virtual SpellSchoolMask GetMeleeDamageSchoolMask(WeaponAttackType attackType = BASE_ATTACK, uint8 damageIndex = 0) const = 0;
         uint32 m_extraAttacks;
@@ -2141,8 +2141,9 @@ class TC_GAME_API Unit : public WorldObject
         float MeleeSpellMissChance(Unit const* victim, WeaponAttackType attType, int32 skillDiff, uint32 spellId) const override;
         SpellMissInfo MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo) const override;
 
-        void AddFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
-        void RemoveFollower(FollowerReference* /*pRef*/) { /* nothing to do yet */ }
+        void FollowerAdded(AbstractFollower* f) { m_followingMe.insert(f); }
+        void FollowerRemoved(AbstractFollower* f) { m_followingMe.erase(f); }
+        void RemoveAllFollowers();
 
         MotionMaster* GetMotionMaster() { return i_motionMaster; }
         const MotionMaster* GetMotionMaster() const { return i_motionMaster; }
@@ -2365,7 +2366,7 @@ class TC_GAME_API Unit : public WorldObject
         friend class ThreatManager;
         ThreatManager m_threatManager;
 
-        FollowerRefManager m_FollowingRefManager;
+        std::unordered_set<AbstractFollower*> m_followingMe;
 
         ComboPointHolderSet m_ComboPointHolders;
         

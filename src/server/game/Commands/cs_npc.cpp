@@ -1,7 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "Transport.h"
-#include "TargetedMovementGenerator.h"
+#include "FollowMovementGenerator.h"
 #include "GameEventMgr.h"
 #include "WaypointMovementGenerator.h"
 #include "GridNotifiersImpl.h"
@@ -788,10 +788,8 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
         return false;
     }
 
-    FollowMovementGenerator<Creature> const* mgen
-        = static_cast<FollowMovementGenerator<Creature> const*>((creature->GetMotionMaster()->top()));
-
-    if(mgen->GetTarget()!=player)
+    FollowMovementGenerator const* mgen = static_cast<FollowMovementGenerator const*>((creature->GetMotionMaster()->top()));
+    if (mgen->GetTarget() != player)
     {
         PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName().c_str());
         SetSentErrorMessage(true);

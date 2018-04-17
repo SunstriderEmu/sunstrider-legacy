@@ -69,21 +69,6 @@ bool PetAI::_needToStop() const
     return !me->IsValidAttackTarget(me->GetVictim());
 }
 
-void PetAI::ResetMovement()
-{
-    Unit* owner = i_pet.GetCharmerOrOwner();
-
-    if(owner && i_pet.IsAlive() && i_pet.GetCharmInfo() && i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW))
-    {
-        i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,owner->GetFollowAngle());
-    }
-    else
-    {
-        i_pet.ClearUnitState(UNIT_STATE_FOLLOW);
-        i_pet.GetMotionMaster()->Clear();
-        i_pet.GetMotionMaster()->MoveIdle();
-    }
-}
 void PetAI::_stopAttack()
 {
     if (!me->IsAlive())
@@ -351,7 +336,7 @@ void PetAI::DoAttack(Unit* target, bool chase)
             ClearCharmInfoFlags();
             me->GetCharmInfo()->SetIsCommandAttack(oldCmdAttack); // For passive pets commanded to attack so they will use spells
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveChase(target, me->GetPetChaseDistance());
+            me->GetMotionMaster()->MoveChase(target, me->GetPetChaseDistance(), (float)M_PI);
         }
         else // (Stay && ((Aggressive || Defensive) && In Melee Range)))
         {

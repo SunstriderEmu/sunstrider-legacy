@@ -96,6 +96,9 @@ inline void ApplyModFloatVar(float& var, float  val, bool apply)
         var = 0;
 }
 
+template <class T>
+inline T square(T x) { return x * x; }
+
 TC_COMMON_API bool Utf8toWStr(const std::string& utf8str, std::wstring& wstr);
 // in wsize==max size of buffer, out wsize==real string size
 TC_COMMON_API bool Utf8toWStr(char const* utf8str, size_t csize, wchar_t* wstr, size_t& wsize);

@@ -108,7 +108,7 @@ enum PetNameInvalidReason : int
 #define OWNER_MAX_DISTANCE 100
 
 #define PET_FOLLOW_DIST  0.7
-#define PET_FOLLOW_ANGLE float(M_PI/2)
+#define PET_FOLLOW_ANGLE float(M_PI)
 
 #define PET_XP_FACTOR 0.25f
 

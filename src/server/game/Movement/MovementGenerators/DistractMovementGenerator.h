@@ -12,7 +12,7 @@ class TC_GAME_API DistractMovementGenerator : public MovementGenerator
         void Finalize(Unit*, bool) override;
         void Reset(Unit* owner) override{ Initialize(owner); }
         bool Update(Unit*, uint32) override;
-        MovementGeneratorType GetMovementGeneratorType() override { return DISTRACT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return DISTRACT_MOTION_TYPE; }
 
     private:
         uint32 m_timer;
@@ -29,7 +29,7 @@ class TC_GAME_API AssistanceDistractMovementGenerator : public MovementGenerator
         void Finalize(Unit*, bool) override;
         void Reset(Unit* owner) override{ Initialize(owner); }
         bool Update(Unit*, uint32) override;
-        MovementGeneratorType GetMovementGeneratorType() override { return ASSISTANCE_DISTRACT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return ASSISTANCE_DISTRACT_MOTION_TYPE; }
     private:
         uint32 m_timer;
 };

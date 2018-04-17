@@ -20,7 +20,7 @@ class ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMov
         void DoReset(T*);
         bool DoUpdate(T*, uint32);
 
-        MovementGeneratorType GetMovementGeneratorType() { return CONFUSED_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const { return CONFUSED_MOTION_TYPE; }
     private:
         PathGenerator* _path;
         bool _interrupt;

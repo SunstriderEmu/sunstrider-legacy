@@ -41,14 +41,6 @@ Position Position::GetPositionWithOffset(Position const& offset) const
     return ret;
 }
 
-float Position::GetAbsoluteAngle(const Position *obj) const
-{
-    if (!obj)
-        return 0;
-
-    return GetAbsoluteAngle(obj->GetPositionX(), obj->GetPositionY());
-}
-
 // Return angle in range 0..2*pi
 float Position::GetAbsoluteAngle(const float x, const float y) const
 {

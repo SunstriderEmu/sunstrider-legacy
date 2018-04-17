@@ -57,6 +57,7 @@ class TC_GAME_API PathGenerator
         use forceDest to force path to arrive at given destination (path may then follow terrain on a part of the path only)
         */
         bool CalculatePath(float destX, float destY, float destZ, bool forceDest = false, bool straightLine = false);
+        bool IsInvalidDestinationZ(Unit const* target) const;
 
         // option setters - use optional
         void SetUseStraightPath(bool useStraightPath) { _useStraightPath = useStraightPath; }
@@ -70,6 +71,9 @@ class TC_GAME_API PathGenerator
         Movement::PointsArray const& GetPath() const { return _pathPoints; }
 
         PathType GetPathType() const { return _type; }
+
+        // shortens the path until the destination is the specified distance from the target point
+        void ShortenPathUntilDist(G3D::Vector3 const& point, float dist);
 
         void ExcludeSteepSlopes() { _filter.setExcludeFlags(NAV_STEEP_SLOPES); }
 

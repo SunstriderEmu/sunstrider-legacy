@@ -30,7 +30,7 @@ class RotateMovementGenerator : public MovementGenerator
         void Finalize(Unit*, bool) override;
         void Reset(Unit* owner) override { Initialize(owner); }
         bool Update(Unit*, uint32) override ;
-        MovementGeneratorType GetMovementGeneratorType() override { return ROTATE_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return ROTATE_MOTION_TYPE; }
 
     private:
         uint32 m_duration, m_maxDuration;

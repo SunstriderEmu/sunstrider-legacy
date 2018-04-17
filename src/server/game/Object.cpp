@@ -18,7 +18,7 @@
 #include "ObjectAccessor.h"
 #include "Log.h"
 #include "Transport.h"
-#include "TargetedMovementGenerator.h"
+#include "ChaseMovementGenerator.h"
 #include "WaypointMovementGenerator.h"
 #include "Management/VMapFactory.h"
 #include "CellImpl.h"

@@ -21,7 +21,6 @@ class TC_GAME_API PetAI : public CreatureAI
 
         void UpdateAI(const uint32) override;
         static int Permissible(const Creature *);
-        void ResetMovement();
 
 		void MovementInform(uint32 moveType, uint32 data) override;
 		void KilledUnit(Unit* /*victim*/) override;

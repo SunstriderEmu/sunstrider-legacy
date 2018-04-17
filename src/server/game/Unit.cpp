@@ -39,7 +39,8 @@
 #include "CharacterCache.h"
 #include "AntiCheatMgr.h"
 #include "SpellHistory.h"
-#include "TargetedMovementGenerator.h"
+#include "ChaseMovementGenerator.h"
+#include "AbstractFollower.h"
 
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
@@ -550,14 +551,14 @@ bool Unit::IsWithinCombatRange(Unit const* obj, float dist2compare) const
     return distsq < maxdist * maxdist;
 }
 
-bool Unit::IsWithinMeleeRange(Unit const* obj, float dist) const
+bool Unit::IsWithinMeleeRangeAt(Position const& pos, Unit const* obj) const
 {
     if (!obj || !IsInMap(obj) || !InSamePhase(obj))
         return false;
 
-    float dx = GetPositionX() - obj->GetPositionX();
-    float dy = GetPositionY() - obj->GetPositionY();
-    float dz = GetPositionZ() - obj->GetPositionZ();
+    float dx = pos.GetPositionX() - obj->GetPositionX();
+    float dy = pos.GetPositionY() - obj->GetPositionY();
+    float dz = pos.GetPositionZ() - obj->GetPositionZ();
     float distsq = dx*dx + dy*dy + dz*dz;
 
     float maxdist = GetMeleeRange(obj);
@@ -7733,7 +7734,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype)
             MovementGenerator* top = creature->GetMotionMaster()->topOrNull();
             if (top && top->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
             {
-                Unit* followed = ASSERT_NOTNULL(dynamic_cast<FollowMovementGenerator<Creature>*>(top))->GetTarget();
+                Unit* followed = ASSERT_NOTNULL(dynamic_cast<AbstractFollower*>(top))->GetTarget();
                 if (followed && followed->GetGUID() == GetOwnerGUID() && !followed->IsInCombat())
                 {
                     float ownerSpeed = followed->GetSpeedRate(mtype);
@@ -7868,6 +7869,12 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
         data << float(GetSpeed(mtype));
         SendMessageToSet(&data, false);
     }
+}
+
+void Unit::RemoveAllFollowers()
+{
+    while (!m_followingMe.empty())
+        (*m_followingMe.begin())->SetTarget(nullptr);
 }
 
 void Unit::SetDeathState(DeathState s)

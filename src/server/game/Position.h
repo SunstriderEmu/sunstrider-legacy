@@ -136,21 +136,24 @@ struct TC_GAME_API Position
     void GetPositionOffsetTo(const Position & endPos, Position & retOffset) const;
     Position GetPositionWithOffset(Position const& offset) const;
 
-    float GetAbsoluteAngle(const Position *pos) const;
     float GetAbsoluteAngle(float x, float y) const;
-    float GetRelativeAngle(const Position *pos) const
-        { return GetAbsoluteAngle(pos) - m_orientation; }
+    float GetAbsoluteAngle(Position const& pos) const { return GetAbsoluteAngle(pos.m_positionX, pos.m_positionY); }
+    float GetAbsoluteAngle(Position const* pos) const { return GetAbsoluteAngle(*pos); }
+    float ToAbsoluteAngle(float relAngle) const { return NormalizeOrientation(relAngle + m_orientation); }
+
     float GetRelativeAngle(float x, float y) const { return GetAbsoluteAngle(x, y) - m_orientation; }
+    float GetRelativeAngle(Position const& pos) const { return ToRelativeAngle(GetAbsoluteAngle(pos)); }
+    float GetRelativeAngle(Position const* pos) const { return ToRelativeAngle(GetAbsoluteAngle(pos)); }
+    float ToRelativeAngle(float absAngle) const { return NormalizeOrientation(absAngle - m_orientation); }
+
     void GetSinCos(float x, float y, float &vsin, float &vcos) const;
 
-    bool IsInDist2d(float x, float y, float dist) const
-        { return GetExactDist2dSq(x, y) < dist * dist; }
-    bool IsInDist2d(const Position *pos, float dist) const
-        { return GetExactDist2dSq(pos) < dist * dist; }
-    bool IsInDist(float x, float y, float z, float dist) const
-        { return GetExactDistSq(x, y, z) < dist * dist; }
-    bool IsInDist(const Position *pos, float dist) const
-        { return GetExactDistSq(pos) < dist * dist; }
+    bool IsInDist2d(float x, float y, float dist) const { return GetExactDist2dSq(x, y) < dist * dist; }
+    bool IsInDist2d(Position const* pos, float dist) const { return GetExactDist2dSq(pos) < dist * dist; }
+
+    bool IsInDist(float x, float y, float z, float dist) const { return GetExactDistSq(x, y, z) < dist * dist; }
+    bool IsInDist(Position const& pos, float dist) const { return GetExactDistSq(pos) < dist * dist; }
+    bool IsInDist(Position const* pos, float dist) const { return GetExactDistSq(pos) < dist * dist; }
 
     /*
     search using this relation: dist2d < radius && abs(dz) < height
