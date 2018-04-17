@@ -7664,8 +7664,9 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
             }
             else 
             {
-                if (target != m_caster && !target->IsWithinLOSInMap(caster, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
-                    return false;
+                if(m_caster->GetTypeId() != TYPEID_GAMEOBJECT || !m_caster->GetOwnerGUID()) //sun: no los check for non owned traps, speedup and fixes some slightly underground traps
+                    if (target != m_caster && !target->IsWithinLOSInMap(caster, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+                        return false;
             }
         }
         break;
