@@ -210,6 +210,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell
     INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 	caster->SetPower(powerType, expectedPowerCost);
+    INTERNAL_ASSERT_INFO("Caster has not the expected power %u but %u instead", expectedPowerCost, caster->GetPower(powerType));
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
     _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);

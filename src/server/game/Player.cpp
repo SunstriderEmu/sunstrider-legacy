@@ -21994,18 +21994,18 @@ void Player::RessurectUsingRequestData()
     ResurrectPlayer(0.0f,false);
 
     if(GetMaxHealth() > m_resurrectHealth)
-        SetHealth( m_resurrectHealth );
+        SetHealth(m_resurrectHealth);
     else
-        SetHealth( GetMaxHealth() );
+        SetHealth(GetMaxHealth());
 
     if(GetMaxPower(POWER_MANA) > m_resurrectMana)
-        SetPower(POWER_MANA, m_resurrectMana );
+        SetPower(POWER_MANA, m_resurrectMana);
     else
-        SetPower(POWER_MANA, GetMaxPower(POWER_MANA) );
+        SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
 
-    SetPower(POWER_RAGE, 0 );
+    SetPower(POWER_RAGE, 0);
 
-    SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY) );
+    SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
 
     SpawnCorpseBones();
 }

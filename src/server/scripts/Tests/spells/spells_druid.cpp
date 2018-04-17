@@ -2047,7 +2047,7 @@ public:
     class RebirthTestImpt : public TestCase
     {
     public:
-        RebirthTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+        RebirthTestImpt() : TestCase(STATUS_PASSING, true) { }
 
         void TestRebirth(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 reagentId, uint32 expectedHealth, uint32 expectedMana)
         {
@@ -2055,9 +2055,13 @@ public:
             caster->GetSpellHistory()->ResetAllCooldowns();
             caster->AddItem(reagentId, 1);
             TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
-            //victim->AcceptRessurectRequest();
             TEST_HAS_COOLDOWN(caster, spellId, Minutes(20));
+            Wait(1);
+            victim->RessurectUsingRequestData();
+            Wait(1); //resurrect needs 1 update to be done
+            ASSERT_INFO("Victim has %u instead of expected %u health", victim->GetHealth(), expectedHealth);
             TEST_ASSERT(victim->GetHealth() == expectedHealth);
+            ASSERT_INFO("Victim has %u instead of expected %u mana", victim->GetPower(POWER_MANA), expectedMana);
             TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
         }
 
@@ -2067,7 +2071,7 @@ public:
             TestPlayer* ally  = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
             TestPlayer* enemy = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
 
-            uint32 manaCost = 1611;
+            uint32 const manaCost = 1611;
 
             uint32 const MAPLE_SEED         = 17034;
             uint32 const STRANGLETHRON_SEED = 17035;
@@ -2076,12 +2080,12 @@ public:
             uint32 const IRONWOOD_SEED      = 17038;
             uint32 const FLINTWEED_SEED     = 22147;
 
-            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_1, MAPLE_SEED, manaCost, 400, 700);
-            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_2, STRANGLETHRON_SEED, manaCost, 750, 1200);
-            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_3, ASHWOOD_SEED, manaCost, 1100, 1700);
-            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_4, HORNBEAM_SEED, manaCost, 1600, 2200);
-            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_5, IRONWOOD_SEED, manaCost, 2200, 2800);
-            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_6, FLINTWEED_SEED, manaCost, 3200, 3200);
+            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_1, manaCost, MAPLE_SEED, 400, 700);
+            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_2, manaCost, STRANGLETHRON_SEED, 750, 1200);
+            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_3, manaCost, ASHWOOD_SEED, 1100, 1700);
+            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_4, manaCost, HORNBEAM_SEED, 1600, 2200);
+            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_5, manaCost, IRONWOOD_SEED, 2200, 2800);
+            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_6, manaCost, FLINTWEED_SEED, 3200, 3200);
         }
     };
 
