@@ -162,6 +162,7 @@ public:
     #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount, crit) { _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedAmount, crit); _ResetCaller(); }
   
     #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount); _ResetCaller(); }
+    #define TEST_CHANNEL_HEALING(caster, target, spellID, testedSpellID, tickCount, expectedAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount, true); _ResetCaller(); }
 
     /* Cast given spells a bunch of time from caster on victim, and test if results are chance% given missInfo
     chance: 0-100
@@ -191,6 +192,7 @@ public:
     void GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount = 0);
     void GetWhiteDamageDoneTo(TestPlayer* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt, uint32 expectedCount = 0);
     float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
+    float GetChannelHealingTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
 
     static uint32 GetTestBotAccountId();
     TestStatus GetTestStatus() const { return _testStatus; }
@@ -219,7 +221,7 @@ protected:
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage); //if !damage, then use healing
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit);
-    void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount);
+    void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount, bool healing = false);
     /* if sampleSize != 0, check if results count = sampleSize
     expectedResult: 0 - 100
     allowedError: 0 - 100
