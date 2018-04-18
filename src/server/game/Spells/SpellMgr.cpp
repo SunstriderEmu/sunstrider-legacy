@@ -8,6 +8,7 @@
 #include "Spell.h"
 #include "BattleGroundMgr.h"
 #include "SpellInfo.h"
+#include "Containers.h"
 
 bool SpellMgr::IsPrimaryProfessionSkill(uint32 skill)
 {
@@ -895,18 +896,23 @@ void SpellMgr::LoadSpellProcs()
 
             switch (spellInfo->Effects[i].ApplyAuraName)
             {
-                // Reflect auras should only proc off reflects
+            // Reflect auras should only proc off reflects
             case SPELL_AURA_REFLECT_SPELLS:
             case SPELL_AURA_REFLECT_SPELLS_SCHOOL:
                 procEntry.HitMask = PROC_HIT_REFLECT;
                 break;
-                // Only drop charge on crit
+            // Only drop charge on crit
             case SPELL_AURA_MOD_WEAPON_CRIT_PERCENT:
                 procEntry.HitMask = PROC_HIT_CRITICAL;
                 break;
-                // Only drop charge on block
+            // Only drop charge on block
             case SPELL_AURA_MOD_BLOCK_PERCENT:
                 procEntry.HitMask = PROC_HIT_BLOCK;
+                break;
+            // proc auras with another aura reducing hit chance (eg 63767) only proc on missed attack
+            case SPELL_AURA_MOD_HIT_CHANCE:
+                if (spellInfo->Effects[i].CalcValue() <= -100)
+                    procEntry.HitMask = PROC_HIT_MISS;
                 break;
             default:
                 continue;
@@ -3055,14 +3061,7 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
         }
 #endif
 
-        if (!spellInfo->_IsPositiveEffect(EFFECT_0, true))
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
-
-        if (!spellInfo->_IsPositiveEffect(EFFECT_1, true))
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF1;
-
-        if (!spellInfo->_IsPositiveEffect(EFFECT_2, true))
-            spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF2;
+        spellInfo->_InitializeSpellPositivity();
 
         if (spellInfo->SpellVisual == 3879)
             spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
@@ -3254,7 +3253,7 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
     {
-        SpellInfo* spellInfo = mSpellInfoMap[i];
+        spellInfo = mSpellInfoMap[i];
         if (!spellInfo)
             continue;
 

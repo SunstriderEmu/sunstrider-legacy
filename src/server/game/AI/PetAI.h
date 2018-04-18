@@ -21,7 +21,6 @@ class TC_GAME_API PetAI : public CreatureAI
 
         void UpdateAI(const uint32) override;
         static int Permissible(const Creature *);
-        void ResetMovement();
 
 		void MovementInform(uint32 moveType, uint32 data) override;
 		void KilledUnit(Unit* /*victim*/) override;
@@ -38,8 +37,6 @@ class TC_GAME_API PetAI : public CreatureAI
         void MoveInLineOfSight(Unit* /*who*/) override { } // CreatureAI interferes with returning pets
         void MoveInLineOfSight_Safe(Unit* /*who*/) { } // CreatureAI interferes with returning pets
 
-    protected:
-        void Minipet_DistanceCheck(uint32 diff);
     private:
         bool _needToStop(void) const;
         void _stopAttack(void);
@@ -59,7 +56,6 @@ class TC_GAME_API PetAI : public CreatureAI
 		bool CanAttack(Unit* target);
 		void ClearCharmInfoFlags();
 
-        uint32 distanceCheckTimer; //minipet only
 		Unit const* _forceAttackBreakable; //force attack target even though it has breakable aura
 };
 #endif

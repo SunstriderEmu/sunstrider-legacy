@@ -20,7 +20,6 @@
 #define TRINITY_POINTMOVEMENTGENERATOR_H
 
 #include "MovementGenerator.h"
-#include "FollowerReference.h"
 
 template<class T>
 class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
@@ -39,7 +38,7 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
 
         void UnitSpeedChanged() override { _recalculateSpeed = true; }
 
-        MovementGeneratorType GetMovementGeneratorType() override { return POINT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return POINT_MOTION_TYPE; }
 
         void GetDestination(float& x, float& y, float& z) const { x = _destination.GetPositionX(); y = _destination.GetPositionY(); z = _destination.GetPositionZ(); }
 
@@ -61,7 +60,7 @@ class AssistanceMovementGenerator : public PointMovementGenerator<Creature>
         AssistanceMovementGenerator(float _x, float _y, float _z) :
             PointMovementGenerator<Creature>(0, _x, _y, _z, 0.0f, true) { }
 
-        MovementGeneratorType GetMovementGeneratorType() override { return ASSISTANCE_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return ASSISTANCE_MOTION_TYPE; }
         void Finalize(Unit*, bool) override;
 };
 
@@ -74,7 +73,7 @@ class EffectMovementGenerator : public MovementGenerator
         void Finalize(Unit*, bool) override;
         void Reset(Unit*) override { }
         bool Update(Unit*, uint32) override;
-        MovementGeneratorType GetMovementGeneratorType() override { return EFFECT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return EFFECT_MOTION_TYPE; }
     private:
         uint32 m_Id;
 };

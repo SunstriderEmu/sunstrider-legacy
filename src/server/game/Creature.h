@@ -153,6 +153,41 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_DB_ALLOWED = (0xFFFFFFFF & ~(CREATURE_FLAG_EXTRA_DUNGEON_BOSS))
 };
 
+enum class CreatureGroundMovementType : uint8
+{
+    None,
+    Run,
+    Hover,
+
+    Max
+};
+
+enum class CreatureFlightMovementType : uint8
+{
+    None,
+    DisableGravity,
+    CanFly,
+
+    Max
+};
+
+struct TC_GAME_API CreatureMovementData
+{
+    CreatureMovementData() : Ground(CreatureGroundMovementType::Run), Flight(CreatureFlightMovementType::None), Swim(true), Rooted(false) { }
+
+    CreatureGroundMovementType Ground;
+    CreatureFlightMovementType Flight;
+    bool Swim;
+    bool Rooted;
+
+    bool IsGroundAllowed() const { return Ground != CreatureGroundMovementType::None; }
+    bool IsSwimAllowed() const { return Swim; }
+    bool IsFlightAllowed() const { return Flight != CreatureFlightMovementType::None; }
+    bool IsRooted() const { return Rooted; }
+
+    std::string ToString() const;
+};
+
 static const uint32 CREATURE_REGEN_INTERVAL = 2 * SECOND * IN_MILLISECONDS;
 static const uint32 PET_FOCUS_REGEN_INTERVAL = 4 * SECOND * IN_MILLISECONDS;
 
@@ -212,7 +247,7 @@ struct CreatureTemplate
     uint32  maxgold;
     std::string AIName;
     uint32  MovementType;
-    uint32  InhabitType;
+    CreatureMovementData Movement;
     bool    RacialLeader;
     float   ModHealth;
     float   ModMana;
@@ -370,14 +405,6 @@ struct CreatureModelInfo
 };
 
 typedef std::unordered_map<uint16, CreatureModelInfo> CreatureModelContainer;
-
-enum InhabitTypeValues
-{
-    INHABIT_GROUND = 1,
-    INHABIT_WATER  = 2,
-    INHABIT_AIR    = 4,
-    INHABIT_ANYWHERE = INHABIT_GROUND | INHABIT_WATER | INHABIT_AIR
-};
 
 // Enums used by StringTextData::Type
 enum ChatType
@@ -552,9 +579,10 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
         bool canResetTalentsOf(Player* pPlayer) const;
         bool IsOutOfThreatArea(Unit* pVictim) const;
-        bool IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster) override;
-        bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const override;
+        bool IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caster) const override;
+        bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, WorldObject const* caster) const override;
         void LoadTemplateImmunities();
+
         bool isElite() const
         {
             if(IsPet())
@@ -809,9 +837,11 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         //Play message for current creature when given time is elapsed. /!\ These events are udpated only if creature is alive
         void AddMessageEvent(uint64 timer, uint32 messageId, uint64 data = 0);
 
-        virtual bool CanWalk() const override { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }
-        virtual bool CanSwim() const override { return GetCreatureTemplate()->InhabitType & INHABIT_WATER; }
-        virtual bool CanFly() const override { return m_canFly; }
+        CreatureMovementData const& GetMovementTemplate() const;
+        bool CanWalk() const { return GetMovementTemplate().IsGroundAllowed(); }
+        bool CanSwim() const override { return GetMovementTemplate().IsSwimAllowed() || IsPet(); }
+        bool CanFly()  const override { return GetMovementTemplate().IsFlightAllowed(); }
+        bool CanHover() const { return GetMovementTemplate().Ground == CreatureGroundMovementType::Hover; }
 
         bool SetWalk(bool enable) override;
         bool SetDisableGravity(bool disable, bool packetOnly = false) override;

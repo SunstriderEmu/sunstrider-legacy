@@ -2755,5 +2755,13 @@ enum LineOfSightChecks
     LINEOFSIGHT_ALL_CHECKS      = (LINEOFSIGHT_CHECK_VMAP | LINEOFSIGHT_CHECK_GOBJECT)
 };
 
+enum WeaponAttackType : unsigned int
+{
+    BASE_ATTACK   = 0,
+    OFF_ATTACK    = 1,
+    RANGED_ATTACK = 2,
+    MAX_ATTACK    = 3
+};
+
 #endif
 

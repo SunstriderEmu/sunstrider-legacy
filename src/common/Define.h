@@ -4,6 +4,25 @@
 
 #include "CompilerDefs.h"
 
+#if TRINITY_COMPILER == TRINITY_COMPILER_GNU
+#  if !defined(__STDC_FORMAT_MACROS)
+#    define __STDC_FORMAT_MACROS
+#  endif
+#  if !defined(__STDC_CONSTANT_MACROS)
+#    define __STDC_CONSTANT_MACROS
+#  endif
+#  if !defined(_GLIBCXX_USE_NANOSLEEP)
+#    define _GLIBCXX_USE_NANOSLEEP
+#  endif
+#  if defined(HELGRIND)
+#    include <valgrind/helgrind.h>
+#    undef _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE
+#    undef _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER
+#    define _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A) ANNOTATE_HAPPENS_BEFORE(A)
+#    define _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A)  ANNOTATE_HAPPENS_AFTER(A)
+#  endif
+#endif
+
 #include <cinttypes>
 #include <cstddef>
 #include <climits>
@@ -22,6 +41,7 @@
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
 #  define TRINITY_LIBRARY_HANDLE HMODULE
 #  define TRINITY_PATH_MAX MAX_PATH
+#  define _USE_MATH_DEFINES
 #  ifndef DECLSPEC_NORETURN
 #    define DECLSPEC_NORETURN __declspec(noreturn)
 #  endif //DECLSPEC_NORETURN

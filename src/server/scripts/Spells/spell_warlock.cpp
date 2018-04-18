@@ -107,7 +107,7 @@ public:
             {
                 if (i->GetMiscValue() == SPELLMOD_CHANCE_OF_SUCCESS && i->GetSpellInfo()->SpellIconID == 113) //improved drain soul (18213 and 18372)
                 {
-                    int32 value = GetCaster()->CalculateSpellDamage(GetCaster(), i->GetSpellInfo(), EFFECT_2, &i->GetSpellInfo()->Effects[2].BasePoints);
+                    int32 value = GetCaster()->CalculateSpellDamage(i->GetSpellInfo(), EFFECT_2, &i->GetSpellInfo()->Effects[2].BasePoints);
                     basepoints0 = value * GetCaster()->GetMaxPower(POWER_MANA) / 100;
                 }
             }

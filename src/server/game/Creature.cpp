@@ -40,6 +40,22 @@
 #include "SpellAuraEffects.h"
 #include "GameTime.h"
 
+std::string CreatureMovementData::ToString() const
+{
+    char const* const GroundStates[] = { "None", "Run", "Hover" };
+    char const* const FlightStates[] = { "None", "DisableGravity", "CanFly" };
+
+    std::ostringstream str;
+    str << std::boolalpha
+        << "Ground: " << GroundStates[AsUnderlyingType(Ground)]
+        << ", Swim: " << Swim
+        << ", Flight: " << FlightStates[AsUnderlyingType(Flight)];
+    if (Rooted)
+        str << ", Rooted";
+
+    return str.str();
+}
+
 void TrainerSpellData::Clear()
 {
     for (auto & itr : spellList)
@@ -361,6 +377,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
                 transport->CalculatePassengerPosition(x, y, z, &o);
         }
 
+        UpdateAllowedPositionZ(x, y, z);
         SetHomePosition(x, y, z, o);
         GetMap()->CreatureRelocation(this, x, y, z, o);
     }
@@ -471,7 +488,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
 #endif
 
     if(!IsPet())
-        SetCanFly(GetCreatureTemplate()->InhabitType & INHABIT_AIR);
+        SetCanFly(GetMovementTemplate().IsFlightAllowed());
 
     // checked at loading
     m_defaultMovementType = MovementGeneratorType(cinfo->MovementType);
@@ -565,6 +582,9 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     }
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_SPELL_SLOW)
         ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+
+    if (GetMovementTemplate().IsRooted())
+        SetControlled(true, UNIT_STATE_ROOT);
 
     //TrinityCore has this LoadCreatureAddon();
     UpdateMovementFlags();
@@ -1111,14 +1131,7 @@ bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, u
     InitCreatureAddon();
 
 #ifdef LICH_KING
-    //! Need to be called after LoadCreaturesAddon - MOVEMENTFLAG_HOVER is set there
-    if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-    {
-        z += GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
-
-        //! Relocate again with updated Z coord
-        Relocate(x, y, z, ang);
-    }
+    m_positionZ += GetHoverOffset();
 #endif
 
     //LastUsedScriptID = GetScriptId(); sunstrider: Moved to InitEntry
@@ -1527,18 +1540,23 @@ void Creature::UpdateLevelDependantStats()
 
     // mana
     uint32 mana = stats->GenerateMana(cInfo);
-
     SetCreateMana(mana);
-    SetMaxPower(POWER_MANA, mana); // MAX Mana
-    SetPower(POWER_MANA, mana);
 
-    /// @todo set UNIT_FIELD_POWER*, for some creature class case (energy, etc)
+    switch (GetClass())
+    {
+        case UNIT_CLASS_PALADIN:
+        case UNIT_CLASS_MAGE:
+            SetMaxPower(POWER_MANA, mana);
+            SetFullPower(POWER_MANA);
+            break;
+        default: // We don't set max power here, 0 makes power bar hidden
+            break;
+    }
 
     SetStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
     SetStatFlatModifier(UNIT_MOD_MANA, BASE_VALUE, (float)mana);
 
     // damage
-
     float basedamage = stats->GenerateBaseDamage(cInfo);
 
     float weaponBaseMinDamage = basedamage;
@@ -1673,7 +1691,7 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
         return false;
     }
     //We should set first home position, because then AI calls home movement
-    SetHomePosition(data->spawnPoint);
+    SetHomePosition(*this);
 
     m_deathState = ALIVE;
 
@@ -2186,7 +2204,9 @@ void Creature::SetDeathState(DeathState s)
         if (m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
 
-        if ((CanFly() || IsFlying()) && !HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
+        bool needsFalling = ((CanFly() || IsFlying() || IsHovering()) && !HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING));
+        SetHover(false);
+        if (needsFalling)
             GetMotionMaster()->MoveFall();
 
         Unit::SetDeathState(CORPSE);
@@ -2393,7 +2413,7 @@ void Creature::LoadTemplateImmunities()
     }
 }
 
-bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster)
+bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caster) const
 {
     if (!spellInfo)
         return false;
@@ -2414,7 +2434,7 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, Unit* caster)
     return Unit::IsImmunedToSpell(spellInfo, caster);
 }
 
-bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
+bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, WorldObject const* caster) const
 {
     if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellInfo->Effects[index].Effect == SPELL_EFFECT_HEAL)
         return true;
@@ -2886,11 +2906,7 @@ void Creature::SendZoneUnderAttackMessage(Player* attacker)
 
 bool Creature::HasSpell(uint32 spellID) const
 {
-    uint8 i;
-    for(i = 0; i < MAX_CREATURE_SPELLS; ++i)
-        if(spellID == m_spells[i])
-            break;
-    return i < MAX_CREATURE_SPELLS;                         //broke before end of iteration of known spells
+    return std::find(std::begin(m_spells), std::end(m_spells), spellID) != std::end(m_spells);
 }
 
 time_t Creature::GetRespawnTimeEx() const
@@ -2929,6 +2945,14 @@ void Creature::GetRespawnPosition( float &x, float &y, float &z, float* ori, flo
         if (dist)
             *dist = 0;
     }
+}
+
+CreatureMovementData const& Creature::GetMovementTemplate() const
+{
+    if (CreatureMovementData const* movementOverride = sObjectMgr->GetCreatureMovementOverride(m_spawnId))
+        return *movementOverride;
+
+    return GetCreatureTemplate()->Movement;
 }
 
 void Creature::AllLootRemovedFromCorpse()
@@ -3508,12 +3532,6 @@ bool Creature::SetHover(bool enable, bool packetOnly /*= false*/)
     if (!packetOnly && !Unit::SetHover(enable))
         return false;
 
-    //! Unconfirmed for players:
-    if (enable)
-        SetByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, UNIT_BYTE1_FLAG_HOVER);
-    else
-        RemoveByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, UNIT_BYTE1_FLAG_HOVER);
-
     if (!movespline->Initialized())
         return true;
 
@@ -3533,8 +3551,12 @@ void Creature::UpdateMovementFlags()
     // Set the movement flags if the creature is in that mode. (Only fly if actually in air, only swim if in water, etc)
     float ground = GetFloorZ();
 
-    bool isInAir = (G3D::fuzzyGt(GetPositionZMinusOffset(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(GetPositionZMinusOffset(), ground - GROUND_HEIGHT_TOLERANCE)); // Can be underground too, prevent the falling
-    
+#ifdef LICH_KING
+    bool isInAir = (G3D::fuzzyGt(GetPositionZ(), ground + (canHover ? GetFloatValue(UNIT_FIELD_HOVERHEIGHT) : 0.0f) + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE)); // Can be underground too, prevent the falling
+#else
+    bool isInAir = (G3D::fuzzyGt(GetPositionZ(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE)); // Can be underground too, prevent the falling
+#endif
+
     if (CanFly() && isInAir && !IsFalling())
     {
         if (CanWalk())
@@ -3549,6 +3571,8 @@ void Creature::UpdateMovementFlags()
     {
         SetFlying(false);
         SetDisableGravity(false);
+        if (IsAlive() && (CanHover() || HasAuraType(SPELL_AURA_HOVER)))
+            SetHover(true);
     }
 
     if (!isInAir || CanFly())

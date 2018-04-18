@@ -588,11 +588,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
     UpdateMaxHealth();                                      // Update max Health (for add bonus from stamina)
     SetFullHealth();
-    if (GetPowerType()==POWER_MANA)
-    {
-        UpdateMaxPower(POWER_MANA);                         // Update max Mana (for add bonus from intellect)
-        SetPower(POWER_MANA,GetMaxPower(POWER_MANA));
-    }
+    SetFullPower(POWER_MANA);
 
     // original spells
     LearnDefaultSkills();
@@ -1920,7 +1916,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             }
 
             // remove arena spell coldowns/buffs now to also remove pet's cooldowns before it's temporarily unsummoned
-            if (mEntry->IsBattleArena())
+            if (mEntry->IsBattleArena() && !IsGameMaster())
             {
                 RemoveArenaSpellCooldowns();
                 RemoveArenaAuras(false);
@@ -2253,13 +2249,13 @@ void Player::ResetAllPowers()
     switch (GetPowerType())
     {
         case POWER_MANA:
-            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+            SetFullPower(POWER_MANA);
             break;
         case POWER_RAGE:
             SetPower(POWER_RAGE, 0);
             break;
         case POWER_ENERGY:
-            SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+            SetFullPower(POWER_ENERGY);
             break;
 #ifdef LICH_KING
         case POWER_RUNIC_POWER:
@@ -2478,7 +2474,7 @@ void Player::SetInWater(bool apply)
     RemoveAurasWithInterruptFlags(apply ? AURA_INTERRUPT_FLAG_NOT_ABOVEWATER : AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
 }
 
-bool Player::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
+bool Player::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, WorldObject const* caster) const
 {
     // players are immune to taunt (the aura and the spell effect)
     if (spellInfo->Effects[index].IsAura(SPELL_AURA_MOD_TAUNT))
@@ -2746,12 +2742,7 @@ void Player::GiveLevel(uint32 level)
 
     // set current level health and mana/energy to maximum after applying all mods.
     SetFullHealth();
-    SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
-    SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
-    if(GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
-        SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
-    SetPower(POWER_FOCUS, 0);
-    SetPower(POWER_HAPPINESS, 0);
+    SetFullPower(POWER_MANA);
 
     // give level to summoned pet
     Pet* pet = GetPet();
@@ -2927,12 +2918,15 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
     // set current level health and mana/energy to maximum after applying all mods.
     SetFullHealth();
-    SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
-    SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+    SetFullPower(POWER_MANA);
+    SetFullPower(POWER_ENERGY);
     if(GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
-        SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
-    SetPower(POWER_FOCUS, 0);
+        SetFullPower(POWER_RAGE);
+    SetFullPower(POWER_FOCUS);
     SetPower(POWER_HAPPINESS, 0);
+#ifdef LICH_KING
+    SetPower(POWER_RUNIC_POWER, 0);
+#endif
 }
 
 void Player::SendInitialSpells()
@@ -4996,22 +4990,28 @@ float Player::GetSpellCritFromIntellect()
     return crit*100.0f;
 }
 
-float Player::GetRatingMultiplier(CombatRating cr) const
+//TC has GetRatingMultiplier but it does not work the same way, they use sGtOCTClassCombatRatingScalarStore
+float Player::GetRatingCoefficient(CombatRating cr) const
 {
     uint32 level = GetLevel();
 
-    if (level>GT_MAX_LEVEL) level = GT_MAX_LEVEL;
+    if (level > GT_MAX_LEVEL)
+        level = GT_MAX_LEVEL;
 
-    GtCombatRatingsEntry const *Rating = sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL+level-1);
-    if (Rating == nullptr)
+    GtCombatRatingsEntry const* rating = sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL+level-1);
+    if (rating == nullptr)
         return 1.0f;                                        // By default use minimum coefficient (not must be called)
 
-    return Rating->ratio;
+    return rating->ratio;
 }
 
 float Player::GetRatingBonusValue(CombatRating cr) const
 {
-    return float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) / GetRatingMultiplier(cr);
+#ifdef LICH_KING
+    return float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) * GetRatingMultiplier(cr);
+#else
+    return float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) / GetRatingCoefficient(cr);
+#endif
 }
 
 uint32 Player::GetMeleeCritDamageReduction(uint32 damage) const
@@ -5086,16 +5086,17 @@ float Player::OCTRegenMPPerSpirit()
     uint32 level = GetLevel();
     uint32 pclass = GetClass();
 
-    if (level>GT_MAX_LEVEL) level = GT_MAX_LEVEL;
+    if (level > GT_MAX_LEVEL) 
+        level = GT_MAX_LEVEL;
 
 //    GtOCTRegenMPEntry     const *baseRatio = sGtOCTRegenMPStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
-    GtRegenMPPerSptEntry  const *moreRatio = sGtRegenMPPerSptStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
-    if (moreRatio==nullptr)
+    GtRegenMPPerSptEntry const* moreRatio = sGtRegenMPPerSptStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
+    if (moreRatio == nullptr)
         return 0.0f;
 
     // Formula get from PaperDollFrame script
-    float spirit    = GetStat(STAT_SPIRIT);
-    float regen     = spirit * moreRatio->ratio;
+    float spirit   = GetStat(STAT_SPIRIT);
+    float regen    = spirit * moreRatio->ratio;
     return regen;
 }
 
@@ -5105,9 +5106,15 @@ void Player::ApplyRatingMod(CombatRating combatRating, int32 value, bool apply)
     m_baseRatingValue[combatRating] += (apply ? value : -value);
 
     // explicit affected values
+#ifdef LICH_KING
     float const multiplier = GetRatingMultiplier(combatRating);
     float const oldVal = oldRating * multiplier;
     float const newVal = m_baseRatingValue[combatRating] * multiplier;
+#else
+    float const coef = GetRatingCoefficient(combatRating);
+    float const oldVal = oldRating / coef;
+    float const newVal = m_baseRatingValue[combatRating] / coef;
+#endif
     switch (combatRating)
     {
         case CR_HASTE_MELEE:
@@ -5189,7 +5196,7 @@ void Player::UpdateRating(CombatRating cr)
     case CR_HIT_TAKEN_MELEE:                            // Implemented in Unit::MeleeMissChanceCalc
     case CR_HIT_TAKEN_RANGED:
         break;
-    case CR_HIT_TAKEN_SPELL:                            // Implemented in Unit::MagicSpellHitResult
+    case CR_HIT_TAKEN_SPELL:                            // Implemented in WorldObject::MagicSpellHitResult
         break;
     case CR_CRIT_TAKEN_MELEE:                           // Implemented in Unit::RollMeleeOutcomeAgainst (only for chance to crit)
     case CR_CRIT_TAKEN_RANGED:
@@ -5398,7 +5405,7 @@ void Player::UpdateWeaponSkill(WeaponAttackType attType)
 {
     // no skill gain in pvp
     Unit *pVictim = GetVictim();
-    if (pVictim && pVictim->isCharmedOwnedByPlayerOrPlayer())
+    if (pVictim && pVictim->IsCharmedOwnedByPlayerOrPlayer())
         return;
 
     if(IsInFeralForm())
@@ -5892,17 +5899,17 @@ void Player::SaveRecallPosition()
     m_recallO = GetOrientation();
 }
 
-void Player::SendMessageToSet(WorldPacket *data, bool self)
+void Player::SendMessageToSet(WorldPacket const* data, bool self)
 {
     SendMessageToSetInRange(data, GetVisibilityRange(), self);
 }
 
-void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin /*= false*/, Player const* skipped_rcvr /*= nullptr*/)
+void Player::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin /*= false*/, Player const* skipped_rcvr /*= nullptr*/)
 {
     SendMessageToSetInRange(data, dist, self, includeMargin, false, skipped_rcvr);
 }
 
-void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin, bool own_team_only, Player const* skipped_rcvr /* = nullptr*/)
+void Player::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin, bool own_team_only, Player const* skipped_rcvr /* = nullptr*/)
 {
     if (self)
         GetSession()->SendPacket(data);
@@ -5915,7 +5922,7 @@ void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, b
     Cell::VisitWorldObjects(this, notifier, dist);
 }
 
-void Player::SendMessageToSet(WorldPacket* data, Player* skipped_rcvr)
+void Player::SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr)
 {
     if (skipped_rcvr != this)
         GetSession()->SendPacket(data);
@@ -7540,14 +7547,32 @@ void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
         HandleStatFlatModifier(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(proto->ArcaneRes), apply);
 
     WeaponAttackType attType = Player::GetAttackBySlot(slot);
-    if (attType != MAX_ATTACK && CanUseAttackType(attType))
-        _ApplyWeaponDamage(slot, proto, /*ssv,*/ apply);
+    if (attType != MAX_ATTACK)
+        _ApplyWeaponDamage(slot, proto, apply);
+
+#ifdef LICH_KING
+    // Druids get feral AP bonus from weapon dps (also use DPS from ScalingStatValue)
+    if (getClass() == CLASS_DRUID)
+    {
+        int32 dpsMod = 0;
+        int32 feral_bonus = 0;
+        if (ssv)
+        {
+            dpsMod = ssv->getDPSMod(proto->ScalingStatValue);
+            feral_bonus += ssv->getFeralBonus(proto->ScalingStatValue);
+        }
+
+        feral_bonus += proto->getFeralBonus(dpsMod);
+        if (feral_bonus)
+            ApplyFeralAPBonus(feral_bonus, apply);
+    }
+#endif
 }
 
 void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, bool apply)
 {
     WeaponAttackType attType = Player::GetAttackBySlot(slot);
-    if (attType == MAX_ATTACK)
+    if (!IsInFeralForm() && apply && !CanUseAttackType(attType))
         return;
 
     for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
@@ -7581,24 +7606,22 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, bool appl
 
     if (!apply)
     {
-        SetBaseWeaponDamage(attType, MINDAMAGE, BASE_MINDAMAGE, 0);
-        SetBaseWeaponDamage(attType, MAXDAMAGE, BASE_MAXDAMAGE, 0);
-
-        for (uint8 i = 1; i < MAX_ITEM_PROTO_DAMAGES; ++i)
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
         {
             SetBaseWeaponDamage(attType, MINDAMAGE, 0.f, i);
             SetBaseWeaponDamage(attType, MAXDAMAGE, 0.f, i);
+        }
+
+        if (attType == BASE_ATTACK)
+        {
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, BASE_MINDAMAGE);
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, BASE_MAXDAMAGE);
         }
     }
 
     if (proto->Delay && !IsInFeralForm())
     {
-        if (slot == EQUIPMENT_SLOT_RANGED)
-            SetAttackTime(RANGED_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
-        else if (slot == EQUIPMENT_SLOT_MAINHAND)
-            SetAttackTime(BASE_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
-        else if (slot == EQUIPMENT_SLOT_OFFHAND)
-            SetAttackTime(OFF_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
+        SetAttackTime(attType, apply ? proto->Delay : BASE_ATTACK_TIME);
     }
 
     // No need to modify any physical damage for ferals as it is calculated from stats only
@@ -11483,9 +11506,9 @@ Item* Player::_StoreItem(uint16 pos, Item *pItem, uint32 count, bool clone, bool
         if( pItem2->GetTemplate()->Bonding == BIND_WHEN_PICKED_UP ||
             pItem2->GetTemplate()->Bonding == BIND_QUEST_ITEM ||
             (pItem2->GetTemplate()->Bonding == BIND_WHEN_EQUIPED && IsBagPos(pos)) )
-            pItem2->SetBinding( true );
+            pItem2->SetBinding(true);
 
-        pItem2->SetCount( pItem2->GetCount() + count );
+        pItem2->SetCount(pItem2->GetCount() + count);
         if( IsInWorld() && update )
             pItem2->SendUpdateToPlayer( this );
 
@@ -11544,10 +11567,9 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
 
             if(IsAlive())
             {
-                ItemTemplate const *pProto = pItem->GetTemplate();
-
                 // item set bonuses applied only at equip and removed at unequip, and still active for broken items
-                if(pProto && pProto->ItemSet)
+                ItemTemplate const* pProto = ASSERT_NOTNULL(pItem->GetTemplate());
+                if(pProto->ItemSet)
                     AddItemsSetItem(this,pItem);
 
                 _ApplyItemMods(pItem, slot, true);
@@ -11577,7 +11599,7 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
                 }
             }
 
-            if( IsInWorld() && update )
+            if (IsInWorld() && update)
             {
                 pItem->AddToWorld();
                 pItem->SendUpdateToPlayer( this );
@@ -11741,15 +11763,14 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
         RemoveEnchantmentDurations(pItem);
         RemoveItemDurations(pItem);
 
-        if( bag == INVENTORY_SLOT_BAG_0 )
+        if (bag == INVENTORY_SLOT_BAG_0)
         {
-            if ( slot < INVENTORY_SLOT_BAG_END )
+            if (slot < INVENTORY_SLOT_BAG_END)
             {
-                ItemTemplate const *pProto = pItem->GetTemplate();
                 // item set bonuses applied only at equip and removed at unequip, and still active for broken items
-
-                if(pProto && pProto->ItemSet)
-                    RemoveItemsSetItem(this,pProto);
+                ItemTemplate const* pProto = ASSERT_NOTNULL(pItem->GetTemplate());
+                if(pProto->ItemSet)
+                    RemoveItemsSetItem(this, pProto);
 
                 _ApplyItemMods(pItem, slot, false, update);
 
@@ -11787,24 +11808,24 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
             m_items[slot] = nullptr;
             SetUInt64Value((uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot*2)), 0);
 
-            if ( slot < EQUIPMENT_SLOT_END )
+            if (slot < EQUIPMENT_SLOT_END)
                 SetVisibleItemSlot(slot,nullptr);
         }
         else
         {
-            Bag *pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, bag );
-            if( pBag )
+            Bag* pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
+            if (pBag)
                 pBag->RemoveItem(slot, update);
         }
-        pItem->SetUInt64Value( ITEM_FIELD_CONTAINED, 0 );
+        pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, 0);
         // pItem->SetUInt64Value( ITEM_FIELD_OWNER, 0 ); not clear owner at remove (it will be set at store). This used in mail and auction code
         pItem->SetSlot( NULL_SLOT );
         if( IsInWorld() && update )
             pItem->SendUpdateToPlayer( this );
 
-        if( slot == EQUIPMENT_SLOT_MAINHAND )
+        if (slot == EQUIPMENT_SLOT_MAINHAND)
             UpdateExpertise(BASE_ATTACK);
-        else if( slot == EQUIPMENT_SLOT_OFFHAND )
+        else if (slot == EQUIPMENT_SLOT_OFFHAND)
             UpdateExpertise(OFF_ATTACK);
     }
 }
@@ -15983,6 +16004,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     if( HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST) )
         m_deathState = DEAD;
 
+    UpdateDisplayPower();
     _LoadSpells(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SPELLS));
 
     // after spell load
@@ -16034,10 +16056,11 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // restore remembered power/health values (but not more max values)
     uint32 savedHealth = fields[LOAD_DATA_HEALTH].GetUInt32();
-    SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
-    for(uint32 i = 0; i < MAX_POWERS; ++i) {
+    SetHealth(savedHealth);
+    for(uint32 i = 0; i < MAX_POWERS; ++i) 
+    {
         uint32 savedPower = fields[LOAD_DATA_POWER1+i].GetUInt32();
-        SetPower(Powers(i),savedPower > GetMaxPower(Powers(i)) ? GetMaxPower(Powers(i)) : savedPower);
+        SetPower(static_cast<Powers>(i), savedPower);
     }
 
     // GM state
@@ -16299,7 +16322,12 @@ void Player::_LoadAuras(PreparedQueryResult result, uint32 timediff)
             if (spellInfo->HasAura(SPELL_AURA_MOD_DETAUNT))
                 continue;
 
-            if (Aura* aura = Aura::TryCreate(spellInfo, effmask, this, nullptr, &baseDamage[0], nullptr, caster_guid))
+            AuraCreateInfo createInfo(spellInfo, effmask, this);
+            createInfo
+                .SetCasterGUID(caster_guid)
+                .SetBaseAmount(baseDamage);
+
+            if (Aura* aura = Aura::TryCreate(createInfo))
             {
                 if (!aura->CanBeSaved())
                 {
@@ -19131,29 +19159,7 @@ void Player::InitDataForForm(bool reapplyMods)
     else
         SetRegularAttackTime();
 
-    switch(m_form)
-    {
-        case FORM_CAT:
-        {
-            if(GetPowerType()!=POWER_ENERGY)
-                SetPowerType(POWER_ENERGY);
-            break;
-        }
-        case FORM_BEAR:
-        case FORM_DIREBEAR:
-        {
-            if(GetPowerType()!=POWER_RAGE)
-                SetPowerType(POWER_RAGE);
-            break;
-        }
-        default:                                            // 0, for example
-        {
-            ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(GetClass());
-            if(cEntry && cEntry->PowerType < MAX_POWERS && uint32(GetPowerType()) != cEntry->PowerType)
-                SetPowerType(Powers(cEntry->PowerType));
-            break;
-        }
-    }
+    UpdateDisplayPower();
 
     // update auras at form change, ignore this at mods reapply (.reset stats/etc) when form not change.
     if (!reapplyMods)
@@ -20294,7 +20300,7 @@ Unit* Player::GetSelectedUnit() const
 Player* Player::GetSelectedPlayer() const
 {
     if (ObjectGuid selectionGUID = GetGuidValue(UNIT_FIELD_TARGET))
-        return ObjectAccessor::GetPlayer(*this, selectionGUID);
+        return ObjectAccessor::FindConnectedPlayer(selectionGUID);
     return nullptr;
 }
 
@@ -21318,11 +21324,14 @@ Battleground* Player::GetBattleground() const
 }
 
 
-bool Player::InBattlegroundQueue() const
+bool Player::InBattlegroundQueue(bool ignoreArena) const
 {
     for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
         if (m_bgBattlegroundQueueID[i].bgQueueTypeId != BATTLEGROUND_QUEUE_NONE)
-            return true;
+            if (!ignoreArena || (m_bgBattlegroundQueueID[i].bgQueueTypeId != BATTLEGROUND_QUEUE_2v2 &&
+                m_bgBattlegroundQueueID[i].bgQueueTypeId != BATTLEGROUND_QUEUE_3v3 &&
+                m_bgBattlegroundQueueID[i].bgQueueTypeId != BATTLEGROUND_QUEUE_5v5))
+                return true;
     return false;
 }
 
@@ -21796,7 +21805,7 @@ void Player::OfflineResurrect(ObjectGuid const& guid, SQLTransaction& trans)
 
 bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
 {
-    bool PvP = pVictim->isCharmedOwnedByPlayerOrPlayer();
+    bool PvP = pVictim->IsCharmedOwnedByPlayerOrPlayer();
 
     // prepare data for near group iteration (PvP and !PvP cases)
     uint32 xp = 0;
@@ -21985,18 +21994,18 @@ void Player::RessurectUsingRequestData()
     ResurrectPlayer(0.0f,false);
 
     if(GetMaxHealth() > m_resurrectHealth)
-        SetHealth( m_resurrectHealth );
+        SetHealth(m_resurrectHealth);
     else
-        SetHealth( GetMaxHealth() );
+        SetHealth(GetMaxHealth());
 
     if(GetMaxPower(POWER_MANA) > m_resurrectMana)
-        SetPower(POWER_MANA, m_resurrectMana );
+        SetPower(POWER_MANA, m_resurrectMana);
     else
-        SetPower(POWER_MANA, GetMaxPower(POWER_MANA) );
+        SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
 
-    SetPower(POWER_RAGE, 0 );
+    SetPower(POWER_RAGE, 0);
 
-    SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY) );
+    SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
 
     SpawnCorpseBones();
 }
@@ -23294,18 +23303,11 @@ void Player::ProcessDelayedOperations()
     {
         ResurrectPlayer(0.0f, false);
 
-        if (GetMaxHealth() > m_resurrectHealth)
-            SetHealth(m_resurrectHealth);
-        else
-            SetFullHealth();
-
-        if (GetMaxPower(POWER_MANA) > m_resurrectMana)
-            SetPower(POWER_MANA, m_resurrectMana);
-        else
-            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+        SetHealth(m_resurrectHealth);
+        SetPower(POWER_MANA, m_resurrectMana);
 
         SetPower(POWER_RAGE, 0);
-        SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+        SetFullPower(POWER_ENERGY);
 
         SpawnCorpseBones();
     }
@@ -23954,6 +23956,26 @@ uint32 Player::GetRank() const
 void Player::InitTaxiNodesForLevel() 
 { 
     m_taxi.InitTaxiNodesForLevel(GetRace(), GetLevel()); 
+}
+
+bool Player::CanNoReagentCast(SpellInfo const* spellInfo) const
+{
+    // don't take reagents for spells with SPELL_ATTR5_NO_REAGENT_WHILE_PREP
+    if (spellInfo->HasAttribute(SPELL_ATTR5_NO_REAGENT_WHILE_PREP) &&
+        HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION))
+        return true;
+
+#ifdef LICH_KING
+    // Check no reagent use mask
+    flag96 noReagentMask;
+    noReagentMask[0] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1);
+    noReagentMask[1] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1 + 1);
+    noReagentMask[2] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1 + 2);
+    if (spellInfo->SpellFamilyFlags & noReagentMask)
+        return true;
+#endif
+
+    return false;
 }
 
 #ifdef TESTS

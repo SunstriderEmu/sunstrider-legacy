@@ -41,6 +41,9 @@
 #endif //HAVE_CONFIG_H
 
 #include "Define.h"
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "Debugging/Errors.h"
 

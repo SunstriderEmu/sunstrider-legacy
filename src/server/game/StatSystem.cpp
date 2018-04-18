@@ -493,7 +493,7 @@ void Player::UpdateMaxPower(Powers power)
     value += GetFlatModifierValue(unitMod, TOTAL_VALUE) + bonusPower;
     value *= GetPctModifierValue(unitMod, TOTAL_PCT);
 
-    SetMaxPower(power, uint32(value));
+    SetMaxPower(power, uint32(std::lroundf(value)));
 }
 
 void Player::UpdateAttackPowerAndDamage(bool ranged )
@@ -673,6 +673,20 @@ bool Player::HasWand() const
 
 void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 damageIndex) const
 {
+    // Only proto damage, not affected by any mods
+    if (damageIndex != 0)
+    {
+        minDamage = 0.0f;
+        maxDamage = 0.0f;
+
+        if (!IsInFeralForm() && CanUseAttackType(attType))
+        {
+            minDamage = GetWeaponDamageRange(attType, MINDAMAGE, damageIndex);
+            maxDamage = GetWeaponDamageRange(attType, MAXDAMAGE, damageIndex);
+        }
+        return;
+    }
+
     UnitMods unitMod;
 
     switch (attType)
@@ -689,28 +703,20 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
             break;
     }
 
-    float weaponMinDamage = GetWeaponDamageRange(attType, MINDAMAGE, damageIndex);
-    float weaponMaxDamage = GetWeaponDamageRange(attType, MAXDAMAGE, damageIndex);
+    float weaponMinDamage = GetWeaponDamageRange(attType, MINDAMAGE);
+    float weaponMaxDamage = GetWeaponDamageRange(attType, MAXDAMAGE);
     bool wandCase = attType == RANGED_ATTACK  && HasWand(); //wand case, do not use attack power
 
     float const attackPowerMod = wandCase ? 0.0f : std::max(GetAPMultiplier(attType, normalized), 0.25f);
     
     float baseValue = GetFlatModifierValue(unitMod, BASE_VALUE);
-    if (damageIndex == 0) // apply AP bonus only to primary weapon damage
-        baseValue += GetTotalAttackPowerValue(attType) / 14.0f * attackPowerMod;
+    baseValue += GetTotalAttackPowerValue(attType) / 14.0f * attackPowerMod;
     float basePct    = GetPctModifierValue(unitMod, BASE_PCT);
     float totalValue = GetFlatModifierValue(unitMod, TOTAL_VALUE);
     float totalPct   = addTotalPct ? GetPctModifierValue(unitMod, TOTAL_PCT) : 1.0f;
 
     if (IsInFeralForm()) // check if player is druid and in cat or bear forms
     {
-        if (damageIndex != 0)
-        {
-            minDamage = 0.f;
-            maxDamage = 0.f;
-            return;
-        }
-
         uint8 lvl = std::min(GetLevel(), uint32(60)); //not 100% sure about this but it seems feral damage from vanilla to wotlk has not changed
         //sunstrider formula:
         //exact for cat lvl 70 at least, regeverse engeneered from videos and screenshots, https://docs.google.com/spreadsheets/d/1zcB4S_1186JVIaJhPU0tPiJF8Bjje5BJm5lPMtwHkMc
@@ -732,7 +738,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     {
         // cannot use ranged/off attack, set values to 0
         // set secondary damages to 0 by default
-        if (damageIndex != 0 || attType != BASE_ATTACK)
+        if (attType != BASE_ATTACK)
         {
             minDamage = 0.0f;
             maxDamage = 0.0f;
@@ -741,7 +747,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
         weaponMinDamage = BASE_MINDAMAGE;
         weaponMaxDamage = BASE_MAXDAMAGE;
     }
-    else if (!HasWand() && damageIndex == 0 && attType == RANGED_ATTACK) // add ammo DPS to ranged damage
+    else if (!HasWand() && attType == RANGED_ATTACK) // add ammo DPS to ranged damage
     {
         weaponMinDamage += GetAmmoDPS() * attackPowerMod;
         weaponMaxDamage += GetAmmoDPS() * attackPowerMod;
@@ -860,14 +866,12 @@ void Player::UpdateDodgePercentage()
 
 void Player::UpdateMeleeHitChances()
 {
-    m_modMeleeHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
-    m_modMeleeHitChance += GetRatingBonusValue(CR_HIT_MELEE);
+    m_modMeleeHitChance = GetRatingBonusValue(CR_HIT_MELEE);
 }
 
 void Player::UpdateRangedHitChances()
 {
-    m_modRangedHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
-    m_modRangedHitChance += GetRatingBonusValue(CR_HIT_RANGED);
+    m_modRangedHitChance = GetRatingBonusValue(CR_HIT_RANGED);
 }
 
 void Player::UpdateSpellHitChances()
@@ -1042,8 +1046,11 @@ void Creature::UpdateMaxPower(Powers power)
 {
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + power);
 
-    float value  = GetTotalAuraModValue(unitMod);
-    SetMaxPower(power, uint32(value));
+    float value = GetFlatModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
+    value += GetFlatModifierValue(unitMod, TOTAL_VALUE);
+    value *= GetPctModifierValue(unitMod, TOTAL_PCT);
+    
+    SetMaxPower(power, uint32(std::lroundf(value)));
 }
 
 void Creature::UpdateAttackPowerAndDamage(bool ranged)
@@ -1251,6 +1258,8 @@ bool Guardian::UpdateStats(Stats stat)
 
 bool Guardian::UpdateAllStats()
 {
+    UpdateMaxHealth();
+
     for (int i = STAT_STRENGTH; i < MAX_STATS; i++)
         UpdateStats(Stats(i));
 

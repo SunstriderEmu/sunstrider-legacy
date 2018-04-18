@@ -726,7 +726,7 @@ bool PlayerbotAI::TellMaster(std::string text, PlayerbotSecurityLevel securityLe
     if (!bot->isMoving() && !bot->IsInCombat() && bot->GetMapId() == master->GetMapId())
     {
         if (!bot->isInFront(master, M_PI / 2))
-            bot->SetFacingTo(bot->GetAngle(master));
+            bot->SetFacingTo(bot->GetAbsoluteAngle(master));
 
         bot->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
     }
@@ -994,7 +994,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target)
 
     if (!bot->isInFront(faceTo, M_PI / 2))
     {
-        bot->SetFacingTo(bot->GetAngle(faceTo));
+        bot->SetFacingTo(bot->GetAbsoluteAngle(faceTo));
         delete spell;
         SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
         return false;
@@ -1415,23 +1415,19 @@ void PlayerbotTestingAI::UpdateAIInternal(uint32 elapsed)
     */
 }
 
-
-//virtual void CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo) override;
-//virtual void CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo) override;
-
-void PlayerbotTestingAI::CastedDamageSpell(Unit* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit)
+void PlayerbotTestingAI::CastedDamageSpell(Unit const* target, SpellNonMeleeDamage damageInfo, SpellMissInfo missInfo, bool crit) const
 {
     SpellDamageDoneInfo info(damageInfo.SpellID, damageInfo, missInfo, crit);
     spellDamageDone[target->GetGUID()].push_back(std::move(info));
 }
 
-void PlayerbotTestingAI::DoneWhiteDamage(Unit* target, CalcDamageInfo* damageInfo)
+void PlayerbotTestingAI::DoneWhiteDamage(Unit const* target, CalcDamageInfo const* damageInfo) const
 {
-    WhiteDamageDoneInfo info(damageInfo);
-    whiteDamageDone[target->GetGUID()].push_back(std::move(info));
+    MeleeDamageDoneInfo info(damageInfo);
+    meleeDamageDone[target->GetGUID()].push_back(std::move(info));
 }
 
-void PlayerbotTestingAI::CastedHealingSpell(Unit* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit)
+void PlayerbotTestingAI::CastedHealingSpell(Unit const* target, uint32 healing, uint32 realGain, uint32 spellID, SpellMissInfo missInfo, bool crit) const
 {
     HealingDoneInfo info;
     info.spellID = spellID;
@@ -1443,7 +1439,12 @@ void PlayerbotTestingAI::CastedHealingSpell(Unit* target, uint32 healing, uint32
     healingDone[target->GetGUID()].push_back(std::move(info));
 }
 
-void PlayerbotTestingAI::PeriodicTick(Unit* target, int32 amount, uint32 spellID)
+void PlayerbotTestingAI::SpellDamageDealt(Unit const* tartget, uint32 damage, uint32 spellID) const
+{
+    //useful?
+}
+
+void PlayerbotTestingAI::PeriodicTick(Unit const* target, int32 amount, uint32 spellID) const
 {
     TickInfo info;
     info.spellID = spellID;
@@ -1452,12 +1453,7 @@ void PlayerbotTestingAI::PeriodicTick(Unit* target, int32 amount, uint32 spellID
     ticksDone[target->GetGUID()].push_back(std::move(info));
 }
 
-void PlayerbotTestingAI::SpellDamageDealt(Unit* tartget, uint32 damage, uint32 spellID)
-{
-    //TODO
-}
-
-int32 PlayerbotTestingAI::GetDotDamage(Unit* victim, uint32 spellID)
+int32 PlayerbotTestingAI::GetDotDamage(Unit const* victim, uint32 spellID) const
 {
     auto ticksToVictim = ticksDone.find(victim->GetGUID());
     if (ticksToVictim == ticksDone.end())
@@ -1474,7 +1470,7 @@ int32 PlayerbotTestingAI::GetDotDamage(Unit* victim, uint32 spellID)
     return totalAmount;
 }
 
-std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> const* PlayerbotTestingAI::GetDamageDoneInfo(Unit* target)
+std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> const* PlayerbotTestingAI::GetSpellDamageDoneInfo(Unit const* target) const
 {
     auto infoForVictimItr = spellDamageDone.find(target->GetGUID());
     if (infoForVictimItr == spellDamageDone.end())
@@ -1483,16 +1479,16 @@ std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> const* PlayerbotTestingAI::
     return &(*infoForVictimItr).second;
 }
 
-std::vector<PlayerbotTestingAI::WhiteDamageDoneInfo> const* PlayerbotTestingAI::GetWhiteDamageDoneInfo(Unit* target)
+std::vector<PlayerbotTestingAI::MeleeDamageDoneInfo> const* PlayerbotTestingAI::GetMeleeDamageDoneInfo(Unit const* target) const
 {
-    auto infoForVictimItr = whiteDamageDone.find(target->GetGUID());
-    if (infoForVictimItr == whiteDamageDone.end())
+    auto infoForVictimItr = meleeDamageDone.find(target->GetGUID());
+    if (infoForVictimItr == meleeDamageDone.end())
         return nullptr;
 
     return &(*infoForVictimItr).second;
 }
 
-std::vector<PlayerbotTestingAI::HealingDoneInfo> const* PlayerbotTestingAI::GetHealingDoneInfo(Unit* target)
+std::vector<PlayerbotTestingAI::HealingDoneInfo> const* PlayerbotTestingAI::GetHealingDoneInfo(Unit const* target) const
 {
     auto infoForVictimItr = healingDone.find(target->GetGUID());
     if (infoForVictimItr == healingDone.end())
@@ -1505,7 +1501,7 @@ void PlayerbotTestingAI::ResetSpellCounters()
 {
     TC_LOG_TRACE("test.unit_test", "PlayerbotTestingAI: Counters were reset");
     spellDamageDone.clear();
-    whiteDamageDone.clear();
+    meleeDamageDone.clear();
     healingDone.clear();
     ticksDone.clear();
 }

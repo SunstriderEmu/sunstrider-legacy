@@ -372,6 +372,7 @@ struct GameObjectTemplate
     uint32 GetAutoCloseTime() const;
     bool IsDespawnAtAction() const;
     bool IsUsableMounted() const;
+    bool IsIgnoringLOSChecks() const;
     uint32 GetLootId() const;
     // despawn at uses amount
     uint32 GetCharges() const;                               
@@ -490,8 +491,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
             m_spawnedByDefault = false;                     // all object with owner is despawned after delay
             SetGuidValue(OBJECT_FIELD_CREATED_BY, owner);
         }
-        ObjectGuid GetOwnerGUID() const { return GetGuidValue(OBJECT_FIELD_CREATED_BY); }
-        Unit* GetOwner() const;
+        ObjectGuid GetOwnerGUID() const override { return GetGuidValue(OBJECT_FIELD_CREATED_BY); }
 
         uint32 GetSpawnId() const { return m_spawnId; }
 
@@ -652,8 +652,6 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         GameObject* LookupFishingHoleAround(float range);
 
-        //returns SpellCastResult
-        uint32 CastSpell(Unit *target, uint32 spell, TriggerCastFlags triggerFlag = TRIGGERED_FULL_MASK, ObjectGuid originalCaster = ObjectGuid::Empty);
         void SendCustomAnim(uint32 anim);
         bool IsInRange(float x, float y, float z, float radius) const;
         
@@ -691,8 +689,8 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void SetDisplayId(uint32 displayid);
         uint32 GetDisplayId() const { return GetUInt32Value(GAMEOBJECT_DISPLAYID); }
         
-        uint32 GetFaction() const { return GetUInt32Value(GAMEOBJECT_FACTION); }
-        void SetFaction(uint32 faction) { SetUInt32Value(GAMEOBJECT_FACTION, faction); }
+        uint32 GetFaction() const override { return GetUInt32Value(GAMEOBJECT_FACTION); }
+        void SetFaction(uint32 faction) override { SetUInt32Value(GAMEOBJECT_FACTION, faction); }
 
         void setManualUnlocked() { manual_unlock = true; RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED); }
         void SetInactive(bool inactive) { m_inactive = inactive; }

@@ -96,6 +96,9 @@ inline void ApplyModFloatVar(float& var, float  val, bool apply)
         var = 0;
 }
 
+template <class T>
+inline T square(T x) { return x * x; }
+
 TC_COMMON_API bool Utf8toWStr(const std::string& utf8str, std::wstring& wstr);
 // in wsize==max size of buffer, out wsize==real string size
 TC_COMMON_API bool Utf8toWStr(char const* utf8str, size_t csize, wchar_t* wstr, size_t& wsize);
@@ -448,6 +451,13 @@ static bool DecreaseTimer(uint32& timer, uint32 const diff)
     }
     return true;
 };
+
+template<typename E>
+typename std::underlying_type<E>::type AsUnderlyingType(E enumValue)
+{
+    static_assert(std::is_enum<E>::value, "AsUnderlyingType can only be used with enums");
+    return static_cast<typename std::underlying_type<E>::type>(enumValue);
+}
 
 #endif
 

@@ -64,6 +64,7 @@ public:
             spawn.MoveInFront(_location, 30.0f);
             TestPlayer* priest3 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN, 70, spawn);
 
+            RemoveAllEquipedItems(warrior);
             warrior->DisableRegeneration(true);
             warrior->SetWalk(false); // run
 
@@ -72,8 +73,8 @@ public:
             TestRequiresStance(warrior, priest2, false, ClassSpells::Warrior::CHARGE_RNK_3, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
             TestRequiresStance(warrior, priest2, false, ClassSpells::Warrior::CHARGE_RNK_3, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
             TestRequiresStance(warrior, priest2, true, ClassSpells::Warrior::CHARGE_RNK_3, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
-            // Melee weapon
-            TestRequiresMeleeWeapon(warrior, priest2, ClassSpells::Warrior::CHARGE_RNK_3, true);
+            
+            warrior->TeleportTo(_location);
 
             // Range
             TEST_CAST(warrior, priest1, ClassSpells::Warrior::CHARGE_RNK_3, SPELL_FAILED_OUT_OF_RANGE);
@@ -660,7 +661,7 @@ public:
             for (uint32 i = 0; i < 75; i++)
             {
                 rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(warrior);
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
                 uint32 damage = 0;
@@ -1274,7 +1275,7 @@ public:
             {
                 TEST_ASSERT(warrior->HasAura(ClassSpells::Warrior::RECKLESSNESS_RNK_1));
                 TEST_CAST(warrior, creature, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-                auto damageToTarget = AI->GetDamageDoneInfo(creature);
+                auto damageToTarget = AI->GetSpellDamageDoneInfo(creature);
                 auto& data = damageToTarget->back();
                 if (data.spellID != ClassSpells::Warrior::HEROIC_STRIKE_RNK_10)
                     continue;
@@ -1722,7 +1723,7 @@ public:
             for (uint32 i = 0; i < 500; i++)
             {
                 rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(warrior);
                 ASSERT_INFO("After 500 hits: dodge: %i, parry: %i, block: %i", int(dodge), int(parry), int(block));
                 TEST_ASSERT(i != 499);
                 TEST_ASSERT(damageToTarget->size() == i + 1);

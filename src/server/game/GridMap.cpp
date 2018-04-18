@@ -13,6 +13,9 @@ u_map_magic MapAreaMagic    = { {'A','R','E','A'} };
 u_map_magic MapHeightMagic  = { {'M','H','G','T'} };
 u_map_magic MapLiquidMagic  = { {'M','L','I','Q'} };
 
+static uint16 const holetab_h[4] = { 0x1111, 0x2222, 0x4444, 0x8888 };
+static uint16 const holetab_v[4] = { 0x000F, 0x00F0, 0x0F00, 0xF000 };
+
 // *****************************
 // Grid function
 // *****************************
@@ -40,6 +43,7 @@ GridMap::GridMap()
     _liquidEntry = nullptr;
     _liquidFlags = nullptr;
     _liquidMap  = nullptr;
+    _holes = nullptr;
 }
 
 GridMap::~GridMap()
@@ -87,6 +91,13 @@ bool GridMap::loadData(char* filename)
             fclose(in);
             return false;
         }
+        // loadup holes data (if any. check header.holesOffset)
+        if (header.holesSize && !loadHolesData(in, header.holesOffset, header.holesSize))
+        {
+            TC_LOG_ERROR("maps", "Error loading map holes data\n");
+        fclose(in);
+            return false;
+        }
         fclose(in);
         return true;
     }
@@ -105,6 +116,7 @@ void GridMap::unloadData()
     delete[] _liquidEntry;
     delete[] _liquidFlags;
     delete[] _liquidMap;
+    delete[] _holes;
     delete[] _minHeight;
     delete[] _maxHeight;
     _areaMap = nullptr;
@@ -115,6 +127,7 @@ void GridMap::unloadData()
     _liquidEntry = nullptr;
     _liquidFlags = nullptr;
     _liquidMap  = nullptr;
+    _holes = nullptr;
     _gridGetHeight = &GridMap::getHeightFromFlat;
 }
 
@@ -227,6 +240,18 @@ bool GridMap::loadLiquidData(FILE* in, uint32 offset, uint32 /*size*/)
     return true;
 }
 
+bool GridMap::loadHolesData(FILE* in, uint32 offset, uint32 size)
+{
+    if (fseek(in, offset, SEEK_SET) != 0)
+        return false;
+
+    _holes = new uint16[16 * 16];
+    if (fread(_holes, sizeof(uint16), 16 * 16, in) != 16 * 16)
+        return false;
+
+    return true;
+}
+
 uint16 GridMap::getArea(float x, float y) const
 {
     if (!_areaMap)
@@ -258,6 +283,9 @@ float GridMap::getHeightFromFloat(float x, float y, bool walkableOnly) const
     y -= y_int;
     x_int&=(MAP_RESOLUTION - 1);
     y_int&=(MAP_RESOLUTION - 1);
+
+    if (isHole(x_int, y_int))
+        return INVALID_HEIGHT;
 
     // Height stored as: h5 - its v8 grid, h1-h4 - its v9 grid
     // +--------------> X
@@ -341,6 +369,9 @@ float GridMap::getHeightFromUint8(float x, float y, bool walkableOnly) const
     x_int&=(MAP_RESOLUTION - 1);
     y_int&=(MAP_RESOLUTION - 1);
 
+    if (isHole(x_int, y_int))
+        return INVALID_HEIGHT;
+
     int32 a, b, c;
     uint8 *V9_h1_ptr = &m_uint8_V9[x_int*128 + x_int + y_int];
     if (x+y < 1)
@@ -408,6 +439,9 @@ float GridMap::getHeightFromUint16(float x, float y, bool walkableOnly) const
     x_int&=(MAP_RESOLUTION - 1);
     y_int&=(MAP_RESOLUTION - 1);
 
+    if (isHole(x_int, y_int))
+        return INVALID_HEIGHT;
+
     int32 a, b, c;
     uint16 *V9_h1_ptr = &m_uint16_V9[x_int*128 + x_int + y_int];
     if (x+y < 1)
@@ -459,6 +493,21 @@ float GridMap::getHeightFromUint16(float x, float y, bool walkableOnly) const
     // Calculate height
 
     return (float)((a * x) + (b * y) + c)*_gridIntHeightMultiplier + _gridHeight;
+}
+
+bool GridMap::isHole(int row, int col) const
+{
+    if (!_holes)
+        return false;
+
+    int cellRow = row / 8;     // 8 squares per cell
+    int cellCol = col / 8;
+    int holeRow = row % 8 / 2;
+    int holeCol = (col - (cellCol * 8)) / 2;
+
+    uint16 hole = _holes[cellRow * 16 + cellCol];
+
+    return (hole & holetab_h[holeCol] & holetab_v[holeRow]) != 0;
 }
 
 float GridMap::getMinHeight(float x, float y) const
@@ -538,19 +587,6 @@ float GridMap::getLiquidLevel(float x, float y) const
         return INVALID_HEIGHT;
 
     return _liquidMap[cx_int*_liquidWidth + cy_int];
-}
-
-// Why does this return LIQUID data?
-uint8 GridMap::getTerrainType(float x, float y) const
-{
-    if (!_liquidFlags)
-        return 0;
-
-    x = 16 * (32 - x/SIZE_OF_GRIDS);
-    y = 16 * (32 - y/SIZE_OF_GRIDS);
-    int lx = (int)x & 15;
-    int ly = (int)y & 15;
-    return _liquidFlags[lx*16 + ly];
 }
 
 // Get water state on map

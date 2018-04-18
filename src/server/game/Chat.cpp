@@ -131,6 +131,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
     static std::vector<ChatCommand> serverCommandTable =
     {
         { "corpses",        SEC_GAMEMASTER2,     true, &ChatHandler::HandleServerCorpsesCommand,       "" },
+        { "debug",          SEC_PLAYER,          true, &ChatHandler::HandleServerDebugCommand,         "" },
         { "exit",           SEC_ADMINISTRATOR,   true, &ChatHandler::HandleServerExitCommand,          "" },
         { "idlerestart",    SEC_ADMINISTRATOR,   true,  nullptr,                                       "", serverIdleRestartCommandTable },
         { "idleshutdown",   SEC_ADMINISTRATOR,   true,  nullptr,                                       "", serverShutdownCommandTable },
@@ -334,6 +335,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "creature_questender",         SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureQuestEndersCommand,     "" },
         { "creature_linked_respawn",     SEC_ADMINISTRATOR, true, &ChatHandler::HandleLinkedRespawnCommand,   "" },
         { "creature_loot_template",      SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadLootTemplatesCreatureCommand,   "" },
+        { "creature_movement_override",  SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureMovementOverrideCommand,"" },
         { "creature_model_info",         SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureModelInfoCommand,       "" },
         { "creature_text",               SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureTextCommand,            "" },
         { "creature_template",           SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadCreatureTemplateCommand,        "" },

@@ -1,7 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "Transport.h"
-#include "TargetedMovementGenerator.h"
+#include "FollowMovementGenerator.h"
 #include "GameEventMgr.h"
 #include "WaypointMovementGenerator.h"
 #include "GridNotifiersImpl.h"
@@ -683,12 +683,14 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage(LANG_NPCINFO_POSITION,float(target->GetPositionX()), float(target->GetPositionY()), float(target->GetPositionZ()), float(target->GetOrientation()));
     PSendSysMessage("AIName: %s", target->GetAIName().c_str());
     PSendSysMessage("ScriptName: %s", target->GetScriptName().c_str());
+    PSendSysMessage(LANG_NPCINFO_MOVEMENT_DATA, target->GetMovementTemplate().ToString().c_str());
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
     PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
         if(CreatureTemplate const *master = sObjectMgr->GetCreatureTemplate(linked->id))
             PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(ObjectGuid(HighGuid::Unit, target->GetEntry(), target->GetSpawnId())), linked->id, master->Name.c_str());
-    PSendSysMessage("Movement flag: %u", target->GetUnitMovementFlags());
+
+
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
         SendSysMessage(LANG_NPCINFO_VENDOR);
 
@@ -786,10 +788,8 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
         return false;
     }
 
-    FollowMovementGenerator<Creature> const* mgen
-        = static_cast<FollowMovementGenerator<Creature> const*>((creature->GetMotionMaster()->top()));
-
-    if(mgen->GetTarget()!=player)
+    FollowMovementGenerator const* mgen = static_cast<FollowMovementGenerator const*>((creature->GetMotionMaster()->top()));
+    if (mgen->GetTarget() != player)
     {
         PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName().c_str());
         SetSentErrorMessage(true);
@@ -891,7 +891,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     FormationInfo* group_member;
 
     group_member                  = new FormationInfo;
-    group_member->follow_angle    = pCreature->GetAngle(chr) - chr->GetOrientation();
+    group_member->follow_angle    = pCreature->GetAbsoluteAngle(chr) - chr->GetOrientation();
     group_member->follow_dist     = sqrtf(pow(chr->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(chr->GetPositionY()-pCreature->GetPositionY(),int(2)));
     group_member->leaderGUID      = leaderGUID;
 

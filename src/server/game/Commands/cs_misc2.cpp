@@ -500,7 +500,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         float x, y, z;
         target->GetContactPoint(m_session->GetPlayer(), x, y, z);
 
-        if (_player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAngle(target), TELE_TO_GM_MODE))
+        if (_player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAbsoluteAngle(target), TELE_TO_GM_MODE))
         {
             _player->SetPhaseMask(target->GetPhaseMask(), true);
             PSendSysMessage(LANG_APPEARING_AT, target->GetName().c_str());
@@ -704,6 +704,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         else
             PSendSysMessage("You are indoor");
 
+        /*
         uint32 mogpFlags;
         int32 adtId, rootId, groupId;
         WMOAreaTableEntry const* wmoEntry = nullptr;
@@ -712,7 +713,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         {
             if ((wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId)))
                 PSendSysMessage(LANG_GPS_WMO_DATA, wmoEntry->Id, wmoEntry->Flags, mogpFlags);
-        }
+        }*/
     }
     else PSendSysMessage("no VMAP available for area info");
 

@@ -22,6 +22,7 @@
 #include "SpellDefines.h"
 #include "Formulas.h"
 #include "ScriptMgr.h"
+#include <numeric>
 
 //
 // EFFECT HANDLER NOTES
@@ -92,7 +93,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS] =
     &AuraEffect::HandleAuraModBlockPercent,                       // 51 SPELL_AURA_MOD_BLOCK_PERCENT
     &AuraEffect::HandleAuraModWeaponCritPercent,                  // 52 SPELL_AURA_MOD_WEAPON_CRIT_PERCENT
     &AuraEffect::HandleNoImmediateEffect,                         // 53 SPELL_AURA_PERIODIC_LEECH implemented in AuraEffect::PeriodicTick
-    &AuraEffect::HandleModHitChance,                              // 54 SPELL_AURA_MOD_HIT_CHANCE
+    &AuraEffect::HandleNoImmediateEffect,                         // 54 SPELL_AURA_MOD_HIT_CHANCE implemented in Unit::MeleeSpellMissChance
     &AuraEffect::HandleModSpellHitChance,                         // 55 SPELL_AURA_MOD_SPELL_HIT_CHANCE
     &AuraEffect::HandleAuraTransform,                             // 56 SPELL_AURA_TRANSFORM
     &AuraEffect::HandleModSpellCritChance,                        // 57 SPELL_AURA_MOD_SPELL_CRIT_CHANCE
@@ -302,7 +303,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS] =
     &AuraEffect::HandleNULL                                       //261 SPELL_AURA_261 some phased state (44856 spell)
 };
 
-AuraEffect::AuraEffect(Aura* base, uint8 effIndex, int32 *baseAmount, Unit* caster) :
+AuraEffect::AuraEffect(Aura* base, uint8 effIndex, int32 const* baseAmount, Unit* caster) :
     m_base(base), m_spellInfo(base->GetSpellInfo()),
     m_baseAmount(baseAmount ? *baseAmount : m_spellInfo->Effects[effIndex].BasePoints),
     _amount(), m_spellmod(nullptr), _periodicTimer(0), _amplitude(0), _ticksDone(0), m_effIndex(effIndex),
@@ -333,7 +334,7 @@ void AuraEffect::GetTargetList(Container& targetContainer) const
 }
 
 template <typename Container>
-void AuraEffect::GetApplicationList(Container& applicationContainer) const
+void AuraEffect::GetApplicationVector(Container& applicationContainer) const
 {
     Aura::ApplicationMap const& targetMap = GetBase()->GetApplicationMap();
     for (auto appIter = targetMap.begin(); appIter != targetMap.end(); ++appIter)
@@ -345,7 +346,7 @@ void AuraEffect::GetApplicationList(Container& applicationContainer) const
 
 int32 AuraEffect::CalculateAmount(Unit* caster)
 {
-    int32 amount = m_spellInfo->Effects[m_effIndex].CalcValue(caster, &m_baseAmount, nullptr);
+    int32 amount = m_spellInfo->Effects[m_effIndex].CalcValue(caster, &m_baseAmount);
 
     // check item enchant aura cast
     if (!amount && caster)
@@ -357,12 +358,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         ItemRandomSuffixEntry const* item_rand_suffix = sItemRandomSuffixStore.LookupEntry(abs(castItem->GetItemRandomPropertyId()));
                         if (item_rand_suffix)
                         {
-                            for (int k = 0; k < MAX_ITEM_ENCHANTMENT_EFFECTS; k++)
+                            for (uint8 k = 0; k < MAX_ITEM_ENCHANTMENT_EFFECTS; k++)
                             {
                                 SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(item_rand_suffix->enchant_id[k]);
                                 if (pEnchant)
                                 {
-                                    for (int t = 0; t < MAX_ITEM_ENCHANTMENT_EFFECTS; t++)
+                                    for (uint8 t = 0; t < MAX_ITEM_ENCHANTMENT_EFFECTS; t++)
                                         if (pEnchant->spellid[t] == m_spellInfo->Id)
                                     {
                                         amount = uint32((item_rand_suffix->prefix[k]*castItem->GetItemSuffixFactor()) / 10000);
@@ -651,6 +652,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         }
     }
 
+    if (GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_ROLLING_PERIODIC))
+    {
+        Unit::AuraEffectList const& periodicAuras = GetBase()->GetUnitOwner()->GetAuraEffectsByType(GetAuraType());
+        amount = std::accumulate(std::begin(periodicAuras), std::end(periodicAuras), amount, [this](int32 val, AuraEffect const* aurEff)
+        {
+            if (aurEff->GetCasterGUID() == GetCasterGUID() && aurEff->GetId() == GetId() && aurEff->GetEffIndex() == GetEffIndex() && aurEff->GetTotalTicks() > 0)
+                val += aurEff->GetAmount() * static_cast<int32>(aurEff->GetRemainingTicks()) / static_cast<int32>(aurEff->GetTotalTicks());
+            return val;
+        });
+    }
+
     GetBase()->CallScriptEffectCalcAmountHandlers(this, amount, m_canBeRecalculated);
     amount *= GetBase()->GetStackAmount();
     return amount;
@@ -669,7 +681,7 @@ void AuraEffect::ChangeAmount(int32 newAmount, bool mark, bool onStackOrReapply)
         return;
 
     std::vector<AuraApplication*> effectApplications;
-    GetApplicationList(effectApplications);
+    GetApplicationVector(effectApplications);
 
     for (AuraApplication* aurApp : effectApplications)
     {
@@ -919,7 +931,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, uint3
         {
             uint32 percent =
                 GetEffIndex() < 2 && GetSpellInfo()->Effects[GetEffIndex()].Effect == SPELL_EFFECT_DUMMY ?
-                caster->CalculateSpellDamage(target, GetSpellInfo(), GetEffIndex() + 1, &GetSpellInfo()->Effects[GetEffIndex() + 1].BasePoints) :
+                caster->CalculateSpellDamage(GetSpellInfo(), GetEffIndex() + 1, &GetSpellInfo()->Effects[GetEffIndex() + 1].BasePoints) :
                 100;
             if (target->GetHealth() * 100 >= target->GetMaxHealth()*percent)
             {
@@ -1116,7 +1128,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
                 // effect 1 m_amount
                 int32 maxPercent = mClassScriptAura->GetAmount();
                 // effect 0 m_amount
-                int32 stepPercent = caster->CalculateSpellDamage(caster, mClassScriptAura->GetSpellInfo(), 0, &mClassScriptAura->GetSpellInfo()->Effects[0].BasePoints);
+                int32 stepPercent = caster->CalculateSpellDamage(mClassScriptAura->GetSpellInfo(), 0, &mClassScriptAura->GetSpellInfo()->Effects[0].BasePoints);
 
                 // count affliction effects and calc additional damage in percentage
                 int32 modPercent = 0;
@@ -1124,7 +1136,8 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
                 for (const auto & victimAura : victimAuras)
                 {
                     Aura* aura = victimAura.second->GetBase();
-                    if (victimAura.second->IsPositive())continue;
+                    if (victimAura.second->IsPositive())
+                        continue;
                     SpellInfo const* m_spell = aura->GetSpellInfo();
                     if (m_spell->SpellFamilyName != SPELLFAMILY_WARLOCK)
                         continue;
@@ -2203,7 +2216,7 @@ void AuraEffect::PeriodicDummyTick(AuraApplication* aurApp, Unit* caster, uint32
         // Regen amount is max (100% from spell) on 21% or less mana and min on 92.5% or greater mana (20% from spell)
         int mana = m_target->GetPower(POWER_MANA);
         int max_mana = m_target->GetMaxPower(POWER_MANA);
-        int32 base_regen = caster->CalculateSpellDamage(m_target, m_spellInfo, m_effIndex, &m_spellInfo->Effects[1].BasePoints);
+        int32 base_regen = caster->CalculateSpellDamage(m_spellInfo, m_effIndex, &m_spellInfo->Effects[1].BasePoints);
         float regen_pct = 1.20f - 1.1f * mana / max_mana;
         if (regen_pct > 1.0f) 
             regen_pct = 1.0f;
@@ -2767,41 +2780,48 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
     case SPELLMOD_EFFECT2:
     case SPELLMOD_EFFECT3:
     {
-        ObjectGuid guid = target->GetGUID();
-
-        Unit::AuraApplicationMap & auras = target->GetAppliedAuras();
-        for (Unit::AuraApplicationMap::iterator iter = auras.begin(); iter != auras.end(); ++iter)
+        //sun: Also recalculate aura for player pets. This allows for talents to be applied immediately without resummoning.
+        auto RecalculateAuras = [&](Unit* target) 
         {
-            Aura* aura = iter->second->GetBase();
-            // only passive and permament auras-active auras should have amount set on spellcast and not be affected
-            // if aura is cast by others, it will not be affected
-            if ((aura->IsPassive() || aura->IsPermanent()) && aura->GetCasterGUID() == guid && aura->GetSpellInfo()->IsAffectedBySpellMod(m_spellmod))
+            ObjectGuid guid = target->GetGUID();
+            Unit::AuraApplicationMap & auras = target->GetAppliedAuras();
+            for (Unit::AuraApplicationMap::iterator iter = auras.begin(); iter != auras.end(); ++iter)
             {
-                if (GetMiscValue() == SPELLMOD_ALL_EFFECTS)
+                Aura* aura = iter->second->GetBase();
+                // only passive and permament auras-active auras should have amount set on spellcast and not be affected
+                // if aura is cast by others, it will not be affected
+                if ((aura->IsPassive() || aura->IsPermanent()) && aura->GetCasterGUID() == guid && aura->GetSpellInfo()->IsAffectedBySpellMod(m_spellmod))
                 {
-                    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                    if (GetMiscValue() == SPELLMOD_ALL_EFFECTS)
                     {
-                        if (AuraEffect* aurEff = aura->GetEffect(i))
+                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                        {
+                            if (AuraEffect* aurEff = aura->GetEffect(i))
+                                aurEff->RecalculateAmount();
+                        }
+                    }
+                    else if (GetMiscValue() == SPELLMOD_EFFECT1)
+                    {
+                        if (AuraEffect* aurEff = aura->GetEffect(0))
+                            aurEff->RecalculateAmount();
+                    }
+                    else if (GetMiscValue() == SPELLMOD_EFFECT2)
+                    {
+                        if (AuraEffect* aurEff = aura->GetEffect(1))
+                            aurEff->RecalculateAmount();
+                    }
+                    else //if (modOp == SPELLMOD_EFFECT3)
+                    {
+                        if (AuraEffect* aurEff = aura->GetEffect(2))
                             aurEff->RecalculateAmount();
                     }
                 }
-                else if (GetMiscValue() == SPELLMOD_EFFECT1)
-                {
-                    if (AuraEffect* aurEff = aura->GetEffect(0))
-                        aurEff->RecalculateAmount();
-                }
-                else if (GetMiscValue() == SPELLMOD_EFFECT2)
-                {
-                    if (AuraEffect* aurEff = aura->GetEffect(1))
-                        aurEff->RecalculateAmount();
-                }
-                else //if (modOp == SPELLMOD_EFFECT3)
-                {
-                    if (AuraEffect* aurEff = aura->GetEffect(2))
-                        aurEff->RecalculateAmount();
-                }
             }
-        }
+        };
+        RecalculateAuras(target);
+        if (target->GetTypeId() == TYPEID_PLAYER)
+            if (Pet* pet = target->GetPet())
+                RecalculateAuras(pet);
     }
     default:
         break;
@@ -2848,7 +2868,7 @@ void AuraEffect::Update(uint32 diff, Unit* caster)
         GetBase()->CallScriptEffectUpdatePeriodicHandlers(this);
 
         std::vector<AuraApplication*> effectApplications;
-        GetApplicationList(effectApplications);
+        GetApplicationVector(effectApplications);
 
         // tick on targets of effects
         for (AuraApplication* aurApp : effectApplications)
@@ -3542,7 +3562,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             case FORM_DIREBEAR:
             {
                 // get furor proc chance
-                uint32 FurorChance = 0;
+                int32 FurorChance = 0;
                 Unit::AuraEffectList const& mDummy = m_target->GetAuraEffectsByType(SPELL_AURA_DUMMY);
                 for (auto i : mDummy)
                 {
@@ -3555,21 +3575,18 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
 
                 if (FurorChance)
                 {
-                    uint32 castSpellId = 0;
                     if (GetMiscValue() == FORM_CAT)
                     {
                         m_target->SetPower(POWER_ENERGY, 0);
-                        if (urand(1, 100) <= FurorChance)
-                            castSpellId = 17099;
+                        if (roll_chance_i(FurorChance))
+                            m_target->CastSpell(m_target, 17099, this);
                     }
                     else
                     {
                         m_target->SetPower(POWER_RAGE, 0);
-                        if (urand(1, 100) <= FurorChance)
-                            castSpellId = 17057;
+                        if (roll_chance_i(FurorChance))
+                            m_target->CastSpell(m_target, 17057, this);
                     }
-                    if (castSpellId)
-                        m_target->CastSpell(m_target, castSpellId, this);
                 }
                 break;
             }
@@ -3587,7 +3604,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
                         if (itr.second->state == PLAYERSPELL_REMOVED) continue;
                         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr.first);
                         if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo->SpellIconID == 139)
-                            Rage_val += m_target->CalculateSpellDamage(m_target, spellInfo, 0, &spellInfo->Effects[0].BasePoints) * 10;
+                            Rage_val += m_target->CalculateSpellDamage(spellInfo, 0, &spellInfo->Effects[0].BasePoints) * 10;
                     }
                 }
 
@@ -3646,6 +3663,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
 
     if (m_target->GetTypeId() == TYPEID_PLAYER)
         (m_target->ToPlayer())->InitDataForForm();
+    else
+        m_target->UpdateDisplayPower();
 
     // force update as too quick shapeshifting and back
     // causes the value to stay the same serverside
@@ -5588,27 +5607,6 @@ void AuraEffect::HandleAuraModWeaponCritPercent(AuraApplication const* aurApp, u
     target->UpdateAllWeaponDependentCritAuras();
 }
 
-void AuraEffect::HandleModHitChance(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
-{
-    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
-        return;
-
-    Unit* target = aurApp->GetTarget();
-
-    // handle stack rules
-    if (target->GetTypeId() == TYPEID_PLAYER)
-    {
-        target->ToPlayer()->UpdateMeleeHitChances();
-        target->ToPlayer()->UpdateRangedHitChances();
-    }
-    else
-    {
-        float value = target->GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
-        target->m_modMeleeHitChance = value;
-        target->m_modRangedHitChance = value;
-    }
-}
-
 void AuraEffect::HandleModSpellHitChance(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
     if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
@@ -6490,6 +6488,6 @@ template TC_GAME_API void AuraEffect::GetTargetList(std::list<Unit*>&) const;
 template TC_GAME_API void AuraEffect::GetTargetList(std::deque<Unit*>&) const;
 template TC_GAME_API void AuraEffect::GetTargetList(std::vector<Unit*>&) const;
 
-template TC_GAME_API void AuraEffect::GetApplicationList(std::list<AuraApplication*>&) const;
-template TC_GAME_API void AuraEffect::GetApplicationList(std::deque<AuraApplication*>&) const;
-template TC_GAME_API void AuraEffect::GetApplicationList(std::vector<AuraApplication*>&) const;
+template TC_GAME_API void AuraEffect::GetApplicationVector(std::list<AuraApplication*>&) const;
+template TC_GAME_API void AuraEffect::GetApplicationVector(std::deque<AuraApplication*>&) const;
+template TC_GAME_API void AuraEffect::GetApplicationVector(std::vector<AuraApplication*>&) const;

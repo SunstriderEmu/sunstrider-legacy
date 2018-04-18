@@ -94,10 +94,13 @@ class GridMap
     uint8 _liquidWidth;
     uint8 _liquidHeight;
 
+    uint16* _holes;
 
     bool loadAreaData(FILE* in, uint32 offset, uint32 size);
     bool loadHeightData(FILE* in, uint32 offset, uint32 size);
     bool loadLiquidData(FILE* in, uint32 offset, uint32 size);
+    bool loadHolesData(FILE* in, uint32 offset, uint32 size);
+    bool isHole(int row, int col) const;
 
     // Get height functions and pointers. walkableOnly NYI
     typedef float (GridMap::*GetHeightPtr) (float x, float y, bool walkableOnly) const;
@@ -117,7 +120,6 @@ public:
     inline float getHeight(float x, float y, bool walkableOnly = false) const {return (this->*_gridGetHeight)(x, y, walkableOnly);}
     float getMinHeight(float x, float y) const;
     float getLiquidLevel(float x, float y) const;
-    uint8 getTerrainType(float x, float y) const;
     ZLiquidStatus GetLiquidStatus(float x, float y, float z, uint8 ReqLiquidTypeMask, LiquidData* data = nullptr, float collisionHeight = 2.03128f); // DEFAULT_COLLISION_HEIGHT in Object.h
     
     static bool ExistMap(uint32 mapid, int x, int y);

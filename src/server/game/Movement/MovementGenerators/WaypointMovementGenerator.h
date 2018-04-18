@@ -110,7 +110,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
 
         void MovementInform(Creature*, uint32 DBNodeId);
 
-        MovementGeneratorType GetMovementGeneratorType() override { return WAYPOINT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return WAYPOINT_MOTION_TYPE; }
 
         uint32 GetSplineId() const override { return _splineId; }
 
@@ -214,7 +214,7 @@ class TC_GAME_API FlightPathMovementGenerator : public MovementGeneratorMedium< 
         void DoReset(Player*);
         void DoFinalize(Player*);
         bool DoUpdate(Player*, uint32);
-        MovementGeneratorType GetMovementGeneratorType() override { return FLIGHT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return FLIGHT_MOTION_TYPE; }
 
         TaxiPathNodeList const& GetPath() { return _path; }
         uint32 GetPathAtMapEnd() const;

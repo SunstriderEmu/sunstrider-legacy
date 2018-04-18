@@ -36,7 +36,7 @@ class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, 
         void DoReset(T*);
         bool DoUpdate(T*, uint32);
 
-        MovementGeneratorType GetMovementGeneratorType() override { return FLEEING_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return FLEEING_MOTION_TYPE; }
 
     private:
         void SetTargetLocation(T*);
@@ -55,7 +55,7 @@ class TC_GAME_API TimedFleeingMovementGenerator : public FleeingMovementGenerato
             FleeingMovementGenerator<Creature>(fright),
             _totalFleeTime(time) { }
 
-        MovementGeneratorType GetMovementGeneratorType() override { return TIMED_FLEEING_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return TIMED_FLEEING_MOTION_TYPE; }
         bool Update(Unit*, uint32) override;
         void Finalize(Unit*, bool) override;
 

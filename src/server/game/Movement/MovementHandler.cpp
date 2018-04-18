@@ -73,13 +73,7 @@ void WorldSession::HandleMoveWorldportAck()
         return;
     }
 
-    float z = loc.GetPositionZ();
-    if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-#ifdef LICH_KING
-        z += GetPlayer()->GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
-#else
-        z += DEFAULT_HOVER_HEIGHT;
-#endif
+    float z = loc.GetPositionZ() + GetPlayer()->GetHoverOffset();
     GetPlayer()->Relocate(loc.m_positionX, loc.m_positionY, z, loc.m_orientation);
     GetPlayer()->SetFallInformation(0, GetPlayer()->GetPositionZ());
 

@@ -356,12 +356,18 @@ typedef std::unordered_map<uint16, InstanceTemplateAddon> InstanceTemplateAddonC
 
 struct PetLevelInfo
 {
-    PetLevelInfo() : health(0), mana(0) { for(unsigned short & stat : stats) stat = 0; }
+    PetLevelInfo() : health(0), mana(0), minDamage(0), maxDamage(0) 
+    { 
+        for(uint16& stat : stats)
+            stat = 0; 
+    }
 
     uint16 stats[MAX_STATS];
     uint16 health;
     uint16 mana;
-    uint16 armor;
+    uint32 armor;
+    uint16 minDamage;
+    uint16 maxDamage;
 };
 
 struct ReputationOnKillEntry
@@ -628,6 +634,7 @@ class TC_GAME_API ObjectMgr
         EquipmentInfo const* GetEquipmentInfo(uint32 entry, int8& id) const;
         CreatureAddon const* GetCreatureAddon(ObjectGuid::LowType lowguid) const;
         CreatureAddon const* GetCreatureTemplateAddon(uint32 entry) const;
+        CreatureMovementData const* GetCreatureMovementOverride(ObjectGuid::LowType spawnId) const;
 
         ItemTemplate const* GetItemTemplate(uint32 id);
         ItemTemplateContainer const& GetItemTemplateStore() const { return _itemTemplateStore; }
@@ -752,6 +759,7 @@ class TC_GAME_API ObjectMgr
         void LoadCreatureTemplates(bool reload = false);
         void LoadCreatureTemplate(Field* fields);
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
+        void CheckCreatureMovement(char const* table, uint64 id, CreatureMovementData& creatureMovement);
         void LoadCreatures();
         void LoadLinkedRespawn();
         /* 
@@ -764,6 +772,8 @@ class TC_GAME_API ObjectMgr
         void LoadCreatureTemplateAddons();
         void LoadCreatureModelInfo();
         void LoadEquipmentTemplates();
+        void LoadCreatureMovementOverrides();
+
         void LoadGameObjectLocales();
         void LoadGameObjects();
         void LoadSpawnGroupTemplates();
@@ -1213,6 +1223,7 @@ class TC_GAME_API ObjectMgr
         InstanceTemplateAddonContainer _instanceTemplateAddonStore;
         CreatureAddonContainer _creatureAddonStore;
         CreatureAddonContainer _creatureTemplateAddonStore;
+        std::unordered_map<ObjectGuid::LowType, CreatureMovementData> _creatureMovementOverrides;
         GameObjectTemplateContainer _gameObjectTemplateStore;
         CreatureTemplateContainer _creatureTemplateStore;
         ItemTemplateContainer _itemTemplateStore;

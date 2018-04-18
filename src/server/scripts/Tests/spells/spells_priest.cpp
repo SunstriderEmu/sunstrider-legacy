@@ -4,6 +4,79 @@
 #include "SpellHistory.h"
 #include <limits>
 
+class ConsumeMagicTest : public TestCaseScript
+{
+public:
+    ConsumeMagicTest() : TestCaseScript("spells priest consume_magic") { }
+
+    class ConsumeMagicTestImpt : public TestCase
+    {
+    public:
+        ConsumeMagicTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void ConsumeMagic(TestPlayer* caster, TriggerCastFlags triggerCastFlags = TRIGGERED_NONE)
+        {
+            caster->SetPower(POWER_MANA, 0);
+            caster->AddAura(ClassSpells::Priest::INNER_FIRE_RNK_1, caster);
+            TEST_CAST(caster, caster, ClassSpells::Priest::CONSUME_MAGIC_RNK_1, SPELL_CAST_OK, triggerCastFlags);
+        }
+
+        void Test() override
+        {
+            uint32 priestLevel = 70;
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, priestLevel);
+
+            priest->DisableRegeneration(true);
+            Wait(1);
+
+            // Only on Priest's spells
+            priest->AddAura(ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8, priest);
+            TEST_CAST(priest, priest, ClassSpells::Priest::CONSUME_MAGIC_RNK_1, SPELL_FAILED_CASTER_AURASTATE);
+            TEST_HAS_AURA(priest, ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8);
+            priest->RemoveAurasDueToSpell(ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8);
+
+            // Cooldown
+            ConsumeMagic(priest);
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::CONSUME_MAGIC_RNK_1, Minutes(2));
+
+            // Test mana gain
+            uint32 consumeMagicSpellLevel = 20;
+            uint32 consumeMagicBase = 120;
+            uint32 consumeMagicMax = 35;
+            float consumeMagicManaPerLevel = 10.8;
+            uint32 expectedMin = consumeMagicBase + consumeMagicManaPerLevel * (priestLevel - consumeMagicSpellLevel);
+            uint32 expectedMax = expectedMin + consumeMagicMax;
+
+            uint32 sampleSize;
+            uint32 maxPredictionError;
+            _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
+
+            uint32 minGain = std::numeric_limits<uint32>::max();
+            uint32 maxGain = 0;
+
+            for (uint32 i = 0; i < sampleSize; i++)
+            {
+                ConsumeMagic(priest, TriggerCastFlags(TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_GCD));
+                uint32 priestMana = priest->GetPower(POWER_MANA);
+
+                minGain = std::min(minGain, priestMana);
+                maxGain = std::max(maxGain, priestMana);
+            }
+
+            uint32 allowedMin = expectedMin > maxPredictionError ? expectedMin - maxPredictionError : 0; // protect against underflow
+            uint32 allowedMax = expectedMax + maxPredictionError;
+
+            TEST_ASSERT(minGain >= allowedMin);
+            TEST_ASSERT(maxGain <= allowedMax);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ConsumeMagicTestImpt>();
+    }
+};
+
 class DispelMagicTest : public TestCaseScript
 {
 public:
@@ -210,7 +283,7 @@ public:
             for (uint32 i = 0; i < 150; i++)
             {
                 rogue->AttackerStateUpdate(priest, BASE_ATTACK);
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(priest);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(priest);
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
                 if (data.damageInfo.HitOutCome != MELEE_HIT_NORMAL && data.damageInfo.HitOutCome != MELEE_HIT_CRIT)
@@ -632,7 +705,7 @@ public:
             for (uint32 i = 0; i < 150; i++)
             {
                 rogue->AttackerStateUpdate(priest, BASE_ATTACK);
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(priest);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(priest);
 
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
@@ -821,6 +894,59 @@ public:
     }
 };
 
+class SymbolOfHopeTest : public TestCaseScript
+{
+public:
+    SymbolOfHopeTest() : TestCaseScript("spells priest symbol_of_hope") { }
+
+    class SymbolOfHopeTestImpt : public TestCase
+    {
+    public:
+        SymbolOfHopeTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_DRAENEI);
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
+
+            GroupPlayer(priest, mage);
+
+            float const symbolOfHopeBonus = (5.0f * (priest->GetLevel() - 10) + 33) / 5.0f;
+
+            float const expectedPriestStartMPS = priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) + symbolOfHopeBonus;
+            float const expectedPriestStartMPSFSR = priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) + symbolOfHopeBonus;
+
+            float const expectedMageStartMPS = mage->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) + symbolOfHopeBonus;
+            float const expectedMageStartMPSFSR = mage->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) + symbolOfHopeBonus;
+
+            uint32 const expectedSymbolOfHopeManaCost = 15;
+            priest->SetPower(POWER_MANA, expectedSymbolOfHopeManaCost);
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1);
+            // Mana cost
+            TEST_ASSERT(priest->GetPower(POWER_MANA) == 0);
+            // Aura duration
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, Seconds(15));
+            TEST_AURA_MAX_DURATION(mage, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, Seconds(15));
+            // Cooldown
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, Minutes(5));
+            Wait(1000);
+            // MPS
+            TEST_ASSERT(priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) == expectedPriestStartMPS);
+            TEST_ASSERT(priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) == expectedPriestStartMPSFSR);
+            TEST_ASSERT(mage->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) == expectedMageStartMPS);
+            TEST_ASSERT(mage->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) == expectedMageStartMPSFSR);
+
+            
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SymbolOfHopeTestImpt>();
+    }
+};
+
 class AbolishDiseaseTest : public TestCaseScript
 {
 public:
@@ -974,6 +1100,61 @@ public:
     }
 };
 
+class ChastiseTest : public TestCaseScript
+{
+public:
+    ChastiseTest() : TestCaseScript("spells priest chastise") { }
+
+    class ChastiseTestImpt : public TestCase
+    {
+    public:
+        ChastiseTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_DWARF);
+
+            Creature* humanoid = SpawnCreature(724, true);  // Burly Rockjaw Trogg
+            Creature* beast = SpawnCreature(705, true);     // Ragged Young Wolf
+
+            // Only cast on humanoid
+            TEST_CAST(priest, beast, ClassSpells::Priest::CHASTISE_RNK_1, SPELL_FAILED_BAD_TARGETS);
+            beast->DespawnOrUnsummon();
+
+            // Mana cost
+            uint32 const expectedChastiseMana = 50;
+            TEST_POWER_COST(priest, humanoid, ClassSpells::Priest::CHASTISE_RNK_1, POWER_MANA, expectedChastiseMana);
+
+            // Does not trigger GCD
+            TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+
+            // Aura
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::CHASTISE_RNK_1, Seconds(30));
+            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::CHASTISE_RNK_1, Seconds(2));
+            TEST_ASSERT(!humanoid->CanFreeMove());
+            humanoid->DespawnOrUnsummon();
+
+            // Damage -- Bug Here, spell coeff too big
+            // Note: got a feeling that it crits way too much
+            Creature* dummy = SpawnCreature();
+            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+            // DrDamage says 0.142 which is the calculation with castTime = 0.5
+            float const chastiseCastTime = 0.5f;
+            float const chastiseCoeff = chastiseCastTime / 3.5f;
+            uint32 const bonusSpell = 292 * chastiseCoeff;
+            uint32 const chastiseMin = ClassSpellsDamage::Priest::CHASTISE_RNK_6_MIN + bonusSpell;
+            uint32 const chastiseMax = ClassSpellsDamage::Priest::CHASTISE_RNK_6_MAX + bonusSpell;
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, chastiseMin, chastiseMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, chastiseMin * 1.5f, chastiseMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ChastiseTestImpt>();
+    }
+};
+
 class CureDiseaseTest : public TestCaseScript
 {
 public:
@@ -1123,6 +1304,42 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<DesperatePrayerTestImpt>();
+    }
+};
+
+class ElunesGraceTest : public TestCaseScript
+{
+public:
+    ElunesGraceTest() : TestCaseScript("spells priest elunes_grace") { }
+
+    class ElunesGraceTestImpt : public TestCase
+    {
+    public:
+        ElunesGraceTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_NIGHTELF);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_ORC);
+            TestPlayer* hunter = SpawnPlayer(CLASS_HUNTER, RACE_ORC);
+
+            Wait(1);
+
+            uint32 expectedElunesGraceMana = 78;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, POWER_MANA, expectedElunesGraceMana);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, Seconds(15));
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, Minutes(3));
+            TEST_HAS_AURA(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1);
+
+            float const expectedResult = 25.f; // PvP Hit 5% + Elune's Grace 20%
+            TEST_SPELL_HIT_CHANCE(hunter, priest, ClassSpells::Hunter::AUTO_SHOT_RNK_1, expectedResult, SPELL_MISS_MISS);
+            TEST_MELEE_HIT_CHANCE(warrior, priest, BASE_ATTACK, expectedResult, MELEE_HIT_MISS);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ElunesGraceTestImpt>();
     }
 };
 
@@ -1576,7 +1793,7 @@ public:
             uint32 const expectedSmiteMana = 385;
             TEST_POWER_COST(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, POWER_MANA, expectedSmiteMana);
 
-            // Heal
+            // Damage
             float const smiteCastTime = 2.5f;
             float const smiteCoeff = smiteCastTime / 3.5f;
             uint32 const bonusHeal = 292 * smiteCoeff;
@@ -1590,6 +1807,53 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<SmiteTestImpt>();
+    }
+};
+
+class DevouringPlagueTest : public TestCaseScript
+{
+public:
+    DevouringPlagueTest() : TestCaseScript("spells priest devouring_plague") { }
+
+    class DevouringPlagueTestImpt : public TestCase
+    {
+    public:
+        DevouringPlagueTestImpt() : TestCase(STATUS_PASSING, true) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_UNDEAD_PLAYER);
+            Creature* dummy = SpawnCreature();
+
+            priest->DisableRegeneration(true);
+            priest->SetHealth(1);
+
+            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 183 SP & 550 BH
+
+            // Mana cost
+            uint32 const expectedDevouringPlagueMana = 1145;
+            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, POWER_MANA, expectedDevouringPlagueMana);
+            TEST_AURA_MAX_DURATION(dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, Seconds(24));
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, Minutes(3));
+
+            // Damage
+            float const dvouringPlagueDotTime = 24.0f;
+            float const devouringPlagueCoeff = dvouringPlagueDotTime / 15 / 2;
+            uint32 const spellBonus = 183 * devouringPlagueCoeff;
+
+            int const devouringPlagueTickCount = 8;
+            uint32 const devouringPlagueTick = ClassSpellsDamage::Priest::DEVOURING_PLAGUE_RNK_7_TICK + spellBonus / devouringPlagueTickCount;
+            uint32 const devouringPlagueTotal = devouringPlagueTick * devouringPlagueTickCount;
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, devouringPlagueTotal, true);
+
+            // Heal
+            TEST_ASSERT(priest->GetHealth() == 1 + devouringPlagueTotal);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<DevouringPlagueTestImpt>();
     }
 };
 
@@ -2187,7 +2451,8 @@ public:
             FORCE_CAST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
             Wait(1000);
             TEST_ASSERT(priest->IsDead());
-            Item* sunflare = priest->GetItemByPos(INVTYPE_WEAPONMAINHAND);
+            Item* sunflare = priest->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            TEST_ASSERT(sunflare != nullptr);
             uint32 sunflareDurability = sunflare->GetUInt32Value(ITEM_FIELD_DURABILITY);
             uint32 sunflareMaxDurability = sunflare->GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
             TEST_ASSERT(sunflareDurability == sunflareMaxDurability);
@@ -2310,7 +2575,7 @@ public:
             for (uint32 i = 0; i < sampleSize; i++) {
                 shadowfiend->AttackerStateUpdate(warrior, BASE_ATTACK);
 
-                auto damageToTarget = AI->GetWhiteDamageDoneInfo(warrior);
+                auto damageToTarget = AI->GetMeleeDamageDoneInfo(warrior);
                 TEST_ASSERT(damageToTarget->size() == i + 1);
                 auto& data = damageToTarget->back();
 
@@ -2452,6 +2717,7 @@ public:
 void AddSC_test_spells_priest()
 {
     // Discipline: 11/11
+    new ConsumeMagicTest();
     new DispelMagicTest();
     new FearWardTest();
     new FeedbackTest();
@@ -2464,11 +2730,14 @@ void AddSC_test_spells_priest()
     new PrayerOfFortitudeTest();
     new ShackleUndeadTest();
     new StarshardsTest();
-    // Holy: 13/13
+    new SymbolOfHopeTest();
+    // Holy: 14/14
     new AbolishDiseaseTest();
     new BindingHealTest();
+    new ChastiseTest();
     new CureDiseaseTest();
     new DesperatePrayerTest();
+    new ElunesGraceTest();
     new FlashHealTest();
     new GreaterHealTest();
     new HealTest();
@@ -2480,6 +2749,7 @@ void AddSC_test_spells_priest()
     new ResurrectionTest();
     new SmiteTest();
     // Shadow: 13/13
+    new DevouringPlagueTest();
     new FadeTest();
     new HexOfWeaknessTest();
     new MindBlastTest();

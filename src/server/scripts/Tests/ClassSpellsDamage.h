@@ -107,6 +107,16 @@ namespace ClassSpellsDamage
 
 			// Feral
 			CLAW_RNK_6 = 190,
+            FEROCIOUS_BITE_RNK_6_CP_1_MIN = 259,
+            FEROCIOUS_BITE_RNK_6_CP_1_MAX = 292,
+            FEROCIOUS_BITE_RNK_6_CP_2_MIN = 428,
+            FEROCIOUS_BITE_RNK_6_CP_2_MAX = 461,
+            FEROCIOUS_BITE_RNK_6_CP_3_MIN = 597,
+            FEROCIOUS_BITE_RNK_6_CP_3_MAX = 630,
+            FEROCIOUS_BITE_RNK_6_CP_4_MIN = 766,
+            FEROCIOUS_BITE_RNK_6_CP_4_MAX = 799,
+            FEROCIOUS_BITE_RNK_6_CP_5_MIN = 935,
+            FEROCIOUS_BITE_RNK_6_CP_5_MAX = 968,
 			LACERATE_RNK_1 = 31,
 			LACERATE_RNK_1_BLEED = 155,
 			MAUL_RNK_8 = 176,
@@ -237,6 +247,8 @@ namespace ClassSpellsDamage
             // Holy
             BINDING_HEAL_RNK_1_MIN = 1053,
             BINDING_HEAL_RNK_1_MAX = 1350,
+            CHASTISE_RNK_6_MIN = 370,
+            CHASTISE_RNK_6_MAX = 430,
             DESPERATE_PRAYER_RNK_8_MIN = 1637,
             DESPERATE_PRAYER_RNK_8_MAX = 1924,
             FLASH_HEAL_RNK_9_MIN = 1116,
@@ -256,6 +268,8 @@ namespace ClassSpellsDamage
             SMITE_RNK_10_MIN = 549,
             SMITE_RNK_10_MAX = 616,
             // Shadow
+            DEVOURING_PLAGUE_RNK_7_TOTAL = 1216,
+            DEVOURING_PLAGUE_RNK_7_TICK = 152,
             MIND_BLAST_RNK_11_MIN = 711,
             MIND_BLAST_RNK_11_MAX = 752,
             SHADOW_WORD_DEATH_RNK_2_MIN = 572,
@@ -286,7 +300,8 @@ namespace ClassSpellsDamage
 		enum Warlock
 		{
 			// Affliction
-			CORRUPTION_RNK_8_TOTAL = 900,
+            CORRUPTION_RNK_8_TICK = 150,
+            CORRUPTION_RNK_8_TOTAL = 900,
 			CURSE_OF_AGONY_RNK_7_TOTAL = 1356,
 			CURSE_OF_DOOM_RNK_2 = 4200,
 			DEATH_COIL_RNK_4 = 519,
@@ -300,14 +315,15 @@ namespace ClassSpellsDamage
 			UNSTABLE_AFFLICTION_RNK_1_TOTAL = 660,
 
 			// Destruction
-			HELLFIRE_RNK_4_TICK = 307, // Self & enemies
-			IMMOLATE_RNK_9 = 331,
+			HELLFIRE_RNK_4_TICK = 306, // Self & enemies
+            IMMOLATE_RNK_9 = 331,
 			IMMOLATE_RNK_9_DOT = 615,
 			INCINERATE_RNK_2_MIN = 444,
 			INCINERATE_RNK_2_MAX = 514,
 			INCINERATE_RNK_2_IMMOLATE_BONUS_MIN = 111,
 			INCINERATE_RNK_2_IMMOLATE_BONUS_MAX = 129,
-			RAIN_OF_FIRE_RNK_5_TOTAL = 1212,
+            RAIN_OF_FIRE_RNK_5_TICK = 303,
+            RAIN_OF_FIRE_RNK_5_TOTAL = 1212,
 			SEARING_PAIN_RNK_8_MIN = 270,
 			SEARING_PAIN_RNK_8_MAX = 320,
 			SHADOW_BOLT_RNK_11_MIN = 544,

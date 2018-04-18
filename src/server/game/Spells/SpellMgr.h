@@ -831,7 +831,7 @@ typedef std::pair<SkillLineAbilityMap::const_iterator, SkillLineAbilityMap::cons
 
 typedef std::vector<SpellInfo*> SpellInfoMap;
 
-typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
+typedef std::unordered_map<int32, std::vector<int32> > SpellLinkedMap;
 
 class TC_GAME_API SpellMgr
 {
@@ -974,7 +974,7 @@ class TC_GAME_API SpellMgr
             return Trinity::Containers::MapGetValuePtr(mSpellPetAuraMap, spell_id);
         }
         
-        const std::vector<int32> *GetSpellLinked(int32 spell_id) const
+        std::vector<int32> const* GetSpellLinked(int32 spell_id) const
         {
             return Trinity::Containers::MapGetValuePtr(mSpellLinkedMap, spell_id);
         }

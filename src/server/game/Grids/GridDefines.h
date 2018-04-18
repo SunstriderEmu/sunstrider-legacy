@@ -5,6 +5,7 @@
 #include "Common.h"
 #include "WaterDefines.h"
 #include "NGrid.h"
+#include "ObjectGuid.h"
 #include <cmath>
 
 // Forward class definitions

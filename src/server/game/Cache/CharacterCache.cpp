@@ -240,7 +240,6 @@ ObjectGuid CharacterCache::GetCharacterGuidByName(std::string const& name) const
     return ObjectGuid::Empty;
 }
 
-
 bool CharacterCache::GetCharacterNameByGuid(ObjectGuid guid, std::string& name) const
 {
     auto itr = _characterCacheStore.find(guid);

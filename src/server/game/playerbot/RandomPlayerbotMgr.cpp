@@ -235,8 +235,11 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, vector<WorldLocation> &locs
         if (!map)
             continue;
 
-        if (!map->IsOutdoors(x, y, z) ||
-                map->IsInWater(x, y, z))
+        PositionFullTerrainStatus data;
+        map->GetFullTerrainStatusForPosition(x, y, z, data, MAP_ALL_LIQUIDS);
+        
+        if (!data.outdoors ||
+            data.liquidStatus != LIQUID_MAP_NO_WATER)
             continue;
 
         uint32 areaId = map->GetAreaId(x, y, z);

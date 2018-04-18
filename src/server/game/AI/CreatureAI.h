@@ -59,8 +59,6 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         bool UpdateVictim(bool evade = true);
 
-        bool CheckBoundary(Position const* who = nullptr) const;
-
     public:
         enum EvadeReason
         {
@@ -103,10 +101,12 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/) {}
 
         // Called when hit by a spell
-        virtual void SpellHit(Unit*, const SpellInfo*) {}
+        virtual void SpellHit(Unit* /*caster*/, SpellInfo const* /*spellInfo*/) { }
+        virtual void SpellHit(GameObject* /*caster*/, SpellInfo const* /*spellInfo*/) { }
 
         // Called when spell hits a target
         virtual void SpellHitTarget(Unit* target, const SpellInfo*) {}
+        virtual void SpellHitTarget(GameObject* /*target*/, SpellInfo const* /*spellInfo*/) { }
 
         virtual bool IsEscorted() const { return false; }
         virtual void VictimDied(Unit* /* attacked */) { }
@@ -184,6 +184,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         void SetBoundary(CreatureBoundary const* boundary, bool negativeBoundaries = false);
 
         static bool IsInBounds(CreatureBoundary const& boundary, Position const* who);
+        bool IsInBoundary(Position const* who = nullptr) const;
 
         /// == Gossip system ================================
 

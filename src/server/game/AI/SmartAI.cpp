@@ -629,8 +629,7 @@ void SmartAI::JustSummoned(Creature* creature)
 
 void SmartAI::AttackStart(Unit* who)
 {
-    // sunwell: dont allow charmed npcs to act on their own
-    if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
+    if (!IsAIControlled())
     {
         if (who && mCanAutoAttack)
             me->Attack(who, true);

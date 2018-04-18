@@ -1153,7 +1153,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         static bool BuildEnumData( PreparedQueryResult  result,  WorldPacket * p_data, WorldSession const* session );
 
-        bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const override;
+        bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, WorldObject const* caster) const override;
 
         void SetInWater(bool apply);
 
@@ -1289,6 +1289,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HasItemCount( uint32 item, uint32 count, bool inBankAlso = false ) const;
         uint32 GetEmptyBagSlotsCount() const;
         bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = nullptr) const;
+        bool CanNoReagentCast(SpellInfo const* spellInfo) const;
         Item* GetItemOrItemWithGemEquipped( uint32 item ) const;
         InventoryResult CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
         InventoryResult CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,nullptr); }
@@ -1838,7 +1839,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         float GetMissPercentageFromDefense() const;
         float OCTRegenHPPerSpirit();
         float OCTRegenMPPerSpirit();
-        float GetRatingMultiplier(CombatRating cr) const;
+        float GetRatingCoefficient(CombatRating cr) const;
         float GetRatingBonusValue(CombatRating cr) const;
         uint32 GetMeleeCritDamageReduction(uint32 damage) const;
         uint32 GetRangedCritDamageReduction(uint32 damage) const;
@@ -1897,10 +1898,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData, bool updateCreatureLiquid ) override;
         void AtExitCombat() override;
 
-        void SendMessageToSet(WorldPacket *data, bool self) override;
-        void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin = false, Player const* skipped_rcvr = nullptr) override;
-		void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin, bool own_team_only, Player const* skipped_rcvr = nullptr);
-        void SendMessageToSet(WorldPacket* data, Player* skipped_rcvr) override;
+        void SendMessageToSet(WorldPacket const* data, bool self) override;
+        void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin = false, Player const* skipped_rcvr = nullptr) override;
+		void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin, bool own_team_only, Player const* skipped_rcvr = nullptr);
+        void SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr) override;
 
         void SendTeleportAckPacket();
 
@@ -2118,7 +2119,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Battleground* GetBattleground() const;
         bool InArena() const;
           
-        bool InBattlegroundQueue() const;
+        bool InBattlegroundQueue(bool ignoreArena = false) const;
 
         BattlegroundQueueTypeId GetBattlegroundQueueTypeId(uint32 index) const;
         uint32 GetBattlegroundQueueIndex(BattlegroundQueueTypeId bgQueueTypeId) const;

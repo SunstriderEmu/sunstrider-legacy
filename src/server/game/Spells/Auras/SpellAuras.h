@@ -28,10 +28,7 @@ struct ChannelTargetData;
 //Aura applied to an specific unit
 class TC_GAME_API AuraApplication
 {
-    friend void Unit::_ApplyAura(AuraApplication * aurApp, uint8 effMask);
-    friend void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMode);
-    friend void Unit::_ApplyAuraEffect(Aura* aura, uint8 effIndex);
-    friend void Unit::RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode);
+    friend class Unit;
     friend AuraApplication * Unit::_CreateAuraApplication(Aura* aura, uint8 effMask);
 private:
     Unit * const _target;
@@ -46,21 +43,23 @@ private:
 
     explicit AuraApplication(Unit* target, Unit* caster, Aura* base, uint8 effMask);
     void _Remove();
-private:
+
     void _InitFlags(Unit* caster, uint8 effMask);
     void _HandleEffect(uint8 effIndex, bool apply);
-public:
 
+public:
     Unit * GetTarget() const { return _target; }
     Aura* GetBase() const { return _base; }
 
     uint8 GetSlot() const { return _slot; }
     uint8 GetFlags() const { return _flags; }
     uint8 GetEffectMask() const { return _flags & (AFLAG_EFF_INDEX_0 | AFLAG_EFF_INDEX_1 | AFLAG_EFF_INDEX_2); }
-    bool HasEffect(uint8 effect) const { ASSERT(effect < MAX_SPELL_EFFECTS);  return (_flags & (1 << effect)) != 0; }
+    bool HasEffect(uint8 effect) const { ASSERT(effect < MAX_SPELL_EFFECTS); return (_flags & (1 << effect)) != 0; }
     bool IsPositive() const { return _positive; }
     bool IsSelfcast() const { return (_flags & AFLAG_CASTER) != 0; }
+
     uint8 GetEffectsToApply() const { return _effectsToApply; }
+    void UpdateApplyEffectMask(uint8 newEffMask);
 
     void SetRemoveMode(AuraRemoveMode mode) { _removeMode = mode; }
     AuraRemoveMode GetRemoveMode() const { return _removeMode; }
@@ -101,19 +100,17 @@ struct CasterInfo
 
 class TC_GAME_API Aura
 {
-    friend Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint8 effMask, Unit* caster, int32 *baseAmount, Item* castItem, ObjectGuid casterGUID, bool resetPeriodicTimer);
+    friend class Unit;
 
 public:
-    typedef std::map<ObjectGuid, AuraApplication*> ApplicationMap;
+    typedef std::unordered_map<ObjectGuid, AuraApplication*> ApplicationMap;
 
     static uint8 BuildEffectMaskForOwner(SpellInfo const* spellProto, uint8 availableEffectMask, WorldObject* owner);
-    static Aura* TryRefreshStackOrCreate(SpellInfo const* spellproto, uint8 tryEffMask, WorldObject* owner, Unit* caster, int32* baseAmount = nullptr, Item* castItem = nullptr, ObjectGuid casterGUID = ObjectGuid::Empty, bool* refresh = nullptr, bool resetPeriodicTimer = true);
-    //fake = true won't add aura to owner
-    static Aura* TryCreate(SpellInfo const* spellproto, uint8 effMask, WorldObject* owner, Unit* caster, int32* baseAmount = nullptr, Item* castItem = nullptr, ObjectGuid casterGUID = ObjectGuid::Empty, bool fake = false);
-    //fake = true won't add aura to owner
-    static Aura* Create(SpellInfo const* spellproto, uint8 effMask, WorldObject* owner, Unit* caster, int32* baseAmount, Item* castItem, ObjectGuid casterGUID, bool fake = false);
-    explicit Aura(SpellInfo const* spellproto, WorldObject* owner, Unit *caster, Item* castItem, ObjectGuid casterGUID);
-    void _InitEffects(uint8 effMask, Unit* caster, int32 *baseAmount);
+    static Aura* TryRefreshStackOrCreate(AuraCreateInfo& createInfo);
+    static Aura* TryCreate(AuraCreateInfo& createInfo);
+    static Aura* Create(AuraCreateInfo& createInfo);
+    explicit Aura(AuraCreateInfo const& createInfo);
+    void _InitEffects(uint8 effMask, Unit* caster, int32 const* baseAmount);
     void SaveCasterInfo(Unit* caster);
     virtual ~Aura();
 
@@ -126,7 +123,8 @@ public:
     int32 GetMaxDuration() const { return m_maxDuration; }
     void SetMaxDuration(int32 duration) { m_maxDuration = duration; }
     int32 CalcMaxDuration() const { return CalcMaxDuration(GetCaster()); }
-    int32 CalcMaxDuration(Unit* caster) const;
+    int32 CalcMaxDuration(Unit* caster) const { return Aura::CalcMaxDuration(GetSpellInfo(), caster); }
+    static int32 CalcMaxDuration(SpellInfo const* spellInfo, WorldObject* caster);
     int32 GetDuration() const { return m_duration; }
     void SetDuration(int32 duration, bool withMods = false);
     void RefreshDuration(bool withMods = false);
@@ -139,8 +137,8 @@ public:
     ObjectGuid const& GetCasterGUID() const { return m_casterGuid; }
     Unit* GetCaster() const;
     WorldObject* GetOwner() const { return m_owner; }
-    Unit* GetUnitOwner() const { ASSERT(GetType() == UNIT_AURA_TYPE); return (Unit*)m_owner; }
-    DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
+    Unit* GetUnitOwner() const { ASSERT(GetType() == UNIT_AURA_TYPE); return m_owner->ToUnit(); }
+    DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return m_owner->ToDynObject(); }
 
     void SetLoadedState(int32 maxduration, int32 duration, int32 charges, uint8 stackamount, uint8 recalculateMask, float critChance, bool applyResilience, int32* amount);
 
@@ -226,7 +224,7 @@ public:
 
     // Helpers for targets
     ApplicationMap const& GetApplicationMap() { return m_applications; }
-    void GetApplicationList(Unit::AuraApplicationList& applicationList) const;
+    void GetApplicationVector(std::vector<AuraApplication*>& applicationList) const;
     AuraApplication const* GetApplicationOfTarget(ObjectGuid guid) const { ApplicationMap::const_iterator itr = m_applications.find(guid); if (itr != m_applications.end()) return itr->second; return nullptr; }
     AuraApplication* GetApplicationOfTarget(ObjectGuid guid) { ApplicationMap::iterator itr = m_applications.find(guid); if (itr != m_applications.end()) return itr->second; return nullptr; }
     bool IsAppliedOnTarget(ObjectGuid guid) const { return m_applications.find(guid) != m_applications.end(); }
@@ -278,6 +276,12 @@ public:
     bool CallScriptEffectProcHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp, ProcEventInfo& eventInfo);
     void CallScriptAfterEffectProcHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp, ProcEventInfo& eventInfo);
 
+    UnitAura* ToUnitAura() { if (GetType() == UNIT_AURA_TYPE) return reinterpret_cast<UnitAura*>(this); else return nullptr; }
+    UnitAura const* ToUnitAura() const { if (GetType() == UNIT_AURA_TYPE) return reinterpret_cast<UnitAura const*>(this); else return nullptr; }
+
+    DynObjAura* ToDynObjAura() { if (GetType() == DYNOBJ_AURA_TYPE) return reinterpret_cast<DynObjAura*>(this); else return nullptr; }
+    DynObjAura const* ToDynObjAura() const { if (GetType() == DYNOBJ_AURA_TYPE) return reinterpret_cast<DynObjAura const*>(this); else return nullptr; }
+
     template <class Script>
     Script* GetScript(std::string const& scriptName) const
     {
@@ -326,7 +330,7 @@ protected:
 
     int32 m_stackAmount;
 
-    AuraEffect* m_effects[3];
+    AuraEffect* m_effects[MAX_SPELL_EFFECTS];
     ApplicationMap m_applications;
 
     ChargeDropEvent* m_dropEvent;
@@ -336,18 +340,17 @@ protected:
     std::chrono::steady_clock::time_point m_procCooldown;
 
 private:
-    Unit::AuraApplicationList m_removedApplications;
+    std::vector<AuraApplication*> _removedApplications;
 };
 
 class TC_GAME_API UnitAura : public Aura
 {
-    friend Aura* Aura::Create(SpellInfo const* spellproto, uint8 effMask, WorldObject* owner, Unit* caster, int32 *baseAmount, Item* castItem, ObjectGuid casterGUID, bool fake);
+    friend Aura* Aura::Create(AuraCreateInfo& createInfo);
 protected:
-    //fake = true won't add aura to unit
-    explicit UnitAura(SpellInfo const* spellproto, uint8 effMask, WorldObject* owner, Unit* caster, int32 *baseAmount, Item* castItem, ObjectGuid casterGUID, bool fake = false);
+    explicit UnitAura(AuraCreateInfo const& createInfo);
 public:
-    void _ApplyForTarget(Unit* target, Unit* caster, AuraApplication * aurApp) override;
-    void _UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * aurApp) override;
+    void _ApplyForTarget(Unit* target, Unit* caster, AuraApplication* aurApp) override;
+    void _UnapplyForTarget(Unit* target, Unit* caster, AuraApplication* aurApp) override;
 
     void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) override;
 
@@ -357,15 +360,18 @@ public:
     void SetDiminishGroup(DiminishingGroup group) { m_AuraDRGroup = group; }
     DiminishingGroup GetDiminishGroup() const { return m_AuraDRGroup; }
 
+    void AddStaticApplication(Unit* target, uint8 effMask);
+
 private:
     DiminishingGroup m_AuraDRGroup;               // Diminishing
+    std::unordered_map<ObjectGuid, uint8> _staticApplications; // non-area auras
 };
 
 class TC_GAME_API DynObjAura : public Aura
 {
-    friend Aura* Aura::Create(SpellInfo const* spellproto, uint8 effMask, WorldObject* owner, Unit* caster, int32 *baseAmount, Item* castItem, ObjectGuid casterGUID, bool fake);
+    friend Aura* Aura::Create(AuraCreateInfo& createInfo);
 protected:
-    explicit DynObjAura(SpellInfo const* spellproto, uint8 effMask, WorldObject* owner, Unit* caster, int32 *baseAmount, Item* castItem, ObjectGuid casterGUID);
+    explicit DynObjAura(AuraCreateInfo const& createInfo);
 public:
     void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) override;
 

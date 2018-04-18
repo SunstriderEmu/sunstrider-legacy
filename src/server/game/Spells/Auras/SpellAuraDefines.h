@@ -2,6 +2,13 @@
 #ifndef TRINITY_SPELLAURADEFINES_H
 #define TRINITY_SPELLAURADEFINES_H
 
+#include "Define.h"
+#include "ObjectGuid.h"
+class Item;
+class SpellInfo;
+class Unit;
+class WorldObject;
+
 #ifdef LICH_KING
 #define MAX_AURAS 255                         // Client-side limit
 #else
@@ -346,5 +353,42 @@ enum AreaAuraType : unsigned int
     AREA_AURA_PET,
     AREA_AURA_OWNER
 };
+
+struct TC_GAME_API AuraCreateInfo
+{
+    friend class Aura;
+    friend class UnitAura;
+    friend class DynObjAura;
+
+    AuraCreateInfo(SpellInfo const* spellInfo, uint8 auraEffMask, WorldObject* owner);
+
+    AuraCreateInfo& SetCasterGUID(ObjectGuid const& guid) { CasterGUID = guid; return *this; }
+    AuraCreateInfo& SetCaster(Unit* caster) { Caster = caster; return *this; }
+    AuraCreateInfo& SetBaseAmount(int32 const* bp) { BaseAmount = bp; return *this; }
+    AuraCreateInfo& SetCastItem(Item* item) { CastItem = item; return *this; }
+    AuraCreateInfo& SetPeriodicReset(bool reset) { ResetPeriodicTimer = reset; return *this; }
+    AuraCreateInfo& SetOwnerEffectMask(uint8 effMask) { _targetEffectMask = effMask; return *this; }
+    AuraCreateInfo& SetFake(bool fake) { Fake = fake; return *this; }
+
+    SpellInfo const* GetSpellInfo() const { return _spellInfo; }
+    uint8 GetAuraEffectMask() const { return _auraEffectMask; }
+
+    ObjectGuid CasterGUID;
+    Unit* Caster = nullptr;
+    int32 const* BaseAmount = nullptr;
+    Item* CastItem = nullptr;
+    bool* IsRefresh = nullptr;
+    bool ResetPeriodicTimer = true;
+    bool Fake = false; // fake = true won't add aura to owner
+
+    private:
+        SpellInfo const* _spellInfo = nullptr;
+        uint8 _auraEffectMask = 0;
+        WorldObject* _owner = nullptr;
+
+        uint8 _targetEffectMask = 0;
+};
+
+
 #endif
 

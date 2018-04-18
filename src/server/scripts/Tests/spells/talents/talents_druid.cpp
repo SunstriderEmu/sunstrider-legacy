@@ -992,7 +992,7 @@ public:
 				TEST_ASSERT(aura != nullptr);
 				TEST_ASSERT(aura->GetDuration() == 12 * SECOND * IN_MILLISECONDS);
 				Wait(1000);
-				auto damageToTarget = AI->GetDamageDoneInfo(target);
+				auto damageToTarget = AI->GetSpellDamageDoneInfo(target);
 
 				if (damageToTarget->empty())
 					continue;

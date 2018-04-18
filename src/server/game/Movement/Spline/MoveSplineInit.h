@@ -11,6 +11,7 @@ namespace G3D
 {
     class Vector3;
 }
+enum UnitMoveType : uint8;
 
 namespace Movement
 {

@@ -482,7 +482,7 @@ bool AnyAoETargetUnitInObjectRangeCheck::operator()(Unit* u)
     if (_spellInfo && _spellInfo->HasAttribute(SPELL_ATTR3_ONLY_TARGET_PLAYERS) && u->GetTypeId() != TYPEID_PLAYER)
         return false;
 
-    if (!i_funit->_IsValidAttackTarget(u, _spellInfo, i_obj->GetTypeId() == TYPEID_DYNAMICOBJECT ? i_obj : nullptr))
+    if (!i_funit->IsValidAttackTarget(u, _spellInfo))
         return false;
 
     float searchRadius = i_range;
@@ -701,12 +701,12 @@ bool GameObjectFocusCheck::operator()(GameObject* go) const
     if (go->GetGOInfo()->type != GAMEOBJECT_TYPE_SPELL_FOCUS)
         return false;
 
-    if (go->GetGOInfo()->spellFocus.focusId != i_focusId)
+    if (go->GetGOInfo()->spellFocus.focusId != _focusId)
         return false;
 
     float dist = (float)((go->GetGOInfo()->spellFocus.dist) / 2);
 
-    return go->IsWithinDistInMap(i_unit, dist);
+    return go->IsWithinDistInMap(_caster, dist);
 }
 
 bool NearestGameObjectFishingHole::operator()(GameObject* go)

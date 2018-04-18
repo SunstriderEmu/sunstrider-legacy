@@ -106,7 +106,7 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
     bool triggered = (trig_str != nullptr);
 
     // update orientation at server
-    caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
+    caster->SetOrientation(caster->GetAbsoluteAngle(m_session->GetPlayer()));
 
     // and client
     WorldPacket data;
@@ -195,7 +195,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
     bool triggered = (trig_str != nullptr);
 
     // update orientation at server
-    caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
+    caster->SetOrientation(caster->GetAbsoluteAngle(m_session->GetPlayer()));
 
     // and client
     WorldPacket data;

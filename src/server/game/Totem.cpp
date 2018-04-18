@@ -182,7 +182,7 @@ void Totem::InitStats(uint32 duration)
     SetLevel(GetOwner()->GetLevel());
 }
 
-bool Totem::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const
+bool Totem::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, WorldObject const* caster) const
 {
     /// @todo possibly all negative auras immune?
     if (GetEntry() == 5925)

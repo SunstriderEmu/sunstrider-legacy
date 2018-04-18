@@ -15,7 +15,7 @@ class HomeMovementGenerator : public MovementGeneratorMedium< T, HomeMovementGen
         void DoFinalize(T*);
         void DoReset(T*);
         bool DoUpdate(T*, const uint32);
-        MovementGeneratorType GetMovementGeneratorType() { return HOME_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return HOME_MOTION_TYPE; }
 
     private:
         void SetTargetLocation(T*);

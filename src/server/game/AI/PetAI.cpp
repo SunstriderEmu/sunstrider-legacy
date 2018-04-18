@@ -25,7 +25,7 @@ int PetAI::Permissible(const Creature *creature)
     return PERMIT_BASE_NO;
 }
 
-PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK), distanceCheckTimer(3000), _forceAttackBreakable(nullptr)
+PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK), _forceAttackBreakable(nullptr)
 {
     if (!me->GetCharmInfo())
         throw InvalidAIException("Creature doesn't have a valid charm info");
@@ -69,21 +69,6 @@ bool PetAI::_needToStop() const
     return !me->IsValidAttackTarget(me->GetVictim());
 }
 
-void PetAI::ResetMovement()
-{
-    Unit* owner = i_pet.GetCharmerOrOwner();
-
-    if(owner && i_pet.IsAlive() && i_pet.GetCharmInfo() && i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW))
-    {
-        i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,owner->GetFollowAngle());
-    }
-    else
-    {
-        i_pet.ClearUnitState(UNIT_STATE_FOLLOW);
-        i_pet.GetMotionMaster()->Clear();
-        i_pet.GetMotionMaster()->MoveIdle();
-    }
-}
 void PetAI::_stopAttack()
 {
     if (!me->IsAlive())
@@ -351,7 +336,7 @@ void PetAI::DoAttack(Unit* target, bool chase)
             ClearCharmInfoFlags();
             me->GetCharmInfo()->SetIsCommandAttack(oldCmdAttack); // For passive pets commanded to attack so they will use spells
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveChase(target, me->GetPetChaseDistance());
+            me->GetMotionMaster()->MoveChase(target, me->GetPetChaseDistance(), (float)M_PI);
         }
         else // (Stay && ((Aggressive || Defensive) && In Melee Range)))
         {
@@ -564,14 +549,15 @@ void PetAI::UpdateAI(const uint32 diff)
             spell->prepare(targets);
         }
 
+        // deleted cached Spell objects
         for (TargetSpellList::const_iterator itr = m_targetSpellStore.begin(); itr != m_targetSpellStore.end(); ++itr)
             delete itr->second;
-
-        if(i_pet.IsPet() && ((Pet*)&i_pet)->getPetType() == MINI_PET)
-        {
-            Minipet_DistanceCheck(diff);
-        }
     }
+
+    // Update speed as needed to prevent dropping too far behind and despawning
+    me->UpdateSpeed(MOVE_RUN);
+    me->UpdateSpeed(MOVE_WALK);
+    me->UpdateSpeed(MOVE_FLIGHT);
 }
 
 void PetAI::KilledUnit(Unit* victim)
@@ -677,24 +663,4 @@ Unit* PetAI::SelectNextTarget(bool allowAutoSelect) const
 
     // Default - no valid targets
     return NULL;
-}
-
-void PetAI::Minipet_DistanceCheck(uint32 diff)
-{
-    Unit* owner = me->GetOwner();
-    if (!owner)
-        return;
-    if (distanceCheckTimer <= diff)
-    {
-        distanceCheckTimer = 2000;
-        float masterSpeed = owner->GetSpeed(MOVE_RUN);
-        float masterSpeedRate = masterSpeed / baseMoveSpeed[MOVE_RUN];
-        float masterDistance = me->GetDistance(owner);
-        if(masterDistance >= 20)
-        {
-            me->SetSpeedRate(MOVE_RUN, masterSpeedRate * (masterDistance / 15.f));
-        } else if (me->GetSpeed(MOVE_RUN) > masterSpeed) {
-            me->SetSpeedRate(MOVE_RUN, masterSpeedRate);
-        }
-    } else distanceCheckTimer -= diff;
 }

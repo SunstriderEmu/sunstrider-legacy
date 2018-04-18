@@ -2,11 +2,13 @@
 #ifndef TRINITY_MOTIONMASTER_H
 #define TRINITY_MOTIONMASTER_H
 
-#include <vector>
+#include "Common.h"
 #include "SharedDefines.h"
 #include "Object.h"
+#include "ObjectDefines.h"
 #include "Spline/MoveSpline.h"
 #include "Position.h"
+#include <vector>
 
 class MovementGenerator;
 class Unit;
@@ -26,7 +28,7 @@ enum MovementGeneratorType
     MAX_DB_MOTION_TYPE        = 3,                              // *** this and below motion types can't be set in DB.
     ANIMAL_RANDOM_MOTION_TYPE = 3,                              // AnimalRandomMovementGenerator.h
     CONFUSED_MOTION_TYPE      = 4,                              // ConfusedMovementGenerator.h
-    CHASE_MOTION_TYPE         = 5,                              // TargetedMovementGenerator.h
+    CHASE_MOTION_TYPE         = 5,                              // ChaseMovementGenerator.h
     HOME_MOTION_TYPE          = 6,                              // HomeMovementGenerator.h
     FLIGHT_MOTION_TYPE        = 7,                              // WaypointMovementGenerator.h
     POINT_MOTION_TYPE         = 8,                              // PointMovementGenerator.h
@@ -35,7 +37,7 @@ enum MovementGeneratorType
     ASSISTANCE_MOTION_TYPE    = 11,                             // PointMovementGenerator.h (first part of flee for assistance)
     ASSISTANCE_DISTRACT_MOTION_TYPE = 12,                       // IdleMovementGenerator.h (second part of flee for assistance)
     TIMED_FLEEING_MOTION_TYPE = 13,                             // FleeingMovementGenerator.h (alt.second part of flee for assistance)
-    FOLLOW_MOTION_TYPE        = 14,
+    FOLLOW_MOTION_TYPE        = 14,                             // FollowMovementGenerator.h
     ROTATE_MOTION_TYPE        = 15,
     EFFECT_MOTION_TYPE        = 16,
     STEALTH_WARN_MOTION_TYPE  = 17,                             // StealthWarnMovementGenerator.h TODO, précédence sur les autres générateurs ?
@@ -62,6 +64,35 @@ enum RotateDirection
 {
     ROTATE_DIRECTION_LEFT,
     ROTATE_DIRECTION_RIGHT
+};
+
+struct ChaseRange
+{
+    ChaseRange(float range) : MinRange(range > CONTACT_DISTANCE ? 0 : range - CONTACT_DISTANCE), MinTolerance(range), MaxRange(range + CONTACT_DISTANCE), MaxTolerance(range) {}
+    ChaseRange(float min, float max) : MinRange(min), MinTolerance(std::min(min + CONTACT_DISTANCE, (min + max) / 2)), MaxRange(max), MaxTolerance(std::max(max - CONTACT_DISTANCE, MinTolerance)) {}
+    ChaseRange(float min, float tMin, float tMax, float max) : MinRange(min), MinTolerance(tMin), MaxRange(max), MaxTolerance(tMax) {}
+
+    // this contains info that informs how we should path!
+    float MinRange;     // we have to move if we are within this range...    (min. attack range)
+    float MinTolerance; // ...and if we are, we will move this far away
+    float MaxRange;     // we have to move if we are outside this range...   (max. attack range)
+    float MaxTolerance; // ...and if we are, we will move into this range
+};
+
+struct ChaseAngle
+{
+    ChaseAngle(float angle, float tol = M_PI_4) : RelativeAngle(Position::NormalizeOrientation(angle)), Tolerance(tol) {}
+
+    float RelativeAngle; // we want to be at this angle relative to the target (0 = front, M_PI = back)
+    float Tolerance;     // but we'll tolerate anything within +- this much
+
+    float UpperBound() const { return Position::NormalizeOrientation(RelativeAngle + Tolerance); }
+    float LowerBound() const { return Position::NormalizeOrientation(RelativeAngle - Tolerance); }
+    bool IsAngleOkay(float relAngle) const
+    {
+        float const diff = std::abs(relAngle - RelativeAngle);
+        return (std::min(diff, float(2 * M_PI) - diff) <= Tolerance);
+    }
 };
 
 // assume it is 25 yard per 0.6 second
@@ -109,6 +140,7 @@ class TC_GAME_API MotionMaster
 
         bool empty() const { return (_top < 0); }
         int size() const { return _top + 1; }
+        _Ty topOrNull() const { return empty() ? nullptr : top(); }
         _Ty top() const
         {
             ASSERT(!empty());
@@ -131,8 +163,9 @@ class TC_GAME_API MotionMaster
         void MoveIdle();
         void MoveTargetedHome();
         void MoveRandom(float spawndist = 0.0f);
-        void MoveFollow(Unit* target, float dist, float angle, MovementSlot slot = MOTION_SLOT_ACTIVE);
-        void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
+        void MoveFollow(Unit* target, float dist, ChaseAngle angle, MovementSlot slot = MOTION_SLOT_ACTIVE);
+        void MoveChase(Unit* target, Optional<ChaseRange> dist = {}, Optional<ChaseAngle> angle = {});
+        void MoveChase(Unit* target, float dist, float angle = 0.0f) { MoveChase(target, Optional<ChaseRange>(dist), Optional<ChaseAngle>(angle)); }
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 time = 0);
         void MovePoint(uint32 id, Position const& pos, bool generatePath = true, bool forceDestination = true)

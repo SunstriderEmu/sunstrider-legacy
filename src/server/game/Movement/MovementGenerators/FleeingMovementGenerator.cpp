@@ -67,7 +67,7 @@ void FleeingMovementGenerator<T>::GetPoint(T* owner, Position &position)
     {
         casterDistance = fleeTarget->GetDistance(owner);
         if (casterDistance > 0.2f)
-            casterAngle = fleeTarget->GetAngle(owner);
+            casterAngle = fleeTarget->GetAbsoluteAngle(owner);
         else
             casterAngle = frand(0.0f, 2.0f * static_cast<float>(M_PI));
     }

@@ -2,6 +2,8 @@
 #define _SPELLINFO_H
 
 #include "SharedDefines.h"
+#include "DBCStructure.h"
+
 #include <boost/container/flat_set.hpp>
 
 enum AuraType : unsigned int;
@@ -16,6 +18,10 @@ struct SpellChainNode;
 enum WeaponAttackType : unsigned int;
 struct SpellModifier;
 class Player;
+struct SpellDurationEntry;
+struct SpellRangeEntry;
+struct SpellRadiusEntry;
+struct SpellCastTimesEntry;
 
 enum SpellCustomAttributes
 {
@@ -33,7 +39,7 @@ enum SpellCustomAttributes
     SPELL_ATTR0_CU_LINK_HIT                      = 0x00000800,
     SPELL_ATTR0_CU_LINK_AURA                     = 0x00001000,
     SPELL_ATTR0_CU_LINK_REMOVE                   = 0x00002000,
-    //reuse                                      = 0x00004000,
+    SPELL_ATTR0_CU_ROLLING_PERIODIC              = 0x00004000,
     SPELL_ATTR0_CU_IGNORE_ARMOR                  = 0x00008000,
     SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS       = 0x00010000,
     //reuse                                      = 0x00020000,
@@ -52,7 +58,7 @@ enum SpellCustomAttributes
     SPELL_ATTR0_CU_NEGATIVE                      = SPELL_ATTR0_CU_NEGATIVE_EFF0 | SPELL_ATTR0_CU_NEGATIVE_EFF1 | SPELL_ATTR0_CU_NEGATIVE_EFF2
 };
 
-enum SpellCastTargetFlags
+enum SpellCastTargetFlags : uint32
 {
     TARGET_FLAG_NONE            = 0x00000000,
     TARGET_FLAG_UNUSED_1        = 0x00000001,               // not used
@@ -90,7 +96,7 @@ enum SpellCastTargetFlags
     TARGET_FLAG_ITEM_MASK = TARGET_FLAG_TRADE_ITEM | TARGET_FLAG_ITEM | TARGET_FLAG_GAMEOBJECT_ITEM
 };
 
-enum SpellTargetSelectionCategories
+enum SpellTargetSelectionCategories : uint8
 {
     TARGET_SELECT_CATEGORY_NYI,
     TARGET_SELECT_CATEGORY_DEFAULT,
@@ -111,7 +117,7 @@ enum SpellTargetReferenceTypes
     TARGET_REFERENCE_TYPE_DEST,
 };
 
-enum SpellTargetObjectTypes
+enum SpellTargetObjectTypes : uint8
 {
     TARGET_OBJECT_TYPE_NONE = 0,
     TARGET_OBJECT_TYPE_SRC,
@@ -127,7 +133,7 @@ enum SpellTargetObjectTypes
     TARGET_OBJECT_TYPE_CORPSE_ALLY,
 };
 
-enum SpellTargetCheckTypes
+enum SpellTargetCheckTypes : uint8
 {
     TARGET_CHECK_DEFAULT,
     TARGET_CHECK_ENTRY,
@@ -296,18 +302,16 @@ public:
     bool IsAura(AuraType aura) const;
     bool IsTargetingArea() const;
     bool IsAreaAuraEffect() const;
-    bool IsFarUnitTargetEffect() const;
-    bool IsFarDestTargetEffect() const;
     bool IsUnitOwnedAuraEffect() const;
 
-    int32 CalcValue(Unit const* caster = nullptr, int32 const* basePoints = nullptr, Unit const* target = nullptr) const;
+    int32 CalcValue(WorldObject  const* caster = nullptr, int32 const* basePoints = nullptr) const;
     int32 CalcBaseValue(int32 value) const;
-    float CalcValueMultiplier(Unit* caster, Spell* spell = nullptr) const;
-    float CalcDamageMultiplier(Unit* caster, Spell* spell = nullptr) const;
+    float CalcValueMultiplier(WorldObject * caster, Spell* spell = nullptr) const;
+    float CalcDamageMultiplier(WorldObject * caster, Spell* spell = nullptr) const;
 
     bool HasRadius() const;
     //always use GetSpellModOwner() for caster
-    float CalcRadius(Unit* caster = nullptr, Spell* = nullptr) const;
+    float CalcRadius(WorldObject * caster = nullptr, Spell* = nullptr) const;
 
     uint32 GetProvidedTargetMask() const;
     uint32 GetMissingTargetMask(bool srcSet = false, bool destSet = false, uint32 mask = 0) const;
@@ -498,14 +502,14 @@ public:
     bool IsAbilityLearnedWithProfession() const;
 
     /** Some spells, such as dispells, can be positive or negative depending on target */
-    bool IsPositive(bool hostileTarget = false) const;
+    bool IsPositive() const;
     /** Some effects, such as dispells, can be positive or negative depending on target */
     bool IsPositiveEffect(uint8 effIndex, bool hostileTarget = false) const;
 
     uint32 CalcCastTime(Spell* spell = nullptr) const;
     uint32 GetRecoveryTime() const;
 
-    int32 CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, Spell* spell = nullptr) const;
+    int32 CalcPowerCost(WorldObject const* caster, SpellSchoolMask schoolMask, Spell* spell = nullptr) const;
 
     bool IsRanked() const;
     uint8 GetRank() const;
@@ -562,14 +566,14 @@ public:
 
     float GetMinRange(bool positive = false) const;
     //always use GetSpellModOwner() for caster
-    float GetMaxRange(bool positive = false, Unit* caster = nullptr, Spell* spell = nullptr) const;
+    float GetMaxRange(bool positive = false, WorldObject* caster = nullptr, Spell* spell = nullptr) const;
 
     bool IsSingleTarget() const;
     bool IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo) const;
     bool IsAuraExclusiveBySpecificPerCasterWith(SpellInfo const* spellInfo) const;
 
-    SpellCastResult CheckTarget(Unit const* caster, WorldObject const* target, bool implicit = true) const;
-    SpellCastResult CheckExplicitTarget(Unit const* caster, WorldObject const* target, Item const* itemTarget = nullptr) const;
+    SpellCastResult CheckTarget(WorldObject  const* caster, WorldObject const* target, bool implicit = true) const;
+    SpellCastResult CheckExplicitTarget(WorldObject  const* caster, WorldObject const* target, Item const* itemTarget = nullptr) const;
     SpellCastResult CheckLocation(uint32 map_id, uint32 zone_id, uint32 area_id, Player const* player = nullptr, bool strict = true) const;
     bool CheckTargetCreatureType(Unit const* target) const;
 
@@ -588,14 +592,9 @@ private:
     void _LoadSpellDiminishInfo();
     void _InitializeExplicitTargetMask();
 
-    static bool _IsPositiveTarget(uint32 targetA, uint32 targetB);
     uint32 _GetExplicitTargetMask() const;
 
-    /* Internal check, will try to deduce result from spell effects + lots of hardcoded id's
-    Use "deep" to enable recursive search in triggered spells
-    */
-    bool _IsPositiveEffect(uint32 effIndex, bool deep = true) const;
-    bool _IsPositiveSpell() const;
+    void _InitializeSpellPositivity();
 
     // unloading helpers
     void _UnloadImplicitTargetConditionLists();

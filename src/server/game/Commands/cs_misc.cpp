@@ -2,7 +2,8 @@
 #include "Language.h"
 #include "CharacterCache.h"
 #include "LogsDatabaseAccessor.h"
-#include "TargetedMovementGenerator.h"
+#include "ChaseMovementGenerator.h"
+#include "FollowMovementGenerator.h"
 #include "BattleGroundMgr.h"
 #include "ArenaTeamMgr.h"
 #include "Weather.h"
@@ -802,8 +803,13 @@ bool ChatHandler::HandleAuraCommand(const char* args)
     uint32 spellID = extractSpellIdFromLink((char*)args);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    if(spellInfo)
-        Aura::TryRefreshStackOrCreate(spellInfo, MAX_EFFECT_MASK, target, target);
+    if (spellInfo)
+    {
+         AuraCreateInfo createInfo(spellInfo, MAX_EFFECT_MASK, target);
+        createInfo.SetCaster(target);
+
+        Aura::TryRefreshStackOrCreate(createInfo);
+    }
 
     return true;
 }
@@ -1266,12 +1272,7 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
                 break;
             case CHASE_MOTION_TYPE:
             {
-                Unit* target = nullptr;
-                if (unit->GetTypeId() == TYPEID_PLAYER)
-                    target = static_cast<ChaseMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
-                else
-                    target = static_cast<ChaseMovementGenerator<Creature> const*>(movementGenerator)->GetTarget();
-
+                Unit* target = static_cast<ChaseMovementGenerator const*>(movementGenerator)->GetTarget();
                 if (!target)
                     SendSysMessage(LANG_MOVEGENS_CHASE_NULL);
                 else if (target->GetTypeId() == TYPEID_PLAYER)
@@ -1282,12 +1283,7 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
             }
             case FOLLOW_MOTION_TYPE:
             {
-                Unit* target = nullptr;
-                if (unit->GetTypeId() == TYPEID_PLAYER)
-                    target = static_cast<FollowMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
-                else
-                    target = static_cast<FollowMovementGenerator<Creature> const*>(movementGenerator)->GetTarget();
-
+                Unit* target = static_cast<FollowMovementGenerator const*>(movementGenerator)->GetTarget();
                 if (!target)
                     SendSysMessage(LANG_MOVEGENS_FOLLOW_NULL);
                 else if (target->GetTypeId() == TYPEID_PLAYER)

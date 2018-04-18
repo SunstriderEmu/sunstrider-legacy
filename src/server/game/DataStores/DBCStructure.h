@@ -794,10 +794,6 @@ struct SoundEntriesEntry
 #define EFFECT_1_MASK 0x2
 #define EFFECT_2_MASK 0x4
 
-#define MAX_SPELL_EFFECTS 3
-#define MAX_EFFECT_MASK 7
-#define MAX_SPELL_REAGENTS 8
-
 struct SpellEntry
 {
     uint32    Id;                                           // 0 normally counted from 0 field (but some tools start counting from 1, check this before tool use for data view!)
