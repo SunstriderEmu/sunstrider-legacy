@@ -8829,6 +8829,8 @@ void Unit::RemoveFromWorld()
 
         //TC RemoveAreaAurasDueToLeaveWorld();
 
+        RemoveAllFollowers();
+
         if (IsCharmed())
             RemoveCharmedBy(nullptr);
 
