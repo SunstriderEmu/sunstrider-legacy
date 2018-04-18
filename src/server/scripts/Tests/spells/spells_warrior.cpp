@@ -696,7 +696,7 @@ public:
     class ChallengingShoutTestImpt : public TestCase
     {
     public:
-        ChallengingShoutTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ChallengingShoutTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -884,7 +884,7 @@ public:
     class DemoralizingShoutTestImpt : public TestCase
     {
     public:
-        DemoralizingShoutTestImpt() : TestCase(STATUS_PASSING, true) { }
+        DemoralizingShoutTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {

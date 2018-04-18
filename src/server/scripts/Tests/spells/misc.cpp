@@ -11,7 +11,7 @@ public:
     class EnvironmentalTrapImpl : public TestCase
     {
     public:
-        EnvironmentalTrapImpl() : TestCase(STATUS_PASSING, true) {  }
+        EnvironmentalTrapImpl() : TestCase(STATUS_PASSING) {  }
 
         void Test() override
         {

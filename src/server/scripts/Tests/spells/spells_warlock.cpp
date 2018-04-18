@@ -248,7 +248,7 @@ public:
     class IncinerateTestImpt : public TestCase
     {
     public:
-        IncinerateTestImpt() : TestCase(STATUS_PASSING, true) { }
+        IncinerateTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -295,7 +295,7 @@ public:
     class SearingPainTestImpt : public TestCase
     {
     public:
-        SearingPainTestImpt() : TestCase(STATUS_PASSING, true) { }
+        SearingPainTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -334,7 +334,7 @@ public:
     class ShadowBoltTestImpt : public TestCase
     {
     public:
-        ShadowBoltTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ShadowBoltTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {

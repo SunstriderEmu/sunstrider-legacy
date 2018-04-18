@@ -9,7 +9,7 @@ public:
     class SinisterStrikeTestImpt : public TestCase
     {
     public:
-        SinisterStrikeTestImpt() : TestCase(STATUS_PASSING, true) { }
+        SinisterStrikeTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {

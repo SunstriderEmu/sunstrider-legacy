@@ -11,7 +11,7 @@ public:
 	class SalvationTestImpt : public TestCase
 	{
 	public:
-		SalvationTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+		SalvationTestImpt() : TestCase(STATUS_INCOMPLETE) { }
 
 		void Test() override
 		{
@@ -33,7 +33,7 @@ public:
 	class DivineStrengthTestImpt : public TestCase
 	{
 	public:
-		DivineStrengthTestImpt() : TestCase(STATUS_PASSING, true) { }
+		DivineStrengthTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -61,7 +61,7 @@ public:
 	class DivineIntellectTestImpt : public TestCase
 	{
 	public:
-		DivineIntellectTestImpt() : TestCase(STATUS_PASSING, true) { }
+		DivineIntellectTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -89,7 +89,7 @@ public:
 	class ImprovedSealOfRighteousnessTestImpt : public TestCase
 	{
 	public:
-		ImprovedSealOfRighteousnessTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedSealOfRighteousnessTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -121,7 +121,7 @@ public:
 	class ImprovedLayOnHandsTestImpt : public TestCase
 	{
 	public:
-		ImprovedLayOnHandsTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedLayOnHandsTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -174,7 +174,7 @@ public:
 	class ImprovedBlessingOfWisdomTestImpt : public TestCase
 	{
 	public:
-		ImprovedBlessingOfWisdomTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedBlessingOfWisdomTestImpt() : TestCase(STATUS_PASSING) { }
 
 		// Wait for next tick and return mana at new tick
 		uint32 WaitNextManaTick(Player* p)
@@ -277,7 +277,7 @@ public:
 	class HolyGuidanceTestImpt : public TestCase
 	{
 	public:
-		HolyGuidanceTestImpt() : TestCase(STATUS_PASSING, true) { }
+		HolyGuidanceTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -312,7 +312,7 @@ public:
 	class ImprovedDevotionAuraTestImpt : public TestCase
 	{
 	public:
-		ImprovedDevotionAuraTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedDevotionAuraTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -341,7 +341,7 @@ public:
 	class GuardiansFavorTestImpt : public TestCase
 	{
 	public:
-		GuardiansFavorTestImpt() : TestCase(STATUS_PASSING, true) { }
+		GuardiansFavorTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -376,7 +376,7 @@ public:
 	class ToughnessTestImpt : public TestCase
 	{
 	public:
-		ToughnessTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ToughnessTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -415,7 +415,7 @@ public:
 	class AnticipationTestImpt : public TestCase
 	{
 	public:
-		AnticipationTestImpt() : TestCase(STATUS_PASSING, true) { }
+		AnticipationTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -442,7 +442,7 @@ public:
 	class ImprovedHammerOfJusticeTestImpt : public TestCase
 	{
 	public:
-		ImprovedHammerOfJusticeTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedHammerOfJusticeTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -470,7 +470,7 @@ public:
 	class SacredDutyTestImpt : public TestCase
 	{
 	public:
-		SacredDutyTestImpt() : TestCase(STATUS_PASSING, true) { }
+		SacredDutyTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -504,7 +504,7 @@ public:
 	class ImprovedHolyShieldTestImpt : public TestCase
 	{
 	public:
-		ImprovedHolyShieldTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedHolyShieldTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -538,7 +538,7 @@ public:
 	class CombatExpertiseTestImpt : public TestCase
 	{
 	public:
-		CombatExpertiseTestImpt() : TestCase(STATUS_PASSING, true) { }
+		CombatExpertiseTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -571,7 +571,7 @@ public:
 	class ImprovedBlessingOfMightTestImpt : public TestCase
 	{
 	public:
-		ImprovedBlessingOfMightTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedBlessingOfMightTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -600,7 +600,7 @@ public:
 	class BenedictionTestImpt : public TestCase
 	{
 	public:
-		BenedictionTestImpt() : TestCase(STATUS_PASSING, true) { }
+		BenedictionTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void TestSealMana(TestPlayer* player, TestPlayer* enemy, uint32 sealSpellId, uint32 expectedSealMana)
 		{
@@ -658,7 +658,7 @@ public:
 	class ImprovedJudgementTestImpt : public TestCase
 	{
 	public:
-		ImprovedJudgementTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedJudgementTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -692,7 +692,7 @@ public:
 	class DeflectionTestImpt : public TestCase
 	{
 	public:
-		DeflectionTestImpt() : TestCase(STATUS_PASSING, true) { }
+		DeflectionTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -851,7 +851,7 @@ public:
 	class SanctifiedJudgementTestImpt : public TestCase
 	{
 	public:
-		SanctifiedJudgementTestImpt() : TestCase(STATUS_PASSING, true) { }
+		SanctifiedJudgementTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void TestSealMana(TestPlayer* player, Creature* creature, uint32 sealSpellId, uint32 sealManaCost)
 		{
@@ -920,7 +920,7 @@ public:
 	class SanctifiedSealsTestImpt : public TestCase
 	{
 	public:
-		SanctifiedSealsTestImpt() : TestCase(STATUS_PASSING, true) { }
+		SanctifiedSealsTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void TestDispelSeal(TestPlayer* player, TestPlayer* shaman, uint32 sealSpellId)
 		{

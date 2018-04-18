@@ -9,7 +9,7 @@ public:
 	class WandSpecializationTestImpt : public TestCase
 	{
 	public:
-		WandSpecializationTestImpt() : TestCase(STATUS_PASSING, true) { }
+		WandSpecializationTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -85,7 +85,7 @@ public:
 	class MagicAttunementTestImpt : public TestCase
 	{
 	public:
-		MagicAttunementTestImpt() : TestCase(STATUS_PASSING, true) { }
+		MagicAttunementTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -128,7 +128,7 @@ public:
 	class ArcaneFortitudeTestImpt : public TestCase
 	{
 	public:
-		ArcaneFortitudeTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ArcaneFortitudeTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -156,7 +156,7 @@ public:
 	class ImprovedCounterspellTestImpt : public TestCase
 	{
 	public:
-		ImprovedCounterspellTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedCounterspellTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -184,7 +184,7 @@ public:
 	class ArcaneMindTestImpt : public TestCase
 	{
 	public:
-		ArcaneMindTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ArcaneMindTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -211,7 +211,7 @@ public:
 	class ArcaneInstabilityTestImpt : public TestCase
 	{
 	public:
-		ArcaneInstabilityTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ArcaneInstabilityTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -244,7 +244,7 @@ public:
 	class EmpoweredArcaneMissilesTestImpt : public TestCase
 	{
 	public:
-		EmpoweredArcaneMissilesTestImpt() : TestCase(STATUS_PASSING, true) { }
+		EmpoweredArcaneMissilesTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -282,7 +282,7 @@ public:
 	class MindMasteryTestImpt : public TestCase
 	{
 	public:
-		MindMasteryTestImpt() : TestCase(STATUS_PASSING, true) { }
+		MindMasteryTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -310,7 +310,7 @@ public:
 	class CriticalMassTestImpt : public TestCase
 	{
 	public:
-		CriticalMassTestImpt() : TestCase(STATUS_PASSING, true) { }
+		CriticalMassTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -340,7 +340,7 @@ public:
 	class FirePowerTestImpt : public TestCase
 	{
 	public:
-		FirePowerTestImpt() : TestCase(STATUS_PASSING, true) { }
+		FirePowerTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -391,7 +391,7 @@ public:
     class EmpoweredFireballTestImpt : public TestCase
     {
     public:
-        EmpoweredFireballTestImpt() : TestCase(STATUS_PASSING, true) { }
+        EmpoweredFireballTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -422,7 +422,7 @@ public:
 	class FrostWardingTestImpt : public TestCase
 	{
 	public:
-		FrostWardingTestImpt() : TestCase(STATUS_PASSING, true) { }
+		FrostWardingTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -460,7 +460,7 @@ public:
 	class PiercingIceTestImpt : public TestCase
 	{
 	public:
-		PiercingIceTestImpt() : TestCase(STATUS_PASSING, true) { }
+		PiercingIceTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -512,7 +512,7 @@ public:
 	class ImprovedConeOfColdTestImpt : public TestCase
 	{
 	public:
-		ImprovedConeOfColdTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedConeOfColdTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -601,7 +601,7 @@ public:
 	class EmpoweredFrostboltTestImpt : public TestCase
 	{
 	public:
-		EmpoweredFrostboltTestImpt() : TestCase(STATUS_PASSING, true) { }
+		EmpoweredFrostboltTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{

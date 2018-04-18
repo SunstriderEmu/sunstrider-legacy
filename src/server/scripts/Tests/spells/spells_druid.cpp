@@ -118,7 +118,7 @@ public:
 	class CycloneTestImpt : public TestCase
 	{
 	public:
-		CycloneTestImpt() : TestCase(STATUS_PASSING, true) { }
+		CycloneTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -200,7 +200,7 @@ public:
 	class EntanglingRootsTestImpt : public TestCase
 	{
 	public:
-		EntanglingRootsTestImpt() : TestCase(STATUS_PASSING, true) { }
+		EntanglingRootsTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -248,7 +248,7 @@ public:
 	class FaerieFireTestImpt : public TestCase
 	{
 	public:
-		FaerieFireTestImpt() : TestCase(STATUS_PASSING, true) { }
+		FaerieFireTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -296,7 +296,7 @@ public:
 	class HibernateTestImpt : public TestCase
 	{
 	public:
-		HibernateTestImpt() : TestCase(STATUS_PASSING, true) { }
+		HibernateTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void HibernateDuration(TestPlayer* druid, Unit* enemy, Milliseconds durationMS)
 		{
@@ -352,7 +352,7 @@ public:
 	class HurricaneTestImpt : public TestCase
 	{
 	public:
-		HurricaneTestImpt() : TestCase(STATUS_PASSING, true) { }
+		HurricaneTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -399,7 +399,7 @@ public:
 	class InnervateTestImpt : public TestCase
 	{
 	public:
-		InnervateTestImpt() : TestCase(STATUS_PASSING, true) { }
+		InnervateTestImpt() : TestCase(STATUS_PASSING) { }
 
 		float getSpiritRatioBasedRegen(TestPlayer* player, float spiritFactor = 1.0f)
 		{
@@ -452,7 +452,7 @@ public:
 	class MoonfireTestImpt : public TestCase
 	{
 	public:
-		MoonfireTestImpt() : TestCase(STATUS_PASSING, true) { }
+		MoonfireTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -508,7 +508,7 @@ public:
 	class StarfireTestImpt : public TestCase
 	{
 	public:
-		StarfireTestImpt() : TestCase(STATUS_PASSING, true) { }
+		StarfireTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -598,7 +598,7 @@ public:
 	class WrathTestImpt : public TestCase
 	{
 	public:
-		WrathTestImpt() : TestCase(STATUS_PASSING, true) { }
+		WrathTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -646,7 +646,7 @@ public:
 	class BashTestImpt : public TestCase
 	{
 	public:
-		BashTestImpt() : TestCase(STATUS_PASSING, true) { }
+		BashTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -681,7 +681,7 @@ public:
 	class ChallengingRoarTestImpt : public TestCase
 	{
 	public:
-		ChallengingRoarTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ChallengingRoarTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -747,7 +747,7 @@ public:
 	class ClawTestImpt : public TestCase
 	{
 	public:
-		ClawTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ClawTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -841,7 +841,7 @@ public:
 	class DemoralizingRoarTestImpt : public TestCase
 	{
 	public:
-		DemoralizingRoarTestImpt() : TestCase(STATUS_PASSING, true) { }
+		DemoralizingRoarTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -947,7 +947,7 @@ public:
     class FerociousBiteTestImpt : public TestCase
     {
     public:
-        FerociousBiteTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+        FerociousBiteTestImpt() : TestCase(STATUS_INCOMPLETE) { }
 
         void Test() override
         {
@@ -1106,7 +1106,7 @@ public:
 	class GrowlTestImpt : public TestCase
 	{
 	public:
-		GrowlTestImpt() : TestCase(STATUS_PASSING, true) { }
+		GrowlTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -1231,7 +1231,7 @@ public:
 	class MaulTestImpt : public TestCase
 	{
 	public:
-		MaulTestImpt() : TestCase(STATUS_PASSING, true) { }
+		MaulTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -1336,7 +1336,7 @@ public:
 	class ProwlTestImpt : public TestCase
 	{
 	public:
-		ProwlTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ProwlTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -1495,7 +1495,7 @@ public:
     class ShredTestImpt : public TestCase
     {
     public:
-        ShredTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ShredTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1619,7 +1619,7 @@ public:
     class TigersFuryTestImpt : public TestCase
     {
     public:
-        TigersFuryTestImpt() : TestCase(STATUS_PASSING, true) { }
+        TigersFuryTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1687,7 +1687,7 @@ public:
     class AbolishPoisonTestImpt : public TestCase
     {
     public:
-        AbolishPoisonTestImpt() : TestCase(STATUS_PASSING, true) { }
+        AbolishPoisonTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1732,7 +1732,7 @@ public:
     class CurePoisonTestImpt : public TestCase
     {
     public:
-        CurePoisonTestImpt() : TestCase(STATUS_PASSING, true) { }
+        CurePoisonTestImpt() : TestCase(STATUS_PASSING) { }
 
         uint32 getPoisonCount(TestPlayer* victim, uint32 poison1, uint32 poison2, uint32 poison3, bool cast = false)
         {
@@ -1791,7 +1791,7 @@ public:
     class GiftOfTheWildTestImpt : public TestCase
     {
     public:
-        GiftOfTheWildTestImpt() : TestCase(STATUS_PASSING, true) { }
+        GiftOfTheWildTestImpt() : TestCase(STATUS_PASSING) { }
 
         void TestOfTheWild(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint8 statBonus, uint8 resistanceBonus, uint16 armorBonus, uint32 reagentId)
         {
@@ -1871,7 +1871,7 @@ public:
     class HealingTouchTestImpt : public TestCase
     {
     public:
-        HealingTouchTestImpt() : TestCase(STATUS_PASSING, true) { }
+        HealingTouchTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1979,7 +1979,7 @@ public:
     class MarkOfTheWildTestImpt : public TestCase
     {
     public:
-        MarkOfTheWildTestImpt() : TestCase(STATUS_PASSING, true) { }
+        MarkOfTheWildTestImpt() : TestCase(STATUS_PASSING) { }
 
         void TestOfTheWild(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint8 statBonus, uint8 resistanceBonus, uint16 armorBonus)
         {
@@ -2047,7 +2047,7 @@ public:
     class RebirthTestImpt : public TestCase
     {
     public:
-        RebirthTestImpt() : TestCase(STATUS_PASSING, true) { }
+        RebirthTestImpt() : TestCase(STATUS_PASSING) { }
 
         void TestRebirth(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 reagentId, uint32 expectedHealth, uint32 expectedMana)
         {
@@ -2103,7 +2103,7 @@ public:
 	class RejuvenationTestImpt : public TestCase
 	{
 	public:
-		RejuvenationTestImpt() : TestCase(STATUS_PASSING, true) { }
+		RejuvenationTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -2143,7 +2143,7 @@ public:
     class RegrowthTestImpt : public TestCase
     {
     public:
-        RegrowthTestImpt() : TestCase(STATUS_PASSING, true) { }
+        RegrowthTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2201,7 +2201,7 @@ public:
     class RemoveCurseTestImpt : public TestCase
     {
     public:
-        RemoveCurseTestImpt() : TestCase(STATUS_PASSING, true) { }
+        RemoveCurseTestImpt() : TestCase(STATUS_PASSING) { }
 
         uint32 getCurseCount(TestPlayer* victim, uint32 curse1, uint32 curse2, uint32 curse3, bool cast = false)
         {
@@ -2273,7 +2273,7 @@ public:
     class TranquilityTestImpt : public TestCase
     {
     public:
-        TranquilityTestImpt() : TestCase(STATUS_PASSING, true) { }
+        TranquilityTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {

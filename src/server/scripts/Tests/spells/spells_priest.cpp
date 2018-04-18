@@ -12,7 +12,7 @@ public:
     class ConsumeMagicTestImpt : public TestCase
     {
     public:
-        ConsumeMagicTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ConsumeMagicTestImpt() : TestCase(STATUS_PASSING) { }
 
         void ConsumeMagic(TestPlayer* caster, TriggerCastFlags triggerCastFlags = TRIGGERED_NONE)
         {
@@ -85,7 +85,7 @@ public:
     class DispelMagicTestImpt : public TestCase
     {
     public:
-        DispelMagicTestImpt() : TestCase(STATUS_PASSING, true) { }
+        DispelMagicTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -151,7 +151,7 @@ public:
     class FearWardTestImpt : public TestCase
     {
     public:
-        FearWardTestImpt() : TestCase(STATUS_PASSING, true) { }
+        FearWardTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -190,7 +190,7 @@ public:
     class FeedbackTestImpt : public TestCase
     {
     public:
-        FeedbackTestImpt() : TestCase(STATUS_PASSING, true) { }
+        FeedbackTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -252,7 +252,7 @@ public:
     class InnerFireTestImpt : public TestCase
     {
     public:
-        InnerFireTestImpt() : TestCase(STATUS_PASSING, true) { }
+        InnerFireTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -362,7 +362,7 @@ public:
     class ManaBurnTestImpt : public TestCase
     {
     public:
-        ManaBurnTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ManaBurnTestImpt() : TestCase(STATUS_PASSING) { }
 
         void TestManaBurn(TestPlayer* priest, Unit* victim, uint32 expectedMin, uint32 expectedMax)
         {
@@ -438,7 +438,7 @@ public:
     class MassDispelTestImpt : public TestCase
     {
     public:
-        MassDispelTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+        MassDispelTestImpt() : TestCase(STATUS_INCOMPLETE) { }
 
         TestPlayer* SpawnShaman(Races race, Position spawn)
         {
@@ -639,7 +639,7 @@ public:
     class PowerWordFortitudeTestImpt : public TestCase
     {
     public:
-        PowerWordFortitudeTestImpt() : TestCase(STATUS_PASSING, true) { }
+        PowerWordFortitudeTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -676,7 +676,7 @@ public:
     class PowerWordShieldTestImpt : public TestCase
     {
     public:
-        PowerWordShieldTestImpt() : TestCase(STATUS_PASSING, true) { }
+        PowerWordShieldTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -749,7 +749,7 @@ public:
     class PrayerOfFortitudeTestImpt : public TestCase
     {
     public:
-        PrayerOfFortitudeTestImpt() : TestCase(STATUS_PASSING, true) { }
+        PrayerOfFortitudeTestImpt() : TestCase(STATUS_PASSING) { }
 
         void TestPrayerOfFortitude(TestPlayer* priest, Unit* warrior, uint32 spellId, uint32 reagentId, uint32 manaCost, uint32 staminaBonus, uint32 priestStartHealth, uint32 warriorStartHealth)
         {
@@ -803,7 +803,7 @@ public:
     class ShackleUndeadTestImpt : public TestCase
     {
     public:
-        ShackleUndeadTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ShackleUndeadTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -902,7 +902,7 @@ public:
     class SymbolOfHopeTestImpt : public TestCase
     {
     public:
-        SymbolOfHopeTestImpt() : TestCase(STATUS_PASSING, true) { }
+        SymbolOfHopeTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1068,7 +1068,7 @@ public:
     class BindingHealTestImpt : public TestCase
     {
     public:
-        BindingHealTestImpt() : TestCase(STATUS_PASSING, true) { }
+        BindingHealTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1268,7 +1268,7 @@ public:
     class DesperatePrayerTestImpt : public TestCase
     {
     public:
-        DesperatePrayerTestImpt() : TestCase(STATUS_PASSING, true) { }
+        DesperatePrayerTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1315,7 +1315,7 @@ public:
     class ElunesGraceTestImpt : public TestCase
     {
     public:
-        ElunesGraceTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ElunesGraceTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1351,7 +1351,7 @@ public:
     class FlashHealTestImpt : public TestCase
     {
     public:
-        FlashHealTestImpt() : TestCase(STATUS_PASSING, true) { }
+        FlashHealTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1388,7 +1388,7 @@ public:
     class GreaterHealTestImpt : public TestCase
     {
     public:
-        GreaterHealTestImpt() : TestCase(STATUS_PASSING, true) { }
+        GreaterHealTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1425,7 +1425,7 @@ public:
     class HealTestImpt : public TestCase
     {
     public:
-        HealTestImpt() : TestCase(STATUS_PASSING, true) { }
+        HealTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1468,7 +1468,7 @@ public:
     class HolyFireTestImpt : public TestCase
     {
     public:
-        HolyFireTestImpt() : TestCase(STATUS_PASSING, true) { }
+        HolyFireTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1511,7 +1511,7 @@ public:
     class LesserHealTestImpt : public TestCase
     {
     public:
-        LesserHealTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+        LesserHealTestImpt() : TestCase(STATUS_INCOMPLETE) { }
 
         void Test() override
         {
@@ -1555,7 +1555,7 @@ public:
     class PrayerOfHealingTestImpt : public TestCase
     {
     public:
-        PrayerOfHealingTestImpt() : TestCase(STATUS_PASSING, true) { }
+        PrayerOfHealingTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1639,7 +1639,7 @@ public:
     class PrayerOfMendingTestImpt : public TestCase
     {
     public:
-        PrayerOfMendingTestImpt() : TestCase(STATUS_PASSING, true) { }
+        PrayerOfMendingTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1703,7 +1703,7 @@ public:
     class RenewTestImpt : public TestCase
     {
     public:
-        RenewTestImpt() : TestCase(STATUS_PASSING, true) { }
+        RenewTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1738,7 +1738,7 @@ public:
     class ResurrectionTestImpt : public TestCase
     {
     public:
-        ResurrectionTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+        ResurrectionTestImpt() : TestCase(STATUS_INCOMPLETE) { }
 
         void TestResurrection(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 expectedHealth, uint32 expectedMana)
         {
@@ -1780,7 +1780,7 @@ public:
     class SmiteTestImpt : public TestCase
     {
     public:
-        SmiteTestImpt() : TestCase(STATUS_PASSING, true) { }
+        SmiteTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1818,7 +1818,7 @@ public:
     class DevouringPlagueTestImpt : public TestCase
     {
     public:
-        DevouringPlagueTestImpt() : TestCase(STATUS_PASSING, true) { }
+        DevouringPlagueTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1865,7 +1865,7 @@ public:
     class FadeTestImpt : public TestCase
     {
     public:
-        FadeTestImpt() : TestCase(STATUS_PASSING, true) { }
+        FadeTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2008,7 +2008,7 @@ public:
     class MindBlastTestImpt : public TestCase
     {
     public:
-        MindBlastTestImpt() : TestCase(STATUS_PASSING, true) { }
+        MindBlastTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2049,7 +2049,7 @@ public:
     class MindControlTestImpt : public TestCase
     {
     public:
-        MindControlTestImpt() : TestCase(STATUS_PASSING, true) { }
+        MindControlTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2156,7 +2156,7 @@ public:
     class MindVisionTestImpt : public TestCase
     {
     public:
-        MindVisionTestImpt() : TestCase(STATUS_PASSING, true) { }
+        MindVisionTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2213,7 +2213,7 @@ public:
     class PrayerOfShadowProtectionTestImpt : public TestCase
     {
     public:
-        PrayerOfShadowProtectionTestImpt() : TestCase(STATUS_PASSING, true) { }
+        PrayerOfShadowProtectionTestImpt() : TestCase(STATUS_PASSING) { }
 
         void TestPrayerOfShadowProtection(TestPlayer* priest, Unit* warrior, uint32 spellId, uint32 reagentId, uint32 manaCost, uint32 shadowResistanceBonus, uint32 priestStartShadowResistance, uint32 warriorStartShadowResistance)
         {
@@ -2265,7 +2265,7 @@ public:
     class PsychicScreamTestImpt : public TestCase
     {
     public:
-        PsychicScreamTestImpt() : TestCase(STATUS_PASSING, true) { }
+        PsychicScreamTestImpt() : TestCase(STATUS_PASSING) { }
 
         bool isFeared(Unit* victim)
         {
@@ -2338,7 +2338,7 @@ public:
     class ShadowProtectionTestImpt : public TestCase
     {
     public:
-        ShadowProtectionTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ShadowProtectionTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2482,7 +2482,7 @@ public:
     class ShadowWordPainTestImpt : public TestCase
     {
     public:
-        ShadowWordPainTestImpt() : TestCase(STATUS_PASSING, true) { }
+        ShadowWordPainTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {

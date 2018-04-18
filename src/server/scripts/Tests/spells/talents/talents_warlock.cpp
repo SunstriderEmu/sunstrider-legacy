@@ -10,7 +10,7 @@ public:
 	class ImprovedLifeTapTestImpt : public TestCase
 	{
 	public:
-		ImprovedLifeTapTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedLifeTapTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -41,7 +41,7 @@ public:
 	class ImprovedCurseOfAgonyTestImpt : public TestCase
 	{
 	public:
-		ImprovedCurseOfAgonyTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedCurseOfAgonyTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -73,7 +73,7 @@ public:
 	class EmpoweredCorruptionTestImpt : public TestCase
 	{
 	public:
-		EmpoweredCorruptionTestImpt() : TestCase(STATUS_PASSING, true) { }
+		EmpoweredCorruptionTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -104,7 +104,7 @@ public:
 	class ShadowMasteryTestImpt : public TestCase
 	{
 	public:
-		ShadowMasteryTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ShadowMasteryTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -145,7 +145,7 @@ public:
 	class ContagionTestImpt : public TestCase
 	{
 	public:
-		ContagionTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ContagionTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -177,7 +177,7 @@ public:
 	class ImprovedHealthstoneTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealthstoneTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedHealthstoneTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -209,7 +209,7 @@ public:
 	class DemonicEmbraceTestImpt : public TestCase
 	{
 	public:
-		DemonicEmbraceTestImpt() : TestCase(STATUS_PASSING, true) { }
+		DemonicEmbraceTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -240,7 +240,7 @@ public:
 	class ImprovedHealthFunnelTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealthFunnelTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ImprovedHealthFunnelTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -283,7 +283,7 @@ public:
 	class FelIntellectTestImpt : public TestCase
 	{
 	public:
-		FelIntellectTestImpt() : TestCase(STATUS_PASSING, true) { }
+		FelIntellectTestImpt() : TestCase(STATUS_PASSING) { }
 
 		float GetPetInt(TestPlayer* player, uint32 summon)
 		{
@@ -348,7 +348,7 @@ public:
 	class FelDominationTestImpt : public TestCase
 	{
 	public:
-		FelDominationTestImpt() : TestCase(STATUS_PASSING, true) { }
+		FelDominationTestImpt() : TestCase(STATUS_PASSING) { }
 
 		uint32 GetRemainingMana(TestPlayer* player, uint32 summon, uint32 startMana, uint32 manaCost)
 		{
@@ -412,7 +412,7 @@ public:
 	class FelStaminaTestImpt : public TestCase
 	{
 	public:
-		FelStaminaTestImpt() : TestCase(STATUS_PASSING, true) { }
+		FelStaminaTestImpt() : TestCase(STATUS_PASSING) { }
 
 		float GetPetSta(TestPlayer* player, uint32 summon)
 		{
@@ -535,7 +535,7 @@ public:
 	class MasterSummonerTestImpt : public TestCase
 	{
 	public:
-		MasterSummonerTestImpt() : TestCase(STATUS_PASSING, true) { }
+		MasterSummonerTestImpt() : TestCase(STATUS_PASSING) { }
 
 		uint32 GetRemainingMana(TestPlayer* player, uint32 summon, uint32 startMana, uint32 manaCost)
 		{
@@ -792,7 +792,7 @@ public:
 	class ManaFeedTestImpt : public TestCase
 	{
 	public:
-		ManaFeedTestImpt() : TestCase(STATUS_PASSING, true) { }
+		ManaFeedTestImpt() : TestCase(STATUS_PASSING) { }
 
 		// drain mana + life tap 100% to pet
 
@@ -868,7 +868,7 @@ public:
 	class DemonicKnowledgeTestImpt : public TestCase
 	{
 	public:
-		DemonicKnowledgeTestImpt() : TestCase(STATUS_PASSING, true) { }
+		DemonicKnowledgeTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void AssertDemonicKnowledge(TestPlayer* player, uint32 summon, float spellPower)
 		{
