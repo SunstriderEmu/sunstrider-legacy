@@ -18,8 +18,8 @@ struct SpellModifier;
 struct ProcTriggerSpell;
 class AuraScript;
 class ChargeDropEvent;
-// forward decl
 class Aura;
+class DynObjAura;
 struct ChannelTargetData;
 
 // update aura target map every 500 ms instead of every update - reduce amount of grid searcher calls

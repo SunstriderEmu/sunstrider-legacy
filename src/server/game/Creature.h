@@ -838,7 +838,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void AddMessageEvent(uint64 timer, uint32 messageId, uint64 data = 0);
 
         CreatureMovementData const& GetMovementTemplate() const;
-        bool CanWalk() const { return GetMovementTemplate().IsGroundAllowed(); }
+        bool CanWalk() const override { return GetMovementTemplate().IsGroundAllowed(); }
         bool CanSwim() const override { return GetMovementTemplate().IsSwimAllowed() || IsPet(); }
         bool CanFly()  const override { return GetMovementTemplate().IsFlightAllowed(); }
         bool CanHover() const { return GetMovementTemplate().Ground == CreatureGroundMovementType::Hover; }

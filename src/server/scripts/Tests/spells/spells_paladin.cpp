@@ -10,14 +10,14 @@ public:
     class FlashOfLightTestImpt : public TestCase
     {
     public:
-        FlashOfLightTestImpt() : TestCase(STATUS_PASSING, true) { }
+        FlashOfLightTestImpt() : TestCase(STATUS_INCOMPLETE) { }
         
         void Test() override
         {
             TestPlayer* paladin = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN);
             
             EQUIP_ITEM(paladin, 34335); // Hammer of Sanctification - 550 BH
-            druid->DisableRegeneration(true);
+            paladin->DisableRegeneration(true);
             
             int32 maceBH = 550;
             TEST_ASSERT(paladin->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
@@ -56,14 +56,14 @@ public:
     class HolyLightTestImpt : public TestCase
     {
     public:
-        HolyLightTestImpt() : TestCase(STATUS_PASSING, true) { }
+        HolyLightTestImpt() : TestCase(STATUS_INCOMPLETE) { }
         
         void Test() override
         {
             TestPlayer* paladin = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN);
             
             EQUIP_ITEM(paladin, 34335); // Hammer of Sanctification - 550 BH
-            druid->DisableRegeneration(true);
+            paladin->DisableRegeneration(true);
             
             int32 maceBH = 550;
             TEST_ASSERT(paladin->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);

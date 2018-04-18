@@ -157,7 +157,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             // -- sun logic 
             bool transportImplied = owner->GetTransport() || target->GetTransport();
             bool forceDest =
-                (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsWorldBoss() || owner->ToCreature()->IsDungeonBoss())  // force for all bosses, even not in instances
+                (owner->GetTypeId() == TYPEID_UNIT && (owner->ToCreature()->IsWorldBoss() || owner->ToCreature()->IsDungeonBoss()))  // force for all bosses, even not in instances
                 || transportImplied; // until transports at dock are handled by mmaps, this should help
             // --
 

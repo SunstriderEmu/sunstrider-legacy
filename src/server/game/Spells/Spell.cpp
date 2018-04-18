@@ -3817,8 +3817,10 @@ void Spell::_cast(bool skipCheck /*= false*/)
             for (int i : *spell_triggered)
             {
                 if (i < 0)
+	        {
                     if (Unit* unitCaster = m_caster->ToUnit())
                         unitCaster->RemoveAurasDueToSpell(-i);
+                }
                 else
                 {
                     if (m_targets.GetUnitTarget())
@@ -3830,7 +3832,8 @@ void Spell::_cast(bool skipCheck /*= false*/)
                                 m_caster->CastSpell(linkCastTarget, i, true);
                         }
                     }
-                    else {
+                    else 
+                    {
                         m_caster->CastSpell(m_caster, i, true);
                     }
                 }

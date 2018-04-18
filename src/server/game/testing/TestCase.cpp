@@ -1288,7 +1288,7 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
 
     if (sampleSize)
     {
-        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", damageToTarget->size(), sampleSize, spellId);
+        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", uint32(damageToTarget->size()), sampleSize, spellId);
         INTERNAL_TEST_ASSERT(damageToTarget->size() == sampleSize)
     }
 
