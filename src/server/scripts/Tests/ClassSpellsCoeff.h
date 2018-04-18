@@ -155,13 +155,14 @@ namespace ClassSpellsCoeff
 		// Affliction
 		const float CORRUPTION = 0.936f;
 		const float CURSE_OF_AGONY = 1.2f;
-		const float CURSE_OF_DOOM = 0.2f;
+		const float CURSE_OF_DOOM = 2.0f;
 		const float DARK_PACT = 0.96f;
 		const float DRAIN_LIFE = 0.7143f;
-		const float DRAIN_MANA = 0.f;
-		const float DRAIN_SOUL = 0.2143f;
-		const float SEED_OF_CORRUPTION = 0.22f;
-		const float SEED_OF_CORRUPTION_DOT = 0.15f;
+		const float DRAIN_MANA = 0.0f;
+		const float DRAIN_SOUL = 2.143f;
+        const float LIFE_TAP = 0.8f;
+        const float SEED_OF_CORRUPTION = 0.22f;
+		const float SEED_OF_CORRUPTION_DOT = 1.5f;
 		const float SIPHON_LIFE = 1.0f;
 		const float UNSTABLE_AFFLICTION = 0.18f;
 		const float UNSTABLE_AFFLICTION_DOT = 0.12f;

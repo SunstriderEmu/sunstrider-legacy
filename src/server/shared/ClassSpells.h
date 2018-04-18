@@ -3503,6 +3503,7 @@ namespace ClassSpells
             LIFE_TAP_RNK_6 = 11689,
             LIFE_TAP_RNK_7 = 27222,
             SEED_OF_CORRUPTION_RNK_1 = 27243,
+            SEED_OF_CORRUPTION_RNK_1_DETONATION = 27285,
             SIPHON_LIFE_RNK_1 = 18265,
             SIPHON_LIFE_RNK_2 = 18879,
             SIPHON_LIFE_RNK_3 = 18880,

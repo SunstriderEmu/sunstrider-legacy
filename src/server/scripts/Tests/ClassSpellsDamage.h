@@ -194,6 +194,14 @@ namespace ClassSpellsDamage
 	{
 		enum Mage
 		{
+            // Arcane
+            ARCANE_EXPLOSION_RNK_8_MIN = 377,
+            ARCANE_EXPLOSION_RNK_8_MAX = 407,
+            // Frost
+            ICE_LANCE_RNK_1_MIN = 173,
+            ICE_LANCE_RNK_1_MAX = 200,
+            FROSTBOLT_RNK_13_MIN = 597,
+            FROSTBOLT_RNK_13_MAX = 644,
 		};
 	};
 
@@ -305,12 +313,15 @@ namespace ClassSpellsDamage
 			CURSE_OF_AGONY_RNK_7_TOTAL = 1356,
 			CURSE_OF_DOOM_RNK_2 = 4200,
 			DEATH_COIL_RNK_4 = 519,
+            DRAIN_LIFE_RNK_8_TICK = 108,
 			DRAIN_MANA_RNK_6_TICK = 200,
-			DRAIN_SOUL_RNK_5_TOTAL = 620,
+            DRAIN_SOUL_RNK_5_TICK = 124,
+            DRAIN_SOUL_RNK_5_TOTAL = 620,
 			LIFE_TAP_RNK_7 = 580,
 			SEED_OF_CORRUPTION_RNK_1_MIN = 1110,
 			SEED_OF_CORRUPTION_RNK_1_MAX = 1290,
-			SEED_OF_CORRUPTION_RNK_1_TOTAL = 1044,
+            SEED_OF_CORRUPTION_RNK_1_TOTAL = 1044,
+            SEED_OF_CORRUPTION_RNK_1_TICK = 174,
 			UNSTABLE_AFFLICTION_RNK_DISPELLED = 990,
 			UNSTABLE_AFFLICTION_RNK_1_TOTAL = 660,
 
