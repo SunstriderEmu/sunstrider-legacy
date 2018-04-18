@@ -20,7 +20,7 @@ int strcmpi(std::string s1, std::string s2);
 #include "MotionMaster.h"
 #include "SpellAuras.h"
 #include "Guild.h"
-#include "Group.h"
+#include "Groups/Group.h"
 #include "AccountMgr.h"
 #include "ObjectMgr.h"
 

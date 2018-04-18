@@ -7,7 +7,7 @@
 #include "Item.h"
 
 #include "QuestDef.h"
-#include "Group.h"
+#include "Groups/Group.h"
 #include "WorldSession.h"
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
