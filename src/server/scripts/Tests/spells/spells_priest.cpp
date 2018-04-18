@@ -158,19 +158,17 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
 
-            // Mana cost
             uint32 const expectedFearWardMana = 78;
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1, POWER_MANA, expectedFearWardMana);
-
-            // Aura
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3))
-
-            // Cooldown
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3));
 
-            // Fear
+            // First fear, should be resisted by ward
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_CAST(warlock, priest, ClassSpells::Warlock::FEAR_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            // Ward shoud be consumed
             TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::FEAR_WARD_RNK_1);
+            // Second fear, priest should be affected
             TEST_CAST(warlock, priest, ClassSpells::Warlock::FEAR_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_HAS_AURA(priest, ClassSpells::Warlock::FEAR_RNK_3);
         }
@@ -190,13 +188,16 @@ public:
     class FeedbackTestImpt : public TestCase
     {
     public:
-        FeedbackTestImpt() : TestCase(STATUS_PASSING) { }
+        FeedbackTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            priest->ForceSpellHitResult(SPELL_MISS_NONE);
+            rogue->ForceSpellHitResult(SPELL_MISS_NONE);
+            mage->ForceSpellHitResult(SPELL_MISS_NONE);
 
             EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
             priest->DisableRegeneration(true);
@@ -206,35 +207,34 @@ public:
 
             // Mana cost, aura & cd
             uint32 const expectedFeedbackMana = 705;
-            priest->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, POWER_MANA, expectedFeedbackMana);
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEEDBACK_RNK_6, Minutes(3));
             TEST_HAS_AURA(priest, ClassSpells::Priest::FEEDBACK_RNK_6);
 
-            // Fail
+            // Melee attack shouldn't proc the spell
             uint32 const rogueHealth = rogue->GetHealth();
-            rogue->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_CAST(rogue, priest, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10);
-            rogue->ResetForceSpellHitResult();
             TEST_ASSERT(rogue->GetHealth() == rogueHealth);
 
             // Burn mana + damage
-            uint32 const expectedmageHealth = mage->GetHealth() - 165;
-            uint32 const expectedMageMana = mage->GetPower(POWER_MANA) - 165;
-            mage->ForceSpellHitResult(SPELL_MISS_NONE);
-            TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            Wait(1000);
-            ASSERT_INFO("initial mana: 200, current mana: %u, expected: %u", mage->GetPower(POWER_MANA), expectedMageMana);
-            TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedMageMana);
-            TEST_ASSERT(mage->GetHealth() == expectedmageHealth);
+            {
+                //mage cast ice lance on priest
+                uint32 const expectedmageHealth = mage->GetHealth() - ClassSpellsDamage::Priest::FEEDBACK_BURN_RNK_6;
+                uint32 const expectedMageMana = mage->GetPower(POWER_MANA) - ClassSpellsDamage::Priest::FEEDBACK_BURN_RNK_6;
+                TEST_CAST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                Wait(1000);
+                ASSERT_INFO("initial mana: 200, current mana: %u, expected: %u", mage->GetPower(POWER_MANA), expectedMageMana);
+                TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedMageMana);
+                TEST_ASSERT(mage->GetHealth() == expectedmageHealth);
 
-            TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            Wait(1000);
-            ASSERT_INFO("initial mana: 35, current mana: %u, expected: %u", mage->GetPower(POWER_MANA), expectedMageMana - 35);
-            TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedMageMana - 35);
-            TEST_ASSERT(mage->GetHealth() == expectedmageHealth - 35);
-            mage->ResetForceSpellHitResult();
-            priest->ResetForceSpellHitResult();
+                //mage cast a second ice lance, but has only 35 (expectedMageMana) mana left. Remaining mana should be burned and damage should only amount to this burned mana
+                TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                Wait(1000);
+                ASSERT_INFO("initial mana: 35, current mana: %u, expected: 0", mage->GetPower(POWER_MANA));
+                TEST_ASSERT(mage->GetPower(POWER_MANA) == 0);
+                TEST_ASSERT(mage->GetHealth() == expectedmageHealth - expectedMageMana);
+            }
         }
     };
 
@@ -808,23 +808,21 @@ public:
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
-            Creature* creature0 = SpawnCreature(6, true);
+            Creature* creature0 = SpawnCreature(6, true); // "Kobold Vermin", humanoid
+
+            // Should fail
+            TEST_CAST(priest, creature0, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, SPELL_FAILED_BAD_TARGETS);
 
             Position spawn(_location);
             spawn.MoveInFront(spawn, 20.0f);
             Creature* creature1 = SpawnCreatureWithPosition(spawn, 16525); // Undead
             Creature* creature2 = SpawnCreatureWithPosition(spawn, 16525); // Undead
 
-            // Fail
-            TEST_CAST(priest, creature0, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, SPELL_FAILED_BAD_TARGETS);
+            Wait(1);
 
-            Wait(3000);
-
-            // Mana cost
             uint32 const expectedShackleUndeadMana = 150;
             TEST_POWER_COST(priest, creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, POWER_MANA, expectedShackleUndeadMana);
 
-            // Aura
             TEST_AURA_MAX_DURATION(creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, Seconds(50));
 
             creature2->Attack(priest, false);
@@ -856,7 +854,7 @@ public:
     class StarshardsTestImpt : public TestCase
     {
     public:
-        StarshardsTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        StarshardsTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -884,7 +882,7 @@ public:
             float const starshardsCoeff = starshardsDuration / 15.0f;
             uint32 const spellBonus = 292 * starshardsCoeff;
             uint32 const starshardsTotal = ClassSpellsDamage::Priest::STARSHARDS_RNK_8_TOTAL + spellBonus;
-            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, starshardsTotal, true);
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, starshardsTotal, false);
         }
     };
 
@@ -955,10 +953,11 @@ public:
     class AbolishDiseaseTestImpt : public TestCase
     {
     public:
-        AbolishDiseaseTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        AbolishDiseaseTestImpt() : TestCase(STATUS_PASSING) { }
 
         void TestDispelDisease(TestPlayer* victim, uint32 Disease1, uint32 Disease2, uint32 Disease3, uint32 Disease4, uint32 Disease5, int8 count)
         {
+            //kelno: Test will probably fail if diff gets high, tofix if this happens
             victim->SetFullHealth();
             ASSERT_INFO("TestDispelDisease maximum trials reached");
             TEST_ASSERT(count < 10);
@@ -1068,29 +1067,40 @@ public:
     class BindingHealTestImpt : public TestCase
     {
     public:
-        BindingHealTestImpt() : TestCase(STATUS_PASSING) { }
+        BindingHealTestImpt() : TestCase(STATUS_PARTIAL) { }
 
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
-            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF);
+            TestPlayer* rogue  = SpawnPlayer(CLASS_ROGUE,  RACE_BLOODELF);
 
             EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
-            // Mana cost
+            // Cast & Mana cost
             uint32 const expectedBindingHealMana = 705;
             TEST_POWER_COST(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, POWER_MANA, expectedBindingHealMana);
             
-            // Heal
+            // Test Healing value
             float const bindingHealCastTime = 1.5f;
             float const bindingHealCoeff = bindingHealCastTime / 3.5f;
             uint32 const bonusHeal = 550 * bindingHealCoeff;
             uint32 const bindingHealMin = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MIN + bonusHeal;
             uint32 const bindingHealMax = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MAX + bonusHeal;
-            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin, bindingHealMax, false);
-            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin * 1.5f, bindingHealMax * 1.5f, true);
             TEST_DIRECT_HEAL(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin, bindingHealMax, false);
             TEST_DIRECT_HEAL(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin * 1.5f, bindingHealMax * 1.5f, true);
+
+            // Test if priest received the same amount of heal
+            // Use data from the last TEST_DIRECT_HEAL, min and max heal should match for priest and rogue
+            uint32 minHealToRogue;
+            uint32 maxHealToRogue;
+            uint32 minHealToPriest;
+            uint32 maxhealToPriest;
+            GetHealingPerSpellsTo(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, minHealToRogue, maxHealToRogue, {});
+            GetHealingPerSpellsTo(priest, priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, minHealToPriest, maxhealToPriest, {});
+            ASSERT_INFO("min heal %u - %u", minHealToRogue, minHealToPriest);
+            TEST_ASSERT(minHealToRogue == minHealToPriest);
+            ASSERT_INFO("max heal %u - %u", maxHealToRogue, maxhealToPriest);
+            TEST_ASSERT(maxHealToRogue == maxhealToPriest);
         }
     };
 
@@ -1163,60 +1173,7 @@ public:
     class CureDiseaseTestImpt : public TestCase
     {
     public:
-        CureDiseaseTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
-
-        void TestDispelDisease(TestPlayer* victim, uint32 Disease1, uint32 Disease2, uint32 Disease3, uint32 Disease4, uint32 Disease5, int8 count)
-        {
-            victim->SetFullHealth();
-            ASSERT_INFO("TestDispelDisease maximum trials reached");
-            TEST_ASSERT(count < 10);
-            count++;
-
-            TEST_CAST(victim, victim, ClassSpells::Priest::CURE_DISEASE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-
-            if (victim->HasAura(Disease5))
-            {
-                TEST_ASSERT(victim->HasAura(Disease4));
-                TEST_ASSERT(victim->HasAura(Disease3));
-                TEST_ASSERT(victim->HasAura(Disease2));
-                TEST_ASSERT(victim->HasAura(Disease1));
-                TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-            }
-            else
-            {
-                if (victim->HasAura(Disease4))
-                {
-                    TEST_ASSERT(victim->HasAura(Disease3));
-                    TEST_ASSERT(victim->HasAura(Disease2));
-                    TEST_ASSERT(victim->HasAura(Disease1));
-                    TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-                }
-                else
-                {
-                    if (victim->HasAura(Disease3))
-                    {
-                        TEST_ASSERT(victim->HasAura(Disease2));
-                        TEST_ASSERT(victim->HasAura(Disease1));
-                        TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-                    }
-                    else
-                    {
-                        if (victim->HasAura(Disease2))
-                        {
-                            TEST_ASSERT(victim->HasAura(Disease1));
-                            TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-                        }
-                        else
-                        {
-                            if (victim->HasAura(Disease1))
-                            {
-                                TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        CureDiseaseTestImpt() : TestCase(STATUS_PASSING, true) { }
 
         void Test() override
         {
@@ -1228,29 +1185,24 @@ public:
 
             uint32 const WEAKENING_DISEASE = 18633;
             uint32 const SPORE_DISEASE = 31423;
-            uint32 const FEVERED_DISEASE = 34363;
+            /*uint32 const FEVERED_DISEASE = 34363;
             uint32 const DISEASE_BUFFET = 46481;
-            uint32 const VOLATILE_DISEASE = 46483;
+            uint32 const VOLATILE_DISEASE = 46483;*/
 
-            // Apply
+            // Apply 2 diseases
             warrior->AddAura(WEAKENING_DISEASE, warrior);
-            Wait(1);
             warrior->AddAura(SPORE_DISEASE, warrior);
             Wait(1);
-            warrior->AddAura(FEVERED_DISEASE, warrior);
-            Wait(1);
-            warrior->AddAura(DISEASE_BUFFET, warrior);
-            Wait(1);
-            warrior->AddAura(VOLATILE_DISEASE, warrior);
-            Wait(1);
 
-            // Mana cost
+            // Cast spell & mana cost
             uint32 const expectedCureDiseaseMana = 314;
             TEST_POWER_COST(priest, warrior, ClassSpells::Priest::CURE_DISEASE_RNK_1, POWER_MANA, expectedCureDiseaseMana);
+            Wait(1);
 
-            Wait(500);
-            int8 count = 0;
-            TestDispelDisease(warrior, WEAKENING_DISEASE, SPORE_DISEASE, FEVERED_DISEASE, DISEASE_BUFFET, VOLATILE_DISEASE, count);
+            // should cure 1 disease only
+            uint8 diseasedCured = uint8(!warrior->HasAura(WEAKENING_DISEASE)) + uint8(!warrior->HasAura(SPORE_DISEASE));
+            ASSERT_INFO("diseasedCured = %u instead of %u", diseasedCured, 1);
+            TEST_ASSERT(diseasedCured == 1);
         }
     };
 
@@ -1332,6 +1284,7 @@ public:
             TEST_HAS_AURA(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1);
 
             float const expectedResult = 25.f; // PvP Hit 5% + Elune's Grace 20%
+            //test both melee and ranged
             TEST_SPELL_HIT_CHANCE(hunter, priest, ClassSpells::Hunter::AUTO_SHOT_RNK_1, expectedResult, SPELL_MISS_MISS);
             TEST_MELEE_HIT_CHANCE(warrior, priest, BASE_ATTACK, expectedResult, MELEE_HIT_MISS);
         }
@@ -1560,44 +1513,35 @@ public:
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            //spawn some priests to target
+            //priest 1 to 4 should be in range
+            //5 should be too far
+            //6 should be in range but in another group
             Position spawn(_location);
             spawn.MoveInFront(spawn, 3.0f);
             TestPlayer* priest2 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
-            spawn.MoveInFront(spawn, 3.0f);
+            spawn.MoveInFront(spawn, 3.0f); //6y
             TestPlayer* priest3 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
-            spawn.MoveInFront(spawn, 19.0f);
+            spawn.MoveInFront(spawn, 19.0f); //25y
             TestPlayer* priest4 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
-            spawn.MoveInFront(spawn, 10.0f);
+            spawn.MoveInFront(spawn, 10.0f); //35y
             TestPlayer* priest5 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
-            TestPlayer* priest6 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
 
-            // Get all the units
-            std::vector<WorldObject*> targets;
-            Trinity::AllWorldObjectsInRange u_check(priest, 50.0f);
-            Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(priest, targets, u_check);
-            Cell::VisitAllObjects(priest, searcher, 50.0f);
-
-            // Reverse array
-            std::reverse(std::begin(targets), std::end(targets));
+            TestPlayer* priest6 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, priest->GetPosition());
 
             // Group raid the players
-            for (WorldObject* object : targets)
+            std::list<TestPlayer*> toGroup { priest2, priest3, priest4, priest5, priest6 };
+            priest->DisableRegeneration(true);
+            priest->SetHealth(1);
+            for (auto player : toGroup)
             {
-                if (Player* player = object->ToPlayer())
-                {
-                    player->DisableRegeneration(true);
-                    player->SetHealth(1);
+                player->DisableRegeneration(true);
+                player->SetHealth(1);
 
-                    if (player == priest)
-                        continue;
-
-                    GroupPlayer(priest, player);
-                }
+                GroupPlayer(priest, player);
             }
 
-            spawn.MoveInFront(spawn, -36.0f);
-            priest6->Relocate(spawn);
-
+            // Priest 6 should end up in group 2 (group 1 is full)
             TEST_ASSERT(!priest->GetGroup()->SameSubGroup(priest, priest6));
 
             EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
@@ -1606,15 +1550,15 @@ public:
             uint32 const expectedPrayerOfHealingMana = 1255;
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, POWER_MANA, expectedPrayerOfHealingMana);
 
-            // Raid & Range
+            // Spell has range 30y and should only target self group
             TEST_ASSERT(priest->GetHealth() > 1);
             TEST_ASSERT(priest2->GetHealth() > 1);
             TEST_ASSERT(priest3->GetHealth() > 1);
             TEST_ASSERT(priest4->GetHealth() > 1);
-            TEST_ASSERT(priest5->GetHealth() == 1); // 35m
-            TEST_ASSERT(priest6->GetHealth() == 1); // not in the same group
+            TEST_ASSERT(priest5->GetHealth() == 1); // 35y
+            TEST_ASSERT(priest6->GetHealth() == 1); // close but not in the same group
 
-            // Heal
+            // Heal value
             float const prayerOfHealingCastTime = 3.0f;
             float const prayerOfHealingCoeff = prayerOfHealingCastTime / 3.5f / 2.0f;
             uint32 const bonusHeal = 550 * prayerOfHealingCoeff;
@@ -1933,7 +1877,7 @@ public:
     class HexOfWeaknessTestImpt : public TestCase
     {
     public:
-        HexOfWeaknessTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        HexOfWeaknessTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1945,6 +1889,7 @@ public:
             EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
 
             // Mana cost, aura & cd
+            // priest applies hex on rogue
             uint32 const expectedHexOfWeaknessMana = 295;
             TEST_POWER_COST(priest, rogue, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, POWER_MANA, expectedHexOfWeaknessMana);
             TEST_HAS_AURA(rogue, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7);
@@ -1959,38 +1904,40 @@ public:
             TEST_DIRECT_HEAL(healRogue, rogue, ClassSpells::Priest::GREATER_HEAL_RNK_7, greaterHealMin, greaterHealMax, false);
             TEST_DIRECT_HEAL(healRogue, rogue, ClassSpells::Priest::GREATER_HEAL_RNK_7, greaterHealMin * 1.5f, greaterHealMax * 1.5f, true);
 
-            // MH, OH, spells
-            EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
-            Wait(1500);
-            EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
-            Wait(1);
-            // Damage -- Issue here, Hex of Weakness lower the damage too much
-            int const hexOfWeaknessDamageMalus = 35;
-            int const sinisterStrikeBonus = 98;
-            float const normalizedSwordSpeed = 2.4f;
-            float const AP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
-            float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5f));
-            // Sinister strike
-            uint32 const weaponMinDamage = 214 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - hexOfWeaknessDamageMalus;
-            uint32 const weaponMaxDamage = 398 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - hexOfWeaknessDamageMalus;
-            uint32 const expectedSinisterStrikeMin = weaponMinDamage * armorFactor;
-            uint32 const expectedSinisterStrikeMax = weaponMaxDamage * armorFactor;
-            uint32 const expectedSinisterStrikeCritMin = weaponMinDamage * 2.0f * armorFactor;
-            uint32 const expectedSinisterStrikeCritMax = weaponMaxDamage * 2.0f * armorFactor;
-            TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeMin, expectedSinisterStrikeMax, false);
-            TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeCritMin, expectedSinisterStrikeCritMax, true);
-            // MH -- 214 - 398
-            float const wgMHSpeed = 2.8f;
-            uint32 const expectedMHMin = (214 - hexOfWeaknessDamageMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
-            uint32 const expectedMHMax = (398 - hexOfWeaknessDamageMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
-            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin, expectedMHMax, false);
-            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin * 2.0f, expectedMHMax * 2.0f, true);
-            // OH -- 107 - 199
-            float const wgOHSpeed = 1.4f;
-            uint32 const expectedOHMin = (107 - hexOfWeaknessDamageMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
-            uint32 const expectedOHMax = (199 - hexOfWeaknessDamageMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
-            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin, expectedOHMax, false);
-            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin * 2.0f, expectedOHMax * 2.0f, true);
+            // Damage reduction
+            {
+                EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+                Wait(1500);
+                EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+                Wait(1);
+                // Damage 
+                int const hexOfWeaknessDamageMalus = 35;
+                int const sinisterStrikeBonus = 98;
+                float const normalizedSwordSpeed = 2.4f;
+                float const AP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
+                float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5f));
+                // rogues casts Sinister strike on dummy, damage should be reduced
+                uint32 const weaponMinDamage = 214 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - hexOfWeaknessDamageMalus;
+                uint32 const weaponMaxDamage = 398 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - hexOfWeaknessDamageMalus;
+                uint32 const expectedSinisterStrikeMin = weaponMinDamage * armorFactor;
+                uint32 const expectedSinisterStrikeMax = weaponMaxDamage * armorFactor;
+                uint32 const expectedSinisterStrikeCritMin = weaponMinDamage * 2.0f * armorFactor;
+                uint32 const expectedSinisterStrikeCritMax = weaponMaxDamage * 2.0f * armorFactor;
+                TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeMin, expectedSinisterStrikeMax, false);
+                TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeCritMin, expectedSinisterStrikeCritMax, true);
+                // rogue uses MH on dummy. MH -- 214 - 398
+                float const wgMHSpeed = 2.8f;
+                uint32 const expectedMHMin = (214 - hexOfWeaknessDamageMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
+                uint32 const expectedMHMax = (398 - hexOfWeaknessDamageMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
+                TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin, expectedMHMax, false);
+                TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin * 2.0f, expectedMHMax * 2.0f, true);
+                // rogue uses OF on dummy. OH -- 107 - 199
+                float const wgOHSpeed = 1.4f;
+                uint32 const expectedOHMin = (107 - hexOfWeaknessDamageMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
+                uint32 const expectedOHMax = (199 - hexOfWeaknessDamageMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
+                TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin, expectedOHMax, false);
+                TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin * 2.0f, expectedOHMax * 2.0f, true);
+            }
         }
     };
 
@@ -2087,6 +2034,7 @@ public:
     public:
         MindSootheTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
 
+        //get approximative aggro range (may be around 1y wrong max)
         float GetAggroRange(TestPlayer* priest, Creature* target, float maxDistance)
         {
             TEST_ASSERT(target->GetVictim() == nullptr); //target must not have target when we start
@@ -2110,7 +2058,7 @@ public:
             Position spawn(_location);
             float const spawnDistance = 40.0f;
             spawn.MoveInFront(_location, spawnDistance);
-            Creature* humanoid = SpawnCreatureWithPosition(spawn, 22874);
+            Creature* humanoid = SpawnCreatureWithPosition(spawn, 25363); //sunblade cabalist
             Creature* beast = SpawnCreatureWithPosition(spawn, 22885);
 
             // Only cast on humanoid
@@ -2132,12 +2080,12 @@ public:
             // Aura
             TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15));
 
-            Wait(Milliseconds(1500));
+            Wait(1);
             float const reducedAggroRange = GetAggroRange(priest, humanoid, spawnDistance);
 
             float const mindSootheRangeEffect = aggroRange - reducedAggroRange;
-            TC_LOG_DEBUG("test.unit_test", "aggroRange: %f, reduced: %f, diff: %f", aggroRange, reducedAggroRange, mindSootheRangeEffect);
-            TEST_ASSERT(reducedAggroRange < aggroRange);
+            //TC_LOG_DEBUG("test.unit_test", "aggroRange: %f, reduced: %f, diff: %f", aggroRange, reducedAggroRange, mindSootheRangeEffect);
+            TEST_ASSERT(mindSootheRangeEffect > 0);
             TEST_ASSERT(Between<float>(mindSootheRangeEffect, aggroRange - 11.0f, aggroRange - 9.0f));
         }
     };
@@ -2163,38 +2111,41 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
 
             Position spawn(_location);
-            spawn.MoveInFront(spawn, 70.0f);
-            TestPlayer* warrior70m = SpawnPlayer(CLASS_WARRIOR, RACE_ORC, 70, spawn); // in priest's sight
-            spawn.MoveInFront(spawn, 70.0f);
-            TestPlayer* rogue140m = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn); // out of priest's sight
+            float mapVisibilityRange = GetMap()->GetVisibilityRange();
+            spawn.MoveInFront(spawn, mapVisibilityRange / 2.0f); // in priest's sight
+            TestPlayer* warriorClose = SpawnPlayer(CLASS_WARRIOR, RACE_ORC, 70, spawn); 
+            spawn.MoveInFront(spawn, mapVisibilityRange * 1.5f); // out of priest's sight
+            TestPlayer* rogueFar = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn); 
+
+            Wait(1);
 
             // Assert visibility
-            TEST_ASSERT(priest->HaveAtClient(warrior70m));
-            TEST_ASSERT(!priest->HaveAtClient(rogue140m));
-            TEST_ASSERT(warrior70m->HaveAtClient(priest));
-            TEST_ASSERT(warrior70m->HaveAtClient(rogue140m));
+            TEST_ASSERT(priest->HaveAtClient(warriorClose));
+            TEST_ASSERT(!priest->HaveAtClient(rogueFar));
+            TEST_ASSERT(warriorClose->HaveAtClient(priest));
+            TEST_ASSERT(warriorClose->HaveAtClient(rogueFar));
 
             // Mana cost
             uint32 const expectedMindVisionMana = 150;
-            TEST_POWER_COST(priest, warrior70m, ClassSpells::Priest::MIND_VISION_RNK_2, POWER_MANA, expectedMindVisionMana);
+            TEST_POWER_COST(priest, warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2, POWER_MANA, expectedMindVisionMana);
 
             // Aura
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(warrior70m, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
 
             // Check jumping targets even out of sight works
-            FORCE_CAST(priest, rogue140m, ClassSpells::Priest::MIND_VISION_RNK_2, SPELL_MISS_NONE);
-            TEST_HAS_AURA(rogue140m, ClassSpells::Priest::MIND_VISION_RNK_2);
+            FORCE_CAST(priest, rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2, SPELL_MISS_NONE);
+            TEST_HAS_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
             TEST_HAS_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
 
             // Aura isnt removed by stealth
-            TEST_CAST(rogue140m, rogue140m, ClassSpells::Rogue::STEALTH_RNK_4);
-            TEST_HAS_AURA(rogue140m, ClassSpells::Priest::MIND_VISION_RNK_2);
+            TEST_CAST(rogueFar, rogueFar, ClassSpells::Rogue::STEALTH_RNK_4);
+            TEST_HAS_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
 
             // Break if in another instance
-            rogue140m->TeleportTo(37, 128.205002, 135.136002, 236.025055, 0); // Teleport to Azshara Crater
+            rogueFar->TeleportTo(37, 128.205002, 135.136002, 236.025055, 0); // Teleport to Azshara Crater
             Wait(1000);
-            TEST_HAS_NOT_AURA(rogue140m, ClassSpells::Priest::MIND_VISION_RNK_2);
+            TEST_HAS_NOT_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
             TEST_HAS_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
         }
     };
@@ -2418,6 +2369,7 @@ public:
             Wait(1000);
             uint32 damage = warriorStartHealth - warrior->GetHealth();
             uint32 backlash = priestStartHealth - priest->GetHealth();
+            ASSERT_INFO("damage %u, backlash %u", damage, backlash);
             TEST_ASSERT(damage == backlash);
 
             // Backlash absorbed by shield
@@ -2428,7 +2380,9 @@ public:
             TEST_ASSERT(priest->GetHealth() == priestHealth);
             priest->RemoveAurasDueToSpell(ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
 
-            // On spell reflect: priest takes damage and backlash <- BUG HERE
+            //On spell reflect: What happens?
+            //We couldn't find any sources on this... 
+            /*
             priest->GetSpellHistory()->ResetAllCooldowns();
             uint32 warriorHealth = warrior->GetHealth();
             FORCE_CAST(warrior, warrior, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
@@ -2438,6 +2392,7 @@ public:
             Wait(1000);
             FORCE_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
             TEST_ASSERT(warrior->GetHealth() == warriorHealth);
+            */
 
             // No backlash on kill
             priest->GetSpellHistory()->ResetAllCooldowns();
@@ -2458,8 +2413,8 @@ public:
             TEST_ASSERT(sunflareDurability == sunflareMaxDurability);
             priest->ResetForceSpellHitResult();
 
-            // Damage
-            // Enough health to survive
+            // Test damages
+            // Setting enough health to survive the TEST_DIRECT_SPELL_DAMAGE multiple casts
             uint32 health = 10000000;
             priest->SetMaxHealth(health);
             priest->SetHealth(health);
@@ -2517,7 +2472,7 @@ public:
     class ShadowfiendTestImpt : public TestCase
     {
     public:
-        ShadowfiendTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        ShadowfiendTestImpt() : TestCase(STATUS_PASSING) { }
 
         /*
         Data:
@@ -2597,6 +2552,43 @@ public:
 
             TEST_ASSERT(expectedShadowfiendMax <= allowedMax);
             TEST_ASSERT(expectedShadowfiendMin >= allowedMin);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowfiendTestImpt>();
+    }
+};
+
+class ShadowfiendTestStats : public TestCaseScript
+{
+public:
+    ShadowfiendTestStats() : TestCaseScript("spells priest shadowfiend stats") { }
+
+    class ShadowfiendTestImpt : public TestCase
+    {
+    public:
+        ShadowfiendTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        /*
+        Data:
+        - http://wowwiki.wikia.com/wiki/Shadowfiend?oldid=1581560
+        - https://github.com/FeenixServerProject/Archangel_2.4.3_Bugtracker/issues/2590
+        - Corecraft: 65% shadow spell coeff / Adding 90% melee and ranged attacker's miss chance auras
+        */
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            Position spawn(_location);
+            spawn.MoveInFront(spawn, 20.0f);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
+
+            FORCE_CAST(priest, warrior, ClassSpells::Priest::SHADOWFIEND_RNK_1);
+
+            Guardian* shadowfiend = priest->GetGuardianPet();
+            TEST_ASSERT(shadowfiend != nullptr);
 
             // Has Shadow Armor, 90% dodge
             TEST_HAS_AURA(shadowfiend, 34424);
@@ -2612,7 +2604,6 @@ public:
 
             // Attack speed 1.5
             TEST_ASSERT(shadowfiend->GetAttackTime(BASE_ATTACK) == 1500);
-            shadowfiend->ResetForceMeleeHitResult();
         }
     };
 
@@ -2630,7 +2621,7 @@ public:
     class TouchOfWeaknessTestImpt : public TestCase
     {
     public:
-        TouchOfWeaknessTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        TouchOfWeaknessTestImpt() : TestCase(STATUS_PASSING, true) { }
 
         void Test() override
         {
@@ -2642,20 +2633,21 @@ public:
             EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
 
             // Mana cost, aura & cd
+            // Priest cast hex on rogue
             uint32 const expectedTouchOfWeaknessMana = 235;
             priest->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, POWER_MANA, expectedTouchOfWeaknessMana);
             TEST_HAS_AURA(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, Minutes(10));
 
-            // Fail on spell
+            // Shouldn't proc on spells
             mage->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             mage->ResetForceSpellHitResult();
             TEST_HAS_AURA(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
             TEST_HAS_NOT_AURA(mage, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER);
 
-            // Success
+            // Should proc on melee
             rogue->ForceMeleeHitResult(MELEE_HIT_NORMAL);
             rogue->AttackerStateUpdate(priest);
             Wait(1000);
@@ -2666,40 +2658,42 @@ public:
             TEST_HAS_AURA(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, Minutes(2));
 
-            // MH, OH, spells
-            EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
-            Wait(1500);
-            EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
-            Wait(1);
-            // Damage -- Issue here, Touch of Weakness lower the damage too much
-            int const touchOfWeaknessMalus = 35;
-            int const sinisterStrikeBonus = 98;
-            float const normalizedSwordSpeed = 2.4f;
-            float const AP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
-            float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5f));
-            // Sinister strike
-            uint32 const weaponMinDamage = 214 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - touchOfWeaknessMalus;
-            uint32 const weaponMaxDamage = 398 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - touchOfWeaknessMalus;
-            uint32 const expectedSinisterStrikeMin = weaponMinDamage * armorFactor;
-            uint32 const expectedSinisterStrikeMax = weaponMaxDamage * armorFactor;
-            uint32 const expectedSinisterStrikeCritMin = weaponMinDamage * 2.0f * armorFactor;
-            uint32 const expectedSinisterStrikeCritMax = weaponMaxDamage * 2.0f * armorFactor;
-            TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeMin, expectedSinisterStrikeMax, false);
-            TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeCritMin, expectedSinisterStrikeCritMax, true);
-            // MH -- 214 - 398
-            float const wgMHSpeed = 2.8f;
-            uint32 const expectedMHMin = (214 - touchOfWeaknessMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
-            uint32 const expectedMHMax = (398 - touchOfWeaknessMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
-            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin, expectedMHMax, false);
-            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin * 2.0f, expectedMHMax * 2.0f, true);
-            // OH -- 107 - 199
-            float const wgOHSpeed = 1.4f;
-            uint32 const expectedOHMin = (107 - touchOfWeaknessMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
-            uint32 const expectedOHMax = (199 - touchOfWeaknessMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
-            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin, expectedOHMax, false);
-            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin * 2.0f, expectedOHMax * 2.0f, true);
+            // Test damage reduc ON MH, OH, spells
+            {
+                EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+                Wait(1500);
+                EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+                Wait(1);
+                // Damage calc
+                int const touchOfWeaknessMalus = 35;
+                int const sinisterStrikeBonus = 98;
+                float const normalizedSwordSpeed = 2.4f;
+                float const AP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
+                float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5f));
+                // Test damage reduc on Sinister strike
+                uint32 const weaponMinDamage = 214 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - touchOfWeaknessMalus;
+                uint32 const weaponMaxDamage = 398 + (AP / 14 * normalizedSwordSpeed) + sinisterStrikeBonus - touchOfWeaknessMalus;
+                uint32 const expectedSinisterStrikeMin = weaponMinDamage * armorFactor;
+                uint32 const expectedSinisterStrikeMax = weaponMaxDamage * armorFactor;
+                uint32 const expectedSinisterStrikeCritMin = weaponMinDamage * 2.0f * armorFactor;
+                uint32 const expectedSinisterStrikeCritMax = weaponMaxDamage * 2.0f * armorFactor;
+                TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeMin, expectedSinisterStrikeMax, false);
+                TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeCritMin, expectedSinisterStrikeCritMax, true);
+                // Test damage reduc MH -- 214 - 398
+                float const wgMHSpeed = 2.8f;
+                uint32 const expectedMHMin = (214 - touchOfWeaknessMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
+                uint32 const expectedMHMax = (398 - touchOfWeaknessMalus + (AP / 14 * wgMHSpeed)) * armorFactor;
+                TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin, expectedMHMax, false);
+                TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMin * 2.0f, expectedMHMax * 2.0f, true);
+                // Test damage reduc OH -- 107 - 199
+                float const wgOHSpeed = 1.4f;
+                uint32 const expectedOHMin = (107 - touchOfWeaknessMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
+                uint32 const expectedOHMax = (199 - touchOfWeaknessMalus + (AP / 14 * wgOHSpeed)) / 2 * armorFactor;
+                TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin, expectedOHMax, false);
+                TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMin * 2.0f, expectedOHMax * 2.0f, true);
+            }
 
-            // Damage
+            // Proc damage
             float const touchOfWeaknessCoeff = ClassSpellsCoeff::Priest::TOUCH_OF_WEAKNESS;
             uint32 const spellBonus = 292 * touchOfWeaknessCoeff;
             uint32 const touchOfWeaknessDmg = ClassSpellsDamage::Priest::TOUCH_OF_WEAKNESS_RNK_7 + spellBonus;
@@ -2762,5 +2756,6 @@ void AddSC_test_spells_priest()
     new ShadowWordDeathTest();
     new ShadowWordPainTest();
     new ShadowfiendTest();
+    new ShadowfiendTestStats();
     new TouchOfWeaknessTest();
 }
