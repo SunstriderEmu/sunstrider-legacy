@@ -215,7 +215,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedEntanglingRootsMana = 160;
-            TEST_POWER_COST(druid, druid, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, POWER_MANA, expectedEntanglingRootsMana);
+            TEST_POWER_COST(druid, creature, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, POWER_MANA, expectedEntanglingRootsMana);
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, Seconds(27));
 
 			// Is rooted
