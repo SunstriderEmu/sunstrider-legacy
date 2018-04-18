@@ -2124,30 +2124,31 @@ float Creature::GetAggroRange(Unit const* pl) const
     int32 leveldif       = playerlevel - creaturelevel;
 
     // "The maximum Aggro Radius has a cap of 25 levels under. Example: A level 30 char has the same Aggro Radius of a level 5 char on a level 60 mob."
-    if ( leveldif < - 25)
+    if (leveldif < -25)
         leveldif = -25;
 
     // "The aggro radius of a mob having the same level as the player is roughly 20 yards"
-    float RetDistance = 20;
+    float aggroRadius = 20;
 
     // "Aggro Radius varies with level difference at a rate of roughly 1 yard/level"
     // radius grow if playlevel < creaturelevel
-    RetDistance -= (float)leveldif;
+    aggroRadius -= (float)leveldif;
 
-    if (creaturelevel + 5 <= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
-    {
-        // detect range auras
-        RetDistance += GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_DETECT_RANGE);
+    // detect range auras
+    aggroRadius += GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE);
 
-        // detected range auras
-        RetDistance += pl->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_DETECTED_RANGE);
-    }
+    // detected range auras
+    aggroRadius += pl->GetTotalAuraModifier(SPELL_AURA_MOD_DETECTED_RANGE);
 
-    //minimal distance
-    if(RetDistance < 3.0f)
-        RetDistance = 3.0f;
+    // Just in case, we don't want pets running all over the map
+    if (aggroRadius > MAX_AGGRO_RADIUS)
+        aggroRadius = MAX_AGGRO_RADIUS;
 
-    return (RetDistance * aggroRate);
+    //  Minimum Aggro Radius for a mob seems to be combat range (5 yards)
+    if(aggroRadius < NOMINAL_MELEE_RANGE)
+        aggroRadius = NOMINAL_MELEE_RANGE;
+
+    return (aggroRadius * aggroRate);
 }
 
 void Creature::SetDeathState(DeathState s)
