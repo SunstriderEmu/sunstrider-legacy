@@ -2530,14 +2530,14 @@ public:
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOWFIEND_RNK_1, Minutes(5));
 
             Guardian* shadowfiend = priest->GetGuardianPet();
-            TEST_ASSERT(shadowfiend != nullptr);
             shadowfiend->ForceMeleeHitResult(MELEE_HIT_MISS);
-
+            TEST_ASSERT(shadowfiend != nullptr);
+            
             // Summon in melee range of target
-            TEST_ASSERT(warrior->GetDistance(shadowfiend) < 5);
+            TEST_ASSERT(warrior->GetDistance(shadowfiend) < 5.0f);
 
             // Attacking target
-            Wait(10);
+            Wait(1000);
             TEST_ASSERT(shadowfiend->GetVictim() == warrior);
 
             // Damage coeff + Mana returned is 2.5 * damage + damage is shadow
@@ -2556,7 +2556,9 @@ public:
             uint32 maxDamage = 0;
 
             shadowfiend->ForceMeleeHitResult(MELEE_HIT_NORMAL);
-            for (uint32 i = 0; i < sampleSize; i++) {
+            AI->ResetSpellCounters();
+            for (uint32 i = 0; i < sampleSize; i++) 
+            {
                 shadowfiend->AttackerStateUpdate(warrior, BASE_ATTACK);
 
                 auto damageToTarget = AI->GetMeleeDamageDoneInfo(warrior);
