@@ -2124,15 +2124,16 @@ public:
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            priest->SetCommandStatusOn(CHEAT_COOLDOWN);
 
-            Position spawn(_location);
+            Position spawn;
             float mapVisibilityRange = GetMap()->GetVisibilityRange();
-            spawn.MoveInFront(spawn, mapVisibilityRange / 2.0f); // in priest's sight
+            spawn.MoveInFront(_location, mapVisibilityRange / 2.0f); // in priest's sight
             TestPlayer* warriorClose = SpawnPlayer(CLASS_WARRIOR, RACE_ORC, 70, spawn); 
-            spawn.MoveInFront(spawn, mapVisibilityRange * 1.5f); // out of priest's sight
+            spawn.MoveInFront(_location, mapVisibilityRange * 1.2f); // out of priest's sight but in warrior sight
             TestPlayer* rogueFar = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn); 
 
-            Wait(1);
+            Wait(4000); //wait for players to appear to each others
 
             // Assert visibility
             TEST_ASSERT(priest->HaveAtClient(warriorClose));
@@ -2148,12 +2149,25 @@ public:
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
             TEST_AURA_MAX_DURATION(warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
 
-            // Check jumping targets even out of sight works
+            Wait(1);
+            WorldPacket fakeClientResponse;
+            fakeClientResponse << bool(true);
+            priest->GetSession()->HandleFarSightOpcode(fakeClientResponse);
+
+            Wait(4000); //wait a bit to update view for priest
+            //priest should now have both players in view
+            TEST_ASSERT(priest->HaveAtClient(warriorClose));
+            TEST_ASSERT(priest->HaveAtClient(rogueFar));
+
+            // Priest should be able to cast vision on rogue, even though he was out of vision the first time
+            priest->SetPower(POWER_MANA, priest->GetMaxPower(POWER_MANA));
             FORCE_CAST(priest, rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2, SPELL_MISS_NONE);
+            Wait(1);
             TEST_HAS_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
             TEST_HAS_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
 
             // Aura isnt removed by stealth
+            Wait(1);
             TEST_CAST(rogueFar, rogueFar, ClassSpells::Rogue::STEALTH_RNK_4);
             TEST_HAS_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
 
@@ -2161,7 +2175,7 @@ public:
             rogueFar->TeleportTo(37, 128.205002, 135.136002, 236.025055, 0); // Teleport to Azshara Crater
             Wait(1000);
             TEST_HAS_NOT_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
-            TEST_HAS_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
+            TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
         }
     };
 
