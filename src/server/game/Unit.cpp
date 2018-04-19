@@ -2294,6 +2294,7 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
     CalcDamageInfo damageInfo;
     CalculateMeleeDamage(victim, &damageInfo, attType);
     // Send log damage message to client
+
     for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
         Unit::DealDamageMods(victim, damageInfo.Damages[i].Damage, &damageInfo.Damages[i].Absorb);
     SendAttackStateUpdate(&damageInfo);
@@ -4002,11 +4003,15 @@ void Unit::RemoveAllGameObjects()
 
 void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log)
 {
-    WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (16+4+4+1+4+4+1+1+4+4+1)); // we guess size
+    WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (16+4+4+1+4+4+1+1+4+4+1)); // we guess size (LK ok)
     data << log->target->GetPackGUID();
     data << log->attacker->GetPackGUID();
     data << uint32(log->SpellID);
     data << uint32(log->damage);                             //damage amount
+#ifdef LICH_KING
+    int32 overkill = log->damage - log->target->GetHealth();
+    data << uint32(overkill > 0 ? overkill : 0);            // overkill
+#endif
     data << uint8 (log->schoolMask);                         //damage school
     data << uint32(log->absorb);                             //AbsorbedDamage
     data << uint32(log->resist);                             //resist
@@ -4020,20 +4025,16 @@ void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log)
 
 void Unit::SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage, SpellSchoolMask damageSchoolMask,uint32 AbsorbedDamage, uint32 Resist,bool PhysicalDamage, uint32 Blocked, bool CriticalHit)
 {
-    WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (16+4+4+1+4+4+1+1+4+4+1)); // we guess size
-    data << target->GetPackGUID();
-    data << GetPackGUID();
-    data << uint32(SpellID);
-    data << uint32(Damage-AbsorbedDamage-Resist-Blocked);
-    data << uint8(damageSchoolMask);                        // spell school
-    data << uint32(AbsorbedDamage);                         // AbsorbedDamage
-    data << uint32(Resist);                                 // resist
-    data << uint8(PhysicalDamage);                          // if 1, then client show spell name (example: %s's ranged shot hit %s for %u school or %s suffers %u school damage from %s's spell_name
-    data << uint8(0);                                       // unk IsFromAura
-    data << uint32(Blocked);                                // blocked
-    data << uint32(CriticalHit ? 0x27 : 0x25);              // hitType, flags: 0x2 - SPELL_HIT_TYPE_CRIT, 0x10 - replace caster?
-    data << uint8(0);                                       // isDebug?
-    SendMessageToSet( &data, true );
+    SpellNonMeleeDamage log(this, target, SpellID, damageSchoolMask);
+    log.damage = Damage - AbsorbedDamage - Resist - Blocked;
+    log.absorb = AbsorbedDamage;
+    log.resist = Resist;
+    log.physicalLog = PhysicalDamage;
+    log.blocked = Blocked;
+    log.HitInfo = SPELL_HIT_TYPE_UNK1 | SPELL_HIT_TYPE_UNK3 | SPELL_HIT_TYPE_UNK6;
+    if (CriticalHit)
+        log.HitInfo |= SPELL_HIT_TYPE_CRIT;
+    SendSpellNonMeleeDamageLog(&log);
 }
 
 /*static*/ void Unit::ProcSkillsAndAuras(Unit* actor, Unit* actionTarget, uint32 typeMaskActor, uint32 typeMaskActionTarget, uint32 spellTypeMask, uint32 spellPhaseMask, uint32 hitMask, Spell* spell, DamageInfo* damageInfo, HealInfo* healInfo)
@@ -13428,11 +13429,11 @@ void Unit::RemoveAurasOnEvade()
     if (IsCharmedOwnedByPlayerOrPlayer()) // if it is a player owned creature it should not remove the aura
         return;
 
-    // don't remove clone caster on evade (to be verified)
 #ifdef LICH_KING
+    // don't remove vehicle auras, passengers aren't supposed to drop off the vehicle
     RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE, SPELL_AURA_CLONE_CASTER);
 #else
-    // don't remove vehicle auras, passengers aren't supposed to drop off the vehicle
+    // don't remove clone caster on evade (to be verified)
     RemoveAllAurasExceptType(SPELL_AURA_CLONE_CASTER);
 #endif
 }

@@ -3762,7 +3762,7 @@ void Spell::_cast(bool skipCheck /*= false*/)
 
     HandleLaunchPhase();
 
-    //SendCastResult(castResult);
+
     SendSpellGo();                                          // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
 
     if (!m_spellInfo->IsChanneled())
@@ -3943,7 +3943,7 @@ void Spell::handle_immediate()
 
 uint64 Spell::handle_delayed(uint64 t_offset)
 {
-    //TC_LOG_DEBUG("FIXME","Spell %u - handle_delayed(%u)", m_spellInfo->Id,t_offset);
+
     
     if (!UpdatePointers())
     {

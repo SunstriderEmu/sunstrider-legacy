@@ -4366,7 +4366,10 @@ void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bo
         return;
 
     Unit* m_target = aurApp->GetTarget();
-    if (Unit *caster = GetCaster()) {
+    
+    if (Unit *caster = GetCaster()) 
+    {
+        //WR HACK, remove me
         // Handle Prohibit school effect before applying stun, or m_target is not casting anymore and prohibit fails
         if (GetId() == 22570 && apply && caster->HasAura(44835))
             caster->CastSpell(m_target, 32747, true);
