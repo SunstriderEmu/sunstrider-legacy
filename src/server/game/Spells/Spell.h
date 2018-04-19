@@ -558,7 +558,7 @@ class TC_GAME_API Spell
         void SetSpellValue(SpellValueMod mod, int32 value);
         
         bool DoesApplyAuraName(uint32 name);
-        
+
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();
@@ -783,6 +783,10 @@ class TC_GAME_API Spell
 
         // sunwell:
         bool _spellTargetsSelected;
+#ifdef TESTS
+        //we need to keep this variable in spell to allow applying it for channels or for when cast finish
+        SpellMissInfo _forceHitResult;
+#endif
 
         PathGenerator* m_preGeneratedPath;
 };
