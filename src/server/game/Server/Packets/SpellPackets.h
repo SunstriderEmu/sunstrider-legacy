@@ -83,6 +83,9 @@ namespace WorldPackets
 
         struct SpellCastData
         {
+            SpellCastData(Opcodes _opcode)
+                : opcode(_opcode) {}
+
             ObjectGuid CasterGUID;
             ObjectGuid CasterUnit;
             uint8 CastID               = 0;
@@ -99,12 +102,14 @@ namespace WorldPackets
             Optional<CreatureImmunities> Immunities;
 #endif
             Optional<SpellAmmo> Ammo;
+
+            Opcodes opcode; //on BC, SMSG_SPELL_GO and SMSG_SPELL_START have a small difference in structure
         };
 
         class SpellGo final : public ServerPacket
         {
             public:
-                SpellGo() : ServerPacket(SMSG_SPELL_GO) { }
+                SpellGo() : ServerPacket(SMSG_SPELL_GO), Cast(SMSG_SPELL_GO) { }
 
                 WorldPacket const* Write() override;
 
@@ -114,7 +119,7 @@ namespace WorldPackets
         class SpellStart final : public ServerPacket
         {
             public:
-                SpellStart() : ServerPacket(SMSG_SPELL_START) { }
+                SpellStart() : ServerPacket(SMSG_SPELL_START), Cast(SMSG_SPELL_START) { }
 
                 WorldPacket const* Write() override;
 

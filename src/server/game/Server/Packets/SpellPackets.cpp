@@ -103,7 +103,16 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellCastData con
     data << uint32(spellCastData.CastFlags);            // cast flags
 #else
     data << uint32(spellCastData.SpellID);              // spellId
-    data << uint8(spellCastData.CastID);                // pending spell cast?
+    switch (spellCastData.opcode)
+    {
+    case SMSG_SPELL_START:
+        data << uint8(spellCastData.CastID);                // pending spell cast?
+        break;
+    case SMSG_SPELL_GO:
+        break;
+    default:
+        ABORT(); //wrong opcode type, not handled
+    }
     data << uint16(spellCastData.CastFlags);            // cast flags
 #endif
     data << uint32(spellCastData.CastTime);             // timestamp
