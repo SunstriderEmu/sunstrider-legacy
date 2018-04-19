@@ -1292,38 +1292,51 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, CalcDamageInfo *damageInfo, Weapo
        return;
     }
 
-    for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
+    damageInfo->HitOutCome = RollMeleeOutcomeAgainst(damageInfo->Target, damageInfo->AttackType);
+
+    //sun: calc damage only if contact was made
+    switch (damageInfo->HitOutCome)
     {
-        if (immunedMask & (1 << i))
-            continue;
-
-        //sun: speedup, creatures only have one damage type
-        if (i > 0 && GetTypeId() == TYPEID_UNIT)
-            break;
-
-        SpellSchoolMask schoolMask = SpellSchoolMask(damageInfo->Damages[i].DamageSchoolMask);
-        bool const addPctMods = (schoolMask & SPELL_SCHOOL_MASK_NORMAL);
-
-        uint32 damage = 0;
-        damage += CalculateDamage(damageInfo->AttackType, false, addPctMods, (1 << i));
-        // Add melee damage bonus
-        damage = MeleeDamageBonusDone(damageInfo->Target, damage, damageInfo->AttackType, nullptr, schoolMask);
-        if (damage) //sun: don't bother with the rest if no dmg done
+    case MELEE_HIT_EVADE:
+    case MELEE_HIT_MISS:
+    case MELEE_HIT_DODGE:
+    case MELEE_HIT_BLOCK:
+    case MELEE_HIT_PARRY:
+        break;
+    default:
+    {
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
         {
-            damage = damageInfo->Target->MeleeDamageBonusTaken(this, damage, damageInfo->AttackType, nullptr, schoolMask);
+            if (immunedMask & (1 << i))
+                continue;
 
-            // Calculate armor reduction
-            if (Unit::IsDamageReducedByArmor(SpellSchoolMask(damageInfo->Damages[i].DamageSchoolMask)))
+            //sun: speedup, creatures only have one damage type
+            if (i > 0 && GetTypeId() == TYPEID_UNIT)
+                break;
+
+            SpellSchoolMask schoolMask = SpellSchoolMask(damageInfo->Damages[i].DamageSchoolMask);
+            bool const addPctMods = (schoolMask & SPELL_SCHOOL_MASK_NORMAL);
+
+            uint32 damage = 0;
+            damage += CalculateDamage(damageInfo->AttackType, false, addPctMods, (1 << i));
+            // Add melee damage bonus
+            damage = MeleeDamageBonusDone(damageInfo->Target, damage, damageInfo->AttackType, nullptr, schoolMask);
+            if (damage) //sun: don't bother with the rest if no dmg done
             {
-                damageInfo->Damages[i].Damage = (addPctMods & SPELL_SCHOOL_MASK_NORMAL) ? Unit::CalcArmorReducedDamage(damageInfo->Attacker, damageInfo->Target, damage, nullptr, attackType) : damage;
-                damageInfo->CleanDamage += damage - damageInfo->Damages[i].Damage;
+                damage = damageInfo->Target->MeleeDamageBonusTaken(this, damage, damageInfo->AttackType, nullptr, schoolMask);
+
+                // Calculate armor reduction
+                if (Unit::IsDamageReducedByArmor(SpellSchoolMask(damageInfo->Damages[i].DamageSchoolMask)))
+                {
+                    damageInfo->Damages[i].Damage = (addPctMods & SPELL_SCHOOL_MASK_NORMAL) ? Unit::CalcArmorReducedDamage(damageInfo->Attacker, damageInfo->Target, damage, nullptr, attackType) : damage;
+                    damageInfo->CleanDamage += damage - damageInfo->Damages[i].Damage;
+                }
+                else
+                    damageInfo->Damages[i].Damage = damage;
             }
-            else
-                damageInfo->Damages[i].Damage = damage;
         }
     }
-
-    damageInfo->HitOutCome = RollMeleeOutcomeAgainst(damageInfo->Target, damageInfo->AttackType);
+    }
 
     // Disable parry or dodge for ranged attack
     if(damageInfo->AttackType == RANGED_ATTACK)
