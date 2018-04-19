@@ -1292,10 +1292,15 @@ public:
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, Minutes(3));
             TEST_HAS_AURA(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1);
 
-            float const expectedResult = 25.f; // PvP Hit 5% + Elune's Grace 20%
             //test both melee and ranged
-            TEST_SPELL_HIT_CHANCE(hunter, priest, ClassSpells::Hunter::AUTO_SHOT_RNK_1, expectedResult, SPELL_MISS_MISS);
-            TEST_MELEE_HIT_CHANCE(warrior, priest, BASE_ATTACK, expectedResult, MELEE_HIT_MISS);
+            {
+                float const expectedResult = 25.f; // PvP Hit 5% + Elune's Grace 20%
+                TEST_SPELL_HIT_CHANCE(hunter, priest, ClassSpells::Hunter::AUTO_SHOT_RNK_1, expectedResult, SPELL_MISS_MISS);
+                //re cast aura, it may have expired while previous TEST_SPELL_HIT_CHANCE finished
+                priest->CastSpell(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, true);
+                TEST_HAS_AURA(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1);
+                TEST_MELEE_HIT_CHANCE(warrior, priest, BASE_ATTACK, expectedResult, MELEE_HIT_MISS);
+            }
         }
     };
 
