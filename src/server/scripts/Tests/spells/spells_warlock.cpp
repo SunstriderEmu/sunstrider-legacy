@@ -697,6 +697,110 @@ public:
     }
 };
 
+class BanishTest : public TestCaseScript
+{
+public:
+    BanishTest() : TestCaseScript("spells warlock banish") { }
+
+    class BanishTestImpt : public TestCase
+    {
+    public:
+        BanishTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+            Creature* demon = SpawnCreature(21, true); // Demon
+            Creature* elemental = SpawnCreature(22, true); // Elemental
+
+            // Should fail on classic dummy -- Bug here: test fails because we are returned SPELL_CAST_OK. The client refuses such cast, need to add a server side check.
+            TEST_CAST(warlock, dummy, ClassSpells::Warlock::BANISH_RNK_2, SPELL_FAILED_BAD_TARGETS);
+
+            // Should succeed on Demon & Elemental
+            FORCE_CAST(warlock, demon, ClassSpells::Warlock::BANISH_RNK_2, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
+            TEST_AURA_MAX_DURATION(demon, ClassSpells::Warlock::BANISH_RNK_2, Seconds(30));
+            uint32 banishManaCost = 200;
+            TEST_POWER_COST(warlock, elemental, ClassSpells::Warlock::BANISH_RNK_2, POWER_MANA, banishManaCost);
+
+            // Only 1 active banish per warlock
+            TEST_HAS_NOT_AURA(demon, ClassSpells::Warlock::BANISH_RNK_2);
+            TEST_HAS_AURA(elemental, ClassSpells::Warlock::BANISH_RNK_2);
+
+            // Banished is invulnerable
+            uint32 elemHealth = elemental->GetHealth();
+            FORCE_CAST(warlock, elemental, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
+            warlock->AttackerStateUpdate(elemental, BASE_ATTACK);
+            Wait(1000);
+            warlock->AttackStop();
+            TEST_ASSERT(elemental->GetHealth() == elemHealth);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<BanishTestImpt>();
+    }
+};
+
+class CreateFirestoneTest : public TestCaseScript
+{
+public:
+    CreateFirestoneTest() : TestCaseScript("spells warlock create_firestone") { }
+
+    class CreateFirestoneTestImpt : public TestCase
+    {
+    public:
+        CreateFirestoneTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+
+        void CreateFirestone(TestPlayer* caster, uint32 firestoneSpellId, uint32 firestone, uint32 expectedManaCost)
+        {
+            caster->AddItem(SOUL_SHARD, 1);
+            TEST_POWER_COST(caster, caster, firestoneSpellId, POWER_MANA, expectedManaCost);
+            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
+            TEST_ASSERT(caster->GetItemCount(firestone, false) == 1);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            const uint32 LESSER_FIRESTONE   = 1254;
+            const uint32 FIRESTONE          = 13699;
+            const uint32 GREATER_FIRESTONE  = 13700;
+            const uint32 MAJOR_FIRESTONE    = 13701;
+            const uint32 MASTER_FIRESTONE   = 22128;
+
+            // Creates a firestone
+            CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_1, LESSER_FIRESTONE, 500);
+            CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_2, FIRESTONE, 700);
+            CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_3, GREATER_FIRESTONE, 900);
+            CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_4, MAJOR_FIRESTONE, 1100);
+            CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_5, MASTER_FIRESTONE, 1330);
+
+            // Damage
+            Item* majorFirestone = warlock->GetItemByPos(INVENTORY_SLOT_BAG_START, 4);
+            TEST_ASSERT(majorFirestone != nullptr);
+            warlock->EquipItem(SLOT_RANGED, majorFirestone, true);
+
+            // Increase fire spell damage by 30
+            const uint32 majorFirestoneFireBonus = 30;
+            const uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN + majorFirestoneFireBonus;
+            const uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX + majorFirestoneFireBonus;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin * 1.5f, expectedIncinerateMax *1.5f, true);
+
+            // TODO: melee proc chance of passive (ClassSpells::Warlock::CREATE_FIRESTONE_PASSIVE_RNK_5)
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CreateFirestoneTestImpt>();
+    }
+};
+
 class RainOfFireTest : public TestCaseScript
 {
 public:
@@ -1046,6 +1150,9 @@ void AddSC_test_spells_warlock()
     new HowlOfTerrorTest();
     new LifeTapTest();
     new SeedOfCorruptionTest();
+    // Demonology
+    new BanishTest();
+    new CreateFirestoneTest();
     // Destruction: 7/7
     new HellfireTest();
     new ImmolateTest();
