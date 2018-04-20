@@ -29,7 +29,7 @@ class TC_GAME_API WorldPacket : public ByteBuffer
             if (this != &right)
             {
                 m_opcode = right.m_opcode;
-                ByteBuffer::operator =(right);
+                ByteBuffer::operator=(right);
             }
 
             return *this;
