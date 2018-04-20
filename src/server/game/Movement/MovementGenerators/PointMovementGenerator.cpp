@@ -7,6 +7,8 @@
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 #include "Player.h"
+#include "MotionMaster.h"
+#include "MovementDefines.h"
 #include "CreatureGroups.h"
 
 template<class T>
@@ -17,13 +19,19 @@ void PointMovementGenerator<T>::LaunchMove(T* owner)
     if (_speed > 0.0f)
         init.SetVelocity(_speed);
 
-    if (_destination.GetOrientation() != 0.0f)
-        init.SetFacing(_destination.GetOrientation());
+    if (_finalOrient)
+        init.SetFacing(*_finalOrient);
 
     init.Launch();
 }
 
 //----- Point Movement Generator
+template<class T>
+MovementGeneratorType PointMovementGenerator<T>::GetMovementGeneratorType() const
+{
+    return POINT_MOTION_TYPE;
+}
+
 template<class T>
 bool PointMovementGenerator<T>::DoInitialize(T* owner)
 {
@@ -97,6 +105,8 @@ template <> void PointMovementGenerator<Creature>::MovementInform(Creature* unit
         unit->AI()->MovementInform(POINT_MOTION_TYPE, _movementId);
 }
 
+template MovementGeneratorType PointMovementGenerator<Player>::GetMovementGeneratorType() const;
+template MovementGeneratorType PointMovementGenerator<Creature>::GetMovementGeneratorType() const;
 template bool PointMovementGenerator<Player>::DoInitialize(Player*);
 template bool PointMovementGenerator<Creature>::DoInitialize(Creature*);
 template void PointMovementGenerator<Player>::DoFinalize(Player*);
@@ -105,6 +115,13 @@ template void PointMovementGenerator<Player>::DoReset(Player*);
 template void PointMovementGenerator<Creature>::DoReset(Creature*);
 template bool PointMovementGenerator<Player>::DoUpdate(Player*, uint32);
 template bool PointMovementGenerator<Creature>::DoUpdate(Creature*, uint32);
+
+//---- AssistanceMovementGenerator
+ 	 
+MovementGeneratorType AssistanceMovementGenerator::GetMovementGeneratorType() const
+{
+    return ASSISTANCE_MOTION_TYPE;
+}
 
 void AssistanceMovementGenerator::Finalize(Unit* unit, bool /* premature */)
 {
@@ -135,4 +152,9 @@ void EffectMovementGenerator::Finalize(Unit* unit, bool /* premature */)
 
     if (unit->ToCreature()->AI())
         unit->ToCreature()->AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
+}
+
+MovementGeneratorType EffectMovementGenerator::GetMovementGeneratorType() const
+{
+    return EFFECT_MOTION_TYPE;
 }

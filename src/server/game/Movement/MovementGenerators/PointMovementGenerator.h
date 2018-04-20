@@ -26,8 +26,15 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
 {
     public:
         //_o = 0 means no orientation used. Use values like 0.00001 for orientation 0.
-        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _o, bool _generatePath, float _speed = 0.0f, bool forceDestination = false) : _movementId(_id),
-            _destination(_x, _y, _z, _o), _speed(_speed), _generatePath(_generatePath), _forceDestination(forceDestination), _recalculateSpeed(false) { }
+        explicit PointMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _generatePath, float _speed = 0.0f, Optional<float> finalOrient = {}, bool forceDestination = false)
+            : _movementId(_id),
+            _destination(_x, _y, _z), 
+            _finalOrient(finalOrient),
+            _speed(_speed), 
+            _generatePath(_generatePath), 
+            _forceDestination(forceDestination), 
+            _recalculateSpeed(false) 
+        { }
 
         bool DoInitialize(T*);
         void DoFinalize(T*);
@@ -38,7 +45,7 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
 
         void UnitSpeedChanged() override { _recalculateSpeed = true; }
 
-        MovementGeneratorType GetMovementGeneratorType() const override { return POINT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override;
 
         void GetDestination(float& x, float& y, float& z) const { x = _destination.GetPositionX(); y = _destination.GetPositionY(); z = _destination.GetPositionZ(); }
 
@@ -51,16 +58,19 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
         bool _generatePath;
         bool _forceDestination;
 
+        //! if set then unit will turn to specified _orient in provided _pos
+        Optional<float> _finalOrient;
+
         void LaunchMove(T*);
 };
 
 class AssistanceMovementGenerator : public PointMovementGenerator<Creature>
 {
     public:
-        AssistanceMovementGenerator(float _x, float _y, float _z) :
+        explicit AssistanceMovementGenerator(float _x, float _y, float _z) :
             PointMovementGenerator<Creature>(0, _x, _y, _z, 0.0f, true) { }
 
-        MovementGeneratorType GetMovementGeneratorType() const override { return ASSISTANCE_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override;
         void Finalize(Unit*, bool) override;
 };
 
@@ -73,7 +83,7 @@ class EffectMovementGenerator : public MovementGenerator
         void Finalize(Unit*, bool) override;
         void Reset(Unit*) override { }
         bool Update(Unit*, uint32) override;
-        MovementGeneratorType GetMovementGeneratorType() const override { return EFFECT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override;
     private:
         uint32 m_Id;
 };

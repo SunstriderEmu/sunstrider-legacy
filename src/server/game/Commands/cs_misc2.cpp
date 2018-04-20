@@ -8,6 +8,7 @@
 #include "BattleGround.h"
 #include "AccountMgr.h"
 #include "CellImpl.h"
+#include "MovementDefines.h"
 
 bool ChatHandler::HandleHelpCommand(const char* args)
 {

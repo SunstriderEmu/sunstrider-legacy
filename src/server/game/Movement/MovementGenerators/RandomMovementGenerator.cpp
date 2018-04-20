@@ -25,8 +25,16 @@
 #include "CreatureGroups.h"
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
+#include "MovementDefines.h"
 
 #define RUNNING_CHANCE_RANDOMMV 20                                  //will be "1 / RUNNING_CHANCE_RANDOMMV"
+
+template<class T>
+MovementGeneratorType RandomMovementGenerator<T>::GetMovementGeneratorType() const
+{
+    return RANDOM_MOTION_TYPE;
+}
+template MovementGeneratorType RandomMovementGenerator<Creature>::GetMovementGeneratorType() const;
 
 template<>
 void RandomMovementGenerator<Creature>::_setRandomLocation(Creature* creature)

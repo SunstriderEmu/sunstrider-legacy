@@ -29,7 +29,7 @@ class TC_GAME_API IdleMovementGenerator : public MovementGenerator
         void Finalize(Unit*, bool) override {  }
         void Reset(Unit*) override;
         bool Update(Unit*, uint32) override { return true; }
-        MovementGeneratorType GetMovementGeneratorType() const override { return IDLE_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override;
 };
 
 #endif //TRINITY_IDLEMOVEMENTGENERATOR_H

@@ -19,7 +19,11 @@
 #define TRINITY_FOLLOWMOVEMENTGENERATOR_H
 
 #include "AbstractFollower.h"
+#include "MovementDefines.h"
 #include "MovementGenerator.h"
+#include "Position.h"
+
+#define FOLLOW_RANGE_TOLERANCE 1.0f
 
 class PathGenerator;
 class Unit;
@@ -27,22 +31,19 @@ class Unit;
 class FollowMovementGenerator : public MovementGenerator, public AbstractFollower
 {
     public:
-        MovementGeneratorType GetMovementGeneratorType() const override { return FOLLOW_MOTION_TYPE; }
-
-        FollowMovementGenerator(Unit* target, float range, ChaseAngle angle);
+        explicit FollowMovementGenerator(Unit* target, float range, ChaseAngle angle);
         ~FollowMovementGenerator();
 
         bool Initialize(Unit* owner) override;
         void Reset(Unit* owner) override { Initialize(owner); }
         bool Update(Unit* owner, uint32 diff) override;
         void Finalize(Unit* owner, bool premature) override;
+        MovementGeneratorType GetMovementGeneratorType() const override { return FOLLOW_MOTION_TYPE; }
 
         void UnitSpeedChanged() override { _lastTargetPosition.Relocate(0.0f, 0.0f, 0.0f); }
 
     private:
         static constexpr uint32 CHECK_INTERVAL = 500;
-// static inline const when?
-#define FOLLOW_RANGE_TOLERANCE 1.0f
 
         void UpdatePetSpeed(Unit* owner);
 

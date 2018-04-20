@@ -14,6 +14,15 @@
 #define MAX_QUIET_DISTANCE 43.0f
 
 template<class T>
+FleeingMovementGenerator<T>::~FleeingMovementGenerator() = default;
+
+template<class T>
+MovementGeneratorType FleeingMovementGenerator<T>::GetMovementGeneratorType() const
+{
+    return FLEEING_MOTION_TYPE;
+}
+
+template<class T>
 void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
 {
     if (!owner)
@@ -23,6 +32,7 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
     {
         _interrupt = true;
         owner->StopMoving();
+        _path = nullptr;
         return;
     }
 
@@ -39,10 +49,12 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
     }
 
     if (!_path)
-        _path = new PathGenerator(owner);
+    {
+        _path = std::make_unique<PathGenerator>(owner);
+        _path->SetPathLengthLimit(30.0f);
+        _path->ExcludeSteepSlopes();
+    }
 
-    _path->SetPathLengthLimit(30.0f);
-    _path->ExcludeSteepSlopes();
     bool result = _path->CalculatePath(destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
     if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
     {
@@ -148,6 +160,7 @@ bool FleeingMovementGenerator<T>::DoUpdate(T* owner, uint32 time_diff)
     {
         _interrupt = true;
         owner->StopMoving();
+        _path = nullptr;
         return true;
     }
     else
@@ -160,6 +173,10 @@ bool FleeingMovementGenerator<T>::DoUpdate(T* owner, uint32 time_diff)
     return true;
 }
 
+template FleeingMovementGenerator<Player>::~FleeingMovementGenerator();
+template FleeingMovementGenerator<Creature>::~FleeingMovementGenerator();
+template MovementGeneratorType FleeingMovementGenerator<Player>::GetMovementGeneratorType() const;
+template MovementGeneratorType FleeingMovementGenerator<Creature>::GetMovementGeneratorType() const;
 template bool FleeingMovementGenerator<Player>::DoInitialize(Player*);
 template bool FleeingMovementGenerator<Creature>::DoInitialize(Creature*);
 template void FleeingMovementGenerator<Player>::GetPoint(Player*, Position&);
@@ -170,6 +187,13 @@ template void FleeingMovementGenerator<Player>::DoReset(Player*);
 template void FleeingMovementGenerator<Creature>::DoReset(Creature*);
 template bool FleeingMovementGenerator<Player>::DoUpdate(Player*, uint32);
 template bool FleeingMovementGenerator<Creature>::DoUpdate(Creature*, uint32);
+
+//---- TimedFleeingMovementGenerator
+
+MovementGeneratorType TimedFleeingMovementGenerator::GetMovementGeneratorType() const
+{
+    return TIMED_FLEEING_MOTION_TYPE;
+}
 
 bool TimedFleeingMovementGenerator::Update(Unit* owner, uint32 time_diff)
 {

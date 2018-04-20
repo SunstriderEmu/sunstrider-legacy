@@ -1,5 +1,7 @@
 #include "DistractMovementGenerator.h"
 #include "Creature.h"
+#include "CreatureAI.h"
+#include "MovementDefines.h"
 
 // DistractMovementGenerator
 
@@ -40,6 +42,11 @@ bool DistractMovementGenerator::Update(Unit* owner, uint32 time_diff)
     return true;
 }
 
+MovementGeneratorType DistractMovementGenerator::GetMovementGeneratorType() const
+{
+    return DISTRACT_MOTION_TYPE;
+}
+
 // AssistanceDistractMovementGenerator
 
 AssistanceDistractMovementGenerator::AssistanceDistractMovementGenerator(uint32 timer) :
@@ -65,4 +72,9 @@ void AssistanceDistractMovementGenerator::Finalize(Unit* unit, bool /* premature
 {
     unit->ClearUnitState(UNIT_STATE_DISTRACTED);
     unit->ToCreature()->SetReactState(REACT_AGGRESSIVE);
+}
+
+MovementGeneratorType AssistanceDistractMovementGenerator::GetMovementGeneratorType() const
+{
+    return ASSISTANCE_DISTRACT_MOTION_TYPE;
 }

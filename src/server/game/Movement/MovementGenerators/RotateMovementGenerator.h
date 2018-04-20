@@ -20,6 +20,7 @@
 #define TRINITY_ROTATEMOVEMENTGENERATOR_H
 
 #include "MovementGenerator.h"
+enum RotateDirection : uint8;
 
 class RotateMovementGenerator : public MovementGenerator
 {
@@ -30,7 +31,7 @@ class RotateMovementGenerator : public MovementGenerator
         void Finalize(Unit*, bool) override;
         void Reset(Unit* owner) override { Initialize(owner); }
         bool Update(Unit*, uint32) override ;
-        MovementGeneratorType GetMovementGeneratorType() const override { return ROTATE_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override;
 
     private:
         uint32 m_duration, m_maxDuration;

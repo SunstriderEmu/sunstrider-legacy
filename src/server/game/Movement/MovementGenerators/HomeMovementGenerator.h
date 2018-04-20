@@ -9,13 +9,12 @@ class HomeMovementGenerator : public MovementGeneratorMedium< T, HomeMovementGen
 {
     public:
         explicit HomeMovementGenerator() : _arrived(false), _skipToHome(false) { }
-        ~HomeMovementGenerator();
 
         bool DoInitialize(T*);
         void DoFinalize(T*);
         void DoReset(T*);
         bool DoUpdate(T*, const uint32);
-        MovementGeneratorType GetMovementGeneratorType() const override { return HOME_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override;
 
     private:
         void SetTargetLocation(T*);

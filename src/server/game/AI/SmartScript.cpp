@@ -1736,8 +1736,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (TransportBase* trans = me->GetTransport())
                         trans->CalculatePassengerPosition(dest.x, dest.y, dest.z);
 
-                //MovePoint will ignore e.target.o if it is 0.0f
-                me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z, e.target.o, e.action.MoveToPos.disablePathfinding == 0);
+                me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z, e.action.MoveToPos.disablePathfinding == 0);
             }
             else {
                 float x, y, z;
@@ -2228,11 +2227,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_JUMP_TO_POS: //LK
         {
-            /*
+#ifdef LICH_KING
             for (WorldObject* target : targets)
                 if (Creature* creature = target->ToCreature())
                     creature->GetMotionMaster()->MoveJump(e.target.x, e.target.y, e.target.z, 0.0f, float(e.action.jump.speedxy), float(e.action.jump.speedz)); // @todo add optional jump orientation support?
-            */
+#endif
             break;
         }
         case SMART_ACTION_GO_SET_LOOT_STATE:

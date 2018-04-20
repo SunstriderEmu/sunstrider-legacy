@@ -5,24 +5,25 @@
 #include "MovementGenerator.h"
 #include "Timer.h"
 
+class PathGenerator;
+
 template<class T>
 class ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMovementGenerator<T> >
 {
     public:
-        explicit ConfusedMovementGenerator() : _path(nullptr), _nextMoveTime(0), _interrupt(false){ }
-        ~ConfusedMovementGenerator()
-        {
-            delete _path;
-        }
+        explicit ConfusedMovementGenerator() :_nextMoveTime(0), _interrupt(false) { }
+        ~ConfusedMovementGenerator();
 
         bool DoInitialize(T*);
         void DoFinalize(T*);
         void DoReset(T*);
         bool DoUpdate(T*, uint32);
 
-        MovementGeneratorType GetMovementGeneratorType() const { return CONFUSED_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override;
+        void UnitSpeedChanged() override { } //TODO
+
     private:
-        PathGenerator* _path;
+        std::unique_ptr<PathGenerator> _path;
         bool _interrupt;
         TimeTracker _nextMoveTime;
         Position _reference;

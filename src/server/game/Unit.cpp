@@ -7745,10 +7745,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype)
         //adapt pet follow speed depending on distance from owner (if ooc)
         if (creature->HasUnitTypeMask(UNIT_MASK_MINION) && !creature->IsInCombat())
         {
-            MovementGenerator* top = creature->GetMotionMaster()->topOrNull();
-            if (top && top->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
+            if (GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
             {
-                Unit* followed = ASSERT_NOTNULL(dynamic_cast<AbstractFollower*>(top))->GetTarget();
+                Unit* followed = ASSERT_NOTNULL(dynamic_cast<AbstractFollower*>(GetMotionMaster()->top()))->GetTarget();
                 if (followed && followed->GetGUID() == GetOwnerGUID() && !followed->IsInCombat())
                 {
                     float ownerSpeed = followed->GetSpeedRate(mtype);
@@ -9413,6 +9412,11 @@ void Unit::SendAIReaction(AIReaction reaction, Player* target)
 
 ///----------End of Pet responses methods----------
 
+MovementGeneratorType Unit::GetDefaultMovementType() const
+{
+    return IDLE_MOTION_TYPE;
+}
+
 void Unit::StopMoving()
 {
     ClearUnitState(UNIT_STATE_MOVING);
@@ -9447,7 +9451,7 @@ void Unit::PauseMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/, bool forced/*
     if (slot >= MAX_MOTION_SLOT)
         return;
 
-    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(slot))
+    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(MovementSlot(slot)))
         movementGenerator->Pause(timer);
 
     if(forced)
@@ -9459,7 +9463,7 @@ void Unit::ResumeMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/)
     if (slot >= MAX_MOTION_SLOT)
         return;
 
-    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(slot))
+    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(MovementSlot(slot)))
         movementGenerator->Resume(timer);
 }
 
@@ -11382,37 +11386,6 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
     }
 }
 
-
-void Unit::JumpTo(float speedXY, float speedZ, bool forward)
-{
-    float angle = forward ? 0 : M_PI;
-    if (GetTypeId() == TYPEID_UNIT)
-        GetMotionMaster()->MoveJumpTo(angle, speedXY, speedZ);
-    else
-    {
-        float vcos = std::cos(angle+GetOrientation());
-        float vsin = std::sin(angle+GetOrientation());
-
-        WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
-        data << GetPackGUID();
-        data << uint32(0);                                      // Sequence
-        data << float(vcos);                                    // x direction
-        data << float(vsin);                                    // y direction
-        data << float(speedXY);                                 // Horizontal speed
-        data << float(-speedZ);                                 // Z Movement speed (vertical)
-
-        ToPlayer()->SendDirectMessage(&data);
-    }
-}
-
-void Unit::JumpTo(WorldObject* obj, float speedZ)
-{
-    float x, y, z;
-    obj->GetContactPoint(this, x, y, z);
-    float speedXY = GetExactDist2d(x, y) * 10.0f / speedZ;
-    GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
-}
-
 bool Unit::CanSwim() const
 {
     // Mirror client behavior, if this method returns false then client will not use swimming animation and for players will apply gravity as if there was no water
@@ -11570,7 +11543,7 @@ public:
             Creature* creature = _unit->ToCreature();
             if (creature)
             {
-                _unit->GetMotionMaster()->_cleanFlag |= MMCF_UPDATE;
+                _unit->GetMotionMaster()->_cleanFlag |= MOTIONMMASTER_CLEANFLAG_UPDATE;
                 auto moveGenerator = static_cast<WaypointMovementGenerator<Creature>*>(creature->GetMotionMaster()->top());
                 moveGenerator->SplineFinished(creature, creature->movespline->currentPathIdx());
 
@@ -11584,7 +11557,7 @@ public:
                             creature->GetFormation()->LeaderMoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), !creature->IsWalking());
                     }
                 }
-                _unit->GetMotionMaster()->_cleanFlag &= ~MMCF_UPDATE;
+                _unit->GetMotionMaster()->_cleanFlag &= ~MOTIONMMASTER_CLEANFLAG_UPDATE;
             }
         }
 

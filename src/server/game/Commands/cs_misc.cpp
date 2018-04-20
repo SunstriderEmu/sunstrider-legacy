@@ -12,6 +12,7 @@
 #include "AccountMgr.h"
 #include "ScriptMgr.h"
 #include "SpellHistory.h"
+#include "MovementDefines.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -1246,7 +1247,7 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
 
     for (uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
     {
-        MovementGenerator* movementGenerator = motionMaster->GetMotionSlot(i);
+        MovementGenerator* movementGenerator = motionMaster->GetMotionSlot(MovementSlot(i));
         if (!movementGenerator)
         {
             SendSysMessage("Empty");

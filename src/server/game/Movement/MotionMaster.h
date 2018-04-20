@@ -7,129 +7,33 @@
 #include "Object.h"
 #include "ObjectDefines.h"
 #include "Spline/MoveSpline.h"
-#include "Position.h"
+#include "MovementDefines.h"
 #include <vector>
 
+struct Position;
 class MovementGenerator;
 class Unit;
 class PathGenerator;
 struct WaypointPath;
 class SplineHandler;
 
-// Creature Entry ID used for waypoints show, visible only for GMs
-#define VISUAL_WAYPOINT 1
-
-// values 0 ... MAX_DB_MOTION_TYPE-1 used in DB
-enum MovementGeneratorType
-{
-    IDLE_MOTION_TYPE          = 0,                              // IdleMovementGenerator.h
-    RANDOM_MOTION_TYPE        = 1,                              // RandomMovementGenerator.h
-    WAYPOINT_MOTION_TYPE      = 2,                              // WaypointMovementGenerator.h
-    MAX_DB_MOTION_TYPE        = 3,                              // *** this and below motion types can't be set in DB.
-    ANIMAL_RANDOM_MOTION_TYPE = 3,                              // AnimalRandomMovementGenerator.h
-    CONFUSED_MOTION_TYPE      = 4,                              // ConfusedMovementGenerator.h
-    CHASE_MOTION_TYPE         = 5,                              // ChaseMovementGenerator.h
-    HOME_MOTION_TYPE          = 6,                              // HomeMovementGenerator.h
-    FLIGHT_MOTION_TYPE        = 7,                              // WaypointMovementGenerator.h
-    POINT_MOTION_TYPE         = 8,                              // PointMovementGenerator.h
-    FLEEING_MOTION_TYPE       = 9,                              // FleeingMovementGenerator.h
-    DISTRACT_MOTION_TYPE      = 10,                             // IdleMovementGenerator.h
-    ASSISTANCE_MOTION_TYPE    = 11,                             // PointMovementGenerator.h (first part of flee for assistance)
-    ASSISTANCE_DISTRACT_MOTION_TYPE = 12,                       // IdleMovementGenerator.h (second part of flee for assistance)
-    TIMED_FLEEING_MOTION_TYPE = 13,                             // FleeingMovementGenerator.h (alt.second part of flee for assistance)
-    FOLLOW_MOTION_TYPE        = 14,                             // FollowMovementGenerator.h
-    ROTATE_MOTION_TYPE        = 15,
-    EFFECT_MOTION_TYPE        = 16,
-    STEALTH_WARN_MOTION_TYPE  = 17,                             // StealthWarnMovementGenerator.h TODO, précédence sur les autres générateurs ?
-    NULL_MOTION_TYPE          = 19
-};
-
-//this determines priority between movement generators
-enum MovementSlot
-{
-    MOTION_SLOT_IDLE, //Default movement, is never deleted unless replaced by another
-    MOTION_SLOT_ACTIVE,
-    MOTION_SLOT_CONTROLLED, 
-    MAX_MOTION_SLOT
-};
-
-enum MMCleanFlag
-{
-    MMCF_NONE   = 0,
-    MMCF_UPDATE = 1, // Clear or Expire called from update
-    MMCF_RESET  = 2  // Flag if need top()->Reset()
-};
-
-enum RotateDirection
-{
-    ROTATE_DIRECTION_LEFT,
-    ROTATE_DIRECTION_RIGHT
-};
-
-struct ChaseRange
-{
-    ChaseRange(float range) : MinRange(range > CONTACT_DISTANCE ? 0 : range - CONTACT_DISTANCE), MinTolerance(range), MaxRange(range + CONTACT_DISTANCE), MaxTolerance(range) {}
-    ChaseRange(float min, float max) : MinRange(min), MinTolerance(std::min(min + CONTACT_DISTANCE, (min + max) / 2)), MaxRange(max), MaxTolerance(std::max(max - CONTACT_DISTANCE, MinTolerance)) {}
-    ChaseRange(float min, float tMin, float tMax, float max) : MinRange(min), MinTolerance(tMin), MaxRange(max), MaxTolerance(tMax) {}
-
-    // this contains info that informs how we should path!
-    float MinRange;     // we have to move if we are within this range...    (min. attack range)
-    float MinTolerance; // ...and if we are, we will move this far away
-    float MaxRange;     // we have to move if we are outside this range...   (max. attack range)
-    float MaxTolerance; // ...and if we are, we will move into this range
-};
-
-struct ChaseAngle
-{
-    ChaseAngle(float angle, float tol = M_PI_4) : RelativeAngle(Position::NormalizeOrientation(angle)), Tolerance(tol) {}
-
-    float RelativeAngle; // we want to be at this angle relative to the target (0 = front, M_PI = back)
-    float Tolerance;     // but we'll tolerate anything within +- this much
-
-    float UpperBound() const { return Position::NormalizeOrientation(RelativeAngle + Tolerance); }
-    float LowerBound() const { return Position::NormalizeOrientation(RelativeAngle - Tolerance); }
-    bool IsAngleOkay(float relAngle) const
-    {
-        float const diff = std::abs(relAngle - RelativeAngle);
-        return (std::min(diff, float(2 * M_PI) - diff) <= Tolerance);
-    }
-};
-
-// assume it is 25 yard per 0.6 second
-#define SPEED_CHARGE    42.0f
-
 class TC_GAME_API MotionMaster
 {
     friend SplineHandler;
     private:
-        //typedef std::stack<MovementGenerator *> Impl;
         typedef MovementGenerator* _Ty;
 
-        void pop()
-        {
-            if (empty())
-                return;
+        void pop();
 
-            Impl[_top] = nullptr;
-            while (!empty() && !top())
-                --_top;
-        }
-        void push(_Ty _Val) { ++_top; Impl[_top] = _Val; }
-
-        bool needInitTop() const
-        {
-            if (empty())
-                return false;
-            return _needInit[_top];
-        }
+        bool NeedInitTop() const;
         void InitTop();
     public:
 
-        explicit MotionMaster(Unit* unit) : _top(-1), _owner(unit), _cleanFlag(MMCF_NONE)
+        explicit MotionMaster(Unit* unit) : _top(-1), _owner(unit), _cleanFlag(MOTIONMMASTER_CLEANFLAG_NONE)
         {
             for (uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
             {
-                Impl[i] = nullptr;
+                _slot[i] = nullptr;
                 _needInit[i] = true;
             }
         }
@@ -140,17 +44,11 @@ class TC_GAME_API MotionMaster
 
         bool empty() const { return (_top < 0); }
         int size() const { return _top + 1; }
-        _Ty topOrNull() const { return empty() ? nullptr : top(); }
-        _Ty top() const
-        {
-            ASSERT(!empty());
-            return Impl[_top];
-        }
-        _Ty GetMotionSlot(int slot) const
-        {
-            ASSERT(slot >= 0);
-            return Impl[slot];
-        }
+        MovementGenerator* top() const;
+
+        MovementGeneratorType GetCurrentMovementGeneratorType() const;
+        MovementGeneratorType GetMotionSlotType(MovementSlot slot) const;
+        MovementGenerator* GetMotionSlot(MovementSlot slot) const;
 
         void DirectDelete(_Ty curr, bool premature = false);
         void DelayedDelete(_Ty curr, bool premature = false);
@@ -168,10 +66,8 @@ class TC_GAME_API MotionMaster
         void MoveChase(Unit* target, float dist, float angle = 0.0f) { MoveChase(target, Optional<ChaseRange>(dist), Optional<ChaseAngle>(angle)); }
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 time = 0);
-        void MovePoint(uint32 id, Position const& pos, bool generatePath = true, bool forceDestination = true)
-            { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, generatePath, forceDestination); }
-        //orientation = 0 will be ignored, use near 0 values if you want to do it
-        void MovePoint(uint32 id, float x, float y, float z, float o = 0.0f, bool generatePath = true, bool forceDestination = true);
+        void MovePoint(uint32 id, Position const& pos, bool generatePath = true, Optional<float> finalOrient = {}, bool forceDestination = true);
+        void MovePoint(uint32 id, float x, float y, float z, bool generatePath = true, Optional<float> finalOrient = {}, bool forceDestination = true);
       
         /*  Makes the unit move toward the target until it is at a certain distance from it. The unit then stops.
                    Only works in 2D.
@@ -186,10 +82,11 @@ class TC_GAME_API MotionMaster
         void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool generatePath = false);
         void MoveCharge(PathGenerator const& path, float speed = SPEED_CHARGE, Unit* target = nullptr);
         void MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ);
+#ifdef LICH_KING
         void MoveJumpTo(float angle, float speedXY, float speedZ);
-        void MoveJump(Position const& pos, float speedXY, float speedZ, uint32 id = EVENT_JUMP)
-            { MoveJump(pos.m_positionX, pos.m_positionY, pos.m_positionZ, speedXY, speedZ, id); };
-        void MoveJump(float x, float y, float z, float speedXY, float speedZ, uint32 id = EVENT_JUMP);
+        void MoveJump(Position const& pos, float speedXY, float speedZ, uint32 id = EVENT_JUMP, bool hasOrientation = false);
+        void MoveJump(float x, float y, float z, float o, float speedXY, float speedZ, uint32 id = EVENT_JUMP, bool hasOrientation = false);
+#endif
         void MoveFall(uint32 id = 0);
 
         void MoveSeekAssistance(float x, float y, float z);
@@ -204,8 +101,6 @@ class TC_GAME_API MotionMaster
         /** Look towards the target for given time */
         void MoveStealthAlert(Unit const* target, uint32 time);
 
-        MovementGeneratorType GetCurrentMovementGeneratorType() const;
-        MovementGeneratorType GetMotionSlotType(int slot) const;
         uint32 GetCurrentSplineId() const; // sunwell: Escort system
 
         void PropagateSpeedChange();
@@ -213,6 +108,8 @@ class TC_GAME_API MotionMaster
 
         bool GetDestination(float &x, float &y, float &z);
     private:
+        typedef std::vector<MovementGenerator*> MovementList;
+
         bool Mutate(MovementGenerator *m, MovementSlot slot);                  // use Move* functions instead
 
         void DirectClean(bool reset);
@@ -221,9 +118,8 @@ class TC_GAME_API MotionMaster
         void DirectExpire(bool reset, bool premature = true);
         void DelayedExpire(bool premature = true);
 
-        typedef std::vector<_Ty> MovementList;
         MovementList _expireList;
-        _Ty Impl[MAX_MOTION_SLOT];
+        MovementGenerator* _slot[MAX_MOTION_SLOT];
         int _top;
         Unit* _owner;
         bool _needInit[MAX_MOTION_SLOT];

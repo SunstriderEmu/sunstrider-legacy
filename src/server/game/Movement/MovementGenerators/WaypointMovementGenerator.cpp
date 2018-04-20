@@ -1,6 +1,7 @@
 
 //Basic headers
 #include "WaypointMovementGenerator.h"
+#include "MovementDefines.h"
 //Extended headers
 #include "ObjectMgr.h"
 #include "World.h"
@@ -56,6 +57,11 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(WaypointPath& pat
     m_useSmoothSpline(smoothSpline)
 {
 
+}
+
+MovementGeneratorType WaypointMovementGenerator<Creature>::GetMovementGeneratorType() const
+{
+    return WAYPOINT_MOTION_TYPE;
 }
 
 #ifdef TRINITY_DEBUG
@@ -864,6 +870,11 @@ bool FlightPathMovementGenerator::DoUpdate(Player* player, uint32 /*diff*/)
     }
 
     return _currentNode < (_path.size() - 1);
+}
+
+MovementGeneratorType FlightPathMovementGenerator::GetMovementGeneratorType() const
+{
+    return FLIGHT_MOTION_TYPE;
 }
 
 void FlightPathMovementGenerator::SetCurrentNodeAfterTeleport()

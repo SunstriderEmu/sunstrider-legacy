@@ -24,12 +24,11 @@
 #include "MoveSpline.h"
 
 template<class T>
-HomeMovementGenerator<T>::~HomeMovementGenerator() { }
-
-template<>
-HomeMovementGenerator<Creature>::~HomeMovementGenerator()
+MovementGeneratorType HomeMovementGenerator<T>::GetMovementGeneratorType() const
 {
+    return HOME_MOTION_TYPE;
 }
+template MovementGeneratorType HomeMovementGenerator<Creature>::GetMovementGeneratorType() const;
 
 template<>
 void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)

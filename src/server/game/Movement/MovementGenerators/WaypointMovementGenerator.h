@@ -27,7 +27,6 @@
 
 #include "MovementGenerator.h"
 #include "WaypointManager.h"
-
 #include "Player.h"
 
 #include <vector>
@@ -110,7 +109,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
 
         void MovementInform(Creature*, uint32 DBNodeId);
 
-        MovementGeneratorType GetMovementGeneratorType() const override { return WAYPOINT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override;
 
         uint32 GetSplineId() const override { return _splineId; }
 
@@ -214,7 +213,7 @@ class TC_GAME_API FlightPathMovementGenerator : public MovementGeneratorMedium< 
         void DoReset(Player*);
         void DoFinalize(Player*);
         bool DoUpdate(Player*, uint32);
-        MovementGeneratorType GetMovementGeneratorType() const override { return FLIGHT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override;
 
         TaxiPathNodeList const& GetPath() { return _path; }
         uint32 GetPathAtMapEnd() const;

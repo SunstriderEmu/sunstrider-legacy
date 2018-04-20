@@ -49,3 +49,8 @@ void RotateMovementGenerator::Finalize(Unit* owner, bool /* premature */)
     if (owner->GetTypeId() == TYPEID_UNIT)
         owner->ToCreature()->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
 }
+
+MovementGeneratorType RotateMovementGenerator::GetMovementGeneratorType() const
+{
+    return ROTATE_MOTION_TYPE;
+}

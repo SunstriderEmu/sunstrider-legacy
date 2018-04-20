@@ -44,6 +44,7 @@ class PetAura;
 class BigNumber;
 class Unit;
 class SpellHistory;
+enum MovementGeneratorType : uint8;
 
 #define WORLD_TRIGGER   12999
 
@@ -1611,8 +1612,10 @@ class TC_GAME_API Unit : public WorldObject
 		bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
 
         void KnockbackFrom(float x, float y, float speedXY, float speedZ);
+#ifdef LICH_KING
         void JumpTo(float speedXY, float speedZ, bool forward = true);
         void JumpTo(WorldObject* obj, float speedZ);
+#endif
 
         void MonsterMoveWithSpeed(float x, float y, float z, float speed, bool generatePath = false, bool forceDestination = false);
         void SendMovementFlagUpdate();
@@ -2147,6 +2150,7 @@ class TC_GAME_API Unit : public WorldObject
 
         MotionMaster* GetMotionMaster() { return i_motionMaster; }
         const MotionMaster* GetMotionMaster() const { return i_motionMaster; }
+        virtual MovementGeneratorType GetDefaultMovementType() const;
 
         //returns wheter unit his currently stopped (= has any move related UNIT_STATE)
         bool IsStopped() const { return !(HasUnitState(UNIT_STATE_MOVING)); }

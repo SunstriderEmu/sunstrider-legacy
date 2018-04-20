@@ -23,7 +23,7 @@ void StealthAlertMovementGenerator::Finalize(Unit* owner, bool premature)
 bool StealthAlertMovementGenerator::Update(Unit* owner, uint32 time_diff)
 {
     //stop being suspicious if a control was applied, we've got other things to worry about
-    if(owner->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != NULL_MOTION_TYPE)
+    if(owner->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != MAX_MOTION_TYPE)
         return false;
     
     //stop generator if creature entered combat, just to be sure

@@ -12,10 +12,9 @@
 #include "GameObjectAI.h"
 #include "CombatAI.h"
 #include "ReactorAI.h"
-#include "RandomMovementGenerator.h"
 #include "CreatureAIImpl.h"
 #include "MapManager.h"
-#include "WaypointMovementGenerator.h"
+#include "MovementGenerator.h"
 
 namespace AIRegistry
 {
@@ -38,8 +37,8 @@ namespace AIRegistry
         (new GameObjectAIFactory<SmartGameObjectAI>(SMARTAI_GOBJECT_AI_NAME))->RegisterSelf();
 
         (new IdleMovementFactory())->RegisterSelf();
-        (new MovementGeneratorFactory<RandomMovementGenerator<Creature> >(RANDOM_MOTION_TYPE))->RegisterSelf();
-        (new MovementGeneratorFactory<WaypointMovementGenerator<Creature> >(WAYPOINT_MOTION_TYPE))->RegisterSelf();
+        (new RandomMovementFactory())->RegisterSelf();
+        (new WaypointMovementFactory())->RegisterSelf();
     }
 } // namespace AIRegistry
 

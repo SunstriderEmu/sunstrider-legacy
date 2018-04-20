@@ -2,21 +2,22 @@
 #include "MotionMaster.h"
 #include "CreatureAISelector.h"
 #include "Creature.h"
-#include "ChaseMovementGenerator.h"
-#include "ConfusedMovementGenerator.h"
-#include "FleeingMovementGenerator.h"
-#include "HomeMovementGenerator.h"
-#include "IdleMovementGenerator.h"
-#include "FollowMovementGenerator.h"
-#include "PointMovementGenerator.h"
-#include "WaypointMovementGenerator.h"
-#include "RandomMovementGenerator.h"
-#include "RotateMovementGenerator.h"
-#include "DistractMovementGenerator.h"
-#include "StealthAlertMovementGenerator.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
 #include <cassert>
+
+#include "ChaseMovementGenerator.h"
+#include "ConfusedMovementGenerator.h"
+#include "DistractMovementGenerator.h"
+#include "FleeingMovementGenerator.h"
+#include "FollowMovementGenerator.h"
+#include "HomeMovementGenerator.h"
+#include "IdleMovementGenerator.h"
+#include "PointMovementGenerator.h"
+#include "RandomMovementGenerator.h"
+#include "RotateMovementGenerator.h"
+#include "StealthAlertMovementGenerator.h"
+#include "WaypointMovementGenerator.h"
 
 inline MovementGenerator* GetIdleMovementGenerator()
 {
@@ -26,6 +27,13 @@ inline MovementGenerator* GetIdleMovementGenerator()
 inline bool isStatic(MovementGenerator* movement)
 {
     return (movement == GetIdleMovementGenerator());
+}
+
+MovementGenerator* MotionMaster::top() const
+{
+    ASSERT(!empty());
+
+    return _slot[_top];
 }
 
 void MotionMaster::Initialize()
@@ -73,10 +81,10 @@ void MotionMaster::UpdateMotion(uint32 diff)
 
     ASSERT(!empty());
 
-    _cleanFlag |= MMCF_UPDATE;
+    _cleanFlag |= MOTIONMMASTER_CLEANFLAG_UPDATE;
     if (!top()->Update(_owner, diff))
     {
-        _cleanFlag &= ~MMCF_UPDATE;
+        _cleanFlag &= ~MOTIONMMASTER_CLEANFLAG_UPDATE;
         /* sunstrider: tweaked this, a movement generator in the idle telling us it's done can only mean two things atm :
         - Waypoint generator has an invalid path 
         - Waypoint generator has finished its path (not repeating case). (TC handle this case by having the generator stalling)
@@ -87,7 +95,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
         else
             MoveIdle();
     } else
-        _cleanFlag &= ~MMCF_UPDATE;
+        _cleanFlag &= ~MOTIONMMASTER_CLEANFLAG_UPDATE;
 
     if (!_expireList.empty())
         ClearExpireList();
@@ -95,12 +103,12 @@ void MotionMaster::UpdateMotion(uint32 diff)
 
 void MotionMaster::Clear(bool reset /* = true*/)
 {
-    if (_cleanFlag & MMCF_UPDATE)
+    if (_cleanFlag & MOTIONMMASTER_CLEANFLAG_UPDATE)
     {
         if (reset)
-            _cleanFlag |= MMCF_RESET;
+            _cleanFlag |= MOTIONMMASTER_CLEANFLAG_RESET;
         else
-            _cleanFlag &= ~MMCF_RESET;
+            _cleanFlag &= ~MOTIONMMASTER_CLEANFLAG_RESET;
         DelayedClean();
     }
     else
@@ -109,12 +117,12 @@ void MotionMaster::Clear(bool reset /* = true*/)
 
 void MotionMaster::MovementExpired(bool reset /* = true*/)
 {
-    if (_cleanFlag & MMCF_UPDATE)
+    if (_cleanFlag & MOTIONMMASTER_CLEANFLAG_UPDATE)
     {
         if (reset)
-            _cleanFlag |= MMCF_RESET;
+            _cleanFlag |= MOTIONMMASTER_CLEANFLAG_RESET;
         else
-            _cleanFlag &= ~MMCF_RESET;
+            _cleanFlag &= ~MOTIONMMASTER_CLEANFLAG_RESET;
         DelayedExpire(false);
     }
     else
@@ -130,12 +138,12 @@ void MotionMaster::ClearExpireList()
 
     if (empty())
         Initialize();
-    else if (needInitTop())
+    else if (NeedInitTop())
         InitTop();
-    else if (_cleanFlag & MMCF_RESET)
+    else if (_cleanFlag & MOTIONMMASTER_CLEANFLAG_RESET)
         top()->Reset(_owner);
 
-    _cleanFlag &= ~MMCF_RESET;
+    _cleanFlag &= ~MOTIONMMASTER_CLEANFLAG_RESET;
 }
 
 void MotionMaster::DirectClean(bool reset)
@@ -150,7 +158,7 @@ void MotionMaster::DirectClean(bool reset)
     if (empty())
         return;
 
-    if (needInitTop())
+    if (NeedInitTop())
         InitTop();
     else if (reset)
         top()->Reset(_owner);
@@ -191,7 +199,7 @@ void MotionMaster::DirectExpire(bool reset, bool premature)
 
     if (empty())
         Initialize();
-    else if (needInitTop())
+    else if (NeedInitTop())
         InitTop();
     else if (reset)
     {
@@ -306,19 +314,23 @@ void MotionMaster::MoveFollow(Unit* target, float dist, ChaseAngle angle, Moveme
 
     Mutate(new FollowMovementGenerator(target, dist, angle), slot);
 }
+void MotionMaster::MovePoint(uint32 id, Position const& pos, bool generatePath/* = true*/, Optional<float> finalOrient/* = {}*/, bool forceDestination /*= true*/)
+{
+    MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, generatePath, finalOrient, forceDestination);
+}
 
-void MotionMaster::MovePoint(uint32 id, float x, float y, float z, float o, bool generatePath, bool forceDestination)
+void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generatePath, Optional<float> finalOrient, bool forceDestination)
 {
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {
         //  TC_LOG_TRACE("misc", "Player (GUID: %u) targeted point (Id: %u X: %f Y: %f Z: %f O: %f)", _owner->GetGUID().GetCounter(), id, x, y, z, o);
-        Mutate(new PointMovementGenerator<Player>(id, x, y, z, o, generatePath, 0.0f, forceDestination), MOTION_SLOT_ACTIVE);
+        Mutate(new PointMovementGenerator<Player>(id, x, y, z, generatePath, 0.0f, finalOrient, forceDestination), MOTION_SLOT_ACTIVE);
     }
     else
     {
        /* TC_LOG_TRACE("misc", "Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f O: %f)",
             _owner->GetEntry(), _owner->GetGUID().GetCounter(), id, x, y, z, o); */
-        Mutate(new PointMovementGenerator<Creature>(id, x, y, z, o, generatePath, 0.0f, forceDestination), MOTION_SLOT_ACTIVE);
+        Mutate(new PointMovementGenerator<Creature>(id, x, y, z, generatePath, 0.0f, finalOrient, forceDestination), MOTION_SLOT_ACTIVE);
     }
 }
 
@@ -458,39 +470,6 @@ void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, floa
 #endif
 }
 
-void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
-{
-    //this function may make players fall below map
-    if (_owner->GetTypeId() == TYPEID_PLAYER)
-        return;
-
-    float x, y, z;
-
-    float moveTimeHalf = speedZ / Movement::gravity;
-    float dist = 2 * moveTimeHalf * speedXY;
-    _owner->GetNearPoint2D(nullptr, x, y, dist, _owner->GetOrientation() + angle);
-    z = _owner->GetPositionZ();
-    _owner->UpdateAllowedPositionZ(x, y, z);
-    MoveJump(x, y, z, speedXY, speedZ);
-}
-
-void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float speedZ, uint32 id)
-{
-    //TC_LOG_TRACE("misc", "Unit (GUID: %u) jump to point (X: %f Y: %f Z: %f)", _owner->GetGUID().GetCounter(), x, y, z);
-    if (speedXY <= 0.1f)
-        return;
-
-//    float moveTimeHalf = speedZ / Movement::gravity;
- //   float max_height = -Movement::computeFallElevation(moveTimeHalf, false, -speedZ);
-
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(x, y, z, false);
-//    init.SetParabolic(max_height, 0);
-    init.SetVelocity(speedXY);
-    init.Launch();
-    Mutate(new EffectMovementGenerator(id), MOTION_SLOT_CONTROLLED);
-}
-
 void MotionMaster::MoveFall(uint32 id /*=0*/)
 {
     // use larger distance for vmap height search than in most other cases
@@ -524,7 +503,7 @@ void MotionMaster::MoveFall(uint32 id /*=0*/)
 
 void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id, bool generatePath)
 {
-    if (Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
+    if (_slot[MOTION_SLOT_CONTROLLED] && _slot[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
         return;
 
     if (_owner->GetTypeId() == TYPEID_PLAYER)
@@ -657,7 +636,7 @@ void MotionMaster::MoveStealthAlert(Unit const* target, uint32 timer)
 void MotionMaster::MoveDistract(float x, float y, uint32 timer)
 {
     //return if already a generator in MOTION_SLOT_CONTROLLED
-    if (Impl[MOTION_SLOT_CONTROLLED])
+    if (_slot[MOTION_SLOT_CONTROLLED])
         return;
 
     if (_owner->GetTypeId() == TYPEID_PLAYER)
@@ -677,11 +656,11 @@ void MotionMaster::MoveDistract(float x, float y, uint32 timer)
 bool MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
 {
     //remove last generator in this slot if any
-    if (MovementGenerator *curr = Impl[slot])
+    if (MovementGenerator *curr = _slot[slot])
     {
-        bool delayed = (_top == slot && (_cleanFlag & MMCF_UPDATE));
+        bool delayed = (_top == slot && (_cleanFlag & MOTIONMMASTER_CLEANFLAG_UPDATE));
 
-        Impl[slot] = nullptr; // in case a new one is generated in this slot during directdelete
+        _slot[slot] = nullptr; // in case a new one is generated in this slot during directdelete
         //kelno: clear slot AND decrease top immediately to avoid crashes when referencing null top in DirectDelete
         while (!empty() && !top())
             --_top;
@@ -696,8 +675,8 @@ bool MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
     if (_top < slot)
         _top = slot;
 
-    Impl[slot] = m;
-    ASSERT(Impl[slot] != nullptr);
+    _slot[slot] = m;
+    ASSERT(_slot[slot] != nullptr);
     //if generator is new top, init it immediately, else mark as need init
     if (_top > slot)
         _needInit[slot] = true;
@@ -741,8 +720,8 @@ void MotionMaster::PropagateSpeedChange()
 {
     for (int i = 0; i <= _top; ++i)
     {
-        if (Impl[i])
-            Impl[i]->UnitSpeedChanged();
+        if (_slot[i])
+            _slot[i]->UnitSpeedChanged();
     }
 }
 
@@ -750,25 +729,37 @@ void MotionMaster::ReinitializeMovement()
 {
     for (int i = 0; i <= _top; ++i)
     {
-        if (Impl[i])
-            Impl[i]->Reset(_owner);
+        if (_slot[i])
+            _slot[i]->Reset(_owner);
     }
 }
 
 MovementGeneratorType MotionMaster::GetCurrentMovementGeneratorType() const
 {
    if (empty())
-       return IDLE_MOTION_TYPE;
+       return MAX_MOTION_TYPE;
 
-   return top()->GetMovementGeneratorType();
+   MovementGenerator* movement = top();
+   if (!movement)
+       return MAX_MOTION_TYPE;
+
+   return movement->GetMovementGeneratorType();
 }
 
-MovementGeneratorType MotionMaster::GetMotionSlotType(int slot) const
+MovementGeneratorType MotionMaster::GetMotionSlotType(MovementSlot slot) const
 {
-    if (!Impl[slot])
-        return NULL_MOTION_TYPE;
+    if (empty() || slot >= MAX_MOTION_SLOT || !_slot[slot])
+        return MAX_MOTION_TYPE;
     else
-        return Impl[slot]->GetMovementGeneratorType();
+        return _slot[slot]->GetMovementGeneratorType();
+}
+
+MovementGenerator* MotionMaster::GetMotionSlot(MovementSlot slot) const
+{
+    if (empty() || slot >= MAX_MOTION_SLOT || !_slot[slot])
+        return nullptr;
+
+    return _slot[slot];
 }
 
 // sunwell: Escort system
@@ -813,4 +804,21 @@ bool MotionMaster::GetDestination(float &x, float &y, float &z)
     y = dest.y;
     z = dest.z;
     return true;
+}
+
+void MotionMaster::pop()
+{
+    if (empty())
+        return;
+
+    _slot[_top] = nullptr;
+    while (!empty() && !top())
+        --_top;
+}
+
+bool MotionMaster::NeedInitTop() const
+{
+    if (empty())
+        return false;
+    return _needInit[_top];
 }
