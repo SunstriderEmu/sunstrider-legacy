@@ -379,9 +379,12 @@ void MotionTransport::RemovePassenger(WorldObject* passenger, bool withAll)
 Creature* MotionTransport::CreateNPCPassenger(ObjectGuid::LowType guid, CreatureData const* data)
 {
     Map* map = GetMap();
+    if (map->GetCreatureRespawnTime(guid))
+        return nullptr;
+
     auto  creature = new Creature();
 
-    if (!creature->LoadFromDB(guid, map, false, true)) //do not add to map yet
+    if (!creature->LoadFromDB(guid, map, false, false)) //do not add to map yet
     {
         delete creature;
         return nullptr;
@@ -433,6 +436,9 @@ GameObject* MotionTransport::CreateGOPassenger(ObjectGuid::LowType guid, GameObj
 {
 #ifdef LICH_KING
     Map* map = GetMap();
+    if (map->GetGORespawnTime(guid))
+        return nullptr;
+
     GameObject* go = new GameObject();
     ASSERT(!sObjectMgr->IsGameObjectStaticTransport(data->id));
 

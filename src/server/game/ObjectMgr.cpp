@@ -1489,12 +1489,12 @@ void ObjectMgr::LoadCreatures()
     }
 
     // build single time for check creature data
-    std::set<uint32> heroicCreatures;
-    CreatureTemplateContainer const& ctc = sObjectMgr->GetCreatureTemplates();
-    for (const auto & itr : ctc)
-        if(CreatureTemplate const* cInfo = &itr.second)
-            if(cInfo->difficulty_entry_1)
-                heroicCreatures.insert(cInfo->difficulty_entry_1);
+    std::map<uint32, uint32> spawnMasks;
+    for (uint32 i = 0; i < sMapStore.GetNumRows(); ++i)
+        if (sMapStore.LookupEntry(i))
+            for (uint8 k = 0; k < MAX_DIFFICULTY; ++k)
+                if (GetMapDifficultyData(i, Difficulty(k)))
+                    spawnMasks[i] |= (1 << k);
 
     do
     {
@@ -1547,11 +1547,13 @@ void ObjectMgr::LoadCreatures()
             data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
         uint32 PoolId = fields[20].GetUInt32();
 
-        if(heroicCreatures.find(data.id)!=heroicCreatures.end())
+        // Skip spawnMask check for transport maps
+        if (!IsTransportMap(data.spawnPoint.GetMapId()))
         {
-            TC_LOG_ERROR("sql.sql","Table `creature` has creature (SpawnId: %u) that listed as heroic template in `creature_template_substitution`, skipped.",guid );
-            continue;
-        }
+            if (data.spawnMask & ~spawnMasks[data.spawnPoint.GetMapId()])
+                TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) that have wrong spawn mask %u including unsupported difficulty modes for map (Id: %u).", guid, data.spawnMask, data.spawnPoint.GetMapId());
+        } else
+            data.spawnGroupData = &_spawnGroupDataStore[1]; // force compatibility group for transport spawns
 
         if (data.displayid != 0)
         {
