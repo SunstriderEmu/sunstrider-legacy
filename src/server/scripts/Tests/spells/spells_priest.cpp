@@ -2530,8 +2530,8 @@ public:
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOWFIEND_RNK_1, Minutes(5));
 
             Guardian* shadowfiend = priest->GetGuardianPet();
-            shadowfiend->ForceMeleeHitResult(MELEE_HIT_MISS);
             TEST_ASSERT(shadowfiend != nullptr);
+            shadowfiend->ForceMeleeHitResult(MELEE_HIT_MISS);
             
             // Summon in melee range of target
             TEST_ASSERT(warrior->GetDistance(shadowfiend) < 5.0f);
