@@ -780,9 +780,11 @@ public:
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_5, MASTER_FIRESTONE, 1330);
 
             // Damage
-            Item* majorFirestone = warlock->GetItemByPos(INVENTORY_SLOT_BAG_START, 4);
-            TEST_ASSERT(majorFirestone != nullptr);
-            warlock->EquipItem(SLOT_RANGED, majorFirestone, true);
+            Item* masterFirestone = warlock->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_8);
+            TEST_ASSERT(masterFirestone != nullptr);
+            TEST_ASSERT(masterFirestone->GetEntry() == MASTER_FIRESTONE);
+            warlock->EquipItem(SLOT_RANGED, masterFirestone, true);
+            Wait(1000);
 
             // Increase fire spell damage by 30
             const uint32 majorFirestoneFireBonus = 30;
