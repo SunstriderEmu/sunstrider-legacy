@@ -61,8 +61,8 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z)
         MotionMaster &mm = *bot->GetMotionMaster();
         mm.Clear();
 
-        float botZ = bot->GetPositionZ();
 #ifdef LICH_KING
+        float botZ = bot->GetPositionZ();
         if (z - botZ > 0.5f && bot->GetDistance2d(x, y) <= 5.0f)
         {
             float speed = bot->GetSpeed(MOVE_RUN);

@@ -45,7 +45,7 @@ AuraCreateInfo::AuraCreateInfo(SpellInfo const* spellInfo, uint8 auraEffMask, Wo
 }
 
 AuraApplication::AuraApplication(Unit* target, Unit* caster, Aura* aura, uint8 effMask) :
-    _target(target), _base(aura), _removeMode(AURA_REMOVE_NONE), _slot(MAX_AURAS), _positive(false),
+    _target(target), _base(aura), _removeMode(AURA_REMOVE_NONE), _slot(MAX_AURAS), _positive(false), _effectMask(0), _selfCast(false),
     _flags(AFLAG_NONE), _effectsToApply(effMask), _needClientUpdate(false), _durationChanged(true)
 {
     ASSERT(GetTarget() && GetBase());
@@ -134,8 +134,11 @@ void AuraApplication::_Remove()
 
 void AuraApplication::_InitFlags(Unit* caster, uint8 effMask)
 {
+    _selfCast = (GetBase()->GetCasterGUID() == GetTarget()->GetGUID());
+#ifdef LICH_KING
     // mark as selfcast if needed
-    _flags |= (GetBase()->GetCasterGUID() == GetTarget()->GetGUID()) ? AFLAG_CASTER : AFLAG_NONE;
+    _flags |= _selfCast ? AFLAG_CASTER : AFLAG_NONE;
+#endif
 
     // aura is cast by self or an enemy
     // one negative effect and we know aura is negative
@@ -150,10 +153,9 @@ void AuraApplication::_InitFlags(Unit* caster, uint8 effMask)
                 break;
             }
         }
+        _positive = negativeFound ? false : true;
 #ifdef LICH_KING
         _flags |= negativeFound ? AFLAG_NEGATIVE : AFLAG_POSITIVE;
-#else
-        _positive = negativeFound ? false : true;
 #endif
     }
     // aura is cast by friend
@@ -169,22 +171,24 @@ void AuraApplication::_InitFlags(Unit* caster, uint8 effMask)
                 break;
             }
         }
+        _positive = positiveFound ? true : false;
 #ifdef LICH_KING
         _flags |= positiveFound ? AFLAG_POSITIVE : AFLAG_NEGATIVE;
-#else
-        _positive = positiveFound ? true : false;
 #endif
     }
 
 #ifndef LICH_KING
-    //Not 100% sure about this flag but this seems right. Some not cancelable cases follow. This should match WorldSession::HandleCancelAuraOpcode logic.
+    //Some not cancelable cases follow. This should match WorldSession::HandleCancelAuraOpcode logic.
     bool areaOrChannelByAnotherCaster = (GetBase()->IsArea() || GetBase()->GetSpellInfo()->IsChanneled()) && (GetTarget() != GetBase()->GetCaster());
     if (IsPositive()
         && !GetBase()->GetSpellInfo()->HasAttribute(SPELL_ATTR0_CANT_CANCEL)
         && !GetBase()->IsPassive()
         && !areaOrChannelByAnotherCaster)
         _flags |= AFLAG_CANCELABLE;
+    else
+        _flags |= AFLAG_NOT_CANCELABLE;
 
+    _flags |= IsPositive() ? AFLAG_HELPFUL : AFLAG_HARMFUL;
 #endif
 }
 
@@ -198,14 +202,20 @@ void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)
 
     if (apply)
     {
-        ASSERT(!(_flags & (1 << effIndex)));
+        ASSERT(!(_effectMask & (1 << effIndex)));
+        _effectMask |= 1 << effIndex;
+#ifdef LICH_KING
         _flags |= 1 << effIndex;
+#endif
         aurEff->HandleEffect(this, AURA_EFFECT_HANDLE_REAL, true);
     }
     else
     {
-        ASSERT(_flags & (1 << effIndex));
+        ASSERT(_effectMask & (1 << effIndex));
+        _effectMask &= ~(1 << effIndex);
+#ifdef LICH_KING
         _flags &= ~(1 << effIndex);
+#endif
         aurEff->HandleEffect(this, AURA_EFFECT_HANDLE_REAL, false);
 
         // Remove all triggered by aura spells vs unlimited duration

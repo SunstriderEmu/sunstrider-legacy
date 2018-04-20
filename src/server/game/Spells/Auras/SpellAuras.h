@@ -37,6 +37,8 @@ private:
     uint8 _slot;                                   // Aura slot on unit
     uint8 _flags;                                  // Aura info flag
     bool _positive; //replaces AFLAG_POSITIVE logic from TC
+    bool _selfCast; //replaces AFLAG_CASTER logic from TC
+    uint8 _effectMask; //replaces AFLAG_EFF_INDEX_* logic from TC
     uint8 _effectsToApply;                         // Used only at spell hit to determine which effect should be applied
     bool _needClientUpdate : 1;
     bool _durationChanged : 1; //sun: added to avoid sending uncessary data at each change
@@ -53,10 +55,11 @@ public:
 
     uint8 GetSlot() const { return _slot; }
     uint8 GetFlags() const { return _flags; }
-    uint8 GetEffectMask() const { return _flags & (AFLAG_EFF_INDEX_0 | AFLAG_EFF_INDEX_1 | AFLAG_EFF_INDEX_2); }
+    //uint8 GetEffectMask() const { return _flags & (AFLAG_EFF_INDEX_0 | AFLAG_EFF_INDEX_1 | AFLAG_EFF_INDEX_2); }
+    uint8 GetEffectMask() const { return _effectMask; }
     bool HasEffect(uint8 effect) const { ASSERT(effect < MAX_SPELL_EFFECTS); return (_flags & (1 << effect)) != 0; }
     bool IsPositive() const { return _positive; }
-    bool IsSelfcast() const { return (_flags & AFLAG_CASTER) != 0; }
+    bool IsSelfcast() const { return _selfCast; }
 
     uint8 GetEffectsToApply() const { return _effectsToApply; }
     void UpdateApplyEffectMask(uint8 newEffMask);

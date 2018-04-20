@@ -17,23 +17,28 @@ class WorldObject;
 #define MAX_POSITIVE_AURAS_PLAYERS      40
 #define MAX_POSITIVE_AURAS_CREATURES    16
 
-enum AURA_FLAGS
+enum AuraFlags
 {
     AFLAG_NONE                   = 0x00,
+#ifdef LICH_KING
     AFLAG_EFF_INDEX_0            = 0x01,
     AFLAG_EFF_INDEX_1            = 0x02,
     AFLAG_EFF_INDEX_2            = 0x04,
-    //not sure about AFLAG_CASTER, may be LICH_KING
-    AFLAG_CASTER                 = 0x08, //corecraft says: "Note: All currently observed data has this toggled on and at least one of the three previous"
-#ifdef LICH_KING
+    AFLAG_CASTER                 = 0x08, 
+
     AFLAG_POSITIVE               = 0x10,
     AFLAG_DURATION               = 0x20,
     AFLAG_ANY_EFFECT_AMOUNT_SENT = 0x40, // used with AFLAG_EFF_INDEX_0/1/2
     AFLAG_NEGATIVE               = 0x80
 #else
-    AFLAG_CANCELABLE             = 0x10,  //sunstrider: Client does not allow canceling those
+    //those are according to mangos-tbc
+    AFLAG_HELPFUL                = 0x01,
+    AFLAG_HARMFUL                = 0x02,
+    AFLAG_PASSIVE_DEPRECATED     = 0x04,     // debuffs can't be queried using this flag. Unused in UI since 1.10.0, new meaning unknown (still the same?)
+    AFLAG_UNK4                   = 0x08,     // unused in UI //corecraft says: "Note: All currently observed data has this toggled on and at least one of the three previous"
+    AFLAG_CANCELABLE             = 0x10,     // confirmed on sunstrider: Client does not allow canceling those
+    AFLAG_NOT_CANCELABLE         = 0x20,
 #endif
-
 };
 
 //m_schoolAbsorb
