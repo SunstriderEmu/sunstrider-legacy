@@ -5029,6 +5029,7 @@ void ObjectMgr::LoadInstanceTemplate()
 
 #ifndef LICH_KING
     //fake sMapDifficultyMap data, this dbc does not exists for BC
+    //non instance part is handled in LoadDBCStores
     for(auto i : _instanceTemplateStore)
     {
         InstanceTemplate* temp = &(i.second);

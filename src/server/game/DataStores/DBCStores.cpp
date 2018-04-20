@@ -315,7 +315,14 @@ void LoadDBCStores(const std::string& dataPath)
 
     LOAD_DBC(sPvPDifficultyStore, "PvpDifficulty.dbc");
 #else
-    //fake MapDifficulty.dbc for BC is handled in ObjectMgr::LoadInstanceTemplate()
+    //fake MapDifficulty.dbc for BC 
+    //also partially handled in ObjectMgr::LoadInstanceTemplate() for instances
+    std::map<uint32, uint32> spawnMasks;
+
+    for (uint32 i = 0; i < sMapStore.GetNumRows(); ++i)
+        if (MapEntry const* mapEntry = sMapStore.LookupEntry(i))
+            if (!mapEntry->Instanceable())
+                sMapDifficultyMap[MAKE_PAIR32(i, REGULAR_DIFFICULTY)] = MapDifficulty(0, 0, false);
 #endif
     LOAD_DBC(sQuestSortStore, "QuestSort.dbc");
     LOAD_DBC(sRandomPropertiesPointsStore, "RandPropPoints.dbc");
