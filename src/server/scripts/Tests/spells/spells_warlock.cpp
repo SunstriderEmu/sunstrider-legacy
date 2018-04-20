@@ -99,7 +99,7 @@ public:
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
 
-            // Not on players
+            // Cannot be cast on players
             TEST_CAST(warlock, player, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, SPELL_FAILED_TARGET_IS_PLAYER);
 
             uint32 const expectedCurseOfDoomManaCost = 380;
@@ -137,15 +137,18 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
 
+            // Fear the rogue
             uint32 const expectedRogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK) + 135;
             uint32 expectedRogueArmor = int32(rogue->GetArmor() - 800) > 0 ? rogue->GetArmor() - 800 : 0;
             FORCE_CAST(warlock, rogue, ClassSpells::Warlock::FEAR_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             TEST_HAS_AURA(rogue, ClassSpells::Warlock::FEAR_RNK_3);
-
+            // Cast curse on the rogue
             uint32 const expectedCurseOfRecklessnessManaCost = 160;
             TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, POWER_MANA, expectedCurseOfRecklessnessManaCost);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, Minutes(2));
+            // Fear should be removed by the curse
             TEST_HAS_NOT_AURA(rogue, ClassSpells::Warlock::FEAR_RNK_3);
+            // Check armor and AP is reduced as intended
             ASSERT_INFO("Armor: %u - Expected: %u", rogue->GetArmor(), expectedRogueArmor);
             TEST_ASSERT(rogue->GetArmor() == expectedRogueArmor);
             TEST_ASSERT(rogue->GetTotalAttackPowerValue(BASE_ATTACK) == expectedRogueAP);
@@ -173,11 +176,12 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            // Damage
+            // Apply CoE
             uint32 const expectedCurseOfElementsManaCost = 260;
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, POWER_MANA, expectedCurseOfElementsManaCost);
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, Minutes(5));
 
+            // Increase damage taken by Shadow, Fire, Arcane and Frost by 10%
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * 1.1f, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * 1.1f, false);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * 1.1f * 1.5f, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * 1.1f * 1.5f, true);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * 1.1f, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * 1.1f, false);
@@ -189,7 +193,7 @@ public:
             TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN * 1.1f, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX * 1.1f, false);
             TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN * 1.1f * 1.5f, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX * 1.1f * 1.5f, true);
 
-            // Resistance
+            // Reduce Shadow, Fire, Arcane and Frost resistances by 88
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
             uint32 const curseOfElementsResistanceMalus = 88;
             rogue->AddAura(ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, rogue);
@@ -224,12 +228,18 @@ public:
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+            Creature* dummy = SpawnCreature();
 
+            // PvE
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, SPELL_MISS_NONE);
+            TEST_AURA_MAX_DURATION(dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, Seconds(30));
+            // TODO: test increased casting time
+
+            // PvP
             uint32 const expectedCurseOfTonguesManaCost = 110;
             TEST_POWER_COST(warlock, mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, POWER_MANA, expectedCurseOfTonguesManaCost);
             TEST_AURA_MAX_DURATION(mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, Seconds(12)); // bug here, it's 10 but as of patch 2.1, it should be 12s
-
-            // Original cast is of 3.0s, with the curse it's 4.8s
+            // Test increased casting time: Frostbolt cast time is 3.0s, with the curse it should be 4.8s
             FORCE_CAST(mage, warlock, ClassSpells::Mage::FROSTBOLT_RNK_13, SPELL_MISS_NONE);
             Wait(4000);
             TEST_HAS_NOT_AURA(warlock, ClassSpells::Mage::FROSTBOLT_RNK_13);
@@ -299,13 +309,14 @@ public:
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
 
+            // Caster heals 100% of damage
             uint32 const rogueStartHealth = rogue->GetHealth();
             uint32 const expectedDeathCoilManaCost = 600;
             TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::DEATH_COIL_RNK_4, POWER_MANA, expectedDeathCoilManaCost);
             Wait(500);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::DEATH_COIL_RNK_4, Seconds(3));
             uint32 const expectedWarlockHealth = 1 + rogueStartHealth - rogue->GetHealth();
-            TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);            
+            TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
 
             // Damage
             float const castTime = 1.5f;
@@ -365,7 +376,7 @@ public:
             TEST_ASSERT(dummy->GetHealth() == dummyExpectedHealth);
             TEST_ASSERT(warlock->GetHealth() == warlockExpectedHealth);
 
-            // Mortal Strike
+            // Mortal Strike: reduces heal, not the damage
             warlock->SetHealth(1);
             warlock->AddAura(ClassSpells::Warrior::MORTAL_STRIKE_RNK_6, warlock);
             warlockExpectedHealth = 1 + 5.0f * expectedTickAmount / 2.0f;
@@ -407,7 +418,7 @@ public:
             uint32 const expectedDrainManaManaCost = 455;
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, POWER_MANA, expectedDrainManaManaCost);
 
-            // Drain
+            // Doesn't drain mana if there isnt mana (!)
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_GCD));
             Wait(5500);
             TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
@@ -462,8 +473,11 @@ public:
             rogue->SetHealth(5.0f * expectedTickAmount);
             FORCE_CAST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_GCD));
             Wait(15500);
+            // Gain soulshard on target's death
             TEST_ASSERT(rogue->IsDead());
             TEST_ASSERT(warlock->HasItemCount(SOUL_SHARD, 1));
+
+            // TODO: drain on creture that doesnt yield experience or honor for a player
         }
     };
 
@@ -493,6 +507,7 @@ public:
             TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::FEAR_RNK_3, POWER_MANA, expectedFearManaCost);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::FEAR_RNK_3, Seconds(10));
 
+            // Only 1 fear is active per warlock
             FORCE_CAST(warlock, mage, ClassSpells::Warlock::FEAR_RNK_3, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_GCD));
             TEST_HAS_NOT_AURA(rogue, ClassSpells::Warlock::FEAR_RNK_3);
             Wait(2000);
@@ -537,6 +552,7 @@ public:
             TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, Seconds(40));
             enemy1->RemoveAurasDueToSpell(ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2);
 
+            // Fear 5 at max
             TestPlayer* enemy2 = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
             TestPlayer* enemy3 = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
             TestPlayer* enemy4 = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
@@ -594,7 +610,7 @@ public:
             TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedManaGained);
             TEST_ASSERT(warlock->GetHealth() == 1);
             TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedManaGained);
-
+            // Can't suicide with Life Tap
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::LIFE_TAP_RNK_7, SPELL_FAILED_FIZZLE, TRIGGERED_IGNORE_GCD);
         }
     };
@@ -642,34 +658,35 @@ public:
 
             // Damage -- wrong spell coefficients
             float const tickAmount = 6.0f;
+            // Coefficients were taken from the Warlock's Den, not WoW Wiki, as they were the most recent
             float const dotCoeff = ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION_DOT;
             float const directCoeff = ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION;
             
             uint32 const seedOfCorruptionTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK + spellPower * dotCoeff / tickAmount;
             uint32 const expectedTotalAmount = tickAmount * seedOfCorruptionTick;
-            // TEST_DOT_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedTotalAmount, true);
+            TEST_DOT_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedTotalAmount, true);
 
             float const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN + spellPower * directCoeff;
             float const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX + spellPower * directCoeff;
-            // TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false);
-            // TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin * 1.5f, expectedDetonationMax * 1.5f, true);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin * 1.5f, expectedDetonationMax * 1.5f, true);
 
             // SoC detonates upon its victim taking 1044 damage
             ResetDummiesHealth(dummy1, dummy2, dummy3);
             uint32 const maxHealth = dummy1->GetHealth();
             FORCE_CAST(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             Wait(18100);
-            //TEST_ASSERT(dummy1->GetHealth() == maxHealth - expectedTotalAmount);
+            TEST_ASSERT(dummy1->GetHealth() == maxHealth - expectedTotalAmount);
             TEST_ASSERT(dummy2->GetHealth() < maxHealth);
             TEST_ASSERT(dummy3->GetHealth() < maxHealth);
 
             // SoC detonates upon its victim's death
-            // SoC detonation does not detonate other SoC
             ResetDummiesHealth(dummy1, dummy2, dummy3);
             FORCE_CAST(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             FORCE_CAST(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-            dummy1->KillSelf();
+            dummy1->KillSelf(); // TODO: that doesnt detonate its SoC, should just damage to death
             TEST_ASSERT(dummy2->GetHealth() < maxHealth && dummy3->GetHealth() < maxHealth);
+            // SoC detonation does not detonate other SoC
             TEST_HAS_AURA(dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1);
         }
     };
@@ -771,7 +788,7 @@ public:
             ASSERT_INFO("Start Health: %u, Current: %u - Expected: %u - Expected Tick: %u, Actual Tick: %u", warlockStartHealth, warlock->GetHealth(), expectedWarlockHealth, expectedTickAmount, uint32((warlockStartHealth - warlock->GetHealth()) / 15.0f));
             TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
 
-            // No durability damage on suicide
+            // Should have no durability damage on suicide
             warlock->SetMaxHealth(uint32(100));
             FORCE_CAST(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
             Wait(1500);
@@ -813,7 +830,7 @@ public:
             uint32 const expectedImmolateManaCost = 445;
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, POWER_MANA, expectedImmolateManaCost);
 
-            // Damage -- bug with direct damage
+            // Direct Damage -- bug with direct damage
             float const castTime = 2.0f;
             float const duration = 15.0f;
             float const dotPortion = (duration / 15.0f) / ((duration / 15.0f) + (castTime / 3.5f));
@@ -829,7 +846,7 @@ public:
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedImmolateDirect, expectedImmolateDirect, false);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedImmolateDirect * 1.5f, expectedImmolateDirect * 1.5f, true);
 
-            // Bonus with Immolate
+            // DoT
             uint32 const expectedImmolateTick = (ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_DOT + spellPower * dotSpellCoefficient) / 5.0f;
             uint32 const expectedImmolateTotal = 5.0f * expectedImmolateTick;
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedImmolateTotal, false);
@@ -919,6 +936,8 @@ public:
             uint32 const expectedSRMax = ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MAX + spellPower * spellCoefficient;
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSRMin, expectedSRMax, false);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSRMin * 1.5f, expectedSRMax * 1.5f, true);
+
+            // TODO: High threat?
         }
     };
 
@@ -987,6 +1006,7 @@ public:
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
 
+            // Consumes a Soul Shard
             uint32 const expectedSoulFireManaCost = 250;
             warlock->AddItem(SOUL_SHARD, 1);
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, POWER_MANA, expectedSoulFireManaCost);

@@ -11,7 +11,7 @@ public:
 	class BarkskinTestImpt : public TestCase
 	{
 	public:
-		BarkskinTestImpt() : TestCase(STATUS_PARTIAL, true) { }
+		BarkskinTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
 
 		void CastBarkskin(TestPlayer* druid)
 		{
