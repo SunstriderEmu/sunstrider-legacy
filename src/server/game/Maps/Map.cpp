@@ -1917,7 +1917,7 @@ uint32 Map::GetAreaId(float x, float y, float z) const
 {
     uint32 mogpFlags;
     int32 adtId, rootId, groupId;
-    float vmapZ;
+    float vmapZ = z;
     bool hasVmapArea = VMAP::VMapFactory::createOrGetVMapManager()->getAreaInfo(GetId(), x, y, vmapZ, mogpFlags, adtId, rootId, groupId);
     uint32 gridAreaId = 0;
     float gridMapHeight = INVALID_HEIGHT;
