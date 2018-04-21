@@ -705,7 +705,7 @@ public:
     class BanishTestImpt : public TestCase
     {
     public:
-        BanishTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        BanishTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -714,7 +714,7 @@ public:
             Creature* demon = SpawnCreature(21, true); // Demon
             Creature* elemental = SpawnCreature(22, true); // Elemental
 
-            // Should fail on classic dummy -- Bug here: test fails because we are returned SPELL_CAST_OK. The client refuses such cast, need to add a server side check.
+            // Should fail on classic dummy 
             TEST_CAST(warlock, dummy, ClassSpells::Warlock::BANISH_RNK_2, SPELL_FAILED_BAD_TARGETS);
 
             // Should succeed on Demon & Elemental
@@ -728,12 +728,19 @@ public:
             TEST_HAS_AURA(elemental, ClassSpells::Warlock::BANISH_RNK_2);
 
             // Banished is invulnerable
-            uint32 elemHealth = elemental->GetHealth();
-            FORCE_CAST(warlock, elemental, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
-            warlock->AttackerStateUpdate(elemental, BASE_ATTACK);
-            Wait(1000);
-            warlock->AttackStop();
-            TEST_ASSERT(elemental->GetHealth() == elemHealth);
+            {
+                uint32 elemHealth = elemental->GetHealth();
+                //to spell damage
+                FORCE_CAST(warlock, elemental, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
+                Wait(2000);
+                TEST_ASSERT(elemental->GetHealth() == elemHealth);
+
+                //to melee damage
+                warlock->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+                warlock->AttackerStateUpdate(elemental, BASE_ATTACK);
+                Wait(1);
+                TEST_ASSERT(elemental->GetHealth() == elemHealth);
+            }
         }
     };
 
