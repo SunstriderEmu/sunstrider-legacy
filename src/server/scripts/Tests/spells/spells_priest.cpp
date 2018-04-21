@@ -2443,12 +2443,12 @@ public:
             priest->ResetForceSpellHitResult();
 
             // Test damages
-            // Setting enough health to survive the TEST_DIRECT_SPELL_DAMAGE multiple casts
-            uint32 health = 10000000;
-            priest->SetMaxHealth(health);
-            priest->SetHealth(health);
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin, shadowWordDeathMax, false);
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin * 1.5f, shadowWordDeathMax * 1.5f, true);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin, shadowWordDeathMax, false, [](Unit* caster, Unit* target) {
+                caster->SetHealth(caster->GetMaxHealth());
+            });
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin * 1.5f, shadowWordDeathMax * 1.5f, true, [](Unit* caster, Unit* target) {
+                caster->SetHealth(caster->GetMaxHealth());
+            });
         }
     };
 

@@ -9,7 +9,7 @@ public:
     class IceLanceTestImpt : public TestCase
     {
     public:
-        IceLanceTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        IceLanceTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -24,19 +24,25 @@ public:
             uint32 const expectedIceLanceManaCost = 150;
             TEST_POWER_COST(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, POWER_MANA, expectedIceLanceManaCost);
 
-            // Damage -- something's wrong with spell coeff. Spell coeff, like damage, should triple on frozen target
+            // Damage -- Failure here, something's wrong with spell coeff. 
+            // Spell coeff, like damage, should triple on frozen target
             float const castTime = 1.5f;
-            float const spellCoeff = castTime / 3.5f;
-            uint32 const iceLanceMin = ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN + spellPower * spellCoeff / 3.0f;
-            uint32 const iceLanceMax = ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX + spellPower * spellCoeff / 3.0f;
-            uint32 const iceLanceMinFrozen = 3.0f * ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN + spellPower * spellCoeff;
-            uint32 const iceLanceMaxFrozen = 3.0f * ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX + spellPower * spellCoeff;
+            float const spellCoeff = castTime / 3.5f / 3.0f;
+            uint32 const iceLanceMin = ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN + spellPower * spellCoeff;
+            uint32 const iceLanceMax = ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX + spellPower * spellCoeff;
+            float const frozenFactor = 3.0f;
+            uint32 const iceLanceMinFrozen = iceLanceMin * frozenFactor;
+            uint32 const iceLanceMaxFrozen = iceLanceMax * frozenFactor;
             TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, iceLanceMin, iceLanceMax, false);
             TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, iceLanceMin * 1.5f, iceLanceMax * 1.5f, true);
-            dummy->AddAura(ClassSpells::Mage::FROST_NOVA_RNK_1, dummy);
-            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, iceLanceMinFrozen, iceLanceMaxFrozen, false);
-            dummy->AddAura(ClassSpells::Mage::FROST_NOVA_RNK_1, dummy);
-            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, iceLanceMinFrozen * 1.5f, iceLanceMaxFrozen * 1.5f, false);
+
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, iceLanceMinFrozen, iceLanceMaxFrozen, false, [](Unit* caster, Unit* target) {
+                target->AddAura(ClassSpells::Mage::FROST_NOVA_RNK_1, target);
+            });
+
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, iceLanceMinFrozen * 1.5f, iceLanceMaxFrozen * 1.5f, true, [](Unit* caster, Unit* target) {
+                target->AddAura(ClassSpells::Mage::FROST_NOVA_RNK_1, target);
+            });
         }
     };
 
