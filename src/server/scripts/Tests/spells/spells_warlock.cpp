@@ -778,12 +778,11 @@ public:
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_3, GREATER_FIRESTONE, 900);
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_4, MAJOR_FIRESTONE, 1100);
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_5, MASTER_FIRESTONE, 1330);
+            warlock->DestroyConjuredItems(true);
 
             // Spell damage
             {
-                Item* masterFirestone = warlock->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_8);
-                TEST_ASSERT(masterFirestone != nullptr);
-                TEST_ASSERT(masterFirestone->GetEntry() == MASTER_FIRESTONE);
+                warlock->DestroyItemCount(MASTER_FIRESTONE, 1, true); //destroy before adding a new one in next macro
                 EQUIP_ITEM(warlock, MASTER_FIRESTONE);
                 Wait(1000);
 
