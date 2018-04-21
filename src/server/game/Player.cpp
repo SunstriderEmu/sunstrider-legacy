@@ -1185,7 +1185,7 @@ void Player::Update( uint32 p_time )
 
     //used to implement delayed far teleports
     SetCanDelayTeleport(true);
-    Unit::Update( p_time );
+    Unit::Update(p_time);
     SetCanDelayTeleport(false);
 
     time_t now = time (nullptr);

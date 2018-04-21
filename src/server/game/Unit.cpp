@@ -475,12 +475,12 @@ void Unit::Update( uint32 p_time )
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
-    m_Events.Update( p_time );
+    m_Events.Update(p_time);
 
     if (!IsInWorld())
         return;
 
-    _UpdateSpells( p_time );
+    _UpdateSpells(p_time);
     if (m_justCCed)
         m_justCCed--;
 

@@ -242,7 +242,8 @@ void AuraApplication::UpdateApplyEffectMask(uint8 newEffMask)
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         // update real effects only if they were applied already
-        if (!(_flags & (1 << i)))
+        //if (!(_flags & (1 << i)))
+        if (!(_effectMask & (1 << i)))
             continue;
 
         if (removeEffMask & (1 << i))
