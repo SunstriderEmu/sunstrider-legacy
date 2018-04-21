@@ -5605,9 +5605,15 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
     }
 
     // Default calculation
-    if (/*coeff &&*/ DoneAdvertisedBenefit)
+    if (DoneAdvertisedBenefit)
     {
-        if (coeff <= 0.f) //sun: added the = here, is this right? else we don't even use the default coef if there is no data in spell_bonus_data table?
+#ifdef LICH_KING
+        if (coeff < 0.f)
+#else
+        // on LK we use spellProto->Effects[effIndex].BonusMultiplier which apperently contains negative values,
+        // but for BC we have 0 when we get here and no data was in DB.
+        if (coeff <= 0.f) 
+#endif
             coeff = CalculateDefaultCoefficient(spellProto, damagetype);  // As wowwiki says: C = (Cast Time / 3.5)
 
         float factorMod = CalculateSpellpowerCoefficientLevelPenalty(spellProto) * stack;

@@ -679,7 +679,7 @@ void ResetSpellCast(Unit* caster)
     caster->m_Events.KillAllEvents(true); //also kill spells in flight
 }
 
-void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage) //if !damage, then use healing
+void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback) //if !damage, then use healing
 {
     INTERNAL_TEST_ASSERT(expectedMax >= expectedMin);
     Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -701,6 +701,9 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
+        if (callback)
+            callback.get()(caster, target);
+
         caster->ForceSpellHitResult(SPELL_MISS_NONE);
         uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_DEBUG_MASK);
         caster->ResetForceSpellHitResult();
