@@ -60,7 +60,7 @@ public:
     class FrostboltTestImpt : public TestCase
     {
     public:
-        FrostboltTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        FrostboltTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -79,7 +79,7 @@ public:
             Wait(1000);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Mage::FROSTBOLT_RNK_13, Seconds(9));
             ASSERT_INFO("Speed: %f - Expected: %f", rogue->GetSpeed(MOVE_RUN), expectedSpeed);
-            TEST_ASSERT(rogue->GetSpeed(MOVE_RUN) == expectedSpeed);
+            TEST_ASSERT(Between(rogue->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
 
             // Damage -- something's wrong with spell coeff, seems that the penalty for extra effect is not taken into account
             float const castTime = 3.0f;
