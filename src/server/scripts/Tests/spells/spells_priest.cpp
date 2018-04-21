@@ -2443,10 +2443,10 @@ public:
             priest->ResetForceSpellHitResult();
 
             // Test damages
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin, shadowWordDeathMax, false, [](Unit* caster, Unit* target) {
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin, shadowWordDeathMax, false, [](Unit* caster, Unit* target) {
                 caster->SetHealth(caster->GetMaxHealth());
             });
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin * 1.5f, shadowWordDeathMax * 1.5f, true, [](Unit* caster, Unit* target) {
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin * 1.5f, shadowWordDeathMax * 1.5f, true, [](Unit* caster, Unit* target) {
                 caster->SetHealth(caster->GetMaxHealth());
             });
         }
