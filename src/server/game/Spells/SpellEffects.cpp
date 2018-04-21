@@ -3967,7 +3967,7 @@ void Spell::EffectSummonChangeItem(uint32 i)
         player->DurabilityLoss(pNewItem, loosePercent);
     }
 
-    if( player->IsInventoryPos( pos ) )
+    if (player->IsInventoryPos(pos))
     {
         ItemPosCountVec dest;
         uint8 msg = player->CanStoreItem( m_CastItem->GetBagSlot(), m_CastItem->GetSlot(), dest, pNewItem, true );
@@ -3989,7 +3989,7 @@ void Spell::EffectSummonChangeItem(uint32 i)
             return;
         }
     }
-    else if( player->IsBankPos ( pos ) )
+    else if (player->IsBankPos(pos))
     {
         ItemPosCountVec dest;
         uint8 msg = player->CanBankItem( m_CastItem->GetBagSlot(), m_CastItem->GetSlot(), dest, pNewItem, true );
@@ -4009,7 +4009,7 @@ void Spell::EffectSummonChangeItem(uint32 i)
             return;
         }
     }
-    else if( player->IsEquipmentPos ( pos ) )
+    else if (player->IsEquipmentPos(pos))
     {
         uint16 dest;
         uint8 msg = player->CanEquipItem( m_CastItem->GetSlot(), dest, pNewItem, true );
@@ -4025,7 +4025,7 @@ void Spell::EffectSummonChangeItem(uint32 i)
             m_castItemGUID.Clear();
             m_castItemEntry = 0;
 
-            player->EquipItem( dest, pNewItem, true);
+            player->EquipItem(dest, pNewItem, true);
             player->AutoUnequipOffhandIfNeed();
             player->SendNewItem(pNewItem, 1, true, false);
             player->ItemAddedQuestCheck(newitemid, 1);

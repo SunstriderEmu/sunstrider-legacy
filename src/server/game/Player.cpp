@@ -373,19 +373,16 @@ Player::Player(WorldSession *session) :
     _cinematicMgr = new CinematicMgr(this);
 }
 
-Player::~Player ()
+Player::~Player()
 {
     CleanupsBeforeDelete();
 
     // it must be unloaded already in PlayerLogout and accessed only for loggined player
-    //m_social = NULL;
+    //m_social = nullptr;
 
     // Note: buy back item already deleted from DB when player was saved
     for(auto & m_item : m_items)
-    {
-        if(m_item)
-            delete m_item;
-    }
+         delete m_item;
     CleanupChannels();
 
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
@@ -1995,12 +1992,10 @@ void Player::AddToWorld()
     Unit::AddToWorld();
 
     for(int i = PLAYER_SLOT_START; i < PLAYER_SLOT_END; i++)
-    {
         if(m_items[i])
             m_items[i]->AddToWorld();
-    }
 
-    //Fog of Corruption
+    //WR HACK, remove me. Fog of Corruption
     if (HasAura(45717))
         CastSpell(this, 45917, true); //Soul Sever - instakill
 }
@@ -2023,11 +2018,10 @@ void Player::RemoveFromWorld()
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
     }
 
+    // Remove items from world before self - player must be found in Item::RemoveFromObjectUpdate
     for(int i = PLAYER_SLOT_START; i < PLAYER_SLOT_END; i++)
-    {
         if(m_items[i])
             m_items[i]->RemoveFromWorld();
-    }
 
     if (isSpectator())
         SetSpectate(false);
@@ -7708,10 +7702,10 @@ void Player::UpdateEquipSpellsAtFormChange()
 {
     for (int i = 0; i < INVENTORY_SLOT_BAG_END; i++)
     {
-        if(m_items[i] && !m_items[i]->IsBroken())
+        if(m_items[i] && !m_items[i]->IsBroken() && CanUseAttackType(GetAttackBySlot(i)))
         {
-            ApplyItemEquipSpell(m_items[i],false,true);     // remove spells that not fit to form
-            ApplyItemEquipSpell(m_items[i],true,true);      // add spells that fit form but not active
+            ApplyItemEquipSpell(m_items[i], false, true);     // remove spells that not fit to form
+            ApplyItemEquipSpell(m_items[i], true, true);      // add spells that fit form but not active
         }
     }
 
@@ -7726,8 +7720,8 @@ void Player::UpdateEquipSpellsAtFormChange()
             if(!spellInfo)
                 continue;
 
-            ApplyEquipSpell(spellInfo,nullptr,false,true);       // remove spells that not fit to form
-            ApplyEquipSpell(spellInfo,nullptr,true,true);        // add spells that fit form but not active
+            ApplyEquipSpell(spellInfo, nullptr, false, true);       // remove spells that not fit to form
+            ApplyEquipSpell(spellInfo, nullptr, true, true);        // add spells that fit form but not active
         }
     }
 }
@@ -8036,7 +8030,7 @@ void Player::_RemoveAllItemMods()
             if(m_items[i]->IsBroken())
                 continue;
 
-            ApplyItemEquipSpell(m_items[i],false);
+            ApplyItemEquipSpell(m_items[i], false);
             ApplyEnchantment(m_items[i], false);
         }
     }
@@ -8045,7 +8039,7 @@ void Player::_RemoveAllItemMods()
     {
         if(m_items[i])
         {
-            if(m_items[i]->IsBroken())
+            if (m_items[i]->IsBroken() || !CanUseAttackType(GetAttackBySlot(i)))
                 continue;
             ItemTemplate const *proto = m_items[i]->GetTemplate();
             if(!proto)
@@ -8054,7 +8048,7 @@ void Player::_RemoveAllItemMods()
             ApplyItemDependentAuras(m_items[i], false);
             _ApplyItemBonuses(proto,i, false);
 
-            if( i == EQUIPMENT_SLOT_RANGED )
+            if (i == EQUIPMENT_SLOT_RANGED)
                 _ApplyAmmoBonuses();
         }
     }
@@ -8074,9 +8068,13 @@ void Player::_ApplyAllItemMods()
                 continue;
 
             ApplyItemDependentAuras(m_items[i], true);
-            _ApplyItemBonuses(proto,i, true);
+            _ApplyItemBonuses(proto, i, true);
 
-            if( i == EQUIPMENT_SLOT_RANGED )
+            WeaponAttackType const attackType = Player::GetAttackBySlot(i);
+            if (attackType != MAX_ATTACK)
+                UpdateWeaponDependentAuras(attackType);
+
+            if (i == EQUIPMENT_SLOT_RANGED)
                 _ApplyAmmoBonuses();
 
         }
@@ -8094,14 +8092,11 @@ void Player::_ApplyAllItemMods()
             if(proto->ItemSet)
                 AddItemsSetItem(this,m_items[i]);
 
-            if(m_items[i]->IsBroken())
+            if (m_items[i]->IsBroken() || !CanUseAttackType(GetAttackBySlot(i)))
                 continue;
 
             ApplyItemEquipSpell(m_items[i],true);
             ApplyEnchantment(m_items[i], true);
-            WeaponAttackType const attackType = Player::GetAttackBySlot(i);
-            if (attackType != MAX_ATTACK)
-                UpdateWeaponDependentAuras(attackType);
         }
     }
 }
@@ -11412,7 +11407,7 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
 
 Item* Player::StoreItem( ItemPosCountVec const& dest, Item* pItem, bool update )
 {
-    if( !pItem )
+    if (!pItem)
         return nullptr;
 
     Item* lastItem = pItem;
@@ -11447,7 +11442,7 @@ Item* Player::_StoreItem(uint16 pos, Item *pItem, uint32 count, bool clone, bool
 
     Item *pItem2 = GetItemByPos( bag, slot );
 
-    if( !pItem2 )
+    if (!pItem2)
     {
         if(clone)
             pItem = pItem->CloneItem(count,this);
@@ -11462,7 +11457,7 @@ Item* Player::_StoreItem(uint16 pos, Item *pItem, uint32 count, bool clone, bool
             (pItem->GetTemplate()->Bonding == BIND_WHEN_EQUIPED && IsBagPos(pos)) )
             pItem->SetBinding( true );
 
-        if( bag == INVENTORY_SLOT_BAG_0 )
+        if (bag == INVENTORY_SLOT_BAG_0)
         {
             m_items[slot] = pItem;
             SetUInt64Value( (uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2) ), pItem->GetGUID() );
@@ -11559,7 +11554,7 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
         uint8 bag = pos >> 8;
         uint8 slot = pos & 255;
 
-        Item*pItem2 = GetItemByPos( bag, slot );
+        Item* pItem2 = GetItemByPos(bag, slot);
 
         if(!pItem2)
         {
@@ -11930,7 +11925,7 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
             SetUInt64Value((uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot*2)), 0);
 
             // equipment and equipped bags can have applied bonuses
-            if ( slot < INVENTORY_SLOT_BAG_END )
+            if (slot < INVENTORY_SLOT_BAG_END)
             {
                 // item set bonuses applied only at equip and removed at unequip, and still active for broken items
                 if(pProto && pProto->ItemSet)
@@ -11939,15 +11934,33 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
                 _ApplyItemMods(pItem, slot, false);
             }
 
-            if ( slot < EQUIPMENT_SLOT_END )
+            if (slot < EQUIPMENT_SLOT_END)
             {
+                // update expertise and armor penetration - passive auras may need it
+#ifdef LICH_KING
+                switch (slot)
+                {
+                case EQUIPMENT_SLOT_MAINHAND:
+                case EQUIPMENT_SLOT_OFFHAND:
+                case EQUIPMENT_SLOT_RANGED:
+                    RecalculateRating(CR_ARMOR_PENETRATION);
+                default:
+                    break;
+                }
+#endif
+
+                if (slot == EQUIPMENT_SLOT_MAINHAND)
+                    UpdateExpertise(BASE_ATTACK);
+                else if (slot == EQUIPMENT_SLOT_OFFHAND)
+                    UpdateExpertise(OFF_ATTACK);
+
                 // equipment visual show
                 SetVisibleItemSlot(slot,nullptr);
             }
 
             m_items[slot] = nullptr;
         }
-        else if(Bag *pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, bag ))
+        else if(Bag* pBag = GetBagByPos(bag))
             pBag->RemoveItem(slot, update);
 
         // Delete rolled money / loot from db.
@@ -11955,15 +11968,15 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
         if (pProto->Flags & ITEM_FLAG_HAS_LOOT)
             sLootItemStorage->RemoveStoredLootForContainer(pItem->GetGUID().GetCounter());
 
-        if( IsInWorld() && update )
+        if (IsInWorld() && update)
         {
             pItem->RemoveFromWorld();
             pItem->DestroyForPlayer(this);
         }
 
         //pItem->SetOwnerGUID(0);
-        pItem->SetUInt64Value( ITEM_FIELD_CONTAINED, 0 );
-        pItem->SetSlot( NULL_SLOT );
+        pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, 0);
+        pItem->SetSlot(NULL_SLOT);
         pItem->SetState(ITEM_REMOVED, this);
     }
 }
@@ -12385,7 +12398,7 @@ void Player::SplitItem( uint16 src, uint16 dst, uint32 count )
         if( IsInWorld() )
             pSrcItem->SendUpdateToPlayer( this );
         pSrcItem->SetState(ITEM_CHANGED, this);
-        EquipItem( dest, pNewItem, true);
+        EquipItem(dest, pNewItem, true);
         AutoUnequipOffhandIfNeed();
     }
 }
@@ -12677,14 +12690,14 @@ void Player::AddItemToBuyBackSlot( Item *pItem )
 
 Item* Player::GetItemFromBuyBackSlot( uint32 slot )
 {
-    if( slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END )
+    if (slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END)
         return m_items[slot];
     return nullptr;
 }
 
 void Player::RemoveItemFromBuyBackSlot( uint32 slot, bool del )
 {
-    if( slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END )
+    if (slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END)
     {
         Item *pItem = m_items[slot];
         if( pItem )
@@ -12703,9 +12716,9 @@ void Player::RemoveItemFromBuyBackSlot( uint32 slot, bool del )
         m_items[slot] = nullptr;
 
         uint32 eslot = slot - BUYBACK_SLOT_START;
-        SetUInt64Value( PLAYER_FIELD_VENDORBUYBACK_SLOT_1 + eslot * 2, 0 );
-        SetUInt32Value( PLAYER_FIELD_BUYBACK_PRICE_1 + eslot, 0 );
-        SetUInt32Value( PLAYER_FIELD_BUYBACK_TIMESTAMP_1 + eslot, 0 );
+        SetUInt64Value(PLAYER_FIELD_VENDORBUYBACK_SLOT_1 + eslot * 2, 0);
+        SetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE_1 + eslot, 0);
+        SetUInt32Value(PLAYER_FIELD_BUYBACK_TIMESTAMP_1 + eslot, 0);
 
         // if current backslot is filled set to now free slot
         if(m_items[m_currentBuybackSlot])
@@ -15459,11 +15472,8 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         SetUInt64Value( (uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2) ), 0 );
         SetVisibleItemSlot(slot,nullptr);
 
-        if (m_items[slot])
-        {
-            delete m_items[slot];
-            m_items[slot] = nullptr;
-        }
+        delete m_items[slot];
+        m_items[slot] = nullptr;
     }
 
     m_race = fields[LOAD_DATA_RACE].GetUInt8();
@@ -21201,7 +21211,7 @@ void Player::DoPack58(uint8 step)
             if(!currentItem)
                 continue;
 
-            DestroyItem( INVENTORY_SLOT_BAG_0, i, true);
+            DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
         }
         uint8 packType;
         switch(step)

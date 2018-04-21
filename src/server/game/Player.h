@@ -1106,11 +1106,12 @@ struct BGData
 class TC_GAME_API Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
+    friend class Spell;
     friend void Item::AddItemToUpdateQueueOf(Player *player);
     friend void Item::RemoveItemFromUpdateQueueOf(Player *player);
     public:
         explicit Player (WorldSession *session);
-        ~Player ( ) override;
+        ~Player() override;
 
         PlayerAI* AI() const { return reinterpret_cast<PlayerAI*>(i_AI); }
 
@@ -1149,7 +1150,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId);
         virtual void SetMapAtCreation(PlayerInfo const* info);
 
-        void Update( uint32 time ) override;
+        void Update(uint32 time) override;
 
         static bool BuildEnumData( PreparedQueryResult  result,  WorldPacket * p_data, WorldSession const* session );
 
@@ -1316,9 +1317,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool CanUseItem(ItemTemplate const *pItem);
         InventoryResult CanUseAmmo(uint32 item) const;
         Item* StoreNewItem(ItemPosCountVec const& pos, uint32 item, bool update, int32 randomPropertyId = 0, GuidSet const& allowedLooters = GuidSet());
-        Item* StoreItem(ItemPosCountVec const& pos, Item *pItem, bool update);
         Item* EquipNewItem(uint16 pos, uint32 item, bool update);
-        Item* EquipItem(uint16 pos, Item *pItem, bool update);
+        Item* StoreItem(ItemPosCountVec const& pos, Item *pItem, bool update);
         void AutoUnequipOffhandIfNeed();
         bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count, ItemTemplate const *proto = nullptr);
         void AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast = false);
@@ -2677,6 +2677,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
        
         // true if player has moved in this update. In the previous system, in a player moved and stopped in the same update you had no way to know it. (this is used to fix spell not always properly interrupted)
         bool m_hasMovedInUpdate;
+
+        //sun: keep EquipItem in private, they're really use to missuse
+        Item* EquipItem(uint16 pos, Item *pItem, bool update);
 
     private:
         // internal common parts for CanStore/StoreItem functions

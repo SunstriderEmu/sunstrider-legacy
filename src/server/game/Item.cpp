@@ -213,11 +213,11 @@ bool ItemCanGoIntoBag(ItemTemplate const *pProto, ItemTemplate const *pBagProto)
     return false;
 }
 
-Item::Item( )
+Item::Item()
 {
     m_objectType |= TYPEMASK_ITEM;
     m_objectTypeId = TYPEID_ITEM;
-                                                           
+
 #ifdef LICH_KING
     m_updateFlag = UPDATEFLAG_LOWGUID;
 #else
@@ -233,6 +233,13 @@ Item::Item( )
     mb_in_trade = false;
 
     m_itemProto = nullptr;
+}
+
+Item::~Item()
+{
+    bool a = false;
+    m_itemProto = m_itemProto;
+    return;
 }
 
 bool Item::Create(ObjectGuid::LowType guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto)

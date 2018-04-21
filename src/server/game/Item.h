@@ -184,7 +184,8 @@ class TC_GAME_API Item : public Object
         static Item* CreateItem(uint32 item, uint32 count, Player const* player = nullptr);
         Item* CloneItem(uint32 count, Player const* player = nullptr) const;
 
-        Item ( );
+        Item();
+        ~Item();
 
         virtual bool Create(ObjectGuid::LowType guidlow, uint32 itemid, Player const* owner, ItemTemplate const *proto);
 
@@ -288,7 +289,7 @@ class TC_GAME_API Item : public Object
         ItemTemplate const* m_itemProto;
     private:
         uint8 m_slot;
-        Bag *m_container;
+        Bag* m_container;
         ItemUpdateState uState;
         int16 uQueuePos;
         bool mb_in_trade;                                   // true if item is currently in trade-window

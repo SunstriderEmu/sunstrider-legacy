@@ -772,26 +772,30 @@ public:
             const uint32 MAJOR_FIRESTONE    = 13701;
             const uint32 MASTER_FIRESTONE   = 22128;
 
-            // Creates a firestone
+            // Assert for each that firestone is created + assert power costs
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_1, LESSER_FIRESTONE, 500);
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_2, FIRESTONE, 700);
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_3, GREATER_FIRESTONE, 900);
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_4, MAJOR_FIRESTONE, 1100);
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_5, MASTER_FIRESTONE, 1330);
 
-            // Damage
-            Item* masterFirestone = warlock->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_8);
-            TEST_ASSERT(masterFirestone != nullptr);
-            TEST_ASSERT(masterFirestone->GetEntry() == MASTER_FIRESTONE);
-            warlock->EquipItem(SLOT_RANGED, masterFirestone, true);
-            Wait(1000);
+            // Spell damage
+            {
+                Item* masterFirestone = warlock->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_8);
+                TEST_ASSERT(masterFirestone != nullptr);
+                TEST_ASSERT(masterFirestone->GetEntry() == MASTER_FIRESTONE);
+                EQUIP_ITEM(warlock, MASTER_FIRESTONE);
+                Wait(1000);
 
-            // Increase fire spell damage by 30
-            const uint32 majorFirestoneFireBonus = 30;
-            const uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN + majorFirestoneFireBonus;
-            const uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX + majorFirestoneFireBonus;
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax, false);
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin * 1.5f, expectedIncinerateMax *1.5f, true);
+                // Increase fire spell damage by 30
+                const uint32 majorFirestoneFireBonus = 30;
+                const uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN + majorFirestoneFireBonus;
+                const uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX + majorFirestoneFireBonus;
+                TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax, false);
+                TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin * 1.5f, expectedIncinerateMax *1.5f, true);
+
+                //TODO: Should only increase fire damage
+            }
 
             // TODO: melee proc chance of passive (ClassSpells::Warlock::CREATE_FIRESTONE_PASSIVE_RNK_5)
         }
