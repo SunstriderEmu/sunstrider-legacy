@@ -11,7 +11,7 @@ public:
 	class BarkskinTestImpt : public TestCase
 	{
 	public:
-		BarkskinTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+		BarkskinTestImpt() : TestCase(STATUS_INCOMPLETE) { }
 
 		void CastBarkskin(TestPlayer* druid)
 		{
@@ -555,7 +555,7 @@ public:
 	class ThornsTestImpt : public TestCase
 	{
 	public:
-		ThornsTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+		ThornsTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void Test() override
 		{
@@ -799,7 +799,7 @@ public:
 	class CowerTestImpt : public TestCase
 	{
 	public:
-		CowerTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+		CowerTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void Test() override
 		{
@@ -900,7 +900,7 @@ public:
 	class EnrageTestImpt : public TestCase
 	{
 	public:
-		EnrageTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+		EnrageTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void TestEnrage(TestPlayer* druid, uint32 spellFormId, float armorReduction)
 		{
@@ -1033,7 +1033,7 @@ public:
 	class FrenziedRegenerationTestImpt : public TestCase
 	{
 	public:
-		FrenziedRegenerationTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+		FrenziedRegenerationTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void InitTest(TestPlayer* druid, uint32 health, uint32 rage)
 		{
@@ -1166,7 +1166,7 @@ public:
 	class LacerateTestImpt : public TestCase
 	{
 	public:
-		LacerateTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+		LacerateTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void Test() override
 		{
@@ -1287,7 +1287,7 @@ public:
 	class PounceTestImpt : public TestCase
 	{
 	public:
-		PounceTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+		PounceTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void Test() override
 		{
@@ -1377,7 +1377,7 @@ public:
 	class RakeTestImpt : public TestCase
 	{
 	public:
-		RakeTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+		RakeTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void Test() override
 		{
@@ -1428,7 +1428,7 @@ public:
 	class RavageTestImpt : public TestCase
 	{
 	public:
-		RavageTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+		RavageTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void Test() override
 		{
@@ -1556,7 +1556,7 @@ public:
     class SwipeTestImpt : public TestCase
     {
     public:
-        SwipeTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        SwipeTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -1915,7 +1915,7 @@ public:
     class LifebloomTestImpt : public TestCase
     {
     public:
-        LifebloomTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        LifebloomTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void TestLifebloom(TestPlayer* druid, uint32 tickTotal, uint32 expectedBloom, bool crit)
         {

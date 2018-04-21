@@ -320,7 +320,7 @@ public:
     class LevitateTestImpt : public TestCase
     {
     public:
-        LevitateTestImpt() : TestCase(STATUS_PARTIAL, true) { }
+        LevitateTestImpt() : TestCase(STATUS_PARTIAL) { }
 
         void Test() override
         {
@@ -1127,7 +1127,7 @@ public:
     class ChastiseTestImpt : public TestCase
     {
     public:
-        ChastiseTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        ChastiseTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -1182,7 +1182,7 @@ public:
     class CureDiseaseTestImpt : public TestCase
     {
     public:
-        CureDiseaseTestImpt() : TestCase(STATUS_PASSING, true) { }
+        CureDiseaseTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2046,7 +2046,7 @@ public:
     class MindSootheTestImpt : public TestCase
     {
     public:
-        MindSootheTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+        MindSootheTestImpt() : TestCase(STATUS_INCOMPLETE) { }
         //INCOMPLETE: Logic seems to be ok and distance is affected by spell, but creatures aggro distance is wonky. More precisely, it appears creatures aggro on a tick basis. FIXME?
 
         //get approximative aggro range (may be around 1y wrong max)
@@ -2355,7 +2355,7 @@ public:
     class ShadowWordDeathTestImpt : public TestCase
     {
     public:
-        ShadowWordDeathTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        ShadowWordDeathTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -2652,7 +2652,7 @@ public:
     class TouchOfWeaknessTestImpt : public TestCase
     {
     public:
-        TouchOfWeaknessTestImpt() : TestCase(STATUS_PASSING, true) { }
+        TouchOfWeaknessTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {

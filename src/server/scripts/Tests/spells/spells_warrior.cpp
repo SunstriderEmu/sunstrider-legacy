@@ -50,7 +50,7 @@ public:
     class ChargeTestImpt : public TestCaseWarrior
     {
     public:
-        ChargeTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        ChargeTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -113,7 +113,7 @@ public:
     class HamstringTestImpt : public TestCaseWarrior
     {
     public:
-        HamstringTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        HamstringTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -163,7 +163,7 @@ public:
     class HeroicStrikeTestImpt : public TestCaseWarrior
     {
     public:
-        HeroicStrikeTestImpt() : TestCaseWarrior(STATUS_PARTIAL, true) { }
+        HeroicStrikeTestImpt() : TestCaseWarrior(STATUS_PARTIAL) { }
 
         void Test() override
         {
@@ -228,7 +228,7 @@ public:
     class MockingBlowTestImpt : public TestCaseWarrior
     {
     public:
-        MockingBlowTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        MockingBlowTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -291,7 +291,7 @@ public:
     class OverpowerTestImpt : public TestCaseWarrior
     {
     public:
-        OverpowerTestImpt() : TestCaseWarrior(STATUS_PARTIAL, true) { }
+        OverpowerTestImpt() : TestCaseWarrior(STATUS_PARTIAL) { }
 
         void Test() override
         {
@@ -343,7 +343,7 @@ public:
     class RendTestImpt : public TestCaseWarrior
     {
     public:
-        RendTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        RendTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -388,7 +388,7 @@ public:
     class RetaliationTestImpt : public TestCaseWarrior
     {
     public:
-        RetaliationTestImpt() : TestCaseWarrior(STATUS_PARTIAL, true) { }
+        RetaliationTestImpt() : TestCaseWarrior(STATUS_PARTIAL) { }
 
         void Test() override
         {
@@ -473,7 +473,7 @@ public:
     class ThunderClapTestImpt : public TestCaseWarrior
     {
     public:
-        ThunderClapTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        ThunderClapTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void TestThunderClapAura(Unit* victim, float expectedAS, int count)
         {
@@ -548,7 +548,7 @@ public:
     class BattleShoutTestImpt : public TestCaseWarrior
     {
     public:
-        BattleShoutTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        BattleShoutTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -602,7 +602,7 @@ public:
     class BerserkerRageTestImpt : public TestCaseWarrior
     {
     public:
-        BerserkerRageTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        BerserkerRageTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void TestImmunity(TestPlayer* warrior, TestPlayer* caster, uint32 spellId)
         {
@@ -770,7 +770,7 @@ public:
     class CleaveTestImpt : public TestCaseWarrior
     {
     public:
-        CleaveTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        CleaveTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -829,7 +829,7 @@ public:
     class CommandingShoutTestImpt : public TestCaseWarrior
     {
     public:
-        CommandingShoutTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        CommandingShoutTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -944,7 +944,7 @@ public:
     class ExecuteTestImpt : public TestCaseWarrior
     {
     public:
-        ExecuteTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        ExecuteTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void TestExecuteDamage(TestPlayer* warrior, Unit* victim, bool crit)
         {
@@ -1022,7 +1022,7 @@ public:
     class InterceptTestImpt : public TestCaseWarrior
     {
     public:
-        InterceptTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        InterceptTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1093,7 +1093,7 @@ public:
     class IntidimidatingShoutTestImpt : public TestCaseWarrior
     {
     public:
-        IntidimidatingShoutTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        IntidimidatingShoutTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
         
         void TestAuraCount(TestPlayer* priest, int count)
         {
@@ -1165,7 +1165,7 @@ public:
     class PummelTestImpt : public TestCaseWarrior
     {
     public:
-        PummelTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        PummelTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1232,7 +1232,7 @@ public:
     class RecklessnessTestImpt : public TestCaseWarrior
     {
     public:
-        RecklessnessTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        RecklessnessTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1302,7 +1302,7 @@ public:
     class SlamTestImpt : public TestCaseWarrior
     {
     public:
-        SlamTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        SlamTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1353,7 +1353,7 @@ public:
     class VictoryRushTestImpt : public TestCaseWarrior
     {
     public:
-        VictoryRushTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        VictoryRushTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1414,7 +1414,7 @@ public:
     class WhirlwindTestImpt : public TestCaseWarrior
     {
     public:
-        WhirlwindTestImpt() : TestCaseWarrior(STATUS_INCOMPLETE, true) { }
+        WhirlwindTestImpt() : TestCaseWarrior(STATUS_INCOMPLETE) { }
 
         bool HasLostHealth(Unit* victim, uint32 startHealth)
         {
@@ -1515,7 +1515,7 @@ public:
     class BloodrageTestImpt : public TestCaseWarrior
     {
     public:
-        BloodrageTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        BloodrageTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1561,7 +1561,7 @@ public:
     class DisarmTestImpt : public TestCaseWarrior
     {
     public:
-        DisarmTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        DisarmTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1641,7 +1641,7 @@ public:
     class InterveneTestImpt : public TestCaseWarrior
     {
     public:
-        InterveneTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        InterveneTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1711,7 +1711,7 @@ public:
     class RevengeTestImpt : public TestCaseWarrior
     {
     public:
-        RevengeTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        RevengeTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void TestRevengeTrigger(TestPlayer* warrior, TestPlayer* rogue)
         {
@@ -1800,7 +1800,7 @@ public:
     class ShieldBashTestImpt : public TestCaseWarrior
     {
     public:
-        ShieldBashTestImpt() : TestCaseWarrior(STATUS_PARTIAL, true) { }
+        ShieldBashTestImpt() : TestCaseWarrior(STATUS_PARTIAL) { }
 
         void Test() override
         {
@@ -1870,7 +1870,7 @@ public:
     class ShieldBlockTestImpt : public TestCaseWarrior
     {
     public:
-        ShieldBlockTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        ShieldBlockTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void TestShieldBlock(TestPlayer* warrior, float expectedResult, bool castShieldBlock = false)
         {
@@ -1939,7 +1939,7 @@ public:
     class ShieldWallTestImpt : public TestCaseWarrior
     {
     public:
-        ShieldWallTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        ShieldWallTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2015,7 +2015,7 @@ public:
     class SpellReflectionTestImpt : public TestCaseWarrior
     {
     public:
-        SpellReflectionTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        SpellReflectionTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2083,7 +2083,7 @@ public:
     class StanceMasteryTestImpt : public TestCaseWarrior
     {
     public:
-        StanceMasteryTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        StanceMasteryTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void TestStanceRage(TestPlayer* warrior, uint32 stanceSpellId)
         {
@@ -2119,7 +2119,7 @@ public:
     class SunderArmorTestImpt : public TestCaseWarrior
     {
     public:
-        SunderArmorTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        SunderArmorTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void TestSunderArmor(TestPlayer* warrior, Unit* victim, uint32 startArmor, int sunderArmorStack, uint32 armorReduced)
         {
@@ -2169,7 +2169,7 @@ public:
     class TauntTestImpt : public TestCaseWarrior
     {
     public:
-        TauntTestImpt() : TestCaseWarrior(STATUS_PASSING, true) { }
+        TauntTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {

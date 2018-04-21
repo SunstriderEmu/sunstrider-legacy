@@ -1842,8 +1842,14 @@ bool SpellInfo::CheckTargetCreatureType(Unit const* target) const
         else
             return true;
     }
+
+    // if target is magnet (i.e Grounding Totem) the check is skipped
+    if (target->IsMagnet())
+        return true;
+
     uint32 creatureType = target->GetCreatureTypeMask();
-    return !TargetCreatureType || !creatureType || (creatureType & TargetCreatureType);
+    //sun: also enforce this rule if target has creatureType == 0 (only some rare custom/script creatures, but his helps for testing)
+    return !TargetCreatureType /*|| !creatureType*/ || (creatureType & TargetCreatureType);
 }
 
 SpellSchoolMask SpellInfo::GetSchoolMask() const

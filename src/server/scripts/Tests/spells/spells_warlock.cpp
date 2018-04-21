@@ -11,7 +11,7 @@ public:
     class CorruptionTestImpt : public TestCase
     {
     public:
-        CorruptionTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        CorruptionTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -49,7 +49,7 @@ public:
     class CurseOfAgonyTestImpt : public TestCase
     {
     public:
-        CurseOfAgonyTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        CurseOfAgonyTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -86,7 +86,7 @@ public:
     class CurseOfDoomTestImpt : public TestCase
     {
     public:
-        CurseOfDoomTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        CurseOfDoomTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -130,7 +130,7 @@ public:
     class CurseOfRecklessnessTestImpt : public TestCase
     {
     public:
-        CurseOfRecklessnessTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        CurseOfRecklessnessTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -169,7 +169,7 @@ public:
     class CurseOfElementsTestImpt : public TestCase
     {
     public:
-        CurseOfElementsTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        CurseOfElementsTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -222,7 +222,7 @@ public:
     class CurseOfTonguesTestImpt : public TestCase
     {
     public:
-        CurseOfTonguesTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        CurseOfTonguesTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -262,7 +262,7 @@ public:
     class CurseOfWeaknessTestImpt : public TestCase
     {
     public:
-        CurseOfWeaknessTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        CurseOfWeaknessTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -293,7 +293,7 @@ public:
     class DeathCoilTestImpt : public TestCase
     {
     public:
-        DeathCoilTestImpt() : TestCase(STATUS_PASSING, true) { }
+        DeathCoilTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -345,7 +345,7 @@ public:
     class DrainLifeTestImpt : public TestCase
     {
     public:
-        DrainLifeTestImpt() : TestCase(STATUS_PASSING, true) { }
+        DrainLifeTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -402,7 +402,7 @@ public:
     class DrainManaTestImpt : public TestCase
     {
     public:
-        DrainManaTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        DrainManaTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -450,7 +450,7 @@ public:
     class DrainSoulTestImpt : public TestCase
     {
     public:
-        DrainSoulTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        DrainSoulTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -495,7 +495,7 @@ public:
     class FearTestImpt : public TestCase
     {
     public:
-        FearTestImpt() : TestCase(STATUS_PASSING, true) { }
+        FearTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -534,7 +534,7 @@ public:
     class HowlOfTerrorTestImpt : public TestCase
     {
     public:
-        HowlOfTerrorTestImpt() : TestCase(STATUS_PASSING, true) { }
+        HowlOfTerrorTestImpt() : TestCase(STATUS_PASSING) { }
 
         bool isFeared(Unit* victim)
         {
@@ -585,7 +585,7 @@ public:
     class LifeTapTestImpt : public TestCase
     {
     public:
-        LifeTapTestImpt() : TestCase(STATUS_PARTIAL, true) { }
+        LifeTapTestImpt() : TestCase(STATUS_PARTIAL) { }
 
         void Test() override
         {
@@ -629,7 +629,7 @@ public:
     class SeedOfCorruptionTestImpt : public TestCase
     {
     public:
-        SeedOfCorruptionTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        SeedOfCorruptionTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void ResetDummiesHealth(Creature* dummy1, Creature* dummy2, Creature* dummy3) {
             dummy1->SetFullHealth();
@@ -751,7 +751,7 @@ public:
     class CreateFirestoneTestImpt : public TestCase
     {
     public:
-        CreateFirestoneTestImpt() : TestCase(STATUS_INCOMPLETE, true) { }
+        CreateFirestoneTestImpt() : TestCase(STATUS_INCOMPLETE) { }
 
         void CreateFirestone(TestPlayer* caster, uint32 firestoneSpellId, uint32 firestone, uint32 expectedManaCost)
         {
@@ -814,7 +814,7 @@ public:
     class RainOfFireTestImpt : public TestCase
     {
     public:
-        RainOfFireTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        RainOfFireTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -857,7 +857,7 @@ public:
     class HellfireTestImpt : public TestCase
     {
     public:
-        HellfireTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        HellfireTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -924,7 +924,7 @@ public:
     class ImmolateTestImpt : public TestCase
     {
     public:
-        ImmolateTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        ImmolateTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -1103,7 +1103,7 @@ public:
     class SoulFireTestImpt : public TestCase
     {
     public:
-        SoulFireTestImpt() : TestCase(STATUS_PARTIAL, true) { }
+        SoulFireTestImpt() : TestCase(STATUS_PARTIAL) { }
 
         void Test() override
         {

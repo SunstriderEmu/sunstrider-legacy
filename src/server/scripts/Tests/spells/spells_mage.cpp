@@ -9,7 +9,7 @@ public:
     class IceLanceTestImpt : public TestCase
     {
     public:
-        IceLanceTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        IceLanceTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -54,7 +54,7 @@ public:
     class FrostboltTestImpt : public TestCase
     {
     public:
-        FrostboltTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { }
+        FrostboltTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {

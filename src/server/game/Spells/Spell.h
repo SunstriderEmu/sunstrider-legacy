@@ -471,8 +471,6 @@ class TC_GAME_API Spell
         void UpdateSpellCastDataTargets(WorldPackets::Spells::SpellCastData& data);
         void UpdateSpellCastDataAmmo(WorldPackets::Spells::SpellAmmo& ammo);
 
-        bool CheckTarget(Unit* target, uint32 eff);
-
         bool CheckEffectTarget(Unit const* target, uint32 eff) const;
         void CheckSrc() { if(!m_targets.HasSrc()) m_targets.SetSrc(m_caster); }
         void CheckDst() { if(!m_targets.HasDst()) m_targets.SetDst(m_caster); }
@@ -550,8 +548,6 @@ class TC_GAME_API Spell
         int32 GetPowerCost() const { return m_powerCost; }
 
         bool UpdatePointers();                              // must be used at call Spell code after time delay (non triggered spell cast/update spell call/etc)
-
-        bool CheckTargetCreatureType(Unit* target) const;
 
         void CleanupTargetList();
 
