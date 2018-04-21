@@ -209,6 +209,7 @@ class TC_GAME_API Item : public Object
         Bag const* ToBag() const { if (IsBag()) return reinterpret_cast<Bag const*>(this); else return nullptr; }
 
         bool IsBag() const;
+        bool IsConjuredConsumable() const { return GetTemplate()->IsConjuredConsumable(); }
         bool IsBroken() const;
         bool CanBeTraded() const;
         void SetInTrade(bool b = true) { mb_in_trade = b; }

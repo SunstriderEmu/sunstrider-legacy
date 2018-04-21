@@ -158,7 +158,7 @@ void Bag::RemoveItem( uint8 slot, bool /*update*/ )
         m_bagslot[slot]->SetContainer(nullptr);
 
     m_bagslot[slot] = nullptr;
-    SetUInt64Value( CONTAINER_FIELD_SLOT_1 + (slot * 2), 0 );
+    SetUInt64Value(CONTAINER_FIELD_SLOT_1 + (slot * 2), 0);
 }
 
 void Bag::StoreItem( uint8 slot, Item *pItem, bool /*update*/ )
