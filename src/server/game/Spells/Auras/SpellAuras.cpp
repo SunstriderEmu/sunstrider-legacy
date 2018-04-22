@@ -188,6 +188,12 @@ void AuraApplication::_InitFlags(Unit* caster, uint8 effMask)
     else
         _flags |= AFLAG_NOT_CANCELABLE;
 
+    if (GetBase()->IsPassive())
+        _flags |= AFLAG_PASSIVE_DEPRECATED;
+
+    if (_flags & AFLAG_HELPFUL)
+        _flags |= AFLAG_HELPFUL_REVEALED;
+
     _flags |= IsPositive() ? AFLAG_HELPFUL : AFLAG_HARMFUL;
 #endif
 }
