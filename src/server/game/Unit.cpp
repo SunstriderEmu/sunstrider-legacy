@@ -1815,7 +1815,7 @@ float Unit::CalculateAverageResistReduction(WorldObject const* caster, SpellScho
     But Is it 8 or 5 per level ?
     "Frostbolt, however, is a binary spell, meaning it has special rules regarding magic resist. A binary spell can only ever hit or miss; it will not ever partially resist. Because of this, frostbolt is completely unaffected by level based magic resist. We're not exactly sure why this occurs, but frost mages almost always see a 99% hit rate on frostbolt (assuming they are hit capped like they should be)  Therefore the 6% damage reduction can be completely ignored. This does not mean that frostbolt does more damage than fireball; it is only another consideration that has been made when comparing specs and theorycrafting."
     */
-    if (caster && caster->GetTypeId() != TYPEID_GAMEOBJECT && (!spellInfo || !spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL)))
+    if (caster && caster->GetTypeId() != TYPEID_GAMEOBJECT && (!spellInfo || !spellInfo->IsBinarySpell()))
     {
         int32 levelDiff = victim->GetLevelForTarget(caster) - caster->GetLevelForTarget(victim);
         if (levelDiff > 0)
@@ -1861,7 +1861,7 @@ uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 
             return 0;
 
         // Binary spells can't have damage part resisted
-       if (spellInfo->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL))
+       if (spellInfo->IsBinarySpell())
             return 0;
     }
 

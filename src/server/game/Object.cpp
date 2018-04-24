@@ -3238,7 +3238,7 @@ SpellMissInfo WorldObject::MagicSpellHitResult(Unit *pVictim, SpellInfo const *s
         }
 
         // resistance chance for binary spells, equals to average damage reduction of non-binary spell
-        if (spell->HasAttribute(SPELL_ATTR0_CU_BINARY_SPELL) && (spell->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
+        if (spell->IsBinarySpell() && (spell->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
             modHitChance -= int32(Unit::CalculateAverageResistReduction(this, spell->GetSchoolMask(), pVictim, spell) * 100.f); 
     }
 
