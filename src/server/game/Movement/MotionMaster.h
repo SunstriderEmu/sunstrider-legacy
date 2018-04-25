@@ -16,6 +16,10 @@ class Unit;
 class PathGenerator;
 struct WaypointPath;
 class SplineHandler;
+namespace Movement
+{
+    class MoveSplineInit;
+};
 
 class TC_GAME_API MotionMaster
 {
@@ -107,6 +111,9 @@ class TC_GAME_API MotionMaster
         void ReinitializeMovement();
 
         bool GetDestination(float &x, float &y, float &z);
+
+        void LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id = 0, MovementSlot slot = MOTION_SLOT_ACTIVE, MovementGeneratorType type = EFFECT_MOTION_TYPE);
+
     private:
         typedef std::vector<MovementGenerator*> MovementList;
 

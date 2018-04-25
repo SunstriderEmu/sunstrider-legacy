@@ -246,6 +246,9 @@ bool MoveSplineInitArgs::_checkPathBounds() const
     return true;
 }
 
+MoveSplineInitArgs::MoveSplineInitArgs(MoveSplineInitArgs && args) = default;
+MoveSplineInitArgs::~MoveSplineInitArgs() = default;
+
 /// ============================================================================================
 
 MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)

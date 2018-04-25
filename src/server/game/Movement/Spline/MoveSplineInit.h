@@ -45,6 +45,7 @@ namespace Movement
     public:
 
         explicit MoveSplineInit(Unit* m);
+        MoveSplineInit(MoveSplineInit&& init) = default;
 
         /*  Final pass of initialization that launches spline movement.
         Does replace first point with creature current position

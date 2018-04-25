@@ -52,6 +52,8 @@ namespace Movement
         {
             path.reserve(path_capacity);
         }
+        MoveSplineInitArgs(MoveSplineInitArgs&& args);
+        ~MoveSplineInitArgs();
 
         PointsArray path;
         FacingInfo facing;

@@ -74,18 +74,4 @@ class AssistanceMovementGenerator : public PointMovementGenerator<Creature>
         void Finalize(Unit*, bool) override;
 };
 
-// Does almost nothing - just doesn't allows previous movegen interrupt current effect.
-class EffectMovementGenerator : public MovementGenerator
-{
-    public:
-        explicit EffectMovementGenerator(uint32 Id) : m_Id(Id) { }
-        bool Initialize(Unit*) override { return true;  }
-        void Finalize(Unit*, bool) override;
-        void Reset(Unit*) override { }
-        bool Update(Unit*, uint32) override;
-        MovementGeneratorType GetMovementGeneratorType() const override;
-    private:
-        uint32 m_Id;
-};
-
 #endif

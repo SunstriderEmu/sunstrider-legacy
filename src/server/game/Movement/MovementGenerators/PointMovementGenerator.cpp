@@ -130,31 +130,3 @@ void AssistanceMovementGenerator::Finalize(Unit* unit, bool /* premature */)
     if (unit->IsAlive())
         unit->GetMotionMaster()->MoveSeekAssistanceDistract(sWorld->getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY));
 }
-
-bool EffectMovementGenerator::Update(Unit* unit, uint32)
-{
-    return !unit->movespline->Finalized();
-}
-
-void EffectMovementGenerator::Finalize(Unit* unit, bool /* premature */)
-{
-    if (unit->GetTypeId() != TYPEID_UNIT)
-        return;
-
-    // Need restore previous movement since we have no proper states system
-    if (unit->IsAlive() && !unit->HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_FLEEING))
-    {
-        if (Unit* victim = unit->GetVictim())
-            unit->GetMotionMaster()->MoveChase(victim);
-        else
-            unit->GetMotionMaster()->Initialize();
-    }
-
-    if (unit->ToCreature()->AI())
-        unit->ToCreature()->AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
-}
-
-MovementGeneratorType EffectMovementGenerator::GetMovementGeneratorType() const
-{
-    return EFFECT_MOTION_TYPE;
-}
