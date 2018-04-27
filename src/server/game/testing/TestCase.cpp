@@ -213,9 +213,10 @@ void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell
 	caster->SetPower(powerType, expectedPowerCost);
     INTERNAL_ASSERT_INFO("Caster has not the expected power %u but %u instead", expectedPowerCost, caster->GetPower(powerType));
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
+    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
     _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
-    caster->ResetForceSpellHitResult();
+    caster->ForceSpellHitResult(previousForceHitResult);
     //special case for channeled spell, spell system currently does not allow casting them instant
     if (spellInfo->IsChanneled())
     {
@@ -236,10 +237,11 @@ void TestCase::_TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellI
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
     caster->GetSpellHistory()->ResetCooldown(castSpellID);
     _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
-    caster->ResetForceSpellHitResult();
+    caster->ForceSpellHitResult(previousForceHitResult);
     //special case for channeled spell, spell system currently does not allow casting them instant
     if (spellInfo->IsChanneled())
     {
@@ -608,9 +610,10 @@ void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastRe
 
 void TestCase::_ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo, TriggerCastFlags triggeredFlags)
 {
+    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     caster->ForceSpellHitResult(forcedMissInfo);
     uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
-    caster->ResetForceSpellHitResult();
+    caster->ForceSpellHitResult(previousForceHitResult);
     INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %s", spellID, StringifySpellCastResult(res).c_str());
     INTERNAL_TEST_ASSERT(res == uint32(SPELL_CAST_OK));
 }
@@ -723,6 +726,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
 	EnableCriticals(caster, crit);
 
+    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     for (uint32 i = 0; i < sampleSize; i++)
     {
         if (callback)
@@ -730,7 +734,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
         caster->ForceSpellHitResult(SPELL_MISS_NONE);
         uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_DEBUG_MASK);
-        caster->ResetForceSpellHitResult();
+        caster->ForceSpellHitResult(previousForceHitResult);
         INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
     }
@@ -774,13 +778,14 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     uint32 maxPredictionError;
     _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
 
+    MeleeHitOutcome previousForceMeleeResult = caster->_forceMeleeResult;
     caster->ForceMeleeHitResult(crit ? MELEE_HIT_CRIT : MELEE_HIT_NORMAL);
     for (uint32 i = 0; i < sampleSize; i++)
     if (attackType != RANGED_ATTACK)
         caster->AttackerStateUpdate(target, attackType);
     else
         caster->CastSpell(target, 75, true); //shoot
-    caster->ResetForceMeleeHitResult();
+    caster->ForceMeleeHitResult(previousForceMeleeResult);
 
     Wait(3 * SECOND * IN_MILLISECONDS);
     uint32 dealtMin;
@@ -1074,11 +1079,12 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
 
+    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
     uint32 result = caster->CastSpell(target, spellID, true);
     if (result != SPELL_CAST_OK)
     {
-        caster->ResetForceSpellHitResult();
+        caster->ForceSpellHitResult(previousForceHitResult);
         INTERNAL_ASSERT_INFO("_TestDotDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(false);
     }
@@ -1093,8 +1099,9 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     //spell did hit, let's wait for dot duration
     uint32 waitTime = aura->GetDuration() + 1 * SECOND * IN_MILLISECONDS;
     Wait(waitTime);
-    caster->ResetForceSpellHitResult();
+    caster->ForceSpellHitResult(previousForceHitResult);
     //aura may be deleted at this point, do not use anymore
+    aura = nullptr;
 
     //make sure aura expired
     INTERNAL_ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
@@ -1117,6 +1124,7 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
     uint32 baseCastTime = spellInfo->CalcCastTime(nullptr);
     uint32 baseDurationTime = spellInfo->GetDuration();
+    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
 
     for (uint32 i = 0; i < 100; i++)
     {
@@ -1126,12 +1134,12 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
         uint32 result = caster->CastSpell(target, spellID, true);
         if (result != SPELL_CAST_OK)
         {
-            caster->ResetForceSpellHitResult();
+            caster->ForceSpellHitResult(previousForceHitResult);
             INTERNAL_ASSERT_INFO("_TestDotDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
             INTERNAL_TEST_ASSERT(false);
         }
         Wait(baseCastTime + baseDurationTime + 1000); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
-        caster->ResetForceSpellHitResult();
+        caster->ForceSpellHitResult(previousForceHitResult);
         bool mustRetry = false;
         float totalChannelDmg = 0; 
         if(healing)
@@ -1148,7 +1156,6 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
         INTERNAL_TEST_ASSERT(resultTickAmount >= (expectedTickAmount - 2) && resultTickAmount <= (expectedTickAmount + 2)); //channels have greater error since they got their damage divided in several ticks
         return;
     }
-    caster->ResetForceSpellHitResult();
     INTERNAL_ASSERT_INFO("Failed to cast spell (%u) 100 times", spellID);
     INTERNAL_TEST_ASSERT(false); //failed to cast the spell 100 times
 }
