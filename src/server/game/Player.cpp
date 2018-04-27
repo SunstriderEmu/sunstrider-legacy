@@ -15954,7 +15954,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetGuidValue(UNIT_FIELD_CHARMEDBY, ObjectGuid::Empty);
     SetGuidValue(UNIT_FIELD_CHARM, ObjectGuid::Empty);
     SetGuidValue(UNIT_FIELD_SUMMON, ObjectGuid::Empty);
-    SetGuidValue(PLAYER_FARSIGHT, ObjectGuid::Empty);
 
     // reset some aura modifiers before aura apply
     SetUInt32Value(PLAYER_TRACK_CREATURES, 0 );
