@@ -233,7 +233,8 @@ public:
 
                 //mage cast a second ice lance, but has only 35 (expectedMageMana) mana left. Remaining mana should be burned and damage should only amount to this burned mana
                 TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-                Wait(1000);
+                Wait(1000); //wait for spell to hit + proc to hit
+                Wait(1);
                 ASSERT_INFO("initial mana: 35, current mana: %u, expected: 0", mage->GetPower(POWER_MANA));
                 TEST_ASSERT(mage->GetPower(POWER_MANA) == 0);
                 TEST_ASSERT(mage->GetHealth() == expectedMageHealth - expectedMageMana);
@@ -1903,8 +1904,11 @@ public:
             // When Fade's duration expires, the **next threat-generating action** will generate normal threat plus all the threat that was originally Faded from the target.
             // Note: On our server threat is immediately given back, we're not reproducing this specific behavior
             Wait(11000); // fade last 10 seconds
+            TEST_ASSERT(priest->IsInCombatWith(creature));
             TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::FADE_RNK_7);
-            TEST_ASSERT(Between(creature->GetThreatManager().GetThreat(priest), startThreat - 1.0f, startThreat + 1.0f));
+            float const currentThreat2 = creature->GetThreatManager().GetThreat(priest);
+            ASSERT_INFO("currentThreat %f - startThreat %f", currentThreat2, startThreat);
+            TEST_ASSERT(Between(currentThreat2, startThreat - 1.0f, startThreat + 1.0f));
 
             // Power cost
             uint32 const expectedFadeMana = 330;
@@ -2055,15 +2059,21 @@ public:
             float const baseAttackSpeed = enemy->GetAttackTimer(BASE_ATTACK);
             float const expectedAttackSpeed = baseAttackSpeed * 1.25f;
 
-            // Mana cost
-            uint32 const expectedMindControlMana = 750;
-            TEST_POWER_COST(priest, enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, POWER_MANA, expectedMindControlMana);
+            FORCE_CAST(priest, enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
+            Wait(5000); //wait for spell to be cast (TRIGGERED_CAST_DIRECTLY does not work currently with channeled)
 
             // Aura
             TEST_AURA_MAX_DURATION(enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, Seconds(10));
 
             // Attack Speed +25%
             TEST_ASSERT(enemy->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
+
+            priest->InterruptNonMeleeSpells(true);
+            Wait(1);
+
+            // Mana cost
+            uint32 const expectedMindControlMana = 750;
+            TEST_POWER_COST(priest, enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, POWER_MANA, expectedMindControlMana);
         }
     };
 
@@ -2176,18 +2186,16 @@ public:
             TEST_ASSERT(warriorClose->HaveAtClient(priest));
             TEST_ASSERT(warriorClose->HaveAtClient(rogueFar));
 
-            // Mana cost
-            uint32 const expectedMindVisionMana = 150;
-            TEST_POWER_COST(priest, warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2, POWER_MANA, expectedMindVisionMana);
-
-            // Aura
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
-            TEST_AURA_MAX_DURATION(warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
-
+            FORCE_CAST(priest, warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2);
+            Wait(1);
             Wait(1);
             WorldPacket fakeClientResponse;
             fakeClientResponse << bool(true);
             priest->GetSession()->HandleFarSightOpcode(fakeClientResponse);
+
+            // Aura
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
+            TEST_AURA_MAX_DURATION(warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2, 1 * MINUTE * IN_MILLISECONDS);
 
             Wait(4000); //wait a bit to update view for priest
             //priest should now have both players in view
@@ -2195,8 +2203,9 @@ public:
             TEST_ASSERT(priest->HaveAtClient(rogueFar));
 
             // Priest should be able to cast vision on rogue, even though he was out of vision the first time
-            priest->SetPower(POWER_MANA, priest->GetMaxPower(POWER_MANA));
+            priest->SetFullPower(POWER_MANA);
             FORCE_CAST(priest, rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2, SPELL_MISS_NONE);
+            Wait(1);
             Wait(1);
             TEST_HAS_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
             TEST_HAS_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
@@ -2211,6 +2220,13 @@ public:
             Wait(1000);
             TEST_HAS_NOT_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
             TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
+
+            // Mana cost
+            priest->InterruptNonMeleeSpells(true);
+            uint32 const expectedMindVisionMana = 150;
+            TEST_POWER_COST(priest, warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2, POWER_MANA, expectedMindVisionMana);
+
+            //TODO: should mind vision be resistable? Because it currently is
         }
     };
 
@@ -2301,7 +2317,7 @@ public:
             TestPlayer* enemyFurther = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
 
             // Auras & range
-            TEST_CAST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+            FORCE_CAST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
             TEST_AURA_MAX_DURATION(enemy1, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
             TEST_AURA_MAX_DURATION(enemy2, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
             TEST_AURA_MAX_DURATION(enemy3, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
