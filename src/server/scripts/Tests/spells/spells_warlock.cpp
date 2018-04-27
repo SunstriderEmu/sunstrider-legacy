@@ -104,6 +104,8 @@ public:
 
             uint32 const expectedCurseOfDoomManaCost = 380;
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, POWER_MANA, expectedCurseOfDoomManaCost);
+
+            TEST_CAST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2);
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, Minutes(1));
             TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, Minutes(1));
 
@@ -548,6 +550,8 @@ public:
 
             uint32 const expectedHowlOfTerrorManaCost = 200;
             TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, POWER_MANA, expectedHowlOfTerrorManaCost);
+
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2);
             TEST_AURA_MAX_DURATION(enemy1, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, Seconds(8));
             TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, Seconds(40));
             enemy1->RemoveAurasDueToSpell(ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2);
@@ -1122,10 +1126,14 @@ public:
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
 
-            // Consumes a Soul Shard
             uint32 const expectedSoulFireManaCost = 250;
             warlock->AddItem(SOUL_SHARD, 1);
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, POWER_MANA, expectedSoulFireManaCost);
+            TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
+
+            warlock->AddItem(SOUL_SHARD, 1);
+            TEST_CAST(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4);
+            // Consumes a Soul Shard
             TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
             TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::SOUL_FIRE_RNK_4, Minutes(1));
 

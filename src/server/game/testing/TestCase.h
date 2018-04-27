@@ -185,8 +185,15 @@ public:
 
     #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) { _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller(); }
 
-    //Cast given spell and check its power cost
+    /* Cast given spell (fully triggered) and check its power cost (note: spell also needs regeants if any)
+    This will not trigger any CD but keep in mind that spell effects will be applied
+    */
     #define TEST_POWER_COST(caster, target, castSpellID, powerType, expectedPowerCost) { _SetCaller(__FILE__, __LINE__); _TestPowerCost(caster, target, castSpellID, powerType, expectedPowerCost); _ResetCaller(); }
+
+    /* Cast given spell (fully triggered) and check if CD is triggered
+    This will not trigger any CD but keep in mind that spell effects will be applied
+    */
+    #define TEST_COOLDOWN(caster, target, castSpellID, cooldownSecond) { _SetCaller(__FILE__, __LINE__); _TestCooldown(caster, target, castSpellID, cooldownSecond); _ResetCaller(); }
 
     /* Check remaining cooldown for given spellID
     cooldownSecond: can be either uint32 or std::chrono::duration (such as Seconds)
@@ -241,8 +248,10 @@ protected:
     void _TestSpellHitChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float chance, SpellMissInfo missInfo);
     void _TestMeleeHitChance(TestPlayer* caster, TestPlayer* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
 
-	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpell, uint32 testSpell, uint32 requireCount);
-	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell, Powers powerType, uint32 expectedPowerCost);
+	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
+	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
+    inline void _TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, Seconds s) { _TestCooldown(caster, target, castSpellID, uint32(s.count())); }
+    void _TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond);
     void _EquipItem(TestPlayer* p, uint32 itemID);
     //if negative, ensure has NOT aura
     void _EnsureHasAura(Unit* target, int32 spellID);

@@ -369,11 +369,15 @@ public:
             // Mana cost
             uint32 const expectedHurricaneMana = 1905;
             TEST_POWER_COST(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, POWER_MANA, expectedHurricaneMana);
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::HURRICANE_RNK_4, Minutes(1));
-            // Duration
+
+            // Cooldown
+            TEST_COOLDOWN(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, Minutes(1));
+
+            // Duration: TODO: any better way to check it?
 			SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(ClassSpells::Druid::HURRICANE_RNK_4);
 			TEST_ASSERT(spellInfo != nullptr);
 			TEST_ASSERT(spellInfo->GetDuration() == 10 * SECOND *  IN_MILLISECONDS);
+
             // 25% AS
 			TEST_ASSERT(rogue->GetAttackTimer(BASE_ATTACK) == expectedRogueAttackSpeed);
 
@@ -429,6 +433,7 @@ public:
             TEST_POWER_COST(druid, druid, ClassSpells::Druid::INNERVATE_RNK_1, POWER_MANA, expectedInnervateManaCost);
 
 			// Duration & CD
+            TEST_CAST(druid, druid, ClassSpells::Druid::INNERVATE_RNK_1);
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::INNERVATE_RNK_1, Seconds(20));
 			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::INNERVATE_RNK_1, Minutes(6));
 
@@ -713,9 +718,10 @@ public:
 			// Rage cost
             uint32 const expectedChallengingRoarRage = 15 * 10;
             TEST_POWER_COST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, POWER_RAGE, expectedChallengingRoarRage);
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Minutes(10));
+            TEST_COOLDOWN(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Minutes(10));
 
 			// Aura
+            TEST_CAST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
             TEST_AURA_MAX_DURATION(creature3m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Seconds(6));
             TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Seconds(6));
             TEST_HAS_NOT_AURA(creature15m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
@@ -809,20 +815,27 @@ public:
             TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
             Wait(1500);
             druid->ForceMeleeHitResult(MELEE_HIT_NORMAL);
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 50; i++)
                 druid->AttackerStateUpdate(creature, BASE_ATTACK);
 			druid->AttackStop();
             druid->ResetForceMeleeHitResult();
 
-			uint32 cowerPoints = 1170;
-			float const threat = creature->GetThreatManager().GetThreat(druid);
-			float const expectedThreat = threat - cowerPoints;
-
-			uint32 expectedCowerEnergy = 20;
-            TEST_POWER_COST(druid, creature, ClassSpells::Druid::COWER_RNK_5, POWER_ENERGY, expectedCowerEnergy);
+            //Test threat
+            uint32 cowerPoints = 1170;
+            float const threat = creature->GetThreatManager().GetThreat(druid);
+            ASSERT_INFO("Druids needs to have higher threat than %u to test spell", threat);
+            TEST_ASSERT(threat > cowerPoints);
+            float const expectedThreat = threat - cowerPoints;
+            TEST_CAST(druid, creature, ClassSpells::Druid::COWER_RNK_5);
 			ASSERT_INFO("Before: %f, current: %f, expected: %f", threat, creature->GetThreatManager().GetThreat(druid), expectedThreat);
 			TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == expectedThreat);
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::COWER_RNK_5, Seconds(10));
+
+            //Test CD
+			TEST_COOLDOWN(druid, creature, ClassSpells::Druid::COWER_RNK_5, Seconds(10));
+
+            //Test power cost
+            uint32 expectedCowerEnergy = 20;
+            TEST_POWER_COST(druid, creature, ClassSpells::Druid::COWER_RNK_5, POWER_ENERGY, expectedCowerEnergy);
 		}
 	};
 
@@ -2055,7 +2068,7 @@ public:
             caster->GetSpellHistory()->ResetAllCooldowns();
             caster->AddItem(reagentId, 1);
             TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
-            TEST_HAS_COOLDOWN(caster, spellId, Minutes(20));
+            TEST_COOLDOWN(caster, victim, spellId, Minutes(20));
             Wait(1);
             victim->RessurectUsingRequestData();
             Wait(1); //resurrect needs 1 update to be done

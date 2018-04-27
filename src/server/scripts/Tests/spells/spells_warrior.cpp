@@ -253,19 +253,20 @@ public:
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
 
             // Rage cost
+            warrior->SetPower(POWER_RAGE, 1000); //max rage
             uint32 const expectedMockingBlowRage = 10 * 10;
             creature->RemoveAurasDueToSpell(ClassSpells::Warrior::MOCKING_BLOW_RNK_6);
             TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, POWER_RAGE, expectedMockingBlowRage);
 
-            // Cooldown
-            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, Minutes(2));
-
-            // Aura
+            // Aura + Cooldown
+            warrior->SetPower(POWER_RAGE, 1000); //max rage
+            TEST_CAST(warrior, creature, ClassSpells::Warrior::MOCKING_BLOW_RNK_6);
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, Seconds(6));
+            TEST_COOLDOWN(warrior, creature, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, Minutes(2));
 
             // Taunt
             TEST_ASSERT(creature->GetTarget() == warrior->GetGUID());
-            Wait(6000);
+            Wait(6000); //let taunt fade
             TEST_ASSERT(creature->GetTarget() == ally->GetGUID());
 
             // Damage
@@ -475,6 +476,7 @@ public:
     public:
         ThunderClapTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
+        //test duration + victim attack time
         void TestThunderClapAura(Unit* victim, float expectedAS, int count)
         {
             if (victim->HasAura(ClassSpells::Warrior::THUNDER_CLAP_RNK_7))
@@ -503,13 +505,16 @@ public:
 
             // Rage cost
             Wait(4500); // Cooldown
+            warrior->SetPower(POWER_RAGE, warrior->GetMaxPower(POWER_RAGE));
             uint32 const expectedThunderClapRage = 20 * 10;
             TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, POWER_RAGE, expectedThunderClapRage);
 
             // Cooldown
-            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, Seconds(4));
+            TEST_COOLDOWN(warrior, creature1, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, Seconds(4));
 
             // 4 affected max, aura duration, slower attacks
+            warrior->SetPower(POWER_RAGE, warrior->GetMaxPower(POWER_RAGE));
+            TEST_CAST(warrior, creature1, ClassSpells::Warrior::THUNDER_CLAP_RNK_7);
             float const ThunderClapFactor = 0.9f;
             float const enemy1ExpectedAS = enemy1->GetAttackTimer(BASE_ATTACK) * ThunderClapFactor;
             float const enemy2ExpectedAS = enemy1->GetAttackTimer(BASE_ATTACK) * ThunderClapFactor;
@@ -643,17 +648,17 @@ public:
             TestImmunity(warrior, rogue, ClassSpells::Rogue::GOUGE_RNK_6);
             TestImmunity(warrior, warlock, ClassSpells::Warlock::FEAR_RNK_3);
 
+            warrior->SetPower(POWER_RAGE, warrior->GetMaxPower(POWER_RAGE));
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::BERSERKER_RAGE_RNK_1);
+
             // Aura duration
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BERSERKER_RAGE_RNK_1, Seconds(10));
 
             // Cooldown duration
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::BERSERKER_RAGE_RNK_1, Seconds(30));
 
-            // Reset
-            warrior->SetPower(POWER_RAGE, 0);
-            TEST_ASSERT(warrior->GetPower(POWER_RAGE) == 0);
-
             // Extra rage
+            warrior->SetPower(POWER_RAGE, 0);
             auto AI = rogue->GetTestingPlayerbotAI();
             uint32 level = 70;
             float const rageConversion = 0.0091107836f * level * level + 3.225598133f * level + 4.2652911f;
@@ -701,6 +706,7 @@ public:
         void Test() override
         {
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            warrior->SetPower(POWER_RAGE, warrior->GetMaxPower(POWER_RAGE));
 
             Position spawn3m(_location);
             spawn3m.MoveInFront(_location, 3.0f);
@@ -725,19 +731,14 @@ public:
             Wait(3000);
 
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1);
 
-            // Rage cost
-            uint32 const expectedChallengingShoutRage = 5 * 10;
-            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, POWER_RAGE, expectedChallengingShoutRage);
-
-            // Cooldown
-            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, Minutes(10));
-
-            // Aura
+            // Aura, affected targets
             Aura* aura3m = creature3m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1);
             TEST_ASSERT(aura3m != nullptr);
             Aura* aura6m = creature6m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1);
             TEST_ASSERT(aura6m != nullptr);
+            // Aura, too far 
             Aura* aura11m = creature11m->GetAura(ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1);
             TEST_ASSERT(aura11m == nullptr);
 
@@ -753,6 +754,15 @@ public:
             Wait(6500);
             TEST_ASSERT(creature3m->GetTarget() == player3m->GetGUID());
             TEST_ASSERT(creature6m->GetTarget() == player6m->GetGUID());
+
+
+            // Rage cost
+            warrior->SetPower(POWER_RAGE, warrior->GetMaxPower(POWER_RAGE));
+            uint32 const expectedChallengingShoutRage = 5 * 10;
+            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, POWER_RAGE, expectedChallengingShoutRage);
+
+            // Cooldown
+            TEST_COOLDOWN(warrior, warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, Minutes(10));
         }
     };
 
@@ -1055,9 +1065,13 @@ public:
             warrior->Relocate(_location);
             Wait(1500);
 
+            uint32 initialRage = warrior->GetPower(POWER_RAGE);
+            TEST_CAST(warrior, priest2, ClassSpells::Warrior::INTERCEPT_RNK_5);
+
             // Rage cost
             uint32 expectedInterceptRageCost = 10 * 10;
-            TEST_POWER_COST(warrior, priest2, ClassSpells::Warrior::INTERCEPT_RNK_5, POWER_RAGE, expectedInterceptRageCost);
+            //TEST_POWER_COST(warrior, priest2, ClassSpells::Warrior::INTERCEPT_RNK_5, POWER_RAGE, expectedInterceptRageCost);
+            TEST_ASSERT(warrior->GetPower(POWER_RAGE) == initialRage - expectedInterceptRageCost);
 
             // Cooldown
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::INTERCEPT_RNK_5, Seconds(30));
@@ -1121,9 +1135,7 @@ public:
 
             warrior->DisableRegeneration(true);
 
-            // Rage cost
-            uint32 expectedIntidimidatingShoutRageCost = 25 * 10;
-            TEST_POWER_COST(warrior, priest1, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, POWER_RAGE, expectedIntidimidatingShoutRageCost);
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1);
 
             // Cooldown
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, Minutes(3));
@@ -1148,6 +1160,10 @@ public:
             Unit::DealDamage(warrior, priest1, 1);
             Wait(500);
             TEST_ASSERT(!priest1->HasAura(ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1_TRIGGER));
+
+            // Rage cost
+            uint32 expectedIntidimidatingShoutRageCost = 25 * 10;
+            TEST_POWER_COST(warrior, priest1, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, POWER_RAGE, expectedIntidimidatingShoutRageCost);
         }
     };
 
@@ -1184,9 +1200,7 @@ public:
             TEST_CAST(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7);
             Wait(500);
 
-            // Rage cost
-            uint32 expectedPummelRageCost = 10 * 10;
-            TEST_POWER_COST(warrior, priest, ClassSpells::Warrior::PUMMEL_RNK_2, POWER_RAGE, expectedPummelRageCost);
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::PUMMEL_RNK_2);
 
             // Cooldown
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::PUMMEL_RNK_2, Seconds(10));
@@ -1215,6 +1229,11 @@ public:
             uint32 const expectedPummelCrit = ClassSpellsDamage::Warrior::PUMMEL_RNK_2 * 2.0f * armorFactor;
             TEST_DIRECT_SPELL_DAMAGE(warrior, dummy, ClassSpells::Warrior::PUMMEL_RNK_2, expectedPummel, expectedPummel, false);
             TEST_DIRECT_SPELL_DAMAGE(warrior, dummy, ClassSpells::Warrior::PUMMEL_RNK_2, expectedPummelCrit, expectedPummelCrit, true);
+
+
+            // Rage cost
+            uint32 expectedPummelRageCost = 10 * 10;
+            TEST_POWER_COST(warrior, priest, ClassSpells::Warrior::PUMMEL_RNK_2, POWER_RAGE, expectedPummelRageCost);
         }
     };
 
@@ -1465,17 +1484,17 @@ public:
             creature3->SetFullHealth();
 
             //Test power cost + cooldown + target count
-            uint32 count = 0; 
-            uint32 const expectedWhirldwindRage = 25 * 10;
-            TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, POWER_RAGE, expectedWhirldwindRage);
+            uint32 lostHealthCount = 0; 
+            TEST_CAST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1);
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::WHIRLWIND_RNK_1, Seconds(10));
-            count += uint32(HasLostHealth(creature1, startHealth1));
-            count += uint32(HasLostHealth(creature2, startHealth1));
-            count += uint32(HasLostHealth(creature3, startHealth1));
+            lostHealthCount += uint32(HasLostHealth(creature1, startHealth1));
+            lostHealthCount += uint32(HasLostHealth(creature2, startHealth1));
+            lostHealthCount += uint32(HasLostHealth(creature3, startHealth1));
             //creature 4 is spawned further away
-            count += uint32(HasLostHealth(creature4, startHealth1));
-            count += uint32(HasLostHealth(creature5, startHealth1));
-            TEST_ASSERT(count <= 4);  // FAILS HERE!
+            lostHealthCount += uint32(HasLostHealth(creature4, startHealth1));
+            lostHealthCount += uint32(HasLostHealth(creature5, startHealth1));
+            ASSERT_INFO("lostHealthCount = %u", lostHealthCount);
+            TEST_ASSERT(lostHealthCount <= 4);  // FAILS HERE!
 
             //Kill all creatures to clear space for damage test
             creature2->KillSelf();
@@ -1498,6 +1517,10 @@ public:
             uint32 const expectedWhirlwindOHMax = (199 + AP / 14 * normalizedSwordSpeed) / 2 * armorFactor;
             TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1_TRIGGER, expectedWhirlwindOHMin, expectedWhirlwindOHMax, false);
             TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1_TRIGGER, expectedWhirlwindOHMin * 2.0f, expectedWhirlwindOHMax * 2.0f, true);
+
+            // Power cost
+            uint32 const expectedWhirldwindRage = 25 * 10;
+            TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, POWER_RAGE, expectedWhirldwindRage);
         }
     };
 
@@ -1604,9 +1627,7 @@ public:
             TestRequiresStance(warrior, rogue2, false, ClassSpells::Warrior::DISARM_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
             TestRequiresStance(warrior, rogue2, true, ClassSpells::Warrior::DISARM_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
 
-            // Power cost
-            uint32 expectedDisarmRage = 20 * 10;
-            TEST_POWER_COST(warrior, rogue, ClassSpells::Warrior::DISARM_RNK_1, POWER_RAGE, expectedDisarmRage);
+            TEST_CAST(warrior, rogue, ClassSpells::Warrior::DISARM_RNK_1);
 
             // Aura
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warrior::DISARM_RNK_1, Seconds(10));
@@ -1624,6 +1645,10 @@ public:
             TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, disarmedMin, disarmedMax, false);
             rogue->AddAura(ClassSpells::Warrior::DISARM_RNK_1, rogue);
             TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMinDmg, expectedOHMaxDmg, false);
+
+            // Power cost
+            uint32 expectedDisarmRage = 20 * 10;
+            TEST_POWER_COST(warrior, rogue, ClassSpells::Warrior::DISARM_RNK_1, POWER_RAGE, expectedDisarmRage);
         }
     };
 
@@ -1677,9 +1702,12 @@ public:
             warrior->Attack(mage, true);
             Wait(2000);
 
+            uint32 startingRage = warrior->GetPower(POWER_RAGE);
+            TEST_CAST(warrior, shaman, ClassSpells::Warrior::INTERVENE_RNK_1);
+
             // Rage cost
             uint32 expectedInterveneRage = 10 * 10;
-            TEST_POWER_COST(warrior, shaman, ClassSpells::Warrior::INTERVENE_RNK_1, POWER_RAGE, expectedInterveneRage);
+            TEST_ASSERT(warrior->GetPower(POWER_RAGE) == startingRage - expectedInterveneRage);
 
             // Cooldown
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::INTERVENE_RNK_1, Seconds(30));
@@ -1775,7 +1803,7 @@ public:
             TestRevengeTrigger(warrior, rogue);
 
             // Cooldown
-            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::REVENGE_RNK_8, Seconds(5));
+            TEST_COOLDOWN(warrior, dummy, ClassSpells::Warrior::REVENGE_RNK_8, Seconds(5));
 
             // Damage
             float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5));
@@ -1827,7 +1855,7 @@ public:
             // TODO: dazes target
 
             // Cooldown
-            TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::SHIELD_BASH_RNK_4, Seconds(12));
+            TEST_COOLDOWN(warrior, priest, ClassSpells::Warrior::SHIELD_BASH_RNK_4, Seconds(12));
 
             Wait(100);
             // Make sure it hits
@@ -2034,9 +2062,7 @@ public:
             TestRequiresMeleeWeapon(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, false, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
             EQUIP_ITEM(warrior, 34185); // Shield
 
-            // Rage cost
-            uint32 expectedSpellReflectionRage = 25 * 10;
-            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, POWER_RAGE, expectedSpellReflectionRage);
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
 
             // Aura
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, Seconds(5));
@@ -2066,6 +2092,10 @@ public:
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             EQUIP_ITEM(warrior, 34247); // Apolyon -- 2 Hands
             TEST_ASSERT(!warrior->HasAura(ClassSpells::Warrior::SPELL_REFLECTION_RNK_1));
+
+            // Rage cost
+            uint32 expectedSpellReflectionRage = 25 * 10;
+            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, POWER_RAGE, expectedSpellReflectionRage);
         }
     };
 

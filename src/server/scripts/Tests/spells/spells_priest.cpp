@@ -160,8 +160,10 @@ public:
 
             uint32 const expectedFearWardMana = 78;
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1, POWER_MANA, expectedFearWardMana);
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3))
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3));
+            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3));
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3));
 
             // First fear, should be resisted by ward
             warlock->ForceSpellHitResult(SPELL_MISS_NONE);
@@ -208,6 +210,7 @@ public:
             // Mana cost, aura & cd
             uint32 const expectedFeedbackMana = 705;
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, POWER_MANA, expectedFeedbackMana);
+            TEST_CAST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6);
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEEDBACK_RNK_6, Minutes(3));
             TEST_HAS_AURA(priest, ClassSpells::Priest::FEEDBACK_RNK_6);
 
@@ -701,11 +704,12 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, POWER_MANA, expectedPowerWordShieldMana);
 
             // Aura
+            TEST_CAST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, Seconds(30));
             TEST_AURA_MAX_DURATION(priest, 6788, Seconds(15)); // Weakened Aura
 
             // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, Seconds(4));
+            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, Seconds(4));
 
             // Absorb
             priest->SetFullHealth();
@@ -872,7 +876,8 @@ public:
             uint32 const expectedStarshardsMana = 0;
             TEST_POWER_COST(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, POWER_MANA, expectedStarshardsMana);
 
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::STARSHARDS_RNK_8, Seconds(30));
+            // Cooldown 
+            TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, Seconds(30));
 
             /*
             Damage (test fails here)
@@ -1236,9 +1241,6 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_DWARF);
             TestPlayer* ally = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
 
-            ally->DisableRegeneration(true);
-            const int allyHealth = 1;
-            ally->SetHealth(allyHealth);
 
             EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
@@ -1246,9 +1248,12 @@ public:
             uint32 const expectedDesperatePrayerMana = 0;
             TEST_POWER_COST(priest, ally, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, POWER_MANA, expectedDesperatePrayerMana);
 
-            // Only heals caster
+            // Only heals caster + Cooldown
+            ally->DisableRegeneration(true);
+            const int allyHealth = 1;
+            ally->SetHealth(allyHealth);
+            TEST_CAST(priest, ally, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8);
             TEST_ASSERT(ally->GetHealth() == allyHealth);
-
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, Minutes(10));
 
             // Heal
@@ -1288,6 +1293,8 @@ public:
 
             uint32 expectedElunesGraceMana = 78;
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, POWER_MANA, expectedElunesGraceMana);
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1);
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, Seconds(15));
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, Minutes(3));
             TEST_HAS_AURA(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1);
@@ -1617,8 +1624,9 @@ public:
             uint32 const expectedPrayerOfMendingMana = 390;
             TEST_POWER_COST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, POWER_MANA, expectedPrayerOfMendingMana);
 
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, Seconds(10));
+            TEST_COOLDOWN(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, Seconds(10));
 
+            TEST_CAST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1);
             TEST_AURA_MAX_DURATION(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, Seconds(30));
 
             TEST_AURA_CHARGE(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 5);
@@ -1791,6 +1799,8 @@ public:
             // Mana cost
             uint32 const expectedDevouringPlagueMana = 1145;
             TEST_POWER_COST(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, POWER_MANA, expectedDevouringPlagueMana);
+
+            TEST_CAST(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7);
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, Seconds(24));
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, Minutes(3));
 
@@ -1855,6 +1865,7 @@ public:
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::FADE_RNK_7, POWER_MANA, expectedFadeMana);
 
             // Aura duration
+            TEST_CAST(priest, priest, ClassSpells::Priest::FADE_RNK_7);
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FADE_RNK_7, Seconds(10));
 
             // Cooldown
@@ -1983,6 +1994,7 @@ public:
             TEST_POWER_COST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, POWER_MANA, expectedMindBlastMana);
 
             // Cooldown
+            TEST_CAST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11);
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::MIND_BLAST_RNK_11, Seconds(8));
 
             // Heal
@@ -2254,6 +2266,8 @@ public:
 
         void Test() override
         {
+            uint32 const expectedPsychicScreamMana = 210;
+
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* enemy1 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
             TestPlayer* enemy2 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
@@ -2263,14 +2277,8 @@ public:
             spawn.MoveInFront(spawn, 10.0f);
             TestPlayer* enemyFurther = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
 
-            // Mana
-            uint32 const expectedPsychicScreamMana = 210;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, POWER_MANA, expectedPsychicScreamMana);
-
-            // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(30));
-
             // Auras & range
+            TEST_CAST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
             TEST_AURA_MAX_DURATION(enemy1, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
             TEST_AURA_MAX_DURATION(enemy2, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
             TEST_AURA_MAX_DURATION(enemy3, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(8));
@@ -2286,21 +2294,29 @@ public:
             enemyFurther->KillSelf(); // not needed anymore
 
             // Max 5 enemies touched
-            TestPlayer* enemy5 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
-            TestPlayer* enemy6 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
-            priest->SetPower(POWER_MANA, expectedPsychicScreamMana);
-            priest->ForceSpellHitResult(SPELL_MISS_NONE);
-            FORCE_CAST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
-            priest->ResetForceSpellHitResult();
+            {
+                TestPlayer* enemy5 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+                TestPlayer* enemy6 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+                priest->SetPower(POWER_MANA, expectedPsychicScreamMana);
+                priest->ForceSpellHitResult(SPELL_MISS_NONE);
+                FORCE_CAST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+                priest->ResetForceSpellHitResult();
 
-            uint32 count = 0;
-            count += uint32(isFeared(enemy1));
-            count += uint32(isFeared(enemy2));
-            count += uint32(isFeared(enemy3));
-            count += uint32(isFeared(enemy4));
-            count += uint32(isFeared(enemy5));
-            count += uint32(isFeared(enemy6));
-            TEST_ASSERT(count == 5);
+                uint32 count = 0;
+                count += uint32(isFeared(enemy1));
+                count += uint32(isFeared(enemy2));
+                count += uint32(isFeared(enemy3));
+                count += uint32(isFeared(enemy4));
+                count += uint32(isFeared(enemy5));
+                count += uint32(isFeared(enemy6));
+                TEST_ASSERT(count == 5);
+            }
+
+            // Mana
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, POWER_MANA, expectedPsychicScreamMana);
+
+            // Cooldown
+            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(30));
         }
     };
 
@@ -2355,7 +2371,7 @@ public:
     class ShadowWordDeathTestImpt : public TestCase
     {
     public:
-        ShadowWordDeathTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        ShadowWordDeathTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2375,26 +2391,18 @@ public:
             priest->DisableRegeneration(true);
             EnableCriticals(priest, false);
 
-            // Both have same starting health
             uint32 const priestStartHealth = 4 * shadowWordDeathMin;
             priest->SetMaxHealth(priestStartHealth);
-            priest->SetHealth(priestStartHealth);
+            priest->SetHealth(priest->GetMaxHealth());
 
             uint32 const warriorStartHealth = 3 * shadowWordDeathMin;
             warrior->SetMaxHealth(warriorStartHealth);
-            warrior->SetHealth(warriorStartHealth);
+            warrior->SetHealth(warrior->GetMaxHealth());
 
-            // Get damage on SWD & Mana cost
+            // Damage = backlash (regen is disabled)
             priest->GetSpellHistory()->ResetAllCooldowns();
-            priest->ForceSpellHitResult(SPELL_MISS_NONE);
-            uint32 const expectedShadowWordDeathMana = 309;
-            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, POWER_MANA, expectedShadowWordDeathMana);
             priest->SetPower(POWER_MANA, 2000);
-
-            // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, Seconds(12));
-
-            // Damage = backlash
+            FORCE_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
             Wait(1000);
             uint32 damage = warriorStartHealth - warrior->GetHealth();
             uint32 backlash = priestStartHealth - priest->GetHealth();
@@ -2426,12 +2434,14 @@ public:
             // No backlash on kill
             priest->GetSpellHistory()->ResetAllCooldowns();
             priestHealth = priest->GetHealth();
+            warrior->SetHealth(1);
             FORCE_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
             TEST_ASSERT(warrior->IsDead());
             TEST_ASSERT(priest->GetHealth() == priestHealth);
 
             // No durability damage on suicide
             priest->GetSpellHistory()->ResetAllCooldowns();
+            priest->SetHealth(1);
             FORCE_CAST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
             Wait(1000);
             TEST_ASSERT(priest->IsDead());
@@ -2449,6 +2459,13 @@ public:
             TEST_DIRECT_SPELL_DAMAGE_CALLBACK(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin * 1.5f, shadowWordDeathMax * 1.5f, true, [](Unit* caster, Unit* target) {
                 caster->SetHealth(caster->GetMaxHealth());
             });
+
+            // Cooldown
+            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, Seconds(12));
+
+            // Power cost
+            uint32 const expectedShadowWordDeathMana = 309;
+            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, POWER_MANA, expectedShadowWordDeathMana);
         }
     };
 
@@ -2521,17 +2538,19 @@ public:
 
             EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
 
-            // Mana cost
-            uint32 const expectedShadowFiendMana = 157;
-            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::SHADOWFIEND_RNK_1, POWER_MANA, expectedShadowFiendMana);
-            priest->SetMaxPower(POWER_MANA, std::numeric_limits<int>::max());
-
-            // Cooldown
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOWFIEND_RNK_1, Minutes(5));
-
+            priest->DisableRegeneration(true);
+            uint32 const startingMana = priest->GetPower(POWER_MANA);
+            TEST_CAST(priest, warrior, ClassSpells::Priest::SHADOWFIEND_RNK_1);
             Guardian* shadowfiend = priest->GetGuardianPet();
             TEST_ASSERT(shadowfiend != nullptr);
             shadowfiend->ForceMeleeHitResult(MELEE_HIT_MISS);
+
+            // Mana cost
+            uint32 const expectedShadowFiendMana = 157;
+            TEST_ASSERT(priest->GetPower(POWER_MANA) == startingMana - expectedShadowFiendMana);
+
+            // Cooldown
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SHADOWFIEND_RNK_1, Minutes(5));
             
             // Summon in melee range of target
             TEST_ASSERT(warrior->GetDistance(shadowfiend) < 5.0f);
@@ -2557,6 +2576,7 @@ public:
 
             shadowfiend->ForceMeleeHitResult(MELEE_HIT_NORMAL);
             AI->ResetSpellCounters();
+            priest->SetMaxPower(POWER_MANA, std::numeric_limits<int32>::max()); //improve me: just reset priest power to 1 at each loop
             for (uint32 i = 0; i < sampleSize; i++) 
             {
                 shadowfiend->AttackerStateUpdate(warrior, BASE_ATTACK);

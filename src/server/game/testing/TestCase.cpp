@@ -213,7 +213,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell
     INTERNAL_ASSERT_INFO("Caster has not the expected power %u but %u instead", expectedPowerCost, caster->GetPower(powerType));
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
-    _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_GCD | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_CAST_IN_PROGRESS));
+    _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
     caster->ResetForceSpellHitResult();
     //special case for channeled spell, spell system currently does not allow casting them instant
     if (spellInfo->IsChanneled())
@@ -227,6 +227,27 @@ void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell
     uint32 remainingPower = caster->GetPower(powerType);
 	INTERNAL_ASSERT_INFO("Caster has %u power remaining after spell %u", remainingPower, castSpellID);
 	INTERNAL_TEST_ASSERT(remainingPower == 0);
+}
+
+void TestCase::_TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond)
+{
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
+    INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    caster->ForceSpellHitResult(SPELL_MISS_NONE);
+    caster->GetSpellHistory()->ResetCooldown(castSpellID);
+    _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+    caster->ResetForceSpellHitResult();
+    //special case for channeled spell, spell system currently does not allow casting them instant
+    if (spellInfo->IsChanneled())
+    {
+        Wait(spellInfo->CalcCastTime() + 1); //may not be exact if spell has modifiers :/
+        Wait(1); //wait another update for some spells?
+    }
+
+    //all setup, proceed to test CD
+    _TestHasCooldown(caster, castSpellID, cooldownSecond);
+    caster->GetSpellHistory()->ResetCooldown(castSpellID);
 }
 
 TestPlayer* TestCase::SpawnRandomPlayer()
