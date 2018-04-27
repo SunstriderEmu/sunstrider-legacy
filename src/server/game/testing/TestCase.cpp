@@ -209,6 +209,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    uint32 const initialPower = caster->GetPower(powerType);
 	caster->SetPower(powerType, expectedPowerCost);
     INTERNAL_ASSERT_INFO("Caster has not the expected power %u but %u instead", expectedPowerCost, caster->GetPower(powerType));
 	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
@@ -225,6 +226,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell
     }
 
     uint32 remainingPower = caster->GetPower(powerType);
+    caster->SetPower(powerType, initialPower);
 	INTERNAL_ASSERT_INFO("Caster has %u power remaining after spell %u", remainingPower, castSpellID);
 	INTERNAL_TEST_ASSERT(remainingPower == 0);
 }
@@ -248,6 +250,7 @@ void TestCase::_TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellI
     //all setup, proceed to test CD
     _TestHasCooldown(caster, castSpellID, cooldownSecond);
     caster->GetSpellHistory()->ResetCooldown(castSpellID);
+    caster->GetSpellHistory()->ResetGlobalCooldown();
 }
 
 TestPlayer* TestCase::SpawnRandomPlayer()

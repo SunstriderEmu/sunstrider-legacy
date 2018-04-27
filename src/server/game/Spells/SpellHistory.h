@@ -95,6 +95,7 @@ public:
     void ModifyCooldown(uint32 spellId, int32 cooldownModMs);
 #endif
     void ResetCooldown(uint32 spellId, bool update = false);
+    void ResetGlobalCooldown();
     void ResetCooldown(CooldownStorageType::iterator& itr, bool update = false);
     template<typename Predicate>
     void ResetCooldowns(Predicate predicate, bool update = false)

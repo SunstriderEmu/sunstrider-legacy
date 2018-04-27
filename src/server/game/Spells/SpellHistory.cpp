@@ -466,6 +466,11 @@ void SpellHistory::ResetCooldown(CooldownStorageType::iterator& itr, bool update
     itr = EraseCooldown(itr);
 }
 
+void SpellHistory::ResetGlobalCooldown()
+{
+    _globalCooldowns.clear();
+}
+
 void SpellHistory::ResetAllCooldowns()
 {
     if (GetPlayerOwner())
