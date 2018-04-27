@@ -101,7 +101,7 @@ public:
                 if (AuraEffect const* borrowedTime = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_BORROWED_TIME, EFFECT_1))
                     bonus += CalculatePct(1.0f, borrowedTime->GetAmount());
 #else
-                float bonus = 0.3f; //to confirm
+                float bonus = 0.3f;
 #endif
 
                 bonus *= caster->SpellBaseHealingBonusDone(GetSpellInfo()->GetSchoolMask());

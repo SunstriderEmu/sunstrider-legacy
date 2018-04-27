@@ -4015,8 +4015,6 @@ uint64 Spell::handle_delayed(uint64 t_offset)
 
 void Spell::_handle_immediate_phase()
 {
-    // initialize Diminishing Returns Data
-    m_diminishLevel = DIMINISHING_LEVEL_1;
     HandleFlatThreat();
 
     // handle effects with SPELL_EFFECT_HANDLE_HIT mode

@@ -190,7 +190,7 @@ public:
     class FeedbackTestImpt : public TestCase
     {
     public:
-        FeedbackTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        FeedbackTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -222,21 +222,21 @@ public:
             // Burn mana + damage
             {
                 //mage cast ice lance on priest
-                uint32 const expectedmageHealth = mage->GetHealth() - ClassSpellsDamage::Priest::FEEDBACK_BURN_RNK_6;
+                uint32 const expectedMageHealth = mage->GetHealth() - ClassSpellsDamage::Priest::FEEDBACK_BURN_RNK_6;
                 uint32 const expectedMageMana = mage->GetPower(POWER_MANA) - ClassSpellsDamage::Priest::FEEDBACK_BURN_RNK_6;
                 TEST_CAST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
                 TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
                 Wait(1000);
                 ASSERT_INFO("initial mana: 200, current mana: %u, expected: %u", mage->GetPower(POWER_MANA), expectedMageMana);
                 TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedMageMana);
-                TEST_ASSERT(mage->GetHealth() == expectedmageHealth);
+                TEST_ASSERT(mage->GetHealth() == expectedMageHealth);
 
                 //mage cast a second ice lance, but has only 35 (expectedMageMana) mana left. Remaining mana should be burned and damage should only amount to this burned mana
                 TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
                 Wait(1000);
                 ASSERT_INFO("initial mana: 35, current mana: %u, expected: 0", mage->GetPower(POWER_MANA));
                 TEST_ASSERT(mage->GetPower(POWER_MANA) == 0);
-                TEST_ASSERT(mage->GetHealth() == expectedmageHealth - expectedMageMana);
+                TEST_ASSERT(mage->GetHealth() == expectedMageHealth - expectedMageMana);
             }
         }
     };
@@ -694,56 +694,74 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            uint32 const WEAKENED_SOUL = 6788;
 
             EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
-            uint32 expectedAbsorb = ClassSpellsDamage::Priest::POWER_WORD_SHIELD_RNK_12 + ClassSpellsCoeff::Priest::POWER_WORD_SHIELD * 550;
+            int32 expectedAbsorb = ClassSpellsDamage::Priest::POWER_WORD_SHIELD_RNK_12 + ClassSpellsCoeff::Priest::POWER_WORD_SHIELD * 550;
 
             // Mana cost
             uint32 const expectedPowerWordShieldMana = 600;
             TEST_POWER_COST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, POWER_MANA, expectedPowerWordShieldMana);
+            priest->RemoveAura(WEAKENED_SOUL);
 
             // Aura
             TEST_CAST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, Seconds(30));
             TEST_AURA_MAX_DURATION(priest, 6788, Seconds(15)); // Weakened Aura
+            priest->RemoveAura(WEAKENED_SOUL);
 
             // Cooldown
             TEST_COOLDOWN(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, Seconds(4));
+            priest->RemoveAura(WEAKENED_SOUL);
 
             // Absorb
-            priest->SetFullHealth();
-            auto AI = rogue->GetTestingPlayerbotAI();
-            int totalDamage = 0;
-            for (uint32 i = 0; i < 150; i++)
             {
-                rogue->AttackerStateUpdate(priest, BASE_ATTACK);
-                auto damageToTarget = AI->GetMeleeDamageDoneInfo(priest);
+                TEST_CAST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
 
-                TEST_ASSERT(damageToTarget->size() == i + 1);
-                auto& data = damageToTarget->back();
+                // Step 1 - test theoritical amount
+                Aura const* shield = priest->GetAura(ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
+                TEST_ASSERT(shield != nullptr);
+                AuraEffect const* absorbEffect = shield->GetEffect(EFFECT_0);
+                int32 const absorbAmount = absorbEffect->GetAmount();
+                ASSERT_INFO("absorbAmount %u != expectedAbsorb %u", absorbAmount, expectedAbsorb);
+                TEST_ASSERT(absorbAmount == expectedAbsorb);
 
-                if (data.damageInfo.HitOutCome != MELEE_HIT_NORMAL && data.damageInfo.HitOutCome != MELEE_HIT_CRIT)
-                    continue;
-
-                for (uint8 j = 0; j < MAX_ITEM_PROTO_DAMAGES; j++)
+                // Step 2 - Test with real damage
+                priest->SetFullHealth();
+                auto AI = rogue->GetTestingPlayerbotAI();
+                int32 totalDamage = 0;
+                for (uint32 i = 0; i < 150; i++)
                 {
-                    totalDamage += data.damageInfo.Damages[j].Damage;
-                    totalDamage += data.damageInfo.Damages[j].Resist;
-                    totalDamage += data.damageInfo.Damages[j].Absorb;
-                }
-                totalDamage += data.damageInfo.Blocked;
+                    rogue->AttackerStateUpdate(priest, BASE_ATTACK);
+                    auto damageToTarget = AI->GetMeleeDamageDoneInfo(priest);
 
-                if (totalDamage < expectedAbsorb)
-                {
-                    TEST_HAS_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
-                    continue;
-                }
+                    TEST_ASSERT(damageToTarget->size() == i + 1);
+                    auto& data = damageToTarget->back();
 
-                TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
-                uint32 expectedHealth = priest->GetMaxHealth() - (totalDamage - expectedAbsorb);
-                TEST_ASSERT(priest->GetHealth() == expectedHealth);
-                break;
+                    if (data.damageInfo.HitOutCome != MELEE_HIT_NORMAL && data.damageInfo.HitOutCome != MELEE_HIT_CRIT)
+                        continue;
+
+                    for (uint8 j = 0; j < MAX_ITEM_PROTO_DAMAGES; j++)
+                    {
+                        totalDamage += data.damageInfo.Damages[j].Damage;
+                        totalDamage += data.damageInfo.Damages[j].Resist;
+                        totalDamage += data.damageInfo.Damages[j].Absorb;
+                    }
+                    totalDamage += data.damageInfo.Blocked;
+
+                    if (totalDamage < expectedAbsorb)
+                    {
+                        TEST_HAS_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12); //if this fails, shield did not absorb enough 
+                        continue;
+                    }
+
+                    TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
+                    uint32 expectedHealth = priest->GetMaxHealth() - (totalDamage - expectedAbsorb);
+                    TEST_ASSERT(priest->GetHealth() == expectedHealth);
+                    break;
+                }
+                priest->RemoveAura(WEAKENED_SOUL);
             }
         }
     };
@@ -1132,35 +1150,36 @@ public:
     class ChastiseTestImpt : public TestCase
     {
     public:
-        ChastiseTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        ChastiseTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_DWARF);
 
             Creature* humanoid = SpawnCreature(724, true);  // Burly Rockjaw Trogg
+            humanoid->SetMaxHealth(std::numeric_limits<uint32>::max()); //enough health to avoid dying
+            humanoid->SetFullHealth();
             Creature* beast = SpawnCreature(705, true);     // Ragged Young Wolf
 
             // Only cast on humanoid
             TEST_CAST(priest, beast, ClassSpells::Priest::CHASTISE_RNK_1, SPELL_FAILED_BAD_TARGETS);
             beast->DespawnOrUnsummon();
+            beast = nullptr;
 
             // Mana cost
             uint32 const expectedChastiseMana = 50;
             TEST_POWER_COST(priest, humanoid, ClassSpells::Priest::CHASTISE_RNK_1, POWER_MANA, expectedChastiseMana);
 
-            // Does not trigger GCD
-            TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            humanoid->ClearDiminishings();
+            TEST_CAST(priest, humanoid, ClassSpells::Priest::CHASTISE_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 
             // Aura
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::CHASTISE_RNK_1, Seconds(30));
             TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::CHASTISE_RNK_1, Seconds(2));
             TEST_ASSERT(!humanoid->CanFreeMove());
-            humanoid->DespawnOrUnsummon();
-
+            
             // Damage -- Bug Here, spell coeff too big
             // Note: got a feeling that it crits way too much
-            Creature* dummy = SpawnCreature();
             EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
             // DrDamage says 0.142 which is the calculation with castTime = 0.5
             float const chastiseCastTime = 0.5f;
@@ -1168,8 +1187,8 @@ public:
             uint32 const bonusSpell = 292 * chastiseCoeff;
             uint32 const chastiseMin = ClassSpellsDamage::Priest::CHASTISE_RNK_6_MIN + bonusSpell;
             uint32 const chastiseMax = ClassSpellsDamage::Priest::CHASTISE_RNK_6_MAX + bonusSpell;
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, chastiseMin, chastiseMax, false);
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, chastiseMin * 1.5f, chastiseMax * 1.5f, true);
+            TEST_DIRECT_SPELL_DAMAGE(priest, humanoid, ClassSpells::Priest::CHASTISE_RNK_6, chastiseMin, chastiseMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, humanoid, ClassSpells::Priest::CHASTISE_RNK_6, chastiseMin * 1.5f, chastiseMax * 1.5f, true);
         }
     };
 
@@ -1837,32 +1856,34 @@ public:
 
         void Test() override
         {
+
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* tank = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
             Creature* creature = SpawnCreature(16878, true); // Shattered Hand Berserker -- Lvl 61
+
+            float const fadeValue = 1512.0f; //this value are from Spell.dbc, with a caster of level 70 (1500 base value + some calc with BaseLevel and such)
 
             // Setup
             tank->SetMaxHealth(30000);
             tank->SetFullHealth();
             FORCE_CAST(tank, tank, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
             EQUIP_ITEM(tank, 34185); // Shield
-            tank->SetPower(POWER_RAGE, 100 * 10);
+            tank->SetPower(POWER_RAGE, tank->GetMaxPower(POWER_RAGE));
             tank->Attack(creature, true);
             Wait(500);
             TEST_ASSERT(creature->GetTarget() == tank->GetGUID());
 
             // Threat
-            FORCE_CAST(priest, creature, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
-            Wait(2000);
-            uint32 startThreat = creature->GetThreatManager().GetThreat(priest);
-
+            //generate some threat
+            for(uint32 i = 0; i < 5; i++)
+                FORCE_CAST(priest, creature, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            Wait(1);
+            float startThreat = creature->GetThreatManager().GetThreat(priest);
+            //some consistency checks
             TEST_ASSERT(startThreat > creature->GetThreatManager().GetThreat(tank));
+            TEST_ASSERT(startThreat > fadeValue); 
             ASSERT_INFO("Wrong target. tank threat: %f, priest threat: %f", creature->GetThreatManager().GetThreat(tank), creature->GetThreatManager().GetThreat(priest));
             TEST_ASSERT(creature->GetTarget() == priest->GetGUID());
-
-            // Fade
-            uint32 const expectedFadeMana = 330;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::FADE_RNK_7, POWER_MANA, expectedFadeMana);
 
             // Aura duration
             TEST_CAST(priest, priest, ClassSpells::Priest::FADE_RNK_7);
@@ -1872,19 +1893,22 @@ public:
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FADE_RNK_7, Seconds(30));
 
             // Effect
-            uint32 const fadeFactor = 1500;
-            uint32 expectedThreat = startThreat - fadeFactor;
-            TEST_ASSERT(creature->GetThreatManager().GetThreat(priest) == expectedThreat);
+            float const expectedThreat = startThreat - fadeValue;
+            float const currentThreat = creature->GetThreatManager().GetThreat(priest);
+            ASSERT_INFO("currentThreat %f - expectedThreat %f", currentThreat, expectedThreat);
+            TEST_ASSERT(Between(currentThreat, expectedThreat - 1.0f, expectedThreat + 1.0f));
 
+            // Check if threat is given back
             // http://wowwiki.wikia.com/wiki/Fade?oldid=1431850
             // When Fade's duration expires, the **next threat-generating action** will generate normal threat plus all the threat that was originally Faded from the target.
-            Wait(11000);
+            // Note: On our server threat is immediately given back, we're not reproducing this specific behavior
+            Wait(11000); // fade last 10 seconds
             TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::FADE_RNK_7);
-            TEST_ASSERT(creature->GetThreatManager().GetThreat(priest) == expectedThreat);
+            TEST_ASSERT(Between(creature->GetThreatManager().GetThreat(priest), startThreat - 1.0f, startThreat + 1.0f));
 
-            FORCE_CAST(priest, creature, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
-            Wait(2000);
-            TEST_ASSERT(creature->GetThreatManager().GetThreat(priest) > expectedThreat);
+            // Power cost
+            uint32 const expectedFadeMana = 330;
+            TEST_POWER_COST(priest, priest, ClassSpells::Priest::FADE_RNK_7, POWER_MANA, expectedFadeMana);
         }
     };
 
@@ -1994,8 +2018,7 @@ public:
             TEST_POWER_COST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, POWER_MANA, expectedMindBlastMana);
 
             // Cooldown
-            TEST_CAST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11);
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::MIND_BLAST_RNK_11, Seconds(8));
+            TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, Seconds(8));
 
             // Heal
             float const mindBlastCastTime = 1.5f;
@@ -2391,19 +2414,16 @@ public:
             priest->DisableRegeneration(true);
             EnableCriticals(priest, false);
 
-            uint32 const priestStartHealth = 4 * shadowWordDeathMin;
-            priest->SetMaxHealth(priestStartHealth);
-            priest->SetHealth(priest->GetMaxHealth());
-
-            uint32 const warriorStartHealth = 3 * shadowWordDeathMin;
-            warrior->SetMaxHealth(warriorStartHealth);
-            warrior->SetHealth(warrior->GetMaxHealth());
+            uint32 const priestStartHealth = priest->GetHealth();
+            uint32 const warriorStartHealth = warrior->GetHealth();
 
             // Damage = backlash (regen is disabled)
             priest->GetSpellHistory()->ResetAllCooldowns();
             priest->SetPower(POWER_MANA, 2000);
             FORCE_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
             Wait(1000);
+            Wait(1000);
+            TEST_ASSERT(warrior->IsAlive());
             uint32 damage = warriorStartHealth - warrior->GetHealth();
             uint32 backlash = priestStartHealth - priest->GetHealth();
             ASSERT_INFO("damage %u, backlash %u", damage, backlash);
@@ -2436,6 +2456,8 @@ public:
             priestHealth = priest->GetHealth();
             warrior->SetHealth(1);
             FORCE_CAST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            Wait(1000); //backlash has a travel time of 1000
+            Wait(1000);
             TEST_ASSERT(warrior->IsDead());
             TEST_ASSERT(priest->GetHealth() == priestHealth);
 
@@ -2443,6 +2465,7 @@ public:
             priest->GetSpellHistory()->ResetAllCooldowns();
             priest->SetHealth(1);
             FORCE_CAST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
+            Wait(1000); //backlash has a travel time of 1000
             Wait(1000);
             TEST_ASSERT(priest->IsDead());
             Item* sunflare = priest->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
@@ -2454,18 +2477,22 @@ public:
 
             // Test damages
             TEST_DIRECT_SPELL_DAMAGE_CALLBACK(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin, shadowWordDeathMax, false, [](Unit* caster, Unit* target) {
-                caster->SetHealth(caster->GetMaxHealth());
+                caster->SetFullHealth();
             });
+            dummy->SetFullHealth();
             TEST_DIRECT_SPELL_DAMAGE_CALLBACK(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin * 1.5f, shadowWordDeathMax * 1.5f, true, [](Unit* caster, Unit* target) {
-                caster->SetHealth(caster->GetMaxHealth());
+                caster->SetFullHealth();
             });
+            dummy->SetFullHealth();
 
             // Cooldown
-            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, Seconds(12));
+            priest->ResurrectPlayer(1.0f);
+            TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, Seconds(12));
 
             // Power cost
+            priest->SetFullHealth();
             uint32 const expectedShadowWordDeathMana = 309;
-            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, POWER_MANA, expectedShadowWordDeathMana);
+            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, POWER_MANA, expectedShadowWordDeathMana);
         }
     };
 
@@ -2533,8 +2560,8 @@ public:
             Position spawn(_location);
             spawn.MoveInFront(spawn, 20.0f);
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
-            warrior->SetMaxHealth(std::numeric_limits<int>::max());
-            warrior->SetHealth(warrior->GetMaxHealth());
+            warrior->SetMaxHealth(std::numeric_limits<int32>::max());
+            warrior->SetFullHealth();
 
             EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
 

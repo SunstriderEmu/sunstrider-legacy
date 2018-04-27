@@ -730,7 +730,7 @@ public:
 			creature->SetHealth(creature->GetHealth() - 1); // issue with Hammer of wrath
 
 			player->SetMaxHealth(10000000); // Used for Judgement of Blood and Holy shield
-			player->SetHealth(player->GetMaxHealth());
+			player->SetFullHealth();
 
 			// Judgement of Righteousness
 			float const expectedJoRMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9_MIN * 1.03f;

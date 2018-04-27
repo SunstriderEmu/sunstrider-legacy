@@ -237,7 +237,6 @@ Item::Item()
 
 Item::~Item()
 {
-    bool a = false;
     m_itemProto = m_itemProto;
     return;
 }

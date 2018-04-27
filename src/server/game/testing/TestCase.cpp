@@ -1422,6 +1422,9 @@ void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 c
 
 void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS)
 {
+    INTERNAL_ASSERT_INFO("Target %u (%s) is not alive", target->GetGUID().GetCounter(), target->GetName().c_str());
+    INTERNAL_TEST_ASSERT(target->IsAlive());
+
     Aura* aura = target->GetAura(spellID);
     INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
     INTERNAL_TEST_ASSERT(aura != nullptr);

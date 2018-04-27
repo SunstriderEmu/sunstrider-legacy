@@ -8488,6 +8488,10 @@ void Unit::SetLevel(uint32 lvl)
 
 void Unit::SetHealth(uint32 val)
 {
+    //sun: little addition to handle > max int32 values
+    if (val > std::numeric_limits<int32>::max())
+        val = std::numeric_limits<int32>::max();
+
     if(GetDeathState() == JUST_DIED)
         val = 0;
     else
@@ -8547,6 +8551,10 @@ uint32 Unit::CountPctFromCurHealth(int32 pct) const
 
 void Unit::SetMaxHealth(uint32 val)
 {
+    //sun: little addition to handle > max int32 values
+    if (val > std::numeric_limits<int32>::max())
+        val = std::numeric_limits<int32>::max();
+
     uint32 health = GetHealth();
     SetUInt32Value(UNIT_FIELD_MAXHEALTH, val);
 

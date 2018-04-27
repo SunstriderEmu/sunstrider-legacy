@@ -70,7 +70,7 @@ public:
 
 			// Prep damage tests
 			druid->SetMaxHealth(100000000);
-			druid->SetHealth(druid->GetMaxHealth());
+			druid->SetFullHealth();
 
 			// Spell coefficient
 			float const barkskinFactor = 0.8f;

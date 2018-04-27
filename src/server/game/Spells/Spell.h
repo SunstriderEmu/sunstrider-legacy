@@ -608,8 +608,6 @@ class TC_GAME_API Spell
         int32 damage;
         SpellMissInfo targetMissInfo;
         SpellEffectHandleMode effectHandleMode;
-        // this is set in Spell Hit, but used in Apply Aura handler
-        DiminishingLevels m_diminishLevel;
         
         // -------------------------------------------
         GameObject* focusObject;
