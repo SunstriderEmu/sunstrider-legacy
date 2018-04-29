@@ -1172,6 +1172,8 @@ void TestCase::EnableCriticals(Unit* caster, bool crit)
 	caster->SetFloatValue(PLAYER_CRIT_PERCENTAGE, critChance); // BASE_ATTACK
 	caster->SetFloatValue(PLAYER_OFFHAND_CRIT_PERCENTAGE, critChance); // OFF_ATTACK
 	caster->SetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE, critChance); // RANGED_ATTACK
+
+    caster->m_baseSpellCritChance = int32(critChance);
 }
 
 void TestCase::GroupPlayer(TestPlayer* leader, Player* player)
