@@ -44,6 +44,70 @@ AuraCreateInfo::AuraCreateInfo(SpellInfo const* spellInfo, uint8 auraEffMask, Wo
     ASSERT(auraEffMask <= MAX_EFFECT_MASK);
 }
 
+#ifndef LICH_KING
+uint32 GetFirstNegativeSlot(Unit const* target)
+{
+    bool isPlayer = target->GetTypeId() == TYPEID_PLAYER;
+    //BC use defined slots for positive/negative auras. Negatives auras occupy the end of the range.
+    return isPlayer ? MAX_POSITIVE_AURAS_PLAYERS : MAX_POSITIVE_AURAS_CREATURES;
+}
+#endif
+
+void AuraApplication::_UpdateSlot()
+{
+    // Try find slot for aura
+    uint8 slot = MAX_AURAS;
+    // Lookup for auras already applied from spell
+    AuraApplication* foundAura = nullptr;
+    if (foundAura = GetTarget()->GetAuraApplication(GetBase()->GetId(), GetBase()->GetCasterGUID(), GetBase()->GetCastItemGUID()))
+    {
+#ifndef LICH_KING //we have to change slot if positivity has changed
+        bool inPositiveSlot = foundAura->GetSlot() < GetFirstNegativeSlot(GetTarget());
+        if (foundAura->IsPositive() != inPositiveSlot)
+        {
+            GetTarget()->RemoveVisibleAura(foundAura->GetSlot());
+            foundAura = nullptr;
+        }
+        else
+#endif
+            slot = foundAura->GetSlot(); // allow use single slot only by auras from same caster
+    }
+
+    if(!foundAura)
+    {
+        Unit::VisibleAuraMap const* visibleAuras = GetTarget()->GetVisibleAuras();
+#ifdef LICH_KING
+        uint32 const firstSlot = 0;
+#else
+        uint32 const firstSlot = IsPositive() ? 0 : GetFirstNegativeSlot(GetTarget());
+#endif
+        Unit::VisibleAuraMap::const_iterator itr = visibleAuras->find(firstSlot);
+        // lookup for free slots in units visibleAuras
+        for (uint32 freeSlot = firstSlot; freeSlot < MAX_AURAS; ++itr, ++freeSlot)
+        {
+            if (itr == visibleAuras->end() || itr->first != freeSlot)
+            {
+                slot = freeSlot;
+                break;
+            }
+        }
+    }
+
+    // Register Visible Aura
+    if (slot < MAX_AURAS)
+    {
+        _slot = slot;
+        GetTarget()->SetVisibleAura(slot, this);
+        SetNeedClientUpdate();
+        TC_LOG_DEBUG("spells", "Aura: %u Effect: %d put to unit visible auras slot: %u", GetBase()->GetId(), GetEffectMask(), slot);
+    }
+#ifdef LICH_KING
+    //we may reach slot limit easily on BC so no error to give
+    else
+        TC_LOG_ERROR("spells", "Aura: %u Effect: %d could not find empty unit visible slot", GetBase()->GetId(), GetEffectMask());
+#endif
+}
+
 AuraApplication::AuraApplication(Unit* target, Unit* caster, Aura* aura, uint8 effMask) :
     _target(target), _base(aura), _removeMode(AURA_REMOVE_NONE), _slot(MAX_AURAS), _positive(false), _effectMask(0), _selfCast(false),
     _flags(AFLAG_NONE), _effectsToApply(effMask), _needClientUpdate(false), _durationChanged(true)
@@ -54,52 +118,7 @@ AuraApplication::AuraApplication(Unit* target, Unit* caster, Aura* aura, uint8 e
     _InitFlags(caster, effMask);
 
     if (GetBase()->CanBeSentToClient())
-    {
-        // Try find slot for aura
-        uint8 slot = MAX_AURAS;
-        // Lookup for auras already applied from spell
-        if (AuraApplication * foundAura = GetTarget()->GetAuraApplication(GetBase()->GetId(), GetBase()->GetCasterGUID(), GetBase()->GetCastItemGUID()))
-        {
-            // allow use single slot only by auras from same caster
-            slot = foundAura->GetSlot();
-        }
-        else
-        {
-            Unit::VisibleAuraMap const* visibleAuras = GetTarget()->GetVisibleAuras();
-#ifdef LICH_KING
-            uint32 const firstSlot = 0;
-#else
-            //BC use defined slots for positive/negative auras. Negatives auras occupy the end of the range.
-            uint32 const maxPositiveSlots = (GetTarget()->GetTypeId() == TYPEID_PLAYER) ? MAX_POSITIVE_AURAS_PLAYERS : MAX_POSITIVE_AURAS_CREATURES;
-            uint32 const firstSlot = IsPositive() ? 0 : maxPositiveSlots;
-#endif
-            Unit::VisibleAuraMap::const_iterator itr = visibleAuras->find(firstSlot);
-            // lookup for free slots in units visibleAuras
-            for (uint32 freeSlot = firstSlot; freeSlot < MAX_AURAS; ++itr, ++freeSlot)
-            {
-                if (itr == visibleAuras->end() || itr->first != freeSlot)
-                {
-                    slot = freeSlot;
-                    break;
-                }
-            }
-        }
-
-        // Register Visible Aura
-        if (slot < MAX_AURAS)
-        {
-            _slot = slot;
-            GetTarget()->SetVisibleAura(slot, this);
-            SetNeedClientUpdate();
-            TC_LOG_DEBUG("spells", "Aura: %u Effect: %d put to unit visible auras slot: %u", GetBase()->GetId(), GetEffectMask(), slot);
-        }
-#ifdef LICH_KING
-        //we may reach slot limit easily on BC
-        else
-            TC_LOG_ERROR("spells", "Aura: %u Effect: %d could not find empty unit visible slot", GetBase()->GetId(), GetEffectMask());
-#endif
-    }
-
+        _UpdateSlot();
 }
 
 void AuraApplication::_Remove()
@@ -134,6 +153,7 @@ void AuraApplication::_Remove()
 
 void AuraApplication::_InitFlags(Unit* caster, uint8 effMask)
 {
+    _flags = 0; //sun: reset flags since _InitFlags may be called multiple times
     _selfCast = (GetBase()->GetCasterGUID() == GetTarget()->GetGUID());
 #ifdef LICH_KING
     // mark as selfcast if needed
@@ -231,6 +251,13 @@ void AuraApplication::UpdateApplyEffectMask(uint8 newEffMask)
 {
     if (_effectsToApply == newEffMask)
         return;
+
+    //sun: also update flags, positivity may have changed
+    _InitFlags(GetBase()->GetCaster(), newEffMask);
+#ifndef LICH_KING
+    //if positivity changed, we may have to update slot for BC
+    _UpdateSlot(); 
+#endif
 
     uint8 removeEffMask = (_effectsToApply ^ newEffMask) & (~newEffMask);
     uint8 addEffMask = (_effectsToApply ^ newEffMask) & (~_effectsToApply);

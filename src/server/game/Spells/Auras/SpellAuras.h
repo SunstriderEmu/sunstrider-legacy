@@ -47,6 +47,8 @@ private:
     void _Remove();
 
     void _InitFlags(Unit* caster, uint8 effMask);
+    //sun: moved slot selection logic in here since we sometimes have to reuse later on BC
+    void _UpdateSlot();
     void _HandleEffect(uint8 effIndex, bool apply);
 
 public:
