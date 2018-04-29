@@ -420,10 +420,10 @@ void Player::UpdateArmor()
         switch(m_form)
         {
             case FORM_BEAR:
-                value *= 0.84f;
+                value *= 0.73f;
                 break;
             case FORM_DIREBEAR:
-                value *= 0.73f;
+                value *= 0.84f;
                 break;
             default:
                 break;
