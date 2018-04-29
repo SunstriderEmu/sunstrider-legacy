@@ -123,8 +123,6 @@ public:
     SpellInfo const* GetSpellInfo() const { return m_spellInfo; }
     uint32 GetId() const;
     ObjectGuid GetCastItemGUID() const { return m_castItemGuid; }
-    int32 GetBasePoints() const { return m_currentBasePoints; }
-    void SetBasePoints(uint32 basePoints) { m_currentBasePoints = basePoints; }
 
     int32 GetMaxDuration() const { return m_maxDuration; }
     void SetMaxDuration(int32 duration) { m_maxDuration = duration; }
@@ -305,7 +303,6 @@ protected:
 
     uint8 m_effIndex;
     SpellInfo const* const m_spellInfo;
-    int32 m_currentBasePoints;                              // cache SpellInfo::EffectBasePoints and use for set custom base points
     ObjectGuid const m_casterGuid;
     int32 m_maxDuration;
     CasterInfo _casterInfo;

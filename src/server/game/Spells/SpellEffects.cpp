@@ -2361,7 +2361,7 @@ void Spell::EffectDummy(uint32 i)
                             // enchanting spell selected by calculated damage-per-sec in enchanting effect
                             // at calculation applied affect from Elemental Weapons talent
                             // real enchantment damage-1
-                            spell->m_currentBasePoints[1] = damage-1;
+                            spell->SetSpellValue(SPELLVALUE_BASE_POINT1, damage);
 
                             SpellCastTargets targets;
                             targets.SetItemTarget( item );
@@ -2436,7 +2436,9 @@ void Spell::EffectDummy(uint32 i)
         }
 
         auto  spell = new Spell(m_caster, spellInfo, TRIGGERED_FULL_MASK, m_originalCasterGUID, nullptr, true);
-        if(bp) spell->m_currentBasePoints[0] = bp;
+        if(bp) 
+            spell->SetSpellValue(SPELLVALUE_BASE_POINT0, bp);
+
         SpellCastTargets targets;
         targets.SetUnitTarget(unitTarget);
         spell->prepare(targets);
@@ -3401,24 +3403,11 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
 
     // TODO: maybe all this can be replaced by using correct calculated `damage` value
     if(pProto->Class != ITEM_CLASS_CONSUMABLE || m_spellInfo->SpellFamilyName != SPELLFAMILY_MAGE)
-    {
         num_to_add = damage;
-        /*int32 basePoints = m_currentBasePoints[i];
-        int32 randomPoints = m_spellInfo->Effects[i].DieSides;
-        if (randomPoints)
-            num_to_add = basePoints + m_caster->GetMap()->irand(1, randomPoints);
-        else
-            num_to_add = basePoints + 1;*/
-    }
     else if (pProto->MaxCount == 1)
         num_to_add = 1;
     else if(player->GetLevel() >= m_spellInfo->SpellLevel)
-    {
         num_to_add = damage;
-        /*int32 basePoints = m_currentBasePoints[i];
-        float pointPerLevel = m_spellInfo->Effects[i].RealPointsPerLevel;
-        num_to_add = basePoints + 1 + uint32((player->GetLevel() - m_spellInfo->SpellLevel)*pointPerLevel);*/
-    }
     else
         num_to_add = 2;
 
@@ -3874,7 +3863,7 @@ void Spell::EffectOpenLock(uint32 effIndex)
         SkillId = SKILL_LOCKPICKING;
 
     // skill bonus provided by casting spell (mostly item spells)
-    uint32 spellSkillBonus = uint32(damage/*m_currentBasePoints[0]+1*/);
+    uint32 spellSkillBonus = uint32(damage);
 
     uint32 reqSkillValue = lockInfo->requiredminingskill;
 

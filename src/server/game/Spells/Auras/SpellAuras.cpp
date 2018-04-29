@@ -498,7 +498,7 @@ m_timeCla(1000), m_castItemGuid(createInfo.CastItem ? createInfo.CastItem->GetGU
 m_isAreaAura(false), m_owner(createInfo._owner),
 m_isPersistent(false), m_updateTargetMapInterval(0), m_dropEvent(nullptr), m_heartBeatTimer(0),
 m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE), m_spellInfo(createInfo._spellInfo),
-m_active(false), m_currentBasePoints(0), m_channelData(nullptr), m_isSingleTarget(false),
+m_active(false), m_channelData(nullptr), m_isSingleTarget(false),
 m_procCooldown(std::chrono::steady_clock::time_point::min())
 {
     memset(m_effects, 0, sizeof(m_effects));

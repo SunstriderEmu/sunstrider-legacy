@@ -851,7 +851,7 @@ struct SpellEntry
     int32     EffectBaseDice[3];                            // 71-73
     float     EffectDicePerLevel[3];                        // 74-76
     float     EffectRealPointsPerLevel[3];                  // 77-79
-    int32     EffectBasePoints[3];                          // 80-82 (don't must be used in spell/auras explicitly, must be used cached Spell::m_currentBasePoints)
+    int32     EffectBasePoints[3];                          // 80-82
     uint32    EffectMechanic[3];                            // 83-85
     uint32    EffectImplicitTargetA[3];                     // 86-88
     uint32    EffectImplicitTargetB[3];                     // 89-91

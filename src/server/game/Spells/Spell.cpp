@@ -618,9 +618,6 @@ Spell::Spell(WorldObject* Caster, SpellInfo const *info, TriggerCastFlags trigge
         if(m_originalCaster && !m_originalCaster->IsInWorld()) m_originalCaster = nullptr;
     }
 
-    for(int i=0; i <3; ++i)
-        m_currentBasePoints[i] = m_spellValue->EffectBasePoints[i];
-
     m_spellState = SPELL_STATE_NULL;
 
     m_castPositionX = m_castPositionY = m_castPositionZ = 0;
@@ -6018,10 +6015,6 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 if(m_CastItem)
                     SkillValue = 0;
 
-                // add the damage modifier from the spell casted (cheat lock / skeleton key etc.) (use m_currentBasePoints, CalculateDamage returns wrong value)
-                // TODO: is this a hack?
-                SkillValue += m_currentBasePoints[i]+1;
-
                 // get the required lock value
                 int32 ReqValue=0;
                 if (lockInfo)
@@ -7920,16 +7913,13 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
     switch(mod)
     {
         case SPELLVALUE_BASE_POINT0:
-            m_spellValue->EffectBasePoints[0] = value - int32(m_spellInfo->Effects[0].BaseDice);
-            m_currentBasePoints[0] = m_spellValue->EffectBasePoints[0]; //this should be removed in the future
+            m_spellValue->EffectBasePoints[0] = m_spellInfo->Effects[EFFECT_0].CalcBaseValue(value);
             break;
         case SPELLVALUE_BASE_POINT1:
-            m_spellValue->EffectBasePoints[1] = value - int32(m_spellInfo->Effects[1].BaseDice);
-            m_currentBasePoints[1] = m_spellValue->EffectBasePoints[1];
+            m_spellValue->EffectBasePoints[1] = m_spellInfo->Effects[EFFECT_1].CalcBaseValue(value);
             break;
         case SPELLVALUE_BASE_POINT2:
-            m_spellValue->EffectBasePoints[2] = value - int32(m_spellInfo->Effects[2].BaseDice);
-            m_currentBasePoints[2] = m_spellValue->EffectBasePoints[2];
+            m_spellValue->EffectBasePoints[2] = m_spellInfo->Effects[EFFECT_2].CalcBaseValue(value);
             break;
         case SPELLVALUE_MAX_TARGETS:
             m_spellValue->MaxAffectedTargets = (uint32)value;

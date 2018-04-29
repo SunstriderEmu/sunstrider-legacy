@@ -7959,7 +7959,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
         auto spell = new Spell(this, spellInfo, TRIGGERED_NONE);
         spell->m_CastItem = item;
         spell->m_cast_count = cast_count;               //set count of casts
-        spell->m_currentBasePoints[0] = learning_spell_id;
+        spell->SetSpellValue(SPELLVALUE_BASE_POINT0, learning_spell_id);
         spell->prepare(targets);
         return;
     }

@@ -503,7 +503,6 @@ class TC_GAME_API Spell
         //void HandleAddAura(Unit* Target);
 
         const SpellInfo* const m_spellInfo;
-        int32 m_currentBasePoints[3];                       // cache SpellInfo::EffectBasePoints and use for set custom base points
         Item* m_CastItem;
         ObjectGuid m_castItemGUID;
         uint32 m_castItemEntry;
