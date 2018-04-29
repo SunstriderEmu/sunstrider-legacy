@@ -436,7 +436,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         }
     }
 
-    //OLD HACKS, todo: move to scripts
+    //OLD HACKS, todo: move to scripts and/or spell_bonus_data db table
     {
         switch (m_spellInfo->Id)
         {
@@ -462,7 +462,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         case SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS:
             // Expose Weakness
             if (m_spellInfo->Id == 34501)
-                _amount = (int32)((float)m_spellInfo->Effects[m_effIndex].BasePoints*caster->GetStat(STAT_AGILITY) / 100.0f);
+                amount = (int32)((float)m_spellInfo->Effects[m_effIndex].BasePoints*caster->GetStat(STAT_AGILITY) / 100.0f);
             break;
         case SPELL_AURA_PERIODIC_DAMAGE:
             switch (m_spellInfo->SpellFamilyName)
@@ -474,11 +474,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 {
                     // $AP*0.18/6 bonus per tick
                     if (caster)
-                        _amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
+                        amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
                     break;
                 }
                 if (m_spellInfo->Id == 40953) {
-                    _amount = 1388 + rand() % 225;
+                    amount = 1388 + rand() % 225;
                 }
                 break;
             }
@@ -495,7 +495,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         float mwb_min = caster->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
                         float mwb_max = caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
                         // WARNING! in 3.0 multiplier 0.00743f change to 0.6
-                        _amount += int32(((mwb_min + mwb_max) / 2 + ap * mws / 14000)*0.00743f);
+                        amount += int32(((mwb_min + mwb_max) / 2 + ap * mws / 14000)*0.00743f);
                     }
                     break;
                 }
@@ -508,15 +508,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 {
                     // $AP*0.06/3 bonus per tick
                     if (caster)
-                        _amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 2 / 100);
-                    break;
-                }
-                // Lacerate
-                if (m_spellInfo->SpellFamilyFlags & 0x000000010000000000LL)
-                {
-                    // $AP*0.05/5 bonus per tick
-                    if (caster)
-                        _amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);
+                        amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 2 / 100);
                     break;
                 }
                 // Rip
@@ -533,13 +525,14 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         {
                             if (dummyAura->GetId() == 34241)
                             {
-                                _amount += cp * dummyAura->GetAmount();
+                                amount += cp * dummyAura->GetAmount();
                                 break;
                             }
                         }
 
-                        if (cp > 4) cp = 4;
-                        _amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
+                        if (cp > 4) 
+                            cp = 4;
+                        amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
                     }
                     break;
                 }
@@ -554,8 +547,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     if (caster && caster->GetTypeId() == TYPEID_PLAYER)
                     {
                         uint8 cp = (caster->ToPlayer())->GetComboPoints();
-                        if (cp > 3) cp = 3;
-                        _amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
+                        if (cp > 3) 
+                            cp = 3;
+                        amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
                     }
                     break;
                 }
@@ -564,7 +558,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 {
                     // $AP*0.18/6 bonus per tick
                     if (caster)
-                        _amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
+                        amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
                     break;
                 }
                 break;
@@ -576,7 +570,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 {
                     // $RAP*0.1/5 bonus per tick
                     if (caster) {
-                        _amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 10 / 500);
+                        amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 10 / 500);
                         //_amount += int32(m_target->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS) * 10 / 500);
                     }
                     break;
@@ -586,7 +580,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 {
                     // $RAP*0.1/5 bonus per tick
                     if (caster)
-                        _amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 10 / 500);
+                        amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 10 / 500);
                     break;
                 }
                 break;
