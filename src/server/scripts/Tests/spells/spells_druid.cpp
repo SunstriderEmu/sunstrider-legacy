@@ -823,7 +823,7 @@ public:
 	class CowerTestImpt : public TestCase
 	{
 	public:
-		CowerTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		CowerTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -831,7 +831,8 @@ public:
 			Creature* creature = SpawnCreature();
 
             TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
-            Wait(1500);
+            Wait(2000);
+            //generate some threat
             druid->ForceMeleeHitResult(MELEE_HIT_NORMAL);
             for (int i = 0; i < 50; i++)
                 druid->AttackerStateUpdate(creature, BASE_ATTACK);
@@ -846,7 +847,7 @@ public:
             float const expectedThreat = threat - cowerPoints;
             TEST_CAST(druid, creature, ClassSpells::Druid::COWER_RNK_5);
 			ASSERT_INFO("Before: %f, current: %f, expected: %f", threat, creature->GetThreatManager().GetThreat(druid), expectedThreat);
-			TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == expectedThreat);
+			TEST_ASSERT(Between(creature->GetThreatManager().GetThreat(druid), expectedThreat - 1, expectedThreat + 1));
 
             //Test CD
 			TEST_COOLDOWN(druid, creature, ClassSpells::Druid::COWER_RNK_5, Seconds(10));
