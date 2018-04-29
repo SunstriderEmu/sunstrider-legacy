@@ -560,32 +560,38 @@ public:
 	class ThornsTestImpt : public TestCase
 	{
 	public:
-		ThornsTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		ThornsTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
-			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            _location.MoveInFront(_location, 3.0f);
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            druid->ForceSpellHitResult(SPELL_MISS_NONE); //Thorns can miss
 
 			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
+            rogue->DisableRegeneration(true);
 
 			int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
-			// Mana cost
-			uint32 const expectedThornsMana = 400;
-			TEST_POWER_COST(druid, druid, ClassSpells::Druid::THORNS_RNK_7, POWER_MANA, expectedThornsMana);
-
-			// Damage -- Bug: shouldn't have a spell coeff
+            TEST_CAST(druid, druid, ClassSpells::Druid::THORNS_RNK_7);
+			// Damage 
 			uint32 const thornsDmg = 25;
-			uint32 expectedRogueHealth = rogue->GetHealth() - thornsDmg;
+            uint32 previousRogueHealth = rogue->GetHealth();
             TEST_ASSERT(rogue->IsFullHealth());
             rogue->ForceMeleeHitResult(MELEE_HIT_NORMAL);
             rogue->AttackerStateUpdate(druid, BASE_ATTACK);
 			rogue->AttackStop();
             rogue->ResetForceMeleeHitResult();
-			TEST_ASSERT(rogue->GetHealth() == expectedRogueHealth);
+            uint32 const doneDamage = previousRogueHealth - rogue->GetHealth();
+            ASSERT_INFO("doneDamage %u == thornsDmg %u", doneDamage, thornsDmg);
+			TEST_ASSERT(doneDamage == thornsDmg);
+
+            // Mana cost
+            uint32 const expectedThornsMana = 400;
+            TEST_POWER_COST(druid, druid, ClassSpells::Druid::THORNS_RNK_7, POWER_MANA, expectedThornsMana);
 		}
 	};
 
