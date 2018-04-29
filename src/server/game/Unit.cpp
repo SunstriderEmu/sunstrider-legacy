@@ -5867,6 +5867,14 @@ float Unit::SpellCritChanceTaken(Unit const* caster, SpellInfo const* spellInfo,
     float crit_chance = doneChance;
     switch (spellInfo->DmgClass)
     {
+        case SPELL_DAMAGE_CLASS_NONE:
+        /* sun: At least some spells in here should crit, such as "Frenzied Regeneration",
+        Other spells in this category: earth shield, Seal of Light, "Alchemist's Stone"
+        I'm using the base crit chance for now. Note for earth shield:
+        "Yesterday i checked my recount. For our warrior tank my ES had ZERO - 0 crits... For our pally it had around 6% crit."
+        */
+            return caster->m_baseSpellCritChance;
+            //TC return 0.0f;
         case SPELL_DAMAGE_CLASS_MAGIC:
         {
             // taken
@@ -5919,9 +5927,8 @@ float Unit::SpellCritChanceTaken(Unit const* caster, SpellInfo const* spellInfo,
                 crit_chance = GetUnitCriticalChanceTaken(caster, attackType, crit_chance);
 
             break;
-        case SPELL_DAMAGE_CLASS_NONE:
         default:
-            return 0.f;
+            return 0.0f;
     }
 
 #ifdef LICH_KING
