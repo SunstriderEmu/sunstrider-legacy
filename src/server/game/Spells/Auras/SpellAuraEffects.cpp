@@ -1584,27 +1584,6 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                 // triggered_spell_id not set and unknown effect triggered in this case, ignoring for while
                 case 768:
                     return;
-                    // Frenzied Regeneration
-                case 22842:
-                case 22895:
-                case 22896:
-                case 26999:
-                {
-                    int32 LifePerRage = GetAmount();
-
-                    int32 lRage = target->GetPower(POWER_RAGE);
-                    if (lRage > 100)                                     // rage stored as rage*10
-                        lRage = 100;
-                    target->ModifyPower(POWER_RAGE, -lRage);
-
-                    int32 FRTriggerBasePoints = int32(lRage*LifePerRage / 10);
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.AddSpellBP0(FRTriggerBasePoints);
-                    args.SetTriggeringAura(this);
-                    target->CastSpell(target, 22845, args);
-                    return;
-                }
                 // Doom
                 case 31347:
                 {
@@ -1934,6 +1913,30 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         }
         else
         {
+            switch (GetSpellInfo()->Id)
+            {
+                // Frenzied Regeneration
+                case 22842:
+                case 22895:
+                case 22896:
+                case 26999:
+                {
+                    int32 LifePerRage = GetAmount();
+
+                    int32 lRage = target->GetPower(POWER_RAGE);
+                    if (lRage > 100)                                     // rage stored as rage*10
+                        lRage = 100;
+                    target->ModifyPower(POWER_RAGE, -lRage);
+
+                    int32 FRTriggerBasePoints = int32(lRage*LifePerRage / 10);
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.AddSpellBP0(FRTriggerBasePoints);
+                    args.SetTriggeringAura(this);
+                    target->CastSpell(target, 22845, args);
+                    return;
+                }
+            }
             /* SELECT st.entry, st.spellName1, st.effectTriggerSpell1,  st2.entry
             FROM spell_template st
             LEFT JOIN spell_template st2 ON st.effectTriggerSpell1 = st2.entry
