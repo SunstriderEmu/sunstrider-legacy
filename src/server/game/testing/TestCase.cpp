@@ -1076,7 +1076,6 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
-    bool spellHasFlyTime = spellInfo->Speed != 0.0f;
 
 	EnableCriticals(caster, crit);
 
@@ -1085,17 +1084,14 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
 
     SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
-    uint32 result = caster->CastSpell(target, spellID, true);
+    uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED)); //ignore speed because we want to test immediately even if spell has a fly time
     if (result != SPELL_CAST_OK)
     {
         caster->ForceSpellHitResult(previousForceHitResult);
         INTERNAL_ASSERT_INFO("_TestDotDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(false);
     }
-    if (spellHasFlyTime)
-        Wait(5 * SECOND*IN_MILLISECONDS);
 
-    Wait(1);
     Aura* aura = target->GetAura(spellID, caster->GetGUID());
     INTERNAL_ASSERT_INFO("Target has not %u aura with caster %u after spell successfully casted", spellID, caster->GetGUID().GetCounter());
     INTERNAL_TEST_ASSERT(aura != nullptr);
@@ -1135,7 +1131,7 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
         ResetSpellCast(caster);
         AI->ResetSpellCounters();
         caster->ForceSpellHitResult(SPELL_MISS_NONE);
-        uint32 result = caster->CastSpell(target, spellID, true);
+        uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         if (result != SPELL_CAST_OK)
         {
             caster->ForceSpellHitResult(previousForceHitResult);
