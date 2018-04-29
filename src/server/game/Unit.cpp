@@ -5572,7 +5572,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
 #else
     float coeff = 0.0f;
 #endif
-    if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
+    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
+    if (bonus)
     {
         if (damagetype == DOT)
         {
@@ -5612,7 +5613,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
 #else
         // on LK we use spellProto->Effects[effIndex].BonusMultiplier which apperently contains negative values,
         // but for BC we have 0 when we get here and no data was in DB.
-        if (coeff <= 0.f) 
+        if (coeff <= 0.f && !bonus)
 #endif
             coeff = CalculateDefaultCoefficient(spellProto, damagetype);  // As wowwiki says: C = (Cast Time / 3.5)
 
