@@ -1673,13 +1673,13 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
             WorldPacket data(SMSG_SPELLDAMAGESHIELD,(8+8+4+4));
             data << uint64(pVictim->GetGUID());
             data << uint64(GetGUID());
-            data << uint32(spellInfo->SchoolMask);
+            data << uint32(spellInfo->Id);
             data << uint32(damage);
 #ifdef LICH_KING
             int32 const overkill = int32(damage) - int32(GetHealth());
             data << uint32(std::max(overkill, 0)); // Overkill
-            data << uint32(spellInfo->SchoolMask);
 #endif
+            data << uint32(spellInfo->SchoolMask);
             pVictim->SendMessageToSet(&data, true );
 
             Unit::DealDamage(pVictim, this, damage, nullptr, SPELL_DIRECT_DAMAGE, spellInfo->GetSchoolMask(), spellInfo, true);
