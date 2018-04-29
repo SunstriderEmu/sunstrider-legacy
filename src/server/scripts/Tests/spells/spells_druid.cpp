@@ -1073,49 +1073,55 @@ public:
 	class FrenziedRegenerationTestImpt : public TestCase
 	{
 	public:
-		FrenziedRegenerationTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		FrenziedRegenerationTestImpt() : TestCase(STATUS_PASSING) { }
 
-		void InitTest(TestPlayer* druid, uint32 health, uint32 rage)
-		{
-			druid->SetHealth(health);
-			TEST_ASSERT(druid->GetHealth() == 1);
-			druid->SetPower(POWER_RAGE, rage);
-			TEST_ASSERT(druid->GetPower(POWER_RAGE) == rage);
-		}
+        void TestValue(TestPlayer* druid, uint32 expected, bool crit)
+        {
+            auto AI = druid->GetTestingPlayerbotAI();
+            TEST_ASSERT(AI != nullptr);
+            AI->ResetSpellCounters();
 
+			druid->GetSpellHistory()->ResetAllCooldowns();
+            druid->SetPower(POWER_RAGE, 100 * 10);
+            EnableCriticals(druid, crit);
+            TEST_CAST(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            Wait(11000); //wait for all ticks
+            uint32 dealtMin, dealtMax;
+            //FR actually triggers this healing spell at each tick
+            GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_TRIGGER, dealtMin, dealtMax, crit, 10);
+            TEST_ASSERT(dealtMin == dealtMax);
+            TEST_ASSERT(expected == dealtMin);
+        }
+         
 		void TestFrenziedRegeneration(TestPlayer* druid, uint32 spellFormId)
 		{
-			druid->GetSpellHistory()->ResetAllCooldowns();
-
+            druid->GetSpellHistory()->ResetAllCooldowns();
+            druid->DisableRegeneration(true); //also disable rage regen and decaying
+            //setup
             TEST_CAST(druid, druid, spellFormId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-			uint32 health = 1;
-			uint32 rage = 100 * 10;
-			InitTest(druid, health, rage);
+            druid->SetPower(POWER_RAGE, 100 * 10); //max rage
 
-			InitTest(druid, health, rage);
-			int32 expectedFRHeal = 10 * 10 * 250;
-			int32 expectedFRCritHeal = 10 * 10 * 250 * 1.5f;
-			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, -expectedFRHeal, false);
-			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, -expectedFRCritHeal, true);
+            //test heal values
+            //WoWiki: Rank 4 : Each point of Rage is converted into 25 health. [...] Unaffected by +healing stats.
+            // -> 250 at each tick, and it can crit
+			uint32 expectedFRHeal = 10 * 25;
+			uint32 expectedFRCritHeal = expectedFRHeal * 1.5f;
 
+            TestValue(druid, expectedFRHeal, false);
+            TestValue(druid, expectedFRCritHeal, true);
+
+            //test if rage is properly removed
+            //1000 rage, we should have 900 when spell ends (10 ticks at 10 rage)
+            druid->SetMaxPower(POWER_RAGE, 1000 * 10);
+            druid->SetFullPower(POWER_RAGE);
+            druid->GetSpellHistory()->ResetAllCooldowns();
             TEST_CAST(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4);
+            //also test CD and duration
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, Seconds(10));
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, Minutes(3));
-			Wait(1000);
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, Minutes(3));
 
-			uint32 expectedRage = rage - 10 * 10;
-			ASSERT_INFO("Rage: %u, expected: %u", druid->GetPower(POWER_RAGE), expectedRage);
-			TEST_ASSERT(druid->GetPower(POWER_RAGE) == expectedRage);
-
-			Wait(4000);
-			expectedRage = rage - 5 * 10 * 10;
-			ASSERT_INFO("Rage: %u, expected: %u", druid->GetPower(POWER_RAGE), expectedRage);
-			TEST_ASSERT(druid->GetPower(POWER_RAGE) == expectedRage);
-			Wait(5000);
-
-			expectedRage = rage - 10 * 10 * 10;
-			ASSERT_INFO("Rage: %u, expected: %u", druid->GetPower(POWER_RAGE), expectedRage);
-			TEST_ASSERT(druid->GetPower(POWER_RAGE) == expectedRage);
+            Wait(11000); //wait for all ticks
+            TEST_ASSERT(druid->GetPower(POWER_RAGE) == 900 * 10);
 
 			druid->RemoveAurasDueToSpell(spellFormId);
 		}

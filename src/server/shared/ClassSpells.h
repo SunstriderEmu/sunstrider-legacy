@@ -1986,6 +1986,7 @@ namespace ClassSpells
             FRENZIED_REGENERATION_RNK_2 = 22895,
             FRENZIED_REGENERATION_RNK_3 = 22896,
             FRENZIED_REGENERATION_RNK_4 = 26999,
+            FRENZIED_REGENERATION_TRIGGER = 22845,
             GROWL_RNK_1 = 6795,
             LACERATE_RNK_1 = 33745,
             MAIM_RNK_1 = 22570,
