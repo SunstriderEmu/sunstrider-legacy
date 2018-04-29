@@ -81,6 +81,11 @@ std::string TestResults::ToString()
 {
     uint32 successes = _successes.size();
     uint32 failures = _failures.size();
+    auto unexpectedSuccesses = GetFilteredResult(true, { STATUS_KNOWN_BUG });
+    auto incompleteSuccess = GetFilteredResult(true, { STATUS_INCOMPLETE });
+    auto regressions = GetFilteredResult(false, { STATUS_PASSING, STATUS_PARTIAL });
+    auto knownBugs = GetFilteredResult(false, { STATUS_KNOWN_BUG });
+    auto incompleteFailures = GetFilteredResult(false, { STATUS_INCOMPLETE });
 
     std::stringstream ss;
     ss << "===============================================================================" << std::endl;
@@ -95,24 +100,19 @@ std::string TestResults::ToString()
         if (partialSuccessCount)
             ss << " (partial: " << partialSuccessCount << ")";
         ss << std::endl;
-        ss << " " << failures  << " | Failures" << std::endl;
+        ss << " " << failures  << " | Failures (regressions: " << regressions.size() << ", known: " << knownBugs.size() << ")" << std::endl;
         ss << " " << std::endl;
         if(!failures)
             ss << R"( All tests passed \o/)" << std::endl;
 
         //show successes with each test status
-        auto unexpectedSuccesses = GetFilteredResult(true, { STATUS_KNOWN_BUG });
         HandlePrintResults(ss, "Success (unexpected):", unexpectedSuccesses);
-        auto incompleteSuccess = GetFilteredResult(true, { STATUS_INCOMPLETE });
         HandlePrintResults(ss, "Success (incompletes):", incompleteSuccess);
-        //not showing expected successes
+        //not showing expected successes, those are implicit
 
         //show failures with each test status
-        auto regressions = GetFilteredResult(false, { STATUS_PASSING, STATUS_PARTIAL });
         HandlePrintResults(ss, "Failures (regressions):", regressions);
-        auto knownBugs = GetFilteredResult(false, { STATUS_KNOWN_BUG });
         HandlePrintResults(ss, "Failures (known bugs):", knownBugs);
-        auto incompleteFailures = GetFilteredResult(false, { STATUS_INCOMPLETE });
         HandlePrintResults(ss, "Failures (incomplete):", incompleteFailures);
     }
     else {
