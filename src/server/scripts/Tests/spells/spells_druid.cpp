@@ -1206,7 +1206,7 @@ public:
 	class LacerateTestImpt : public TestCase
 	{
 	public:
-		LacerateTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		LacerateTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -1223,35 +1223,36 @@ public:
 			TEST_POWER_COST(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, POWER_RAGE, expectedLacerateRage);
 			druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
 
-			// Damage
+			// Direct damage (always fixed damage, no ap bonus)
             TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, ClassSpellsDamage::Druid::LACERATE_RNK_1, ClassSpellsDamage::Druid::LACERATE_RNK_1, false);
             creature->RemoveAllAuras();
 
-			// Bleed -- bug here doesn't take AP bonus
+			// Bleed damage
 			float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
 			uint32 const apBonus = AP * 0.05f;
-			uint32 const lacerateTickDmg = floor(ClassSpellsDamage::Druid::LACERATE_RNK_1_BLEED + apBonus) / 5.0f;
 
 			creature->RemoveAurasDueToSpell(ClassSpells::Druid::LACERATE_RNK_1);
 			creature->SetHealth(10000);
-			uint32 const startHealth = creature->GetHealth();
-
             druid->ForceSpellHitResult(SPELL_MISS_NONE);
-			for (uint32 lacerateStack = 1; lacerateStack < 6; lacerateStack++)
-			{
-                TEST_CAST(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            for (uint32 lacerateStack = 1; lacerateStack <= 7; lacerateStack++)
+            {
+                TEST_CAST(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
                 TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::LACERATE_RNK_1, Seconds(15));
-                TEST_AURA_STACK(creature, ClassSpells::Druid::LACERATE_RNK_1, lacerateStack);
+            }
+            //we casted 7 times but stacks should only go to 5
+            TEST_AURA_STACK(creature, ClassSpells::Druid::LACERATE_RNK_1, 5);
 
-				Wait(3500); // 1 tick
-				// calculate health
-				uint32 expectedHealth = startHealth;
-				for (int i = 1; i <= lacerateStack; i++)
-					expectedHealth -= ClassSpellsDamage::Druid::LACERATE_RNK_1 + lacerateTickDmg * i;
-				ASSERT_INFO("Stack #%u, start: %u, health: %u, expected: %u, tick: %u", lacerateStack, startHealth, creature->GetHealth(), expectedHealth, lacerateTickDmg);
-				TEST_ASSERT(creature->GetHealth() == expectedHealth);
-			}
+            // test damage with all stacks. Target has currently 5 stacks
+            int32 const totalDotDamage = floor(ClassSpellsDamage::Druid::LACERATE_RNK_1_BLEED + apBonus) * 5;
+            auto AI = druid->GetTestingPlayerbotAI();
+            TEST_ASSERT(AI != nullptr);
+            AI->ResetSpellCounters();
+            Wait(16000); // wait all ticks to finish
+
+            int32 doneToTarget = AI->GetDotDamage(creature, ClassSpells::Druid::LACERATE_RNK_1);
+            TEST_ASSERT(Between(doneToTarget, totalDotDamage - 1, totalDotDamage + 1));
+
             druid->ResetForceSpellHitResult();
 		}
 	};
