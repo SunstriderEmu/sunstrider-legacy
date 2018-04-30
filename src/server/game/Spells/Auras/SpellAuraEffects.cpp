@@ -469,15 +469,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             {
             case SPELLFAMILY_GENERIC:
             {
-                // Pounce Bleed
-                if (m_spellInfo->SpellIconID == 147 && m_spellInfo->HasVisual(0))
+                if (m_spellInfo->Id == 40953) 
                 {
-                    // $AP*0.18/6 bonus per tick
-                    if (caster)
-                        amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
-                    break;
-                }
-                if (m_spellInfo->Id == 40953) {
                     amount = 1388 + rand() % 225;
                 }
                 break;

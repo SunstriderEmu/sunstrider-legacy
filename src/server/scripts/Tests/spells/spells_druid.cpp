@@ -1334,7 +1334,7 @@ public:
 	class PounceTestImpt : public TestCase
 	{
 	public:
-		PounceTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		PounceTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -1360,7 +1360,9 @@ public:
 			// Combo
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
 
-			// Damage -- bug here, not taking ap coeff
+			// Damage
+            // WoWWiki: Pounce damage is affected by attack power. Empirical data gathered by player Staralfur in patch 2.0 suggests this calculation: Base Damage + .18 x Attack Power
+            // This is also the coef listed in DrDamage
 			float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
 			float const pounceBleedCoeff = 0.18f;
 			uint32 const pounceBleedTotal = ClassSpellsDamage::Druid::POUNCE_RNK_4_TOTAL + AP * pounceBleedCoeff;
