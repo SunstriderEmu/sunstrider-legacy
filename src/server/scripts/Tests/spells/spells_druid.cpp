@@ -1426,7 +1426,7 @@ public:
 	class RakeTestImpt : public TestCase
 	{
 	public:
-		RakeTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		RakeTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -1452,7 +1452,7 @@ public:
 			uint32 const rakeDamage = floor(AP / 100 + ClassSpellsDamage::Druid::RAKE_RNK_5);
 			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::RAKE_RNK_5, rakeDamage, rakeDamage, false);
 
-			// Bleed -- bug here, ap coeff not taken
+			// Bleed
             //WoWwiki: Rank5: Rake the target for (AP/100+78) damage and an additional (108+AP*0.06) damage over 9 sec.
             float const rakeAPCoeff = 0.06f;    
             float const rakeTickCount = 3.0f;

@@ -496,14 +496,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             }
             case SPELLFAMILY_DRUID:
             {
-                // Rake
-                if (m_spellInfo->SpellFamilyFlags & 0x0000000000001000LL)
-                {
-                    // $AP*0.06/3 bonus per tick
-                    if (caster)
-                        amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 2 / 100);
-                    break;
-                }
                 // Rip
                 if (m_spellInfo->SpellFamilyFlags & 0x000000000000800000LL)
                 {
