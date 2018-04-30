@@ -1475,7 +1475,7 @@ public:
 	class RavageTestImpt : public TestCase
 	{
 	public:
-		RavageTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		RavageTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -1507,7 +1507,15 @@ public:
 			// Combo
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
 
-			// Damage -- damage is too high, calculations below are in agreement with DrDamage
+			/*  Damage -- damage is too high? calculations below are in agreement with DrDamage (I could not find any other source for now)
+             kelno: spell has 147 and not 514 in base points in dbc... that's because 147 x 350% = 514 and "In Patch 2.3.2, damage (all ranks) changed from 350% to 385%." 
+             So I'm pretty sure our calculation is correct, but either:
+             - Blizzard forgot to update the tooptip and the bonus damage is actually 565 (147 x 385%) since 2.3.2 (note that the 514 value is hardcoded in the tooltip so that's a likely error)
+             - Blizzard reduced the base value to 133 but our dbc did not follow this change (dbc are indeed sometimes late on patchs)
+             Failing to find any good source, I'll use the tooltip data for now and update the base value of the spell to 133. 
+             It may be a nerf but in case someone looks into it it's looking better to match the tooltip + the spell is not in the dps rotation so that's not a big loss.
+            */
+
 			uint32 const level = 60;
 			float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
 			float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
@@ -1520,6 +1528,8 @@ public:
 			uint32 const expectedRavageMin = weaponMinDamage * armorFactor;
 			uint32 const expectedRavageMax = weaponMaxDamage * armorFactor;
 			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::RAVAGE_RNK_5, expectedRavageMin, expectedRavageMax, false);
+
+            creature->SetOrientation(0.0f);
 
 			uint32 const expectedRavageCritMin = weaponMinDamage * 2.0f * armorFactor;
 			uint32 const expectedRavageCritMax = weaponMaxDamage * 2.0f * armorFactor;
