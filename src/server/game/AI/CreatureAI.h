@@ -54,10 +54,10 @@ enum SCEquip
 
 class TC_GAME_API CreatureAI : public UnitAI
 {
+    public:
+        bool UpdateVictim(bool evade = true); //made public for tests
     protected:
         Creature *me;
-
-        bool UpdateVictim(bool evade = true);
 
     public:
         enum EvadeReason

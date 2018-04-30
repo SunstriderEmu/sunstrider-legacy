@@ -136,53 +136,25 @@ public:
 			spawnPosition2.MoveInFront(_location, 6.0f);
 			TestPlayer* druid3 = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF, 70, spawnPosition2);
 
-			// Init friend druid
-			Position spawnPosition3(_location);
-			spawnPosition3.MoveInFront(_location, 9.0f);
-			TestPlayer* druid4 = SpawnPlayer(CLASS_DRUID, RACE_TAUREN, 70, spawnPosition3);
-
-			// Fail on friendly
-            TEST_CAST(druid, druid4, ClassSpells::Druid::CYCLONE_RNK_1, SPELL_FAILED_BAD_TARGETS);
-
 			// Cooldown & invulnerable to damage & heals
+            uint32 const startHealth = druid2->GetHealth();
             TEST_CAST(druid2, druid2, ClassSpells::Druid::LIFEBLOOM_RNK_1);
-			Wait(3500);
-            TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
-			Wait(1500); // Cyclone cast time
-			uint32 const startHealth = druid2->GetHealth();
+            FORCE_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
             TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, Seconds(6));
-            TEST_CAST(druid, druid2, ClassSpells::Druid::WRATH_RNK_10);
-			Wait(500); // wrath hit
-			TEST_ASSERT(druid2->GetHealth() == startHealth);
-			Wait(2000); // no more lifebloom
+            FORCE_CAST(druid, druid2, ClassSpells::Druid::WRATH_RNK_10, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_SPEED));
+			Wait(1); // wait for wrath to hit
+            //lifebloom and wrath should both fail
 			TEST_ASSERT(druid2->GetHealth() == startHealth);
 
 			// Only one target can be affected
-            TEST_CAST(druid, druid3, ClassSpells::Druid::CYCLONE_RNK_1);
-			Wait(1500); // Cyclone cast time
+            FORCE_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
+            FORCE_CAST(druid, druid3, ClassSpells::Druid::CYCLONE_RNK_1, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
             TEST_HAS_NOT_AURA(druid2, ClassSpells::Druid::CYCLONE_RNK_1);
             TEST_HAS_AURA(druid3, ClassSpells::Druid::CYCLONE_RNK_1);
 
-			// Diminishing returns
-			// 3s
-            TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
-			Wait(1500); // Cyclone cast time
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, Seconds(3));
-			druid2->RemoveAurasDueToSpell(ClassSpells::Druid::CYCLONE_RNK_1);
-
-			// 1.5s
-            TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
-			Wait(1500); // Cyclone cast time
-            TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, Milliseconds(1500));
-
-			// Immune
-            TEST_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1);
-			Wait(1500); // Cyclone cast time
-            TEST_HAS_NOT_AURA(druid2, ClassSpells::Druid::CYCLONE_RNK_1);
-
 			// Mana cost
 			uint32 const expectedCycloneMana = 189;
-			TEST_POWER_COST(druid, druid3, ClassSpells::Druid::CYCLONE_RNK_1, POWER_MANA, 189);
+			TEST_POWER_COST(druid, druid3, ClassSpells::Druid::CYCLONE_RNK_1, POWER_MANA, expectedCycloneMana);
 		}
 	};
 
@@ -683,6 +655,68 @@ public:
 	}
 };
 
+class GrowlTest : public TestCaseScript
+{
+public:
+
+    GrowlTest() : TestCaseScript("spells druid growl") { }
+
+    class GrowlTestImpt : public TestCase
+    {
+    public:
+        GrowlTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+
+            Position spawn3m(_location);
+            spawn3m.MoveInFront(_location, 3.0f);
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawn3m);
+            Creature* creature = SpawnCreatureWithPosition(spawn3m, 6);
+
+            // Setup
+            creature->SetMaxHealth(10000);
+            creature->SetHealth(10000);
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_CAST(warlock, creature, ClassSpells::Warlock::SEARING_PAIN_RNK_8, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            Wait(500);
+            uint32 warlockThreat = creature->GetThreatManager().GetThreat(warlock);
+            TEST_ASSERT(warlockThreat > 0);
+            TEST_ASSERT(creature->GetVictim() == warlock);
+
+            // Acquire threat, aura duration, cooldown
+            TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            Wait(2000);
+            FORCE_CAST(druid, creature, ClassSpells::Druid::GROWL_RNK_1);
+            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::GROWL_RNK_1, Seconds(3));
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::GROWL_RNK_1, Seconds(10));
+            TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == warlockThreat);
+            creature->AI()->UpdateVictim(); //update immediately to avoid waiting an update
+            TEST_ASSERT(creature->GetVictim() == druid);
+
+            // Make some more instant threat
+            TEST_CAST(warlock, creature, ClassSpells::Warlock::SEARING_PAIN_RNK_8, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            warlock->ResetForceSpellHitResult();
+            warlockThreat = creature->GetThreatManager().GetThreat(warlock);
+            TEST_ASSERT(warlockThreat > creature->GetThreatManager().GetThreat(druid) * 1.1f); //1.1 is the retake aggro threshold
+                                                                                               //warlock now has higher threat but target should stay unchanged
+            creature->AI()->UpdateVictim();
+            TEST_ASSERT(creature->GetVictim() == druid);
+
+            Wait(3300); //taunt aura last 3000, let it expire
+            TEST_ASSERT(!creature->HasAura(ClassSpells::Druid::GROWL_RNK_1));
+            //Taunt faded and warlock has higher threat, target should be restored!
+            TEST_ASSERT(creature->GetVictim() == warlock);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<GrowlTestImpt>();
+    }
+};
+
 class ChallengingRoarTest : public TestCaseScript
 {
 public:
@@ -726,8 +760,6 @@ public:
 			TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			Wait(2000);
 
-            Wait(10000);
-
             druid->SetFullPower(POWER_RAGE);
             druid->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_CAST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
@@ -736,7 +768,10 @@ public:
             TEST_AURA_MAX_DURATION(creature3m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Seconds(6));
             TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Seconds(6));
             TEST_HAS_NOT_AURA(creature15m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
-            Wait(1);
+
+            //force update victim immediately to avoid waiting more updates
+            creature3m->AI()->UpdateVictim();
+            creature6m->AI()->UpdateVictim();
 		
 			// Target changed
 			TEST_ASSERT(creature3m->GetVictim() == druid);
@@ -1143,66 +1178,6 @@ public:
 	}
 };
 
-class GrowlTest : public TestCaseScript
-{
-public:
-
-	GrowlTest() : TestCaseScript("spells druid growl") { }
-
-	class GrowlTestImpt : public TestCase
-	{
-	public:
-		GrowlTestImpt() : TestCase(STATUS_PASSING) { }
-
-		void Test() override
-		{
-			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-
-			Position spawn3m(_location);
-			spawn3m.MoveInFront(_location, 3.0f);
-			TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawn3m);
-			Creature* creature = SpawnCreatureWithPosition(spawn3m, 6);
-
-			// Setup
-			creature->SetMaxHealth(10000);
-			creature->SetHealth(10000);
-            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
-            TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-			Wait(500);
-			uint32 warlockThreat = creature->GetThreatManager().GetThreat(warlock);
-			TEST_ASSERT(warlockThreat > 0);
-			TEST_ASSERT(creature->GetTarget() == warlock->GetGUID());
-
-			// Acquire threat, aura duration, cooldown
-            TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-            druid->ForceSpellHitResult(SPELL_MISS_NONE);
-            TEST_CAST(druid, creature, ClassSpells::Druid::GROWL_RNK_1);
-            druid->ResetForceSpellHitResult();
-            TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::GROWL_RNK_1, Seconds(3));
-			TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::GROWL_RNK_1, Seconds(10));
-			TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == warlockThreat);
-
-			// Keep aggro
-			Wait(1000);
-            TEST_CAST(warlock, creature, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-            warlock->ResetForceSpellHitResult();
-			Wait(500);
-			warlockThreat = creature->GetThreatManager().GetThreat(warlock);
-			TEST_ASSERT(warlockThreat > creature->GetThreatManager().GetThreat(druid));
-			TEST_ASSERT(creature->GetTarget() == druid->GetGUID());
-
-			// Lose aggro
-			Wait(2000);
-			TEST_ASSERT(creature->GetTarget() == warlock->GetGUID());
-		}
-	};
-
-	std::shared_ptr<TestCase> GetTest() const override
-	{
-		return std::make_shared<GrowlTestImpt>();
-	}
-};
-
 class LacerateTest : public TestCaseScript
 {
 public:
@@ -1297,6 +1272,7 @@ public:
 
 			// Shapeshift
 			druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
+            Wait(1500); // GCD
             TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2);
 			Wait(1500); // GCD
 
