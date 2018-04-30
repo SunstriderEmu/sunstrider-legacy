@@ -3277,33 +3277,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
     }
     case SPELLFAMILY_DRUID:
     {
-        // Lifebloom
-        if (GetSpellInfo()->SpellFamilyFlags & 0x1000000000LL)
-        {
-            // Do final heal for real !apply
-            if (!apply && (mode & AURA_EFFECT_HANDLE_REAL))
-            {
-                if (GetBase()->GetDuration() <= 0 || aurApp->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
-                {
-                    // final heal
-                    if (m_target->IsInWorld())
-                    {
-                        int32 amount = _amount;
-                        if(caster)
-                            amount = caster->SpellHealingBonusDone(m_target, GetSpellInfo(), _amount, HEAL, GetEffIndex());
-
-                        CastSpellExtraArgs args;
-                        args.TriggerFlags = TRIGGERED_FULL_MASK;
-                        args.AddSpellBP0(int32(amount));
-                        args.SetTriggeringAura(this);
-                        args.SetOriginalCaster(GetCasterGUID());
-                        m_target->CastSpell(m_target, 33778, args);
-                    }
-                }
-            }
-            return;
-        }
-
         // Predatory Strikes
         if (m_target->GetTypeId() == TYPEID_PLAYER && GetSpellInfo()->SpellIconID == 1563)
         {

@@ -389,6 +389,63 @@ public:
     }
 };
 
+// -33763 - Lifebloom
+class spell_dru_lifebloom : public SpellScriptLoader
+{
+public:
+    spell_dru_lifebloom() : SpellScriptLoader("spell_dru_lifebloom") { }
+
+    class spell_dru_lifebloom_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_dru_lifebloom_AuraScript);
+
+        bool Validate(SpellInfo const* /*spell*/) override
+        {
+            return ValidateSpellInfo(
+            {
+                SPELL_DRUID_LIFEBLOOM_FINAL_HEAL,
+            });
+        }
+
+        void OnRemoveEffect(Unit* target, AuraEffect const* aurEff, uint32 stack)
+        {
+            int32 healAmount = aurEff->GetAmount();
+            CastSpellExtraArgs args(aurEff);
+            args.OriginalCaster = GetCasterGUID();
+            args.AddSpellBP0(healAmount);
+            target->CastSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, args);
+        }
+
+        void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            // Final heal only on duration end
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+                return;
+
+            // final heal
+            OnRemoveEffect(GetTarget(), aurEff, GetStackAmount());
+        }
+
+        void HandleDispel(DispelInfo* dispelInfo)
+        {
+            if (Unit* target = GetUnitOwner())
+                if (AuraEffect const* aurEff = GetEffect(EFFECT_1))
+                    OnRemoveEffect(target, aurEff, dispelInfo->GetRemovedCharges()); // final heal
+        }
+
+        void Register() override
+        {
+            AfterEffectRemove += AuraEffectRemoveFn(spell_dru_lifebloom_AuraScript::AfterRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            AfterDispel += AuraDispelFn(spell_dru_lifebloom_AuraScript::HandleDispel);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_dru_lifebloom_AuraScript();
+    }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_idol_lifebloom();
@@ -398,4 +455,5 @@ void AddSC_druid_spell_scripts()
     new spell_dru_t3_8p_bonus();
     new spell_dru_t4_2p_bonus();
     new spell_dru_forms_trinket();
+    new spell_dru_lifebloom();
 }

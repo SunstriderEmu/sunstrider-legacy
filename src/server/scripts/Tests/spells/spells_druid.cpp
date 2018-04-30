@@ -1451,7 +1451,8 @@ public:
 			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::RAKE_RNK_5, rakeDamage, rakeDamage, false);
 
 			// Bleed -- bug here, ap coeff not taken
-            float const rakeAPCoeff = 0.06f;
+            //WoWwiki: Rank5: Rake the target for (AP/100+78) damage and an additional (108+AP*0.06) damage over 9 sec.
+            float const rakeAPCoeff = 0.06f;    
             float const rakeTickCount = 3.0f;
             uint32 const rakeBleedTotal = AP * rakeAPCoeff + ClassSpellsDamage::Druid::RAKE_RNK_5_BLEED;
 			uint32 const rakeBleedTick = floor(rakeBleedTotal / rakeTickCount);
@@ -1977,18 +1978,25 @@ public:
     class LifebloomTestImpt : public TestCase
     {
     public:
-        LifebloomTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        LifebloomTestImpt() : TestCase(STATUS_PARTIAL) { }
 
-        void TestLifebloom(TestPlayer* druid, uint32 tickTotal, uint32 expectedBloom, bool crit)
+        void TestLifebloom(TestPlayer* druid, uint32 expectedBloom, bool crit)
         {
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
-            uint32 startHealth = 1;
-            druid->SetHealth(startHealth);
+
+            auto AI = druid->GetTestingPlayerbotAI();
+            ASSERT_INFO("Caster in not a testing bot");
+            TEST_ASSERT(AI != nullptr);
+            AI->ResetSpellCounters();
             EnableCriticals(druid, crit);
+
             TEST_CAST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
             Wait(8000);
-            //uint32 expectedHealth = druid->GetHealth() - (startHealth + tickTotal);
-            TEST_ASSERT(druid->GetHealth() == expectedBloom);
+            uint32 dealtMin, dealtMax;
+            GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1_FINAL_PROC, dealtMin, dealtMax, crit, 1);
+
+            ASSERT_INFO("dealtMin %u == expectedBloom %u", dealtMin, expectedBloom);
+            TEST_ASSERT(dealtMin == expectedBloom);
         }
 
         void Test() override
@@ -2010,6 +2018,7 @@ public:
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
 
             // Spell coeffs -- bug here, calculations below are on par with DrDamage
+            //WoWiki: The HoT and final heal gain roughly 52 % and 34 % of your + healing respectively.
             float const lifebloomDuration = 7.0f;
             float const lifebloomCastTime = 1.5f;
             float const lifebloomTotalCoeff = (lifebloomDuration / 15.0f) / ((lifebloomDuration / 15.0f) + (lifebloomCastTime / 3.5f));
@@ -2022,8 +2031,10 @@ public:
             uint32 const expectedBloom = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_BURST + lifebloomBurstBHBonus;
             TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, expectedLifebloomTotal, false);
             // Bloom
-            TestLifebloom(druid, expectedLifebloomTotal, expectedBloom, false);
-            TestLifebloom(druid, expectedLifebloomTotal * 1.5f, expectedBloom, true);
+            TestLifebloom(druid, expectedBloom, false);
+            TestLifebloom(druid, expectedBloom * 1.5f, true);
+
+            //TODO test: If the druid that cast it is in combat, the heal over time counts as threat to the druid. The bloom is zero threat to either the druid or the recipient, (contrary to most people's assumptions about the combat log).
         }
     };
 

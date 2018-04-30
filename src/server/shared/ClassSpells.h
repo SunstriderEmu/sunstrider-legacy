@@ -2067,6 +2067,7 @@ namespace ClassSpells
             HEALING_TOUCH_RNK_12 = 26978,
             HEALING_TOUCH_RNK_13 = 26979,
             LIFEBLOOM_RNK_1 = 33763,
+            LIFEBLOOM_RNK_1_FINAL_PROC = 33778,
             MARK_OF_THE_WILD_RNK_1 = 1126,
             MARK_OF_THE_WILD_RNK_2 = 5232,
             MARK_OF_THE_WILD_RNK_3 = 6756,
