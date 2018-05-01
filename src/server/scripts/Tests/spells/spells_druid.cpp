@@ -1598,6 +1598,7 @@ public:
         {
             /*
                 Bugged: hack in SpellEffects.cpp with 0.08f factor on AP
+                DrDamage: 0.07
             */
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
@@ -1956,7 +1957,7 @@ public:
     class LifebloomTestImpt : public TestCase
     {
     public:
-        LifebloomTestImpt() : TestCase(STATUS_PARTIAL) { }
+        LifebloomTestImpt() : TestCase(STATUS_PASSING) { }
 
         void TestLifebloom(TestPlayer* druid, uint32 expectedBloom, bool crit)
         {
@@ -1979,7 +1980,7 @@ public:
 
         void Test() override
         {
-            TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
             EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
             druid->DisableRegeneration(true);
@@ -1987,16 +1988,13 @@ public:
             int32 maceBH = 550;
             TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
 
-            // Mana cost
             uint32 const expectedLifebloomMana = 220;
             TEST_POWER_COST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, POWER_MANA, expectedLifebloomMana);
-
-            // Aura
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, Seconds(7));
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
 
             // Spell coeffs -- bug here, calculations below are on par with DrDamage
-            //WoWiki: The HoT and final heal gain roughly 52 % and 34 % of your + healing respectively.
+            // WoWiki: The HoT and final heal gain roughly 52 % and 34 % of your + healing respectively.
             float const lifebloomDuration = 7.0f;
             float const lifebloomCastTime = 1.5f;
             float const lifebloomTotalCoeff = (lifebloomDuration / 15.0f) / ((lifebloomDuration / 15.0f) + (lifebloomCastTime / 3.5f));
@@ -2012,7 +2010,27 @@ public:
             TestLifebloom(druid, expectedBloom, false);
             TestLifebloom(druid, expectedBloom * 1.5f, true);
 
-            //TODO test: If the druid that cast it is in combat, the heal over time counts as threat to the druid. The bloom is zero threat to either the druid or the recipient, (contrary to most people's assumptions about the combat log).
+            // 2008/08/02
+            // Lifebloom HoT generates threat at 0.25 threat per point healed, the final bloom of Lifebloom causes 0 threat.
+            // https://authors.curseforge.com/forums/world-of-warcraft/addon-chat/libraries/209220-threat-2-0-and-lifebloom
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            Creature* dummy = SpawnCreature();
+            warrior->DisableRegeneration(true);
+            warrior->SetHealth(1);
+            warrior->AttackerStateUpdate(dummy, BASE_ATTACK);
+            TEST_CAST(druid, warrior, ClassSpells::Druid::LIFEBLOOM_RNK_1);
+            Wait(Seconds(8));
+            warrior->AttackStop();
+
+            const float expectedDruidThreat = 7 * expectedLifebloomTick / 0.25f;
+            const float expectedWarriorThreat = dummy->GetMaxHealth() - dummy->GetHealth();
+            ASSERT_INFO("Druid threat: %f, expected: %u", dummy->GetThreatManager().GetThreat(druid), expectedDruidThreat);
+            const float druidThreat = dummy->GetThreatManager().GetThreat(druid);
+            TEST_ASSERT(Between<float>(druidThreat, druidThreat - 0.1f, druidThreat + 0.1f));
+
+            const float warriorthreat = dummy->GetThreatManager().GetThreat(warrior);
+            ASSERT_INFO("Warrior threat: %f, expected: %u", dummy->GetThreatManager().GetThreat(warrior), expectedWarriorThreat);
+            TEST_ASSERT(Between<float>(warriorthreat, warriorthreat - 0.1f, warriorthreat + 0.1f));
         }
     };
 

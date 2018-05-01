@@ -1,5 +1,6 @@
 #include "../ClassSpellsDamage.h"
 #include "../ClassSpellsCoeff.h"
+#include "SpellHistory.h"
 
 #define SOUL_SHARD 6265
 
@@ -132,7 +133,7 @@ public:
     class CurseOfRecklessnessTestImpt : public TestCase
     {
     public:
-        CurseOfRecklessnessTestImpt() : TestCase(STATUS_INCOMPLETE) { } //was marked KNOWN_BUG, why?
+        CurseOfRecklessnessTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -264,7 +265,7 @@ public:
     class CurseOfWeaknessTestImpt : public TestCase
     {
     public:
-        CurseOfWeaknessTestImpt() : TestCase(STATUS_INCOMPLETE) { } //was marked KNOWN_BUG, why?
+        CurseOfWeaknessTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -618,7 +619,7 @@ public:
             TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedManaGained);
             TEST_ASSERT(warlock->GetHealth() == 1);
             TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedManaGained);
-            // Can't suicide with Life Tap
+            // Can't suicide with Life Tap (http://www.wowhead.com/spell=1454/life-tap#comments:id=19418)
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::LIFE_TAP_RNK_7, SPELL_FAILED_FIZZLE, TRIGGERED_IGNORE_GCD);
         }
     };
@@ -766,7 +767,7 @@ public:
     class CreateFirestoneTestImpt : public TestCase
     {
     public:
-        CreateFirestoneTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        CreateFirestoneTestImpt() : TestCase(STATUS_PARTIAL) { }
 
         void CreateFirestone(TestPlayer* caster, uint32 firestoneSpellId, uint32 firestone, uint32 expectedManaCost)
         {
@@ -792,7 +793,6 @@ public:
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_2, FIRESTONE, 700);
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_3, GREATER_FIRESTONE, 900);
             CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_4, MAJOR_FIRESTONE, 1100);
-            CreateFirestone(warlock, ClassSpells::Warlock::CREATE_FIRESTONE_RNK_5, MASTER_FIRESTONE, 1330);
             warlock->DestroyConjuredItems(true);
 
             // Spell damage
@@ -808,7 +808,9 @@ public:
                 TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax, false);
                 TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin * 1.5f, expectedIncinerateMax *1.5f, true);
 
-                //TODO: Should only increase fire damage
+                // Should only increase fire damage
+                TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX, false);
+                TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * 1.5f, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * 1.5f, true);
             }
 
             // TODO: melee proc chance of passive (ClassSpells::Warlock::CREATE_FIRESTONE_PASSIVE_RNK_5)
@@ -818,6 +820,210 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<CreateFirestoneTestImpt>();
+    }
+};
+
+class CreateHealthstoneTest : public TestCaseScript
+{
+public:
+    CreateHealthstoneTest() : TestCaseScript("spells warlock create_healthstone") { }
+
+    class CreateHealthstoneTestImpt : public TestCase
+    {
+    public:
+        CreateHealthstoneTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void CreateHealthstone(TestPlayer* caster, uint32 healthstoneSpellId, uint32 healthstone, uint32 expectedManaCost, uint32 healthRestored)
+        {
+            caster->SetHealth(1);
+            caster->AddItem(SOUL_SHARD, 2);
+            TEST_CAST(caster, caster, healthstoneSpellId);
+            Wait(3500);
+            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 1);
+            TEST_ASSERT(caster->GetItemCount(healthstone, false) == 1);
+            Wait(1);
+            USE_ITEM(caster, caster, healthstone);
+            Wait(Seconds(1));
+            TEST_ASSERT(caster->GetItemCount(healthstone, false) == 0);
+            TEST_ASSERT(caster->GetHealth() == 1 + healthRestored);
+            caster->GetSpellHistory()->ResetAllCooldowns();
+
+            TEST_POWER_COST(caster, caster, healthstoneSpellId, POWER_MANA, expectedManaCost);
+            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
+            caster->SetFullPower(POWER_MANA);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            warlock->DisableRegeneration(true);
+            EnableCriticals(warlock, false); // disable Healthstone crit
+
+            const uint32 MINOR_HEALTHSTONE      = 5512;
+            const uint32 LESSER_HEALTHSTONE     = 5511;
+            const uint32 HEALTHSTONE            = 5509;
+            const uint32 GREATER_HEALTHSTONE    = 5510;
+            const uint32 MAJOR_HEALTHSTONE      = 9421;
+            const uint32 MASTER_HEALTHSTONE     = 22103;
+
+            // Assert for each that healthstone is created + assert power costs + health restored
+            CreateHealthstone(warlock, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_1, MINOR_HEALTHSTONE, 95, 100);
+            CreateHealthstone(warlock, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_2, LESSER_HEALTHSTONE, 240, 250);
+            CreateHealthstone(warlock, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_3, HEALTHSTONE, 475, 500);
+            CreateHealthstone(warlock, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_4, GREATER_HEALTHSTONE, 750, 800);
+            CreateHealthstone(warlock, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_5, MAJOR_HEALTHSTONE, 1120, 1200);
+            CreateHealthstone(warlock, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_6, MASTER_HEALTHSTONE, 1390, 2080);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CreateHealthstoneTestImpt>();
+    }
+};
+
+class CreateSoulstoneTest : public TestCaseScript
+{
+public:
+    CreateSoulstoneTest() : TestCaseScript("spells warlock create_soulstone") { }
+
+    class CreateSoulstoneTestImpt : public TestCase
+    {
+    public:
+        CreateSoulstoneTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void CreateSoulstone(TestPlayer* caster, uint32 soulstoneSpellId, uint32 soulstoneItemSpellId, uint32 soulstone, uint32 healthRestored, uint32 manaRestored)
+        {
+            caster->AddItem(SOUL_SHARD, 1);
+            TEST_CAST(caster, caster, soulstoneSpellId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            ASSERT_INFO("cb fdp: %u", caster->GetItemCount(SOUL_SHARD, false));
+            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
+            TEST_ASSERT(caster->GetItemCount(soulstone, false) == 1);
+
+            USE_ITEM(caster, caster, soulstone);
+            Wait(Seconds(3));
+            TEST_ASSERT(caster->GetItemCount(soulstone, false) == 0);
+            // Spell has 30min cooldown. Impossible to check directly, so we test superior to 29 min.
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(soulstoneItemSpellId);
+            TEST_ASSERT(spellInfo != nullptr);
+            ASSERT_INFO("Spell: %u, cd: %u", soulstoneItemSpellId, caster->GetSpellHistory()->GetRemainingCooldown(spellInfo));
+            TEST_ASSERT(caster->GetSpellHistory()->GetRemainingCooldown(spellInfo) > (29 * MINUTE * IN_MILLISECONDS));
+            TEST_AURA_MAX_DURATION(caster, soulstoneItemSpellId, Minutes(30));
+
+            caster->KillSelf();
+            Wait(1);
+            WorldPacket fakeClientResponse(CMSG_SELF_RES);
+            caster->GetSession()->HandleSelfResOpcode(fakeClientResponse);
+            Wait(1);
+            TEST_ASSERT(caster->GetHealth() == healthRestored);
+            TEST_ASSERT(caster->GetPower(POWER_MANA) == manaRestored);
+            caster->GetSpellHistory()->ResetAllCooldowns();
+            caster->RemoveAurasDueToSpell(soulstoneItemSpellId);
+
+            caster->AddItem(SOUL_SHARD, 1);
+            TEST_POWER_COST(caster, caster, soulstoneSpellId, POWER_MANA, 1778);
+            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
+            caster->SetFullPower(POWER_MANA);
+            caster->GetSpellHistory()->ResetAllCooldowns();
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            warlock->DisableRegeneration(true);
+            
+            const uint32 MINOR_SOULSTONE    = 5232;
+            const uint32 LESSER_SOULSTONE   = 16892;
+            const uint32 SOULSTONE          = 16893;
+            const uint32 GREATER_SOULSTONE  = 16895;
+            const uint32 MAJOR_SOULSTONE    = 16896;
+            const uint32 MASTER_SOULSTONE   = 22116;
+
+            // Assert for each that soulstone is created + assert power costs + resurrected stats
+            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_1, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_1_ITEM, MINOR_SOULSTONE, 400, 700);
+            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_2, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_2_ITEM, LESSER_SOULSTONE, 750, 1200);
+            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_3, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_3_ITEM, SOULSTONE, 1100, 1700);
+            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_4, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_4_ITEM, GREATER_SOULSTONE, 1600, 2200);
+            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_5, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_5_ITEM, MAJOR_SOULSTONE, 2200, 2800);
+            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM, MASTER_SOULSTONE, 2900, 3300);
+
+            // TODO: 2.1: Soulstones can no longer be used on targets not in your party or raid
+            // TODO: 2.1: Soulstone buff will now be removed if the target or caster leaves the party or raid
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CreateSoulstoneTestImpt>();
+    }
+};
+
+class CreateSpellstoneTest : public TestCaseScript
+{
+public:
+    CreateSpellstoneTest() : TestCaseScript("spells warlock create_spellstone") { }
+
+    class CreateSpellstoneTestImpt : public TestCase
+    {
+    public:
+        CreateSpellstoneTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+
+        void CreateSpellstone(TestPlayer* caster, uint32 spellstoneSpellId, uint32 spellstone, uint32 expectedManaCost, uint32 criticalStrikeRatingBonus)
+        {
+            const uint32 expectedSpellCritScore = caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL) + criticalStrikeRatingBonus;
+            caster->AddItem(SOUL_SHARD, 1);
+            TEST_POWER_COST(caster, caster, spellstoneSpellId, POWER_MANA, expectedManaCost);
+            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
+            TEST_ASSERT(caster->GetItemCount(spellstone, false) == 1);
+            // Equip item
+            caster->GetSpellHistory()->ResetAllCooldowns();
+            caster->AddAura(5760, caster); // Poison
+            caster->AddAura(35760, caster); // Disease
+            caster->AddAura(ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, caster); // Curse
+            caster->AddAura(ClassSpells::Warrior::HAMSTRING_RNK_4, caster); // Debuff
+            caster->AddAura(ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, caster); // Magic harmless
+            caster->AddAura(ClassSpells::Mage::FROSTBOLT_RNK_13, caster); // Magic harmful
+            caster->GetSpellHistory()->ResetAllCooldowns();
+            // Use item
+            USE_ITEM(caster, caster, spellstone);
+            Wait(1);
+            ASSERT_INFO("Crit: %u, expected: %u", caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL), expectedSpellCritScore);
+            TEST_ASSERT(caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL) == expectedSpellCritScore);
+            TEST_HAS_AURA(caster, 5760);
+            TEST_HAS_AURA(caster, 35760);
+            TEST_HAS_AURA(caster, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
+            TEST_HAS_AURA(caster, ClassSpells::Warrior::HAMSTRING_RNK_4);
+            TEST_HAS_AURA(caster, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7);
+            TEST_HAS_NOT_AURA(caster, ClassSpells::Mage::FROSTBOLT_RNK_13);
+            caster->RemoveAurasDueToSpell(5760);
+            caster->RemoveAurasDueToSpell(35760);
+            caster->RemoveAurasDueToSpell(ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
+            caster->RemoveAurasDueToSpell(ClassSpells::Warrior::HAMSTRING_RNK_4);
+            caster->RemoveAurasDueToSpell(ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            const uint32 SPELLSTONE         = 5522;
+            const uint32 GREATER_SPELLSTONE = 13602;
+            const uint32 MAJOR_SPELLSTONE   = 13603;
+            const uint32 MASTER_SPELLSTONE  = 22646;
+
+            // Assert for each that spellstone is created + assert power costs
+            CreateSpellstone(warlock, ClassSpells::Warlock::CREATE_SPELLSTONE_RNK_1, SPELLSTONE, 500, 8);
+            CreateSpellstone(warlock, ClassSpells::Warlock::CREATE_SPELLSTONE_RNK_2, GREATER_SPELLSTONE, 750, 11);
+            CreateSpellstone(warlock, ClassSpells::Warlock::CREATE_SPELLSTONE_RNK_3, MAJOR_SPELLSTONE, 1000, 14);
+            CreateSpellstone(warlock, ClassSpells::Warlock::CREATE_SPELLSTONE_RNK_4, MASTER_SPELLSTONE, 1150, 20);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CreateSpellstoneTestImpt>();
     }
 };
 
@@ -1118,7 +1324,7 @@ public:
     class SoulFireTestImpt : public TestCase
     {
     public:
-        SoulFireTestImpt() : TestCase(STATUS_PARTIAL) { }
+        SoulFireTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1177,6 +1383,9 @@ void AddSC_test_spells_warlock()
     // Demonology
     new BanishTest();
     new CreateFirestoneTest();
+    new CreateHealthstoneTest();
+    new CreateSoulstoneTest();
+    new CreateSpellstoneTest();
     // Destruction: 7/7
     new HellfireTest();
     new ImmolateTest();
