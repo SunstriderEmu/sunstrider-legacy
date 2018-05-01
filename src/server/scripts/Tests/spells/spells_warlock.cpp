@@ -132,7 +132,7 @@ public:
     class CurseOfRecklessnessTestImpt : public TestCase
     {
     public:
-        CurseOfRecklessnessTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        CurseOfRecklessnessTestImpt() : TestCase(STATUS_INCOMPLETE) { } //was marked KNOWN_BUG, why?
 
         void Test() override
         {
@@ -259,12 +259,12 @@ public:
 class CurseOfWeaknessTest : public TestCaseScript
 {
 public:
-    CurseOfWeaknessTest() : TestCaseScript("spells warlock curse_of_weakness") { }
+    CurseOfWeaknessTest() : TestCaseScript("spells warlock curse_of_weakness") { } 
 
     class CurseOfWeaknessTestImpt : public TestCase
     {
     public:
-        CurseOfWeaknessTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        CurseOfWeaknessTestImpt() : TestCase(STATUS_INCOMPLETE) { } //was marked KNOWN_BUG, why?
 
         void Test() override
         {
@@ -313,9 +313,7 @@ public:
 
             // Caster heals 100% of damage
             uint32 const rogueStartHealth = rogue->GetHealth();
-            uint32 const expectedDeathCoilManaCost = 600;
-            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::DEATH_COIL_RNK_4, POWER_MANA, expectedDeathCoilManaCost);
-            Wait(500);
+            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::DEATH_COIL_RNK_4, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_SPEED));
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::DEATH_COIL_RNK_4, Seconds(3));
             uint32 const expectedWarlockHealth = 1 + rogueStartHealth - rogue->GetHealth();
             TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
@@ -330,6 +328,9 @@ public:
 
             uint32 const expectedDeathCoilDmg = ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4 + dmgPerLevelGain + spellPower * spellCoefficient;
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoilDmg, expectedDeathCoilDmg, false);
+
+            uint32 const expectedDeathCoilManaCost = 600;
+            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::DEATH_COIL_RNK_4, POWER_MANA, expectedDeathCoilManaCost);
         }
     };
 
@@ -548,10 +549,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             TestPlayer* enemy1 = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
 
-            uint32 const expectedHowlOfTerrorManaCost = 200;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, POWER_MANA, expectedHowlOfTerrorManaCost);
-
-            TEST_CAST(warlock, warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2);
+            FORCE_CAST(warlock, warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
             TEST_AURA_MAX_DURATION(enemy1, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, Seconds(8));
             TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, Seconds(40));
             enemy1->RemoveAurasDueToSpell(ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2);
@@ -572,6 +570,9 @@ public:
             count += uint32(isFeared(enemy5));
             count += uint32(isFeared(enemy6));
             TEST_ASSERT(count == 5);
+
+            uint32 const expectedHowlOfTerrorManaCost = 200;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, POWER_MANA, expectedHowlOfTerrorManaCost);
         }
     };
 
@@ -589,7 +590,7 @@ public:
     class LifeTapTestImpt : public TestCase
     {
     public:
-        LifeTapTestImpt() : TestCase(STATUS_PARTIAL) { }
+        LifeTapTestImpt() : TestCase(STATUS_INCOMPLETE) { }
 
         void Test() override
         {
@@ -1132,7 +1133,7 @@ public:
             TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
 
             warlock->AddItem(SOUL_SHARD, 1);
-            TEST_CAST(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4);
+            TEST_CAST(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             // Consumes a Soul Shard
             TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
             TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::SOUL_FIRE_RNK_4, Minutes(1));
