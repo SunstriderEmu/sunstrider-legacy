@@ -8002,7 +8002,6 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
         }
 
         pushSpells.push_back(spell);
-        //spell->prepare(targets);
 
         ++count;
     }
@@ -9501,6 +9500,17 @@ InventoryResult Player::CanUnequipItems( uint32 item, uint32 count ) const
 
     // not found req. item count and have unequippable items
     return res;
+}
+
+Item* Player::GetFirstItem(uint32 item) const
+{
+    for (int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; i++)
+    {
+        Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (pItem && pItem->GetEntry() == item)
+            return pItem;
+    }
+    return nullptr;
 }
 
 uint32 Player::GetItemCount( uint32 item, bool inBankAlso, Item* skipItem ) const

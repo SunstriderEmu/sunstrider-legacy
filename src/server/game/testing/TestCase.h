@@ -180,7 +180,7 @@ public:
     #define TEST_MELEE_HIT_CHANCE(caster, victim, weaponAttackType, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestMeleeHitChance(caster, victim, weaponAttackType, chance, missInfo); _ResetCaller(); }
     // Test the percentage of a melee hit outcome for already done attacks
     #define TEST_MELEE_OUTCOME_PERCENTAGE(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestMeleeOutcomePercentage(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError);  _ResetCaller(); }
-        // Test the percentage of a spell hit outcome for already done attacks
+    // Test the percentage of a spell hit outcome for already done attacks
     #define TEST_SPELL_OUTCOME_PERCENTAGE(attacker, victim, spellId, missType, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestSpellOutcomePercentage(attacker, victim, spellId, missType, expectedResult, allowedError);  _ResetCaller(); }
 
     #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) { _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller(); }
@@ -199,6 +199,12 @@ public:
     cooldownSecond: can be either uint32 or std::chrono::duration (such as Seconds)
     */
     #define TEST_HAS_COOLDOWN(caster, spellID, cooldownSecond) { _SetCaller(__FILE__, __LINE__); _TestHasCooldown(caster, spellID, cooldownSecond); _ResetCaller(); }
+
+    /* Use first item found in inventory with given id
+    */
+    #define USE_ITEM(caster, itemID) { _SetCaller(__FILE__, __LINE__); _TestUseItem(caster, itemID); _ResetCaller(); }
+
+    #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance); _ResetCaller(); }
 
     //crit: get only spells that made crit / only spells that did not
     void GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount = 0);
@@ -244,9 +250,16 @@ protected:
     expectedResult: 0 - 100
     allowedError: 0 - 100
     */
-    void _TestSpellOutcomePercentage(TestPlayer* attacker, Unit* victim, uint32 spellId, SpellMissInfo hitInfo, float expectedResult, float allowedError, uint32 sampleSize = 0);
+    void _TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, SpellMissInfo hitInfo, float expectedResult, float allowedError, uint32 sampleSize = 0);
+    /* if sampleSize != 0, check if results count = sampleSize
+    expectedResult: 0 - 100
+    allowedError: 0 - 100
+    */
+    void _TestSpellCritPercentage(TestPlayer* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize = 0);
+
     void _TestSpellHitChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float chance, SpellMissInfo missInfo);
     void _TestMeleeHitChance(TestPlayer* caster, TestPlayer* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
+    void _TestSpellCritChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float chance);
 
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
@@ -263,6 +276,7 @@ protected:
     void _TestAuraStack(Unit* target, uint32 spellID,uint32 stacks, bool stack);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
     void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
+    void _TestUseItem(TestPlayer* caster, uint32 itemId);
 
     //Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
     static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);

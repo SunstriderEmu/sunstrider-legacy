@@ -1266,6 +1266,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetSheath(SheathState sheathed ) override;
         uint8 FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap ) const;
         uint32 GetItemCount( uint32 item, bool inBankAlso = false, Item* skipItem = nullptr ) const;
+        Item* GetFirstItem(uint32 item) const;
         Item* GetItemByGuid(ObjectGuid guid ) const;
         Item* GetItemByPos( uint16 pos ) const;
         Item* GetItemByPos( uint8 bag, uint8 slot ) const;

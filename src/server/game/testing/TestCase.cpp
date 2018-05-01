@@ -1350,6 +1350,44 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
+void TestCase::_TestSpellCritPercentage(TestPlayer* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
+    if (!damageToTarget || damageToTarget->empty())
+    {
+        TC_LOG_WARN("test.unit_test", "_TestSpellCritPercentage found no data for this victim (%s)", victim->GetName().c_str());
+        return;
+    }
+
+    if (sampleSize)
+    {
+        INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found %u results instead of expected sample size %u for spell %u", uint32(damageToTarget->size()), sampleSize, spellId);
+        INTERNAL_TEST_ASSERT(damageToTarget->size() == sampleSize)
+    }
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage was prompted for non existing spell ID %u", spellId);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+
+    uint32 count = 0;
+    for (auto itr : *damageToTarget)
+    {
+        if (itr.damageInfo.SpellID != spellId)
+            continue;
+
+        if (itr.crit)
+            count++;
+    }
+
+    float const result = (count / float(damageToTarget->size())) * 100.0f;
+    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage on spell %u: expected result: %f, result: %f", spellId, expectedResult, result);
+    INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
+}
+
 float TestCase::CalcChance(uint32 iterations, const std::function<bool()>& f)
 {
 	uint32 success = 0;
@@ -1461,6 +1499,50 @@ void TestCase::_TestAuraStack(Unit* target, uint32 spellID, uint32 stacks, bool 
     }
     INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with %u %s instead of %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID, auraStacks, type.c_str(), stacks);
     INTERNAL_TEST_ASSERT(auraStacks == stacks);
+}
+
+void TestCase::_TestUseItem(TestPlayer* caster, uint32 itemId)
+{
+    Item* firstItem = caster->GetFirstItem(itemId);
+    WorldPacket fakePacket(CMSG_USE_ITEM);
+
+    fakePacket << uint8(firstItem->GetBagSlot());
+    fakePacket << uint8(firstItem->GetSlot());
+    fakePacket << uint8(1) << uint8(1);
+    fakePacket << firstItem->GetGUID();
+
+    caster->GetSession()->HandleUseItemOpcode(fakePacket);
+}
+
+void TestCase::_TestSpellCritChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float expectedResultPercent)
+{
+    INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive caster");
+    INTERNAL_TEST_ASSERT(caster->IsAlive());
+    INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive victim");
+    INTERNAL_TEST_ASSERT(victim->IsAlive());
+
+    uint32 startingHealth = victim->GetHealth();
+    uint32 startingMaxHealth = victim->GetMaxHealth();
+
+    victim->SetMaxHealth(std::numeric_limits<uint32>::max());
+
+    float const absoluteTolerance = 0.02f;
+    uint32 sampleSize;
+    float resultingAbsoluteTolerance;
+    _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResultPercent / 100.0f, absoluteTolerance);
+
+    for (uint32 i = 0; i < sampleSize; i++)
+    {
+        victim->SetFullHealth();
+        caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+    }
+
+    Wait(1); //wait an update before restoring health, some procs may have occured
+
+    victim->SetMaxHealth(startingMaxHealth);
+    victim->SetHealth(startingHealth);
+
+    _TestSpellCritPercentage(caster, victim, spellID, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
 }
 
 std::string TestCase::StringifySpellCastResult(SpellCastResult result)
@@ -1644,3 +1726,4 @@ std::string TestCase::StringifySpellCastResult(SpellCastResult result)
     }
     return str;
 }
+
