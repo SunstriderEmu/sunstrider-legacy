@@ -1322,44 +1322,47 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* m_target, Unit* caster, u
         return;
 
     // ignore non positive values (can be result apply spellmods to aura damage
-    uint32 pdamage = GetAmount() > 0 ? GetAmount() : 0;
+    uint32 drainAmount = std::max(GetAmount(), 0);
+
+    // Special case: draining x% of mana (up to a maximum of 2*x% of the caster's maximum mana)
+    // It's mana percent cost spells, m_amount is percent drain from target
+    if (m_spellInfo->ManaCostPercentage)
+    {
+        // max value
+        int32 maxmana = CalculatePct(caster->GetMaxPower(powerType), drainAmount * 2.0f);
+        ApplyPct(drainAmount, m_target->GetMaxPower(powerType));
+        if (drainAmount > maxmana)
+            drainAmount = maxmana;
+    }
 
     TC_LOG_DEBUG("spells", "PeriodicTick: %u (TypeId: %u) power leech of %u (TypeId: %u) for %u dmg inflicted by %u",
-        GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), pdamage, GetId());
-
-    Powers power = Powers(GetMiscValue());
-
-    int32 drain_amount = m_target->GetPower(power) > pdamage ? pdamage : m_target->GetPower(power);
+        GetCasterGUID().GetCounter(), GuidHigh2TypeId(GetCasterGUID().GetHigh()), m_target->GetGUID().GetCounter(), m_target->GetTypeId(), drainAmount, GetId());
 
     // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
-    if (power == POWER_MANA && m_target->GetTypeId() == TYPEID_PLAYER)
-        drain_amount -= (m_target->ToPlayer())->GetSpellCritDamageReduction(drain_amount);
+    if (powerType == POWER_MANA && m_target->GetTypeId() == TYPEID_PLAYER)
+        drainAmount -= (m_target->ToPlayer())->GetSpellCritDamageReduction(drainAmount);
 
-    m_target->ModifyPower(power, -drain_amount);
-    realDamage = pdamage;
+    int32 drainedAmount = -m_target->ModifyPower(powerType, -drainAmount);
+
+    realDamage = drainAmount;
 
     float gain_multiplier = 0;
+    if (caster->GetMaxPower(powerType) > 0)
+        gain_multiplier = GetSpellInfo()->Effects[GetEffIndex()].CalcValueMultiplier(caster);
 
-    if (caster->GetMaxPower(power) > 0)
-    {
-        gain_multiplier *= GetSpellInfo()->Effects[GetEffIndex()].CalcValueMultiplier(caster);
-    }
-
-    SpellPeriodicAuraLogInfo pInfo(this, drain_amount, 0, 0, gain_multiplier);
+    SpellPeriodicAuraLogInfo pInfo(this, drainedAmount, 0, 0, gain_multiplier);
     m_target->SendPeriodicAuraLog(&pInfo);
 
-    int32 gain_amount = int32(drain_amount*gain_multiplier);
-
-    if (gain_amount)
+    int32 gainAmount = int32(drainedAmount * gain_multiplier);
+    int32 gainedAmount = 0;
+    if (gainAmount)
     {
-        int32 gain = caster->ModifyPower(power, gain_amount);
-        m_target->GetThreatManager().AddThreat(caster, float(gain) * 0.5f, GetSpellInfo());
+        gainedAmount = caster->ModifyPower(powerType, gainAmount);
+        m_target->GetThreatManager().AddThreat(caster, float(gainedAmount) * 0.5f, GetSpellInfo());
     }
 
-    //no procs?
-
     // Mark of Kaz'rogal
-    if (GetId() == 31447 && m_target->GetPower(power) == 0)
+    if (GetId() == 31447 && m_target->GetPower(powerType) == 0)
     {
         m_target->CastSpell(m_target, 31463, this);
         m_target->RemoveAura(GetId());
@@ -1368,10 +1371,10 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* m_target, Unit* caster, u
     // Mark of Kazzak
     if (GetId() == 32960)
     {
-        int32 modifier = (m_target->GetPower(power) * 0.05f);
-        m_target->ModifyPower(power, -modifier);
+        int32 modifier = (m_target->GetPower(powerType) * 0.05f);
+        m_target->ModifyPower(powerType, -modifier);
 
-        if (m_target->GetPower(power) == 0)
+        if (m_target->GetPower(powerType) == 0)
         {
             m_target->CastSpell(m_target, 32961, this);
             // Remove aura
