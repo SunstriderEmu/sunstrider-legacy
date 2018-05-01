@@ -1501,17 +1501,12 @@ void TestCase::_TestAuraStack(Unit* target, uint32 spellID, uint32 stacks, bool 
     INTERNAL_TEST_ASSERT(auraStacks == stacks);
 }
 
-void TestCase::_TestUseItem(TestPlayer* caster, uint32 itemId)
+void TestCase::_TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId)
 {
     Item* firstItem = caster->GetFirstItem(itemId);
-    WorldPacket fakePacket(CMSG_USE_ITEM);
-
-    fakePacket << uint8(firstItem->GetBagSlot());
-    fakePacket << uint8(firstItem->GetSlot());
-    fakePacket << uint8(1) << uint8(1);
-    fakePacket << firstItem->GetGUID();
-
-    caster->GetSession()->HandleUseItemOpcode(fakePacket);
+    SpellCastTargets targets;
+    targets.SetUnitTarget(target);
+    caster->CastItemUseSpell(firstItem, targets, 1);
 }
 
 void TestCase::_TestSpellCritChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float expectedResultPercent)

@@ -202,7 +202,7 @@ public:
 
     /* Use first item found in inventory with given id
     */
-    #define USE_ITEM(caster, itemID) { _SetCaller(__FILE__, __LINE__); _TestUseItem(caster, itemID); _ResetCaller(); }
+    #define USE_ITEM(caster, target, itemID) { _SetCaller(__FILE__, __LINE__); _TestUseItem(caster, target, itemID); _ResetCaller(); }
 
     #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance); _ResetCaller(); }
 
@@ -276,7 +276,7 @@ protected:
     void _TestAuraStack(Unit* target, uint32 spellID,uint32 stacks, bool stack);
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
     void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
-    void _TestUseItem(TestPlayer* caster, uint32 itemId);
+    void _TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId);
 
     //Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
     static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);

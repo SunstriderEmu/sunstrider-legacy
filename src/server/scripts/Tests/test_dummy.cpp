@@ -27,6 +27,7 @@ public:
             Wait(Seconds(3));
             summon->Say("lol");
             Wait(Seconds(2));
+
             //sWorld->SendGlobalText("DUMMY AFTER WAIT");
             //sWorld->SendGlobalText(str.c_str());
             //TEST_ASSERT(urand(0, 1) == 1);
