@@ -220,10 +220,11 @@ void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpell
     //special case for channeled spell, spell system currently does not allow casting them instant
     if (spellInfo->IsChanneled())
     {
+        bool previousDisableState = caster->IsRegenDisabled();
         caster->DisableRegeneration(true);
         Wait(spellInfo->CalcCastTime() + 1); //may not be exact if spell has modifiers :/
         Wait(1); //wait another update for some spells?
-        caster->DisableRegeneration(false);
+        caster->DisableRegeneration(previousDisableState);
     }
 
     uint32 remainingPower = caster->GetPower(powerType);

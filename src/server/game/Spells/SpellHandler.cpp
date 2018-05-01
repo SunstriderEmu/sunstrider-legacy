@@ -20,7 +20,6 @@
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
-    // TODO: add targets.read() check
     Player* pUser = _player;
     uint8 bagIndex, slot;
     uint8 spell_count;                                      // number of spells at item, not used

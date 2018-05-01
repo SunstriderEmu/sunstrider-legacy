@@ -1335,6 +1335,7 @@ class TC_GAME_API Unit : public WorldObject
 
         // Testing
         void DisableRegeneration(bool set) { m_disabledRegen = set; }
+        bool IsRegenDisabled() const { return m_disabledRegen; }
 
         Powers GetPowerType() const { return Powers(GetByteValue(UNIT_FIELD_BYTES_0, 3)); }
         void SetPowerType(Powers power);
