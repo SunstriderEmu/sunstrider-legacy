@@ -328,7 +328,7 @@ namespace ClassSpellsDamage
 
 			// Destruction
 			HELLFIRE_RNK_4_TICK = 306, // Self & enemies
-            IMMOLATE_RNK_9 = 331,
+            IMMOLATE_RNK_9 = 327,
 			IMMOLATE_RNK_9_DOT = 615,
 			INCINERATE_RNK_2_MIN = 444,
 			INCINERATE_RNK_2_MAX = 514,

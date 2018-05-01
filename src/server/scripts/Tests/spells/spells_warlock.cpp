@@ -590,7 +590,7 @@ public:
     class LifeTapTestImpt : public TestCase
     {
     public:
-        LifeTapTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        LifeTapTestImpt() : TestCase(STATUS_INCOMPLETE) { } // Was PARTIAL, why?
 
         void Test() override
         {
@@ -936,7 +936,7 @@ public:
     class ImmolateTestImpt : public TestCase
     {
     public:
-        ImmolateTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        ImmolateTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -951,7 +951,7 @@ public:
             uint32 const expectedImmolateManaCost = 445;
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, POWER_MANA, expectedImmolateManaCost);
 
-            // Direct Damage -- bug with direct damage
+            // Direct Damage -- https://wow.gamepedia.com/Talk:Spell_power#Hybrid_Formula
             float const castTime = 2.0f;
             float const duration = 15.0f;
             float const dotPortion = (duration / 15.0f) / ((duration / 15.0f) + (castTime / 3.5f));
