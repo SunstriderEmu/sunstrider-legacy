@@ -13,6 +13,15 @@ enum WarlockSpells
     SPELL_WARLOCK_SOUL_LEECH_HEAL          = 30294,
     SPELL_WARLOCK_SHADOWFLAME              = 37378,
     SPELL_WARLOCK_FLAMESHADOW              = 37379,
+    SPELL_WARLOCK_LIFE_TAP_ENERGIZE        = 31818,
+    SPELL_WARLOCK_LIFE_TAP_ENERGIZE_2      = 32553,
+};
+
+enum WarlockSpellIcons
+{
+    WARLOCK_ICON_ID_IMPROVED_LIFE_TAP               = 208,
+    WARLOCK_ICON_ID_MANA_FEED                       = 1982,
+    WARLOCK_ICON_ID_DEMONIC_PACT                    = 3220
 };
 
 // -18096 - Pyroclasm (talent)
@@ -318,6 +327,82 @@ public:
     }
 };
 
+// -1454 - Life Tap
+class spell_warl_life_tap : public SpellScriptLoader
+{
+public:
+    spell_warl_life_tap() : SpellScriptLoader("spell_warl_life_tap") { }
+
+    class spell_warl_life_tap_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warl_life_tap_SpellScript);
+
+        bool Load() override
+        {
+            return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+        }
+
+        bool Validate(SpellInfo const* /*spell*/) override
+        {
+            return ValidateSpellInfo({ SPELL_WARLOCK_LIFE_TAP_ENERGIZE, SPELL_WARLOCK_LIFE_TAP_ENERGIZE_2 });
+        }
+
+        void HandleDummy(SpellEffIndex /*effIndex*/, int32& damage)
+        {
+            Player* caster = GetCaster()->ToPlayer();
+            if (Unit* target = GetHitUnit())
+            {
+                int32 damage = int32(GetEffectValue() + (caster->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * 0.8f));
+
+                if (damage > target->GetHealth()) 
+                    return; //shouldn't happen but... just to be sure we can't suicide
+
+                // Shouldn't Appear in Combat Log
+                target->ModifyHealth(-damage);
+
+                // Improved Life Tap mod
+                if (AuraEffect const* aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_WARLOCK, WARLOCK_ICON_ID_IMPROVED_LIFE_TAP, 0))
+                    AddPct(damage, aurEff->GetAmount());
+
+                CastSpellExtraArgs args;
+                args.AddSpellBP0(damage);
+                caster->CastSpell(target, SPELL_WARLOCK_LIFE_TAP_ENERGIZE, args);
+
+                // Mana Feed
+                int32 manaFeedVal = 0;
+                if (AuraEffect const* aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_WARLOCK, WARLOCK_ICON_ID_MANA_FEED, 0))
+                    manaFeedVal = aurEff->GetAmount();
+
+                if (manaFeedVal > 0)
+                {
+                    ApplyPct(manaFeedVal, damage);
+                    CastSpellExtraArgs manaFeedArgs(TRIGGERED_FULL_MASK);
+                    manaFeedArgs.AddSpellBP0(manaFeedVal);
+                    caster->CastSpell(caster, SPELL_WARLOCK_LIFE_TAP_ENERGIZE_2, manaFeedArgs);
+                }
+            }
+        }
+
+        SpellCastResult CheckCast()
+        {
+            if (int32(GetCaster()->GetHealth()) > GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster()))
+                return SPELL_CAST_OK;
+            return SPELL_FAILED_FIZZLE;
+        }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_warl_life_tap_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            OnCheckCast += SpellCheckCastFn(spell_warl_life_tap_SpellScript::CheckCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_warl_life_tap_SpellScript();
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_pyroclasm();
@@ -328,4 +413,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_soul_leech();
     new spell_warl_t4_2p_bonus<SPELL_WARLOCK_FLAMESHADOW>("spell_warl_t4_2p_bonus_shadow");
     new spell_warl_t4_2p_bonus<SPELL_WARLOCK_SHADOWFLAME>("spell_warl_t4_2p_bonus_fire");
+    new spell_warl_life_tap();
 }

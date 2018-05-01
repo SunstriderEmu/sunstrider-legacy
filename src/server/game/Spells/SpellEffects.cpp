@@ -2011,54 +2011,6 @@ void Spell::EffectDummy(uint32 i)
                 return;
             }
             break;
-        case SPELLFAMILY_WARLOCK:
-            //Life Tap (only it have this with dummy effect)
-            if (m_spellInfo->SpellFamilyFlags == 0x40000 && unitCaster)
-            {
-                float cost = damage;
-
-                if(Player* modOwner = m_caster->GetSpellModOwner())
-                    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, cost,this);
-
-                int32 dmg = unitCaster->SpellDamageBonusDone(unitCaster, m_spellInfo, uint32(cost > 0 ? cost : 0), SPELL_DIRECT_DAMAGE, i, {});
-                dmg = unitCaster->SpellDamageBonusTaken(unitCaster, m_spellInfo, dmg, SPELL_DIRECT_DAMAGE);
-
-                if(int32(unitCaster->GetHealth()) > dmg)
-                {
-                    // Shouldn't Appear in Combat Log
-                    unitCaster->ModifyHealth(-dmg);
-
-                    int32 mana = dmg;
-
-                    Unit::AuraEffectList const& auraDummy = unitCaster->GetAuraEffectsByType(SPELL_AURA_DUMMY);
-                    for(auto itr : auraDummy)
-                    {
-                        // only Imp. Life Tap have this in combination with dummy aura
-                        if(itr->GetSpellInfo()->SpellFamilyName==SPELLFAMILY_WARLOCK && itr->GetSpellInfo()->SpellIconID == 208)
-                            mana = (itr->GetAmount() + 100)* mana / 100;
-                    }
-
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.AddSpellBP0(int32(mana));
-                    unitCaster->CastSpell(unitCaster, 31818, args);
-
-                    // Mana Feed
-                    int32 manaFeedVal = unitCaster->CalculateSpellDamage(m_spellInfo, 1, &m_spellInfo->Effects[1].BasePoints);
-                    manaFeedVal = manaFeedVal * mana / 100;
-                    if (manaFeedVal > 0)
-                    {
-                        CastSpellExtraArgs _args;
-                        _args.TriggerFlags = TRIGGERED_FULL_MASK;
-                        _args.AddSpellBP0(int32(manaFeedVal));
-                        m_caster->CastSpell(m_caster, 32553, _args);
-                    }
-                }
-                else
-                    SendCastResult(SPELL_FAILED_FIZZLE);
-                return;
-            }
-            break;
         case SPELLFAMILY_PRIEST:
             switch(m_spellInfo->Id )
             {

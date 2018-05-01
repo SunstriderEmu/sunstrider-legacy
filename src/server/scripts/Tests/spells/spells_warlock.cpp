@@ -422,12 +422,15 @@ public:
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, POWER_MANA, expectedDrainManaManaCost);
 
             // Doesn't drain mana if there isnt mana (!)
+            warlock->SetPower(POWER_MANA, 0);
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_GCD));
             Wait(5500);
             TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
 
             // Bug here -- successfully drains the mage but doesn't return the mana to the warlock
-            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+            Position spawnPos;
+            spawnPos.MoveInFront(_location, 10.0f);
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL, 70, spawnPos);
             mage->DisableRegeneration(true);
             uint32 warlockExpectedMana = 5.0f * ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK;
             uint32 mageExpectedMana = mage->GetPower(POWER_MANA) - 5.0f * ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK;
@@ -590,7 +593,7 @@ public:
     class LifeTapTestImpt : public TestCase
     {
     public:
-        LifeTapTestImpt() : TestCase(STATUS_INCOMPLETE) { } // Was PARTIAL, why?
+        LifeTapTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -604,7 +607,7 @@ public:
             uint32 const spellLevel = 68;
             uint32 const perLevelPoint = 1;
             uint32 const perLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * perLevelPoint;
-            float const spellCoeff = ClassSpellsCoeff::Warlock::LIFE_TAP;
+            float const spellCoeff = ClassSpellsCoeff::Warlock::LIFE_TAP; //DrDamage value
             uint32 const expectedManaGained = ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7 + perLevelGain + spellPower * spellCoeff;
 
             warlock->DisableRegeneration(true);
@@ -959,8 +962,8 @@ public:
             float const dotSpellCoefficient = (duration / 15.0f) * dotPortion;
             float const directSpellCoefficient = (castTime / 3.5f) * directPortion;
 
-            uint32 const spellLevel = 69;
-            float const dmgPerLevel = 4.3f;
+            uint32 const spellLevel = 69; //db values
+            float const dmgPerLevel = 4.3f; //db values
             float const dmgPerLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * dmgPerLevel;
 
             uint32 const expectedImmolateDirect = ClassSpellsDamage::Warlock::IMMOLATE_RNK_9 + dmgPerLevelGain + spellPower * directSpellCoefficient;
