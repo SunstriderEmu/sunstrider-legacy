@@ -556,11 +556,6 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
             {
                 damage += int32(unitCaster->GetTotalAttackPowerValue(BASE_ATTACK, unitTarget) / 100);
             }
-            // Swipe
-            else if (m_spellInfo->SpellFamilyFlags & 0x0010000000000000LL)
-            {
-                damage += int32(unitCaster->GetTotalAttackPowerValue(BASE_ATTACK, unitTarget)*0.08f);
-            }
             // Starfire
             else if (m_spellInfo->SpellFamilyFlags & 0x0004LL)
             {

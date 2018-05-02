@@ -1592,13 +1592,11 @@ public:
     class SwipeTestImpt : public TestCase
     {
     public:
-        SwipeTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        SwipeTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
-            /*
-                Bugged: hack in SpellEffects.cpp with 0.08f factor on AP
-                DrDamage: 0.07
+            /* DrDamage AP factor: 0.07
             */
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
