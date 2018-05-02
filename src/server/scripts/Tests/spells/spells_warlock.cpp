@@ -1027,6 +1027,53 @@ public:
     }
 };
 
+class DemonArmorTest : public TestCaseScript
+{
+public:
+    DemonArmorTest() : TestCaseScript("spells warlock demon_armor") { }
+
+    class DemonArmorTestImpt : public TestCase
+    {
+    public:
+        DemonArmorTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+
+        void TestDemonArmorBonuses(TestPlayer* caster, uint32 demonArmorSpellId, uint32 expectedManaCost, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
+        {
+            caster->SetHealth(1);
+            uint32 const expectedArmor = caster->GetArmor() + armorBonus;
+            uint32 const expectedShadowRes = caster->GetResistance(SPELL_SCHOOL_SHADOW) + shadowResBonus;
+            TEST_POWER_COST(caster, caster, demonArmorSpellId, POWER_MANA, expectedManaCost);
+            TEST_ASSERT(caster->GetArmor() == expectedArmor);
+            TEST_ASSERT(caster->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowRes);
+            uint32 const regenTick = healthRestore / 2.5f;
+            Wait(2000);
+            ASSERT_INFO("Health: %u, expected: %u", caster->GetHealth(), 1 + regenTick);
+            TEST_ASSERT(caster->GetHealth() == 1 + regenTick);
+            caster->RemoveAurasDueToSpell(demonArmorSpellId);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            warlock->AttackerStateUpdate(dummy, BASE_ATTACK);
+
+            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_1, 110, 210, 3, 7);
+            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_2, 208, 300, 6, 9);
+            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_3, 320, 390, 9, 11);
+            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_4, 460, 480, 12, 13);
+            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_5, 632, 570, 15, 15);
+            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_6, 820, 660, 18, 18);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<DemonArmorTestImpt>();
+    }
+};
+
 class RainOfFireTest : public TestCaseScript
 {
 public:
@@ -1386,6 +1433,7 @@ void AddSC_test_spells_warlock()
     new CreateHealthstoneTest();
     new CreateSoulstoneTest();
     new CreateSpellstoneTest();
+    new DemonArmorTest();
     // Destruction: 7/7
     new HellfireTest();
     new ImmolateTest();
