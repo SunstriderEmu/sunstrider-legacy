@@ -3193,7 +3193,6 @@ void TestMap::DisconnectAllBots()
 
 Player* TestMap::GetFirstHumanPlayer()
 {
-
 #ifdef TESTS
     for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
         if (Player* player = itr->GetSource())

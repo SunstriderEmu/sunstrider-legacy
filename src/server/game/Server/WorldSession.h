@@ -699,6 +699,7 @@ class TC_GAME_API WorldSession
         void HandleAttackStopOpcode(WorldPacket& recvPacket);
         void HandleSetSheathedOpcode(WorldPacket& recvPacket);
 
+        bool _HandleUseItemOpcode(uint8 bagIndex, uint8 slot, uint8 spell_count, uint8 cast_count, ObjectGuid item_guid, SpellCastTargets targets);
         void HandleUseItemOpcode(WorldPacket& recvPacket);
         void HandleOpenItemOpcode(WorldPacket& recvPacket);
         void HandleOpenWrappedItemCallback(uint16 pos, ObjectGuid itemGuid, PreparedQueryResult result);

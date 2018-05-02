@@ -20,7 +20,6 @@
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
-    Player* pUser = _player;
     uint8 bagIndex, slot;
     uint8 spell_count;                                      // number of spells at item, not used
     uint8 cast_count;                                       // next cast if exists (single or not)
@@ -32,96 +31,103 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     recvPacket >> bagIndex >> slot >> spell_count >> cast_count >> item_guid;
 #endif
 
+    SpellCastTargets targets;
+    targets.Read(recvPacket, _player);
+
+    _HandleUseItemOpcode(bagIndex, slot, spell_count, cast_count, item_guid, targets);
+    TC_LOG_DEBUG("network", "WORLD: CMSG_USE_ITEM packet, bagIndex: %u, slot: %u, spell_count: %u , cast_count: %u, Item: %u, data length = %i", bagIndex, slot, spell_count, cast_count, item_guid.GetCounter(), uint32(recvPacket.size()));
+}
+
+bool WorldSession::_HandleUseItemOpcode(uint8 bagIndex, uint8 slot, uint8 spell_count, uint8 cast_count, ObjectGuid item_guid, SpellCastTargets targets)
+{
+    Player* pUser = _player;
+
     // ignore for remote control state
     if (pUser->m_unitMovedByMe != pUser)
-        return;
+        return false;
 
-    Item *pItem = pUser->GetUseableItemByPos(bagIndex, slot);
-    if(!pItem)
+    Item* pItem = pUser->GetUseableItemByPos(bagIndex, slot);
+    if (!pItem)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr );
-        return;
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
+        return false;
     }
 
-    if(pItem->GetGUID() != item_guid)
+    if (pItem->GetGUID() != item_guid)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr );
-        return;
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
+        return false;
     }
-
-    TC_LOG_DEBUG("network","WORLD: CMSG_USE_ITEM packet, bagIndex: %u, slot: %u, spell_count: %u , cast_count: %u, Item: %u, data length = %i", bagIndex, slot, spell_count, cast_count, pItem->GetEntry(), uint32(recvPacket.size()));
 
     ItemTemplate const *proto = pItem->GetTemplate();
-    if(!proto)
+    if (!proto)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, nullptr );
-        return;
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, nullptr);
+        return false;
     }
 
     // some item classes can be used only in equipped state
-    if(proto->InventoryType != INVTYPE_NON_EQUIP && !pItem->IsEquipped())
+    if (proto->InventoryType != INVTYPE_NON_EQUIP && !pItem->IsEquipped())
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, nullptr );
-        return;
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, nullptr);
+        return false;
     }
 
     uint8 msg = pUser->CanUseItem(pItem);
-    if( msg != EQUIP_ERR_OK )
+    if (msg != EQUIP_ERR_OK)
     {
-        pUser->SendEquipError( msg, pItem, nullptr );
-        return;
+        pUser->SendEquipError(msg, pItem, nullptr);
+        return false;
     }
 
     // only allow conjured consumable, bandage, poisons (all should have the 2^21 item flag set in DB)
-    if( proto->Class == ITEM_CLASS_CONSUMABLE &&
+    if (proto->Class == ITEM_CLASS_CONSUMABLE &&
         !(proto->Flags & ITEM_FLAG_USEABLE_IN_ARENA) &&
         pUser->InArena())
     {
-        pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH,pItem,nullptr);
-        return;
+        pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH, pItem, nullptr);
+        return false;
     }
 
     // don't allow items banned in arena
     if ((proto->Flags & ITEM_FLAG_NOT_USEABLE_IN_ARENA) && pUser->InArena())
     {
         pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH, pItem, nullptr);
-        return;
+        return false;
     }
 
     if (pUser->IsInCombat())
     {
-        for(const auto & Spell : proto->Spells)
+        for (const auto & Spell : proto->Spells)
         {
             if (SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(Spell.SpellId))
             {
                 if (!spellInfo->CanBeUsedInCombat())
                 {
-                    pUser->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT,pItem,nullptr);
-                    return;
+                    pUser->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT, pItem, nullptr);
+                    return false;
                 }
             }
         }
     }
 
     // check also  BIND_WHEN_PICKED_UP and BIND_QUEST_ITEM for .additem or .additemset case by GM (not binded at adding to inventory)
-    if( pItem->GetTemplate()->Bonding == BIND_WHEN_USE || pItem->GetTemplate()->Bonding == BIND_WHEN_PICKED_UP || pItem->GetTemplate()->Bonding == BIND_QUEST_ITEM )
+    if (pItem->GetTemplate()->Bonding == BIND_WHEN_USE || pItem->GetTemplate()->Bonding == BIND_WHEN_PICKED_UP || pItem->GetTemplate()->Bonding == BIND_QUEST_ITEM)
     {
         if (!pItem->IsSoulBound())
         {
             pItem->SetState(ITEM_CHANGED, pUser);
-            pItem->SetBinding( true );
+            pItem->SetBinding(true);
         }
     }
 
-    SpellCastTargets targets;
-    targets.Read(recvPacket, pUser);
-
     //Note: If script stop casting it must send appropriate data to client to prevent stuck item in gray state.
-    if(!sScriptMgr->OnItemUse(pUser,pItem,targets))
+    if (!sScriptMgr->OnItemUse(pUser, pItem, targets))
     {
         // no script or script not process request by self
         pUser->CastItemUseSpell(pItem, targets, cast_count);
     }
+    return true;
 }
 
 #define OPEN_CHEST 11437
