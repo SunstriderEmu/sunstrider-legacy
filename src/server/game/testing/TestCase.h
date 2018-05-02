@@ -257,9 +257,9 @@ protected:
     */
     void _TestSpellCritPercentage(TestPlayer* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize = 0);
 
-    void _TestSpellHitChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float chance, SpellMissInfo missInfo);
-    void _TestMeleeHitChance(TestPlayer* caster, TestPlayer* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
-    void _TestSpellCritChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float chance);
+    void _TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo);
+    void _TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
+    void _TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance);
 
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);

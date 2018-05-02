@@ -1201,7 +1201,7 @@ void TestCase::GroupPlayer(TestPlayer* leader, Player* player)
     }
 }
 
-void TestCase::_TestSpellHitChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo)
+void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo)
 {
     INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive caster");
     INTERNAL_TEST_ASSERT(caster->IsAlive());
@@ -1232,7 +1232,7 @@ void TestCase::_TestSpellHitChance(TestPlayer* caster, TestPlayer* victim, uint3
     _TestSpellOutcomePercentage(caster, victim, spellID, missInfo, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
 }
 
-void TestCase::_TestMeleeHitChance(TestPlayer* caster, TestPlayer* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
+void TestCase::_TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
 {
     INTERNAL_ASSERT_INFO("_TestMeleeHitChance only support alive caster");
     INTERNAL_TEST_ASSERT(caster->IsAlive());
@@ -1514,11 +1514,11 @@ void TestCase::_TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId)
     INTERNAL_TEST_ASSERT(result);
 }
 
-void TestCase::_TestSpellCritChance(TestPlayer* caster, TestPlayer* victim, uint32 spellID, float expectedResultPercent)
+void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent)
 {
-    INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive caster");
+    INTERNAL_ASSERT_INFO("_TestSpellCritChance only support alive caster");
     INTERNAL_TEST_ASSERT(caster->IsAlive());
-    INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive victim");
+    INTERNAL_ASSERT_INFO("_TestSpellCritChance only support alive victim");
     INTERNAL_TEST_ASSERT(victim->IsAlive());
 
     uint32 startingHealth = victim->GetHealth();

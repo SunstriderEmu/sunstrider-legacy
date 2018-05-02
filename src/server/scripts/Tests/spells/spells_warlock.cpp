@@ -912,7 +912,7 @@ public:
             TEST_AURA_MAX_DURATION(caster, soulstoneItemSpellId, Minutes(30));
 
             caster->KillSelf();
-            Wait(1);
+            Wait(1000);
             WorldPacket fakeClientResponse(CMSG_SELF_RES);
             caster->GetSession()->HandleSelfResOpcode(fakeClientResponse);
             Wait(1);
