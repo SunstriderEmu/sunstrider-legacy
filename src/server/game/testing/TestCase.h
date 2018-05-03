@@ -205,17 +205,23 @@ public:
     */
     #define USE_ITEM(caster, target, itemID) { _SetCaller(__FILE__, __LINE__); _TestUseItem(caster, target, itemID); _ResetCaller(); }
 
+    /* Test the crit chance of given spell on target
+    */
     #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance); _ResetCaller(); }
 
+    //Get raw spell data from caster to target with spellID
     std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(TestPlayer* caster, Unit* victim, uint32 spellID);
+    //Get raw healing data from caster to target with spellID
     std::vector<PlayerbotTestingAI::HealingDoneInfo> GetHealingDoneInfoTo(TestPlayer* caster, Unit* target, uint32 spellID);
     //crit: get only spells that made crit / only spells that did not
     void GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount = 0);
     //crit: get only spells that made crit / only spells that did not
     void GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount = 0);
     void GetWhiteDamageDoneTo(TestPlayer* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt, uint32 expectedCount = 0);
-    float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
-    float GetChannelHealingTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);
+    //return total channel damage done
+    uint32 GetChannelDamageTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit);
+    //return total channel heal done
+    uint32 GetChannelHealingTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit);
 
     static uint32 GetTestBotAccountId();
     TestStatus GetTestStatus() const { return _testStatus; }

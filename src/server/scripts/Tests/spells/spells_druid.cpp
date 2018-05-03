@@ -1231,8 +1231,11 @@ public:
             AI->ResetSpellCounters();
             Wait(16000); // wait all ticks to finish
 
-            int32 doneToTarget = AI->GetDotDamage(creature, ClassSpells::Druid::LACERATE_RNK_1);
+            uint32 tickCount;
+            int32 doneToTarget = AI->GetDotDamage(creature, ClassSpells::Druid::LACERATE_RNK_1, tickCount);
             TEST_ASSERT(Between(doneToTarget, totalDotDamage - 1, totalDotDamage + 1));
+
+            //also assert tick count?
 
             druid->ResetForceSpellHitResult();
 		}

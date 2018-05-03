@@ -748,7 +748,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     uint32 dealtMin;
     uint32 dealtMax;
     if(damage)
-        GetDamagePerSpellsTo( casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
+        GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
     else 
         GetHealingPerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
 
@@ -816,11 +816,11 @@ std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDon
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    INTERNAL_ASSERT_INFO("GetChannelDamageTo was prompted for non existing spell ID %u", spellID);
+    INTERNAL_ASSERT_INFO("GetSpellDamageDoneInfoTo was prompted for non existing spell ID %u", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("GetChannelDamageTo found no data for this victim (%s)", victim->GetName().c_str());
+    INTERNAL_ASSERT_INFO("GetSpellDamageDoneInfoTo found no data for this victim (%s)", victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
     std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> filteredDamageToTarget;
@@ -832,42 +832,6 @@ std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDon
     return std::move(filteredDamageToTarget);
 }
 
-float TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32 tickCount, bool& mustRetry)
-{
-    auto filteredDamageToTarget = GetSpellDamageDoneInfoTo(caster, victim, spellID);
-    if (filteredDamageToTarget.size() != tickCount)
-    {
-        INTERNAL_ASSERT_INFO("Victim did not received expected tick count %u but received %u instead", tickCount, uint32(filteredDamageToTarget.size()));
-        INTERNAL_TEST_ASSERT(false);
-    }
-
-    uint64 totalDamage = 0;
-    uint32 count = 0;
-    for (auto itr : filteredDamageToTarget)
-    {
-        //some spells were resisted or did crit... cannot use this data
-        if (itr.missInfo != SPELL_MISS_NONE || itr.crit)
-        {
-            mustRetry = true;
-            return 0.0f;
-        }
-
-        uint32 damage = itr.damageInfo.damage;
-        damage += itr.damageInfo.resist;
-        damage += itr.damageInfo.blocked;
-        damage += itr.damageInfo.absorb;
-        //resilience not taken into account...
-
-        totalDamage += damage;
-        count++;
-    }
-
-    INTERNAL_ASSERT_INFO("GetChannelDamageTo was prompted for a victim(%s) with no valid data for this spell(ID %u)", victim->GetName().c_str(), spellID);
-    INTERNAL_TEST_ASSERT(count != 0);
-
-    return totalDamage;
-}
-
 std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(TestPlayer* caster, Unit* target, uint32 spellID)
 {
     auto AI = caster->GetTestingPlayerbotAI();
@@ -875,11 +839,11 @@ std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    INTERNAL_ASSERT_INFO("GetChannelHealingTo was prompted for non existing spell ID %u", spellID);
+    INTERNAL_ASSERT_INFO("GetHealingDoneInfoTo was prompted for non existing spell ID %u", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
     auto healingToTarget = AI->GetHealingDoneInfo(target);
-    INTERNAL_ASSERT_INFO("GetChannelHealingTo found no data for this victim (%s)", target->GetName().c_str());
+    INTERNAL_ASSERT_INFO("GetHealingDoneInfoTo found no data for this victim (%s)", target->GetName().c_str());
     INTERNAL_TEST_ASSERT(healingToTarget && !healingToTarget->empty());
 
     std::vector<PlayerbotTestingAI::HealingDoneInfo> filteredHealingToTarget;
@@ -891,35 +855,42 @@ std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(
     return std::move(filteredHealingToTarget);
 }
 
-float TestCase::GetChannelHealingTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32 tickCount, bool& mustRetry)
+uint32 TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit)
 {
-    auto healingToTarget = GetHealingDoneInfoTo(caster, target, spellID);
-    if (healingToTarget.size() != tickCount)
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    INTERNAL_ASSERT_INFO("GetChannelDamageTo was prompted for non existing spell ID %u", spellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+
+    //this functions actually handle two kind of spells-> 
+    if (spellInfo->HasAuraEffect(SPELL_AURA_PERIODIC_DAMAGE))
     {
-        INTERNAL_ASSERT_INFO("Victim did not received expected tick count %u but received %u instead", tickCount, uint32(healingToTarget.size()));
-        Wait(5000);
-        INTERNAL_TEST_ASSERT(false);
+        auto AI = caster->GetTestingPlayerbotAI();
+        INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+        INTERNAL_TEST_ASSERT(AI != nullptr);
+
+        uint32 actualTicksCount;
+        int32 dotDmg = AI->GetDotDamage(victim, spellID, actualTicksCount);
+        INTERNAL_ASSERT_INFO("_TestChannelDamage found some damage but tick count is %u instead of %u", actualTicksCount, expectedTickCount);
+        INTERNAL_TEST_ASSERT(actualTicksCount == expectedTickCount);
+        return dotDmg;
     }
 
-    uint64 totalHealing = 0;
-    uint32 count = 0;
-    for (auto itr : healingToTarget)
-    {
-        //some spells were resisted or did crit... cannot use this data
-        if (itr.missInfo != SPELL_MISS_NONE || itr.crit)
-        {
-            mustRetry = true;
-            return 0.0f;
-        }
+    uint32 dealtMin, dealtMax;
+    GetDamagePerSpellsTo(caster, victim, spellID, dealtMin, dealtMax, crit, expectedTickCount);
+    INTERNAL_ASSERT_INFO("dealtMin %u != dealtMax %u", dealtMin, dealtMax);
+    INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
 
-        totalHealing += itr.healing;
-        count++;
-    }
+    return dealtMin * expectedTickCount;
+}
 
-    INTERNAL_ASSERT_INFO("GetChannelHealingTo was prompted for a victim(%s) with no valid data for this spell(ID %u)", target->GetName().c_str(), spellID);
-    INTERNAL_TEST_ASSERT(count != 0);
+uint32 TestCase::GetChannelHealingTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit)
+{
+    uint32 dealtMin, dealtMax;
+    GetHealingPerSpellsTo(caster, target, spellID, dealtMin, dealtMax, crit, expectedTickCount);
+    INTERNAL_ASSERT_INFO("dealtMin %u != dealtMax %u", dealtMin, dealtMax);
+    INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
 
-    return totalHealing;
+    return dealtMin * expectedTickCount;
 }
 
 void TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount)
@@ -1094,13 +1065,14 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     INTERNAL_ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
     INTERNAL_TEST_ASSERT(!target->HasAura(spellID, caster->GetGUID()));
 
-    int32 dotDamageToTarget = AI->GetDotDamage(target, spellID);
+    uint32 tickCount;
+    int32 dotDamageToTarget = AI->GetDotDamage(target, spellID, tickCount);
 	TC_LOG_TRACE("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedTotalAmount: %i", spellID, dotDamageToTarget, expectedTotalAmount);
     INTERNAL_ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedTotalAmount: %i", dotDamageToTarget, expectedTotalAmount);
     TEST_ASSERT(dotDamageToTarget >= (expectedTotalAmount - 6) && dotDamageToTarget <= (expectedTotalAmount + 6)); //dots have greater error since they got their damage divided in several ticks
 }
 
-void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount, bool healing /* = false*/)
+void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 expectedTickCount, int32 expectedTickAmount, bool healing /* = false*/)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -1114,39 +1086,28 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
     uint32 baseDurationTime = spellInfo->GetDuration();
     SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
 
-    for (uint32 i = 0; i < 100; i++)
+    ResetSpellCast(caster);
+    AI->ResetSpellCounters();
+    caster->ForceSpellHitResult(SPELL_MISS_NONE);
+    EnableCriticals(caster, false);
+    uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+    if (result != SPELL_CAST_OK)
     {
-        ResetSpellCast(caster);
-        AI->ResetSpellCounters();
-        caster->ForceSpellHitResult(SPELL_MISS_NONE);
-        EnableCriticals(caster, false);
-        uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
-        if (result != SPELL_CAST_OK)
-        {
-            caster->ForceSpellHitResult(previousForceHitResult);
-            INTERNAL_ASSERT_INFO("_TestChannelDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
-            INTERNAL_TEST_ASSERT(false);
-        }
-        Wait(baseCastTime + baseDurationTime + 1000); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
         caster->ForceSpellHitResult(previousForceHitResult);
-        bool mustRetry = false;
-        float totalChannelDmg = 0; 
-        if(healing)
-            totalChannelDmg = GetChannelHealingTo(caster, target, testedSpell, tickCount, mustRetry);
-        else
-            totalChannelDmg = GetChannelDamageTo(caster, target, testedSpell, tickCount, mustRetry);
-
-        if (mustRetry)
-            continue;
-        INTERNAL_ASSERT_INFO("Check if totalChannelDmg (%f) is round", totalChannelDmg);
-        INTERNAL_TEST_ASSERT(totalChannelDmg == std::floor(totalChannelDmg));
-        uint32 resultTickAmount = totalChannelDmg / tickCount;
-        INTERNAL_ASSERT_INFO("Enforcing channel damage. resultTickAmount: %i, expectedTickAmount: %i", resultTickAmount, expectedTickAmount);
-        INTERNAL_TEST_ASSERT(resultTickAmount >= (expectedTickAmount - 2) && resultTickAmount <= (expectedTickAmount + 2)); //channels have greater error since they got their damage divided in several ticks
-        return;
+        INTERNAL_ASSERT_INFO("_TestChannelDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
+        INTERNAL_TEST_ASSERT(false);
     }
-    INTERNAL_ASSERT_INFO("Failed to cast spell (%u) 100 times", spellID);
-    INTERNAL_TEST_ASSERT(false); //failed to cast the spell 100 times
+    Wait(baseCastTime + baseDurationTime + 1000); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
+    caster->ForceSpellHitResult(previousForceHitResult);
+    uint32 totalChannelDmg = 0; 
+    if (healing)
+        totalChannelDmg = GetChannelHealingTo(caster, target, testedSpell, expectedTickCount, {});
+    else
+        totalChannelDmg = GetChannelDamageTo(caster, target, testedSpell, expectedTickCount, {});
+
+    uint32 actualTickAmount = totalChannelDmg / expectedTickCount;
+    INTERNAL_ASSERT_INFO("Enforcing channel damage. resultTickAmount: %i, expectedTickAmount: %i", actualTickAmount, expectedTickAmount);
+    INTERNAL_TEST_ASSERT(actualTickAmount >= (expectedTickAmount - 2) && actualTickAmount <= (expectedTickAmount + 2)); //channels have greater error since they got their damage divided in several ticks
 }
 
 void TestCase::EnableCriticals(Unit* caster, bool crit)

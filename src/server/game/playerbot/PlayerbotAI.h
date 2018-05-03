@@ -247,8 +247,8 @@ public:
         int32 amount;
     };
 
-    //Get DoT damage, resists and absorbs ignored
-    int32 GetDotDamage(Unit const* to, uint32 spellID) const;
+    //Get DoT damage, resists and absorbs ignored. Also returns how much ticks were found
+    int32 GetDotDamage(Unit const* to, uint32 spellID, uint32& ticksCount) const;
     //Get spells damage info for this caster on given target. Note that ranged attacks are also spells
     std::vector<SpellDamageDoneInfo> const* GetSpellDamageDoneInfo(Unit const* target) const;
     //Get healing spells info for this caster on given target.
