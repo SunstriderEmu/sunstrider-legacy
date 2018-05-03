@@ -50,7 +50,7 @@ public:
     class CurseOfAgonyTestImpt : public TestCase
     {
     public:
-        CurseOfAgonyTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        CurseOfAgonyTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
