@@ -8,6 +8,7 @@
 #include "SpellMgr.h"
 #include "ScriptMgr.h"
 #include "Unit.h"
+#include "PlayerbotAI.h"
 #include <functional>
 
 #define TEST_CREATURE_ENTRY 8
@@ -165,10 +166,10 @@ public:
     @expectedAmount negative values for healing
     @crit Set crit score of caster to maximum
     */
-    #define TEST_DOT_DAMAGE(caster, target, spellID, expectedAmount, crit) { _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedAmount, crit); _ResetCaller(); }
+    #define TEST_DOT_DAMAGE(caster, target, spellID, expectedTotalAmount, crit) { _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedTotalAmount, crit); _ResetCaller(); }
   
-    #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount); _ResetCaller(); }
-    #define TEST_CHANNEL_HEALING(caster, target, spellID, testedSpellID, tickCount, expectedAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedAmount, true); _ResetCaller(); }
+    #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount); _ResetCaller(); }
+    #define TEST_CHANNEL_HEALING(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount, true); _ResetCaller(); }
 
     /* Cast given spells a bunch of time from caster on victim, and test if results are chance% given missInfo
     chance: 0-100
@@ -206,8 +207,11 @@ public:
 
     #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance); _ResetCaller(); }
 
+    std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(TestPlayer* caster, Unit* victim, uint32 spellID);
+    std::vector<PlayerbotTestingAI::HealingDoneInfo> GetHealingDoneInfoTo(TestPlayer* caster, Unit* target, uint32 spellID);
     //crit: get only spells that made crit / only spells that did not
     void GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount = 0);
+    //crit: get only spells that made crit / only spells that did not
     void GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount = 0);
     void GetWhiteDamageDoneTo(TestPlayer* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt, uint32 expectedCount = 0);
     float GetChannelDamageTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32 tickCount, bool& mustRetry);

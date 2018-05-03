@@ -1,8 +1,5 @@
-#pragma once
-
 #ifndef PLAYERBOT_AI_H
 #define PLAYERBOT_AI_H
-
 
 #include "PlayerbotMgr.h"
 #include "PlayerbotAIBase.h"
