@@ -44,9 +44,9 @@ enum TestStatus
     //Test is working, but failure is expected.
     STATUS_KNOWN_BUG,
     //Test is working and should pass, but still miss some features (handled as STATUS_PASSING by the core, this is just a way to mark test as "need to be refined")
-    STATUS_PARTIAL,
+    STATUS_PASSING_INCOMPLETE,
     //Test is not yet finished and will be ignored unless directly called
-    STATUS_INCOMPLETE,
+    STATUS_WIP,
 };
 
 class TC_GAME_API TestCase

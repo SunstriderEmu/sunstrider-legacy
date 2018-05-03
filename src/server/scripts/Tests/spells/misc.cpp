@@ -44,7 +44,7 @@ public:
     class StackingTestImpl : public TestCase
     {
     public:
-        StackingTestImpl() : TestCase(STATUS_PARTIAL, true) {  }
+        StackingTestImpl() : TestCase(STATUS_PASSING_INCOMPLETE, true) {  }
 
         TestPlayer* p1;
         TestPlayer* p2;
@@ -245,7 +245,7 @@ public:
     class SpellPositivityImpl : public TestCase
     {
     public:
-        SpellPositivityImpl() : TestCase(STATUS_PARTIAL, false) {  }
+        SpellPositivityImpl() : TestCase(STATUS_PASSING_INCOMPLETE, false) {  }
 
         void Test() override
         {

@@ -10,7 +10,7 @@ public:
     class FlashOfLightTestImpt : public TestCase
     {
     public:
-        FlashOfLightTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        FlashOfLightTestImpt() : TestCase(STATUS_WIP) { }
         
         void Test() override
         {
@@ -56,7 +56,7 @@ public:
     class HolyLightTestImpt : public TestCase
     {
     public:
-        HolyLightTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        HolyLightTestImpt() : TestCase(STATUS_WIP) { }
         
         void Test() override
         {

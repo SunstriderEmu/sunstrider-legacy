@@ -324,7 +324,7 @@ public:
     class LevitateTestImpt : public TestCase
     {
     public:
-        LevitateTestImpt() : TestCase(STATUS_PARTIAL) { }
+        LevitateTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
 
         void Test() override
         {
@@ -451,7 +451,7 @@ public:
     class MassDispelTestImpt : public TestCase
     {
     public:
-        MassDispelTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        MassDispelTestImpt() : TestCase(STATUS_WIP) { }
 
         TestPlayer* SpawnShaman(Races race, Position spawn)
         {
@@ -1505,7 +1505,7 @@ public:
     class LesserHealTestImpt : public TestCase
     {
     public:
-        LesserHealTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        LesserHealTestImpt() : TestCase(STATUS_WIP) { }
 
         void Test() override
         {
@@ -1724,7 +1724,7 @@ public:
     class ResurrectionTestImpt : public TestCase
     {
     public:
-        ResurrectionTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        ResurrectionTestImpt() : TestCase(STATUS_WIP) { }
 
         void TestResurrection(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 expectedHealth, uint32 expectedMana)
         {
@@ -2091,7 +2091,7 @@ public:
     class MindSootheTestImpt : public TestCase
     {
     public:
-        MindSootheTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        MindSootheTestImpt() : TestCase(STATUS_WIP) { }
         //INCOMPLETE: Logic seems to be ok and distance is affected by spell, but creatures aggro distance is wonky. More precisely, it appears creatures aggro on a tick basis. FIXME?
 
         //get approximative aggro range (may be around 1y wrong max)

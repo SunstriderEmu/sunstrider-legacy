@@ -767,7 +767,7 @@ public:
     class CreateFirestoneTestImpt : public TestCase
     {
     public:
-        CreateFirestoneTestImpt() : TestCase(STATUS_PARTIAL) { }
+        CreateFirestoneTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
 
         void CreateFirestone(TestPlayer* caster, uint32 firestoneSpellId, uint32 firestone, uint32 expectedManaCost)
         {
@@ -968,7 +968,7 @@ public:
     class CreateSpellstoneTestImpt : public TestCase
     {
     public:
-        CreateSpellstoneTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        CreateSpellstoneTestImpt() : TestCase(STATUS_WIP) { }
 
         void CreateSpellstone(TestPlayer* caster, uint32 spellstoneSpellId, uint32 spellstone, uint32 expectedManaCost, uint32 criticalStrikeRatingBonus)
         {
@@ -1035,7 +1035,7 @@ public:
     class DemonArmorTestImpt : public TestCase
     {
     public:
-        DemonArmorTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        DemonArmorTestImpt() : TestCase(STATUS_WIP) { }
 
         void TestDemonArmorBonuses(TestPlayer* caster, uint32 demonArmorSpellId, uint32 expectedManaCost, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
         {

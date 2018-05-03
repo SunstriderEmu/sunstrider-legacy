@@ -11,7 +11,7 @@ public:
 	class BarkskinTestImpt : public TestCase
 	{
 	public:
-		BarkskinTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+		BarkskinTestImpt() : TestCase(STATUS_WIP) { }
 
 		void CastBarkskin(TestPlayer* druid)
 		{
@@ -726,7 +726,7 @@ public:
 	class ChallengingRoarTestImpt : public TestCase
 	{
 	public:
-		ChallengingRoarTestImpt() : TestCase(STATUS_PARTIAL) { }
+		ChallengingRoarTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
 
 		void Test() override
 		{
@@ -1021,7 +1021,7 @@ public:
     class FerociousBiteTestImpt : public TestCase
     {
     public:
-        FerociousBiteTestImpt() : TestCase(STATUS_INCOMPLETE) { }
+        FerociousBiteTestImpt() : TestCase(STATUS_WIP) { }
 
         void Test() override
         {

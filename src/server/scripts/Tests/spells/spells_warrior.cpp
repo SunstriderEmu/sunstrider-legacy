@@ -163,7 +163,7 @@ public:
     class HeroicStrikeTestImpt : public TestCaseWarrior
     {
     public:
-        HeroicStrikeTestImpt() : TestCaseWarrior(STATUS_PARTIAL) { }
+        HeroicStrikeTestImpt() : TestCaseWarrior(STATUS_PASSING_INCOMPLETE) { }
 
         void Test() override
         {
@@ -292,7 +292,7 @@ public:
     class OverpowerTestImpt : public TestCaseWarrior
     {
     public:
-        OverpowerTestImpt() : TestCaseWarrior(STATUS_PARTIAL) { }
+        OverpowerTestImpt() : TestCaseWarrior(STATUS_PASSING_INCOMPLETE) { }
 
         void Test() override
         {
@@ -389,7 +389,7 @@ public:
     class RetaliationTestImpt : public TestCaseWarrior
     {
     public:
-        RetaliationTestImpt() : TestCaseWarrior(STATUS_PARTIAL) { }
+        RetaliationTestImpt() : TestCaseWarrior(STATUS_PASSING_INCOMPLETE) { }
 
         void Test() override
         {
@@ -1433,7 +1433,7 @@ public:
     class WhirlwindTestImpt : public TestCaseWarrior
     {
     public:
-        WhirlwindTestImpt() : TestCaseWarrior(STATUS_INCOMPLETE) { }
+        WhirlwindTestImpt() : TestCaseWarrior(STATUS_WIP) { }
 
         bool HasLostHealth(Unit* victim, uint32 startHealth)
         {
@@ -1828,7 +1828,7 @@ public:
     class ShieldBashTestImpt : public TestCaseWarrior
     {
     public:
-        ShieldBashTestImpt() : TestCaseWarrior(STATUS_PARTIAL) { }
+        ShieldBashTestImpt() : TestCaseWarrior(STATUS_PASSING_INCOMPLETE) { }
 
         void Test() override
         {

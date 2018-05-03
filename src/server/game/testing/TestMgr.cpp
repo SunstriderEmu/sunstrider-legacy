@@ -50,7 +50,7 @@ bool TestMgr::_TestMatchPattern(std::shared_ptr<TestCase> test, std::string cons
         return true;
 
     //special case, only run incomplete tests if directly called
-    if (test->GetTestStatus() == STATUS_INCOMPLETE)
+    if (test->GetTestStatus() == STATUS_WIP)
         return test->GetName() == pattern;
 
     std::regex regex_pattern;

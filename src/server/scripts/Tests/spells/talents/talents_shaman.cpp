@@ -365,7 +365,7 @@ public:
 	class ImprovedChainHealTestImpt : public TestCase
 	{
 	public:
-		ImprovedChainHealTestImpt() : TestCase(STATUS_PARTIAL, true) { }
+		ImprovedChainHealTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE, true) { }
 
 		void Test() override
 		{
