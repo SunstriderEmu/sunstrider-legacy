@@ -1342,7 +1342,7 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* m_target, Unit* caster, u
     if (powerType == POWER_MANA && m_target->GetTypeId() == TYPEID_PLAYER)
         drainAmount -= (m_target->ToPlayer())->GetSpellCritDamageReduction(drainAmount);
 
-    int32 drainedAmount = -m_target->ModifyPower(powerType, -drainAmount);
+    int32 drainedAmount = -m_target->ModifyPower(powerType, -int32(drainAmount));
 
     realDamage = drainAmount;
 
