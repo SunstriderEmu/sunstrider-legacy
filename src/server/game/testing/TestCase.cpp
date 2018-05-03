@@ -861,7 +861,10 @@ uint32 TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spe
     INTERNAL_ASSERT_INFO("GetChannelDamageTo was prompted for non existing spell ID %u", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
-    //this functions actually handle two kind of spells-> 
+    /* this functions actually handle two kind of spells:
+    - Channels triggering another spells to do their damage
+    - Channels using an aura on target to to damage
+    */
     if (spellInfo->HasAuraEffect(SPELL_AURA_PERIODIC_DAMAGE))
     {
         auto AI = caster->GetTestingPlayerbotAI();

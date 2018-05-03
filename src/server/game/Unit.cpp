@@ -5563,10 +5563,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
 #ifdef LICH_KING
     float coeff = spellProto->Effects[effIndex].BonusMultiplier;
 #else
-    float coeff = 0.0f;
+    //sun: -1.0f = use default coef. This is also the value used in db spell_bonus_data
+    float coeff = -1.0f;
 #endif
-    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
-    if (bonus)
+    if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
     {
         if (damagetype == DOT)
         {
@@ -5601,13 +5601,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
     // Default calculation
     if (DoneAdvertisedBenefit)
     {
-#ifdef LICH_KING
         if (coeff < 0.f)
-#else
-        // on LK we use spellProto->Effects[effIndex].BonusMultiplier which apperently contains negative values,
-        // but for BC we have 0 when we get here and no data was in DB.
-        if (coeff <= 0.f && !bonus)
-#endif
             coeff = CalculateDefaultCoefficient(spellProto, damagetype);  // As wowwiki says: C = (Cast Time / 3.5)
 
         float factorMod = CalculateSpellpowerCoefficientLevelPenalty(spellProto) * stack;
@@ -6260,10 +6254,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, ui
 #ifdef LICH_KING
     float coeff = spellProto->Effects[effIndex].BonusMultiplier;
 #else
-    float coeff = 0.f;
+    //sun: -1.0f = use default coef. This is also the value used in db spell_bonus_data
+    float coeff = -1.0f;
 #endif
-    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
-    if (bonus)
+    if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
     {
         WeaponAttackType const attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
         float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
@@ -6292,13 +6286,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, ui
     // Default calculation
     if (DoneAdvertisedBenefit)
     {
-#ifdef LICH_KING
         if (coeff < 0.f)
-#else
-        // on LK we use spellProto->Effects[effIndex].BonusMultiplier which apperently contains negative values,
-        // but for BC we have 0 when we get here and no data was in DB.
-        if (coeff <= 0.f && !bonus)
-#endif
             coeff = CalculateDefaultCoefficient(spellProto, damagetype);
 
         float factorMod = CalculateSpellpowerCoefficientLevelPenalty(spellProto) * stack;
