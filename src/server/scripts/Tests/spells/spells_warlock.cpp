@@ -1082,7 +1082,7 @@ public:
     class RainOfFireTestImpt : public TestCase
     {
     public:
-        RainOfFireTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        RainOfFireTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1097,7 +1097,10 @@ public:
             uint32 const expectedRainOfFireManaCost = 1480;
             TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, POWER_MANA, expectedRainOfFireManaCost);
 
-            // Damage -- seems to have a wrong coeff, DrDamage agrees with the following
+            // Damage -- 
+            // DrDamage has coef 1.146
+            // WoWWiki has coef 0.952 (http://wowwiki.wikia.com/wiki/Spell_power_coefficient?oldid=1336186)
+            // Sunstrider uses with DrDamage value
             float const duration = 8.0f;
             float const spellCoeff = duration / 3.5f / 2.0f;
 
