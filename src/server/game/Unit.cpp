@@ -5311,7 +5311,6 @@ void Unit::SetCantProc(bool apply)
 
 float Unit::CalculateDefaultCoefficient(SpellInfo const *spellInfo, DamageEffectType damagetype) const
 {
-    float forceDotCoeff = 0.0f;
     int32 CastingTime = 0;
 
     switch (spellInfo->SpellFamilyName)
@@ -5349,14 +5348,8 @@ float Unit::CalculateDefaultCoefficient(SpellInfo const *spellInfo, DamageEffect
     if (damagetype == DOT)
     {
         int32 DotDuration = spellInfo->GetDuration();
-        if (forceDotCoeff == 0.0f)
-        {
-            if (!spellInfo->IsChanneled() && DotDuration > 0)
-                DotFactor = DotDuration / 15000.0f;
-        }
-        else {
-            DotFactor = forceDotCoeff;
-        }
+        if (!spellInfo->IsChanneled() && DotDuration > 0)
+            DotFactor = DotDuration / 15000.0f;
 
         if (uint32 DotTicks = spellInfo->GetMaxTicks())
             DotFactor /= DotTicks;
@@ -6269,7 +6262,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, ui
 #else
     float coeff = 0.f;
 #endif
-    if (SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id))
+    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
+    if (bonus)
     {
         WeaponAttackType const attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
         float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
@@ -6298,7 +6292,13 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, ui
     // Default calculation
     if (DoneAdvertisedBenefit)
     {
-        if (coeff <= 0.f) //sun: added equal here, else we don't even use a default coef if there is no data in spell_bonus_data?
+#ifdef LICH_KING
+        if (coeff < 0.f)
+#else
+        // on LK we use spellProto->Effects[effIndex].BonusMultiplier which apperently contains negative values,
+        // but for BC we have 0 when we get here and no data was in DB.
+        if (coeff <= 0.f && !bonus)
+#endif
             coeff = CalculateDefaultCoefficient(spellProto, damagetype);
 
         float factorMod = CalculateSpellpowerCoefficientLevelPenalty(spellProto) * stack;
