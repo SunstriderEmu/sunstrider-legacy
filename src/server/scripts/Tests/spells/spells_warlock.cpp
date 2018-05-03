@@ -457,11 +457,12 @@ public:
     class DrainSoulTestImpt : public TestCase
     {
     public:
-        DrainSoulTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        DrainSoulTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            _location.MoveInFront(_location, 10.0f);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
             rogue->DisableRegeneration(true);
 
@@ -469,20 +470,25 @@ public:
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
-
-            uint32 const expectedDrainSoulManaCost = 360;
-            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, POWER_MANA, expectedDrainSoulManaCost);
-
-            // Damage -- something's wrong with the spell coeff, DrDamage agrees with calculations below
+            // Damage -- 
+            // DrDamage coef: 2.143
             float const spellCoeff = ClassSpellsCoeff::Warlock::DRAIN_SOUL;
             uint32 const totalDrainSoul = 5.0f * ClassSpellsDamage::Warlock::DRAIN_SOUL_RNK_5_TICK + spellPower * spellCoeff;
             uint32 const expectedTickAmount = totalDrainSoul / 5.0f;
-            rogue->SetHealth(5.0f * expectedTickAmount);
-            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_GCD));
-            Wait(15500);
+            TEST_CHANNEL_DAMAGE(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, 5, expectedTickAmount);
+
+            Wait(2000);
+            rogue->SetHealth(1);
+            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            Wait(3000);
+            Wait(1);
             // Gain soulshard on target's death
             TEST_ASSERT(rogue->IsDead());
             TEST_ASSERT(warlock->HasItemCount(SOUL_SHARD, 1));
+
+            rogue->ResurrectPlayer(1.0f);
+            uint32 const expectedDrainSoulManaCost = 360;
+            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, POWER_MANA, expectedDrainSoulManaCost);
 
             // TODO: drain on creture that doesnt yield experience or honor for a player
         }

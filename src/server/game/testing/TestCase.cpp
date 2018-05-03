@@ -873,7 +873,7 @@ uint32 TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spe
 
         uint32 actualTicksCount;
         int32 dotDmg = AI->GetDotDamage(victim, spellID, actualTicksCount);
-        INTERNAL_ASSERT_INFO("_TestChannelDamage found some damage but tick count is %u instead of %u", actualTicksCount, expectedTickCount);
+        INTERNAL_ASSERT_INFO("GetChannelDamageTo found some damage but tick count is %u instead of %u", actualTicksCount, expectedTickCount);
         INTERNAL_TEST_ASSERT(actualTicksCount == expectedTickCount);
         return dotDmg;
     }
