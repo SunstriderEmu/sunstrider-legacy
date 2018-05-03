@@ -12,7 +12,7 @@ public:
     class CorruptionTestImpt : public TestCase
     {
     public:
-        CorruptionTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        CorruptionTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
