@@ -238,8 +238,8 @@ class TC_GAME_API ThreatReference
         bool IsOnline() const { return (_online >= ONLINE_STATE_ONLINE); }
         bool IsAvailable() const { return (_online > ONLINE_STATE_OFFLINE); }
         bool IsOffline() const { return (_online <= ONLINE_STATE_OFFLINE); }
-        TauntState GetTauntState() const { return _taunted; }
-        bool IsTaunting() const { return _taunted == TAUNT_STATE_TAUNT; }
+        TauntState GetTauntState() const { return IsTaunting() ? TAUNT_STATE_TAUNT : _taunted; }
+        bool IsTaunting() const { return _taunted >= TAUNT_STATE_TAUNT; }
         bool IsDetaunted() const { return _taunted == TAUNT_STATE_DETAUNT; }
 
         void SetThreat(float amount) { _baseAmount = amount; HeapNotifyChanged(); }
@@ -254,7 +254,7 @@ class TC_GAME_API ThreatReference
         ThreatReference(ThreatManager* mgr, Unit* victim, float amount) : _owner(mgr->_owner), _mgr(mgr), _victim(victim), _baseAmount(amount), _tempModifier(0), _online(SelectOnlineState()), _taunted(TAUNT_STATE_NONE) { }
         static bool FlagsAllowFighting(Unit const* a, Unit const* b);
         OnlineState SelectOnlineState();
-        void UpdateTauntState(bool victimIsTaunting);
+        void UpdateTauntState(TauntState state = TAUNT_STATE_NONE);
         Unit* const _owner;
         ThreatManager* const _mgr;
         void HeapNotifyIncreased() { _mgr->_sortedThreatList.increase(_handle); }
