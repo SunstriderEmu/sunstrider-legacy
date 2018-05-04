@@ -805,15 +805,15 @@ public:
                 Wait(1000);
 
                 // Increase fire spell damage by 30
-                const uint32 majorFirestoneFireBonus = 30;
-                const uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN + majorFirestoneFireBonus;
-                const uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX + majorFirestoneFireBonus;
+                float const castTime = 2.5f;
+                float const spellCoefficient = castTime / 3.5f;
+                const uint32 masterFirestoneFireBonus = spellCoefficient * 30;
+                const uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN + masterFirestoneFireBonus;
+                const uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX + masterFirestoneFireBonus;
                 TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax, false);
-                TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin * 1.5f, expectedIncinerateMax *1.5f, true);
 
                 // Should only increase fire damage
                 TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX, false);
-                TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * 1.5f, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * 1.5f, true);
             }
 
             // TODO: melee proc chance of passive (ClassSpells::Warlock::CREATE_FIRESTONE_PASSIVE_RNK_5)
