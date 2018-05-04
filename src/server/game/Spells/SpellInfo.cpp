@@ -958,7 +958,10 @@ void SpellInfo::_LoadSpellDiminishInfo()
             // Curses/etc
             if (SpellVisual == 339 && SpellIconID == 692) // Curse of Languages
                 return DIMINISHING_LIMITONLY;
-            else if (SpellFamilyFlags & 0x00080000000LL) {
+            else if (SpellFamilyFlags & 0x20000000000) // Curse of the Elements
+                return DIMINISHING_LIMITONLY;
+            else if (SpellFamilyFlags & 0x00080000000LL) 
+            {
                 if (SpellVisual == 1265 && SpellIconID == 93)   // Curse of Recklessness
                     return DIMINISHING_NONE;
                 else
@@ -1090,45 +1093,52 @@ void SpellInfo::_LoadSpellDiminishInfo()
         if (!isGroupDurationLimited())
             return 0;
 
-#ifdef LICH_KING
         //not sure none of these are BC but I see no mention of this
         // Explicit diminishing duration
         switch (SpellFamilyName)
         {
+#ifdef LICH_KING
         case SPELLFAMILY_DRUID:
         {
             // Faerie Fire - limit to 40 seconds in PvP (3.1)
-            if (SpellFamilyFlags[0] & 0x400)
+            if (SpellFamilyFlags & 0x400)
                 return 40 * IN_MILLISECONDS;
             break;
         }
+#endif
         case SPELLFAMILY_HUNTER:
         {
             // Wyvern Sting
-            if (SpellFamilyFlags[1] & 0x1000)
+            if (SpellFamilyFlags & 0x100000000000)
+#ifdef LICH_KING
                 return 6 * IN_MILLISECONDS;
+#else
+                return 10 * IN_MILLISECONDS;
+#endif
             // Hunter's Mark
-            if (SpellFamilyFlags[0] & 0x400)
+            if (SpellFamilyFlags & 0x400)
                 return 120 * IN_MILLISECONDS;
             break;
         }
         case SPELLFAMILY_PALADIN:
         {
             // Repentance - limit to 6 seconds in PvP
-            if (SpellFamilyFlags[0] & 0x4)
+            if (SpellFamilyFlags & 0x4)
                 return 6 * IN_MILLISECONDS;
             break;
         }
         case SPELLFAMILY_WARLOCK:
         {
+#ifdef LICH_KING
             // Banish - limit to 6 seconds in PvP
             if (SpellFamilyFlags[1] & 0x8000000)
                 return 6 * IN_MILLISECONDS;
+#endif
             // Curse of Tongues - limit to 12 seconds in PvP
-            else if (SpellFamilyFlags[2] & 0x800)
+            if (SpellFamilyFlags & 0x80000000)
                 return 12 * IN_MILLISECONDS;
             // Curse of Elements - limit to 120 seconds in PvP
-            else if (SpellFamilyFlags[1] & 0x200)
+            else if (SpellFamilyFlags & 0x20000000000)
                 return 120 * IN_MILLISECONDS;
             break;
         }
@@ -1136,7 +1146,6 @@ void SpellInfo::_LoadSpellDiminishInfo()
             break;
         }
 
-#endif
         return 10 * IN_MILLISECONDS;
     };
 

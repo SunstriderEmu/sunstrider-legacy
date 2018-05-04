@@ -172,7 +172,7 @@ public:
     class CurseOfElementsTestImpt : public TestCase
     {
     public:
-        CurseOfElementsTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        CurseOfElementsTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -186,15 +186,11 @@ public:
 
             // Increase damage taken by Shadow, Fire, Arcane and Frost by 10%
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * 1.1f, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * 1.1f, false);
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * 1.1f * 1.5f, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * 1.1f * 1.5f, true);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * 1.1f, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * 1.1f, false);
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * 1.1f * 1.5f, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * 1.1f * 1.5f, true);
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
             TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MIN * 1.1f, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MAX * 1.1f, false);
-            TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MIN * 1.1f * 1.5f, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MAX * 1.1f * 1.5f, true);
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
             TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN * 1.1f, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX * 1.1f, false);
-            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN * 1.1f * 1.5f, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX * 1.1f * 1.5f, true);
 
             // Reduce Shadow, Fire, Arcane and Frost resistances by 88
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
@@ -203,6 +199,7 @@ public:
             EQUIP_ITEM(rogue, 32420);
             uint32 const expectedShadowResistance = 70 + 40 - curseOfElementsResistanceMalus;
             FORCE_CAST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            // Patch 2.1.0 (2007-05-22): "...now [has] a duration of 2 minutes when used on PvP targets." 
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, Minutes(2)); // Bug here, is still 5min
             TEST_ASSERT(rogue->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowResistance);
             TEST_ASSERT(rogue->GetResistance(SPELL_SCHOOL_ARCANE) == 0);
@@ -225,7 +222,7 @@ public:
     class CurseOfTonguesTestImpt : public TestCase
     {
     public:
-        CurseOfTonguesTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        CurseOfTonguesTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
