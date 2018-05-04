@@ -4165,7 +4165,7 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
             for (Unit::AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end(); ++itr)
             {
                 Unit* opponent = (*itr);
-                if (opponent && !opponent->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
+                if (opponent && !opponent->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED))
                 {
                     if (m_target->MagicSpellHitResult(opponent, GetSpellInfo()) != SPELL_MISS_NONE)
                     {

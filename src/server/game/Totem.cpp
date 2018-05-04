@@ -122,7 +122,7 @@ Unit *Totem::GetOwner()
 
 void Totem::InitSummon()
 {
-    SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE); //sunstrider
+    SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED); //sunstrider
 
     if (uint32 spell_id = GetSpell())
     {
