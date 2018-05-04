@@ -641,7 +641,7 @@ public:
     class SeedOfCorruptionTestImpt : public TestCase
     {
     public:
-        SeedOfCorruptionTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        SeedOfCorruptionTestImpt() : TestCase(STATUS_WIP) { }
 
         void ResetDummiesHealth(Creature* dummy1, Creature* dummy2, Creature* dummy3) {
             dummy1->SetFullHealth();
@@ -668,18 +668,20 @@ public:
             Wait(500);
             TEST_AURA_MAX_DURATION(dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, Seconds(18));
 
-            // Damage -- wrong spell coefficients
+            // Damage 
             float const tickAmount = 6.0f;
-            // Coefficients were taken from the Warlock's Den, not WoW Wiki, as they were the most recent
+            // WoWWiki, Warlock's Den and DrDamage have 150% dot coef
             float const dotCoeff = ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION_DOT;
+            // WoWWiki has 16.6% direct coef, Warlock's Den and DrDamage have 22% 
             float const directCoeff = ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION;
             
             uint32 const seedOfCorruptionTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK + spellPower * dotCoeff / tickAmount;
-            uint32 const expectedTotalAmount = tickAmount * seedOfCorruptionTick;
+            uint32 const expectedTotalAmount = (tickAmount - 1) * seedOfCorruptionTick; //special case for this spell, last tick does not make damage but only proc the direct damage
             TEST_DOT_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedTotalAmount, true);
 
             float const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN + spellPower * directCoeff;
             float const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX + spellPower * directCoeff;
+            //FIXME: two next lines not working ("GetSpellDamageDoneInfoTo found no data for this victim (Testing Creature)")
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin * 1.5f, expectedDetonationMax * 1.5f, true);
 
