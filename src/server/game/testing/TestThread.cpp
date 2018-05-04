@@ -122,12 +122,12 @@ bool TestThread::Wait(uint32 ms)
         return true;
 
     //see _thisUpdateStartTimeMS comment
-    milliseconds nowMS = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
-    uint32 timeSinceThisUpdateStart = (nowMS - _thisUpdateStartTimeMS).count();
+    milliseconds const nowMS = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+    uint32 const timeSinceThisUpdateStart = (nowMS - _thisUpdateStartTimeMS).count();
 
     _state = STATE_WAITING;
     _SetWait(ms + timeSinceThisUpdateStart);
-    WakeUp(); //wake up TestMgr will may be waiting in WaitUntilDoneOrWaiting
+    WakeUp(); //wake up TestMgr which may be waiting in WaitUntilDoneOrWaiting
 
     //Now pause exec
     std::unique_lock<std::mutex> lk(_testCVMutex);

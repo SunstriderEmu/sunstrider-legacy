@@ -403,7 +403,7 @@ public:
     class DrainManaTestImpt : public TestCase
     {
     public:
-        DrainManaTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        DrainManaTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -425,7 +425,7 @@ public:
             Wait(5500);
             TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
 
-            // Bug here -- successfully drains the mage but doesn't return the mana to the warlock
+            // Test drain values
             Position spawnPos;
             spawnPos.MoveInFront(_location, 10.0f);
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL, 70, spawnPos);
