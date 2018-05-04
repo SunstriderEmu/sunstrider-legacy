@@ -1134,7 +1134,7 @@ public:
     class HellfireTestImpt : public TestCase
     {
     public:
-        HellfireTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        HellfireTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1149,7 +1149,7 @@ public:
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
 
-            // Sometimes the spell doesnt seem to be cast, resulting in test failing here
+           
             uint32 const expectedHellfireManaCost = 1665;
             TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, POWER_MANA, expectedHellfireManaCost);
 
@@ -1166,14 +1166,9 @@ public:
             uint32 const expectedTickAmount = totalHellfire / 15.0f;
             TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::HELLFIRE_RNK_4, ClassSpells::Warlock::HELLFIRE_RNK_4_TRIGGER, 15, expectedTickAmount);
 
-            // Self damage -- bug here
-            uint32 const warlockStartHealth = warlock->GetHealth();
-            FORCE_CAST(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
-            Wait(15500);
-            uint32 const expectedWarlockHealth = warlockStartHealth - 15.0f * expectedTickAmount;
-            ASSERT_INFO("Start Health: %u, Current: %u - Expected: %u - Expected Tick: %u, Actual Tick: %u", warlockStartHealth, warlock->GetHealth(), expectedWarlockHealth, expectedTickAmount, uint32((warlockStartHealth - warlock->GetHealth()) / 15.0f));
-            TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
-
+            // Self damage
+            TEST_DOT_DAMAGE(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, totalHellfire, false);
+         
             // Should have no durability damage on suicide
             warlock->SetMaxHealth(uint32(100));
             FORCE_CAST(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
