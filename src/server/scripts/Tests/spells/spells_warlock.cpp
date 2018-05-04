@@ -87,7 +87,7 @@ public:
     class CurseOfDoomTestImpt : public TestCase
     {
     public:
-        CurseOfDoomTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        CurseOfDoomTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
 
         void Test() override
         {
@@ -110,7 +110,7 @@ public:
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, Minutes(1));
             TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, Minutes(1));
 
-            // Damage -- something's wrong with the spell coeff
+            // Damage
             float const spellCoefficient = ClassSpellsCoeff::Warlock::CURSE_OF_DOOM;
             float const expectedCoDDamage = ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 + spellPower * spellCoefficient;
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoDDamage, true);
