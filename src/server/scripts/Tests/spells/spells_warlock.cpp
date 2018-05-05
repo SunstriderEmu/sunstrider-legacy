@@ -1337,7 +1337,7 @@ public:
     class SummonDreadsteedTestImpt : public TestCase
     {
     public:
-        SummonDreadsteedTestImpt() : TestCase(STATUS_WIP) { }
+        SummonDreadsteedTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1346,7 +1346,6 @@ public:
             float const expectedSpeed = warlock->GetSpeed(MOVE_RUN) * 2.0f;
             uint32 const expectedSummonDreadsteedManaCost = 150;
             TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1, POWER_MANA, expectedSummonDreadsteedManaCost);
-            Wait(3500);
             TEST_ASSERT(warlock->IsMounted());
             TEST_HAS_AURA(warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1);
             TEST_ASSERT(Between(warlock->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
@@ -1356,6 +1355,207 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<SummonDreadsteedTestImpt>();
+    }
+};
+
+class SummonFelhunterTest : public TestCaseScript
+{
+public:
+    SummonFelhunterTest() : TestCaseScript("spells warlock summon_felhunter") { }
+
+    class SummonFelhunterTestImpt : public TestCase
+    {
+    public:
+        SummonFelhunterTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            // Fail without Soul shard
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, SPELL_FAILED_ITEM_NOT_READY);
+
+            uint32 const baseMana = warlock->GetMaxPower(POWER_MANA) - warlock->GetManaBonusFromIntellect();
+            float const summonFelhunterBaseManaPercentage = 0.8f;
+            uint32 const expectedSummonFelhunterManaCost = baseMana * summonFelhunterBaseManaPercentage;
+            TEST_ASSERT(expectedSummonFelhunterManaCost == 2092);
+
+            warlock->AddItem(SOUL_SHARD, 1);
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, POWER_MANA, expectedSummonFelhunterManaCost);
+            TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
+
+            Guardian* felhunter = warlock->GetGuardianPet();
+            TEST_ASSERT(felhunter != nullptr);
+            TEST_ASSERT(felhunter->GetEntry() == 417);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SummonFelhunterTestImpt>();
+    }
+};
+
+class SummonFelsteedTest : public TestCaseScript
+{
+public:
+    SummonFelsteedTest() : TestCaseScript("spells warlock summon_felsteed") { }
+
+    class SummonFelsteedTestImpt : public TestCase
+    {
+    public:
+        SummonFelsteedTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            float const expectedSpeed = warlock->GetSpeed(MOVE_RUN) * 1.6f;
+            uint32 const expectedSummonFelsteedManaCost = 100;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1, POWER_MANA, expectedSummonFelsteedManaCost);
+            TEST_ASSERT(warlock->IsMounted());
+            TEST_HAS_AURA(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
+            TEST_ASSERT(Between(warlock->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SummonFelsteedTestImpt>();
+    }
+};
+
+class SummonImpTest : public TestCaseScript
+{
+public:
+    SummonImpTest() : TestCaseScript("spells warlock summon_imp") { }
+
+    class SummonImpTestImpt : public TestCase
+    {
+    public:
+        SummonImpTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            uint32 const baseMana = warlock->GetMaxPower(POWER_MANA) - warlock->GetManaBonusFromIntellect();
+            float const summonImpBaseManaPercentage = 0.64f;
+            uint32 const expectedSummonImpManaCost = baseMana * summonImpBaseManaPercentage;
+            TEST_ASSERT(expectedSummonImpManaCost == 1673);
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, POWER_MANA, expectedSummonImpManaCost);
+
+            Guardian* imp = warlock->GetGuardianPet();
+            TEST_ASSERT(imp != nullptr);
+            TEST_ASSERT(imp->GetEntry() == 416);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SummonImpTestImpt>();
+    }
+};
+
+class SummonSuccubusTest : public TestCaseScript
+{
+public:
+    SummonSuccubusTest() : TestCaseScript("spells warlock summon_succubus") { }
+
+    class SummonSuccubusTestSuccubust : public TestCase
+    {
+    public:
+        SummonSuccubusTestSuccubust() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            // Fail without Soul shard
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, SPELL_FAILED_ITEM_NOT_READY);
+
+            uint32 const baseMana = warlock->GetMaxPower(POWER_MANA) - warlock->GetManaBonusFromIntellect();
+            float const summonSuccubusBaseManaPercentage = 0.8f;
+            uint32 const expectedSummonSuccubusManaCost = baseMana * summonSuccubusBaseManaPercentage;
+            TEST_ASSERT(expectedSummonSuccubusManaCost == 2092);
+            warlock->AddItem(SOUL_SHARD, 1);
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, POWER_MANA, expectedSummonSuccubusManaCost);
+            TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
+
+            Guardian* succubus = warlock->GetGuardianPet();
+            TEST_ASSERT(succubus != nullptr);
+            TEST_ASSERT(succubus->GetEntry() == 1863);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SummonSuccubusTestSuccubust>();
+    }
+};
+
+class SummonVoidwalkerTest : public TestCaseScript
+{
+public:
+    SummonVoidwalkerTest() : TestCaseScript("spells warlock summon_voidwalker") { }
+
+    class SummonVoidwalkerTestVoidwalkert : public TestCase
+    {
+    public:
+        SummonVoidwalkerTestVoidwalkert() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            // Fail without Soul shard
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, SPELL_FAILED_ITEM_NOT_READY);
+
+            uint32 const baseMana = warlock->GetMaxPower(POWER_MANA) - warlock->GetManaBonusFromIntellect();
+            float const summonVoidwalkerBaseManaPercentage = 0.8f;
+            uint32 const expectedSummonVoidwalkerManaCost = baseMana * summonVoidwalkerBaseManaPercentage;
+            TEST_ASSERT(expectedSummonVoidwalkerManaCost == 2092);
+            warlock->AddItem(SOUL_SHARD, 1);
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, POWER_MANA, expectedSummonVoidwalkerManaCost);
+            TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
+
+            Guardian* voidwalker = warlock->GetGuardianPet();
+            TEST_ASSERT(voidwalker != nullptr);
+            TEST_ASSERT(voidwalker->GetEntry() == 1863);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SummonVoidwalkerTestVoidwalkert>();
+    }
+};
+
+class UnendingBreathTest : public TestCaseScript
+{
+public:
+    UnendingBreathTest() : TestCaseScript("spells warlock unending_breath") { }
+
+    class UnendingBreathTestVoidwalkert : public TestCase
+    {
+    public:
+        UnendingBreathTestVoidwalkert() : TestCase(STATUS_PASSING_INCOMPLETE) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            uint32 const expectedUnendingBreathManaCost = 50;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::UNENDING_BREATH_RNK_1, POWER_MANA, expectedUnendingBreathManaCost);
+            TEST_AURA_MAX_DURATION(warlock, ClassSpells::Warlock::UNENDING_BREATH_RNK_1, Minutes(10));
+
+            // TODO: breathing underwater for 10min
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<UnendingBreathTestVoidwalkert>();
     }
 };
 
@@ -1726,6 +1926,12 @@ void AddSC_test_spells_warlock()
     new ShadowWardTest();
     new SoulshatterTest();
     new SummonDreadsteedTest();
+    new SummonFelhunterTest();
+    new SummonFelsteedTest();
+    new SummonImpTest();
+    new SummonSuccubusTest();
+    new SummonVoidwalkerTest();
+    new UnendingBreathTest();
     // Destruction: 7/7
     new HellfireTest();
     new ImmolateTest();
