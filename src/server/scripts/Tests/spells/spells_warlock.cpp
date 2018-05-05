@@ -1040,21 +1040,35 @@ public:
     class DemonArmorTestImpt : public TestCase
     {
     public:
-        DemonArmorTestImpt() : TestCase(STATUS_WIP) { }
+        DemonArmorTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
-        void TestDemonArmorBonuses(TestPlayer* caster, uint32 demonArmorSpellId, uint32 expectedManaCost, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
+        void TestDemonArmorBonuses(TestPlayer* caster, Creature* victim, uint32 demonArmorSpellId, uint32 expectedManaCost, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
         {
+            TEST_ASSERT(caster->IsInCombatWith(victim));
+
             caster->SetHealth(1);
             uint32 const expectedArmor = caster->GetArmor() + armorBonus;
             uint32 const expectedShadowRes = caster->GetResistance(SPELL_SCHOOL_SHADOW) + shadowResBonus;
+
+            // Only one armor active
+            TEST_CAST(caster, caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
+            TEST_HAS_AURA(caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
+
             TEST_POWER_COST(caster, caster, demonArmorSpellId, POWER_MANA, expectedManaCost);
             TEST_ASSERT(caster->GetArmor() == expectedArmor);
             TEST_ASSERT(caster->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowRes);
-            uint32 const regenTick = healthRestore / 2.5f;
+            TEST_AURA_MAX_DURATION(caster, demonArmorSpellId, Minutes(30));
+            TEST_HAS_NOT_AURA(caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
+
+            uint32 const regenTick = floor(healthRestore / 2.5f);
+            uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
             Wait(2000);
-            ASSERT_INFO("Health: %u, expected: %u", caster->GetHealth(), 1 + regenTick);
-            TEST_ASSERT(caster->GetHealth() == 1 + regenTick);
-            caster->RemoveAurasDueToSpell(demonArmorSpellId);
+            uint32 const afterWaitTime = GameTime::GetGameTimeMS();
+            uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
+            uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 2.0f);
+            uint32 const expectedHealth = 1 + regenTick * expectedTickAmount;
+            ASSERT_INFO("Health: %u, expected: %u", caster->GetHealth(), expectedHealth);
+            TEST_ASSERT(caster->GetHealth() == expectedHealth);
         }
 
         void Test() override
@@ -1064,12 +1078,12 @@ public:
 
             warlock->AttackerStateUpdate(dummy, BASE_ATTACK);
 
-            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_1, 110, 210, 3, 7);
-            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_2, 208, 300, 6, 9);
-            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_3, 320, 390, 9, 11);
-            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_4, 460, 480, 12, 13);
-            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_5, 632, 570, 15, 15);
-            TestDemonArmorBonuses(warlock, ClassSpells::Warlock::DEMON_ARMOR_RNK_6, 820, 660, 18, 18);
+            TestDemonArmorBonuses(warlock, dummy, ClassSpells::Warlock::DEMON_ARMOR_RNK_1, 110, 210, 3, 7);
+            TestDemonArmorBonuses(warlock, dummy, ClassSpells::Warlock::DEMON_ARMOR_RNK_2, 208, 300, 6, 9);
+            TestDemonArmorBonuses(warlock, dummy, ClassSpells::Warlock::DEMON_ARMOR_RNK_3, 320, 390, 9, 11);
+            TestDemonArmorBonuses(warlock, dummy, ClassSpells::Warlock::DEMON_ARMOR_RNK_4, 460, 480, 12, 13);
+            TestDemonArmorBonuses(warlock, dummy, ClassSpells::Warlock::DEMON_ARMOR_RNK_5, 632, 570, 15, 15);
+            TestDemonArmorBonuses(warlock, dummy, ClassSpells::Warlock::DEMON_ARMOR_RNK_6, 820, 660, 18, 18);
         }
     };
 
