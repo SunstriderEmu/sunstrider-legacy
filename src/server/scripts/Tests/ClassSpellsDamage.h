@@ -326,6 +326,11 @@ namespace ClassSpellsDamage
 			UNSTABLE_AFFLICTION_RNK_DISPELLED = 990,
 			UNSTABLE_AFFLICTION_RNK_1_TOTAL = 660,
 
+            // Demonology
+            HEALTH_FUNNEL_RNK_8_HP_COST = 99,
+            HEALTH_FUNNEL_RNK_8_HP_PER_TICK = 65,
+            HEALTH_FUNNEL_RNK_8_HEAL_PER_TICK = 188,
+
 			// Destruction
 			HELLFIRE_RNK_4_TICK = 306, // Self & enemies
             IMMOLATE_RNK_9 = 327,

@@ -1113,7 +1113,7 @@ public:
 
             // Mana cost, spell power, aura duration
             TEST_POWER_COST(caster, caster, felArmorSpellId, POWER_MANA, expectedManaCost);
-            TEST_ASSERT(caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == expectedSpellDamage);
+            TEST_ASSERT(uint32(caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW)) == expectedSpellDamage);
             TEST_AURA_MAX_DURATION(caster, felArmorSpellId, Minutes(30));
             TEST_HAS_NOT_AURA(caster, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
 
@@ -1141,6 +1141,72 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<FelArmorTestImpt>();
+    }
+};
+
+class HealthFunnelTest : public TestCaseScript
+{
+public:
+    HealthFunnelTest() : TestCaseScript("spells warlock health_funnel") { }
+
+    class HealthFunnelTestImpt : public TestCase
+    {
+    public:
+        HealthFunnelTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            warlock->DisableRegeneration(true);
+
+            EQUIP_ITEM(warlock, 34337); // Golden Staff of the Sin'dorei -- 550 BH
+            uint32 const healingPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS);
+            TEST_ASSERT(healingPower == 550);
+
+            // Summon Voidwalker
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            Wait(1);
+            Guardian* voidwalker = warlock->GetGuardianPet();
+            TEST_ASSERT(voidwalker != nullptr);
+            voidwalker->DisableRegeneration(true);
+            voidwalker->SetHealth(1);
+
+            /*
+                Bugs here
+                - Damages the caster as much as it heals the pet, should not.
+                - "Miss" appears on the character portrait when the pet is full health, it should not.
+                - Not possible to suicide.
+            */
+            // Damage & pet heal
+            float const duration = 10.0f;
+            float const spellCoeff = duration / 3.5f;
+            float const tickAmount = 10.0f;
+            uint32 const totalHealthFunnelHeal = tickAmount * ClassSpellsDamage::Warlock::HEALTH_FUNNEL_RNK_8_HEAL_PER_TICK + healingPower * spellCoeff;
+            uint32 const expectedTickAmount = totalHealthFunnelHeal / tickAmount;
+            uint32 const totalHealthCost = tickAmount * ClassSpellsDamage::Warlock::HEALTH_FUNNEL_RNK_8_HP_PER_TICK + ClassSpellsDamage::Warlock::HEALTH_FUNNEL_RNK_8_HP_COST;
+
+            uint32 const expectedWarlockHealth = warlock->GetHealth() - totalHealthCost;
+            uint32 const expectedVoidwalkerHealth = voidwalker->GetHealth() + expectedTickAmount * tickAmount;
+
+            TEST_CAST(warlock, voidwalker, ClassSpells::Warlock::HEALTH_FUNNEL_RNK_8);
+            Wait(Seconds(11));
+            ASSERT_INFO("Warlock has %u HP, %u was expected.", warlock->GetHealth(), expectedWarlockHealth);
+            TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
+            ASSERT_INFO("Voidwalker has %u HP, %u was expected.", voidwalker->GetHealth(), expectedVoidwalkerHealth);
+            TEST_ASSERT(voidwalker->GetHealth() == expectedVoidwalkerHealth);
+
+            // http://wowwiki.wikia.com/wiki/Health_Funnel?oldid=1586771
+            // It is possible for the Warlock to kill himself using this spell.
+            warlock->SetHealth(150);
+            TEST_CAST(warlock, voidwalker, ClassSpells::Warlock::HEALTH_FUNNEL_RNK_8);
+            Wait(Seconds(5));
+            TEST_ASSERT(warlock->IsDead());
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<HealthFunnelTestImpt>();
     }
 };
 
@@ -1503,6 +1569,7 @@ void AddSC_test_spells_warlock()
     new CreateSpellstoneTest();
     new DemonArmorTest();
     new FelArmorTest();
+    new HealthFunnelTest();
     // Destruction: 7/7
     new HellfireTest();
     new ImmolateTest();
