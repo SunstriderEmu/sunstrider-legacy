@@ -1210,6 +1210,44 @@ public:
     }
 };
 
+class ShadowWardTest : public TestCaseScript
+{
+public:
+    ShadowWardTest() : TestCaseScript("spells warlock shadow_ward") { }
+
+    class ShadowWardTestImpt : public TestCase
+    {
+    public:
+        ShadowWardTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            warlock->DisableRegeneration(true);
+
+            uint32 const expectedShadowWardCost = 320;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4, POWER_MANA, expectedShadowWardCost);
+            TEST_AURA_MAX_DURATION(warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4, Seconds(30));
+
+            // Cast Prince Malchezaar's Shadow Nova - Hits for 3000 Shadow
+            uint32 const shadowWardAbsorption = 875;
+            uint32 const shadowNovaDamage = 3000;
+            uint32 const expectedWarlockHealth = warlock->GetHealth() - (shadowNovaDamage - shadowWardAbsorption);
+            FORCE_CAST(dummy, dummy, 30852, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            TEST_HAS_NOT_AURA(warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4);
+            ASSERT_INFO("Warlock has %u HP, %u was expected.", warlock->GetHealth(), expectedWarlockHealth);
+            TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowWardTestImpt>();
+    }
+};
+
 class RainOfFireTest : public TestCaseScript
 {
 public:
@@ -1570,6 +1608,11 @@ void AddSC_test_spells_warlock()
     new DemonArmorTest();
     new FelArmorTest();
     new HealthFunnelTest();
+    // TODO: Inferno
+    // TODO: Ritual of Souls
+    // TODO: Ritual of Summoning
+    // TODO: Sense Demons
+    new ShadowWardTest();
     // Destruction: 7/7
     new HellfireTest();
     new ImmolateTest();
