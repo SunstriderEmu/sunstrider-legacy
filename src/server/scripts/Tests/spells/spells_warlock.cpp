@@ -1298,6 +1298,36 @@ public:
     }
 };
 
+class SummonDreadsteedTest : public TestCaseScript
+{
+public:
+    SummonDreadsteedTest() : TestCaseScript("spells warlock summon_dreadsteed") { }
+
+    class SummonDreadsteedTestImpt : public TestCase
+    {
+    public:
+        SummonDreadsteedTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            float const expectedSpeed = warlock->GetSpeed(MOVE_RUN) * 2.0f;
+            uint32 const expectedSummonDreadsteedManaCost = 150;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1, POWER_MANA, expectedSummonDreadsteedManaCost);
+            Wait(3500);
+            TEST_ASSERT(warlock->IsMounted());
+            TEST_HAS_AURA(warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1);
+            TEST_ASSERT(Between(warlock->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SummonDreadsteedTestImpt>();
+    }
+};
+
 class RainOfFireTest : public TestCaseScript
 {
 public:
@@ -1664,6 +1694,7 @@ void AddSC_test_spells_warlock()
     // TODO: Sense Demons
     new ShadowWardTest();
     new SoulshatterTest();
+    new SummonDreadsteedTest();
     // Destruction: 7/7
     new HellfireTest();
     new ImmolateTest();
