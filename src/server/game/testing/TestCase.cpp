@@ -1400,15 +1400,16 @@ void TestCase::Celebrate()
 
 void TestCase::_EnsureHasAura(Unit* target, int32 spellID)
 {
-    bool hasAura = target->HasAura(spellID);
+    uint32 const spellId = spellID > 0 ? spellID : -spellID;
+    bool hasAura = target->HasAura(spellId);
     if (spellID > 0)
     {
-        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
+        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellId);
         INTERNAL_TEST_ASSERT(hasAura);
     }
     else 
     {
-        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
+        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellId);
         INTERNAL_TEST_ASSERT(!hasAura);
     }
 }
