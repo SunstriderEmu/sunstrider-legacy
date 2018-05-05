@@ -896,13 +896,12 @@ public:
     class CreateSoulstoneTestImpt : public TestCase
     {
     public:
-        CreateSoulstoneTestImpt() : TestCase(STATUS_PASSING) { }
+        CreateSoulstoneTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void CreateSoulstone(TestPlayer* caster, uint32 soulstoneSpellId, uint32 soulstoneItemSpellId, uint32 soulstone, uint32 healthRestored, uint32 manaRestored)
         {
             caster->AddItem(SOUL_SHARD, 1);
             TEST_CAST(caster, caster, soulstoneSpellId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-            ASSERT_INFO("cb fdp: %u", caster->GetItemCount(SOUL_SHARD, false));
             TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
             TEST_ASSERT(caster->GetItemCount(soulstone, false) == 1);
 
@@ -926,8 +925,13 @@ public:
             caster->GetSpellHistory()->ResetAllCooldowns();
             caster->RemoveAurasDueToSpell(soulstoneItemSpellId);
 
+            uint32 const baseMana = caster->GetMaxPower(POWER_MANA) - caster->GetManaBonusFromIntellect();
+            float const createSoulstoneBaseManaPercentage = 0.68f;
+            uint32 const expectedCreateSoulstoneManaCost = baseMana * createSoulstoneBaseManaPercentage;
+            ASSERT_INFO("Create Soulstone %u, is supposed to cost 1778, calculted: %u", soulstone, expectedCreateSoulstoneManaCost);
+            TEST_ASSERT(expectedCreateSoulstoneManaCost == 1778);
             caster->AddItem(SOUL_SHARD, 1);
-            TEST_POWER_COST(caster, caster, soulstoneSpellId, POWER_MANA, 1778);
+            TEST_POWER_COST(caster, caster, soulstoneSpellId, POWER_MANA, expectedCreateSoulstoneManaCost);
             TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
             caster->SetFullPower(POWER_MANA);
             caster->GetSpellHistory()->ResetAllCooldowns();
@@ -954,8 +958,35 @@ public:
             CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_5, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_5_ITEM, MAJOR_SOULSTONE, 2200, 2800);
             CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM, MASTER_SOULSTONE, 2900, 3300);
 
-            // TODO: 2.1: Soulstones can no longer be used on targets not in your party or raid
-            // TODO: 2.1: Soulstone buff will now be removed if the target or caster leaves the party or raid
+            // 2.1: Soulstones can no longer be used on targets not in your party or raid
+            Position spawnPos;
+            spawnPos.MoveInFront(_location, 5.0f);
+            TestPlayer* friendly = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawnPos);
+
+            // Try to put soulstone on target not in group/raid
+            warlock->AddItem(SOUL_SHARD, 1);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            TEST_ASSERT(warlock->GetItemCount(MASTER_SOULSTONE, false) == 1);
+            USE_ITEM(warlock, friendly, MASTER_SOULSTONE);
+            Wait(Seconds(3));
+            TEST_ASSERT(warlock->GetItemCount(MASTER_SOULSTONE, false) == 1);
+            TEST_HAS_NOT_AURA(friendly, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM);
+
+            // Put soulstone on target in same group/raid
+            GroupPlayer(warlock, friendly);
+            Wait(1);
+            TEST_ASSERT(friendly->IsInSameGroupWith(warlock));
+            USE_ITEM(warlock, friendly, MASTER_SOULSTONE);
+            Wait(Seconds(3));
+            TEST_ASSERT(warlock->GetItemCount(MASTER_SOULSTONE, false) == 0);
+            TEST_HAS_AURA(friendly, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM);
+
+            // 2.1: Soulstone buff will now be removed if the target or caster leaves the party or raid
+            warlock->GetGroup()->Disband();
+            Wait(1);
+            TEST_ASSERT(!friendly->IsInSameGroupWith(warlock));
+            TEST_HAS_NOT_AURA(friendly, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM);
+            Wait(5000);
         }
     };
 
