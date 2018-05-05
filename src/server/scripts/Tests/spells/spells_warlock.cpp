@@ -1093,6 +1093,57 @@ public:
     }
 };
 
+class FelArmorTest : public TestCaseScript
+{
+public:
+    FelArmorTest() : TestCaseScript("spells warlock fel_armor") { }
+
+    class FelArmorTestImpt : public TestCase
+    {
+    public:
+        FelArmorTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void TestFelArmorBonuses(TestPlayer* caster, TestPlayer* healer, uint32 felArmorSpellId, uint32 expectedManaCost, uint32 spellDamageBonus)
+        {
+            uint32 const expectedSpellDamage = caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) + spellDamageBonus;
+
+            // Only one armor active
+            TEST_CAST(caster, caster, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
+            TEST_HAS_AURA(caster, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
+
+            // Mana cost, spell power, aura duration
+            TEST_POWER_COST(caster, caster, felArmorSpellId, POWER_MANA, expectedManaCost);
+            TEST_ASSERT(caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == expectedSpellDamage);
+            TEST_AURA_MAX_DURATION(caster, felArmorSpellId, Minutes(30));
+            TEST_HAS_NOT_AURA(caster, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
+
+            // Increased amount of health generated through spells and effects by 20%
+            TEST_DIRECT_HEAL(healer, caster, ClassSpells::Druid::HEALING_TOUCH_RNK_13, ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN * 1.2f, ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX * 1.2f, false);
+            
+            caster->RemoveAurasDueToSpell(felArmorSpellId);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+
+            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            TestFelArmorBonuses(warlock, druid, ClassSpells::Warlock::FEL_ARMOR_RNK_1, 637, 50);
+            TestFelArmorBonuses(warlock, druid, ClassSpells::Warlock::FEL_ARMOR_RNK_2, 725, 100);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<FelArmorTestImpt>();
+    }
+};
+
 class RainOfFireTest : public TestCaseScript
 {
 public:
@@ -1451,6 +1502,7 @@ void AddSC_test_spells_warlock()
     new CreateSoulstoneTest();
     new CreateSpellstoneTest();
     new DemonArmorTest();
+    new FelArmorTest();
     // Destruction: 7/7
     new HellfireTest();
     new ImmolateTest();
