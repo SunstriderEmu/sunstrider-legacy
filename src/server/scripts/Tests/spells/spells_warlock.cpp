@@ -1227,8 +1227,8 @@ public:
 
             warlock->DisableRegeneration(true);
 
-            uint32 const expectedShadowWardCost = 320;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4, POWER_MANA, expectedShadowWardCost);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4);
+            TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4, Seconds(30));
             TEST_AURA_MAX_DURATION(warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4, Seconds(30));
 
             // Cast Prince Malchezaar's Shadow Nova - Hits for 3000 Shadow
@@ -1239,12 +1239,62 @@ public:
             TEST_HAS_NOT_AURA(warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4);
             ASSERT_INFO("Warlock has %u HP, %u was expected.", warlock->GetHealth(), expectedWarlockHealth);
             TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
+
+            uint32 const expectedShadowWardCost = 320;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4, POWER_MANA, expectedShadowWardCost);
         }
     };
 
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<ShadowWardTestImpt>();
+    }
+};
+
+class SoulshatterTest : public TestCaseScript
+{
+public:
+    SoulshatterTest() : TestCaseScript("spells warlock soulshatter") { }
+
+    class SoulshatterTestImpt : public TestCase
+    {
+    public:
+        SoulshatterTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy1 = SpawnCreature();
+            Creature* dummy2 = SpawnCreature();
+
+            warlock->DisableRegeneration(true);
+
+            // Build threat
+            FORCE_CAST(warlock, dummy1, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            TEST_ASSERT(dummy1->IsInCombatWith(warlock));
+            TEST_ASSERT(!dummy2->IsInCombatWith(warlock));
+            uint32 const expectedWarlockThreat = dummy1->GetThreatManager().GetThreat(warlock) / 2.0f;
+
+            // Fail without Soul shard
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SOULSHATTER_RNK_1, SPELL_FAILED_ITEM_NOT_READY);
+
+            // Cost, cooldown, threat
+            warlock->AddItem(SOUL_SHARD, 1);
+            uint32 const soulshatterHealthCost = 279;
+            uint32 const expectedWarlockHealth = warlock->GetHealth() - soulshatterHealthCost;
+
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SOULSHATTER_RNK_1);
+            TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
+            TEST_COOLDOWN(warlock, warlock, ClassSpells::Warlock::SOULSHATTER_RNK_1, Minutes(5));
+            TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
+            TEST_ASSERT(dummy1->GetThreatManager().GetThreat(warlock) == expectedWarlockThreat);
+            TEST_ASSERT(!dummy2->IsInCombatWith(warlock));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SoulshatterTestImpt>();
     }
 };
 
@@ -1613,6 +1663,7 @@ void AddSC_test_spells_warlock()
     // TODO: Ritual of Summoning
     // TODO: Sense Demons
     new ShadowWardTest();
+    new SoulshatterTest();
     // Destruction: 7/7
     new HellfireTest();
     new ImmolateTest();
