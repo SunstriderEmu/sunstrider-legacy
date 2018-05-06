@@ -1075,9 +1075,10 @@ public:
 
         void TestDemonArmorBonuses(TestPlayer* caster, Creature* victim, uint32 demonArmorSpellId, uint32 expectedManaCost, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
         {
+            uint32 const startHealth = 1;
+            caster->SetHealth(startHealth);
+            caster->EngageWithTarget(victim);
             TEST_ASSERT(caster->IsInCombatWith(victim));
-
-            caster->SetHealth(1);
             uint32 const expectedArmor = caster->GetArmor() + armorBonus;
             uint32 const expectedShadowRes = caster->GetResistance(SPELL_SCHOOL_SHADOW) + shadowResBonus;
 
@@ -1091,14 +1092,16 @@ public:
             TEST_AURA_MAX_DURATION(caster, demonArmorSpellId, Minutes(30));
             TEST_HAS_NOT_AURA(caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
 
-            uint32 const regenTick = floor(healthRestore / 2.5f);
+            uint32 const regenTickAmount = floor(healthRestore / 2.5f);
             uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
             Wait(2000);
+            TEST_ASSERT(caster->IsInCombatWith(victim));
             uint32 const afterWaitTime = GameTime::GetGameTimeMS();
             uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
-            uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 2.0f);
-            uint32 const expectedHealth = 1 + regenTick * expectedTickAmount;
-            ASSERT_INFO("Health: %u, expected: %u", caster->GetHealth(), expectedHealth);
+            uint32 const expectedTicksElapsed = floor(elapsedTimeInSeconds / 2.0f);
+            uint32 const expectedHealth = startHealth + regenTickAmount * expectedTicksElapsed;
+            ASSERT_INFO("Health: %u, expected: %u, regenTickAmount %u, expectedTicksElapsed %u", caster->GetHealth(), expectedHealth, regenTickAmount, expectedTicksElapsed);
+            //BUG HERE: health regen is fully added at each tick (2s) instead of having its value per 5s
             TEST_ASSERT(caster->GetHealth() == expectedHealth);
         }
 
@@ -1106,8 +1109,6 @@ public:
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
-
-            warlock->AttackerStateUpdate(dummy, BASE_ATTACK);
 
             TestDemonArmorBonuses(warlock, dummy, ClassSpells::Warlock::DEMON_ARMOR_RNK_1, 110, 210, 3, 7);
             TestDemonArmorBonuses(warlock, dummy, ClassSpells::Warlock::DEMON_ARMOR_RNK_2, 208, 300, 6, 9);
