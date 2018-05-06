@@ -210,6 +210,11 @@ public:
     */
     #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance); _ResetCaller(); }
 
+    /* Check if spell has given cast time for caster 
+    (Does not actually cast the spell)
+    */
+    #define TEST_SPELL_CAST_TIME(caster, spellID, expectedCastTimeMS) { _SetCaller(__FILE__, __LINE__); _TestSpellCastTime(caster, spellID, expectedCastTimeMS); _ResetCaller(); }
+
     //Get raw spell data from caster to target with spellID
     std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(TestPlayer* caster, Unit* victim, uint32 spellID);
     //Get raw healing data from caster to target with spellID
@@ -271,6 +276,7 @@ protected:
     void _TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback);
     void _TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
     void _TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance);
+    void _TestSpellCastTime(TestPlayer* caster, uint32 spellID, uint32 expectedCastTimeMS);
 
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);

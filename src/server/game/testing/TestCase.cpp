@@ -1505,6 +1505,21 @@ void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spe
     _TestSpellCritPercentage(caster, victim, spellID, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
 }
 
+void TestCase::_TestSpellCastTime(TestPlayer* caster, uint32 spellID, uint32 expectedCastTimeMS)
+{
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+
+    Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE);
+    uint32 const actualCastTime = spellInfo->CalcCastTime(spell);
+    delete spell;
+    spell = nullptr;
+
+    ASSERT_INFO("Cast time did not match: Expected %u - Actual %u", expectedCastTimeMS, actualCastTime);
+    TEST_ASSERT(actualCastTime == expectedCastTimeMS);
+}
+
 std::string TestCase::StringifySpellCastResult(SpellCastResult result)
 {
     std::string str;
