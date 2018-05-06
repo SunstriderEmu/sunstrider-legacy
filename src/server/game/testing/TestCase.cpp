@@ -1406,7 +1406,8 @@ void TestCase::Celebrate()
 
     if (Player* player = _map->GetFirstHumanPlayer())
     {
-        player->PlaySound(9332, false); //applauses
+        player->PlaySound(619, false); //quest complete sound
+
         //get a position in front of default location
         Position celebrateLocation;
         celebrateLocation.MoveInFront(player->GetPosition(), 10.0f);

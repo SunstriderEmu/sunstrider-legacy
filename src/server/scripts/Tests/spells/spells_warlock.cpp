@@ -512,23 +512,25 @@ public:
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            _location.MoveInFront(_location, 8.0f);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
+            _location.MoveInFront(_location, 8.0f);
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+
+            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::FEAR_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::FEAR_RNK_3, Seconds(10));
+
+            // Only 1 fear is active per warlock - Buggerd here
+            FORCE_CAST(warlock, mage, ClassSpells::Warlock::FEAR_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            TEST_HAS_NOT_AURA(rogue, ClassSpells::Warlock::FEAR_RNK_3);
+            TEST_AURA_MAX_DURATION(mage, ClassSpells::Warlock::FEAR_RNK_3, Seconds(10));
+
+            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::FEAR_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            TEST_HAS_NOT_AURA(mage, ClassSpells::Warlock::FEAR_RNK_3);
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::FEAR_RNK_3, Seconds(5));
 
             uint32 const expectedFearManaCost = 313;
             TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::FEAR_RNK_3, POWER_MANA, expectedFearManaCost);
-            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::FEAR_RNK_3, Seconds(10));
-
-            // Only 1 fear is active per warlock
-            FORCE_CAST(warlock, mage, ClassSpells::Warlock::FEAR_RNK_3, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_GCD));
-            TEST_HAS_NOT_AURA(rogue, ClassSpells::Warlock::FEAR_RNK_3);
-            Wait(2000);
-            TEST_AURA_MAX_DURATION(mage, ClassSpells::Warlock::FEAR_RNK_3, Seconds(10));
-
-            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::FEAR_RNK_3, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_GCD));
-            TEST_HAS_NOT_AURA(mage, ClassSpells::Warlock::FEAR_RNK_3);
-            Wait(2000);
-            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::FEAR_RNK_3, Seconds(5));
         }
     };
 
