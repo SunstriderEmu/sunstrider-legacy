@@ -470,7 +470,7 @@ Unit::~Unit()
     ASSERT(m_dynObj.empty());
 }
 
-void Unit::Update( uint32 p_time )
+void Unit::Update(uint32 p_time)
 {
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
@@ -3479,7 +3479,7 @@ void Unit::_DeleteRemovedAuras()
     m_removedAurasCount = 0;
 }
 
-void Unit::_UpdateSpells( uint32 time )
+void Unit::_UpdateSpells(uint32 diff)
 {
     if(GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
         _UpdateAutoRepeatSpell();
@@ -3499,7 +3499,7 @@ void Unit::_UpdateSpells( uint32 time )
     {
         Aura* i_aura = m_auraUpdateIterator->second;
         ++m_auraUpdateIterator;                            // need shift to next for allow update if need into aura update
-        i_aura->UpdateOwner(time, this);
+        i_aura->UpdateOwner(diff, this);
     }
 
 

@@ -4,7 +4,7 @@
 class DummyTest : public TestCaseScript
 {
 public:
-    DummyTest() : TestCaseScript("testing dummy") { }
+    DummyTest() : TestCaseScript("testing framework dummy") { }
 
     class DummyTestImpl : public TestCase
     {
@@ -43,7 +43,7 @@ public:
 class SpawnPlayersTest : public TestCaseScript
 {
 public:
-    SpawnPlayersTest() : TestCaseScript("testing spawnplayers") { }
+    SpawnPlayersTest() : TestCaseScript("testing framework spawnplayers") { }
 
     class SpawnPlayersTestImplt : public TestCase
     {

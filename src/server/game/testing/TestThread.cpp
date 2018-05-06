@@ -4,7 +4,8 @@
 TestThread::TestThread(std::shared_ptr<TestCase> test)
     : _testCase(test), 
     _state(STATE_NOT_STARTED),
-    _waitTimer(0)
+    _waitTimer(0),
+    _lastMapUpdateTime(0)
 {
 }
 
@@ -32,8 +33,6 @@ void TestThread::Run()
         bool setupSuccess = _testCase->_InternalSetup();
         if(!setupSuccess)
             _testCase->_Fail("Failed to setup test");
-
-        _thisUpdateStartTimeMS = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
 
         _testCase->Test();
         if (_testCase->GetTestCount() == 0)
@@ -76,8 +75,23 @@ void TestThread::ResumeExecution()
     }
 }
 
-void TestThread::UpdateWaitTimer(uint32 const diff)
+void TestThread::UpdateWaitTimer(uint32 const worldDiff)
 {
+    uint32 diff = worldDiff;
+
+    //if test is using a map, make sure it has updated at least once since our last update (maps don't always update at each world update)
+    if (TestMap const* testMap = _testCase->GetMap())
+    {
+        if (testMap->GetLastMapUpdateTime() == _lastMapUpdateTime)
+            return;
+        else
+            _lastMapUpdateTime = testMap->GetLastMapUpdateTime();
+
+        //Also, we're using the map last diff to be sure to be in sync with map timers, since the diff are a bit imprecise
+        //This is also very important to have the testing Wait(...) in sync
+        diff = testMap->GetLastDiff();
+    }
+
     if (!_waitTimer)
         return;
     if (_waitTimer <= diff)
@@ -121,18 +135,13 @@ bool TestThread::Wait(uint32 ms)
     if (ms == 0)
         return true;
 
-    //see _thisUpdateStartTimeMS comment
-    milliseconds const nowMS = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
-    uint32 const timeSinceThisUpdateStart = (nowMS - _thisUpdateStartTimeMS).count();
-
     _state = STATE_WAITING;
-    _SetWait(ms + timeSinceThisUpdateStart);
+    _SetWait(ms);
     WakeUp(); //wake up TestMgr which may be waiting in WaitUntilDoneOrWaiting
 
     //Now pause exec
     std::unique_lock<std::mutex> lk(_testCVMutex);
     _testCV.wait(lk, [this] { return _state == STATE_FINISHED || _waitTimer == 0; });
-    _thisUpdateStartTimeMS = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
 
     //Resume!
     if(_state == STATE_WAITING)

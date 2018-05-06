@@ -757,7 +757,7 @@ void Map::VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::Obj
     }
 }
 
-void Map::DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate)
+void Map::DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate /* = 0*/)
 {
     uint32 now = GetMSTime();
     uint32 diff = GetMSTimeDiff(_lastMapUpdate, now);
@@ -2802,7 +2802,7 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 instanceId, uint8 spaw
 }
 
 TestMap::TestMap(uint32 id, uint32 instanceId, uint8 spawnMode, Map* _parent, bool enableMapObjects)
-    : InstanceMap(id, 0, instanceId, spawnMode, _parent)
+    : InstanceMap(id, 0, instanceId, spawnMode, _parent), _lastDiff(0)
 {
     i_mapType = MAP_TYPE_TEST_MAP;
     m_unloadTimer = 0; //disable unload for test maps
@@ -3163,6 +3163,12 @@ void Map::RemoveAllPlayers()
             }
         }
     }
+}
+
+void TestMap::Update(const uint32& diff)
+{
+    InstanceMap::Update(diff);
+    _lastDiff = diff;
 }
 
 void TestMap::RemoveAllPlayers()

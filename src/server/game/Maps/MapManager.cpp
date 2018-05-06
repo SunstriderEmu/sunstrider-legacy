@@ -212,7 +212,7 @@ Map::EnterState MapManager::PlayerCannotEnter(uint32 mapid, Player* player, bool
 void MapManager::Update(time_t diff)
 {
     i_timer.Update(diff);
-    if( !i_timer.Passed() )
+    if (!i_timer.Passed())
         return;
 
     for (auto & i_map : i_maps)
@@ -234,7 +234,7 @@ void MapManager::Update(time_t diff)
         m_updater.waitUpdateLoops();
     }
 
-    //delayed map updates
+    //delayed map updates. Keep in mind that TC has a logic where a delayed update always follow an unique update, we don't. This is not a problem atm but this expectation may cause problem if delayed logic is changed later.
     for (auto & i_map : i_maps)
         i_map.second->DelayedUpdate(uint32(i_timer.GetCurrent()));
 

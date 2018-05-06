@@ -2122,16 +2122,17 @@ void World::Update(time_t diff)
     sMapMgr->Update(diff);
     RecordTimeDiff("UpdateMapMgr");
 
+#ifdef TESTS
+    //MUST be after map updates, testing code assumes so
+    sTestMgr->Update(diff);
+    RecordTimeDiff("UpdatesTestMgr");
+#endif
+
     sBattlegroundMgr->Update(diff);
     RecordTimeDiff("UpdateBattlegroundMgr");
 
     sOutdoorPvPMgr->Update(diff);
     RecordTimeDiff("UpdateOutdoorPvPMgr");
-
-#ifdef TESTS
-    sTestMgr->Update(diff);
-    RecordTimeDiff("UpdatesTestMgr");
-#endif
 
     ///- Erase corpses once every 20 minutes
     if (m_timers[WUPDATE_CORPSES].Passed())

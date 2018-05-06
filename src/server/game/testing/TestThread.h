@@ -53,6 +53,7 @@ public:
 
 private:
     std::shared_ptr<TestCase> _testCase;
+    uint32 _lastMapUpdateTime; //last update time of the map, the last time we updated the test. This is used to make sure the map has updated before updating our test.
     std::future<void> _future;
     std::atomic<ThreadState> _state; // this thread may be finished either because test finished, or because test was cancelled
 
@@ -62,9 +63,6 @@ private:
     std::condition_variable _testCV;
     std::mutex _testCVMutex;
     std::atomic<uint32>     _waitTimer;
-    /* When waiting, we need some way to ignore time that has already passed in this update. This is particularly needed if we're using the debugger. This is very approximative...*/
-    milliseconds _thisUpdateStartTimeMS;
-    // --
 };
 
 #endif // TESTTHREAD_H

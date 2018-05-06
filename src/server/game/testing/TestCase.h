@@ -156,7 +156,7 @@ public:
      Caster must be a TestPlayer or a pet/summon of him
      Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time*/
     #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true, {}); _ResetCaller(); }
-    // same as TEST_DIRECT_SPELL_DAMAGE but you can give a callbck function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    // same as TEST_DIRECT_SPELL_DAMAGE but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     typedef std::function<void(Unit*, Unit*)> TestCallback;
     #define TEST_DIRECT_SPELL_DAMAGE_CALLBACK(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true, Optional<TestCallback>(callback)); _ResetCaller(); }
      //Caster must be a TestPlayer or a pet/summon of him
@@ -177,6 +177,7 @@ public:
     chance: 0-100
     */
     #define TEST_SPELL_HIT_CHANCE(caster, victim, spellID, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo, {}); _ResetCaller(); }
+    //same but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     #define TEST_SPELL_HIT_CHANCE_CALLBACK(caster, victim, spellID, chance, missInfo, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo, Optional<TestCallback>(callback)); _ResetCaller(); }
     /* Triggers attack from caster on victim, and test if results are chance% given missInfo
     chance: 0-100
@@ -254,6 +255,7 @@ protected:
     void _SetCaller(std::string callerFile, int32 callerLine);
     void _ResetCaller();
     void Celebrate();
+    void Sadness();
 
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback); //if !damage, then use healing
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);

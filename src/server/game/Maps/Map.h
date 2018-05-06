@@ -856,9 +856,14 @@ class TC_GAME_API TestMap : public InstanceMap
 {
 public:
     TestMap(uint32 id, uint32 InstanceId, uint8 spawnMode, Map* parent, bool enableMapObjects);
+    void Update(const uint32&) override;
     void RemoveAllPlayers() override;
+
     void DisconnectAllBots();
     Player* GetFirstHumanPlayer();
+    uint32 GetLastDiff() const { return _lastDiff; }
+private:
+    uint32 _lastDiff;
 };
 
 class TC_GAME_API BattlegroundMap : public Map

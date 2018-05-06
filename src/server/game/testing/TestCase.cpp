@@ -600,7 +600,6 @@ void TestCase::_EquipItem(TestPlayer* player, uint32 itemID, bool newItem)
     Item* equipedItem = player->GetItemByPos(dest);
     INTERNAL_ASSERT_INFO("Player failed to equip item %u (dest: %u)", itemID, dest);
     INTERNAL_TEST_ASSERT_NOCOUNT(equipedItem != nullptr);
-    Wait(1); //not sure this is needed but... let's just wait next update to make sure item spells are properly applied
 }
 
 void TestCase::LearnTalent(TestPlayer* p, uint32 spellID)
@@ -751,13 +750,12 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
             callback.get()(caster, target);
 
         caster->ForceSpellHitResult(SPELL_MISS_NONE);
-        uint32 result = caster->CastSpell(target, spellID, TRIGGERED_FULL_DEBUG_MASK);
+        uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED));
         caster->ForceSpellHitResult(previousForceHitResult);
         INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
     }
 
-    Wait(5 * SECOND * IN_MILLISECONDS);
     uint32 dealtMin;
     uint32 dealtMax;
     if(damage)
@@ -802,10 +800,9 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     if (attackType != RANGED_ATTACK)
         caster->AttackerStateUpdate(target, attackType);
     else
-        caster->CastSpell(target, 75, true); //shoot
+        caster->CastSpell(target, 75, TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED)); //shoot
     caster->ForceMeleeHitResult(previousForceMeleeResult);
 
-    Wait(3 * SECOND * IN_MILLISECONDS);
     uint32 dealtMin;
     uint32 dealtMax;
     GetWhiteDamageDoneTo(casterOwner, target, attackType, crit, dealtMin, dealtMax, sampleSize);
@@ -1066,6 +1063,8 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
         INTERNAL_TEST_ASSERT(false);
     }
 
+    //Currently, channeled spells start at the next update so we need to wait for it to be applied.
+    //Remove this line if spell system has changed and this is not true
     if (spellInfo->IsChanneled())
         Wait(1);
 
@@ -1074,7 +1073,7 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
     //spell did hit, let's wait for dot duration
-    uint32 waitTime = aura->GetDuration() + 1 * SECOND * IN_MILLISECONDS;
+    uint32 waitTime = aura->GetDuration();
     Wait(waitTime);
     caster->ForceSpellHitResult(previousForceHitResult);
     //aura may be deleted at this point, do not use anymore
@@ -1101,7 +1100,7 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
     INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
-    uint32 baseCastTime = spellInfo->CalcCastTime(nullptr);
+    //uint32 baseCastTime = spellInfo->CalcCastTime(nullptr);
     uint32 baseDurationTime = spellInfo->GetDuration();
     SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
 
@@ -1116,7 +1115,8 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
         INTERNAL_ASSERT_INFO("_TestChannelDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(false);
     }
-    Wait(baseCastTime + baseDurationTime + 1000); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
+    Wait(1); //extra wait, remove if spell system allow to cast channel instantly
+    Wait(baseDurationTime); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
     caster->ForceSpellHitResult(previousForceHitResult);
     uint32 totalChannelDmg = 0; 
     if (healing)
@@ -1202,7 +1202,7 @@ void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spel
         caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
     }
 
-    Wait(1); //wait an update before restoring health, some procs may have occured
+    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
 
     victim->SetMaxHealth(startingMaxHealth);
     victim->SetHealth(startingHealth);
@@ -1235,7 +1235,7 @@ void TestCase::_TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttac
         caster->AttackerStateUpdate(victim, weaponAttackType);
     }
 
-    Wait(1); //wait an update before restoring health, some procs may have occured
+    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
 
     victim->SetMaxHealth(startingMaxHealth);
     victim->SetHealth(startingHealth);
@@ -1288,7 +1288,7 @@ void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, W
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
-void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, SpellMissInfo missInfo, float expectedResult, float allowedError, uint32 sampleSize /*= 0*/)
+void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, SpellMissInfo missInfo, float expectedResult, float allowedError, uint32 expectedSampleSize /*= 0*/)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -1320,10 +1320,10 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
         actualDesiredOutcomeCount++;
     }
 
-    if (sampleSize)
+    if (expectedSampleSize)
     {
-        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", uint32(damageToTarget->size()), sampleSize, spellId);
-        INTERNAL_TEST_ASSERT(actualSampleCount == sampleSize)
+        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", actualSampleCount, expectedSampleSize, spellId);
+        INTERNAL_TEST_ASSERT(actualSampleCount == expectedSampleSize)
     }
 
     float const result = (actualDesiredOutcomeCount / float(actualSampleCount)) * 100.0f;
@@ -1406,6 +1406,7 @@ void TestCase::Celebrate()
 
     if (Player* player = _map->GetFirstHumanPlayer())
     {
+        player->PlaySound(9332, false); //applauses
         //get a position in front of default location
         Position celebrateLocation;
         celebrateLocation.MoveInFront(player->GetPosition(), 10.0f);
@@ -1421,6 +1422,19 @@ void TestCase::Celebrate()
 
             Wait(5 * SECOND * IN_MILLISECONDS);
         }
+    }
+}
+
+void TestCase::Sadness()
+{
+    if (!_map)
+        return;
+
+    //This is actually useful to let the player see what happened
+    if (Player* player = _map->GetFirstHumanPlayer())
+    {
+        player->PlaySound(10072, false); //fel orc death
+        Wait(15 * SECOND * IN_MILLISECONDS);
     }
 }
 

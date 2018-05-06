@@ -27,7 +27,7 @@ public:
             uint32 const expectedCorruptionManaCost = 370;
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, POWER_MANA, expectedCorruptionManaCost);
 
-            // Damage -- something's wrong with the spell coeff
+            // Damage
             float const spellCoefficient = ClassSpellsCoeff::Warlock::CORRUPTION;
             float const tickAmount = 6.0f;
             uint32 const expectedCorruptionTick = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TICK + spellPower * spellCoefficient / tickAmount;

@@ -8,7 +8,7 @@
 #include "World.h"
 #include "MapManager.h"
 
-#define MINIMUM_MAP_UPDATE_INTERVAL 10
+#define MINIMUM_MAP_UPDATE_INTERVAL 30
 
 class MapUpdateRequest
 {
@@ -60,14 +60,10 @@ void MapUpdater::deactivate()
     waitUpdateLoops();
 
     for (auto& thread : _once_maps_workerThreads)
-    {
         thread.join();
-    }
 
     for (auto& thread : _loop_maps_workerThreads)
-    {
         thread.join();
-    }
 }
 
 void MapUpdater::waitUpdateOnces()
@@ -140,7 +136,7 @@ void MapUpdater::LoopWorkerThread(std::atomic<bool>* enable_instance_updates_loo
         ASSERT(request);
         request->call();
 
-        //repush at end of queue with new diff, or delete if continents have finished
+        //repush at end of queue, or delete if loop has been disabled by MapManager
         if(!(*enable_instance_updates_loop))
         {
             delete request;
