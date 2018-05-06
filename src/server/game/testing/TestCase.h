@@ -191,10 +191,9 @@ public:
 
     #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) { _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller(); }
 
-    /* Cast given spell (fully triggered) and check its power cost (note: spell also needs regeants if any)
-    This will not trigger any CD but keep in mind that spell effects will be applied
+    /* Check power cost of spell. Spells is not actually casted and conditions are ignored
     */
-    #define TEST_POWER_COST(caster, target, castSpellID, powerType, expectedPowerCost) { _SetCaller(__FILE__, __LINE__); _TestPowerCost(caster, target, castSpellID, powerType, expectedPowerCost); _ResetCaller(); }
+    #define TEST_POWER_COST(caster, castSpellID, powerType, expectedPowerCost) { _SetCaller(__FILE__, __LINE__); _TestPowerCost(caster, castSpellID, powerType, expectedPowerCost); _ResetCaller(); }
 
     /* Cast given spell (fully triggered) and check if CD is triggered
     This will not trigger any CD but keep in mind that spell effects will be applied
@@ -285,7 +284,7 @@ protected:
     void _TestSpellCastTime(TestPlayer* caster, uint32 spellID, uint32 expectedCastTimeMS);
 
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
-	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
+	void _TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
     inline void _TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, Seconds s) { _TestCooldown(caster, target, castSpellID, uint32(s.count())); }
     void _TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond);
     void _EquipItem(TestPlayer* p, uint32 itemID, bool newItem);

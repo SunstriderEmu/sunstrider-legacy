@@ -24,7 +24,7 @@ public:
             
             // Mana cost
             uint32 const expectedFlashOfLightMana = 180;
-            TEST_POWER_COST(paladin, paladin, ClassSpells::Paladin::FLASH_OF_LIGHT_RNK_7, POWER_MANA, expectedFlashOfLightMana);
+            TEST_POWER_COST(paladin, ClassSpells::Paladin::FLASH_OF_LIGHT_RNK_7, POWER_MANA, expectedFlashOfLightMana);
             
             // Spell coefficient
             float const flashOfLightCastTIme = 1.5f;
@@ -70,7 +70,7 @@ public:
             
             // Mana cost
             uint32 const expectedHolyLightMana = 840;
-            TEST_POWER_COST(paladin, paladin, ClassSpells::Paladin::HOLY_LIGHT_RNK_11, POWER_MANA, expectedHolyLightMana);
+            TEST_POWER_COST(paladin, ClassSpells::Paladin::HOLY_LIGHT_RNK_11, POWER_MANA, expectedHolyLightMana);
             
             // Spell coefficient
             float const holyLightCastTIme = 2.5f;

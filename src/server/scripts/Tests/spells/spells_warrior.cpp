@@ -132,7 +132,10 @@ public:
 
             // Rage cost
             uint32 const expectedHamstringRage = 10 * 10;
-            TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::HAMSTRING_RNK_4, POWER_RAGE, expectedHamstringRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::HAMSTRING_RNK_4, POWER_RAGE, expectedHamstringRage);
+            
+            warrior->SetFullPower(POWER_RAGE);
+            FORCE_CAST(warrior, creature, ClassSpells::Warrior::HAMSTRING_RNK_4);
 
             // Duration & CD
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Warrior::HAMSTRING_RNK_4, Seconds(15));
@@ -178,9 +181,7 @@ public:
 
             // Rage cost
             uint32 const expectedHeroicStrikeRage = 15 * 10;
-            warrior->Attack(warlock, true);
-            TEST_POWER_COST(warrior, warlock, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, POWER_RAGE, expectedHeroicStrikeRage);
-            warrior->AttackStop();
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, POWER_RAGE, expectedHeroicStrikeRage);
 
             // http://wowwiki.wikia.com/wiki/Heroic_Strike?oldid=1513476
             // TODO: No Rage is expended if Heroic Strike is parried or dodged. Rage is expended if Heroic Strike hits or is blocked.
@@ -256,7 +257,7 @@ public:
             warrior->SetPower(POWER_RAGE, 1000); //max rage
             uint32 const expectedMockingBlowRage = 10 * 10;
             creature->RemoveAurasDueToSpell(ClassSpells::Warrior::MOCKING_BLOW_RNK_6);
-            TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, POWER_RAGE, expectedMockingBlowRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::MOCKING_BLOW_RNK_6, POWER_RAGE, expectedMockingBlowRage);
 
             // Aura + Cooldown
             warrior->SetPower(POWER_RAGE, 1000); //max rage
@@ -309,7 +310,7 @@ public:
 
             // Rage cost
             uint32 const expectedOverpowerRage = 5 * 10;
-            TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::OVERPOWER_RNK_4, POWER_RAGE, expectedOverpowerRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::OVERPOWER_RNK_4, POWER_RAGE, expectedOverpowerRage);
 
             // TODO: Overpower only usable after target dodged.
             // TODO: Overpower cannot be blocked, dodged or parried.
@@ -361,7 +362,7 @@ public:
 
             // Rage cost
             uint32 const expectedRendRage = 10 * 10;
-            TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::REND_RNK_8, POWER_RAGE, expectedRendRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::REND_RNK_8, POWER_RAGE, expectedRendRage);
 
             // Damage -- Apolyon, the Soul-Render - 404-607 damage
             float const apolyonSpeed = 3.4f;
@@ -505,9 +506,11 @@ public:
 
             // Rage cost
             Wait(4500); // Cooldown
-            warrior->SetPower(POWER_RAGE, warrior->GetMaxPower(POWER_RAGE));
             uint32 const expectedThunderClapRage = 20 * 10;
-            TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, POWER_RAGE, expectedThunderClapRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, POWER_RAGE, expectedThunderClapRage);
+
+            warrior->SetFullPower(POWER_RAGE);
+            FORCE_CAST(warrior, creature1, ClassSpells::Warrior::THUNDER_CLAP_RNK_7);
 
             // Cooldown
             TEST_COOLDOWN(warrior, creature1, ClassSpells::Warrior::THUNDER_CLAP_RNK_7, Seconds(4));
@@ -578,7 +581,9 @@ public:
 
             // Rage cost
             uint32 const expectedBattleShoutRage = 10 * 10;
-            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8, POWER_RAGE, expectedBattleShoutRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8, POWER_RAGE, expectedBattleShoutRage);
+
+             TEST_CAST(warrior, warrior, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8);
 
             // Aura duration
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::BATTLE_SHOUT_RNK_8, 2 * MINUTE * IN_MILLISECONDS);
@@ -757,9 +762,11 @@ public:
 
 
             // Rage cost
-            warrior->SetPower(POWER_RAGE, warrior->GetMaxPower(POWER_RAGE));
             uint32 const expectedChallengingShoutRage = 5 * 10;
-            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, POWER_RAGE, expectedChallengingShoutRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, POWER_RAGE, expectedChallengingShoutRage);
+
+            warrior->SetFullPower(POWER_RAGE);
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1);
 
             // Cooldown
             TEST_COOLDOWN(warrior, warrior, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1, Minutes(10));
@@ -800,9 +807,7 @@ public:
 
             // Rage cost
             uint32 const expectedCleaveRage = 20 * 10;
-            warrior->Attack(creature1, true);
-            TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::CLEAVE_RNK_6, POWER_RAGE, expectedCleaveRage);
-            warrior->AttackStop();
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::CLEAVE_RNK_6, POWER_RAGE, expectedCleaveRage);
 
 
             // Damage -- Apolyon, the Soul-Render - 404-607 damage
@@ -864,7 +869,10 @@ public:
 
             // Rage cost
             uint32 const expectedCommandingShoutRage = 10 * 10;
-            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, POWER_RAGE, expectedCommandingShoutRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, POWER_RAGE, expectedCommandingShoutRage);
+
+            warrior->SetFullPower(POWER_RAGE);
+            TEST_CAST(warrior, warrior, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1);
 
             // Aura duration
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::COMMANDING_SHOUT_RNK_1, 2 * MINUTE * IN_MILLISECONDS);
@@ -920,7 +928,10 @@ public:
 
             // Rage cost
             uint32 const expectedDemoralizingShoutRage = 10 * 10;
-            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, POWER_RAGE, expectedDemoralizingShoutRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, POWER_RAGE, expectedDemoralizingShoutRage);
+
+            warrior->SetFullPower(POWER_RAGE);
+            FORCE_CAST(warrior, warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7);
 
             // Aura
             TEST_AURA_MAX_DURATION(player3m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, 30 * SECOND  * IN_MILLISECONDS);
@@ -1010,7 +1021,7 @@ public:
 
             // Rage cost
             uint32 const expectedExecuteRage = 15 * 10;
-            TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::EXECUTE_RNK_7, POWER_RAGE, expectedExecuteRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::EXECUTE_RNK_7, POWER_RAGE, expectedExecuteRage);
 
             // Damage
             TestExecuteDamage(warrior, creature, false);
@@ -1163,7 +1174,7 @@ public:
 
             // Rage cost
             uint32 expectedIntidimidatingShoutRageCost = 25 * 10;
-            TEST_POWER_COST(warrior, priest1, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, POWER_RAGE, expectedIntidimidatingShoutRageCost);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::INTIMIDATING_SHOUT_RNK_1, POWER_RAGE, expectedIntidimidatingShoutRageCost);
         }
     };
 
@@ -1233,7 +1244,7 @@ public:
 
             // Rage cost
             uint32 expectedPummelRageCost = 10 * 10;
-            TEST_POWER_COST(warrior, priest, ClassSpells::Warrior::PUMMEL_RNK_2, POWER_RAGE, expectedPummelRageCost);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::PUMMEL_RNK_2, POWER_RAGE, expectedPummelRageCost);
         }
     };
 
@@ -1338,8 +1349,9 @@ public:
             uint32 currentAttackTimer = warrior->GetAttackTimer(BASE_ATTACK);
 
             uint32 const expectedSlamRage = 15 * 10;
-            TEST_POWER_COST(warrior, creature, ClassSpells::Warrior::SLAM_RNK_6, POWER_RAGE, expectedSlamRage);
-            Wait(1750); // Cast
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::SLAM_RNK_6, POWER_RAGE, expectedSlamRage);
+
+            TEST_CAST(warrior, creature, ClassSpells::Warrior::SLAM_RNK_6, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             ASSERT_INFO("AttackTime: %u, AttackTimer: %u, Current: %u", warrior->GetAttackTime(BASE_ATTACK), warrior->GetAttackTimer(BASE_ATTACK), currentAttackTimer);
             TEST_ASSERT(warrior->GetAttackTimer(BASE_ATTACK) > currentAttackTimer);
 
@@ -1520,7 +1532,7 @@ public:
 
             // Power cost
             uint32 const expectedWhirldwindRage = 25 * 10;
-            TEST_POWER_COST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, POWER_RAGE, expectedWhirldwindRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::WHIRLWIND_RNK_1, POWER_RAGE, expectedWhirldwindRage);
         }
     };
 
@@ -1648,7 +1660,7 @@ public:
 
             // Power cost
             uint32 expectedDisarmRage = 20 * 10;
-            TEST_POWER_COST(warrior, rogue, ClassSpells::Warrior::DISARM_RNK_1, POWER_RAGE, expectedDisarmRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::DISARM_RNK_1, POWER_RAGE, expectedDisarmRage);
         }
     };
 
@@ -1850,7 +1862,9 @@ public:
 
             // Rage cost
             uint32 expectedShieldBashRageCost = 10 * 10;
-            TEST_POWER_COST(warrior, priest, ClassSpells::Warrior::SHIELD_BASH_RNK_4, POWER_RAGE, expectedShieldBashRageCost);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::SHIELD_BASH_RNK_4, POWER_RAGE, expectedShieldBashRageCost);
+
+            FORCE_CAST(warrior, priest, ClassSpells::Warrior::SHIELD_BASH_RNK_4);
 
             // TODO: dazes target
 
@@ -2095,7 +2109,7 @@ public:
 
             // Rage cost
             uint32 expectedSpellReflectionRage = 25 * 10;
-            TEST_POWER_COST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, POWER_RAGE, expectedSpellReflectionRage);
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, POWER_RAGE, expectedSpellReflectionRage);
         }
     };
 
@@ -2154,8 +2168,12 @@ public:
         void TestSunderArmor(TestPlayer* warrior, Unit* victim, uint32 startArmor, int sunderArmorStack, uint32 armorReduced)
         {
             uint32 const expectedSunderArmorRage = 15 * 10;
+            TEST_POWER_COST(warrior, ClassSpells::Warrior::SUNDER_ARMOR_RNK_6, POWER_RAGE, expectedSunderArmorRage);
+            
+            warrior->SetFullPower(POWER_RAGE);
+            FORCE_CAST(warrior, victim, ClassSpells::Warrior::SUNDER_ARMOR_RNK_6);
+
             uint32 const expectedArmor = startArmor - sunderArmorStack * armorReduced;
-            TEST_POWER_COST(warrior, victim, ClassSpells::Warrior::SUNDER_ARMOR_RNK_6, POWER_RAGE, expectedSunderArmorRage);
             ASSERT_INFO("Sunder Armor %i stacks -> start armor: %u, current armor: %u, expected: %u", sunderArmorStack, startArmor, victim->GetArmor(), expectedArmor);
             TEST_ASSERT(victim->GetArmor() == expectedArmor);
             Aura* aura = victim->GetAura(ClassSpells::Warrior::SUNDER_ARMOR_RNK_6);

@@ -22,7 +22,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedIceLanceManaCost = 150;
-            TEST_POWER_COST(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, POWER_MANA, expectedIceLanceManaCost);
+            TEST_POWER_COST(mage, ClassSpells::Mage::ICE_LANCE_RNK_1, POWER_MANA, expectedIceLanceManaCost);
 
             // Damage -- Failure here, something's wrong with spell coeff. 
             // Spell coeff, like damage, should triple on frozen target
@@ -75,8 +75,9 @@ public:
 
             float const expectedSpeed = rogue->GetSpeed(MOVE_RUN) * 0.6f;
             uint32 const expectedFrostboltManaCost = 330;
-            TEST_POWER_COST(mage, rogue, ClassSpells::Mage::FROSTBOLT_RNK_13, POWER_MANA, expectedFrostboltManaCost);
-            Wait(1000);
+            TEST_POWER_COST(mage, ClassSpells::Mage::FROSTBOLT_RNK_13, POWER_MANA, expectedFrostboltManaCost);
+
+            FORCE_CAST(mage, rogue, ClassSpells::Mage::FROSTBOLT_RNK_13, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_SPEED));
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Mage::FROSTBOLT_RNK_13, Seconds(9));
             ASSERT_INFO("Speed: %f - Expected: %f", rogue->GetSpeed(MOVE_RUN), expectedSpeed);
             TEST_ASSERT(Between(rogue->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));

@@ -98,9 +98,8 @@ public:
             TEST_CAST(priest, enemy1, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, SPELL_FAILED_NOTHING_TO_DISPEL, TRIGGERED_IGNORE_GCD);
 
             // Test mana cost
-            TEST_CAST(enemy1, priest, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
             uint32 const expectedDispelMagicMana = 366;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, POWER_MANA, expectedDispelMagicMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, POWER_MANA, expectedDispelMagicMana);
 
             // Setup
             TEST_CAST(enemy1, enemy1, ClassSpells::Priest::DIVINE_SPIRIT_RNK_5, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
@@ -159,7 +158,9 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
 
             uint32 const expectedFearWardMana = 78;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1, POWER_MANA, expectedFearWardMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, POWER_MANA, expectedFearWardMana);
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1);
             TEST_COOLDOWN(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3));
 
             TEST_CAST(priest, priest, ClassSpells::Priest::FEAR_WARD_RNK_1);
@@ -209,7 +210,7 @@ public:
 
             // Mana cost, aura & cd
             uint32 const expectedFeedbackMana = 705;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, POWER_MANA, expectedFeedbackMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::FEEDBACK_RNK_6, POWER_MANA, expectedFeedbackMana);
             TEST_CAST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6);
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::FEEDBACK_RNK_6, Minutes(3));
             TEST_HAS_AURA(priest, ClassSpells::Priest::FEEDBACK_RNK_6);
@@ -270,7 +271,9 @@ public:
 
             // Mana cost
             uint32 const expectedInnerFireMana = 375;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::INNER_FIRE_RNK_7, POWER_MANA, expectedInnerFireMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::INNER_FIRE_RNK_7, POWER_MANA, expectedInnerFireMana);
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::INNER_FIRE_RNK_7);
 
             // Aura
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::INNER_FIRE_RNK_7, 10 * MINUTE * IN_MILLISECONDS);
@@ -333,10 +336,11 @@ public:
 
             priest->DisableRegeneration(true);
 
-            // Mana cost
+            // Mana cost & reagant
             uint32 const expectedLevitateMana = 100;
+            TEST_POWER_COST(priest, ClassSpells::Priest::LEVITATE_RNK_1, POWER_MANA, expectedLevitateMana);
             priest->AddItem(17056, 1); // Reagent Light Feather
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::LEVITATE_RNK_1, POWER_MANA, expectedLevitateMana);
+            TEST_CAST(priest, priest, ClassSpells::Priest::LEVITATE_RNK_1);
             TEST_ASSERT(priest->GetItemCount(17056, false) == 0);
 
             // Aura
@@ -420,17 +424,14 @@ public:
             EQUIP_NEW_ITEM(priest, 34336); // Sunflare - 292 SP
             priest->DisableRegeneration(true);
             mage->DisableRegeneration(true);
-            Wait(5000);
+            Wait(1500);
 
             // Fail
             TEST_CAST(priest, rogue, ClassSpells::Priest::MANA_BURN_RNK_7, SPELL_FAILED_BAD_TARGETS);
 
             // Mana cost
             uint32 const expectedManaBurnMana = 355;
-            TEST_POWER_COST(priest, mage, ClassSpells::Priest::MANA_BURN_RNK_7, POWER_MANA, expectedManaBurnMana);
-
-            // Nothing happened on rogue
-            TEST_ASSERT(rogue->GetHealth() == rogue->GetMaxHealth());
+            TEST_POWER_COST(priest, ClassSpells::Priest::MANA_BURN_RNK_7, POWER_MANA, expectedManaBurnMana);
 
             //there is no spell power coef on mana burn
             TestManaBurn(priest, mage, ClassSpellsDamage::Priest::MANA_BURN_RNK_7_MIN, ClassSpellsDamage::Priest::MANA_BURN_RNK_7_MAX);
@@ -664,7 +665,9 @@ public:
 
             // Mana cost
             uint32 const expectedPowerWordFortitudeMana = 700;
-            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, POWER_MANA, expectedPowerWordFortitudeMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, POWER_MANA, expectedPowerWordFortitudeMana);
+
+            TEST_CAST(priest, warrior, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7);
 
             // Health
             ASSERT_INFO("Health: %u, expected: %u", warrior->GetHealth(), expectedHealth);
@@ -703,8 +706,7 @@ public:
 
             // Mana cost
             uint32 const expectedPowerWordShieldMana = 600;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, POWER_MANA, expectedPowerWordShieldMana);
-            priest->RemoveAura(WEAKENED_SOUL);
+            TEST_POWER_COST(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, POWER_MANA, expectedPowerWordShieldMana);
 
             // Aura
             TEST_CAST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
@@ -788,9 +790,10 @@ public:
             uint32 expectedPriestHealth = priestStartHealth + staminaBonus * 10;
             uint32 expectedWarriorHealth = warriorStartHealth + staminaBonus * 10;
 
-            // Mana cost
+            // Mana cost & reagents
+            TEST_POWER_COST(priest, spellId, POWER_MANA, manaCost);
             priest->AddItem(reagentId, 1); // Reagent
-            TEST_POWER_COST(priest, warrior, spellId, POWER_MANA, manaCost);
+            TEST_CAST(priest, warrior, spellId);
             TEST_ASSERT(priest->GetItemCount(reagentId, false) == 0);
 
             // Aura
@@ -853,7 +856,9 @@ public:
             Wait(1);
 
             uint32 const expectedShackleUndeadMana = 150;
-            TEST_POWER_COST(priest, creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, POWER_MANA, expectedShackleUndeadMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, POWER_MANA, expectedShackleUndeadMana);
+
+            FORCE_CAST(priest, creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
             TEST_AURA_MAX_DURATION(creature1, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, Seconds(50));
             //creature 1 should have shackle on him at this point
 
@@ -893,7 +898,9 @@ public:
 
             // Mana cost
             uint32 const expectedStarshardsMana = 0;
-            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, POWER_MANA, expectedStarshardsMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::STARSHARDS_RNK_8, POWER_MANA, expectedStarshardsMana);
+
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8);
 
             // Cooldown 
             TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, Seconds(30));
@@ -1071,7 +1078,9 @@ public:
 
             // Mana cost
             uint32 const expectedAbolishDiseaseMana = 314;
-            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, POWER_MANA, expectedAbolishDiseaseMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, POWER_MANA, expectedAbolishDiseaseMana);
+
+            TEST_CAST(priest, warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1);
 
             // Aura duration
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, Seconds(20));
@@ -1107,7 +1116,7 @@ public:
 
             // Cast & Mana cost
             uint32 const expectedBindingHealMana = 705;
-            TEST_POWER_COST(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, POWER_MANA, expectedBindingHealMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, POWER_MANA, expectedBindingHealMana);
             
             // Test Healing value
             float const bindingHealCastTime = 1.5f;
@@ -1169,7 +1178,7 @@ public:
 
             // Mana cost
             uint32 const expectedChastiseMana = 50;
-            TEST_POWER_COST(priest, humanoid, ClassSpells::Priest::CHASTISE_RNK_1, POWER_MANA, expectedChastiseMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::CHASTISE_RNK_1, POWER_MANA, expectedChastiseMana);
 
             humanoid->ClearDiminishings();
             TEST_CAST(priest, humanoid, ClassSpells::Priest::CHASTISE_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
@@ -1228,10 +1237,11 @@ public:
             warrior->AddAura(SPORE_DISEASE, warrior);
             Wait(1);
 
-            // Cast spell & mana cost
+            // mana cost
             uint32 const expectedCureDiseaseMana = 314;
-            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::CURE_DISEASE_RNK_1, POWER_MANA, expectedCureDiseaseMana);
-            Wait(1);
+            TEST_POWER_COST(priest, ClassSpells::Priest::CURE_DISEASE_RNK_1, POWER_MANA, expectedCureDiseaseMana);
+
+            TEST_CAST(priest, warrior, ClassSpells::Priest::CURE_DISEASE_RNK_1);
 
             // should cure 1 disease only
             uint8 diseasedCured = uint8(!warrior->HasAura(WEAKENING_DISEASE)) + uint8(!warrior->HasAura(SPORE_DISEASE));
@@ -1266,7 +1276,7 @@ public:
 
             // Mana cost
             uint32 const expectedDesperatePrayerMana = 0;
-            TEST_POWER_COST(priest, ally, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, POWER_MANA, expectedDesperatePrayerMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, POWER_MANA, expectedDesperatePrayerMana);
 
             // Only heals caster + Cooldown
             ally->DisableRegeneration(true);
@@ -1312,7 +1322,7 @@ public:
             Wait(1);
 
             uint32 expectedElunesGraceMana = 78;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, POWER_MANA, expectedElunesGraceMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, POWER_MANA, expectedElunesGraceMana);
 
             TEST_CAST(priest, priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1);
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, Seconds(15));
@@ -1355,7 +1365,7 @@ public:
 
             // Mana cost
             uint32 const expectedFlashHealMana = 470;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, POWER_MANA, expectedFlashHealMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, POWER_MANA, expectedFlashHealMana);
 
             // Heal
             float const flashHealCastTime = 1.5f;
@@ -1392,7 +1402,7 @@ public:
 
             // Mana cost
             uint32 const expectedGreaterHealMana = 825;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, POWER_MANA, expectedGreaterHealMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, POWER_MANA, expectedGreaterHealMana);
 
             // Heal
             float const greaterHealCastTime = 3.0f;
@@ -1429,7 +1439,7 @@ public:
 
             // Mana cost
             uint32 const expectedHealMana = 305;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::HEAL_RNK_4, POWER_MANA, expectedHealMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::HEAL_RNK_4, POWER_MANA, expectedHealMana);
 
             // Heal
             int const spellMaxLevel = 39;
@@ -1473,7 +1483,7 @@ public:
 
             // Mana cost
             uint32 const expectedHolyFireMana = 290;
-            TEST_POWER_COST(priest, creature, ClassSpells::Priest::HOLY_FIRE_RNK_9, POWER_MANA, expectedHolyFireMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::HOLY_FIRE_RNK_9, POWER_MANA, expectedHolyFireMana);
 
             // Direct
             float const holyFireCoeff = ClassSpellsCoeff::Priest::HOLY_FIRE;
@@ -1515,7 +1525,7 @@ public:
 
             // Mana cost
             uint32 const expectedLesserHealMana = 75;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::LESSER_HEAL_RNK_3, POWER_MANA, expectedLesserHealMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::LESSER_HEAL_RNK_3, POWER_MANA, expectedLesserHealMana);
 
             // Lesser Heal
             int const spellMaxLevel = 15;
@@ -1589,7 +1599,9 @@ public:
 
             // Mana cost
             uint32 const expectedPrayerOfHealingMana = 1255;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, POWER_MANA, expectedPrayerOfHealingMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, POWER_MANA, expectedPrayerOfHealingMana);
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
             // Spell has range 30y and should only target self group
             TEST_ASSERT(priest->GetHealth() > 1);
@@ -1642,11 +1654,10 @@ public:
             GroupPlayer(priest, warlock);
 
             uint32 const expectedPrayerOfMendingMana = 390;
-            TEST_POWER_COST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, POWER_MANA, expectedPrayerOfMendingMana);
-
-            TEST_COOLDOWN(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, Seconds(10));
+            TEST_POWER_COST(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, POWER_MANA, expectedPrayerOfMendingMana);
 
             TEST_CAST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1);
+            TEST_COOLDOWN(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, Seconds(10));
             TEST_AURA_MAX_DURATION(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, Seconds(30));
 
             TEST_AURA_CHARGE(warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 5);
@@ -1699,7 +1710,7 @@ public:
 
             // Mana cost
             uint32 const expectedRenewMana = 450;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, POWER_MANA, expectedRenewMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::RENEW_RNK_12, POWER_MANA, expectedRenewMana);
 
             // Heal
             float const renewDuration = 15.0f;
@@ -1729,7 +1740,9 @@ public:
         void TestResurrection(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 expectedHealth, uint32 expectedMana)
         {
             victim->KillSelf(true);
-            TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
+            TEST_POWER_COST(caster, spellId, POWER_MANA, manaCost);
+
+            TEST_CAST(caster, victim, spellId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             //victim->AcceptRessurectRequest();
             TEST_ASSERT(victim->GetHealth() == expectedHealth);
             TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
@@ -1777,7 +1790,7 @@ public:
 
             // Mana cost
             uint32 const expectedSmiteMana = 385;
-            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, POWER_MANA, expectedSmiteMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::SMITE_RNK_10, POWER_MANA, expectedSmiteMana);
 
             // Damage
             float const smiteCastTime = 2.5f;
@@ -1818,7 +1831,7 @@ public:
 
             // Mana cost
             uint32 const expectedDevouringPlagueMana = 1145;
-            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, POWER_MANA, expectedDevouringPlagueMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, POWER_MANA, expectedDevouringPlagueMana);
 
             TEST_CAST(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7);
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, Seconds(24));
@@ -1912,7 +1925,7 @@ public:
 
             // Power cost
             uint32 const expectedFadeMana = 330;
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::FADE_RNK_7, POWER_MANA, expectedFadeMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::FADE_RNK_7, POWER_MANA, expectedFadeMana);
         }
     };
 
@@ -1944,7 +1957,9 @@ public:
             // Mana cost, aura & cd
             // priest applies hex on rogue
             uint32 const expectedHexOfWeaknessMana = 295;
-            TEST_POWER_COST(priest, rogue, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, POWER_MANA, expectedHexOfWeaknessMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, POWER_MANA, expectedHexOfWeaknessMana);
+
+            FORCE_CAST(priest, rogue, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7);
             TEST_HAS_AURA(rogue, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, Minutes(2));
 
@@ -2019,8 +2034,9 @@ public:
 
             // Mana cost
             uint32 const expectedMindBlastMana = 450;
-            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, POWER_MANA, expectedMindBlastMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::MIND_BLAST_RNK_11, POWER_MANA, expectedMindBlastMana);
 
+            TEST_CAST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             // Cooldown
             TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, Seconds(8));
 
@@ -2073,7 +2089,7 @@ public:
 
             // Mana cost
             uint32 const expectedMindControlMana = 750;
-            TEST_POWER_COST(priest, enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, POWER_MANA, expectedMindControlMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::MIND_CONTROL_RNK_3, POWER_MANA, expectedMindControlMana);
         }
     };
 
@@ -2135,7 +2151,9 @@ public:
 
             // Mana cost
             uint32 const expectedMindSootheMana = 120;
-            TEST_POWER_COST(priest, humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, POWER_MANA, expectedMindSootheMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::MIND_SOOTHE_RNK_4, POWER_MANA, expectedMindSootheMana);
+
+            FORCE_CAST(priest, humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4);
 
             // Aura
             TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15));
@@ -2224,7 +2242,7 @@ public:
             // Mana cost
             priest->InterruptNonMeleeSpells(true);
             uint32 const expectedMindVisionMana = 150;
-            TEST_POWER_COST(priest, warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2, POWER_MANA, expectedMindVisionMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::MIND_VISION_RNK_2, POWER_MANA, expectedMindVisionMana);
 
             //TODO: should mind vision be resistable? Because it currently is
         }
@@ -2251,9 +2269,10 @@ public:
             uint32 expectedPriestSR = priestStartShadowResistance + shadowResistanceBonus;
             uint32 expectedWarriorSR = warriorStartShadowResistance + shadowResistanceBonus;
 
-            // Mana cost
-            priest->AddItem(reagentId, 1); // Reagent
-            TEST_POWER_COST(priest, warrior, spellId, POWER_MANA, manaCost);
+            // Mana cost & Reagent
+            TEST_POWER_COST(priest, spellId, POWER_MANA, manaCost);
+            priest->AddItem(reagentId, 1);
+            TEST_CAST(priest, warrior, spellId);
             TEST_ASSERT(priest->GetItemCount(reagentId, false) == 0);
 
             // Aura
@@ -2352,7 +2371,10 @@ public:
             }
 
             // Mana
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, POWER_MANA, expectedPsychicScreamMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, POWER_MANA, expectedPsychicScreamMana);
+
+            priest->GetSpellHistory()->ResetAllCooldowns();
+            TEST_CAST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
 
             // Cooldown
             TEST_COOLDOWN(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(30));
@@ -2385,7 +2407,9 @@ public:
 
             // Mana cost
             uint32 const expectedShadowProtectionMana = 810;
-            TEST_POWER_COST(priest, warrior, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, POWER_MANA, expectedShadowProtectionMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, POWER_MANA, expectedShadowProtectionMana);
+
+            TEST_CAST(priest, warrior, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4);
 
             // Health
             ASSERT_INFO("Shadow resistance: %u, expected: %u", warrior->GetResistance(SPELL_SCHOOL_SHADOW), expectedShadowResistance);
@@ -2506,9 +2530,8 @@ public:
             TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, Seconds(12));
 
             // Power cost
-            priest->SetFullHealth();
             uint32 const expectedShadowWordDeathMana = 309;
-            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, POWER_MANA, expectedShadowWordDeathMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, POWER_MANA, expectedShadowWordDeathMana);
         }
     };
 
@@ -2537,7 +2560,7 @@ public:
 
             // Mana cost
             uint32 const expectedShadowWordPainMana = 575;
-            TEST_POWER_COST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, POWER_MANA, expectedShadowWordPainMana);
+            TEST_POWER_COST(priest, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, POWER_MANA, expectedShadowWordPainMana);
 
             // Damage
             float const shadowWordPainCoeff = ClassSpellsCoeff::Priest::SHADOW_WORD_PAIN;
@@ -2729,13 +2752,12 @@ public:
             // Mana cost, aura & cd
             // Priest cast hex on rogue
             uint32 const expectedTouchOfWeaknessMana = 235;
-            priest->ForceSpellHitResult(SPELL_MISS_NONE);
-            TEST_POWER_COST(priest, priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, POWER_MANA, expectedTouchOfWeaknessMana);
-            TEST_HAS_AURA(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, Minutes(10));
+            TEST_POWER_COST(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, POWER_MANA, expectedTouchOfWeaknessMana);
+            FORCE_CAST(priest, rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
+            TEST_HAS_AURA(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, Minutes(10));
 
             // Shouldn't proc on spells
-            mage->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             mage->ResetForceSpellHitResult();
             TEST_HAS_AURA(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);

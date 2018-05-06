@@ -25,7 +25,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedCorruptionManaCost = 370;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, POWER_MANA, expectedCorruptionManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CORRUPTION_RNK_8, POWER_MANA, expectedCorruptionManaCost);
 
             // Damage
             float const spellCoefficient = ClassSpellsCoeff::Warlock::CORRUPTION;
@@ -63,7 +63,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedCurseOfAgonyManaCost = 265;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, POWER_MANA, expectedCurseOfAgonyManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, POWER_MANA, expectedCurseOfAgonyManaCost);
 
             // Damage
             float const spellCoefficient = ClassSpellsCoeff::Warlock::CURSE_OF_AGONY;
@@ -104,7 +104,7 @@ public:
             TEST_CAST(warlock, player, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, SPELL_FAILED_TARGET_IS_PLAYER);
 
             uint32 const expectedCurseOfDoomManaCost = 380;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, POWER_MANA, expectedCurseOfDoomManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, POWER_MANA, expectedCurseOfDoomManaCost);
 
             TEST_CAST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2);
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, Minutes(1));
@@ -156,7 +156,7 @@ public:
             TEST_ASSERT(rogue->GetArmor() == expectedRogueArmor);
             TEST_ASSERT(rogue->GetTotalAttackPowerValue(BASE_ATTACK) == expectedRogueAP);
 
-            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, POWER_MANA, expectedCurseOfRecklessnessManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, POWER_MANA, expectedCurseOfRecklessnessManaCost);
         }
     };
 
@@ -183,7 +183,9 @@ public:
 
             // Apply CoE
             uint32 const expectedCurseOfElementsManaCost = 260;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, POWER_MANA, expectedCurseOfElementsManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, POWER_MANA, expectedCurseOfElementsManaCost);
+
+            TEST_CAST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, Minutes(5));
 
             // Increase damage taken by Shadow, Fire, Arcane and Frost by 10%
@@ -238,8 +240,8 @@ public:
             // TODO: test increased casting time
 
             // PvP
-            uint32 const expectedCurseOfTonguesManaCost = 110;
-            TEST_POWER_COST(warlock, mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, POWER_MANA, expectedCurseOfTonguesManaCost);
+            Wait(1500); //GCD
+            FORCE_CAST(warlock, mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, SPELL_MISS_NONE);
             TEST_AURA_MAX_DURATION(mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, Seconds(12)); // bug here, it's 10 but as of patch 2.1, it should be 12s
             // Test increased casting time: Frostbolt cast time is 3.0s, with the curse it should be 4.8s
             FORCE_CAST(mage, warlock, ClassSpells::Mage::FROSTBOLT_RNK_13, SPELL_MISS_NONE);
@@ -247,6 +249,9 @@ public:
             TEST_HAS_NOT_AURA(warlock, ClassSpells::Mage::FROSTBOLT_RNK_13);
             Wait(1000);
             TEST_HAS_AURA(warlock, ClassSpells::Mage::FROSTBOLT_RNK_13);
+
+            uint32 const expectedCurseOfTonguesManaCost = 110;
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, POWER_MANA, expectedCurseOfTonguesManaCost);
         }
     };
 
@@ -274,10 +279,13 @@ public:
             uint32 const curseOfWeaknessAPMalus = 350;
             uint32 const expectedRogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK) - curseOfWeaknessAPMalus;
 
-            uint32 const expectedCurseOfWeaknessManaCost = 265;
-            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, POWER_MANA, expectedCurseOfWeaknessManaCost);
+            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, SPELL_MISS_NONE);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, Minutes(2));
             TEST_ASSERT(rogue->GetTotalAttackPowerValue(BASE_ATTACK) == expectedRogueAP);
+
+            uint32 const expectedCurseOfWeaknessManaCost = 265;
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, POWER_MANA, expectedCurseOfWeaknessManaCost);
+
         }
     };
 
@@ -330,7 +338,7 @@ public:
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoilDmg, expectedDeathCoilDmg, false);
 
             uint32 const expectedDeathCoilManaCost = 600;
-            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::DEATH_COIL_RNK_4, POWER_MANA, expectedDeathCoilManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::DEATH_COIL_RNK_4, POWER_MANA, expectedDeathCoilManaCost);
         }
     };
 
@@ -363,7 +371,7 @@ public:
             TEST_ASSERT(spellPower == 183);
 
             uint32 const expectedDrainLifeManaCost = 425;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, POWER_MANA, expectedDrainLifeManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, POWER_MANA, expectedDrainLifeManaCost);
 
             // Damage & Heal
             float const duration = 5.0f;
@@ -419,7 +427,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedDrainManaManaCost = 455;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, POWER_MANA, expectedDrainManaManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::DRAIN_MANA_RNK_6, POWER_MANA, expectedDrainManaManaCost);
 
             // Doesn't drain mana if there isnt mana (!)
             warlock->SetPower(POWER_MANA, 0);
@@ -487,7 +495,7 @@ public:
 
             rogue->ResurrectPlayer(1.0f);
             uint32 const expectedDrainSoulManaCost = 360;
-            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, POWER_MANA, expectedDrainSoulManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, POWER_MANA, expectedDrainSoulManaCost);
 
             // TODO: drain on creture that doesnt yield experience or honor for a player
         }
@@ -530,7 +538,7 @@ public:
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::FEAR_RNK_3, Seconds(5));
 
             uint32 const expectedFearManaCost = 313;
-            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::FEAR_RNK_3, POWER_MANA, expectedFearManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::FEAR_RNK_3, POWER_MANA, expectedFearManaCost);
         }
     };
 
@@ -583,7 +591,7 @@ public:
             TEST_ASSERT(count == 5);
 
             uint32 const expectedHowlOfTerrorManaCost = 200;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, POWER_MANA, expectedHowlOfTerrorManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, POWER_MANA, expectedHowlOfTerrorManaCost);
         }
     };
 
@@ -667,9 +675,7 @@ public:
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
 
-            uint32 const expectedSeedOfCorruptionManaCost = 882;
-            TEST_POWER_COST(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, POWER_MANA, expectedSeedOfCorruptionManaCost);
-            Wait(500);
+            FORCE_CAST(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
             TEST_AURA_MAX_DURATION(dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, Seconds(18));
 
             // Damage 
@@ -706,6 +712,10 @@ public:
             TEST_ASSERT(dummy2->GetHealth() < maxHealth && dummy3->GetHealth() < maxHealth);
             // SoC detonation does not detonate other SoC
             TEST_HAS_AURA(dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1);
+
+            // Test mana cost
+            uint32 const expectedSeedOfCorruptionManaCost = 882;
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, POWER_MANA, expectedSeedOfCorruptionManaCost);
         }
     };
 
@@ -738,8 +748,7 @@ public:
             // Should succeed on Demon & Elemental
             FORCE_CAST(warlock, demon, ClassSpells::Warlock::BANISH_RNK_2, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
             TEST_AURA_MAX_DURATION(demon, ClassSpells::Warlock::BANISH_RNK_2, Seconds(30));
-            uint32 banishManaCost = 200;
-            TEST_POWER_COST(warlock, elemental, ClassSpells::Warlock::BANISH_RNK_2, POWER_MANA, banishManaCost);
+            FORCE_CAST(warlock, elemental, ClassSpells::Warlock::BANISH_RNK_2, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
 
             // Only 1 active banish per warlock
             TEST_HAS_NOT_AURA(demon, ClassSpells::Warlock::BANISH_RNK_2);
@@ -759,6 +768,9 @@ public:
                 Wait(1);
                 TEST_ASSERT(elemental->GetHealth() == elemHealth);
             }
+
+            uint32 banishManaCost = 200;
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::BANISH_RNK_2, POWER_MANA, banishManaCost);
         }
     };
 
@@ -780,8 +792,11 @@ public:
 
         void CreateFirestone(TestPlayer* caster, uint32 firestoneSpellId, uint32 firestone, uint32 expectedManaCost)
         {
+            TEST_POWER_COST(caster, firestoneSpellId, POWER_MANA, expectedManaCost);
+
             caster->AddItem(SOUL_SHARD, 1);
-            TEST_POWER_COST(caster, caster, firestoneSpellId, POWER_MANA, expectedManaCost);
+            caster->SetFullPower(POWER_MANA);
+            TEST_CAST(caster, caster, firestoneSpellId, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_GCD));
             TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
             TEST_ASSERT(caster->GetItemCount(firestone, false) == 1);
         }
@@ -845,10 +860,10 @@ public:
         void CreateHealthstone(TestPlayer* caster, uint32 healthstoneSpellId, uint32 healthstone, uint32 expectedManaCost, uint32 healthRestored)
         {
             caster->SetHealth(1);
-            caster->AddItem(SOUL_SHARD, 2);
+            caster->AddItem(SOUL_SHARD, 1);
             TEST_CAST(caster, caster, healthstoneSpellId);
             Wait(3500);
-            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 1);
+            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
             TEST_ASSERT(caster->GetItemCount(healthstone, false) == 1);
             Wait(1);
             USE_ITEM(caster, caster, healthstone);
@@ -857,8 +872,7 @@ public:
             TEST_ASSERT(caster->GetHealth() == 1 + healthRestored);
             caster->GetSpellHistory()->ResetAllCooldowns();
 
-            TEST_POWER_COST(caster, caster, healthstoneSpellId, POWER_MANA, expectedManaCost);
-            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
+            TEST_POWER_COST(caster, healthstoneSpellId, POWER_MANA, expectedManaCost);
             caster->SetFullPower(POWER_MANA);
         }
 
@@ -934,9 +948,7 @@ public:
             uint32 const expectedCreateSoulstoneManaCost = baseMana * createSoulstoneBaseManaPercentage;
             ASSERT_INFO("Create Soulstone %u, is supposed to cost 1778, calculted: %u", soulstone, expectedCreateSoulstoneManaCost);
             TEST_ASSERT(expectedCreateSoulstoneManaCost == 1778);
-            caster->AddItem(SOUL_SHARD, 1);
-            TEST_POWER_COST(caster, caster, soulstoneSpellId, POWER_MANA, expectedCreateSoulstoneManaCost);
-            TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
+            TEST_POWER_COST(caster, soulstoneSpellId, POWER_MANA, expectedCreateSoulstoneManaCost);
             caster->SetFullPower(POWER_MANA);
             caster->GetSpellHistory()->ResetAllCooldowns();
         }
@@ -1013,8 +1025,9 @@ public:
         void CreateSpellstone(TestPlayer* caster, uint32 spellstoneSpellId, uint32 spellstoneItemID, uint32 expectedManaCost, uint32 criticalStrikeRatingBonus)
         {
             const uint32 expectedSpellCritScore = caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL) + criticalStrikeRatingBonus;
+            TEST_POWER_COST(caster, spellstoneSpellId, POWER_MANA, expectedManaCost);
             caster->AddItem(SOUL_SHARD, 1);
-            TEST_POWER_COST(caster, caster, spellstoneSpellId, POWER_MANA, expectedManaCost);
+            TEST_CAST(caster, caster, spellstoneSpellId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
             TEST_ASSERT(caster->GetItemCount(spellstoneItemID, false) == 1);
             // Equip item
@@ -1091,7 +1104,8 @@ public:
             TEST_CAST(caster, caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
             TEST_HAS_AURA(caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
 
-            TEST_POWER_COST(caster, caster, demonArmorSpellId, POWER_MANA, expectedManaCost);
+            TEST_POWER_COST(caster, demonArmorSpellId, POWER_MANA, expectedManaCost);
+            TEST_CAST(caster, caster, demonArmorSpellId, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
             TEST_ASSERT(caster->GetArmor() == expectedArmor);
             TEST_ASSERT(caster->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowRes);
             TEST_AURA_MAX_DURATION(caster, demonArmorSpellId, Minutes(30));
@@ -1161,7 +1175,7 @@ public:
             TEST_DIRECT_HEAL(healer, caster, ClassSpells::Druid::HEALING_TOUCH_RNK_13, ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN * 1.2f, ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX * 1.2f, false);
 
             // Mana cost
-            TEST_POWER_COST(caster, caster, felArmorSpellId, POWER_MANA, expectedManaCost);
+            TEST_POWER_COST(caster, felArmorSpellId, POWER_MANA, expectedManaCost);
             caster->RemoveAurasDueToSpell(felArmorSpellId);
         }
 
@@ -1283,7 +1297,7 @@ public:
             TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
 
             uint32 const expectedShadowWardCost = 320;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4, POWER_MANA, expectedShadowWardCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOW_WARD_RNK_4, POWER_MANA, expectedShadowWardCost);
         }
     };
 
@@ -1361,7 +1375,7 @@ public:
             TEST_ASSERT(Between(warlock->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
 
             uint32 const expectedSummonDreadsteedManaCost = 150;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1, POWER_MANA, expectedSummonDreadsteedManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1, POWER_MANA, expectedSummonDreadsteedManaCost);
         }
     };
 
@@ -1394,12 +1408,14 @@ public:
             TEST_ASSERT(expectedSummonFelhunterManaCost == 2092);
 
             warlock->AddItem(SOUL_SHARD, 1);
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, POWER_MANA, expectedSummonFelhunterManaCost);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
 
             Guardian* felhunter = warlock->GetGuardianPet();
             TEST_ASSERT(felhunter != nullptr);
             TEST_ASSERT(felhunter->GetEntry() == 417);
+
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, POWER_MANA, expectedSummonFelhunterManaCost);
         }
     };
 
@@ -1424,13 +1440,13 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
 
             float const expectedSpeed = warlock->GetSpeed(MOVE_RUN) * 1.6f;
-            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_ASSERT(warlock->IsMounted());
             TEST_HAS_AURA(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
             TEST_ASSERT(Between(warlock->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
 
             uint32 const expectedSummonFelsteedManaCost = 100;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1, POWER_MANA, expectedSummonFelsteedManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1, POWER_MANA, expectedSummonFelsteedManaCost);
         }
     };
 
@@ -1458,11 +1474,13 @@ public:
             float const summonImpBaseManaPercentage = 0.64f;
             uint32 const expectedSummonImpManaCost = baseMana * summonImpBaseManaPercentage;
             TEST_ASSERT(expectedSummonImpManaCost == 1673);
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, POWER_MANA, expectedSummonImpManaCost);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
             Guardian* imp = warlock->GetGuardianPet();
             TEST_ASSERT(imp != nullptr);
             TEST_ASSERT(imp->GetEntry() == 416);
+
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, POWER_MANA, expectedSummonImpManaCost);
         }
     };
 
@@ -1494,12 +1512,14 @@ public:
             uint32 const expectedSummonSuccubusManaCost = baseMana * summonSuccubusBaseManaPercentage;
             TEST_ASSERT(expectedSummonSuccubusManaCost == 2092);
             warlock->AddItem(SOUL_SHARD, 1);
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, POWER_MANA, expectedSummonSuccubusManaCost);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
 
             Guardian* succubus = warlock->GetGuardianPet();
             TEST_ASSERT(succubus != nullptr);
-            TEST_ASSERT(succubus->GetEntry() == 1863);
+            TEST_ASSERT(succubus->GetEntry() == 1863)
+
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, POWER_MANA, expectedSummonSuccubusManaCost);
         }
     };
 
@@ -1531,12 +1551,14 @@ public:
             uint32 const expectedSummonVoidwalkerManaCost = baseMana * summonVoidwalkerBaseManaPercentage;
             TEST_ASSERT(expectedSummonVoidwalkerManaCost == 2092);
             warlock->AddItem(SOUL_SHARD, 1);
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, POWER_MANA, expectedSummonVoidwalkerManaCost);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
 
             Guardian* voidwalker = warlock->GetGuardianPet();
             TEST_ASSERT(voidwalker != nullptr);
             TEST_ASSERT(voidwalker->GetEntry() == 1860);
+
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, POWER_MANA, expectedSummonVoidwalkerManaCost);
         }
     };
 
@@ -1561,7 +1583,9 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
 
             uint32 const expectedUnendingBreathManaCost = 50;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::UNENDING_BREATH_RNK_1, POWER_MANA, expectedUnendingBreathManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::UNENDING_BREATH_RNK_1, POWER_MANA, expectedUnendingBreathManaCost);
+            
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::UNENDING_BREATH_RNK_1);
             TEST_AURA_MAX_DURATION(warlock, ClassSpells::Warlock::UNENDING_BREATH_RNK_1, Minutes(10));
 
             // TODO: breathing underwater for 10min
@@ -1595,7 +1619,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedRainOfFireManaCost = 1480;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, POWER_MANA, expectedRainOfFireManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, POWER_MANA, expectedRainOfFireManaCost);
 
             // Damage -- 
             // DrDamage has coef 1.146
@@ -1645,7 +1669,7 @@ public:
 
            
             uint32 const expectedHellfireManaCost = 1665;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, POWER_MANA, expectedHellfireManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, POWER_MANA, expectedHellfireManaCost);
 
             // Damage
             float const duration = 15.0f;
@@ -1703,7 +1727,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedImmolateManaCost = 445;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, POWER_MANA, expectedImmolateManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::IMMOLATE_RNK_9, POWER_MANA, expectedImmolateManaCost);
 
             // Direct Damage -- https://wow.gamepedia.com/Talk:Spell_power#Hybrid_Formula
             float const castTime = 2.0f;
@@ -1755,7 +1779,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedIncinerateManaCost = 355;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, POWER_MANA, expectedIncinerateManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, POWER_MANA, expectedIncinerateManaCost);
 
             // Damage
             float const castTime = 2.5f;
@@ -1802,7 +1826,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedSearingPainManaCost = 205;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, POWER_MANA, expectedSearingPainManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SEARING_PAIN_RNK_8, POWER_MANA, expectedSearingPainManaCost);
 
             // Damage
             float const castTime = 1.5f;
@@ -1843,7 +1867,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedShadowBoltManaCost = 420;
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, POWER_MANA, expectedShadowBoltManaCost);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, POWER_MANA, expectedShadowBoltManaCost);
 
             // Damage
             float const castTime = 3.0f;
@@ -1882,9 +1906,7 @@ public:
             TEST_ASSERT(spellPower == 292);
 
             uint32 const expectedSoulFireManaCost = 250;
-            warlock->AddItem(SOUL_SHARD, 1);
-            TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, POWER_MANA, expectedSoulFireManaCost);
-            TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SOUL_FIRE_RNK_4, POWER_MANA, expectedSoulFireManaCost);
 
             warlock->AddItem(SOUL_SHARD, 1);
             TEST_CAST(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);

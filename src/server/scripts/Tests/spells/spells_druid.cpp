@@ -46,7 +46,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedBarkskinMana = 284;
-			TEST_POWER_COST(druid, druid, ClassSpells::Druid::BARKSKIN_RNK_1, POWER_MANA, expectedBarkskinMana);
+			TEST_POWER_COST(druid, ClassSpells::Druid::BARKSKIN_RNK_1, POWER_MANA, expectedBarkskinMana);
 			druid->RemoveAurasDueToSpell(ClassSpells::Druid::BARKSKIN_RNK_1);
 
 			// Duration & CD
@@ -154,7 +154,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedCycloneMana = 189;
-			TEST_POWER_COST(druid, druid3, ClassSpells::Druid::CYCLONE_RNK_1, POWER_MANA, expectedCycloneMana);
+			TEST_POWER_COST(druid, ClassSpells::Druid::CYCLONE_RNK_1, POWER_MANA, expectedCycloneMana);
 		}
 	};
 
@@ -180,6 +180,7 @@ public:
 			Creature* creature = SpawnCreature();
 
 			EQUIP_NEW_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+            Wait(2000);
 			druid->DisableRegeneration(true);
 
 			int32 staffSP = 266;
@@ -187,7 +188,10 @@ public:
 
 			// Mana cost
 			uint32 const expectedEntanglingRootsMana = 160;
-            TEST_POWER_COST(druid, creature, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, POWER_MANA, expectedEntanglingRootsMana);
+            TEST_POWER_COST(druid, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, POWER_MANA, expectedEntanglingRootsMana);
+
+            // Max duration
+            FORCE_CAST(druid, creature, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, Seconds(27));
 
 			// Is rooted
@@ -247,9 +251,11 @@ public:
             TEST_CAST(rogue, rogue, ClassSpells::Rogue::STEALTH_RNK_4, SPELL_FAILED_CASTER_AURASTATE);
 
 			// Mage can't invisible
-			uint32 expectedFaerieFireMana = 145;
-			TEST_POWER_COST(druid, mage, ClassSpells::Druid::FAERIE_FIRE_RNK_5, POWER_MANA, expectedFaerieFireMana);
+            FORCE_CAST(druid, mage, ClassSpells::Druid::FAERIE_FIRE_RNK_5);
             TEST_CAST(mage, mage, ClassSpells::Mage::INVISIBILITY_RNK_1, SPELL_FAILED_CASTER_AURASTATE);
+
+            uint32 expectedFaerieFireMana = 145;
+            TEST_POWER_COST(druid, ClassSpells::Druid::FAERIE_FIRE_RNK_5, POWER_MANA, expectedFaerieFireMana);
 		}
 	};
 
@@ -304,9 +310,11 @@ public:
 			HibernateDuration(druid, enemy, Milliseconds(5000)); // 5s
 			HibernateDuration(druid, enemy, Milliseconds(2500)); // 2.5s
 			// Immune
-			uint32 expectedHibernateMana = 150;
-			TEST_POWER_COST(druid, enemy, ClassSpells::Druid::HIBERNATE_RNK_3, POWER_MANA, expectedHibernateMana);
+			TEST_CAST(druid, enemy, ClassSpells::Druid::HIBERNATE_RNK_3);
             TEST_HAS_NOT_AURA(enemy, ClassSpells::Druid::HIBERNATE_RNK_3);
+
+            uint32 expectedHibernateMana = 150;
+            TEST_POWER_COST(druid, ClassSpells::Druid::HIBERNATE_RNK_3, POWER_MANA, expectedHibernateMana);
 		}
 	};
 
@@ -332,6 +340,7 @@ public:
 			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
 
 			EQUIP_NEW_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+            Wait(2000);
             int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
@@ -340,7 +349,9 @@ public:
 
             // Mana cost
             uint32 const expectedHurricaneMana = 1905;
-            TEST_POWER_COST(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, POWER_MANA, expectedHurricaneMana);
+            TEST_POWER_COST(druid, ClassSpells::Druid::HURRICANE_RNK_4, POWER_MANA, expectedHurricaneMana);
+
+            TEST_CAST(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
             // Cooldown
             TEST_COOLDOWN(druid, rogue, ClassSpells::Druid::HURRICANE_RNK_4, Minutes(1));
@@ -402,7 +413,7 @@ public:
 
 			// Power cost
 			uint32 expectedInnervateManaCost = 94;
-            TEST_POWER_COST(druid, druid, ClassSpells::Druid::INNERVATE_RNK_1, POWER_MANA, expectedInnervateManaCost);
+            TEST_POWER_COST(druid, ClassSpells::Druid::INNERVATE_RNK_1, POWER_MANA, expectedInnervateManaCost);
 
 			// Duration & CD
             TEST_CAST(druid, druid, ClassSpells::Druid::INNERVATE_RNK_1);
@@ -444,7 +455,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedMoonfireManaCost = 495;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::MOONFIRE_RNK_12, POWER_MANA, expectedMoonfireManaCost);
+			TEST_POWER_COST(druid, ClassSpells::Druid::MOONFIRE_RNK_12, POWER_MANA, expectedMoonfireManaCost);
 
 			// Spell coefficient
 			float const moonfireCastTimeDuration = 1.5f; // GCD
@@ -500,7 +511,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedStarfireMana = 370;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::STARFIRE_RNK_8, POWER_MANA, expectedStarfireMana);
+			TEST_POWER_COST(druid, ClassSpells::Druid::STARFIRE_RNK_8, POWER_MANA, expectedStarfireMana);
 
 			// Spell coefficient
 			float const starfireSpellCoeff = ClassSpellsCoeff::Druid::STARFIRE;
@@ -563,7 +574,7 @@ public:
 
             // Mana cost
             uint32 const expectedThornsMana = 400;
-            TEST_POWER_COST(druid, druid, ClassSpells::Druid::THORNS_RNK_7, POWER_MANA, expectedThornsMana);
+            TEST_POWER_COST(druid, ClassSpells::Druid::THORNS_RNK_7, POWER_MANA, expectedThornsMana);
 		}
 	};
 
@@ -596,7 +607,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedWrathMana = 255;
-			TEST_POWER_COST(druid, dummy, ClassSpells::Druid::WRATH_RNK_10, POWER_MANA, expectedWrathMana);
+			TEST_POWER_COST(druid, ClassSpells::Druid::WRATH_RNK_10, POWER_MANA, expectedWrathMana);
 
 			// Spell coefficient
 			float const wrathSpellCoeff = ClassSpellsCoeff::Druid::WRATH;
@@ -642,9 +653,12 @@ public:
             TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			Wait(1500); // GCD
 
-			// Rage & aura duration
+			// Rage cost
 			uint32 const expectedBashRageCost = 10 * 10;
-            TEST_POWER_COST(druid, rogue, ClassSpells::Druid::BASH_RNK_3, POWER_RAGE, expectedBashRageCost);
+            TEST_POWER_COST(druid, ClassSpells::Druid::BASH_RNK_3, POWER_RAGE, expectedBashRageCost);
+
+            // Aura duration
+            FORCE_CAST(druid, rogue, ClassSpells::Druid::BASH_RNK_3, SPELL_MISS_NONE);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Druid::BASH_RNK_3, Seconds(4));
 		}
 	};
@@ -786,7 +800,11 @@ public:
 
             // Rage cost
             uint32 const expectedChallengingRoarRage = 15 * 10;
-            TEST_POWER_COST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, POWER_RAGE, expectedChallengingRoarRage);
+            TEST_POWER_COST(druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, POWER_RAGE, expectedChallengingRoarRage);
+
+            // CD
+            druid->SetFullPower(POWER_RAGE);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
             TEST_COOLDOWN(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Minutes(10));
 		}
 	};
@@ -817,9 +835,7 @@ public:
             TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
 			Wait(1500); // GCD
 
-			// Energy cost
-			uint32 const expectedClawEnergy = 45;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::CLAW_RNK_6, POWER_ENERGY, expectedClawEnergy);
+            FORCE_CAST(druid, creature, ClassSpells::Druid::CLAW_RNK_6);
 
 			// Combo point added
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
@@ -840,6 +856,10 @@ public:
 			uint32 const expectedClawCritMin = weaponMinDamage * 2.0f * armorFactor;
 			uint32 const expectedClawCritMax = weaponMaxDamage * 2.0f * armorFactor;
 			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::CLAW_RNK_6, expectedClawCritMin, expectedClawCritMax, true);
+
+            // Energy cost
+            uint32 const expectedClawEnergy = 45;
+            TEST_POWER_COST(druid, ClassSpells::Druid::CLAW_RNK_6, POWER_ENERGY, expectedClawEnergy);
 		}
 	};
 
@@ -889,7 +909,7 @@ public:
 
             //Test power cost
             uint32 expectedCowerEnergy = 20;
-            TEST_POWER_COST(druid, creature, ClassSpells::Druid::COWER_RNK_5, POWER_ENERGY, expectedCowerEnergy);
+            TEST_POWER_COST(druid, ClassSpells::Druid::COWER_RNK_5, POWER_ENERGY, expectedCowerEnergy);
 		}
 	};
 
@@ -934,9 +954,7 @@ public:
             TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			Wait(1500);
 
-			// Rage cost
-			uint32 const expectedDemoralizingRoarRage = 10 * 10;
-            TEST_POWER_COST(druid, druid, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6, POWER_RAGE, expectedDemoralizingRoarRage);
+            FORCE_CAST(druid, druid, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
 
 			// Aura
             TEST_AURA_MAX_DURATION(player3m, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6, Seconds(30));
@@ -949,6 +967,10 @@ public:
 			Wait(31000);
 			TEST_ASSERT(player3m->GetTotalAttackPowerValue(BASE_ATTACK) == startAP3m);
 			TEST_ASSERT(creature6m->GetTotalAttackPowerValue(BASE_ATTACK) == startAP6m);
+
+            // Rage cost
+            uint32 const expectedDemoralizingRoarRage = 10 * 10;
+            TEST_POWER_COST(druid, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6, POWER_RAGE, expectedDemoralizingRoarRage);
 		}
 	};
 
@@ -1041,7 +1063,7 @@ public:
 
             // Energy cost
             uint32 const expectedFerociousBiteEnergy = 35;
-            TEST_POWER_COST(druid, creature, ClassSpells::Druid::FEROCIOUS_BITE_RNK_6, POWER_ENERGY, expectedFerociousBiteEnergy);
+            TEST_POWER_COST(druid, ClassSpells::Druid::FEROCIOUS_BITE_RNK_6, POWER_ENERGY, expectedFerociousBiteEnergy);
 
             // Damages
             float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
@@ -1201,7 +1223,7 @@ public:
 			// Rage cost
             TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 			uint32 const expectedLacerateRage = 15 * 10;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::LACERATE_RNK_1, POWER_RAGE, expectedLacerateRage);
+			TEST_POWER_COST(druid, ClassSpells::Druid::LACERATE_RNK_1, POWER_RAGE, expectedLacerateRage);
 			druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
 
 			// Direct damage (always fixed damage, no ap bonus)
@@ -1269,9 +1291,7 @@ public:
 
 			// Rage cost
 			uint32 const expectedMaulRage = 15 * 10;
-            druid->AttackerStateUpdate(creature, BASE_ATTACK);
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::MAUL_RNK_8, POWER_RAGE, expectedMaulRage);
-			druid->AttackStop();
+			TEST_POWER_COST(druid, ClassSpells::Druid::MAUL_RNK_8, POWER_RAGE, expectedMaulRage);
 
 			// Shapeshift
 			druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
@@ -1332,7 +1352,9 @@ public:
 			
 			// Energy cost
 			uint32 const expectedPounceEnergy = 50;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::POUNCE_RNK_4, POWER_ENERGY, expectedPounceEnergy);
+			TEST_POWER_COST(druid, ClassSpells::Druid::POUNCE_RNK_4, POWER_ENERGY, expectedPounceEnergy);
+
+            FORCE_CAST(druid, creature, ClassSpells::Druid::POUNCE_RNK_4);
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4, Seconds(3));
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::POUNCE_RNK_4_PROC, Seconds(18));
 
@@ -1420,7 +1442,9 @@ public:
 
 			// Energy cost
 			uint32 const expectedRakeEnergy = 40;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::RAKE_RNK_5, POWER_ENERGY, expectedRakeEnergy);
+			TEST_POWER_COST(druid, ClassSpells::Druid::RAKE_RNK_5, POWER_ENERGY, expectedRakeEnergy);
+
+            FORCE_CAST(druid, creature, ClassSpells::Druid::RAKE_RNK_5);
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::RAKE_RNK_5, Seconds(9));
 
 			// Combo
@@ -1484,8 +1508,10 @@ public:
 
 			// Energy cost
 			uint32 const expectedRavageEnergy = 60;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::RAVAGE_RNK_5, POWER_ENERGY, expectedRavageEnergy);
-
+			TEST_POWER_COST(druid, ClassSpells::Druid::RAVAGE_RNK_5, POWER_ENERGY, expectedRavageEnergy);
+            
+            Wait(1500); //GCD
+            FORCE_CAST(druid, creature, ClassSpells::Druid::RAVAGE_RNK_5);
 			// Combo
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
 
@@ -1555,7 +1581,10 @@ public:
 
             // Energy cost
             uint32 const expectedShredEnergy = 60;
-            TEST_POWER_COST(druid, creature, ClassSpells::Druid::SHRED_RNK_7, POWER_ENERGY, expectedShredEnergy);
+            TEST_POWER_COST(druid, ClassSpells::Druid::SHRED_RNK_7, POWER_ENERGY, expectedShredEnergy);
+
+            Wait(1500); //GCD
+            FORCE_CAST(druid, creature, ClassSpells::Druid::SHRED_RNK_7);
 
             // Combo
             TEST_ASSERT(druid->GetComboPoints(creature) == 1);
@@ -1622,7 +1651,7 @@ public:
 
             // Rage cost
             uint32 const expectedSwipeRage = 20 * 10;
-            TEST_POWER_COST(druid, creature1, ClassSpells::Druid::SWIPE_RNK_6, POWER_RAGE, expectedSwipeRage);
+            TEST_POWER_COST(druid, ClassSpells::Druid::SWIPE_RNK_6, POWER_RAGE, expectedSwipeRage);
 
             // Shapeshift
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
@@ -1712,7 +1741,7 @@ public:
 
             // Energy cost
             uint32 const expectedTigersFuryEnergy = 30;
-            TEST_POWER_COST(druid, creature, ClassSpells::Druid::TIGERS_FURY_RNK_4, POWER_ENERGY, expectedTigersFuryEnergy);
+            TEST_POWER_COST(druid, ClassSpells::Druid::TIGERS_FURY_RNK_4, POWER_ENERGY, expectedTigersFuryEnergy);
         }
     };
 
@@ -1750,14 +1779,17 @@ public:
             Wait(1);
 
             // Mana cost
-            uint32 const expectedAbolishPoisonMana = 308;
-            TEST_POWER_COST(druid, warrior, ClassSpells::Druid::ABOLISH_POISON_RNK_1, POWER_MANA, expectedAbolishPoisonMana);
+            TEST_CAST(druid, warrior, ClassSpells::Druid::ABOLISH_POISON_RNK_1);
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Druid::ABOLISH_POISON_RNK_1, Seconds(8));
 
             Wait(4500);
             TEST_HAS_NOT_AURA(warrior, WOUND_POISON_V);
             TEST_HAS_NOT_AURA(warrior, MIND_NUMBING_POISON_III);
             TEST_HAS_NOT_AURA(warrior, DEADLY_POISON_VII);
+
+            // Mana cost
+            uint32 const expectedAbolishPoisonMana = 308;
+            TEST_POWER_COST(druid, ClassSpells::Druid::ABOLISH_POISON_RNK_1, POWER_MANA, expectedAbolishPoisonMana);
         }
     };
 
@@ -1812,11 +1844,13 @@ public:
             warrior->AddAura(DEADLY_POISON_VII, warrior);
             Wait(1);
 
-            uint32 const expectedCurePoisonMana = 308;
-            TEST_POWER_COST(druid, warrior, ClassSpells::Druid::CURE_POISON_RNK_1, POWER_MANA, expectedCurePoisonMana);
+            TEST_CAST(druid, warrior, ClassSpells::Druid::CURE_POISON_RNK_1);
             TEST_ASSERT(2 == getPoisonCount(warrior, WOUND_POISON_V, MIND_NUMBING_POISON_III, DEADLY_POISON_VII));
             TEST_ASSERT(1 == getPoisonCount(warrior, WOUND_POISON_V, MIND_NUMBING_POISON_III, DEADLY_POISON_VII, true));
             TEST_ASSERT(0 == getPoisonCount(warrior, WOUND_POISON_V, MIND_NUMBING_POISON_III, DEADLY_POISON_VII, true));
+
+            uint32 const expectedCurePoisonMana = 308;
+            TEST_POWER_COST(druid, ClassSpells::Druid::CURE_POISON_RNK_1, POWER_MANA, expectedCurePoisonMana);
         }
     };
 
@@ -1851,10 +1885,12 @@ public:
             uint32 const expectedResNature  = victim->GetResistance(SPELL_SCHOOL_NATURE) + resistanceBonus;
             uint32 const expectedResShadow  = victim->GetResistance(SPELL_SCHOOL_SHADOW) + resistanceBonus;
 
+            TEST_POWER_COST(caster, spellId, POWER_MANA, manaCost);
+
             if (!victim->HasAura(spellId)) {
                 caster->AddItem(reagentId, 1);
                 TEST_ASSERT(caster->HasItemCount(reagentId, 1, false));
-                TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
+                TEST_CAST(caster, victim, spellId, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
                 TEST_ASSERT(caster->GetItemCount(reagentId, false) == 0);
             }
 
@@ -1928,7 +1964,7 @@ public:
 
             // Mana cost
             uint32 const expectedHealingTouchMana = 935;
-            TEST_POWER_COST(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, POWER_MANA, expectedHealingTouchMana);
+            TEST_POWER_COST(druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, POWER_MANA, expectedHealingTouchMana);
 
             // Spell coefficient
             float const healingTouchCastTIme = 3.5f;
@@ -1984,13 +2020,16 @@ public:
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
             EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
+            Wait(1500);
             druid->DisableRegeneration(true);
 
             int32 maceBH = 550;
             TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
 
             uint32 const expectedLifebloomMana = 220;
-            TEST_POWER_COST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, POWER_MANA, expectedLifebloomMana);
+            TEST_POWER_COST(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, POWER_MANA, expectedLifebloomMana);
+
+            TEST_CAST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, Seconds(7));
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
 
@@ -2066,7 +2105,9 @@ public:
             uint32 const expectedResShadow = victim->GetResistance(SPELL_SCHOOL_SHADOW) + resistanceBonus;
 
             // Mana cost
-            TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
+            TEST_POWER_COST(caster, spellId, POWER_MANA, manaCost);
+
+            TEST_CAST(caster, victim, spellId);
 
             // Aura duration
             TEST_AURA_MAX_DURATION(victim, spellId, Minutes(30));
@@ -2121,10 +2162,11 @@ public:
 
         void TestRebirth(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 reagentId, uint32 expectedHealth, uint32 expectedMana)
         {
+            
             victim->KillSelf(true);
             caster->GetSpellHistory()->ResetAllCooldowns();
             caster->AddItem(reagentId, 1);
-            TEST_POWER_COST(caster, victim, spellId, POWER_MANA, manaCost);
+            TEST_CAST(caster, victim, spellId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_COOLDOWN(caster, victim, spellId, Minutes(20));
             Wait(1);
             victim->RessurectUsingRequestData();
@@ -2133,6 +2175,8 @@ public:
             TEST_ASSERT(victim->GetHealth() == expectedHealth);
             ASSERT_INFO("Victim has %u instead of expected %u mana", victim->GetPower(POWER_MANA), expectedMana);
             TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
+
+            TEST_POWER_COST(caster, spellId, POWER_MANA, manaCost);
         }
 
         void Test() override
@@ -2187,7 +2231,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedRejuvenationMana = 415;
-			TEST_POWER_COST(druid, druid, ClassSpells::Druid::REJUVENATION_RNK_13, POWER_MANA, expectedRejuvenationMana);
+			TEST_POWER_COST(druid, ClassSpells::Druid::REJUVENATION_RNK_13, POWER_MANA, expectedRejuvenationMana);
 
 			// Spell coefficient
 			float const rejuvenationDuration = 12.0f;
@@ -2221,14 +2265,17 @@ public:
 
             EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
             druid->DisableRegeneration(true);
+            Wait(1500);
 
             int32 maceBH = 550;
             TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
 
             // Mana cost
             uint32 const expectedRegrowthMana = 675;
-            TEST_POWER_COST(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, POWER_MANA, expectedRegrowthMana);
-            Wait(2000);
+            TEST_POWER_COST(druid, ClassSpells::Druid::REGROWTH_RNK_10, POWER_MANA, expectedRegrowthMana);
+
+            TEST_CAST(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10);
+            Wait(1500);
 
             // Aura
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::REGROWTH_RNK_10, Seconds(21));
@@ -2331,7 +2378,7 @@ public:
             // Mana cost
             FORCE_CAST(warlock1, ally, CURSE_OF_THE_ELEMENTS, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             uint32 const expectedRemoveCurseMana = 189;
-            TEST_POWER_COST(druid, ally, ClassSpells::Druid::REMOVE_CURSE_RNK_1, POWER_MANA, expectedRemoveCurseMana);
+            TEST_POWER_COST(druid, ClassSpells::Druid::REMOVE_CURSE_RNK_1, POWER_MANA, expectedRemoveCurseMana);
         }
     };
 
@@ -2357,13 +2404,16 @@ public:
 
             EQUIP_NEW_ITEM(druid, 32500); // Crystal Spire of Karabor - 486 BH
             druid->DisableRegeneration(true);
+            Wait(1500);
 
             int32 maceBH = 486;
             TEST_ASSERT(druid->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) == maceBH);
 
             // Mana cost
             uint32 const expectedTranquilityMana = 1650;
-            TEST_POWER_COST(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, POWER_MANA, expectedTranquilityMana);
+            TEST_POWER_COST(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, POWER_MANA, expectedTranquilityMana);
+
+            TEST_CAST(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5);
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, Seconds(8));
 
             // Spell coeffs

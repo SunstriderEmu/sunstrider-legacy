@@ -152,7 +152,7 @@ public:
 
 			// Mana cost
 			uint32 const expectedInsectSwarmMana = 175;
-			TEST_POWER_COST(druid, creature, ClassSpells::Druid::INSECT_SWARM_RNK_6, POWER_MANA, expectedInsectSwarmMana);
+			TEST_POWER_COST(druid, ClassSpells::Druid::INSECT_SWARM_RNK_6, POWER_MANA, expectedInsectSwarmMana);
 
 			// Spell coefficient
 			float const wrathSpellCoeff = 12.0f / 15.0f;

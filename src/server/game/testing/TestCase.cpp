@@ -204,33 +204,22 @@ void TestCase::_TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpe
 	INTERNAL_TEST_ASSERT(auraCount == requireCount);
 }
 
-void TestCase::_TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost)
+void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
-    uint32 const initialPower = caster->GetPower(powerType);
-	caster->SetPower(powerType, expectedPowerCost);
-    INTERNAL_ASSERT_INFO("Caster has not the expected power %u but %u instead", expectedPowerCost, caster->GetPower(powerType));
-	INTERNAL_TEST_ASSERT(caster->GetPower(powerType) == expectedPowerCost);
-    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
-    caster->ForceSpellHitResult(SPELL_MISS_NONE);
-    _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
-    caster->ForceSpellHitResult(previousForceHitResult);
-    //special case for channeled spell, spell system currently does not allow casting them instant
-    if (spellInfo->IsChanneled())
-    {
-        bool previousDisableState = caster->IsRegenDisabled();
-        caster->DisableRegeneration(true);
-        Wait(spellInfo->CalcCastTime() + 1); //may not be exact if spell has modifiers :/
-        Wait(1); //wait another update for some spells?
-        caster->DisableRegeneration(previousDisableState);
-    }
 
-    uint32 remainingPower = caster->GetPower(powerType);
-    caster->SetPower(powerType, initialPower);
-	INTERNAL_ASSERT_INFO("Caster has %u power remaining after spell %u", remainingPower, castSpellID);
-	INTERNAL_TEST_ASSERT(remainingPower == 0);
+    INTERNAL_ASSERT_INFO("Spell %u has wrong power type %u (instead of %u)", spellInfo->PowerType, powerType);
+    INTERNAL_TEST_ASSERT(spellInfo->PowerType != powerType);
+
+    Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE);
+    uint32 actualCost = spellInfo->CalcPowerCost(caster, spellInfo->GetSchoolMask(), spell);
+    delete spell;
+    spell = nullptr;
+
+    INTERNAL_ASSERT_INFO("Spell has cost %u power instead of %u", actualCost, expectedPowerCost);
+	INTERNAL_TEST_ASSERT(actualCost == expectedPowerCost);
 }
 
 void TestCase::_TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond)
