@@ -1038,7 +1038,7 @@ void TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
     }
 }
 
-void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedTotalAmount, bool crit /* = false*/)
+void TestCase::_CastDotAndWait(TestPlayer* caster, Unit* target, uint32 spellID, bool crit)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -1048,7 +1048,7 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
-	EnableCriticals(caster, crit);
+    EnableCriticals(caster, crit);
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
@@ -1082,12 +1082,32 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     //make sure aura expired
     INTERNAL_ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
     INTERNAL_TEST_ASSERT(!target->HasAura(spellID, caster->GetGUID()));
+}
+
+void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedTotalAmount, bool crit /* = false*/)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    
+    _CastDotAndWait(caster, target, spellID, crit);
 
     uint32 tickCount;
     int32 dotDamageToTarget = AI->GetDotDamage(target, spellID, tickCount);
 	TC_LOG_TRACE("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedTotalAmount: %i", spellID, dotDamageToTarget, expectedTotalAmount);
     INTERNAL_ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedTotalAmount: %i", dotDamageToTarget, expectedTotalAmount);
     INTERNAL_TEST_ASSERT(dotDamageToTarget >= (expectedTotalAmount - tickCount) && dotDamageToTarget <= (expectedTotalAmount + tickCount)); //dots have greater error since they got their damage divided in several ticks
+}
+
+void TestCase::_TestDotThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedTotalThreat, bool crit /* = false*/)
+{
+    target->GetThreatManager().ClearAllThreat();  // Reset threat
+    Wait(1);
+
+    _CastDotAndWait(caster, target, spellID, crit);
+
+    float const threatDone = target->GetThreatManager().GetThreat(caster);
+
+    INTERNAL_ASSERT_INFO("Enforcing threat for spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
+    INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 0.1f, expectedTotalThreat + 0.1f));
 }
 
 void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 expectedTickCount, int32 expectedTickAmount, bool healing /* = false*/)

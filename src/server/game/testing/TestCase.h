@@ -169,6 +169,7 @@ public:
     @crit Set crit score of caster to maximum
     */
     #define TEST_DOT_DAMAGE(caster, target, spellID, expectedTotalAmount, crit) { _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedTotalAmount, crit); _ResetCaller(); }
+    #define TEST_DOT_THREAT(caster, target, spellID, expectedTotalThreat, crit) { _SetCaller(__FILE__, __LINE__); _TestDotThreat(caster, target, spellID, expectedTotalThreat, crit); _ResetCaller(); }
   
     #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount); _ResetCaller(); }
     #define TEST_CHANNEL_HEALING(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount, true); _ResetCaller(); }
@@ -260,6 +261,7 @@ protected:
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback); //if !damage, then use healing
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
+    void _TestDotThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedThreat, bool crit = false);
     void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount, bool healing = false);
     /* if sampleSize != 0, check if results count = sampleSize
     expectedResult: 0 - 100
@@ -347,6 +349,8 @@ private:
     //those two just to help avoiding calling SpawnRandomPlayer with the wrong arguments, SpawnPlayer should be called in those case
     TestPlayer* SpawnRandomPlayer(Races race, Classes cls) { return nullptr; }
     TestPlayer* SpawnRandomPlayer(Classes cls, Races races) { return nullptr; }
+
+    void _CastDotAndWait(TestPlayer* caster, Unit* target, uint32 spellID, bool crit = false);
 };
 
 #endif //TESTCASE_H
