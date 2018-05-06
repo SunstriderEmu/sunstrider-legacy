@@ -1171,6 +1171,13 @@ void TestCase::GroupPlayer(TestPlayer* leader, Player* player)
 
 void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo, Optional<TestCallback> callback)
 {
+    auto AI = caster->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    ResetSpellCast(caster);
+    AI->ResetSpellCounters();
+
     INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive caster");
     INTERNAL_TEST_ASSERT(caster->IsAlive());
     INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive victim");
@@ -1492,6 +1499,13 @@ void TestCase::_TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId)
 
 void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent)
 {
+    auto AI = caster->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    ResetSpellCast(caster);
+    AI->ResetSpellCounters();
+
     INTERNAL_ASSERT_INFO("_TestSpellCritChance only support alive caster");
     INTERNAL_TEST_ASSERT(caster->IsAlive());
     INTERNAL_ASSERT_INFO("_TestSpellCritChance only support alive victim");
