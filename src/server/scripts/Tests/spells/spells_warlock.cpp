@@ -65,9 +65,9 @@ public:
             uint32 const expectedCurseOfAgonyManaCost = 265;
             TEST_POWER_COST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, POWER_MANA, expectedCurseOfAgonyManaCost);
 
-            // Damage -- something's wrong with the spell coeff
+            // Damage
             float const spellCoefficient = ClassSpellsCoeff::Warlock::CURSE_OF_AGONY;
-            float const expectedCoAMaxDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL + spellPower * spellCoefficient;
+            uint32 const expectedCoAMaxDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL + spellPower * spellCoefficient;
             uint32 const expectedCoADamage = (4 * expectedCoAMaxDamage / 24.0f) + (4 * expectedCoAMaxDamage / 12.0f) + (4 * expectedCoAMaxDamage / 8.0f);
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, true);
         }
@@ -676,11 +676,11 @@ public:
             float const directCoeff = ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION;
             
             uint32 const seedOfCorruptionTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK + spellPower * dotCoeff / tickAmount;
-            uint32 const expectedTotalAmount = (tickAmount - 1) * seedOfCorruptionTick; //special case for this spell, last tick does not make damage but only proc the direct damage
+            uint32 const expectedTotalAmount = (tickAmount - 1) * seedOfCorruptionTick; // with spell power, it reaches detonation threshold (1044) at the 5th tick
             TEST_DOT_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedTotalAmount, true);
 
-            float const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN + spellPower * directCoeff;
-            float const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX + spellPower * directCoeff;
+            uint32 const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN + spellPower * directCoeff;
+            uint32 const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX + spellPower * directCoeff;
             //FIXME: two next lines not working ("GetSpellDamageDoneInfoTo found no data for this victim (Testing Creature)")
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin * 1.5f, expectedDetonationMax * 1.5f, true);
@@ -1205,7 +1205,7 @@ public:
 
             /*
                 Bugs here
-                - Damages the caster as much as it heals the pet, should not.
+                - Damages the caster as much as it heals the pet + 65 damage, it should only damage the caster for 65.
                 - "Miss" appears on the character portrait when the pet is full health, it should not.
                 - Not possible to suicide.
             */
@@ -1345,11 +1345,13 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
 
             float const expectedSpeed = warlock->GetSpeed(MOVE_RUN) * 2.0f;
-            uint32 const expectedSummonDreadsteedManaCost = 150;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1, POWER_MANA, expectedSummonDreadsteedManaCost);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             TEST_ASSERT(warlock->IsMounted());
             TEST_HAS_AURA(warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1);
             TEST_ASSERT(Between(warlock->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
+
+            uint32 const expectedSummonDreadsteedManaCost = 150;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_DREADSTEED_RNK_1, POWER_MANA, expectedSummonDreadsteedManaCost);
         }
     };
 
@@ -1412,11 +1414,13 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
 
             float const expectedSpeed = warlock->GetSpeed(MOVE_RUN) * 1.6f;
-            uint32 const expectedSummonFelsteedManaCost = 100;
-            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1, POWER_MANA, expectedSummonFelsteedManaCost);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             TEST_ASSERT(warlock->IsMounted());
             TEST_HAS_AURA(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
             TEST_ASSERT(Between(warlock->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
+
+            uint32 const expectedSummonFelsteedManaCost = 100;
+            TEST_POWER_COST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1, POWER_MANA, expectedSummonFelsteedManaCost);
         }
     };
 

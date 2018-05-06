@@ -2,6 +2,8 @@
 #include "../../ClassSpellsCoeff.h"
 #include "SpellHistory.h"
 
+#define SOUL_SHARD 6265
+
 class ImprovedLifeTapTest : public TestCaseScript
 {
 public:
@@ -14,15 +16,20 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
-            player->DisableRegeneration(true);
-			player->SetPower(POWER_MANA, 0);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            warlock->DisableRegeneration(true);
+			warlock->SetPower(POWER_MANA, 0);
 
-			float const expectedMana = 580 * 1.2f;
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_LIFE_TAP_RNK_2);
+            float const improvedLifeTapFactor = 1.2f;
 
-			LearnTalent(player, Talents::Warlock::IMPROVED_LIFE_TAP_RNK_2);
-			player->CastSpell(player, ClassSpells::Warlock::LIFE_TAP_RNK_7);
-			TEST_ASSERT(player->GetPower(POWER_MANA) == expectedMana);
+            uint32 const spellLevel = 68;
+            uint32 const perLevelPoint = 1;
+            uint32 const perLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * perLevelPoint;
+            uint32 const expectedManaGained = (ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7 + perLevelGain) * improvedLifeTapFactor;
+
+			warlock->CastSpell(warlock, ClassSpells::Warlock::LIFE_TAP_RNK_7);
+			TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedManaGained);
 		}
 	};
 
@@ -45,16 +52,16 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            Creature* dummy = SpawnCreature();
 
-			float const coaSpellCoeff = 120.00;
-			float const playerShadowSpellPower = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-			float const expectedCoAMaxDamage = 1356 * 1.1f + coaSpellCoeff * playerShadowSpellPower;
-			float const expectedCoADamage = (4 * expectedCoAMaxDamage / 24) + (4 * expectedCoAMaxDamage / 12) + (4 * expectedCoAMaxDamage / 8);
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_CURSE_OF_AGONY_RNK_2);
+            float const improvedCoAFactor = 1.1f;
 
-			Creature* dummyTarget = SpawnCreature();
-			LearnTalent(player, Talents::Warlock::IMPROVED_CURSE_OF_AGONY_RNK_2);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, false);
+			float const expectedCoAMaxDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * improvedCoAFactor;
+            uint32 const expectedCoADamage = (4 * expectedCoAMaxDamage / 24.0f) + (4 * expectedCoAMaxDamage / 12.0f) + (4 * expectedCoAMaxDamage / 8.0f);
+
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, false);
 		}
 	};
 
@@ -77,15 +84,21 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            Creature* dummy = SpawnCreature();
 
-			float const corruptionSpellCoeff = 93.6;
-			float const playerShadowSpellPower = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-			float const corruptionDamage = 900 + (corruptionSpellCoeff * 1.25f) * playerShadowSpellPower;
+            LearnTalent(warlock, Talents::Warlock::EMPOWERED_CORRUPTION_RNK_3);
+            float const empoweredCorruptionFactor = 0.36f;
 
-			Creature* dummyTarget = SpawnCreature();
-			LearnTalent(player, Talents::Warlock::EMPOWERED_CORRUPTION_RNK_3);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage, false);
+            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+			float const corruptionSpellCoeff = ClassSpellsCoeff::Warlock::CORRUPTION;
+			float const expectedCorruptionDamage = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL + (corruptionSpellCoeff + empoweredCorruptionFactor) * spellPower;
+
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionDamage, false);
 		}
 	};
 
@@ -104,29 +117,66 @@ public:
 	class ShadowMasteryTestImpt : public TestCase
 	{
 	public:
-		ShadowMasteryTestImpt() : TestCase(STATUS_PASSING) { }
+		ShadowMasteryTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Curse of Doom & Drain Soul are not affected by the talent
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            Creature* dummy = SpawnCreature();
 
-			float const corruptionDamage = 900;
-			float const coaDamage = 1356;
-			float const codDamage = 4200;
-			float const deathCoilDamage = 519;
-			float const drainLifeDamage = 108;
-			float const drainSoulDamage = 620;
-			float const socDamage = 1044;
+            dummy->DisableRegeneration(true);
 
-			Creature* dummyTarget = SpawnCreature();
-			LearnTalent(player, Talents::Warlock::SHADOW_MASTERY_RNK_5);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.1f, false);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.1f, false);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, codDamage * 1.1f, false);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, deathCoilDamage * 1.1f, false);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, drainLifeDamage * 1.1f, false);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulDamage * 1.1f, false);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.1f, false);
+            LearnTalent(warlock, Talents::Warlock::SHADOW_MASTERY_RNK_5);
+            float const shadowMasteryFactor = 1.1f;
+
+            // Corruption
+			float const expectedCorruptionDamage = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * shadowMasteryFactor;
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionDamage, false);
+
+            // Curse of Agony
+			float const expectedCoaDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * shadowMasteryFactor;
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoaDamage, false);
+
+            // Curse of Doom
+			float const expectedCodDamage = ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 * shadowMasteryFactor;
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCodDamage, false);
+
+            // Death Coil
+            uint32 const spellLevel = 68;
+            float const dmgPerLevel = 3.4f;
+            float const dmgPerLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * dmgPerLevel;
+			float const expectedDeathCoilDamage = (ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4 + dmgPerLevelGain) * shadowMasteryFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoilDamage, expectedDeathCoilDamage, false);
+
+            // Drain Life
+            float const drainLifeTickAmount = 5.0f;
+            uint32 const expectedDrainLifeTick = ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * shadowMasteryFactor;
+            uint32 const expectedDrainLifeTotal = drainLifeTickAmount * expectedDrainLifeTick;
+            uint32 const dummyExpectedHealth = dummy->GetHealth() - expectedDrainLifeTotal;
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
+            Wait(5500);
+            TEST_ASSERT(dummy->GetHealth() == dummyExpectedHealth);
+
+            // Drain Soul
+            float const drainSoulTickAmount = 5.0f;
+            uint32 const expectedDrainSoulTick = ClassSpellsDamage::Warlock::DRAIN_SOUL_RNK_5_TICK * shadowMasteryFactor;
+            TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulTickAmount, expectedDrainSoulTick);
+
+            // Seed of Corruption
+            float const seedOfCorruptionTickAmount = 6.0f;
+            uint32 const expectedSoCTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * shadowMasteryFactor;
+            uint32 const expectedSoCTotalAmount = seedOfCorruptionTickAmount * expectedSoCTick;
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCTotalAmount, true);
+
+            // Shadow Bolt
+            uint32 const expectedShadowBoltMin = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * shadowMasteryFactor;
+            uint32 const expectedShadowBoltMax = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * shadowMasteryFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax, false);
+
+            // Shadowburn
+            uint32 const expectedShadowBurnMin = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * shadowMasteryFactor;
+            uint32 const expectedShadowBurnMax = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * shadowMasteryFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowBurnMin, expectedShadowBurnMax, false);
 		}
 	};
 
@@ -145,21 +195,111 @@ public:
 	class ContagionTestImpt : public TestCase
 	{
 	public:
-		ContagionTestImpt() : TestCase(STATUS_PASSING) { }
+		ContagionTestImpt() : TestCase(STATUS_WIP) { } // Needs to fix Seed of Corruption spell
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
 
-			float const corruptionDamage = 900;
-			float const coaDamage = 1356;
-			float const socDamage = 1044;
+            LearnTalent(warlock, Talents::Warlock::CONTAGION_RNK_5);
+            float const contagionFactor = 1.05f;
 
-			Creature* dummyTarget = SpawnCreature();
-			LearnTalent(player, Talents::Warlock::SHADOW_MASTERY_RNK_5);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, corruptionDamage * 1.05f, false);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, coaDamage * 1.05f, false);
-            TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, socDamage * 1.05f, false);
+            // Corruption
+			uint32 const expectedCorruptionDamage = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * contagionFactor;
+            //TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionDamage, false);
+
+            // Curse of Agony
+			uint32 const expectedCoADamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * contagionFactor;
+            //TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, false);
+
+            // Seed of Corruption
+			uint32 const expectedSoCDamage = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * contagionFactor;
+            //TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCDamage, false);
+
+            Creature* dummy2 = SpawnCreature();
+            uint32 const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * contagionFactor;
+            uint32 const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * contagionFactor;
+            //FIXME: next line not working ("GetSpellDamageDoneInfoTo found no data for this victim (Testing Creature)")
+            //TEST_DIRECT_SPELL_DAMAGE(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false);
+            dummy2->DespawnOrUnsummon();
+
+            // Reduces the chance your Affliction spells wtill be dispelled by 30% (5/5)
+            const float dispelTalentFactor = 30.f;
+            float const expectedResist = dispelTalentFactor + 16.f; // priest has not spell hit reating
+
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            ASSERT_INFO("Corruption");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Death Coil");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::DEATH_COIL_RNK_4, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Drain Life");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
+            });
+            ASSERT_INFO("Drain Mana");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                target->CastSpell(caster, ClassSpells::Warlock::DRAIN_MANA_RNK_6);
+            });
+            ASSERT_INFO("Fear");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                target->CastSpell(caster, ClassSpells::Warlock::FEAR_RNK_3, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Howl of Terror");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                target->CastSpell(caster, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Seed of Corruption");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Siphon Life");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Unstable Affliction");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, TRIGGERED_FULL_MASK);
+            });
+
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+            druid->SetMaxHealth(std::numeric_limits<uint32>::max());
+            ASSERT_INFO("Curse of Agony");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Curse of Recklessness");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Curse of the elements");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Curse of Tongues");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, TRIGGERED_FULL_MASK);
+            });
+            ASSERT_INFO("Curse of Weakness");
+            TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+                caster->SetMaxHealth(caster->GetMaxHealth());
+                target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, TRIGGERED_FULL_MASK);
+            });
 		}
 	};
 
@@ -179,19 +319,41 @@ public:
 	public:
 		ImprovedHealthstoneTestImpt() : TestCase(STATUS_PASSING) { }
 
+        void TestImprovedHealthstone(TestPlayer* caster, float talentFactor, uint32 healthstoneSpellId, uint32 healthstoneItemId, uint32 healthRestored)
+        {
+            caster->SetHealth(1);
+            uint32 const expectedHealthRestored = 1 + healthRestored * talentFactor;
+            uint32 const expectedHealthRestoredCrit = 1 + healthRestored * talentFactor * 1.5f;
+            TEST_CAST(caster, caster, healthstoneSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            TEST_ASSERT(caster->GetItemCount(healthstoneItemId, false) == 1);
+            USE_ITEM(caster, caster, healthstoneItemId);
+            ASSERT_INFO("After Healthstone %u, Warlock should have %u HP but has %u.", healthstoneItemId, expectedHealthRestored, caster->GetHealth());
+            TEST_ASSERT(caster->GetHealth() == expectedHealthRestored || caster->GetHealth() == expectedHealthRestoredCrit);
+            caster->GetSpellHistory()->ResetAllCooldowns();
+        }
+
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
-            player->DisableRegeneration(true);
-			player->SetHealth(1);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            warlock->DisableRegeneration(true);
 
-			float const expectedHealth = 2080 * 1.2f + 1;
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_HEALTHSTONE_RNK_1);
+            float const improvedHealthStoneFactorRank1 = 1.1f;
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank1, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_1, 19004, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_1_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank1, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_2, 19006, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_2_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank1, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_3, 19008, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_3_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank1, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_4, 19010, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_4_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank1, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_5, 19012, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_5_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank1, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_6, 22104, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_6_HP_RESTORED);
 
-			LearnTalent(player, Talents::Warlock::IMPROVED_HEALTHSTONE_RNK_2);
-			player->CastSpell(player, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_6);
-			Wait(3500);
-			//UseItem(22105) // Master Healthstone
-			TEST_ASSERT(player->GetHealth() == expectedHealth);
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_HEALTHSTONE_RNK_2);
+            float const improvedHealthStoneFactorRank2 = 1.2f;
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank2, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_1, 19005, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_1_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank2, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_2, 19007, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_2_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank2, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_3, 19009, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_3_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank2, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_4, 19011, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_4_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank2, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_5, 19013, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_5_HP_RESTORED);
+            TestImprovedHealthstone(warlock, improvedHealthStoneFactorRank2, ClassSpells::Warlock::CREATE_HEALTHSTONE_RNK_6, 22105, ClassSpellsDamage::Warlock::CREATE_HEALTHSTONE_RNK_6_HP_RESTORED);
 		}
 	};
 
@@ -213,16 +375,17 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
 
-			uint32 const startSta = player->GetStat(STAT_STAMINA);
-			uint32 const expectedSta = startSta * 1.15f;
-			uint32 const startSpi = player->GetStat(STAT_SPIRIT);
-			uint32 const expectedSpi = startSpi * 0.95f;
+            float const demonicEmbraceStaminaFactor = 1.15f;
+            float const demonicEmbraceSpiritFactor = 0.95f;
 
-			LearnTalent(player, Talents::Warlock::DEMONIC_EMBRACE_RNK_5);
-			TEST_ASSERT(Between<float>(player->GetStat(STAT_STAMINA), expectedSta - 1, expectedSta + 1));
-			TEST_ASSERT(Between<float>(player->GetStat(STAT_SPIRIT), expectedSpi - 1, expectedSpi + 1));
+            float const expectedWarlockStamina = warlock->GetStat(STAT_STAMINA) * demonicEmbraceStaminaFactor;
+            float const expectedWarlockSpirit = warlock->GetStat(STAT_SPIRIT) * demonicEmbraceSpiritFactor;
+
+			LearnTalent(warlock, Talents::Warlock::DEMONIC_EMBRACE_RNK_5);
+			TEST_ASSERT(Between<float>(warlock->GetStat(STAT_STAMINA), expectedWarlockStamina - 1, expectedWarlockStamina + 1));
+			TEST_ASSERT(Between<float>(warlock->GetStat(STAT_SPIRIT), expectedWarlockSpirit - 1, expectedWarlockSpirit + 1));
 		}
 	};
 
@@ -240,32 +403,42 @@ public:
 	class ImprovedHealthFunnelTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealthFunnelTestImpt() : TestCase(STATUS_PASSING) { }
+		ImprovedHealthFunnelTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Talent is working but spell is not, so it will fail as long as the spell test is failing
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
-            player->DisableRegeneration(true);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            warlock->DisableRegeneration(true);
 
-			uint32 const startHealth = player->GetHealth();
-			float const expectedHealth = startHealth - 99 - 65 * 10;
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_HEALTH_FUNNEL_RNK_2);
+            float const talentHealthTransferredFactor = 1.2f;
+            float const talentInitialCostFactor = 0.8f;
 
-			LearnTalent(player, Talents::Warlock::IMPROVED_HEALTH_FUNNEL_RNK_2);
-            player->AddItem(6265, 1);
-			Wait(1000);
-			uint32 res = player->CastSpell(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
-			Wait(10500);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Pet* pet = player->GetPet();
-			TEST_ASSERT(pet != nullptr);
+            // Summon Voidwalker
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            Wait(1);
+            Guardian* voidwalker = warlock->GetGuardianPet();
+            TEST_ASSERT(voidwalker != nullptr);
+            voidwalker->DisableRegeneration(true);
+            voidwalker->SetHealth(1);
 
-			pet->SetHealth(1);
-			float const expectedPetHealth = 1 + 188 * 10;
+            // Calculate new health restored and initial cost
+            float const tickAmount = 10.0f;
+            uint32 const totalHealthFunnelHeal = tickAmount * ClassSpellsDamage::Warlock::HEALTH_FUNNEL_RNK_8_HEAL_PER_TICK * talentHealthTransferredFactor;
+            uint32 const expectedTickAmount = totalHealthFunnelHeal / tickAmount;
+            uint32 const expectedInitialCost = ClassSpellsDamage::Warlock::HEALTH_FUNNEL_RNK_8_HP_COST * talentInitialCostFactor;
+            uint32 const totalHealthCost = tickAmount * ClassSpellsDamage::Warlock::HEALTH_FUNNEL_RNK_8_HP_PER_TICK + expectedInitialCost;
 
-			uint32 result = player->CastSpell(player, ClassSpells::Warlock::HEALTH_FUNNEL_RNK_8);
-			TEST_ASSERT(result == SPELL_CAST_OK);
-			TEST_ASSERT(player->GetHealth() == expectedHealth);
-			TEST_ASSERT(pet->GetHealth() == expectedPetHealth);
+            uint32 const expectedWarlockHealth = warlock->GetHealth() - totalHealthCost;
+            uint32 const expectedVoidwalkerHealth = voidwalker->GetHealth() + expectedTickAmount * tickAmount;
+
+            Wait(5000);
+            TEST_CAST(warlock, voidwalker, ClassSpells::Warlock::HEALTH_FUNNEL_RNK_8);
+            Wait(Seconds(11));
+            ASSERT_INFO("Warlock has %u HP, %u was expected.", warlock->GetHealth(), expectedWarlockHealth);
+            TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
+            ASSERT_INFO("Voidwalker has %u HP, %u was expected.", voidwalker->GetHealth(), expectedVoidwalkerHealth);
+            TEST_ASSERT(voidwalker->GetHealth() == expectedVoidwalkerHealth);
 		}
 	};
 
@@ -283,54 +456,57 @@ public:
 	class FelIntellectTestImpt : public TestCase
 	{
 	public:
-		FelIntellectTestImpt() : TestCase(STATUS_PASSING) { }
+		FelIntellectTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
-		float GetPetInt(TestPlayer* player, uint32 summon)
+		float GetPetInt(TestPlayer* caster, uint32 summonPetSpellId)
 		{
-			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
-			Wait(1000);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Pet* pet = player->GetPet();
-			TEST_ASSERT(pet != nullptr);
+            TEST_CAST(caster, caster, summonPetSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            Guardian* pet = caster->GetGuardianPet();
+            TEST_ASSERT(pet != nullptr);
 			return pet->GetStat(STAT_INTELLECT);
 		}
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
 
-			uint32 const startMana = player->GetPower(POWER_MANA);
-			float const expectedMana = startMana * 1.03f;
+            LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+            float const intellectTalentFactor = 1.15f;
+            float const manaTalentFactor = 1.03f;
 
-            player->AddItem(6265, 8); // Soul shard
-			Wait(1000);
-			TEST_ASSERT(player->HasItemCount(6265, 8, false));
+            uint32 const expectedMaxMana = warlock->GetMaxPower(POWER_MANA) * manaTalentFactor;
 
-			float const impInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
-			float const voidwalkerInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
-			float const succubusInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
-			float const felhunterInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
-			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-			float const felguardInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+			float const expectedImpInt          = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1) * intellectTalentFactor;
+			float const expectedVoidwalkerInt   = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1) * intellectTalentFactor;
+			float const expectedSuccubusInt     = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1) * intellectTalentFactor;
+			float const expectedFelhunterInt    = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1) * intellectTalentFactor;
+			float const expectedFelguardInt     = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1) * intellectTalentFactor;
 
-			LearnTalent(player, Talents::Warlock::FEL_INTELLECT_RNK_3);
-			Wait(1000);
-			TEST_ASSERT(Between<float>(player->GetPower(POWER_MANA), startMana - 1, expectedMana + 1));
+            LearnTalent(warlock, Talents::Warlock::FEL_INTELLECT_RNK_3);
+            Wait(1000);
 
-			float const impNextInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
-			TEST_ASSERT(Between<float>(impNextInt, impInt * 1.15f - 1, impInt * 1.15f - 1));
+            ASSERT_INFO("Warlock has %u max mana, %u expected.", warlock->GetMaxPower(POWER_MANA), expectedMaxMana);
+            TEST_ASSERT(Between<uint32>(warlock->GetMaxPower(POWER_MANA), expectedMaxMana - 1, expectedMaxMana + 1));
 
-			float const voidwalkerNextInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
-			TEST_ASSERT(Between<float>(voidwalkerNextInt, voidwalkerInt * 1.15f - 1, voidwalkerInt * 1.15f - 1));
+			float const impNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+            ASSERT_INFO("Imp has %f Intellect, %f expected.", impNextInt, expectedImpInt);
+			TEST_ASSERT(Between<float>(impNextInt, expectedImpInt - 1.0f, expectedImpInt + 1.0f));
 
-			float const succubusNextInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
-			TEST_ASSERT(Between<float>(succubusNextInt, succubusInt * 1.15f - 1, succubusInt * 1.15f - 1));
+			float const voidwalkerNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+            ASSERT_INFO("Voidwalker has %f Intellect, %f expected.", voidwalkerNextInt, expectedVoidwalkerInt);
+			TEST_ASSERT(Between<float>(voidwalkerNextInt, expectedVoidwalkerInt - 1.0f, expectedVoidwalkerInt + 1.0f));
 
-			float const felhunterNextInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
-			TEST_ASSERT(Between<float>(felhunterNextInt, felhunterInt * 1.15f - 1, felhunterInt * 1.15f - 1));
+			float const succubusNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+            ASSERT_INFO("Succubus has %f Intellect, %f expected.", succubusNextInt, expectedSuccubusInt);
+			TEST_ASSERT(Between<float>(succubusNextInt, expectedSuccubusInt - 1.0f, expectedSuccubusInt + 1.0f));
 
-			float const felguardNextInt = GetPetInt(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
-			TEST_ASSERT(Between<float>(felguardNextInt, felguardInt * 1.15f - 1, felguardInt * 1.15f - 1));
+			float const felhunterNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
+            ASSERT_INFO("Felhunter has %f Intellect, %f expected.", felhunterNextInt, expectedFelhunterInt);
+			TEST_ASSERT(Between<float>(felhunterNextInt, expectedFelhunterInt - 1.0f, expectedFelhunterInt + 1.0f));
+
+			float const felguardNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+            ASSERT_INFO("Felguard has %f Intellect, %f expected.", felguardNextInt, expectedFelguardInt);
+			TEST_ASSERT(Between<float>(felguardNextInt, expectedFelguardInt - 1.0f, expectedFelguardInt + 1.0f));
 		}
 	};
 
@@ -350,51 +526,47 @@ public:
 	public:
 		FelDominationTestImpt() : TestCase(STATUS_PASSING) { }
 
-		uint32 GetRemainingMana(TestPlayer* player, uint32 summon, uint32 startMana, uint32 manaCost)
+		void TestSummonManaCost(TestPlayer* warlock, uint32 summonSpellId, uint32 expectedManaCost)
 		{
-			player->GetSpellHistory()->ResetAllCooldowns();
-			uint32 feldom = player->CastSpell(player, ClassSpells::Warlock::FEL_DOMINATION_RNK_1);
-			Wait(Seconds(1));
-			TEST_ASSERT(feldom == SPELL_CAST_OK);
+            warlock->SetPower(POWER_MANA, expectedManaCost);
+			warlock->GetSpellHistory()->ResetAllCooldowns();
 
-			uint32 res = player->CastSpell(player, summon);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::FEL_DOMINATION_RNK_1);
+            TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::FEL_DOMINATION_RNK_1, Minutes(15));
+            TEST_AURA_MAX_DURATION(warlock, ClassSpells::Warlock::FEL_DOMINATION_RNK_1, Seconds(15));
+
+            TEST_CAST(warlock, warlock, summonSpellId);
 			Wait(Seconds(5));
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Pet* pet = player->GetPet();
+			Pet* pet = warlock->GetPet();
 			TEST_ASSERT(pet != nullptr);
 
-			TEST_ASSERT(player->GetPower(POWER_MANA) == startMana - floor(manaCost * 0.5));
-
-			return player->GetPower(POWER_MANA);
+			TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
 		}
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            warlock->DisableRegeneration(true);
 
-			uint32 const summonImp = 1673;
-			uint32 const summonVoid = 2092;
-			uint32 const summonSuc = 2092;
-			uint32 const summonFh = 2092;
-			uint32 const summonFg = 2092;
+            LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+            LearnTalent(warlock, Talents::Warlock::FEL_DOMINATION_RNK_1);
+            float const talentFactor = 0.5f;
 
-            player->AddItem(6265, 4); // Soul shard
-			Wait(1000);
-			TEST_ASSERT(player->HasItemCount(6265, 4, false));
+            uint32 const baseMana = warlock->GetMaxPower(POWER_MANA) - warlock->GetManaBonusFromIntellect();
+            uint32 const expectedImpManaCost        = baseMana * 0.64f * talentFactor;
+            uint32 const expectedFelguardManaCost   = baseMana * 0.80f * talentFactor;
+            uint32 const expectedFelhunterManaCost  = baseMana * 0.80f * talentFactor;
+            uint32 const expectedSuccubusManaCost   = baseMana * 0.80f * talentFactor;
+            uint32 const expectedVoidwalkerManaCost = baseMana * 0.80f * talentFactor;
 
-			uint32 const startMana = 10000;
-            player->DisableRegeneration(true);
-			player->SetMaxPower(POWER_MANA, startMana);
-			player->SetPower(POWER_MANA, startMana);
-			TEST_ASSERT(player->GetPower(POWER_MANA) == 10000);
+            warlock->AddItem(SOUL_SHARD, 4);
+			TEST_ASSERT(warlock->HasItemCount(6265, 4, false));
 
-			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-			LearnTalent(player, Talents::Warlock::FEL_DOMINATION_RNK_1);
-			uint32 currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1, startMana, summonImp);
-			currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, currentMana, summonVoid);
-			currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, currentMana, summonSuc);
-			currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, currentMana, summonFh);
-			currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, currentMana, summonFg);
+			TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, expectedImpManaCost);
+			TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, expectedFelguardManaCost);
+			TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, expectedFelhunterManaCost);
+			TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, expectedSuccubusManaCost);
+			TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, expectedVoidwalkerManaCost);
 		}
 	};
 
@@ -414,53 +586,50 @@ public:
 	public:
 		FelStaminaTestImpt() : TestCase(STATUS_PASSING) { }
 
-		float GetPetSta(TestPlayer* player, uint32 summon)
+		float GetPetSta(TestPlayer* warlock, uint32 summonSpellId)
 		{
-			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
-			Wait(1000);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Pet* pet = player->GetPet();
+            TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+			Pet* pet = warlock->GetPet();
 			TEST_ASSERT(pet != nullptr);
 			return pet->GetStat(STAT_STAMINA);
 		}
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
 
-			uint32 const startHealth = player->GetHealth();
-			float const expectedHealth = startHealth * 1.03f;
+            LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+            float const talentStaminaFactor = 1.15f;
+            float const talentHealthFactor = 1.03f;
 
+			uint32 const expectedWarlockHealth = warlock->GetHealth() * talentHealthFactor;
 
-            player->AddItem(6265, 8); // Soul shard
-			Wait(1000);
-			TEST_ASSERT(player->HasItemCount(6265, 8, false));
+            warlock->AddItem(SOUL_SHARD, 8);
+			TEST_ASSERT(warlock->HasItemCount(6265, 8, false));
 
-			float const impInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
-			float const voidwalkerInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
-			float const succubusInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
-			float const felhunterInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
-			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-			float const felguardInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+			float const expectedImpStamina          = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+			float const expectedVoidwalkerStamina   = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+			float const expectedSuccubusStamina     = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+			float const expectedFelhunterStamina    = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
+			float const expectedFelguardStamina     = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
 
-			LearnTalent(player, Talents::Warlock::FEL_STAMINA_RNK_3);
-			Wait(1000);
-			TEST_ASSERT(Between<float>(player->GetHealth(), startHealth - 1, expectedHealth + 1));
+			LearnTalent(warlock, Talents::Warlock::FEL_STAMINA_RNK_3);
+			TEST_ASSERT(Between<uint32>(warlock->GetHealth(), expectedWarlockHealth - 1, expectedWarlockHealth + 1));
 
-			float const impNextInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
-			TEST_ASSERT(Between<float>(impNextInt, impInt * 1.15f - 1, impInt * 1.15f - 1));
+			float const impNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+			TEST_ASSERT(Between<float>(impNextInt, expectedImpStamina - 1.0f, expectedImpStamina + 1.0f));
 
-			float const voidwalkerNextInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
-			TEST_ASSERT(Between<float>(voidwalkerNextInt, voidwalkerInt * 1.15f - 1, voidwalkerInt * 1.15f - 1));
+			float const voidwalkerNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+			TEST_ASSERT(Between<float>(voidwalkerNextInt, expectedVoidwalkerStamina - 1.0f, expectedVoidwalkerStamina + 1.0f));
 
-			float const succubusNextInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
-			TEST_ASSERT(Between<float>(succubusNextInt, succubusInt * 1.15f - 1, succubusInt * 1.15f - 1));
+			float const succubusNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+			TEST_ASSERT(Between<float>(succubusNextInt, expectedSuccubusStamina - 1.0f, expectedSuccubusStamina + 1.0f));
 
-			float const felhunterNextInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
-			TEST_ASSERT(Between<float>(felhunterNextInt, felhunterInt * 1.15f - 1, felhunterInt * 1.15f - 1));
+			float const felhunterNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
+			TEST_ASSERT(Between<float>(felhunterNextInt, expectedFelhunterStamina - 1.0f, expectedFelhunterStamina + 1.0f));
 
-			float const felguardNextInt = GetPetSta(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
-			TEST_ASSERT(Between<float>(felguardNextInt, felguardInt * 1.15f - 1, felguardInt * 1.15f - 1));
+			float const felguardNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+			TEST_ASSERT(Between<float>(felguardNextInt, expectedFelguardStamina - 1.0f, expectedFelguardStamina + 1.0f));
 		}
 	};
 
@@ -478,47 +647,73 @@ public:
 	class DemonicAegisTestImpt : public TestCase
 	{
 	public:
-		DemonicAegisTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE, true) { }
+		DemonicAegisTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { } // Talent is OK, Demon Armor spell is not
 
-		void Test() override
-		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+        void TestDemonArmorBonuses(TestPlayer* caster, Creature* victim, float talentFactor, uint32 demonArmorSpellId, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
+        {
+            TEST_ASSERT(caster->IsInCombatWith(victim));
 
-			// Demon Armor
-			const float regen = floor(player->OCTRegenHPPerSpirit());
-			const uint32 startHealth = 1;
-			player->SetHealth(startHealth);
+            caster->SetHealth(1);
+            uint32 const expectedArmor = caster->GetArmor() + armorBonus * talentFactor;
+            uint32 const expectedShadowRes = caster->GetResistance(SPELL_SCHOOL_SHADOW) + shadowResBonus * talentFactor;
 
-			const uint32 startArmor = player->GetArmor();
-			const uint32 startDASR = player->GetResistance(SPELL_SCHOOL_SHADOW);
+            TEST_CAST(caster, caster, demonArmorSpellId);
+            TEST_ASSERT(caster->GetArmor() == expectedArmor);
+            TEST_ASSERT(caster->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowRes);
 
-			const float expectedDAArmor = startArmor + floor(660 * 1.3f);
-			const float expectedDASR = startDASR + floor(18 * 1.3f);
+            uint32 const regenTick = floor(healthRestore * talentFactor / 2.5f);
+            uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
+            Wait(2000);
+            uint32 const afterWaitTime = GameTime::GetGameTimeMS();
+            uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
+            uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 2.0f);
+            uint32 const expectedHealth = 1 + regenTick * expectedTickAmount;
+            ASSERT_INFO("%u, Health: %u, expected: %u", demonArmorSpellId, caster->GetHealth(), expectedHealth);
+            TEST_ASSERT(caster->GetHealth() == expectedHealth);
+        }
 
-			LearnTalent(player, Talents::Warlock::DEMONIC_AEGIS_RNK_3);
-			uint32 result = player->CastSpell(player, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
-			TEST_ASSERT(player->GetHealth() == 1);
-			Wait(1000);
-			TEST_ASSERT(result == SPELL_CAST_OK);
-			TEST_ASSERT(player->GetArmor() == expectedDAArmor);
-			TEST_ASSERT(player->GetResistance(SPELL_SCHOOL_SHADOW) == expectedDASR);
-			Wait(10000);
-			TEST_ASSERT(player->GetHealth() == startHealth + 10 * regen + 2 * floor(18 * 1.3f));
-			Wait(1000);
-			TEST_ASSERT(player->GetHealth() == startHealth + 12 * regen + 2 * floor(18 * 1.3f));
+        void TestFelArmorBonuses(TestPlayer* caster, TestPlayer* healer, float talentFactor, uint32 felArmorSpellId, uint32 spellDamageBonus)
+        {
+            // Spell power
+            uint32 const expectedSpellDamage = caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) + spellDamageBonus * talentFactor;
+            TEST_CAST(caster, caster, felArmorSpellId);
+            TEST_ASSERT(uint32(caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW)) == expectedSpellDamage);
 
+            // Healing
+            float const felArmorFactor = 1.26f; // boosted by the talent
+            uint32 const expectedHTMin = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN * felArmorFactor;
+            uint32 const expectedHTMax = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX * felArmorFactor;
+            TEST_DIRECT_HEAL(healer, caster, ClassSpells::Druid::HEALING_TOUCH_RNK_13, expectedHTMin, expectedHTMax, false);
 
-			// Fel armor
-			float const startSP = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-			float const expectedSP = startSP + 100 * 1.3f;
+            caster->RemoveAurasDueToSpell(felArmorSpellId);
+        }
 
-			result = player->CastSpell(player, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
-			Wait(1000);
-			TEST_ASSERT(result == SPELL_CAST_OK);
-            TEST_HAS_NOT_AURA(player, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
-			TEST_ASSERT(Between<float>(player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW), expectedSP - 1, expectedSP + 1));
-			// TODO: test healing done on warlock
-		}
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+            Creature* dummy = SpawnCreature();
+
+            warlock->AttackerStateUpdate(dummy, BASE_ATTACK);
+
+            LearnTalent(warlock, Talents::Warlock::DEMONIC_AEGIS_RNK_3);
+            float const talentFactor = 1.3f;
+
+            TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_1, 210, 3, 7);
+            TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_2, 300, 6, 9);
+            TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_3, 390, 9, 11);
+            TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_4, 480, 12, 13);
+            TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_5, 570, 15, 15);
+            TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_6, 660, 18, 18);
+
+            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            TestFelArmorBonuses(warlock, druid, talentFactor, ClassSpells::Warlock::FEL_ARMOR_RNK_1, 50);
+            TestFelArmorBonuses(warlock, druid, talentFactor, ClassSpells::Warlock::FEL_ARMOR_RNK_2, 100);
+        }
 	};
 
 	std::shared_ptr<TestCase> GetTest() const override
@@ -537,53 +732,57 @@ public:
 	public:
 		MasterSummonerTestImpt() : TestCase(STATUS_PASSING) { }
 
-		uint32 GetRemainingMana(TestPlayer* player, uint32 summon, uint32 startMana, uint32 manaCost)
-		{
-			player->GetSpellHistory()->ResetAllCooldowns();
-			uint32 feldom = player->CastSpell(player, ClassSpells::Warlock::FEL_DOMINATION_RNK_1);
-			Wait(Seconds(1));
-			TEST_ASSERT(feldom == SPELL_CAST_OK);
+        void TestSummonManaCost(TestPlayer* warlock, uint32 summonSpellId, uint32 expectedManaCost, bool useFelDomination = false)
+        {
+            warlock->SetPower(POWER_MANA, expectedManaCost);
+            warlock->GetSpellHistory()->ResetAllCooldowns();
 
-			uint32 res = player->CastSpell(player, summon);
-			Wait(Seconds(1));
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Pet* pet = player->GetPet();
-			TEST_ASSERT(pet != nullptr);
+            if (useFelDomination)
+                TEST_CAST(warlock, warlock, ClassSpells::Warlock::FEL_DOMINATION_RNK_1);
 
-			TEST_ASSERT(player->GetPower(POWER_MANA) == startMana - floor(manaCost * (0.5 - 0.4)));
+            TEST_CAST(warlock, warlock, summonSpellId);
+            useFelDomination ? Wait(Seconds(1)) : Wait(Seconds(7));
+            Pet* pet = warlock->GetPet();
+            TEST_ASSERT(pet != nullptr);
 
-			return player->GetPower(POWER_MANA);
-		}
+            ASSERT_INFO("After %u, Warlock should have 0 mana but has %u", summonSpellId, warlock->GetPower(POWER_MANA));
+            TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
+        }
 
-		void Test() override
-		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            warlock->DisableRegeneration(true);
 
-			uint32 const summonImp = 1673;
-			uint32 const summonVoid = 2092;
-			uint32 const summonSuc = 2092;
-			uint32 const summonFh = 2092;
-			uint32 const summonFg = 2092;
+            LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+            LearnTalent(warlock, Talents::Warlock::FEL_DOMINATION_RNK_1);
+            LearnTalent(warlock, Talents::Warlock::MASTER_SUMMONER_RNK_2);
+            float const masterSummonerManaCostFactor = 1 - 0.4f;
+            float const felDominationManaCostFactor = 0.5f;
 
-            player->AddItem(6265, 4); // Soul shard
-			Wait(1000);
-			TEST_ASSERT(player->HasItemCount(6265, 4, false));
+            uint32 const baseMana = warlock->GetMaxPower(POWER_MANA) - warlock->GetManaBonusFromIntellect();
+            uint32 const expectedImpManaCost = baseMana * 0.64f;
+            uint32 const expectedFelguardManaCost = baseMana * 0.80f;
+            uint32 const expectedFelhunterManaCost = baseMana * 0.80f;
+            uint32 const expectedSuccubusManaCost = baseMana * 0.80f;
+            uint32 const expectedVoidwalkerManaCost = baseMana * 0.80f;
 
-			uint32 const startMana = 10000;
-            player->DisableRegeneration(true);
-			player->SetMaxPower(POWER_MANA, startMana);
-			player->SetPower(POWER_MANA, startMana);
-			TEST_ASSERT(player->GetPower(POWER_MANA) == 10000);
+            warlock->AddItem(SOUL_SHARD, 8);
+            TEST_ASSERT(warlock->HasItemCount(6265, 8, false));
 
-			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-			LearnTalent(player, Talents::Warlock::FEL_DOMINATION_RNK_1);
-			LearnTalent(player, Talents::Warlock::MASTER_SUMMONER_RNK_2);
-			uint32 currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1, startMana, summonImp);
-			currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, currentMana, summonVoid);
-			currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, currentMana, summonSuc);
-			currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, currentMana, summonFh);
-			currentMana = GetRemainingMana(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, currentMana, summonFg);
-		}
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, expectedImpManaCost * masterSummonerManaCostFactor);
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, expectedFelguardManaCost * masterSummonerManaCostFactor);
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, expectedFelhunterManaCost * masterSummonerManaCostFactor);
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, expectedSuccubusManaCost * masterSummonerManaCostFactor);
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, expectedVoidwalkerManaCost * masterSummonerManaCostFactor);
+
+            float talentsFactor = 1 - (felDominationManaCostFactor + 1 - masterSummonerManaCostFactor);
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, expectedImpManaCost * talentsFactor, true);
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, expectedFelguardManaCost * talentsFactor, true);
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, expectedFelhunterManaCost * talentsFactor, true);
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, expectedSuccubusManaCost * talentsFactor, true);
+            TestSummonManaCost(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, expectedVoidwalkerManaCost * talentsFactor, true);
+        }
 	};
 
 	std::shared_ptr<TestCase> GetTest() const override
@@ -600,181 +799,174 @@ public:
 	class DemonicSacrificeTestImpt : public TestCase
 	{
 	public:
-		DemonicSacrificeTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE, true) { }
+		DemonicSacrificeTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { } // Will break as long as Seed of Corruption is broken
 
-		void SacrificePet(TestPlayer* player, uint32 summon, uint32 aura, uint32 previousAura = 0)
+		void SacrificePet(TestPlayer* warlock, uint32 summonSpellId, uint32 aura, uint32 previousAura = 0)
 		{
-			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
-			Wait(Seconds(1));
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Pet* pet = player->GetPet();
+			TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            Wait(1);
+			Pet* pet = warlock->GetPet();
 			TEST_ASSERT(pet != nullptr);
 			if(previousAura != 0)
-                TEST_HAS_NOT_AURA(player, previousAura);
+                TEST_HAS_NOT_AURA(warlock, previousAura);
 
-			res = player->CastSpell(player, ClassSpells::Warlock::DEMONIC_SACRIFICE_RNK_1, TRIGGERED_FULL_MASK);
-			Wait(Seconds(1));
-			TEST_ASSERT(res == SPELL_CAST_OK);
-
-            TEST_HAS_AURA(player, aura);
+			TEST_CAST(warlock, warlock, ClassSpells::Warlock::DEMONIC_SACRIFICE_RNK_1);
+            TEST_HAS_AURA(warlock, aura);
 		}
 
-		void TestImpSacrifice(TestPlayer* player, Creature* dummyTarget)
+		void TestImpSacrifice(TestPlayer* warlock, Creature* dummy, float sacrificeFactor)
 		{
-			float const sp = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
-
 			// Immolate
-			uint32 expectedDirectImmolate = floor(ClassSpellsDamage::Warlock::IMMOLATE_RNK_9 * 1.15f + sp * ClassSpellsCoeff::Warlock::IMMOLATE);
-			uint32 expectedDotImmolate = floor(ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_DOT * 1.15f + sp * ClassSpellsCoeff::Warlock::IMMOLATE_DOT);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDirectImmolate, expectedDirectImmolate, false);
-			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDotImmolate, false);
+            uint32 const immolateSpellLevel = 69; //db values
+            float const immolateDmgPerLevel = 4.3f; //db values
+            float const immolateDmgPerLevelGain = std::max(warlock->GetLevel() - immolateSpellLevel, uint32(0)) * immolateDmgPerLevel;
+			uint32 expectedDirectImmolate = (ClassSpellsDamage::Warlock::IMMOLATE_RNK_9 + immolateDmgPerLevelGain) * sacrificeFactor;
+			uint32 expectedDotImmolate = ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_DOT * sacrificeFactor;
+			TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDirectImmolate, expectedDirectImmolate, false);
+			TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedDotImmolate, false);
 
 			// Rain of Fire
-			uint32 expectedRoFTick = floor((ClassSpellsDamage::Warlock::RAIN_OF_FIRE_RNK_5_TOTAL * 1.15f + sp * ClassSpellsCoeff::Warlock::RAIN_OF_FIRE) * 0.25f);
-			TEST_CHANNEL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5_PROC, 4, expectedRoFTick);
+			uint32 expectedRoFTick = ClassSpellsDamage::Warlock::RAIN_OF_FIRE_RNK_5_TOTAL * sacrificeFactor / 4.0f;
+			TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5_PROC, 4, expectedRoFTick);
 
 			// Incinerate
-			uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * 1.15f + sp * ClassSpellsCoeff::Warlock::INCINERATE;
-			uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * 1.15f + sp * ClassSpellsCoeff::Warlock::INCINERATE;
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax, false);
+			uint32 expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * sacrificeFactor;
+			uint32 expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * sacrificeFactor;
+			TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax, false);
 
 			// Searing Pain
-			uint32 expectedSearingPainMin = ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MIN * 1.15f + sp * ClassSpellsCoeff::Warlock::SEARING_PAIN;
-			uint32 expectedSearingPainMax = ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MAX * 1.15f + sp * ClassSpellsCoeff::Warlock::SEARING_PAIN;
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSearingPainMin, expectedSearingPainMax, false);
+			uint32 expectedSearingPainMin = ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MIN * sacrificeFactor;
+			uint32 expectedSearingPainMax = ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MAX * sacrificeFactor;
+			TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSearingPainMin, expectedSearingPainMax, false);
 
 			// Soul Fire
-			uint32 expectedSoulFireMin = ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MIN * 1.15f + sp * ClassSpellsCoeff::Warlock::SOUL_FIRE;
-			uint32 expectedSoulFireMax = ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MAX * 1.15f + sp * ClassSpellsCoeff::Warlock::SOUL_FIRE;
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SOUL_FIRE_RNK_4, expectedSoulFireMin, expectedSoulFireMax, false);
+			uint32 expectedSoulFireMin = ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MIN * sacrificeFactor;
+			uint32 expectedSoulFireMax = ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MAX * sacrificeFactor;
+			TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, expectedSoulFireMin, expectedSoulFireMax, false);
 
 			// Hellfire
-			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
-            player->DisableRegeneration(true);
-            enemy->DisableRegeneration(true);
-			player->SetMaxHealth(10000);
-			player->SetHealth(10000);
-			enemy->SetMaxHealth(10000);
-			enemy->SetHealth(10000);
-			uint32 startPlayerHealth = player->GetHealth();
-			uint32 startEnemyHealth = enemy->GetHealth();
-			uint32 expectedPlayerHealth = startPlayerHealth - 15 * floor(ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK * 1.15f + sp * ClassSpellsCoeff::Warlock::HELLFIRE_SELF);
-			uint32 expectedEnemyHealth = startEnemyHealth - 15 * floor(ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK * 1.15f + sp * ClassSpellsCoeff::Warlock::HELLFIRE_ENEMIES);
-			player->CastSpell(player, ClassSpells::Warlock::HELLFIRE_RNK_4);
-			Wait(15500);
-			TEST_ASSERT(Between<float>(player->GetHealth(), expectedPlayerHealth - 1, expectedPlayerHealth + 1));
-			TEST_ASSERT(Between<float>(enemy->GetHealth(), expectedEnemyHealth - 1, expectedEnemyHealth + 1));
+            warlock->SetMaxHealth(uint32(10000000));
+            warlock->SetFullHealth();
 
+            uint32 const hellfireSpellLevel = 68;
+            float const hellfireDmgPerLevel = 0.8f;
+            float const hellfireDmgPerLevelGain = std::max(warlock->GetLevel() - hellfireSpellLevel, uint32(0)) * hellfireDmgPerLevel;
+			uint32 totalHellfire = 15.0f * floor((ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK + hellfireDmgPerLevelGain) * sacrificeFactor);
+            uint32 hellfireTickAmount = totalHellfire / 15.0f;
+            TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::HELLFIRE_RNK_4, ClassSpells::Warlock::HELLFIRE_RNK_4_TRIGGER, 15, hellfireTickAmount);
+
+            // Self damage
+            TEST_DOT_DAMAGE(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, totalHellfire, false);
 		}
 
-		void TestVoidwalkerSacrifice(TestPlayer* player)
+		void TestVoidwalkerSacrifice(TestPlayer* warlock, Creature* dummy)
 		{
-			player->DisableRegeneration(false);
-			player->SetHealth(1);
+            warlock->AttackerStateUpdate(dummy, BASE_ATTACK);
+			warlock->DisableRegeneration(false);
+			warlock->SetHealth(1);
+            // Restores 2% every 4 sec.
+            uint32 const regenTick = warlock->GetMaxHealth() * 0.02f;
 
-			Wait(Seconds(10));
-			const float regen = floor(player->OCTRegenHPPerSpirit());
-			uint32 totalHealth = player->GetMaxHealth();
-			uint32 expectedHealth = 1 + floor(10 * regen + 2 * totalHealth * 0.01f);
-			TEST_ASSERT(player->GetHealth() == expectedHealth);
-			Wait(2500);
-			expectedHealth = 1 + floor(10 * regen + 3 * totalHealth * 0.01f);
-			TEST_ASSERT(player->GetHealth() == expectedHealth);
+            uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
+            Wait(5000);
+            uint32 const afterWaitTime = GameTime::GetGameTimeMS();
+            uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
+            uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 4.0f);
+            uint32 const expectedHealth = 1 + regenTick * expectedTickAmount;
+            ASSERT_INFO("Warlock should have %u HP but has %u HP.", expectedHealth, warlock->GetHealth());
+            TEST_ASSERT(warlock->GetHealth() == expectedHealth);
 		}
 
-		void TestSuccubusSacrifice(TestPlayer* player, Creature* dummyTarget, float percentage)
+		void TestSuccubusSacrifice(TestPlayer* warlock, Creature* dummy, float sacrificeFactor)
 		{
-			float const sp = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-
 			// Death Coil
-			uint32 expectedDeathCoil = floor(ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4 * percentage + sp * ClassSpellsCoeff::Warlock::DEATH_COIL);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoil, expectedDeathCoil, false);
+            uint32 const deathCoilSpellLevel = 68;
+            float const deathCoilDmgPerLevel = 3.4f;
+            float const deathCoilDmgPerLevelGain = std::max(warlock->GetLevel() - deathCoilSpellLevel, uint32(0)) * deathCoilDmgPerLevel;
+			uint32 const expectedDeathCoil = (ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4 + deathCoilDmgPerLevelGain) * sacrificeFactor;
+			TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoil, expectedDeathCoil, false);
 
 			// Shadow Bolt
-			uint32 expectedShadowBoltMin = floor(ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SHADOW_BOLT);
-			uint32 expectedShadowBoltMax = floor(ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SHADOW_BOLT);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax, false);
+			uint32 const expectedShadowBoltMin = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * sacrificeFactor;
+			uint32 const expectedShadowBoltMax = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * sacrificeFactor;
+			TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax, false);
 
-			// TODO: Shadowburn (takes 1 soul shard per cast)
-			//uint32 expectedShadowburnMin = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
-			//uint32 expectedShadowburnMax = floor(ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SHADOWBURN);
-			//TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin, expectedShadowburnMax, false);
+            // Shadowburn
+            uint32 const expectedShadowburnMin = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * sacrificeFactor;
+            uint32 const expectedShadowburnMax = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * sacrificeFactor;
+		    TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin, expectedShadowburnMax, false);
 
 			// Corruption
-			uint32 expectedCorruption = floor(ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::CORRUPTION);
-			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruption, false);
+            float const corruptionTickAmount = 6.0f;
+			uint32 const expectedCorruption = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TICK * sacrificeFactor * corruptionTickAmount;
+			TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruption, false);
 
 			// Curse of Agony
-			uint32 expectedCoA = floor(ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::CURSE_OF_AGONY);
-			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoA, false);
+            uint32 const expectedCoAMaxDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * sacrificeFactor;
+            uint32 const expectedCoADamage = (4.0f * expectedCoAMaxDamage / 24.0f) + (4.0f * expectedCoAMaxDamage / 12.0f) + (4.0f * expectedCoAMaxDamage / 8.0f);
+			TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, false);
 
 			// Curse of Doom
-			uint32 expectedCoD = floor(ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 * percentage + sp * ClassSpellsCoeff::Warlock::CURSE_OF_DOOM);
-			TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoD, false);
+			uint32 const expectedCoD = ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 * sacrificeFactor;
+			TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoD, false);
 
-			// TODO: Seed of Corruption test DoT + end damage
-            //Tuint32 expectedDot = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TOTAL * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION_DOT);
-            //Tuint32 expectedDamageMin = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION);
-            //Tuint32 expectedDamageMax = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * percentage + sp * ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION);
-			//TEST_DOT_DAMAGE(player, dummyTarget, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedCoA);
+            // Seed of Corruption
+            Creature* dummy2 = SpawnCreature(); // spawn second dummy to take SoC detonation
+
+            float const socTickAmount = 6.0f;
+            uint32 const seedOfCorruptionTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * sacrificeFactor;
+            uint32 const expectedSoCTotalAmount = socTickAmount * seedOfCorruptionTick;
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCTotalAmount, true);
+
+            uint32 const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * sacrificeFactor;
+            uint32 const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * sacrificeFactor;
+            //FIXME: next line not working ("GetSpellDamageDoneInfoTo found no data for this victim (Testing Creature)")
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false);
+            dummy2->DespawnOrUnsummon();
 		}
 
-		void TestFelhunterSacrifice(TestPlayer* player, float percentage)
+		void TestFelhunterSacrifice(TestPlayer* warlock, Creature* dummy, float sacrificeFactor)
 		{
-            player->DisableRegeneration(false);
-			player->SetMaxPower(POWER_MANA, 10000);
-			uint32 totalMana = player->GetMaxPower(POWER_MANA);
-			player->SetPower(POWER_MANA, 0);
-			const float regen = floor(sqrt(player->GetStat(STAT_INTELLECT)) * player->OCTRegenMPPerSpirit());
-			TEST_ASSERT(player->GetPower(POWER_MANA) == 0);
-			Wait(10000);
-			uint32 expectedMana = floor(10 * regen + 2 * (totalMana * percentage));
-			TEST_ASSERT(player->GetPower(POWER_MANA) == expectedMana);
-			Wait(1500);
-			expectedMana = floor(12 * regen + 3 * (totalMana * percentage));
-			TEST_ASSERT(player->GetPower(POWER_MANA) == expectedMana);
+            warlock->AttackerStateUpdate(dummy, BASE_ATTACK);
+            warlock->DisableRegeneration(true);
+            warlock->SetPower(POWER_MANA, 0);
+            // Restores x% of total mana every 4 sec.
+            uint32 const regenTick = warlock->GetMaxPower(POWER_MANA) * sacrificeFactor;
+
+            uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
+            Wait(5000);
+            uint32 const afterWaitTime = GameTime::GetGameTimeMS();
+            uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
+            uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 4.0f);
+            uint32 const expectedMana = regenTick * expectedTickAmount;
+            ASSERT_INFO("Warlock should have %u MP but has %u MP.", expectedMana, warlock->GetPower(POWER_MANA));
+            TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedMana);
 		}
 
-		void TestFelguardSacrifice(TestPlayer* player, Creature* dummyTarget)
+		void TestFelguardSacrifice(TestPlayer* warlock, Creature* dummy)
 		{
-			TestSuccubusSacrifice(player, dummyTarget, 1.1f);
-			TestFelhunterSacrifice(player, 0.02f);
+			TestSuccubusSacrifice(warlock, dummy, 1.1f);
+			TestFelhunterSacrifice(warlock, dummy, 0.02f);
 		}
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+			TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
 
-			uint32 const summonImp = 1673;
-			uint32 const summonVoid = 2092;
-			uint32 const summonSuc = 2092;
-			uint32 const summonFh = 2092;
-			uint32 const summonFg = 2092;
+            LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+            LearnTalent(warlock, Talents::Warlock::DEMONIC_SACRIFICE_RNK_1);
 
-            player->AddItem(6265, 4); // Soul shard
-			Wait(1000);
-			TEST_ASSERT(player->HasItemCount(6265, 4, false));
-
-			uint32 const startMana = 10000;
-            player->DisableRegeneration(true);
-			player->SetMaxPower(POWER_MANA, startMana);
-			player->SetPower(POWER_MANA, startMana);
-			TEST_ASSERT(player->GetPower(POWER_MANA) == 10000);
-
-			Creature* dummyTarget = SpawnCreature();
-
-			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-			LearnTalent(player, Talents::Warlock::DEMONIC_SACRIFICE_RNK_1);
-			SacrificePet(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1, 18789); // Burning Wish
-			TestImpSacrifice(player, dummyTarget);
-			SacrificePet(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, 18790, 18789); // Fel Stamina
-			TestVoidwalkerSacrifice(player);
-			SacrificePet(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, 18791, 18790); // Touch of Shadow
-			TestSuccubusSacrifice(player, dummyTarget, 1.15f);
-			SacrificePet(player, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, 18792, 18791); // Fel Energy
-			TestFelhunterSacrifice(player, 0.03f);
-			SacrificePet(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, 35701, 18792); // Touch of Shadow
-			TestFelguardSacrifice(player, dummyTarget);
+			SacrificePet(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, 18789); // Burning Wish
+			TestImpSacrifice(warlock, dummy, 1.15f);
+			SacrificePet(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, 18790, 18789); // Fel Stamina
+			TestVoidwalkerSacrifice(warlock, dummy);
+			SacrificePet(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, 18791, 18790); // Touch of Shadow
+			TestSuccubusSacrifice(warlock, dummy, 1.15f);
+			SacrificePet(warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, 18792, 18791); // Fel Energy
+			TestFelhunterSacrifice(warlock, dummy, 0.03f);
+			SacrificePet(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, 35701, 18792); // Touch of Shadow
+			TestFelguardSacrifice(warlock, dummy);
 		}
 	};
 
@@ -792,65 +984,52 @@ public:
 	class ManaFeedTestImpt : public TestCase
 	{
 	public:
-		ManaFeedTestImpt() : TestCase(STATUS_PASSING) { }
+		ManaFeedTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
-		// drain mana + life tap 100% to pet
-
-		void AssertManaFeed(TestPlayer* player, TestPlayer* enemy, uint32 summonSpell)
+		void AssertManaFeed(TestPlayer* warlock, TestPlayer* enemy, uint32 summonSpell)
 		{
-			uint32 res = player->CastSpell(player, summonSpell, TRIGGERED_FULL_MASK);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Pet* pet = player->GetPet();
+            TEST_CAST(warlock, warlock, summonSpell, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+			Pet* pet = warlock->GetPet();
 			TEST_ASSERT(pet != nullptr);
 
 			pet->DisableRegeneration(true);
 			pet->SetPower(POWER_MANA, 0);
-			player->SetPower(POWER_MANA, 2000);
+            warlock->SetPower(POWER_MANA, 2000);
+            enemy->SetPower(POWER_MANA, 2000);
 
-			Wait(4000);
-
-			// Drain Mana
-			uint32 expectedDrain = ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK + player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * ClassSpellsCoeff::Warlock::DRAIN_MANA;
-			
-			res = player->CastSpell(enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, TRIGGERED_FULL_MASK);
-            TEST_ASSERT(res == SPELL_CAST_OK);
+			// Drain Mana -- bug here
+			uint32 expectedManaDrained = ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK * 5.0f;
+			TEST_CAST(warlock, enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6);
 			Wait(5500);
-			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedDrain);
-			
-			Wait(4000);
+            ASSERT_INFO("Drain Mana, Pet invoqued with %u, should have %u MP but has %u MP.", summonSpell, expectedManaDrained, pet->GetPower(POWER_MANA));
+			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedManaDrained);
 
 			// Life Tap
-			player->CastSpell(player, ClassSpells::Warlock::LIFE_TAP_RNK_7);
-			Wait(1500);
-			uint32 expectedLT = ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7;
-            TC_LOG_TRACE("test.unit_test", "current: %u, expected: %u", pet->GetPower(POWER_MANA), expectedLT);
-			Wait(500);
-			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedLT);
-
-
-			Wait(4000);
+            pet->SetPower(POWER_MANA, 0);
+            uint32 const spellLevel = 68;
+            uint32 const perLevelPoint = 1;
+            uint32 const perLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * perLevelPoint;
+            uint32 const expectedManaGained = ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7 + perLevelGain;
+			TEST_CAST(warlock, warlock, ClassSpells::Warlock::LIFE_TAP_RNK_7, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            ASSERT_INFO("Life Tap Pet invoqued with %u, should have %u MP but has %u MP.", summonSpell, expectedManaGained, pet->GetPower(POWER_MANA));
+			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedManaGained);
 		}
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+			TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
 
 			Position spawnPosition(_location);
 			spawnPosition.MoveInFront(_location, 10.0f);
 			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawnPosition);
-            //TCreature* dummyTarget = SpawnCreature();
 
-			player->AddItem(6265, 4); // Soul shard
-			Wait(1000);
-			TEST_ASSERT(player->HasItemCount(6265, 4, false));
-
-			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-			LearnTalent(player, Talents::Warlock::MANA_FEED_RNK_3);
-			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
-			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
-			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
-			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1);
-			AssertManaFeed(player, enemy, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+			LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+			LearnTalent(warlock, Talents::Warlock::MANA_FEED_RNK_3);
+			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1);
+			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
 		}
 	};
 
@@ -868,38 +1047,34 @@ public:
 	class DemonicKnowledgeTestImpt : public TestCase
 	{
 	public:
-		DemonicKnowledgeTestImpt() : TestCase(STATUS_PASSING) { }
+		DemonicKnowledgeTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
-		void AssertDemonicKnowledge(TestPlayer* player, uint32 summon, float spellPower)
+		void AssertDemonicKnowledge(TestPlayer* warlock, uint32 summonSpellId, float spellPower, float talentFactor)
 		{
-			uint32 res = player->CastSpell(player, summon, TRIGGERED_FULL_MASK);
-			Wait(Seconds(1));
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Pet* pet = player->GetPet();
+			TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+			Pet* pet = warlock->GetPet();
 			TEST_ASSERT(pet != nullptr);
 
-			float expectedSP = spellPower + (pet->GetStat(STAT_STAMINA) + pet->GetStat(STAT_INTELLECT)) * 0.12;
-            TC_LOG_TRACE("test.unit_test", "current: %f, start: %f, expected: %f", player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW), spellPower, expectedSP);
-			TEST_ASSERT(player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == expectedSP);
+			float const expectedSP = spellPower + (pet->GetStat(STAT_STAMINA) + pet->GetStat(STAT_INTELLECT)) * talentFactor;
+            ASSERT_INFO("After %u, Warlock should have %f SP but has %f SP.", summonSpellId, expectedSP, warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW));
+			TEST_ASSERT(Between<float>(warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW), expectedSP - 0.1f, expectedSP + 0.1f));
 		}
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_WARLOCK);
+			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
 
-			float const sp = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+			float const spellPower = warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            float const talentFactor = 0.12f;
 
-			player->AddItem(6265, 4); // Soul shard
-			Wait(1000);
-			TEST_ASSERT(player->HasItemCount(6265, 4, false));
+			LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+			LearnTalent(warlock, Talents::Warlock::DEMONIC_KNOWLEDGE_RNK_3);
 
-			LearnTalent(player, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-			LearnTalent(player, Talents::Warlock::DEMONIC_KNOWLEDGE_RNK_3);
-			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_IMP_RNK_1, sp);
-			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, sp);
-			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, sp);
-			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, sp);
-			AssertDemonicKnowledge(player, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, sp);
+			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, spellPower, talentFactor);
+			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, spellPower, talentFactor);
+			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, spellPower, talentFactor);
+			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, spellPower, talentFactor);
+			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, spellPower, talentFactor);
 		}
 	};
 
