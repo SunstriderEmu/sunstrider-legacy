@@ -1527,7 +1527,7 @@ public:
 
             Guardian* voidwalker = warlock->GetGuardianPet();
             TEST_ASSERT(voidwalker != nullptr);
-            TEST_ASSERT(voidwalker->GetEntry() == 1863);
+            TEST_ASSERT(voidwalker->GetEntry() == 1860);
         }
     };
 
