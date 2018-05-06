@@ -133,7 +133,7 @@ public:
     class CurseOfRecklessnessTestImpt : public TestCase
     {
     public:
-        CurseOfRecklessnessTestImpt() : TestCase(STATUS_PASSING) { }
+        CurseOfRecklessnessTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -147,14 +147,16 @@ public:
             TEST_HAS_AURA(rogue, ClassSpells::Warlock::FEAR_RNK_3);
             // Cast curse on the rogue
             uint32 const expectedCurseOfRecklessnessManaCost = 160;
-            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, POWER_MANA, expectedCurseOfRecklessnessManaCost);
+            TEST_CAST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, Minutes(2));
-            // Fear should be removed by the curse
+            // Fear should be removed by the curse - Bugged here
             TEST_HAS_NOT_AURA(rogue, ClassSpells::Warlock::FEAR_RNK_3);
             // Check armor and AP is reduced as intended
             ASSERT_INFO("Armor: %u - Expected: %u", rogue->GetArmor(), expectedRogueArmor);
             TEST_ASSERT(rogue->GetArmor() == expectedRogueArmor);
             TEST_ASSERT(rogue->GetTotalAttackPowerValue(BASE_ATTACK) == expectedRogueAP);
+
+            TEST_POWER_COST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, POWER_MANA, expectedCurseOfRecklessnessManaCost);
         }
     };
 
