@@ -1138,21 +1138,26 @@ public:
 
         void TestFelArmorBonuses(TestPlayer* caster, TestPlayer* healer, uint32 felArmorSpellId, uint32 expectedManaCost, uint32 spellDamageBonus)
         {
+            caster->SetFullPower(POWER_MANA);
             uint32 const expectedSpellDamage = caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) + spellDamageBonus;
 
             // Only one armor active
             TEST_CAST(caster, caster, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
             TEST_HAS_AURA(caster, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
+            Wait(2000); //wait GCD
 
-            // Mana cost, spell power, aura duration
-            TEST_POWER_COST(caster, caster, felArmorSpellId, POWER_MANA, expectedManaCost);
+            // Spell power, aura duration
+            TEST_CAST(caster, caster, felArmorSpellId);
             TEST_ASSERT(uint32(caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW)) == expectedSpellDamage);
             TEST_AURA_MAX_DURATION(caster, felArmorSpellId, Minutes(30));
             TEST_HAS_NOT_AURA(caster, ClassSpells::Warlock::DEMON_ARMOR_RNK_6);
+            Wait(2000); //wait GCD
 
             // Increased amount of health generated through spells and effects by 20%
             TEST_DIRECT_HEAL(healer, caster, ClassSpells::Druid::HEALING_TOUCH_RNK_13, ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN * 1.2f, ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX * 1.2f, false);
-            
+
+            // Mana cost
+            TEST_POWER_COST(caster, caster, felArmorSpellId, POWER_MANA, expectedManaCost);
             caster->RemoveAurasDueToSpell(felArmorSpellId);
         }
 
