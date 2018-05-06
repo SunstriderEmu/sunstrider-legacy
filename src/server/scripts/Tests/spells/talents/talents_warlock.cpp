@@ -4,6 +4,155 @@
 
 #define SOUL_SHARD 6265
 
+class ImprovedCorruptionTest : public TestCaseScript
+{
+public:
+    ImprovedCorruptionTest() : TestCaseScript("talents warlock improved_corruption") { }
+
+    class ImprovedCorruptionTestImpt : public TestCase
+    {
+    public:
+        ImprovedCorruptionTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void TestCorruptionCastTime(TestPlayer* caster, Creature* victim, uint32 talentSpellId, uint32 talentFactor)
+        {
+            LearnTalent(caster, talentSpellId);
+            uint32 const expectedCastTime = 2000 - talentFactor;
+            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCastTime);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_CORRUPTION_RNK_5);
+            uint32 const castTimeReducedPerTalentPoint = 400;
+
+            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_1, 1 * castTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_2, 2 * castTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_3, 3 * castTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_4, 4 * castTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_5, 5 * castTimeReducedPerTalentPoint);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedCorruptionTestImpt>();
+    }
+};
+
+class ImprovedCurseOfWeaknessTest : public TestCaseScript
+{
+public:
+    ImprovedCurseOfWeaknessTest() : TestCaseScript("talents warlock improved_curse_of_weakness") { }
+
+    class ImprovedCurseOfWeaknessTestImpt : public TestCase
+    {
+    public:
+        ImprovedCurseOfWeaknessTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
+            EQUIP_NEW_ITEM(rogue, 34188); // Leggins of Immortal Night - 124 AP
+
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_CURSE_OF_WEAKNESS_RNK_2);
+            float const talentFactor = 1.2f;
+
+            uint32 const curseOfWeaknessAPMalus = 350 * talentFactor;
+            float const expectedRogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK) - curseOfWeaknessAPMalus;
+
+            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8);
+            ASSERT_INFO("Rogue has %f AP, should have %f.", rogue->GetTotalAttackPowerValue(BASE_ATTACK), expectedRogueAP);
+            TEST_ASSERT(Between<float>(rogue->GetTotalAttackPowerValue(BASE_ATTACK), expectedRogueAP - 0.1f, expectedRogueAP + 0.1f));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedCurseOfWeaknessTestImpt>();
+    }
+};
+
+class ImprovedDrainSoulTest : public TestCaseScript
+{
+public:
+    ImprovedDrainSoulTest() : TestCaseScript("talents warlock improved_drain_soul") { }
+
+    class ImprovedDrainSoulTestImpt : public TestCase
+    {
+    public:
+        ImprovedDrainSoulTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Curse of Doom doesnt gets its threat reduced
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            _location.MoveInFront(_location, 10.0f);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
+            warlock->DisableRegeneration(true);
+            rogue->DisableRegeneration(true);
+            rogue->SetHealth(100); // Less than a Drain Soul tick
+            Wait(3000);
+
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_DRAIN_SOUL_RNK_2);
+            float const talentManaFactor = 0.15f;
+            float const talentThreatFactor = 1 - 0.1f;
+
+            // Mana returned
+            uint32 const drainSoulManaCost = 360;
+            warlock->SetPower(POWER_MANA, drainSoulManaCost);
+
+            uint32 const expectedManaReturn = warlock->GetMaxPower(POWER_MANA) * talentManaFactor;
+            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5);
+            Wait(4000);
+            TEST_ASSERT(rogue->IsDead());
+            TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedManaReturn);
+
+            // Only get mana if the drain soul kills the target
+            rogue->ResurrectPlayer(1.0f);
+            warlock->SetPower(POWER_MANA, drainSoulManaCost);
+            FORCE_CAST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5);
+            Wait(1000);
+            rogue->KillSelf();
+            Wait(2000);
+            TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
+
+            // Threat reduced by 10% for all affliction spells
+            Creature* dummy = SpawnCreature();
+
+            const float expectedCorruptionThreat = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * talentThreatFactor;
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionThreat, false);
+
+            const float expectedCoAThreat = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * talentThreatFactor;
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoAThreat, false);
+
+            const float expectedCoDThreat = ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 * talentThreatFactor;
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoDThreat, false);
+
+            const float expectedDeathCoilThreat = ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4_LVL_70 * talentThreatFactor;
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoilThreat, false);
+
+            const float expectedDrainLifeThreat = ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * 5.0f * talentThreatFactor;
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, expectedDrainLifeThreat, false);
+
+            const float expectedDrainSoulThreat = ClassSpellsDamage::Warlock::DRAIN_SOUL_RNK_5_TOTAL * talentThreatFactor;
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, expectedDrainSoulThreat, false);
+
+            const float expectedSoCThreat = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TOTAL * talentThreatFactor;
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCThreat, false);
+            // TODO: SoC Direct damage
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedDrainSoulTestImpt>();
+    }
+};
+
 class ImprovedLifeTapTest : public TestCaseScript
 {
 public:
@@ -37,6 +186,134 @@ public:
 	{
 		return std::make_shared<ImprovedLifeTapTestImpt>();
 	}
+};
+
+class SoulSiphonTest : public TestCaseScript
+{
+public:
+    SoulSiphonTest() : TestCaseScript("talents warlock soul_siphon") { }
+
+    class SoulSiphonTestImpt : public TestCase
+    {
+    public:
+        SoulSiphonTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Bug: Should have a 60% limit for drain life bonus
+
+        void Add5AfflictionSpell(TestPlayer* warlock, Creature* dummy, uint32 curseSpellId)
+        {
+            FORCE_CAST(warlock, dummy, curseSpellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5);
+        }
+
+        void IsAffectedByTalent(TestPlayer* warlock, TestPlayer* warlock2, Creature* dummy, uint32 spellId, float talentFactor, bool checkAura = false)
+        {
+            warlock->SetHealth(1);
+            FORCE_CAST(warlock2, dummy, spellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            uint32 warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * (1.0f + talentFactor));
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
+            Wait(750);
+            // The following for is made to pass Fear and Howl of Terror. To be refactored when a better solution comes around.
+            for (uint8 i = 0; i < 5; i++)
+            {
+                if (!dummy->HasAura(spellId))
+                    dummy->AddAura(spellId, dummy);
+                Wait(1000);
+            }
+            ASSERT_INFO("After Drain Life, Warlock didnt have aura %u.", spellId);
+            if (checkAura) // Used by Drain Mana because it lasts as long as Drain Life
+                TEST_HAS_AURA(dummy, spellId);
+            ASSERT_INFO("After spell %u, Warlock has %u HP but should have %u HP.", spellId, warlock->GetHealth(), warlockExpectedHealth);
+            TEST_ASSERT(warlock->GetHealth() == warlockExpectedHealth);
+            dummy->RemoveAurasDueToSpell(spellId);
+            warlock->SetPower(POWER_MANA, warlock->GetMaxPower(POWER_MANA));
+            warlock2->SetPower(POWER_MANA, warlock2->GetMaxPower(POWER_MANA));
+        }
+
+        uint32 GetHarmfulAurasCount(Creature* dummy)
+        {
+            uint32 harmfulAuraCount = 0;
+            auto& auras = dummy->GetAppliedAuras();
+            for (const auto & i : auras)
+            {
+                if (!i.second->IsPositive())
+                    harmfulAuraCount++;
+            }
+            return harmfulAuraCount;
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            warlock->DisableRegeneration(true);
+
+            TestPlayer* warlock2 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::SOUL_SIPHON_RNK_2);
+            float const bonusPerSpell = 0.04f;
+
+            // Solo Drain Life
+            warlock->SetHealth(1);
+            uint32 warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * (1 + bonusPerSpell));
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
+            Wait(5500);
+            ASSERT_INFO("After Drain Life, Warlock has %u HP but should have %u HP.", warlock->GetHealth(), warlockExpectedHealth);
+            TEST_ASSERT(warlock->GetHealth() == warlockExpectedHealth);
+
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, 2 * bonusPerSpell);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, 2 * bonusPerSpell);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, 2 * bonusPerSpell);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1, 2 * bonusPerSpell);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, 2 * bonusPerSpell);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, 2 * bonusPerSpell + 0.1f); // +10% from CoE
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, 2 * bonusPerSpell);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, 2 * bonusPerSpell);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, 2 * bonusPerSpell, false);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::FEAR_RNK_3, 2 * bonusPerSpell);
+            dummy->NearTeleportTo(_location);
+            Wait(1);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, 2 * bonusPerSpell);
+            dummy->NearTeleportTo(_location);
+            Wait(1);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, 2 * bonusPerSpell);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, 2 * bonusPerSpell);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, 2 * bonusPerSpell);
+
+            // Test Max bonus: +60% -- Bugged, goes beyond 60%
+            TestPlayer* warlock3 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            TestPlayer* warlock4 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            TestPlayer* warlock5 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            TestPlayer* warlock6 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+
+            Add5AfflictionSpell(warlock2, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7);
+            Add5AfflictionSpell(warlock3, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
+            Add5AfflictionSpell(warlock4, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2);
+            Add5AfflictionSpell(warlock5, dummy, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8);
+            Add5AfflictionSpell(warlock6, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2);
+            Wait(1);
+
+            // Dummy should be affected by 25 Affliction spells
+            warlock->SetHealth(1);
+            uint32 const harmfulAuraCount = GetHarmfulAurasCount(dummy);
+            ASSERT_INFO("Dummy has %u harmful auras instead of %u.", harmfulAuraCount, 18);
+            TEST_ASSERT(harmfulAuraCount == 25);
+
+            float const expectedDrainLifeBonus = std::min(1.0f + harmfulAuraCount * bonusPerSpell, 1.60f);
+            warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * expectedDrainLifeBonus);
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
+            Wait(5500);
+            TEST_ASSERT(GetHarmfulAurasCount(dummy) == 25);
+            ASSERT_INFO("Warlock has %u HP but should have %u HP.", warlock->GetHealth(), warlockExpectedHealth);
+            TEST_ASSERT(warlock->GetHealth() == warlockExpectedHealth);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SoulSiphonTestImpt>();
+    }
 };
 
 class ImprovedCurseOfAgonyTest : public TestCaseScript
@@ -226,78 +503,81 @@ public:
 
             // Reduces the chance your Affliction spells wtill be dispelled by 30% (5/5)
             const float dispelTalentFactor = 30.f;
-            float const expectedResist = dispelTalentFactor + 16.f; // priest has not spell hit reating
+            float const expectedResist = dispelTalentFactor + 3.f; // priest has 0 spell hit rating
 
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Wait(1);
             warlock->ForceSpellHitResult(SPELL_MISS_NONE);
             ASSERT_INFO("Corruption");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
-                target->CastSpell(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, TRIGGERED_FULL_MASK);
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
+                warlock->CastSpell(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Death Coil");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
-                target->CastSpell(caster, ClassSpells::Warlock::DEATH_COIL_RNK_4, TRIGGERED_FULL_MASK);
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
+                warlock->CastSpell(caster, ClassSpells::Warlock::DEATH_COIL_RNK_4, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Drain Life");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
-                target->CastSpell(caster, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
+                warlock->CastSpell(caster, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
             });
+            Wait(1);
             ASSERT_INFO("Drain Mana");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::DRAIN_MANA_RNK_6);
             });
+            Wait(1);
             ASSERT_INFO("Fear");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::FEAR_RNK_3, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Howl of Terror");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Seed of Corruption");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
                 target->CastSpell(caster, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Siphon Life");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
                 target->CastSpell(caster, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Unstable Affliction");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
                 target->CastSpell(caster, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
 
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
             druid->SetMaxHealth(std::numeric_limits<uint32>::max());
             ASSERT_INFO("Curse of Agony");
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Curse of Recklessness");
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Curse of the elements");
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Curse of Tongues");
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, TRIGGERED_FULL_MASK);
             });
+            Wait(1);
             ASSERT_INFO("Curse of Weakness");
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                caster->SetMaxHealth(caster->GetMaxHealth());
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, TRIGGERED_FULL_MASK);
             });
 		}
@@ -1087,7 +1367,11 @@ public:
 void AddSC_test_talents_warlock()
 {
 	// Affliction
+    new ImprovedCorruptionTest();
+    new ImprovedCurseOfWeaknessTest();
+    new ImprovedDrainSoulTest();
 	new ImprovedLifeTapTest();
+    new SoulSiphonTest();
 	new ImprovedCurseOfAgonyTest();
 	new EmpoweredCorruptionTest();
 	new ShadowMasteryTest();
