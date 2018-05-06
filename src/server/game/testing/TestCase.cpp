@@ -1294,29 +1294,32 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
         return;
     }
 
-    if (sampleSize)
-    {
-        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", uint32(damageToTarget->size()), sampleSize, spellId);
-        INTERNAL_TEST_ASSERT(damageToTarget->size() == sampleSize)
-    }
-
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage was prompted for non existing spell ID %u", spellId);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
-    uint32 count = 0;
+    uint32 actualDesiredOutcomeCount = 0;
+    uint32 actualSampleCount = 0;
     for (auto itr : *damageToTarget)
     {
         if (itr.damageInfo.SpellID != spellId)
             continue;
 
+        actualSampleCount++;
+
         if (itr.missInfo != missInfo)
             continue;
 
-        count++;
+        actualDesiredOutcomeCount++;
     }
 
-    float const result = (count / float(damageToTarget->size())) * 100.0f;
+    if (sampleSize)
+    {
+        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", uint32(damageToTarget->size()), sampleSize, spellId);
+        INTERNAL_TEST_ASSERT(actualSampleCount == sampleSize)
+    }
+
+    float const result = (actualDesiredOutcomeCount / float(actualSampleCount)) * 100.0f;
     INTERNAL_ASSERT_INFO("TestSpellOutcomePercentage on spell %u: expected result: %f, result: %f", spellId, expectedResult, result);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
