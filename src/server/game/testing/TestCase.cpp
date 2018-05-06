@@ -1156,7 +1156,7 @@ void TestCase::GroupPlayer(TestPlayer* leader, Player* player)
     }
 }
 
-void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo)
+void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo, Optional<TestCallback> callback)
 {
     INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive caster");
     INTERNAL_TEST_ASSERT(caster->IsAlive());
@@ -1175,6 +1175,9 @@ void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spel
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
+        if (callback)
+            callback.get()(caster, victim);
+
         victim->SetFullHealth();
         caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
     }

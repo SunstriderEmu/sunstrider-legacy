@@ -174,7 +174,8 @@ public:
     /* Cast given spells a bunch of time from caster on victim, and test if results are chance% given missInfo
     chance: 0-100
     */
-    #define TEST_SPELL_HIT_CHANCE(caster, victim, spellID, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo); _ResetCaller(); }
+    #define TEST_SPELL_HIT_CHANCE(caster, victim, spellID, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo, {}); _ResetCaller(); }
+    #define TEST_SPELL_HIT_CHANCE_CALLBACK(caster, victim, spellID, chance, missInfo, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo, Optional<TestCallback>(callback)); _ResetCaller(); }
     /* Triggers attack from caster on victim, and test if results are chance% given missInfo
     chance: 0-100
     */
@@ -267,7 +268,7 @@ protected:
     */
     void _TestSpellCritPercentage(TestPlayer* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize = 0);
 
-    void _TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo);
+    void _TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback);
     void _TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
     void _TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance);
 
