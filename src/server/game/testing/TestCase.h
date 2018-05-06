@@ -99,7 +99,9 @@ public:
     //This checks if item exists in loot (but we cannot say if player can actually loot it)
     bool HasLootForMe(Creature*, Player*, uint32 itemID);
     //Create item and equip it to player. Will remove any item already in slot. Fail test on failure
-    #define EQUIP_ITEM(player, itemID) { _SetCaller(__FILE__, __LINE__); _EquipItem(player, itemID); _ResetCaller(); }
+    #define EQUIP_NEW_ITEM(player, itemID) { _SetCaller(__FILE__, __LINE__); _EquipItem(player, itemID, true); _ResetCaller(); }
+    //Equip an item from player inventory. Will remove any item already in slot. Fail test on failure
+    #define EQUIP_EXISTING_ITEM(player, itemID) { _SetCaller(__FILE__, __LINE__); _EquipItem(player, itemID, false); _ResetCaller(); }
 
     void RemoveAllEquipedItems(TestPlayer* player);
     void RemoveItem(TestPlayer* player, uint32 itemID, uint32 count);
@@ -282,7 +284,7 @@ protected:
 	void _TestPowerCost(TestPlayer* caster, Unit* target, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
     inline void _TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, Seconds s) { _TestCooldown(caster, target, castSpellID, uint32(s.count())); }
     void _TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond);
-    void _EquipItem(TestPlayer* p, uint32 itemID);
+    void _EquipItem(TestPlayer* p, uint32 itemID, bool newItem);
     //if negative, ensure has NOT aura
     void _EnsureHasAura(Unit* target, int32 spellID);
     void _EnsureHasNotAura(Unit* target, int32 spellID) { _EnsureHasAura(target, -spellID); }

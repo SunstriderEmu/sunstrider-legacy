@@ -38,7 +38,7 @@ public:
 			Position spawnPosition(_location);
 			spawnPosition.MoveInFront(_location, -3.0f);
 			TestPlayer* druid2 = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF, 70, spawnPosition);
-			EQUIP_ITEM(druid2, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_NEW_ITEM(druid2, 34182); // Grand Magister's Staff of Torrents - 266 SP
             int32 staffSP = 266;
 			TEST_ASSERT(druid2->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
@@ -179,7 +179,7 @@ public:
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 			Creature* creature = SpawnCreature();
 
-			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_NEW_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
 			int32 staffSP = 266;
@@ -231,7 +231,7 @@ public:
 			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawnPosition);
 			TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawnPosition);
 
-			EQUIP_ITEM(rogue, 34211); // S4 Chest
+			EQUIP_NEW_ITEM(rogue, 34211); // S4 Chest
             uint32 const expectedRogueArmor = rogue->GetArmor() - 610;
 
 			// Faerie Fire 
@@ -331,7 +331,7 @@ public:
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
 
-			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_NEW_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
             int32 staffSP = 266;
 			TEST_ASSERT(druid->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) == staffSP);
 
@@ -436,7 +436,7 @@ public:
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 			Creature* creature = SpawnCreature();
 
-			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_NEW_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
 			int32 staffSP = 266;
@@ -492,7 +492,7 @@ public:
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 			Creature* creature = SpawnCreature();
 
-			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_NEW_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
             int32 staffSP = 266;
@@ -541,7 +541,7 @@ public:
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
             druid->ForceSpellHitResult(SPELL_MISS_NONE); //Thorns can miss
 
-			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_NEW_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
             rogue->DisableRegeneration(true);
 
@@ -588,7 +588,7 @@ public:
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 			Creature* dummy = SpawnCreature();
 
-			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_NEW_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
             int32 staffSP = 266;
@@ -813,7 +813,7 @@ public:
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 			Creature* creature = SpawnCreature();
 
-			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+			EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
             TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
 			Wait(1500); // GCD
 
@@ -999,7 +999,7 @@ public:
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-            EQUIP_ITEM(druid, 31042); // "Thunderheart Chestguard" (T6 torso)  // give him some more armor
+            EQUIP_NEW_ITEM(druid, 31042); // "Thunderheart Chestguard" (T6 torso)  // give him some more armor
 
 			TestEnrage(druid, ClassSpells::Druid::BEAR_FORM_RNK_1, 0.27f);
 			TestEnrage(druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, 0.16f);
@@ -1028,8 +1028,8 @@ public:
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
             Creature* creature = SpawnCreature();
 
-            EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
-            EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+            EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+            EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
             // Must be in Cat Form
             TEST_CAST(druid, creature, ClassSpells::Druid::FEROCIOUS_BITE_RNK_6, SPELL_FAILED_ONLY_SHAPESHIFT);
@@ -1196,7 +1196,7 @@ public:
 
 			creature->DisableRegeneration(true);
 			druid->DisableRegeneration(true);
-			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+			EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
 			// Rage cost
             TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
@@ -1263,7 +1263,7 @@ public:
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 			Creature* creature = SpawnCreature();
 
-			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+			EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
             TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
 			Wait(1500); // GCD
 
@@ -1320,7 +1320,7 @@ public:
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 			Creature* creature = SpawnCreature();
 
-			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+			EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
 			// Must be in Cat Form
             TEST_CAST(druid, creature, ClassSpells::Druid::POUNCE_RNK_1, SPELL_FAILED_ONLY_SHAPESHIFT);
@@ -1412,7 +1412,7 @@ public:
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 			Creature* creature = SpawnCreature();
 
-			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+			EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
 			// Must be in Cat Form
             TEST_CAST(druid, creature, ClassSpells::Druid::RAKE_RNK_5, SPELL_FAILED_ONLY_SHAPESHIFT);
@@ -1468,7 +1468,7 @@ public:
 			Creature* creature = SpawnCreatureWithPosition(spawnPosition);
             creature->SetOrientation(creature->GetOrientation() + M_PI);
 
-			EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+			EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
             Wait(5000);
 
@@ -1545,7 +1545,7 @@ public:
             Creature* creature = SpawnCreatureWithPosition(spawnPosition);
             creature->SetOrientation(creature->GetOrientation() + M_PI);
 
-            EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+            EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
             // Must be behind & in cat form
             TEST_CAST(druid, creature, ClassSpells::Druid::SHRED_RNK_7, SPELL_FAILED_NOT_BEHIND);
@@ -1617,7 +1617,7 @@ public:
             TEST_ASSERT(creature2->GetArmor() == armor);
             TEST_ASSERT(creature3->GetArmor() == armor);
 
-            EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+            EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
             TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
             // Rage cost
@@ -1668,7 +1668,7 @@ public:
             spawnPosition.MoveInFront(_location, 3.0f);
             Creature* creature = SpawnCreatureWithPosition(spawnPosition);
 
-            EQUIP_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
+            EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
             // Must be in cat form
             TEST_CAST(druid, creature, ClassSpells::Druid::TIGERS_FURY_RNK_4, SPELL_FAILED_ONLY_SHAPESHIFT);
@@ -1920,7 +1920,7 @@ public:
         {
             TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 
-            EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
+            EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
             druid->DisableRegeneration(true);
 
             int32 maceBH = 550;
@@ -1983,7 +1983,7 @@ public:
         {
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
-            EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
+            EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
             druid->DisableRegeneration(true);
 
             int32 maceBH = 550;
@@ -2179,7 +2179,7 @@ public:
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 
-			EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
+			EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
 			druid->DisableRegeneration(true);
 
             int32 maceBH = 550;
@@ -2219,7 +2219,7 @@ public:
         {
             TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 
-            EQUIP_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
+            EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification - 550 BH
             druid->DisableRegeneration(true);
 
             int32 maceBH = 550;
@@ -2355,7 +2355,7 @@ public:
         {
             TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 
-            EQUIP_ITEM(druid, 32500); // Crystal Spire of Karabor - 486 BH
+            EQUIP_NEW_ITEM(druid, 32500); // Crystal Spire of Karabor - 486 BH
             druid->DisableRegeneration(true);
 
             int32 maceBH = 486;

@@ -14,7 +14,7 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
-			EQUIP_ITEM(player, 28783); //Eredar Wand of Obliteration, 177 - 330 Shadow Damage
+			EQUIP_NEW_ITEM(player, 28783); //Eredar Wand of Obliteration, 177 - 330 Shadow Damage
 			uint32 const wandMinDamage = 177;
 			uint32 const wandMaxDamage = 330;
 
@@ -216,7 +216,7 @@ public:
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
-			EQUIP_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
+			EQUIP_NEW_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
 
 			float const startSP = player->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
 			float const startSC = player->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_FIRE);
@@ -250,7 +250,7 @@ public:
 		{
 			Creature* dummyTarget = SpawnCreature();
 			TestPlayer* player = SpawnRandomPlayer(CLASS_MAGE);
-			EQUIP_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
+			EQUIP_NEW_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 spell power
             uint32 arcaneSpellPower = player->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_ARCANE);
 			float const startCoeff = 1.429;
 			float const expectedCoeff = startCoeff + (3 * 0.15);

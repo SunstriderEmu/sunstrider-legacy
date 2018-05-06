@@ -16,7 +16,7 @@ public:
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(mage, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(mage, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = mage->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -68,7 +68,7 @@ public:
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(mage, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(mage, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = mage->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);

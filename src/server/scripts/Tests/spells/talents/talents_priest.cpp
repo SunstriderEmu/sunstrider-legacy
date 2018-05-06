@@ -14,7 +14,7 @@ public:
         void Test() override
         {
             TestPlayer* player = SpawnRandomPlayer(CLASS_PRIEST);
-            EQUIP_ITEM(player, 28783); //Eredar Wand of Obliteration, 177 - 330 Shadow Damage
+            EQUIP_NEW_ITEM(player, 28783); //Eredar Wand of Obliteration, 177 - 330 Shadow Damage
             uint32 const wandMinDamage = 177;
             uint32 const wandMaxDamage = 330;
 

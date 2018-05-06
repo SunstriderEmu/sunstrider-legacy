@@ -16,7 +16,7 @@ public:
         {
             TestPlayer* paladin = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN);
             
-            EQUIP_ITEM(paladin, 34335); // Hammer of Sanctification - 550 BH
+            EQUIP_NEW_ITEM(paladin, 34335); // Hammer of Sanctification - 550 BH
             paladin->DisableRegeneration(true);
             
             int32 maceBH = 550;
@@ -62,7 +62,7 @@ public:
         {
             TestPlayer* paladin = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN);
             
-            EQUIP_ITEM(paladin, 34335); // Hammer of Sanctification - 550 BH
+            EQUIP_NEW_ITEM(paladin, 34335); // Hammer of Sanctification - 550 BH
             paladin->DisableRegeneration(true);
             
             int32 maceBH = 550;

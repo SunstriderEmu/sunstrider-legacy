@@ -17,9 +17,9 @@ public:
             Creature* dummy = SpawnCreature();
 
             // MH, OH, spells
-            EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+            EQUIP_NEW_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
             Wait(1500);
-            EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+            EQUIP_NEW_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
             Wait(1);
             // Damage
             int const sinisterStrikeBonus = 98;

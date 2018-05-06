@@ -224,9 +224,9 @@ public:
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 			LearnTalent(player, Talents::Shaman::DUAL_WIELD_RNK_1);
 			player->SetSkill(44, 0, 350, 350); // Axe
-			EQUIP_ITEM(player, 34331); // Rising Tide MH
+			EQUIP_NEW_ITEM(player, 34331); // Rising Tide MH
 			player->SetSkill(473, 0, 350, 350); // Fist weapon
-			EQUIP_ITEM(player, 34203); // Grip of Mannoroth OH
+			EQUIP_NEW_ITEM(player, 34203); // Grip of Mannoroth OH
 
 			uint32 const minOH = 113;
 			uint32 const maxMH = 313;

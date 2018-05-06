@@ -571,16 +571,29 @@ void TestCase::RemoveItem(TestPlayer* player, uint32 itemID, uint32 count)
     player->DestroyItemCount(itemID, count, true, false);
 }
 
-void TestCase::_EquipItem(TestPlayer* player, uint32 itemID)
+void TestCase::_EquipItem(TestPlayer* player, uint32 itemID, bool newItem)
 {
-    Item* item = player->AddItem(itemID, 1);
-    INTERNAL_ASSERT_INFO("Failed to add item %u to player", itemID);
-    INTERNAL_TEST_ASSERT_NOCOUNT(item != nullptr);
+    Item* item;
+    if (newItem)
+    {
+        item = player->AddItem(itemID, 1);
+        INTERNAL_ASSERT_INFO("_EquipItem: Failed to add item %u to player", itemID);
+        INTERNAL_TEST_ASSERT_NOCOUNT(item != nullptr);
+    }
+    else 
+    {
+        item = player->GetFirstItem(itemID);
+        INTERNAL_ASSERT_INFO("_EquipItem: failed to find any item with id %u", itemID);
+        INTERNAL_TEST_ASSERT(item != nullptr);
+
+        INTERNAL_ASSERT_INFO("_EquipItem: First item found with id %u is already equipped", itemID);
+        INTERNAL_TEST_ASSERT(!item->IsEquipped());
+    }
 
     uint16 dest;
-    uint8 msg2 = player->CanEquipItem(NULL_SLOT, dest, item, !item->IsBag());
-    INTERNAL_ASSERT_INFO("Player cannot equip item %u, reason: %u", itemID, msg2);
-    INTERNAL_TEST_ASSERT_NOCOUNT(msg2 == EQUIP_ERR_OK);
+    uint8 msg = player->CanEquipItem(NULL_SLOT, dest, item, !item->IsBag());
+    INTERNAL_ASSERT_INFO("Player cannot equip item %u, reason: %u", itemID, msg);
+    INTERNAL_TEST_ASSERT_NOCOUNT(msg == EQUIP_ERR_OK);
 
     player->GetSession()->_HandleAutoEquipItemOpcode(item->GetBagSlot(), item->GetSlot());
 

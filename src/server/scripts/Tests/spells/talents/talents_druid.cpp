@@ -144,7 +144,7 @@ public:
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 			Creature* creature = SpawnCreature();
 
-			EQUIP_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_NEW_ITEM(druid, 34182); // Grand Magister's Staff of Torrents - 266 SP
 			druid->DisableRegeneration(true);
 
 			int32 staffSP = 266;
@@ -438,7 +438,7 @@ public:
 
 			LearnTalent(player, Talents::Druid::WRATH_OF_CENARIUS_RNK_5);
 
-			EQUIP_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 SP
+			EQUIP_NEW_ITEM(player, 34182); // Grand Magister's Staff of Torrents - 266 SP
 
 			float const starfireFactor	= 5 * 0.04f;
 			float const wrathFactor		= 5 * 0.02f;
@@ -611,7 +611,7 @@ public:
 			uint32 const startingArmorViaAgi = player->GetStat(STAT_AGILITY) * 2;
 			uint32 const startingArmor = player->GetArmor() - startingArmorViaAgi;
 
-			EQUIP_ITEM(player, 34392); // Demontooth Shoulderpads - 514 Armor (140 hidden) - 38 Agi
+			EQUIP_NEW_ITEM(player, 34392); // Demontooth Shoulderpads - 514 Armor (140 hidden) - 38 Agi
 
 			uint32 const itemArmor = 514 + 140;
 			uint32 const itemAgi = 38 * 2;
@@ -759,7 +759,7 @@ public:
 			Creature* creature = SpawnCreature();
 			creature->DisableRegeneration(true);
 
-			EQUIP_ITEM(player, 30883); // Stanchion of Primal Instinct - 136-293 damage
+			EQUIP_NEW_ITEM(player, 30883); // Stanchion of Primal Instinct - 136-293 damage
 			LearnTalent(player, Talents::Druid::SAVAGE_FURY_RNK_2);
 
 			uint32 res = player->CastSpell(player, ClassSpells::Druid::CAT_FORM_RNK_1);
@@ -818,7 +818,7 @@ public:
 			TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawnPosition);
 			TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawnPosition);
 
-			EQUIP_ITEM(rogue, 34211); // S4 Chest
+			EQUIP_NEW_ITEM(rogue, 34211); // S4 Chest
 			int32 const expectedRogueArmor = rogue->GetArmor() - 610;
 
 			// Only cast in Bear or Cat form
@@ -1079,8 +1079,8 @@ public:
 			spawnPosition.MoveInFront(_location, 3.0f);
 			Creature* creature = SpawnCreatureWithPosition(spawnPosition, 17); // 0 armor
 
-			EQUIP_ITEM(druidWithMangle, 30883); // Pillar of Ferocity - 136-293 damage
-			EQUIP_ITEM(druidTestDamage, 30883); // Pillar of Ferocity - 136-293 damage
+			EQUIP_NEW_ITEM(druidWithMangle, 30883); // Pillar of Ferocity - 136-293 damage
+			EQUIP_NEW_ITEM(druidTestDamage, 30883); // Pillar of Ferocity - 136-293 damage
 
 			LearnTalent(druidWithMangle, Talents::Druid::MANGLE_RNK_1);
 			TEST_ASSERT(druidWithMangle->HasSpell(ClassSpells::Druid::MANGLE_BEAR_RNK_1));
@@ -1704,7 +1704,7 @@ public:
 			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
 			player->DisableRegeneration(true);
 
-			EQUIP_ITEM(player, 34335); // Hammer of Sanctification - 550 SP
+			EQUIP_NEW_ITEM(player, 34335); // Hammer of Sanctification - 550 SP
 
 			LearnTalent(player, Talents::Druid::EMPOWERED_REJUVENATION_RNK_5);
 

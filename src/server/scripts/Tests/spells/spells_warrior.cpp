@@ -31,13 +31,13 @@ public:
 
         if (twoHand)
         {
-            EQUIP_ITEM(warrior, 34247); // Apolyon, the Soul-Render
+            EQUIP_NEW_ITEM(warrior, 34247); // Apolyon, the Soul-Render
         }
         else
         {
-            EQUIP_ITEM(warrior, 32837); // Warglaive of Azzinoth MH
+            EQUIP_NEW_ITEM(warrior, 32837); // Warglaive of Azzinoth MH
             Wait(1500);
-            EQUIP_ITEM(warrior, 32838); // Warglaive of Azzinoth OH
+            EQUIP_NEW_ITEM(warrior, 32838); // Warglaive of Azzinoth OH
         }
     }
 };
@@ -408,7 +408,7 @@ public:
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::RETALIATION_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::RETALIATION_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
             TestRequiresStance(warrior, warrior, true, ClassSpells::Warrior::RETALIATION_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1);
-            EQUIP_ITEM(warrior, 34247); // Apolyon, the Soul-Render
+            EQUIP_NEW_ITEM(warrior, 34247); // Apolyon, the Soul-Render
 
             // Aura
             Aura* aura = warrior->GetAura(ClassSpells::Warrior::RETALIATION_RNK_1);
@@ -1594,7 +1594,7 @@ public:
             spawn.MoveInFront(spawn, 3.0f);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
             TestPlayer* rogue2 = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
-            EQUIP_ITEM(rogue2, 32837); // Warglaive of Azzinoth MH
+            EQUIP_NEW_ITEM(rogue2, 32837); // Warglaive of Azzinoth MH
             Creature* dummy = SpawnCreature();
 
             // Rogue setup
@@ -1607,9 +1607,9 @@ public:
             uint32 const expectedStartMaxDmg = startDmgMax * armorFactor;
             TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedStartMinDmg, expectedStartMaxDmg, false);
 
-            EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+            EQUIP_NEW_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
             Wait(1500);
-            EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+            EQUIP_NEW_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
 
             float const rogueMHSpeed = 2.8f;
             float const rogueOHSpeed = 1.4f;
@@ -1796,7 +1796,7 @@ public:
             TestRequiresStance(warrior, dummy, false, ClassSpells::Warrior::REVENGE_RNK_8, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
             TestRequiresStance(warrior, dummy, true, ClassSpells::Warrior::REVENGE_RNK_8, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
             TestRequiresMeleeWeapon(warrior, dummy, ClassSpells::Warrior::REVENGE_RNK_8, false, SPELL_FAILED_CASTER_AURASTATE);
-            EQUIP_ITEM(warrior, 34185); // Shield
+            EQUIP_NEW_ITEM(warrior, 34185); // Shield
 
             // Triggers
             Wait(5200);
@@ -1837,7 +1837,7 @@ public:
             Creature* dummy = SpawnCreature();
 
             warrior->DisableRegeneration(true);
-            EQUIP_ITEM(warrior, 34185); // Shield
+            EQUIP_NEW_ITEM(warrior, 34185); // Shield
 
             // Stances
             TestRequiresStance(warrior, priest, false, ClassSpells::Warrior::SHIELD_BASH_RNK_4);
@@ -1934,7 +1934,7 @@ public:
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
             TestRequiresMeleeWeapon(warrior, warrior, ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, false, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
-            EQUIP_ITEM(warrior, 8320); //random useless shield
+            EQUIP_NEW_ITEM(warrior, 8320); //random useless shield
 
             // Triggers
             float const startBlock = warrior->GetUnitBlockChance(BASE_ATTACK, warrior);
@@ -1974,10 +1974,10 @@ public:
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
 
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
-            EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+            EQUIP_NEW_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             TestPlayer* hunter = SpawnPlayer(CLASS_HUNTER, RACE_DWARF);
-            EQUIP_ITEM(hunter, 32336); // Black Bow of the Betrayer
+            EQUIP_NEW_ITEM(hunter, 32336); // Black Bow of the Betrayer
 
             // Stances & weapon
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_WALL_RNK_1);
@@ -1985,7 +1985,7 @@ public:
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_WALL_RNK_1, ClassSpells::Warrior::BERSERKER_STANCE_RNK_1);
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SHIELD_WALL_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
             TestRequiresMeleeWeapon(warrior, warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, false, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
-            EQUIP_ITEM(warrior, 34185); // Shield
+            EQUIP_NEW_ITEM(warrior, 34185); // Shield
 
             // Aura
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1);
@@ -2060,7 +2060,7 @@ public:
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, ClassSpells::Warrior::BATTLE_STANCE_RNK_1, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
             TestRequiresStance(warrior, warrior, false, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
             TestRequiresMeleeWeapon(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, false, SPELL_FAILED_EQUIPPED_ITEM_CLASS);
-            EQUIP_ITEM(warrior, 34185); // Shield
+            EQUIP_NEW_ITEM(warrior, 34185); // Shield
 
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
 
@@ -2090,7 +2090,7 @@ public:
 
             // Aura removed when no shield
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            EQUIP_ITEM(warrior, 34247); // Apolyon -- 2 Hands
+            EQUIP_NEW_ITEM(warrior, 34247); // Apolyon -- 2 Hands
             TEST_ASSERT(!warrior->HasAura(ClassSpells::Warrior::SPELL_REFLECTION_RNK_1));
 
             // Rage cost

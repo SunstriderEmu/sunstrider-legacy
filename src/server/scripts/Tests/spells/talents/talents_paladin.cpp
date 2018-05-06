@@ -132,7 +132,7 @@ public:
 
             RemoveAllEquipedItems(player);
 			uint32 const startingArmor = player->GetArmor();
-			EQUIP_ITEM(player, 34185); // Sword Breaker's Bulwark - 6459 armor
+			EQUIP_NEW_ITEM(player, 34185); // Sword Breaker's Bulwark - 6459 armor
 
 			uint32 const shieldArmor = player->GetArmor() - startingArmor;
 			TEST_ASSERT(shieldArmor == 6459);
@@ -384,7 +384,7 @@ public:
 
             RemoveAllEquipedItems(player);
 			uint32 const startingArmor = player->GetArmor();
-			EQUIP_ITEM(player, 34135); // Sword Breaker's Bulwark - 6459 armor
+			EQUIP_NEW_ITEM(player, 34135); // Sword Breaker's Bulwark - 6459 armor
 
 			uint32 const shieldArmor = player->GetArmor() - startingArmor;
 			TEST_ASSERT(shieldArmor == 6459);
@@ -510,8 +510,8 @@ public:
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			EQUIP_ITEM(player, 34164); // 1H Sword
-			EQUIP_ITEM(player, 34185); // Shield
+			EQUIP_NEW_ITEM(player, 34164); // 1H Sword
+			EQUIP_NEW_ITEM(player, 34185); // Shield
 			
 			// Holy shield stacks
 			LearnTalent(player, Talents::Paladin::HOLY_SHIELD_RNK_1);
@@ -785,7 +785,7 @@ public:
 			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_VENGEANCE_RNK_1, expectedJoBMin, expectedJoVMin, false);
 
 			// Crusader Strike
-			EQUIP_ITEM(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
+			EQUIP_NEW_ITEM(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
 			LearnTalent(player, Talents::Paladin::CRUSADER_STRIKE_RNK_1);
 			float const AP = player->GetTotalAttackPowerValue(BASE_ATTACK);
 			float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));
@@ -798,8 +798,8 @@ public:
 
 			/*
 			// Holy shield
-			EQUIP_ITEM(player, 34164); // 1H Sword
-			EQUIP_ITEM(player, 34185); // Shield
+			EQUIP_NEW_ITEM(player, 34164); // 1H Sword
+			EQUIP_NEW_ITEM(player, 34185); // Shield
 
 			LearnTalent(player, Talents::Paladin::HOLY_SHIELD_RNK_1);
 			res = player->CastSpell(player, ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
@@ -980,7 +980,7 @@ public:
 			LearnTalent(player, Talents::Paladin::CRUSADER_STRIKE_RNK_1);
 
 			// Damage
-			EQUIP_ITEM(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
+			EQUIP_NEW_ITEM(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
 			float const AP = player->GetTotalAttackPowerValue(BASE_ATTACK);
 			TEST_ASSERT(AP == 562);
 			float const armorFactor = 1 - (creature->GetArmor() / (creature->GetArmor() + 10557.5));

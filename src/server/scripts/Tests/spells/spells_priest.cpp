@@ -201,7 +201,7 @@ public:
             rogue->ForceSpellHitResult(SPELL_MISS_NONE);
             mage->ForceSpellHitResult(SPELL_MISS_NONE);
 
-            EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare - 292 SP
             priest->DisableRegeneration(true);
             mage->DisableRegeneration(true);
             mage->SetPower(POWER_MANA, 200);
@@ -417,7 +417,7 @@ public:
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
 
-            EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare - 292 SP
             priest->DisableRegeneration(true);
             mage->DisableRegeneration(true);
             Wait(5000);
@@ -456,7 +456,7 @@ public:
         TestPlayer* SpawnShaman(Races race, Position spawn)
         {
             TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, race, 70, spawn);
-            EQUIP_ITEM(shaman, 28523); // Totem
+            EQUIP_NEW_ITEM(shaman, 28523); // Totem
             TEST_CAST(shaman, shaman, ClassSpells::Shaman::MANA_SPRING_TOTEM_RNK_5, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             TEST_CAST(shaman, shaman, ClassSpells::Shaman::GRACE_OF_AIR_TOTEM_RNK_3, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             TEST_CAST(shaman, shaman, ClassSpells::Shaman::STRENGTH_OF_EARTH_TOTEM_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
@@ -697,7 +697,7 @@ public:
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
             uint32 const WEAKENED_SOUL = 6788;
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             int32 expectedAbsorb = ClassSpellsDamage::Priest::POWER_WORD_SHIELD_RNK_12 + ClassSpellsCoeff::Priest::POWER_WORD_SHIELD * 550;
 
@@ -889,7 +889,7 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_NIGHTELF);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
 
             // Mana cost
             uint32 const expectedStarshardsMana = 0;
@@ -1103,7 +1103,7 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* rogue  = SpawnPlayer(CLASS_ROGUE,  RACE_BLOODELF);
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             // Cast & Mana cost
             uint32 const expectedBindingHealMana = 705;
@@ -1181,7 +1181,7 @@ public:
             
             // Damage -- Bug Here, spell coeff too big
             // Note: got a feeling that it crits way too much
-            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
             // DrDamage says 0.142 which is the calculation with castTime = 0.5
             float const chastiseCastTime = 0.5f;
             float const chastiseCoeff = chastiseCastTime / 3.5f;
@@ -1262,7 +1262,7 @@ public:
             TestPlayer* ally = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
 
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             // Mana cost
             uint32 const expectedDesperatePrayerMana = 0;
@@ -1351,7 +1351,7 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             // Mana cost
             uint32 const expectedFlashHealMana = 470;
@@ -1388,7 +1388,7 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             // Mana cost
             uint32 const expectedGreaterHealMana = 825;
@@ -1425,7 +1425,7 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             // Mana cost
             uint32 const expectedHealMana = 305;
@@ -1469,7 +1469,7 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             Creature* creature = SpawnCreature();
 
-            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 BH
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 BH
 
             // Mana cost
             uint32 const expectedHolyFireMana = 290;
@@ -1511,7 +1511,7 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             // Mana cost
             uint32 const expectedLesserHealMana = 75;
@@ -1585,7 +1585,7 @@ public:
             // Priest 6 should end up in group 2 (group 1 is full)
             TEST_ASSERT(!priest->GetGroup()->SameSubGroup(priest, priest6));
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             // Mana cost
             uint32 const expectedPrayerOfHealingMana = 1255;
@@ -1635,7 +1635,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_BLOODELF, 70, spawn);
             spawn.MoveInFront(spawn, -2.0f);
             TestPlayer* priest2 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN, 70, spawn);
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             // Failed
             TEST_CAST(priest, warlock, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, SPELL_FAILED_BAD_TARGETS);
@@ -1695,7 +1695,7 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
 
             // Mana cost
             uint32 const expectedRenewMana = 450;
@@ -1773,7 +1773,7 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
 
             // Mana cost
             uint32 const expectedSmiteMana = 385;
@@ -1814,7 +1814,7 @@ public:
             priest->DisableRegeneration(true);
             priest->SetHealth(1);
 
-            EQUIP_ITEM(priest, 34335); // Hammer of Sanctification -- 183 SP & 550 BH
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 183 SP & 550 BH
 
             // Mana cost
             uint32 const expectedDevouringPlagueMana = 1145;
@@ -1868,7 +1868,7 @@ public:
             tank->SetMaxHealth(30000);
             tank->SetFullHealth();
             FORCE_CAST(tank, tank, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
-            EQUIP_ITEM(tank, 34185); // Shield
+            EQUIP_NEW_ITEM(tank, 34185); // Shield
             tank->SetPower(POWER_RAGE, tank->GetMaxPower(POWER_RAGE));
             tank->Attack(creature, true);
             Wait(500);
@@ -1939,7 +1939,7 @@ public:
             TestPlayer* healRogue = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare - 292 SP
 
             // Mana cost, aura & cd
             // priest applies hex on rogue
@@ -1959,9 +1959,9 @@ public:
 
             // Damage reduction
             {
-                EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+                EQUIP_NEW_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
                 Wait(1500);
-                EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+                EQUIP_NEW_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
                 Wait(1);
                 // Damage 
                 int const hexOfWeaknessDamageMalus = 35;
@@ -2015,7 +2015,7 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
 
             // Mana cost
             uint32 const expectedMindBlastMana = 450;
@@ -2418,7 +2418,7 @@ public:
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
 
             float const shadowWordDeathCastTime = 1.5f;
             float const shadowWordDeathCoeff = shadowWordDeathCastTime / 3.5f;
@@ -2459,7 +2459,7 @@ public:
             priest->GetSpellHistory()->ResetAllCooldowns();
             uint32 warriorHealth = warrior->GetHealth();
             FORCE_CAST(warrior, warrior, ClassSpells::Warrior::DEFENSIVE_STANCE_RNK_1);
-            EQUIP_ITEM(warrior, 34185); // Shield
+            EQUIP_NEW_ITEM(warrior, 34185); // Shield
             warrior->SetPower(POWER_RAGE, 100 * 10);
             FORCE_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
             Wait(1000);
@@ -2533,7 +2533,7 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
 
             // Mana cost
             uint32 const expectedShadowWordPainMana = 575;
@@ -2579,7 +2579,7 @@ public:
             warrior->SetMaxHealth(std::numeric_limits<int32>::max());
             warrior->SetFullHealth();
 
-            EQUIP_ITEM(priest, 34336); // Sunflare -- 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
 
             priest->DisableRegeneration(true);
             uint32 const startingMana = priest->GetPower(POWER_MANA);
@@ -2724,7 +2724,7 @@ public:
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(priest, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare - 292 SP
 
             // Mana cost, aura & cd
             // Priest cast hex on rogue
@@ -2754,9 +2754,9 @@ public:
 
             // Test damage reduc ON MH, OH, spells
             {
-                EQUIP_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+                EQUIP_NEW_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
                 Wait(1500);
-                EQUIP_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+                EQUIP_NEW_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
                 Wait(1);
                 // Damage calc
                 int const touchOfWeaknessMalus = 35;

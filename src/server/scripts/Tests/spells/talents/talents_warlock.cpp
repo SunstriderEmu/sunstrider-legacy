@@ -90,7 +90,7 @@ public:
             LearnTalent(warlock, Talents::Warlock::EMPOWERED_CORRUPTION_RNK_3);
             float const empoweredCorruptionFactor = 0.36f;
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -706,7 +706,7 @@ public:
             TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_5, 570, 15, 15);
             TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_6, 660, 18, 18);
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);

@@ -19,7 +19,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -57,7 +57,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -95,7 +95,7 @@ public:
             TestPlayer* player = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -196,7 +196,7 @@ public:
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
             uint32 const curseOfElementsResistanceMalus = 88;
             rogue->AddAura(ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, rogue);
-            EQUIP_ITEM(rogue, 32420);
+            EQUIP_NEW_ITEM(rogue, 32420);
             uint32 const expectedShadowResistance = 70 + 40 - curseOfElementsResistanceMalus;
             FORCE_CAST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             // Patch 2.1.0 (2007-05-22): "...now [has] a duration of 2 minutes when used on PvP targets." 
@@ -301,7 +301,7 @@ public:
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
             warlock->SetHealth(1);
             warlock->DisableRegeneration(true);
             rogue->DisableRegeneration(true);
@@ -353,7 +353,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34337); // Golden Staff of the Sin'dorei - 183 SP
+            EQUIP_NEW_ITEM(warlock, 34337); // Golden Staff of the Sin'dorei - 183 SP
             warlock->DisableRegeneration(true);
             dummy->DisableRegeneration(true);
 
@@ -410,7 +410,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
             warlock->DisableRegeneration(true);
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
@@ -463,7 +463,7 @@ public:
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
             rogue->DisableRegeneration(true);
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -603,7 +603,7 @@ public:
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -658,7 +658,7 @@ public:
             Creature* dummy2 = SpawnCreature();
             Creature* dummy3 = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -803,7 +803,7 @@ public:
             // Spell damage
             {
                 warlock->DestroyItemCount(MASTER_FIRESTONE, 1, true); //destroy before adding a new one in next macro
-                EQUIP_ITEM(warlock, MASTER_FIRESTONE);
+                EQUIP_NEW_ITEM(warlock, MASTER_FIRESTONE);
                 Wait(1000);
 
                 // Increase fire spell damage by 30
@@ -1006,13 +1006,13 @@ public:
     public:
         CreateSpellstoneTestImpt() : TestCase(STATUS_WIP) { }
 
-        void CreateSpellstone(TestPlayer* caster, uint32 spellstoneSpellId, uint32 spellstone, uint32 expectedManaCost, uint32 criticalStrikeRatingBonus)
+        void CreateSpellstone(TestPlayer* caster, uint32 spellstoneSpellId, uint32 spellstoneItemID, uint32 expectedManaCost, uint32 criticalStrikeRatingBonus)
         {
             const uint32 expectedSpellCritScore = caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL) + criticalStrikeRatingBonus;
             caster->AddItem(SOUL_SHARD, 1);
             TEST_POWER_COST(caster, caster, spellstoneSpellId, POWER_MANA, expectedManaCost);
             TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
-            TEST_ASSERT(caster->GetItemCount(spellstone, false) == 1);
+            TEST_ASSERT(caster->GetItemCount(spellstoneItemID, false) == 1);
             // Equip item
             caster->GetSpellHistory()->ResetAllCooldowns();
             caster->AddAura(5760, caster); // Poison
@@ -1023,7 +1023,8 @@ public:
             caster->AddAura(ClassSpells::Mage::FROSTBOLT_RNK_13, caster); // Magic harmful
             caster->GetSpellHistory()->ResetAllCooldowns();
             // Use item
-            USE_ITEM(caster, caster, spellstone);
+            EQUIP_EXISTING_ITEM(caster, spellstoneItemID);
+            USE_ITEM(caster, caster, spellstoneItemID);
             Wait(1);
             ASSERT_INFO("Crit: %u, expected: %u", caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL), expectedSpellCritScore);
             TEST_ASSERT(caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL) == expectedSpellCritScore);
@@ -1160,7 +1161,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -1191,7 +1192,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             warlock->DisableRegeneration(true);
 
-            EQUIP_ITEM(warlock, 34337); // Golden Staff of the Sin'dorei -- 550 BH
+            EQUIP_NEW_ITEM(warlock, 34337); // Golden Staff of the Sin'dorei -- 550 BH
             uint32 const healingPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS);
             TEST_ASSERT(healingPower == 550);
 
@@ -1579,7 +1580,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -1625,7 +1626,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
             warlock->SetMaxHealth(uint32(10000000));
             warlock->SetFullHealth();
             warlock->DisableRegeneration(true);
@@ -1687,7 +1688,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -1739,7 +1740,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -1786,7 +1787,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -1827,7 +1828,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
@@ -1866,7 +1867,7 @@ public:
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
             Creature* dummy = SpawnCreature();
 
-            EQUIP_ITEM(warlock, 34336); // Sunflare - 292 SP
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
