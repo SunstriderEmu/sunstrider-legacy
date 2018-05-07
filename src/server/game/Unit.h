@@ -735,10 +735,12 @@ private:
 
 struct CleanDamage
 {
-    CleanDamage(uint32 _damage, WeaponAttackType _attackType, MeleeHitOutcome _hitOutCome) :
-    damage(_damage), attackType(_attackType), hitOutCome(_hitOutCome) {}
+    CleanDamage(uint32 mitigated, uint32 absorbed, WeaponAttackType _attackType, MeleeHitOutcome _hitOutCome) :
+        absorbed_damage(absorbed), mitigated_damage(mitigated), attackType(_attackType), hitOutCome(_hitOutCome) {}
 
-    uint32 damage;
+    uint32 absorbed_damage;
+    uint32 mitigated_damage;
+
     WeaponAttackType attackType;
     MeleeHitOutcome hitOutCome;
 };

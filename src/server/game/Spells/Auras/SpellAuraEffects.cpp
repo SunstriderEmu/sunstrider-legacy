@@ -943,7 +943,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, uint3
         }
     }
 
-    CleanDamage cleanDamage = CleanDamage(0, BASE_ATTACK, MELEE_HIT_NORMAL);
+    CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     // ignore negative values (can be result apply spellmods to aura damage
     uint32 damage = std::max(GetAmount(), 0);
@@ -1078,7 +1078,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
         return;
     }
 
-    CleanDamage cleanDamage = CleanDamage(0, BASE_ATTACK, MELEE_HIT_NORMAL);
+    CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     uint32 pdamage = std::max(GetAmount(), 0);
 
@@ -1282,7 +1282,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, uint32 
         {
             caster->SendSpellNonMeleeDamageLog(caster, GetId(), healInfo.GetEffectiveHeal(), GetSpellInfo()->GetSchoolMask(), 0, 0, false, 0, false);
 
-            CleanDamage cleanDamage = CleanDamage(0, BASE_ATTACK, MELEE_HIT_NORMAL);
+            CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
             Unit::DealDamage(caster, caster, healInfo.GetEffectiveHeal(), &cleanDamage, NODAMAGE, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), true);
         }
     }

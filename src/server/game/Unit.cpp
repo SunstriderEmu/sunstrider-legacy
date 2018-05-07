@@ -816,16 +816,22 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
         else
             pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, 0);
             
+        // interrupt spells with SPELL_INTERRUPT_FLAG_ABORT_ON_DMG on absorbed damage (no dots)
+        if (!damage && damagetype != DOT && cleanDamage && cleanDamage->absorbed_damage)
+        {
+            if (pVictim != attacker && pVictim->GetTypeId() == TYPEID_PLAYER)
+            {
+                if (Spell* spell = pVictim->m_currentSpells[CURRENT_GENERIC_SPELL])
+                    if (spell->getState() == SPELL_STATE_PREPARING)
+                    {
+                        uint32 interruptFlags = spell->m_spellInfo->InterruptFlags;
+                        if ((interruptFlags & SPELL_INTERRUPT_FLAG_ABORT_ON_DMG) != 0)
+                            pVictim->InterruptNonMeleeSpells(false);
+                    }
+            }
+        }
+
         pVictim->RemoveSpellbyDamageTaken(damage, spellProto ? spellProto->Id : 0);
-    }
-
-    if(!damage)
-    {
-        // Rage from physical damage received .
-        if(cleanDamage && cleanDamage->damage && (damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL) && pVictim->GetTypeId() == TYPEID_PLAYER && (pVictim->GetPowerType() == POWER_RAGE))
-            (pVictim->ToPlayer())->RewardRage(cleanDamage->damage, 0, false);
-
-        return 0;
     }
 
     //TC_LOG_DEBUG("FIXME","DealDamageStart");
@@ -852,31 +858,28 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
         switch(cleanDamage->attackType)
         {
             case BASE_ATTACK:
-            {
-                if(cleanDamage->hitOutCome == MELEE_HIT_CRIT)
-                    weaponSpeedHitFactor = uint32(attacker->GetAttackTime(cleanDamage->attackType)/1000.0f * 7);
-                else
-                    weaponSpeedHitFactor = uint32(attacker->GetAttackTime(cleanDamage->attackType)/1000.0f * 3.5f);
-
-                (attacker->ToPlayer())->RewardRage(damage, weaponSpeedHitFactor, true);
-
-                break;
-            }
             case OFF_ATTACK:
             {
-                if(cleanDamage->hitOutCome == MELEE_HIT_CRIT)
-                    weaponSpeedHitFactor = uint32(attacker->GetAttackTime(cleanDamage->attackType)/1000.0f * 3.5f);
-                else
-                    weaponSpeedHitFactor = uint32(attacker->GetAttackTime(cleanDamage->attackType)/1000.0f * 1.75f);
+                weaponSpeedHitFactor = uint32(attacker->GetAttackTime(cleanDamage->attackType) / 1000.0f * (cleanDamage->attackType == BASE_ATTACK ? 3.5f : 1.75f));
+                if (cleanDamage->hitOutCome == MELEE_HIT_CRIT)
+                    weaponSpeedHitFactor *= 2;
 
                 (attacker->ToPlayer())->RewardRage(damage, weaponSpeedHitFactor, true);
-
                 break;
             }
             case RANGED_ATTACK:
             default:
                 break;
         }
+    }
+
+    if (!damage)
+    {
+        // Rage from absorbed damage
+        if (cleanDamage && cleanDamage->absorbed_damage && pVictim->GetPowerType() == POWER_RAGE && pVictim->GetTypeId() == TYPEID_PLAYER)
+            (pVictim->ToPlayer())->RewardRage(cleanDamage->absorbed_damage, 0, false);
+
+        return 0;
     }
 
     if(attacker && pVictim->GetTypeId() == TYPEID_PLAYER && attacker->GetTypeId() == TYPEID_PLAYER)
@@ -945,7 +948,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
             // Rage from damage received
             if(attacker != pVictim && pVictim->GetPowerType() == POWER_RAGE)
             {
-                uint32 rage_damage = damage + (cleanDamage ? cleanDamage->damage : 0);
+                uint32 rage_damage = damage + (cleanDamage ? cleanDamage->absorbed_damage : 0);
                 (pVictim->ToPlayer())->RewardRage(rage_damage, 0, false);
             }
 
@@ -983,7 +986,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
                     if (spell->getState() == SPELL_STATE_PREPARING)
                     {
                         uint32 interruptFlags = spell->m_spellInfo->InterruptFlags;
-                        if (interruptFlags & SPELL_INTERRUPT_FLAG_DAMAGE)
+                        if (interruptFlags & SPELL_INTERRUPT_FLAG_ABORT_ON_DMG)
                             pVictim->InterruptNonMeleeSpells(false);
                         else if (interruptFlags & SPELL_INTERRUPT_FLAG_PUSH_BACK)
                             spell->Delayed();
@@ -1219,7 +1222,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
         }
     }
     // Call default DealDamage
-    CleanDamage cleanDamage(damageInfo->cleanDamage, BASE_ATTACK, MELEE_HIT_NORMAL);
+    CleanDamage cleanDamage(damageInfo->cleanDamage, damageInfo->absorb, BASE_ATTACK, MELEE_HIT_NORMAL);
     Unit::DealDamage(this, pVictim, damageInfo->damage, &cleanDamage, SPELL_DIRECT_DAMAGE, SpellSchoolMask(damageInfo->schoolMask), spellProto, durabilityLoss);
 
 #ifdef TESTS
@@ -1594,7 +1597,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
     for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
     {
         // Call default DealDamage
-        CleanDamage cleanDamage(damageInfo->CleanDamage, damageInfo->AttackType, damageInfo->HitOutCome);
+        CleanDamage cleanDamage(damageInfo->CleanDamage, damageInfo->Damages[i].Absorb, damageInfo->AttackType, damageInfo->HitOutCome);
         Unit::DealDamage(this, pVictim, damageInfo->Damages[i].Damage, &cleanDamage, DIRECT_DAMAGE, SpellSchoolMask(damageInfo->Damages[i].DamageSchoolMask), nullptr, durabilityLoss);
     }
 
@@ -2213,8 +2216,11 @@ uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 
             if (Unit* attacker = damageInfo.GetAttacker())
                 attacker->SendSpellNonMeleeDamageLog(caster, (*itr)->GetSpellInfo()->Id, splitted, damageInfo.GetSchoolMask(), splitted_absorb, 0, false, 0, false);
 
-            CleanDamage cleanDamage = CleanDamage(splitted, BASE_ATTACK, MELEE_HIT_NORMAL);
+            CleanDamage cleanDamage = CleanDamage(splitted, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
             Unit::DealDamage(damageInfo.GetAttacker(), caster, splitted, &cleanDamage, DIRECT_DAMAGE, damageInfo.GetSchoolMask(), (*itr)->GetSpellInfo(), false);
+
+            // sun: also proc here
+            Unit::ProcSkillsAndAuras(damageInfo.GetAttacker(), caster, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_SPELL_TYPE_DAMAGE, PROC_SPELL_PHASE_HIT, PROC_HIT_NONE, nullptr, &damageInfo, nullptr);
         }
 
         // We're going to call functions which can modify content of the list during iteration over it's elements
@@ -2258,11 +2264,11 @@ uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 
             if (Unit* attacker = damageInfo.GetAttacker())
                 attacker->SendSpellNonMeleeDamageLog(caster, (*itr)->GetSpellInfo()->Id, splitDamage, damageInfo.GetSchoolMask(), split_absorb, 0, false, 0, false);
 
-            CleanDamage cleanDamage = CleanDamage(splitDamage, BASE_ATTACK, MELEE_HIT_NORMAL);
+            CleanDamage cleanDamage = CleanDamage(splitDamage, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
             Unit::DealDamage(damageInfo.GetAttacker(), caster, splitDamage, &cleanDamage, DIRECT_DAMAGE, damageInfo.GetSchoolMask(), (*itr)->GetSpellInfo(), false);
 
             // break 'Fear' and similar auras
-            //TC Unit::ProcSkillsAndAuras(damageInfo.GetAttacker(), caster, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_SPELL_TYPE_DAMAGE, PROC_SPELL_PHASE_HIT, PROC_HIT_NONE, nullptr, &damageInfo, nullptr);
+            Unit::ProcSkillsAndAuras(damageInfo.GetAttacker(), caster, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_SPELL_TYPE_DAMAGE, PROC_SPELL_PHASE_HIT, PROC_HIT_NONE, nullptr, &damageInfo, nullptr);
         }
     }
 }

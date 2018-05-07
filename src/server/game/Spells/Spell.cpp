@@ -7340,7 +7340,7 @@ void Spell::Delayed() // only called in DealDamage()
         return;
 
     // spells not loosing casting time ( slam, dynamites, bombs.. )
-    if(!(m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_DAMAGE))
+    if(!(m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_PUSH_BACK))
         return;
 
 #ifdef LICH_KING
@@ -8505,7 +8505,7 @@ void Spell::PrepareTriggersExecutedOnHit()
 
 bool Spell::IsAutoActionResetSpell() const
 {
-    /// @todo changed SPELL_INTERRUPT_FLAG_AUTOATTACK -> SPELL_INTERRUPT_FLAG_INTERRUPT to fix compile - is this check correct at all?
+    /// @todo changed SPELL_INTERRUPT_FLAG_INTERRUPT -> SPELL_INTERRUPT_FLAG_INTERRUPT to fix compile - is this check correct at all?
     if (IsTriggered() || !(m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT))
         return false;
 
