@@ -44,6 +44,7 @@ class Object;
 class TempSummon;
 struct Position;
 struct SummonPropertiesEntry;
+class TestThread;
 
 struct ScriptAction
 {
@@ -862,8 +863,12 @@ public:
     void DisconnectAllBots();
     Player* GetFirstHumanPlayer();
     uint32 GetLastDiff() const { return _lastDiff; }
+    TestThread const* GetTestThread() const { return _testThread; }
+    void SetTestThread(TestThread const* testThread) { _testThread = testThread; }
+
 private:
     uint32 _lastDiff;
+    TestThread const* _testThread; //TestMap will use the TestThread for some time sync with the test waits
 };
 
 class TC_GAME_API BattlegroundMap : public Map

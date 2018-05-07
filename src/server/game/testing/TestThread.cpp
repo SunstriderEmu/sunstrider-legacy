@@ -33,6 +33,8 @@ void TestThread::Run()
         bool setupSuccess = _testCase->_InternalSetup();
         if(!setupSuccess)
             _testCase->_Fail("Failed to setup test");
+        if (TestMap* testMap = _testCase->GetMap())
+            testMap->SetTestThread(this);
 
         _testCase->Test();
         if (_testCase->GetTestCount() == 0)
@@ -50,6 +52,8 @@ void TestThread::Run()
         _testCase->_FailNoException(e.what());
     }
 
+    if (TestMap* testMap = _testCase->GetMap())
+        testMap->SetTestThread(nullptr);
     _testCase->_Cleanup();
     _state = STATE_FINISHED;
 

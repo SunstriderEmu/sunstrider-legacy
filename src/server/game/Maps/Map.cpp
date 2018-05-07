@@ -37,6 +37,7 @@
 #include "ScriptMgr.h"
 #ifdef TESTS
 #include "TestCase.h"
+#include "TestThread.h"
 #endif
 
 #define DEFAULT_GRID_EXPIRY     300
@@ -768,6 +769,14 @@ void Map::DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate /* = 0*/)
     }
     if (diff > maxDiff)
         diff = maxDiff;
+#ifdef TESTS
+    //If a test is currently waiting, lets cheat a bit and make sure the wait end time coincide with the map diff if the diff is enough to finish the wait
+    if(GetMapType() == MAP_TYPE_TEST_MAP)
+        if (TestThread const* testThread = static_cast<TestMap*>(this)->GetTestThread())
+            if (uint32 const testWaitTimer = testThread->GetWaitTimer())
+                if (diff > testWaitTimer)
+                    diff = testWaitTimer;
+#endif
     _lastMapUpdate = now;
     Update(diff);
 }
@@ -2802,7 +2811,7 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 instanceId, uint8 spaw
 }
 
 TestMap::TestMap(uint32 id, uint32 instanceId, uint8 spawnMode, Map* _parent, bool enableMapObjects)
-    : InstanceMap(id, 0, instanceId, spawnMode, _parent), _lastDiff(0)
+    : InstanceMap(id, 0, instanceId, spawnMode, _parent), _lastDiff(0), _testThread(nullptr)
 {
     i_mapType = MAP_TYPE_TEST_MAP;
     m_unloadTimer = 0; //disable unload for test maps

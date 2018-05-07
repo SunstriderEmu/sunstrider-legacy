@@ -39,6 +39,7 @@ public:
     void WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test);
     // Sleep caller execution for given ms (MUST BE called from the TestCase only). False if test is cancelling
     bool Wait(uint32 ms);    
+    uint32 GetWaitTimer() const { return _waitTimer;  }
     
     //stop and fail tests as soon as possible
     void Cancel();
