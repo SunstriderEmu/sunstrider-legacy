@@ -87,17 +87,13 @@ void TestMgr::Update()
     if (!_running || _loading)
         return;
 
-    uint32 available_threads = std::thread::hardware_concurrency();
-
-    //prepare X first tests from _remainingTests and copy them in updatingTests 
+    //copy all tests from _remainingTests to updatingTests 
     std::vector<std::pair<uint32, std::shared_ptr<TestThread>>> updatingTests;
-    uint32 usedThreads = 0;
     auto remaining_itr = _remainingTests.begin();
-    while (usedThreads < available_threads && remaining_itr != _remainingTests.end())
+    while (remaining_itr != _remainingTests.end())
     {
         updatingTests.push_back(std::make_pair(remaining_itr->first, remaining_itr->second));
         remaining_itr++;
-        usedThreads++;
     }
 
     // Tests are being run in threads and executed in parralel. Threads are actually used to keep the call stack rather than running tests in parallel.
