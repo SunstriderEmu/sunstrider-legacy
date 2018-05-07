@@ -653,7 +653,7 @@ public:
     class SeedOfCorruptionTestImpt : public TestCase
     {
     public:
-        SeedOfCorruptionTestImpt() : TestCase(STATUS_WIP) { }
+        SeedOfCorruptionTestImpt() : TestCase(STATUS_PASSING) { }
 
         void ResetDummiesHealth(Creature* dummy1, Creature* dummy2, Creature* dummy3) {
             dummy1->SetFullHealth();
@@ -686,31 +686,42 @@ public:
             float const directCoeff = ClassSpellsCoeff::Warlock::SEED_OF_CORRUPTION;
             
             uint32 const seedOfCorruptionTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK + spellPower * dotCoeff / tickAmount;
-            uint32 const expectedTotalAmount = (tickAmount - 1) * seedOfCorruptionTick; // with spell power, it reaches detonation threshold (1044) at the 5th tick
-            TEST_DOT_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedTotalAmount, true);
+            uint32 const expectedTicksTotalAmount = (tickAmount - 1) * seedOfCorruptionTick; // with spell power, it reaches detonation threshold (1044) at the 5th tick
+            TEST_DOT_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedTicksTotalAmount, true);
 
             uint32 const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN + spellPower * directCoeff;
             uint32 const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX + spellPower * directCoeff;
-            //FIXME: two next lines not working ("GetSpellDamageDoneInfoTo found no data for this victim (Testing Creature)")
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false);
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin * 1.5f, expectedDetonationMax * 1.5f, true);
+            //okay now... this is dirty. We cant just use TEST_DIRECT_SPELL_DAMAGE because damage are not done on target but on enemies around him. So we're using the callback to cast another one on the warlock at each loop that will hit enemies
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            auto dirtyCallback = [](Unit* caster, Unit* target) {
+                caster->CastSpell(caster, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, true);
+            };
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false, dirtyCallback);
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin * 1.5f, expectedDetonationMax * 1.5f, true, dirtyCallback);
 
             // SoC detonates upon its victim taking 1044 damage
             ResetDummiesHealth(dummy1, dummy2, dummy3);
             uint32 const maxHealth = dummy1->GetHealth();
             FORCE_CAST(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             Wait(18100);
-            TEST_ASSERT(dummy1->GetHealth() == maxHealth - expectedTotalAmount);
+            TEST_ASSERT(dummy1->GetHealth() == maxHealth - expectedTicksTotalAmount);
             TEST_ASSERT(dummy2->GetHealth() < maxHealth);
             TEST_ASSERT(dummy3->GetHealth() < maxHealth);
 
             // SoC detonates upon its victim's death
             ResetDummiesHealth(dummy1, dummy2, dummy3);
-            FORCE_CAST(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-            FORCE_CAST(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-            dummy1->KillSelf(); // TODO: that doesnt detonate its SoC, should just damage to death
-            TEST_ASSERT(dummy2->GetHealth() < maxHealth && dummy3->GetHealth() < maxHealth);
+            FORCE_CAST(warlock, dummy1, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+            FORCE_CAST(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+            //kill dummy1, should detonate
+            dummy1->SetHealth(1);
+            FORCE_CAST(warlock, dummy1, ClassSpells::Warlock::SEARING_PAIN_RNK_8, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+            TEST_ASSERT(dummy2->GetHealth() < maxHealth);
+            TEST_ASSERT(dummy3->GetHealth() < maxHealth);
+
             // SoC detonation does not detonate other SoC
+            //  "The seed will detonate early if the target is hit by other detonations" (WoWWiki but at Legion time)
+            // "SoC detonation can be set off by any damage" (WoWWiki TBC)
+            // However THIS "http://wowwiki.wikia.com/wiki/Talk:Seed_of_Corruption" seems to claim that previous affirmation are false
             TEST_HAS_AURA(dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1);
 
             // Test mana cost

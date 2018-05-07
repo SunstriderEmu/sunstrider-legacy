@@ -153,8 +153,7 @@ public:
     // Test must use macro so that we can store from which line their calling. If calling function does a direct call without using the macro, we just print the internal line */
 
     /* Will cast the spell a bunch of time and test if results match the expected damage.
-     Caster must be a TestPlayer or a pet/summon of him
-     Note for multithread: You can only have only one TestDirectSpellDamage function running for each caster/target combination at the same time*/
+     Caster must be a TestPlayer or a pet/summon of him*/
     #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true, {}); _ResetCaller(); }
     // same as TEST_DIRECT_SPELL_DAMAGE but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     typedef std::function<void(Unit*, Unit*)> TestCallback;

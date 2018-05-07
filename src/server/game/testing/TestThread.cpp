@@ -45,6 +45,7 @@ void TestThread::Run()
     }
     catch (TestException e)
     {
+        _testCase->Sadness();
         //test failed! nothing more to do, failure message is already handled by TestCase
     }
     catch (std::exception& e)
