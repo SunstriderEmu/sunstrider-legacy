@@ -53,7 +53,8 @@ void TestThread::Run()
         _testCase->_FailNoException(e.what());
     }
 
-    _testCase->GetMap()->SetTestThread(nullptr);
+    if(_testCase->GetMap()) //may have no map if setup failed
+        _testCase->GetMap()->SetTestThread(nullptr);
     _testCase->_Cleanup();
     _state = STATE_FINISHED;
 

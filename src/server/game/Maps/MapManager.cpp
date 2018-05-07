@@ -277,15 +277,18 @@ void MapManager::UnloadAll()
     Map::DeleteStateMachine();
 }
 
-TestMap* MapManager::CreateTestMap(uint32 mapid, uint32& testMapInstanceId, Difficulty diff, bool enableMapObjects)
+std::pair<TestMap*, uint32 /*testMapInstanceId*/> MapManager::CreateTestMap(uint32 mapid, Difficulty diff, bool enableMapObjects)
 {
     MapInstanced* mapInstanced = static_cast<MapInstanced*>(CreateBaseMap(mapid, true));
     if (!mapInstanced)
-        return nullptr;
+        return {};
 
-    testMapInstanceId = sMapMgr->GenerateInstanceId();
+    uint32 testMapInstanceId = sMapMgr->GenerateInstanceId();
     TestMap* testMap = mapInstanced->CreateTestInsteance(testMapInstanceId, diff, enableMapObjects);
-    return testMap;
+    if (!testMap)
+        return {};
+
+    return { testMap, testMapInstanceId };
 }
 
 bool MapManager::UnloadTestMap(uint32 mapId, uint32 instanceId)

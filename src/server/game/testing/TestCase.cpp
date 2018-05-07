@@ -174,7 +174,7 @@ void TestCase::_Cleanup()
 {
     Cleanup(); //test defined additional cleanup
 
-    if (_testMapInstanceId)
+    if(_testMapInstanceId) //may have no map if setup failed
         sMapMgr->UnloadTestMap(_location.GetMapId(), _testMapInstanceId);
 }
 
@@ -183,9 +183,13 @@ bool TestCase::_InternalSetup()
     ASSERT(!_map);
     ASSERT(_location.GetMapId() != MAPID_INVALID);
 
-    _map = sMapMgr->CreateTestMap(_location.GetMapId(), _testMapInstanceId, _diff, _enableMapObjects);
+    auto pair = sMapMgr->CreateTestMap(_location.GetMapId(), _diff, _enableMapObjects);
+    _map = pair.first;
     if (!_map)
         return false;
+
+    _testMapInstanceId = pair.second;
+    ASSERT(_testMapInstanceId);
 
     _setup = true;
     return true;
