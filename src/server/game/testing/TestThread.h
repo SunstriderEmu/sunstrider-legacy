@@ -16,8 +16,10 @@ public:
 
 class TestThread
 {
-    friend class TestCase; //to allow calling Wait
+    friend class TestCase; //to allow calling Wait and HandleThreadPause
 public:
+    const uint32 MAX_UPDATE_TIME_MS = 200;
+
     //Create thread with test, do not start immediately
     TestThread(std::shared_ptr<TestCase> test);
     //Start test!
@@ -39,6 +41,7 @@ public:
     // Sleep caller execution until ... (this does not sleep the test thread)
     void WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test);
     uint32 GetWaitTimer() const { return _waitTimer;  }
+    bool IsPaused() const { return _state == STATE_PAUSED; }
     
     //stop and fail tests as soon as possible
     void Cancel();
@@ -48,13 +51,14 @@ public:
         STATE_NOT_STARTED, //not yet running
         STATE_RUNNING, 
         STATE_WAITING,
+        STATE_PAUSED, //almost the same as waiting, but map will skip updates when we're paused. A pause is always removed at the next update.
         STATE_FINISHED,
     };
 
 private:
     std::shared_ptr<TestCase> _testCase;
     uint32 _lastMapUpdateTime; //last update time of the map, the last time we updated the test. This is used to make sure the map has updated before updating our test.
-    std::future<void> _future;
+    std::future<void> _future; //the actual thread containing the test
     std::atomic<ThreadState> _state; // this thread may be finished either because test finished, or because test was cancelled
 
     //Set wait time for the thread. (will not notify anything)
@@ -63,9 +67,14 @@ private:
     std::condition_variable _testCV;
     std::mutex _testCVMutex;
     std::atomic<uint32>     _waitTimer;
+    // --
+    milliseconds _thisUpdateStartTimeMS;
+
 
     // Sleep caller execution for given ms (MUST BE called from the TestCase only). False if test is cancelling
     bool Wait(uint32 ms);
+    //This will make the thread pause itself and resume in the next udpate if it has been running too long (MUST BE called from the TestCase only)
+    void HandleThreadPause();
 };
 
 #endif // TESTTHREAD_H

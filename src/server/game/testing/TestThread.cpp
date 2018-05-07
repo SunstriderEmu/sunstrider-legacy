@@ -35,6 +35,7 @@ void TestThread::Run()
             _testCase->_Fail("Failed to setup test");
 
         _testCase->GetMap()->SetTestThread(this);
+        _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
         _testCase->Test();
         if (_testCase->GetTestCount() == 0)
@@ -71,7 +72,7 @@ void TestThread::WakeUp()
 void TestThread::ResumeExecution()
 {
     //resume execution if wait finished
-    if (_waitTimer == 0)
+    if (_waitTimer == 0 || _state == STATE_PAUSED)
     {
         _state = STATE_RUNNING;
         WakeUp();
@@ -80,6 +81,9 @@ void TestThread::ResumeExecution()
 
 void TestThread::UpdateWaitTimer()
 {
+    if (_state == STATE_PAUSED) //if thread is paused, time is frozen
+        return;
+
     TestMap const* testMap = _testCase->GetMap();
     if (!testMap)
         return; //test may not be setup yet
@@ -110,7 +114,7 @@ void TestThread::WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test)
         return; //no sleep to do
 
     //TC_LOG_TRACE("test.unit_test", "Test tread with test name %s will now WaitUntilDoneOrWaiting", test->GetName().c_str());
-    _testCV.wait(lk, [this] {return  _state == STATE_FINISHED || _state == STATE_WAITING; });
+    _testCV.wait(lk, [this] {return  _state == STATE_FINISHED || _state == STATE_WAITING || _state == STATE_PAUSED; });
     //TC_LOG_TRACE("test.unit_test", "Test tread with test name %s has finished waiting", test->GetName().c_str());
 }
 
@@ -149,4 +153,23 @@ bool TestThread::Wait(uint32 ms)
     if(_state == STATE_WAITING)
         _state = STATE_RUNNING;
     return true;
+}
+
+void TestThread::HandleThreadPause()
+{
+    if (_state != STATE_RUNNING)
+        return;
+
+    //pause if we used too much time in this update
+    milliseconds const nowMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+    milliseconds const elapsedTimeMS = nowMS - _thisUpdateStartTimeMS;
+    if (elapsedTimeMS.count() > MAX_UPDATE_TIME_MS)
+    {
+        _state = STATE_PAUSED;
+        WakeUp(); //wake up TestMgr which may be waiting in WaitUntilDoneOrWaiting
+
+        //Now pause exec
+        std::unique_lock<std::mutex> lk(_testCVMutex);
+        _testCV.wait(lk, [this] { return _state != STATE_PAUSED; });
+    }
 }

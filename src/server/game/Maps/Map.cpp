@@ -770,12 +770,18 @@ void Map::DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate /* = 0*/)
     if (diff > maxDiff)
         diff = maxDiff;
 #ifdef TESTS
-    //If a test is currently waiting, lets cheat a bit and make sure the wait end time coincide with the map diff if the diff is enough to finish the wait
     if(GetMapType() == MAP_TYPE_TEST_MAP)
         if (TestThread const* testThread = static_cast<TestMap*>(this)->GetTestThread())
+        {
+            //if thread is paused, skip this update
+            if (testThread->IsPaused())
+                return;
+
+            //If a test is currently waiting, lets cheat a bit and make sure the wait end time coincide with the map diff if the diff is enough to finish the wait
             if (uint32 const testWaitTimer = testThread->GetWaitTimer())
                 if (diff > testWaitTimer)
                     diff = testWaitTimer;
+        }
 #endif
     _lastMapUpdate = now;
     Update(diff);

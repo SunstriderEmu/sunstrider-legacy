@@ -165,6 +165,11 @@ void TestCase::Wait(uint32 ms)
         _Fail("Test was canceled (TestCase)");
 }
 
+void TestCase::HandleThreadPause()
+{
+    _testThread->HandleThreadPause();
+}
+
 void TestCase::_Cleanup()
 {
     Cleanup(); //test defined additional cleanup
@@ -736,6 +741,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
         caster->ForceSpellHitResult(previousForceHitResult);
         INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
+        HandleThreadPause();
     }
 
     uint32 dealtMin;
@@ -779,10 +785,14 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     MeleeHitOutcome previousForceMeleeResult = caster->_forceMeleeResult;
     caster->ForceMeleeHitResult(crit ? MELEE_HIT_CRIT : MELEE_HIT_NORMAL);
     for (uint32 i = 0; i < sampleSize; i++)
-    if (attackType != RANGED_ATTACK)
-        caster->AttackerStateUpdate(target, attackType);
-    else
-        caster->CastSpell(target, 75, TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED)); //shoot
+    {
+        if (attackType != RANGED_ATTACK)
+            caster->AttackerStateUpdate(target, attackType);
+        else
+            caster->CastSpell(target, 75, TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED)); //shoot
+
+        HandleThreadPause();
+    }
     caster->ForceMeleeHitResult(previousForceMeleeResult);
 
     uint32 dealtMin;
@@ -1201,6 +1211,7 @@ void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spel
 
         victim->SetFullHealth();
         caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+        HandleThreadPause();
     }
 
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
@@ -1234,6 +1245,7 @@ void TestCase::_TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttac
     {
         victim->SetFullHealth();
         caster->AttackerStateUpdate(victim, weaponAttackType);
+        HandleThreadPause();
     }
 
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
@@ -1535,6 +1547,7 @@ void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spe
     {
         victim->SetFullHealth();
         caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+        HandleThreadPause();
     }
 
     Wait(1); //wait an update before restoring health, some procs may have occured
