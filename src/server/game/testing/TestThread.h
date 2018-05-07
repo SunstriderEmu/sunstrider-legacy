@@ -16,6 +16,7 @@ public:
 
 class TestThread
 {
+    friend class TestCase; //to allow calling Wait
 public:
     //Create thread with test, do not start immediately
     TestThread(std::shared_ptr<TestCase> test);
@@ -31,14 +32,12 @@ public:
     //Main function for thread
     void Run();
     //update test Wait Timer but do not notify anything
-    void UpdateWaitTimer(uint32 const diff);
+    void UpdateWaitTimer();
     std::shared_ptr<TestCase> GetTest() const { return _testCase; };
     bool IsFinished() const;
 
     // Sleep caller execution until ... (this does not sleep the test thread)
     void WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test);
-    // Sleep caller execution for given ms (MUST BE called from the TestCase only). False if test is cancelling
-    bool Wait(uint32 ms);    
     uint32 GetWaitTimer() const { return _waitTimer;  }
     
     //stop and fail tests as soon as possible
@@ -64,6 +63,9 @@ private:
     std::condition_variable _testCV;
     std::mutex _testCVMutex;
     std::atomic<uint32>     _waitTimer;
+
+    // Sleep caller execution for given ms (MUST BE called from the TestCase only). False if test is cancelling
+    bool Wait(uint32 ms);
 };
 
 #endif // TESTTHREAD_H

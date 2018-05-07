@@ -23,7 +23,7 @@ public:
     std::string ListAvailable(std::string filter) const;
     std::string ListRunning(std::string filter) const;
     bool GoToTest(Player*, uint32 testId) const;
-    void Update(uint32 const diff);
+    void Update();
     //cancel all tests, print to all players when stopped. This is not instantaneous since test are stopped on next Wait or completion
     void Cancel();
 

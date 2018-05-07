@@ -82,7 +82,7 @@ bool TestMgr::Run(std::string args)
     return true;
 }
 
-void TestMgr::Update(uint32 const diff)
+void TestMgr::Update()
 {
     if (!_running || _loading)
         return;
@@ -112,7 +112,7 @@ void TestMgr::Update(uint32 const diff)
         if (!testThread->IsStarted())
             testThread->Start();
 
-        testThread->UpdateWaitTimer(diff);
+        testThread->UpdateWaitTimer();
         testThread->ResumeExecution();
         testThread->WaitUntilDoneOrWaiting(test);
         //from this line we be sure that the test thread is not currently running
@@ -209,8 +209,6 @@ bool TestMgr::GoToTest(Player* player, uint32 testId) const
     auto testThread = (*test).second;
     auto testCase = testThread->GetTest();
     TestMap* testMap = testCase->GetMap();
-    if (!testMap) //test may be spawned without a map
-        return false;
 
     WorldLocation const& loc = testCase->GetLocation();
     

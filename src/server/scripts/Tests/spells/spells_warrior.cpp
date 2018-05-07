@@ -6,7 +6,7 @@
 class TestCaseWarrior : public TestCase
 {
 public:
-    TestCaseWarrior(TestStatus status, bool needMap = true) : TestCase(status, true) {}
+    TestCaseWarrior(TestStatus status, bool needMap = true) : TestCase(status) {}
     TestCaseWarrior(TestStatus status, WorldLocation const& loc) : TestCase(status, loc) {}
 
     void TestRequiresStance(TestPlayer* warrior, Unit* victim, bool success, uint32 testSpellId, uint32 stanceSpellId = 0, SpellCastResult result = SPELL_FAILED_ONLY_SHAPESHIFT)

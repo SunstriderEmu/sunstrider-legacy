@@ -921,7 +921,7 @@ public:
 	class DemonicAegisTestImpt : public TestCase
 	{
 	public:
-		DemonicAegisTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { } // Talent is OK, Demon Armor spell is not
+		DemonicAegisTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Talent is OK, Demon Armor spell is not
 
         void TestDemonArmorBonuses(TestPlayer* caster, Creature* victim, float talentFactor, uint32 demonArmorSpellId, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
         {
@@ -1073,7 +1073,7 @@ public:
 	class DemonicSacrificeTestImpt : public TestCase
 	{
 	public:
-		DemonicSacrificeTestImpt() : TestCase(STATUS_KNOWN_BUG, true) { } // Will break as long as Seed of Corruption is broken
+		DemonicSacrificeTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Will break as long as Seed of Corruption is broken
 
 		void SacrificePet(TestPlayer* warlock, uint32 summonSpellId, uint32 aura, uint32 previousAura = 0)
 		{

@@ -20,7 +20,7 @@
 //input info for next check, place this before INTERNAL_TEST_ASSERT
 #define INTERNAL_ASSERT_INFO(expr, ...) _InternalAssertInfo(expr, ## __VA_ARGS__);
 
-TestCase::TestCase(TestStatus status, bool needMap) :
+TestCase::TestCase(TestStatus status) :
     _failed(false),
     _testsCount(0),
 
@@ -32,16 +32,16 @@ TestCase::TestCase(TestStatus status, bool needMap) :
     _testStatus(status)
 {
     //default pos:
-    if (needMap && _location.GetMapId() == MAPID_INVALID) //not yet defined by the other constructor
+    if (_location.GetMapId() == MAPID_INVALID) //not yet defined by the other constructor
         _location = std::move(WorldLocation(MAP_TESTING_ID, TestCase::GetDefaultPositionForMap(MAP_TESTING_ID)));
 }
 
-TestCase::TestCase(TestStatus status, WorldLocation const& specificPosition)
-    : TestCase(status, true)
+TestCase::TestCase(TestStatus status, WorldLocation const specificPosition)
+    : TestCase(status)
 {
-    bool hasDefaultPos = specificPosition.GetPositionX() == 0.0f && specificPosition.GetPositionY() == 0.0f && specificPosition.GetPositionZ() == 0.0f;
+    bool useDefaultPos = specificPosition.GetPositionX() == 0.0f && specificPosition.GetPositionY() == 0.0f && specificPosition.GetPositionZ() == 0.0f;
     _location = specificPosition;
-    if (hasDefaultPos)
+    if (useDefaultPos)
         _location.Relocate(TestCase::GetDefaultPositionForMap(specificPosition.GetMapId()));
 }
 
@@ -176,11 +176,7 @@ void TestCase::_Cleanup()
 bool TestCase::_InternalSetup()
 {
     ASSERT(!_map);
-    if (_location.GetMapId() == MAPID_INVALID) // test has been started with needMap = false
-    {
-        _setup = true;
-        return true;
-    }
+    ASSERT(_location.GetMapId() != MAPID_INVALID);
 
     _map = sMapMgr->CreateTestMap(_location.GetMapId(), _testMapInstanceId, _diff, _enableMapObjects);
     if (!_map)
@@ -334,9 +330,6 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
 {
     INTERNAL_TEST_ASSERT_NOCOUNT(cls != CLASS_NONE && race != RACE_NONE);
     TC_LOG_TRACE("test.unit_test", "Creating new random bot for class %d", cls);
-
-    if (!_map)
-        return nullptr;
 
     std::string name = RandomPlayerbotFactory::CreateTestBotName();  //note that by doing this test bots name may sometime overlap with other connected bots name... BUT WELL WHATEVER.
     if (name.empty())
@@ -1409,9 +1402,6 @@ int32 TestCase::_GetCallerLine()
 
 void TestCase::Celebrate()
 {
-    if (!_map)
-        return;
-
     if (Player* player = _map->GetFirstHumanPlayer())
     {
         player->PlaySound(619, false); //quest complete sound
@@ -1436,9 +1426,6 @@ void TestCase::Celebrate()
 
 void TestCase::Sadness()
 {
-    if (!_map)
-        return;
-
     //This is actually useful to let the player see what happened
     if (Player* player = _map->GetFirstHumanPlayer())
     {

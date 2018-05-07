@@ -33,8 +33,8 @@ void TestThread::Run()
         bool setupSuccess = _testCase->_InternalSetup();
         if(!setupSuccess)
             _testCase->_Fail("Failed to setup test");
-        if (TestMap* testMap = _testCase->GetMap())
-            testMap->SetTestThread(this);
+
+        _testCase->GetMap()->SetTestThread(this);
 
         _testCase->Test();
         if (_testCase->GetTestCount() == 0)
@@ -52,8 +52,7 @@ void TestThread::Run()
         _testCase->_FailNoException(e.what());
     }
 
-    if (TestMap* testMap = _testCase->GetMap())
-        testMap->SetTestThread(nullptr);
+    _testCase->GetMap()->SetTestThread(nullptr);
     _testCase->_Cleanup();
     _state = STATE_FINISHED;
 
@@ -79,22 +78,21 @@ void TestThread::ResumeExecution()
     }
 }
 
-void TestThread::UpdateWaitTimer(uint32 const worldDiff)
+void TestThread::UpdateWaitTimer()
 {
-    uint32 diff = worldDiff;
+    TestMap const* testMap = _testCase->GetMap();
+    if (!testMap)
+        return; //test may not be setup yet
 
-    //if test is using a map, make sure it has updated at least once since our last update (maps don't always update at each world update)
-    if (TestMap const* testMap = _testCase->GetMap())
-    {
-        if (testMap->GetLastMapUpdateTime() == _lastMapUpdateTime)
-            return;
-        else
-            _lastMapUpdateTime = testMap->GetLastMapUpdateTime();
+    //make sure map has updated at least once since our last update (maps don't always update at each world update)
+    if (testMap->GetLastMapUpdateTime() == _lastMapUpdateTime)
+        return;
+    else
+        _lastMapUpdateTime = testMap->GetLastMapUpdateTime();
 
-        //Also, we're using the map last diff to be sure to be in sync with map timers, since the diff are a bit imprecise
-        //This is also very important to have the testing Wait(...) in sync
-        diff = testMap->GetLastDiff();
-    }
+    //Also, we're using the map last diff to be sure to be in sync with map timers, since the diff are a bit imprecise
+    //This is also very important to have the testing Wait(...) in sync
+    uint32 diff = testMap->GetLastDiff();
 
     if (!_waitTimer)
         return;

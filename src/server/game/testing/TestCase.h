@@ -57,9 +57,9 @@ class TC_GAME_API TestCase
 
 public:
     //If needMap is specified, test will be done in an instance of the test map (13). 
-    TestCase(TestStatus status, bool needMap = true);
+    TestCase(TestStatus status);
     //Use specific position. If only map was specified in location, default coordinates in map may be chosen instead. If you need creatures and objects, use EnableMapObjects in your test constructor
-    TestCase(TestStatus status, WorldLocation const& specificPosition);
+    TestCase(TestStatus status, WorldLocation const specificPosition);
 
     std::string GetName() const { return _testName; }
     bool Failed() const { return _failed; }

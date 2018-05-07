@@ -719,7 +719,7 @@ public:
 	class CrusadeTestImpt : public TestCase
 	{
 	public:
-		CrusadeTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE, true) { }
+		CrusadeTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
 
 		void TestCreatureType(TestPlayer* player, uint32 entry, bool demonOrUndead = false)
 		{
@@ -970,7 +970,7 @@ public:
 	class CrusaderStrikeTestImpt : public TestCase
 	{
 	public:
-		CrusaderStrikeTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE, true) { }
+		CrusaderStrikeTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
 
 		void Test() override
 		{

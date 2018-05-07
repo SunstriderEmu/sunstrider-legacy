@@ -2124,7 +2124,7 @@ void World::Update(time_t diff)
 
 #ifdef TESTS
     //MUST be after map updates, testing code assumes so
-    sTestMgr->Update(diff);
+    sTestMgr->Update();
     RecordTimeDiff("UpdatesTestMgr");
 #endif
 
