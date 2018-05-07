@@ -142,7 +142,7 @@ public:
             FORCE_CAST(druid, druid2, ClassSpells::Druid::CYCLONE_RNK_1, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
             TEST_AURA_MAX_DURATION(druid2, ClassSpells::Druid::CYCLONE_RNK_1, Seconds(6));
             FORCE_CAST(druid, druid2, ClassSpells::Druid::WRATH_RNK_10, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_SPEED));
-			Wait(1); // wait for wrath to hit
+			WaitNextUpdate(); // wait for wrath to hit
             //lifebloom and wrath should both fail
 			TEST_ASSERT(druid2->GetHealth() == startHealth);
 
@@ -1103,6 +1103,7 @@ public:
 
                     minDamage = std::min(minDamage, damage);
                     maxDamage = std::max(maxDamage, damage);
+                    HandleThreadPause();
                 }
                 druid->ForceMeleeHitResult(MELEE_HIT_MISS);
 
@@ -1772,11 +1773,11 @@ public:
             uint32 const MIND_NUMBING_POISON_III = 11398; // 14s
             uint32 const DEADLY_POISON_VII = 27187; // 12s
             warrior->AddAura(WOUND_POISON_V, warrior);
-            Wait(1);
+            WaitNextUpdate();
             warrior->AddAura(MIND_NUMBING_POISON_III, warrior);
-            Wait(1);
+            WaitNextUpdate();
             warrior->AddAura(DEADLY_POISON_VII, warrior);
-            Wait(1);
+            WaitNextUpdate();
 
             // Mana cost
             TEST_CAST(druid, warrior, ClassSpells::Druid::ABOLISH_POISON_RNK_1);
@@ -1838,11 +1839,11 @@ public:
             uint32 const MIND_NUMBING_POISON_III = 11398; // 14s
             uint32 const DEADLY_POISON_VII = 27187; // 12s
             warrior->AddAura(WOUND_POISON_V, warrior);
-            Wait(1);
+            WaitNextUpdate();
             warrior->AddAura(MIND_NUMBING_POISON_III, warrior);
-            Wait(1);
+            WaitNextUpdate();
             warrior->AddAura(DEADLY_POISON_VII, warrior);
-            Wait(1);
+            WaitNextUpdate();
 
             TEST_CAST(druid, warrior, ClassSpells::Druid::CURE_POISON_RNK_1);
             TEST_ASSERT(2 == getPoisonCount(warrior, WOUND_POISON_V, MIND_NUMBING_POISON_III, DEADLY_POISON_VII));
@@ -2168,9 +2169,9 @@ public:
             caster->AddItem(reagentId, 1);
             TEST_CAST(caster, victim, spellId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_COOLDOWN(caster, victim, spellId, Minutes(20));
-            Wait(1);
+            WaitNextUpdate();
             victim->RessurectUsingRequestData();
-            Wait(1); //resurrect needs 1 update to be done
+            WaitNextUpdate(); //resurrect needs 1 update to be done
             ASSERT_INFO("Victim has %u instead of expected %u health", victim->GetHealth(), expectedHealth);
             TEST_ASSERT(victim->GetHealth() == expectedHealth);
             ASSERT_INFO("Victim has %u instead of expected %u mana", victim->GetPower(POWER_MANA), expectedMana);

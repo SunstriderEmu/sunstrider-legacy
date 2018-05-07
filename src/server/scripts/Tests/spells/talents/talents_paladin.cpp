@@ -184,7 +184,7 @@ public:
 			uint32 currentValue = p->GetPower(POWER_MANA);
 			while (currentValue == p->GetPower(POWER_MANA) && waitCount < waitCountMax)
 			{
-				Wait(1);
+                WaitNextUpdate();
 				waitCount++;
 			}
 			TEST_ASSERT(waitCount != waitCountMax);

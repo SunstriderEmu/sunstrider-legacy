@@ -1933,6 +1933,7 @@ public:
                     warrior->AddAura(ClassSpells::Warrior::SHIELD_BLOCK_RNK_1, warrior);
                 rogue->AttackerStateUpdate(warrior, BASE_ATTACK);
                 warrior->SetFullHealth();
+                HandleThreadPause();
             }
             TEST_MELEE_OUTCOME_PERCENTAGE(rogue, warrior, BASE_ATTACK, MELEE_HIT_BLOCK, expectedResult, resultingAbsoluteTolerance * 100);
             rogue->KillSelf();

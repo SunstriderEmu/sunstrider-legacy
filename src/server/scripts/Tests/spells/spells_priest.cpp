@@ -27,7 +27,7 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, priestLevel);
 
             priest->DisableRegeneration(true);
-            Wait(1);
+            WaitNextUpdate();
 
             // Only on Priest's spells
             priest->AddAura(ClassSpells::Druid::MARK_OF_THE_WILD_RNK_8, priest);
@@ -61,6 +61,7 @@ public:
 
                 minGain = std::min(minGain, priestMana);
                 maxGain = std::max(maxGain, priestMana);
+                HandleThreadPause();
             }
 
             uint32 allowedMin = expectedMin > maxPredictionError ? expectedMin - maxPredictionError : 0; // protect against underflow
@@ -206,7 +207,7 @@ public:
             priest->DisableRegeneration(true);
             mage->DisableRegeneration(true);
             mage->SetPower(POWER_MANA, 200);
-            Wait(1);
+            WaitNextUpdate();
 
             // Mana cost, aura & cd
             uint32 const expectedFeedbackMana = 705;
@@ -235,7 +236,7 @@ public:
                 //mage cast a second ice lance, but has only 35 (expectedMageMana) mana left. Remaining mana should be burned and damage should only amount to this burned mana
                 TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
                 Wait(1000); //wait for spell to hit + proc to hit
-                Wait(1);
+                WaitNextUpdate();
                 ASSERT_INFO("initial mana: 35, current mana: %u, expected: 0", mage->GetPower(POWER_MANA));
                 TEST_ASSERT(mage->GetPower(POWER_MANA) == 0);
                 TEST_ASSERT(mage->GetHealth() == expectedMageHealth - expectedMageMana);
@@ -404,6 +405,7 @@ public:
                 maxPredictionError += 1; //add 1 to allow for rounding error here
                 ASSERT_INFO("Health: %u, expected: %u", victim->GetHealth(), expectedHealth);
                 TEST_ASSERT(Between(victim->GetHealth(), expectedHealth - maxPredictionError, expectedHealth + maxPredictionError));
+                HandleThreadPause();
             }
 
             // Check min-max values
@@ -853,7 +855,7 @@ public:
             Creature* creature1 = SpawnCreatureWithPosition(spawn, 16525); // Undead
             Creature* creature2 = SpawnCreatureWithPosition(spawn, 16525); // Undead
 
-            Wait(1);
+            WaitNextUpdate();
 
             uint32 const expectedShackleUndeadMana = 150;
             TEST_POWER_COST(priest, ClassSpells::Priest::SHACKLE_UNDEAD_RNK_3, POWER_MANA, expectedShackleUndeadMana);
@@ -1066,15 +1068,15 @@ public:
 
             // Apply
             warrior->AddAura(WEAKENING_DISEASE, warrior);
-            Wait(1);
+            WaitNextUpdate();
             warrior->AddAura(SPORE_DISEASE, warrior);
-            Wait(1);
+            WaitNextUpdate();
             warrior->AddAura(FEVERED_DISEASE, warrior);
-            Wait(1);
+            WaitNextUpdate();
             warrior->AddAura(DISEASE_BUFFET, warrior);
-            Wait(1);
+            WaitNextUpdate();
             warrior->AddAura(VOLATILE_DISEASE, warrior);
-            Wait(1);
+            WaitNextUpdate();
 
             // Mana cost
             uint32 const expectedAbolishDiseaseMana = 314;
@@ -1235,7 +1237,7 @@ public:
             // Apply 2 diseases
             warrior->AddAura(WEAKENING_DISEASE, warrior);
             warrior->AddAura(SPORE_DISEASE, warrior);
-            Wait(1);
+            WaitNextUpdate();
 
             // mana cost
             uint32 const expectedCureDiseaseMana = 314;
@@ -1319,7 +1321,7 @@ public:
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_ORC);
             TestPlayer* hunter = SpawnPlayer(CLASS_HUNTER, RACE_ORC);
 
-            Wait(1);
+            WaitNextUpdate();
 
             uint32 expectedElunesGraceMana = 78;
             TEST_POWER_COST(priest, ClassSpells::Priest::ELUNES_GRACE_RNK_1, POWER_MANA, expectedElunesGraceMana);
@@ -1665,7 +1667,7 @@ public:
             // Changed target and 1 charge less
             priest2->ForceMeleeHitResult(MELEE_HIT_NORMAL);
             priest2->AttackerStateUpdate(warlock);
-            Wait(1);
+            WaitNextUpdate();
             TEST_AURA_CHARGE(priest, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1_BUFF, 4);
 
             // Heal
@@ -1891,7 +1893,7 @@ public:
             //generate some threat
             for(uint32 i = 0; i < 5; i++)
                 FORCE_CAST(priest, creature, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-            Wait(1);
+            WaitNextUpdate();
             float startThreat = creature->GetThreatManager().GetThreat(priest);
             //some consistency checks
             TEST_ASSERT(startThreat > creature->GetThreatManager().GetThreat(tank));
@@ -1977,7 +1979,7 @@ public:
                 EQUIP_NEW_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
                 Wait(1500);
                 EQUIP_NEW_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
-                Wait(1);
+                WaitNextUpdate();
                 // Damage 
                 int const hexOfWeaknessDamageMalus = 35;
                 int const sinisterStrikeBonus = 98;
@@ -2085,7 +2087,7 @@ public:
             TEST_ASSERT(enemy->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
 
             priest->InterruptNonMeleeSpells(true);
-            Wait(1);
+            WaitNextUpdate();
 
             // Mana cost
             uint32 const expectedMindControlMana = 750;
@@ -2121,7 +2123,7 @@ public:
             {
                 dist += 1.0f;
                 priest->TeleportTo(priest->GetMapId(), baseX + dist, priest->GetPositionY(), priest->GetPositionZ(), priest->GetOrientation());
-                Wait(1); //try with a second Wait(1) if humanoid still won't aggro priest
+                WaitNextUpdate(); //try with a second WaitNextUpdate if humanoid still won't aggro priest
                 Wait(1000);
                 TEST_ASSERT(dist < maxDistance);
             }
@@ -2158,7 +2160,7 @@ public:
             // Aura
             TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15));
 
-            Wait(1);
+            WaitNextUpdate();
             float const reducedAggroRange = GetAggroRange(priest, humanoid, spawnDistance);
 
             float const mindSootheRangeEffect = aggroRange - reducedAggroRange;
@@ -2205,8 +2207,8 @@ public:
             TEST_ASSERT(warriorClose->HaveAtClient(rogueFar));
 
             FORCE_CAST(priest, warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2);
-            Wait(1);
-            Wait(1);
+            WaitNextUpdate();
+            WaitNextUpdate();
             WorldPacket fakeClientResponse;
             fakeClientResponse << bool(true);
             priest->GetSession()->HandleFarSightOpcode(fakeClientResponse);
@@ -2223,13 +2225,13 @@ public:
             // Priest should be able to cast vision on rogue, even though he was out of vision the first time
             priest->SetFullPower(POWER_MANA);
             FORCE_CAST(priest, rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2, SPELL_MISS_NONE);
-            Wait(1);
-            Wait(1);
+            WaitNextUpdate();
+            WaitNextUpdate();
             TEST_HAS_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
             TEST_HAS_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
 
             // Aura isnt removed by stealth
-            Wait(1);
+            WaitNextUpdate();
             TEST_CAST(rogueFar, rogueFar, ClassSpells::Rogue::STEALTH_RNK_4);
             TEST_HAS_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
 
@@ -2660,6 +2662,7 @@ public:
                 priestOldMana = priestCurrentMana;
                 minDamage = std::min(minDamage, damage);
                 maxDamage = std::max(maxDamage, damage);
+                HandleThreadPause();
             }
             shadowfiend->ForceMeleeHitResult(MELEE_HIT_MISS);
 
@@ -2779,7 +2782,7 @@ public:
                 EQUIP_NEW_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
                 Wait(1500);
                 EQUIP_NEW_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
-                Wait(1);
+                WaitNextUpdate();
                 // Damage calc
                 int const touchOfWeaknessMalus = 35;
                 int const sinisterStrikeBonus = 98;

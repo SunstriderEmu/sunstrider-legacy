@@ -165,6 +165,11 @@ void TestCase::Wait(uint32 ms)
         _Fail("Test was canceled (TestCase)");
 }
 
+void TestCase::WaitNextUpdate()
+{
+    Wait(1);
+}
+
 void TestCase::HandleThreadPause()
 {
     _testThread->HandleThreadPause();
@@ -1062,7 +1067,7 @@ void TestCase::_CastDotAndWait(TestPlayer* caster, Unit* target, uint32 spellID,
     //Currently, channeled spells start at the next update so we need to wait for it to be applied.
     //Remove this line if spell system has changed and this is not true
     if (spellInfo->IsChanneled())
-        Wait(1);
+        WaitNextUpdate();
 
     Aura* aura = target->GetAura(spellID, caster->GetGUID());
     INTERNAL_ASSERT_INFO("Target has not %u aura with caster %u after spell successfully casted", spellID, caster->GetGUID().GetCounter());
@@ -1130,7 +1135,7 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
         INTERNAL_ASSERT_INFO("_TestChannelDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(false);
     }
-    Wait(1); //extra wait, remove if spell system allow to cast channel instantly
+    WaitNextUpdate(); //extra wait, remove if spell system allow to cast channel instantly
     Wait(baseDurationTime); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
     caster->ForceSpellHitResult(previousForceHitResult);
     uint32 totalChannelDmg = 0; 
@@ -1554,7 +1559,7 @@ void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spe
         HandleThreadPause();
     }
 
-    Wait(1); //wait an update before restoring health, some procs may have occured
+    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
 
     victim->SetMaxHealth(startingMaxHealth);
     victim->SetHealth(startingHealth);

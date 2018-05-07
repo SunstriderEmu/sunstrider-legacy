@@ -207,16 +207,16 @@ public:
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5);
         }
 
-        void IsAffectedByTalent(TestPlayer* warlock, TestPlayer* warlock2, Creature* dummy, uint32 spellId, float talentFactor, bool checkAura = false)
+        void IsAffectedByTalent(TestPlayer* warlock, TestPlayer* warlock2, Creature* dummy, uint32 spellId, float talentFactor)
         {
             warlock->SetHealth(1);
             FORCE_CAST(warlock2, dummy, spellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             uint32 warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * (1.0f + talentFactor));
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
-            Wait(1); //Wait for channel to start
-            ASSERT_INFO("After Drain Life, Warlock didnt have aura %u.", spellId);
-            if (checkAura) // Used by Drain Mana because it lasts as long as Drain Life
-                TEST_HAS_AURA(dummy, spellId);
+            WaitNextUpdate(); //Wait for channel to start
+            ASSERT_INFO("After Drain Life started, target didnt have aura %u.", spellId);
+            TEST_HAS_AURA(dummy, spellId);
+            Wait(6000); //Wait for drain life to finish
             ASSERT_INFO("After spell %u, Warlock has %u HP but should have %u HP.", spellId, warlock->GetHealth(), warlockExpectedHealth);
             TEST_ASSERT(warlock->GetHealth() == warlockExpectedHealth);
             dummy->RemoveAurasDueToSpell(spellId);
@@ -264,13 +264,13 @@ public:
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, 2 * bonusPerSpell + 0.1f); // +10% from CoE
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, 2 * bonusPerSpell);
-            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, 2 * bonusPerSpell, false);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::FEAR_RNK_3, 2 * bonusPerSpell);
             dummy->NearTeleportTo(_location);
-            Wait(1);
+            WaitNextUpdate();
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, 2 * bonusPerSpell);
             dummy->NearTeleportTo(_location);
-            Wait(1);
+            WaitNextUpdate();
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, 2 * bonusPerSpell);
@@ -286,7 +286,7 @@ public:
             Add5AfflictionSpell(warlock4, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2);
             Add5AfflictionSpell(warlock5, dummy, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8);
             Add5AfflictionSpell(warlock6, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2);
-            Wait(1);
+            WaitNextUpdate();
 
             // Dummy should be affected by 25 Affliction spells
             warlock->SetHealth(1);
@@ -500,53 +500,53 @@ public:
             float const expectedResist = dispelTalentFactor + 3.f; // priest has 0 spell hit rating
 
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
-            Wait(1);
+            WaitNextUpdate();
             warlock->ForceSpellHitResult(SPELL_MISS_NONE);
             ASSERT_INFO("Corruption");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
                 warlock->CastSpell(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Death Coil");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
                 warlock->CastSpell(caster, ClassSpells::Warlock::DEATH_COIL_RNK_4, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Drain Life");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
                 warlock->CastSpell(caster, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Drain Mana");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::DRAIN_MANA_RNK_6);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Fear");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::FEAR_RNK_3, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Howl of Terror");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Seed of Corruption");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Siphon Life");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Unstable Affliction");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
 
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
             druid->SetMaxHealth(std::numeric_limits<uint32>::max());
@@ -554,22 +554,22 @@ public:
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Curse of Recklessness");
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Curse of the elements");
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Curse of Tongues");
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, TRIGGERED_FULL_MASK);
             });
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Curse of Weakness");
             TEST_SPELL_HIT_CHANCE_CALLBACK(druid, warlock, ClassSpells::Druid::REMOVE_CURSE_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, TRIGGERED_FULL_MASK);
@@ -690,7 +690,7 @@ public:
 
             // Summon Voidwalker
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            Wait(1);
+            WaitNextUpdate();
             Guardian* voidwalker = warlock->GetGuardianPet();
             TEST_ASSERT(voidwalker != nullptr);
             voidwalker->DisableRegeneration(true);
@@ -1078,7 +1078,7 @@ public:
 		void SacrificePet(TestPlayer* warlock, uint32 summonSpellId, uint32 aura, uint32 previousAura = 0)
 		{
 			TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            Wait(1);
+            WaitNextUpdate();
 			Pet* pet = warlock->GetPet();
 			TEST_ASSERT(pet != nullptr);
 			if(previousAura != 0)

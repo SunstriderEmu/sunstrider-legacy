@@ -487,8 +487,8 @@ public:
             Wait(2000);
             rogue->SetHealth(1);
             FORCE_CAST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
-            Wait(3000);
-            Wait(1);
+            Wait(3500);
+            WaitNextUpdate();
             // Gain soulshard on target's death
             TEST_ASSERT(rogue->IsDead());
             TEST_ASSERT(warlock->HasItemCount(SOUL_SHARD, 1));
@@ -765,7 +765,7 @@ public:
                 //to melee damage
                 warlock->ForceMeleeHitResult(MELEE_HIT_NORMAL);
                 warlock->AttackerStateUpdate(elemental, BASE_ATTACK);
-                Wait(1);
+                WaitNextUpdate();
                 TEST_ASSERT(elemental->GetHealth() == elemHealth);
             }
 
@@ -865,7 +865,7 @@ public:
             Wait(3500);
             TEST_ASSERT(caster->GetItemCount(SOUL_SHARD, false) == 0);
             TEST_ASSERT(caster->GetItemCount(healthstone, false) == 1);
-            Wait(1);
+            WaitNextUpdate();
             USE_ITEM(caster, caster, healthstone);
             Wait(Seconds(1));
             TEST_ASSERT(caster->GetItemCount(healthstone, false) == 0);
@@ -937,7 +937,7 @@ public:
             Wait(1000);
             WorldPacket fakeClientResponse(CMSG_SELF_RES);
             caster->GetSession()->HandleSelfResOpcode(fakeClientResponse);
-            Wait(1);
+            WaitNextUpdate();
             TEST_ASSERT(caster->GetHealth() == healthRestored);
             TEST_ASSERT(caster->GetPower(POWER_MANA) == manaRestored);
             caster->GetSpellHistory()->ResetAllCooldowns();
@@ -990,7 +990,7 @@ public:
 
             // Put soulstone on target in same group/raid
             GroupPlayer(warlock, friendly);
-            Wait(1);
+            WaitNextUpdate();
             TEST_ASSERT(friendly->IsInSameGroupWith(warlock));
             USE_ITEM(warlock, friendly, MASTER_SOULSTONE);
             Wait(Seconds(3));
@@ -999,7 +999,7 @@ public:
 
             // 2.1: Soulstone buff will now be removed if the target or caster leaves the party or raid
             warlock->GetGroup()->Disband();
-            Wait(1);
+            WaitNextUpdate();
             TEST_ASSERT(!friendly->IsInSameGroupWith(warlock));
             TEST_HAS_NOT_AURA(friendly, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM);
             Wait(5000);
@@ -1042,7 +1042,7 @@ public:
             // Use item
             EQUIP_EXISTING_ITEM(caster, spellstoneItemID);
             USE_ITEM(caster, caster, spellstoneItemID);
-            Wait(1);
+            WaitNextUpdate();
             ASSERT_INFO("Crit: %u, expected: %u", caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL), expectedSpellCritScore);
             TEST_ASSERT(caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL) == expectedSpellCritScore);
             TEST_HAS_AURA(caster, 5760);
@@ -1221,7 +1221,7 @@ public:
 
             // Summon Voidwalker
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            Wait(1);
+            WaitNextUpdate();
             Guardian* voidwalker = warlock->GetGuardianPet();
             TEST_ASSERT(voidwalker != nullptr);
             voidwalker->DisableRegeneration(true);

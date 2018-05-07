@@ -241,6 +241,7 @@ protected:
     void Wait(uint32 ms);
     void Wait(Seconds s);
     void Wait(Milliseconds s);
+    void WaitNextUpdate();
     //This will make the thread pause itself and resume in the next udpate if it has been running too long
     void HandleThreadPause();
     //Main check function, used by TEST_ASSERT macro. Will stop execution on failure

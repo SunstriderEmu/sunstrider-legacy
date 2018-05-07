@@ -182,7 +182,7 @@ std::string TestMgr::ListAvailable(std::string filter) const
     std::stringstream ss;
     ss << "Available tests";
     if (!filter.empty())
-        ss << " with regex filter " << filter;
+        ss << " with regex filter '" << filter << "'";
     ss << ":" << std::endl;
     if (foundList.empty())
     {

@@ -20,7 +20,7 @@ public:
             EQUIP_NEW_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
             Wait(1500);
             EQUIP_NEW_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
-            Wait(1);
+            WaitNextUpdate();
             // Damage
             int const sinisterStrikeBonus = 98;
             float const normalizedSwordSpeed = 2.4f;
