@@ -499,9 +499,12 @@ public:
             const float dispelTalentFactor = 30.f;
             float const expectedResist = dispelTalentFactor + 3.f; // priest has 0 spell hit rating
 
+            _location.MoveInFront(_location, 5.f);
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
             WaitNextUpdate();
             warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+
+            //Kelno: FIXME: we cant use TEST_SPELL_HIT_CHANCE_CALLBACK, spells is supposed to always hit but fails to dispel with a SMSG_DISPEL_FAILED sent seperately.
             ASSERT_INFO("Corruption");
             TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
                 warlock->CastSpell(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, TRIGGERED_FULL_MASK);
