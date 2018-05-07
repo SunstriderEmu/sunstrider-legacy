@@ -210,8 +210,8 @@ void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers pow
     INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
 
-    INTERNAL_ASSERT_INFO("Spell %u has wrong power type %u (instead of %u)", spellInfo->PowerType, powerType);
-    INTERNAL_TEST_ASSERT(spellInfo->PowerType != powerType);
+    INTERNAL_ASSERT_INFO("Spell %u has wrong power type %u (instead of %u)", spellInfo->PowerType, uint32(powerType));
+    INTERNAL_TEST_ASSERT(spellInfo->PowerType == powerType);
 
     Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE);
     uint32 actualCost = spellInfo->CalcPowerCost(caster, spellInfo->GetSchoolMask(), spell);
