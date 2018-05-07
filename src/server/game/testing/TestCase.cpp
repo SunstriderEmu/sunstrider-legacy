@@ -1089,14 +1089,13 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
 void TestCase::_TestDotThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedTotalThreat, bool crit /* = false*/)
 {
     target->GetThreatManager().ClearAllThreat();  // Reset threat
-    Wait(1);
 
     _CastDotAndWait(caster, target, spellID, crit);
 
     float const threatDone = target->GetThreatManager().GetThreat(caster);
 
     INTERNAL_ASSERT_INFO("Enforcing threat for spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
-    INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 0.1f, expectedTotalThreat + 0.1f));
+    INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
 }
 
 void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 expectedTickCount, int32 expectedTickAmount, bool healing /* = false*/)

@@ -666,12 +666,17 @@ bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,uint6
     return false;
 }
 
-/* Called by DealDamage for auras that have a chance to be dispelled on damage taken. */
+/* Called by DealDamage for auras that have a chance to be removed on damage taken. */
 void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spellId)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if(!spellInfo || spellInfo->HasAttribute(SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS))
         return;
+
+#ifdef TESTS
+    if (_disableSpellBreakChance)
+        return;
+#endif
 
     // The chance to dispel an aura depends on the damage taken with respect to the casters level.
     uint32 max_dmg = GetLevel() > 8 ? 30 * GetLevel() - 100 : 50;

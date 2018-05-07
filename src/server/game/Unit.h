@@ -1551,6 +1551,9 @@ class TC_GAME_API Unit : public WorldObject
         MeleeHitOutcome _forceMeleeResult = MeleeHitOutcome(-1);
         void ForceMeleeHitResult(MeleeHitOutcome outcome) { _forceMeleeResult = outcome; }
         void ResetForceMeleeHitResult() { _forceMeleeResult = MELEE_HIT_TOTAL; }
+
+        //if true, disable the auras break chance on damage (ex: fears breaking on damage)
+        bool _disableSpellBreakChance = false;
 #endif
 
         virtual bool IsInWater() const;

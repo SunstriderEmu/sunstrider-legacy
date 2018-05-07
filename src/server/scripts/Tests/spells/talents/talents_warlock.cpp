@@ -213,14 +213,7 @@ public:
             FORCE_CAST(warlock2, dummy, spellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             uint32 warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * (1.0f + talentFactor));
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
-            Wait(750);
-            // The following for is made to pass Fear and Howl of Terror. To be refactored when a better solution comes around.
-            for (uint8 i = 0; i < 5; i++)
-            {
-                if (!dummy->HasAura(spellId))
-                    dummy->AddAura(spellId, dummy);
-                Wait(1000);
-            }
+            Wait(1); //Wait for channel to start
             ASSERT_INFO("After Drain Life, Warlock didnt have aura %u.", spellId);
             if (checkAura) // Used by Drain Mana because it lasts as long as Drain Life
                 TEST_HAS_AURA(dummy, spellId);
@@ -250,6 +243,7 @@ public:
 
             TestPlayer* warlock2 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
             Creature* dummy = SpawnCreature();
+            dummy->_disableSpellBreakChance = true; //needed for fears
 
             LearnTalent(warlock, Talents::Warlock::SOUL_SIPHON_RNK_2);
             float const bonusPerSpell = 0.04f;
