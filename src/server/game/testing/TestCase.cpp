@@ -1251,9 +1251,6 @@ void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellI
     Aura* aura = caster->AddAura(spellID, target);
     INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to add aura %u on victim", spellID);
     INTERNAL_TEST_ASSERT(aura != nullptr);
-    AuraApplication* app = aura->GetApplicationOfTarget(target->GetGUID());
-    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to get aura %u application on victim", spellID);
-    INTERNAL_TEST_ASSERT(app != nullptr);
     AuraEffect* effect = aura->GetEffect(effIndex);
     INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to get aura %u effect %u on victim", spellID, uint32(effIndex));
     INTERNAL_TEST_ASSERT(effect != nullptr);
@@ -1269,7 +1266,7 @@ void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellI
     uint32 successCount = 0;
     for (uint32 i = 0; i < sampleSize; i++)
     {
-        effect->PeriodicTick(app, caster);
+        effect->PeriodicTick(caster);
         successCount += uint32(callback(caster, target));
 
         target->SetMaxHealth(startingMaxHealth);

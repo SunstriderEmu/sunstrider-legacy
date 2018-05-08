@@ -2848,19 +2848,24 @@ void AuraEffect::Update(uint32 diff, Unit* caster)
         if (!GetBase()->IsPermanent() && (_ticksDone + 1) > totalTicks)
             break;
 
-        ++_ticksDone;
-
-        GetBase()->CallScriptEffectUpdatePeriodicHandlers(this);
-
-        std::vector<AuraApplication*> effectApplications;
-        GetApplicationVector(effectApplications);
-
-        // tick on targets of effects
-        for (AuraApplication* aurApp : effectApplications)
-            PeriodicTick(aurApp, caster);
+        PeriodicTick(caster);
     }
 }
 
+
+void AuraEffect::PeriodicTick(Unit* caster)
+{
+    ++_ticksDone;
+
+    GetBase()->CallScriptEffectUpdatePeriodicHandlers(this);
+
+    std::vector<AuraApplication*> effectApplications;
+    GetApplicationVector(effectApplications);
+
+    // tick on targets of effects
+    for (AuraApplication* aurApp : effectApplications)
+        PeriodicTick(aurApp, caster);
+}
 
 /*********************************************************/
 /***                  AURA EFFECTS                     ***/

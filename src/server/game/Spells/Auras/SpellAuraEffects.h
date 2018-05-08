@@ -57,6 +57,7 @@ class TC_GAME_API AuraEffect
         void ApplySpellMod(Unit* target, bool apply);
 
         void Update(uint32 diff, Unit* caster);
+        void PeriodicTick(Unit* caster);
 
         uint32 GetTickNumber() const { return _ticksDone; }
         uint32 GetRemainingTicks() const { return GetTotalTicks() - _ticksDone; }
