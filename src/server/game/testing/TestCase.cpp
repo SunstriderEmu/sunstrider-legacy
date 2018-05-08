@@ -7,6 +7,7 @@
 #include "PlayerbotFactory.h"
 #include "CharacterCache.h"
 #include "SpellHistory.h"
+#include "SpellAuraEffects.h"
 
 #include <boost/math/special_functions/erf.hpp>
 
@@ -1238,6 +1239,50 @@ void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spel
     victim->SetHealth(startingHealth);
 
     _TestSpellOutcomePercentage(caster, victim, spellID, missInfo, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
+}
+
+void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex effIndex, float expectedResultPercent, TestCallbackResult callback)
+{
+    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance only support alive caster");
+    INTERNAL_TEST_ASSERT(caster->IsAlive());
+    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance only support alive victim");
+    INTERNAL_TEST_ASSERT(target->IsAlive());
+
+    Aura* aura = caster->AddAura(spellID, target);
+    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to add aura %u on victim", spellID);
+    INTERNAL_TEST_ASSERT(aura != nullptr);
+    AuraApplication* app = aura->GetApplicationOfTarget(target->GetGUID());
+    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to get aura %u application on victim", spellID);
+    INTERNAL_TEST_ASSERT(app != nullptr);
+    AuraEffect* effect = aura->GetEffect(effIndex);
+    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to get aura %u effect %u on victim", spellID, uint32(effIndex));
+    INTERNAL_TEST_ASSERT(effect != nullptr);
+
+    uint32 startingHealth = target->GetHealth();
+    uint32 startingMaxHealth = target->GetMaxHealth();
+
+    float const absoluteTolerance = 0.02f;
+    uint32 sampleSize;
+    float resultingAbsoluteTolerance;
+    _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResultPercent / 100.0f, absoluteTolerance);
+
+    uint32 successCount = 0;
+    for (uint32 i = 0; i < sampleSize; i++)
+    {
+        effect->PeriodicTick(app, caster);
+        successCount += uint32(callback(caster, target));
+
+        target->SetMaxHealth(startingMaxHealth);
+        target->SetHealth(startingHealth);
+
+        HandleThreadPause();
+    }
+
+    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
+
+    float actualSuccessPercent = 100 * (successCount / float(sampleSize));
+    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance on spell %u: expected result: %f, result: %f", spellID, expectedResultPercent, actualSuccessPercent);
+    INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 }
 
 void TestCase::_TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)

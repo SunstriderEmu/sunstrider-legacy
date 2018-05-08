@@ -493,7 +493,6 @@ public:
         {
             victim->SetFullHealth();
             FORCE_CAST(warlock, victim, spellId);
-            Wait(2000); // Need to wait a little so Shadow Embrace is applied
             TEST_HAS_AURA(victim, shadowEmbraceId);
             Wait(dotTime);
             ASSERT_INFO("After spell %u, victim still has Shadow Embrace.", spellId);

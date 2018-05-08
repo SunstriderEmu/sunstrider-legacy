@@ -209,6 +209,7 @@ public:
     #define USE_ITEM(caster, target, itemID) { _SetCaller(__FILE__, __LINE__); _TestUseItem(caster, target, itemID); _ResetCaller(); }
 
     /* Test the crit chance of given spell on target
+    chance: 0-100
     */
     #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance); _ResetCaller(); }
 
@@ -216,6 +217,13 @@ public:
     (Does not actually cast the spell)
     */
     #define TEST_SPELL_CAST_TIME(caster, spellID, expectedCastTimeMS) { _SetCaller(__FILE__, __LINE__); _TestSpellCastTime(caster, spellID, expectedCastTimeMS); _ResetCaller(); }
+
+    /* Apply aura of given spell from caster to target, then test if callback has %chance to be true at after each tick.
+    You should cleanup tick effect in the callback before returning result.
+    chance: 0-100
+    */
+    typedef std::function<bool(Unit*, Unit*)> TestCallbackResult;
+    #define TEST_AURA_TICK_PROC_CHANCE(caster, target, spellID, effIdx, chance, callback)  { _SetCaller(__FILE__, __LINE__); _TestAuraTickProcChance(caster, target, spellID, effIdx, chance, callback); _ResetCaller(); }
 
     //Get raw spell data from caster to target with spellID
     std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(TestPlayer* caster, Unit* victim, uint32 spellID);
@@ -284,6 +292,7 @@ protected:
     void _TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
     void _TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance);
     void _TestSpellCastTime(TestPlayer* caster, uint32 spellID, uint32 expectedCastTimeMS);
+    void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, TestCallbackResult callback);
 
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
