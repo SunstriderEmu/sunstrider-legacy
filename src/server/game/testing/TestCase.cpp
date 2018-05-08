@@ -1303,25 +1303,33 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     MeleeHitOutcome previousForceHit = attackingUnit->_forceMeleeResult;
     attackingUnit->ForceMeleeHitResult(MELEE_HIT_NORMAL);
 
-    caster->CastSpell(target, spellID, TRIGGERED_NONE);
-    //if(spellInfo->IsChanneled())
-    Spell* spell = caster->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    bool channeled = spellInfo->IsChanneled();
+    TriggerCastFlags castFlags = TRIGGERED_FULL_MASK;
+    if (!channeled)
+        castFlags = TriggerCastFlags(castFlags & ~TRIGGERED_CAST_DIRECTLY); //if channeled, we want finish the initial cast directly to start channeling
+
+    caster->CastSpell(target, spellID, castFlags);
+    if (channeled)
+        WaitNextUpdate(); //currently we can't start a channel before next update
+    Spell* spell = caster->GetCurrentSpell(channeled ? CURRENT_CHANNELED_SPELL:  CURRENT_GENERIC_SPELL);
     INTERNAL_ASSERT_INFO("_TestPushBackResistChance: Failed to get spell %u", spellID);
     INTERNAL_TEST_ASSERT(spell != nullptr);
-    spell->m_timer = 1;
 
     uint32 pushbackCount = 0;
     for (uint32 i = 0; i < sampleSize; i++)
     {
         caster->SetFullHealth();
-        uint32 startingHealth = caster->GetHealth();
+        //timer should be increased for cast, descreased for channels
+        uint32 const startChannelTime = 10000;
+        uint32 const startCastTime = 1;
+        spell->m_timer = channeled ? startChannelTime : startCastTime;
+        uint32 healthBefore = caster->GetHealth();
         attackingUnit->AttackerStateUpdate(caster, BASE_ATTACK);
+        //health check is just here to ensure integrity
         INTERNAL_ASSERT_INFO("Caster has not lost hp, did melee hit failed?");
-        INTERNAL_TEST_ASSERT(caster->GetHealth() < startingHealth);
+        INTERNAL_TEST_ASSERT(caster->GetHealth() < healthBefore);
 
-        Spell* spell2 = caster->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        INTERNAL_ASSERT_INFO("_TestPushBackResistChance: Failed to get spell %u (loop)", spellID);
-        if (spell2->m_timer > 1)
+        if (channeled ? spell->m_timer < startChannelTime : spell->m_timer > startCastTime)
             pushbackCount++;
 
         HandleThreadPause();
