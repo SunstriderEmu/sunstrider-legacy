@@ -457,9 +457,9 @@ public:
             LearnTalent(warlock, Talents::Warlock::FEL_CONCENTRATION_RNK_5);
             float const resistPushBackChance = 70.f;
 
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_MANA_RNK_6, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, resistPushBackChance);
         }
     };
 
@@ -2108,15 +2108,15 @@ public:
             LearnTalent(warlock, Talents::Warlock::INTENSITY_RNK_2);
             float const resistPushBackChance = 70.f;
 
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::HELLFIRE_RNK_4, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::IMMOLATE_RNK_9, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::INCINERATE_RNK_2, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SEARING_PAIN_RNK_8, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SHADOWFURY_RNK_3, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::HELLFIRE_RNK_4, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOWFURY_RNK_3, resistPushBackChance);
             warlock->AddItem(SOUL_SHARD, 1);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SOUL_FIRE_RNK_4, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, resistPushBackChance);
         }
     };
 
@@ -2270,6 +2270,50 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<EmberstormTestImpt>();
+    }
+};
+
+class BacklashTest : public TestCaseScript
+{
+public:
+    BacklashTest() : TestCaseScript("talents warlock backlash") { }
+
+    class BacklashTestImpt : public TestCase
+    {
+    public:
+        BacklashTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            float const expectedSpellCritChance = warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) + 3.0f;
+
+            LearnTalent(warlock, Talents::Warlock::BACKLASH_RNK_3);
+            float const talentFactor = 5.0f;
+
+            uint32 const backlashSpellProcId = 34936;
+
+            // +3% spell crit
+            TEST_ASSERT(warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) == expectedSpellCritChance);
+
+            // Provides instant Shadow Bolt or Incinerate
+            warlock->AddAura(backlashSpellProcId, warlock);
+            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, uint32(0));
+            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, uint32(0));
+
+            // Proc
+            // Rogue attack
+            // after each attack:
+            // if aura auraCount++ + remove aura
+            // totalcount++
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<BacklashTestImpt>();
     }
 };
 
