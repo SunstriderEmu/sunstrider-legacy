@@ -1326,11 +1326,8 @@ void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, W
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
-    if (!damageToTarget || damageToTarget->empty())
-    {
-        TC_LOG_WARN("test.unit_test", "_TestMeleeOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
-        return;
-    }
+    INTERNAL_ASSERT_INFO("_TestMeleeOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
+    INTERNAL_TEST_ASSERT(!damageToTarget || damageToTarget->empty());
 
     uint32 success = 0;
     uint32 attacks = 0; //total attacks with correct type
@@ -1372,7 +1369,7 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
-    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
+    INTERNAL_TEST_ASSERT(!damageToTarget || damageToTarget->empty());
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage was prompted for non existing spell ID %u", spellId);
@@ -1412,7 +1409,7 @@ void TestCase::_TestSpellCritPercentage(TestPlayer* caster, Unit* victim, uint32
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data for this victim (%s)", victim->GetName().c_str());
-    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
+    INTERNAL_TEST_ASSERT(!damageToTarget || damageToTarget->empty());
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     INTERNAL_ASSERT_INFO("_TestSpellCritPercentage was prompted for non existing spell ID %u", spellId);
