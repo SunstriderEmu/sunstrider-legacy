@@ -1368,7 +1368,7 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
+    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data of %u for this victim (%s)", spellId, victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(!damageToTarget || damageToTarget->empty());
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -1408,8 +1408,8 @@ void TestCase::_TestSpellCritPercentage(TestPlayer* caster, Unit* victim, uint32
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data for this victim (%s)", victim->GetName().c_str());
-    INTERNAL_TEST_ASSERT(!damageToTarget || damageToTarget->empty());
+    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of spell %u for this victim (%s)", spellId, victim->GetName().c_str());
+    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     INTERNAL_ASSERT_INFO("_TestSpellCritPercentage was prompted for non existing spell ID %u", spellId);
@@ -1576,7 +1576,7 @@ void TestCase::_TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId)
     INTERNAL_TEST_ASSERT(result);
 }
 
-void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent)
+void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent, Optional<TestCallback> callback)
 {
     auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
@@ -1602,6 +1602,9 @@ void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spe
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
+        if (callback)
+            callback.get()(caster, victim);
+
         victim->SetFullHealth();
         caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         HandleThreadPause();

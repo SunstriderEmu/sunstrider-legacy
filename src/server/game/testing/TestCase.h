@@ -211,7 +211,9 @@ public:
     /* Test the crit chance of given spell on target
     chance: 0-100
     */
-    #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance); _ResetCaller(); }
+    #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance, {}); _ResetCaller(); }
+    //same but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>    
+    #define TEST_SPELL_CRIT_CHANCE_CALLBACK(caster, target, spellID, chance, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance, Optional<TestCallback>(callback)); _ResetCaller(); }
 
     /* Check if spell has given cast time for caster 
     (Does not actually cast the spell)
@@ -290,7 +292,7 @@ protected:
 
     void _TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback);
     void _TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
-    void _TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance);
+    void _TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback);
     void _TestSpellCastTime(TestPlayer* caster, uint32 spellID, uint32 expectedCastTimeMS);
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, TestCallbackResult callback);
 

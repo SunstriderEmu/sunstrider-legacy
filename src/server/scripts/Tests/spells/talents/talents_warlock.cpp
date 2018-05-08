@@ -437,6 +437,49 @@ public:
 	}
 };
 
+class NightfallTest : public TestCaseScript
+{
+public:
+
+    NightfallTest() : TestCaseScript("talents warlock nightfall") { }
+
+    class NightfallTestImpt : public TestCase
+    {
+    public:
+        NightfallTestImpt() : TestCase(STATUS_WIP) { } // Proc doesnt proc!
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::NIGHTFALL_RNK_2);
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_CORRUPTION_RNK_5);
+            float const procChance = 4.f;
+            uint32 const procSpellId = 17941;
+
+            // Proc chance
+            auto callback = [&](Unit* caster, Unit* target) {
+                bool hasAura = caster->HasAura(procSpellId);
+                caster->RemoveAllAuras();
+                return hasAura;
+            };
+            Wait(5000);
+            TEST_AURA_TICK_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, EFFECT_0, procChance, callback);
+            TEST_AURA_TICK_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, EFFECT_0, procChance, callback);
+
+            // Instant shadow bolt
+            warlock->AddAura(procSpellId, warlock);
+            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, uint32(0));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<NightfallTestImpt>();
+    }
+};
+
 class EmpoweredCorruptionTest : public TestCaseScript
 {
 public:
@@ -492,10 +535,11 @@ public:
         void SpellAppliesAndRemovesShadowEmbrace(TestPlayer* warlock, TestPlayer* victim, uint32 spellId, Seconds dotTime, uint32 shadowEmbraceId)
         {
             victim->SetFullHealth();
-            FORCE_CAST(warlock, victim, spellId);
+            FORCE_CAST(warlock, victim, spellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            ASSERT_INFO("After spell %u, warlock doesn't have Shadow Embrace.", spellId);
             TEST_HAS_AURA(victim, shadowEmbraceId);
             Wait(dotTime);
-            ASSERT_INFO("After spell %u, victim still has Shadow Embrace.", spellId);
+            ASSERT_INFO("After spell %u, warlock still has Shadow Embrace.", spellId);
             TEST_HAS_NOT_AURA(victim, shadowEmbraceId);
         }
 
@@ -784,47 +828,47 @@ public:
 
             //Kelno: FIXME: we cant use TEST_SPELL_HIT_CHANCE_CALLBACK, spells is supposed to always hit but fails to dispel with a SMSG_DISPEL_FAILED sent seperately.
             ASSERT_INFO("Corruption");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_1, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
                 warlock->CastSpell(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, TRIGGERED_FULL_MASK);
             });
             WaitNextUpdate();
             ASSERT_INFO("Death Coil");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_1, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
                 warlock->CastSpell(caster, ClassSpells::Warlock::DEATH_COIL_RNK_4, TRIGGERED_FULL_MASK);
             });
             WaitNextUpdate();
             ASSERT_INFO("Drain Life");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_1, expectedResist, SPELL_MISS_RESIST, [warlock](Unit* caster, Unit* target) {
                 warlock->CastSpell(caster, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
             });
             WaitNextUpdate();
             ASSERT_INFO("Drain Mana");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::DRAIN_MANA_RNK_6);
             });
             WaitNextUpdate();
             ASSERT_INFO("Fear");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::FEAR_RNK_3, TRIGGERED_FULL_MASK);
             });
             WaitNextUpdate();
             ASSERT_INFO("Howl of Terror");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, TRIGGERED_FULL_MASK);
             });
             WaitNextUpdate();
             ASSERT_INFO("Seed of Corruption");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, TRIGGERED_FULL_MASK);
             });
             WaitNextUpdate();
             ASSERT_INFO("Siphon Life");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, TRIGGERED_FULL_MASK);
             });
             WaitNextUpdate();
             ASSERT_INFO("Unstable Affliction");
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, warlock, ClassSpells::Priest::DISPEL_MAGIC_RNK_1, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
                 target->CastSpell(caster, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, TRIGGERED_FULL_MASK);
             });
             WaitNextUpdate();
@@ -1002,7 +1046,7 @@ public:
             float const tickAmount = 6.0f;
             uint32 const expectedUnstableAfflictionTick = ClassSpellsDamage::Warlock::UNSTABLE_AFFLICTION_RNK_3_TICK + spellPower * spellCoefficient / tickAmount;
             uint32 const expectedUnstableAfflictionTotal = expectedUnstableAfflictionTick * tickAmount;
-            //TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedUnstableAfflictionTotal, true);
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedUnstableAfflictionTotal, true);
 
             // Dispell & damage
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
@@ -1802,6 +1846,164 @@ public:
 	}
 };
 
+class ImprovedShadowBoltTest : public TestCaseScript
+{
+public:
+    ImprovedShadowBoltTest() : TestCaseScript("talents warlock improved_shadow_bolt") { }
+
+    class ImprovedShadowBoltTestImpt : public TestCase
+    {
+    public:
+        ImprovedShadowBoltTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // SB crit doesn't proc the ISB buff
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5);
+            float const talentFactor = 1.2f;
+            EnableCriticals(warlock, true);
+
+            uint32 const IMPROVED_SHADOW_BOLT_RNK_5_PROC = 17800;
+
+            // Buff is applied
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11);
+            TEST_AURA_MAX_DURATION(dummy, IMPROVED_SHADOW_BOLT_RNK_5_PROC, Seconds(12));
+
+            uint32 expectedMinDamage = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * talentFactor * 1.5f;
+            uint32 expectedMaxDamage = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * talentFactor * 1.5f;
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedMinDamage, expectedMaxDamage, true, [IMPROVED_SHADOW_BOLT_RNK_5_PROC](Unit* caster, Unit* target) {
+                if(!target->HasAura(IMPROVED_SHADOW_BOLT_RNK_5_PROC))
+                    target->AddAura(IMPROVED_SHADOW_BOLT_RNK_5_PROC, target);
+            });
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedShadowBoltTestImpt>();
+    }
+};
+
+class CataclysmTest : public TestCaseScript
+{
+public:
+    CataclysmTest() : TestCaseScript("talents warlock cataclysm") { }
+
+    class CataclysmTestImpt : public TestCase
+    {
+    public:
+        CataclysmTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+
+            LearnTalent(warlock, Talents::Warlock::CATACLYSM_RNK_5);
+            float const talentFactor = 1 - 0.05f;
+
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CONFLAGRATE_RNK_6, POWER_MANA, 305 * talentFactor);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, POWER_MANA, 1665 * talentFactor);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::IMMOLATE_RNK_9, POWER_MANA, 445 * talentFactor);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, POWER_MANA, 355 * talentFactor);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, POWER_MANA, 1480 * talentFactor);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SEARING_PAIN_RNK_8, POWER_MANA, 205 * talentFactor);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, POWER_MANA, 420 * talentFactor);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOWBURN_RNK_8, POWER_MANA, 515 * talentFactor);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOWFURY_RNK_3, POWER_MANA, 710 * talentFactor);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SOUL_FIRE_RNK_4, POWER_MANA, 250 * talentFactor);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CataclysmTestImpt>();
+    }
+};
+
+class BaneTest : public TestCaseScript
+{
+public:
+    BaneTest() : TestCaseScript("talents warlock bane") { }
+
+    class BaneTestImpt : public TestCase
+    {
+    public:
+        BaneTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void TestCorruptionCastTime(TestPlayer* caster, uint32 talentSpellId, uint32 talentPoint, uint32 shadowbBoltImmolateFactor, uint32 soulFireFactor)
+        {
+            LearnTalent(caster, talentSpellId);
+            uint32 const shadowBolt = 3000 - talentPoint * shadowbBoltImmolateFactor;
+            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, shadowBolt);
+            uint32 const immolate = 2000 - talentPoint * shadowbBoltImmolateFactor;
+            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, shadowBolt);
+            uint32 const soulFire = 6000 - talentPoint * soulFireFactor;
+            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::SOUL_FIRE_RNK_4, soulFire);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+
+            uint32 const shadowbBoltCastTimeReducedPerTalentPoint = 100;
+            uint32 const soulFireCastTimeReducedPerTalentPoint = 400;
+
+            TestCorruptionCastTime(warlock, Talents::Warlock::BANE_RNK_1, 1, shadowbBoltCastTimeReducedPerTalentPoint, soulFireCastTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, Talents::Warlock::BANE_RNK_2, 2, shadowbBoltCastTimeReducedPerTalentPoint, soulFireCastTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, Talents::Warlock::BANE_RNK_3, 3, shadowbBoltCastTimeReducedPerTalentPoint, soulFireCastTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, Talents::Warlock::BANE_RNK_4, 4, shadowbBoltCastTimeReducedPerTalentPoint, soulFireCastTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, Talents::Warlock::BANE_RNK_5, 5, shadowbBoltCastTimeReducedPerTalentPoint, soulFireCastTimeReducedPerTalentPoint);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<BaneTestImpt>();
+    }
+};
+
+class DevastationTest : public TestCaseScript
+{
+public:
+    DevastationTest() : TestCaseScript("talents warlock devastation") { }
+
+    class DevastationTestImpt : public TestCase
+    {
+    public:
+        DevastationTestImpt() : TestCase(STATUS_WIP) { } // Bugs on Immolate, Incinerate, Searing Pain, Shadow Bolt, Shadowfury
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::DEVASTATION_RNK_5);
+            float const talentFactor = 5.0f;
+            float const expectedSpellCritChance = warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) + talentFactor;
+
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_SPELL_CRIT_CHANCE_CALLBACK(warlock, dummy, ClassSpells::Warlock::CONFLAGRATE_RNK_6, expectedSpellCritChance, [](Unit* caster, Unit* target) {
+                caster->CastSpell(target, ClassSpells::Warlock::IMMOLATE_RNK_9, TRIGGERED_FULL_MASK);
+            });
+            TEST_SPELL_CRIT_CHANCE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOWFURY_RNK_3, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, expectedSpellCritChance);
+            warlock->ResetForceSpellHitResult();
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<DevastationTestImpt>();
+    }
+};
+
 void AddSC_test_talents_warlock()
 {
 	// Affliction
@@ -1815,7 +2017,7 @@ void AddSC_test_talents_warlock()
     // TODO: Fel Concentration
     new AmplifyCurseTest();
     // TODO: Grim Reach
-    // TODO: Nightfall
+    new NightfallTest();
 	new EmpoweredCorruptionTest();
     new ShadowEmbraceTest();
     new SiphonLifeTest();
@@ -1838,4 +2040,9 @@ void AddSC_test_talents_warlock()
 	new DemonicSacrificeTest();
 	new DemonicKnowledgeTest();
 	new ManaFeedTest();
+    // Destruction
+    new ImprovedShadowBoltTest();
+    new CataclysmTest();
+    new BaneTest();
+    new DevastationTest();
 }
