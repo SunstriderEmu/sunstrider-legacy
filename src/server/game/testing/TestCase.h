@@ -227,6 +227,11 @@ public:
     typedef std::function<bool(Unit*, Unit*)> TestCallbackResult;
     #define TEST_AURA_TICK_PROC_CHANCE(caster, target, spellID, effIdx, chance, callback)  { _SetCaller(__FILE__, __LINE__); _TestAuraTickProcChance(caster, target, spellID, effIdx, chance, callback); _ResetCaller(); }
 
+    /* Test how much of the time a cast pushback is resisted (against melee attacks). Target will also be the one attacking the caster.
+    chance: 0-100
+    */
+    #define TEST_PUSHBACK_RESIST_CHANCE(caster, target, spellID, chance)  { _SetCaller(__FILE__, __LINE__); _TestPushBackResistChance(caster, target, spellID, chance); _ResetCaller(); }
+
     //Get raw spell data from caster to target with spellID
     std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(TestPlayer* caster, Unit* victim, uint32 spellID);
     //Get raw healing data from caster to target with spellID
@@ -295,6 +300,7 @@ protected:
     void _TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback);
     void _TestSpellCastTime(TestPlayer* caster, uint32 spellID, uint32 expectedCastTimeMS);
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, TestCallbackResult callback);
+    void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
 
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
@@ -319,6 +325,8 @@ protected:
     //expectedResult: % from absoluteTolerance*2 to 1.0f
     //absoluteTolerance: % from 0.0f to 1.0f. Error tolerance.
     void _GetPercentApproximationParams(uint32& sampleSize, float& resultingAbsoluteTolerance, float const expectedResult, float const absoluteTolerance = 0.01f);
+
+    void _EnsureAlive(Unit* caster, Unit* victim);
 
 private:
     std::string              _testName;

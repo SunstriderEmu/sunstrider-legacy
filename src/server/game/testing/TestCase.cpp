@@ -1207,10 +1207,7 @@ void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spel
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
 
-    INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive caster");
-    INTERNAL_TEST_ASSERT(caster->IsAlive());
-    INTERNAL_ASSERT_INFO("_TestSpellHitChance only support alive victim");
-    INTERNAL_TEST_ASSERT(victim->IsAlive());
+    _EnsureAlive(caster, victim);
 
     uint32 startingHealth = victim->GetHealth();
     uint32 startingMaxHealth = victim->GetMaxHealth();
@@ -1242,10 +1239,7 @@ void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spel
 
 void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex effIndex, float expectedResultPercent, TestCallbackResult callback)
 {
-    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance only support alive caster");
-    INTERNAL_TEST_ASSERT(caster->IsAlive());
-    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance only support alive victim");
-    INTERNAL_TEST_ASSERT(target->IsAlive());
+    _EnsureAlive(caster, target);
 
     Aura* aura = caster->AddAura(spellID, target);
     INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to add aura %u on victim", spellID);
@@ -1281,12 +1275,69 @@ void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellI
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 }
 
+void TestCase::_EnsureAlive(Unit* caster, Unit* target)
+{
+    INTERNAL_ASSERT_INFO("Only support alive caster");
+    INTERNAL_TEST_ASSERT(caster->IsAlive());
+    INTERNAL_ASSERT_INFO("Only support alive victim");
+    INTERNAL_TEST_ASSERT(target->IsAlive());
+}
+
+void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float expectedResultPercent)
+{
+    _EnsureAlive(caster, target);
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+
+    uint32 startingHealth = caster->GetHealth();
+
+    float const absoluteTolerance = 0.02f;
+    uint32 sampleSize;
+    float resultingAbsoluteTolerance;
+    _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResultPercent / 100.0f, absoluteTolerance);
+
+    Unit* attackingUnit = target;
+
+    MeleeHitOutcome previousForceHit = attackingUnit->_forceMeleeResult;
+    attackingUnit->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+
+    caster->CastSpell(target, spellID, TRIGGERED_NONE);
+    //if(spellInfo->IsChanneled())
+    Spell* spell = caster->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    INTERNAL_ASSERT_INFO("_TestPushBackResistChance: Failed to get spell %u", spellID);
+    INTERNAL_TEST_ASSERT(spell != nullptr);
+    spell->m_timer = 1;
+
+    uint32 pushbackCount = 0;
+    for (uint32 i = 0; i < sampleSize; i++)
+    {
+        caster->SetFullHealth();
+        uint32 startingHealth = caster->GetHealth();
+        attackingUnit->AttackerStateUpdate(caster, BASE_ATTACK);
+        INTERNAL_ASSERT_INFO("Caster has not lost hp, did melee hit failed?");
+        INTERNAL_TEST_ASSERT(caster->GetHealth() < startingHealth);
+
+        Spell* spell2 = caster->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        INTERNAL_ASSERT_INFO("_TestPushBackResistChance: Failed to get spell %u (loop)", spellID);
+        if (spell2->m_timer > 1)
+            pushbackCount++;
+
+        HandleThreadPause();
+    }
+
+    attackingUnit->ForceMeleeHitResult(previousForceHit);
+    caster->SetHealth(startingHealth);
+
+    float actualResistPercent = 100 * (1 - (pushbackCount / float(sampleSize)));
+    INTERNAL_ASSERT_INFO("_TestPushBackResistChance on spell %u: expected result: %f, result: %f", spellID, expectedResultPercent, actualResistPercent);
+    INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
+}
+
 void TestCase::_TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
 {
-    INTERNAL_ASSERT_INFO("_TestMeleeHitChance only support alive caster");
-    INTERNAL_TEST_ASSERT(caster->IsAlive());
-    INTERNAL_ASSERT_INFO("_TestMeleeHitChance only support alive victim");
-    INTERNAL_TEST_ASSERT(victim->IsAlive());
+    _EnsureAlive(caster, victim);
     INTERNAL_ASSERT_INFO("_TestMeleeHitChance can only be used with BASE_ATTACK and OFF_ATTACK");
     INTERNAL_TEST_ASSERT(weaponAttackType <= OFF_ATTACK);
 
@@ -1581,10 +1632,7 @@ void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spe
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
 
-    INTERNAL_ASSERT_INFO("_TestSpellCritChance only support alive caster");
-    INTERNAL_TEST_ASSERT(caster->IsAlive());
-    INTERNAL_ASSERT_INFO("_TestSpellCritChance only support alive victim");
-    INTERNAL_TEST_ASSERT(victim->IsAlive());
+    _EnsureAlive(caster, victim);
 
     uint32 startingHealth = victim->GetHealth();
     uint32 startingMaxHealth = victim->GetMaxHealth();

@@ -288,6 +288,8 @@ enum SpellTargets
 class TC_GAME_API Spell
 {
     friend class SpellScript;
+    friend class TestCase;
+
     public:
 
         void EffectNULL(uint32 );
@@ -752,7 +754,7 @@ class TC_GAME_API Spell
 		void SummonGuardian(uint32 effectIndex, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons);
 
         uint32 m_spellState;
-        uint32 m_timer;
+        uint32 m_timer; //remaining cast time
         SpellEvent* _spellEvent;
 
         float m_castPositionX;
