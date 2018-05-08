@@ -8531,7 +8531,7 @@ bool Spell::IsPositive() const
 
 bool Spell::IsTriggered() const
 {
-    return (_triggeredCastFlags & TRIGGERED_FULL_MASK) != 0;
+    return (_triggeredCastFlags & TRIGGERED_FULL_MASK) != 0 && (_triggeredCastFlags & TRIGGERED_PROC_AS_NON_TRIGGERED) == 0;
 }
 
 bool Spell::IsIgnoringCooldowns() const

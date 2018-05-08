@@ -153,7 +153,8 @@ enum TriggerCastFlags : uint32
     //?
     //sunstrider custom
     TRIGGERED_IGNORE_SPEED                          = 0x00200000,
-    TRIGGERED_FULL_DEBUG_MASK                       = 0xFFFFFFFF
+    TRIGGERED_PROC_AS_NON_TRIGGERED                 = 0x00400000,
+    TRIGGERED_FULL_DEBUG_MASK                       = 0xFFFFFFFF,
 };
 
 struct TC_GAME_API CastSpellExtraArgs

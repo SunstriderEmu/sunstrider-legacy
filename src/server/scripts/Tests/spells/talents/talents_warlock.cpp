@@ -537,7 +537,7 @@ public:
         {
             //TC_LOG_TRACE("test.unit_test", "SpellAppliesAndRemovesShadowEmbrace %u", spellId);
             victim->SetFullHealth();
-            FORCE_CAST(warlock, victim, spellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            FORCE_CAST(warlock, victim, spellId, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_PROC_AS_NON_TRIGGERED));
             //ASSERT_INFO("After spell %u, warlock doesn't have Shadow Embrace.", spellId);
             TEST_HAS_AURA(victim, shadowEmbraceId);
             Wait(dotTime);
