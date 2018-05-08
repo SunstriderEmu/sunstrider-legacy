@@ -2056,6 +2056,35 @@ public:
     }
 };
 
+class ImprovedSearingPainTest : public TestCaseScript
+{
+public:
+    ImprovedSearingPainTest() : TestCaseScript("talents warlock improved_searing_pain") { }
+
+    class ImprovedSearingPainTestImpt : public TestCase
+    {
+    public:
+        ImprovedSearingPainTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_SEARING_PAIN_RNK_3);
+            float const talentFactor = 10.0f;
+            float const expectedSpellCritChance = warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) + talentFactor;
+
+            TEST_SPELL_CRIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSpellCritChance);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedSearingPainTestImpt>();
+    }
+};
+
 void AddSC_test_talents_warlock()
 {
 	// Affliction
@@ -2098,4 +2127,5 @@ void AddSC_test_talents_warlock()
     new BaneTest();
     new DevastationTest();
     new ShadowburnTest();
+    new ImprovedSearingPainTest();
 }
