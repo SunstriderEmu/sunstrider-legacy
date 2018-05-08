@@ -237,18 +237,19 @@ public:
             // PvE
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, SPELL_MISS_NONE);
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, Seconds(30));
-            // TODO: test increased casting time
 
             // PvP
             Wait(1500); //GCD
             FORCE_CAST(warlock, mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, SPELL_MISS_NONE);
-            TEST_AURA_MAX_DURATION(mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, Seconds(12)); // bug here, it's 10 but as of patch 2.1, it should be 12s
+            TEST_AURA_MAX_DURATION(mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, Seconds(12));
+
             // Test increased casting time: Frostbolt cast time is 3.0s, with the curse it should be 4.8s
             FORCE_CAST(mage, warlock, ClassSpells::Mage::FROSTBOLT_RNK_13, SPELL_MISS_NONE);
-            Wait(4000);
-            TEST_HAS_NOT_AURA(warlock, ClassSpells::Mage::FROSTBOLT_RNK_13);
-            Wait(1000);
-            TEST_HAS_AURA(warlock, ClassSpells::Mage::FROSTBOLT_RNK_13);
+            Spell* spell = mage->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+            TEST_ASSERT(spell != nullptr);
+            uint32 const expectedCastTime = 4800;
+            ASSERT_INFO("New spell cast time %u instead of expected %u", spell->GetCastTime(), expectedCastTime);
+            TEST_ASSERT(spell->GetCastTime() == expectedCastTime);
 
             uint32 const expectedCurseOfTonguesManaCost = 110;
             TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, POWER_MANA, expectedCurseOfTonguesManaCost);
@@ -719,9 +720,7 @@ public:
             TEST_ASSERT(dummy3->GetHealth() < maxHealth);
 
             // SoC detonation does not detonate other SoC
-            //  "The seed will detonate early if the target is hit by other detonations" (WoWWiki but at Legion time)
-            // "SoC detonation can be set off by any damage" (WoWWiki TBC)
-            // However THIS "http://wowwiki.wikia.com/wiki/Talk:Seed_of_Corruption" seems to claim that previous affirmation are false
+            // "If a target afflicted by Seed of Corruption takes damage from another target's SoC detonation and survives, it will not have its own SoC detonate" WoWWiki TBC
             TEST_HAS_AURA(dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1);
 
             // Test mana cost
@@ -937,11 +936,12 @@ public:
             USE_ITEM(caster, caster, soulstone);
             Wait(Seconds(3));
             TEST_ASSERT(caster->GetItemCount(soulstone, false) == 0);
-            // Spell has 30min cooldown. Impossible to check directly, so we test superior to 29 min.
+            // Spell has 30min cooldown. Impossible to check precisely, so we test superior to 29 min.
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(soulstoneItemSpellId);
             TEST_ASSERT(spellInfo != nullptr);
             ASSERT_INFO("Spell: %u, cd: %u", soulstoneItemSpellId, caster->GetSpellHistory()->GetRemainingCooldown(spellInfo));
             TEST_ASSERT(caster->GetSpellHistory()->GetRemainingCooldown(spellInfo) > (29 * MINUTE * IN_MILLISECONDS));
+            TEST_ASSERT(caster->GetSpellHistory()->GetRemainingCooldown(spellInfo) > (31 * MINUTE * IN_MILLISECONDS));
             TEST_AURA_MAX_DURATION(caster, soulstoneItemSpellId, Minutes(30));
 
             caster->KillSelf();
@@ -1012,7 +1012,7 @@ public:
             warlock->GetGroup()->Disband();
             WaitNextUpdate();
             TEST_ASSERT(!friendly->IsInSameGroupWith(warlock));
-            TEST_HAS_NOT_AURA(friendly, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM);
+            TEST_HAS_NOT_AURA(friendly, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM); //BUG HERE
             Wait(5000);
         }
     };
