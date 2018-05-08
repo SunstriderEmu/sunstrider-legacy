@@ -3650,6 +3650,7 @@ namespace ClassSpells
             SHADOWBURN_RNK_6 = 18871,
             SHADOWBURN_RNK_7 = 27263,
             SHADOWBURN_RNK_8 = 30546,
+            SHADOWBURN_RNK_8_TRIGGER = 29341,
             SHADOWFURY_RNK_1 = 30283,
             SHADOWFURY_RNK_2 = 30413,
             SHADOWFURY_RNK_3 = 30414,

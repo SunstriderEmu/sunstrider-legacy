@@ -2006,6 +2006,56 @@ public:
     }
 };
 
+class ShadowburnTest : public TestCaseScript
+{
+public:
+    ShadowburnTest() : TestCaseScript("talents warlock shadowburn") { }
+
+    class ShadowburnTestImpt : public TestCase
+    {
+    public:
+        ShadowburnTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            uint32 const expectedShadowburnManaCost = 515;
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOWBURN_RNK_8, POWER_MANA, expectedShadowburnManaCost);
+            
+            warlock->AddItem(SOUL_SHARD, 1);
+            TEST_CAST(warlock, enemy, ClassSpells::Warlock::SHADOWBURN_RNK_8, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            // Consumes a Soul Shard
+            TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
+            TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::SHADOWBURN_RNK_8, Seconds(15));
+            TEST_AURA_MAX_DURATION(enemy, ClassSpells::Warlock::SHADOWBURN_RNK_8_TRIGGER, Seconds(5));
+            Wait(Seconds(2));
+            enemy->KillSelf();
+            // Gives shard if affected target dies within 5sec
+            TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 1);
+
+            // Damage
+            float const spellCoefficient = ClassSpellsCoeff::Warlock::SHADOWBURN;
+            uint32 const expectedShadowburnMin = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN + spellPower * spellCoefficient;
+            uint32 const expectedShadowburnMax = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX + spellPower * spellCoefficient;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin, expectedShadowburnMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin * 1.5f, expectedShadowburnMax * 1.5f, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowburnTestImpt>();
+    }
+};
+
 void AddSC_test_talents_warlock()
 {
 	// Affliction
@@ -2047,4 +2097,5 @@ void AddSC_test_talents_warlock()
     new CataclysmTest();
     new BaneTest();
     new DevastationTest();
+    new ShadowburnTest();
 }
