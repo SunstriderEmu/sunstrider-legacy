@@ -239,17 +239,11 @@ public:
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, Seconds(30));
 
             // PvP
-            Wait(1500); //GCD
-            FORCE_CAST(warlock, mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, SPELL_MISS_NONE);
+            FORCE_CAST(warlock, mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             TEST_AURA_MAX_DURATION(mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, Seconds(12));
 
             // Test increased casting time: Frostbolt cast time is 3.0s, with the curse it should be 4.8s
-            FORCE_CAST(mage, warlock, ClassSpells::Mage::FROSTBOLT_RNK_13, SPELL_MISS_NONE);
-            Spell* spell = mage->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-            TEST_ASSERT(spell != nullptr);
-            uint32 const expectedCastTime = 4800;
-            ASSERT_INFO("New spell cast time %u instead of expected %u", spell->GetCastTime(), expectedCastTime);
-            TEST_ASSERT(spell->GetCastTime() == expectedCastTime);
+            TEST_SPELL_CAST_TIME(mage, ClassSpells::Mage::FROSTBOLT_RNK_13, 4800);
 
             uint32 const expectedCurseOfTonguesManaCost = 110;
             TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, POWER_MANA, expectedCurseOfTonguesManaCost);
@@ -1609,52 +1603,6 @@ public:
     }
 };
 
-class RainOfFireTest : public TestCaseScript
-{
-public:
-    RainOfFireTest() : TestCaseScript("spells warlock rain_of_fire") { }
-
-    class RainOfFireTestImpt : public TestCase
-    {
-    public:
-        RainOfFireTestImpt() : TestCase(STATUS_PASSING) { }
-
-        void Test() override
-        {
-            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
-            Creature* dummy = SpawnCreature();
-
-            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
-
-            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-            TEST_ASSERT(spellPower == 292);
-
-            uint32 const expectedRainOfFireManaCost = 1480;
-            TEST_POWER_COST(warlock, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, POWER_MANA, expectedRainOfFireManaCost);
-
-            // Damage -- 
-            // DrDamage has coef 1.146
-            // WoWWiki has coef 0.952 (http://wowwiki.wikia.com/wiki/Spell_power_coefficient?oldid=1336186)
-            // Sunstrider uses with DrDamage value
-            float const duration = 8.0f;
-            float const spellCoeff = duration / 3.5f / 2.0f;
-
-            uint32 const spellLevel = 69;
-            float const dmgPerLevel = 0.8f;
-            float const dmgPerLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * dmgPerLevel;
-
-            uint32 const totalRainOfFire = 4.0f * (ClassSpellsDamage::Warlock::RAIN_OF_FIRE_RNK_5_TICK + dmgPerLevelGain) + spellPower * spellCoeff;
-            uint32 const expectedTickAmount = totalRainOfFire / 4.0f;
-            TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5_PROC, 4, expectedTickAmount);
-        }
-    };
-
-    std::shared_ptr<TestCase> GetTest() const override
-    {
-        return std::make_shared<RainOfFireTestImpt>();
-    }
-};
-
 class HellfireTest : public TestCaseScript
 {
 public:
@@ -1813,6 +1761,52 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<IncinerateTestImpt>();
+    }
+};
+
+class RainOfFireTest : public TestCaseScript
+{
+public:
+    RainOfFireTest() : TestCaseScript("spells warlock rain_of_fire") { }
+
+    class RainOfFireTestImpt : public TestCase
+    {
+    public:
+        RainOfFireTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            uint32 const expectedRainOfFireManaCost = 1480;
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, POWER_MANA, expectedRainOfFireManaCost);
+
+            // Damage
+            // DrDamage has coef 1.146
+            // WoWWiki has coef 0.952 (http://wowwiki.wikia.com/wiki/Spell_power_coefficient?oldid=1336186)
+            // Sunstrider uses with DrDamage value
+            float const duration = 8.0f;
+            float const spellCoeff = duration / 3.5f / 2.0f;
+
+            uint32 const spellLevel = 69;
+            float const dmgPerLevel = 0.8f;
+            float const dmgPerLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * dmgPerLevel;
+
+            uint32 const totalRainOfFire = 4.0f * (ClassSpellsDamage::Warlock::RAIN_OF_FIRE_RNK_5_TICK + dmgPerLevelGain) + spellPower * spellCoeff;
+            uint32 const expectedTickAmount = totalRainOfFire / 4.0f;
+            TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5_PROC, 4, expectedTickAmount);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<RainOfFireTestImpt>();
     }
 };
 

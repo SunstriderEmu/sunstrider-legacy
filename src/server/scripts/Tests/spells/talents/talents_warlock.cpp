@@ -437,6 +437,38 @@ public:
 	}
 };
 
+class FelConcentrationTest : public TestCaseScript
+{
+public:
+
+    FelConcentrationTest() : TestCaseScript("talents warlock fel_concentration") { }
+
+    class FelConcentrationTestImpt : public TestCase
+    {
+    public:
+        FelConcentrationTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::FEL_CONCENTRATION_RNK_5);
+            float const resistPushBackChance = 70.f;
+
+            //TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, resistPushBackChance);
+            //TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_MANA_RNK_6, resistPushBackChance);
+            //TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, resistPushBackChance);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<FelConcentrationTestImpt>();
+    }
+};
+
 class NightfallTest : public TestCaseScript
 {
 public:
@@ -2085,6 +2117,124 @@ public:
     }
 };
 
+class ImprovedImmolateTest : public TestCaseScript
+{
+public:
+    ImprovedImmolateTest() : TestCaseScript("talents warlock improved_immolate") { }
+
+    class ImprovedImmolateTestImpt : public TestCase
+    {
+    public:
+        ImprovedImmolateTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_IMMOLATE_RNK_5);
+            float const talentFactor = 1.25f;
+
+            // Direct damage
+            uint32 const expectedImprovedImmolateDirect = ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_LVL_70 * talentFactor;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, expectedImprovedImmolateDirect, expectedImprovedImmolateDirect, false);
+            // Make sure DoT isnt boosted
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_DOT, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedImmolateTestImpt>();
+    }
+};
+
+class RuinTest : public TestCaseScript
+{
+public:
+    RuinTest() : TestCaseScript("talents warlock ruin") { }
+
+    class RuinTestImpt : public TestCase
+    {
+    public:
+        RuinTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::RUIN_RNK_1);
+
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy, ClassSpells::Warlock::CONFLAGRATE_RNK_6, ClassSpellsDamage::Warlock::CONFLAGRATE_RNK_6_MIN * 2.f, ClassSpellsDamage::Warlock::CONFLAGRATE_RNK_6_MAX * 2.f, true, [](Unit* caster, Unit* target) {
+                caster->CastSpell(target, ClassSpells::Warlock::IMMOLATE_RNK_9, TRIGGERED_FULL_MASK);
+            });
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_LVL_70 * 2.f, ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_LVL_70 * 2.f, true);
+            dummy->RemoveAllAuras(); // Removing Immolate that would fail Incinerate test
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * 2.f, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * 2.f, true);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MIN * 2.f, ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MAX * 2.f, true);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * 2.f, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * 2.f, true);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * 2.f, ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * 2.f, true);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWFURY_RNK_3, ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MIN * 2.f, ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MAX * 2.f, true);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MIN * 2.f, ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MAX * 2.f, true);
+            warlock->ResetForceSpellHitResult();
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<RuinTestImpt>();
+    }
+};
+
+class EmberstormTest : public TestCaseScript
+{
+public:
+    EmberstormTest() : TestCaseScript("talents warlock emberstorm") { }
+
+    class EmberstormTestImpt : public TestCase
+    {
+    public:
+        EmberstormTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::EMBERSTORM_RNK_5);
+            float const damageFactor = 1.1f;
+            warlock->SetMaxHealth(uint32(1000000));
+            warlock->SetFullHealth();
+
+            // Incinerate cast time reduces by 10%
+            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, 2500 * 0.9f);
+
+            // Fire damage increased by 10%
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy, ClassSpells::Warlock::CONFLAGRATE_RNK_6, ClassSpellsDamage::Warlock::CONFLAGRATE_RNK_6_MIN * damageFactor, ClassSpellsDamage::Warlock::CONFLAGRATE_RNK_6_MAX * damageFactor, false, [](Unit* caster, Unit* target) {
+                caster->CastSpell(target, ClassSpells::Warlock::IMMOLATE_RNK_9, TRIGGERED_FULL_MASK);
+            });
+            warlock->ResetForceSpellHitResult();
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_LVL_70 * damageFactor, ClassSpellsDamage::Warlock::IMMOLATE_RNK_9_LVL_70 * damageFactor, false);
+            dummy->RemoveAllAuras(); // Removing Immolate that would fail Incinerate test
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * damageFactor, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * damageFactor, false);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MIN * damageFactor, ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MAX * damageFactor, false);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MIN * damageFactor, ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MAX * damageFactor, false);
+            // Helfire
+            TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::HELLFIRE_RNK_4, ClassSpells::Warlock::HELLFIRE_RNK_4_TRIGGER, 15, ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK_LVL_70 * damageFactor);
+            TEST_DOT_DAMAGE(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK_LVL_70 * damageFactor * 15.f, false);
+            TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5_PROC, 4, ClassSpellsDamage::Warlock::RAIN_OF_FIRE_RNK_5_TICK_LVL_70 * damageFactor);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<EmberstormTestImpt>();
+    }
+};
+
 void AddSC_test_talents_warlock()
 {
 	// Affliction
@@ -2095,7 +2245,7 @@ void AddSC_test_talents_warlock()
 	new ImprovedLifeTapTest();
     new SoulSiphonTest();
     new ImprovedCurseOfAgonyTest();
-    // TODO: Fel Concentration
+    new FelConcentrationTest();
     new AmplifyCurseTest();
     // TODO: Grim Reach
     new NightfallTest();
@@ -2128,4 +2278,7 @@ void AddSC_test_talents_warlock()
     new DevastationTest();
     new ShadowburnTest();
     new ImprovedSearingPainTest();
+    new ImprovedImmolateTest();
+    new RuinTest();
+    new EmberstormTest();
 }
