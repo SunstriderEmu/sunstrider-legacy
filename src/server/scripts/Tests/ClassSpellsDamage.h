@@ -306,26 +306,29 @@ namespace ClassSpellsDamage
 
 	namespace Warlock
 	{
-		enum Warlock
-		{
-			// Affliction
+        enum Warlock
+        {
+            // Affliction
             CORRUPTION_RNK_8_TICK = 150,
             CORRUPTION_RNK_8_TOTAL = 900,
-			CURSE_OF_AGONY_RNK_7_TOTAL = 1356,
-			CURSE_OF_DOOM_RNK_2 = 4200,
+            CURSE_OF_AGONY_RNK_7_TOTAL = 1356,
+            CURSE_OF_DOOM_RNK_2 = 4200,
+            DARK_PACT_RNK_4 = 700,
             DEATH_COIL_RNK_4 = 519,
             DEATH_COIL_RNK_4_LVL_70 = 525,
             DRAIN_LIFE_RNK_8_TICK = 108,
-			DRAIN_MANA_RNK_6_TICK = 200,
+            DRAIN_MANA_RNK_6_TICK = 200,
             DRAIN_SOUL_RNK_5_TICK = 124,
             DRAIN_SOUL_RNK_5_TOTAL = 620,
-			LIFE_TAP_RNK_7 = 580,
-			SEED_OF_CORRUPTION_RNK_1_MIN = 1110,
-			SEED_OF_CORRUPTION_RNK_1_MAX = 1290,
+            LIFE_TAP_RNK_7 = 580,
+            SEED_OF_CORRUPTION_RNK_1_MIN = 1110,
+            SEED_OF_CORRUPTION_RNK_1_MAX = 1290,
             SEED_OF_CORRUPTION_RNK_1_TOTAL = 1044,
             SEED_OF_CORRUPTION_RNK_1_TICK = 174,
-			UNSTABLE_AFFLICTION_RNK_DISPELLED = 990,
-			UNSTABLE_AFFLICTION_RNK_1_TOTAL = 660,
+            SIHPON_LIFE_RNK_6_TICK = 63,
+			UNSTABLE_AFFLICTION_RNK_3_DISPELLED = 1575,
+            UNSTABLE_AFFLICTION_RNK_3_TICK = 175,
+            UNSTABLE_AFFLICTION_RNK_3_TOTAL = 1050,
 
             // Demonology
             CREATE_HEALTHSTONE_RNK_1_HP_RESTORED = 100,

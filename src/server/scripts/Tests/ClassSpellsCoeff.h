@@ -164,8 +164,8 @@ namespace ClassSpellsCoeff
         const float SEED_OF_CORRUPTION = 0.22f;
 		const float SEED_OF_CORRUPTION_DOT = 1.5f;
 		const float SIPHON_LIFE = 1.0f;
-		const float UNSTABLE_AFFLICTION = 0.18f;
-		const float UNSTABLE_AFFLICTION_DOT = 0.12f;
+		const float UNSTABLE_AFFLICTION = 1.8f;
+		const float UNSTABLE_AFFLICTION_DOT = 1.2f;
 
 		// Demonology
 		const float HEALTH_FUNNEL_HEAL = 0.2857f;

@@ -4,6 +4,52 @@
 
 #define SOUL_SHARD 6265
 
+class SuppressionTest : public TestCaseScript
+{
+public:
+    SuppressionTest() : TestCaseScript("talents warlock suppression") { }
+
+    class SuppressionTestImpt : public TestCase
+    {
+    public:
+        SuppressionTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Curse of Doom is not affected, should be.
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            Creature* dummy = SpawnCreature(12); // Boss
+
+            LearnTalent(warlock, Talents::Warlock::SUPPRESSION_RNK_5);
+            float const hitTalentFactor = 10.0f;
+            float const hitChance = 16.0f - hitTalentFactor;
+
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::FEAR_RNK_3, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, hitChance, SPELL_MISS_RESIST);
+
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, 16.0f, SPELL_MISS_RESIST);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SuppressionTestImpt>();
+    }
+};
+
 class ImprovedCorruptionTest : public TestCaseScript
 {
 public:
@@ -14,7 +60,7 @@ public:
     public:
         ImprovedCorruptionTestImpt() : TestCase(STATUS_PASSING) { }
 
-        void TestCorruptionCastTime(TestPlayer* caster, Creature* victim, uint32 talentSpellId, uint32 talentFactor)
+        void TestCorruptionCastTime(TestPlayer* caster, uint32 talentSpellId, uint32 talentFactor)
         {
             LearnTalent(caster, talentSpellId);
             uint32 const expectedCastTime = 2000 - talentFactor;
@@ -24,16 +70,14 @@ public:
         void Test() override
         {
             TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
-            Creature* dummy = SpawnCreature();
 
-            LearnTalent(warlock, Talents::Warlock::IMPROVED_CORRUPTION_RNK_5);
             uint32 const castTimeReducedPerTalentPoint = 400;
 
-            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_1, 1 * castTimeReducedPerTalentPoint);
-            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_2, 2 * castTimeReducedPerTalentPoint);
-            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_3, 3 * castTimeReducedPerTalentPoint);
-            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_4, 4 * castTimeReducedPerTalentPoint);
-            TestCorruptionCastTime(warlock, dummy, Talents::Warlock::IMPROVED_CORRUPTION_RNK_5, 5 * castTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, Talents::Warlock::IMPROVED_CORRUPTION_RNK_1, 1 * castTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, Talents::Warlock::IMPROVED_CORRUPTION_RNK_2, 2 * castTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, Talents::Warlock::IMPROVED_CORRUPTION_RNK_3, 3 * castTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, Talents::Warlock::IMPROVED_CORRUPTION_RNK_4, 4 * castTimeReducedPerTalentPoint);
+            TestCorruptionCastTime(warlock, Talents::Warlock::IMPROVED_CORRUPTION_RNK_5, 5 * castTimeReducedPerTalentPoint);
         }
     };
 
@@ -310,6 +354,57 @@ public:
     }
 };
 
+class AmplifyCurseTest : public TestCaseScript
+{
+public:
+
+    AmplifyCurseTest() : TestCaseScript("talents warlock amplify_curse") { }
+
+    class AmplifyCurseTestImpt : public TestCase
+    {
+    public:
+        AmplifyCurseTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Doesnt boost Curse of Doom and somehow reduce it
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::AMPLIFY_CURSE_RNK_1);
+            float const codAndCoABoostFactor = 1.5f;
+            float const coeBoostFactor = 0.5f;
+
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::AMPLIFY_CURSE_RNK_1);
+            TEST_AURA_MAX_DURATION(warlock, ClassSpells::Warlock::AMPLIFY_CURSE_RNK_1, Seconds(30));
+
+            // Curse of Exhaustion
+            float const expectedSpeed = warrior->GetSpeed(MOVE_RUN) * coeBoostFactor;
+            FORCE_CAST(warlock, warrior, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1);
+            ASSERT_INFO("Warrior has %f speed, %f was expected.", warrior->GetSpeed(MOVE_RUN), expectedSpeed);
+            TEST_ASSERT(Between<float>(warrior->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
+            TEST_HAS_NOT_AURA(warlock, ClassSpells::Warlock::AMPLIFY_CURSE_RNK_1);
+            TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::AMPLIFY_CURSE_RNK_1, Minutes(3)); // Cooldown starts when consuming a spell
+
+            // Curse of Agony
+            float const expectedCoAMaxDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * codAndCoABoostFactor;
+            uint32 const expectedCoADamage = (4 * expectedCoAMaxDamage / 24.0f) + (4 * expectedCoAMaxDamage / 12.0f) + (4 * expectedCoAMaxDamage / 8.0f);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::AMPLIFY_CURSE_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD);
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, false);
+
+            // Curse of Doom
+            float const expectedCoDDamage = ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 * codAndCoABoostFactor;
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::AMPLIFY_CURSE_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD);
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoDDamage, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<AmplifyCurseTestImpt>();
+    }
+};
+
 class ImprovedCurseOfAgonyTest : public TestCaseScript
 {
 public:
@@ -379,6 +474,173 @@ public:
 	}
 };
 
+class ShadowEmbraceTest : public TestCaseScript
+{
+public:
+    ShadowEmbraceTest() : TestCaseScript("talents warlock shadow_embrace") { }
+
+    class ShadowEmbraceTestImpt : public TestCase
+    {
+    public:
+        /*
+        Bugs:
+        - Siphon Life doesnt remove Shadow Embrace at the end.
+        - Seed of Corruption doesnt apply Shadow Embrace.
+        */
+        ShadowEmbraceTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        void SpellAppliesAndRemovesShadowEmbrace(TestPlayer* warlock, TestPlayer* victim, uint32 spellId, Seconds dotTime, uint32 shadowEmbraceId)
+        {
+            victim->SetFullHealth();
+            FORCE_CAST(warlock, victim, spellId);
+            Wait(2000); // Need to wait a little so Shadow Embrace is applied
+            TEST_HAS_AURA(victim, shadowEmbraceId);
+            Wait(dotTime);
+            ASSERT_INFO("After spell %u, victim still has Shadow Embrace.", spellId);
+            TEST_HAS_NOT_AURA(victim, shadowEmbraceId);
+        }
+
+        void ApplyShadowEmbrace(TestPlayer* rogue, uint32 shadowEmbraceId)
+        {
+            if (!rogue->HasAura(shadowEmbraceId))
+                rogue->AddAura(shadowEmbraceId, rogue);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+
+            LearnTalent(warlock, Talents::Warlock::SHADOW_EMBRACE_RNK_5);
+            float const shadowEmbraceFactor = 1 - 0.05f;
+
+            uint32 const SHADOW_EMBRACE_AURA_RNK_5 = 32391;
+
+            SpellAppliesAndRemovesShadowEmbrace(warlock, rogue, ClassSpells::Warlock::CORRUPTION_RNK_8, Seconds(18), SHADOW_EMBRACE_AURA_RNK_5);
+            SpellAppliesAndRemovesShadowEmbrace(warlock, rogue, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, Seconds(24), SHADOW_EMBRACE_AURA_RNK_5);
+            SpellAppliesAndRemovesShadowEmbrace(warlock, rogue, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, Seconds(18), SHADOW_EMBRACE_AURA_RNK_5);
+            SpellAppliesAndRemovesShadowEmbrace(warlock, rogue, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, Seconds(30), SHADOW_EMBRACE_AURA_RNK_5);
+
+            // Physical damage reduced by 5%
+            Creature* dummy = SpawnCreature();
+            EQUIP_NEW_ITEM(rogue, 32837); // Warglaive of Azzinoth MH
+            Wait(1500);
+            EQUIP_NEW_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
+            WaitNextUpdate();
+            int const sinisterStrikeBonus = 98;
+            float const normalizedSwordSpeed = 2.4f;
+            float const AP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5f));
+            // Sinister strike
+            uint32 const weaponMinDamage = 214 + (AP / 14 * normalizedSwordSpeed);
+            uint32 const weaponMaxDamage = 398 + (AP / 14 * normalizedSwordSpeed);
+            uint32 const expectedSinisterStrikeMin = (weaponMinDamage + sinisterStrikeBonus) * armorFactor * shadowEmbraceFactor;
+            uint32 const expectedSinisterStrikeMax = (weaponMaxDamage + sinisterStrikeBonus) * armorFactor * shadowEmbraceFactor;
+            ApplyShadowEmbrace(rogue, SHADOW_EMBRACE_AURA_RNK_5);
+            TEST_DIRECT_SPELL_DAMAGE(rogue, dummy, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, expectedSinisterStrikeMin, expectedSinisterStrikeMax, false);
+            // Melee
+            uint32 const mhMinDamage = (214 + (AP / 14 * 2.8f)) * armorFactor * shadowEmbraceFactor;
+            uint32 const mhMaxDamage = (398 + (AP / 14 * 2.8f)) * armorFactor * shadowEmbraceFactor;
+            uint32 const ohMinDamage = (107 + (AP / 14 * 1.4f)) / 2.0f * armorFactor * shadowEmbraceFactor;
+            uint32 const ohMaxDamage = (199 + (AP / 14 * 1.4f)) / 2.0f * armorFactor * shadowEmbraceFactor;
+            ApplyShadowEmbrace(rogue, SHADOW_EMBRACE_AURA_RNK_5);
+            TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, mhMinDamage, mhMaxDamage, false);
+            ApplyShadowEmbrace(rogue, SHADOW_EMBRACE_AURA_RNK_5);
+            TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, ohMinDamage, ohMaxDamage, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowEmbraceTestImpt>();
+    }
+};
+
+class SiphonLifeTest : public TestCaseScript
+{
+public:
+    SiphonLifeTest() : TestCaseScript("talents warlock siphon_life") { }
+
+    class SiphonLifeTestImpt : public TestCase
+    {
+    public:
+        SiphonLifeTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void TestCorruptionCastTime(TestPlayer* caster, Creature* victim, uint32 talentSpellId, uint32 talentFactor)
+        {
+            LearnTalent(caster, talentSpellId);
+            uint32 const expectedCastTime = 2000 - talentFactor;
+            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCastTime);
+        }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            Creature* dummy = SpawnCreature();
+
+            warlock->DisableRegeneration(true);
+
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            uint32 const expectedSiphonLifeManaCost = 410;
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, POWER_MANA, expectedSiphonLifeManaCost);
+
+            // Damage
+            float const spellCoefficient = ClassSpellsCoeff::Warlock::SIPHON_LIFE; // DrDamage & WoWWiki coeff
+            float const tickAmount = 10.0f;
+            uint32 const expectedSLTick = ClassSpellsDamage::Warlock::SIHPON_LIFE_RNK_6_TICK + spellPower * spellCoefficient / tickAmount;
+            uint32 const expectedSLTotal = expectedSLTick * tickAmount;
+            warlock->SetHealth(1);
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, expectedSLTotal, true);
+            TEST_ASSERT(warlock->GetHealth() == 1 + expectedSLTotal);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SiphonLifeTestImpt>();
+    }
+};
+
+class CurseOfExhaustionTest : public TestCaseScript
+{
+public:
+
+    CurseOfExhaustionTest() : TestCaseScript("talents warlock curse_of_exhaustion") { }
+
+    class CurseOfExhaustionTestImpt : public TestCase
+    {
+    public:
+        CurseOfExhaustionTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+
+            LearnTalent(warlock, Talents::Warlock::CURSE_OF_EXHAUSTION_RNK_1);
+            float const speedMalusFactor = 1 - 0.3f;
+
+            float const warriorSpeed = warrior->GetSpeed(MOVE_RUN);
+            float const expectedSpeed = warrior->GetSpeed(MOVE_RUN) * speedMalusFactor;
+            FORCE_CAST(warlock, warrior, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1);
+            ASSERT_INFO("Warrior has %f speed, %f was expected.", warrior->GetSpeed(MOVE_RUN), expectedSpeed);
+            TEST_ASSERT(Between<float>(warrior->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
+            TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1, Seconds(12));
+
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1, POWER_MANA, 156);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CurseOfExhaustionTestImpt>();
+    }
+};
+
 class ShadowMasteryTest : public TestCaseScript
 {
 public:
@@ -388,7 +650,12 @@ public:
 	class ShadowMasteryTestImpt : public TestCase
 	{
 	public:
-		ShadowMasteryTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Curse of Doom & Drain Soul are not affected by the talent
+        /*
+            Bugs:
+                - Drain Soul is not affected by the talent, should.
+                - Drain Life and Siphon Life heals gain double effect, should not.
+        */
+		ShadowMasteryTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void Test() override
 		{
@@ -396,6 +663,7 @@ public:
             Creature* dummy = SpawnCreature();
 
             dummy->DisableRegeneration(true);
+            warlock->DisableRegeneration(true);
 
             LearnTalent(warlock, Talents::Warlock::SHADOW_MASTERY_RNK_5);
             float const shadowMasteryFactor = 1.1f;
@@ -408,9 +676,8 @@ public:
 			float const expectedCoaDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * shadowMasteryFactor;
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoaDamage, false);
 
-            // Curse of Doom
-			float const expectedCodDamage = ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 * shadowMasteryFactor;
-            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCodDamage, false);
+            // Curse of Doom should not be affected by Shadow Mastery cf Leulier's DPS Spreadsheet v1.12 (http://www.leulier.fr/spreadsheet/) and WoWWiki also mentions it
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2, false);
 
             // Death Coil
             uint32 const spellLevel = 68;
@@ -424,9 +691,13 @@ public:
             uint32 const expectedDrainLifeTick = ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * shadowMasteryFactor;
             uint32 const expectedDrainLifeTotal = drainLifeTickAmount * expectedDrainLifeTick;
             uint32 const dummyExpectedHealth = dummy->GetHealth() - expectedDrainLifeTotal;
+            warlock->SetHealth(1);
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
             Wait(5500);
+            ASSERT_INFO("Dummy has %u HP but %u was expected.", dummy->GetHealth(), dummyExpectedHealth);
             TEST_ASSERT(dummy->GetHealth() == dummyExpectedHealth);
+            ASSERT_INFO("Warlock has %u HP but %u was expected.", warlock->GetHealth(), 1 + expectedDrainLifeTotal);
+            TEST_ASSERT(warlock->GetHealth() == 1 + expectedDrainLifeTotal);
 
             // Drain Soul
             float const drainSoulTickAmount = 5.0f;
@@ -438,6 +709,14 @@ public:
             uint32 const expectedSoCTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * shadowMasteryFactor;
             uint32 const expectedSoCTotalAmount = seedOfCorruptionTickAmount * expectedSoCTick;
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCTotalAmount, true);
+
+            // Siphon Life 
+            float const siphonLifetickAmount = 10.0f;
+            uint32 const expectedSLTotalAmount = ClassSpellsDamage::Warlock::SIHPON_LIFE_RNK_6_TICK * siphonLifetickAmount * shadowMasteryFactor;
+            warlock->SetHealth(1);
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, expectedSLTotalAmount, true);
+            ASSERT_INFO("Warlock has %u HP but %u was expected.", warlock->GetHealth(), 1 + expectedSLTotalAmount);
+            TEST_ASSERT(warlock->GetHealth() == 1 + expectedSLTotalAmount);
 
             // Shadow Bolt
             uint32 const expectedShadowBoltMin = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * shadowMasteryFactor;
@@ -584,6 +863,169 @@ public:
 	{
 		return std::make_shared<ContagionTestImpt>();
 	}
+};
+
+class DarkPactTest : public TestCaseScript
+{
+public:
+    DarkPactTest() : TestCaseScript("talents warlock dark_pact") { }
+
+    class DarkPactTestImpt : public TestCase
+    {
+    public:
+        DarkPactTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Not affected by Spell Coefficient
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            warlock->DisableRegeneration(true);
+
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::DARK_PACT_RNK_4, SPELL_FAILED_NO_PET);
+
+            // Summon Voidwalker
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            WaitNextUpdate();
+            Guardian* voidwalker = warlock->GetGuardianPet();
+            TEST_ASSERT(voidwalker != nullptr);
+            voidwalker->DisableRegeneration(true);
+
+            uint32 expectedManaDrained = ClassSpellsDamage::Warlock::DARK_PACT_RNK_4 + spellPower * ClassSpellsCoeff::Warlock::DARK_PACT; // WoWWiki
+            uint32 expectedPetMana = std::max(voidwalker->GetPower(POWER_MANA) - expectedManaDrained, uint32(0));
+            warlock->SetPower(POWER_MANA, 0);
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::DARK_PACT_RNK_4);
+            ASSERT_INFO("Voidwalker has %u MP but should have %u MP.", voidwalker->GetPower(POWER_MANA), expectedPetMana);
+            TEST_ASSERT(voidwalker->GetPower(POWER_MANA) == expectedPetMana);
+            ASSERT_INFO("Warlock has %u MP but should have %u MP.", warlock->GetPower(POWER_MANA), expectedManaDrained);
+            TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedManaDrained);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<DarkPactTestImpt>();
+    }
+};
+
+class ImprovedHowOfTerrorTest : public TestCaseScript
+{
+public:
+    ImprovedHowOfTerrorTest() : TestCaseScript("talents warlock improved_howl_of_terror") { }
+
+    class ImprovedHowOfTerrorTestImpt : public TestCase
+    {
+    public:
+        ImprovedHowOfTerrorTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_HOWL_OF_TERROR_RNK_1);
+            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, 700);
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_HOWL_OF_TERROR_RNK_2);
+            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, uint32(0));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedHowOfTerrorTestImpt>();
+    }
+};
+
+class MaledictionTest : public TestCaseScript
+{
+public:
+    MaledictionTest() : TestCaseScript("talents warlock malediction") { }
+
+    class MaledictionTestImpt : public TestCase
+    {
+    public:
+        MaledictionTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::MALEDICTION_RNK_3);
+            float const talentFactor = 1.13f;
+
+            // Apply CoE
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
+
+            // Increase damage taken by Shadow, Fire, Arcane and Frost by 10%
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * talentFactor, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * talentFactor, false);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * talentFactor, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * talentFactor, false);
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+            TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MIN * talentFactor, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MAX * talentFactor, false);
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
+            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN * talentFactor, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX * talentFactor, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<MaledictionTestImpt>();
+    }
+};
+
+class UnstableAfflictionTest : public TestCaseScript
+{
+public:
+    UnstableAfflictionTest() : TestCaseScript("talents warlock unstable_affliction") { }
+
+    class UnstableAfflictionTestImpt : public TestCase
+    {
+    public:
+        UnstableAfflictionTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Wrong Direct Damage spell coeff
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            uint32 const expectedUnstableAfflictionManaCost = 400;
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, POWER_MANA, expectedUnstableAfflictionManaCost);
+
+            // DoT
+            float const spellCoefficient = ClassSpellsCoeff::Warlock::UNSTABLE_AFFLICTION_DOT;
+            float const tickAmount = 6.0f;
+            uint32 const expectedUnstableAfflictionTick = ClassSpellsDamage::Warlock::UNSTABLE_AFFLICTION_RNK_3_TICK + spellPower * spellCoefficient / tickAmount;
+            uint32 const expectedUnstableAfflictionTotal = expectedUnstableAfflictionTick * tickAmount;
+            //TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedUnstableAfflictionTotal, true);
+
+            // Dispell & damage
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            priest->SetMaxHealth(uint32(10000));
+            priest->SetFullHealth();
+            priest->DisableRegeneration(true);
+            WaitNextUpdate();
+            uint32 const expectedUADamage = ClassSpellsDamage::Warlock::UNSTABLE_AFFLICTION_RNK_3_DISPELLED + spellPower * ClassSpellsCoeff::Warlock::UNSTABLE_AFFLICTION;
+            uint32 const expectedPriestHealth = priest->GetHealth() - expectedUADamage;
+            FORCE_CAST(warlock, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            FORCE_CAST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE, Seconds(5));
+            TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_FAILED_SILENCED);
+            ASSERT_INFO("Priest has %u HP but %u was expected.", priest->GetHealth(), expectedPriestHealth);
+            TEST_ASSERT(priest->GetHealth() == expectedPriestHealth);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<UnstableAfflictionTestImpt>();
+    }
 };
 
 class ImprovedHealthstoneTest : public TestCaseScript
@@ -1364,15 +1806,27 @@ public:
 void AddSC_test_talents_warlock()
 {
 	// Affliction
+    new SuppressionTest();
     new ImprovedCorruptionTest();
     new ImprovedCurseOfWeaknessTest();
     new ImprovedDrainSoulTest();
 	new ImprovedLifeTapTest();
     new SoulSiphonTest();
-	new ImprovedCurseOfAgonyTest();
+    new ImprovedCurseOfAgonyTest();
+    // TODO: Fel Concentration
+    new AmplifyCurseTest();
+    // TODO: Grim Reach
+    // TODO: Nightfall
 	new EmpoweredCorruptionTest();
+    new ShadowEmbraceTest();
+    new SiphonLifeTest();
+    new CurseOfExhaustionTest();
 	new ShadowMasteryTest();
 	new ContagionTest();
+    new DarkPactTest();
+    new ImprovedHowOfTerrorTest();
+    new MaledictionTest();
+    new UnstableAfflictionTest();
 	// Demonology
 	new ImprovedHealthstoneTest();
 	new DemonicEmbraceTest();

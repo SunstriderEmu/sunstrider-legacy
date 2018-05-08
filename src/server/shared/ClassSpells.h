@@ -3515,6 +3515,7 @@ namespace ClassSpells
             UNSTABLE_AFFLICTION_RNK_1 = 30108,
             UNSTABLE_AFFLICTION_RNK_2 = 30404,
             UNSTABLE_AFFLICTION_RNK_3 = 30405,
+            UNSTABLE_AFFLICTION_SILENCE = 31117,
 
             // Demonology
             BANISH_RNK_1 = 710,
