@@ -18,7 +18,7 @@ class TestThread
 {
     friend class TestCase; //to allow calling Wait and HandleThreadPause
 public:
-    const uint32 MAX_UPDATE_TIME_MS = 200;
+    static const uint32 MAX_UPDATE_TIME_MS = 200;
 
     //Create thread with test, do not start immediately
     TestThread(std::shared_ptr<TestCase> test);

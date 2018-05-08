@@ -1326,11 +1326,8 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    if (!damageToTarget || damageToTarget->empty())
-    {
-        TC_LOG_WARN("test.unit_test", "_TestSpellOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
-        return;
-    }
+    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
+    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage was prompted for non existing spell ID %u", spellId);
@@ -1369,11 +1366,8 @@ void TestCase::_TestSpellCritPercentage(TestPlayer* caster, Unit* victim, uint32
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    if (!damageToTarget || damageToTarget->empty())
-    {
-        TC_LOG_WARN("test.unit_test", "_TestSpellCritPercentage found no data for this victim (%s)", victim->GetName().c_str());
-        return;
-    }
+    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data for this victim (%s)", victim->GetName().c_str());
+    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
     if (sampleSize)
     {
