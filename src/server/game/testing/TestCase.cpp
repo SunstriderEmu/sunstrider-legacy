@@ -1512,8 +1512,11 @@ void TestCase::_SetCaller(std::string callerFile, int32 callerLine)
 
 void TestCase::_ResetCaller() 
 {
-    _callerFile = {}; _callerLine = 0;
+    _callerFile = {}; 
+    _callerLine = 0;
+    _ResetAssertInfo(); //also reset assert info to allow usage of ASSERT_INFO with all TEST_* macro
 }
+
 std::string TestCase::_GetCallerFile() 
 { 
     return _callerFile; 

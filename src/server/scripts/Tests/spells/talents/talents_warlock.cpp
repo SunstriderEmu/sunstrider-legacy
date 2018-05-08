@@ -567,13 +567,12 @@ public:
 
         void SpellAppliesAndRemovesShadowEmbrace(TestPlayer* warlock, TestPlayer* victim, uint32 spellId, Seconds dotTime, uint32 shadowEmbraceId)
         {
-            //TC_LOG_TRACE("test.unit_test", "SpellAppliesAndRemovesShadowEmbrace %u", spellId);
             victim->SetFullHealth();
             FORCE_CAST(warlock, victim, spellId, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_PROC_AS_NON_TRIGGERED));
-            //ASSERT_INFO("After spell %u, warlock doesn't have Shadow Embrace.", spellId);
+            ASSERT_INFO("After spell %u, warlock doesn't have Shadow Embrace.", spellId);
             TEST_HAS_AURA(victim, shadowEmbraceId);
             Wait(dotTime);
-            //ASSERT_INFO("After spell %u, warlock still has Shadow Embrace.", spellId);
+            ASSERT_INFO("After spell %u, warlock still has Shadow Embrace.", spellId);
             TEST_HAS_NOT_AURA(victim, shadowEmbraceId);
         }
 

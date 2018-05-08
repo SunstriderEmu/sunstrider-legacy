@@ -25,7 +25,7 @@ struct Position;
 class TempSummon;
 
 
-//input info for next TEST_ASSERT check
+//input info for next TEST_* check
 #define ASSERT_INFO(expr, ...) _AssertInfo(expr, ## __VA_ARGS__)
 #define TEST_ASSERT( expr ) { Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr); _ResetAssertInfo(); }
 
