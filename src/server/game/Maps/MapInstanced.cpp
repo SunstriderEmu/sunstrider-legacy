@@ -225,7 +225,7 @@ Map* MapInstanced::FindInstanceMap(uint32 InstanceId)
     return i == m_InstancedMaps.end() ? nullptr : i->second;
 }
 
-TestMap* MapInstanced::CreateTestInsteance(uint32 instanceId, Difficulty difficulty, bool enableMapObjects)
+TestMap* MapInstanced::CreateTestInsteance(TestThread* testThread, uint32 instanceId, Difficulty difficulty, bool enableMapObjects)
 {
     // load/create a map
     std::lock_guard<std::mutex> lock(_mapLock);
@@ -243,7 +243,7 @@ TestMap* MapInstanced::CreateTestInsteance(uint32 instanceId, Difficulty difficu
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateTestInsteance: map instance %d for %d created with difficulty %s", instanceId, GetId(), difficulty ? "heroic" : "normal");
 
-    TestMap* map = new TestMap(GetId(), instanceId, difficulty, this, enableMapObjects);
+    TestMap* map = new TestMap(testThread, GetId(), instanceId, difficulty, this, enableMapObjects);
 
     map->CreateInstanceData(false);
 

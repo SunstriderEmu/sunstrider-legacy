@@ -31,7 +31,7 @@ class TC_GAME_API MapManager
         Map* CreateMap(uint32 id, Player* player, uint32 loginInstanceId = 0);
         Map* FindMap(uint32 mapid, uint32 instanceId);
         //enableMapObjects = spawn npcs and gobjects on the map
-        std::pair<TestMap*, uint32 /*testMapInstanceId*/> CreateTestMap(uint32 mapid, Difficulty diff = REGULAR_DIFFICULTY, bool enableMapObjects = false);
+        std::pair<TestMap*, uint32 /*testMapInstanceId*/> CreateTestMap(TestThread*, uint32 mapid, Difficulty diff = REGULAR_DIFFICULTY, bool enableMapObjects = false);
 
         uint32 GetAreaId(uint32 mapid, float x, float y, float z) const;
         uint32 GetZoneId(uint32 mapid, float x, float y, float z) const;

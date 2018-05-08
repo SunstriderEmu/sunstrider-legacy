@@ -104,7 +104,7 @@ void MapUpdater::schedule_update(Map& map, uint32 diff)
     MapUpdateRequest* request = new MapUpdateRequest(map, *this, diff);
     // MapInstanced re schedule the instances it contains by itself, so we want to call it only once
     // Also currently test maps needs to be updated once per world update
-    if(map.Instanceable() && map.GetMapType() != MAP_TYPE_MAP_INSTANCED && map.GetMapType() != MAP_TYPE_TEST_MAP) 
+    if((map.Instanceable() && map.GetMapType() != MAP_TYPE_MAP_INSTANCED) || map.GetMapType() == MAP_TYPE_TEST_MAP) 
     { 
         pending_loop_maps++;
         _loop_queue.Push(request);

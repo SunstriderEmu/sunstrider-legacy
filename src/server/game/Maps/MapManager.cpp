@@ -277,14 +277,14 @@ void MapManager::UnloadAll()
     Map::DeleteStateMachine();
 }
 
-std::pair<TestMap*, uint32 /*testMapInstanceId*/> MapManager::CreateTestMap(uint32 mapid, Difficulty diff, bool enableMapObjects)
+std::pair<TestMap*, uint32 /*testMapInstanceId*/> MapManager::CreateTestMap(TestThread* testThread, uint32 mapid, Difficulty diff, bool enableMapObjects)
 {
     MapInstanced* mapInstanced = static_cast<MapInstanced*>(CreateBaseMap(mapid, true));
     if (!mapInstanced)
         return {};
 
     uint32 testMapInstanceId = sMapMgr->GenerateInstanceId();
-    TestMap* testMap = mapInstanced->CreateTestInsteance(testMapInstanceId, diff, enableMapObjects);
+    TestMap* testMap = mapInstanced->CreateTestInsteance(testThread, testMapInstanceId, diff, enableMapObjects);
     if (!testMap)
         return {};
 
@@ -316,6 +316,10 @@ bool MapManager::UnloadTestMap(uint32 mapId, uint32 instanceId)
     testMap->DisconnectAllBots(); //This will delete players objects
     testMap->RemoveAllPlayers();
     //testMap should trigger unload when all players have left
+
+    // unloaded at next update
+    testMap->MarkForUnload();
+
     return true;
 }
 

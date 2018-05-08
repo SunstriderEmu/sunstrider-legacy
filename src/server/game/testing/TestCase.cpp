@@ -23,7 +23,7 @@
 TestCase::TestCase(TestStatus status) :
     _failed(false),
     _testsCount(0),
-
+    _callerLine(0),
     _testMapInstanceId(0),
     _diff(REGULAR_DIFFICULTY),
     _map(nullptr),
@@ -188,7 +188,7 @@ bool TestCase::_InternalSetup()
     ASSERT(!_map);
     ASSERT(_location.GetMapId() != MAPID_INVALID);
 
-    auto pair = sMapMgr->CreateTestMap(_location.GetMapId(), _diff, _enableMapObjects);
+    auto pair = sMapMgr->CreateTestMap(_testThread, _location.GetMapId(), _diff, _enableMapObjects);
     _map = pair.first;
     if (!_map)
         return false;
@@ -384,6 +384,9 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     auto holder = new LoginQueryHolder(testAccountId, player->GetGUID());
     if (!holder->Initialize())
     {
+        delete session;
+        delete player;
+        delete ai;
         delete holder;                                      // delete all unprocessed queries
         return nullptr;
     }
@@ -405,7 +408,13 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     //handle bot position
     bool teleportOK = player->TeleportTo(WorldLocation(_location.GetMapId(), loc), TELE_TO_GM_MODE);
     if (!teleportOK)
+    {
+        delete session;
+        delete player;
+        delete ai;
+        delete holder; 
         return nullptr;
+    }
     ai->HandleTeleportAck(); //immediately handle teleport packet
 
     sCharacterCache->AddCharacterCacheEntry(player->GetGUID().GetCounter(), testAccountId, player->GetName(), cci.Gender, cci.Race, cci.Class, level, 0);

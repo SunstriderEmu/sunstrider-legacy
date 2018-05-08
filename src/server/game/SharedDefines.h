@@ -394,7 +394,7 @@ enum SpellAttr2
     SPELL_ATTR2_CAN_TARGET_DEAD            = 0x00000001,           // 0
     SPELL_ATTR2_UNK1                       = 0x00000002,           // 1
     SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS      = 0x00000004,           // 2
-    SPELL_ATTR2_UNK3                       = 0x00000008,           // 3
+    SPELL_ATTR2_UNK3                       = 0x00000008,           // 3 sun: maybe remove aura if target leaves caster raid? (see Soul Stone patch notes)
     SPELL_ATTR2_DISPLAY_IN_STANCE_BAR      = 0x00000010,           // 4 client displays icon in stance bar when learned, even if not shapeshift
     SPELL_ATTR2_AUTOREPEAT_FLAG            = 0x00000020,           // 5
     SPELL_ATTR2_CANT_TARGET_TAPPED         = 0x00000040,           // 6 target must be tapped by caster

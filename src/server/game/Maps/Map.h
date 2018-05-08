@@ -856,19 +856,17 @@ class TC_GAME_API InstanceMap : public Map
 class TC_GAME_API TestMap : public InstanceMap
 {
 public:
-    TestMap(uint32 id, uint32 InstanceId, uint8 spawnMode, Map* parent, bool enableMapObjects);
+    TestMap(TestThread* testThread, uint32 id, uint32 InstanceId, uint8 spawnMode, Map* parent, bool enableMapObjects);
     void Update(const uint32&) override;
     void RemoveAllPlayers() override;
 
     void DisconnectAllBots();
     Player* GetFirstHumanPlayer();
-    uint32 GetLastDiff() const { return _lastDiff; }
     TestThread const* GetTestThread() const { return _testThread; }
-    void SetTestThread(TestThread const* testThread) { _testThread = testThread; }
+    void MarkForUnload();
 
 private:
-    uint32 _lastDiff;
-    TestThread const* _testThread; //TestMap will use the TestThread for some time sync with the test waits
+    TestThread* _testThread; //TestMap will use the TestThread for some time sync with the test waits
 };
 
 class TC_GAME_API BattlegroundMap : public Map

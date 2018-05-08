@@ -34,7 +34,7 @@ public:
     //Main function for thread
     void Run();
     //update test Wait Timer but do not notify anything
-    void UpdateWaitTimer();
+    void UpdateWaitTimer(uint32 const mapDiff);
     std::shared_ptr<TestCase> GetTest() const { return _testCase; };
     bool IsFinished() const;
 
@@ -57,7 +57,6 @@ public:
 
 private:
     std::shared_ptr<TestCase> _testCase;
-    uint32 _lastMapUpdateTime; //last update time of the map, the last time we updated the test. This is used to make sure the map has updated before updating our test.
     std::future<void> _future; //the actual thread containing the test
     std::atomic<ThreadState> _state; // this thread may be finished either because test finished, or because test was cancelled
 

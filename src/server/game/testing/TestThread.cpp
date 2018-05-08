@@ -4,8 +4,7 @@
 TestThread::TestThread(std::shared_ptr<TestCase> test)
     : _testCase(test), 
     _state(STATE_NOT_STARTED),
-    _waitTimer(0),
-    _lastMapUpdateTime(0)
+    _waitTimer(0)
 {
 }
 
@@ -34,7 +33,6 @@ void TestThread::Run()
         if(!setupSuccess)
             _testCase->_Fail("Failed to setup test");
 
-        _testCase->GetMap()->SetTestThread(this);
         _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
         _testCase->Test();
@@ -54,8 +52,6 @@ void TestThread::Run()
         _testCase->_FailNoException(e.what());
     }
 
-    if(_testCase->GetMap()) //may have no map if setup failed
-        _testCase->GetMap()->SetTestThread(nullptr);
     _testCase->_Cleanup();
     _state = STATE_FINISHED;
 
@@ -83,31 +79,18 @@ void TestThread::ResumeExecution()
     }
 }
 
-void TestThread::UpdateWaitTimer()
+void TestThread::UpdateWaitTimer(uint32 const mapDiff)
 {
-    if (_state == STATE_PAUSED) //if thread is paused, time is frozen
-        return;
-
     TestMap const* testMap = _testCase->GetMap();
     if (!testMap)
         return; //test may not be setup yet
-
-    //make sure map has updated at least once since our last update (maps don't always update at each world update)
-    if (testMap->GetLastMapUpdateTime() == _lastMapUpdateTime)
-        return;
-    else
-        _lastMapUpdateTime = testMap->GetLastMapUpdateTime();
-
-    //Also, we're using the map last diff to be sure to be in sync with map timers, since the diff are a bit imprecise
-    //This is also very important to have the testing Wait(...) in sync
-    uint32 diff = testMap->GetLastDiff();
-
+    
     if (!_waitTimer)
         return;
-    if (_waitTimer <= diff)
+    if (_waitTimer <= mapDiff)
         _SetWait(0);
     else
-        _SetWait(_waitTimer - diff);
+        _SetWait(_waitTimer - mapDiff);
 }
 
 //This function will be executed while the test is running... care for racing conditions

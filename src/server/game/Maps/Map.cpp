@@ -769,20 +769,6 @@ void Map::DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate /* = 0*/)
     }
     if (diff > maxDiff)
         diff = maxDiff;
-#ifdef TESTS
-    if(GetMapType() == MAP_TYPE_TEST_MAP)
-        if (TestThread const* testThread = static_cast<TestMap*>(this)->GetTestThread())
-        {
-            //if thread is paused, skip this update
-            if (testThread->IsPaused())
-                return;
-
-            //If a test is currently waiting, lets cheat a bit and make sure the wait end time coincide with the map diff if the diff is enough to finish the wait
-            if (uint32 const testWaitTimer = testThread->GetWaitTimer())
-                if (diff > testWaitTimer)
-                    diff = testWaitTimer;
-        }
-#endif
     _lastMapUpdate = now;
     Update(diff);
 }
@@ -2816,8 +2802,8 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 instanceId, uint8 spaw
     m_unloadTimer = std::max(sWorld->getConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
 }
 
-TestMap::TestMap(uint32 id, uint32 instanceId, uint8 spawnMode, Map* _parent, bool enableMapObjects)
-    : InstanceMap(id, 0, instanceId, spawnMode, _parent), _lastDiff(0), _testThread(nullptr)
+TestMap::TestMap(TestThread* testThread, uint32 id, uint32 instanceId, uint8 spawnMode, Map* _parent, bool enableMapObjects)
+    : InstanceMap(id, 0, instanceId, spawnMode, _parent), _testThread(testThread)
 {
     i_mapType = MAP_TYPE_TEST_MAP;
     m_unloadTimer = 0; //disable unload for test maps
@@ -3182,8 +3168,32 @@ void Map::RemoveAllPlayers()
 
 void TestMap::Update(const uint32& diff)
 {
-    InstanceMap::Update(diff);
-    _lastDiff = diff;
+#ifdef TESTS
+    if (m_unloadTimer) //If map was marked for unload, test is finished
+        return;
+
+    uint32 usedDiff = diff;
+
+    //If a test is currently waiting, lets cheat a bit and make sure the wait end time coincide with the map diff if the diff is enough to finish the wait
+    if (uint32 const testWaitTimer = _testThread->GetWaitTimer())
+        if (usedDiff > testWaitTimer)
+            usedDiff = testWaitTimer;
+
+    //if test asked for a pause, skip this map update
+    if (!_testThread->IsPaused())
+    {
+        InstanceMap::Update(usedDiff);
+
+        //When paused, time is frozen in test too
+        _testThread->UpdateWaitTimer(usedDiff);
+    }
+
+    auto test = _testThread->GetTest();
+    ASSERT(test->IsSetup());
+    _testThread->ResumeExecution();
+    _testThread->WaitUntilDoneOrWaiting(test);
+    //from this line we be sure that the test thread is not currently running
+#endif
 }
 
 void TestMap::RemoveAllPlayers()
@@ -3221,6 +3231,11 @@ Player* TestMap::GetFirstHumanPlayer()
                 return player;
 #endif
     return nullptr;
+}
+
+void TestMap::MarkForUnload()
+{
+    m_unloadTimer = MIN_UNLOAD_DELAY;
 }
 
 void InstanceMap::UnloadAll()

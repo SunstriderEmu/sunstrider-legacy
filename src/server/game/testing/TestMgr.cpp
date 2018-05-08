@@ -87,43 +87,37 @@ void TestMgr::Update()
     if (!_running || _loading)
         return;
 
-    //copy all tests from _remainingTests to updatingTests 
-    std::vector<std::pair<uint32, std::shared_ptr<TestThread>>> updatingTests;
-    auto remaining_itr = _remainingTests.begin();
-    while (remaining_itr != _remainingTests.end())
+    //start only some at each updates, since the test setups and beginning are usually very resources intensives, we don't want to start them all at once
+    const uint32 MAX_STARTS_PER_UPDATE = 10;
+    uint32 startedThisUpdate = 0;
+
+    //For every running test, start if needed and check if it's finished
+    if (!_cancelling)
     {
-        updatingTests.push_back(std::make_pair(remaining_itr->first, remaining_itr->second));
-        remaining_itr++;
-    }
-
-    // Tests are being run in threads and executed in parralel. Threads are actually used to keep the call stack rather than running tests in parallel.
-    // This loop will iterate over every prepared tests, and wait for them to finish or to have triggered a wait time.
-    #pragma omp parallel for
-    for(auto itr = updatingTests.begin(); itr != updatingTests.end(); itr++)
-    {
-        uint32 testID = itr->first;
-        auto& testThread = itr->second;
-        auto test = testThread->GetTest();
-
-        if (!testThread->IsStarted())
-            testThread->Start();
-
-        testThread->UpdateWaitTimer();
-        testThread->ResumeExecution();
-        testThread->WaitUntilDoneOrWaiting(test);
-        //from this line we be sure that the test thread is not currently running
-        ASSERT(test->IsSetup());
-        if (testThread->IsFinished())
+        for (decltype(_remainingTests)::iterator itr = _remainingTests.begin(); itr != _remainingTests.end();)
         {
-            _results.TestFinished(*test);
-            size_t removed = _remainingTests.erase(testID);
-            ASSERT(removed == 1);
-            continue;
+            //uint32 testID = itr->first;
+            auto& testThread = itr->second;
+
+            if (!testThread->IsStarted())
+            {
+                testThread->Start();
+                startedThisUpdate++;
+                if (startedThisUpdate >= MAX_STARTS_PER_UPDATE)
+                    break;
+            }
+            else if (testThread->IsFinished())
+            {
+                auto test = testThread->GetTest();
+                _results.TestFinished(*test);
+                itr = _remainingTests.erase(itr);
+                continue;
+            }
+            itr++;
         }
     }
-    updatingTests.clear();
 
-    if (_remainingTests.empty()) //then we're done!
+    if (_cancelling || _remainingTests.empty()) //then we're done!
     {
         std::string results;
         if (_cancelling)
