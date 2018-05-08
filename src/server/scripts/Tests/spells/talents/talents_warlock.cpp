@@ -530,16 +530,18 @@ public:
         - Siphon Life doesnt remove Shadow Embrace at the end.
         - Seed of Corruption doesnt apply Shadow Embrace.
         */
+        //See hack in AuraEffect::CleanupTriggeredSpells for spell cleanup handling
         ShadowEmbraceTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void SpellAppliesAndRemovesShadowEmbrace(TestPlayer* warlock, TestPlayer* victim, uint32 spellId, Seconds dotTime, uint32 shadowEmbraceId)
         {
+            //TC_LOG_TRACE("test.unit_test", "SpellAppliesAndRemovesShadowEmbrace %u", spellId);
             victim->SetFullHealth();
             FORCE_CAST(warlock, victim, spellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-            ASSERT_INFO("After spell %u, warlock doesn't have Shadow Embrace.", spellId);
+            //ASSERT_INFO("After spell %u, warlock doesn't have Shadow Embrace.", spellId);
             TEST_HAS_AURA(victim, shadowEmbraceId);
             Wait(dotTime);
-            ASSERT_INFO("After spell %u, warlock still has Shadow Embrace.", spellId);
+            //ASSERT_INFO("After spell %u, warlock still has Shadow Embrace.", spellId);
             TEST_HAS_NOT_AURA(victim, shadowEmbraceId);
         }
 

@@ -1139,15 +1139,14 @@ void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spell
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
     EnableCriticals(caster, false);
     uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+    caster->ForceSpellHitResult(previousForceHitResult);
     if (result != SPELL_CAST_OK)
     {
-        caster->ForceSpellHitResult(previousForceHitResult);
         INTERNAL_ASSERT_INFO("_TestChannelDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(false);
     }
     WaitNextUpdate(); //extra wait, remove if spell system allow to cast channel instantly
     Wait(baseDurationTime); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
-    caster->ForceSpellHitResult(previousForceHitResult);
     uint32 totalChannelDmg = 0; 
     if (healing)
         totalChannelDmg = GetChannelHealingTo(caster, target, testedSpell, expectedTickCount, {});
@@ -1597,6 +1596,9 @@ void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spe
     float resultingAbsoluteTolerance;
     _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResultPercent / 100.0f, absoluteTolerance);
 
+    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
+    caster->ForceSpellHitResult(SPELL_MISS_NONE);
+
     for (uint32 i = 0; i < sampleSize; i++)
     {
         if (callback)
@@ -1606,6 +1608,8 @@ void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spe
         caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         HandleThreadPause();
     }
+
+    caster->ForceSpellHitResult(previousForceHitResult);
 
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
 
