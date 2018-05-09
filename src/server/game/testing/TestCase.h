@@ -158,7 +158,9 @@ public:
     // same as TEST_DIRECT_SPELL_DAMAGE but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     typedef std::function<void(Unit*, Unit*)> TestCallback;
     #define TEST_DIRECT_SPELL_DAMAGE_CALLBACK(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true, Optional<TestCallback>(callback)); _ResetCaller(); }
-     //Caster must be a TestPlayer or a pet/summon of him
+    // Will cast spell and check if threat is equal to damage dealt multipled by expectedThreat
+    #define TEST_DIRECT_SPELL_THREAT(caster, target, spellID, expectedThreat) { _SetCaller(__FILE__, __LINE__); _TestDirectThreat(caster, target, spellID, expectedThreat); _ResetCaller(); }
+    //Caster must be a TestPlayer or a pet/summon of him
     #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax, crit) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, crit, false, {}); _ResetCaller(); }
     //Caster must be a TestPlayer or a pet/summon of him
     #define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller(); }
@@ -227,6 +229,15 @@ public:
     typedef std::function<bool(Unit*, Unit*)> TestCallbackResult;
     #define TEST_AURA_TICK_PROC_CHANCE(caster, target, spellID, effIdx, chance, callback)  { _SetCaller(__FILE__, __LINE__); _TestAuraTickProcChance(caster, target, spellID, effIdx, chance, callback); _ResetCaller(); }
 
+
+    /* Test the proc chance of given aura on caster or victim by casting a spell on a target
+    chance: 0-100
+    */
+    #define TEST_SPELL_PROC_CHANCE(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, {}); _ResetCaller(); }
+    //same but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>    
+    #define TEST_SPELL_PROC_CHANCE_CALLBACK(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, Optional<TestCallback>(callback)); _ResetCaller(); }
+
+
     /* Test how much of the time a cast pushback is resisted (against melee attacks). Target will also be the one attacking the caster.
     chance: 0-100
     */
@@ -275,6 +286,7 @@ protected:
     void Sadness();
 
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback); //if !damage, then use healing
+    void _TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreat);
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
     void _TestDotThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedThreat, bool crit = false);
@@ -298,20 +310,21 @@ protected:
     void _TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback);
     void _TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
     void _TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback);
-    void _TestSpellCastTime(TestPlayer* caster, uint32 spellID, uint32 expectedCastTimeMS);
+    void _TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS);
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, TestCallbackResult callback);
+    void _TestSpellProcChance(TestPlayer* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
 
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
-    inline void _TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, Seconds s) { _TestCooldown(caster, target, castSpellID, uint32(s.count())); }
-    void _TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond);
+    inline void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, Seconds s) { _TestCooldown(caster, target, castSpellID, uint32(s.count())); }
+    void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond);
     void _EquipItem(TestPlayer* p, uint32 itemID, bool newItem);
     //if negative, ensure has NOT aura
     void _EnsureHasAura(Unit* target, int32 spellID);
     void _EnsureHasNotAura(Unit* target, int32 spellID) { _EnsureHasAura(target, -spellID); }
-    void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond);
-    inline void _TestHasCooldown(TestPlayer* caster, uint32 castSpellID, Seconds s) { _TestHasCooldown(caster, castSpellID, uint32(s.count())); }
+    void _TestHasCooldown(Unit* caster, uint32 castSpellID, uint32 cooldownSecond);
+    inline void _TestHasCooldown(Unit* caster, uint32 castSpellID, Seconds s) { _TestHasCooldown(caster, castSpellID, uint32(s.count())); }
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS);
     inline void _TestAuraMaxDuration(Unit* target, uint32 spellID, Milliseconds ms) { _TestAuraMaxDuration(target, spellID, uint32(ms.count())); }
     void _TestAuraStack(Unit* target, uint32 spellID,uint32 stacks, bool stack);

@@ -233,7 +233,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers pow
 	INTERNAL_TEST_ASSERT(actualCost == expectedPowerCost);
 }
 
-void TestCase::_TestCooldown(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond)
+void TestCase::_TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
@@ -781,6 +781,43 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
 }
 
+void TestCase::_TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreat)
+{
+    Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
+    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(_casterOwner);
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
+    INTERNAL_TEST_ASSERT(casterOwner != nullptr);
+    auto AI = caster->ToPlayer()->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    ResetSpellCast(caster);
+    AI->ResetSpellCounters();
+    EnableCriticals(caster, false);
+
+    target->GetThreatManager().ClearAllThreat();  // Reset threat
+
+    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
+    caster->ForceSpellHitResult(SPELL_MISS_NONE);
+    uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED));
+    caster->ForceSpellHitResult(previousForceHitResult);
+    INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
+    INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
+
+    uint32 dealtMin;
+    uint32 dealtMax;
+    GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, false, 1);
+
+    INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
+    INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
+
+    float const threatDone = target->GetThreatManager().GetThreat(caster);
+    float const expectedTotalThreat = dealtMin * expectedThreat;
+
+    INTERNAL_ASSERT_INFO("Enforcing threat for spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
+    INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
+}
+
 void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit)
 {
     Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -1275,6 +1312,67 @@ void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellI
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 }
 
+void TestCase::_TestSpellProcChance(TestPlayer* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    _EnsureAlive(caster, victim);
+    
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
+    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+
+    SpellInfo const* procSpellInfo = sSpellMgr->GetSpellInfo(procSpellID);
+    INTERNAL_ASSERT_INFO("Proc Spell %u does not exists", procSpellID);
+    INTERNAL_TEST_ASSERT(procSpellInfo != nullptr);
+
+    ResetSpellCast(caster);
+    AI->ResetSpellCounters();
+    caster->ForceSpellHitResult(missInfo);
+    EnableCriticals(caster, crit);
+
+    uint32 startingHealth = victim->GetHealth();
+    uint32 startingMaxHealth = victim->GetMaxHealth();
+
+    victim->SetMaxHealth(std::numeric_limits<uint32>::max());
+
+    float const absoluteTolerance = 0.02f;
+    uint32 sampleSize;
+    float resultingAbsoluteTolerance;
+    _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, chance / 100.0f, absoluteTolerance);
+
+    uint32 count = 0;
+    uint32 procCount = 0;
+    for (uint32 i = 0; i < sampleSize; i++)
+    {
+        if (callback)
+            callback.get()(caster, victim);
+
+        victim->SetFullHealth();
+        caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+
+        count++;
+
+        selfProc ? procCount += uint32(caster->HasAura(procSpellID)) : uint32(victim->HasAura(procSpellID));
+
+        HandleThreadPause();
+    }
+
+    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
+
+    victim->SetMaxHealth(startingMaxHealth);
+    victim->SetHealth(startingHealth);
+
+    INTERNAL_ASSERT_INFO("_TestSpellProcChance found %u results instead of expected sample size %u", count, sampleSize);
+    INTERNAL_TEST_ASSERT(count == sampleSize);
+
+    float actualSuccessPercent = 100 * (procCount / float(sampleSize));
+    INTERNAL_ASSERT_INFO("Spell %u only proc'd %u %f but was expected %f.", spellID, procSpellID, actualSuccessPercent, chance);
+    INTERNAL_TEST_ASSERT(Between<float>(chance, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
+}
+
 void TestCase::_EnsureAlive(Unit* caster, Unit* target)
 {
     INTERNAL_ASSERT_INFO("Only support alive caster");
@@ -1319,11 +1417,13 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     for (uint32 i = 0; i < sampleSize; i++)
     {
         caster->SetFullHealth();
+
         //timer should be increased for cast, descreased for channels
         uint32 const startChannelTime = 10000;
         uint32 const startCastTime = 1;
         spell->m_timer = channeled ? startChannelTime : startCastTime;
         uint32 healthBefore = caster->GetHealth();
+
         attackingUnit->AttackerStateUpdate(caster, BASE_ATTACK);
         //health check is just here to ensure integrity
         INTERNAL_ASSERT_INFO("Caster has not lost hp, did melee hit failed?");
@@ -1578,7 +1678,7 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID)
     }
 }
 
-void TestCase::_TestHasCooldown(TestPlayer* caster, uint32 castSpellID, uint32 cooldownSecond)
+void TestCase::_TestHasCooldown(Unit* caster, uint32 castSpellID, uint32 cooldownSecond)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
@@ -1678,7 +1778,7 @@ void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spe
     _TestSpellCritPercentage(caster, victim, spellID, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
 }
 
-void TestCase::_TestSpellCastTime(TestPlayer* caster, uint32 spellID, uint32 expectedCastTimeMS)
+void TestCase::_TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
