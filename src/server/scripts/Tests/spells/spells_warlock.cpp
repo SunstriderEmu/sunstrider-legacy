@@ -1818,7 +1818,7 @@ public:
     class SearingPainTestImpt : public TestCase
     {
     public:
-        SearingPainTestImpt() : TestCase(STATUS_PASSING) { }
+        SearingPainTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //  Too much threat
 
         void Test() override
         {
@@ -1841,7 +1841,8 @@ public:
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSRMin, expectedSRMax, false);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSRMin * 1.5f, expectedSRMax * 1.5f, true);
 
-            // TODO: High threat?
+            // High threat
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, 2.f);
         }
     };
 

@@ -3658,6 +3658,10 @@ namespace ClassSpells
             SOUL_FIRE_RNK_2 = 17924,
             SOUL_FIRE_RNK_3 = 27211,
             SOUL_FIRE_RNK_4 = 30545,
+
+            // Pet
+            IMP_FIREBOLT_RNK_8 = 27487,
+            SUCCUBUS_LASH_OF_PAIN_RNK_7 = 27274,
         };
     };
 

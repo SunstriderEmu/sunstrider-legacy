@@ -452,20 +452,74 @@ public:
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
-            Creature* dummy = SpawnCreature();
 
             LearnTalent(warlock, Talents::Warlock::FEL_CONCENTRATION_RNK_5);
             float const resistPushBackChance = 70.f;
 
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_MANA_RNK_6, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, resistPushBackChance);
         }
     };
 
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<FelConcentrationTestImpt>();
+    }
+};
+
+class GrimReachTest : public TestCaseScript
+{
+public:
+    GrimReachTest() : TestCaseScript("talents warlock grim_reach") { }
+
+    class GrimReachTestImpt : public TestCase
+    {
+    public:
+        /*
+        Bugs:
+            - Doesnt affect Curse of Doom, should.
+        */
+        GrimReachTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Position spawn36(_location);
+            spawn36.MoveInFront(_location, 36.0f);
+            Creature* dummy36 = SpawnCreatureWithPosition(spawn36);
+
+            Position spawn24(_location);
+            spawn24.MoveInFront(_location, 24.0f);
+            Creature* dummy24 = SpawnCreatureWithPosition(spawn24);
+
+            // Out of Range
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::CORRUPTION_RNK_8, SPELL_FAILED_OUT_OF_RANGE);
+
+            LearnTalent(warlock, Talents::Warlock::GRIM_REACH_RNK_2);
+
+            // 36m
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::CORRUPTION_RNK_8, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy24, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::DEATH_COIL_RNK_4, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::DRAIN_MANA_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy24, ClassSpells::Warlock::FEAR_RNK_3, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, SPELL_CAST_OK, TRIGGERED_FULL_DEBUG_MASK);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<GrimReachTestImpt>();
     }
 };
 
@@ -1997,6 +2051,107 @@ public:
     }
 };
 
+class AftermathTest : public TestCaseScript
+{
+public:
+    AftermathTest() : TestCaseScript("talents warlock aftermath") { } // Never procs
+
+    class AftermathTestImpt : public TestCase
+    {
+    public:
+        AftermathTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::AFTERMATH_RNK_5);
+            uint32 const spellProcId = 18118;
+            float const procChance = 10.0f;
+
+            TEST_SPELL_PROC_CHANCE_CALLBACK(warlock, dummy, ClassSpells::Warlock::CONFLAGRATE_RNK_6, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* target) {
+                caster->CastSpell(target, ClassSpells::Warlock::IMMOLATE_RNK_9, TRIGGERED_FULL_MASK);
+            });
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOWFURY_RNK_3, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<AftermathTestImpt>();
+    }
+};
+
+class ImprovedFireboltTest : public TestCaseScript
+{
+public:
+    ImprovedFireboltTest() : TestCaseScript("talents warlock improved_firebolt") { }
+
+    class ImprovedFireboltTestImpt : public TestCase
+    {
+    public:
+        ImprovedFireboltTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_FIREBOLT_RNK_2);
+
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            WaitNextUpdate();
+            Guardian* imp = warlock->GetGuardianPet();
+            TEST_ASSERT(imp != nullptr);
+
+            TEST_SPELL_CAST_TIME(imp, ClassSpells::Warlock::IMP_FIREBOLT_RNK_8, 2500);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedFireboltTestImpt>();
+    }
+};
+
+class ImprovedLashOfPainTest : public TestCaseScript
+{
+public:
+    ImprovedLashOfPainTest() : TestCaseScript("talents warlock improved_lash_of_pain") { }
+
+    class ImprovedLashOfPainTestImpt : public TestCase
+    {
+    public:
+        ImprovedLashOfPainTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_FIREBOLT_RNK_2);
+
+            TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            WaitNextUpdate();
+            Guardian* succubus = warlock->GetGuardianPet();
+            TEST_ASSERT(succubus != nullptr);
+
+            TEST_COOLDOWN(succubus, dummy, ClassSpells::Warlock::SUCCUBUS_LASH_OF_PAIN_RNK_7, Seconds(6));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedLashOfPainTestImpt>();
+    }
+};
+
 class DevastationTest : public TestCaseScript
 {
 public:
@@ -2096,32 +2251,81 @@ public:
     class WarlockIntensityTestImpt : public TestCase
     {
     public:
-        WarlockIntensityTestImpt() : TestCase(STATUS_WIP) { }
+        WarlockIntensityTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
-            Creature* dummy = SpawnCreature();
 
             LearnTalent(warlock, Talents::Warlock::INTENSITY_RNK_2);
             float const resistPushBackChance = 70.f;
 
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::HELLFIRE_RNK_4, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOWFURY_RNK_3, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::HELLFIRE_RNK_4, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::IMMOLATE_RNK_9, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::INCINERATE_RNK_2, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SEARING_PAIN_RNK_8, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SHADOWFURY_RNK_3, resistPushBackChance);
             warlock->AddItem(SOUL_SHARD, 1);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SOUL_FIRE_RNK_4, resistPushBackChance);
         }
     };
 
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<WarlockIntensityTestImpt>();
+    }
+};
+
+class DestructiveReachTest : public TestCaseScript
+{
+public:
+    DestructiveReachTest() : TestCaseScript("talents warlock destructive_reach") { }
+
+    class DestructiveReachTestImpt : public TestCase
+    {
+    public:
+        /*
+        Bug:
+            - Talent is working, Searing Pain spell deals too much threat.
+        */
+        DestructiveReachTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Position spawn36(_location);
+            spawn36.MoveInFront(_location, 36.0f);
+            Creature* dummy36 = SpawnCreatureWithPosition(spawn36);
+
+            Position spawn24(_location);
+            spawn24.MoveInFront(_location, 24.0f);
+            Creature* dummy24 = SpawnCreatureWithPosition(spawn24);
+
+            // Out of Range
+            TEST_CAST(warlock, dummy36, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_FAILED_OUT_OF_RANGE);
+
+            LearnTalent(warlock, Talents::Warlock::DESTRUCTIVE_REACH_RNK_2);
+            float const threatFactor = 1 - 0.1f;
+
+            // 36m + Threat
+            warlock->AddAura(ClassSpells::Warlock::IMMOLATE_RNK_9, dummy36);
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::CONFLAGRATE_RNK_6, threatFactor);
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::IMMOLATE_RNK_9, threatFactor);
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::INCINERATE_RNK_2, threatFactor);
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::SEARING_PAIN_RNK_8, 2.f * threatFactor);
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, threatFactor);
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy24, ClassSpells::Warlock::SHADOWBURN_RNK_8, threatFactor);
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::SHADOWFURY_RNK_3, threatFactor);
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::SOUL_FIRE_RNK_4, threatFactor);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<DestructiveReachTestImpt>();
     }
 };
 
@@ -2225,6 +2429,45 @@ public:
     }
 };
 
+class NetherProtectionTest : public TestCaseScript
+{
+public:
+    NetherProtectionTest() : TestCaseScript("talents warlock nether_protection") { }
+
+    class NetherProtectionTestImpt : public TestCase
+    {
+    public:
+        NetherProtectionTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Never procs
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            LearnTalent(warlock, Talents::Warlock::NETHER_PROTECTION_RNK_3);
+            uint32 const spellProcId = 30300;
+            float const procChance = 30.0f;
+
+            // Immune to Fire and Shadow for 4sec
+            warlock->AddAura(spellProcId, warlock);
+            TEST_AURA_MAX_DURATION(warlock, spellProcId, Seconds(4));
+            uint32 warlockHealth = warlock->GetHealth();
+            FORCE_CAST(enemy, warlock, ClassSpells::Warlock::INCINERATE_RNK_2, SPELL_MISS_NONE, TRIGGERED_FULL_DEBUG_MASK);
+            FORCE_CAST(enemy, warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, TRIGGERED_FULL_DEBUG_MASK);
+            TEST_ASSERT(warlock->GetHealth() == warlockHealth);
+
+            // Proc chance
+            TEST_SPELL_PROC_CHANCE(enemy, warlock, ClassSpells::Warlock::INCINERATE_RNK_2, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(enemy, warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<NetherProtectionTestImpt>();
+    }
+};
+
 class EmberstormTest : public TestCaseScript
 {
 public:
@@ -2316,6 +2559,130 @@ public:
     }
 };
 
+class ConflagrateTest : public TestCaseScript
+{
+public:
+    ConflagrateTest() : TestCaseScript("talents warlock conflagrate") { }
+
+    class ConflagrateTestImpt : public TestCase
+    {
+    public:
+        ConflagrateTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            uint32 const expectedConflagrateManaCost = 305;
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::CONFLAGRATE_RNK_6, POWER_MANA, expectedConflagrateManaCost);
+
+            // Damage
+            float const spellBonus = spellPower * ClassSpellsCoeff::Warlock::CONFLAGRATE;
+            uint32 const expectedConflagrateMin = ClassSpellsDamage::Warlock::CONFLAGRATE_RNK_6_MIN + spellBonus;
+            uint32 const expectedConflagrateMax = ClassSpellsDamage::Warlock::CONFLAGRATE_RNK_6_MAX + spellBonus;
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy, ClassSpells::Warlock::CONFLAGRATE_RNK_6, expectedConflagrateMin, expectedConflagrateMax, false, [](Unit* caster, Unit* target) {
+                caster->CastSpell(target, ClassSpells::Warlock::IMMOLATE_RNK_9, TRIGGERED_FULL_MASK);
+            });
+            warlock->ResetForceSpellHitResult();
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ConflagrateTestImpt>();
+    }
+};
+
+class ShadowAndFlamesTest : public TestCaseScript
+{
+public:
+    ShadowAndFlamesTest() : TestCaseScript("talents warlock shadow_and_flames") { }
+
+    class ShadowAndFlamesTestImpt : public TestCase
+    {
+    public:
+        ShadowAndFlamesTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::SHADOW_AND_FLAME_RNK_5);
+            float const talentFactor = 0.2f;
+
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            // Incinerate
+            float const castTime = 2.5f;
+            float const spellCoefficient = castTime / 3.5f + talentFactor;
+            uint32 const expectedIncinerateMin = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN + spellPower * spellCoefficient;
+            uint32 const expectedIncinerateMax = ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX + spellPower * spellCoefficient;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, expectedIncinerateMin, expectedIncinerateMax, false);
+
+            // Shadow Bolt
+            float const sbCastTime = 3.f;
+            float const sbSpellCoefficient = sbCastTime / 3.5f + talentFactor;
+            uint32 const expectedSBMin = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN + spellPower * sbSpellCoefficient;
+            uint32 const expectedSBMax = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX + spellPower * sbSpellCoefficient;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedSBMin, expectedSBMax, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowAndFlamesTestImpt>();
+    }
+};
+
+class ShadowfuryTest : public TestCaseScript
+{
+public:
+    ShadowfuryTest() : TestCaseScript("talents warlock shadowfury") { }
+
+    class ShadowfuryTestImpt : public TestCase
+    {
+    public:
+        ShadowfuryTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Spell Coeff seems slightly off
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+
+            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            uint32 const expectedShadowfuryManaCost = 710;
+            TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOWFURY_RNK_3, POWER_MANA, expectedShadowfuryManaCost);
+
+            // Damage
+            float const spellBonus = spellPower * ClassSpellsCoeff::Warlock::SHADOWFURY; // DrDamage
+            uint32 const expectedShadowfuryMin = ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MIN + spellBonus;
+            uint32 const expectedShadowfuryMax = ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MAX + spellBonus;
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWFURY_RNK_3, expectedShadowfuryMin, expectedShadowfuryMax, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowfuryTestImpt>();
+    }
+};
+
 void AddSC_test_talents_warlock()
 {
 	// Affliction
@@ -2328,7 +2695,7 @@ void AddSC_test_talents_warlock()
     new ImprovedCurseOfAgonyTest();
     new FelConcentrationTest();
     new AmplifyCurseTest();
-    // TODO: Grim Reach
+    new GrimReachTest();
     new NightfallTest();
 	new EmpoweredCorruptionTest();
     new ShadowEmbraceTest();
@@ -2356,11 +2723,22 @@ void AddSC_test_talents_warlock()
     new ImprovedShadowBoltTest();
     new CataclysmTest();
     new BaneTest();
+    new AftermathTest();
+    new ImprovedFireboltTest();
+    new ImprovedLashOfPainTest();
     new DevastationTest();
     new ShadowburnTest();
     new WarlockIntensityTest();
+    new DestructiveReachTest();
     new ImprovedSearingPainTest();
+    // TODO: Pyroclasm
     new ImprovedImmolateTest();
     new RuinTest();
+    new NetherProtectionTest();
     new EmberstormTest();
+    // TODO: Backlash
+    new ConflagrateTest();
+    // TODO: Soul Leech
+    new ShadowAndFlamesTest();
+    new ShadowfuryTest();
 }
