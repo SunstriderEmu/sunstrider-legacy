@@ -781,7 +781,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
 }
 
-void TestCase::_TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreat)
+void TestCase::_TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreat, bool heal)
 {
     Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
     TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(_casterOwner);
@@ -796,25 +796,51 @@ void TestCase::_TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, flo
     EnableCriticals(caster, false);
 
     target->GetThreatManager().ClearAllThreat();  // Reset threat
+    float autoAttackThreat = 0.f;
+
+    uint32 const casterMaxHealth = caster->GetMaxHealth();
+    if (heal)
+    {
+        caster->SetMaxHealth(std::numeric_limits<uint32>::max());
+        caster->AttackerStateUpdate(target, BASE_ATTACK);
+        caster->AttackStop();
+        autoAttackThreat = target->GetThreatManager().GetThreat(caster);
+        INTERNAL_ASSERT_INFO("Caster is not in combat with victim.");
+        INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
+    }
 
     SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
-    uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED));
+    TriggerCastFlags const triggers = TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED);
+    uint32 result = heal ? caster->CastSpell(caster, spellID, triggers) : caster->CastSpell(target, spellID, triggers);
     caster->ForceSpellHitResult(previousForceHitResult);
     INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
     INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
 
-    uint32 dealtMin;
-    uint32 dealtMax;
-    GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, false, 1);
+    target->RemoveAllAuras();
 
-    INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
+    // Having both for spell that affect caster and its victim
+    uint32 dealtMin = 0;
+    uint32 dealtMax = 0;
+
+    if (heal)
+    {
+        GetHealingPerSpellsTo(casterOwner, casterOwner, spellID, dealtMin, dealtMax, false, 1);
+        INTERNAL_ASSERT_INFO("Caster is not in combat with victim after spell %u.", spellID);
+        INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
+    }
+    else
+        GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, false, 1);
+
+    caster->SetMaxHealth(casterMaxHealth);
+
+    INTERNAL_ASSERT_INFO("Spell must have same dealtMin and dealtMax");
     INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
 
-    float const threatDone = target->GetThreatManager().GetThreat(caster);
+    float const threatDone = target->GetThreatManager().GetThreat(caster) - autoAttackThreat;
     float const expectedTotalThreat = dealtMin * expectedThreat;
 
-    INTERNAL_ASSERT_INFO("Enforcing threat for spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
+    INTERNAL_ASSERT_INFO("Enforcing threat for direct spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
     INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
 }
 
@@ -1145,15 +1171,56 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
     INTERNAL_TEST_ASSERT(dotDamageToTarget >= (expectedTotalAmount - tickCount) && dotDamageToTarget <= (expectedTotalAmount + tickCount)); //dots have greater error since they got their damage divided in several ticks
 }
 
-void TestCase::_TestDotThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedTotalThreat, bool crit /* = false*/)
+void TestCase::_TestOtThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedThreat, bool initial, bool heal)
 {
-    target->GetThreatManager().ClearAllThreat();  // Reset threat
+    Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
+    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(_casterOwner);
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
+    INTERNAL_TEST_ASSERT(casterOwner != nullptr);
+    auto AI = caster->ToPlayer()->GetTestingPlayerbotAI();
+    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+    INTERNAL_TEST_ASSERT(AI != nullptr);
 
-    _CastDotAndWait(caster, target, spellID, crit);
+    target->GetThreatManager().ClearAllThreat();  // Reset threat
+    TestPlayer* helper = SpawnRandomPlayer(Races(caster->GetRace()));
+
+    // Used for overtime spells with initial damage or heal
+    uint32 dealtMin = 0;
+    uint32 dealtMax = 0;
+    if (heal)
+    {
+        GroupPlayer(caster, helper);
+        helper->SetMaxHealth(std::numeric_limits<uint32>::max());
+        helper->AttackerStateUpdate(target, BASE_ATTACK);
+        INTERNAL_ASSERT_INFO("Ally is not in combat with victim.");
+        INTERNAL_TEST_ASSERT(target->IsInCombatWith(helper));
+
+        _CastDotAndWait(caster, helper, spellID, false);
+        INTERNAL_ASSERT_INFO("Caster is not in combat with victim after spell %u.", spellID);
+        INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
+        caster->GetGroup()->Disband();
+        if (initial)
+            GetHealingPerSpellsTo(casterOwner, helper, spellID, dealtMin, dealtMax, false, 1);
+    }
+    else
+    {
+        _CastDotAndWait(caster, target, spellID, false);
+        if (initial)
+            GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, false, 1);
+    }
+
+    helper->KillSelf();
+
+    INTERNAL_ASSERT_INFO("Spell must have same dealtMin and dealtMax");
+    INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
+
+    uint32 tickCount;
+    int32 otDamageToTarget = heal ? AI->GetDotDamage(helper, spellID, tickCount) : AI->GetDotDamage(target, spellID, tickCount);
 
     float const threatDone = target->GetThreatManager().GetThreat(caster);
+    float const expectedTotalThreat = (dealtMin + otDamageToTarget) * expectedThreat;
 
-    INTERNAL_ASSERT_INFO("Enforcing threat for spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
+    INTERNAL_ASSERT_INFO("Enforcing threat for overtime spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
     INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
 }
 
