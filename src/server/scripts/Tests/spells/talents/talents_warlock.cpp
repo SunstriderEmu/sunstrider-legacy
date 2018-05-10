@@ -166,27 +166,13 @@ public:
 
             // Threat reduced by 10% for all affliction spells
             Creature* dummy = SpawnCreature();
-
-            const float expectedCorruptionThreat = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * talentThreatFactor;
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionThreat, false);
-
-            const float expectedCoAThreat = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * talentThreatFactor;
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoAThreat, false);
-
-            const float expectedCoDThreat = ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 * talentThreatFactor;
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoDThreat, false);
-
-            const float expectedDeathCoilThreat = ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4_LVL_70 * talentThreatFactor;
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoilThreat, false);
-
-            const float expectedDrainLifeThreat = ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * 5.0f * talentThreatFactor;
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, expectedDrainLifeThreat, false);
-
-            const float expectedDrainSoulThreat = ClassSpellsDamage::Warlock::DRAIN_SOUL_RNK_5_TOTAL * talentThreatFactor;
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, expectedDrainSoulThreat, false);
-
-            const float expectedSoCThreat = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TOTAL * talentThreatFactor;
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCThreat, false);
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, talentThreatFactor, false);
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, talentThreatFactor, false);
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, talentThreatFactor, false);
+            TEST_DIRECT_SPELL_THREAT(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, talentThreatFactor);
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, talentThreatFactor, false);
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, talentThreatFactor, false);
+            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, talentThreatFactor, false);
             // TODO: SoC Direct damage
         }
     };

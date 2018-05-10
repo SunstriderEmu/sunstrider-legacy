@@ -51,7 +51,7 @@ class HolyLightTest : public TestCaseScript
 {
 public:
     
-    HolyLightTest() : TestCaseScript("spells paladin flash_of_light") { }
+    HolyLightTest() : TestCaseScript("spells paladin holy_light") { }
     
     class HolyLightTestImpt : public TestCase
     {
