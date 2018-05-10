@@ -446,19 +446,19 @@ public:
     class FelConcentrationTestImpt : public TestCase
     {
     public:
-        FelConcentrationTestImpt() : TestCase(STATUS_WIP) { }
+        FelConcentrationTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
-            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            TestPlayer* paladin = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN);
 
             LearnTalent(warlock, Talents::Warlock::FEL_CONCENTRATION_RNK_5);
             float const resistPushBackChance = 70.f;
 
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_MANA_RNK_6, resistPushBackChance);
-            TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, paladin, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, paladin, ClassSpells::Warlock::DRAIN_MANA_RNK_6, resistPushBackChance);
+            TEST_PUSHBACK_RESIST_CHANCE(warlock, paladin, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, resistPushBackChance);
         }
     };
 
@@ -2251,7 +2251,7 @@ public:
     class WarlockIntensityTestImpt : public TestCase
     {
     public:
-        WarlockIntensityTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        WarlockIntensityTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2355,6 +2355,38 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<ImprovedSearingPainTestImpt>();
+    }
+};
+
+class PyroclasmTest : public TestCaseScript
+{
+public:
+    PyroclasmTest() : TestCaseScript("talents warlock pyroclasm") { }
+
+    class PyroclasmTestImpt : public TestCase
+    {
+    public:
+        PyroclasmTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(warlock, Talents::Warlock::PYROCLASM_RNK_2);
+            uint32 const spellProcId = 18093;
+            float const procChance = 26.f;
+            
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            // WoWWiki: Since Rain of Fire and Hellfire do damage over time, the chance to stun is distributed over all the ticks of the spell, not 13%/26% per tick.
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::HELLFIRE_RNK_4_TRIGGER, spellProcId, false, procChance / 15.f, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5_PROC, spellProcId, false, procChance / 4.f, SPELL_MISS_NONE, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<PyroclasmTestImpt>();
     }
 };
 
@@ -2731,7 +2763,7 @@ void AddSC_test_talents_warlock()
     new WarlockIntensityTest();
     new DestructiveReachTest();
     new ImprovedSearingPainTest();
-    // TODO: Pyroclasm
+    new PyroclasmTest();
     new ImprovedImmolateTest();
     new RuinTest();
     new NetherProtectionTest();
