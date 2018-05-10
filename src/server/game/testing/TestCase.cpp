@@ -1338,7 +1338,11 @@ void TestCase::_TestSpellProcChance(TestPlayer* caster, Unit* victim, uint32 spe
 
     victim->SetMaxHealth(std::numeric_limits<uint32>::max());
 
-    float const absoluteTolerance = 0.02f;
+    float expectedResult = chance / 100.0f;
+    float absoluteTolerance = 0.02f;
+    if (expectedResult < absoluteTolerance) // Needed to pass Warlock's Pyroclasm
+        absoluteTolerance = 0.005f;
+
     uint32 sampleSize;
     float resultingAbsoluteTolerance;
     _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, chance / 100.0f, absoluteTolerance);
@@ -1353,10 +1357,14 @@ void TestCase::_TestSpellProcChance(TestPlayer* caster, Unit* victim, uint32 spe
         victim->SetFullHealth();
         caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
 
+        if (selfProc)
+        {
+            procCount += uint32(caster->HasAura(procSpellID));
+            caster->RemoveAurasDueToSpell(procSpellID);
+        }
+
         count++;
-
-        selfProc ? procCount += uint32(caster->HasAura(procSpellID)) : uint32(victim->HasAura(procSpellID));
-
+        
         HandleThreadPause();
     }
 
@@ -1364,6 +1372,22 @@ void TestCase::_TestSpellProcChance(TestPlayer* caster, Unit* victim, uint32 spe
 
     victim->SetMaxHealth(startingMaxHealth);
     victim->SetHealth(startingHealth);
+
+    // Proc can be resisted or immune, but it still proc'd
+    if (!selfProc)
+    {
+        auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
+        INTERNAL_ASSERT_INFO("_TestSpellProcChance found no data of %u for this victim (%s)", spellID, victim->GetName().c_str());
+        INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
+
+        for (auto itr : *damageToTarget)
+        {
+            if (itr.damageInfo.SpellID != procSpellID)
+                continue;
+
+            procCount++;
+        }
+    }
 
     INTERNAL_ASSERT_INFO("_TestSpellProcChance found %u results instead of expected sample size %u", count, sampleSize);
     INTERNAL_TEST_ASSERT(count == sampleSize);
