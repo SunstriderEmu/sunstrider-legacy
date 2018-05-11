@@ -752,7 +752,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
             callback.get()(caster, target);
 
         caster->ForceSpellHitResult(SPELL_MISS_NONE);
-        uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED));
+        uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         caster->ForceSpellHitResult(previousForceHitResult);
         INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
         INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
@@ -777,67 +777,61 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
 }
 
-void TestCase::_TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreat, bool heal)
+void TestCase::_TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreatFactor, bool heal)
 {
-    Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
-    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(_casterOwner);
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
-    INTERNAL_TEST_ASSERT(casterOwner != nullptr);
-    auto AI = caster->ToPlayer()->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
     EnableCriticals(caster, false);
 
-    target->GetThreatManager().ClearAllThreat();  // Reset threat
-    float autoAttackThreat = 0.f;
+    uint32 casterStartingHealth = caster->GetHealth();
+    uint32 targetStartingHealth = target->GetHealth();
 
-    uint32 const casterMaxHealth = caster->GetMaxHealth();
+    uint32 startingThreat = target->GetThreatManager().GetThreat(caster);
+
     if (heal)
     {
-        caster->SetMaxHealth(std::numeric_limits<uint32>::max());
-        caster->AttackerStateUpdate(target, BASE_ATTACK);
-        caster->AttackStop();
-        autoAttackThreat = target->GetThreatManager().GetThreat(caster);
+        target->EngageWithTarget(caster);
         INTERNAL_ASSERT_INFO("Caster is not in combat with victim.");
         INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
     }
 
     SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
-    TriggerCastFlags const triggers = TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED);
+    TriggerCastFlags const triggers = TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED);
     uint32 result = heal ? caster->CastSpell(caster, spellID, triggers) : caster->CastSpell(target, spellID, triggers);
     caster->ForceSpellHitResult(previousForceHitResult);
     INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
     INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
 
-    target->RemoveAllAuras();
-
     // Having both for spell that affect caster and its victim
-    uint32 dealtMin = 0;
-    uint32 dealtMax = 0;
-
+    uint32 dealtMin, dealtMax;
     if (heal)
     {
-        GetHealingPerSpellsTo(casterOwner, casterOwner, spellID, dealtMin, dealtMax, false, 1);
+        GetHealingPerSpellsTo(caster, caster, spellID, dealtMin, dealtMax, false, 1);
         INTERNAL_ASSERT_INFO("Caster is not in combat with victim after spell %u.", spellID);
         INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
     }
     else
-        GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, false, 1);
+        GetDamagePerSpellsTo(caster, target, spellID, dealtMin, dealtMax, false, 1);
 
-    caster->SetMaxHealth(casterMaxHealth);
-
-    INTERNAL_ASSERT_INFO("Spell must have same dealtMin and dealtMax");
+    INTERNAL_ASSERT_INFO("Spell must have same dealtMin and dealtMax"); //since there is only one... just a consistency check.
     INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
 
-    float const threatDone = target->GetThreatManager().GetThreat(caster) - autoAttackThreat;
-    float const expectedTotalThreat = dealtMin * expectedThreat;
+    float const threatDone = target->GetThreatManager().GetThreat(caster) - startingThreat;
+    float const expectedTotalThreat = dealtMin * expectedThreatFactor;
 
     INTERNAL_ASSERT_INFO("Enforcing threat for direct spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
     INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
+
+    //Restore context
+    target->GetThreatManager().ClearThreat(caster);
+    target->GetThreatManager().AddThreat(caster, startingThreat);
+    caster->RemoveAurasDueToSpell(spellID);
+    target->RemoveAurasDueToSpell(spellID);
+    caster->SetHealth(casterStartingHealth);
+    target->SetHealth(targetStartingHealth);
 }
 
 PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster)
@@ -875,7 +869,7 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
         if (attackType != RANGED_ATTACK)
             caster->AttackerStateUpdate(target, attackType);
         else
-            caster->CastSpell(target, 75, TriggerCastFlags(TRIGGERED_FULL_DEBUG_MASK | TRIGGERED_IGNORE_SPEED)); //shoot
+            caster->CastSpell(target, 75, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED)); //shoot
 
         HandleThreadPause();
     }

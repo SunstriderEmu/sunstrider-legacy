@@ -158,12 +158,12 @@ public:
     // same as TEST_DIRECT_SPELL_DAMAGE but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     typedef std::function<void(Unit*, Unit*)> TestCallback;
     #define TEST_DIRECT_SPELL_DAMAGE_CALLBACK(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true, Optional<TestCallback>(callback)); _ResetCaller(); }
-    // Will cast spell and check if threat is equal to damage dealt multipled by expectedThreat
-    #define TEST_DIRECT_SPELL_THREAT(caster, target, spellID, expectedThreat) { _SetCaller(__FILE__, __LINE__); _TestDirectThreat(caster, target, spellID, expectedThreat, false); _ResetCaller(); }
+    // Will cast spell and check if threat is equal to damage dealt multipled by expectedThreatFactor
+    #define TEST_DIRECT_SPELL_THREAT(caster, target, spellID, expectedThreatFactor) { _SetCaller(__FILE__, __LINE__); _TestDirectThreat(caster, target, spellID, expectedThreatFactor, false); _ResetCaller(); }
     //Caster must be a TestPlayer or a pet/summon of him
     #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax, crit) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, crit, false, {}); _ResetCaller(); }
-    // Will cast spell and check if threat is equal to healing done multipled by expectedThreat
-    #define TEST_DIRECT_HEAL_THREAT(caster, target, spellID, expectedThreat) { _SetCaller(__FILE__, __LINE__); _TestDirectThreat(caster, target, spellID, expectedThreat, true); _ResetCaller(); }
+    // Will cast spell and check if threat is equal to healing done multiplied by expectedThreat
+    #define TEST_DIRECT_HEAL_THREAT(caster, target, spellID, expectedThreatFactor) { _SetCaller(__FILE__, __LINE__); _TestDirectThreat(caster, target, spellID, expectedThreatFactor, true); _ResetCaller(); }
     //Caster must be a TestPlayer or a pet/summon of him
     #define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller(); }
   
@@ -290,7 +290,7 @@ protected:
     void Sadness();
 
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback); //if !damage, then use healing
-    void _TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreat, bool heal);
+    void _TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreatFactor, bool heal);
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
     void _TestOtThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedThreat, bool initial, bool heal);
