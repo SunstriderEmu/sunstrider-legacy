@@ -246,19 +246,20 @@ public:
     */
     #define TEST_PUSHBACK_RESIST_CHANCE(caster, target, spellID, chance)  { _SetCaller(__FILE__, __LINE__); _TestPushBackResistChance(caster, target, spellID, chance); _ResetCaller(); }
 
-    //Get raw spell data from caster to target with spellID
-    std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(TestPlayer* caster, Unit* victim, uint32 spellID);
-    //Get raw healing data from caster to target with spellID
-    std::vector<PlayerbotTestingAI::HealingDoneInfo> GetHealingDoneInfoTo(TestPlayer* caster, Unit* target, uint32 spellID);
+    //Get raw spell data from caster (+ pets) to target with spellID
+    std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID);
+    //Get raw healing data from caster (+ pets) to target with spellID
+    std::vector<PlayerbotTestingAI::HealingDoneInfo> GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID);
     //crit: get only spells that made crit / only spells that did not
-    void GetDamagePerSpellsTo(TestPlayer* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount = 0);
+    void GetDamagePerSpellsTo(Unit* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount = 0);
     //crit: get only spells that made crit / only spells that did not
-    void GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount = 0);
-    void GetWhiteDamageDoneTo(TestPlayer* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt, uint32 expectedCount = 0);
+    void GetHealingPerSpellsTo(Unit* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount = 0);
+    
+    void GetWhiteDamageDoneTo(Unit* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt, uint32 expectedCount = 0);
     //return total channel damage done
-    uint32 GetChannelDamageTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit);
+    uint32 GetChannelDamageTo(Unit* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit);
     //return total channel heal done
-    uint32 GetChannelHealingTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit);
+    uint32 GetChannelHealingTo(Unit* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit);
 
     static uint32 GetTestBotAccountId();
     TestStatus GetTestStatus() const { return _testStatus; }
@@ -291,31 +292,31 @@ protected:
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback); //if !damage, then use healing
     void _TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreat, bool heal);
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
-    void _TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
+    void _TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
     void _TestOtThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedThreat, bool initial, bool heal);
-    void _TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount, bool healing = false);
+    void _TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount, bool healing = false);
     /* if sampleSize != 0, check if results count = sampleSize
     expectedResult: 0 - 100
     allowedError: 0 - 100
     */
-    void _TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError, uint32 sampleSize = 0);
+    void _TestMeleeOutcomePercentage(Unit* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError, uint32 sampleSize = 0);
     /* if sampleSize != 0, check if results count = sampleSize
     expectedResult: 0 - 100
     allowedError: 0 - 100
     */
-    void _TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, SpellMissInfo hitInfo, float expectedResult, float allowedError, uint32 sampleSize = 0);
+    void _TestSpellOutcomePercentage(Unit* caster, Unit* victim, uint32 spellId, SpellMissInfo hitInfo, float expectedResult, float allowedError, uint32 sampleSize = 0);
     /* if sampleSize != 0, check if results count = sampleSize
     expectedResult: 0 - 100
     allowedError: 0 - 100
     */
-    void _TestSpellCritPercentage(TestPlayer* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize = 0);
+    void _TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize = 0);
 
-    void _TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback);
-    void _TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
-    void _TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback);
+    void _TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback);
+    void _TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
+    void _TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback);
     void _TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS);
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, TestCallbackResult callback);
-    void _TestSpellProcChance(TestPlayer* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
+    void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
 
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
@@ -343,6 +344,8 @@ protected:
     void _GetPercentApproximationParams(uint32& sampleSize, float& resultingAbsoluteTolerance, float const expectedResult, float const absoluteTolerance = 0.01f);
 
     void _EnsureAlive(Unit* caster, Unit* victim);
+    //Try to get caster AI or owner caster AI (if pet or summon). Fail if no caster AI found. Changes caster arg to owner if pet/summon.
+    PlayerbotTestingAI* _GetCasterAI(Unit*& caster);
 
 private:
     std::string              _testName;
@@ -386,7 +389,7 @@ private:
     TestPlayer* SpawnRandomPlayer(Races race, Classes cls) { return nullptr; }
     TestPlayer* SpawnRandomPlayer(Classes cls, Races races) { return nullptr; }
 
-    void _CastDotAndWait(TestPlayer* caster, Unit* target, uint32 spellID, bool crit = false);
+    void _CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit = false);
 };
 
 #endif //TESTCASE_H

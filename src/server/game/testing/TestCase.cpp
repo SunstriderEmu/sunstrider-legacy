@@ -844,18 +844,26 @@ void TestCase::_TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, flo
     INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
 }
 
-void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit)
+PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster)
 {
-    Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
+    caster = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
     INTERNAL_ASSERT_INFO("Caster is not a player or a pet/summon of him");
-    INTERNAL_TEST_ASSERT(_casterOwner != nullptr);
-    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(_casterOwner);
+    INTERNAL_TEST_ASSERT(caster != nullptr);
+
+    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(caster);
     INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
-    INTERNAL_TEST_ASSERT(casterOwner != nullptr);
+    INTERNAL_TEST_ASSERT(caster != nullptr);
 
     auto AI = casterOwner->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
+
+    return AI;
+}
+
+void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit)
+{
+    auto AI = _GetCasterAI(caster);
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
@@ -879,7 +887,7 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
 
     uint32 dealtMin;
     uint32 dealtMax;
-    GetWhiteDamageDoneTo(casterOwner, target, attackType, crit, dealtMin, dealtMax, sampleSize);
+    GetWhiteDamageDoneTo(caster, target, attackType, crit, dealtMin, dealtMax, sampleSize);
 
     //TC_LOG_DEBUG("test.unit_test", "attackType: %u - crit %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", uint32(attackType), uint32(crit), dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
 
@@ -893,11 +901,9 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
 
 }
 
-std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDoneInfoTo(TestPlayer* caster, Unit* victim, uint32 spellID)
+std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     INTERNAL_ASSERT_INFO("GetSpellDamageDoneInfoTo was prompted for non existing spell ID %u", spellID);
@@ -916,11 +922,9 @@ std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDon
     return std::move(filteredDamageToTarget);
 }
 
-std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(TestPlayer* caster, Unit* target, uint32 spellID)
+std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     INTERNAL_ASSERT_INFO("GetHealingDoneInfoTo was prompted for non existing spell ID %u", spellID);
@@ -939,8 +943,10 @@ std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(
     return std::move(filteredHealingToTarget);
 }
 
-uint32 TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit)
+uint32 TestCase::GetChannelDamageTo(Unit* caster, Unit* victim, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit)
 {
+    auto AI = _GetCasterAI(caster);
+
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     INTERNAL_ASSERT_INFO("GetChannelDamageTo was prompted for non existing spell ID %u", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
@@ -951,10 +957,6 @@ uint32 TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spe
     */
     if (spellInfo->HasAuraEffect(SPELL_AURA_PERIODIC_DAMAGE))
     {
-        auto AI = caster->GetTestingPlayerbotAI();
-        INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-        INTERNAL_TEST_ASSERT(AI != nullptr);
-
         uint32 actualTicksCount;
         int32 dotDmg = AI->GetDotDamage(victim, spellID, actualTicksCount);
         INTERNAL_ASSERT_INFO("GetChannelDamageTo found some damage but tick count is %u instead of %u", actualTicksCount, expectedTickCount);
@@ -970,7 +972,7 @@ uint32 TestCase::GetChannelDamageTo(TestPlayer* caster, Unit* victim, uint32 spe
     return dealtMin * expectedTickCount;
 }
 
-uint32 TestCase::GetChannelHealingTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit)
+uint32 TestCase::GetChannelHealingTo(Unit* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit)
 {
     uint32 dealtMin, dealtMax;
     GetHealingPerSpellsTo(caster, target, spellID, dealtMin, dealtMax, crit, expectedTickCount);
@@ -980,7 +982,7 @@ uint32 TestCase::GetChannelHealingTo(TestPlayer* caster, Unit* target, uint32 sp
     return dealtMin * expectedTickCount;
 }
 
-void TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount)
+void TestCase::GetHealingPerSpellsTo(Unit* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount)
 {
     auto healingToTarget = GetHealingDoneInfoTo(caster, target, spellID);
 
@@ -1013,11 +1015,9 @@ void TestCase::GetHealingPerSpellsTo(TestPlayer* caster, Unit* target, uint32 sp
     }
 }
 
-void TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAttackType attackType, bool critical, uint32& minDamage, uint32& maxDamage, uint32 expectedCount)
+void TestCase::GetWhiteDamageDoneTo(Unit* caster, Unit* victim, WeaponAttackType attackType, bool critical, uint32& minDamage, uint32& maxDamage, uint32 expectedCount)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
@@ -1071,7 +1071,7 @@ void TestCase::GetWhiteDamageDoneTo(TestPlayer* caster, Unit* victim, WeaponAtta
     }
 }
 
-void TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount)
+void TestCase::GetDamagePerSpellsTo(Unit* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount)
 {
     auto damageToTarget = GetSpellDamageDoneInfoTo(caster, victim, spellID);
 
@@ -1112,11 +1112,9 @@ void TestCase::GetDamagePerSpellsTo(TestPlayer* caster, Unit* victim, uint32 spe
     }
 }
 
-void TestCase::_CastDotAndWait(TestPlayer* caster, Unit* target, uint32 spellID, bool crit)
+void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
@@ -1158,9 +1156,9 @@ void TestCase::_CastDotAndWait(TestPlayer* caster, Unit* target, uint32 spellID,
     INTERNAL_TEST_ASSERT(!target->HasAura(spellID, caster->GetGUID()));
 }
 
-void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, int32 expectedTotalAmount, bool crit /* = false*/)
+void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedTotalAmount, bool crit /* = false*/)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
+    auto AI = _GetCasterAI(caster);
     
     _CastDotAndWait(caster, target, spellID, crit);
 
@@ -1173,13 +1171,8 @@ void TestCase::_TestDotDamage(TestPlayer* caster, Unit* target, uint32 spellID, 
 
 void TestCase::_TestOtThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedThreat, bool initial, bool heal)
 {
-    Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
-    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(_casterOwner);
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
-    INTERNAL_TEST_ASSERT(casterOwner != nullptr);
-    auto AI = caster->ToPlayer()->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    Unit* _caster = caster->ToUnit();
+    auto AI = _GetCasterAI(_caster);
 
     target->GetThreatManager().ClearAllThreat();  // Reset threat
     TestPlayer* helper = SpawnRandomPlayer(Races(caster->GetRace()));
@@ -1200,13 +1193,13 @@ void TestCase::_TestOtThreat(TestPlayer* caster, Creature* target, uint32 spellI
         INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
         caster->GetGroup()->Disband();
         if (initial)
-            GetHealingPerSpellsTo(casterOwner, helper, spellID, dealtMin, dealtMax, false, 1);
+            GetHealingPerSpellsTo(caster, helper, spellID, dealtMin, dealtMax, false, 1);
     }
     else
     {
         _CastDotAndWait(caster, target, spellID, false);
         if (initial)
-            GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, false, 1);
+            GetDamagePerSpellsTo(caster, target, spellID, dealtMin, dealtMax, false, 1);
     }
 
     helper->KillSelf();
@@ -1224,11 +1217,9 @@ void TestCase::_TestOtThreat(TestPlayer* caster, Creature* target, uint32 spellI
     INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
 }
 
-void TestCase::_TestChannelDamage(TestPlayer* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 expectedTickCount, int32 expectedTickAmount, bool healing /* = false*/)
+void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 expectedTickCount, int32 expectedTickAmount, bool healing /* = false*/)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
@@ -1302,11 +1293,9 @@ void TestCase::GroupPlayer(TestPlayer* leader, Player* player)
     }
 }
 
-void TestCase::_TestSpellHitChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo, Optional<TestCallback> callback)
+void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo, Optional<TestCallback> callback)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
@@ -1379,11 +1368,9 @@ void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellI
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 }
 
-void TestCase::_TestSpellProcChance(TestPlayer* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback)
+void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     _EnsureAlive(caster, victim);
     
@@ -1534,7 +1521,7 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
 }
 
-void TestCase::_TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
+void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
 {
     _EnsureAlive(caster, victim);
     INTERNAL_ASSERT_INFO("_TestMeleeHitChance can only be used with BASE_ATTACK and OFF_ATTACK");
@@ -1565,11 +1552,9 @@ void TestCase::_TestMeleeHitChance(TestPlayer* caster, Unit* victim, WeaponAttac
     _TestMeleeOutcomePercentage(caster, victim, weaponAttackType, meleeHitOutcome, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
 }
 
-void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError, uint32 sampleSize /*= 0*/)
+void TestCase::_TestMeleeOutcomePercentage(Unit* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError, uint32 sampleSize /*= 0*/)
 {
-    auto AI = attacker->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(attacker);
 
     auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("_TestMeleeOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
@@ -1607,11 +1592,9 @@ void TestCase::_TestMeleeOutcomePercentage(TestPlayer* attacker, Unit* victim, W
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
-void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uint32 spellId, SpellMissInfo missInfo, float expectedResult, float allowedError, uint32 expectedSampleSize /*= 0*/)
+void TestCase::_TestSpellOutcomePercentage(Unit* caster, Unit* victim, uint32 spellId, SpellMissInfo missInfo, float expectedResult, float allowedError, uint32 expectedSampleSize /*= 0*/)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data of %u for this victim (%s)", spellId, victim->GetName().c_str());
@@ -1647,11 +1630,9 @@ void TestCase::_TestSpellOutcomePercentage(TestPlayer* caster, Unit* victim, uin
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
-void TestCase::_TestSpellCritPercentage(TestPlayer* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize)
+void TestCase::_TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of spell %u for this victim (%s)", spellId, victim->GetName().c_str());
@@ -1825,11 +1806,9 @@ void TestCase::_TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId)
     INTERNAL_TEST_ASSERT(result);
 }
 
-void TestCase::_TestSpellCritChance(TestPlayer* caster, Unit* victim, uint32 spellID, float expectedResultPercent, Optional<TestCallback> callback)
+void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float expectedResultPercent, Optional<TestCallback> callback)
 {
-    auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    auto AI = _GetCasterAI(caster);
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
