@@ -225,7 +225,7 @@ public:
             TEST_PUSHBACK_RESIST_CHANCE(priest, shaman, ClassSpells::Priest::GREATER_HEAL_RNK_7, 100.f);
 
             // 20% resist to interrupt
-            TEST_SPELL_HIT_CHANCE(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, 23.f, SPELL_MISS_RESIST, [focusedCasting](Unit* caster, Unit* target) {
+            TEST_SPELL_HIT_CHANCE_CALLBACK(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, 23.f, SPELL_MISS_RESIST, [focusedCasting](Unit* caster, Unit* target) {
                 target->AddAura(focusedCasting, target);
                 target->CastSpell(target, ClassSpells::Priest::GREATER_HEAL_RNK_7, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
             });
@@ -555,12 +555,12 @@ public:
 
             LearnTalent(priest, Talents::Priest::IMPROVED_DIVINE_SPIRIT_RNK_2);
             TEST_CAST(priest, priest, ClassSpells::Priest::DIVINE_SPIRIT_RNK_5);
-            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS) == expectedBH);
-            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == expectedSP);
+            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS) == int32(expectedBH));
+            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == int32(expectedSP));
 
             TEST_CAST(priest, priest, ClassSpells::Priest::PRAYER_OF_SPIRIT_RNK_2, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS) == expectedBH);
-            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == expectedSP);
+            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS) == int32(expectedBH));
+            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == int32(expectedSP));
         }
     };
 

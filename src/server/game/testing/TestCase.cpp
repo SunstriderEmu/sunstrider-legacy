@@ -217,9 +217,7 @@ void TestCase::_TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpe
 
 void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost)
 {
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
-    INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    SpellInfo const* spellInfo = _GetSpellInfo(castSpellID);
 
     INTERNAL_ASSERT_INFO("Spell %u has wrong power type %u (instead of %u)", spellInfo->PowerType, uint32(powerType));
     INTERNAL_TEST_ASSERT(spellInfo->PowerType == powerType);
@@ -235,9 +233,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers pow
 
 void TestCase::_TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond)
 {
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
-    INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    SpellInfo const* spellInfo = _GetSpellInfo(castSpellID);
 
     //special case for channeled spell, spell system currently does not allow casting them instant
     if (spellInfo->IsChanneled())
@@ -904,11 +900,7 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
 std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID)
 {
     auto AI = _GetCasterAI(caster);
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    INTERNAL_ASSERT_INFO("GetSpellDamageDoneInfoTo was prompted for non existing spell ID %u", spellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
-
+    /*SpellInfo const* spellInfo = */ _GetSpellInfo(spellID);
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("GetSpellDamageDoneInfoTo found no data for this victim (%s)", victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
@@ -925,10 +917,7 @@ std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDon
 std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID)
 {
     auto AI = _GetCasterAI(caster);
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    INTERNAL_ASSERT_INFO("GetHealingDoneInfoTo was prompted for non existing spell ID %u", spellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellID);
 
     auto healingToTarget = AI->GetHealingDoneInfo(target);
     INTERNAL_ASSERT_INFO("GetHealingDoneInfoTo found no data for this victim (%s)", target->GetName().c_str());
@@ -946,10 +935,7 @@ std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(
 uint32 TestCase::GetChannelDamageTo(Unit* caster, Unit* victim, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit)
 {
     auto AI = _GetCasterAI(caster);
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    INTERNAL_ASSERT_INFO("GetChannelDamageTo was prompted for non existing spell ID %u", spellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
     /* this functions actually handle two kind of spells:
     - Channels triggering another spells to do their damage
@@ -1115,10 +1101,7 @@ void TestCase::GetDamagePerSpellsTo(Unit* caster, Unit* victim, uint32 spellID, 
 void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit)
 {
     auto AI = _GetCasterAI(caster);
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
     EnableCriticals(caster, crit);
 
@@ -1220,10 +1203,7 @@ void TestCase::_TestOtThreat(TestPlayer* caster, Creature* target, uint32 spellI
 void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 expectedTickCount, int32 expectedTickAmount, bool healing /* = false*/)
 {
     auto AI = _GetCasterAI(caster);
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
     //uint32 baseCastTime = spellInfo->CalcCastTime(nullptr);
     uint32 baseDurationTime = spellInfo->GetDuration();
@@ -1373,14 +1353,8 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     auto AI = _GetCasterAI(caster);
 
     _EnsureAlive(caster, victim);
-    
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
-
-    SpellInfo const* procSpellInfo = sSpellMgr->GetSpellInfo(procSpellID);
-    INTERNAL_ASSERT_INFO("Proc Spell %u does not exists", procSpellID);
-    INTERNAL_TEST_ASSERT(procSpellInfo != nullptr);
+    /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellID);
+    /*SpellInfo const* procSpellInfo =*/ _GetSpellInfo(procSpellID);
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
@@ -1459,13 +1433,19 @@ void TestCase::_EnsureAlive(Unit* caster, Unit* target)
     INTERNAL_TEST_ASSERT(target->IsAlive());
 }
 
-void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float expectedResultPercent)
+SpellInfo const* TestCase::_GetSpellInfo(uint32 spellID)
 {
-    _EnsureAlive(caster, target);
-
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
     INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+
+    return spellInfo;
+}
+
+void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float expectedResultPercent)
+{
+    _EnsureAlive(caster, target);
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
     uint32 startingHealth = caster->GetHealth();
 
@@ -1592,23 +1572,21 @@ void TestCase::_TestMeleeOutcomePercentage(Unit* attacker, Unit* victim, WeaponA
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
-void TestCase::_TestSpellOutcomePercentage(Unit* caster, Unit* victim, uint32 spellId, SpellMissInfo missInfo, float expectedResult, float allowedError, uint32 expectedSampleSize /*= 0*/)
+void TestCase::_TestSpellOutcomePercentage(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo missInfo, float expectedResult, float allowedError, uint32 expectedSampleSize /*= 0*/)
 {
     auto AI = _GetCasterAI(caster);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data of %u for this victim (%s)", spellId, victim->GetName().c_str());
+    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data of %u for this victim (%s)", spellID, victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(!damageToTarget || damageToTarget->empty());
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage was prompted for non existing spell ID %u", spellId);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    
+    /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellID);
 
     uint32 actualDesiredOutcomeCount = 0;
     uint32 actualSampleCount = 0;
     for (auto itr : *damageToTarget)
     {
-        if (itr.damageInfo.SpellID != spellId)
+        if (itr.damageInfo.SpellID != spellID)
             continue;
 
         actualSampleCount++;
@@ -1621,12 +1599,12 @@ void TestCase::_TestSpellOutcomePercentage(Unit* caster, Unit* victim, uint32 sp
 
     if (expectedSampleSize)
     {
-        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", actualSampleCount, expectedSampleSize, spellId);
+        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", actualSampleCount, expectedSampleSize, spellID);
         INTERNAL_TEST_ASSERT(actualSampleCount == expectedSampleSize)
     }
 
     float const result = (actualDesiredOutcomeCount / float(actualSampleCount)) * 100.0f;
-    INTERNAL_ASSERT_INFO("TestSpellOutcomePercentage on spell %u: expected result: %f, result: %f", spellId, expectedResult, result);
+    INTERNAL_ASSERT_INFO("TestSpellOutcomePercentage on spell %u: expected result: %f, result: %f", spellID, expectedResult, result);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
@@ -1637,10 +1615,8 @@ void TestCase::_TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spell
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
     INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of spell %u for this victim (%s)", spellId, victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage was prompted for non existing spell ID %u", spellId);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    
+    /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellId);
 
     uint32 critCount = 0;
     uint32 foundCount = 0;
@@ -1752,9 +1728,7 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID)
 
 void TestCase::_TestHasCooldown(Unit* caster, uint32 castSpellID, uint32 cooldownSecond)
 {
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(castSpellID);
-    INTERNAL_ASSERT_INFO("Spell %u does not exists", castSpellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    SpellInfo const* spellInfo = _GetSpellInfo(castSpellID);
     uint32 cooldown = caster->GetSpellHistory()->GetRemainingCooldown(spellInfo);
     INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName().c_str(), cooldown, castSpellID, cooldownSecond * IN_MILLISECONDS);
     INTERNAL_TEST_ASSERT(cooldown == cooldownSecond * IN_MILLISECONDS);
@@ -1850,9 +1824,7 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
 
 void TestCase::_TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS)
 {
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    INTERNAL_ASSERT_INFO("Spell %u does not exists", spellID);
-    INTERNAL_TEST_ASSERT(spellInfo != nullptr);
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
     Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE);
     uint32 const actualCastTime = spellInfo->CalcCastTime(spell);
