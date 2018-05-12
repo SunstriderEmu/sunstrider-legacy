@@ -20,6 +20,16 @@ class TestThread
 public:
     static const uint32 MAX_UPDATE_TIME_MS = 200;
 
+    enum ThreadState : uint8
+    {
+        STATE_NOT_STARTED, //not yet setup
+        STATE_STARTED, //started and setup but not yet running
+        STATE_RUNNING, //currently updating
+        STATE_WAITING, //update is suspended because of waiting time
+        STATE_PAUSED, //almost the same as waiting, but map will skip updates when we're paused. A pause is always removed at the next update.
+        STATE_FINISHED,
+    };
+
     //Create thread with test, do not start immediately
     TestThread(std::shared_ptr<TestCase> test);
     //Start test!
@@ -36,24 +46,16 @@ public:
     //update test Wait Timer but do not notify anything
     void UpdateWaitTimer(uint32 const mapDiff);
     std::shared_ptr<TestCase> GetTest() const { return _testCase; };
-    bool IsFinished() const;
 
     // Sleep caller execution until ... (this does not sleep the test thread)
     void WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test);
     uint32 GetWaitTimer() const { return _waitTimer;  }
-    bool IsPaused() const { return _state == STATE_PAUSED; }
-    
+    bool IsPaused() const;
+    bool IsFinished() const;
+    ThreadState GetState() const { return _state; }
+
     //stop and fail tests as soon as possible
     void Cancel();
-
-    enum ThreadState : uint8
-    {
-        STATE_NOT_STARTED, //not yet running
-        STATE_RUNNING, 
-        STATE_WAITING,
-        STATE_PAUSED, //almost the same as waiting, but map will skip updates when we're paused. A pause is always removed at the next update.
-        STATE_FINISHED,
-    };
 
 private:
     std::shared_ptr<TestCase> _testCase;

@@ -3182,6 +3182,7 @@ void TestMap::Update(const uint32& diff)
     //if test asked for a pause, skip this map update
     if (!_testThread->IsPaused())
     {
+        ASSERT(_testThread->GetState() != TestThread::STATE_RUNNING); //test should never be currently updating at the same time as the map is updating
         InstanceMap::Update(usedDiff);
 
         //When paused, time is frozen in test too
@@ -3193,6 +3194,8 @@ void TestMap::Update(const uint32& diff)
     _testThread->ResumeExecution();
     _testThread->WaitUntilDoneOrWaiting(test);
     //from this line we be sure that the test thread is not currently running
+    if (_testThread->IsFinished())
+        m_unloadTimer = 1; //make sure we're not updating anymore after this, and unload at next update
 #endif
 }
 

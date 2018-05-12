@@ -10,8 +10,8 @@ TestThread::TestThread(std::shared_ptr<TestCase> test)
 
 void TestThread::Start()
 {
+    _state = STATE_STARTED;
     _future = std::move(std::async(std::launch::async, [this]() { this->Run(); }));
-    _state = STATE_RUNNING;
 }
 
 bool TestThread::IsStarted() const
@@ -24,14 +24,24 @@ bool TestThread::IsFinished() const
     return _state == STATE_FINISHED;
 }
 
+bool TestThread::IsPaused() const
+{
+    return _state == STATE_PAUSED; 
+}
+
 void TestThread::Run()
 {
+    _testCase->_SetThread(this);
     try
     {
-        _testCase->_SetThread(this);
         bool setupSuccess = _testCase->_InternalSetup();
         if(!setupSuccess)
             _testCase->_Fail("Failed to setup test");
+        
+        { //Thread will actually start the test when map resume execution for the first time
+            std::unique_lock<std::mutex> lk(_testCVMutex);
+            _testCV.wait(lk, [this] {return  IsStarted(); });
+        }
 
         _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
@@ -52,8 +62,8 @@ void TestThread::Run()
         _testCase->_FailNoException(e.what());
     }
 
-    _testCase->_Cleanup();
     _state = STATE_FINISHED;
+    _testCase->_Cleanup();
 
     //unlock sleeping TestMgr if needed (we finished test)
     //TC_LOG_TRACE("tests", "Test tread with test name %s will notify 2", _testCase->GetName().c_str());
