@@ -1498,6 +1498,14 @@ bool SpellInfo::HasAreaAuraEffect() const
     return false;
 }
 
+bool SpellInfo::HasAnyAura() const
+{
+    for (const auto & Effect : Effects)
+        if (Effect.IsAura())
+            return true;
+    return false;
+}
+
 bool SpellInfo::HasOnlyDamageEffects() const
 {
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -1652,7 +1660,7 @@ bool SpellInfo::HasVisual(uint32 visual) const
 #endif
 }
 
-SpellCastResult SpellInfo::CheckTarget(WorldObject  const* caster, WorldObject const* target, bool implicit /*= true*/) const
+SpellCastResult SpellInfo::CheckTarget(WorldObject const* caster, WorldObject const* target, bool implicit /*= true*/, Spell const* spell /* = nullptr*/) const
 {
     if (AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF && caster == target)
         return SPELL_FAILED_BAD_TARGETS;
@@ -1769,7 +1777,7 @@ SpellCastResult SpellInfo::CheckTarget(WorldObject  const* caster, WorldObject c
     Spell examples: [ID - 52864 Devour Water, ID - 52862 Devour Wind, ID - 49370 Wyrmrest Defender: Destabilize Azure Dragonshrine Effect] */
     if (Unit const* unitCaster = caster->ToUnit())
     {
-        if (
+        if (!(spell->GetTriggerCastFlags() & TRIGGERED_IGNORE_TARGET_AURASTATE) &&
 #ifdef LICH_KING
             !unitCaster->IsVehicle() &&
 #endif

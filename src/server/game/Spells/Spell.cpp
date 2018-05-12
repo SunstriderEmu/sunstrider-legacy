@@ -1752,7 +1752,7 @@ void Spell::SelectImplicitTrajTargets(SpellEffIndex effIndex, SpellImplicitTarge
     Unit* unitCaster = ASSERT_NOTNULL(m_caster->ToUnit());
     for (auto itr = targets.begin(); itr != targets.end(); ++itr)
     {
-        if (m_spellInfo->CheckTarget(unitCaster, *itr, true) != SPELL_CAST_OK)
+        if (m_spellInfo->CheckTarget(unitCaster, *itr, true, this) != SPELL_CAST_OK)
             continue;
 
         if (Unit* unit = (*itr)->ToUnit())
@@ -2229,7 +2229,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
 
     if (checkIfValid)
     {
-        if (m_spellInfo->CheckTarget(m_caster, target, implicit) != SPELL_CAST_OK) // skip stealth checks for AOE
+        if (m_spellInfo->CheckTarget(m_caster, target, implicit, this) != SPELL_CAST_OK) // skip stealth checks for AOE
             return;
     }
 
@@ -5335,7 +5335,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
 
     if (Unit *target = m_targets.GetUnitTarget())
     {
-        SpellCastResult castResult = m_spellInfo->CheckTarget(m_caster, target, m_caster->GetTypeId() == TYPEID_GAMEOBJECT); // skip stealth checks for GO casts
+        SpellCastResult castResult = m_spellInfo->CheckTarget(m_caster, target, m_caster->GetTypeId() == TYPEID_GAMEOBJECT, this); // skip stealth checks for GO casts
         if (castResult != SPELL_CAST_OK)
             return castResult;
         
@@ -8068,7 +8068,7 @@ namespace Trinity
 
     bool WorldObjectSpellTargetCheck::operator()(WorldObject* target) const
     {
-        if (_spellInfo->CheckTarget(_caster, target, true) != SPELL_CAST_OK)
+        if (_spellInfo->CheckTarget(_caster, target, true, this) != SPELL_CAST_OK)
             return false;
         Unit* unitTarget = target->ToUnit();
         if (Corpse* corpseTarget = target->ToCorpse())

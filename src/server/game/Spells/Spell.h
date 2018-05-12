@@ -556,6 +556,8 @@ class TC_GAME_API Spell
         
         bool DoesApplyAuraName(uint32 name);
 
+        TriggerCastFlags GetTriggerCastFlags() const { return _triggeredCastFlags; }
+
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();
@@ -722,7 +724,6 @@ class TC_GAME_API Spell
         void CallScriptOnCastHandlers();
         void CallScriptAfterCastHandlers();
         SpellCastResult CallScriptCheckCastHandlers();
-        void PrepareScriptHitHandlers();
         bool CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMode mode, int32& damage);
         void CallScriptBeforeHitHandlers();
         void CallScriptOnHitHandlers();
@@ -761,7 +762,7 @@ class TC_GAME_API Spell
         float m_castPositionY;
         float m_castPositionZ;
         float m_castOrientation;
-        TriggerCastFlags _triggeredCastFlags;;
+        TriggerCastFlags _triggeredCastFlags;
 
         // if need this can be replaced by Aura copy
         // we can't store original aura link to prevent access to deleted auras

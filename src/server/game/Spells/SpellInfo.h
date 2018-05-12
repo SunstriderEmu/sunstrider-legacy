@@ -460,6 +460,7 @@ public:
     bool HasAura(AuraType aura) const;
     bool HasAuraEffect(AuraType aura) const;
     bool HasAreaAuraEffect() const;
+    bool HasAnyAura() const;
     bool HasOnlyDamageEffects() const;
 
     inline bool HasAttribute(SpellAttr0 attribute) const { return !!(Attributes & attribute); }
@@ -572,7 +573,7 @@ public:
     bool IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo) const;
     bool IsAuraExclusiveBySpecificPerCasterWith(SpellInfo const* spellInfo) const;
 
-    SpellCastResult CheckTarget(WorldObject  const* caster, WorldObject const* target, bool implicit = true) const;
+    SpellCastResult CheckTarget(WorldObject  const* caster, WorldObject const* target, bool implicit = true, Spell const* spell = nullptr) const;
     SpellCastResult CheckExplicitTarget(WorldObject  const* caster, WorldObject const* target, Item const* itemTarget = nullptr) const;
     SpellCastResult CheckLocation(uint32 map_id, uint32 zone_id, uint32 area_id, Player const* player = nullptr, bool strict = true) const;
     bool CheckTargetCreatureType(Unit const* target) const;
