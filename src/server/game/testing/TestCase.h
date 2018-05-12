@@ -233,6 +233,7 @@ public:
 
 
     /* Test the proc chance of given aura on caster or victim by casting a spell on a target
+    selfProc: Check of on caster, else check on target
     chance: 0-100
     */
     #define TEST_SPELL_PROC_CHANCE(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, {}); _ResetCaller(); }

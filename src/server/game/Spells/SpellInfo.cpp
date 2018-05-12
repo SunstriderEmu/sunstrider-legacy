@@ -1777,7 +1777,7 @@ SpellCastResult SpellInfo::CheckTarget(WorldObject const* caster, WorldObject co
     Spell examples: [ID - 52864 Devour Water, ID - 52862 Devour Wind, ID - 49370 Wyrmrest Defender: Destabilize Azure Dragonshrine Effect] */
     if (Unit const* unitCaster = caster->ToUnit())
     {
-        if (!(spell->GetTriggerCastFlags() & TRIGGERED_IGNORE_TARGET_AURASTATE) &&
+        if ((!spell || !(spell->GetTriggerCastFlags() & TRIGGERED_IGNORE_TARGET_AURASTATE)) &&
 #ifdef LICH_KING
             !unitCaster->IsVehicle() &&
 #endif
