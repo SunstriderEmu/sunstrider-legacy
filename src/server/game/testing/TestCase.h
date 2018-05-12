@@ -164,8 +164,9 @@ public:
     #define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller(); }
 
     // Will cast spell and check if threat is equal to dmg/healing done multiplied by expectedThreatFactor. Group of caster may be disbanded if any. Target aura and caster aura may be removed.
-    #define TEST_THREAT(caster, target, spellID, expectedThreatFactor, heal)  { _SetCaller(__FILE__, __LINE__); _TestThreat(caster, target, spellID, expectedThreatFactor, heal); _ResetCaller(); }
-
+    #define TEST_THREAT(caster, target, spellID, expectedThreatFactor, heal)  { _SetCaller(__FILE__, __LINE__); _TestThreat(caster, target, spellID, expectedThreatFactor, heal, {}); _ResetCaller(); }
+    // Same as TEST_THREAT but with a function to call just before casting the spell, with the type std::function<void(Unit*, Unit*)>
+    #define TEST_THREAT_CALLBACK(caster, target, spellID, expectedThreatFactor, heal, callback)  { _SetCaller(__FILE__, __LINE__); _TestThreat(caster, target, spellID, expectedThreatFactor, heal, Optional<TestCallback>(callback)); _ResetCaller(); }
     /* 
     @expectedAmount negative values for healing
     @crit Set crit score of caster to maximum
@@ -290,7 +291,7 @@ protected:
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback); //if !damage, then use healing
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
-    void _TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal);
+    void _TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal, Optional<TestCallback> callback);
     void _TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount, bool healing = false);
     /* if sampleSize != 0, check if results count = sampleSize
     expectedResult: 0 - 100

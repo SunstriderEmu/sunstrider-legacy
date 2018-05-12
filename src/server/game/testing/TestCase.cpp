@@ -1089,7 +1089,7 @@ void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 
     INTERNAL_TEST_ASSERT(dotDamageToTarget >= (expectedTotalAmount - tickCount) && dotDamageToTarget <= (expectedTotalAmount + tickCount)); //dots have greater error since they got their damage divided in several ticks
 }
 
-void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal)
+void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal, Optional<TestCallback> callback)
 {
     // + It'd be nice to deduce heal arg from spell but I don't see any sure way to do it atm
 
@@ -1129,6 +1129,9 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     uint32 const spellTargetStartingHealth = spellTarget->GetHealth();
     uint32 const spellTargetStartingMaxHealth = spellTarget->GetMaxHealth();
     spellTarget->RemoveArenaAuras(false); //may help with already present hot and dots breaking the results
+
+    if (callback)
+        callback.get()(caster, target);
 
     if (applyAura)
         _CastDotAndWait(caster, spellTarget, spellID, false);

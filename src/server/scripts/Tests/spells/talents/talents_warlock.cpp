@@ -2297,7 +2297,9 @@ public:
             float const threatFactor = 1 - 0.1f;
 
             // 36m + Threat
-            TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::CONFLAGRATE_RNK_6, threatFactor, false);
+            TEST_THREAT_CALLBACK(warlock, dummy36, ClassSpells::Warlock::CONFLAGRATE_RNK_6, threatFactor, false, [](Unit* caster, Unit* target) {
+                caster->AddAura(ClassSpells::Warlock::IMMOLATE_RNK_9, target);
+            });
             TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::IMMOLATE_RNK_9, threatFactor, false);
             TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::INCINERATE_RNK_2, threatFactor, false);
             TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::SEARING_PAIN_RNK_8, 2.f * threatFactor, false);
