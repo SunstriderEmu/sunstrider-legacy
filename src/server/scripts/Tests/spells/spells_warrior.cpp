@@ -1917,7 +1917,6 @@ public:
         void TestShieldBlock(TestPlayer* warrior, float expectedResult, bool castShieldBlock = false)
         {
             uint32 sampleSize;
-            float resultingAbsoluteTolerance;
 
             Position spawn(_location);
             spawn.MoveInFront(spawn, 3.0f);
@@ -1925,7 +1924,8 @@ public:
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
             rogue->SetFacingToObject(warrior);
 
-            _GetPercentApproximationParams(sampleSize, resultingAbsoluteTolerance, expectedResult / 100.0f);
+            float resultingAbsoluteTolerance = 0.0f;
+            _GetPercentApproximationParams(sampleSize, expectedResult / 100.0f, resultingAbsoluteTolerance);
             //auto AI = rogue->GetTestingPlayerbotAI();
             for (uint32 i = 0; i < sampleSize; i++)
             {
