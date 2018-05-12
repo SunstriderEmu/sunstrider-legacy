@@ -8068,7 +8068,7 @@ namespace Trinity
 
     bool WorldObjectSpellTargetCheck::operator()(WorldObject* target) const
     {
-        if (_spellInfo->CheckTarget(_caster, target, true, this) != SPELL_CAST_OK)
+        if (_spellInfo->CheckTarget(_caster, target, true) != SPELL_CAST_OK)
             return false;
         Unit* unitTarget = target->ToUnit();
         if (Corpse* corpseTarget = target->ToCorpse())

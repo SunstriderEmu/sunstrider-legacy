@@ -166,13 +166,13 @@ public:
 
             // Threat reduced by 10% for all affliction spells
             Creature* dummy = SpawnCreature();
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, talentThreatFactor, false);
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, talentThreatFactor, false);
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, talentThreatFactor, false);
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, talentThreatFactor);
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, talentThreatFactor, false);
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, talentThreatFactor, false);
-            TEST_DOT_THREAT(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, talentThreatFactor, false);
+            TEST_THREAT(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, talentThreatFactor, false);
+            TEST_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, talentThreatFactor, false);
+            TEST_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, talentThreatFactor, false);
+            TEST_THREAT(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, talentThreatFactor, false); //probably not working with the heal
+            TEST_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, talentThreatFactor, false);
+            TEST_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, talentThreatFactor, false);
+            TEST_THREAT(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, talentThreatFactor, false);
             // TODO: SoC Direct damage
         }
     };
@@ -2297,15 +2297,14 @@ public:
             float const threatFactor = 1 - 0.1f;
 
             // 36m + Threat
-            warlock->AddAura(ClassSpells::Warlock::IMMOLATE_RNK_9, dummy36);
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::CONFLAGRATE_RNK_6, threatFactor);
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::IMMOLATE_RNK_9, threatFactor);
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::INCINERATE_RNK_2, threatFactor);
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::SEARING_PAIN_RNK_8, 2.f * threatFactor);
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, threatFactor);
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy24, ClassSpells::Warlock::SHADOWBURN_RNK_8, threatFactor);
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::SHADOWFURY_RNK_3, threatFactor);
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy36, ClassSpells::Warlock::SOUL_FIRE_RNK_4, threatFactor);
+            TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::CONFLAGRATE_RNK_6, threatFactor, false);
+            TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::IMMOLATE_RNK_9, threatFactor, false);
+            TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::INCINERATE_RNK_2, threatFactor, false);
+            TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::SEARING_PAIN_RNK_8, 2.f * threatFactor, false);
+            TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, threatFactor, false);
+            TEST_THREAT(warlock, dummy24, ClassSpells::Warlock::SHADOWBURN_RNK_8, threatFactor, false);
+            TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::SHADOWFURY_RNK_3, threatFactor, false);
+            TEST_THREAT(warlock, dummy36, ClassSpells::Warlock::SOUL_FIRE_RNK_4, threatFactor, false);
         }
     };
 

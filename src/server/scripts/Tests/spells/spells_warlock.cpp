@@ -1842,7 +1842,7 @@ public:
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, expectedSRMin * 1.5f, expectedSRMax * 1.5f, true);
 
             // High threat
-            TEST_DIRECT_SPELL_THREAT(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, 2.f);
+            TEST_THREAT(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, 2.f, false);
         }
     };
 

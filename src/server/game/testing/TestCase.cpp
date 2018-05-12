@@ -777,63 +777,6 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
 }
 
-void TestCase::_TestDirectThreat(Unit* caster, Unit* target, uint32 spellID, float expectedThreatFactor, bool heal)
-{
-    auto AI = _GetCasterAI(caster);
-
-    ResetSpellCast(caster);
-    AI->ResetSpellCounters();
-    EnableCriticals(caster, false);
-
-    uint32 casterStartingHealth = caster->GetHealth();
-    uint32 targetStartingHealth = target->GetHealth();
-
-    uint32 startingThreat = target->GetThreatManager().GetThreat(caster);
-
-    if (heal)
-    {
-        target->EngageWithTarget(caster);
-        INTERNAL_ASSERT_INFO("Caster is not in combat with victim.");
-        INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
-    }
-
-    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
-    caster->ForceSpellHitResult(SPELL_MISS_NONE);
-    TriggerCastFlags const triggers = TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED);
-    uint32 result = heal ? caster->CastSpell(caster, spellID, triggers) : caster->CastSpell(target, spellID, triggers);
-    caster->ForceSpellHitResult(previousForceHitResult);
-    INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
-    INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
-
-    // Having both for spell that affect caster and its victim
-    uint32 dealtMin, dealtMax;
-    if (heal)
-    {
-        GetHealingPerSpellsTo(caster, caster, spellID, dealtMin, dealtMax, false, 1);
-        INTERNAL_ASSERT_INFO("Caster is not in combat with victim after spell %u.", spellID);
-        INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
-    }
-    else
-        GetDamagePerSpellsTo(caster, target, spellID, dealtMin, dealtMax, false, 1);
-
-    INTERNAL_ASSERT_INFO("Spell must have same dealtMin and dealtMax"); //since there is only one... just a consistency check.
-    INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
-
-    float const threatDone = target->GetThreatManager().GetThreat(caster) - startingThreat;
-    float const expectedTotalThreat = dealtMin * expectedThreatFactor;
-
-    INTERNAL_ASSERT_INFO("Enforcing threat for direct spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
-    INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
-
-    //Restore context
-    target->GetThreatManager().ClearThreat(caster);
-    target->GetThreatManager().AddThreat(caster, startingThreat);
-    caster->RemoveAurasDueToSpell(spellID);
-    target->RemoveAurasDueToSpell(spellID);
-    caster->SetHealth(casterStartingHealth);
-    target->SetHealth(targetStartingHealth);
-}
-
 PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster)
 {
     caster = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -1146,52 +1089,81 @@ void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 
     INTERNAL_TEST_ASSERT(dotDamageToTarget >= (expectedTotalAmount - tickCount) && dotDamageToTarget <= (expectedTotalAmount + tickCount)); //dots have greater error since they got their damage divided in several ticks
 }
 
-void TestCase::_TestOtThreat(TestPlayer* caster, Creature* target, uint32 spellID, float expectedThreat, bool initial, bool heal)
+void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal)
 {
-    Unit* _caster = caster->ToUnit();
-    auto AI = _GetCasterAI(_caster);
+    // + It'd be nice to deduce heal arg from spell but I don't see any sure way to do it atm
 
-    target->GetThreatManager().ClearAllThreat();  // Reset threat
-    TestPlayer* helper = SpawnRandomPlayer(Races(caster->GetRace()));
+    auto AI = _GetCasterAI(caster);
+    //TestPlayer* playerCaster = static_cast<TestPlayer*>(caster); //_GetCasterAI guarantees the caster is a TestPlayer
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
-    // Used for overtime spells with initial damage or heal
-    uint32 dealtMin = 0;
-    uint32 dealtMax = 0;
+    ResetSpellCast(caster);
+    ResetSpellCast(target);
+    AI->ResetSpellCounters();
+
+    uint32 const startThreat = target->GetThreatManager().GetThreat(caster);
+    bool applyAura = spellInfo->HasAnyAura();
+    Unit* spellTarget = nullptr;
+
+    //make sure the target is in combat with our caster so that threat is generated
+    target->EngageWithTarget(caster);
+    INTERNAL_ASSERT_INFO("Caster is not in combat with spell target.");
+    INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
+
     if (heal)
     {
-        GroupPlayer(caster, helper);
-        helper->SetMaxHealth(std::numeric_limits<uint32>::max());
-        helper->AttackerStateUpdate(target, BASE_ATTACK);
-        INTERNAL_ASSERT_INFO("Ally is not in combat with victim.");
-        INTERNAL_TEST_ASSERT(target->IsInCombatWith(helper));
+        spellTarget = caster;
 
-        _CastDotAndWait(caster, helper, spellID, false);
-        INTERNAL_ASSERT_INFO("Caster is not in combat with victim after spell %u.", spellID);
-        INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
-        caster->GetGroup()->Disband();
-        if (initial)
-            GetHealingPerSpellsTo(caster, helper, spellID, dealtMin, dealtMax, false, 1);
+        //enough health to avoid overheal
+        spellTarget->SetMaxHealth(std::numeric_limits<int32>::max());
+        spellTarget->SetHealth(1);
     }
     else
     {
-        _CastDotAndWait(caster, target, spellID, false);
-        if (initial)
-            GetDamagePerSpellsTo(caster, target, spellID, dealtMin, dealtMax, false, 1);
+        spellTarget = target;
+        //enough health to avoid dying
+        spellTarget->SetMaxHealth(std::numeric_limits<int32>::max());
+        spellTarget->SetFullHealth();
     }
 
-    helper->KillSelf();
+    uint32 const spellTargetStartingHealth = spellTarget->GetHealth();
+    uint32 const spellTargetStartingMaxHealth = spellTarget->GetMaxHealth();
+    spellTarget->RemoveArenaAuras(false); //may help with already present hot and dots breaking the results
 
-    INTERNAL_ASSERT_INFO("Spell must have same dealtMin and dealtMax");
-    INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
+    if (applyAura)
+        _CastDotAndWait(caster, spellTarget, spellID, false);
+    else
+    {
+        _ForceCast(caster, spellTarget, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_TARGET_AURASTATE));
+        if (spellInfo->IsChanneled())
+        {
+            WaitNextUpdate();
+            uint32 baseDurationTime = spellInfo->GetDuration(); 
+            Wait(baseDurationTime); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
+        }
+    }
 
-    uint32 tickCount;
-    int32 otDamageToTarget = heal ? AI->GetDotDamage(helper, spellID, tickCount) : AI->GetDotDamage(target, spellID, tickCount);
+    //just make sure target is still in combat with caster
+    INTERNAL_ASSERT_INFO("Caster is not in combat with spell target.");
+    INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
 
-    float const threatDone = target->GetThreatManager().GetThreat(caster);
-    float const expectedTotalThreat = (dealtMin + otDamageToTarget) * expectedThreat;
+    int32 totalDamage = spellTargetStartingHealth - spellTarget->GetHealth();
+    INTERNAL_ASSERT_INFO("No damage or heal done to target");
+    INTERNAL_TEST_ASSERT(totalDamage != 0);
 
-    INTERNAL_ASSERT_INFO("Enforcing threat for overtime spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, threatDone);
-    INTERNAL_TEST_ASSERT(Between<float>(threatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
+    float const actualThreatDone = target->GetThreatManager().GetThreat(caster) - startThreat;
+    float const expectedTotalThreat = std::abs(totalDamage) * expectedThreatFactor;
+
+    INTERNAL_ASSERT_INFO("Enforcing threat for overtime spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, actualThreatDone);
+    INTERNAL_TEST_ASSERT(Between<float>(actualThreatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
+
+    //Cleanup
+    target->GetThreatManager().ResetThreat(caster);
+    target->GetThreatManager().AddThreat(caster, startThreat);
+    caster->RemoveAurasDueToSpell(spellID);
+    target->RemoveAurasDueToSpell(spellID);
+    spellTarget->SetHealth(spellTargetStartingHealth);
+    spellTarget->SetMaxHealth(spellTargetStartingMaxHealth);
 }
 
 void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 expectedTickCount, int32 expectedTickAmount, bool healing /* = false*/)
@@ -1207,7 +1179,7 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
     AI->ResetSpellCounters();
     caster->ForceSpellHitResult(SPELL_MISS_NONE);
     EnableCriticals(caster, false);
-    uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+    uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_TARGET_AURASTATE));
     caster->ForceSpellHitResult(previousForceHitResult);
     if (result != SPELL_CAST_OK)
     {
@@ -1279,7 +1251,7 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
     uint32 startingHealth = victim->GetHealth();
     uint32 startingMaxHealth = victim->GetMaxHealth();
 
-    victim->SetMaxHealth(std::numeric_limits<uint32>::max());
+    victim->SetMaxHealth(std::numeric_limits<int32>::max());
 
     float const absoluteTolerance = 0.02f;
     uint32 sampleSize;

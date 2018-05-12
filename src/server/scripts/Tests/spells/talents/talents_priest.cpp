@@ -51,8 +51,10 @@ public:
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            _location.MoveInFront(_location, 5.0f);
             TestPlayer* enemy = SpawnPlayer(CLASS_PRIEST, RACE_TROLL);
-            Creature* dummy = SpawnCreature(18); // Humanoid
+            _location.MoveInFront(_location, 5.0f);
+            Creature* dummy = SpawnCreature();
 
             LearnTalent(priest, Talents::Priest::SILENT_RESOLVE_RNK_5);
             float const threatReductionFactor = 1.0f - 0.2f;
@@ -61,19 +63,19 @@ public:
             // Threat of Discipline and Holy
             // TODO: Power Word: Shield
             //TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::BINDING_HEAL_RNK_1, 0.5f * healThreatFactor);
-            TEST_DOT_THREAT(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, threatReductionFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, threatReductionFactor, false);
             //TEST_DIRECT_SPELL_THREAT(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, threatFactor);
-            TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, healThreatFactor);
-            TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, healThreatFactor);
-            TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::FLASH_HEAL_RNK_9, healThreatFactor);
-            TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::GREATER_HEAL_RNK_7, healThreatFactor);
-            TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::HEAL_RNK_4, healThreatFactor);
-            TEST_DOT_THREAT(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, threatReductionFactor, true);
-            TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::LESSER_HEAL_RNK_3, healThreatFactor);
-            TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, healThreatFactor);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::FLASH_HEAL_RNK_9, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::GREATER_HEAL_RNK_7, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::HEAL_RNK_4, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, threatReductionFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::LESSER_HEAL_RNK_3, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, healThreatFactor, true);
             //TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, healThreatFactor);
-            TEST_HOT_THREAT(priest, dummy, ClassSpells::Priest::RENEW_RNK_12, healThreatFactor, false);
-            TEST_DIRECT_SPELL_THREAT(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, threatReductionFactor);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::RENEW_RNK_12, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, threatReductionFactor, false);
 
             // TODO: Resist dispell of all spells
         }
