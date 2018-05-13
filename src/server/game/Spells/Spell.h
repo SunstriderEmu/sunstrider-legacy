@@ -769,7 +769,7 @@ class TC_GAME_API Spell
         // and in same time need aura data and after aura deleting.
         SpellInfo const* m_triggeredByAuraSpell;
         // used in effects handlers
-        Unit* unitCaster;
+        Unit* _unitCaster; //renamed from TC unitCaster to _unitCaster, until they fixes all their variables hiding this class member (couldn't fix the warnings and then update code from TC safely)
         UnitAura* _spellAura;
         DynObjAura* _dynObjAura;
 
