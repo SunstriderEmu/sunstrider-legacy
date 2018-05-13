@@ -354,6 +354,7 @@ protected:
     PlayerbotTestingAI* _GetCasterAI(Unit*& caster);
     //Get SpellInfo, fails test if not found
     SpellInfo const* _GetSpellInfo(uint32 spellID);
+    void _UpdateUnitEvents(Unit* unit);
 
 private:
     std::string              _testName;

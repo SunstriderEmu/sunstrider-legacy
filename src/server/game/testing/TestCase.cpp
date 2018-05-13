@@ -1433,6 +1433,17 @@ SpellInfo const* TestCase::_GetSpellInfo(uint32 spellID)
     return spellInfo;
 }
 
+void TestCase::_UpdateUnitEvents(Unit* unit)
+{
+    //this function actually exists just to have this comment not repeated all over the place:
+
+    //Currently, channeled spells start at the next update so we need to wait for it to be applied.
+    //We can't loop on spells thousands of times if we need to wait each time...
+    //So we force a SpellEvent update to help with it
+    //If this isn't true anymore, this function and all its call can be deleted
+    unit->m_Events.Update(1);
+}
+
 void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float expectedResultPercent)
 {
     _EnsureAlive(caster, target);
@@ -1495,14 +1506,6 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
     _EnsureAlive(caster, target);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
-    if (spellInfo->IsChanneled())
-    {
-        //Currently, channeled spells start at the next update so we need to wait for it to be applied.
-        //We can't loop on spells thousands of times if we need to wait each time...
-        //Remove this line if block if spell system has changed and this is not true
-        return;
-    }
-
     uint32 targetStartingHealth = target->GetHealth();
     uint32 targetStartingMaxHealth = target->GetMaxHealth();
     target->SetMaxHealth(std::numeric_limits<int32>::max());
@@ -1515,7 +1518,8 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
         target->SetFullHealth();
 
         _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
-
+        if (spellInfo->IsChanneled())
+            _UpdateUnitEvents(caster);
         INTERNAL_ASSERT_INFO("TestCase::_TestSpellDispelResist target has not aura of %u after cast", spellID);
         INTERNAL_TEST_ASSERT(target->HasAura(spellID));
         _ForceCast(dispeler, target, /*ClassSpells::Priest::DISPEL_MAGIC_RNK_1*/ 527, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);

@@ -2305,8 +2305,8 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     if (targetInfo.MissCondition == SPELL_MISS_REFLECT)
     {
         // Calculate reflected spell result on caster (shouldn't be able to reflect gameobject spells)
-        Unit* caster = ASSERT_NOTNULL(m_caster->ToUnit());
-        targetInfo.ReflectResult = caster->SpellHitResult(caster, m_spellInfo, false); // can't reflect twice
+        Unit* uCaster = ASSERT_NOTNULL(m_caster->ToUnit());
+        targetInfo.ReflectResult = uCaster->SpellHitResult(uCaster, m_spellInfo, false); // can't reflect twice
 
         if (targetInfo.ReflectResult == SPELL_MISS_REFLECT)     // Impossible reflect again, so simply deflect spell
             targetInfo.ReflectResult = SPELL_MISS_PARRY;
@@ -2759,9 +2759,9 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
         // Failed Pickpocket, reveal rogue
         if (MissCondition == SPELL_MISS_RESIST && spell->m_spellInfo->HasAttribute(SPELL_ATTR0_CU_PICKPOCKET) && spell->unitTarget->GetTypeId() == TYPEID_UNIT)
         {
-            Unit* caster = ASSERT_NOTNULL(spell->m_caster->ToUnit());
-            caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
-            spell->unitTarget->ToCreature()->EngageWithTarget(caster);
+            Unit* uCaster = ASSERT_NOTNULL(spell->m_caster->ToUnit());
+            uCaster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
+            spell->unitTarget->ToCreature()->EngageWithTarget(uCaster);
         }
 #ifdef TESTS
         if (Player* p = spell->m_caster->GetCharmerOrOwnerPlayerOrPlayerItself())
@@ -2795,8 +2795,8 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
     if (MissCondition != SPELL_MISS_EVADE && _spellHitTarget && !spell->m_caster->IsFriendlyTo(unit) && (!spell->IsPositive() || spell->m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
     {
         if (!spell->IsTriggered()) //sun: prevent triggered spells to trigger pvp... a frost armor proc is not an offensive action
-            if (Unit* caster = spell->m_caster->ToUnit())
-                caster->AttackedTarget(unit, spell->m_spellInfo->HasInitialAggro());
+            if (Unit* uCaster = spell->m_caster->ToUnit())
+                uCaster->AttackedTarget(unit, spell->m_spellInfo->HasInitialAggro());
 
         if (!unit->IsStandState())
             unit->SetStandState(UNIT_STAND_STATE_STAND);
