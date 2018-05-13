@@ -12,6 +12,9 @@
 #include "WorldPacket.h"
 #include "GossipDef.h"
 #include "World.h"
+#ifdef TESTS
+#include "TestPlayer.h"
+#endif
 
 Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES)
 {
@@ -83,11 +86,18 @@ bool Corpse::Create(ObjectGuid::LowType guidlow, Player *owner)
 
     _cellCoord = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
 
+#ifdef TESTS
+    if (dynamic_cast<TestPlayer*>(owner))
+        _noDatabaseSave = true;
+#endif
     return true;
 }
 
 void Corpse::SaveToDB()
 {
+    if (_noDatabaseSave)
+        return;
+
     // prevent DB data inconsistance problems and duplicates
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     DeleteFromDB(trans);

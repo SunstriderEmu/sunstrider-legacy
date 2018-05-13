@@ -65,6 +65,7 @@ class TC_GAME_API Corpse : public WorldObject, public GridObject<Corpse>
         CorpseType m_type;
         time_t m_time;
 		CellCoord _cellCoord;
+        bool _noDatabaseSave = false;
 };
 #endif
 

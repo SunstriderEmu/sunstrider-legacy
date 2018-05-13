@@ -5886,7 +5886,7 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 
 void Player::SaveRecallPosition()
 {
-    m_recall_location.WorldRelocate(*this); }
+    m_recall_location.WorldRelocate(*this);
 }
 
 void Player::SendMessageToSet(WorldPacket const* data, bool self)
