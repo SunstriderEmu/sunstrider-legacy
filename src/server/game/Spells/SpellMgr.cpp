@@ -515,36 +515,46 @@ void SpellMgr::LoadSpellAffects()
     for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
     {
         uint32 id = itr->first;
+
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
         if (!spellInfo)
             continue;
 
-        auto range = mSpellAffectMap.equal_range(id);
-        for (int effectId = 0; effectId < MAX_SPELL_EFFECTS; ++effectId)
+        SpellInfo const* firstSpellInfo = spellInfo->GetFirstRankSpell(); //never nullptr
+
+        auto missesAffect = [&](uint32 id, uint8& effIndex) 
         {
-            if( spellInfo->Effects[effectId].Effect != SPELL_EFFECT_APPLY_AURA ||
-                (spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_FLAT_MODIFIER &&
-                spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_PCT_MODIFIER  &&
-                spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_TARGET_TRIGGER) )
-                continue;
-
-            if(spellInfo->Effects[effectId].ItemType != 0)
-                continue;
-
-            bool found = true;
-            for (auto itr2 = range.first; itr2 != range.second; ++itr2)
+            auto range = mSpellAffectMap.equal_range(id);
+            for (int effectId = 0; effectId < MAX_SPELL_EFFECTS; ++effectId)
             {
-                uint8 effectIndex = itr2->second.first;
-                if (effectIndex == effectId)
+                if (spellInfo->Effects[effectId].Effect != SPELL_EFFECT_APPLY_AURA ||
+                    (spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_FLAT_MODIFIER &&
+                        spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_PCT_MODIFIER &&
+                        spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_TARGET_TRIGGER))
+                    continue;
+
+                if (spellInfo->Effects[effectId].ItemType != 0)
+                    continue;
+
+                bool found = false;
+                for (auto itr2 = range.first; itr2 != range.second; ++itr2)
                 {
-                    found = true;
-                    break;
+                    effIndex = itr2->second.first;
+                    if (effIndex == effectId)
+                    {
+                        found = true;
+                        break;
+                    }
                 }
+                if (!found)
+                    return true;
             }
-            
-            if(!found)
-                TC_LOG_ERROR("server.loading","Spell %u (%s) misses spell_affect for effect %u", id, spellInfo->SpellName[sWorld->GetDefaultDbcLocale()], effectId);
-        }
+            return false;
+        };
+
+        uint8 effIndex;
+        if(missesAffect(id, effIndex) && missesAffect(firstSpellInfo->Id, effIndex))
+            TC_LOG_ERROR("server.loading", "Spell %u (%s) misses spell_affect for effect %u", id, spellInfo->SpellName[sWorld->GetDefaultDbcLocale()], effIndex);
     }
 
     //fill SpellInfo
@@ -565,10 +575,21 @@ void SpellMgr::LoadSpellAffects()
             continue;
         }
         spellInfo->Effects[effect].SpellClassMask = familyMask;
+        //if first rank, also fill other ranks
+        if (spellInfo->ChainEntry && spellInfo->ChainEntry->first == spellInfo)
+        {
+            SpellInfo const* next = spellInfo->ChainEntry->next;
+            do
+            {
+                SpellInfo* nextSpellInfo = sSpellMgr->_GetSpellInfo(next->Id);
+                ASSERT(nextSpellInfo);
+                if (!nextSpellInfo->Effects[effect].SpellClassMask)
+                    nextSpellInfo->Effects[effect].SpellClassMask = spellInfo->Effects[effect].SpellClassMask;
+            } while (next = next->ChainEntry->next);
+        }
     }
     TC_LOG_INFO("server.loading", ">> Loaded %u spell affect definitions", count);
 }
-
 
 void SpellMgr::LoadSpellProcs()
 {
