@@ -2742,9 +2742,9 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
                 p->GetPlayerbotAI()->CastedDamageSpell(spell->unitTarget, damageInfo, MissCondition, IsCrit);
 #endif
     }
-
     // Passive spell hits/misses or active spells only misses (only triggers)
-    if (spell->m_damage <= 0 && spell->m_healing <= 0)
+    // sun: added the 'else', we don't want to do both the first if and this one. This can happen if damage is entirely absorbed.
+    else if (spell->m_damage <= 0 && spell->m_healing <= 0)
     {
         // Fill base damage struct (unitTarget - is real spell target)
         SpellNonMeleeDamage damageInfo(caster, spell->unitTarget, spell->m_spellInfo->Id, spell->m_spellSchoolMask);
