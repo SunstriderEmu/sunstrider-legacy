@@ -2597,7 +2597,7 @@ public:
             Position spawn(_location);
             spawn.MoveInFront(spawn, 20.0f);
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
-            warrior->SetMaxHealth(std::numeric_limits<int32>::max());
+            warrior->SetMaxHealth(std::numeric_limits<uint32>::max());
             warrior->SetFullHealth();
 
             EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP

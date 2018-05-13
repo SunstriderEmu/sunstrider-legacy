@@ -268,6 +268,10 @@ namespace ClassSpellsDamage
             HOLY_FIRE_RNK_9_MIN = 426,
             HOLY_FIRE_RNK_9_MAX = 537,
             HOLY_FIRE_RNK_9_TOTAL = 165,
+            HOLY_NOVA_RNK_7_MIN = 242,
+            HOLY_NOVA_RNK_7_MAX = 282,
+            HOLY_NOVA_RNK_7_MIN_LVL_70 = 244,
+            HOLY_NOVA_RNK_7_MAX_LVL_70 = 284,
             LESSER_HEAL_RNK_3_MIN = 135,
             LESSER_HEAL_RNK_3_MAX = 158,
             PRAYER_OF_HEALING_RNK_6_MIN = 1251,
@@ -301,6 +305,9 @@ namespace ClassSpellsDamage
 	{
 		enum Shaman
 		{
+            // Elemental
+            EARTH_SHOCK_RNK_8_MIN = 658,
+            EARTH_SHOCK_RNK_8_MAX = 693,
 		};
 	};
 

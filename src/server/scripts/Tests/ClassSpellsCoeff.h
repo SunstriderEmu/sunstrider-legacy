@@ -99,7 +99,7 @@ namespace ClassSpellsCoeff
         const float HEAL = 0.551f;
 		const float HOLY_FIRE = 0.8571f;
 		const float HOLY_FIRE_DOT = 0.165f;
-		const float HOLY_NOVA = 0.16f; // Damage & Heal
+		const float HOLY_NOVA = 0.163f; // Damage & Heal
 		const float PRAYER_OF_HEALING = 0.4285f;
 		const float PRAYER_OF_MENDING = 0.4286f;
 		const float RENEW = 1.0f;
