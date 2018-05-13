@@ -1142,9 +1142,8 @@ public:
             EnableCriticals(druid, crit);
             TEST_CAST(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_RNK_4, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             Wait(11000); //wait for all ticks
-            uint32 dealtMin, dealtMax;
             //FR actually triggers this healing spell at each tick
-            GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_TRIGGER, dealtMin, dealtMax, crit, 10);
+            auto [dealtMin, dealtMax] = GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::FRENZIED_REGENERATION_TRIGGER, crit, 10);
             TEST_ASSERT(dealtMin == dealtMax);
             TEST_ASSERT(expected == dealtMin);
         }
@@ -2007,8 +2006,7 @@ public:
 
             TEST_CAST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
             Wait(8000);
-            uint32 dealtMin, dealtMax;
-            GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1_FINAL_PROC, dealtMin, dealtMax, crit, 1);
+            auto [dealtMin, dealtMax] = GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1_FINAL_PROC, crit, 1);
 
             ASSERT_INFO("dealtMin %u == expectedBloom %u", dealtMin, expectedBloom);
             TEST_ASSERT(dealtMin == expectedBloom);

@@ -791,9 +791,9 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     uint32 dealtMin;
     uint32 dealtMax;
     if(damage)
-        GetDamagePerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
+        std::tie(dealtMin, dealtMax) = GetDamagePerSpellsTo(casterOwner, target, spellID, crit, sampleSize);
     else 
-        GetHealingPerSpellsTo(casterOwner, target, spellID, dealtMin, dealtMax, crit, sampleSize);
+        std::tie(dealtMin, dealtMax) = GetHealingPerSpellsTo(casterOwner, target, spellID, crit, sampleSize);
 
     TC_LOG_TRACE("test.unit_test", "spellId: %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", spellID, dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
 
@@ -845,9 +845,7 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     }
     caster->ForceMeleeHitResult(previousForceMeleeResult);
 
-    uint32 dealtMin;
-    uint32 dealtMax;
-    GetWhiteDamageDoneTo(caster, target, attackType, crit, dealtMin, dealtMax, sampleSize);
+    auto [dealtMin, dealtMax] = GetWhiteDamageDoneTo(caster, target, attackType, crit, sampleSize);
 
     //TC_LOG_DEBUG("test.unit_test", "attackType: %u - crit %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", uint32(attackType), uint32(crit), dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
 
@@ -914,8 +912,7 @@ uint32 TestCase::GetChannelDamageTo(Unit* caster, Unit* victim, uint32 spellID, 
         return dotDmg;
     }
 
-    uint32 dealtMin, dealtMax;
-    GetDamagePerSpellsTo(caster, victim, spellID, dealtMin, dealtMax, crit, expectedTickCount);
+    auto [dealtMin, dealtMax] = GetDamagePerSpellsTo(caster, victim, spellID, crit, expectedTickCount);
     INTERNAL_ASSERT_INFO("dealtMin %u != dealtMax %u", dealtMin, dealtMax);
     INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
 
@@ -924,20 +921,19 @@ uint32 TestCase::GetChannelDamageTo(Unit* caster, Unit* victim, uint32 spellID, 
 
 uint32 TestCase::GetChannelHealingTo(Unit* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit)
 {
-    uint32 dealtMin, dealtMax;
-    GetHealingPerSpellsTo(caster, target, spellID, dealtMin, dealtMax, crit, expectedTickCount);
+    auto [dealtMin, dealtMax] = GetHealingPerSpellsTo(caster, target, spellID, crit, expectedTickCount);
     INTERNAL_ASSERT_INFO("dealtMin %u != dealtMax %u", dealtMin, dealtMax);
     INTERNAL_TEST_ASSERT(dealtMin == dealtMax);
 
     return dealtMin * expectedTickCount;
 }
 
-void TestCase::GetHealingPerSpellsTo(Unit* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount)
+std::pair<uint32 /*minHeal*/, uint32 /*maxHeal*/> TestCase::GetHealingPerSpellsTo(Unit* caster, Unit* target, uint32 spellID, Optional<bool> crit, uint32 expectedCount)
 {
     auto healingToTarget = GetHealingDoneInfoTo(caster, target, spellID);
 
-    minHeal = std::numeric_limits<uint32>::max();
-    maxHeal = 0;
+    uint32 minHeal = std::numeric_limits<uint32>::max();
+    uint32 maxHeal = 0;
 
     uint32 count = 0;
     for (auto itr : healingToTarget)
@@ -963,9 +959,10 @@ void TestCase::GetHealingPerSpellsTo(Unit* caster, Unit* target, uint32 spellID,
         INTERNAL_ASSERT_INFO("GetHealingPerSpellsTo did find data for spell %u and target %s, but not expected count (%u instead of %u)", spellID, target->GetName().c_str(), count, expectedCount);
         INTERNAL_TEST_ASSERT(count == expectedCount);
     }
+    return std::make_pair(minHeal, maxHeal);
 }
 
-void TestCase::GetWhiteDamageDoneTo(Unit* caster, Unit* victim, WeaponAttackType attackType, bool critical, uint32& minDamage, uint32& maxDamage, uint32 expectedCount)
+std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> TestCase::GetWhiteDamageDoneTo(Unit* caster, Unit* victim, WeaponAttackType attackType, bool critical, uint32 expectedCount)
 {
     auto AI = _GetCasterAI(caster);
 
@@ -973,8 +970,8 @@ void TestCase::GetWhiteDamageDoneTo(Unit* caster, Unit* victim, WeaponAttackType
     INTERNAL_ASSERT_INFO("GetWhiteDamageDoneTo found no data for this victim (%s)", victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
-    minDamage = std::numeric_limits<uint32>::max();
-    maxDamage = 0;
+    uint32 minDamage = std::numeric_limits<uint32>::max();
+    uint32 maxDamage = 0;
 
     //uint64 totalDamage = 0;
     uint32 count = 0;
@@ -1019,14 +1016,15 @@ void TestCase::GetWhiteDamageDoneTo(Unit* caster, Unit* victim, WeaponAttackType
         INTERNAL_ASSERT_INFO("GetWhiteDamageDoneTo did find data for target %s, but not expected count (%u instead of %u)", victim->GetName().c_str(), count, expectedCount);
         INTERNAL_TEST_ASSERT(count == expectedCount);
     }
+    return std::make_pair(minDamage, maxDamage);
 }
 
-void TestCase::GetDamagePerSpellsTo(Unit* caster, Unit* victim, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount)
+std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> TestCase::GetDamagePerSpellsTo(Unit* caster, Unit* victim, uint32 spellID, Optional<bool> crit, uint32 expectedCount)
 {
     auto damageToTarget = GetSpellDamageDoneInfoTo(caster, victim, spellID);
 
-    minDamage = std::numeric_limits<uint32>::max();
-    maxDamage = 0;
+    uint32 minDamage = std::numeric_limits<uint32>::max();
+    uint32 maxDamage = 0;
 
     //uint64 totalDamage = 0;
     uint32 count = 0;
@@ -1060,6 +1058,7 @@ void TestCase::GetDamagePerSpellsTo(Unit* caster, Unit* victim, uint32 spellID, 
         INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo did find data for spell %u and target %s, but not expected count (%u instead of %u)", spellID, victim->GetName().c_str(), count, expectedCount);
         INTERNAL_TEST_ASSERT(count == expectedCount);
     }
+    return std::make_pair(minDamage, maxDamage);
 }
 
 void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit)

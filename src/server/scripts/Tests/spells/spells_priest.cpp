@@ -1133,8 +1133,8 @@ public:
             uint32 maxHealToRogue;
             uint32 minHealToPriest;
             uint32 maxhealToPriest;
-            GetHealingPerSpellsTo(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, minHealToRogue, maxHealToRogue, {});
-            GetHealingPerSpellsTo(priest, priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, minHealToPriest, maxhealToPriest, {});
+            auto [minHealToRogue, maxHealToRogue] = GetHealingPerSpellsTo(priest, rogue, ClassSpells::Priest::BINDING_HEAL_RNK_1, {});
+            auto [minHealToPriest, maxhealToPriest] = GetHealingPerSpellsTo(priest, priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, {});
 
             ASSERT_INFO("min heal %u - %u", minHealToRogue, minHealToPriest);
             TEST_ASSERT(minHealToRogue == minHealToPriest);

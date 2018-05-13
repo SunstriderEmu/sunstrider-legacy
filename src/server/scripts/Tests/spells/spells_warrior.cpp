@@ -450,9 +450,7 @@ public:
                 warrior->SetFullHealth();
             }
 
-            uint32 givenMin;
-            uint32 givenMax;
-            GetDamagePerSpellsTo(warrior, enemy, ClassSpells::Warrior::RETALIATION_RNK_1_PROC, givenMin, givenMax, false);
+            auto [givenMin, givenMax] = GetDamagePerSpellsTo(warrior, enemy, ClassSpells::Warrior::RETALIATION_RNK_1_PROC, false);
             TC_LOG_TRACE("test.unit_test", "givenMin: %u, givenMax: %u, expectedMin: %u, expectedMax: %u", givenMin, givenMax, expectedMin, expectedMax);
             TEST_ASSERT(givenMin < expectedMax);
             TEST_ASSERT(givenMax > expectedMin);

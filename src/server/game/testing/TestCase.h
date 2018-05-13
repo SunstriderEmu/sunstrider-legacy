@@ -251,11 +251,11 @@ public:
     //Get raw healing data from caster (+ pets) to target with spellID
     std::vector<PlayerbotTestingAI::HealingDoneInfo> GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID);
     //crit: get only spells that made crit / only spells that did not
-    void GetDamagePerSpellsTo(Unit* caster, Unit* to, uint32 spellID, uint32& minDamage, uint32& maxDamage, Optional<bool> crit, uint32 expectedCount = 0);
+    std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> GetDamagePerSpellsTo(Unit* caster, Unit* to, uint32 spellID, Optional<bool> crit, uint32 expectedCount = 0);
     //crit: get only spells that made crit / only spells that did not
-    void GetHealingPerSpellsTo(Unit* caster, Unit* target, uint32 spellID, uint32& minHeal, uint32& maxHeal, Optional<bool> crit, uint32 expectedCount = 0);
+    std::pair<uint32 /*minHeal*/, uint32 /*maxHeal*/> GetHealingPerSpellsTo(Unit* caster, Unit* target, uint32 spellID, Optional<bool> crit, uint32 expectedCount = 0);
     
-    void GetWhiteDamageDoneTo(Unit* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32& minDealt, uint32& maxDealt, uint32 expectedCount = 0);
+    std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> GetWhiteDamageDoneTo(Unit* caster, Unit* target, WeaponAttackType attackType, bool critical, uint32 expectedCount = 0);
     //return total channel damage done
     uint32 GetChannelDamageTo(Unit* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit);
     //return total channel heal done
