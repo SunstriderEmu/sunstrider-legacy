@@ -644,6 +644,7 @@ bool ChatHandler::HandleDebugThreatListCommand(const char * args)
                 PSendSysMessage("%s (GUID %u, SpawnID %u) is not engaged, but still has a threat list? Well, here it is:", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
 
             count = 0;
+            Unit* fixtateVictim = mgr.GetFixateTarget();
             for (ThreatReference const* ref : mgr.GetSortedThreatList())
             {
                 Unit* unit = ref->GetVictim();
@@ -660,17 +661,20 @@ bool ChatHandler::HandleDebugThreatListCommand(const char * args)
                     onlineStr = "";
                 }
                 char const* tauntStr;
-                switch (ref->GetTauntState())
-                {
-                case ThreatReference::TAUNT_STATE_TAUNT:
-                    tauntStr = " [TAUNT]";
-                    break;
-                case ThreatReference::TAUNT_STATE_DETAUNT:
-                    tauntStr = " [DETAUNT]";
-                    break;
-                default:
-                    tauntStr = "";
-                }
+                if (unit == fixtateVictim)
+                    tauntStr = " [FIXTATE]";
+                else
+                    switch (ref->GetTauntState())
+                    {
+                    case ThreatReference::TAUNT_STATE_TAUNT:
+                        tauntStr = " [TAUNT]";
+                        break;
+                    case ThreatReference::TAUNT_STATE_DETAUNT:
+                        tauntStr = " [DETAUNT]";
+                        break;
+                    default:
+                        tauntStr = "";
+                    }
                 PSendSysMessage("   %u.   %s   (GUID %u)  - threat %f%s%s", ++count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), ref->GetThreat(), tauntStr, onlineStr);
             }
             SendSysMessage("End of threat list.");
