@@ -8,6 +8,7 @@
 #include "CharacterCache.h"
 #include "SpellHistory.h"
 #include "SpellAuraEffects.h"
+//#include "ClassSpells.h" //I'm avoiding including this for now since it is changed often and will break script rebuild it is modified and TestCase.cpp has to be rebuilt too
 
 #include <boost/math/special_functions/erf.hpp>
 #include <algorithm>
@@ -1361,7 +1362,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     uint32 startingHealth = victim->GetHealth();
     uint32 startingMaxHealth = victim->GetMaxHealth();
 
-    victim->SetMaxHealth(std::numeric_limits<uint32>::max());
+    victim->SetMaxHealth(std::numeric_limits<int32>::max());
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
 
@@ -1480,17 +1481,59 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
         HandleThreadPause();
     }
 
-    attackingUnit->ForceMeleeHitResult(previousForceHit);
-    caster->SetHealth(startingHealth);
-
-    float actualResistPercent = 100 * (1 - (pushbackCount / float(sampleSize)));
+    float actualResistPercent = 100.0f * (1 - (pushbackCount / float(sampleSize)));
     INTERNAL_ASSERT_INFO("_TestPushBackResistChance on spell %u: expected result: %f, result: %f", spellID, expectedResultPercent, actualResistPercent);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
+
+    //restoring
+    attackingUnit->ForceMeleeHitResult(previousForceHit);
+    caster->SetHealth(startingHealth);
 }
 
-void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance)
+void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float expectedResultPercent)
 {
-    //To implement
+    _EnsureAlive(caster, target);
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
+
+    if (spellInfo->IsChanneled())
+    {
+        //Currently, channeled spells start at the next update so we need to wait for it to be applied.
+        //We can't loop on spells thousands of times if we need to wait each time...
+        //Remove this line if block if spell system has changed and this is not true
+        return;
+    }
+
+    uint32 targetStartingHealth = target->GetHealth();
+    uint32 targetStartingMaxHealth = target->GetMaxHealth();
+    target->SetMaxHealth(std::numeric_limits<int32>::max());
+
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
+
+    uint32 resistedCount = 0;
+    for (uint32 i = 0; i < sampleSize; i++)
+    {
+        target->SetFullHealth();
+
+        _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+
+        INTERNAL_ASSERT_INFO("TestCase::_TestSpellDispelResist target has not aura of %u after cast", spellID);
+        INTERNAL_TEST_ASSERT(target->HasAura(spellID));
+        _ForceCast(dispeler, target, /*ClassSpells::Priest::DISPEL_MAGIC_RNK_1*/ 527, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+        resistedCount += uint32(target->HasAura(spellID));
+
+        target->ClearDiminishings();
+        target->RemoveAurasDueToSpell(spellID);
+
+        HandleThreadPause();
+    }
+
+    float actualResistPercent = 100.0f * (resistedCount / float(sampleSize));
+    INTERNAL_ASSERT_INFO("_TestSpellDispelResist on spell %u: expected result: %f, result: %f", spellID, expectedResultPercent, actualResistPercent);
+    INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
+
+    //Restore
+    target->SetMaxHealth(targetStartingMaxHealth);
+    target->SetHealth(targetStartingHealth);
 }
 
 void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
@@ -1502,7 +1545,7 @@ void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType 
     uint32 startingHealth = victim->GetHealth();
     uint32 startingMaxHealth = victim->GetMaxHealth();
 
-    victim->SetMaxHealth(std::numeric_limits<uint32>::max());
+    victim->SetMaxHealth(std::numeric_limits<int32>::max());
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
@@ -1781,7 +1824,7 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
     uint32 startingHealth = victim->GetHealth();
     uint32 startingMaxHealth = victim->GetMaxHealth();
 
-    victim->SetMaxHealth(std::numeric_limits<uint32>::max());
+    victim->SetMaxHealth(std::numeric_limits<int32>::max());
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 

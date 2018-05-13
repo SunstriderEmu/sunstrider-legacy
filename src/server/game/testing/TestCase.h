@@ -237,9 +237,14 @@ public:
     chance: 0-100
     */
     #define TEST_SPELL_PROC_CHANCE(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, {}); _ResetCaller(); }
-    //same but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>    
+    /* Same as TEST_SPELL_PROC_CHANCE but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>    
+    chance: 0 - 100
+    */
     #define TEST_SPELL_PROC_CHANCE_CALLBACK(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, Optional<TestCallback>(callback)); _ResetCaller(); }
-    //caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
+
+    /* caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
+    chance: 0-100
+    */
     #define TEST_SPELL_DISPEL_RESIST_CHANCE(caster, target, dispeler, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance); _ResetCaller(); }
 
     /* Test how much of the time a cast pushback is resisted (against melee attacks). Target will also be the one attacking the caster.
