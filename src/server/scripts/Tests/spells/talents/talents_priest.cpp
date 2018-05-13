@@ -1,5 +1,6 @@
 #include "../../ClassSpellsDamage.h"
 #include "../../ClassSpellsCoeff.h"
+#include "SpellHistory.h"
 
 class PriestWandSpecializationTest : public TestCaseScript
 {
@@ -76,6 +77,7 @@ public:
             TEST_THREAT(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, threatReductionFactor, false);
 
             // TODO: Resist dispell of all spells
+            // Don't forget Pain Suppression with 65 dispel resist
         }
     };
 
@@ -639,7 +641,7 @@ public:
             // Smite
             uint32 const expectedSmiteMin = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN * talentDamageFactor;
             uint32 const expectedSmiteMax = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX * talentDamageFactor;
-            //TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, expectedSmiteMin, expectedSmiteMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, expectedSmiteMin, expectedSmiteMax, false);
             // Holy Fire -- Direct
             uint32 const expectedHolyFireMin = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MIN * talentDamageFactor;
             uint32 const expectedHolyFireMax = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MAX * talentDamageFactor;
@@ -729,7 +731,7 @@ public:
             uint8 auraStack = 0;
             if (priest->HasAura(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER))
             {
-                Aura* aura = priest->GetAura(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER);
+                aura = priest->GetAura(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER);
                 TEST_ASSERT(aura != nullptr);
                 auraStack = aura->GetStackAmount();
             }
@@ -799,7 +801,7 @@ public:
     class ReflectiveShieldTestImpt : public TestCase
     {
     public:
-        ReflectiveShieldTestImpt() : TestCase(STATUS_WIP) { }
+        ReflectiveShieldTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -808,42 +810,132 @@ public:
             spawn.MoveInFront(_location, 5.f);
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL, 70, spawn);
             spawn.MoveInFront(spawn, 5.f);
-            TestPlayer* ennemyMage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
-            EnableCriticals(ennemyMage, false);
-            ennemyMage->DisableRegeneration(true);
+            TestPlayer* enemyMage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
+            EnableCriticals(enemyMage, false);
+            enemyMage->DisableRegeneration(true);
 
             LearnTalent(priest, Talents::Priest::REFLECTIVE_SHIELD_RNK_5);
 
-            Wait(3000);
-
             // Patch 2.4: Reflective Shield will no longer break crowd control effects.
+            // Enemy casts on Priest and gets polymorphed before the spell hits the reflective shield
             TEST_CAST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             TEST_HAS_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
-            FORCE_CAST(ennemyMage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-            FORCE_CAST(mage, ennemyMage, ClassSpells::Mage::POLYMORPH_RNK_4, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+            FORCE_CAST(enemyMage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            FORCE_CAST(mage, enemyMage, ClassSpells::Mage::POLYMORPH_RNK_4, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
             WaitNextUpdate();
-            TEST_HAS_AURA(ennemyMage, ClassSpells::Mage::POLYMORPH_RNK_4);
-            Wait(5000);
-            ennemyMage->RemoveAurasDueToSpell(ClassSpells::Mage::POLYMORPH_RNK_4);
+            TEST_HAS_AURA(enemyMage, ClassSpells::Mage::POLYMORPH_RNK_4);
+            enemyMage->RemoveAurasDueToSpell(ClassSpells::Mage::POLYMORPH_RNK_4);
 
             // Reflects 50% of damage
             TEST_HAS_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
-            uint32 enemyMageStartingHealth = ennemyMage->GetHealth();
-
-            FORCE_CAST(ennemyMage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
-            uint32 minDamage;
-            uint32 maxDamage;
-            // FIXME: Ice lance logged two times when completely absorbed
-            GetDamagePerSpellsTo(ennemyMage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, minDamage, maxDamage, false, 1);
-            TEST_ASSERT(minDamage == maxDamage);
-            uint32 enemyMageExpectedHealth = enemyMageStartingHealth - minDamage * 0.5f;
-            TEST_ASSERT(ennemyMage->GetHealth() == enemyMageExpectedHealth);
+            uint32 enemyMageStartingHealth = enemyMage->GetHealth();
+            FORCE_CAST(enemyMage, priest, ClassSpells::Mage::SCORCH_RNK_9, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+            auto[dealtMin, dealtMax] = GetDamagePerSpellsTo(enemyMage, priest, ClassSpells::Mage::SCORCH_RNK_9, false, 1);
+            TEST_ASSERT(dealtMin == dealtMax);
+            uint32 enemyMageExpectedHealth = enemyMageStartingHealth - floor(dealtMin * 0.5f);
+            ASSERT_INFO("Mage should have %u HP but has %u HP.", enemyMageExpectedHealth, enemyMage->GetHealth());
+            TEST_ASSERT(enemyMage->GetHealth() == enemyMageExpectedHealth);
         }
     };
 
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<ReflectiveShieldTestImpt>();
+    }
+};
+
+class EnlightmentTest : public TestCaseScript
+{
+public:
+
+    EnlightmentTest() : TestCaseScript("talents priest enlightment") { }
+
+    class EnlightmentTestImpt : public TestCase
+    {
+    public:
+        EnlightmentTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            float const talentFactor = 1.05f;
+
+            uint32 expectedSpirit = priest->GetStat(STAT_SPIRIT) * talentFactor;
+            uint32 expectedStamina = priest->GetStat(STAT_STAMINA) * talentFactor;
+            uint32 expectedIntellect = priest->GetStat(STAT_INTELLECT) * talentFactor;
+
+            LearnTalent(priest, Talents::Priest::ENLIGHTENMENT_RNK_5);
+
+            TEST_ASSERT(priest->GetStat(STAT_SPIRIT) == expectedSpirit);
+            TEST_ASSERT(priest->GetStat(STAT_STAMINA) == expectedStamina);
+            TEST_ASSERT(priest->GetStat(STAT_INTELLECT) == expectedIntellect);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<EnlightmentTestImpt>();
+    }
+};
+
+class PainSuppressionTest : public TestCaseScript
+{
+public:
+
+    PainSuppressionTest() : TestCaseScript("talents priest pain_suppression") { }
+
+    class PainSuppressionTestImpt : public TestCase
+    {
+    public:
+        PainSuppressionTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            float const talentDamageTakenFactor = 0.6f;
+            float const talentThreatFactor = 0.95f;
+            float const talentDispelResistFactor = 0.65f;
+
+            TEST_CAST(priest, priest, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1, Seconds(8));
+            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1, Minutes(2));
+            priest->RemoveAurasDueToSpell(ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1);
+            priest->GetSpellHistory()->ResetAllCooldowns();
+
+            // Reduces threat by 5%
+            Creature* dummy = SpawnCreature();
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            float const expectedThreat = dummy->GetThreatManager().GetThreat(priest) * talentThreatFactor;
+            TEST_CAST(priest, priest, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1);
+            WaitNextUpdate();
+            ASSERT_INFO("Priest should have %f threat but has %f.", expectedThreat, dummy->GetThreatManager().GetThreat(priest));
+            TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedThreat - 0.1f, expectedThreat + 0.1f));
+
+            // Reduces all damage taken by 40%
+            TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, RACE_DRAENEI);
+            EQUIP_NEW_ITEM(shaman, 34165); // Fang of Kalecgos
+            WaitNextUpdate();
+            uint32 const weaponMinDmg = 113;
+            uint32 const weaponMaxDmg = 211;
+            float const weaponSpeed = 1.5f;
+            float const AP = shaman->GetTotalAttackPowerValue(BASE_ATTACK);
+            float const armorFactor = 1 - (priest->GetArmor() / (priest->GetArmor() + 10557.5f));
+            uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed) * armorFactor * talentDamageTakenFactor;
+            uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed) * armorFactor * talentDamageTakenFactor;
+            TEST_MELEE_DAMAGE(shaman, priest, BASE_ATTACK, minMelee, maxMelee, false);
+            uint32 const minEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MIN * talentDamageTakenFactor;
+            uint32 const maxEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MAX * talentDamageTakenFactor;
+            TEST_DIRECT_SPELL_DAMAGE(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, minEarthShock, maxEarthShock, false);
+
+            // Increases resistance to dispell by 65%
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<PainSuppressionTestImpt>();
     }
 };
 
@@ -861,22 +953,22 @@ public:
 		void Test() override
 		{
 			TestPlayer* priest = SpawnRandomPlayer(CLASS_PRIEST);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(priest, Talents::Priest::SEARING_LIGHT_RNK_2);
+            float const talentFactor = 1.1f;
+
 			// Smite
-			uint32 const smiteMinDamage = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN;
-			uint32 const smiteMaxDamage = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX;
+			uint32 const expectedSmiteMin = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN * talentFactor;
+			uint32 const expectedSmiteMax = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX * talentFactor;
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, expectedSmiteMin, expectedSmiteMax, false);
 
 			// Holy Fire
-			uint32 const holyFireMinDamage = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MIN;
-			uint32 const holyFireMaxDamage = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MAX;
-            uint32 const holyFireDotDamage = 5.0f * floor(ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_TOTAL / 5.0f);
-
-			Creature* dummyTarget = SpawnCreature();
-
-			//Test improved damage 10%
-			LearnTalent(priest, Talents::Priest::SEARING_LIGHT_RNK_2);
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummyTarget, ClassSpells::Priest::SMITE_RNK_10, smiteMinDamage * 1.1f, smiteMaxDamage * 1.1f, false);
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMinDamage * 1.1f, holyFireMaxDamage * 1.1f, false);
-            TEST_DOT_DAMAGE(priest, dummyTarget, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDotDamage * 1.1f, false);
+			uint32 const expectedHolyFireMin = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MIN * talentFactor;
+			uint32 const expectedHolyFireMax = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MAX * talentFactor;
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, expectedHolyFireMin, expectedHolyFireMax, false);
+            uint32 const expectedHolyFireDot = 5.0f * floor(ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_TOTAL * talentFactor / 5.0f);
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, expectedHolyFireDot, false);
 		}
 	};
 
@@ -909,6 +1001,8 @@ void AddSC_test_talents_priest()
     new FocusedWillTest();
     new PowerInfusionTest();
     new ReflectiveShieldTest();
+    new EnlightmentTest();
+    new PainSuppressionTest();
     // Holy
 	new SearingLightTest();
     // Shadow
