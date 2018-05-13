@@ -829,6 +829,10 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
+    uint32 startingTargetHealth = target->GetHealth();
+    uint32 startingTargetMaxHealt = target->GetMaxHealth();
+    target->SetHealth(std::numeric_limits<int32>::max());
+    target->SetFullHealth();
 
     auto[sampleSize, maxPredictionError] = _GetApproximationParams(expectedMin, expectedMax);
 
@@ -836,6 +840,7 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     caster->ForceMeleeHitResult(crit ? MELEE_HIT_CRIT : MELEE_HIT_NORMAL);
     for (uint32 i = 0; i < sampleSize; i++)
     {
+        target->SetFullHealth();
         if (attackType != RANGED_ATTACK)
             caster->AttackerStateUpdate(target, attackType);
         else
@@ -857,6 +862,9 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     INTERNAL_ASSERT_INFO("Enforcing low result for attackType: %u - crit %u. allowedMin: %u, dealtMin: %u", uint32(attackType), uint32(crit), allowedMin, dealtMin);
     INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
 
+    //restoring
+    target->SetMaxHealth(startingTargetMaxHealt);
+    target->SetHealth(startingTargetHealth);
 }
 
 std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID)
