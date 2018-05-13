@@ -38,6 +38,7 @@
 #ifdef TESTS
 #include "TestCase.h"
 #include "TestThread.h"
+#include "TestPlayer.h"
 #endif
 
 #define DEFAULT_GRID_EXPIRY     300
@@ -3206,11 +3207,21 @@ void TestMap::Update(const uint32& diff)
 
 void TestMap::RemoveAllPlayers()
 {
+#ifdef TESTS
     if (HavePlayers())
         for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
             if (Player* player = itr->GetSource())
-                if (!player->IsBeingTeleportedFar())
-                    player->TeleportTo(player->m_recallMap, player->m_recallX, player->m_recallY, player->m_recallZ, player->m_recallO);
+            {
+                if (dynamic_cast<TestPlayer*>(player))
+                    player->GetSession()->KickPlayer();
+                else if (!player->IsBeingTeleportedFar())
+                {
+                    bool recallOk = player->Recall();
+                    if (!recallOk)
+                        player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->GetOrientation());
+                }
+            }
+#endif
 }
 
 void TestMap::DisconnectAllBots()

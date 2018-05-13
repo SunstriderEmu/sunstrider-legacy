@@ -591,7 +591,7 @@ bool ChatHandler::HandleRecallCommand(const char* args)
         chr->CleanupAfterTaxiFlight();
     }
 
-    chr->TeleportTo(chr->m_recallMap, chr->m_recallX, chr->m_recallY, chr->m_recallZ, chr->m_recallO);
+    chr->Recall();
     return true;
 }
 

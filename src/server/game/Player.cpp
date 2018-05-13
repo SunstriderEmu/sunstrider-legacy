@@ -5886,11 +5886,7 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 
 void Player::SaveRecallPosition()
 {
-    m_recallMap = GetMapId();
-    m_recallX = GetPositionX();
-    m_recallY = GetPositionY();
-    m_recallZ = GetPositionZ();
-    m_recallO = GetOrientation();
+    m_recall_location.WorldRelocate(*this); }
 }
 
 void Player::SendMessageToSet(WorldPacket const* data, bool self)

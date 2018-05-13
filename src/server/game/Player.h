@@ -2248,12 +2248,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         #endif
 
         // Recall position
-        uint32 m_recallMap;
-        float  m_recallX;
-        float  m_recallY;
-        float  m_recallZ;
-        float  m_recallO;
-        void   SaveRecallPosition();
+        WorldLocation m_recall_location;
+        void SaveRecallPosition();
+        bool Recall() { return TeleportTo(m_recall_location); }
         
         uint32 m_ConditionErrorMsgId;
 
