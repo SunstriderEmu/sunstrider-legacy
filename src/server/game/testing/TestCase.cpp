@@ -666,32 +666,29 @@ float myErfInv2(float x) {
     return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
 }
 
-void TestCase::_GetPercentApproximationParams(uint32& sampleSize, float const expectedResult, float& absoluteTolerance)
+std::pair<uint32 /*sampleSize*/, float /*tolerance*/> TestCase::_GetPercentApproximationParams(float const expectedResult, float absoluteTolerance /*= 0*/)
 {
+    float const minExpectedResult = 0.01f;
+    float const maxExpectedResult = 1.0f - minExpectedResult;
+
+    float const defaultRelativeTolerance = 0.1f;
+
+    float const minTolerance = minExpectedResult * defaultRelativeTolerance;
+    float const maxTolerance = 0.1f;
+
     //enforce a minimum chance... else sample size will really go through the roof
     INTERNAL_ASSERT_INFO("Expected result %f too low", expectedResult);
-    INTERNAL_TEST_ASSERT(expectedResult >= 0.005f);
+    INTERNAL_TEST_ASSERT(expectedResult >= minExpectedResult);
     INTERNAL_ASSERT_INFO("Expected result %f too high %f", expectedResult);
-    INTERNAL_TEST_ASSERT(expectedResult <= 1.0f);
-
-    float const minTolerance = 0.002f;
-    float const maxTolerance = 0.1f;
+    INTERNAL_TEST_ASSERT(expectedResult <= maxExpectedResult);
 
     //auto tolerance deduction:
     if (!absoluteTolerance)
     {
-        // Target: 
-        // - 0.2% diff tolerance for 0.5% expected chance
-        // - 2.0% diff tolerance for 50.0% expected chance
-        std::pair<float, float> a = { 0.002f, 0.005f };
-        std::pair<float, float> b = { 0.020f, 0.50f };
-        float const slope = (b.first - a.first) / (b.second - a.second);
-        absoluteTolerance = (expectedResult - a.second) * slope + a.first;
+        float distFromExtreme = expectedResult <= 0.5f ? expectedResult : 1.0f - expectedResult; //distance from 0 or 100, whichever is closer (thus from 0 to 50)
+        absoluteTolerance = distFromExtreme * defaultRelativeTolerance;
 
-        if (absoluteTolerance < minTolerance)
-            absoluteTolerance = minTolerance;
-        else if (absoluteTolerance > maxTolerance)
-            absoluteTolerance = maxTolerance;
+        absoluteTolerance = std::clamp(absoluteTolerance, minTolerance, maxTolerance);
     }
     else 
     {
@@ -704,8 +701,10 @@ void TestCase::_GetPercentApproximationParams(uint32& sampleSize, float const ex
 
     float const certainty = 0.999f;
 
-    sampleSize = 2 * pow(boost::math::erf_inv(certainty) / absoluteTolerance, 2);
+    uint32 sampleSize = 2 * pow(boost::math::erf_inv(certainty) / absoluteTolerance, 2);
     sampleSize = std::max(sampleSize, uint32(100)); //min sample size
+
+    return std::make_pair(sampleSize, absoluteTolerance);
 }
 
 void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& absoluteAllowedError, uint32 const expectedMin, uint32 const expectedMax)
@@ -1284,9 +1283,7 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
 
     victim->SetMaxHealth(std::numeric_limits<int32>::max());
 
-    uint32 sampleSize;
-    float resultingAbsoluteTolerance = 0.0f;
-    _GetPercentApproximationParams(sampleSize, expectedResultPercent / 100.0f, resultingAbsoluteTolerance);
+    auto [ sampleSize, resultingAbsoluteTolerance ] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -1320,9 +1317,7 @@ void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellI
     uint32 startingHealth = target->GetHealth();
     uint32 startingMaxHealth = target->GetMaxHealth();
 
-    uint32 sampleSize;
-    float resultingAbsoluteTolerance = 0.0f;
-    _GetPercentApproximationParams(sampleSize, expectedResultPercent / 100.0f, resultingAbsoluteTolerance);
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
     uint32 successCount = 0;
     for (uint32 i = 0; i < sampleSize; i++)
@@ -1343,7 +1338,7 @@ void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellI
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 }
 
-void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback)
+void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback)
 {
     auto AI = _GetCasterAI(caster);
 
@@ -1361,9 +1356,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
 
     victim->SetMaxHealth(std::numeric_limits<uint32>::max());
 
-    uint32 sampleSize;
-    float resultingAbsoluteTolerance = 0.0f;
-    _GetPercentApproximationParams(sampleSize, chance / 100.0f, resultingAbsoluteTolerance);
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
 
     uint32 count = 0;
     uint32 procCount = 0;
@@ -1411,8 +1404,8 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     INTERNAL_TEST_ASSERT(count == sampleSize);
 
     float actualSuccessPercent = 100 * (procCount / float(sampleSize));
-    INTERNAL_ASSERT_INFO("Spell %u only proc'd %u %f but was expected %f.", spellID, procSpellID, actualSuccessPercent, chance);
-    INTERNAL_TEST_ASSERT(Between<float>(chance, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
+    INTERNAL_ASSERT_INFO("Spell %u only proc'd %u %f but was expected %f.", spellID, procSpellID, actualSuccessPercent, expectedChancePercent);
+    INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 }
 
 void TestCase::_EnsureAlive(Unit* caster, Unit* target)
@@ -1439,9 +1432,7 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
 
     uint32 startingHealth = caster->GetHealth();
 
-    uint32 sampleSize;
-    float resultingAbsoluteTolerance = 0.0f;
-    _GetPercentApproximationParams(sampleSize, expectedResultPercent / 100.0f, resultingAbsoluteTolerance);
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
     Unit* attackingUnit = target;
 
@@ -1501,9 +1492,7 @@ void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType 
 
     victim->SetMaxHealth(std::numeric_limits<uint32>::max());
 
-    uint32 sampleSize;
-    float resultingAbsoluteTolerance = 0.0f;
-    _GetPercentApproximationParams(sampleSize, expectedResultPercent / 100.0f, resultingAbsoluteTolerance);
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -1782,9 +1771,7 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
 
     victim->SetMaxHealth(std::numeric_limits<uint32>::max());
 
-    uint32 sampleSize;
-    float resultingAbsoluteTolerance = 0.0f;
-    _GetPercentApproximationParams(sampleSize, expectedResultPercent / 100.0f, resultingAbsoluteTolerance);
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
     SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     caster->ForceSpellHitResult(SPELL_MISS_NONE);

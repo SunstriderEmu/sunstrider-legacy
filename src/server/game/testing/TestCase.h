@@ -340,7 +340,7 @@ protected:
     //Returns how much iterations and how much tolerance you should allow for given:
     //expectedResult: % from absoluteTolerance*2 to 1.0f
     //absoluteTolerance: % from 0.0f to 1.0f. Error tolerance, maximum diff with expectedResult. If 0 given, will use a default value depending on expectedResult.
-    void _GetPercentApproximationParams(uint32& sampleSize, float const expectedResult, float& absoluteTolerance);
+    std::pair<uint32 /*sampleSize*/, float /*tolerance*/> _GetPercentApproximationParams(float const expectedResult, float absoluteTolerance = 0.0f);
 
     void _EnsureAlive(Unit* caster, Unit* victim);
     //Try to get caster AI or owner caster AI (if pet or summon). Fail if no caster AI found. Changes caster arg to owner if pet/summon.

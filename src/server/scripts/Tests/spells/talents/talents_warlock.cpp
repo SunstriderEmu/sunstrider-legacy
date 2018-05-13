@@ -9,10 +9,13 @@ class SuppressionTest : public TestCaseScript
 public:
     SuppressionTest() : TestCaseScript("talents warlock suppression") { }
 
+    // "Reduces the chance for enemies to resist your Affliction spells by 10%."
     class SuppressionTestImpt : public TestCase
     {
     public:
-        SuppressionTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Curse of Doom is not affected, should be.
+        SuppressionTestImpt() : TestCase(STATUS_WIP) { } 
+        // Known bug: Curse of Doom is not affected, should be.
+        // WIP: replace creature 12 by a test specific creature
 
         void Test() override
         {
@@ -20,8 +23,8 @@ public:
             Creature* dummy = SpawnCreature(12); // Boss
 
             LearnTalent(warlock, Talents::Warlock::SUPPRESSION_RNK_5);
-            float const hitTalentFactor = 10.0f;
-            float const hitChance = 16.0f - hitTalentFactor;
+            float const talentHitPct = 10.0f;
+            float const hitChance = 16.0f - talentHitPct;
 
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, hitChance, SPELL_MISS_RESIST);
