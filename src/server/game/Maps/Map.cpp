@@ -3172,6 +3172,14 @@ void TestMap::Update(const uint32& diff)
     if (m_unloadTimer) //If map was marked for unload, test is finished
         return;
 
+    auto test = _testThread->GetTest();
+    //test thread may have been finish by itself or externally (by a cancel)
+    if (_testThread->IsFinished())
+    {
+        m_unloadTimer = 1; //make sure we're not updating anymore after this, and unload at next update
+        return;
+    }
+
     uint32 usedDiff = diff;
 
     //If a test is currently waiting, lets cheat a bit and make sure the wait end time coincide with the map diff if the diff is enough to finish the wait
@@ -3189,13 +3197,10 @@ void TestMap::Update(const uint32& diff)
         _testThread->UpdateWaitTimer(usedDiff);
     }
 
-    auto test = _testThread->GetTest();
     ASSERT(test->IsSetup());
     _testThread->ResumeExecution();
     _testThread->WaitUntilDoneOrWaiting(test);
     //from this line we be sure that the test thread is not currently running
-    if (_testThread->IsFinished())
-        m_unloadTimer = 1; //make sure we're not updating anymore after this, and unload at next update
 #endif
 }
 

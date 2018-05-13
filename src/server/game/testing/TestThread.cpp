@@ -79,6 +79,7 @@ void TestThread::WakeUp()
 
 void TestThread::ResumeExecution()
 {
+    ASSERT(_state != STATE_FINISHED);
     _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
     //resume execution if wait finished
