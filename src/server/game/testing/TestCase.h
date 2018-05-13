@@ -336,11 +336,11 @@ protected:
     void _TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId);
 
     //Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
-    static void _GetApproximationParams(uint32& sampleSize, uint32& allowedError, uint32 const expectedMin, uint32 const expectedMax);
+    std::pair<uint32 /*sampleSize*/, uint32 /*absoluteTolerance*/>  _GetApproximationParams(uint32 const expectedMin, uint32 const expectedMax);
     //Returns how much iterations and how much tolerance you should allow for given:
     //expectedResult: % from absoluteTolerance*2 to 1.0f
     //absoluteTolerance: % from 0.0f to 1.0f. Error tolerance, maximum diff with expectedResult. If 0 given, will use a default value depending on expectedResult.
-    std::pair<uint32 /*sampleSize*/, float /*tolerance*/> _GetPercentApproximationParams(float const expectedResult, float absoluteTolerance = 0.0f);
+    std::pair<uint32 /*sampleSize*/, float /*resultingAbsoluteTolerance*/> _GetPercentApproximationParams(float const expectedResult, float absoluteTolerance = 0.0f);
 
     void _EnsureAlive(Unit* caster, Unit* victim);
     //Try to get caster AI or owner caster AI (if pet or summon). Fail if no caster AI found. Changes caster arg to owner if pet/summon.

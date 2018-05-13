@@ -666,7 +666,7 @@ float myErfInv2(float x) {
     return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
 }
 
-std::pair<uint32 /*sampleSize*/, float /*tolerance*/> TestCase::_GetPercentApproximationParams(float const expectedResult, float absoluteTolerance /*= 0*/)
+std::pair<uint32 /*sampleSize*/, float /*absoluteTolerance*/> TestCase::_GetPercentApproximationParams(float const expectedResult, float absoluteTolerance /*= 0*/)
 {
     float const minExpectedResult = 0.01f;
     float const maxExpectedResult = 1.0f - minExpectedResult;
@@ -707,8 +707,10 @@ std::pair<uint32 /*sampleSize*/, float /*tolerance*/> TestCase::_GetPercentAppro
     return std::make_pair(sampleSize, absoluteTolerance);
 }
 
-void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& absoluteAllowedError, uint32 const expectedMin, uint32 const expectedMax)
+std::pair<uint32 /*sampleSize*/, uint32 /*absoluteTolerance*/> TestCase::_GetApproximationParams(uint32 const expectedMin, uint32 const expectedMax)
 {
+    uint32 sampleSize, absoluteAllowedError;
+
     double certainty = 0.999;
     absoluteAllowedError = (expectedMax - expectedMin) / 25; //arbitary
     absoluteAllowedError = std::max(absoluteAllowedError, uint32(1)); //min 1
@@ -744,6 +746,8 @@ void TestCase::_GetApproximationParams(uint32& sampleSize, uint32& absoluteAllow
 
     // Set sampleSize minimum to 10
     sampleSize = std::max(uint32(10), std::max(sampleSize_min, sampleSize_max));
+
+    return std::make_pair(sampleSize, absoluteAllowedError);
 }
 
 void ResetSpellCast(Unit* caster)
@@ -766,9 +770,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
 
-    uint32 sampleSize;
-    uint32 maxPredictionError;
-    _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
+    auto[sampleSize, maxPredictionError] = _GetApproximationParams(expectedMin, expectedMax);
 
 	EnableCriticals(caster, crit);
 
@@ -828,9 +830,7 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
 
-    uint32 sampleSize;
-    uint32 maxPredictionError;
-    _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
+    auto[sampleSize, maxPredictionError] = _GetApproximationParams(expectedMin, expectedMax);
 
     MeleeHitOutcome previousForceMeleeResult = caster->_forceMeleeResult;
     caster->ForceMeleeHitResult(crit ? MELEE_HIT_CRIT : MELEE_HIT_NORMAL);
@@ -1283,7 +1283,7 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
 
     victim->SetMaxHealth(std::numeric_limits<int32>::max());
 
-    auto [ sampleSize, resultingAbsoluteTolerance ] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {

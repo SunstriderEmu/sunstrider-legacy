@@ -1081,9 +1081,7 @@ public:
                 uint32 minFerociousBiteDmg = (AP * comboPoints * APperCP + cpDmgMin + dmgPerRemainingEnergy * energyAfterFB) * armorFactor;
                 uint32 maxFerociousBiteDmg = (AP * comboPoints * APperCP + cpDmgMax + dmgPerRemainingEnergy * energyAfterFB) * armorFactor;
 
-                uint32 sampleSize;
-                uint32 absoluteAllowedError;
-                _GetApproximationParams(sampleSize, absoluteAllowedError, minFerociousBiteDmg, maxFerociousBiteDmg);
+                auto[sampleSize, absoluteAllowedError] = _GetApproximationParams(minFerociousBiteDmg, maxFerociousBiteDmg);
 
                 auto AI = druid->GetTestingPlayerbotAI();
                 uint32 minDamage = std::numeric_limits<uint32>::max();

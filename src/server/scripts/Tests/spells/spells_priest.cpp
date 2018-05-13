@@ -47,9 +47,7 @@ public:
             uint32 expectedMin = consumeMagicBase + consumeMagicManaPerLevel * (priestLevel - consumeMagicSpellLevel);
             uint32 expectedMax = expectedMin + consumeMagicMax;
 
-            uint32 sampleSize;
-            uint32 maxPredictionError;
-            _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
+            auto[sampleSize, maxPredictionError] = _GetApproximationParams(expectedMin, expectedMax);
 
             uint32 minGain = std::numeric_limits<uint32>::max();
             uint32 maxGain = 0;
@@ -375,9 +373,7 @@ public:
 
         void TestManaBurn(TestPlayer* priest, Unit* victim, uint32 expectedMin, uint32 expectedMax)
         {
-            uint32 sampleSize;
-            uint32 maxPredictionError;
-            _GetApproximationParams(sampleSize, maxPredictionError, expectedMin, expectedMax);
+            auto[sampleSize, maxPredictionError] = _GetApproximationParams(expectedMin, expectedMax);
 
             EnableCriticals(priest, true);
 
@@ -2632,9 +2628,7 @@ public:
             uint32 expectedShadowfiendMin = ClassSpellsDamage::Priest::SHADOWFIEND_RNK_1_MIN + spellBonus;
             uint32 expectedShadowfiendMax = ClassSpellsDamage::Priest::SHADOWFIEND_RNK_1_MAX + spellBonus;
 
-            uint32 sampleSize;
-            uint32 absoluteAllowedError;
-            _GetApproximationParams(sampleSize, absoluteAllowedError, expectedShadowfiendMin, expectedShadowfiendMax);
+            auto[sampleSize, absoluteAllowedError] = _GetApproximationParams(expectedShadowfiendMin, expectedShadowfiendMax);
 
             auto AI = priest->GetTestingPlayerbotAI();
             uint32 priestOldMana = priest->GetPower(POWER_MANA);
