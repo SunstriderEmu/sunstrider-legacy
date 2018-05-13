@@ -1488,6 +1488,11 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
 }
 
+void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance)
+{
+    //To implement
+}
+
 void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
 {
     _EnsureAlive(caster, victim);

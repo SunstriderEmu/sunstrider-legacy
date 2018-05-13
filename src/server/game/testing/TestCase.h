@@ -239,7 +239,8 @@ public:
     #define TEST_SPELL_PROC_CHANCE(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, {}); _ResetCaller(); }
     //same but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>    
     #define TEST_SPELL_PROC_CHANCE_CALLBACK(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, Optional<TestCallback>(callback)); _ResetCaller(); }
-
+    //caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
+    #define TEST_SPELL_DISPEL_RESIST_CHANCE(caster, target, dispeler, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance); _ResetCaller(); }
 
     /* Test how much of the time a cast pushback is resisted (against melee attacks). Target will also be the one attacking the caster.
     chance: 0-100
@@ -317,6 +318,7 @@ protected:
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, TestCallbackResult callback);
     void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
+    void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance);
 
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);

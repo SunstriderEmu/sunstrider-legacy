@@ -13920,7 +13920,7 @@ int32 Unit::GetTotalAuraModifier(AuraType auraType, std::function<bool(AuraEffec
 
 float Unit::GetTotalAuraMultiplier(AuraType auraType, std::function<bool(AuraEffect const*)> const& predicate) const
 {
-    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auraType);
     if (mTotalAuraList.empty())
         return 1.0f;
 
