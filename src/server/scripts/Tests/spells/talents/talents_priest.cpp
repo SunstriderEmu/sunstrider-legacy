@@ -52,8 +52,6 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
             _location.MoveInFront(_location, 5.0f);
-            TestPlayer* enemy = SpawnPlayer(CLASS_PRIEST, RACE_TROLL);
-            _location.MoveInFront(_location, 5.0f);
             Creature* dummy = SpawnCreature();
 
             LearnTalent(priest, Talents::Priest::SILENT_RESOLVE_RNK_5);
