@@ -26,6 +26,7 @@
 #include "SharedDefines.h"
 #include "ItemEnchantmentMgr.h"
 #include "Loot.h"
+#include <functional>
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] = {
     RATE_DROP_ITEM_POOR,                                    // ITEM_QUALITY_POOR
@@ -49,7 +50,7 @@ LootStore LootTemplates_Reference(    "reference_loot_template",    "reference i
 LootStore LootTemplates_Skinning(     "skinning_loot_template",     "creature skinning id",       true);
 
 // Selects invalid loot items to be removed from group possible entries (before rolling)
-struct LootGroupInvalidSelector : public std::unary_function<LootStoreItem*, bool>
+struct LootGroupInvalidSelector
 {
     explicit LootGroupInvalidSelector(Loot const& loot, uint16 lootMode) : _loot(loot), _lootMode(lootMode) { }
 

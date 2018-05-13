@@ -10,6 +10,7 @@
 #include "SpellAuraEffects.h"
 
 #include <boost/math/special_functions/erf.hpp>
+#include <algorithm>
 
 #define MAP_TESTING_ID 13
 

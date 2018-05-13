@@ -56,7 +56,7 @@ endif()
 # -Wno-switch because I find this warning useless
 target_compile_options(trinity-compile-option-interface
   INTERFACE
-    -std=c++14
+    -std=c++17
     -Wno-narrowing
 	-Wno-deprecated-register
 	-Wno-switch)

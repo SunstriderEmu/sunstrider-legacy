@@ -99,17 +99,6 @@ bool UnitAI::GetRestoreCombatMovementOnOOM()
     return m_restoreCombatMovementOnOOM;
 }
 
-struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
-{
-    const Unit* me;
-    TargetDistanceOrder(const Unit* Target) : me(Target) {};
-    // functor for operator ">"
-    bool operator()(const Unit* _Left, const Unit* _Right) const
-    {
-        return (me->GetDistance(_Left) < me->GetDistance(_Right));
-    }
-};
-
 DefaultTargetSelector::DefaultTargetSelector(Unit const* unit, float dist, bool playerOnly, bool withTank, int32 aura)
     : me(unit), m_dist(dist), m_playerOnly(playerOnly), except(!withTank ? unit->GetThreatManager().GetCurrentVictim() : nullptr), m_aura(aura)
 {

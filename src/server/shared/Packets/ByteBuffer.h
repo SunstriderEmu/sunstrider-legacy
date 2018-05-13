@@ -89,6 +89,7 @@ public:
         buf._rpos = 0;
         buf._wpos = 0;
     }
+
     ByteBuffer(ByteBuffer const& right) : _rpos(right._rpos), _wpos(right._wpos), _storage(right._storage) { }
 
     ByteBuffer(MessageBuffer&& buffer);
@@ -641,17 +642,6 @@ template<>
 inline void ByteBuffer::read_skip<std::string>()
 {
     read_skip<char*>();
-}
-
-namespace boost
-{
-    namespace asio
-    {
-        inline const_buffers_1 buffer(ByteBuffer const& packet)
-        {
-            return buffer(packet.contents(), packet.size());
-        }
-    }
 }
 
 #endif

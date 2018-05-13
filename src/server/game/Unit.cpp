@@ -960,7 +960,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
             // random durability for items (HIT TAKEN)
             if (attacker && roll_chance_f(sWorld->GetRate(RATE_DURABILITY_LOSS_DAMAGE)))
             {
-                EquipmentSlots slot = EquipmentSlots(attacker->GetMap()->urand(0,EQUIPMENT_SLOT_END-1));
+                EquipmentSlots slot = EquipmentSlots(urand(0,EQUIPMENT_SLOT_END-1));
                 (pVictim->ToPlayer())->DurabilityPointLossForEquipSlot(slot);
             }
         }
@@ -970,7 +970,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
             // random durability for items (HIT DONE)
             if (roll_chance_f(sWorld->GetRate(RATE_DURABILITY_LOSS_DAMAGE)))
             {
-              EquipmentSlots slot = EquipmentSlots(attacker->GetMap()->urand(0,EQUIPMENT_SLOT_END-1));
+              EquipmentSlots slot = EquipmentSlots(urand(0,EQUIPMENT_SLOT_END-1));
                 (attacker->ToPlayer())->DurabilityPointLossForEquipSlot(slot);
             }
         }
@@ -2400,7 +2400,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
     // http://wowwiki.wikia.com/wiki/Attack_table?oldid=1432543
 
     float sum = 0, tmp = 0;
-    float roll = float(GetMap()->rand_norm()) * 100.0f;
+    float roll = float(rand_norm()) * 100.0f;
 
     // check if attack comes from behind, nobody can parry or block if attacker is behind
     bool canParryOrBlock = victim->HasInArc(float(M_PI), this) 
@@ -2725,7 +2725,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
 
     int32 skillDiff = attackerWeaponSkill - int32(victim->GetMaxSkillValueForLevel(this));
 
-    uint32 roll = GetMap()->urand(0, 9999);
+    uint32 roll = urand(0, 9999);
 
     uint32 missChance = uint32(MeleeSpellMissChance(victim, attType, skillDiff, spellInfo->Id)*100.0f);
     // Roll miss
@@ -9656,7 +9656,7 @@ Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
         return nullptr;
 
     // select random
-    uint32 rIdx = GetMap()->urand(0,targets.size()-1);
+    uint32 rIdx = urand(0,targets.size()-1);
     std::list<Unit *>::const_iterator tcIter = targets.begin();
     for(uint32 i = 0; i < rIdx; ++i)
         ++tcIter;

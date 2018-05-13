@@ -8,7 +8,6 @@
 #include "GridRefManager.h"
 #include "MapRefManager.h"
 #include "MPSCQueue.h"
-#include "MersenneTwister.h"
 #include "DynamicTree.h"
 #include "Models/GameObjectModel.h"
 #include <boost/heap/fibonacci_heap.hpp>
@@ -480,8 +479,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         template<class T> void SwitchGridContainers(T* obj, bool active);
         CreatureGroupHolderType CreatureGroupHolder;
 
-        MTRand mtRand;
-
+        /*
         int32 irand(int32 min, int32 max)
         {
           return int32 (mtRand.randInt(max - min)) + min;
@@ -506,6 +504,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         {
           return mtRand.randExc(100.0);
         }
+        */
         
         void AddCreatureToPool(Creature*, uint32);
         void RemoveCreatureFromPool(Creature*, uint32);

@@ -511,12 +511,14 @@ variables_map GetConsoleArguments(int argc, char** argv,  fs::path& configFile, 
         ("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_TRINITY_CORE_CONFIG)),
             "use <arg> as configuration file");
 #ifdef _WIN32
+    /* sun: crash with cpp17, but we don't need it
     options_description win("Windows platform specific options");
     win.add_options()
         ("service,s", value<std::string>(&configService)->default_value(""), "Windows service options: [install | uninstall]")
         ;
 
     all.add(win);
+    */
 #endif
     variables_map vm;
     try

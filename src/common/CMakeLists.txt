@@ -60,7 +60,6 @@ target_link_libraries(common
     utf8cpp
     openssl
     threads
-	mersennetwister
 	sfmt
 )
 

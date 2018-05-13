@@ -1,7 +1,6 @@
 #include "Util.h"
 
 #include "utf8.h"
-#include "MersenneTwister.h"
 #include "SFMT.h"
 #include <boost/thread/tss.hpp>
 #include <cstdarg>

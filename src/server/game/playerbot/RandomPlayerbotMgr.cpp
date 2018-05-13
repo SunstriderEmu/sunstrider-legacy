@@ -6,7 +6,6 @@
 #include "PlayerbotAI.h"
 #include "AiFactory.h"
 #include "MapManager.h"
-#include "PlayerbotCommandServer.h"
 #include "GuildTaskMgr.h"
 #include "CharacterCache.h"
 #include "RandomPlayerbotFactory.h"
@@ -14,7 +13,6 @@
 
 RandomPlayerbotMgr::RandomPlayerbotMgr() : PlayerbotHolder(), processTicks(0)
 {
-    sPlayerbotCommandServer.Start();
 }
 
 RandomPlayerbotMgr::~RandomPlayerbotMgr()

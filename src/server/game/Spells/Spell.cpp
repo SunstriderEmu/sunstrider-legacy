@@ -5910,7 +5910,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 // chance for fail at orange skinning attempt
                 if( (m_selfContainer && (*m_selfContainer) == this) &&
                     skillValue < sWorld->GetConfigMaxSkillValue() &&
-                    (ReqValue < 0 ? 0 : ReqValue) > m_caster->GetMap()->irand(skillValue-25, skillValue+37) )
+                    (ReqValue < 0 ? 0 : ReqValue) > irand(skillValue-25, skillValue+37) )
                     return SPELL_FAILED_TRY_AGAIN;
 #endif
                 break;
@@ -6044,7 +6044,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                     return SPELL_FAILED_LOW_CASTLEVEL;
 
                 // chance for failure in orange gather / lockpick (gathering skill can't fail at maxskill)
-                if((canFailAtMax || SkillValue < sWorld->GetConfigMaxSkillValue()) && ReqValue > m_caster->GetMap()->irand(SkillValue-25, SkillValue+37))
+                if((canFailAtMax || SkillValue < sWorld->GetConfigMaxSkillValue()) && ReqValue > irand(SkillValue-25, SkillValue+37))
                     return SPELL_FAILED_TRY_AGAIN;
 
                 break;

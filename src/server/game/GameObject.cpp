@@ -1666,7 +1666,7 @@ void GameObject::Use(Unit* user)
 
                     int32 skill = player->GetSkillValue(SKILL_FISHING);
                     int32 chance = skill - zone_skill + 5;
-                    int32 roll = GetMap()->irand(1,100);
+                    int32 roll = irand(1,100);
 
                     TC_LOG_DEBUG("entities.gameobject","Fishing check (skill: %i zone min skill: %i chance %i roll: %i",skill,zone_skill,chance,roll);
 

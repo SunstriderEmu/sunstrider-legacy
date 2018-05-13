@@ -3165,7 +3165,7 @@ SpellMissInfo WorldObject::MagicSpellHitResult(Unit *pVictim, SpellInfo const *s
         return SPELL_MISS_NONE;
         
     // Always 1% resist chance. Send this as SPELL_MISS_MISS (note that this is not BC blizzlike, this was changed in WotLK).
-    uint32 rand = GetMap()->urand(0, 9999);
+    uint32 rand = urand(0, 9999);
     if (rand > 9900)
         return SPELL_MISS_MISS;
 

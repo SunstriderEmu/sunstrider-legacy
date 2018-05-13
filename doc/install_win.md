@@ -17,7 +17,7 @@ the linking will fail.
 3. Install [OpenSSL 1.0.x][openssl] note the directory to which you
    install it. Caution, do not use the 'Light' version. OpenSSL 1.1 is NOT supported!
 
-4. Install [Boost 1.65.1][boost] version. (Other versions may be working but are not supported) 
+4. Install [Boost 1.67][boost] version. (Other versions may be working but are not supported) 
    Get the windows prebuilt binaries corresponding to your MSVC compiler. 
    Set the **environment** variable (not a CMake variable) `BOOST_ROOT` to wherever you
    installed Boost. 
@@ -56,7 +56,7 @@ http://www.cmake.org/cmake/resources/software.html
 http://slproweb.com/products/Win32OpenSSL.html
 
 [boost]:
-https://sourceforge.net/projects/boost/files/boost-binaries/1.65.1/
+https://dl.bintray.com/boostorg/release/1.67.0/binaries/
 
 <!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc
