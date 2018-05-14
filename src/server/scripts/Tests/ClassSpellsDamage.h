@@ -320,6 +320,7 @@ namespace ClassSpellsDamage
             CORRUPTION_RNK_8_TOTAL = 900,
             CURSE_OF_AGONY_RNK_7_TOTAL = 1356,
             CURSE_OF_DOOM_RNK_2 = 4200,
+            CURSE_OF_WEAKNESS_RNK7 = 350,
             DARK_PACT_RNK_4 = 700,
             DEATH_COIL_RNK_4 = 519,
             DEATH_COIL_RNK_4_LVL_70 = 525,

@@ -58,6 +58,7 @@ class ImprovedCorruptionTest : public TestCaseScript
 public:
     ImprovedCorruptionTest() : TestCaseScript("talents warlock improved_corruption") { }
 
+    // "Reduces the casting time of your Corruption spell by 2 sec." (max rank)
     class ImprovedCorruptionTestImpt : public TestCase
     {
     public:
@@ -95,6 +96,7 @@ class ImprovedCurseOfWeaknessTest : public TestCaseScript
 public:
     ImprovedCurseOfWeaknessTest() : TestCaseScript("talents warlock improved_curse_of_weakness") { }
 
+    // "Increases the effect of your Curse of Weakness by 20 %" (max rank)
     class ImprovedCurseOfWeaknessTestImpt : public TestCase
     {
     public:
@@ -108,13 +110,14 @@ public:
 
             LearnTalent(warlock, Talents::Warlock::IMPROVED_CURSE_OF_WEAKNESS_RNK_2);
             float const talentFactor = 1.2f;
-
-            uint32 const curseOfWeaknessAPMalus = 350 * talentFactor;
+            
+            uint32 const curseOfWeaknessAPMalus = ClassSpellsDamage::Warlock::CURSE_OF_WEAKNESS_RNK7 * talentFactor; 
             float const expectedRogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK) - curseOfWeaknessAPMalus;
 
             FORCE_CAST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8);
-            ASSERT_INFO("Rogue has %f AP, should have %f.", rogue->GetTotalAttackPowerValue(BASE_ATTACK), expectedRogueAP);
-            TEST_ASSERT(Between<float>(rogue->GetTotalAttackPowerValue(BASE_ATTACK), expectedRogueAP - 0.1f, expectedRogueAP + 0.1f));
+            float const actualRogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
+            ASSERT_INFO("Rogue has %f AP, should have %f.", actualRogueAP, expectedRogueAP);
+            TEST_ASSERT(Between(actualRogueAP, expectedRogueAP - 1.0f, expectedRogueAP + 1.0f));
         }
     };
 

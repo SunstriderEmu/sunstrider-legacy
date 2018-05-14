@@ -3438,7 +3438,7 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
                 for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                     if (m_spellInfo->Effects[i].GetUsedTargetObjectType() == TARGET_OBJECT_TYPE_UNIT)
                     {
-                        _unitCaster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_SPELL_ATTACK);
+                        caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_SPELL_ATTACK);
                         break;
                     }
             }
