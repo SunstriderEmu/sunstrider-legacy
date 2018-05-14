@@ -27,6 +27,7 @@ public:
         STATE_RUNNING, //currently updating
         STATE_WAITING, //update is suspended because of waiting time
         STATE_PAUSED, //almost the same as waiting, but map will skip updates when we're paused. A pause is always removed at the next update.
+        STATE_CANCELING, //currently in the process of canceling
         STATE_FINISHED,
     };
 
@@ -52,6 +53,7 @@ public:
     uint32 GetWaitTimer() const { return _waitTimer;  }
     bool IsPaused() const;
     bool IsFinished() const;
+    bool IsCanceling() const;
     ThreadState GetState() const { return _state; }
 
     //stop and fail tests as soon as possible
@@ -72,8 +74,8 @@ private:
     milliseconds _thisUpdateStartTimeMS;
 
 
-    // Sleep caller execution for given ms (MUST BE called from the TestCase only). False if test is cancelling
-    bool Wait(uint32 ms);
+    // Sleep caller execution for given ms (MUST BE called from the TestCase only)
+    void Wait(uint32 ms);
     //This will make the thread pause itself and resume in the next udpate if it has been running too long (MUST BE called from the TestCase only)
     void HandleThreadPause();
 };

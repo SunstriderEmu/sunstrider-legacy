@@ -11,7 +11,7 @@
 TestMgr::TestMgr() :
     _running(false),
     _loading(false),
-    _cancelling(false)
+    _canceling(false)
 { }
 
 void TestMgr::_Load(std::string name_or_pattern)
@@ -75,7 +75,7 @@ bool TestMgr::Run(std::string args)
 
     _running = true;
     _loading = true;
-    _cancelling = false;
+    _canceling = false;
     _Load(args);
     _loading = false;
 
@@ -92,35 +92,32 @@ void TestMgr::Update()
     uint32 startedThisUpdate = 0;
 
     //For every running test, start if needed and check if it's finished
-    if (!_cancelling)
+    for (decltype(_remainingTests)::iterator itr = _remainingTests.begin(); itr != _remainingTests.end();)
     {
-        for (decltype(_remainingTests)::iterator itr = _remainingTests.begin(); itr != _remainingTests.end();)
-        {
-            //uint32 testID = itr->first;
-            auto& testThread = itr->second;
+        //uint32 testID = itr->first;
+        auto& testThread = itr->second;
 
-            if (!testThread->IsStarted())
-            {
-                testThread->Start();
-                startedThisUpdate++;
-                if (startedThisUpdate >= MAX_STARTS_PER_UPDATE)
-                    break;
-            }
-            else if (testThread->IsFinished())
-            {
-                auto test = testThread->GetTest();
-                _results.TestFinished(*test);
-                itr = _remainingTests.erase(itr);
-                continue;
-            }
-            itr++;
+        if (!testThread->IsStarted() && !_canceling)
+        {
+            testThread->Start();
+            startedThisUpdate++;
+            if (startedThisUpdate >= MAX_STARTS_PER_UPDATE)
+                break;
         }
+        else if (testThread->IsFinished())
+        {
+            auto test = testThread->GetTest();
+            _results.TestFinished(*test);
+            itr = _remainingTests.erase(itr);
+            continue;
+        }
+        itr++;
     }
 
-    if (_cancelling || _remainingTests.empty()) //then we're done!
+    if (_remainingTests.empty()) //then we're done!
     {
         std::string results;
-        if (_cancelling)
+        if (_canceling)
             results = "\nTests were canceled";
         else
             results = _results.ToString();
@@ -139,7 +136,7 @@ void TestMgr::Update()
 
 void TestMgr::Cancel()
 {
-    _cancelling = true;
+    _canceling = true;
     for (auto itr : _remainingTests)
         itr.second->Cancel();
 }
@@ -230,6 +227,9 @@ std::string TestMgr::ListRunning(std::string filter) const
     }
     if (!found)
         ss << "(none)" << std::endl;
+
+    if (_running && _canceling)
+        ss << "(canceling)" << std::endl;
 
     return ss.str();
 }

@@ -163,9 +163,7 @@ void TestCase::Wait(uint32 ms)
     if (ms == 0)
         return;
 
-    bool ok = _testThread->Wait(ms);
-    if (!ok)
-        _Fail("Test was canceled (TestCase)");
+    _testThread->Wait(ms);
 }
 
 void TestCase::WaitNextUpdate()
@@ -1149,20 +1147,27 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     {
         spellTarget = caster;
 
-        //enough health to avoid overheal
-        spellTarget->SetMaxHealth(std::numeric_limits<int32>::max());
-        spellTarget->SetHealth(1);
     }
     else
     {
         spellTarget = target;
-        //enough health to avoid dying
-        spellTarget->SetMaxHealth(std::numeric_limits<int32>::max());
-        spellTarget->SetFullHealth();
     }
 
     uint32 const spellTargetStartingHealth = spellTarget->GetHealth();
     uint32 const spellTargetStartingMaxHealth = spellTarget->GetMaxHealth();
+
+    if (heal)
+    {
+        //enough health to avoid overheal
+        spellTarget->SetMaxHealth(std::numeric_limits<int32>::max());
+        spellTarget->SetHealth(1);
+    }
+    else 
+    {
+        //enough health to avoid dying
+        spellTarget->SetMaxHealth(std::numeric_limits<int32>::max());
+        spellTarget->SetFullHealth();
+    }
     spellTarget->RemoveArenaAuras(false); //may help with already present hot and dots breaking the results
 
     if (callback)
@@ -1503,6 +1508,9 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
 
 void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float expectedResultPercent)
 {
+    //Dispel resist chance is not related to hit chance but is a separate roll
+    //https://wow.gamepedia.com/index.php?title=Dispel&oldid=1432725
+
     _EnsureAlive(caster, target);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 

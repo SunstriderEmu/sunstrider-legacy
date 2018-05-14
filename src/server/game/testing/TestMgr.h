@@ -38,7 +38,7 @@ private:
     TestResults _results;
     std::atomic<bool> _running;
     std::atomic<bool> _loading;
-    std::atomic<bool> _cancelling;
+    std::atomic<bool> _canceling;
 }; 
 
 //extra ifdef to make sure we don't include this by error

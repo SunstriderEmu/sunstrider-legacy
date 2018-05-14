@@ -3175,7 +3175,7 @@ void TestMap::Update(const uint32& diff)
 
     auto test = _testThread->GetTest();
     //test thread may have been finish by itself or externally (by a cancel)
-    if (_testThread->IsFinished())
+    if (_testThread->IsFinished() || _testThread->IsCanceling())
     {
         m_unloadTimer = 1; //make sure we're not updating anymore after this, and unload at next update
         return;

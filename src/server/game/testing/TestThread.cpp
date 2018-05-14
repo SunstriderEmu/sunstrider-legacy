@@ -24,6 +24,11 @@ bool TestThread::IsFinished() const
     return _state == STATE_FINISHED;
 }
 
+bool TestThread::IsCanceling() const
+{
+    return _state == STATE_CANCELING;;
+}
+
 bool TestThread::IsPaused() const
 {
     return _state == STATE_PAUSED; 
@@ -62,8 +67,8 @@ void TestThread::Run()
         _testCase->_FailNoException(e.what());
     }
 
-    _state = STATE_FINISHED;
     _testCase->_Cleanup();
+    _state = STATE_FINISHED;
 
     //unlock sleeping TestMgr if needed (we finished test)
     //TC_LOG_TRACE("tests", "Test tread with test name %s will notify 2", _testCase->GetName().c_str());
@@ -79,7 +84,7 @@ void TestThread::WakeUp()
 
 void TestThread::ResumeExecution()
 {
-    ASSERT(_state != STATE_FINISHED);
+    ASSERT(_state != STATE_FINISHED && _state != STATE_CANCELING);
     _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
     //resume execution if wait finished
@@ -108,11 +113,11 @@ void TestThread::UpdateWaitTimer(uint32 const mapDiff)
 void TestThread::WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test)
 {
     std::unique_lock<std::mutex> lk(_testCVMutex);
-    if (_state != STATE_RUNNING && (_waitTimer > 0 || _state == STATE_FINISHED))
+    if (_state != STATE_RUNNING && (_waitTimer > 0 || _state == STATE_FINISHED || _state == STATE_CANCELING))
         return; //no sleep to do
 
     //TC_LOG_TRACE("test.unit_test", "Test tread with test name %s will now WaitUntilDoneOrWaiting", test->GetName().c_str());
-    _testCV.wait(lk, [this] {return  _state == STATE_FINISHED || _state == STATE_WAITING || _state == STATE_PAUSED; });
+    _testCV.wait(lk, [this] {return  _state == STATE_FINISHED || _state == STATE_CANCELING || _state == STATE_WAITING || _state == STATE_PAUSED; });
     //TC_LOG_TRACE("test.unit_test", "Test tread with test name %s has finished waiting", test->GetName().c_str());
 }
 
@@ -125,19 +130,19 @@ void TestThread::_SetWait(uint32 ms)
 
 void TestThread::Cancel()
 {
-    _state = STATE_FINISHED;
+    _state = STATE_CANCELING;
     GetTest()->_FailNoException("Test was canceled (thread)");
     WakeUp();
     //test mgr will remove the test after this since it is marked as finished
 }
 
-bool TestThread::Wait(uint32 ms)
+void TestThread::Wait(uint32 ms)
 {
-    if (_state == STATE_FINISHED)
-        return false;
+    if (_state == STATE_FINISHED || _state == STATE_CANCELING)
+        throw TestException();
 
     if (ms == 0)
-        return true;
+        return;
 
     _state = STATE_WAITING;
     _SetWait(ms);
@@ -145,16 +150,18 @@ bool TestThread::Wait(uint32 ms)
 
     //Now pause exec
     std::unique_lock<std::mutex> lk(_testCVMutex);
-    _testCV.wait(lk, [this] { return _state == STATE_FINISHED || _waitTimer == 0; });
+    _testCV.wait(lk, [this] { return _state == STATE_FINISHED || _state == STATE_CANCELING || _waitTimer == 0; });
 
     //Resume!
     if(_state == STATE_WAITING)
         _state = STATE_RUNNING;
-    return true;
 }
 
 void TestThread::HandleThreadPause()
 {
+    if (_state == STATE_CANCELING)  //Test was canceled. Message already set, just throw to exit test
+        throw TestException();
+
     if (_state != STATE_RUNNING)
         return;
 
