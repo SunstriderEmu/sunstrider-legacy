@@ -13,7 +13,7 @@ public:
     class SuppressionTestImpt : public TestCase
     {
     public:
-        SuppressionTestImpt() : TestCase(STATUS_WIP) { } 
+        SuppressionTestImpt() : TestCase(STATUS_PASSING) { } 
         // Known bug: Curse of Doom is not affected, should be.
         // WIP: replace creature 12 by a test specific creature
 
@@ -42,7 +42,7 @@ public:
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, hitChance, SPELL_MISS_RESIST);
-
+            //not affected
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, 16.0f, SPELL_MISS_RESIST);
         }
     };
