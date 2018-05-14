@@ -1007,7 +1007,7 @@ class TC_GAME_API SpellMgr
         void LoadSpellRequired();
         void LoadSpellLearnSkills();
         void LoadSpellLearnSpells();
-        void LoadSpellAffects();
+        void LoadSpellAffects(bool reload = false);
         void LoadSpellElixirs();
         void LoadSpellTargetPositions();
         void LoadSpellGroups();

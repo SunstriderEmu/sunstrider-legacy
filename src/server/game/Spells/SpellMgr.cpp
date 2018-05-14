@@ -441,8 +441,11 @@ void SpellMgr::LoadSpellGroupStackRules()
 }
 
 //Fill SpellEffectInfo.SpellClassMask in SpellInfo store
-void SpellMgr::LoadSpellAffects()
+void SpellMgr::LoadSpellAffects(bool reload)
 {
+#ifdef LICH_KING
+    This shouldn't be called at all;
+#endif
     // Spell affects related declarations (accessed using SpellMgr functions)
     typedef std::multimap<uint32 /*spellId*/, std::pair<uint8 /*effect*/, uint64 /*mask*/>> SpellAffectMap;
     SpellAffectMap mSpellAffectMap;
@@ -510,7 +513,19 @@ void SpellMgr::LoadSpellAffects()
 
         ++count;
     } while(result->NextRow());
-    
+
+    //in reload case, clear all SpellClassMask previously set
+    if (reload)
+    {
+        for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
+        {
+            SpellInfo* spellInfo = sSpellMgr->_GetSpellInfo(itr->first);
+            if (spellInfo)
+                for(auto effect : spellInfo->Effects)
+                    effect.SpellClassMask = 0;
+        }
+    }
+
     //missing spell affect check
     for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
     {
@@ -553,6 +568,7 @@ void SpellMgr::LoadSpellAffects()
         };
 
         uint8 effIndex;
+        //affect may be set on spell or on first rank
         if(missesAffect(id, effIndex) && missesAffect(firstSpellInfo->Id, effIndex))
             TC_LOG_ERROR("server.loading", "Spell %u (%s) misses spell_affect for effect %u", id, spellInfo->SpellName[sWorld->GetDefaultDbcLocale()], effIndex);
     }

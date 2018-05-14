@@ -454,7 +454,7 @@ bool ChatHandler::HandleReloadSpellBonusesCommand(const char*)
 bool ChatHandler::HandleReloadSpellAffectCommand(const char*)
 {
     TC_LOG_INFO( "command", "Re-Loading SpellAffect definitions..." );
-    sSpellMgr->LoadSpellAffects();
+    sSpellMgr->LoadSpellAffects(true);
     SendGlobalGMSysMessage("DB table `spell_affect` (spell mods apply requirements) reloaded.");
     return true;
 }
