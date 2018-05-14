@@ -828,10 +828,7 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
-    uint32 startingTargetHealth = target->GetHealth();
-    uint32 startingTargetMaxHealt = target->GetMaxHealth();
-    target->SetHealth(std::numeric_limits<int32>::max());
-    target->SetFullHealth();
+    _MaxHealth(target);
 
     auto[sampleSize, maxPredictionError] = _GetApproximationParams(expectedMin, expectedMax);
 
@@ -862,8 +859,7 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
 
     //restoring
-    target->SetMaxHealth(startingTargetMaxHealt);
-    target->SetHealth(startingTargetHealth);
+    _RestoreUnitState(target);
 }
 
 std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID)
@@ -1112,6 +1108,8 @@ void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool 
 void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedTotalAmount, bool crit /* = false*/)
 {
     auto AI = _GetCasterAI(caster);
+    bool heal = expectedTotalAmount < 0;
+    _MaxHealth(target, heal);
     
     _CastDotAndWait(caster, target, spellID, crit);
 
@@ -1120,6 +1118,8 @@ void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 
 	TC_LOG_TRACE("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedTotalAmount: %i", spellID, dotDamageToTarget, expectedTotalAmount);
     INTERNAL_ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedTotalAmount: %i", dotDamageToTarget, expectedTotalAmount);
     INTERNAL_TEST_ASSERT(dotDamageToTarget >= (expectedTotalAmount - tickCount) && dotDamageToTarget <= (expectedTotalAmount + tickCount)); //dots have greater error since they got their damage divided in several ticks
+
+    _RestoreUnitState(target);
 }
 
 void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal, Optional<TestCallback> callback)
@@ -1156,18 +1156,8 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     uint32 const spellTargetStartingHealth = spellTarget->GetHealth();
     uint32 const spellTargetStartingMaxHealth = spellTarget->GetMaxHealth();
 
-    if (heal)
-    {
-        //enough health to avoid overheal
-        spellTarget->SetMaxHealth(std::numeric_limits<int32>::max());
-        spellTarget->SetHealth(1);
-    }
-    else 
-    {
-        //enough health to avoid dying
-        spellTarget->SetMaxHealth(std::numeric_limits<int32>::max());
-        spellTarget->SetFullHealth();
-    }
+    _MaxHealth(spellTarget, heal);
+
     spellTarget->RemoveArenaAuras(false); //may help with already present hot and dots breaking the results
 
     if (callback)
@@ -1205,8 +1195,7 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     target->GetThreatManager().AddThreat(caster, startThreat);
     caster->RemoveAurasDueToSpell(spellID);
     target->RemoveAurasDueToSpell(spellID);
-    spellTarget->SetHealth(spellTargetStartingHealth);
-    spellTarget->SetMaxHealth(spellTargetStartingMaxHealth);
+    _RestoreUnitState(spellTarget);
 }
 
 void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 expectedTickCount, int32 expectedTickAmount, bool healing /* = false*/)
@@ -1291,10 +1280,7 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
 
     _EnsureAlive(caster, victim);
 
-    uint32 startingHealth = victim->GetHealth();
-    uint32 startingMaxHealth = victim->GetMaxHealth();
-
-    victim->SetMaxHealth(std::numeric_limits<int32>::max());
+    _MaxHealth(victim);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
@@ -1308,12 +1294,11 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
         HandleThreadPause();
     }
 
-    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
-
-    victim->SetMaxHealth(startingMaxHealth);
-    victim->SetHealth(startingHealth);
-
     _TestSpellOutcomePercentage(caster, victim, spellID, missInfo, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
+
+    //Restore
+    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
+    _RestoreUnitState(victim);
 }
 
 void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex effIndex, float expectedResultPercent, TestCallbackResult callback)
@@ -1364,10 +1349,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     caster->ForceSpellHitResult(missInfo);
     EnableCriticals(caster, crit);
 
-    uint32 startingHealth = victim->GetHealth();
-    uint32 startingMaxHealth = victim->GetMaxHealth();
-
-    victim->SetMaxHealth(std::numeric_limits<int32>::max());
+    _MaxHealth(victim);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
 
@@ -1392,11 +1374,6 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
         HandleThreadPause();
     }
 
-    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
-
-    victim->SetMaxHealth(startingMaxHealth);
-    victim->SetHealth(startingHealth);
-
     // Proc can be resisted or immune, but it still proc'd
     if (!selfProc)
     {
@@ -1419,6 +1396,10 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     float actualSuccessPercent = 100 * (procCount / float(sampleSize));
     INTERNAL_ASSERT_INFO("Spell %u only proc'd %u %f but was expected %f.", spellID, procSpellID, actualSuccessPercent, expectedChancePercent);
     INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
+
+    //Restore
+    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
+    _RestoreUnitState(victim);
 }
 
 void TestCase::_EnsureAlive(Unit* caster, Unit* target)
@@ -1447,6 +1428,42 @@ void TestCase::_UpdateUnitEvents(Unit* unit)
     //So we force a SpellEvent update to help with it
     //If this isn't true anymore, this function and all its call can be deleted
     unit->m_Events.Update(1);
+}
+
+void TestCase::_MaxHealth(Unit* unit, bool lowHealth /*= false*/)
+{
+    _SaveUnitState(unit);
+
+    unit->SetMaxHealth(std::numeric_limits<int32>::max());
+    if (lowHealth)
+        unit->SetHealth(1);
+    else
+        unit->SetFullHealth();
+}
+
+void TestCase::_SaveUnitState(Unit* unit)
+{
+    INTERNAL_ASSERT_INFO("Unit %s was dead when trying to save state", unit->GetName().c_str());
+    INTERNAL_TEST_ASSERT(unit->IsAlive());
+
+    Powers powerType = unit->GetPowerType();
+    _saveUnitStates.emplace(std::piecewise_construct,
+        std::forward_as_tuple(unit),
+        std::forward_as_tuple(unit->GetHealth(), unit->GetMaxHealth(), powerType, unit->GetPower(powerType), unit->GetMaxPower(powerType))
+    );
+}
+
+void TestCase::_RestoreUnitState(Unit* unit)
+{
+    auto itr = _saveUnitStates.find(unit);
+    if (itr != _saveUnitStates.end())
+    {
+        SavedUnitState& state = itr->second;
+        unit->SetMaxHealth(state.maxHealth);
+        unit->SetHealth(state.health);
+        unit->SetMaxPower(state.powerType, state.maxPower);
+        unit->SetPower(state.powerType, state.power);
+    }
 }
 
 void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float expectedResultPercent)
@@ -1514,9 +1531,7 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
     _EnsureAlive(caster, target);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
-    uint32 targetStartingHealth = target->GetHealth();
-    uint32 targetStartingMaxHealth = target->GetMaxHealth();
-    target->SetMaxHealth(std::numeric_limits<int32>::max());
+    _MaxHealth(target);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
@@ -1544,8 +1559,7 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
 
     //Restore
-    target->SetMaxHealth(targetStartingMaxHealth);
-    target->SetHealth(targetStartingHealth);
+    _RestoreUnitState(target);
 }
 
 void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
@@ -1554,10 +1568,7 @@ void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType 
     INTERNAL_ASSERT_INFO("_TestMeleeHitChance can only be used with BASE_ATTACK and OFF_ATTACK");
     INTERNAL_TEST_ASSERT(weaponAttackType <= OFF_ATTACK);
 
-    uint32 startingHealth = victim->GetHealth();
-    uint32 startingMaxHealth = victim->GetMaxHealth();
-
-    victim->SetMaxHealth(std::numeric_limits<int32>::max());
+    _MaxHealth(victim);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
@@ -1568,12 +1579,11 @@ void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType 
         HandleThreadPause();
     }
 
-    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
-
-    victim->SetMaxHealth(startingMaxHealth);
-    victim->SetHealth(startingHealth);
-
     _TestMeleeOutcomePercentage(caster, victim, weaponAttackType, meleeHitOutcome, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
+
+    //Restore
+    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
+    _RestoreUnitState(victim);
 }
 
 void TestCase::_TestMeleeOutcomePercentage(Unit* attacker, Unit* victim, WeaponAttackType weaponAttackType, MeleeHitOutcome meleeHitOutcome, float expectedResult, float allowedError, uint32 sampleSize /*= 0*/)
@@ -1833,10 +1843,7 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
 
     _EnsureAlive(caster, victim);
 
-    uint32 startingHealth = victim->GetHealth();
-    uint32 startingMaxHealth = victim->GetMaxHealth();
-
-    victim->SetMaxHealth(std::numeric_limits<int32>::max());
+    _MaxHealth(victim);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
@@ -1855,12 +1862,11 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
 
     caster->ForceSpellHitResult(previousForceHitResult);
 
-    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
-
-    victim->SetMaxHealth(startingMaxHealth);
-    victim->SetHealth(startingHealth);
-
     _TestSpellCritPercentage(caster, victim, spellID, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
+
+    //Restore
+    ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
+    _RestoreUnitState(victim);
 }
 
 void TestCase::_TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS)

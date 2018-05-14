@@ -349,12 +349,18 @@ protected:
     //absoluteTolerance: % from 0.0f to 1.0f. Error tolerance, maximum diff with expectedResult. If 0 given, will use a default value depending on expectedResult.
     std::pair<uint32 /*sampleSize*/, float /*resultingAbsoluteTolerance*/> _GetPercentApproximationParams(float const expectedResult, float absoluteTolerance = 0.0f);
 
+    // -- Helpers
     void _EnsureAlive(Unit* caster, Unit* victim);
     //Try to get caster AI or owner caster AI (if pet or summon). Fail if no caster AI found. Changes caster arg to owner if pet/summon.
     PlayerbotTestingAI* _GetCasterAI(Unit*& caster);
     //Get SpellInfo, fails test if not found
     SpellInfo const* _GetSpellInfo(uint32 spellID);
     void _UpdateUnitEvents(Unit* unit);
+    //Set unit hp and max hp to high values. lowHealth = hp to 1 and high max hp. Will store unit state that can be restored later with _RestoreUnitState
+    void _MaxHealth(Unit* unit, bool lowHealth = false);
+    void _SaveUnitState(Unit* unit);
+    void _RestoreUnitState(Unit* unit);
+    // -- 
 
 private:
     std::string              _testName;
@@ -399,6 +405,24 @@ private:
     TestPlayer* SpawnRandomPlayer(Classes cls, Races races) { return nullptr; }
 
     void _CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit = false);
+
+    struct SavedUnitState
+    {
+        SavedUnitState(uint32 health, uint32 maxHealth, Powers powerType, uint32 power, uint32 maxPower) :
+            health(health),
+            maxHealth(maxHealth),
+            powerType(powerType),
+            power(power),
+            maxPower(maxPower)
+        { }
+
+        uint32 health;
+        uint32 maxHealth;
+        Powers powerType;
+        uint32 power;
+        uint32 maxPower;
+    };
+    std::unordered_map<Unit*, SavedUnitState> _saveUnitStates;
 };
 
 #endif //TESTCASE_H
