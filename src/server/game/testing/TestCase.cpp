@@ -1273,13 +1273,14 @@ void TestCase::GroupPlayer(TestPlayer* leader, Player* player)
 
 void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo, Optional<TestCallback> callback)
 {
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
+
     auto AI = _GetCasterAI(caster);
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
 
     _EnsureAlive(caster, victim);
-
     _MaxHealth(victim);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
@@ -1291,6 +1292,9 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
 
         victim->SetFullHealth();
         caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+        if (spellInfo->IsChanneled())
+            _UpdateUnitEvents(caster);
+
         HandleThreadPause();
     }
 
@@ -1341,7 +1345,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     auto AI = _GetCasterAI(caster);
 
     _EnsureAlive(caster, victim);
-    /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellID);
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
     /*SpellInfo const* procSpellInfo =*/ _GetSpellInfo(procSpellID);
 
     ResetSpellCast(caster);
@@ -1362,6 +1366,8 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
 
         victim->SetFullHealth();
         caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+        if (spellInfo->IsChanneled())
+            _UpdateUnitEvents(caster);
 
         if (selfProc)
         {
