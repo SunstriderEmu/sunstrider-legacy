@@ -111,7 +111,7 @@ public:
             LearnTalent(warlock, Talents::Warlock::IMPROVED_CURSE_OF_WEAKNESS_RNK_2);
             float const talentFactor = 1.2f;
             
-            uint32 const curseOfWeaknessAPMalus = ClassSpellsDamage::Warlock::CURSE_OF_WEAKNESS_RNK7 * talentFactor; 
+            uint32 const curseOfWeaknessAPMalus = ClassSpellsDamage::Warlock::CURSE_OF_WEAKNESS_RNK_7 * talentFactor;
             float const expectedRogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK) - curseOfWeaknessAPMalus;
 
             FORCE_CAST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8);
@@ -132,10 +132,11 @@ class ImprovedDrainSoulTest : public TestCaseScript
 public:
     ImprovedDrainSoulTest() : TestCaseScript("talents warlock improved_drain_soul") { }
 
+    // "Returns 15% of your maximum mana if the target is killed by you while you drain its soul. In addition, your Affliction spells generate 10% less threat." (max rank)
     class ImprovedDrainSoulTestImpt : public TestCase
     {
     public:
-        ImprovedDrainSoulTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Curse of Doom doesnt gets its threat reduced
+        ImprovedDrainSoulTestImpt() : TestCase(STATUS_PASSING) { } 
 
         void Test() override
         {
@@ -144,12 +145,10 @@ public:
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_ORC);
             warlock->DisableRegeneration(true);
             rogue->DisableRegeneration(true);
-            rogue->SetHealth(100); // Less than a Drain Soul tick
-            Wait(3000);
 
             LearnTalent(warlock, Talents::Warlock::IMPROVED_DRAIN_SOUL_RNK_2);
             float const talentManaFactor = 0.15f;
-            float const talentThreatFactor = 1 - 0.1f;
+            float const talentThreatFactor = 1.0f - 0.1f;
 
             // Mana returned
             uint32 const drainSoulManaCost = 360;
@@ -157,6 +156,8 @@ public:
 
             uint32 const expectedManaReturn = warlock->GetMaxPower(POWER_MANA) * talentManaFactor;
             FORCE_CAST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5);
+            rogue->SetHealth(1); // Less than a Drain Soul tick
+            WaitNextUpdate();
             Wait(4000);
             TEST_ASSERT(rogue->IsDead());
             TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedManaReturn);
@@ -168,7 +169,7 @@ public:
             Wait(1000);
             rogue->KillSelf();
             Wait(2000);
-            TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
+            TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0); //no mana returned
 
             // Threat reduced by 10% for all affliction spells
             Creature* dummy = SpawnCreature();
@@ -179,7 +180,12 @@ public:
             TEST_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, talentThreatFactor, false);
             TEST_THREAT(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, talentThreatFactor, false);
             TEST_THREAT(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, talentThreatFactor, false);
-            // TODO: SoC Direct damage
+            //okay now... this is dirty. We cant just use TEST_THREAT because damage are not done on target but on enemies around him. So we're using the callback to cast another one on the warlock at each loop that will hit enemies
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            auto dirtyCallback = [](Unit* caster, Unit* target) {
+                caster->CastSpell(caster, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, true);
+            };
+            TEST_THREAT_CALLBACK(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, talentThreatFactor, false, dirtyCallback);
         }
     };
 

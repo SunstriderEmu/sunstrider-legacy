@@ -1144,19 +1144,12 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
 
     if (heal)
-    {
         spellTarget = caster;
-
-    }
     else
-    {
         spellTarget = target;
-    }
-
-    uint32 const spellTargetStartingHealth = spellTarget->GetHealth();
-    uint32 const spellTargetStartingMaxHealth = spellTarget->GetMaxHealth();
 
     _MaxHealth(spellTarget, heal);
+    uint32 const spellTargetStartingHealth = spellTarget->GetHealth();
 
     spellTarget->RemoveArenaAuras(false); //may help with already present hot and dots breaking the results
 
