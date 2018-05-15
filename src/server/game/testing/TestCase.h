@@ -107,6 +107,9 @@ public:
     void RemoveItem(TestPlayer* player, uint32 itemID, uint32 count);
     void LearnTalent(TestPlayer* p, uint32 spellID);
     void EnableCriticals(Unit* caster, bool crit);
+    void RestoreCriticals(Unit* caster);
+    void SaveCriticals(Unit* caster);
+
     //Invite player into leader group. Group is created if not yet existing.
     void GroupPlayer(TestPlayer* leader, Player* player);
     static std::string StringifySpellCastResult(uint32 result) { return StringifySpellCastResult(SpellCastResult(result)); }
@@ -353,6 +356,7 @@ protected:
     void _EnsureAlive(Unit* caster, Unit* victim);
     //Try to get caster AI or owner caster AI (if pet or summon). Fail if no caster AI found. Changes caster arg to owner if pet/summon.
     PlayerbotTestingAI* _GetCasterAI(Unit*& caster);
+    PlayerbotTestingAI* _GetCasterAI(TestPlayer* caster);
     //Get SpellInfo, fails test if not found
     SpellInfo const* _GetSpellInfo(uint32 spellID);
     void _UpdateUnitEvents(Unit* unit);
@@ -422,7 +426,18 @@ private:
         uint32 power;
         uint32 maxPower;
     };
+
+    struct SavedCriticalValues
+    {
+        float spellCrit[MAX_SPELL_SCHOOL]; //PLAYER_SPELL_CRIT_PERCENTAGE1 + i
+        float mainCrit; //PLAYER_CRIT_PERCENTAGE
+        float offCrit; //PLAYER_OFFHAND_CRIT_PERCENTAGE
+        float rangedCrit; //PLAYER_RANGED_CRIT_PERCENTAGE
+        int32 baseCrit; //m_baseSpellCritChance
+    };
+
     std::unordered_map<Unit*, SavedUnitState> _saveUnitStates;
+    std::unordered_map<Unit*, SavedCriticalValues> _savedCriticalValues;
 };
 
 #endif //TESTCASE_H

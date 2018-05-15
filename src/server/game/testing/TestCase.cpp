@@ -803,6 +803,9 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     INTERNAL_TEST_ASSERT(dealtMax <= allowedMax);
     INTERNAL_ASSERT_INFO("Enforcing low result for spell %u. allowedMin: %u, dealtMin: %u", spellID, allowedMin, dealtMin);
     INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
+
+    //Restoring
+    RestoreCriticals(caster);
 }
 
 PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster)
@@ -815,7 +818,12 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster)
     INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
     INTERNAL_TEST_ASSERT(caster != nullptr);
 
-    auto AI = casterOwner->GetTestingPlayerbotAI();
+    return _GetCasterAI(casterOwner);
+}
+
+PlayerbotTestingAI* TestCase::_GetCasterAI(TestPlayer* caster)
+{
+    auto AI = caster->GetTestingPlayerbotAI();
     INTERNAL_ASSERT_INFO("Caster in not a testing bot");
     INTERNAL_TEST_ASSERT(AI != nullptr);
 
@@ -1103,6 +1111,9 @@ void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool 
     //make sure aura expired
     INTERNAL_ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
     INTERNAL_TEST_ASSERT(!target->HasAura(spellID, caster->GetGUID()));
+
+    //Restoring
+    RestoreCriticals(caster);
 }
 
 void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedTotalAmount, bool crit /* = false*/)
@@ -1222,10 +1233,15 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
     uint32 actualTickAmount = totalChannelDmg / expectedTickCount;
     INTERNAL_ASSERT_INFO("Enforcing channel damage. resultTickAmount: %i, expectedTickAmount: %i", actualTickAmount, expectedTickAmount);
     INTERNAL_TEST_ASSERT(actualTickAmount >= (expectedTickAmount - 2) && actualTickAmount <= (expectedTickAmount + 2)); //channels have greater error since they got their damage divided in several ticks
+
+    //Restoring
+    RestoreCriticals(caster);
 }
 
 void TestCase::EnableCriticals(Unit* caster, bool crit)
 {
+    SaveCriticals(caster);
+
     float critChance = -100.0f;
 	if (crit)
 		critChance = 200.0f;
@@ -1238,6 +1254,37 @@ void TestCase::EnableCriticals(Unit* caster, bool crit)
 	caster->SetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE, critChance); // RANGED_ATTACK
 
     caster->m_baseSpellCritChance = int32(critChance);
+}
+
+void TestCase::SaveCriticals(Unit* caster)
+{
+    SavedCriticalValues values = _savedCriticalValues[caster];
+
+    for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
+        values.spellCrit[i] = caster->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i);
+
+    values.mainCrit = caster->GetFloatValue(PLAYER_CRIT_PERCENTAGE);
+    values.offCrit = caster->GetFloatValue(PLAYER_OFFHAND_CRIT_PERCENTAGE);
+    values.rangedCrit = caster->GetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE);
+    values.baseCrit = caster->m_baseSpellCritChance;
+}
+
+void TestCase::RestoreCriticals(Unit* caster)
+{
+    auto itr = _savedCriticalValues.find(caster);
+    INTERNAL_ASSERT_INFO("RestoreCriticals: Trying to restore non existent saved critical values");
+    INTERNAL_TEST_ASSERT(itr != _savedCriticalValues.end());
+
+    SavedCriticalValues const values = itr->second;
+
+    for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
+        caster->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, values.spellCrit[i]);
+
+    caster->SetFloatValue(PLAYER_CRIT_PERCENTAGE, values.mainCrit); // BASE_ATTACK
+    caster->SetFloatValue(PLAYER_OFFHAND_CRIT_PERCENTAGE, values.offCrit); // OFF_ATTACK
+    caster->SetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE, values.rangedCrit); // RANGED_ATTACK
+
+    caster->m_baseSpellCritChance = values.baseCrit;
 }
 
 void TestCase::GroupPlayer(TestPlayer* leader, Player* player)
@@ -1399,6 +1446,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     //Restore
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
     _RestoreUnitState(victim);
+    RestoreCriticals(caster);
 }
 
 void TestCase::_EnsureAlive(Unit* caster, Unit* target)
