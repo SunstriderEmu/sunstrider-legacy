@@ -168,14 +168,15 @@ public:
 
     // Will cast spell and check if threat is equal to dmg/healing done multiplied by expectedThreatFactor. Group of caster may be disbanded if any. Target aura and caster aura may be removed.
     #define TEST_THREAT(caster, target, spellID, expectedThreatFactor, heal)  { _SetCaller(__FILE__, __LINE__); _TestThreat(caster, target, spellID, expectedThreatFactor, heal, {}); _ResetCaller(); }
-    // Same as TEST_THREAT but with a function to call just before casting the spell, with the type std::function<void(Unit*, Unit*)>
+    /* Same but with additional argument:
+    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
     #define TEST_THREAT_CALLBACK(caster, target, spellID, expectedThreatFactor, heal, callback)  { _SetCaller(__FILE__, __LINE__); _TestThreat(caster, target, spellID, expectedThreatFactor, heal, Optional<TestCallback>(callback)); _ResetCaller(); }
     /* 
     @expectedAmount negative values for healing
     @crit Set crit score of caster to maximum
     */
     #define TEST_DOT_DAMAGE(caster, target, spellID, expectedTotalAmount, crit) { _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedTotalAmount, crit); _ResetCaller(); }
-    // 
   
     #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount); _ResetCaller(); }
     #define TEST_CHANNEL_HEALING(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount, true); _ResetCaller(); }
@@ -184,7 +185,9 @@ public:
     chance: 0-100
     */
     #define TEST_SPELL_HIT_CHANCE(caster, victim, spellID, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo, {}); _ResetCaller(); }
-    //same but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    /* Same but with additional argument:
+    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
     #define TEST_SPELL_HIT_CHANCE_CALLBACK(caster, victim, spellID, chance, missInfo, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo, Optional<TestCallback>(callback)); _ResetCaller(); }
     /* Triggers attack from caster on victim, and test if results are chance% given missInfo
     chance: 0-100
@@ -219,7 +222,9 @@ public:
     chance: 0-100
     */
     #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance, {}); _ResetCaller(); }
-    //same but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>    
+    /* Same but with additional argument:
+    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
     #define TEST_SPELL_CRIT_CHANCE_CALLBACK(caster, target, spellID, chance, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance, Optional<TestCallback>(callback)); _ResetCaller(); }
 
     /* Check if spell has given cast time for caster 
@@ -240,15 +245,19 @@ public:
     chance: 0-100
     */
     #define TEST_SPELL_PROC_CHANCE(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, {}); _ResetCaller(); }
-    /* Same as TEST_SPELL_PROC_CHANCE but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>    
-    chance: 0 - 100
+    /* Same but with additional argument:
+    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
     #define TEST_SPELL_PROC_CHANCE_CALLBACK(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, Optional<TestCallback>(callback)); _ResetCaller(); }
 
     /* caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
     chance: 0-100
     */
-    #define TEST_SPELL_DISPEL_RESIST_CHANCE(caster, target, dispeler, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance); _ResetCaller(); }
+    #define TEST_SPELL_DISPEL_RESIST_CHANCE(caster, target, dispeler, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance, {}); _ResetCaller(); }
+    /* Same but with additional argument:
+    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
+    #define TEST_SPELL_DISPEL_RESIST_CHANCE_CALLBACK(caster, target, dispeler, spellID, chance, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance,  Optional<TestCallback>(callback)); _ResetCaller(); }
 
     /* Test how much of the time a cast pushback is resisted (against melee attacks). Target will also be the one attacking the caster.
     chance: 0-100
@@ -298,6 +307,7 @@ protected:
     void Celebrate();
     void Sadness();
 
+    // <Test macros related functions>
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback); //if !damage, then use healing
     void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
     void _TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
@@ -318,7 +328,6 @@ protected:
     allowedError: 0 - 100
     */
     void _TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize = 0);
-
     void _TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback);
     void _TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
     void _TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback);
@@ -326,16 +335,15 @@ protected:
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, TestCallbackResult callback);
     void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
-    void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance);
-
+    void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, Optional<TestCallback> callback);
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
     inline void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, Seconds s) { _TestCooldown(caster, target, castSpellID, uint32(s.count())); }
     void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond);
     void _EquipItem(TestPlayer* p, uint32 itemID, bool newItem);
-    //if negative, ensure has NOT aura
+    //if spellID negative, ensure has NOT aura
     void _EnsureHasAura(Unit* target, int32 spellID);
-    void _EnsureHasNotAura(Unit* target, int32 spellID) { _EnsureHasAura(target, -spellID); }
+    inline void _EnsureHasNotAura(Unit* target, uint32 spellID) { _EnsureHasAura(target, -int32(spellID)); }
     void _TestHasCooldown(Unit* caster, uint32 castSpellID, uint32 cooldownSecond);
     inline void _TestHasCooldown(Unit* caster, uint32 castSpellID, Seconds s) { _TestHasCooldown(caster, castSpellID, uint32(s.count())); }
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS);
@@ -344,27 +352,33 @@ protected:
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
     void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
     void _TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId);
+    // <Test macros related functions/>
 
-    //Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
+    // Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
     std::pair<uint32 /*sampleSize*/, uint32 /*absoluteTolerance*/>  _GetApproximationParams(uint32 const expectedMin, uint32 const expectedMax);
-    //Returns how much iterations and how much tolerance you should allow for given:
-    //expectedResult: % from absoluteTolerance*2 to 1.0f
-    //absoluteTolerance: % from 0.0f to 1.0f. Error tolerance, maximum diff with expectedResult. If 0 given, will use a default value depending on expectedResult.
+    /* Returns how much iterations and how much tolerance you should allow for given:
+    expectedResult: % from absoluteTolerance*2 to 1.0f
+    absoluteTolerance: % from 0.0f to 1.0f. Error tolerance, maximum diff with expectedResult. If 0 given, will use a default value depending on expectedResult.
+    */
     std::pair<uint32 /*sampleSize*/, float /*resultingAbsoluteTolerance*/> _GetPercentApproximationParams(float const expectedResult, float absoluteTolerance = 0.0f);
 
-    // -- Helpers
+    // <Helpers>
     void _EnsureAlive(Unit* caster, Unit* victim);
     //Try to get caster AI or owner caster AI (if pet or summon). Fail if no caster AI found. Changes caster arg to owner if pet/summon.
     PlayerbotTestingAI* _GetCasterAI(Unit*& caster);
+    //Same but with an already provided TestPlayer (no checking summoner or owner)
     PlayerbotTestingAI* _GetCasterAI(TestPlayer* caster);
     //Get SpellInfo, fails test if not found
     SpellInfo const* _GetSpellInfo(uint32 spellID);
+    //See comments inside
     void _UpdateUnitEvents(Unit* unit);
-    //Set unit hp and max hp to high values. lowHealth = hp to 1 and high max hp. Will store unit state that can be restored later with _RestoreUnitState
+    //Set unit hp and max hp to high values. lowHealth = hp to 1 and high max hp. Will also call _SaveUnitState
     void _MaxHealth(Unit* unit, bool lowHealth = false);
+    //Save health, max health, power, max power for later usage
     void _SaveUnitState(Unit* unit);
+    //Restore values saved by _SaveUnitState
     void _RestoreUnitState(Unit* unit);
-    // -- 
+    // <Helpers/>
 
 private:
     std::string              _testName;
@@ -393,9 +407,8 @@ private:
       std::string _GetCallerFile();
     int32 _GetCallerLine();
 
-    /* return a new randomized test bot. Returned player must be deleted by the caller
-    if level == 0, set bot at max player level
-    */
+    /* Return a new randomized test bot. Returned player must be deleted by the caller
+    if level == 0, set bot at max player level */
     TestPlayer* _CreateTestBot(Position loc, Classes cls, Races race, uint32 level = 0);
     void _GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower = false, Powers power = POWER_MANA);
     Classes _GetRandomClassForRace(Races race);
@@ -405,8 +418,8 @@ private:
     TestThread* _testThread;
 
     //those two just to help avoiding calling SpawnRandomPlayer with the wrong arguments, SpawnPlayer should be called in those case
-    TestPlayer* SpawnRandomPlayer(Races race, Classes cls) { return nullptr; }
-    TestPlayer* SpawnRandomPlayer(Classes cls, Races races) { return nullptr; }
+    TestPlayer* SpawnRandomPlayer(Races race, Classes cls) = delete;
+    TestPlayer* SpawnRandomPlayer(Classes cls, Races races) = delete;
 
     void _CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit = false);
 

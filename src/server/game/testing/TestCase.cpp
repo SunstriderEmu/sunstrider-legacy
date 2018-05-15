@@ -1552,13 +1552,28 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     caster->SetHealth(startingHealth);
 }
 
-void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float expectedResultPercent)
+void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float expectedResultPercent, Optional<TestCallback> callback)
 {
     //Dispel resist chance is not related to hit chance but is a separate roll
     //https://wow.gamepedia.com/index.php?title=Dispel&oldid=1432725
 
     _EnsureAlive(caster, target);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
+    uint32 dispelMask = spellInfo->GetDispelMask();
+    uint32 dispelSpellId = 0;
+    if (dispelMask & (1 << DISPEL_MAGIC))
+        dispelSpellId = 527; //priest dispel
+    else if (dispelMask & (1 << DISPEL_CURSE))
+        dispelSpellId = 2782; //druid remove curse
+    else if (dispelMask & (1 << DISPEL_DISEASE))
+        dispelSpellId = 528; //priest curse disease
+    else if (dispelMask & (1 << DISPEL_POISON))
+        dispelSpellId = 8946;  //Druid Curse Poison
+    else
+    {
+        INTERNAL_ASSERT_INFO("Dispel mask %u not handled", dispelSpellId);
+        INTERNAL_TEST_ASSERT(false);
+    }
 
     _MaxHealth(target);
 
@@ -1569,12 +1584,15 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
     {
         target->SetFullHealth();
 
+        if (callback)
+            callback.get()(caster, target);
+
         _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         if (spellInfo->IsChanneled())
             _UpdateUnitEvents(caster);
         INTERNAL_ASSERT_INFO("TestCase::_TestSpellDispelResist target has not aura of %u after cast", spellID);
         INTERNAL_TEST_ASSERT(target->HasAura(spellID));
-        _ForceCast(dispeler, target, /*ClassSpells::Priest::DISPEL_MAGIC_RNK_1*/ 527, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+        _ForceCast(dispeler, target, dispelSpellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
         resistedCount += uint32(target->HasAura(spellID));
 
         target->ClearDiminishings();
