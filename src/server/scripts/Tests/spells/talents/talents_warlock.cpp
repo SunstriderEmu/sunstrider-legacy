@@ -1349,6 +1349,7 @@ class FelDominationTest : public TestCaseScript
 public:
 	FelDominationTest() : TestCaseScript("talents warlock fel_domination") { }
 
+    //"Your next Imp, Voidwalker, Succubus, Felhunter or Felguard Summon spell has its casting time reduced by 5.5 sec and its Mana cost reduced by 50%."
 	class FelDominationTestImpt : public TestCase
 	{
 	public:
@@ -1363,12 +1364,10 @@ public:
             TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::FEL_DOMINATION_RNK_1, Minutes(15));
             TEST_AURA_MAX_DURATION(warlock, ClassSpells::Warlock::FEL_DOMINATION_RNK_1, Seconds(15));
 
-            TEST_CAST(warlock, warlock, summonSpellId);
-			Wait(Seconds(5));
-			Pet* pet = warlock->GetPet();
-			TEST_ASSERT(pet != nullptr);
-
-			TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
+            uint32 const castTimeReduc = 5500;
+            TEST_SPELL_CAST_TIME(warlock, summonSpellId, 10000 - castTimeReduc);
+            TEST_POWER_COST(warlock, summonSpellId, POWER_MANA, expectedManaCost);
+            TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
 		}
 
 		void Test() override
