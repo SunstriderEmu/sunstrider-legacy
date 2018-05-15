@@ -1100,7 +1100,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
             {
                 if (mClassScriptAura->GetEffIndex() != 1)
                 {
-                    TC_LOG_ERROR("FIXME", "Expected spell %u structure change, need code update", mClassScriptAura->GetId());
+                    TC_LOG_ERROR("spells", "Expected spell %u structure change, need code update", mClassScriptAura->GetId());
                     break;
                 }
 
@@ -1135,6 +1135,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
                         }
                     }
                 }
+
                 pdamage += (pdamage*modPercent / 100);
                 break;
             }

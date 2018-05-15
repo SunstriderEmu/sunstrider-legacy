@@ -199,7 +199,8 @@ class ImprovedLifeTapTest : public TestCaseScript
 {
 public:
 	ImprovedLifeTapTest() : TestCaseScript("talents warlock improved_life_tap") { }
-
+    
+    //"Increases the amount of Mana awarded by your Life Tap spell by 20 %" (max rank)
 	class ImprovedLifeTapTestImpt : public TestCase
 	{
 	public:
@@ -209,7 +210,6 @@ public:
 		{
 			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
             warlock->DisableRegeneration(true);
-			warlock->SetPower(POWER_MANA, 0);
 
             LearnTalent(warlock, Talents::Warlock::IMPROVED_LIFE_TAP_RNK_2);
             float const improvedLifeTapFactor = 1.2f;
@@ -219,6 +219,7 @@ public:
             uint32 const perLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * perLevelPoint;
             uint32 const expectedManaGained = (ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7 + perLevelGain) * improvedLifeTapFactor;
 
+            warlock->SetPower(POWER_MANA, 0);
 			warlock->CastSpell(warlock, ClassSpells::Warlock::LIFE_TAP_RNK_7);
 			TEST_ASSERT(warlock->GetPower(POWER_MANA) == expectedManaGained);
 		}
@@ -235,24 +236,24 @@ class SoulSiphonTest : public TestCaseScript
 public:
     SoulSiphonTest() : TestCaseScript("talents warlock soul_siphon") { }
 
+    //Increases the amount drained by your Drain Life spell by an additional 4 % for each Affliction effect on the target, up to a maximum of 60 % additional effect.
     class SoulSiphonTestImpt : public TestCase
     {
     public:
-        SoulSiphonTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Bug: Should have a 60% limit for drain life bonus
+        SoulSiphonTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Bug: Drain mana is affected and shouldn't
 
-        void Add5AfflictionSpell(TestPlayer* warlock, Creature* dummy, uint32 curseSpellId)
+        void Add4AfflictionSpell(TestPlayer* warlock, Creature* dummy)
         {
-            FORCE_CAST(warlock, dummy, curseSpellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5);
         }
 
         void IsAffectedByTalent(TestPlayer* warlock, TestPlayer* warlock2, Creature* dummy, uint32 spellId, float talentFactor)
         {
             warlock->SetHealth(1);
-            FORCE_CAST(warlock2, dummy, spellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            FORCE_CAST(warlock2, dummy, spellId, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
             uint32 warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * (1.0f + talentFactor));
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
             WaitNextUpdate(); //Wait for channel to start
@@ -290,7 +291,7 @@ public:
             LearnTalent(warlock, Talents::Warlock::SOUL_SIPHON_RNK_2);
             float const bonusPerSpell = 0.04f;
 
-            // Solo Drain Life
+            // Only Drain Life test - Damage is already amplified by itself?
             warlock->SetHealth(1);
             uint32 warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * (1 + bonusPerSpell));
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
@@ -306,7 +307,8 @@ public:
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, 2 * bonusPerSpell + 0.1f); // +10% from CoE
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, 2 * bonusPerSpell);
-            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, 2 * bonusPerSpell);
+            //Patch 2.3.0 (2007 - 11 - 13) : Rank 2 changed to 4 % increase per affliction effect from 5 % .It no longer affects Drain Mana.
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, 0.0f);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::FEAR_RNK_3, 2 * bonusPerSpell);
             dummy->NearTeleportTo(_location);
             WaitNextUpdate();
@@ -317,30 +319,34 @@ public:
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, 2 * bonusPerSpell);
 
-            // Test Max bonus: +60% -- Bugged, goes beyond 60%
+            // Test Max bonus: +60%
             TestPlayer* warlock3 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
             TestPlayer* warlock4 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
             TestPlayer* warlock5 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
             TestPlayer* warlock6 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
 
-            Add5AfflictionSpell(warlock2, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7);
-            Add5AfflictionSpell(warlock3, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
-            Add5AfflictionSpell(warlock4, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2);
-            Add5AfflictionSpell(warlock5, dummy, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8);
-            Add5AfflictionSpell(warlock6, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2);
-            WaitNextUpdate();
+            Add4AfflictionSpell(warlock2, dummy);
+            Add4AfflictionSpell(warlock3, dummy);
+            Add4AfflictionSpell(warlock4, dummy);
+            Add4AfflictionSpell(warlock5, dummy);
+            Add4AfflictionSpell(warlock6, dummy);
+            uint32 const expectedHarmfulAuraCount = 20;
 
-            // Dummy should be affected by 25 Affliction spells
+            // Dummy should be affected by expectedHarmfulAuraCount Affliction spells
+            // If 60% is not enforced, drain should take 80% more dmg
             warlock->SetHealth(1);
-            uint32 const harmfulAuraCount = GetHarmfulAurasCount(dummy);
-            ASSERT_INFO("Dummy has %u harmful auras instead of %u.", harmfulAuraCount, 18);
-            TEST_ASSERT(harmfulAuraCount == 25);
+            uint32 const actualHarmfulAuraCount = GetHarmfulAurasCount(dummy);
+            ASSERT_INFO("Dummy has %u harmful auras instead of %u.", actualHarmfulAuraCount, expectedHarmfulAuraCount);
+            TEST_ASSERT(actualHarmfulAuraCount == expectedHarmfulAuraCount);
 
-            float const expectedDrainLifeBonus = std::min(1.0f + harmfulAuraCount * bonusPerSpell, 1.60f);
+            float const expectedDrainLifeBonus = std::min(1.0f + actualHarmfulAuraCount * bonusPerSpell, 1.60f);
             warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * expectedDrainLifeBonus);
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
-            Wait(5500);
-            TEST_ASSERT(GetHarmfulAurasCount(dummy) == 25);
+            WaitNextUpdate(); //Wait for channel to start
+            Wait(6000); //6s cast time
+            uint32 const newActualHarmfulAuraCount = GetHarmfulAurasCount(dummy);
+            ASSERT_INFO("Dummy has %u harmful auras instead of %u (after drain life cast).", newActualHarmfulAuraCount, expectedHarmfulAuraCount);
+            TEST_ASSERT(newActualHarmfulAuraCount == expectedHarmfulAuraCount);
             ASSERT_INFO("Warlock has %u HP but should have %u HP.", warlock->GetHealth(), warlockExpectedHealth);
             TEST_ASSERT(warlock->GetHealth() == warlockExpectedHealth);
         }
@@ -358,6 +364,7 @@ public:
 
     AmplifyCurseTest() : TestCaseScript("talents warlock amplify_curse") { }
 
+    //"Increases the effect of your next Curse of Doom or Curse of Agony by 50 % , or your next Curse of Exhaustion by an additional 20 % .Lasts 30sec."
     class AmplifyCurseTestImpt : public TestCase
     {
     public:
@@ -873,7 +880,7 @@ public:
 	class ContagionTestImpt : public TestCase
 	{
 	public:
-		ContagionTestImpt() : TestCase(STATUS_WIP) { } // Needs to fix Seed of Corruption spell
+		ContagionTestImpt() : TestCase(STATUS_WIP) { } // SoC logic is now fixed in here. New status?
 
 		void Test() override
 		{
@@ -882,6 +889,8 @@ public:
 
             LearnTalent(warlock, Talents::Warlock::CONTAGION_RNK_5);
             float const contagionFactor = 1.05f;
+
+            // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5 %"
 
             // Corruption
 			uint32 const expectedCorruptionDamage = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * contagionFactor;
@@ -898,8 +907,12 @@ public:
             Creature* dummy2 = SpawnCreature();
             uint32 const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * contagionFactor;
             uint32 const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * contagionFactor;
-            //FIXME: next line not working ("GetSpellDamageDoneInfoTo found no data for this victim (Testing Creature)")
-            //TEST_DIRECT_SPELL_DAMAGE(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false);
+            //okay now... this is dirty. We cant just use TEST_DIRECT_SPELL_DAMAGE because damage are not done on target but on enemies around him. So we're using the callback to cast another one on the warlock at each loop that will hit enemies
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            auto dirtyCallback = [](Unit* caster, Unit* target) {
+                caster->CastSpell(caster, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, true);
+            };
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false, dirtyCallback);
             dummy2->DespawnOrUnsummon();
 
             // Reduces the chance your Affliction spells wtill be dispelled by 30% (5/5)
@@ -1603,7 +1616,7 @@ public:
 	class DemonicSacrificeTestImpt : public TestCase
 	{
 	public:
-		DemonicSacrificeTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Will break as long as Seed of Corruption is broken
+		DemonicSacrificeTestImpt() : TestCase(STATUS_WIP) { } // What's the new status now that SoC logic is fixed in here?
 
 		void SacrificePet(TestPlayer* warlock, uint32 summonSpellId, uint32 aura, uint32 previousAura = 0)
 		{
@@ -1724,8 +1737,12 @@ public:
 
             uint32 const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * sacrificeFactor;
             uint32 const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * sacrificeFactor;
-            //FIXME: next line not working ("GetSpellDamageDoneInfoTo found no data for this victim (Testing Creature)")
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false);
+            //okay now... this is dirty. We cant just use TEST_DIRECT_SPELL_DAMAGE because damage are not done on target but on enemies around him. So we're using the callback to cast another one on the warlock at each loop that will hit enemies
+            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
+            auto dirtyCallback = [](Unit* caster, Unit* target) {
+                caster->CastSpell(caster, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, true);
+            };
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false, dirtyCallback);
             dummy2->DespawnOrUnsummon();
 		}
 
