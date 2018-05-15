@@ -60,7 +60,8 @@ void TrainerSpellData::Clear()
 {
     for (auto & itr : spellList)
         delete itr;
-    spellList.empty();
+
+    spellList.clear();
 }
 
 TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const

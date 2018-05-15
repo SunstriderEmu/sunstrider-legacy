@@ -280,7 +280,6 @@ public:
 
             uint32 const expectedCurseOfWeaknessManaCost = 265;
             TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, POWER_MANA, expectedCurseOfWeaknessManaCost);
-
         }
     };
 
