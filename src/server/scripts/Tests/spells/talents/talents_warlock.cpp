@@ -368,7 +368,7 @@ public:
     class AmplifyCurseTestImpt : public TestCase
     {
     public:
-        AmplifyCurseTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Doesnt boost Curse of Doom and somehow reduce it
+        AmplifyCurseTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
