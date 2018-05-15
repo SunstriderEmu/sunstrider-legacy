@@ -872,6 +872,7 @@ public:
 
 	ContagionTest() : TestCaseScript("talents warlock contagion") { }
 
+    // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5% and reduces the chance your Affliction spells will be dispelled by an additional 30%." (max rank)
 	class ContagionTestImpt : public TestCase
 	{
 	public:
@@ -963,10 +964,11 @@ class DarkPactTest : public TestCaseScript
 public:
     DarkPactTest() : TestCaseScript("talents warlock dark_pact") { }
 
+    //"Drains 700 of your pet's Mana, returning 100% to you." (max rank)
     class DarkPactTestImpt : public TestCase
     {
     public:
-        DarkPactTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Not affected by Spell Coefficient
+        DarkPactTestImpt() : TestCase(STATUS_PASSING) { } // Not affected by Spell Coefficient
 
         void Test() override
         {
@@ -987,7 +989,7 @@ public:
             TEST_ASSERT(voidwalker != nullptr);
             voidwalker->DisableRegeneration(true);
 
-            uint32 expectedManaDrained = ClassSpellsDamage::Warlock::DARK_PACT_RNK_4 + spellPower * ClassSpellsCoeff::Warlock::DARK_PACT; // WoWWiki
+            uint32 expectedManaDrained = ClassSpellsDamage::Warlock::DARK_PACT_RNK_4 + spellPower * ClassSpellsCoeff::Warlock::DARK_PACT;
             uint32 expectedPetMana = std::max(voidwalker->GetPower(POWER_MANA) - expectedManaDrained, uint32(0));
             warlock->SetPower(POWER_MANA, 0);
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::DARK_PACT_RNK_4);

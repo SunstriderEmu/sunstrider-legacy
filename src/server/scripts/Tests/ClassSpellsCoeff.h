@@ -156,7 +156,7 @@ namespace ClassSpellsCoeff
 		const float CORRUPTION = 0.936f;
 		const float CURSE_OF_AGONY = 1.2f;
 		const float CURSE_OF_DOOM = 2.0f;
-		const float DARK_PACT = 0.96f;
+		const float DARK_PACT = 0.96f; // WoWWiki
 		const float DRAIN_LIFE = 0.7143f;
 		const float DRAIN_MANA = 0.0f;
 		const float DRAIN_SOUL = 2.143f;
