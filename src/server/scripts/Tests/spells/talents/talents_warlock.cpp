@@ -416,6 +416,7 @@ public:
 
 	ImprovedCurseOfAgonyTest() : TestCaseScript("talents warlock improved_curse_of_agony") { }
 
+    //"Increases the damage done by your Curse of Agony by 10 %" (max rank)
 	class ImprovedCurseOfAgonyTestImpt : public TestCase
 	{
 	public:
@@ -448,6 +449,7 @@ public:
 
     FelConcentrationTest() : TestCaseScript("talents warlock fel_concentration") { }
 
+    //"Gives you a 70% chance to avoid interruption caused by damage while channeling the Drain Life, Drain Mana, or Drain Soul spell." (max rank)
     class FelConcentrationTestImpt : public TestCase
     {
     public:
@@ -478,14 +480,11 @@ class GrimReachTest : public TestCaseScript
 public:
     GrimReachTest() : TestCaseScript("talents warlock grim_reach") { }
 
+    // "Increases the range of your Affliction spells by 20%." (max rank)
     class GrimReachTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - Doesnt affect Curse of Doom, should.
-        */
-        GrimReachTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        GrimReachTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
