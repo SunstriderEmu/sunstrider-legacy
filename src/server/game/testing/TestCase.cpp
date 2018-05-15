@@ -779,11 +779,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
         if (callback)
             callback.get()(caster, target);
 
-        caster->ForceSpellHitResult(SPELL_MISS_NONE);
-        uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
-        caster->ForceSpellHitResult(previousForceHitResult);
-        INTERNAL_ASSERT_INFO("Spell casting failed with reason %s", StringifySpellCastResult(result).c_str());
-        INTERNAL_TEST_ASSERT(result == SPELL_CAST_OK);
+        _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         HandleThreadPause();
     }
 
@@ -1082,15 +1078,7 @@ void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
 
-    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
-    caster->ForceSpellHitResult(SPELL_MISS_NONE);
-    uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED)); //ignore speed because we want to test immediately even if spell has a fly time
-    if (result != SPELL_CAST_OK)
-    {
-        caster->ForceSpellHitResult(previousForceHitResult);
-        INTERNAL_ASSERT_INFO("_TestDotDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
-        INTERNAL_TEST_ASSERT(false);
-    }
+    _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
 
     //Currently, channeled spells start at the next update so we need to wait for it to be applied.
     //Remove this line if spell system has changed and this is not true
@@ -1104,7 +1092,6 @@ void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool 
     //spell did hit, let's wait for dot duration
     uint32 waitTime = aura->GetDuration();
     Wait(waitTime);
-    caster->ForceSpellHitResult(previousForceHitResult);
     //aura may be deleted at this point, do not use anymore
     aura = nullptr;
 
@@ -1213,15 +1200,10 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
-    caster->ForceSpellHitResult(SPELL_MISS_NONE);
+
     EnableCriticals(caster, false);
-    uint32 result = caster->CastSpell(target, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_TARGET_AURASTATE));
-    caster->ForceSpellHitResult(previousForceHitResult);
-    if (result != SPELL_CAST_OK)
-    {
-        INTERNAL_ASSERT_INFO("_TestChannelDamage: Spell cast failed with result %s ", StringifySpellCastResult(result).c_str());
-        INTERNAL_TEST_ASSERT(false);
-    }
+    _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_TARGET_AURASTATE));
+
     WaitNextUpdate(); //extra wait, remove if spell system allow to cast channel instantly
     Wait(baseDurationTime); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
     uint32 totalChannelDmg = 0; 
@@ -1331,7 +1313,7 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
             callback.get()(caster, victim);
 
         victim->SetFullHealth();
-        caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+        _TestCast(caster, victim, spellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         if (spellInfo->IsChanneled())
             _UpdateUnitEvents(caster);
 
@@ -1405,7 +1387,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
             callback.get()(caster, victim);
 
         victim->SetFullHealth();
-        caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+        _TestCast(caster, victim, spellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         if (spellInfo->IsChanneled())
             _UpdateUnitEvents(caster);
 
@@ -1532,7 +1514,7 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     if (!channeled)
         castFlags = TriggerCastFlags(castFlags & ~TRIGGERED_CAST_DIRECTLY); //if channeled, we want finish the initial cast directly to start channeling
 
-    caster->CastSpell(target, spellID, castFlags);
+    _TestCast(caster, target, spellID, SPELL_CAST_OK, castFlags);
     if (channeled)
         WaitNextUpdate(); //currently we can't start a channel before next update
     Spell* spell = caster->GetCurrentSpell(channeled ? CURRENT_CHANNELED_SPELL:  CURRENT_GENERIC_SPELL);
@@ -1903,7 +1885,7 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
             callback.get()(caster, victim);
 
         victim->SetFullHealth();
-        caster->CastSpell(victim, spellID, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+        _TestCast(caster, victim, spellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         HandleThreadPause();
     }
 

@@ -1136,6 +1136,7 @@ class ImprovedHealthstoneTest : public TestCaseScript
 public:
 	ImprovedHealthstoneTest() : TestCaseScript("talents warlock improved_healthstone") { }
 
+    //"Increases the amount of Health restored by your Healthstone by 20 %" (max rank)
 	class ImprovedHealthstoneTestImpt : public TestCase
 	{
 	public:
@@ -1190,6 +1191,7 @@ class DemonicEmbraceTest : public TestCaseScript
 public:
 	DemonicEmbraceTest() : TestCaseScript("talents warlock demonic_embrace") { }
 
+    //"Increases your total Stamina by 15% but reduces your total Spirit by 5%" (max rank)
 	class DemonicEmbraceTestImpt : public TestCase
 	{
 	public:
@@ -1222,6 +1224,7 @@ class ImprovedHealthFunnelTest : public TestCaseScript
 public:
 	ImprovedHealthFunnelTest() : TestCaseScript("talents warlock improved_health_funnel") { }
 
+    //"Increases the amount of Health transferred by your Health Funnel spell by 20% and reduces the initial health cost by 20%" (max rank)
 	class ImprovedHealthFunnelTestImpt : public TestCase
 	{
 	public:
@@ -1236,7 +1239,7 @@ public:
             float const talentHealthTransferredFactor = 1.2f;
             float const talentInitialCostFactor = 0.8f;
 
-            // Summon Voidwalker
+            // Summon Voidwalker (with low health)
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             WaitNextUpdate();
             Guardian* voidwalker = warlock->GetGuardianPet();
@@ -1275,10 +1278,11 @@ class FelIntellectTest : public TestCaseScript
 public:
 	FelIntellectTest() : TestCaseScript("talents warlock fel_intellect") { }
 
+    //Increases the Intellect of your Imp, Voidwalker, Succubus, Felhunter and Felguard by 15% and increases your maximum mana by 3%
 	class FelIntellectTestImpt : public TestCase
 	{
 	public:
-		FelIntellectTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		FelIntellectTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //Imp has no bonus intellect, the others probably too
 
 		float GetPetInt(TestPlayer* caster, uint32 summonPetSpellId)
 		{
@@ -1296,8 +1300,10 @@ public:
             float const intellectTalentFactor = 1.15f;
             float const manaTalentFactor = 1.03f;
 
+            //Test warlock Mana
             uint32 const expectedMaxMana = warlock->GetMaxPower(POWER_MANA) * manaTalentFactor;
 
+            //Test pets intellect
 			float const expectedImpInt          = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1) * intellectTalentFactor;
 			float const expectedVoidwalkerInt   = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1) * intellectTalentFactor;
 			float const expectedSuccubusInt     = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1) * intellectTalentFactor;
