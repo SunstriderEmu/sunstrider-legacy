@@ -1042,6 +1042,7 @@ class MaledictionTest : public TestCaseScript
 public:
     MaledictionTest() : TestCaseScript("talents warlock malediction") { }
 
+    //"Increases the damage bonus effect of your Curse of Shadows and Curse of the Elements spells by an additional 3%" (max rank)
     class MaledictionTestImpt : public TestCase
     {
     public:
@@ -1053,18 +1054,19 @@ public:
             Creature* dummy = SpawnCreature();
 
             LearnTalent(warlock, Talents::Warlock::MALEDICTION_RNK_3);
-            float const talentFactor = 1.13f;
+            float const talentBonus = 0.03f;
+            float const damageFactor = 1.1f + talentBonus; //1.1 = CoE factor
 
             // Apply CoE
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
 
             // Increase damage taken by Shadow, Fire, Arcane and Frost by 10%
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * talentFactor, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * talentFactor, false);
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * talentFactor, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * talentFactor, false);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * damageFactor, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * damageFactor, false);
+            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * damageFactor, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * damageFactor, false);
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
-            TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MIN * talentFactor, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MAX * talentFactor, false);
+            TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MIN * damageFactor, ClassSpellsDamage::Druid::STARFIRE_RNK_8_MAX * damageFactor, false);
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
-            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN * talentFactor, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX * talentFactor, false);
+            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN * damageFactor, ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MAX * damageFactor, false);
         }
     };
 
@@ -1079,10 +1081,11 @@ class UnstableAfflictionTest : public TestCaseScript
 public:
     UnstableAfflictionTest() : TestCaseScript("talents warlock unstable_affliction") { }
 
+    //"Shadow energy slowly destroys the target, causing 1050 damage over 18sec. In addition, if the Unstable Affliction is dispelled it will cause 1575 damage to the dispeller and silence them for 5sec." (max rank)
     class UnstableAfflictionTestImpt : public TestCase
     {
     public:
-        UnstableAfflictionTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Wrong Direct Damage spell coeff
+        UnstableAfflictionTestImpt() : TestCase(STATUS_PASSING) { } 
 
         void Test() override
         {
@@ -1102,22 +1105,23 @@ public:
             float const tickAmount = 6.0f;
             uint32 const expectedUnstableAfflictionTick = ClassSpellsDamage::Warlock::UNSTABLE_AFFLICTION_RNK_3_TICK + spellPower * spellCoefficient / tickAmount;
             uint32 const expectedUnstableAfflictionTotal = expectedUnstableAfflictionTick * tickAmount;
-            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedUnstableAfflictionTotal, true);
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedUnstableAfflictionTotal, false);
 
             // Dispell & damage
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
-            priest->SetMaxHealth(uint32(10000));
+            priest->SetMaxHealth(10000);
             priest->SetFullHealth();
             priest->DisableRegeneration(true);
-            WaitNextUpdate();
             uint32 const expectedUADamage = ClassSpellsDamage::Warlock::UNSTABLE_AFFLICTION_RNK_3_DISPELLED + spellPower * ClassSpellsCoeff::Warlock::UNSTABLE_AFFLICTION;
-            uint32 const expectedPriestHealth = priest->GetHealth() - expectedUADamage;
             FORCE_CAST(warlock, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             FORCE_CAST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2);
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE, Seconds(5));
             TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_FAILED_SILENCED);
-            ASSERT_INFO("Priest has %u HP but %u was expected.", priest->GetHealth(), expectedPriestHealth);
-            TEST_ASSERT(priest->GetHealth() == expectedPriestHealth);
+            //But can this spell crit?
+            auto[dealtMin, dealtMax] = GetDamagePerSpellsTo(warlock, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE, false, 1);
+            uint32 actualDamageDone = dealtMin;
+            ASSERT_INFO("actualDamageDone %u, expectedDamageDone %u", actualDamageDone, expectedUADamage);
+            TEST_ASSERT(Between(actualDamageDone, expectedUADamage - 3, expectedUADamage + 3)); //larger tolerance due to error related to tick approximation
         }
     };
 

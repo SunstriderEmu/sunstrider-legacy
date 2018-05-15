@@ -15,6 +15,7 @@ enum WarlockSpells
     SPELL_WARLOCK_FLAMESHADOW              = 37379,
     SPELL_WARLOCK_LIFE_TAP_ENERGIZE        = 31818,
     SPELL_WARLOCK_LIFE_TAP_ENERGIZE_2      = 32553,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_DISPEL = 31117,
 };
 
 enum WarlockSpellIcons
@@ -405,6 +406,58 @@ public:
     }
 };
 
+class spell_unstable_affliction : public SpellScriptLoader
+{
+public:
+    spell_unstable_affliction() : SpellScriptLoader("spell_unstable_affliction")
+    { }
+
+    class spell_unstable_affliction_AuraScript : public AuraScript
+    {
+    PrepareAuraScript(spell_unstable_affliction_AuraScript);
+
+    public:
+        spell_unstable_affliction_AuraScript() : AuraScript()
+        { }
+
+        bool Validate(SpellInfo const* /*spell*/) override
+        {
+            return ValidateSpellInfo({ SPELL_WARLOCK_UNSTABLE_AFFLICTION_DISPEL });
+        }
+
+        void HandleDispel(DispelInfo* dispelInfo)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (AuraEffect const* aurEff = GetEffect(EFFECT_0))
+                {
+                    if (Unit* target = dispelInfo->GetDispeller()->ToUnit())
+                    {
+                        int32 bp = aurEff->GetAmount();
+                        bp = target->SpellDamageBonusTaken(caster, aurEff->GetSpellInfo(), bp, DOT);
+                        bp *= 9;
+
+                        // backfire damage and silence
+                        CastSpellExtraArgs args(aurEff);
+                        args.AddSpellBP0(bp);
+                        caster->CastSpell(target, SPELL_WARLOCK_UNSTABLE_AFFLICTION_DISPEL, args);
+                    }
+                }
+            }
+        }
+
+        void Register() override
+        {
+            AfterDispel += AuraDispelFn(spell_unstable_affliction_AuraScript::HandleDispel);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_unstable_affliction_AuraScript();
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_pyroclasm();
@@ -416,4 +469,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_t4_2p_bonus<SPELL_WARLOCK_FLAMESHADOW>("spell_warl_t4_2p_bonus_shadow");
     new spell_warl_t4_2p_bonus<SPELL_WARLOCK_SHADOWFLAME>("spell_warl_t4_2p_bonus_fire");
     new spell_warl_life_tap();
+    new spell_unstable_affliction();
 }

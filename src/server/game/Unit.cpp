@@ -13019,29 +13019,12 @@ void Unit::RemoveAurasDueToSpellByDispel(uint32 spellId, uint32 dispellerSpellId
             // Call OnDispel hook on AuraScript
             aura->CallScriptDispel(&dispelInfo);
 
-            // HACKS to move to CallScriptDispel
-            // Unstable Affliction
-            if (aura->GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (aura->GetSpellInfo()->SpellFamilyFlags & 0x010000000000LL))
-            {
-                int32 damage = aura->GetEffect(EFFECT_0)->GetAmount() * 9;
-                ObjectGuid caster_guid = aura->GetCasterGUID();
-
-                // backfire damage and silence
-                CastSpellExtraArgs args;
-                args.TriggerFlags = TRIGGERED_FULL_MASK;
-                args.AddSpellBP0(int32(damage));
-                args.SetOriginalCaster(caster_guid);
-                dispeller->CastSpell(dispeller, 31117, args);
-            }
-
 #ifdef LICH_KING
             if (aura->GetSpellInfo()->HasAttribute(SPELL_ATTR7_DISPEL_CHARGES))
                 aura->ModCharges(-dispelInfo.GetRemovedCharges(), AURA_REMOVE_BY_ENEMY_SPELL);
             else
-                aura->ModStackAmount(-dispelInfo.GetRemovedCharges(), AURA_REMOVE_BY_ENEMY_SPELL);
-#else
-            aura->ModStackAmount(-dispelInfo.GetRemovedCharges(), AURA_REMOVE_BY_ENEMY_SPELL);
 #endif
+            aura->ModStackAmount(-dispelInfo.GetRemovedCharges(), AURA_REMOVE_BY_ENEMY_SPELL);
 
             // Call AfterDispel hook on AuraScript
             aura->CallScriptAfterDispel(&dispelInfo);
