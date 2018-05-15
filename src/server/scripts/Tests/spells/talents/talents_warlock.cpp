@@ -240,7 +240,7 @@ public:
     class SoulSiphonTestImpt : public TestCase
     {
     public:
-        SoulSiphonTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Bug: Drain mana is affected and shouldn't
+        SoulSiphonTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Add4AfflictionSpell(TestPlayer* warlock, Creature* dummy)
         {
@@ -308,7 +308,7 @@ public:
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, 2 * bonusPerSpell);
             //Patch 2.3.0 (2007 - 11 - 13) : Rank 2 changed to 4 % increase per affliction effect from 5 % .It no longer affects Drain Mana.
-            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, 0.0f);
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, 1 * bonusPerSpell); //1 instead of 2
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::FEAR_RNK_3, 2 * bonusPerSpell);
             dummy->NearTeleportTo(_location);
             WaitNextUpdate();

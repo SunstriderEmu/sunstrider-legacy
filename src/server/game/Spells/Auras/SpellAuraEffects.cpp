@@ -1121,6 +1121,10 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
                     if (m_spell->SpellFamilyName != SPELLFAMILY_WARLOCK)
                         continue;
 
+                    //Patch 2.3.0 (2007 - 11 - 13) : Rank 2 changed to 4 % increase per affliction effect from 5 % .It no longer affects Drain Mana.
+                    if (m_spell->SpellFamilyFlags & 0x10) // drain mana
+                        continue;
+
                     SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(m_spell->Id);
                     for (auto _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
                     {
