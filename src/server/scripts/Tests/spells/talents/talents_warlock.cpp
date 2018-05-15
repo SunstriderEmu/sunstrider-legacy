@@ -1011,6 +1011,7 @@ class ImprovedHowOfTerrorTest : public TestCaseScript
 public:
     ImprovedHowOfTerrorTest() : TestCaseScript("talents warlock improved_howl_of_terror") { }
 
+    //"Reduces the casting time of your Howl of Terror spell by 1.5 sec." (max rank)
     class ImprovedHowOfTerrorTestImpt : public TestCase
     {
     public:
@@ -1020,10 +1021,13 @@ public:
         {
             TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
 
+            uint32 baseCastTime = 1500;
+            uint32 reduc_rank_1 = 800;
+            uint32 reduc_rank_2 = 1500;
             LearnTalent(warlock, Talents::Warlock::IMPROVED_HOWL_OF_TERROR_RNK_1);
-            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, 700);
+            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, baseCastTime - reduc_rank_1);
             LearnTalent(warlock, Talents::Warlock::IMPROVED_HOWL_OF_TERROR_RNK_2);
-            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, uint32(0));
+            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, baseCastTime - reduc_rank_2);
         }
     };
 
