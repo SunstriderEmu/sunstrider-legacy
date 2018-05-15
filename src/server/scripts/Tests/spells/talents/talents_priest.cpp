@@ -93,7 +93,7 @@ public:
         Bugs:
             - Mind Flay and Vampiric Embrace not affected by the dispell resist.
         */
-        WandSpecializationTestImpt() : TestCase(STATUS_WIP) { } // Waiting TEST_SPELL_DISPEL_RESIST_CHANCE to be able to handle other dispel types
+        WandSpecializationTestImpt() : TestCase(STATUS_WIP) { } // Waiting TEST_DISPEL_RESIST_CHANCE to be able to handle other dispel types
 
         void Test() override
         {
@@ -126,42 +126,42 @@ public:
 
             // Resist dispell of all spells
             // Disc
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::DIVINE_SPIRIT_RNK_5, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::ELUNES_GRACE_RNK_1, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::FEAR_WARD_RNK_1, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::INNER_FIRE_RNK_7, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::INNER_FOCUS_RNK_1, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::LEVITATE_RNK_1, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1, dispelTalentFactor + 65.f);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::POWER_INFUSION_RNK_1, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE_CALLBACK(priest, priest, enemy, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, dispelTalentFactor); // need callback to remove aura
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_SPIRIT_RNK_2, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::STARSHARDS_RNK_8, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::DIVINE_SPIRIT_RNK_5, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::ELUNES_GRACE_RNK_1, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::FEAR_WARD_RNK_1, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::INNER_FIRE_RNK_7, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::INNER_FOCUS_RNK_1, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::LEVITATE_RNK_1, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1, dispelTalentFactor + 65.f);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::POWER_INFUSION_RNK_1, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE_CALLBACK(priest, priest, enemy, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, dispelTalentFactor); // need callback to remove aura
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_SPIRIT_RNK_2, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::STARSHARDS_RNK_8, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, dispelTalentFactor);
             // Holy
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::HOLY_FIRE_RNK_9, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::HOLY_FIRE_RNK_9, dispelTalentFactor);
             // Shadow
-            TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, dispelTalentFactor); // Disease
-            TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, dispelTalentFactor); // Curse
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_SHADOW_PROTECTION_RNK_2, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SHADOW_GUARD_RNK_7, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::SILENCE_RNK_1, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, dispelTalentFactor); // Disease
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, dispelTalentFactor); // Curse
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_SHADOW_PROTECTION_RNK_2, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SHADOW_GUARD_RNK_7, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::SILENCE_RNK_1, dispelTalentFactor);
             // Talents procs - We suppose that this talent affects other talents procs such as:
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::MARTYRDOM_RNK_2_TRIGGER, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::INSPIRATION_RNK_3_TRIGGER, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::HOLY_CONCENTRATION_RNK_3_TRIGGER, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, Talents::Priest::SHADOW_WEAVING_RNK_5_PROC, dispelTalentFactor);
-            //TEST_SPELL_DISPEL_RESIST_CHANCE(priest, enemy, enemy, Talents::Priest::BLACKOUT_RNK_5_TRIGGER, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::MARTYRDOM_RNK_2_TRIGGER, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::INSPIRATION_RNK_3_TRIGGER, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::HOLY_CONCENTRATION_RNK_3_TRIGGER, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, Talents::Priest::SHADOW_WEAVING_RNK_5_PROC, dispelTalentFactor);
+            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, Talents::Priest::BLACKOUT_RNK_5_TRIGGER, dispelTalentFactor);
         }
     };
 
@@ -541,7 +541,7 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
 
             LearnTalent(priest, Talents::Priest::IMPROVED_MANA_BURN_RNK_2);
-            TEST_SPELL_CAST_TIME(priest, ClassSpells::Priest::MANA_BURN_RNK_7, 2000);
+            TEST_CAST_TIME(priest, ClassSpells::Priest::MANA_BURN_RNK_7, 2000);
         }
     };
 
@@ -685,7 +685,7 @@ public:
             });
 
             // Mass Dispel Cast Time
-            TEST_SPELL_CAST_TIME(priest, ClassSpells::Priest::MASS_DISPEL_RNK_1, 500);
+            TEST_CAST_TIME(priest, ClassSpells::Priest::MASS_DISPEL_RNK_1, 500);
         }
     };
 
@@ -863,7 +863,7 @@ public:
             // Haste: X% haste means to cast X additional spells in the time it would normally take to cast 100 spells
             uint32 const greaterHealCastTime = 3 * IN_MILLISECONDS;
             uint32 const expectedGreaterHealCastTime = greaterHealCastTime * 100 / uint32(100 * castingSpeedIncrease);
-            TEST_SPELL_CAST_TIME(priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, expectedGreaterHealCastTime);
+            TEST_CAST_TIME(priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, expectedGreaterHealCastTime);
 
             // Mana reduction
             uint32 const expectedGreaterHealManaCost = 825 * manaCostReduction;
@@ -1027,7 +1027,7 @@ public:
             //TEST_DIRECT_SPELL_DAMAGE(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, minEarthShock, maxEarthShock, false);
 
             // Increases resistance to dispell by 65%
-            TEST_SPELL_DISPEL_RESIST_CHANCE(priest, priest, shaman, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1, talentDispelResistFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, shaman, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1, talentDispelResistFactor);
         }
     };
 

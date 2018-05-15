@@ -243,7 +243,7 @@ public:
             TEST_AURA_MAX_DURATION(mage, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, Seconds(12));
 
             // Test increased casting time: Frostbolt cast time is 3.0s, with the curse it should be 4.8s
-            TEST_SPELL_CAST_TIME(mage, ClassSpells::Mage::FROSTBOLT_RNK_13, 4800);
+            TEST_CAST_TIME(mage, ClassSpells::Mage::FROSTBOLT_RNK_13, 4800);
 
             uint32 const expectedCurseOfTonguesManaCost = 110;
             TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, POWER_MANA, expectedCurseOfTonguesManaCost);

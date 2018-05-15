@@ -230,7 +230,7 @@ public:
     /* Check if spell has given cast time for caster 
     (Does not actually cast the spell)
     */
-    #define TEST_SPELL_CAST_TIME(caster, spellID, expectedCastTimeMS) { _SetCaller(__FILE__, __LINE__); _TestSpellCastTime(caster, spellID, expectedCastTimeMS); _ResetCaller(); }
+    #define TEST_CAST_TIME(caster, spellID, expectedCastTimeMS) { _SetCaller(__FILE__, __LINE__); _TestSpellCastTime(caster, spellID, expectedCastTimeMS); _ResetCaller(); }
 
     /* Apply aura of given spell from caster to target, then test if callback has %chance to be true at after each tick.
     You should cleanup tick effect in the callback before returning result.
@@ -253,11 +253,11 @@ public:
     /* caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
     chance: 0-100
     */
-    #define TEST_SPELL_DISPEL_RESIST_CHANCE(caster, target, dispeler, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance, {}); _ResetCaller(); }
+    #define TEST_DISPEL_RESIST_CHANCE(caster, target, dispeler, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance, {}); _ResetCaller(); }
     /* Same but with additional argument:
     callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
-    #define TEST_SPELL_DISPEL_RESIST_CHANCE_CALLBACK(caster, target, dispeler, spellID, chance, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance,  Optional<TestCallback>(callback)); _ResetCaller(); }
+    #define TEST_DISPEL_RESIST_CHANCE_CALLBACK(caster, target, dispeler, spellID, chance, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance,  Optional<TestCallback>(callback)); _ResetCaller(); }
 
     /* Test how much of the time a cast pushback is resisted (against melee attacks). Target will also be the one attacking the caster.
     chance: 0-100

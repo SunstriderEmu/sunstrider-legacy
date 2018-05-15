@@ -68,7 +68,7 @@ public:
         {
             LearnTalent(caster, talentSpellId);
             uint32 const expectedCastTime = 2000 - talentFactor;
-            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCastTime);
+            TEST_CAST_TIME(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCastTime);
         }
 
         void Test() override
@@ -561,7 +561,7 @@ public:
 
             // Instant shadow bolt
             warlock->AddAura(procSpellId, warlock);
-            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, uint32(0));
+            TEST_CAST_TIME(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, uint32(0));
         }
     };
 
@@ -703,7 +703,7 @@ public:
         {
             LearnTalent(caster, talentSpellId);
             uint32 const expectedCastTime = 2000 - talentFactor;
-            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCastTime);
+            TEST_CAST_TIME(caster, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCastTime);
         }
 
         void Test() override
@@ -921,35 +921,35 @@ public:
             warlock->ForceSpellHitResult(SPELL_MISS_NONE);
 
             ASSERT_INFO("Corruption");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedResist);
             ASSERT_INFO("Death Coil");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedResist);
             ASSERT_INFO("Drain Life");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, expectedResist);
             ASSERT_INFO("Drain Mana");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::DRAIN_MANA_RNK_6, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::DRAIN_MANA_RNK_6, expectedResist);
             ASSERT_INFO("Fear");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::FEAR_RNK_3, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::FEAR_RNK_3, expectedResist);
             ASSERT_INFO("Howl of Terror");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, expectedResist);
             ASSERT_INFO("Seed of Corruption");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedResist);
             ASSERT_INFO("Siphon Life");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, expectedResist);
             ASSERT_INFO("Unstable Affliction");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedResist);
 
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
             ASSERT_INFO("Curse of Agony");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedResist);
             ASSERT_INFO("Curse of Recklessness");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, expectedResist);
             ASSERT_INFO("Curse of the elements");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, expectedResist);
             ASSERT_INFO("Curse of Tongues");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, expectedResist);
             ASSERT_INFO("Curse of Weakness");
-            TEST_SPELL_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, expectedResist);
 		}
 	};
 
@@ -1025,9 +1025,9 @@ public:
             uint32 reduc_rank_1 = 800;
             uint32 reduc_rank_2 = 1500;
             LearnTalent(warlock, Talents::Warlock::IMPROVED_HOWL_OF_TERROR_RNK_1);
-            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, baseCastTime - reduc_rank_1);
+            TEST_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, baseCastTime - reduc_rank_1);
             LearnTalent(warlock, Talents::Warlock::IMPROVED_HOWL_OF_TERROR_RNK_2);
-            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, baseCastTime - reduc_rank_2);
+            TEST_CAST_TIME(warlock, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, baseCastTime - reduc_rank_2);
         }
     };
 
@@ -1365,7 +1365,7 @@ public:
             TEST_AURA_MAX_DURATION(warlock, ClassSpells::Warlock::FEL_DOMINATION_RNK_1, Seconds(15));
 
             uint32 const castTimeReduc = 5500;
-            TEST_SPELL_CAST_TIME(warlock, summonSpellId, 10000 - castTimeReduc);
+            TEST_CAST_TIME(warlock, summonSpellId, 10000 - castTimeReduc);
             TEST_POWER_COST(warlock, summonSpellId, POWER_MANA, expectedManaCost);
             TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
 		}
@@ -2005,11 +2005,11 @@ public:
         {
             LearnTalent(caster, talentSpellId);
             uint32 const shadowBolt = 3000 - talentPoint * shadowbBoltImmolateFactor;
-            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, shadowBolt);
+            TEST_CAST_TIME(caster, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, shadowBolt);
             uint32 const immolate = 2000 - talentPoint * shadowbBoltImmolateFactor;
-            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, shadowBolt);
+            TEST_CAST_TIME(caster, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, shadowBolt);
             uint32 const soulFire = 6000 - talentPoint * soulFireFactor;
-            TEST_SPELL_CAST_TIME(caster, ClassSpells::Warlock::SOUL_FIRE_RNK_4, soulFire);
+            TEST_CAST_TIME(caster, ClassSpells::Warlock::SOUL_FIRE_RNK_4, soulFire);
         }
 
         void Test() override
@@ -2092,7 +2092,7 @@ public:
             Guardian* imp = warlock->GetGuardianPet();
             TEST_ASSERT(imp != nullptr);
 
-            TEST_SPELL_CAST_TIME(imp, ClassSpells::Warlock::IMP_FIREBOLT_RNK_8, 2500);
+            TEST_CAST_TIME(imp, ClassSpells::Warlock::IMP_FIREBOLT_RNK_8, 2500);
         }
     };
 
@@ -2504,7 +2504,7 @@ public:
             warlock->SetFullHealth();
 
             // Incinerate cast time reduces by 10%
-            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, 2500 * 0.9f);
+            TEST_CAST_TIME(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, 2500 * 0.9f);
 
             // Fire damage increased by 10%
             warlock->ForceSpellHitResult(SPELL_MISS_NONE);
@@ -2557,8 +2557,8 @@ public:
 
             // Provides instant Shadow Bolt or Incinerate
             warlock->AddAura(backlashSpellProcId, warlock);
-            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, uint32(0));
-            TEST_SPELL_CAST_TIME(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, uint32(0));
+            TEST_CAST_TIME(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, uint32(0));
+            TEST_CAST_TIME(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, uint32(0));
 
             // Proc
             // Rogue attack
