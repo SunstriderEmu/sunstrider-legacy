@@ -693,6 +693,7 @@ class SiphonLifeTest : public TestCaseScript
 public:
     SiphonLifeTest() : TestCaseScript("talents warlock siphon_life") { }
 
+    //Spell from talent. "Transfers 63 health from the target to the caster every 3 sec.Lasts 30sec." (max rank)
     class SiphonLifeTestImpt : public TestCase
     {
     public:
@@ -740,9 +741,9 @@ public:
 class CurseOfExhaustionTest : public TestCaseScript
 {
 public:
-
     CurseOfExhaustionTest() : TestCaseScript("talents warlock curse_of_exhaustion") { }
 
+    //Spell from talent. "Reduces the target's movement speed by 30% for 12sec. Only one Curse per Warlock can be active on any one target." (max rank)
     class CurseOfExhaustionTestImpt : public TestCase
     {
     public:
@@ -776,18 +777,13 @@ public:
 class ShadowMasteryTest : public TestCaseScript
 {
 public:
-
 	ShadowMasteryTest() : TestCaseScript("talents warlock shadow_mastery") { }
 
 	class ShadowMasteryTestImpt : public TestCase
 	{
 	public:
-        /*
-            Bugs:
-                - Drain Soul is not affected by the talent, should.
-                - Drain Life and Siphon Life heals gain double effect, should not.
-        */
-		ShadowMasteryTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        //"Increases the damage dealt or life drained by your Shadow spells by 10%." (max rank)
+		ShadowMasteryTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -825,7 +821,8 @@ public:
             uint32 const dummyExpectedHealth = dummy->GetHealth() - expectedDrainLifeTotal;
             warlock->SetHealth(1);
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
-            Wait(5500);
+            Wait(6000);
+            WaitNextUpdate();
             ASSERT_INFO("Dummy has %u HP but %u was expected.", dummy->GetHealth(), dummyExpectedHealth);
             TEST_ASSERT(dummy->GetHealth() == dummyExpectedHealth);
             ASSERT_INFO("Warlock has %u HP but %u was expected.", warlock->GetHealth(), 1 + expectedDrainLifeTotal);
@@ -837,14 +834,15 @@ public:
             TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulTickAmount, expectedDrainSoulTick);
 
             // Seed of Corruption
-            float const seedOfCorruptionTickAmount = 6.0f;
+            uint32 const seedOfCorruptionTickAmount = 6;
             uint32 const expectedSoCTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * shadowMasteryFactor;
             uint32 const expectedSoCTotalAmount = seedOfCorruptionTickAmount * expectedSoCTick;
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCTotalAmount, true);
 
             // Siphon Life 
-            float const siphonLifetickAmount = 10.0f;
-            uint32 const expectedSLTotalAmount = ClassSpellsDamage::Warlock::SIHPON_LIFE_RNK_6_TICK * siphonLifetickAmount * shadowMasteryFactor;
+            uint32 const siphonLifetickAmount = 10;
+            uint32 const expectedSLTick = ClassSpellsDamage::Warlock::SIHPON_LIFE_RNK_6_TICK * siphonLifetickAmount;
+            uint32 const expectedSLTotalAmount = expectedSLTick * shadowMasteryFactor;
             warlock->SetHealth(1);
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, expectedSLTotalAmount, true);
             ASSERT_INFO("Warlock has %u HP but %u was expected.", warlock->GetHealth(), 1 + expectedSLTotalAmount);

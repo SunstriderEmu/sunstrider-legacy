@@ -1203,7 +1203,13 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
         }
     }
 
-    uint32 heal = caster->SpellHealingBonusDone(caster, spellProto, uint32(new_damage * multiplier), DOT, GetEffIndex(), { }, GetBase()->GetStackAmount());
+    /*Sun: WoWWiki: 
+        - "Drain Life does not benefit from +healing."
+        - "In Patch 2.3, the amount healed is reduced when the warlock is affected by healing reducing effects (e.g. Mortal Strike, Wounding Poison)."
+    Besides, using SpellHealingBonusDone would cause problem such as Shadow Mastery talent being applied on both damage and healing
+    */
+    //uint32 heal = caster->SpellHealingBonusDone(caster, spellProto, uint32(new_damage * multiplier), DOT, GetEffIndex(), { }, GetBase()->GetStackAmount());
+    uint32 heal = uint32(new_damage * multiplier);
     heal = caster->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT);
 
     HealInfo healInfo(caster, caster, heal, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
