@@ -763,7 +763,7 @@ void Map::DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate /* = 0*/)
 {
     uint32 now = GetMSTime();
     uint32 diff = GetMSTimeDiff(_lastMapUpdate, now);
-    //freeze thread if last update was less than 10ms ago
+    //freeze thread if last update was less than minimumTimeSinceLastUpdate ms ago
     if(diff < minimumTimeSinceLastUpdate) {
         std::this_thread::sleep_for(std::chrono::milliseconds(minimumTimeSinceLastUpdate - diff));
         diff = minimumTimeSinceLastUpdate;
