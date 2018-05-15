@@ -521,7 +521,7 @@ void SpellMgr::LoadSpellAffects(bool reload)
         {
             SpellInfo* spellInfo = sSpellMgr->_GetSpellInfo(itr->first);
             if (spellInfo)
-                for(auto effect : spellInfo->Effects)
+                for(auto& effect : spellInfo->Effects)
                     effect.SpellClassMask = 0;
         }
     }
