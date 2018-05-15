@@ -533,6 +533,7 @@ public:
 
     NightfallTest() : TestCaseScript("talents warlock nightfall") { }
 
+    //"Gives your Corruption and Drain Life spells a 4% chance to cause you to enter a Shadow Trance state after damaging the opponent. The Shadow Trance state reduces the casting time of your next Shadow Bolt spell by 100%." (max rank)
     class NightfallTestImpt : public TestCase
     {
     public:
@@ -576,6 +577,7 @@ public:
 
 	EmpoweredCorruptionTest() : TestCaseScript("talents warlock empowered_corruption") { }
 
+    //"Your Corruption spell gains an additional 36 % of your bonus spell damage effects."
 	class EmpoweredCorruptionTestImpt : public TestCase
 	{
 	public:
@@ -615,18 +617,14 @@ public:
     class ShadowEmbraceTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-        - Siphon Life doesnt remove Shadow Embrace at the end.
-        - Seed of Corruption doesnt apply Shadow Embrace.
-        */
         //See hack in AuraEffect::CleanupTriggeredSpells for spell cleanup handling
-        ShadowEmbraceTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        //"Your Corruption, Curse of Agony, Siphon Life and Seed of Corruption spells also cause the Shadow Embrace effect, which reduces physical damage caused by 5 %" (max rank)
+        ShadowEmbraceTestImpt() : TestCase(STATUS_PASSING) { }
 
         void SpellAppliesAndRemovesShadowEmbrace(TestPlayer* warlock, TestPlayer* victim, uint32 spellId, Seconds dotTime, uint32 shadowEmbraceId)
         {
             victim->SetFullHealth();
-            FORCE_CAST(warlock, victim, spellId, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_PROC_AS_NON_TRIGGERED));
+            FORCE_CAST(warlock, victim, spellId, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_PROC_AS_NON_TRIGGERED));
             ASSERT_INFO("After spell %u, warlock doesn't have Shadow Embrace.", spellId);
             TEST_HAS_AURA(victim, shadowEmbraceId);
             Wait(dotTime);

@@ -2515,18 +2515,22 @@ void AuraEffect::CleanupTriggeredSpells(Unit* target)
         }
     }
 
-    // Corruption/Seed of Corruption/Curse of Agony - check if shadow embrace should be removed
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellInfo->SpellFamilyFlags & 0x0000001000000402LL)
+    // Corruption/Seed of Corruption/Curse of Agony/Siphon Life - check if shadow embrace should be removed
+    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellInfo->SpellFamilyFlags & 0x0000001100000402LL)
     {
         bool canRemove = true;
         auto& auraMap = target->GetAppliedAuras();
-        for (auto itr = auraMap.begin(); itr != auraMap.end() && canRemove; ++itr) 
+        //don't remove if there is any other of those spells present
+        for (auto itr = auraMap.begin(); itr != auraMap.end(); ++itr) 
         {
             SpellInfo const* proto = itr->second->GetBase()->GetSpellInfo();
-            if (proto && proto->SpellFamilyName == SPELLFAMILY_WARLOCK && proto->SpellFamilyFlags & 0x0000001000000402LL) 
+            if (proto && proto->SpellFamilyName == SPELLFAMILY_WARLOCK && proto->SpellFamilyFlags & 0x0000001100000402LL) 
             {
                 if (GetId() != itr->second->GetBase()->GetId() && itr->second->GetBase()->GetCaster() && GetCaster() && itr->second->GetBase()->GetCaster() == GetCaster())
+                {
                     canRemove = false;
+                    break;
+                }
             }
         }
 
