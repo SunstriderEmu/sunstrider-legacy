@@ -1898,20 +1898,15 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
-    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
-    caster->ForceSpellHitResult(SPELL_MISS_NONE);
-
     for (uint32 i = 0; i < sampleSize; i++)
     {
         if (callback)
             callback.get()(caster, victim);
 
         victim->SetFullHealth();
-        _TestCast(caster, victim, spellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+        _ForceCast(caster, victim, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
         HandleThreadPause();
     }
-
-    caster->ForceSpellHitResult(previousForceHitResult);
 
     _TestSpellCritPercentage(caster, victim, spellID, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
 

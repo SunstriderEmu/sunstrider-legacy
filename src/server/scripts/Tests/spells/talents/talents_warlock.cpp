@@ -2339,6 +2339,7 @@ class ImprovedSearingPainTest : public TestCaseScript
 public:
     ImprovedSearingPainTest() : TestCaseScript("talents warlock improved_searing_pain") { }
 
+    //"Increases the critical strike chance of your Searing Pain spell by 10%."
     class ImprovedSearingPainTestImpt : public TestCase
     {
     public:
