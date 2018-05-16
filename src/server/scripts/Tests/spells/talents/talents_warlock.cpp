@@ -13,14 +13,12 @@ public:
     class SuppressionTestImpt : public TestCase
     {
     public:
-        SuppressionTestImpt() : TestCase(STATUS_PASSING) { } 
-        // Known bug: Curse of Doom is not affected, should be.
-        // WIP: replace creature 12 by a test specific creature
+        SuppressionTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Curse of Doom is not affected, should be.
 
         void Test() override
         {
             TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
-            Creature* dummy = SpawnCreature(12); // Boss
+            Creature* dummy = SpawnBoss();
 
             LearnTalent(warlock, Talents::Warlock::SUPPRESSION_RNK_5);
             float const talentHitPct = 10.0f;
