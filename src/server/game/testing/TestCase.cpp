@@ -16,9 +16,9 @@
 #define MAP_TESTING_ID 13
 
 //same as TEST_ASSERT but will track caller file and line to print it in case of error
-#define INTERNAL_TEST_ASSERT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo();
+#define INTERNAL_TEST_ASSERT( expr ) { _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo(); }
 //same as last but does not increase test count
-#define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo();
+#define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) { _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo(); }
 
 //input info for next check, place this before INTERNAL_TEST_ASSERT
 #define INTERNAL_ASSERT_INFO(expr, ...) _InternalAssertInfo(expr, ## __VA_ARGS__);
@@ -227,8 +227,15 @@ void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers pow
     delete spell;
     spell = nullptr;
 
-    INTERNAL_ASSERT_INFO("Spell has cost %u power instead of %u", actualCost, expectedPowerCost);
-	INTERNAL_TEST_ASSERT(actualCost == expectedPowerCost);
+    INTERNAL_ASSERT_INFO("Spell %u has cost %u power instead of %u", castSpellID, actualCost, expectedPowerCost);
+    if (expectedPowerCost != 0)
+    {
+        INTERNAL_TEST_ASSERT(Between(actualCost, expectedPowerCost - 1, expectedPowerCost + 1));
+    }
+    else
+    {
+        INTERNAL_TEST_ASSERT(actualCost == expectedPowerCost);
+    }
 }
 
 void TestCase::_TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond)
@@ -674,7 +681,7 @@ std::pair<uint32 /*sampleSize*/, float /*absoluteTolerance*/> TestCase::_GetPerc
 {
     //special speedups for extreme cases
     if(expectedResult == 1.0f || expectedResult == 0.0f)
-        std::make_pair(1000, 0.0001f);
+        return std::make_pair(1000, 0.0001f);
 
     float const minExpectedResult = 0.01f;
     float const maxExpectedResult = 1.0f - minExpectedResult;
@@ -829,7 +836,7 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster, bool failOnNotFound)
         if (failOnNotFound)
         {
             INTERNAL_ASSERT_INFO("Caster is not a player or a pet/summon of him");
-            INTERNAL_TEST_ASSERT(false);
+            INTERNAL_TEST_ASSERT_NOCOUNT(false);
         }
         else
             return nullptr;
@@ -841,7 +848,7 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster, bool failOnNotFound)
         if (failOnNotFound)
         {
             INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
-            INTERNAL_TEST_ASSERT(false);
+            INTERNAL_TEST_ASSERT_NOCOUNT(false);
         }
         else
             return nullptr;
@@ -856,7 +863,7 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(TestPlayer* caster, bool failOnNotFou
     if (failOnNotFound)
     {
         INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-        INTERNAL_TEST_ASSERT(AI != nullptr);
+        INTERNAL_TEST_ASSERT_NOCOUNT(AI != nullptr);
     }
 
     return AI;
@@ -1928,13 +1935,13 @@ void TestCase::_TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId)
 {
     Item* firstItem = caster->GetFirstItem(itemId);
     INTERNAL_ASSERT_INFO("_TestUseItem failed to find any item with id %u", itemId);
-    INTERNAL_TEST_ASSERT(firstItem != nullptr);
+    INTERNAL_TEST_ASSERT_NOCOUNT(firstItem != nullptr);
 
     SpellCastTargets targets;
     targets.SetUnitTarget(target);
     bool result = caster->GetSession()->_HandleUseItemOpcode(firstItem->GetBagSlot(), firstItem->GetSlot(), 1, 1, firstItem->GetGUID(), targets);
     INTERNAL_ASSERT_INFO("_TestUseItem failed to use item with id %u", itemId);
-    INTERNAL_TEST_ASSERT(result);
+    INTERNAL_TEST_ASSERT_NOCOUNT(result);
 }
 
 void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float expectedResultPercent, Optional<TestCallback> callback)
