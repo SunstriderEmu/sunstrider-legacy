@@ -1284,7 +1284,7 @@ public:
 	public:
 		FelIntellectTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //Imp has no bonus intellect, the others probably too
 
-		float GetPetInt(TestPlayer* caster, uint32 summonPetSpellId)
+		float GetPetIntellect(TestPlayer* caster, uint32 summonPetSpellId)
 		{
             TEST_CAST(caster, caster, summonPetSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             Guardian* pet = caster->GetGuardianPet();
@@ -1304,11 +1304,11 @@ public:
             uint32 const expectedMaxMana = warlock->GetMaxPower(POWER_MANA) * manaTalentFactor;
 
             //Test pets intellect
-			float const expectedImpInt          = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1) * intellectTalentFactor;
-			float const expectedVoidwalkerInt   = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1) * intellectTalentFactor;
-			float const expectedSuccubusInt     = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1) * intellectTalentFactor;
-			float const expectedFelhunterInt    = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1) * intellectTalentFactor;
-			float const expectedFelguardInt     = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1) * intellectTalentFactor;
+			float const expectedImpInt          = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1) * intellectTalentFactor;
+			float const expectedVoidwalkerInt   = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1) * intellectTalentFactor;
+			float const expectedSuccubusInt     = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1) * intellectTalentFactor;
+			float const expectedFelhunterInt    = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1) * intellectTalentFactor;
+			float const expectedFelguardInt     = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1) * intellectTalentFactor;
 
             LearnTalent(warlock, Talents::Warlock::FEL_INTELLECT_RNK_3);
             Wait(1000);
@@ -1316,23 +1316,23 @@ public:
             ASSERT_INFO("Warlock has %u max mana, %u expected.", warlock->GetMaxPower(POWER_MANA), expectedMaxMana);
             TEST_ASSERT(Between<uint32>(warlock->GetMaxPower(POWER_MANA), expectedMaxMana - 1, expectedMaxMana + 1));
 
-			float const impNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+			float const impNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
             ASSERT_INFO("Imp has %f Intellect, %f expected.", impNextInt, expectedImpInt);
 			TEST_ASSERT(Between<float>(impNextInt, expectedImpInt - 1.0f, expectedImpInt + 1.0f));
 
-			float const voidwalkerNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+			float const voidwalkerNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
             ASSERT_INFO("Voidwalker has %f Intellect, %f expected.", voidwalkerNextInt, expectedVoidwalkerInt);
 			TEST_ASSERT(Between<float>(voidwalkerNextInt, expectedVoidwalkerInt - 1.0f, expectedVoidwalkerInt + 1.0f));
 
-			float const succubusNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+			float const succubusNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
             ASSERT_INFO("Succubus has %f Intellect, %f expected.", succubusNextInt, expectedSuccubusInt);
 			TEST_ASSERT(Between<float>(succubusNextInt, expectedSuccubusInt - 1.0f, expectedSuccubusInt + 1.0f));
 
-			float const felhunterNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
+			float const felhunterNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
             ASSERT_INFO("Felhunter has %f Intellect, %f expected.", felhunterNextInt, expectedFelhunterInt);
 			TEST_ASSERT(Between<float>(felhunterNextInt, expectedFelhunterInt - 1.0f, expectedFelhunterInt + 1.0f));
 
-			float const felguardNextInt = GetPetInt(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+			float const felguardNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
             ASSERT_INFO("Felguard has %f Intellect, %f expected.", felguardNextInt, expectedFelguardInt);
 			TEST_ASSERT(Between<float>(felguardNextInt, expectedFelguardInt - 1.0f, expectedFelguardInt + 1.0f));
 		}
@@ -1408,12 +1408,13 @@ class FelStaminaTest : public TestCaseScript
 public:
 	FelStaminaTest() : TestCaseScript("talents warlock fel_stamina") { }
 
+    //"Increases the Stamina of your Imp, Voidwalker, Succubus, Felhunter and Felguard by 15% and increases your maximum health by 3%"
 	class FelStaminaTestImpt : public TestCase
 	{
 	public:
 		FelStaminaTestImpt() : TestCase(STATUS_PASSING) { }
 
-		float GetPetSta(TestPlayer* warlock, uint32 summonSpellId)
+		float GetPetStamina(TestPlayer* warlock, uint32 summonSpellId)
 		{
             TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
 			Pet* pet = warlock->GetPet();
@@ -1432,30 +1433,30 @@ public:
 			uint32 const expectedWarlockHealth = warlock->GetHealth() * talentHealthFactor;
 
             warlock->AddItem(SOUL_SHARD, 8);
-			TEST_ASSERT(warlock->HasItemCount(6265, 8, false));
+			TEST_ASSERT(warlock->HasItemCount(6265, 8));
 
-			float const expectedImpStamina          = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
-			float const expectedVoidwalkerStamina   = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
-			float const expectedSuccubusStamina     = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
-			float const expectedFelhunterStamina    = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
-			float const expectedFelguardStamina     = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+			float const expectedImpStamina          = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+			float const expectedVoidwalkerStamina   = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+			float const expectedSuccubusStamina     = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+			float const expectedFelhunterStamina    = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
+			float const expectedFelguardStamina     = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
 
 			LearnTalent(warlock, Talents::Warlock::FEL_STAMINA_RNK_3);
 			TEST_ASSERT(Between<uint32>(warlock->GetHealth(), expectedWarlockHealth - 1, expectedWarlockHealth + 1));
 
-			float const impNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+			float const impNextInt = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
 			TEST_ASSERT(Between<float>(impNextInt, expectedImpStamina - 1.0f, expectedImpStamina + 1.0f));
 
-			float const voidwalkerNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+			float const voidwalkerNextInt = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
 			TEST_ASSERT(Between<float>(voidwalkerNextInt, expectedVoidwalkerStamina - 1.0f, expectedVoidwalkerStamina + 1.0f));
 
-			float const succubusNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+			float const succubusNextInt = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
 			TEST_ASSERT(Between<float>(succubusNextInt, expectedSuccubusStamina - 1.0f, expectedSuccubusStamina + 1.0f));
 
-			float const felhunterNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
+			float const felhunterNextInt = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
 			TEST_ASSERT(Between<float>(felhunterNextInt, expectedFelhunterStamina - 1.0f, expectedFelhunterStamina + 1.0f));
 
-			float const felguardNextInt = GetPetSta(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+			float const felguardNextInt = GetPetStamina(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
 			TEST_ASSERT(Between<float>(felguardNextInt, expectedFelguardStamina - 1.0f, expectedFelguardStamina + 1.0f));
 		}
 	};
@@ -1471,6 +1472,7 @@ class DemonicAegisTest : public TestCaseScript
 public:
 	DemonicAegisTest() : TestCaseScript("talents warlock demonic_aegis") { }
 
+    //Increases the effectiveness of your Demon Armor and Fel Armor spells by 30% (max rank)
 	class DemonicAegisTestImpt : public TestCase
 	{
 	public:
@@ -1507,7 +1509,7 @@ public:
             TEST_ASSERT(uint32(caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW)) == expectedSpellDamage);
 
             // Healing
-            float const felArmorFactor = 1.26f; // boosted by the talent
+            float const felArmorFactor = 1.0f + (0.2f * 1.3f); //Base 20% heal boost * talent
             uint32 const expectedHTMin = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN * felArmorFactor;
             uint32 const expectedHTMax = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX * felArmorFactor;
             TEST_DIRECT_HEAL(healer, caster, ClassSpells::Druid::HEALING_TOUCH_RNK_13, expectedHTMin, expectedHTMax, false);
@@ -1554,6 +1556,7 @@ class MasterSummonerTest : public TestCaseScript
 public:
 	MasterSummonerTest() : TestCaseScript("talents warlock master_summoner") { }
 
+    //Reduces the casting time of your Imp, Voidwalker, Succubus, Felhunter and Fel Guard Summoning spells by 4 sec and the Mana cost by 40 % .
 	class MasterSummonerTestImpt : public TestCase
 	{
 	public:
@@ -1561,19 +1564,22 @@ public:
 
         void TestSummonManaCost(TestPlayer* warlock, uint32 summonSpellId, uint32 expectedManaCost, bool useFelDomination = false)
         {
-            warlock->SetPower(POWER_MANA, expectedManaCost);
             warlock->GetSpellHistory()->ResetAllCooldowns();
 
             if (useFelDomination)
                 TEST_CAST(warlock, warlock, ClassSpells::Warlock::FEL_DOMINATION_RNK_1);
 
-            TEST_CAST(warlock, warlock, summonSpellId);
-            useFelDomination ? Wait(Seconds(1)) : Wait(Seconds(7));
-            Pet* pet = warlock->GetPet();
-            TEST_ASSERT(pet != nullptr);
+            uint32 const masterSummonerReduc = 4000;
+            uint32 const felDominationReduc = 5500;
+            uint32 const baseCastTime = 10000;
+            int32 expectedCastTime = baseCastTime - masterSummonerReduc;
+            if (useFelDomination)
+                expectedCastTime -= felDominationReduc;
+            if (expectedCastTime < 0)
+                expectedCastTime = 0;
+            TEST_CAST_TIME(warlock, summonSpellId, uint32(expectedCastTime));
 
-            ASSERT_INFO("After %u, Warlock should have 0 mana but has %u", summonSpellId, warlock->GetPower(POWER_MANA));
-            TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
+            TEST_POWER_COST(warlock, summonSpellId, POWER_MANA, expectedManaCost);
         }
 
         void Test() override
@@ -1812,10 +1818,11 @@ class ManaFeedTest : public TestCaseScript
 public:
 	ManaFeedTest() : TestCaseScript("talents warlock mana_feed") { }
 
+    //When you gain mana from Drain Mana or Life Tap spells, your pet gains 100 % of the mana you gain. (max rank)
 	class ManaFeedTestImpt : public TestCase
 	{
 	public:
-		ManaFeedTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		ManaFeedTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //0 mana given to pet
 
 		void AssertManaFeed(TestPlayer* warlock, TestPlayer* enemy, uint32 summonSpell)
 		{
@@ -1824,16 +1831,21 @@ public:
 			TEST_ASSERT(pet != nullptr);
 
 			pet->DisableRegeneration(true);
+            warlock->DisableRegeneration(true);
 			pet->SetPower(POWER_MANA, 0);
-            warlock->SetPower(POWER_MANA, 2000);
-            enemy->SetPower(POWER_MANA, 2000);
+            uint32 baseMana = 2000;
+            warlock->SetPower(POWER_MANA, baseMana);
+            enemy->SetPower(POWER_MANA, baseMana);
 
 			// Drain Mana -- bug here
-			uint32 expectedManaDrained = ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK * 5.0f;
-			TEST_CAST(warlock, enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6);
-			Wait(5500);
-            ASSERT_INFO("Drain Mana, Pet invoqued with %u, should have %u MP but has %u MP.", summonSpell, expectedManaDrained, pet->GetPower(POWER_MANA));
-			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedManaDrained);
+			FORCE_CAST(warlock, enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            WaitNextUpdate();
+			Wait(5000); //Drain mana has 5s cast time
+            ASSERT_INFO("warlock did not gain mana?");
+            TEST_ASSERT(warlock->GetPower(POWER_MANA) > baseMana);
+            uint32 const warlockManaGain = warlock->GetPower(POWER_MANA) - baseMana;
+            ASSERT_INFO("Drain Mana, Pet invoqued with %u, should have %u MP but has %u MP.", summonSpell, warlockManaGain, pet->GetPower(POWER_MANA));
+			TEST_ASSERT(pet->GetPower(POWER_MANA) == warlockManaGain);
 
 			// Life Tap
             pet->SetPower(POWER_MANA, 0);
@@ -1875,16 +1887,19 @@ class DemonicKnowledgeTest : public TestCaseScript
 public:
 	DemonicKnowledgeTest() : TestCaseScript("talents warlock demonic_knowledge") { }
 
+    //"Increases your spell damage by an amount equal to 12% of the total of your active demon's Stamina plus Intellect." (max rank)
 	class DemonicKnowledgeTestImpt : public TestCase
 	{
 	public:
-		DemonicKnowledgeTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		DemonicKnowledgeTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //No SP given
 
 		void AssertDemonicKnowledge(TestPlayer* warlock, uint32 summonSpellId, float spellPower, float talentFactor)
 		{
 			TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
 			Pet* pet = warlock->GetPet();
 			TEST_ASSERT(pet != nullptr);
+
+            Wait(1); //dunno if needed
 
 			float const expectedSP = spellPower + (pet->GetStat(STAT_STAMINA) + pet->GetStat(STAT_INTELLECT)) * talentFactor;
             ASSERT_INFO("After %u, Warlock should have %f SP but has %f SP.", summonSpellId, expectedSP, warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW));
@@ -1920,10 +1935,11 @@ class ImprovedShadowBoltTest : public TestCaseScript
 public:
     ImprovedShadowBoltTest() : TestCaseScript("talents warlock improved_shadow_bolt") { }
 
+    //"Your Shadow Bolt critical strikes increase Shadow damage dealt to the target by 20% until 4 non-periodic damage sources are applied. Effect lasts a maximum of 12sec." (max rank)
     class ImprovedShadowBoltTestImpt : public TestCase
     {
     public:
-        ImprovedShadowBoltTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // SB crit doesn't proc the ISB buff
+        ImprovedShadowBoltTestImpt() : TestCase(STATUS_WIP) { } //Todo: Test if buff is consumed + also consumed by another spell such as priest mind blast
 
         void Test() override
         {
@@ -1937,7 +1953,7 @@ public:
             uint32 const IMPROVED_SHADOW_BOLT_RNK_5_PROC = 17800;
 
             // Buff is applied
-            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11);
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_PROC_AS_NON_TRIGGERED));
             TEST_AURA_MAX_DURATION(dummy, IMPROVED_SHADOW_BOLT_RNK_5_PROC, Seconds(12));
 
             uint32 expectedMinDamage = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * talentFactor * 1.5f;
@@ -1960,6 +1976,7 @@ class CataclysmTest : public TestCaseScript
 public:
     CataclysmTest() : TestCaseScript("talents warlock cataclysm") { }
 
+    //Reduces the Mana cost of your Destruction spells by 5% (max ranks)
     class CataclysmTestImpt : public TestCase
     {
     public:
