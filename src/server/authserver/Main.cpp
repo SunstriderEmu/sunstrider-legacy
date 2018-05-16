@@ -296,12 +296,14 @@ variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, s
             "use <arg> as configuration file")
         ;
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
+    /* sun: crash with cpp17, but we don't need it
     options_description win("Windows platform specific options");
     win.add_options()
         ("service,s", value<std::string>(&configService)->default_value(""), "Windows service options: [install | uninstall]")
         ;
 
     all.add(win);
+    */
 #else
     (void)configService;
 #endif
