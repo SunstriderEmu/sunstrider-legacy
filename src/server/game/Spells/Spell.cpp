@@ -2647,7 +2647,7 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
         caster->HealBySpell(*healInfo, IsCrit);
 
         //sun SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER handling
-        float threat = healInfo->GetEffectiveHeal() * 0.5f * sSpellMgr->GetSpellThreatModPercent(spell->m_spellInfo);
+        float threat = healInfo->GetEffectiveHeal() * 0.5f;
         Unit* threatTarget = (spell->m_spellInfo->HasAttribute(SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER) || !spell->m_originalCaster) ? spell->_unitCaster : spell->m_originalCaster;
         if(threatTarget)
             spell->unitTarget->GetThreatManager().ForwardThreatForAssistingMe(threatTarget, threat, spell->m_spellInfo);

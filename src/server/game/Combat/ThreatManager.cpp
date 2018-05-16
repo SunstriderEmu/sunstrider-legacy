@@ -524,9 +524,7 @@ ThreatReference const* ThreatManager::ReselectVictim()
     // modifiers by spell
     if (spell)
     {
-        if (SpellThreatEntry const* threatEntry = sSpellMgr->GetSpellThreatEntry(spell->Id))
-            if (threatEntry->pctMod != 1.0f) // flat/AP modifiers handled in Spell::HandleThreatSpells
-                threat *= threatEntry->pctMod;
+        threat *= sSpellMgr->GetSpellThreatModPercent(spell);  // flat/AP modifiers handled in Spell::HandleThreatSpells
 
         if (Player* modOwner = victim->GetSpellModOwner())
             modOwner->ApplySpellMod(spell->Id, SPELLMOD_THREAT, threat);
