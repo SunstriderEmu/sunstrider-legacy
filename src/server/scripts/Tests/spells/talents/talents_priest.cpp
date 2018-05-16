@@ -57,6 +57,7 @@ class PriestWandSpecializationTest : public TestCaseScript
 public:
     PriestWandSpecializationTest() : TestCaseScript("talents priest wand_specialization") { }
 
+    //"Increases your damage with Wands by 25%."
     class WandSpecializationTestImpt : public TestCase
     {
     public:
@@ -496,6 +497,7 @@ public:
 
     MentalAgilityTest() : TestCaseScript("talents priest mental_agility") { }
 
+    //"Reduces the mana cost of your instant cast spells by 10%."
     class MentalAgilityTestImpt : public TestCase
     {
     public:
@@ -508,7 +510,7 @@ public:
             float const talentFactor = 1 - 0.1f;
             uint32 const baseMana = priest->GetMaxPower(POWER_MANA) - priest->GetManaBonusFromIntellect();
 
-            LearnTalent(priest, Talents::Priest::MENTAL_STRENGTH_RNK_5);
+            LearnTalent(priest, Talents::Priest::MENTAL_AGILITY_RNK_5);
             WaitNextUpdate();
             // Discipline
             TEST_POWER_COST(priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, POWER_MANA, baseMana * 0.14f * talentFactor);
