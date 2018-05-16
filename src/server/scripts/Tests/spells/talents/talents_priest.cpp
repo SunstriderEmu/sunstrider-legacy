@@ -738,10 +738,10 @@ public:
     public:
         /*
         Bugs:
-            - Damages: Holy Fire's Dot, Shadow Word: Death
-            - Crit: Smite, Holy Fire, Holy Nova, Mind Blast and Shadow Word: Death
+            - Damages: Shadow Word: Death
+            - Crit: Smite and Shadow Word: Death
         */
-        ForceOfWillTestImpt() : TestCase(STATUS_WIP) { }
+        ForceOfWillTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -751,7 +751,7 @@ public:
             float const talentDamageFactor = 1.05f;
             float const talentCritFactor = 5.f;
 
-            float const expectedSpellCritChance = priest->GetFloatValue(PLAYER_CRIT_PERCENTAGE) + talentCritFactor;
+            float const expectedSpellCritChance = priest->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_SHADOW) + talentCritFactor;
 
             LearnTalent(priest, Talents::Priest::FORCE_OF_WILL_RNK_5);
             // SP
@@ -762,34 +762,42 @@ public:
             // Holy Fire -- Direct
             uint32 const expectedHolyFireMin = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MIN * talentDamageFactor;
             uint32 const expectedHolyFireMax = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_MAX * talentDamageFactor;
-            //TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, expectedHolyFireMin, expectedHolyFireMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, expectedHolyFireMin, expectedHolyFireMax, false);
             // Holy Fire -- Dot
-            uint32 const holyFireDoT = ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_TOTAL * talentDamageFactor;
-            //TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDoT, true);
+            uint32 const holyFireTickAmount = 5;
+            uint32 const holyFireDoT = holyFireTickAmount * floor(ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_TICK * talentDamageFactor);
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireDoT, true);
             // Holy Nova
             uint32 const expectedHolyNovaMin = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_MIN_LVL_70 * talentDamageFactor;
             uint32 const expectedHolyNovaMax = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_MAX_LVL_70 * talentDamageFactor;
-            //TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::HOLY_NOVA_RNK_7, expectedHolyNovaMin, expectedHolyNovaMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::HOLY_NOVA_RNK_7, expectedHolyNovaMin, expectedHolyNovaMax, false);
             // Mind Blast
             uint32 const expectedMindBlastMin = ClassSpellsDamage::Priest::MIND_BLAST_RNK_11_MIN * talentDamageFactor;
             uint32 const expectedMindBlastMax = ClassSpellsDamage::Priest::MIND_BLAST_RNK_11_MAX * talentDamageFactor;
-            //TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, expectedMindBlastMin, expectedMindBlastMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, expectedMindBlastMin, expectedMindBlastMax, false);
             // SwD
             uint32 const expectedSwDMin = ClassSpellsDamage::Priest::SHADOW_WORD_DEATH_RNK_2_MIN * talentDamageFactor;
             uint32 const expectedSwDMax = ClassSpellsDamage::Priest::SHADOW_WORD_DEATH_RNK_2_MAX * talentDamageFactor;
-            //TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, expectedSwDMin, expectedSwDMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, expectedSwDMin, expectedSwDMax, false);
             // SwP
-            uint32 const expectedSwPDoT = ClassSpellsDamage::Priest::SHADOW_WORD_PAIN_RNK_10_TOTAL * talentDamageFactor;
-            //TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, expectedSwPDoT, false);
-            // TODO: Vampiric Touch
-            // TODO: Mind Flay
+            uint32 const swpTickAmount = 6;
+            uint32 const expectedSwPDoT = swpTickAmount * floor(ClassSpellsDamage::Priest::SHADOW_WORD_PAIN_RNK_10_TICK * talentDamageFactor);
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, expectedSwPDoT, false);
+            // Vampiric Touch
+            uint32 const vtTickAmount = 5;
+            uint32 const expectedVTDoT = vtTickAmount * floor(ClassSpellsDamage::Priest::VAMPIRIC_TOUCH_RNK_3_TICK * talentDamageFactor);
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, expectedVTDoT, false);
+            // Mind Flay
+            uint32 const mfTickAmount = 3;
+            uint32 const expectedMindFlayTick = ClassSpellsDamage::Priest::MIND_FLAY_RNK_7_TICK * talentDamageFactor;
+            TEST_CHANNEL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, ClassSpells::Priest::MIND_FLAY_RNK_7, mfTickAmount, expectedMindFlayTick);
 
             // Crit
-            //TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, expectedSpellCritChance);
-            //TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, expectedSpellCritChance);
-            //TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::HOLY_NOVA_RNK_7, expectedSpellCritChance);
-            //TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, expectedSpellCritChance);
-            //TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::HOLY_NOVA_RNK_7, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, expectedSpellCritChance);
+            TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, expectedSpellCritChance);
         }
     };
 
