@@ -768,6 +768,8 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
+    _MaxHealth(caster);
+    _MaxHealth(target);
 
     auto[sampleSize, maxPredictionError] = _GetApproximationParams(expectedMin, expectedMax);
 
@@ -802,6 +804,8 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
     //Restoring
     RestoreCriticals(caster);
+    _RestoreUnitState(caster);
+    _RestoreUnitState(target);
 }
 
 PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster)

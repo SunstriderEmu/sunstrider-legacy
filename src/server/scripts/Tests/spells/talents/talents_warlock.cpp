@@ -1939,7 +1939,7 @@ public:
     class ImprovedShadowBoltTestImpt : public TestCase
     {
     public:
-        ImprovedShadowBoltTestImpt() : TestCase(STATUS_WIP) { } //Todo: Test if buff is consumed + also consumed by another spell such as priest mind blast
+        ImprovedShadowBoltTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { } //Todo: Test if buff is consumed + also consumed by another spell such as priest mind blast
 
         void Test() override
         {
@@ -2013,6 +2013,7 @@ class BaneTest : public TestCaseScript
 public:
     BaneTest() : TestCaseScript("talents warlock bane") { }
 
+    //"Reduces the casting time of your Shadow Bolt and Immolate spells by 0.5 sec and your Soul Fire spell by 2 sec."
     class BaneTestImpt : public TestCase
     {
     public:
