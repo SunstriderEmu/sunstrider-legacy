@@ -537,7 +537,7 @@ public:
     class NightfallTestImpt : public TestCase
     {
     public:
-        NightfallTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //Double chance (8%), spell can proc 2 times per tick
+        NightfallTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {

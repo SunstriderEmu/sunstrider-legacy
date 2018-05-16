@@ -667,6 +667,10 @@ float myErfInv2(float x) {
 
 std::pair<uint32 /*sampleSize*/, float /*absoluteTolerance*/> TestCase::_GetPercentApproximationParams(float const expectedResult, float absoluteTolerance /*= 0*/)
 {
+    //special speedups for extreme cases
+    if(expectedResult == 1.0f || expectedResult == 0.0f)
+        std::make_pair(1000, 0.0001f);
+
     float const minExpectedResult = 0.01f;
     float const maxExpectedResult = 1.0f - minExpectedResult;
 
@@ -702,6 +706,10 @@ std::pair<uint32 /*sampleSize*/, float /*absoluteTolerance*/> TestCase::_GetPerc
 
     uint32 sampleSize = 2 * pow(boost::math::erf_inv(certainty) / absoluteTolerance, 2);
     sampleSize = std::max(sampleSize, uint32(100)); //min sample size
+
+    //temp hack
+    if (sampleSize > 200000)
+        sampleSize = 200000;
 
     return std::make_pair(sampleSize, absoluteTolerance);
 }
