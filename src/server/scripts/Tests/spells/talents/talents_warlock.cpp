@@ -2617,6 +2617,9 @@ public:
             uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             TEST_ASSERT(spellPower == 292);
 
+            // Can't cast without Immolate on target
+            TEST_CAST(warlock, dummy, ClassSpells::Warlock::CONFLAGRATE_RNK_6, SPELL_FAILED_TARGET_AURASTATE);
+
             uint32 const expectedConflagrateManaCost = 305;
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             TEST_POWER_COST(warlock, ClassSpells::Warlock::CONFLAGRATE_RNK_6, POWER_MANA, expectedConflagrateManaCost);
