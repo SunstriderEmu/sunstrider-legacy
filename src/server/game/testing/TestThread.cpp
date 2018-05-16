@@ -10,7 +10,6 @@ TestThread::TestThread(std::shared_ptr<TestCase> test)
 
 void TestThread::Start()
 {
-    _state = STATE_STARTED;
     _future = std::move(std::async(std::launch::async, [this]() { this->Run(); }));
 }
 
@@ -43,9 +42,11 @@ void TestThread::Run()
         if(!setupSuccess)
             _testCase->_Fail("Failed to setup test");
         
-        { //Thread will actually start the test when map resume execution for the first time
+        _state = STATE_READY;
+
+        { //Test will actually start the test when map resume execution for the first time
             std::unique_lock<std::mutex> lk(_testCVMutex);
-            _testCV.wait(lk, [this] {return  IsStarted(); });
+            _testCV.wait(lk, [this] {return _state > STATE_READY; });
         }
 
         _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());

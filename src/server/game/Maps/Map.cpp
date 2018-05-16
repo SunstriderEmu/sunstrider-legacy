@@ -3174,6 +3174,9 @@ void TestMap::Update(const uint32& diff)
         return;
 
     auto test = _testThread->GetTest();
+    if (_testThread->GetState() < TestThread::STATE_READY)
+        return; //still setting up
+
     //test thread may have been finish by itself or externally (by a cancel)
     if (_testThread->IsFinished() || _testThread->IsCanceling())
     {
@@ -3191,7 +3194,9 @@ void TestMap::Update(const uint32& diff)
     //if test asked for a pause, skip this map update
     if (!_testThread->IsPaused())
     {
-        ASSERT(_testThread->GetState() != TestThread::STATE_RUNNING); //test should never be currently updating at the same time as the map is updating
+        //only valid states at this points. test should never be currently updating at the same time as the map is updating
+        auto state = _testThread->GetState();
+        ASSERT(state == TestThread::STATE_READY || state == TestThread::STATE_WAITING || state == TestThread::STATE_PAUSED);
         InstanceMap::Update(usedDiff);
 
         //When paused, time is frozen in test too

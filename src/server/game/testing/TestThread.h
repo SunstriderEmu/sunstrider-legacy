@@ -23,7 +23,7 @@ public:
     enum ThreadState : uint8
     {
         STATE_NOT_STARTED, //not yet setup
-        STATE_STARTED, //started and setup but not yet running
+        STATE_READY, //started and setup but not yet running
         STATE_RUNNING, //currently updating
         STATE_WAITING, //update is suspended because of waiting time
         STATE_PAUSED, //almost the same as waiting, but map will skip updates when we're paused. A pause is always removed at the next update.
