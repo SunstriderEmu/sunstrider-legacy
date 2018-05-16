@@ -5,16 +5,16 @@
 class UnbreakableWillTest : public TestCaseScript
 {
 public:
-
     UnbreakableWillTest() : TestCaseScript("talents priest unbreakable_will") { }
 
+    //"Increases your chance to resist Stun, Fear, and Silence effects by an additional 15%"
     class UnbreakableWillTestImpt : public TestCase
     {
     public:
         /*
         Bugs: Not sure, feels like the special attacks hit is wrong
         */
-        UnbreakableWillTestImpt() : TestCase(STATUS_WIP) { }
+        UnbreakableWillTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -26,16 +26,19 @@ public:
             LearnTalent(priest, Talents::Priest::UNBREAKABLE_WILL_RNK_5);
             float const talentResistFactor = 15.f;
             float const expectedSpellResist = talentResistFactor + 3.f; // 3% is required to be spell hit capped in PvP
-            float const expectedMeleeResist = talentResistFactor + 5.f; // 5% is required to be special attacks capped in PvP
+            float const expectedMeleeResist = talentResistFactor; // 5% melee cap is in SPELL_MISS_MISS so we don't need to count it
 
+            ASSERT_INFO("Fear");
             TEST_SPELL_HIT_CHANCE_CALLBACK(warlock, priest, ClassSpells::Warlock::FEAR_RNK_3, expectedSpellResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* victim) {
                 victim->ClearDiminishings();
                 victim->RemoveAurasDueToSpell(ClassSpells::Warlock::FEAR_RNK_3);
             });
+            ASSERT_INFO("Concussion blow");
             TEST_SPELL_HIT_CHANCE_CALLBACK(warrior, priest, Talents::Warrior::CONCUSSION_BLOW_RNK_1, expectedMeleeResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* victim) {
                 victim->ClearDiminishings();
                 victim->RemoveAurasDueToSpell(Talents::Warrior::CONCUSSION_BLOW_RNK_1);
             });
+            ASSERT_INFO("Silence");
             TEST_SPELL_HIT_CHANCE_CALLBACK(enemyPriest, priest, ClassSpells::Priest::SILENCE_RNK_1, expectedSpellResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* victim) {
                 victim->ClearDiminishings();
                 victim->RemoveAurasDueToSpell(ClassSpells::Priest::SILENCE_RNK_1);
