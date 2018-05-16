@@ -779,7 +779,14 @@ public:
     class FocusedWillTestImpt : public TestCase
     {
     public:
-        FocusedWillTestImpt() : TestCase(STATUS_WIP) { }
+        FocusedWillTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void RefreshProcWith3Stacks(TestPlayer* priest)
+        {
+            priest->RemoveAurasDueToSpell(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER);
+            for (uint8 i = 0; i < 3; i++)
+                priest->AddAura(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER, priest);
+        }
 
         void Test() override
         {
@@ -787,7 +794,7 @@ public:
             TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, RACE_DRAENEI);
 
             LearnTalent(priest, Talents::Priest::FOCUSED_WILL_RNK_3);
-            float const talentDamageTakenFactor = 0.96f;
+            float const talentDamageTakenFactorPerStack = 0.04f;
             float const talentHealingBoostPerStack = 0.1f;
 
             shaman->ForceMeleeHitResult(MELEE_HIT_CRIT);
@@ -803,32 +810,24 @@ public:
             // Damage reduced: melee MH & Earth Shock
             EQUIP_NEW_ITEM(shaman, 34165); // Fang of Kalecgos
             WaitNextUpdate();
+            float const talentReduction = 1 - 3 * talentDamageTakenFactorPerStack;
             uint32 const weaponMinDmg = 113;
             uint32 const weaponMaxDmg = 211;
             float const weaponSpeed = 1.5f;
             float const AP = shaman->GetTotalAttackPowerValue(BASE_ATTACK);
             float const armorFactor = 1 - (priest->GetArmor() / (priest->GetArmor() + 10557.5f));
-            uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed) * armorFactor * talentDamageTakenFactor;
-            uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed) * armorFactor * talentDamageTakenFactor;
+            uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed) * armorFactor * talentReduction;
+            uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed) * armorFactor * talentReduction;
+            RefreshProcWith3Stacks(priest);
             TEST_MELEE_DAMAGE(shaman, priest, BASE_ATTACK, minMelee, maxMelee, false);
-            uint32 const minEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MIN * talentDamageTakenFactor;
-            uint32 const maxEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MAX * talentDamageTakenFactor;
+            uint32 const minEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MIN_LVL_70 * talentReduction;
+            uint32 const maxEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MAX_LVL_70 * talentReduction;
+            RefreshProcWith3Stacks(priest);
             TEST_DIRECT_SPELL_DAMAGE(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, minEarthShock, maxEarthShock, false);
 
             // Healing increased
-            uint8 auraStack = 0;
-            if (priest->HasAura(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER))
-            {
-                aura = priest->GetAura(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER);
-                TEST_ASSERT(aura != nullptr);
-                auraStack = aura->GetStackAmount();
-            }
-            else
-            {
-                priest->AddAura(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER, priest);
-                auraStack = 1;
-            }
-            float const talentBoost = 1 + auraStack * talentHealingBoostPerStack;
+            RefreshProcWith3Stacks(priest);
+            float const talentBoost = 1 + 3 * talentHealingBoostPerStack;
             uint32 const minGreaterHeal = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN * talentBoost;
             uint32 const maxGreaterHeal = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX * talentBoost;
             TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, minGreaterHeal, maxGreaterHeal, false);
