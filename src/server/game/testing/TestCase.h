@@ -12,6 +12,7 @@
 #include <functional>
 
 #define TEST_CREATURE_ENTRY 8
+#define TEST_BOSS_ENTRY 28
 
 class TestMap;
 class TestThread;
@@ -93,6 +94,8 @@ public:
     TestPlayer* SpawnPlayer(Classes cls, Races _race, uint32 level = 70, Position spawnPosition = {});
     //Spawn creature. Fail test on failure
     TempSummon* SpawnCreature(uint32 entry = 0, bool spawnInFront = true);
+    //Spawn boss. Fail test on failure
+    TempSummon* SpawnBoss(bool spawnInFront = true);
     //Spawn creature. Fail test on failure
     TempSummon* SpawnCreatureWithPosition(Position spawnPosition, uint32 entry = 0);
 

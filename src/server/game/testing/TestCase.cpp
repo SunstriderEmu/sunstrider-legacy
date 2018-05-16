@@ -542,10 +542,15 @@ Races TestCase::_GetRandomRaceForClass(Classes cls)
 TempSummon* TestCase::SpawnCreature(uint32 entry, bool spawnInFront)
 {
     Position spawnPosition(_location);
-    if(spawnInFront)
+    if (spawnInFront)
         spawnPosition.MoveInFront(_location, 3.0f);
 
     return SpawnCreatureWithPosition(spawnPosition, entry);
+}
+
+TempSummon* TestCase::SpawnBoss(bool spawnInFront)
+{
+    return SpawnCreature(TEST_BOSS_ENTRY, spawnInFront);
 }
 
 TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 entry)
