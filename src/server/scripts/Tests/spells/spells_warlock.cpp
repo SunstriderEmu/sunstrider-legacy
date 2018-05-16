@@ -1817,7 +1817,7 @@ public:
     class SearingPainTestImpt : public TestCase
     {
     public:
-        SearingPainTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //  Too much threat
+        SearingPainTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {

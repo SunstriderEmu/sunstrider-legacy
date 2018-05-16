@@ -1578,8 +1578,6 @@ class TC_GAME_API Unit : public WorldObject
 
         void LogBossDown(Creature* victim);
 
-        static bool IsDamageToThreatSpell(SpellInfo const * spellInfo);
-
         void DeMorph();
         void RestoreDisplayId();
 

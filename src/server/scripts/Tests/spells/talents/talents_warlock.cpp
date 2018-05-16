@@ -2295,11 +2295,7 @@ public:
     class DestructiveReachTestImpt : public TestCase
     {
     public:
-        /*
-        Bug:
-            - Talent is working, Searing Pain spell deals too much threat.
-        */
-        DestructiveReachTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        DestructiveReachTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {

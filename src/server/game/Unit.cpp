@@ -939,14 +939,8 @@ uint32 Unit::DealDamage(Unit* attacker, Unit *pVictim, uint32 damage, CleanDamag
 
         if (attacker && pVictim->GetTypeId() != TYPEID_PLAYER)
         {
-            if(spellProto && IsDamageToThreatSpell(spellProto)) {
-                //TC_LOG_INFO("DealDamage (IsDamageToThreatSpell), AddThreat : %f * 2 = %f",damage,damage*2);
-                pVictim->GetThreatManager().AddThreat(attacker, float(damage*2), spellProto);
-            } else {
-                //TC_LOG_INFO("DealDamage, AddThreat : %f",threat);
-                float threat = damage * sSpellMgr->GetSpellThreatModPercent(spellProto);
-                pVictim->GetThreatManager().AddThreat(attacker, float(threat), spellProto);
-            }
+            //TC_LOG_INFO("DealDamage, AddThreat : %f",threat);
+            pVictim->GetThreatManager().AddThreat(attacker, float(damage), spellProto);
         }
         else                                                // victim is a player
         {
@@ -6636,21 +6630,6 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Worl
 #endif
         }
     }
-
-    return false;
-}
-
-bool Unit::IsDamageToThreatSpell(SpellInfo const* spellInfo)
-{
-    if(!spellInfo)
-        return false;
-
-    uint32 family = spellInfo->SpellFamilyName;
-    uint64 flags = spellInfo->SpellFamilyFlags;
-
-    if((family == SPELLFAMILY_WARLOCK && flags == SPELLFAMILYFLAG_WARLOCK_SEARING_PAIN) || 
-        (family == SPELLFAMILY_SHAMAN && flags == SPELLFAMILYFLAG_SHAMAN_FROST_SHOCK))
-        return true;
 
     return false;
 }
