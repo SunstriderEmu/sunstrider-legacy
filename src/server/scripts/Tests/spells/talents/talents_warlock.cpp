@@ -537,7 +537,7 @@ public:
     class NightfallTestImpt : public TestCase
     {
     public:
-        NightfallTestImpt() : TestCase(STATUS_WIP) { } // Proc doesnt proc!
+        NightfallTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //Double chance (8%), spell can proc 2 times per tick
 
         void Test() override
         {
@@ -550,14 +550,8 @@ public:
             uint32 const procSpellId = 17941;
 
             // Proc chance
-            auto callback = [&](Unit* caster, Unit* target) {
-                bool hasAura = caster->HasAura(procSpellId);
-                caster->RemoveAllAuras();
-                return hasAura;
-            };
-            Wait(5000);
-            TEST_AURA_TICK_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, EFFECT_0, procChance, callback);
-            TEST_AURA_TICK_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, EFFECT_0, procChance, callback);
+            TEST_AURA_TICK_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8, EFFECT_0, procChance, true, procSpellId);
+            TEST_AURA_TICK_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, EFFECT_0, procChance, true, procSpellId);
 
             // Instant shadow bolt
             warlock->AddAura(procSpellId, warlock);
@@ -2545,7 +2539,7 @@ public:
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::INCINERATE_RNK_2, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MIN * damageFactor, ClassSpellsDamage::Warlock::INCINERATE_RNK_2_MAX * damageFactor, false);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEARING_PAIN_RNK_8, ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MIN * damageFactor, ClassSpellsDamage::Warlock::SEARING_PAIN_RNK_8_MAX * damageFactor, false);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SOUL_FIRE_RNK_4, ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MIN * damageFactor, ClassSpellsDamage::Warlock::SOUL_FIRE_RNK_4_MAX * damageFactor, false);
-            // Helfire
+            // Hellfire
             TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::HELLFIRE_RNK_4, ClassSpells::Warlock::HELLFIRE_RNK_4_TRIGGER, 15, ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK_LVL_70 * damageFactor);
             TEST_DOT_DAMAGE(warlock, warlock, ClassSpells::Warlock::HELLFIRE_RNK_4, ClassSpellsDamage::Warlock::HELLFIRE_RNK_4_TICK_LVL_70 * damageFactor * 15.f, false);
             TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5, ClassSpells::Warlock::RAIN_OF_FIRE_RNK_5_PROC, 4, ClassSpellsDamage::Warlock::RAIN_OF_FIRE_RNK_5_TICK_LVL_70 * damageFactor);
@@ -2607,6 +2601,7 @@ class ConflagrateTest : public TestCaseScript
 public:
     ConflagrateTest() : TestCaseScript("talents warlock conflagrate") { }
 
+    //"Ignites a target that is already afflicted by your Immolate, dealing 579 to 722 Fire damage and consuming the Immolate spell."
     class ConflagrateTestImpt : public TestCase
     {
     public:
@@ -2644,15 +2639,16 @@ public:
     }
 };
 
-class ShadowAndFlamesTest : public TestCaseScript
+class ShadowAndFlameTest : public TestCaseScript
 {
 public:
-    ShadowAndFlamesTest() : TestCaseScript("talents warlock shadow_and_flames") { }
+    ShadowAndFlameTest() : TestCaseScript("talents warlock shadow_and_flame") { }
 
-    class ShadowAndFlamesTestImpt : public TestCase
+    // "Your Shadow Bolt and Incinerate spells gain an additional 20% of your bonus spell damage effects."
+    class ShadowAndFlameTestImpt : public TestCase
     {
     public:
-        ShadowAndFlamesTestImpt() : TestCase(STATUS_PASSING) { }
+        ShadowAndFlameTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2685,7 +2681,7 @@ public:
 
     std::shared_ptr<TestCase> GetTest() const override
     {
-        return std::make_shared<ShadowAndFlamesTestImpt>();
+        return std::make_shared<ShadowAndFlameTestImpt>();
     }
 };
 
@@ -2782,6 +2778,6 @@ void AddSC_test_talents_warlock()
     // TODO: Backlash
     new ConflagrateTest();
     // TODO: Soul Leech
-    new ShadowAndFlamesTest();
+    new ShadowAndFlameTest();
     new ShadowfuryTest();
 }

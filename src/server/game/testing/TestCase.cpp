@@ -1354,7 +1354,15 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
     _RestoreUnitState(victim);
 }
 
-void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex effIndex, float expectedResultPercent, TestCallbackResult callback)
+void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, bool checkSelf)
+{
+    auto callback = [checkSelf, procSpellId](Unit* caster, Unit* target) { 
+        return (checkSelf ? caster : target)->HasAura(procSpellId); 
+    };
+    _TestAuraTickProcChanceCallback(caster, target, spellID, index, chance, procSpellId, callback);
+}
+
+void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex effIndex, float expectedResultPercent, uint32 procSpellId, TestCallbackResult callback)
 {
     _EnsureAlive(caster, target);
 
@@ -1375,6 +1383,9 @@ void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellI
     {
         effect->PeriodicTick(caster);
         successCount += uint32(callback(caster, target));
+
+        caster->RemoveAurasDueToSpell(procSpellId);
+        target->RemoveAurasDueToSpell(procSpellId);
 
         target->SetMaxHealth(startingMaxHealth);
         target->SetHealth(startingHealth);

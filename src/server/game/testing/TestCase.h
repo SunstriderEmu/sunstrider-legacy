@@ -240,12 +240,17 @@ public:
     */
     #define TEST_CAST_TIME(caster, spellID, expectedCastTimeMS) { _SetCaller(__FILE__, __LINE__); _TestSpellCastTime(caster, spellID, expectedCastTimeMS); _ResetCaller(); }
 
-    /* Apply aura of given spell from caster to target, then test if callback has %chance to be true at after each tick.
+    /* Apply aura of given spell from caster to target, then check if caster has aura after each tick.
     You should cleanup tick effect in the callback before returning result.
     chance: 0-100
+    checkSelf: Check if aura proc on caster. Else, on target.
     */
     typedef std::function<bool(Unit*, Unit*)> TestCallbackResult;
-    #define TEST_AURA_TICK_PROC_CHANCE(caster, target, spellID, effIdx, chance, callback)  { _SetCaller(__FILE__, __LINE__); _TestAuraTickProcChance(caster, target, spellID, effIdx, chance, callback); _ResetCaller(); }
+    #define TEST_AURA_TICK_PROC_CHANCE(caster, target, spellID, effIdx, chance, checkSelf, spellProcId)  { _SetCaller(__FILE__, __LINE__); _TestAuraTickProcChance(caster, target, spellID, effIdx, chance, procSpellId, checkSelf); _ResetCaller(); }
+    /* Same but with additional argument:
+    callback: function to use after each tick to determine success.
+    */
+    #define TEST_AURA_TICK_PROC_CHANCE_CALLBACK(caster, target, spellID, effIdx, chance, procSpellId, callback)  { _SetCaller(__FILE__, __LINE__); _TestAuraTickProcChanceCallback(caster, target, spellID, effIdx, chance, procSpellId, callback); _ResetCaller(); }
 
 
     /* Test the proc chance of given aura on caster or victim by casting a spell on a target
@@ -341,7 +346,8 @@ protected:
     void _TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
     void _TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback);
     void _TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS);
-    void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, TestCallbackResult callback);
+    void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, bool checkSelf);
+    void _TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, TestCallbackResult callback);
     void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
     void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, Optional<TestCallback> callback);
