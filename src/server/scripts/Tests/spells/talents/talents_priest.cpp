@@ -1119,7 +1119,7 @@ void AddSC_test_talents_priest()
 {
     // Discipline
     new UnbreakableWillTest();
-	new PriestWandSpecializationTest();
+    new PriestWandSpecializationTest();
     new SilentResolve();
     new ImprovedPowerWordFortitudeTest();
     new ImprovedPowerWordShieldTest();
