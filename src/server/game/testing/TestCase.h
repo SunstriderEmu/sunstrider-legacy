@@ -374,9 +374,9 @@ protected:
     // <Helpers>
     void _EnsureAlive(Unit* caster, Unit* victim);
     //Try to get caster AI or owner caster AI (if pet or summon). Fail if no caster AI found. Changes caster arg to owner if pet/summon.
-    PlayerbotTestingAI* _GetCasterAI(Unit*& caster);
+    PlayerbotTestingAI* _GetCasterAI(Unit*& caster, bool failOnNotFound = true);
     //Same but with an already provided TestPlayer (no checking summoner or owner)
-    PlayerbotTestingAI* _GetCasterAI(TestPlayer* caster);
+    PlayerbotTestingAI* _GetCasterAI(TestPlayer* caster, bool failOnNotFound = true);
     //Get SpellInfo, fails test if not found
     SpellInfo const* _GetSpellInfo(uint32 spellID);
     //See comments inside

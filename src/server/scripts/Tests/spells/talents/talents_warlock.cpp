@@ -2369,6 +2369,7 @@ class PyroclasmTest : public TestCaseScript
 public:
     PyroclasmTest() : TestCaseScript("talents warlock pyroclasm") { }
 
+    //"Gives your Rain of Fire, Hellfire, and Soul Fire spells a 26% chance to stun the target for 3sec."
     class PyroclasmTestImpt : public TestCase
     {
     public:
@@ -2401,6 +2402,7 @@ class ImprovedImmolateTest : public TestCaseScript
 public:
     ImprovedImmolateTest() : TestCaseScript("talents warlock improved_immolate") { }
 
+    //"Increases the initial damage of your Immolate spell by 25%"
     class ImprovedImmolateTestImpt : public TestCase
     {
     public:
@@ -2433,6 +2435,7 @@ class RuinTest : public TestCaseScript
 public:
     RuinTest() : TestCaseScript("talents warlock ruin") { }
 
+    //"Increases the critical strike damage bonus of your Destruction spells by 100%."
     class RuinTestImpt : public TestCase
     {
     public:
@@ -2472,10 +2475,11 @@ class NetherProtectionTest : public TestCaseScript
 public:
     NetherProtectionTest() : TestCaseScript("talents warlock nether_protection") { }
 
+    //"After being hit with a Shadow or Fire spell, you have a 30% chance to become immune to Shadow and Fire spells for 4sec."
     class NetherProtectionTestImpt : public TestCase
     {
     public:
-        NetherProtectionTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Never procs
+        NetherProtectionTestImpt() : TestCase(STATUS_PASSING) { } 
 
         void Test() override
         {
@@ -2511,6 +2515,7 @@ class EmberstormTest : public TestCaseScript
 public:
     EmberstormTest() : TestCaseScript("talents warlock emberstorm") { }
 
+    //"Increases the damage done by your Fire spells by 10%, and reduces the cast time of your Incinerate spell by 10%"
     class EmberstormTestImpt : public TestCase
     {
     public:

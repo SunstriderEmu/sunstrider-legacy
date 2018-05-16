@@ -808,24 +808,43 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     _RestoreUnitState(target);
 }
 
-PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster)
+PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster, bool failOnNotFound)
 {
     caster = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
-    INTERNAL_ASSERT_INFO("Caster is not a player or a pet/summon of him");
-    INTERNAL_TEST_ASSERT(caster != nullptr);
+    if (caster == nullptr)
+    {
+        if (failOnNotFound)
+        {
+            INTERNAL_ASSERT_INFO("Caster is not a player or a pet/summon of him");
+            INTERNAL_TEST_ASSERT(false);
+        }
+        else
+            return nullptr;
+    }
 
     TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(caster);
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
-    INTERNAL_TEST_ASSERT(caster != nullptr);
+    if (casterOwner == nullptr)
+    {
+        if (failOnNotFound)
+        {
+            INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
+            INTERNAL_TEST_ASSERT(false);
+        }
+        else
+            return nullptr;
+    }
 
-    return _GetCasterAI(casterOwner);
+    return _GetCasterAI(casterOwner, failOnNotFound);
 }
 
-PlayerbotTestingAI* TestCase::_GetCasterAI(TestPlayer* caster)
+PlayerbotTestingAI* TestCase::_GetCasterAI(TestPlayer* caster, bool failOnNotFound)
 {
     auto AI = caster->GetTestingPlayerbotAI();
-    INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-    INTERNAL_TEST_ASSERT(AI != nullptr);
+    if (failOnNotFound)
+    {
+        INTERNAL_ASSERT_INFO("Caster in not a testing bot");
+        INTERNAL_TEST_ASSERT(AI != nullptr);
+    }
 
     return AI;
 }
@@ -1368,21 +1387,26 @@ void TestCase::_TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellI
 
 void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback)
 {
-    auto AI = _GetCasterAI(caster);
+    auto casterAI = _GetCasterAI(caster, false);
+    auto victimAI = _GetCasterAI(victim, false);
+    INTERNAL_ASSERT_INFO("Could not find Testing AI for neither caster or victim");
+    INTERNAL_TEST_ASSERT(casterAI && victimAI);
 
     _EnsureAlive(caster, victim);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
     /*SpellInfo const* procSpellInfo =*/ _GetSpellInfo(procSpellID);
 
     ResetSpellCast(caster);
-    AI->ResetSpellCounters();
+    if(casterAI)
+        casterAI->ResetSpellCounters();
+    if(victimAI)
+        victimAI->ResetSpellCounters();
     _MaxHealth(caster);
     _MaxHealth(victim);
     EnableCriticals(caster, crit);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
 
-    uint32 count = 0;
     uint32 procCount = 0;
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -1394,35 +1418,35 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
         if (spellInfo->IsChanneled())
             _UpdateUnitEvents(caster);
 
-        if (selfProc)
-        {
-            procCount += uint32(caster->HasAura(procSpellID));
-            caster->RemoveAurasDueToSpell(procSpellID);
-        }
-
-        count++;
-        
+        caster->RemoveAurasDueToSpell(procSpellID);
+        victim->RemoveAurasDueToSpell(procSpellID);
+                
         HandleThreadPause();
     }
 
-    // Proc can be resisted or immune, but it still proc'd
-    if (!selfProc)
-    {
-        auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-        INTERNAL_ASSERT_INFO("_TestSpellProcChance found no data of %u for this victim (%s)", spellID, victim->GetName().c_str());
-        INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
+    Unit* checkTarget = selfProc ? caster : victim;
+    auto countProcs = [checkTarget, procSpellID](PlayerbotTestingAI* AI) {
+        auto damageToTarget = AI->GetSpellDamageDoneInfo(checkTarget);
+        if (!damageToTarget)
+            return uint32(0);
+
+        uint32 count = 0;
         for (auto itr : *damageToTarget)
         {
             if (itr.damageInfo.SpellID != procSpellID)
                 continue;
 
-            procCount++;
+            count++;
         }
-    }
-
-    INTERNAL_ASSERT_INFO("_TestSpellProcChance found %u results instead of expected sample size %u", count, sampleSize);
-    INTERNAL_TEST_ASSERT(count == sampleSize);
+        return count;
+    };
+    //we count both procs from caster to checkTarget and from victim to checkTarget
+    //if this is not flexible enough, consider replacing the selfProc arg with a Unit* checkTarget
+    if (casterAI)
+        procCount += countProcs(casterAI);
+    if (victimAI)
+        procCount += countProcs(victimAI);
 
     float actualSuccessPercent = 100 * (procCount / float(sampleSize));
     INTERNAL_ASSERT_INFO("Spell %u only proc'd %u %f but was expected %f.", spellID, procSpellID, actualSuccessPercent, expectedChancePercent);
