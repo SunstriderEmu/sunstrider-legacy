@@ -89,18 +89,20 @@ class SilentResolve : public TestCaseScript
 public:
     SilentResolve() : TestCaseScript("talents priest silent_resolve") { }
 
-    class WandSpecializationTestImpt : public TestCase
+    class SilentResolveTestImpt : public TestCase
     {
     public:
         /*
         Bugs:
+            - Threat: PWS doesnt have threat, Chastise and Binding Heal doesn't have a half factor.
             - Mind Flay and Vampiric Embrace not affected by the dispell resist.
         */
-        WandSpecializationTestImpt() : TestCase(STATUS_WIP) { } // Waiting TEST_DISPEL_RESIST_CHANCE to be able to handle other dispel types -> DONE
+        SilentResolveTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            TestPlayer* ally = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
             _location.MoveInFront(_location, 5.0f);
             TestPlayer* enemy = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             Creature* dummy = SpawnCreature();
@@ -111,66 +113,93 @@ public:
             const float dispelTalentFactor = 20.f;
 
             // Threat of Discipline and Holy
-            // TODO: Power Word: Shield
-            //TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::BINDING_HEAL_RNK_1, 0.5f * healThreatFactor);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, threatReductionFactor, false);
-            ////TEST_DIRECT_SPELL_THREAT(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, threatFactor);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, healThreatFactor, true);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, healThreatFactor, true);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::FLASH_HEAL_RNK_9, healThreatFactor, true);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::GREATER_HEAL_RNK_7, healThreatFactor, true);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::HEAL_RNK_4, healThreatFactor, true);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, threatReductionFactor, false);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::LESSER_HEAL_RNK_3, healThreatFactor, true);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, healThreatFactor, true);
-            ////TEST_DIRECT_HEAL_THREAT(priest, dummy, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, healThreatFactor);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::RENEW_RNK_12, healThreatFactor, true);
-            //TEST_THREAT(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, threatReductionFactor, false);
+            // PWS: Omen uses half threat to calculate at cast.
+            // More info about at cast threat: http://www.wowhead.com/forums&topic=94784/power-word-shield-and-threat
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, 0.5f * healThreatFactor, true);
+            // Chastise: "Very low threat", Omen affects a half factor.
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, 0.5f * threatReductionFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::FLASH_HEAL_RNK_9, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::GREATER_HEAL_RNK_7, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::HEAL_RNK_4, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, threatReductionFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::LESSER_HEAL_RNK_3, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, threatReductionFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::RENEW_RNK_12, healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, threatReductionFactor, false);
+
+            // Binding Heal: "Low threat", Omen & DTM affects it a half factor.
+            GroupPlayer(priest, ally);
+            ally->SetHealth(1);
+            priest->SetHealth(1);
+            dummy->EngageWithTarget(ally);
+            dummy->EngageWithTarget(priest);
+            EnableCriticals(priest, false);
+            TEST_CAST(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            auto [healMinBHPriest, healMaxBHPriest] = GetHealingPerSpellsTo(priest, priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, false, 1);
+            auto [healMinBHAlly, healMaxBHAlly] = GetHealingPerSpellsTo(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, false, 1);
+            float actualPriestThreat = dummy->GetThreatManager().GetThreat(priest);
+            const float expectedBindingHealThreat = 0.5f * (healMinBHPriest + healMinBHAlly) * healThreatFactor;
+            ASSERT_INFO("Priest should have %f threat but has %f.", expectedBindingHealThreat, actualPriestThreat);
+            TEST_ASSERT(Between<float>(actualPriestThreat, expectedBindingHealThreat - 0.1f, expectedBindingHealThreat + 0.1f));
+            // Prayer of Mending
+            dummy->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            TEST_CAST(priest, ally, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+            dummy->AttackerStateUpdate(ally, BASE_ATTACK);
+            dummy->AttackStop();
+            const float expectedPoMThreat = actualPriestThreat + ClassSpellsDamage::Priest::PRAYER_OF_MENDING_RNK_1 * healThreatFactor;
+            actualPriestThreat = dummy->GetThreatManager().GetThreat(priest);
+            ASSERT_INFO("Priest should have %f threat but has %f.", expectedPoMThreat, actualPriestThreat);
+            TEST_ASSERT(Between<float>(actualPriestThreat, expectedPoMThreat - 0.1f, expectedPoMThreat + 0.1f));
 
             // Resist dispell of all spells
             // Disc
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::DIVINE_SPIRIT_RNK_5, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::ELUNES_GRACE_RNK_1, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::FEAR_WARD_RNK_1, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::INNER_FIRE_RNK_7, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::INNER_FOCUS_RNK_1, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::LEVITATE_RNK_1, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1, dispelTalentFactor + 65.f);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::POWER_INFUSION_RNK_1, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE_CALLBACK(priest, priest, enemy, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, dispelTalentFactor); // need callback to remove aura
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_SPIRIT_RNK_2, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::STARSHARDS_RNK_8, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::DIVINE_SPIRIT_RNK_5, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::ELUNES_GRACE_RNK_1, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::FEAR_WARD_RNK_1, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::INNER_FIRE_RNK_7, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::INNER_FOCUS_RNK_1, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::LEVITATE_RNK_1, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1, dispelTalentFactor + 65.f);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::POWER_INFUSION_RNK_1, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE_CALLBACK(priest, priest, enemy, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, dispelTalentFactor, [](Unit* caster, Unit* victim) {
+                victim->RemoveAurasDueToSpell(ClassSpells::Priest::WEAKENED_SOUL);
+            });
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_SPIRIT_RNK_2, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::STARSHARDS_RNK_8, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SYMBOL_OF_HOPE_RNK_1, dispelTalentFactor);
             // Holy
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::HOLY_FIRE_RNK_9, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::HOLY_FIRE_RNK_9, dispelTalentFactor);
             // Shadow
-            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, dispelTalentFactor); // Disease
-            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, dispelTalentFactor); // Curse
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_SHADOW_PROTECTION_RNK_2, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SHADOW_GUARD_RNK_7, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::SILENCE_RNK_1, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_SHADOW_PROTECTION_RNK_2, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SHADOW_GUARD_RNK_7, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::SILENCE_RNK_1, dispelTalentFactor);
             // Talents procs - We suppose that this talent affects other talents procs such as:
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::MARTYRDOM_RNK_2_TRIGGER, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::INSPIRATION_RNK_3_TRIGGER, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::HOLY_CONCENTRATION_RNK_3_TRIGGER, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, Talents::Priest::SHADOW_WEAVING_RNK_5_PROC, dispelTalentFactor);
-            //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, Talents::Priest::BLACKOUT_RNK_5_TRIGGER, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::MARTYRDOM_RNK_2_TRIGGER, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::INSPIRATION_RNK_3_TRIGGER, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, Talents::Priest::HOLY_CONCENTRATION_RNK_3_TRIGGER, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, Talents::Priest::SHADOW_WEAVING_RNK_5_PROC, dispelTalentFactor);
+            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, Talents::Priest::BLACKOUT_RNK_5_TRIGGER, dispelTalentFactor);
         }
     };
 
     std::shared_ptr<TestCase> GetTest() const override
     {
-        return std::make_shared<WandSpecializationTestImpt>();
+        return std::make_shared<SilentResolveTestImpt>();
     }
 };
 
