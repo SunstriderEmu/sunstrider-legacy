@@ -862,7 +862,6 @@ public:
     void DisconnectAllBots();
     Player* GetFirstHumanPlayer();
     TestThread const* GetTestThread() const { return _testThread; }
-    void MarkForUnload();
 
 private:
     TestThread* _testThread; //TestMap will use the TestThread for some time sync with the test waits

@@ -3257,11 +3257,6 @@ Player* TestMap::GetFirstHumanPlayer()
     return nullptr;
 }
 
-void TestMap::MarkForUnload()
-{
-    m_unloadTimer = MIN_UNLOAD_DELAY;
-}
-
 void InstanceMap::UnloadAll()
 {
     ASSERT(!HavePlayers());

@@ -25,7 +25,7 @@ bool TestThread::IsFinished() const
 
 bool TestThread::IsCanceling() const
 {
-    return _state == STATE_CANCELING;;
+    return _state == STATE_CANCELING;
 }
 
 bool TestThread::IsPaused() const

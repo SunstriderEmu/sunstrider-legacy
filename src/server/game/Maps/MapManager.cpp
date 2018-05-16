@@ -316,9 +316,6 @@ bool MapManager::UnloadTestMap(uint32 mapId, uint32 instanceId)
     testMap->DisconnectAllBots(); //This will delete players objects
     testMap->RemoveAllPlayers();
 
-    // unloaded at next update
-    testMap->MarkForUnload();
-
     return true;
 }
 
