@@ -6240,6 +6240,15 @@ void AuraEffect::HandleSchoolAbsorb(AuraApplication const* aurApp, uint8 mode, b
 
         return;
     }
+
+    /* Sun: Handle threat. Power Word : Shield has half threat on absorb, I'm gonna assume it is a general rule.
+    Couldn't find any reference to this for other spells than shield though.
+    */
+    if (apply)
+    {
+        float threat = GetAmount() * 0.5f;
+        m_target->GetThreatManager().ForwardThreatForAssistingMe(m_target, threat, GetSpellInfo());
+    }
 }
 
 void AuraEffect::HandlePreventFleeing(AuraApplication const* aurApp, uint8 mode, bool apply) const

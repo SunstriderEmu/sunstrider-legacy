@@ -1213,10 +1213,9 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     //just make sure target is still in combat with caster
     INTERNAL_ASSERT_INFO("Caster is not in combat with spell target.");
     INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
-
     int32 totalDamage = spellTargetStartingHealth - spellTarget->GetHealth();
     INTERNAL_ASSERT_INFO("No damage or heal done to target");
-    INTERNAL_TEST_ASSERT(totalDamage != 0);
+    INTERNAL_TEST_ASSERT(totalDamage != 0 || spellInfo->HasAuraEffect(SPELL_AURA_MANA_SHIELD) || spellInfo->HasAuraEffect(SPELL_AURA_SCHOOL_ABSORB));
 
     float const actualThreatDone = target->GetThreatManager().GetThreat(caster) - startThreat;
     float const expectedTotalThreat = std::abs(totalDamage) * expectedThreatFactor;
