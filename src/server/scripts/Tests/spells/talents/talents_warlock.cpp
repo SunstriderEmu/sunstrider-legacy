@@ -861,14 +861,17 @@ public:
 class ContagionTest : public TestCaseScript
 {
 public:
-
+    /*
+    Bugs:
+        - Unstable Affliction is dispelled 50%.
+    */
 	ContagionTest() : TestCaseScript("talents warlock contagion") { }
 
     // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5% and reduces the chance your Affliction spells will be dispelled by an additional 30%." 
 	class ContagionTestImpt : public TestCase
 	{
 	public:
-		ContagionTestImpt() : TestCase(STATUS_WIP) { } // SoC logic is now fixed in here. New status?
+		ContagionTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void Test() override
 		{
@@ -881,17 +884,20 @@ public:
             // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5 %"
 
             // Corruption
-			uint32 const expectedCorruptionDamage = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * contagionFactor;
-            //TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionDamage, false);
-
+            uint8 const corruptionTickAmount = 6;
+			uint32 const expectedCorruptionDamage = floor(ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TICK * contagionFactor) * corruptionTickAmount;
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionDamage, false);
+            
             // Curse of Agony
-			uint32 const expectedCoADamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * contagionFactor;
-            //TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, false);
-
+            uint32 const expectedCoABase = 4 * floor(ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * contagionFactor);
+            uint32 const expectedCoADamage = (expectedCoABase / 24.0f) + (expectedCoABase / 12.0f) + (expectedCoABase / 8.0f);
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, false);
+            
             // Seed of Corruption
-			uint32 const expectedSoCDamage = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * contagionFactor;
-            //TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCDamage, false);
-
+            uint8 const socTickAmount = 6;
+			uint32 const expectedSoCDamage = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * contagionFactor) * socTickAmount;
+            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCDamage, false);
+            
             Creature* dummy2 = SpawnCreature();
             uint32 const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * contagionFactor;
             uint32 const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * contagionFactor;
@@ -902,16 +908,16 @@ public:
             };
             TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false, dirtyCallback);
             dummy2->DespawnOrUnsummon();
-
+            
             // Reduces the chance your Affliction spells wtill be dispelled by 30% (5/5)
             const float dispelTalentFactor = 30.f;
             float const expectedResist = dispelTalentFactor;
-
+            
             _location.MoveInFront(_location, 5.f);
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
             WaitNextUpdate();
             warlock->ForceSpellHitResult(SPELL_MISS_NONE);
-
+            
             ASSERT_INFO("Corruption");
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedResist);
             ASSERT_INFO("Death Coil");
