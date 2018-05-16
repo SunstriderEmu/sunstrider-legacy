@@ -1390,7 +1390,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     auto casterAI = _GetCasterAI(caster, false);
     auto victimAI = _GetCasterAI(victim, false);
     INTERNAL_ASSERT_INFO("Could not find Testing AI for neither caster or victim");
-    INTERNAL_TEST_ASSERT(casterAI && victimAI);
+    INTERNAL_TEST_ASSERT(casterAI != nullptr && victimAI != nullptr);
 
     _EnsureAlive(caster, victim);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
