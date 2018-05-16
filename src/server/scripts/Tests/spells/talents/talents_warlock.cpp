@@ -58,7 +58,7 @@ class ImprovedCorruptionTest : public TestCaseScript
 public:
     ImprovedCorruptionTest() : TestCaseScript("talents warlock improved_corruption") { }
 
-    // "Reduces the casting time of your Corruption spell by 2 sec." (max rank)
+    // "Reduces the casting time of your Corruption spell by 2 sec." 
     class ImprovedCorruptionTestImpt : public TestCase
     {
     public:
@@ -96,7 +96,7 @@ class ImprovedCurseOfWeaknessTest : public TestCaseScript
 public:
     ImprovedCurseOfWeaknessTest() : TestCaseScript("talents warlock improved_curse_of_weakness") { }
 
-    // "Increases the effect of your Curse of Weakness by 20 %" (max rank)
+    // "Increases the effect of your Curse of Weakness by 20 %" 
     class ImprovedCurseOfWeaknessTestImpt : public TestCase
     {
     public:
@@ -132,7 +132,7 @@ class ImprovedDrainSoulTest : public TestCaseScript
 public:
     ImprovedDrainSoulTest() : TestCaseScript("talents warlock improved_drain_soul") { }
 
-    // "Returns 15% of your maximum mana if the target is killed by you while you drain its soul. In addition, your Affliction spells generate 10% less threat." (max rank)
+    // "Returns 15% of your maximum mana if the target is killed by you while you drain its soul. In addition, your Affliction spells generate 10% less threat." 
     class ImprovedDrainSoulTestImpt : public TestCase
     {
     public:
@@ -200,7 +200,7 @@ class ImprovedLifeTapTest : public TestCaseScript
 public:
 	ImprovedLifeTapTest() : TestCaseScript("talents warlock improved_life_tap") { }
     
-    //"Increases the amount of Mana awarded by your Life Tap spell by 20 %" (max rank)
+    //"Increases the amount of Mana awarded by your Life Tap spell by 20 %" 
 	class ImprovedLifeTapTestImpt : public TestCase
 	{
 	public:
@@ -416,7 +416,7 @@ public:
 
 	ImprovedCurseOfAgonyTest() : TestCaseScript("talents warlock improved_curse_of_agony") { }
 
-    //"Increases the damage done by your Curse of Agony by 10 %" (max rank)
+    //"Increases the damage done by your Curse of Agony by 10 %" 
 	class ImprovedCurseOfAgonyTestImpt : public TestCase
 	{
 	public:
@@ -449,7 +449,7 @@ public:
 
     FelConcentrationTest() : TestCaseScript("talents warlock fel_concentration") { }
 
-    //"Gives you a 70% chance to avoid interruption caused by damage while channeling the Drain Life, Drain Mana, or Drain Soul spell." (max rank)
+    //"Gives you a 70% chance to avoid interruption caused by damage while channeling the Drain Life, Drain Mana, or Drain Soul spell." 
     class FelConcentrationTestImpt : public TestCase
     {
     public:
@@ -480,7 +480,7 @@ class GrimReachTest : public TestCaseScript
 public:
     GrimReachTest() : TestCaseScript("talents warlock grim_reach") { }
 
-    // "Increases the range of your Affliction spells by 20%." (max rank)
+    // "Increases the range of your Affliction spells by 20%." 
     class GrimReachTestImpt : public TestCase
     {
     public:
@@ -533,7 +533,7 @@ public:
 
     NightfallTest() : TestCaseScript("talents warlock nightfall") { }
 
-    //"Gives your Corruption and Drain Life spells a 4% chance to cause you to enter a Shadow Trance state after damaging the opponent. The Shadow Trance state reduces the casting time of your next Shadow Bolt spell by 100%." (max rank)
+    //"Gives your Corruption and Drain Life spells a 4% chance to cause you to enter a Shadow Trance state after damaging the opponent. The Shadow Trance state reduces the casting time of your next Shadow Bolt spell by 100%." 
     class NightfallTestImpt : public TestCase
     {
     public:
@@ -618,7 +618,7 @@ public:
     {
     public:
         //See hack in AuraEffect::CleanupTriggeredSpells for spell cleanup handling
-        //"Your Corruption, Curse of Agony, Siphon Life and Seed of Corruption spells also cause the Shadow Embrace effect, which reduces physical damage caused by 5 %" (max rank)
+        //"Your Corruption, Curse of Agony, Siphon Life and Seed of Corruption spells also cause the Shadow Embrace effect, which reduces physical damage caused by 5 %" 
         ShadowEmbraceTestImpt() : TestCase(STATUS_PASSING) { }
 
         void SpellAppliesAndRemovesShadowEmbrace(TestPlayer* warlock, TestPlayer* victim, uint32 spellId, Seconds dotTime, uint32 shadowEmbraceId)
@@ -693,7 +693,7 @@ class SiphonLifeTest : public TestCaseScript
 public:
     SiphonLifeTest() : TestCaseScript("talents warlock siphon_life") { }
 
-    //Spell from talent. "Transfers 63 health from the target to the caster every 3 sec.Lasts 30sec." (max rank)
+    //Spell from talent. "Transfers 63 health from the target to the caster every 3 sec.Lasts 30sec." 
     class SiphonLifeTestImpt : public TestCase
     {
     public:
@@ -743,7 +743,7 @@ class CurseOfExhaustionTest : public TestCaseScript
 public:
     CurseOfExhaustionTest() : TestCaseScript("talents warlock curse_of_exhaustion") { }
 
-    //Spell from talent. "Reduces the target's movement speed by 30% for 12sec. Only one Curse per Warlock can be active on any one target." (max rank)
+    //Spell from talent. "Reduces the target's movement speed by 30% for 12sec. Only one Curse per Warlock can be active on any one target." 
     class CurseOfExhaustionTestImpt : public TestCase
     {
     public:
@@ -782,7 +782,7 @@ public:
 	class ShadowMasteryTestImpt : public TestCase
 	{
 	public:
-        //"Increases the damage dealt or life drained by your Shadow spells by 10%." (max rank)
+        //"Increases the damage dealt or life drained by your Shadow spells by 10%." 
 		ShadowMasteryTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
@@ -872,7 +872,7 @@ public:
 
 	ContagionTest() : TestCaseScript("talents warlock contagion") { }
 
-    // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5% and reduces the chance your Affliction spells will be dispelled by an additional 30%." (max rank)
+    // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5% and reduces the chance your Affliction spells will be dispelled by an additional 30%." 
 	class ContagionTestImpt : public TestCase
 	{
 	public:
@@ -964,7 +964,7 @@ class DarkPactTest : public TestCaseScript
 public:
     DarkPactTest() : TestCaseScript("talents warlock dark_pact") { }
 
-    //"Drains 700 of your pet's Mana, returning 100% to you." (max rank)
+    //"Drains 700 of your pet's Mana, returning 100% to you." 
     class DarkPactTestImpt : public TestCase
     {
     public:
@@ -1011,7 +1011,7 @@ class ImprovedHowOfTerrorTest : public TestCaseScript
 public:
     ImprovedHowOfTerrorTest() : TestCaseScript("talents warlock improved_howl_of_terror") { }
 
-    //"Reduces the casting time of your Howl of Terror spell by 1.5 sec." (max rank)
+    //"Reduces the casting time of your Howl of Terror spell by 1.5 sec." 
     class ImprovedHowOfTerrorTestImpt : public TestCase
     {
     public:
@@ -1042,7 +1042,7 @@ class MaledictionTest : public TestCaseScript
 public:
     MaledictionTest() : TestCaseScript("talents warlock malediction") { }
 
-    //"Increases the damage bonus effect of your Curse of Shadows and Curse of the Elements spells by an additional 3%" (max rank)
+    //"Increases the damage bonus effect of your Curse of Shadows and Curse of the Elements spells by an additional 3%" 
     class MaledictionTestImpt : public TestCase
     {
     public:
@@ -1081,7 +1081,7 @@ class UnstableAfflictionTest : public TestCaseScript
 public:
     UnstableAfflictionTest() : TestCaseScript("talents warlock unstable_affliction") { }
 
-    //"Shadow energy slowly destroys the target, causing 1050 damage over 18sec. In addition, if the Unstable Affliction is dispelled it will cause 1575 damage to the dispeller and silence them for 5sec." (max rank)
+    //"Shadow energy slowly destroys the target, causing 1050 damage over 18sec. In addition, if the Unstable Affliction is dispelled it will cause 1575 damage to the dispeller and silence them for 5sec." 
     class UnstableAfflictionTestImpt : public TestCase
     {
     public:
@@ -1136,7 +1136,7 @@ class ImprovedHealthstoneTest : public TestCaseScript
 public:
 	ImprovedHealthstoneTest() : TestCaseScript("talents warlock improved_healthstone") { }
 
-    //"Increases the amount of Health restored by your Healthstone by 20 %" (max rank)
+    //"Increases the amount of Health restored by your Healthstone by 20 %" 
 	class ImprovedHealthstoneTestImpt : public TestCase
 	{
 	public:
@@ -1191,7 +1191,7 @@ class DemonicEmbraceTest : public TestCaseScript
 public:
 	DemonicEmbraceTest() : TestCaseScript("talents warlock demonic_embrace") { }
 
-    //"Increases your total Stamina by 15% but reduces your total Spirit by 5%" (max rank)
+    //"Increases your total Stamina by 15% but reduces your total Spirit by 5%" 
 	class DemonicEmbraceTestImpt : public TestCase
 	{
 	public:
@@ -1224,7 +1224,7 @@ class ImprovedHealthFunnelTest : public TestCaseScript
 public:
 	ImprovedHealthFunnelTest() : TestCaseScript("talents warlock improved_health_funnel") { }
 
-    //"Increases the amount of Health transferred by your Health Funnel spell by 20% and reduces the initial health cost by 20%" (max rank)
+    //"Increases the amount of Health transferred by your Health Funnel spell by 20% and reduces the initial health cost by 20%" 
 	class ImprovedHealthFunnelTestImpt : public TestCase
 	{
 	public:
@@ -1472,7 +1472,7 @@ class DemonicAegisTest : public TestCaseScript
 public:
 	DemonicAegisTest() : TestCaseScript("talents warlock demonic_aegis") { }
 
-    //Increases the effectiveness of your Demon Armor and Fel Armor spells by 30% (max rank)
+    //Increases the effectiveness of your Demon Armor and Fel Armor spells by 30% 
 	class DemonicAegisTestImpt : public TestCase
 	{
 	public:
@@ -1818,7 +1818,7 @@ class ManaFeedTest : public TestCaseScript
 public:
 	ManaFeedTest() : TestCaseScript("talents warlock mana_feed") { }
 
-    //When you gain mana from Drain Mana or Life Tap spells, your pet gains 100 % of the mana you gain. (max rank)
+    //When you gain mana from Drain Mana or Life Tap spells, your pet gains 100 % of the mana you gain. 
 	class ManaFeedTestImpt : public TestCase
 	{
 	public:
@@ -1887,7 +1887,7 @@ class DemonicKnowledgeTest : public TestCaseScript
 public:
 	DemonicKnowledgeTest() : TestCaseScript("talents warlock demonic_knowledge") { }
 
-    //"Increases your spell damage by an amount equal to 12% of the total of your active demon's Stamina plus Intellect." (max rank)
+    //"Increases your spell damage by an amount equal to 12% of the total of your active demon's Stamina plus Intellect." 
 	class DemonicKnowledgeTestImpt : public TestCase
 	{
 	public:
@@ -1935,7 +1935,7 @@ class ImprovedShadowBoltTest : public TestCaseScript
 public:
     ImprovedShadowBoltTest() : TestCaseScript("talents warlock improved_shadow_bolt") { }
 
-    //"Your Shadow Bolt critical strikes increase Shadow damage dealt to the target by 20% until 4 non-periodic damage sources are applied. Effect lasts a maximum of 12sec." (max rank)
+    //"Your Shadow Bolt critical strikes increase Shadow damage dealt to the target by 20% until 4 non-periodic damage sources are applied. Effect lasts a maximum of 12sec." 
     class ImprovedShadowBoltTestImpt : public TestCase
     {
     public:
@@ -2056,7 +2056,7 @@ class AftermathTest : public TestCaseScript
 public:
     AftermathTest() : TestCaseScript("talents warlock aftermath") { }
 
-    //"Gives your Destruction spells a 10% chance to daze the target for 5sec." (max rank)
+    //"Gives your Destruction spells a 10% chance to daze the target for 5sec." 
     class AftermathTestImpt : public TestCase
     {
     public:
@@ -2096,7 +2096,7 @@ class ImprovedFireboltTest : public TestCaseScript
 public:
     ImprovedFireboltTest() : TestCaseScript("talents warlock improved_firebolt") { }
 
-    //"Reduces the casting time of your Imp's Firebolt spell by 0.5 sec." (max rank)
+    //"Reduces the casting time of your Imp's Firebolt spell by 0.5 sec." 
     class ImprovedFireboltTestImpt : public TestCase
     {
     public:
@@ -2128,24 +2128,25 @@ class ImprovedLashOfPainTest : public TestCaseScript
 public:
     ImprovedLashOfPainTest() : TestCaseScript("talents warlock improved_lash_of_pain") { }
 
+    //"Reduces the cooldown of your Succubus' Lash of Pain spell by 6 sec."
     class ImprovedLashOfPainTestImpt : public TestCase
     {
     public:
-        ImprovedLashOfPainTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        ImprovedLashOfPainTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
             Creature* dummy = SpawnCreature();
 
-            LearnTalent(warlock, Talents::Warlock::IMPROVED_FIREBOLT_RNK_2);
+            LearnTalent(warlock, Talents::Warlock::IMPROVED_LASH_OF_PAIN_RNK_2);
 
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             WaitNextUpdate();
             Guardian* succubus = warlock->GetGuardianPet();
             TEST_ASSERT(succubus != nullptr);
 
-            TEST_COOLDOWN(succubus, dummy, ClassSpells::Warlock::SUCCUBUS_LASH_OF_PAIN_RNK_7, Seconds(6));
+            TEST_COOLDOWN(succubus, dummy, ClassSpells::Warlock::SUCCUBUS_LASH_OF_PAIN_RNK_7, Seconds(6)); //down from 12s
         }
     };
 
@@ -2160,10 +2161,11 @@ class DevastationTest : public TestCaseScript
 public:
     DevastationTest() : TestCaseScript("talents warlock devastation") { }
 
+    //"Increases the critical strike chance of your Destruction spells by 5%"
     class DevastationTestImpt : public TestCase
     {
     public:
-        DevastationTestImpt() : TestCase(STATUS_WIP) { } // Bugs on Immolate, Incinerate, Searing Pain, Shadow Bolt, Shadowfury
+        DevastationTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2172,7 +2174,7 @@ public:
 
             LearnTalent(warlock, Talents::Warlock::DEVASTATION_RNK_5);
             float const talentFactor = 5.0f;
-            float const expectedSpellCritChance = warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) + talentFactor;
+            float const expectedSpellCritChance = warlock->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_SHADOW) + talentFactor;
 
             warlock->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_SPELL_CRIT_CHANCE_CALLBACK(warlock, dummy, ClassSpells::Warlock::CONFLAGRATE_RNK_6, expectedSpellCritChance, [](Unit* caster, Unit* target) {
@@ -2200,6 +2202,7 @@ class ShadowburnTest : public TestCaseScript
 public:
     ShadowburnTest() : TestCaseScript("talents warlock shadowburn") { }
 
+    //"Instantly blasts the target for 597 to 666 Shadow damage. If the target dies within 5sec of Shadowburn, and yields experience or honor, the caster gains a Soul Shard."
     class ShadowburnTestImpt : public TestCase
     {
     public:
@@ -2236,6 +2239,8 @@ public:
             uint32 const expectedShadowburnMax = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX + spellPower * spellCoefficient;
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin, expectedShadowburnMax, false);
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowburnMin * 1.5f, expectedShadowburnMax * 1.5f, true);
+
+            //might be tested too: honorless target
         }
     };
 
@@ -2248,9 +2253,9 @@ public:
 class WarlockIntensityTest : public TestCaseScript
 {
 public:
-
     WarlockIntensityTest() : TestCaseScript("talents warlock intensity") { }
 
+    //"Gives you a 70 % chance to resist interruption caused by damage while casting or channeling any Destruction spell."
     class WarlockIntensityTestImpt : public TestCase
     {
     public:
@@ -2271,7 +2276,6 @@ public:
             TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SEARING_PAIN_RNK_8, resistPushBackChance);
             TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, resistPushBackChance);
             TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SHADOWFURY_RNK_3, resistPushBackChance);
-            warlock->AddItem(SOUL_SHARD, 1);
             TEST_PUSHBACK_RESIST_CHANCE(warlock, rogue, ClassSpells::Warlock::SOUL_FIRE_RNK_4, resistPushBackChance);
         }
     };
@@ -2287,6 +2291,7 @@ class DestructiveReachTest : public TestCaseScript
 public:
     DestructiveReachTest() : TestCaseScript("talents warlock destructive_reach") { }
 
+    //"Increases the range of your Destruction spells by 20% and reduces threat caused by Destruction spells by 10%"
     class DestructiveReachTestImpt : public TestCase
     {
     public:
