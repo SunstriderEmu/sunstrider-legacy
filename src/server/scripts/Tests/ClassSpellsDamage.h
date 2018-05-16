@@ -267,6 +267,7 @@ namespace ClassSpellsDamage
             HEAL_RNK_4_MIN = 712,
             HOLY_FIRE_RNK_9_MIN = 426,
             HOLY_FIRE_RNK_9_MAX = 537,
+            HOLY_FIRE_RNK_9_TICK = 33,
             HOLY_FIRE_RNK_9_TOTAL = 165,
             HOLY_NOVA_RNK_7_MIN = 242,
             HOLY_NOVA_RNK_7_MAX = 282,
@@ -285,12 +286,17 @@ namespace ClassSpellsDamage
             DEVOURING_PLAGUE_RNK_7_TICK = 152,
             MIND_BLAST_RNK_11_MIN = 711,
             MIND_BLAST_RNK_11_MAX = 752,
+            MIND_FLAY_RNK_7_TICK = 176,
+            MIND_FLAY_RNK_7_TOTAL = 528,
             SHADOW_WORD_DEATH_RNK_2_MIN = 572,
             SHADOW_WORD_DEATH_RNK_2_MAX = 664,
+            SHADOW_WORD_PAIN_RNK_10_TICK = 206,
             SHADOW_WORD_PAIN_RNK_10_TOTAL = 1236,
             SHADOWFIEND_RNK_1_MIN = 110,
             SHADOWFIEND_RNK_1_MAX = 121,
             TOUCH_OF_WEAKNESS_RNK_7 = 80,
+            VAMPIRIC_TOUCH_RNK_3_TICK = 130,
+            VAMPIRIC_TOUCH_RNK_3_TOTAL = 650,
 		};
 	};
 
@@ -308,6 +314,8 @@ namespace ClassSpellsDamage
             // Elemental
             EARTH_SHOCK_RNK_8_MIN = 658,
             EARTH_SHOCK_RNK_8_MAX = 693,
+            EARTH_SHOCK_RNK_8_MIN_LVL_70 = 661,
+            EARTH_SHOCK_RNK_8_MAX_LVL_70 = 696,
 		};
 	};
 

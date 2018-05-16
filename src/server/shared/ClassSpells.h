@@ -2825,6 +2825,7 @@ namespace ClassSpells
             POWER_WORD_SHIELD_RNK_10 = 10901,
             POWER_WORD_SHIELD_RNK_11 = 25217,
             POWER_WORD_SHIELD_RNK_12 = 25218,
+            WEAKENED_SOUL = 6788,
             PRAYER_OF_FORTITUDE_RNK_1 = 21562,
             PRAYER_OF_FORTITUDE_RNK_2 = 21564,
             PRAYER_OF_FORTITUDE_RNK_3 = 25392,
