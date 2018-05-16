@@ -739,7 +739,7 @@ public:
     class CurseOfExhaustionTestImpt : public TestCase
     {
     public:
-        CurseOfExhaustionTestImpt() : TestCase(STATUS_WIP) { }
+        CurseOfExhaustionTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
