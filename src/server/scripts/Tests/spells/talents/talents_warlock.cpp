@@ -2056,10 +2056,11 @@ class AftermathTest : public TestCaseScript
 public:
     AftermathTest() : TestCaseScript("talents warlock aftermath") { }
 
+    //"Gives your Destruction spells a 10% chance to daze the target for 5sec." (max rank)
     class AftermathTestImpt : public TestCase
     {
     public:
-        AftermathTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        AftermathTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2071,6 +2072,7 @@ public:
             float const procChance = 10.0f;
 
             TEST_SPELL_PROC_CHANCE_CALLBACK(warlock, dummy, ClassSpells::Warlock::CONFLAGRATE_RNK_6, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* target) {
+                caster->ForceSpellHitResult(SPELL_MISS_NONE);
                 caster->CastSpell(target, ClassSpells::Warlock::IMMOLATE_RNK_9, TRIGGERED_FULL_MASK);
             });
             TEST_SPELL_PROC_CHANCE(warlock, dummy, ClassSpells::Warlock::IMMOLATE_RNK_9, spellProcId, false, procChance, SPELL_MISS_NONE, false);
@@ -2094,10 +2096,11 @@ class ImprovedFireboltTest : public TestCaseScript
 public:
     ImprovedFireboltTest() : TestCaseScript("talents warlock improved_firebolt") { }
 
+    //"Reduces the casting time of your Imp's Firebolt spell by 0.5 sec." (max rank)
     class ImprovedFireboltTestImpt : public TestCase
     {
     public:
-        ImprovedFireboltTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        ImprovedFireboltTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2110,7 +2113,7 @@ public:
             Guardian* imp = warlock->GetGuardianPet();
             TEST_ASSERT(imp != nullptr);
 
-            TEST_CAST_TIME(imp, ClassSpells::Warlock::IMP_FIREBOLT_RNK_8, 2500);
+            TEST_CAST_TIME(imp, ClassSpells::Warlock::IMP_FIREBOLT_RNK_8, 1500); //2000 - 500
         }
     };
 
