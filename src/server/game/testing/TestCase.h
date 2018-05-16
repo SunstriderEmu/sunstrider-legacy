@@ -115,6 +115,14 @@ public:
     static std::string StringifySpellCastResult(uint32 result) { return StringifySpellCastResult(SpellCastResult(result)); }
     static std::string StringifySpellCastResult(SpellCastResult result);
 
+    /* # Test macros are guaranteed to 
+    - Preserve health and power of caster and victim
+    - Preserve ForceHitResult values
+    - Preserve critical score
+       # Not guaranteed
+    - Threat conservation
+    */
+
     /* Cast a spell and check for spell start return value (SpellCastResult)
     Usage:
     TEST_CAST(caster, victim, spellID)
@@ -242,6 +250,7 @@ public:
 
     /* Test the proc chance of given aura on caster or victim by casting a spell on a target
     selfProc: Check of on caster, else check on target
+    missInfo: Force spell hit result
     chance: 0-100
     */
     #define TEST_SPELL_PROC_CHANCE(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, {}); _ResetCaller(); }

@@ -1376,10 +1376,9 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();
-    caster->ForceSpellHitResult(missInfo);
-    EnableCriticals(caster, crit);
-
+    _MaxHealth(caster);
     _MaxHealth(victim);
+    EnableCriticals(caster, crit);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
 
@@ -1391,7 +1390,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
             callback.get()(caster, victim);
 
         victim->SetFullHealth();
-        _TestCast(caster, victim, spellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+        _ForceCast(caster, victim, spellID, missInfo, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_PROC_AS_NON_TRIGGERED));
         if (spellInfo->IsChanneled())
             _UpdateUnitEvents(caster);
 
@@ -1432,6 +1431,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     //Restore
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
     _RestoreUnitState(victim);
+    _RestoreUnitState(caster);
     RestoreCriticals(caster);
 }
 

@@ -2054,7 +2054,7 @@ public:
 class AftermathTest : public TestCaseScript
 {
 public:
-    AftermathTest() : TestCaseScript("talents warlock aftermath") { } // Never procs
+    AftermathTest() : TestCaseScript("talents warlock aftermath") { }
 
     class AftermathTestImpt : public TestCase
     {

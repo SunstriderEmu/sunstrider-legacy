@@ -93,7 +93,7 @@ public:
         Bugs:
             - Mind Flay and Vampiric Embrace not affected by the dispell resist.
         */
-        WandSpecializationTestImpt() : TestCase(STATUS_WIP) { } // Waiting TEST_DISPEL_RESIST_CHANCE to be able to handle other dispel types
+        WandSpecializationTestImpt() : TestCase(STATUS_WIP) { } // Waiting TEST_DISPEL_RESIST_CHANCE to be able to handle other dispel types -> DONE
 
         void Test() override
         {
@@ -977,7 +977,7 @@ public:
         Bugs:
             - Threat is not reduced by 5%.
         */
-        PainSuppressionTestImpt() : TestCase(STATUS_WIP) { } // Waiting on max health in TestCase::_TestDirectValue, should pass afterwards
+        PainSuppressionTestImpt() : TestCase(STATUS_WIP) { } // Waiting on max health in TestCase::_TestDirectValue, should pass afterwards -> DONE
 
         void RefreshPainSuppression(TestPlayer* priest)
         {
