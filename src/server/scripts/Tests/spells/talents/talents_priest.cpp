@@ -337,7 +337,7 @@ public:
     class AbsolutionTestImpt : public TestCase
     {
     public:
-        AbsolutionTestImpt() : TestCase(STATUS_WIP) { }
+        AbsolutionTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
