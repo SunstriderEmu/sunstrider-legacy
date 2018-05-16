@@ -979,7 +979,7 @@ public:
         Bugs:
             - Threat is not reduced by 5%.
         */
-        PainSuppressionTestImpt() : TestCase(STATUS_WIP) { } // Waiting on max health in TestCase::_TestDirectValue, should pass afterwards -> DONE
+        PainSuppressionTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void RefreshPainSuppression(TestPlayer* priest)
         {
@@ -1003,13 +1003,13 @@ public:
             priest->GetSpellHistory()->ResetAllCooldowns();
 
             // Reduces threat by 5%
-            //Creature* dummy = SpawnCreature();
-            //FORCE_CAST(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-            //float const expectedThreat = dummy->GetThreatManager().GetThreat(priest) * talentThreatFactor;
-            //TEST_CAST(priest, priest, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1);
-            //WaitNextUpdate();
-            //ASSERT_INFO("Priest should have %f threat but has %f.", expectedThreat, dummy->GetThreatManager().GetThreat(priest));
-            //TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedThreat - 0.1f, expectedThreat + 0.1f));
+            Creature* dummy = SpawnCreature();
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            float const expectedThreat = dummy->GetThreatManager().GetThreat(priest) * talentThreatFactor;
+            TEST_CAST(priest, priest, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1);
+            WaitNextUpdate();
+            ASSERT_INFO("Priest should have %f threat but has %f.", expectedThreat, dummy->GetThreatManager().GetThreat(priest));
+            TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedThreat - 0.1f, expectedThreat + 0.1f));
 
             // Reduces all damage taken by 40%
             EQUIP_NEW_ITEM(shaman, 34165); // Fang of Kalecgos
@@ -1023,10 +1023,10 @@ public:
             uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed) * armorFactor * talentDamageTakenFactor;
             RefreshPainSuppression(priest);
             TEST_MELEE_DAMAGE(shaman, priest, BASE_ATTACK, minMelee, maxMelee, false);
-            uint32 const minEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MIN * talentDamageTakenFactor;
-            uint32 const maxEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MAX * talentDamageTakenFactor;
+            uint32 const minEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MIN_LVL_70 * talentDamageTakenFactor;
+            uint32 const maxEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MAX_LVL_70 * talentDamageTakenFactor;
             RefreshPainSuppression(priest);
-            //TEST_DIRECT_SPELL_DAMAGE(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, minEarthShock, maxEarthShock, false);
+            TEST_DIRECT_SPELL_DAMAGE(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, minEarthShock, maxEarthShock, false);
 
             // Increases resistance to dispell by 65%
             TEST_DISPEL_RESIST_CHANCE(priest, priest, shaman, ClassSpells::Priest::PAIN_SUPPRESSION_RNK_1, talentDispelResistFactor);
