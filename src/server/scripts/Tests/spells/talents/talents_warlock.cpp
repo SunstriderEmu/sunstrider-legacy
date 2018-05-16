@@ -1626,7 +1626,7 @@ public:
 	class DemonicSacrificeTestImpt : public TestCase
 	{
 	public:
-		DemonicSacrificeTestImpt() : TestCase(STATUS_WIP) { } // What's the new status now that SoC logic is fixed in here?
+		DemonicSacrificeTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void SacrificePet(TestPlayer* warlock, uint32 summonSpellId, uint32 aura, uint32 previousAura = 0)
 		{
