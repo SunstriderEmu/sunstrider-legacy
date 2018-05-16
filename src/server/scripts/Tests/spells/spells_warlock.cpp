@@ -67,8 +67,8 @@ public:
 
             // Damage
             float const spellCoefficient = ClassSpellsCoeff::Warlock::CURSE_OF_AGONY;
-            uint32 const expectedCoAMaxDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL + spellPower * spellCoefficient;
-            uint32 const expectedCoADamage = (4 * expectedCoAMaxDamage / 24.0f) + (4 * expectedCoAMaxDamage / 12.0f) + (4 * expectedCoAMaxDamage / 8.0f);
+            uint32 const expectedCoABase = 4 * (ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL + spellPower * spellCoefficient);
+            uint32 const expectedCoADamage = (expectedCoABase / 24.0f) + (expectedCoABase / 12.0f) + (expectedCoABase / 8.0f);
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, true);
         }
     };
