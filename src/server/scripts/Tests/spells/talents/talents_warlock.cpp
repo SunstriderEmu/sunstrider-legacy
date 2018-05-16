@@ -936,18 +936,16 @@ public:
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, expectedResist);
             ASSERT_INFO("Unstable Affliction");
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedResist);
-
-            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
             ASSERT_INFO("Curse of Agony");
-            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedResist);
             ASSERT_INFO("Curse of Recklessness");
-            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, expectedResist);
             ASSERT_INFO("Curse of the elements");
-            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, expectedResist);
             ASSERT_INFO("Curse of Tongues");
-            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, expectedResist);
             ASSERT_INFO("Curse of Weakness");
-            TEST_DISPEL_RESIST_CHANCE(warlock, druid, druid, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, expectedResist);
 		}
 	};
 
