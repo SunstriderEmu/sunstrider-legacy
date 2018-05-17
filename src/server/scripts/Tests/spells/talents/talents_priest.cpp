@@ -208,6 +208,7 @@ public:
 
     ImprovedPowerWordFortitudeTest() : TestCaseScript("talents priest improved_power_word_fortitude") { }
 
+    //"Increases the effect of your Power Word : Fortitude and Prayer of Fortitude spells by 30%"
     class ImprovedPowerWordFortitudeTestImpt : public TestCase
     {
     public:
@@ -244,9 +245,9 @@ public:
 class ImprovedPowerWordShieldTest : public TestCaseScript
 {
 public:
-
     ImprovedPowerWordShieldTest() : TestCaseScript("talents priest improved_power_word_shield") { }
 
+    //"Increases the damage absorbed by your Power Word : Shield by 15%"
     class ImprovedPowerWordShieldTestImpt : public TestCase
     {
     public:
@@ -315,13 +316,13 @@ public:
 class MartyrdomTest : public TestCaseScript
 {
 public:
-
     MartyrdomTest() : TestCaseScript("talents priest martyrdom") { }
 
+    //"Gives you a 100% chance to gain the Focused Casting effect that lasts for 6sec after being the victim of a melee or ranged critical strike. The Focused Casting effect prevents you from losing casting time when taking damage while casting Priest spells and increases resistance to Interrupt effects by 20%"
     class MartyrdomTestImpt : public TestCase
     {
     public:
-        MartyrdomTestImpt() : TestCase(STATUS_WIP) { } // Waiting for TestCase::_GetPercentApproximationParams to handle an expected chance of 100%
+        MartyrdomTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -340,7 +341,7 @@ public:
             shaman->ResetForceMeleeHitResult();
 
             // No pushback
-            TEST_PUSHBACK_RESIST_CHANCE(priest, shaman, ClassSpells::Priest::GREATER_HEAL_RNK_7, talentResistPushbackFactor);
+            TEST_PUSHBACK_RESIST_CHANCE(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, talentResistPushbackFactor);
 
             // 20% resist to interrupt
             TEST_SPELL_HIT_CHANCE_CALLBACK(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, expectedResist, SPELL_MISS_RESIST, [](Unit* caster, Unit* victim) {

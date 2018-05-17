@@ -1577,8 +1577,7 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
-    Unit* attackingUnit = target;
-
+    Creature* attackingUnit = SpawnCreature(0, false);
     MeleeHitOutcome previousForceHit = attackingUnit->_forceMeleeResult;
     attackingUnit->ForceMeleeHitResult(MELEE_HIT_NORMAL);
 
@@ -1621,7 +1620,7 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
 
     //restoring
-    attackingUnit->ForceMeleeHitResult(previousForceHit);
+    attackingUnit->DisappearAndDie();
     caster->SetHealth(startingHealth);
 }
 
