@@ -979,16 +979,16 @@ public:
     }
 };
 
-class EnlightmentTest : public TestCaseScript
+class EnlightenmentTest : public TestCaseScript
 {
 public:
+    EnlightenmentTest() : TestCaseScript("talents priest enlightenment") { }
 
-    EnlightmentTest() : TestCaseScript("talents priest enlightment") { }
-
-    class EnlightmentTestImpt : public TestCase
+    //"Increases your total Stamina, Intellect and Spirit by 5%."
+    class EnlightenmentTestImpt : public TestCase
     {
     public:
-        EnlightmentTestImpt() : TestCase(STATUS_PASSING) { }
+        EnlightenmentTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1010,24 +1010,20 @@ public:
 
     std::shared_ptr<TestCase> GetTest() const override
     {
-        return std::make_shared<EnlightmentTestImpt>();
+        return std::make_shared<EnlightenmentTestImpt>();
     }
 };
 
 class PainSuppressionTest : public TestCaseScript
 {
 public:
-
     PainSuppressionTest() : TestCaseScript("talents priest pain_suppression") { }
 
+    //"Instantly reduces a friendly target's threat by 5%, reduces all damage taken by 40% and increases resistance to Dispel mechanics by 65% for 8sec."
     class PainSuppressionTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - Threat is not reduced by 5%.
-        */
-        PainSuppressionTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        PainSuppressionTestImpt() : TestCase(STATUS_PASSING) { }
 
         void RefreshPainSuppression(TestPlayer* priest)
         {
@@ -1149,7 +1145,7 @@ void AddSC_test_talents_priest()
     new FocusedWillTest();
     new PowerInfusionTest();
     new ReflectiveShieldTest();
-    new EnlightmentTest();
+    new EnlightenmentTest();
     new PainSuppressionTest();
     // Holy
 	new SearingLightTest();
