@@ -360,7 +360,7 @@ public:
 class AbsolutionTest : public TestCaseScript
 {
 public:
-
+    //"Reduces the mana cost of your Dispel Magic, Cure Disease, Abolish Disease and Mass Dispel spells by 15%."
     AbsolutionTest() : TestCaseScript("talents priest absolution") { }
 
     class AbsolutionTestImpt : public TestCase
@@ -393,20 +393,20 @@ public:
 class InnerFocusTest : public TestCaseScript
 {
 public:
-
     InnerFocusTest() : TestCaseScript("talents priest inner_focus") { }
 
+    //When activated, reduces the mana cost of your next spell by 100% and increases its critical effect chance by 25% if it is capable of a critical effect.
     class InnerFocusTestImpt : public TestCase
     {
     public:
-        InnerFocusTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Crit chance fails
+        InnerFocusTestImpt() : TestCase(STATUS_PASSING) { } 
 
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             Creature* dummy = SpawnCreature();
             float const talentFactor = 25.f;
-            float const expectedSpellCritChance = priest->GetFloatValue(PLAYER_CRIT_PERCENTAGE) + talentFactor;
+            float const expectedHolySpellCritChance = priest->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_HOLY) + talentFactor;
 
             // CD
             TEST_CAST(priest, priest, ClassSpells::Priest::INNER_FOCUS_RNK_1);
@@ -416,7 +416,10 @@ public:
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::INNER_FOCUS_RNK_1, Minutes(3));
 
             // Crit chance
-            TEST_SPELL_CRIT_CHANCE_CALLBACK(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, expectedSpellCritChance, [](Unit* caster, Unit* target) {
+            TEST_SPELL_CRIT_CHANCE_CALLBACK(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, expectedHolySpellCritChance, [](Unit* caster, Unit* target) {
+                caster->AddAura(ClassSpells::Priest::INNER_FOCUS_RNK_1, caster);
+            });
+            TEST_SPELL_CRIT_CHANCE_CALLBACK(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, expectedHolySpellCritChance, [](Unit* caster, Unit* target) {
                 caster->AddAura(ClassSpells::Priest::INNER_FOCUS_RNK_1, caster);
             });
         }
