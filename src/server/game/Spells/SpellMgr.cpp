@@ -600,7 +600,7 @@ void SpellMgr::LoadSpellAffects(bool reload)
                 SpellInfo* nextSpellInfo = sSpellMgr->_GetSpellInfo(next->Id);
                 ASSERT(nextSpellInfo);
                 if (!nextSpellInfo->Effects[effect].SpellClassMask)
-                    nextSpellInfo->Effects[effect].SpellClassMask = spellInfo->Effects[effect].SpellClassMask;
+                    nextSpellInfo->Effects[effect].SpellClassMask = familyMask;
             } while (next = next->ChainEntry->next);
         }
     }

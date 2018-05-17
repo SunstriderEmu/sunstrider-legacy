@@ -434,9 +434,9 @@ public:
 class MeditationTest : public TestCaseScript
 {
 public:
-
     MeditationTest() : TestCaseScript("talents priest meditation") { }
 
+    //"Allows 30% of your mana regeneration to continue while casting."
     class MeditationTestImpt : public TestCase
     {
     public:
@@ -464,9 +464,9 @@ public:
 class ImprovedInnerFireTest : public TestCaseScript
 {
 public:
-
     ImprovedInnerFireTest() : TestCaseScript("talents priest improved_inner_fire") { }
 
+    //"Increases the armor bonus of your Inner Fire spell by 30%"
     class ImprovedInnerFireTestImpt : public TestCase
     {
     public:
@@ -496,14 +496,13 @@ public:
 class MentalAgilityTest : public TestCaseScript
 {
 public:
-
     MentalAgilityTest() : TestCaseScript("talents priest mental_agility") { }
 
     //"Reduces the mana cost of your instant cast spells by 10%."
     class MentalAgilityTestImpt : public TestCase
     {
     public:
-        MentalAgilityTestImpt() : TestCase(STATUS_WIP) { }
+        MentalAgilityTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -522,8 +521,8 @@ public:
             TEST_POWER_COST(priest, ClassSpells::Priest::FEEDBACK_RNK_6, POWER_MANA, 705 * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::INNER_FIRE_RNK_7, POWER_MANA, 375 * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::LEVITATE_RNK_1, POWER_MANA, 100 * talentFactor);
-            TEST_POWER_COST(priest, ClassSpells::Priest::MANA_BURN_RNK_7, POWER_MANA, 355 * talentFactor);
-            TEST_POWER_COST(priest, ClassSpells::Priest::MASS_DISPEL_RNK_1, POWER_MANA, baseMana * 0.33f * talentFactor);
+            //TEST_POWER_COST(priest, ClassSpells::Priest::MANA_BURN_RNK_7, POWER_MANA, 355 * talentFactor);
+            //TEST_POWER_COST(priest, ClassSpells::Priest::MASS_DISPEL_RNK_1, POWER_MANA, baseMana * 0.33f * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::POWER_INFUSION_RNK_1, POWER_MANA, baseMana * 0.16f * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, POWER_MANA, 700 * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, POWER_MANA, 600 * talentFactor);
