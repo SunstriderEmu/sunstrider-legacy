@@ -3185,6 +3185,11 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
             }
             break;
         }
+        //Sun: default dummy to negative if negative aura (ex:15286)
+        case SPELL_AURA_DUMMY:
+            if (!_isPositiveTarget(spellInfo, effIndex))
+                return false;
+            break;
         default:
             break;
         }
@@ -3232,8 +3237,8 @@ void SpellInfo::_InitializeSpellPositivity()
 
         switch (Effects[i].ApplyAuraName)
         {
-            // has other non positive effect?
-            // then it should be marked negative if has same target as negative effect (ex 8510, 8511, 8893, 10267)
+        // has other non positive effect?
+        // then it should be marked negative if has same target as negative effect (ex 8510, 8511, 8893, 10267)
         case SPELL_AURA_DUMMY:
         case SPELL_AURA_MOD_STUN:
         case SPELL_AURA_MOD_FEAR:

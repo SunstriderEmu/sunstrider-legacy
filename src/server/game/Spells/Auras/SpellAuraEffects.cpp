@@ -6241,8 +6241,8 @@ void AuraEffect::HandleSchoolAbsorb(AuraApplication const* aurApp, uint8 mode, b
         return;
     }
 
-    /* Sun: Handle threat. Power Word : Shield has half threat on absorb, I'm gonna assume it is a general rule.
-    Couldn't find any reference to this for other spells than shield though.
+    /* Sun: Handle threat. Power Word : Shield has half threat on cast, I'm gonna assume it is a general rule.
+    Couldn't find any reference to this for other spells than PWS though.
     */
     if (apply)
     {
