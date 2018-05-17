@@ -8,6 +8,7 @@
 #include "../../RandomPlayerbotMgr.h"
 #include "../../GuildTaskMgr.h"
 #include "../values/ItemUsageValue.h"
+#include "TradeData.h"
 
 using namespace ai;
 

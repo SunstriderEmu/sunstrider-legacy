@@ -10,6 +10,7 @@
 #include "Bag.h"
 #include "ScriptMgr.h"
 #include "LootItemStorage.h"
+#include "TradeData.h"
 
 void AddItemsSetItem(Player*player,Item *item)
 {
@@ -762,18 +763,25 @@ bool Item::IsEquipped() const
     return !IsInBag() && m_slot < EQUIPMENT_SLOT_END;
 }
 
-bool Item::CanBeTraded() const
+bool Item::CanBeTraded(bool /*mail*/, bool /*trade*/) const
 {
+    if (m_lootGenerated)
+        return false;
+#ifdef LICH_KING
+    if ((!mail || !IsBoundAccountWide()) && (IsSoulBound() && (!HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_BOP_TRADEABLE) || !trade)))
+        return false;
+#else
     if(IsSoulBound())
         return false;
-    if(IsBag() && (Player::IsBagPos(GetPos()) || !((Bag const*)this)->IsEmpty()) )
+#endif
+    if (IsBag() && (Player::IsBagPos(GetPos()) || !ToBag()->IsEmpty()))
         return false;
 
     if(Player* owner = GetOwner())
     {
-        if(owner->CanUnequipItem(GetPos(),false) !=  EQUIP_ERR_OK )
+        if (owner->CanUnequipItem(GetPos(), false) != EQUIP_ERR_OK)
             return false;
-        if(owner->GetLootGUID()==GetGUID())
+        if (owner->GetLootGUID() == GetGUID())
             return false;
     }
 
@@ -1006,14 +1014,68 @@ void Item::RemoveFromObjectUpdate()
         owner->GetMap()->RemoveUpdateObject(this);
 }
 
-ObjectGuid Item::GetOwnerGUID() const { return GetGuidValue(ITEM_FIELD_OWNER); }
-void Item::SetOwnerGUID(ObjectGuid const& guid) { SetGuidValue(ITEM_FIELD_OWNER, guid); }
-void Item::SetBinding(bool val) { ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, val); }
-bool Item::IsSoulBound() const { return HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND); }
-bool Item::IsBag() const { return GetTemplate()->InventoryType == INVTYPE_BAG; }
-bool Item::IsBroken() const { return GetUInt32Value(ITEM_FIELD_MAXDURABILITY) > 0 && GetUInt32Value(ITEM_FIELD_DURABILITY) == 0; }
-uint32 Item::GetCount() const { return GetUInt32Value(ITEM_FIELD_STACK_COUNT); }
-void Item::SetCount(uint32 value) { SetUInt32Value(ITEM_FIELD_STACK_COUNT, value); }
+ObjectGuid Item::GetOwnerGUID() const 
+{ 
+    return GetGuidValue(ITEM_FIELD_OWNER); 
+}
+
+void Item::SetOwnerGUID(ObjectGuid const& guid) 
+{ 
+    SetGuidValue(ITEM_FIELD_OWNER, guid); 
+}
+
+void Item::SetBinding(bool val) 
+{ 
+    ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, val); 
+}
+
+bool Item::IsSoulBound() const 
+{ 
+    return HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND); 
+}
+
+bool Item::IsBindedNotWith(Player const* player) const
+{
+    // not binded item
+    if (!IsSoulBound())
+        return false;
+
+    // own item
+    if (GetOwnerGUID() == player->GetGUID())
+        return false;
+
+#ifdef LICH_KING
+    if (HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_BOP_TRADEABLE))
+        if (allowedGUIDs.find(player->GetGUID()) != allowedGUIDs.end())
+            return false;
+
+    // BOA item case
+    if (IsBoundAccountWide())
+        return false;
+#endif
+
+    return true;
+}
+
+bool Item::IsBag() const 
+{ 
+    return GetTemplate()->InventoryType == INVTYPE_BAG; 
+}
+
+bool Item::IsBroken() const 
+{ 
+    return GetUInt32Value(ITEM_FIELD_MAXDURABILITY) > 0 && GetUInt32Value(ITEM_FIELD_DURABILITY) == 0; 
+}
+
+uint32 Item::GetCount() const 
+{ 
+    return GetUInt32Value(ITEM_FIELD_STACK_COUNT); 
+}
+
+void Item::SetCount(uint32 value) 
+{ 
+    SetUInt32Value(ITEM_FIELD_STACK_COUNT, value); 
+}
 
 int32 Item::GetItemRandomPropertyId() const { return GetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID); }
 uint32 Item::GetItemSuffixFactor() const { return GetUInt32Value(ITEM_FIELD_PROPERTY_SEED); }

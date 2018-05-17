@@ -81,7 +81,8 @@ enum ItemBondingType
 #define MAX_BIND_TYPE                             6
 
 // masks for ITEM_FIELD_FLAGS field
-enum ITEM_FLAGS
+//For LK has another enum ItemFieldFlags for this?
+enum ItemFlags : uint32
 {
     ITEM_FLAG_SOULBOUND                      = 0x00000001,
     ITEM_FLAG_CONJURED                       = 0x00000002,

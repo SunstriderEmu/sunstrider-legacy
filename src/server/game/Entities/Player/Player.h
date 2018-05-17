@@ -35,6 +35,7 @@ struct TrainerSpell;
 class SpellCastTargets;
 class PlayerAI;
 class CinematicMgr;
+class TradeData;
 
 #ifdef PLAYERBOT
 // Playerbot mod
@@ -880,13 +881,6 @@ struct ItemPosCount
 };
 typedef std::vector<ItemPosCount> ItemPosCountVec;
 
-enum TradeSlots
-{
-    TRADE_SLOT_COUNT            = 7,
-    TRADE_SLOT_TRADED_COUNT     = 6,
-    TRADE_SLOT_NONTRADED        = 6
-};
-
 enum TransferAbortReason
 {
     TRANSFER_ABORT_NONE                     = 0x00,
@@ -1103,6 +1097,19 @@ struct BGData
     bool HasTaxiPath() const { return taxiPath[0] && taxiPath[1]; }
 };
 
+struct TradeStatusInfo
+{
+    TradeStatusInfo() : Status(TRADE_STATUS_BUSY), TraderGuid(), Result(EQUIP_ERR_OK),
+        IsTargetResult(false), ItemLimitCategoryId(0), Slot(0) { }
+
+    TradeStatus Status;
+    ObjectGuid TraderGuid;
+    InventoryResult Result;
+    bool IsTargetResult;
+    uint32 ItemLimitCategoryId;
+    uint8 Slot;
+};
+
 class TC_GAME_API Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
@@ -1292,9 +1299,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 GetEmptyBagSlotsCount() const;
         bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = nullptr) const;
         bool CanNoReagentCast(SpellInfo const* spellInfo) const;
-        Item* GetItemOrItemWithGemEquipped( uint32 item ) const;
-        InventoryResult CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
-        InventoryResult CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,nullptr); }
+        Item* GetItemOrItemWithGemEquipped(uint32 item) const;
+        //itemLimitCategory unused on BC
+        InventoryResult CanTakeMoreSimilarItems(Item* pItem, uint32* itemLimitCategory = nullptr) const;
+        //itemLimitCategory unused on BC
+        InventoryResult CanTakeMoreSimilarItems(uint32 entry, uint32 count, uint32* itemLimitCategory = nullptr) const { return _CanTakeMoreSimilarItems(entry, count, nullptr, nullptr, itemLimitCategory); }
         InventoryResult CanStoreNewItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 item, uint32 count, uint32* no_space_count = nullptr, ItemTemplate const* proto = nullptr ) const
         {
             return _CanStoreItem(bag, slot, dest, item, count, nullptr, false, no_space_count, proto );
@@ -1307,7 +1316,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
             return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, nullptr, pItem ? pItem->GetTemplate() : nullptr );
 
         }
-        InventoryResult CanStoreItems( std::vector<Item*> const& items, uint32 count) const;
+        InventoryResult CanStoreItems( std::vector<Item*> const& items, uint32 count, uint32* itemLimitCategory) const;
         InventoryResult CanEquipNewItem(uint8 slot, uint16 &dest, uint32 item, bool swap) const;
         InventoryResult CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, bool not_loading = true) const;
         InventoryResult CanUnequipItems(uint32 item, uint32 count) const;
@@ -1329,7 +1338,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         //Add item count to player, return pointer to item in variable item
         Item* AddItem(uint32 itemId, uint32 count);
 
-        InventoryResult _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = nullptr) const;
+        InventoryResult _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = nullptr, uint32* itemLimitCategory = nullptr) const;
         InventoryResult _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = nullptr, bool swap = false, uint32* no_space_count = nullptr, ItemTemplate const* proto = nullptr ) const;
 
         void ApplyEquipCooldown( Item * pItem );
@@ -1382,10 +1391,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         float GetReputationPriceDiscount( Creature const* pCreature ) const;
         float GetReputationPriceDiscount(FactionTemplateEntry const* factionTemplate) const;
-        Player* GetTrader() const { return pTrader; }
-        void ClearTrade();
+
+        Player* GetTrader() const;
+        TradeData* GetTradeData() const { return m_trade; }
         void TradeCancel(bool sendback);
-        uint16 GetItemPosByTradeSlot(uint32 slot) const { return tradeItems[slot]; }
 
         CinematicMgr* GetCinematicMgr() const { return _cinematicMgr; }
 
@@ -2576,10 +2585,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         int m_cinematic;
 
-        Player *pTrader;
-        bool acceptTrade;
-        uint16 tradeItems[TRADE_SLOT_COUNT];
-        uint32 tradeGold;
+        TradeData* m_trade;
 
         bool   m_DailyQuestChanged;
         time_t m_lastDailyQuestTime;

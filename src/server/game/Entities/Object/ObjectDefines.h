@@ -113,6 +113,7 @@ enum TempSummonType
 #define SPELL_SEARCHER_COMPENSATION 30.0f // increase searchers size in case we have large npc near cell border
 #define VISIBILITY_DIST_WINTERGRASP 175.0f // LK
 #define SIGHT_RANGE_UNIT            50.0f
+#define TRADE_DISTANCE              11.11f
 
 #define DEFAULT_VISIBILITY_DISTANCE 90.0f       // default visible distance, 90 yards on continents
 #define DEFAULT_VISIBILITY_INSTANCE 120.0f      // default visible distance in instances, 120 yards

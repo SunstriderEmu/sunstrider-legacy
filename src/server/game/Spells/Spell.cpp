@@ -36,6 +36,7 @@
 #include "GameObjectAI.h"
 #include "SpellHistory.h"
 #include "SpellPackets.h"
+#include "TradeData.h"
 
 extern SpellEffectHandlerFn SpellEffectHandlers[TOTAL_SPELL_EFFECTS];
 
@@ -521,18 +522,9 @@ void SpellCastTargets::Update(WorldObject* caster)
         if (m_targetMask & TARGET_FLAG_ITEM)
             m_itemTarget = player->GetItemByGuid(m_itemTargetGUID);
         else if (m_targetMask & TARGET_FLAG_TRADE_ITEM)
-        {
-            /* Sunwell core (kept here if we use TradeData one day. Old code instead below.
             if (m_itemTargetGUID == TRADE_SLOT_NONTRADED) // here it is not guid but slot. Also prevents hacking slots
                 if (TradeData* pTrade = player->GetTradeData())
                     m_itemTarget = pTrade->GetTraderData()->GetItem(TRADE_SLOT_NONTRADED);
-            */
-
-            // here it is not guid but slot
-            Player* pTrader = (caster->ToPlayer())->GetTrader();
-            if (pTrader && m_itemTargetGUID < TRADE_SLOT_COUNT)
-                m_itemTarget = pTrader->GetItemByPos(pTrader->GetItemPosByTradeSlot(m_itemTargetGUID));
-        }
 
         if (m_itemTarget)
             m_itemTargetEntry = m_itemTarget->GetEntry();

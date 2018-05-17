@@ -35,6 +35,7 @@ class WorldSocket;
 class WorldSession;
 class LoginQueryHolder;
 class CharacterHandler;
+struct TradeStatusInfo;
 
 #ifdef LICH_KING
 namespace lfg
@@ -286,11 +287,11 @@ class TC_GAME_API WorldSession
         //void SendTestCreatureQueryOpcode( uint32 entry, ObjectGuid guid, uint32 testvalue );
         void SendNameQueryOpcode(ObjectGuid guid);
 
-        void SendTrainerList( ObjectGuid guid );
-        void SendTrainerList( ObjectGuid guid, const std::string& strTitle );
-        void SendListInventory( ObjectGuid guid );
-        void SendShowBank( ObjectGuid guid );
-        void SendTabardVendorActivate( ObjectGuid guid );
+        void SendTrainerList(ObjectGuid guid);
+        void SendTrainerList(ObjectGuid guid, const std::string& strTitle);
+        void SendListInventory(ObjectGuid guid);
+        void SendShowBank(ObjectGuid guid);
+        void SendTabardVendorActivate(ObjectGuid guid);
         void SendSpiritResurrect();
         void SendBindPoint(Creature* npc);
 
@@ -298,9 +299,9 @@ class TC_GAME_API WorldSession
 
         void SendBattleGroundList( ObjectGuid guid, BattlegroundTypeId bgTypeId );
 
-        void SendTradeStatus(uint32 status);
+        void SendTradeStatus(TradeStatusInfo const& info);
         void SendCancelTrade();
-        void SendUpdateTrade();
+        void SendUpdateTrade(bool trader_data = true);
 
         void SendPetitionQueryOpcode(ObjectGuid petitionguid);
 
@@ -932,6 +933,8 @@ class TC_GAME_API WorldSession
         // private trade methods
         void moveItems(std::vector<Item*> myItems, std::vector<Item*> hisItems);
 
+        bool CanUseBank(ObjectGuid bankerGUID = ObjectGuid::Empty) const;
+
         // logging helper
         void LogUnexpectedOpcode(WorldPacket* packet, const char* status, const char *reason);
         void LogUnprocessedTail(WorldPacket* packet);
@@ -981,6 +984,7 @@ class TC_GAME_API WorldSession
         AddonsList m_addonsList;
         uint32 expireTime;
         bool forceExit;
+        ObjectGuid m_currentBankerGUID;
 
         LockedQueue<WorldPacket*> _recvQueue;
 

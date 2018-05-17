@@ -197,7 +197,7 @@ class TC_GAME_API Item : public Object
 
         void SetBinding(bool val);
         bool IsSoulBound() const;
-        bool IsBindedNotWith(ObjectGuid guid) const { return IsSoulBound() && GetOwnerGUID()!= guid; }
+        bool IsBindedNotWith(Player const* player) const;
         bool IsBoundByEnchant() const;
         virtual void SaveToDB(SQLTransaction& trans);
         virtual bool LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid);
@@ -211,7 +211,7 @@ class TC_GAME_API Item : public Object
         bool IsBag() const;
         bool IsConjuredConsumable() const { return GetTemplate()->IsConjuredConsumable(); }
         bool IsBroken() const;
-        bool CanBeTraded() const;
+        bool CanBeTraded(bool mail = false, bool trade = false) const;
         void SetInTrade(bool b = true) { mb_in_trade = b; }
         bool IsInTrade() const { return mb_in_trade; }
 

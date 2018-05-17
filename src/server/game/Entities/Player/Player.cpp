@@ -64,6 +64,7 @@
 #include "CinematicMgr.h"
 #include "AntiCheatMgr.h"
 #include "SpellHistory.h"
+#include "TradeData.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -183,7 +184,8 @@ Player::Player(WorldSession *session) :
     m_zoneUpdateId(MAP_INVALID_ZONE),
     m_zoneUpdateTimer(0),
     m_areaUpdateId(0),
-    m_spellModTakingSpell(nullptr)
+    m_spellModTakingSpell(nullptr),
+    m_trade(nullptr)
 {
 
     m_objectType |= TYPEMASK_PLAYER;
@@ -222,9 +224,6 @@ Player::Player(WorldSession *session) :
 
     m_unitMovedByMe = this;
     m_playerMovingMe = this;
-
-    pTrader = nullptr;
-    ClearTrade();
 
     m_cinematic = 0;
 
@@ -9944,6 +9943,12 @@ uint32 Player::GetEmptyBagSlotsCount() const
     return freeSlots;
 }
 
+
+InventoryResult Player::CanTakeMoreSimilarItems(Item* pItem, uint32* itemLimitCategory /*= nullptr*/) const
+{
+    return _CanTakeMoreSimilarItems(pItem->GetEntry(), pItem->GetCount(), pItem, nullptr, itemLimitCategory);
+}
+
 Item* Player::GetItemOrItemWithGemEquipped(uint32 item) const
 {
     Item *pItem;
@@ -9971,7 +9976,8 @@ Item* Player::GetItemOrItemWithGemEquipped(uint32 item) const
     return nullptr;
 }
 
-InventoryResult Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count ) const
+//itemLimitCategory unused on BC
+InventoryResult Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count, uint32* /*itemLimitCategory = nullptr*/) const
 {
     ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(entry);
     if (!pProto)
@@ -10243,7 +10249,7 @@ InventoryResult Player::_CanStoreItem(uint8 bag, uint8 slot, ItemPosCountVec &de
         return swap ? EQUIP_ERR_ITEMS_CANT_BE_SWAPPED : EQUIP_ERR_ITEM_NOT_FOUND;
     }
 
-    if (pItem && pItem->IsBindedNotWith(GetGUID()))
+    if (pItem && pItem->IsBindedNotWith(this))
     {
         if (no_space_count)
             *no_space_count = count;
@@ -10643,9 +10649,9 @@ Item* Player::AddItem(uint32 itemId, uint32 count)
 }
 
 //////////////////////////////////////////////////////////////////////////
-InventoryResult Player::CanStoreItems(std::vector<Item*> const& items, uint32 count) const
+InventoryResult Player::CanStoreItems(std::vector<Item*> const& items, uint32 count, uint32* itemLimitCategory) const
 {
-    Item    *pItem2;
+    Item* pItem2;
 
     // fill space table
     int inv_slot_items[INVENTORY_SLOT_ITEM_END-INVENTORY_SLOT_ITEM_START];
@@ -10706,14 +10712,14 @@ InventoryResult Player::CanStoreItems(std::vector<Item*> const& items, uint32 co
             return EQUIP_ERR_ITEM_NOT_FOUND;
 
         // item it 'bind'
-        if(pItem->IsBindedNotWith(GetGUID()))
+        if(pItem->IsBindedNotWith(this))
             return EQUIP_ERR_DONT_OWN_THAT_ITEM;
 
         Bag *pBag;
         ItemTemplate const *pBagProto;
 
         // item is 'one item only'
-        InventoryResult res = CanTakeMoreSimilarItems(pItem);
+        InventoryResult res = CanTakeMoreSimilarItems(pItem, itemLimitCategory);
         if(res != EQUIP_ERR_OK)
             return res;
 
@@ -10880,7 +10886,7 @@ InventoryResult Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, boo
         ItemTemplate const *pProto = pItem->GetTemplate();
         if( pProto )
         {
-            if(pItem->IsBindedNotWith(GetGUID()))
+            if(pItem->IsBindedNotWith(this))
                 return EQUIP_ERR_DONT_OWN_THAT_ITEM;
 
             // check count of items (skip for auto move for same player from bank)
@@ -11069,7 +11075,7 @@ InventoryResult Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &des
     if( !pProto )
         return swap ? EQUIP_ERR_ITEMS_CANT_BE_SWAPPED : EQUIP_ERR_ITEM_NOT_FOUND;
 
-    if( pItem->IsBindedNotWith(GetGUID()) )
+    if (pItem->IsBindedNotWith(this))
         return EQUIP_ERR_DONT_OWN_THAT_ITEM;
 
     // check count of items (skip for auto move for same player from bank)
@@ -11259,7 +11265,7 @@ InventoryResult Player::CanUseItem( Item *pItem, bool not_loading ) const
         ItemTemplate const *pProto = pItem->GetTemplate();
         if( pProto )
         {
-            if( pItem->IsBindedNotWith(GetGUID()) )
+            if (pItem->IsBindedNotWith(this))
                 return EQUIP_ERR_DONT_OWN_THAT_ITEM;
             if( (pProto->AllowableClass & GetClassMask()) == 0 || (pProto->AllowableRace & GetRaceMask()) == 0 )
                 return EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM;
@@ -12765,33 +12771,23 @@ void Player::SendSellError(uint8 msg, Creature* pCreature, ObjectGuid guid, uint
     SendDirectMessage(&data);
 }
 
-void Player::ClearTrade()
-{
-    tradeGold = 0;
-    acceptTrade = false;
-    for(unsigned short & tradeItem : tradeItems)
-        tradeItem = NULL_SLOT;
-}
-
 void Player::TradeCancel(bool sendback)
 {
-    if(pTrader)
+    if (m_trade)
     {
+        Player* trader = m_trade->GetTrader();
+
         // send yellow "Trade canceled" message to both traders
-        WorldSession* ws;
-        ws = GetSession();
         if(sendback)
-            ws->SendCancelTrade();
-        ws = pTrader->GetSession();
-        if(!ws->PlayerLogout())
-            ws->SendCancelTrade();
+            GetSession()->SendCancelTrade();
+
+        GetSession()->SendCancelTrade();
 
         // cleanup
-        ClearTrade();
-        pTrader->ClearTrade();
-        // prevent loss of reference
-        pTrader->pTrader = nullptr;
-        pTrader = nullptr;
+        delete m_trade;
+        m_trade = nullptr;
+        delete trader->m_trade;
+        trader->m_trade = nullptr;
     }
 }
 
@@ -21455,6 +21451,11 @@ float Player::GetReputationPriceDiscount(FactionTemplateEntry const* factionTemp
         return 1.0f;
 
     return 1.0f - 0.05f* (rank - REP_NEUTRAL);
+}
+
+Player* Player::GetTrader() const
+{
+    return m_trade ? m_trade->GetTrader() : nullptr;
 }
 
 bool Player::HandlePassiveSpellLearn(SpellInfo const* spellInfo)

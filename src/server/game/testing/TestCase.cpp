@@ -1578,7 +1578,6 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
     Creature* attackingUnit = SpawnCreature(0, false);
-    MeleeHitOutcome previousForceHit = attackingUnit->_forceMeleeResult;
     attackingUnit->ForceMeleeHitResult(MELEE_HIT_NORMAL);
 
     bool channeled = spellInfo->IsChanneled();

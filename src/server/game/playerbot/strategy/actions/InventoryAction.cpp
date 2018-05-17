@@ -1,6 +1,7 @@
 
 #include "../../playerbot.h"
 #include "InventoryAction.h"
+#include "TradeData.h"
 
 #include "../values/ItemCountValue.h"
 
