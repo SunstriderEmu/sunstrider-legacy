@@ -1111,7 +1111,7 @@ std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> TestCase::GetDamagePerSpellsTo(U
     return std::make_pair(minDamage, maxDamage);
 }
 
-void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit)
+int32 TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit)
 {
     auto AI = _GetCasterAI(caster);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
@@ -1131,6 +1131,9 @@ void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool 
     Aura* aura = target->GetAura(spellID, caster->GetGUID());
     INTERNAL_ASSERT_INFO("Target has not %u aura with caster %u after spell successfully casted", spellID, caster->GetGUID().GetCounter());
     INTERNAL_TEST_ASSERT(aura != nullptr);
+    int32 auraAmount = 0;
+    if(aura->GetEffect(EFFECT_0))
+        auraAmount = aura->GetEffect(EFFECT_0)->GetAmount();
 
     //spell did hit, let's wait for dot duration
     uint32 waitTime = aura->GetDuration();
@@ -1144,6 +1147,7 @@ void TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool 
 
     //Restoring
     RestoreCriticals(caster);
+    return auraAmount;
 }
 
 void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedTotalAmount, bool crit /* = false*/)
@@ -1197,8 +1201,9 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     if (callback)
         callback.get()(caster, target);
 
+    uint32 auraAmount = 0;
     if (applyAura)
-        _CastDotAndWait(caster, spellTarget, spellID, false);
+        auraAmount = _CastDotAndWait(caster, spellTarget, spellID, false);
     else
     {
         _ForceCast(caster, spellTarget, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_TARGET_AURASTATE));
@@ -1213,9 +1218,15 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     //just make sure target is still in combat with caster
     INTERNAL_ASSERT_INFO("Caster is not in combat with spell target.");
     INTERNAL_TEST_ASSERT(target->IsInCombatWith(caster));
-    int32 totalDamage = spellTargetStartingHealth - spellTarget->GetHealth();
-    INTERNAL_ASSERT_INFO("No damage or heal done to target");
-    INTERNAL_TEST_ASSERT(totalDamage != 0 || spellInfo->HasAuraEffect(SPELL_AURA_MANA_SHIELD) || spellInfo->HasAuraEffect(SPELL_AURA_SCHOOL_ABSORB));
+    int32 totalDamage = 0;
+    if (spellInfo->HasAuraEffect(SPELL_AURA_MANA_SHIELD) || spellInfo->HasAuraEffect(SPELL_AURA_SCHOOL_ABSORB))
+        totalDamage = auraAmount;
+    else
+    {
+        totalDamage = spellTargetStartingHealth - spellTarget->GetHealth();
+        INTERNAL_ASSERT_INFO("No damage or heal done to target");
+        INTERNAL_TEST_ASSERT(totalDamage != 0);
+    }
 
     float const actualThreatDone = target->GetThreatManager().GetThreat(caster) - startThreat;
     float const expectedTotalThreat = std::abs(totalDamage) * expectedThreatFactor;

@@ -439,7 +439,8 @@ private:
     TestPlayer* SpawnRandomPlayer(Races race, Classes cls) = delete;
     TestPlayer* SpawnRandomPlayer(Classes cls, Races races) = delete;
 
-    void _CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit = false);
+    //return aura amount of effect 0
+    int32 _CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit = false);
 
     struct SavedUnitState
     {

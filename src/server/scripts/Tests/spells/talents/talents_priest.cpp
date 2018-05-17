@@ -93,12 +93,7 @@ public:
     class SilentResolveTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - Threat: PWS doesnt have threat, Chastise and Binding Heal doesn't have a half factor.
-            - Mind Flay and Vampiric Embrace not affected by the dispell resist.
-        */
-        SilentResolveTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        SilentResolveTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -109,27 +104,29 @@ public:
             Creature* dummy = SpawnCreature();
 
             LearnTalent(priest, Talents::Priest::SILENT_RESOLVE_RNK_5);
-            float const threatReductionFactor = 1.0f - 0.2f;
-            float const healThreatFactor = 0.5f * threatReductionFactor;
+            float const talentReductionFactor = 1.0f - 0.2f;
+            float const healThreatFactor = 0.5f * talentReductionFactor;
             const float dispelTalentFactor = 20.f;
 
             // Threat of Discipline and Holy
-            // PWS: Omen uses half threat to calculate at cast.
+            // PWS: Omen uses half threat to calculate at cast (like other heals)
             // More info about at cast threat: http://www.wowhead.com/forums&topic=94784/power-word-shield-and-threat
-            TEST_THREAT(priest, dummy, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, 0.5f * healThreatFactor, true);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, healThreatFactor, true);
             // Chastise: "Very low threat", Omen affects a half factor.
-            TEST_THREAT(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, 0.5f * threatReductionFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::CHASTISE_RNK_6, 0.5f * talentReductionFactor, false);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, healThreatFactor, true);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::DESPERATE_PRAYER_RNK_8, healThreatFactor, true);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::FLASH_HEAL_RNK_9, healThreatFactor, true);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::GREATER_HEAL_RNK_7, healThreatFactor, true);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::HEAL_RNK_4, healThreatFactor, true);
-            TEST_THREAT(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, threatReductionFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, talentReductionFactor, false);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::LESSER_HEAL_RNK_3, healThreatFactor, true);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, healThreatFactor, true);
-            TEST_THREAT(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, threatReductionFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, talentReductionFactor, false);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::RENEW_RNK_12, healThreatFactor, true);
-            TEST_THREAT(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, threatReductionFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, talentReductionFactor, false);
+            //Mind blast not affected
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, 1.0f, false);
 
             // Binding Heal: "Low threat", Omen & DTM affects it a half factor.
             GroupPlayer(priest, ally);
@@ -178,7 +175,7 @@ public:
             // Shadow
             TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, dispelTalentFactor);
             TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, dispelTalentFactor);
-            TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, dispelTalentFactor);
+            //Not dispellable //TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, dispelTalentFactor);
             TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::PRAYER_OF_SHADOW_PROTECTION_RNK_2, dispelTalentFactor);
             TEST_DISPEL_RESIST_CHANCE(priest, priest, enemy, ClassSpells::Priest::SHADOW_PROTECTION_RNK_4, dispelTalentFactor);
             TEST_DISPEL_RESIST_CHANCE(priest, enemy, enemy, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, dispelTalentFactor);
