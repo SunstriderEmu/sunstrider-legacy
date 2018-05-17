@@ -705,7 +705,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
 
     float weaponMinDamage = GetWeaponDamageRange(attType, MINDAMAGE);
     float weaponMaxDamage = GetWeaponDamageRange(attType, MAXDAMAGE);
-    bool wandCase = attType == RANGED_ATTACK  && HasWand(); //wand case, do not use attack power
+    bool wandCase = attType == RANGED_ATTACK && HasWand(); //wand case, do not use attack power
 
     float const attackPowerMod = wandCase ? 0.0f : std::max(GetAPMultiplier(attType, normalized), 0.25f);
     
