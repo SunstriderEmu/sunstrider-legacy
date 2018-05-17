@@ -31,7 +31,8 @@ bool EquipAction::Execute(Event event)
 
 bool EquipAction::UseEquipmentSet(string& _name)
 {
-   /* EquipmentSets &sets = bot->GetEquipmentSets();
+#ifdef LICH_KING
+    EquipmentSets &sets = bot->GetEquipmentSets();
     for (EquipmentSets::iterator i = sets.begin(); i != sets.end(); i++)
     {
         if (i->second.state == EQUIPMENT_SET_DELETED || i->second.Name != _name)
@@ -43,14 +44,11 @@ bool EquipAction::UseEquipmentSet(string& _name)
         ai->TellMaster(out);
         return true;
     }
-    return false; */
-    std::ostringstream out;
-    out << "Not supported";
-    ai->TellMaster(out);
-    return true;
+#endif
+    return false;
 }
 
-    /*
+#ifdef LICH_KING
 bool EquipAction::UseEquipmentSet(EquipmentSet& set)
 {
     WorldPacket* p = new WorldPacket(CMSG_EQUIPMENT_SET_USE);
@@ -68,19 +66,21 @@ bool EquipAction::UseEquipmentSet(EquipmentSet& set)
     bot->GetSession()->QueuePacket(p);
     return true;
 }
-*/
+#endif
 
 void EquipAction::TellEquipmentSets()
 {
-  /*  ai->TellMaster("=== Equipment sets ===");
+#ifdef LICH_KING
+    ai->TellMaster("=== Equipment sets ===");
     EquipmentSets &sets = bot->GetEquipmentSets();
     for (EquipmentSets::iterator i = sets.begin(); i != sets.end(); i++)
     {
         if (i->second.state != EQUIPMENT_SET_DELETED)
             ai->TellMaster(i->second.Name);
     }
-    */
+#else
     ai->TellMaster("Not supported");
+#endif
 }
 
 void EquipAction::EquipItem(FindItemVisitor* visitor)

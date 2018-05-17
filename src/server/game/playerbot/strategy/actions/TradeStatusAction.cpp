@@ -38,7 +38,6 @@ bool TradeStatusAction::Execute(Event event)
     uint32 status;
     p >> status;
 
-    /* TODO PLAYERBOT
     if (status == TRADE_STATUS_TRADE_ACCEPT)
     {
         WorldPacket p;
@@ -79,7 +78,6 @@ bool TradeStatusAction::Execute(Event event)
         BeginTrade();
         return true;
     }
-    */
     return false;
 }
 

@@ -45,6 +45,7 @@ bool CheckMountStateAction::Mount()
     int32 masterSpeed = max(masterSpell->Effects[1].BasePoints, masterSpell->Effects[2].BasePoints);
 
     map<uint32, map<int32, vector<uint32> > > allSpells;
+#ifdef LICH_KING
     for(PlayerSpellMap::iterator itr = bot->GetSpellMap().begin(); itr != bot->GetSpellMap().end(); ++itr)
     {
         uint32 spellId = itr->first;
@@ -64,12 +65,40 @@ bool CheckMountStateAction::Mount()
                 spellInfo->Effects[2].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ? 1 : 0;
         allSpells[index][effect].push_back(spellId);
     }
+#else
+    for (int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
+    {
+        Bag* bag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (!bag)
+            continue;
 
+        for (uint32 j = 0; j < bag->GetBagSize(); j++)
+        {
+            Item* pItem = bag->GetItemByPos(j);
+            if (!pItem)
+                continue;
+
+            uint32 spellId = pItem->GetTemplate()->Spells[0].SpellId;
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+
+            if (!spellInfo || spellInfo->Effects[0].ApplyAuraName != SPELL_AURA_MOUNTED || spellInfo->IsPassive())
+                continue;
+
+            int32 effect = max(spellInfo->Effects[1].BasePoints, spellInfo->Effects[2].BasePoints);
+            if (effect < masterSpeed)
+                continue;
+
+            uint32 index = (spellInfo->Effects[1].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED ||
+                spellInfo->Effects[2].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ? 1 : 0;
+            allSpells[index][effect].push_back(spellId);
+        }
+    }
+#endif
     int masterMountType = (masterSpell->Effects[1].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED ||
-            masterSpell->Effects[2].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ? 1 : 0;
+        masterSpell->Effects[2].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ? 1 : 0;
 
     map<int32, vector<uint32> >& spells = allSpells[masterMountType];
-    for (map<int32,vector<uint32> >::iterator i = spells.begin(); i != spells.end(); ++i)
+    for (map<int32, vector<uint32> >::iterator i = spells.begin(); i != spells.end(); ++i)
     {
         vector<uint32>& ids = i->second;
         int index = urand(0, ids.size() - 1);
