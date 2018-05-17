@@ -735,12 +735,8 @@ public:
     class ForceOfWillTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - Damages: Shadow Word: Death
-            - Crit: Smite and Shadow Word: Death
-        */
-        ForceOfWillTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        //"Increases your spell damage by 5% and the critical strike chance of your offensive spells by 5%"
+        ForceOfWillTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { } //TODO: Add devouring plague + starshard
 
         void Test() override
         {
