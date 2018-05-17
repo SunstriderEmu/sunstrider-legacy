@@ -521,8 +521,6 @@ public:
             TEST_POWER_COST(priest, ClassSpells::Priest::FEEDBACK_RNK_6, POWER_MANA, 705 * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::INNER_FIRE_RNK_7, POWER_MANA, 375 * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::LEVITATE_RNK_1, POWER_MANA, 100 * talentFactor);
-            //TEST_POWER_COST(priest, ClassSpells::Priest::MANA_BURN_RNK_7, POWER_MANA, 355 * talentFactor);
-            //TEST_POWER_COST(priest, ClassSpells::Priest::MASS_DISPEL_RNK_1, POWER_MANA, baseMana * 0.33f * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::POWER_INFUSION_RNK_1, POWER_MANA, baseMana * 0.16f * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, POWER_MANA, 700 * talentFactor);
             TEST_POWER_COST(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, POWER_MANA, 600 * talentFactor);
@@ -563,9 +561,9 @@ public:
 class ImprovedManaBurnTest : public TestCaseScript
 {
 public:
-
     ImprovedManaBurnTest() : TestCaseScript("talents priest improved_mana_burn") { }
 
+    //"Reduces the casting time of your Mana Burn spell by 1 sec."
     class ImprovedManaBurnTestImpt : public TestCase
     {
     public:
@@ -589,9 +587,9 @@ public:
 class MentalStrengthTest : public TestCaseScript
 {
 public:
-
     MentalStrengthTest() : TestCaseScript("talents priest mental_strength") { }
 
+    //"Increases your maximum mana by 10%."
     class MentalStrengthTestImpt : public TestCase
     {
     public:
@@ -619,9 +617,9 @@ public:
 class DivineSpiritTest : public TestCaseScript
 {
 public:
-
     DivineSpiritTest() : TestCaseScript("talents priest divine_spirit") { }
 
+    //"Holy power infuses the target, increasing their Spirit by 50 for 30min."
     class DivineSpiritTestImpt : public TestCase
     {
     public:
@@ -651,9 +649,9 @@ public:
 class ImprovedDivineSpiritTest : public TestCaseScript
 {
 public:
-
     ImprovedDivineSpiritTest() : TestCaseScript("talents priest improved_divine_spirit") { }
 
+    //"Your Divine Spirit and Prayer of Spirit spells also increase the target's spell damage and healing by an amount equal to 10% of their total Spirit."
     class ImprovedDivineSpiritTestImpt : public TestCase
     {
     public:
@@ -695,9 +693,9 @@ public:
 class FocusedPowerTest : public TestCaseScript
 {
 public:
-
     FocusedPowerTest() : TestCaseScript("talents priest focused_power") { }
 
+    //"Your Smite, Mind Blast and Mass Dispel spells have an additional 4% chance to hit. In addition, your Mass Dispel cast time is reduced by 1 sec."
     class FocusedPowerTestImpt : public TestCase
     {
     public:
@@ -706,21 +704,19 @@ public:
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
-            Creature* dummy = SpawnCreature(12); // Boss
+            Creature* boss = SpawnBoss();
 
             LearnTalent(priest, Talents::Priest::FOCUSED_POWER_RNK_2);
             float const hitTalentFactor = 4.0f;
             float const hitChance = 16.0f - hitTalentFactor;
 
             // Hit chance
-            TEST_SPELL_HIT_CHANCE(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, hitChance, SPELL_MISS_RESIST);
-            TEST_SPELL_HIT_CHANCE(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, hitChance, SPELL_MISS_RESIST);
-            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, dummy, ClassSpells::Priest::MASS_DISPEL_RNK_1, hitChance, SPELL_MISS_RESIST, [](Unit* caster, Unit* target) {
-                target->AddAura(ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7, target);
-            });
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::SMITE_RNK_10, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_BLAST_RNK_11, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MASS_DISPEL_RNK_1, hitChance, SPELL_MISS_RESIST);
 
             // Mass Dispel Cast Time
-            TEST_CAST_TIME(priest, ClassSpells::Priest::MASS_DISPEL_RNK_1, 500);
+            TEST_CAST_TIME(priest, ClassSpells::Priest::MASS_DISPEL_RNK_1, 500); //from 1500
         }
     };
 
