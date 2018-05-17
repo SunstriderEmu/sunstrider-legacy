@@ -14,6 +14,9 @@ map<uint8, std::string> ChatHelper::classes;
 map<uint8, std::string> ChatHelper::races;
 map<uint8, map<uint8, std::string> > ChatHelper::specs;
 
+std::atomic<bool> ChatHelper::_initDone;
+std::mutex ChatHelper::_initMutex;
+
 template<class T>
 static bool substrContainsInMap(std::string searchTerm, map<string, T> searchIn)
 {
@@ -27,8 +30,10 @@ static bool substrContainsInMap(std::string searchTerm, map<string, T> searchIn)
     return false;
 }
 
-ChatHelper::ChatHelper(PlayerbotAI* ai) : PlayerbotAIAware(ai)
+void ChatHelper::InitStatics()
 {
+    _initDone = true;
+
     itemQualities["poor"] = ITEM_QUALITY_POOR;
     itemQualities["gray"] = ITEM_QUALITY_POOR;
     itemQualities["normal"] = ITEM_QUALITY_NORMAL;
@@ -146,6 +151,14 @@ ChatHelper::ChatHelper(PlayerbotAI* ai) : PlayerbotAIAware(ai)
     races[RACE_TAUREN] = "Tauren";
     races[RACE_TROLL] = "Troll";
     races[RACE_UNDEAD_PLAYER] = "Undead";
+}
+
+ChatHelper::ChatHelper(PlayerbotAI* ai) : PlayerbotAIAware(ai)
+{
+    _initMutex.lock();
+    if(!_initDone)
+        ChatHelper::InitStatics();
+    _initMutex.unlock();
 }
 
 string ChatHelper::formatMoney(uint32 copper)

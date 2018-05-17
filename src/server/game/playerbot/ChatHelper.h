@@ -14,6 +14,7 @@ namespace ai
     {
     public:
         ChatHelper(PlayerbotAI* ai);
+        void InitStatics();
 
     public:
         static std::string formatMoney(uint32 copper);
@@ -49,5 +50,8 @@ namespace ai
         static map<uint8, std::string> classes;
         static map<uint8, std::string> races;
         static map<uint8, map<uint8, std::string> > specs;
+
+        static std::atomic<bool> _initDone;
+        static std::mutex _initMutex;
     };
 };

@@ -1086,9 +1086,9 @@ public:
 class SearingLightTest : public TestCaseScript
 {
 public:
-
 	SearingLightTest() : TestCaseScript("talents priest searing_light") { }
 
+    //"Increases the damage of your Smite and Holy Fire spells by 10%"
 	class SearingLightTestImpt : public TestCase
 	{
 	public:
