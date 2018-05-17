@@ -3,6 +3,7 @@
 #define _OBJECT_H
 
 #include "Common.h"
+#include "Duration.h"
 #include "EventProcessor.h"
 #include "ByteBuffer.h"
 #include "UpdateData.h"

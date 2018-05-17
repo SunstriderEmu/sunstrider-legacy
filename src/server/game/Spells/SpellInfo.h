@@ -15,7 +15,6 @@ class Unit;
 class WorldObject;
 class Item;
 struct SpellChainNode;
-enum WeaponAttackType : unsigned int;
 struct SpellModifier;
 class Player;
 struct SpellDurationEntry;
