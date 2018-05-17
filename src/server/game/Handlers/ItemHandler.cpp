@@ -695,9 +695,9 @@ void WorldSession::HandleBuyItemInSlotOpcode( WorldPacket & recvData )
 {
     ObjectGuid vendorguid, bagguid;
     uint32 item;
-    uint8 slot, count;
+    uint8 bagslot, count;
 
-    recvData >> vendorguid >> item >> bagguid >> slot >> count;
+    recvData >> vendorguid >> item >> bagguid >> bagslot >> count;
 
     uint8 bag = NULL_BAG;                                   // init for case invalid bagGUID
 
@@ -723,7 +723,7 @@ void WorldSession::HandleBuyItemInSlotOpcode( WorldPacket & recvData )
     if (bag == NULL_BAG)
         return;
 
-    GetPlayer()->BuyItemFromVendorSlot(vendorguid, item, count, bag,slot);
+    GetPlayer()->BuyItemFromVendorSlot(vendorguid, 0, item, count, bag, bagslot);
 }
 
 void WorldSession::HandleBuyItemOpcode( WorldPacket & recvData )
@@ -735,7 +735,7 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recvData )
 
     recvData >> vendorguid >> item >> count >> unused;
 
-    GetPlayer()->BuyItemFromVendorSlot(vendorguid, item, count, NULL_BAG, NULL_SLOT);
+    GetPlayer()->BuyItemFromVendorSlot(vendorguid, 0, item, count, NULL_BAG, NULL_SLOT);
 }
 
 void WorldSession::HandleListInventoryOpcode(WorldPacket & recvData)
@@ -793,44 +793,47 @@ void WorldSession::SendListInventory(ObjectGuid vendorguid)
     {
         if(VendorItem const* crItem = vItems->GetItem(slot))
         {
-            if((crItem->proto->AllowableClass & _player->GetClassMask()) == 0 && crItem->proto->Bonding == BIND_WHEN_PICKED_UP && !_player->IsGameMaster())
-                continue;
+            if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(crItem->item))
+            {
+                if ((itemTemplate->AllowableClass & _player->GetClassMask()) == 0 && itemTemplate->Bonding == BIND_WHEN_PICKED_UP && !_player->IsGameMaster())
+                    continue;
 
 #ifdef LICH_KING
-            // Only display items in vendor lists for the team the
-            // player is on. If GM on, display all items.
-            if (!_player->IsGameMaster() && ((crItem->proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeamId() == ALLIANCE) || (crItem->proto->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeamId() == HORDE)))
-                continue;
+                // Only display items in vendor lists for the team the
+                // player is on. If GM on, display all items.
+                if (!_player->IsGameMaster() && ((crItem->proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeamId() == ALLIANCE) || (crItem->proto->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeamId() == HORDE)))
+                    continue;
 #endif
 
-            uint32 leftInStock = !crItem->maxcount ? 0xFFFFFFFF : pCreature->GetVendorItemCurrentCount(crItem);
-            /* Why should this be ?
-            // Items sold out are not displayed in list
-            if (!_player->IsGameMaster() && !leftInStock)
-                continue;
-            */
+                uint32 leftInStock = !crItem->maxcount ? 0xFFFFFFFF : pCreature->GetVendorItemCurrentCount(crItem);
+                /* Why should this be ?
+                // Items sold out are not displayed in list
+                if (!_player->IsGameMaster() && !leftInStock)
+                    continue;
+                */
 
-            if (!sConditionMgr->IsObjectMeetingVendorItemConditions(pCreature->GetEntry(), crItem->proto->ItemId, _player, pCreature))
-            {
-                TC_LOG_DEBUG("condition", "SendListInventory: conditions not met for creature entry %u item %u", pCreature->GetEntry(), crItem->proto->ItemId);
-                continue;
+                if (!sConditionMgr->IsObjectMeetingVendorItemConditions(pCreature->GetEntry(), crItem->item, _player, pCreature))
+                {
+                    TC_LOG_DEBUG("condition", "SendListInventory: conditions not met for creature entry %u item %u", pCreature->GetEntry(), crItem->item);
+                    continue;
+                }
+
+                // reputation discount
+                uint32 price = uint32(floor(itemTemplate->BuyPrice * discountMod));
+
+                data << uint32(slot + 1);  // client expects counting to start at 1
+                data << uint32(crItem->item);
+                data << uint32(itemTemplate->DisplayInfoID);
+                data << uint32(leftInStock);
+                data << uint32(price);
+                data << uint32(itemTemplate->MaxDurability);
+                data << uint32(itemTemplate->BuyCount);
+                data << uint32(crItem->ExtendedCost);
+
+                ++count;
+                if (count >= MAX_VENDOR_ITEMS)
+                    break;
             }
-
-            // reputation discount
-            uint32 price = uint32(floor(crItem->proto->BuyPrice * discountMod));
-
-            data << uint32(slot + 1);  // client expects counting to start at 1
-            data << uint32(crItem->proto->ItemId);
-            data << uint32(crItem->proto->DisplayInfoID);
-            data << uint32(leftInStock);
-            data << uint32(price);
-            data << uint32(crItem->proto->MaxDurability);
-            data << uint32(crItem->proto->BuyCount);
-            data << uint32(crItem->ExtendedCost);
-
-            ++count;
-            if (count >= MAX_VENDOR_ITEMS)
-                break;
         }
     }
 

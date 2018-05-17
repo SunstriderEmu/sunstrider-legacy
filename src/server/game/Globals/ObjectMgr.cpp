@@ -7684,7 +7684,7 @@ void ObjectMgr::LoadVendors()
 
         VendorItemData& vList = m_mCacheVendorItemMap[entry];
 
-        vList.AddItem(proto,maxcount,incrtime,ExtendedCost);
+        vList.AddItem(item_id, maxcount, incrtime, ExtendedCost);
         ++count;
 
     } while (result->NextRow());
@@ -7915,7 +7915,7 @@ void ObjectMgr::LoadGossipMenuItems()
 void ObjectMgr::AddVendorItem( uint32 entry, ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)
 {
     VendorItemData& vList = m_mCacheVendorItemMap[entry];
-    vList.AddItem(proto,maxcount,incrtime,extendedcost);
+    vList.AddItem(entry, maxcount, incrtime, extendedcost);
 
     if(savetodb) 
         WorldDatabase.PExecute("INSERT INTO npc_vendor (entry,item,maxcount,incrtime,extendedcost) VALUES('%u','%u','%u','%u','%u')",entry, proto->ItemId, maxcount,incrtime,extendedcost);

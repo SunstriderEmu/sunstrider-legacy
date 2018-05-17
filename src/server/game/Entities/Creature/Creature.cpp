@@ -77,7 +77,7 @@ bool VendorItemData::RemoveItem( uint32 item_id )
 {
     for(auto i = m_items.begin(); i != m_items.end(); ++i )
     {
-        if((*i)->proto->ItemId==item_id)
+        if ((*i)->item == item_id)
         {
             m_items.erase(i);
             return true;
@@ -89,7 +89,7 @@ bool VendorItemData::RemoveItem( uint32 item_id )
 size_t VendorItemData::FindItemSlot(uint32 item_id) const
 {
     for(size_t i = 0; i < m_items.size(); ++i )
-        if(m_items[i]->proto->ItemId==item_id)
+        if(m_items[i]->item == item_id)
             return i;
     return m_items.size();
 }
@@ -97,7 +97,7 @@ size_t VendorItemData::FindItemSlot(uint32 item_id) const
 VendorItem const* VendorItemData::FindItem(uint32 item_id) const
 {
     for(auto m_item : m_items)
-        if(m_item->proto->ItemId==item_id)
+        if(m_item->item == item_id)
             return m_item;
     return nullptr;
 }
@@ -3032,7 +3032,7 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
 
     auto itr = m_vendorItemCounts.begin();
     for(; itr != m_vendorItemCounts.end(); ++itr)
-        if(itr->itemId==vItem->proto->ItemId)
+        if (itr->itemId == vItem->item)
             break;
 
     if(itr == m_vendorItemCounts.end())
@@ -3044,7 +3044,7 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
 
     if( vCount->lastIncrementTime + vItem->incrtime <= ptime )
     {
-        ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(vItem->proto->ItemId);
+        ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(vItem->item);
 
         uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
         if((vCount->count + diff * pProto->BuyCount) >= vItem->maxcount )
@@ -3067,13 +3067,13 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
 
     auto itr = m_vendorItemCounts.begin();
     for(; itr != m_vendorItemCounts.end(); ++itr)
-        if(itr->itemId==vItem->proto->ItemId)
+        if(itr->itemId==vItem->item)
             break;
 
     if(itr == m_vendorItemCounts.end())
     {
         uint32 new_count = vItem->maxcount > used_count ? vItem->maxcount-used_count : 0;
-        m_vendorItemCounts.push_back(VendorItemCount(vItem->proto->ItemId,new_count));
+        m_vendorItemCounts.push_back(VendorItemCount(vItem->item,new_count));
         return new_count;
     }
 
@@ -3082,13 +3082,14 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
     time_t ptime = time(nullptr);
 
     if( vCount->lastIncrementTime + vItem->incrtime <= ptime )
-    {
-        uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
-        if((vCount->count + diff * vItem->proto->BuyCount) < vItem->maxcount )
-            vCount->count += diff * vItem->proto->BuyCount;
-        else
-            vCount->count = vItem->maxcount;
-    }
+        if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(vItem->item))
+        {
+            uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
+            if((vCount->count + diff * pProto->BuyCount) < vItem->maxcount )
+                vCount->count += diff * pProto->BuyCount;
+            else
+                vCount->count = vItem->maxcount;
+        }
 
     vCount->count = vCount->count > used_count ? vCount->count-used_count : 0;
     vCount->lastIncrementTime = ptime;

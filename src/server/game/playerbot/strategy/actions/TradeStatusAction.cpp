@@ -110,8 +110,6 @@ bool TradeStatusAction::CheckTrade()
     if (!sRandomPlayerbotMgr.IsRandomBot(bot))
         return true;
 
-    /* TODO PLAYERBOT
-
     Player* master = GetMaster();
     if (!bot->GetTradeData() || !master->GetTradeData())
         return false;
@@ -119,7 +117,8 @@ bool TradeStatusAction::CheckTrade()
     for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
     {
         Item* item = bot->GetTradeData()->GetItem((TradeSlots)slot);
-        if (item && !auctionbot.GetSellPrice(item->GetTemplate()))
+        //if (item && !auctionbot.GetSellPrice(item->GetTemplate()))
+        if (item && !item->GetTemplate()->SellPrice)
         {
             std::ostringstream out;
             out << chat->formatItem(item->GetTemplate()) << " - This is not for sale";
@@ -132,7 +131,8 @@ bool TradeStatusAction::CheckTrade()
         {
             std::ostringstream out; out << item->GetTemplate()->ItemId;
             ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
-            if (!auctionbot.GetBuyPrice(item->GetTemplate()) || usage == ITEM_USAGE_NONE)
+            if (!item->GetTemplate()->BuyPrice || usage == ITEM_USAGE_NONE)
+            //if (!auctionbot.GetBuyPrice(item->GetTemplate()) || usage == ITEM_USAGE_NONE)
             {
                 std::ostringstream out;
                 out << chat->formatItem(item->GetTemplate()) << " - I don't need this";
@@ -181,7 +181,6 @@ bool TradeStatusAction::CheckTrade()
     std::ostringstream out;
     out << "I want " << chat->formatMoney(botMoney - playerMoney) << " for this";
     ai->TellMaster(out);
-    */
     return false;
 }
 
@@ -191,7 +190,6 @@ int32 TradeStatusAction::CalculateCost(TradeData* data, bool sell)
         return 0;
 
     uint32 sum = 0;
-    /* TODO PLAYERBOT
     for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
     {
         Item* item = data->GetItem((TradeSlots)slot);
@@ -207,13 +205,14 @@ int32 TradeStatusAction::CalculateCost(TradeData* data, bool sell)
 
         if (sell)
         {
-            sum += item->GetCount() * auctionbot.GetSellPrice(proto) * sRandomPlayerbotMgr.GetSellMultiplier(bot);
+            //sum += item->GetCount() * auctionbot.GetSellPrice(proto) * sRandomPlayerbotMgr.GetSellMultiplier(bot);
+            sum += item->GetCount() * item->GetTemplate()->SellPrice * sRandomPlayerbotMgr.GetSellMultiplier(bot);
         }
         else
         {
-            sum += item->GetCount() * auctionbot.GetBuyPrice(proto) * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
+            //sum += item->GetCount() * auctionbot.GetBuyPrice(proto) * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
+            sum += item->GetCount() * item->GetTemplate()->BuyPrice * sRandomPlayerbotMgr.GetSellMultiplier(bot);
         }
     }
-    */
     return sum;
 }

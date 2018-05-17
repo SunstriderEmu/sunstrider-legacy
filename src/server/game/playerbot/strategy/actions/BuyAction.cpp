@@ -41,14 +41,11 @@ bool BuyAction::Execute(Event event)
     {
         for (uint32 slot = 0; slot < tItems->GetItemCount(); slot++)
         {
-            /* TODO PLAYERBOT
             if (tItems->GetItem(slot)->item == *i)
             {
                 bot->BuyItemFromVendorSlot(vendor->GetGUID(), slot, *i, 1, NULL_BAG, NULL_SLOT);
                 ai->TellMaster("Bought item");
             }
-            */
-            ai->TellMaster("NYI");
         }
     }
 

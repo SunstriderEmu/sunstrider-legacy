@@ -1387,7 +1387,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
             return !IsInFeralForm() && (!mainhand || !HasFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISARMED) );
         }
         void SendNewItem( Item *item, uint32 count, bool received, bool created, bool broadcast = false, bool sendChatMessage = true);
-        bool BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 item, uint8 count, uint8 bag, uint8 slot);
+        //vendorslot unused on BC
+        bool BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
 
         float GetReputationPriceDiscount( Creature const* pCreature ) const;
         float GetReputationPriceDiscount(FactionTemplateEntry const* factionTemplate) const;
