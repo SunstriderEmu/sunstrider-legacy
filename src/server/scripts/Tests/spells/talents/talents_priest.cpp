@@ -805,18 +805,20 @@ public:
 class FocusedWillTest : public TestCaseScript
 {
 public:
-
     FocusedWillTest() : TestCaseScript("talents priest focused_will") { }
 
+    //"After taking a critical hit you gain the Focused Will effect, reducing all damage taken by 4% and increasing healing effects on you by 10%. Stacks up to 3 times. Lasts 8sec."
     class FocusedWillTestImpt : public TestCase
     {
     public:
         FocusedWillTestImpt() : TestCase(STATUS_PASSING) { }
 
-        void RefreshProcWith3Stacks(TestPlayer* priest)
+        uint32 const MAX_STACK = 3;
+
+        void RefreshProcWithMaxStacks(TestPlayer* priest)
         {
             priest->RemoveAurasDueToSpell(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER);
-            for (uint8 i = 0; i < 3; i++)
+            for (uint8 i = 0; i < MAX_STACK; i++)
                 priest->AddAura(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER, priest);
         }
 
@@ -829,36 +831,43 @@ public:
             float const talentDamageTakenFactorPerStack = 0.04f;
             float const talentHealingBoostPerStack = 0.1f;
 
+            //procs on melee attack
             shaman->ForceMeleeHitResult(MELEE_HIT_CRIT);
-            for (uint8 i = 0; i < 5; i++)
+            for (uint8 i = 0; i < MAX_STACK * 2; i++) //more than MAX_STACK to make sure stack amount is correctly limited
                 shaman->AttackerStateUpdate(priest, BASE_ATTACK);
             shaman->AttackStop();
             shaman->ResetForceMeleeHitResult();
+
+            //duration + stack limit
             TEST_AURA_MAX_DURATION(priest, Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER, Seconds(8));
             Aura* aura = priest->GetAura(Talents::Priest::FOCUSED_WILL_RNK_3_TRIGGER);
             TEST_ASSERT(aura != nullptr);
-            TEST_ASSERT(aura->GetStackAmount() == 3);
+            TEST_ASSERT(aura->GetStackAmount() == int32(MAX_STACK));
 
             // Damage reduced: melee MH & Earth Shock
             EQUIP_NEW_ITEM(shaman, 34165); // Fang of Kalecgos
             WaitNextUpdate();
-            float const talentReduction = 1 - 3 * talentDamageTakenFactorPerStack;
-            uint32 const weaponMinDmg = 113;
-            uint32 const weaponMaxDmg = 211;
-            float const weaponSpeed = 1.5f;
-            float const AP = shaman->GetTotalAttackPowerValue(BASE_ATTACK);
-            float const armorFactor = 1 - (priest->GetArmor() / (priest->GetArmor() + 10557.5f));
-            uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed) * armorFactor * talentReduction;
-            uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed) * armorFactor * talentReduction;
-            RefreshProcWith3Stacks(priest);
-            TEST_MELEE_DAMAGE(shaman, priest, BASE_ATTACK, minMelee, maxMelee, false);
-            uint32 const minEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MIN_LVL_70 * talentReduction;
-            uint32 const maxEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MAX_LVL_70 * talentReduction;
-            RefreshProcWith3Stacks(priest);
-            TEST_DIRECT_SPELL_DAMAGE(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, minEarthShock, maxEarthShock, false);
+            float const talentReduction = 1 - MAX_STACK * talentDamageTakenFactorPerStack;
+            { //melee damage reduction
+                uint32 const weaponMinDmg = 113;
+                uint32 const weaponMaxDmg = 211;
+                float const weaponSpeed = 1.5f;
+                float const AP = shaman->GetTotalAttackPowerValue(BASE_ATTACK);
+                float const armorFactor = 1.0f - (priest->GetArmor() / (priest->GetArmor() + 10557.5f));
+                uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed) * armorFactor * talentReduction;
+                uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed) * armorFactor * talentReduction;
+                RefreshProcWithMaxStacks(priest);
+                TEST_MELEE_DAMAGE(shaman, priest, BASE_ATTACK, minMelee, maxMelee, false);
+            }
+            { //spell damage reduction
+                uint32 const minEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MIN_LVL_70 * talentReduction;
+                uint32 const maxEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MAX_LVL_70 * talentReduction;
+                RefreshProcWithMaxStacks(priest);
+                TEST_DIRECT_SPELL_DAMAGE(shaman, priest, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, minEarthShock, maxEarthShock, false);
+            }
 
             // Healing increased
-            RefreshProcWith3Stacks(priest);
+            RefreshProcWithMaxStacks(priest);
             float const talentBoost = 1 + 3 * talentHealingBoostPerStack;
             uint32 const minGreaterHeal = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN * talentBoost;
             uint32 const maxGreaterHeal = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX * talentBoost;
@@ -875,9 +884,9 @@ public:
 class PowerInfusionTest : public TestCaseScript
 {
 public:
-
     PowerInfusionTest() : TestCaseScript("talents priest power_infusion") { }
 
+    //"Infuses the target with power, increasing spell casting speed by 20% and reducing the mana cost of all spells by 20%. Lasts 15sec."
     class PowerInfusionTestImpt : public TestCase
     {
     public:
@@ -914,9 +923,9 @@ public:
 class ReflectiveShieldTest : public TestCaseScript
 {
 public:
-
     ReflectiveShieldTest() : TestCaseScript("talents priest reflective_shield") { }
 
+    //"Causes 50% of the damage absorbed by your Power Word: Shield to reflect back at the attacker. This damage causes no threat."
     class ReflectiveShieldTestImpt : public TestCase
     {
     public:
@@ -939,15 +948,22 @@ public:
             // Enemy casts on Priest and gets polymorphed before the spell hits the reflective shield
             TEST_CAST(priest, priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             TEST_HAS_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
+            uint32 enemyMageStartingHealth = enemyMage->GetHealth();
             FORCE_CAST(enemyMage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            //ice lance is still in flight and ally mage polymorph enemy mage
             FORCE_CAST(mage, enemyMage, ClassSpells::Mage::POLYMORPH_RNK_4, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+            //give some time for the spell to fly and hit
             WaitNextUpdate();
+            Wait(2000);
+            ASSERT_INFO("enemy mage did not loose any health, did ice lance hit it?");
+            TEST_ASSERT(enemyMage->GetHealth() < enemyMageStartingHealth);
+            //should still have polymorph
             TEST_HAS_AURA(enemyMage, ClassSpells::Mage::POLYMORPH_RNK_4);
             enemyMage->RemoveAurasDueToSpell(ClassSpells::Mage::POLYMORPH_RNK_4);
 
             // Reflects 50% of damage
             TEST_HAS_AURA(priest, ClassSpells::Priest::POWER_WORD_SHIELD_RNK_12);
-            uint32 enemyMageStartingHealth = enemyMage->GetHealth();
+            enemyMageStartingHealth = enemyMage->GetHealth();
             FORCE_CAST(enemyMage, priest, ClassSpells::Mage::SCORCH_RNK_9, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
             auto[dealtMin, dealtMax] = GetDamagePerSpellsTo(enemyMage, priest, ClassSpells::Mage::SCORCH_RNK_9, false, 1);
             TEST_ASSERT(dealtMin == dealtMax);
