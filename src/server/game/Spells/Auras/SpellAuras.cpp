@@ -494,13 +494,17 @@ void AuraApplication::ClientUpdate(bool remove)
 
 Aura::Aura(AuraCreateInfo const& createInfo) :
 m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_casterGuid(createInfo.CasterGUID),
-m_timeCla(1000), m_castItemGuid(createInfo.CastItem ? createInfo.CastItem->GetGUID() : ObjectGuid::Empty),
+m_timeCla(0), m_castItemGuid(createInfo.CastItem ? createInfo.CastItem->GetGUID() : ObjectGuid::Empty),
 m_isAreaAura(false), m_owner(createInfo._owner),
 m_isPersistent(false), m_updateTargetMapInterval(0), m_dropEvent(nullptr), m_heartBeatTimer(0),
 m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE), m_spellInfo(createInfo._spellInfo),
 m_active(false), m_channelData(nullptr), m_isSingleTarget(false),
 m_procCooldown(std::chrono::steady_clock::time_point::min())
 {
+    //sun: m_timeCla logic currently broken, disable for health funnel (is the only spell important with it and it is handled in funnel logic)
+    if ((m_spellInfo->ManaPerSecond || m_spellInfo->ManaPerSecondPerLevel) && !m_spellInfo->HasAttribute(SPELL_ATTR2_HEALTH_FUNNEL))
+        m_timeCla = 1 * IN_MILLISECONDS;
+
     memset(m_effects, 0, sizeof(m_effects));
 
     m_maxDuration = CalcMaxDuration(createInfo.Caster);
@@ -815,6 +819,10 @@ void Aura::Update(uint32 diff, Unit* caster)
             m_duration = 0;
 
         // handle manaPerSecond/manaPerSecondPerLevel
+        /*sun: currently broken logic, depending on update time this could tick far less than every second. Only important spell needing this 
+        is health funnel and it handles it by itself so, not gonna fix this until TC does. Only two others spells have this:
+        461 and 10260
+        */
         if (m_timeCla)
         {
             if (m_timeCla > int32(diff))
@@ -1578,7 +1586,8 @@ void Aura::RefreshDuration(bool withMods)
     else
         SetDuration(GetMaxDuration());
 
-    if (m_spellInfo->ManaPerSecond || m_spellInfo->ManaPerSecondPerLevel)
+    //sun: m_timeCla logic currently broken, disable for health funnel (is the only spell important with it and it is handled in funnel logic)
+    if ((m_spellInfo->ManaPerSecond || m_spellInfo->ManaPerSecondPerLevel) && !m_spellInfo->HasAttribute(SPELL_ATTR2_HEALTH_FUNNEL))
         m_timeCla = 1 * IN_MILLISECONDS;
 
     // also reset periodic counters

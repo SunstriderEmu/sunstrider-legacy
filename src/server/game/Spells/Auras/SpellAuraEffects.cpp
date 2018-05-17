@@ -1233,7 +1233,11 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, uint32 
         return;
 
     // heal for caster damage (must be alive)
-    if (target != caster && GetSpellInfo()->HasVisual(163) && !caster->IsAlive()) //Health Funnel
+    if (target != caster && GetSpellInfo()->HasAttribute(SPELL_ATTR2_HEALTH_FUNNEL) && !caster->IsAlive())
+        return;
+
+    // don't regen when permanent aura target has full power
+    if (GetBase()->IsPermanent() && target->IsFullHealth())
         return;
 
     // ignore negative values (can be result apply spellmods to aura damage
@@ -1260,6 +1264,9 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, uint32 
     realDamage = heal;
 
     HealInfo healInfo(caster, target, heal, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
+#ifdef LICH_KING
+    Unit::CalcHealAbsorb(healInfo);
+#endif
     Unit::DealHeal(healInfo);
 
     SpellPeriodicAuraLogInfo pInfo(this, heal, 0, 0, 0.0f);
@@ -1270,32 +1277,23 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, uint32 
 
     bool haveCastItem = GetBase()->GetCastItemGUID() != 0;
 
-    // heal for caster damage
-    if (target != caster && GetSpellInfo()->HasVisual(163)) //Health Funnel
+    // Health Funnel
+    // damage caster for heal amount
+    if (target != caster && GetSpellInfo()->HasAttribute(SPELL_ATTR2_HEALTH_FUNNEL))
     {
-        uint32 dmg = GetSpellInfo()->ManaPerSecond;
-        if (caster->GetHealth() <= dmg && caster->GetTypeId() == TYPEID_PLAYER)
-        {
-            caster->RemoveAurasDueToSpell(GetId());
+        uint32 funnelDamage = GetSpellInfo()->ManaPerSecond; // damage is not affected by spell power
 
-            // finish current generic/channeling spells, don't affect autorepeat
-            if (caster->m_currentSpells[CURRENT_GENERIC_SPELL])
-            {
-                caster->m_currentSpells[CURRENT_GENERIC_SPELL]->finish();
-            }
-            if (caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
-            {
-                caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
-            }
-        }
-        else
-        {
-            caster->SendSpellNonMeleeDamageLog(caster, GetId(), healInfo.GetEffectiveHeal(), GetSpellInfo()->GetSchoolMask(), 0, 0, false, 0, false);
+        if (funnelDamage > healInfo.GetEffectiveHeal() && healInfo.GetEffectiveHeal())
+            funnelDamage = healInfo.GetEffectiveHeal();
 
-            CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
-            Unit::DealDamage(caster, caster, healInfo.GetEffectiveHeal(), &cleanDamage, NODAMAGE, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), true);
-        }
+        uint32 funnelAbsorb = 0;
+        Unit::DealDamageMods(caster, funnelDamage, &funnelAbsorb);
+
+        if (caster)
+            caster->SendSpellNonMeleeDamageLog(caster, GetId(), funnelDamage, GetSpellInfo()->GetSchoolMask(), funnelAbsorb, 0, false, 0, false);
+
+        CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
+        Unit::DealDamage(caster, caster, funnelDamage, &cleanDamage, SELF_DAMAGE, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), true);
     }
 
     // %-based heal - does not proc auras

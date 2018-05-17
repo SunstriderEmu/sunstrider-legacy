@@ -1209,10 +1209,11 @@ class HealthFunnelTest : public TestCaseScript
 public:
     HealthFunnelTest() : TestCaseScript("spells warlock health_funnel") { }
 
+    //"Gives 188 health to the caster's pet every second for 10sec as long as the caster channels."
     class HealthFunnelTestImpt : public TestCase
     {
     public:
-        HealthFunnelTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        HealthFunnelTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1231,29 +1232,28 @@ public:
             voidwalker->DisableRegeneration(true);
             voidwalker->SetHealth(1);
 
-            /*
-                Bugs here
-                - Damages the caster as much as it heals the pet + 65 damage, it should only damage the caster for 65.
-                - "Miss" appears on the character portrait when the pet is full health, it should not.
-                - Not possible to suicide.
-            */
             // Damage & pet heal
             float const duration = 10.0f;
             float const spellCoeff = duration / 3.5f;
-            float const tickAmount = 10.0f;
+            uint32 const tickAmount = 10;
             uint32 const totalHealthFunnelHeal = tickAmount * ClassSpellsDamage::Warlock::HEALTH_FUNNEL_RNK_8_HEAL_PER_TICK + healingPower * spellCoeff;
             uint32 const expectedTickAmount = totalHealthFunnelHeal / tickAmount;
             uint32 const totalHealthCost = tickAmount * ClassSpellsDamage::Warlock::HEALTH_FUNNEL_RNK_8_HP_PER_TICK + ClassSpellsDamage::Warlock::HEALTH_FUNNEL_RNK_8_HP_COST;
 
-            uint32 const expectedWarlockHealth = warlock->GetHealth() - totalHealthCost;
-            uint32 const expectedVoidwalkerHealth = voidwalker->GetHealth() + expectedTickAmount * tickAmount;
+            warlock->SetFullHealth();
+            uint32 warlockStartingHealth = warlock->GetHealth();
+            uint32 voidwalkerStartingHealth = voidwalker->GetHealth();
+            uint32 const expectedHeal = expectedTickAmount * tickAmount;
 
             TEST_CAST(warlock, voidwalker, ClassSpells::Warlock::HEALTH_FUNNEL_RNK_8);
             Wait(Seconds(11));
-            ASSERT_INFO("Warlock has %u HP, %u was expected.", warlock->GetHealth(), expectedWarlockHealth);
-            TEST_ASSERT(warlock->GetHealth() == expectedWarlockHealth);
-            ASSERT_INFO("Voidwalker has %u HP, %u was expected.", voidwalker->GetHealth(), expectedVoidwalkerHealth);
-            TEST_ASSERT(voidwalker->GetHealth() == expectedVoidwalkerHealth);
+            WaitNextUpdate();
+            uint32 actualDamage = warlockStartingHealth - warlock->GetHealth();
+            ASSERT_INFO("Warlock received %u damage, %u was expected.", actualDamage, totalHealthCost);
+            TEST_ASSERT(actualDamage == totalHealthCost);
+            uint32 actualHeal = voidwalker->GetHealth() - voidwalkerStartingHealth;
+            ASSERT_INFO("Voidwalker was healed %u HP, %u was expected.", actualHeal, expectedHeal);
+            TEST_ASSERT(actualHeal == expectedHeal);
 
             // http://wowwiki.wikia.com/wiki/Health_Funnel?oldid=1586771
             // It is possible for the Warlock to kill himself using this spell.

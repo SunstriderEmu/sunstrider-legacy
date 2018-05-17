@@ -1224,7 +1224,7 @@ public:
 	class ImprovedHealthFunnelTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealthFunnelTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Talent is working but spell is not, so it will fail as long as the spell test is failing
+		ImprovedHealthFunnelTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
@@ -1253,7 +1253,6 @@ public:
             uint32 const expectedWarlockHealth = warlock->GetHealth() - totalHealthCost;
             uint32 const expectedVoidwalkerHealth = voidwalker->GetHealth() + expectedTickAmount * tickAmount;
 
-            Wait(5000);
             TEST_CAST(warlock, voidwalker, ClassSpells::Warlock::HEALTH_FUNNEL_RNK_8);
             Wait(Seconds(11));
             ASSERT_INFO("Warlock has %u HP, %u was expected.", warlock->GetHealth(), expectedWarlockHealth);
