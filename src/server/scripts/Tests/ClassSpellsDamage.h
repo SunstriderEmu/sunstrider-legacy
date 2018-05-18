@@ -278,6 +278,7 @@ namespace ClassSpellsDamage
             PRAYER_OF_HEALING_RNK_6_MIN = 1251,
             PRAYER_OF_HEALING_RNK_6_MAX = 1322,
             PRAYER_OF_MENDING_RNK_1 = 800,
+            RENEW_RNK_12_TICK = 222,
             RENEW_RNK_12_TOTAL = 1110,
             SMITE_RNK_10_MIN = 549,
             SMITE_RNK_10_MAX = 616,
