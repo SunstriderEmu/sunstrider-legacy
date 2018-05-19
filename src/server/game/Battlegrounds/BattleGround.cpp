@@ -925,7 +925,7 @@ void Battleground::RewardMark(Player* plr, uint32 count)
     }
 }
 
-void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
+void Battleground::SendRewardMarkByMail(Player* plr, uint32 mark, uint32 count)
 {
     uint32 bmEntry = GetBattlemasterEntry();
     if(!bmEntry)
@@ -941,10 +941,6 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         // save new item before send
         markItem->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
 
-        // item
-        MailItemsInfo mi;
-        mi.AddItem(markItem->GetGUID().GetCounter(), markItem->GetEntry(), markItem);
-
         // subject: item name
         std::string subject = plr->GetSession()->GetLocalizedItemName(markProto);
         if(subject.empty())
@@ -954,9 +950,11 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         std::string textFormat = plr->GetSession()->GetTrinityString(LANG_BG_MARK_BY_MAIL);
         char textBuf[300];
         snprintf(textBuf,300,textFormat.c_str(),GetName().c_str(),GetName().c_str());
-        uint32 itemTextId = sObjectMgr->CreateItemText( textBuf );
 
-        WorldSession::SendMailTo(trans, plr, MAIL_CREATURE, MAIL_STATIONERY_NORMAL, bmEntry, plr->GetGUID().GetCounter(), subject, itemTextId , &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+        MailDraft(subject, textBuf)
+            .AddItem(markItem)
+            .SendMailTo(trans, MailReceiver(plr, plr->GetGUID().GetCounter()), bmEntry, MAIL_CHECK_MASK_HAS_BODY);
+
         CharacterDatabase.CommitTransaction(trans);
     }
 }

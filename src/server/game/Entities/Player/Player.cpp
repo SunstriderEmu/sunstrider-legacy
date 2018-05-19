@@ -2973,15 +2973,16 @@ void Player::RemoveMail(uint32 id)
     }
 }
 
-void Player::SendMailResult(uint32 mailId, uint32 mailAction, uint32 mailError, uint32 equipError, ObjectGuid::LowType item_guid, uint32 item_count)
+void Player::SendMailResult(uint32 mailId, MailResponseType mailAction, MailResponseResult mailError, uint32 equipError, ObjectGuid::LowType item_guid, uint32 item_count)
 {
-    WorldPacket data(SMSG_SEND_MAIL_RESULT, (4+4+4+(mailError == MAIL_ERR_BAG_FULL?4:(mailAction == MAIL_ITEM_TAKEN?4+4:0))));
+    //LK ok
+    WorldPacket data(SMSG_SEND_MAIL_RESULT, (4 + 4 + 4 + (mailError == MAIL_ERR_EQUIP_ERROR ? 4 : (mailAction == MAIL_ITEM_TAKEN ? 4 + 4 : 0))));
     data << (uint32) mailId;
     data << (uint32) mailAction;
     data << (uint32) mailError;
-    if ( mailError == MAIL_ERR_BAG_FULL )
-        data << (uint32) equipError;
-    else if( mailAction == MAIL_ITEM_TAKEN )
+    if (mailError == MAIL_ERR_EQUIP_ERROR)
+        data << (uint32)equipError;
+    else if (mailAction == MAIL_ITEM_TAKEN)
     {
         data << (uint32) item_guid;                         // item guid low?
         data << (uint32) item_count;                        // item count?
@@ -2992,7 +2993,7 @@ void Player::SendMailResult(uint32 mailId, uint32 mailAction, uint32 mailError, 
 void Player::SendNewMail()
 {
     // deliver undelivered mail
-    WorldPacket data(SMSG_RECEIVED_MAIL, 4);
+    WorldPacket data(SMSG_RECEIVED_MAIL, 4); //LK ok
     data << (uint32) 0;
     SendDirectMessage(&data);
 }
@@ -3955,64 +3956,96 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
         // Completely remove from the database
         case CHAR_DELETE_REMOVE:
         {
-            // return back all mails with COD and Item                 0  1              2      3       4          5     6
-            QueryResult resultMail = CharacterDatabase.PQuery("SELECT id,mailTemplateId,sender,subject,itemTextId,money,has_items FROM mail WHERE receiver='%u' AND has_items<>0 AND cod<>0", guid);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_COD_ITEM_MAIL);
+            stmt->setUInt32(0, guid);
+            PreparedQueryResult resultMail = CharacterDatabase.Query(stmt);
+
             if (resultMail)
             {
                 do
                 {
-                    Field *fields = resultMail->Fetch();
+                    Field* mailFields = resultMail->Fetch();
 
-                    uint32 mail_id = fields[0].GetUInt32();
-                    uint16 mailTemplateId = fields[1].GetUInt32();
-                    uint32 sender = fields[2].GetUInt32();
-                    std::string subject = fields[3].GetString();
-                    uint32 itemTextId = fields[4].GetUInt32();
-                    uint32 money = fields[5].GetUInt32();
-                    bool has_items = fields[6].GetBool();
+                    uint32 mail_id = mailFields[0].GetUInt32();
+                    uint8 mailType = mailFields[1].GetUInt8();
+                    uint16 mailTemplateId = mailFields[2].GetUInt16();
+                    uint32 sender = mailFields[3].GetUInt32();
+                    std::string subject = mailFields[4].GetString();
+                    uint32 itemTextId = mailFields[5].GetUInt32();
+                    //std::string body = mailFields[5].GetString();
+                    uint32 money = mailFields[6].GetUInt32();
+                    bool has_items = mailFields[7].GetBool();
 
-                    //we can return mail now
-                    //so firstly delete the old one
-                    trans->PAppend("DELETE FROM mail WHERE id = '%u'", mail_id);
+                    //itemTextId can't be reused because it will be deleted with previous mail, create a new one
+                    std::string body;
+                    if(itemTextId)
+                        body = sObjectMgr->GetItemText(itemTextId);
 
-                    MailItemsInfo mi;
+                    // We can return mail now
+                    // So firstly delete the old one
+                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_BY_ID);
+                    stmt->setUInt32(0, mail_id);
+                    trans->Append(stmt);
+
+                    // Mail is not from player
+                    if (mailType != MAIL_NORMAL)
+                    {
+                        if (has_items)
+                        {
+                            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_ITEM_BY_ID);
+                            stmt->setUInt32(0, mail_id);
+                            trans->Append(stmt);
+                        }
+                        continue;
+                    }
+
+                    MailDraft draft(subject, body);
+                    if (mailTemplateId)
+                        draft = MailDraft(mailTemplateId, false);    // items are already included
+
                     if (has_items)
                     {
-                        QueryResult resultItems = CharacterDatabase.PQuery("SELECT item_guid,item_template FROM mail_items WHERE mail_id='%u'", mail_id);
+                        // Data needs to be at first place for Item::LoadFromDB
+                        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAILITEMS);
+                        stmt->setUInt32(0, mail_id);
+                        PreparedQueryResult resultItems = CharacterDatabase.Query(stmt);
                         if (resultItems)
                         {
                             do
                             {
-                                Field *fields2 = resultItems->Fetch();
-
-                                ObjectGuid::LowType item_guidlow = fields2[0].GetUInt32();
-                                uint32 item_template = fields2[1].GetUInt32();
+                                Field* itemFields = resultItems->Fetch();
+                                ObjectGuid::LowType item_guidlow = itemFields[48].GetUInt32();
+                                uint32 item_template = itemFields[49].GetUInt32();
 
                                 ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(item_template);
                                 if (!itemProto)
                                 {
-                                    trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item_guidlow);
+                                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
+                                    stmt->setUInt32(0, item_guidlow);
+                                    trans->Append(stmt);
                                     continue;
                                 }
 
-                                Item *pItem = NewItemOrBag(itemProto);
-                                if (!pItem->LoadFromDB(item_guidlow, ObjectGuid(HighGuid::Player, guid)))
+                                Item* pItem = NewItemOrBag(itemProto);
+                                if (!pItem->LoadFromDB(item_guidlow, playerguid, itemFields, item_template))
                                 {
                                     pItem->FSetState(ITEM_REMOVED);
-                                    pItem->SaveToDB(trans);              // it also deletes item object !
+                                    pItem->SaveToDB(trans);              // it also deletes item object!
                                     continue;
                                 }
 
-                                mi.AddItem(item_guidlow, item_template, pItem);
+                                draft.AddItem(pItem);
                             } while (resultItems->NextRow());
                         }
                     }
 
-                    trans->PAppend("DELETE FROM mail_items WHERE mail_id = '%u'", mail_id);
+                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_ITEM_BY_ID);
+                    stmt->setUInt32(0, mail_id);
+                    trans->Append(stmt);
 
-                    uint32 pl_account = sCharacterCache->GetCharacterAccountIdByGuid(ObjectGuid(HighGuid::Player, guid));
+                    uint32 pl_account = sCharacterCache->GetCharacterAccountIdByGuid(playerguid);
 
-                    WorldSession::SendReturnToSender(MAIL_NORMAL, pl_account, guid, sender, subject, itemTextId, &mi, money, mailTemplateId);
+                    draft.AddMoney(money).SendReturnToSender(pl_account, guid, sender, trans);
                 } while (resultMail->NextRow());
             }
 
@@ -4054,8 +4087,15 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
             trans->Append(stmt);
 
             trans->PAppend("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'", guid, guid);
-            trans->PAppend("DELETE FROM mail WHERE receiver = '%u'", guid);
-            trans->PAppend("DELETE FROM mail_items WHERE receiver = '%u'", guid);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_ITEMS);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+
             trans->PAppend("DELETE FROM character_pet WHERE owner = '%u'", guid);
             trans->PAppend("DELETE FROM character_pet_declinedname WHERE owner = '%u'", guid);
             trans->PAppend("DELETE FROM character_skills WHERE guid = '%u'", guid);
@@ -11472,31 +11512,31 @@ Item* Player::_StoreItem(uint16 pos, Item *pItem, uint32 count, bool clone, bool
         if (bag == INVENTORY_SLOT_BAG_0)
         {
             m_items[slot] = pItem;
-            SetUInt64Value( (uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2) ), pItem->GetGUID() );
-            pItem->SetUInt64Value( ITEM_FIELD_CONTAINED, GetGUID() );
-            pItem->SetUInt64Value( ITEM_FIELD_OWNER, GetGUID() );
+            SetUInt64Value((uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2)), pItem->GetGUID());
+            pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, GetGUID());
+            pItem->SetUInt64Value(ITEM_FIELD_OWNER, GetGUID());
 
-            pItem->SetSlot( slot );
-            pItem->SetContainer( nullptr );
+            pItem->SetSlot(slot);
+            pItem->SetContainer(nullptr);
 
-            if( IsInWorld() && update )
+            if (IsInWorld() && update)
             {
                 pItem->AddToWorld();
-                pItem->SendUpdateToPlayer( this );
+                pItem->SendUpdateToPlayer(this);
             }
 
             pItem->SetState(ITEM_CHANGED, this);
         }
         else
         {
-            Bag *pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, bag );
-            if( pBag )
+            Bag *pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
+            if (pBag)
             {
-                pBag->StoreItem( slot, pItem, update );
-                if( IsInWorld() && update )
+                pBag->StoreItem(slot, pItem, update);
+                if (IsInWorld() && update)
                 {
                     pItem->AddToWorld();
-                    pItem->SendUpdateToPlayer( this );
+                    pItem->SendUpdateToPlayer(this);
                 }
                 pItem->SetState(ITEM_CHANGED, this);
                 pBag->SetState(ITEM_CHANGED, this);
@@ -11516,16 +11556,16 @@ Item* Player::_StoreItem(uint16 pos, Item *pItem, uint32 count, bool clone, bool
             pItem2->SetBinding(true);
 
         pItem2->SetCount(pItem2->GetCount() + count);
-        if( IsInWorld() && update )
-            pItem2->SendUpdateToPlayer( this );
+        if (IsInWorld() && update)
+            pItem2->SendUpdateToPlayer(this);
 
-        if(!clone)
+        if (!clone)
         {
             // delete item (it not in any slot currently)
-            if( IsInWorld() && update )
+            if (IsInWorld() && update)
             {
                 pItem->RemoveFromWorld();
-                pItem->DestroyForPlayer( this );
+                pItem->DestroyForPlayer(this);
             }
 
             RemoveEnchantmentDurations(pItem);
@@ -11745,9 +11785,9 @@ void Player::VisualizeItem( uint8 slot, Item *pItem)
         pItem->SetBinding( true );
 
     m_items[slot] = pItem;
-    SetUInt64Value((uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2)), pItem->GetGUID() );
-    pItem->SetUInt64Value( ITEM_FIELD_CONTAINED, GetGUID() );
-    pItem->SetUInt64Value( ITEM_FIELD_OWNER, GetGUID() );
+    SetUInt64Value((uint16)(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2)), pItem->GetGUID());
+    pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, GetGUID());
+    pItem->SetUInt64Value(ITEM_FIELD_OWNER, GetGUID());
     pItem->SetSlot(slot);
     pItem->SetContainer(nullptr);
 
@@ -11824,11 +11864,11 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
             if (pBag)
                 pBag->RemoveItem(slot, update);
         }
-        pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, 0);
+        pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, ObjectGuid::Empty);
         // pItem->SetUInt64Value( ITEM_FIELD_OWNER, 0 ); not clear owner at remove (it will be set at store). This used in mail and auction code
         pItem->SetSlot( NULL_SLOT );
-        if( IsInWorld() && update )
-            pItem->SendUpdateToPlayer( this );
+        if (IsInWorld() && update)
+            pItem->SendUpdateToPlayer(this);
 
         if (slot == EQUIPMENT_SLOT_MAINHAND)
             UpdateExpertise(BASE_ATTACK);
@@ -11923,7 +11963,7 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
         if (pItem->GetEntry() == 31088)      // Vashj Tainted Core
             SetMovement(MOVE_UNROOT);
 
-        if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
+        if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_WRAPPED))
             CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUID().GetCounter());
 
         RemoveEnchantmentDurations(pItem);
@@ -11987,7 +12027,7 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
         }
 
         //pItem->SetOwnerGUID(0);
-        pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, 0);
+        pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, ObjectGuid::Empty);
         pItem->SetSlot(NULL_SLOT);
         pItem->SetState(ITEM_REMOVED, this);
     }
@@ -12280,15 +12320,19 @@ void Player::SwapItems(uint32 item1, uint32 item2)
             StoreNewItem(dest, item2, count, true);
         else 
         {
-            if (Item* newItem = Item::CreateItem(item2, count, this)) {
+            if (Item* newItem = Item::CreateItem(item2, count, this)) 
+            {
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 newItem->SaveToDB(trans);
-                CharacterDatabase.CommitTransaction(trans);
 
-                MailItemsInfo mi;
-                mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);
+                MailSender sender(MAIL_NORMAL, GetGUID().GetCounter(), MAIL_STATIONERY_GM);
+
                 std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, GetGUID().GetCounter(), GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                MailDraft(subject, {})
+                    .AddItem(newItem)
+                    .SendMailTo(trans, MailReceiver(this, GetGUID().GetCounter()), sender, MAIL_CHECK_MASK_COPIED);
+
+                CharacterDatabase.CommitTransaction(trans);
             }
         }
     }
@@ -13984,68 +14028,15 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     }
 
     // Send reward mail
-    if(pQuest->GetRewMailTemplateId())
+    if (uint32 mail_template_id = pQuest->GetRewMailTemplateId())
     {
-        MailMessageType mailType;
-        uint32 senderGuidOrEntry;
-        switch(questGiver->GetTypeId())
-        {
-            case TYPEID_UNIT:
-                mailType = MAIL_CREATURE;
-                senderGuidOrEntry = questGiver->GetEntry();
-                break;
-            case TYPEID_GAMEOBJECT:
-                mailType = MAIL_GAMEOBJECT;
-                senderGuidOrEntry = questGiver->GetEntry();
-                break;
-            case TYPEID_ITEM:
-                mailType = MAIL_ITEM;
-                senderGuidOrEntry = questGiver->GetEntry();
-                break;
-            case TYPEID_PLAYER:
-                mailType = MAIL_NORMAL;
-                senderGuidOrEntry = questGiver->GetGUID().GetCounter();
-                break;
-            default:
-                mailType = MAIL_NORMAL;
-                senderGuidOrEntry = GetGUID().GetCounter();
-                break;
-        }
-
-        Loot questMailLoot;
-
-        questMailLoot.FillLoot(pQuest->GetQuestId(), LootTemplates_QuestMail, this, true);
-
-        // fill mail
-        MailItemsInfo mi;                                   // item list preparing
-
+        /// @todo Poor design of mail system
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        for(size_t i = 0; mi.size() < MAX_MAIL_ITEMS && i < questMailLoot.items.size(); ++i)
-        {
-            if(LootItem* lootitem = questMailLoot.LootItemInSlot(i,this))
-            {
-                if(Item* item = Item::CreateItem(lootitem->itemid,lootitem->count,this))
-                {
-                    item->SaveToDB(trans);                       // save for prevent lost at next mail load, if send fail then item will deleted
-                    mi.AddItem(item->GetGUID().GetCounter(), item->GetEntry(), item);
-                }
-            }
-        }
-
-        for(size_t i = 0; mi.size() < MAX_MAIL_ITEMS && i < questMailLoot.quest_items.size(); ++i)
-        {
-            if(LootItem* lootitem = questMailLoot.LootItemInSlot(i+questMailLoot.items.size(),this))
-            {
-                if(Item* item = Item::CreateItem(lootitem->itemid,lootitem->count,this))
-                {
-                    item->SaveToDB(trans);                       // save for prevent lost at next mail load, if send fail then item will deleted
-                    mi.AddItem(item->GetGUID().GetCounter(), item->GetEntry(), item);
-                }
-            }
-        }
+        if (uint32 questMailSender = pQuest->GetRewMailSenderEntry())
+            MailDraft(mail_template_id).SendMailTo(trans, this, questMailSender, MAIL_CHECK_MASK_HAS_BODY, pQuest->GetRewMailDelaySecs());
+        else
+            MailDraft(mail_template_id).SendMailTo(trans, this, questGiver, MAIL_CHECK_MASK_HAS_BODY, pQuest->GetRewMailDelaySecs());
         CharacterDatabase.CommitTransaction(trans);
-
-        WorldSession::SendMailTo(this, mailType, MAIL_STATIONERY_NORMAL, senderGuidOrEntry, GetGUID().GetCounter(), "", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE,pQuest->GetRewMailDelaySecs(),pQuest->GetRewMailTemplateId());
     }
 
     if(pQuest->IsDaily())
@@ -16367,10 +16358,138 @@ void Player::LoadCorpse(PreparedQueryResult result)
     RemoveAtLoginFlag(AT_LOGIN_RESURRECT);
 }
 
-void Player::_LoadInventory(PreparedQueryResult result, uint32 timediff)
+Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, Field* fields)
 {
-    //QueryResult result = CharacterDatabase.PQuery("SELECT bag,slot,item,item_template FROM character_inventory JOIN item_instance ON character_inventory.item = item_instance.guid WHERE character_inventory.guid = '%u' ORDER BY bag,slot", GetGUID().GetCounter());
-    std::map<uint64, Bag*> bagMap;                          // fast guid lookup for bags
+    Item* item = nullptr;
+    uint32 startIndex = CHAR_SEL_CHARACTER_INVENTORY_FIELDS_COUNT + 2;
+    ObjectGuid::LowType itemGuid = fields[startIndex++].GetUInt32();
+    uint32 itemEntry = fields[startIndex++].GetUInt32();
+    if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry))
+    {
+        bool remove = false;
+        item = NewItemOrBag(proto);
+        if (item->LoadFromDB(itemGuid, GetGUID(), fields, itemEntry))
+        {
+            PreparedStatement* stmt;
+
+            // Do not allow to have item limited to another map/zone in alive state
+            if (IsAlive() && item->IsLimitedToAnotherMapOrZone(GetMapId(), zoneId))
+            {
+                TC_LOG_DEBUG("entities.player.loading", "Player::_LoadInventory: player (GUID: %u, name: '%s', map: %u) has item (GUID: %u, entry: %u) limited to another map (%u). Deleting item.",
+                    GetGUID().GetCounter(), GetName().c_str(), GetMapId(), item->GetGUID().GetCounter(), item->GetEntry(), zoneId);
+                remove = true;
+            }
+            // "Conjured items disappear if you are logged out for more than 15 minutes"
+            else if (timeDiff > 15 * MINUTE && proto->Flags & ITEM_FLAG_CONJURED)
+            {
+                TC_LOG_DEBUG("entities.player.loading", "Player::_LoadInventory: player (GUID: %u, name: '%s', diff: %u) has conjured item (GUID: %u, entry: %u) with expired lifetime (15 minutes). Deleting item.",
+                    GetGUID().GetCounter(), GetName().c_str(), timeDiff, item->GetGUID().GetCounter(), item->GetEntry());
+                remove = true;
+            }
+#ifdef LICH_KING
+            else if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_REFUNDABLE))
+            {
+                if (item->GetPlayedTime() > (2 * HOUR))
+                {
+                    TC_LOG_DEBUG("entities.player.loading", "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) with expired refund time (%u). Deleting refund data and removing refundable flag.",
+                        GetGUID().GetCounter(), GetName().c_str(), item->GetGUID().GetCounter(), item->GetEntry(), item->GetPlayedTime());
+
+                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_REFUND_INSTANCE);
+                    stmt->setUInt32(0, item->GetGUID().GetCounter());
+                    trans->Append(stmt);
+
+                    item->RemoveFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_REFUNDABLE);
+                }
+                else
+                {
+                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ITEM_REFUNDS);
+                    stmt->setUInt32(0, item->GetGUID().GetCounter());
+                    stmt->setUInt32(1, GetGUID().GetCounter());
+                    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
+                    {
+                        item->SetRefundRecipient((*result)[0].GetUInt32());
+                        item->SetPaidMoney((*result)[1].GetUInt32());
+                        item->SetPaidExtendedCost((*result)[2].GetUInt16());
+                        AddRefundReference(item->GetGUID());
+                    }
+                    else
+                    {
+                        TC_LOG_DEBUG("entities.player.loading", "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) with refundable flags, but without data in item_refund_instance. Removing flag.",
+                            GetGUID().GetCounter(), GetName().c_str(), item->GetGUID().GetCounter(), item->GetEntry());
+                        item->RemoveFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_REFUNDABLE);
+                    }
+                }
+            }
+            else if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_BOP_TRADEABLE))
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ITEM_BOP_TRADE);
+                stmt->setUInt32(0, item->GetGUID().GetCounter());
+                if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
+                {
+                    std::string strGUID = (*result)[0].GetString();
+                    Tokenizer GUIDlist(strGUID, ' ');
+                    GuidSet looters;
+                    for (Tokenizer::const_iterator itr = GUIDlist.begin(); itr != GUIDlist.end(); ++itr)
+                        looters.insert(ObjectGuid::Create<HighGuid::Player>(uint32(strtoul(*itr, nullptr, 10))));
+
+                    if (looters.size() > 1 && item->GetTemplate()->GetMaxStackSize() == 1 && item->IsSoulBound())
+                    {
+                        item->SetSoulboundTradeable(looters);
+                        AddTradeableItem(item);
+                    }
+                    else
+                        item->ClearSoulboundTradeable(this);
+                }
+                else
+                {
+                    TC_LOG_DEBUG("entities.player.loading", "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) with ITEM_FLAG_BOP_TRADEABLE flag, but without data in item_soulbound_trade_data. Removing flag.",
+                        GetGUID().GetCounter(), GetName().c_str(), item->GetGUID().GetCounter(), item->GetEntry());
+                    item->RemoveFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_BOP_TRADEABLE);
+                }
+            }
+            else if (proto->HolidayId)
+            {
+                remove = true;
+                GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
+                GameEventMgr::ActiveEvents const& activeEventsList = sGameEventMgr->GetActiveEventList();
+                for (GameEventMgr::ActiveEvents::const_iterator itr = activeEventsList.begin(); itr != activeEventsList.end(); ++itr)
+                {
+                    if (uint32(events[*itr].holiday_id) == proto->HolidayId)
+                    {
+                        remove = false;
+                        break;
+                    }
+                }
+            }
+#endif
+        }
+        else
+        {
+            TC_LOG_ERROR("entities.player", "Player::_LoadInventory: player (GUID: %u, name: '%s') has a broken item (GUID: %u, entry: %u) in inventory. Deleting item.",
+                GetGUID().GetCounter(), GetName().c_str(), itemGuid, itemEntry);
+            remove = true;
+        }
+        // Remove item from inventory if necessary
+        if (remove)
+        {
+            Item::DeleteFromInventoryDB(trans, itemGuid);
+            item->FSetState(ITEM_REMOVED);
+            item->SaveToDB(trans);                           // it also deletes item object!
+            item = nullptr;
+        }
+    }
+    else
+    {
+        TC_LOG_ERROR("entities.player", "Player::_LoadInventory: player (GUID: %u, name: '%s') has an unknown item (entry: %u) in inventory. Deleting item.",
+            GetGUID().GetCounter(), GetName().c_str(), itemEntry);
+        Item::DeleteFromInventoryDB(trans, itemGuid);
+        Item::DeleteFromDB(trans, itemGuid);
+    }
+    return item;
+}
+
+void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
+{
     //NOTE: the "order by `bag`" is important because it makes sure
     //the bagMap is filled before items in the bags are loaded
     //NOTE2: the "order by `slot`" is needed because mainhand weapons are (wrongly?)
@@ -16380,116 +16499,105 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timediff)
 
     if (result)
     {
+        uint32 zoneId = GetZoneId();
+
+        std::map<ObjectGuid::LowType, Bag*> bagMap;             // fast guid lookup for bags
+        std::map<ObjectGuid::LowType, Item*> invalidBagMap;     // fast guid lookup for bags
         std::list<Item*> problematicItems;
+
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
         // prevent items from being added to the queue when stored
         m_itemUpdateQueueBlocked = true;
         do
         {
             Field *fields = result->Fetch();
-            ObjectGuid::LowType bag_guid  = fields[0].GetUInt32();
-            uint8  slot      = fields[1].GetUInt8();
-            ObjectGuid::LowType item_guid = fields[2].GetUInt32();
-            uint32 item_id   = fields[3].GetUInt32();
-
-            ItemTemplate const * proto = sObjectMgr->GetItemTemplate(item_id);
-
-            if(!proto)
+            if (Item* item = _LoadItem(trans, zoneId, timeDiff, fields))
             {
-                TC_LOG_ERROR("entities.player", "Player::_LoadInventory: Player %s has an unknown item (id: #%u) in inventory, not loaded.", GetName().c_str(),item_id );
-                continue;
-            }
+                uint32 startIndex = CHAR_SEL_CHARACTER_INVENTORY_FIELDS_COUNT;
+                ObjectGuid::LowType bagGuid = fields[startIndex++].GetUInt32();
+                uint8 slot = fields[startIndex++].GetUInt8();
 
-            Item *item = NewItemOrBag(proto);
-
-            if(!item->LoadFromDB(item_guid, GetGUID()))
-            {
-                TC_LOG_ERROR("entities.player", "Player::_LoadInventory: Player %s has broken item (id: #%u) in inventory, not loaded.", GetName().c_str(),item_id );
-                continue;
-            }
-
-            // not allow have in alive state item limited to another map/zone
-            if(IsAlive() && item->IsLimitedToAnotherMapOrZone(GetMapId(),zone) )
-            {
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
-                item->FSetState(ITEM_REMOVED);
-                item->SaveToDB(trans);                           // it also deletes item object !
-                CharacterDatabase.CommitTransaction(trans);
-                continue;
-            }
-
-            // "Conjured items disappear if you are logged out for more than 15 minutes"
-            if ((timediff > 15*60) && (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_CONJURED)))
-            {
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
-                item->FSetState(ITEM_REMOVED);
-                item->SaveToDB(trans);                           // it also deletes item object !
-                CharacterDatabase.CommitTransaction(trans);
-                continue;
-            }
-
-            bool success = true;
-
-            if (!bag_guid)
-            {
-                // the item is not in a bag
-                item->SetContainer( nullptr );
-                item->SetSlot(slot);
-
-                if( IsInventoryPos( INVENTORY_SLOT_BAG_0, slot ) )
+                InventoryResult err = EQUIP_ERR_OK;
+                if (!bagGuid)
                 {
-                    ItemPosCountVec dest;
-                    if( CanStoreItem( INVENTORY_SLOT_BAG_0, slot, dest, item, false ) == EQUIP_ERR_OK )
-                        item = StoreItem(dest, item, true);
+                    // the item is not in a bag
+                    item->SetContainer(nullptr);
+                    item->SetSlot(slot);
+
+                    if (IsInventoryPos(INVENTORY_SLOT_BAG_0, slot))
+                    {
+                        ItemPosCountVec dest;
+                        err = CanStoreItem(INVENTORY_SLOT_BAG_0, slot, dest, item, false);
+                        if (err == EQUIP_ERR_OK)
+                            item = StoreItem(dest, item, true);
+                    }
+                    else if (IsEquipmentPos(INVENTORY_SLOT_BAG_0, slot))
+                    {
+                        uint16 dest;
+                        err = CanEquipItem(slot, dest, item, false, false);
+                        if (err == EQUIP_ERR_OK)
+                            QuickEquipItem(dest, item);
+                    }
+                    else if (IsBankPos(INVENTORY_SLOT_BAG_0, slot))
+                    {
+                        ItemPosCountVec dest;
+                        err = CanBankItem(INVENTORY_SLOT_BAG_0, slot, dest, item, false, false);
+                        if (err == EQUIP_ERR_OK)
+                            item = BankItem(dest, item, true);
+                    }
+
+                    // Remember bags that may contain items in them
+                    if (err == EQUIP_ERR_OK)
+                    {
+                        if (IsBagPos(item->GetPos()))
+                            if (Bag* pBag = item->ToBag())
+                                bagMap[item->GetGUID().GetCounter()] = pBag;
+                    }
                     else
-                        success = false;
+                        if (IsBagPos(item->GetPos()))
+                            if (item->IsBag())
+                                invalidBagMap[item->GetGUID().GetCounter()] = item;
                 }
-                else if( IsEquipmentPos( INVENTORY_SLOT_BAG_0, slot ) )
-                {
-                    uint16 dest;
-                    if( CanEquipItem( slot, dest, item, false, false ) == EQUIP_ERR_OK )
-                        QuickEquipItem(dest, item);
-                    else
-                        success = false;
-                }
-                else if( IsBankPos( INVENTORY_SLOT_BAG_0, slot ) )
-                {
-                    ItemPosCountVec dest;
-                    if( CanBankItem( INVENTORY_SLOT_BAG_0, slot, dest, item, false, false ) == EQUIP_ERR_OK )
-                        item = BankItem(dest, item, true);
-                    else
-                        success = false;
-                }
-
-                if(success)
-                {
-                    // store bags that may contain items in them
-                    if(item->IsBag() && IsBagPos(item->GetPos()))
-                        bagMap[item_guid] = (Bag*)item;
-                }
-            }
-            else
-            {
-                item->SetSlot(NULL_SLOT);
-                // the item is in a bag, find the bag
-                auto itr = bagMap.find(bag_guid);
-                if(itr != bagMap.end())
-                    itr->second->StoreItem(slot, item, true );
                 else
-                    success = false;
-            }
+                {
+                    item->SetSlot(NULL_SLOT);
+                    // Item is in the bag, find the bag
+                    std::map<ObjectGuid::LowType, Bag*>::iterator itr = bagMap.find(bagGuid);
+                    if (itr != bagMap.end())
+                    {
+                        ItemPosCountVec dest;
+                        err = CanStoreItem(itr->second->GetSlot(), slot, dest, item);
+                        if (err == EQUIP_ERR_OK)
+                            item = StoreItem(dest, item, true);
+                    }
+                    else if (invalidBagMap.find(bagGuid) != invalidBagMap.end())
+                    {
+                        std::map<ObjectGuid::LowType, Item*>::iterator invalidBagItr = invalidBagMap.find(bagGuid);
+                        if (std::find(problematicItems.begin(), problematicItems.end(), invalidBagItr->second) != problematicItems.end())
+                            err = EQUIP_ERR_INT_BAG_ERROR;
+                    }
+                    else
+                    {
+                        TC_LOG_ERROR("entities.player", "Player::_LoadInventory: Player '%s' (%s) has item (%s, entry: %u) which doesnt have a valid bag (Bag %u, slot: %u). Possible cheat?",
+                            GetName().c_str(), GetGUID().ToString().c_str(), item->GetGUID().ToString().c_str(), item->GetEntry(), bagGuid, slot);
+                        item->DeleteFromInventoryDB(trans);
+                        delete item;
+                        continue;
+                    }
+                }
 
-            // item's state may have changed after stored
-            if (success)
-                item->SetState(ITEM_UNCHANGED, this);
-            else
-            {
-                TC_LOG_ERROR("entities.player","Player::_LoadInventory: Player %s has item (GUID: %u Entry: %u) can't be loaded to inventory (Bag GUID: %u Slot: %u) by some reason, will send by mail.", GetName().c_str(),item_guid, item_id, bag_guid, slot);
-                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
-                problematicItems.push_back(item);
-            }
+                // item's state may have changed after stored
+                if (err == EQUIP_ERR_OK)
+                    item->SetState(ITEM_UNCHANGED, this);
+                else
+                {
+                    TC_LOG_ERROR("entities.player", "Player::_LoadInventory: Player '%s' (%s) has item (%s, entry: %u) which can't be loaded into inventory (Bag %u, slot: %u) by reason %u. Item will be sent by mail.",
+                        GetName().c_str(), GetGUID().ToString().c_str(), item->GetGUID().ToString().c_str(), item->GetEntry(), bagGuid, slot, uint32(err));
+                    item->DeleteFromInventoryDB(trans);
+                    problematicItems.push_back(item);
+                }
+            } 
         } while (result->NextRow());
 
         m_itemUpdateQueueBlocked = false;
@@ -16497,21 +16605,17 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timediff)
         // send by mail problematic items
         while(!problematicItems.empty())
         {
-            // fill mail
-            MailItemsInfo mi;                               // item list preparing
-
-            for(int i = 0; !problematicItems.empty() && i < MAX_MAIL_ITEMS; ++i)
-            {
-                Item* item = problematicItems.front();
-                problematicItems.pop_front();
-
-                mi.AddItem(item->GetGUID().GetCounter(), item->GetEntry(), item);
-            }
-
             std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
 
-            WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, GetGUID().GetCounter(), GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+            MailDraft draft(subject, "There were problems with equipping item(s).");
+            for (uint8 i = 0; !problematicItems.empty() && i < MAX_MAIL_ITEMS; ++i)
+            {
+                draft.AddItem(problematicItems.front());
+                problematicItems.pop_front();
+            }
+            draft.SendMailTo(trans, this, MailSender(this, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
         }
+        CharacterDatabase.CommitTransaction(trans);
     }
     //if(IsAlive())
     _ApplyAllItemMods();
@@ -16520,40 +16624,54 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timediff)
 // load mailed item which should receive current player
 void Player::_LoadMailedItems(Mail *mail)
 {
-    QueryResult result = CharacterDatabase.PQuery("SELECT item_guid, item_template FROM mail_items WHERE mail_id='%u'", mail->messageID);
-    if(!result)
+    // data needs to be at first place for Item::LoadFromDB
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAILITEMS);
+    stmt->setUInt32(0, mail->messageID);
+    PreparedQueryResult result = CharacterDatabase.Query(stmt);
+    if (!result)
         return;
 
     do
     {
-        Field *fields = result->Fetch();
-        uint32 item_guid_low = fields[0].GetUInt32();
-        uint32 item_template = fields[1].GetUInt32();
+        Field* fields = result->Fetch();
 
-        mail->AddItem(item_guid_low, item_template);
+        uint32 startIndex = CHAR_SEL_CHARACTER_INVENTORY_FIELDS_COUNT;
+        ObjectGuid::LowType itemGuid = fields[startIndex++].GetUInt32();
+        uint32 itemTemplate = fields[startIndex++].GetUInt32();
 
-        ItemTemplate const *proto = sObjectMgr->GetItemTemplate(item_template);
+        mail->AddItem(itemGuid, itemTemplate);
 
-        if(!proto)
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemTemplate);
+
+        if (!proto)
         {
-            TC_LOG_ERROR("entities.player", "Player %u have unknown item_template (ProtoType) in mailed items(GUID: %u template: %u) in mail (%u), deleted.", GetGUID().GetCounter(), item_guid_low, item_template,mail->messageID);
-            SQLTransaction trans = CharacterDatabase.BeginTransaction();
-            trans->PAppend("DELETE FROM mail_items WHERE item_guid = '%u'", item_guid_low);
-            trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item_guid_low);
-            CharacterDatabase.CommitTransaction(trans);
+            TC_LOG_ERROR("entities.player", "Player '%s' (%s) has unknown item_template in mailed items (GUID: %u, Entry: %u) in mail (%u), deleted.",
+                GetName().c_str(), GetGUID().ToString().c_str(), itemGuid, itemTemplate, mail->messageID);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_MAIL_ITEM);
+            stmt->setUInt32(0, itemGuid);
+            CharacterDatabase.Execute(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
+            stmt->setUInt32(0, itemGuid);
+            CharacterDatabase.Execute(stmt);
             continue;
         }
 
-        Item *item = NewItemOrBag(proto);
+        Item* item = NewItemOrBag(proto);
 
-        if(!item->LoadFromDB(item_guid_low, ObjectGuid::Empty))
+        if (!item->LoadFromDB(itemGuid, ObjectGuid(HighGuid::Player, fields[startIndex++].GetUInt32()), fields, itemTemplate))
         {
-            TC_LOG_ERROR("entities.player", "Player::_LoadMailedItems - Item in mail (%u) doesn't exist !!!! - item guid: %u, deleted from mail", mail->messageID, item_guid_low);
-            SQLTransaction trans = CharacterDatabase.BeginTransaction();
-            trans->PAppend("DELETE FROM mail_items WHERE item_guid = '%u'", item_guid_low);
+            TC_LOG_ERROR("entities.player", "Player::_LoadMailedItems: Item (GUID: %u) in mail (%u) doesn't exist, deleted from mail.", itemGuid, mail->messageID);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_ITEM);
+            stmt->setUInt32(0, itemGuid);
+            CharacterDatabase.Execute(stmt);
+
             item->FSetState(ITEM_REMOVED);
-            item->SaveToDB(trans);                               // it also deletes item object !
-            CharacterDatabase.CommitTransaction(trans);
+
+            SQLTransaction temp = SQLTransaction(nullptr);
+            item->SaveToDB(temp);                               // it also deletes item object !
             continue;
         }
 
@@ -16583,32 +16701,37 @@ void Player::_LoadMailInit(PreparedQueryResult resultUnread, PreparedQueryResult
 void Player::_LoadMail()
 {
     m_mail.clear();
-    //mails are in right order                             0  1           2      3        4       5          6         7           8            9     10  11      12         13
-    QueryResult result = CharacterDatabase.PQuery("SELECT id,messageType,sender,receiver,subject,itemTextId,has_items,expire_time,deliver_time,money,cod,checked,stationery,mailTemplateId FROM mail WHERE receiver = '%u' ORDER BY id DESC",GetGUID().GetCounter());
-    if(result)
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL);
+    stmt->setUInt32(0, GetGUID().GetCounter());
+    PreparedQueryResult result = CharacterDatabase.Query(stmt);
+
+    if (result)
     {
         do
         {
-            Field *fields = result->Fetch();
-            auto m = new Mail;
+            Field* fields = result->Fetch();
+            Mail* m = new Mail;
+
             m->messageID = fields[0].GetUInt32();
             m->messageType = fields[1].GetUInt8();
             m->sender = fields[2].GetUInt32();
             m->receiver = fields[3].GetUInt32();
             m->subject = fields[4].GetString();
+            //m->body = fields[5].GetString();
             m->itemTextId = fields[5].GetUInt32();
             bool has_items = fields[6].GetBool();
-            m->expire_time = (time_t)fields[7].GetUInt64();
-            m->deliver_time = (time_t)fields[8].GetUInt64();
+            m->expire_time = time_t(fields[7].GetUInt32());
+            m->deliver_time = time_t(fields[8].GetUInt32());
             m->money = fields[9].GetUInt32();
             m->COD = fields[10].GetUInt32();
             m->checked = fields[11].GetUInt8();
             m->stationery = fields[12].GetUInt8();
-            m->mailTemplateId = fields[13].GetInt32();
+            m->mailTemplateId = fields[13].GetInt16();
 
-            if(m->mailTemplateId && !sMailTemplateStore.LookupEntry(m->mailTemplateId))
+            if (m->mailTemplateId && !sMailTemplateStore.LookupEntry(m->mailTemplateId))
             {
-                TC_LOG_ERROR("entities.player", "Player::_LoadMail - Mail (%u) have not existed MailTemplateId (%u), remove at load", m->messageID, m->mailTemplateId);
+                TC_LOG_ERROR("entities.player", "Player::_LoadMail: Mail (%u) has nonexistent MailTemplateId (%u), remove at load", m->messageID, m->mailTemplateId);
                 m->mailTemplateId = 0;
             }
 
@@ -16618,7 +16741,7 @@ void Player::_LoadMail()
                 _LoadMailedItems(m);
 
             m_mail.push_back(m);
-        } while( result->NextRow() );
+        } while (result->NextRow());
     }
     m_mailsLoaded = true;
 }
@@ -17649,6 +17772,7 @@ void Player::_SaveBGData(SQLTransaction& trans)
 
 void Player::_SaveInventory(SQLTransaction trans)
 {
+    PreparedStatement* stmt;
     // force items in buyback slots to new state
     // and remove those that aren't already
     for (uint8 i = BUYBACK_SLOT_START; i < BUYBACK_SLOT_END; i++)
@@ -17665,9 +17789,15 @@ void Player::_SaveInventory(SQLTransaction trans)
 
             continue;
         }
-        
-        trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUID().GetCounter());
-        trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item->GetGUID().GetCounter());
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INVENTORY_BY_ITEM);
+        stmt->setUInt32(0, item->GetGUID().GetCounter());
+        trans->Append(stmt);
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
+        stmt->setUInt32(0, item->GetGUID().GetCounter());
+        trans->Append(stmt);
+
         m_items[i]->FSetState(ITEM_NEW);
 
         if (ItemTemplate const* itemTemplate = item->GetTemplate())
@@ -17739,7 +17869,9 @@ void Player::_SaveInventory(SQLTransaction trans)
                 trans->PAppend("UPDATE character_inventory SET guid='%u', bag='%u', slot='%u', item_template='%u' WHERE item='%u'", GetGUID().GetCounter(), bag_guid, item->GetSlot(), item->GetEntry(), item->GetGUID().GetCounter());
                 break;
             case ITEM_REMOVED:
-                trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUID().GetCounter());
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INVENTORY_BY_ITEM);
+                stmt->setUInt32(0, item->GetGUID().GetCounter());
+                trans->Append(stmt);
                 break;
             case ITEM_UNCHANGED:
                 break;
@@ -17755,16 +17887,32 @@ void Player::_SaveMail(SQLTransaction trans)
     if (!m_mailsLoaded)
         return;
 
-    for (auto m : m_mail)
+    PreparedStatement* stmt;
+
+    for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)
     {
+        Mail* m = (*itr);
         if (m->state == MAIL_STATE_CHANGED)
         {
-            trans->PAppend("UPDATE mail SET itemTextId = '%u',has_items = '%u',expire_time = '" UI64FMTD "', deliver_time = '" UI64FMTD "',money = '%u',cod = '%u',checked = '%u' WHERE id = '%u'",
-                m->itemTextId, m->HasItems() ? 1 : 0, (uint64)m->expire_time, (uint64)m->deliver_time, m->money, m->COD, m->checked, m->messageID);
-            if(m->removedItems.size())
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_MAIL);
+            stmt->setUInt8(0, uint8(m->HasItems() ? 1 : 0));
+            stmt->setUInt32(1, uint32(m->expire_time));
+            stmt->setUInt32(2, uint32(m->deliver_time));
+            stmt->setUInt32(3, m->money);
+            stmt->setUInt32(4, m->COD);
+            stmt->setUInt8(5, uint8(m->checked));
+            stmt->setUInt32(6, m->messageID);
+
+            trans->Append(stmt);
+
+            if (!m->removedItems.empty())
             {
-                for(uint32 & removedItem : m->removedItems)
-                    trans->PAppend("DELETE FROM mail_items WHERE item_guid = '%u'", removedItem);
+                for (std::vector<uint32>::iterator itr2 = m->removedItems.begin(); itr2 != m->removedItems.end(); ++itr2)
+                {
+                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_ITEM);
+                    stmt->setUInt32(0, *itr2);
+                    trans->Append(stmt);
+                }
                 m->removedItems.clear();
             }
             m->state = MAIL_STATE_UNCHANGED;
@@ -17772,17 +17920,26 @@ void Player::_SaveMail(SQLTransaction trans)
         else if (m->state == MAIL_STATE_DELETED)
         {
             if (m->HasItems())
-                for(auto & item : m->items)
-                    trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item.item_guid);
-            if (m->itemTextId)
-                trans->PAppend("DELETE FROM item_text WHERE id = '%u'", m->itemTextId);
-            trans->PAppend("DELETE FROM mail WHERE id = '%u'", m->messageID);
-            trans->PAppend("DELETE FROM mail_items WHERE mail_id = '%u'", m->messageID);
+            {
+                for (MailItemInfoVec::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
+                {
+                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
+                    stmt->setUInt32(0, itr2->item_guid);
+                    trans->Append(stmt);
+                }
+            }
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_BY_ID);
+            stmt->setUInt32(0, m->messageID);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_ITEM_BY_ID);
+            stmt->setUInt32(0, m->messageID);
+            trans->Append(stmt);
         }
     }
 
     //deallocate deleted mails...
-    for (auto itr = m_mail.begin(); itr != m_mail.end(); )
+    for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end();)
     {
         if ((*itr)->state == MAIL_STATE_DELETED)
         {

@@ -368,7 +368,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "pickpocketing_loot_template", SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadLootTemplatesPickpocketingCommand,""},
         { "prospecting_loot_template",   SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadLootTemplatesProspectingCommand,"" },
         { "quest_end_scripts",           SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadQuestEndScriptsCommand,         "" },
-        { "quest_mail_loot_template",    SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadLootTemplatesQuestMailCommand,  "" },
+        { "mail_loot_template",          SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadLootTemplatesMailCommand,       "" },
         { "quest_start_scripts",         SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadQuestStartScriptsCommand,       "" },
         { "quest_template",              SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadQuestTemplateCommand,           "" },
         { "reference_loot_template",     SEC_ADMINISTRATOR, true, &ChatHandler::HandleReloadLootTemplatesReferenceCommand,  "" },

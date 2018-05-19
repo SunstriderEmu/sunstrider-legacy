@@ -43,7 +43,7 @@ public:
     static void Sanction(WorldSession const* author, uint32 targetAccount, ObjectGuid::LowType targetGUID, SanctionType type, uint32 durationSecs, std::string const& reason);
     static void RemoveSanction(WorldSession const* author, uint32 targetAccount, ObjectGuid::LowType targetGUID, std::string const& targetIP, SanctionType type);
     // money can be negative to indicate a COD (Collect on Delivery)
-    static void Mail(uint32 mailId, MailMessageType type, uint32 sender_guidlow_or_entry, uint32 receiver_guidlow, std::string const& subject, uint32 itemTextId, MailItemsInfo const* mi, int32 money);
+    static void Mail(uint32 mailId, MailMessageType type, uint32 sender_guidlow_or_entry, uint32 receiver_guidlow, std::string const subject, std::string const body, MailDraft::MailItemMap const& items, uint32 money, uint32 cod);
 
     static void WonAuction(uint32 bidderAccount, ObjectGuid::LowType bidderGUID, uint32 sellerAccount, ObjectGuid::LowType sellerGUID, ObjectGuid::LowType itemGUID, uint32 itemEntry, uint32 itemCount);
     static void CreateAuction(Player const* player, ObjectGuid::LowType itemGUID, uint32 itemEntry, uint32 itemCount);

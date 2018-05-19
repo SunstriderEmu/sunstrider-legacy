@@ -7,7 +7,6 @@ using namespace ai;
 
 bool CheckMailAction::Execute(Event event)
 {
-    /* TODO PLAYERBOT
     if (!bot->IsMailsLoaded())
     {
         WorldPacket p;
@@ -25,7 +24,7 @@ bool CheckMailAction::Execute(Event event)
         if (!mail || mail->state == MAIL_STATE_DELETED)
             continue;
 
-        Player* owner = ObjectAccessor::FindPlayer(mail->sender);
+        Player* owner = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, mail->sender));
         if (!owner)
             continue;
 
@@ -44,14 +43,12 @@ bool CheckMailAction::Execute(Event event)
         CharacterDatabase.CommitTransaction(tran);
         bot->RemoveMail(id);
     }
-    */
     return true;
 }
 
 
 void CheckMailAction::ProcessMail(Mail* mail, Player* owner)
 {
-    /* TODO PLAYERBOT
     if (!mail->HasItems())
         return;
 
@@ -65,5 +62,4 @@ void CheckMailAction::ProcessMail(Mail* mail, Player* owner)
         bot->RemoveMItem(i->item_guid);
         item->DestroyForPlayer(bot);
     }
-    */
 }

@@ -170,6 +170,12 @@ std::string const& WorldSession::GetPlayerName() const
     return GetPlayer() ? GetPlayer()->GetName() : DefaultPlayerName;
 }
 
+/// Get player guid if available. Use for logging purposes only
+ObjectGuid::LowType WorldSession::GetGUIDLow() const
+{
+    return GetPlayer() ? GetPlayer()->GetGUID().GetCounter() : 0;
+}
+
 void WorldSession::SendPacket(WorldPacket const* packet)
 {
     ASSERT(packet->GetOpcode() != NULL_OPCODE);

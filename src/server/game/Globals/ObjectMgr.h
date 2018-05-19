@@ -800,7 +800,6 @@ class TC_GAME_API ObjectMgr
         void LoadBattleMastersEntry();
         void LoadGameObjectForQuests();
 
-        void LoadItemTexts();
         void LoadPageTexts();
         PageText const* GetPageText(uint32 pageEntry);
 
@@ -875,14 +874,7 @@ class TC_GAME_API ObjectMgr
 
         uint32 CreateItemText(SQLTransaction& charTrans, std::string const& text);
         uint32 CreateItemText(std::string const& text);
-        std::string GetItemText( uint32 id )
-        {
-            ItemTextMap::const_iterator itr = mItemTexts.find( id );
-            if ( itr != mItemTexts.end() )
-                return itr->second;
-            else
-                return "There is no info for this item";
-        }
+        std::string GetItemText(uint32 id);
 
         typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
         ExclusiveQuestGroups mExclusiveQuestGroups;
@@ -1177,7 +1169,6 @@ class TC_GAME_API ObjectMgr
         ArenaTeamMap        mArenaTeamMap;
 
         ItemMap             mItems;
-
         ItemTextMap         mItemTexts;
 
         QuestAreaTriggerMap _questAreaTriggerStore;

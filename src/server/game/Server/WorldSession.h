@@ -246,6 +246,7 @@ class TC_GAME_API WorldSession
         std::string const& GetPlayerName() const;
         std::string GetPlayerInfo() const;
 
+        ObjectGuid::LowType GetGUIDLow() const;
         void SetSecurity(AccountTypes security) { _security = security; }
         std::string const& GetRemoteAddress() const { return m_Address; }
         void SetPlayer(Player *plr) { _player = plr; }
@@ -291,6 +292,10 @@ class TC_GAME_API WorldSession
         void SendTrainerList(ObjectGuid guid, const std::string& strTitle);
         void SendListInventory(ObjectGuid guid);
         void SendShowBank(ObjectGuid guid);
+        bool CanOpenMailBox(ObjectGuid guid);
+#ifdef LICH_KING
+        void SendShowMailBox(ObjectGuid guid); //no such opcode on BC
+#endif
         void SendTabardVendorActivate(ObjectGuid guid);
         void SendSpiritResurrect();
         void SendBindPoint(Creature* npc);
@@ -343,11 +348,6 @@ class TC_GAME_API WorldSession
         //title
         void SendTitleEarned(uint32 titleIndex, bool earned);
 
-        //mail
-        static void SendReturnToSender(uint8 messageType, uint32 sender_acc, uint32 sender_guid, ObjectGuid::LowType receiver_guid, const std::string& subject, uint32 itemTextId, MailItemsInfo *mi, uint32 money, uint16 mailTemplateId = 0);
-        static void SendMailTo(SQLTransaction& trans, Player* receiver, MailMessageType messageType, uint8 stationery, ObjectGuid::LowType sender_guidlow_or_entry, ObjectGuid::LowType received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
-        static void SendMailTo(Player* receiver, MailMessageType messageType, uint8 stationery, ObjectGuid::LowType sender_guidlow_or_entry, ObjectGuid::LowType received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
-
         //return item name for player local, or default to english if not found
         std::string GetLocalizedItemName(const ItemTemplate* proto);
         std::string GetLocalizedItemName(uint32 itemId);
@@ -357,8 +357,6 @@ class TC_GAME_API WorldSession
         void SendAuctionCommandResult( uint32 auctionId, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
         void SendAuctionBidderNotification( uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 item_template);
         void SendAuctionOwnerNotification( AuctionEntry * auction );
-        void SendAuctionOutbiddedMail( AuctionEntry * auction, uint32 newPrice );
-        void SendAuctionCancelledToBidderMail( AuctionEntry* auction );
 
         //Item Enchantment
         void SendEnchantmentLog(ObjectGuid Target, ObjectGuid Caster, uint32 ItemID, uint32 SpellID);
@@ -664,19 +662,19 @@ class TC_GAME_API WorldSession
         void HandleAuctionListOwnerItems( WorldPacket & recvData );
         void HandleAuctionPlaceBid( WorldPacket & recvData );
 
-        void HandleGetMailList( WorldPacket & recvData );
-        void HandleSendMail( WorldPacket & recvData );
-        void HandleMailTakeMoney( WorldPacket & recvData );
-        void HandleMailTakeItem( WorldPacket & recvData );
-        void HandleMailMarkAsRead( WorldPacket & recvData );
-        void HandleMailReturnToSender( WorldPacket & recvData );
-        void HandleMailDelete( WorldPacket & recvData );
-        void HandleItemTextQuery( WorldPacket & recvData);
-        void HandleMailCreateTextItem(WorldPacket & recvData );
-        void HandleQueryNextMailTime(WorldPacket & recvData );
-        void HandleCancelChanneling(WorldPacket & recvData );
+        void HandleGetMailList(WorldPacket & recvData);
+        void HandleSendMail(WorldPacket & recvData);
+        void HandleMailTakeMoney(WorldPacket & recvData);
+        void HandleMailTakeItem(WorldPacket & recvData);
+        void HandleMailMarkAsRead(WorldPacket & recvData);
+        void HandleMailReturnToSender(WorldPacket & recvData);
+        void HandleMailDelete(WorldPacket & recvData);
+        void HandleItemTextQuery(WorldPacket & recvData);
+        void HandleMailCreateTextItem(WorldPacket & recvData);
+        void HandleQueryNextMailTime(WorldPacket & recvData);
+        void HandleCancelChanneling(WorldPacket & recvData);
 
-        void SendItemPageInfo( ItemTemplate *itemProto );
+        void SendItemPageInfo(ItemTemplate *itemProto);
         void HandleSplitItemOpcode(WorldPacket& recvPacket);
         void HandleSwapInvItemOpcode(WorldPacket& recvPacket);
         void HandleDestroyItemOpcode(WorldPacket& recvPacket);

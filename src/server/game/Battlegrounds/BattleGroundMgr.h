@@ -114,6 +114,8 @@ class TC_GAME_API BattlegroundMgr
         uint32 GetRatingDiscardTimer()  const;
 
         void InitAutomaticArenaPointDistribution();
+        //TC compat
+        BattlegroundTypeId GetBattleMasterBG(uint32 entry) const { return sObjectMgr->GetBattleMasterBG(entry); }
 
     private:
 

@@ -174,6 +174,7 @@ class Quest
         void LoadQuestDetails(Field* fields);
         void LoadQuestRequestItems(Field* fields);
         void LoadQuestOfferReward(Field* fields);
+        void LoadQuestMailSender(Field* fields);
 
         uint32 XPValue( Player *pPlayer ) const;
 
@@ -220,6 +221,7 @@ class Quest
         uint32 GetRewSpellCast() const { return RewardSpellCast; }
         uint32 GetRewMailTemplateId() const { return RewardMailTemplateId; }
         uint32 GetRewMailDelaySecs() const { return RewardMailDelaySecs; }
+        uint32 GetRewMailSenderEntry() const { return RewardMailSenderEntry; }
         uint32 GetPointMapId() const { return PointMapId; }
         float  GetPointX() const { return PointX; }
         float  GetPointY() const { return PointY; }
@@ -332,6 +334,7 @@ class Quest
         uint32 RewardSpellCast;
         uint32 RewardMailTemplateId;
         uint32 RewardMailDelaySecs;
+        uint32 RewardMailSenderEntry;
         uint32 PointMapId;
         float  PointX;
         float  PointY;

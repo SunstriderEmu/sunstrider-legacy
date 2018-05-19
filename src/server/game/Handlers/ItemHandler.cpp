@@ -1119,7 +1119,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    if(!gift->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPER))// cheating: non-wrapper wrapper
+    if(!gift->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_WRAPPED))// cheating: non-wrapper wrapper
     {
         _player->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, gift, nullptr );
         return;
@@ -1145,7 +1145,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    if(item->GetGuidValue(ITEM_FIELD_GIFTCREATOR))        // HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED);
+    if(item->GetGuidValue(ITEM_FIELD_GIFTCREATOR))        // HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_WRAPPED);
     {
         _player->SendEquipError( EQUIP_ERR_WRAPPED_CANT_BE_WRAPPED, item, nullptr );
         return;
@@ -1190,7 +1190,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         case 21830: item->SetEntry(21831); break;
     }
     item->SetGuidValue(ITEM_FIELD_GIFTCREATOR, _player->GetGUID());
-    item->SetUInt32Value(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED);
+    item->SetUInt32Value(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_WRAPPED);
     item->SetState(ITEM_CHANGED, _player);
 
     if(item->GetState()==ITEM_NEW)                          // save new item, to have alway for `character_gifts` record in `item_instance`
@@ -1350,6 +1350,47 @@ void WorldSession::HandleCancelTempEnchantmentOpcode(WorldPacket& recvData)
 
     GetPlayer()->ApplyEnchantment(item,TEMP_ENCHANTMENT_SLOT,false);
     item->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
+}
+
+/**
+* Handles the packet sent by the client when requesting information about item text.
+*
+* This function is called when player clicks on item which has some flag set
+  Old comment: this function is called when client needs mail message body, or when player clicks on item which has ITEM_FIELD_ITEM_TEXT_ID > 0
+*/
+void WorldSession::HandleItemTextQuery(WorldPacket& recvData)
+{
+#ifdef LICH_KING
+    ObjectGuid itemGuid;
+    recvData >> itemGuid;
+
+    TC_LOG_DEBUG("network", "CMSG_ITEM_TEXT_QUERY %s", itemGuid.ToString().c_str());
+
+    WorldPacket data(SMSG_ITEM_TEXT_QUERY_RESPONSE, (4 + 10));    // guess size
+
+    if (Item* item = _player->GetItemByGuid(itemGuid))
+    {
+        data << uint8(0);                                       // has text
+        data << uint64(itemGuid);                               // item guid
+        data << item->GetText();
+    }
+    else
+    {
+        data << uint8(1);                                       // no text
+    }
+#else
+    uint32 itemTextId;
+    uint32 mailId; // this value can be item id in bag, but it is also mail id
+    uint32 unk;    // maybe something like state - 0x70000000
+
+    recvData >> itemTextId >> mailId >> unk;
+
+    WorldPacket data(SMSG_ITEM_TEXT_QUERY_RESPONSE, (12)); // guess size
+    data << itemTextId;
+    data <<  sObjectMgr->GetItemText(itemTextId);
+#endif
+
+    SendPacket(&data);
 }
 
 bool WorldSession::CanUseBank(ObjectGuid bankerGUID) const

@@ -1517,9 +1517,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Items..." );                   // must be after LoadRandomEnchantmentsTable and LoadPageTexts
     sObjectMgr->LoadItemTemplates();
 
-    TC_LOG_INFO("server.loading", "Loading Item Texts..." );
-    sObjectMgr->LoadItemTexts();
-
     TC_LOG_INFO("server.loading", "Loading Creature Model Based Info Data..." );
     sObjectMgr->LoadCreatureModelInfo();
 

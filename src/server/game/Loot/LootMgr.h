@@ -134,29 +134,28 @@ class TC_GAME_API LootTemplate
 
 //=====================================================
 
-extern LootStore LootTemplates_Creature;
-extern LootStore LootTemplates_Fishing;
-extern LootStore LootTemplates_Gameobject;
-extern LootStore LootTemplates_Item;
-extern LootStore LootTemplates_Pickpocketing;
-extern LootStore LootTemplates_Skinning;
-extern LootStore LootTemplates_Disenchant;
-extern LootStore LootTemplates_Prospecting;
-extern LootStore LootTemplates_QuestMail;
-extern LootStore LootTemplates_Reference;
+ TC_GAME_API extern LootStore LootTemplates_Creature;
+TC_GAME_API extern LootStore LootTemplates_Fishing;
+TC_GAME_API extern LootStore LootTemplates_Gameobject;
+TC_GAME_API extern LootStore LootTemplates_Item;
+TC_GAME_API extern LootStore LootTemplates_Mail;
+TC_GAME_API extern LootStore LootTemplates_Pickpocketing;
+TC_GAME_API extern LootStore LootTemplates_Skinning;
+TC_GAME_API extern LootStore LootTemplates_Disenchant;
+TC_GAME_API extern LootStore LootTemplates_Prospecting;
+TC_GAME_API extern LootStore LootTemplates_Reference;
 
-void LoadLootTemplates_Creature();
-void LoadLootTemplates_Fishing();
-void LoadLootTemplates_Gameobject();
-void LoadLootTemplates_Item();
-void LoadLootTemplates_Pickpocketing();
-void LoadLootTemplates_Skinning();
-void LoadLootTemplates_Disenchant();
-void LoadLootTemplates_Prospecting();
-void LoadLootTemplates_QuestMail();
-void LoadLootTemplates_Reference();
+TC_GAME_API void LoadLootTemplates_Creature();
+TC_GAME_API void LoadLootTemplates_Fishing();
+TC_GAME_API void LoadLootTemplates_Gameobject();
+TC_GAME_API void LoadLootTemplates_Item();
+TC_GAME_API void LoadLootTemplates_Mail();
+TC_GAME_API void LoadLootTemplates_Pickpocketing();
+TC_GAME_API void LoadLootTemplates_Skinning();
+TC_GAME_API void LoadLootTemplates_Disenchant();
+TC_GAME_API void LoadLootTemplates_Prospecting();
+TC_GAME_API void LoadLootTemplates_Reference();
 
-void LoadLootTables();
+TC_GAME_API void LoadLootTables();
 
 #endif
-

@@ -250,8 +250,8 @@ bool Item::Create(ObjectGuid::LowType guidlow, uint32 itemid, Player const* owne
     Object::_Create( guidlow, 0, HighGuid::Item );
 
     SetEntry(itemid);
+    SetObjectScale(1.0f);
     m_itemProto = itemProto;
-    SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
 
     SetGuidValue(ITEM_FIELD_OWNER, owner ? owner->GetGUID() : ObjectGuid::Empty);
     SetGuidValue(ITEM_FIELD_CONTAINED, owner ? owner->GetGUID() : ObjectGuid::Empty);
@@ -337,13 +337,14 @@ void Item::SaveToDB(SQLTransaction& trans)
             stmt->setUInt16(index++, GetItemSuffixFactor());
             stmt->setInt16(index++, GetItemRandomPropertyId());
             stmt->setUInt16(index++, GetUInt32Value(ITEM_FIELD_DURABILITY));
+            stmt->setUInt32(index++, GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID));
 
             if(uState == ITEM_CHANGED)
                 stmt->setUInt32(index++, guid);
 
             trans->Append(stmt);
 
-            if ((uState == ITEM_CHANGED) && HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
+            if ((uState == ITEM_CHANGED) && HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_WRAPPED))
             {
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GIFT_OWNER);
                 stmt->setUInt32(0, GetOwnerGUID().GetCounter());
@@ -357,7 +358,7 @@ void Item::SaveToDB(SQLTransaction& trans)
                 trans->PAppend("DELETE FROM item_text WHERE id = '%u'", GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID));
 
             trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", guid);
-            if(HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
+            if(HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_WRAPPED))
                 trans->PAppend("DELETE FROM character_gifts WHERE item_guid = '%u'", GetGUID().GetCounter());
 
             // Delete the items if this is a container
@@ -373,13 +374,13 @@ void Item::SaveToDB(SQLTransaction& trans)
     SetState(ITEM_UNCHANGED);
 }
 
-bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
+bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid, Field* fields, uint32 entry)
 {
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
     Object::_Create(guid, 0, HighGuid::Item);
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ITEM_INSTANCE);
+    /*PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ITEM_INSTANCE);
     stmt->setUInt32(0, guid);
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
@@ -389,11 +390,10 @@ bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
         return false;
     }
 
-    Field* fields = result->Fetch();
+    Field* fields = result->Fetch();*/
 
-    uint8 index = 0;
-    SetOwnerGUID(ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()));
-    SetEntry(fields[index++].GetUInt32());
+    SetEntry(entry);
+    SetObjectScale(1.0f);
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(GetEntry());
     if (!proto)
     {
@@ -401,7 +401,12 @@ bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
         return false;
     }
 
-    SetGuidValue(ITEM_FIELD_CONTAINED, ObjectGuid(fields[index++].GetUInt64())); //todo: switch this to uint32
+    // set owner (not if item is only loaded for gbank/auction/mail
+    if (owner_guid)
+        SetOwnerGUID(owner_guid);
+
+    uint8 index = 0;
+    //SetGuidValue(ITEM_FIELD_CONTAINED, ObjectGuid(fields[index++].GetUInt64())); //todo: switch this to uint32
     SetGuidValue(ITEM_FIELD_CREATOR, ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()));
     SetGuidValue(ITEM_FIELD_GIFTCREATOR, ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()));
     SetUInt32Value(ITEM_FIELD_STACK_COUNT, fields[index++].GetUInt16());
@@ -419,11 +424,13 @@ bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
 
     SetUInt32Value(ITEM_FIELD_PROPERTY_SEED, fields[index++].GetUInt16());
     SetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, fields[index++].GetInt16());
-    //SetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID, fields[index++].GetUInt32()); // not in request or db anymore since it seems this has no use
     SetUInt32Value(ITEM_FIELD_DURABILITY, fields[index++].GetUInt16());
+    SetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID, fields[index++].GetUInt32());
     SetUInt32Value(ITEM_FIELD_MAXDURABILITY, proto->MaxDurability);
 
     bool need_save = false;                                 // need explicit save data at load fixes
+
+    //TC SetText(fields[index++].GetString());
 
     // overwrite possible wrong/corrupted guid
     ObjectGuid new_item_guid = ObjectGuid(HighGuid::Item, 0, guid);
@@ -445,7 +452,7 @@ bool Item::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
     // Remove bind flag for items vs NO_BIND set
     if (IsSoulBound() && proto->Bonding == NO_BIND)
     {
-        ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, false);
+        ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_SOULBOUND, false);
         need_save = true;
     }
 
@@ -494,9 +501,17 @@ void Item::DeleteFromDB(SQLTransaction& trans)
         sLootItemStorage->RemoveStoredLootForContainer(GetGUID().GetCounter());
 }
 
+/*static*/
+void Item::DeleteFromInventoryDB(SQLTransaction& trans, ObjectGuid::LowType itemGuid)
+{
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INVENTORY_BY_ITEM);
+    stmt->setUInt32(0, itemGuid);
+    trans->Append(stmt);
+}
+
 void Item::DeleteFromInventoryDB(SQLTransaction& trans)
 {
-    trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'",GetGUID().GetCounter());
+    DeleteFromInventoryDB(trans, GetGUID().GetCounter());
 }
 
 Player* Item::GetOwner()const
@@ -1026,12 +1041,12 @@ void Item::SetOwnerGUID(ObjectGuid const& guid)
 
 void Item::SetBinding(bool val) 
 { 
-    ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, val); 
+    ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_SOULBOUND, val);
 }
 
 bool Item::IsSoulBound() const 
 { 
-    return HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND); 
+    return HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_SOULBOUND);
 }
 
 bool Item::IsBindedNotWith(Player const* player) const
@@ -1060,6 +1075,15 @@ bool Item::IsBindedNotWith(Player const* player) const
 bool Item::IsBag() const 
 { 
     return GetTemplate()->InventoryType == INVTYPE_BAG; 
+}
+
+// Returns true if Item is a bag AND it is not empty.
+// Returns false if Item is not a bag OR it is an empty bag.
+bool Item::IsNotEmptyBag() const
+{
+    if (Bag const* bag = ToBag())
+        return !bag->IsEmpty();
+    return false;
 }
 
 bool Item::IsBroken() const 

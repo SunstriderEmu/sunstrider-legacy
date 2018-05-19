@@ -768,12 +768,11 @@ bool ChatHandler::HandleGPSSCommand(const char* args)
 //Send mail by command
 bool ChatHandler::HandleSendMailCommand(const char* args)
 {
-    ARGS_CHECK
-
-        // format: name "subject text" "mail text"
-
-        char* pName = strtok((char*)args, " ");
-    if (!pName)
+    // format: name "subject text" "mail text"
+    Player* target;
+    ObjectGuid targetGuid;
+    std::string targetName;
+    if (!extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
         return false;
 
     char* tail1 = strtok(nullptr, "");
@@ -812,38 +811,21 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
     if (!msgText)
         return false;
 
-    // pName, msgSubject, msgText isn't NUL after prev. check
-    std::string name = pName;
+    // msgSubject, msgText isn't NUL after prev. check
     std::string subject = msgSubject;
     std::string text = msgText;
 
-    if (!normalizePlayerName(name))
-    {
-        SendSysMessage(LANG_PLAYER_NOT_FOUND);
-        SetSentErrorMessage(true);
-        return false;
-    }
 
-    ObjectGuid receiver_guid = sCharacterCache->GetCharacterGuidByName(name);
-    if (!receiver_guid)
-    {
-        SendSysMessage(LANG_PLAYER_NOT_FOUND);
-        SetSentErrorMessage(true);
-        return false;
-    }
+    // from console, use non-existing sender
+    MailSender sender(MAIL_NORMAL, GetSession() ? GetSession()->GetPlayer()->GetGUID().GetCounter() : 0, MAIL_STATIONERY_GM);
 
-    // from console show not existed sender
-    ObjectGuid::LowType sender_guidlo = m_session ? m_session->GetPlayer()->GetGUID().GetCounter() : 0;
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    MailDraft(subject, text)
+        .SendMailTo(trans, MailReceiver(target, targetGuid.GetCounter()), sender, MAIL_CHECK_MASK_COPIED);
 
-    MailMessageType messagetype = MAIL_NORMAL;
-    uint32 stationery = MAIL_STATIONERY_GM;
-    uint32 itemTextId = !text.empty() ? sObjectMgr->CreateItemText(text) : 0;
+    CharacterDatabase.CommitTransaction(trans);
 
-    Player *receiver = ObjectAccessor::FindPlayer(receiver_guid);
-
-    WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, receiver_guid.GetCounter(), subject, itemTextId, nullptr, 0, 0, MAIL_CHECK_MASK_NONE);
-
-    PSendSysMessage(LANG_MAIL_SENT, name.c_str());
+    PSendSysMessage(LANG_MAIL_SENT, targetName.c_str());
     return true;
 }
 

@@ -35,7 +35,7 @@ class TC_GAME_API Bag : public Item
         // overwrite virtual Item::SaveToDB
         void SaveToDB(SQLTransaction& trans) override;
         // overwrite virtual Item::LoadFromDB
-        bool LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid) override;
+        bool LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid, Field* fields, uint32 entry) override;
         // overwrite virtual Item::DeleteFromDB
         void DeleteFromDB(SQLTransaction& trans) override;
 

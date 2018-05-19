@@ -276,7 +276,7 @@ class TC_GAME_API ChatHandler
         bool HandleReloadLootTemplatesPickpocketingCommand(const char* args);
         bool HandleReloadLootTemplatesProspectingCommand(const char* args);
         bool HandleReloadLootTemplatesReferenceCommand(const char* args);
-        bool HandleReloadLootTemplatesQuestMailCommand(const char* args);
+        bool HandleReloadLootTemplatesMailCommand(const char* args);
         bool HandleReloadLootTemplatesSkinningCommand(const char* args);
         bool HandleReloadTrinityStringCommand(const char* args);
         bool HandleReloadGossipMenuCommand(const char* args);

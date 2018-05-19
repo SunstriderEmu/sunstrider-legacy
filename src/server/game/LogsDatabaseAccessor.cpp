@@ -348,7 +348,7 @@ void LogsDatabaseAccessor::RemoveSanction(WorldSession const* authorSession, uin
     LogsDatabase.Execute(stmt);
 }
 
-void LogsDatabaseAccessor::Mail(uint32 mailId, MailMessageType type, uint32 sender_guidlow_or_entry, uint32 receiver_guidlow, std::string const& subject, uint32 itemTextId, MailItemsInfo const* mi, int32 money)
+void LogsDatabaseAccessor::Mail(uint32 mailId, MailMessageType type, uint32 sender_guidlow_or_entry, uint32 receiver_guidlow, std::string const subject, std::string const body, MailDraft::MailItemMap const& items, uint32 money, uint32 cod)
 {
     //## Prepare some infos
     bool gmInvolved = false;
@@ -369,11 +369,7 @@ void LogsDatabaseAccessor::Mail(uint32 mailId, MailMessageType type, uint32 send
 
     if (!ShouldLog(CONFIG_LOG_CHAR_MAIL, CONFIG_GM_LOG_CHAR_MAIL, gmInvolved))
         return;
-
-    std::string body;
-    if(itemTextId)
-        body = sObjectMgr->GetItemText(itemTextId);
-
+    
     //## Insert into database
 
     SQLTransaction trans = LogsDatabase.BeginTransaction();
@@ -387,25 +383,23 @@ void LogsDatabaseAccessor::Mail(uint32 mailId, MailMessageType type, uint32 send
     stmt->setUInt32(4, receiver_guidlow);
     stmt->setString(5, subject);
     stmt->setString(6, body);
-    stmt->setInt32(7, money);
-    stmt->setString(8, IP);
+    stmt->setUInt32(7, money);
+    stmt->setUInt32(8, cod);
+    stmt->setString(9, IP);
     stmt->setBool(9, gmInvolved);
     trans->Append(stmt);
 
-    if (mi)
+    uint32 mail_itemId = 0;
+    for (auto itr : items)
     {
-        uint32 id = 0;
-        for (auto itr : *mi)
-        {
-            //PrepareStatement(LOGS_INS_MAIL_ITEMS, "INSERT INTO mail_items (mail_id, id, item_guid, item_entry, item_count) VALUES (?,?,?,?,?)", CONNECTION_ASYNC);
-            stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_MAIL_ITEMS);
-            stmt->setUInt32(0, mailId);
-            stmt->setUInt8(1, id++);
-            stmt->setUInt32(2, itr.second.item_guidlow);
-            stmt->setUInt32(3, itr.second.item_template);
-            stmt->setUInt16(4, itr.second.item->GetCount());
-            trans->Append(stmt);
-        }
+        //PrepareStatement(LOGS_INS_MAIL_ITEMS, "INSERT INTO mail_items (mail_id, id, item_guid, item_entry, item_count) VALUES (?,?,?,?,?)", CONNECTION_ASYNC);
+        stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_MAIL_ITEMS);
+        stmt->setUInt32(0, mailId);
+        stmt->setUInt8(1, mail_itemId++);
+        stmt->setUInt32(2, itr.second->GetGUID().GetCounter());
+        stmt->setUInt32(3, itr.second->GetEntry());
+        stmt->setUInt16(4, itr.second->GetCount());
+        trans->Append(stmt);
     }
 
     LogsDatabase.CommitTransaction(trans);

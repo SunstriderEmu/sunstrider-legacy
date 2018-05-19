@@ -196,6 +196,11 @@ void Quest::LoadQuestOfferReward(Field* fields)
     _offerRewardText = fields[9].GetString();
 }
 
+void Quest::LoadQuestMailSender(Field* fields)
+{
+    RewardMailSenderEntry = fields[1].GetUInt32();
+}
+
 uint32 Quest::XPValue( Player *pPlayer ) const
 {
     if( pPlayer )

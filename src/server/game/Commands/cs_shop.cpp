@@ -831,10 +831,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                             if (Item* newItem = Item::CreateItem(item_alliance, count, plr)) {
                                 newItem->SaveToDB(trans);
 
-                                MailItemsInfo mi;
-                                mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);
+                                MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
+
                                 std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                                WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                                MailDraft(subject, {})
+                                    .AddItem(newItem)
+                                    .SendMailTo(trans, MailReceiver(plr, plr->GetGUID().GetCounter()), sender, MAIL_CHECK_MASK_COPIED);
                             }
                         }
                     }
@@ -857,10 +859,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                             if (Item* newItem = Item::CreateItem(item_horde, count, plr)) {
                                 newItem->SaveToDB(trans);
 
-                                MailItemsInfo mi;
-                                mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);
+                                MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
+
                                 std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                                WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                                MailDraft(subject, {})
+                                    .AddItem(newItem)
+                                    .SendMailTo(trans, MailReceiver(plr, plr->GetGUID().GetCounter()), sender, MAIL_CHECK_MASK_COPIED);
                             }
                         }
                     }
@@ -894,12 +898,15 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                         if (Item* newItem = Item::CreateItem(to, count, plr)) {
                             SQLTransaction trans_ = CharacterDatabase.BeginTransaction();
                             newItem->SaveToDB(trans_);
-                            CharacterDatabase.CommitTransaction(trans_);
 
-                            MailItemsInfo mi;
-                            mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);
+                            MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
+
                             std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                            WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                            MailDraft(subject, {})
+                                .AddItem(newItem)
+                                .SendMailTo(trans_, MailReceiver(plr, plr->GetGUID().GetCounter()), sender, MAIL_CHECK_MASK_COPIED);
+
+                            CharacterDatabase.CommitTransaction(trans_);
                         }
                     }
                 }
@@ -931,10 +938,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                         if (Item* newItem = Item::CreateItem(to, count, plr)) {
                             newItem->SaveToDB(trans);
 
-                            MailItemsInfo mi;
-                            mi.AddItem(newItem->GetGUID().GetCounter(), newItem->GetEntry(), newItem);
+                            MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
+
                             std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                            WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                            MailDraft(subject, {})
+                                .AddItem(newItem)
+                                .SendMailTo(trans, MailReceiver(plr, plr->GetGUID().GetCounter()), sender, MAIL_CHECK_MASK_COPIED);
                         }
                     }
                 }

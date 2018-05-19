@@ -40,9 +40,9 @@ bool TradeStatusAction::Execute(Event event)
 
     if (status == TRADE_STATUS_TRADE_ACCEPT)
     {
-        WorldPacket p;
-        uint32 status = 0;
-        p << status;
+        WorldPacket _p;
+        status = 0;
+        _p << status;
 
         if (CheckTrade())
         {
@@ -56,7 +56,7 @@ bool TradeStatusAction::Execute(Event event)
                     itemIds[item->GetTemplate()->ItemId] += item->GetCount();
             }
 
-            bot->GetSession()->HandleAcceptTradeOpcode(p);
+            bot->GetSession()->HandleAcceptTradeOpcode(_p);
             if (bot->GetTradeData())
                 return false;
 
@@ -120,23 +120,24 @@ bool TradeStatusAction::CheckTrade()
         //if (item && !auctionbot.GetSellPrice(item->GetTemplate()))
         if (item && !item->GetTemplate()->SellPrice)
         {
-            std::ostringstream out;
-            out << chat->formatItem(item->GetTemplate()) << " - This is not for sale";
-            ai->TellMaster(out);
+            std::ostringstream _out;
+            _out << chat->formatItem(item->GetTemplate()) << " - This is not for sale";
+            ai->TellMaster(_out);
             return false;
         }
 
         item = master->GetTradeData()->GetItem((TradeSlots)slot);
         if (item)
         {
-            std::ostringstream out; out << item->GetTemplate()->ItemId;
-            ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
+            std::ostringstream _out;
+            _out << item->GetTemplate()->ItemId;
+            ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", _out.str());
             if (!item->GetTemplate()->BuyPrice || usage == ITEM_USAGE_NONE)
             //if (!auctionbot.GetBuyPrice(item->GetTemplate()) || usage == ITEM_USAGE_NONE)
             {
-                std::ostringstream out;
-                out << chat->formatItem(item->GetTemplate()) << " - I don't need this";
-                ai->TellMaster(out);
+                std::ostringstream _out2;
+                _out2 << chat->formatItem(item->GetTemplate()) << " - I don't need this";
+                ai->TellMaster(_out2);
                 return false;
             }
         }
@@ -178,9 +179,9 @@ bool TradeStatusAction::CheckTrade()
         return true;
     }
 
-    std::ostringstream out;
-    out << "I want " << chat->formatMoney(botMoney - playerMoney) << " for this";
-    ai->TellMaster(out);
+    std::ostringstream _out;
+    _out << "I want " << chat->formatMoney(botMoney - playerMoney) << " for this";
+    ai->TellMaster(_out);
     return false;
 }
 

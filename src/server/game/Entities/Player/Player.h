@@ -1605,7 +1605,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void ClearComboPoints(uint32 spellId = 0);
         void SendComboPoints();
 
-        void SendMailResult(uint32 mailId, uint32 mailAction, uint32 mailError, uint32 equipError = 0, ObjectGuid::LowType item_guid = 0, uint32 item_count = 0);
+        void SendMailResult(uint32 mailId, MailResponseType mailAction, MailResponseResult mailError, uint32 equipError = 0, ObjectGuid::LowType item_guid = 0, uint32 item_count = 0);
         void SendNewMail();
         void UpdateNextMailTimeAndUnreads();
         void AddNewMailDeliverTime(time_t deliver_time);
@@ -1614,12 +1614,12 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         //void SetMail(Mail *m);
         void RemoveMail(uint32 id);
 
-        void AddMail(Mail* mail) { m_mail.push_front(mail);}// for call from WorldSession::SendMailTo
+        void AddMail(Mail* mail) { m_mail.push_front(mail);}
         uint32 GetMailSize() { return m_mail.size();};
         Mail* GetMail(uint32 id);
 
-        PlayerMails::iterator GetmailBegin() { return m_mail.begin();};
-        PlayerMails::iterator GetmailEnd() { return m_mail.end();};
+        PlayerMails::iterator GetMailBegin() { return m_mail.begin();};
+        PlayerMails::iterator GetMailEnd() { return m_mail.end();};
 
         /*********************************************************/
         /*** MAILED ITEMS SYSTEM ***/
@@ -2692,6 +2692,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         InventoryResult _CanStoreItem_InBag( uint8 bag, ItemPosCountVec& dest, ItemTemplate const *pProto, uint32& count, bool merge, bool non_specialized, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
         InventoryResult _CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemTemplate const *pProto, uint32& count, bool merge, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
         Item* _StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, bool update );
+        Item* _LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, Field* fields);
 
         CinematicMgr* _cinematicMgr;
 

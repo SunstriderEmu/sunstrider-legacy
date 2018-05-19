@@ -111,9 +111,9 @@ void Bag::SaveToDB(SQLTransaction& trans)
     Item::SaveToDB(trans);
 }
 
-bool Bag::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid)
+bool Bag::LoadFromDB(ObjectGuid::LowType guid, ObjectGuid owner_guid, Field* fields, uint32 entry)
 {
-    if(!Item::LoadFromDB(guid, owner_guid))
+    if(!Item::LoadFromDB(guid, owner_guid, fields, entry))
         return false;
 
     SetUInt32Value(CONTAINER_FIELD_NUM_SLOTS, GetTemplate()->ContainerSlots);
@@ -169,12 +169,12 @@ void Bag::StoreItem( uint8 slot, Item *pItem, bool /*update*/ )
         return;
     }
 
-    if( pItem )
+    if (pItem)
     {
         m_bagslot[slot] = pItem;
         SetUInt64Value(CONTAINER_FIELD_SLOT_1 + (slot * 2), pItem->GetGUID());
         pItem->SetGuidValue(ITEM_FIELD_CONTAINED, GetGUID());
-        pItem->SetUInt64Value( ITEM_FIELD_OWNER, GetOwnerGUID() );
+        pItem->SetUInt64Value(ITEM_FIELD_OWNER, GetOwnerGUID());
         pItem->SetContainer(this);
         pItem->SetSlot(slot);
     }

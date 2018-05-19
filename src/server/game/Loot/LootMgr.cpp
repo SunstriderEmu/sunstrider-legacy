@@ -43,9 +43,9 @@ LootStore LootTemplates_Disenchant(   "disenchant_loot_template",   "item disenc
 LootStore LootTemplates_Fishing(      "fishing_loot_template",      "area id",                    true);
 LootStore LootTemplates_Gameobject(   "gameobject_loot_template",   "gameobject entry",           true);
 LootStore LootTemplates_Item(         "item_loot_template",         "item entry",                 true);
+LootStore LootTemplates_Mail(         "mail_loot_template",         "mail template id",           false);
 LootStore LootTemplates_Pickpocketing("pickpocketing_loot_template","creature pickpocket lootid", true);
 LootStore LootTemplates_Prospecting(  "prospecting_loot_template",  "item entry",                 true);
-LootStore LootTemplates_QuestMail(    "quest_mail_loot_template",   "quest id",                   true);
 LootStore LootTemplates_Reference(    "reference_loot_template",    "reference id",               false);
 LootStore LootTemplates_Skinning(     "skinning_loot_template",     "creature skinning id",       true);
 
@@ -977,22 +977,23 @@ void LoadLootTemplates_Prospecting()
         TC_LOG_INFO("server.loading", ">> Loaded 0 prospecting loot templates. DB table `prospecting_loot_template` is empty");
 }
 
-void LoadLootTemplates_QuestMail()
+void LoadLootTemplates_Mail()
 {
     TC_LOG_INFO("server.loading", "Loading mail loot templates...");
+
     uint32 oldMSTime = GetMSTime();
 
-    LootIdSet ids_set;
-    uint32 count = LootTemplates_QuestMail.LoadAndCollectLootIds(ids_set);
+    LootIdSet lootIdSet;
+    uint32 count = LootTemplates_Mail.LoadAndCollectLootIds(lootIdSet);
 
     // remove real entries and check existence loot
-    ObjectMgr::QuestContainer const& questMap = sObjectMgr->GetQuestTemplates();
-    for(const auto & itr : questMap)
-        if(ids_set.count(itr.first))
-            ids_set.erase(itr.first);
+    for (uint32 i = 1; i < sMailTemplateStore.GetNumRows(); ++i)
+        if (sMailTemplateStore.LookupEntry(i))
+            if (lootIdSet.find(i) != lootIdSet.end())
+                lootIdSet.erase(i);
 
     // output error for any still listed (not referenced from appropriate table) ids
-    LootTemplates_QuestMail.ReportUnusedIds(ids_set);
+    LootTemplates_Mail.ReportUnusedIds(lootIdSet);
 
     if (count)
         TC_LOG_INFO("server.loading", ">> Loaded %u mail loot templates in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
@@ -1052,7 +1053,7 @@ void LoadLootTemplates_Reference()
     LootTemplates_Skinning.CheckLootRefs(&ids_set);
     LootTemplates_Disenchant.CheckLootRefs(&ids_set);
     LootTemplates_Prospecting.CheckLootRefs(&ids_set);
-    LootTemplates_QuestMail.CheckLootRefs(&ids_set);
+    LootTemplates_Mail.CheckLootRefs(&ids_set);
     LootTemplates_Reference.CheckLootRefs(&ids_set);
 
     // output error for any still listed ids (not referenced from any loot table)
@@ -1070,6 +1071,5 @@ void LoadLootTables()
     LoadLootTemplates_Skinning();
     LoadLootTemplates_Disenchant();
     LoadLootTemplates_Prospecting();
-    LoadLootTemplates_QuestMail();
     LoadLootTemplates_Reference();
 }

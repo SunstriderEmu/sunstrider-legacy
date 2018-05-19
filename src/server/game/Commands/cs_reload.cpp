@@ -325,12 +325,13 @@ bool ChatHandler::HandleReloadLootTemplatesProspectingCommand(const char*)
     return true;
 }
 
-bool ChatHandler::HandleReloadLootTemplatesQuestMailCommand(const char*)
+bool ChatHandler::HandleReloadLootTemplatesMailCommand(const char*)
 {
-    TC_LOG_INFO( "command", "Re-Loading Loot Tables... (`quest_mail_loot_template`)" );
-    LoadLootTemplates_QuestMail();
-    LootTemplates_QuestMail.CheckLootRefs();
-    SendGlobalGMSysMessage("DB table `quest_mail_loot_template` reloaded.");
+    TC_LOG_INFO("misc", "Re-Loading Loot Tables... (`mail_loot_template`)");
+    LoadLootTemplates_Mail();
+    LootTemplates_Mail.CheckLootRefs();
+    SendGlobalGMSysMessage("DB table `mail_loot_template` reloaded.");
+    sConditionMgr->LoadConditions(true);
     return true;
 }
 

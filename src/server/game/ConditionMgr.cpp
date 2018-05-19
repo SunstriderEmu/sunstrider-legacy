@@ -1047,7 +1047,7 @@ void ConditionMgr::LoadConditions(bool isReload)
         LootTemplates_Fishing.ResetConditions();
         LootTemplates_Gameobject.ResetConditions();
         LootTemplates_Item.ResetConditions();
-//        LootTemplates_Mail.ResetConditions();
+        LootTemplates_Mail.ResetConditions();
 //        LootTemplates_Milling.ResetConditions();
         LootTemplates_Pickpocketing.ResetConditions();
         LootTemplates_Reference.ResetConditions();
@@ -1205,7 +1205,7 @@ void ConditionMgr::LoadConditions(bool isReload)
                     valid = addToLootTemplate(cond, LootTemplates_Item.GetLootForConditionFill(cond->SourceGroup));
                     break;
                 case CONDITION_SOURCE_TYPE_MAIL_LOOT_TEMPLATE:
-//                    valid = addToLootTemplate(cond, LootTemplates_Mail.GetLootForConditionFill(cond->SourceGroup));
+                    valid = addToLootTemplate(cond, LootTemplates_Mail.GetLootForConditionFill(cond->SourceGroup));
                     break;
                 case CONDITION_SOURCE_TYPE_MILLING_LOOT_TEMPLATE:
 //                    valid = addToLootTemplate(cond, LootTemplates_Milling.GetLootForConditionFill(cond->SourceGroup));
@@ -1555,7 +1555,6 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond) const
         }
         case CONDITION_SOURCE_TYPE_MAIL_LOOT_TEMPLATE:
         {
-            /*
             if (!LootTemplates_Mail.HaveLootFor(cond->SourceGroup))
             {
                 TC_LOG_ERROR("sql.sql", "%s SourceGroup in `condition` table, does not exist in `mail_loot_template`, ignoring.", cond->ToString().c_str());
@@ -1569,12 +1568,11 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond) const
                 TC_LOG_ERROR("sql.sql", "%s SourceType, SourceEntry in `condition` table, does not exist in `item_template`, ignoring.", cond->ToString().c_str());
                 return false;
             }
-            */
             break;
         }
         case CONDITION_SOURCE_TYPE_MILLING_LOOT_TEMPLATE:
         {
-            /*
+#ifdef LICH_KING
             if (!LootTemplates_Milling.HaveLootFor(cond->SourceGroup))
             {
                 TC_LOG_ERROR("sql.sql", "%s SourceGroup in `condition` table, does not exist in `milling_loot_template`, ignoring.", cond->ToString().c_str());
@@ -1588,7 +1586,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond) const
                 TC_LOG_ERROR("sql.sql", "%s SourceType, SourceEntry in `condition` table, does not exist in `item_template`, ignoring.", cond->ToString().c_str());
                 return false;
             }
-            */
+#endif
             break;
         }
         case CONDITION_SOURCE_TYPE_PICKPOCKETING_LOOT_TEMPLATE:

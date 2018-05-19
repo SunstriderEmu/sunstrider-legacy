@@ -82,8 +82,9 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_DEL_RESET_CHARACTER_QUESTSTATUS_WEEKLY, "DELETE FROM character_queststatus_weekly", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_RESET_CHARACTER_QUESTSTATUS_MONTHLY, "DELETE FROM character_queststatus_monthly", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_RESET_CHARACTER_QUESTSTATUS_SEASONAL_BY_EVENT, "DELETE FROM character_queststatus_seasonal WHERE event = ?", CONNECTION_ASYNC);
-
+    */
     PrepareStatement(CHAR_SEL_MAIL_COUNT, "SELECT COUNT(*) FROM mail WHERE receiver = ?", CONNECTION_SYNCH);
+    /*
     PrepareStatement(CHAR_SEL_GUILD_MEMBER_EXTENDED, "SELECT g.guildid, g.name, gr.rname, gr.rid, gm.pnote, gm.offnote "
                      "FROM guild g JOIN guild_member gm ON g.guildid = gm.guildid "
                      "JOIN guild_rank gr ON g.guildid = gr.guildid AND gm.rank = gr.rid WHERE gm.guid = ?", CONNECTION_BOTH);
@@ -101,9 +102,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_SEL_CHARACTER_QUESTSTATUS, "SELECT quest,status,rewarded,explored,timer,mobcount1,mobcount2,mobcount3,mobcount4,itemcount1,itemcount2,itemcount3,itemcount4 FROM character_queststatus WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_CHARACTER_QUESTSTATUS_DAILY, "SELECT quest,time FROM character_queststatus_daily WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_CHARACTER_REPUTATION, "SELECT faction,standing,flags FROM character_reputation WHERE guid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_CHARACTER_INVENTORY, "SELECT bag,slot,item,item_template FROM character_inventory JOIN item_instance ON character_inventory.item = item_instance.guid WHERE character_inventory.guid = ? ORDER BY bag,slot", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_CHARACTER_ACTIONS, "SELECT button,action,type,misc FROM character_action WHERE guid = ? ORDER BY button", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_CHARACTER_MAILCOUNT, "SELECT COUNT(id) FROM mail WHERE receiver = ? AND (checked & 1)=0 AND deliver_time <= ?", CONNECTION_ASYNC);
+     PrepareStatement(CHAR_SEL_CHARACTER_ACTIONS, "SELECT button,action,type,misc FROM character_action WHERE guid = ? ORDER BY button", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_CHARACTER_MAILCOUNT, "SELECT COUNT(id) FROM mail WHERE receiver = ? AND (checked & 1) = 0 AND deliver_time <= ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_CHARACTER_MAILDATE, "SELECT MIN(deliver_time) FROM mail WHERE receiver = ? AND (checked & 1)=0", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_CHARACTER_SOCIALLIST, "SELECT friend,flags,note FROM character_social WHERE guid = ? LIMIT 255", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_CHARACTER_HOMEBIND, "SELECT map,zone,position_x,position_y,position_z FROM character_homebind WHERE guid = ?", CONNECTION_ASYNC);
@@ -121,35 +121,47 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_SEL_CHARACTER_BANNED, "SELECT guid FROM character_banned WHERE guid = ? AND active = 1", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_CHARACTER_QUESTSTATUSREW, "SELECT quest FROM character_queststatus_rewarded WHERE guid = ? AND active = 1", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_ACCOUNT_INSTANCELOCKTIMES, "SELECT instanceId, releaseTime FROM account_instance_times WHERE accountId = ?", CONNECTION_ASYNC);
-
-    PrepareStatement(CHAR_SEL_MAILITEMS, "SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, durability, playedTime, text, item_guid, itemEntry, owner_guid FROM mail_items mi JOIN item_instance ii ON mi.item_guid = ii.guid WHERE mail_id = ?", CONNECTION_SYNCH);
-    PrepareStatement(CHAR_SEL_AUCTION_ITEMS, "SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, durability, playedTime, text, itemguid, itemEntry FROM auctionhouse ah JOIN item_instance ii ON ah.itemguid = ii.guid", CONNECTION_SYNCH);
+    */
+    /*
     PrepareStatement(CHAR_SEL_AUCTIONS, "SELECT id, auctioneerguid, itemguid, itemEntry, count, itemowner, buyoutprice, time, buyguid, lastbid, startbid, deposit FROM auctionhouse ah INNER JOIN item_instance ii ON ii.guid = ah.itemguid", CONNECTION_SYNCH);
     PrepareStatement(CHAR_INS_AUCTION, "INSERT INTO auctionhouse (id, auctioneerguid, itemguid, itemowner, buyoutprice, time, buyguid, lastbid, startbid, deposit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_AUCTION, "DELETE FROM auctionhouse WHERE id = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_AUCTION_BY_TIME, "SELECT id FROM auctionhouse WHERE time <= ? ORDER BY TIME ASC", CONNECTION_SYNCH);
     PrepareStatement(CHAR_UPD_AUCTION_BID, "UPDATE auctionhouse SET buyguid = ?, lastbid = ? WHERE id = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_INS_MAIL, "INSERT INTO mail(id, messageType, stationery, mailTemplateId, sender, receiver, subject, body, has_items, expire_time, deliver_time, money, cod, checked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_DEL_MAIL_BY_ID, "DELETE FROM mail WHERE id = ?", CONNECTION_ASYNC);
+    */
+    PrepareStatement(CHAR_INS_MAIL, "INSERT INTO mail(id, messageType, stationery, mailTemplateId, sender, receiver, subject, itemTextId, has_items, expire_time, deliver_time, money, cod, checked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    //diff with TC here, delete from item_text too if any
+    PrepareStatement(CHAR_DEL_MAIL_BY_ID, "DELETE m.*, it.*FROM mail m LEFT JOIN item_text it ON  m.itemTextId = it.id WHERE m.id = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_MAIL_ITEM, "INSERT INTO mail_items(mail_id, item_guid, receiver) VALUES (?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_MAIL_ITEM, "DELETE FROM mail_items WHERE item_guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_INVALID_MAIL_ITEM, "DELETE FROM mail_items WHERE item_guid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_DEL_EMPTY_EXPIRED_MAIL, "DELETE FROM mail WHERE expire_time < ? AND has_items = 0 AND body = ''", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_EMPTY_EXPIRED_MAIL, "DELETE FROM mail WHERE expire_time < ? AND has_items = 0 AND itemTextId = 0", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_EXPIRED_MAIL, "SELECT id, messageType, sender, receiver, has_items, expire_time, cod, checked, mailTemplateId FROM mail WHERE expire_time < ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_SEL_EXPIRED_MAIL_ITEMS, "SELECT item_guid, itemEntry, mail_id FROM mail_items mi INNER JOIN item_instance ii ON ii.guid = mi.item_guid LEFT JOIN mail mm ON mi.mail_id = mm.id WHERE mm.id IS NOT NULL AND mm.expire_time < ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_UPD_MAIL_RETURNED, "UPDATE mail SET sender = ?, receiver = ?, expire_time = ?, deliver_time = ?, cod = 0, checked = ? WHERE id = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_MAIL_ITEM_RECEIVER, "UPDATE mail_items SET receiver = ? WHERE item_guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_ITEM_OWNER, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?", CONNECTION_ASYNC);
+    /*
 
     PrepareStatement(CHAR_SEL_ITEM_REFUNDS, "SELECT player_guid, paidMoney, paidExtendedCost FROM item_refund_instance WHERE item_guid = ? AND player_guid = ? LIMIT 1", CONNECTION_SYNCH);
     PrepareStatement(CHAR_SEL_ITEM_BOP_TRADE, "SELECT allowedPlayers FROM item_soulbound_trade_data WHERE itemGuid = ? LIMIT 1", CONNECTION_SYNCH);
     PrepareStatement(CHAR_DEL_ITEM_BOP_TRADE, "DELETE FROM item_soulbound_trade_data WHERE itemGuid = ? LIMIT 1", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_ITEM_BOP_TRADE, "INSERT INTO item_soulbound_trade_data VALUES (?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_INVENTORY_ITEM, "REPLACE INTO character_inventory (guid, bag, slot, item) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
-    */
-    PrepareStatement(CHAR_SEL_ITEM_INSTANCE, "SELECT owner_guid, template, container_guid, creator, gift_creator, stacks, duration, spell1_charges, spell2_charges, spell3_charges, spell4_charges, spell5_charges, flags, enchant1_id, enchant1_duration, enchant1_charges, enchant2_id, enchant2_duration, enchant2_charges, enchant3_id, enchant3_duration, enchant3_charges, enchant4_id, enchant4_duration, enchant4_charges, enchant5_id, enchant5_duration, enchant5_charges, enchant6_id, enchant6_duration, enchant6_charges, enchant7_id, enchant7_duration, enchant7_charges, enchant8_id, enchant8_duration, enchant8_charges, enchant9_id, enchant9_duration, enchant9_charges, enchant10_id, enchant10_duration, enchant10_charges, enchant11_id, enchant11_duration, enchant11_charges, property_seed, random_prop_id, durability FROM item_instance WHERE guid = ?", CONNECTION_SYNCH);
-    PrepareStatement(CHAR_REP_ITEM_INSTANCE, "REPLACE INTO item_instance (guid, owner_guid, template, container_guid, creator, gift_creator, stacks, duration, spell1_charges, spell2_charges, spell3_charges, spell4_charges, spell5_charges, flags, enchant1_id, enchant1_duration, enchant1_charges, enchant2_id, enchant2_duration, enchant2_charges, enchant3_id, enchant3_duration, enchant3_charges, enchant4_id, enchant4_duration, enchant4_charges, enchant5_id, enchant5_duration, enchant5_charges, enchant6_id, enchant6_duration, enchant6_charges, enchant7_id, enchant7_duration, enchant7_charges, enchant8_id, enchant8_duration, enchant8_charges, enchant9_id, enchant9_duration, enchant9_charges, enchant10_id, enchant10_duration, enchant10_charges, enchant11_id, enchant11_duration, enchant11_charges, property_seed, random_prop_id, durability) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_UPD_ITEM_INSTANCE, "UPDATE item_instance SET guid = ? , owner_guid = ? , template = ? , container_guid = ? , creator = ? , gift_creator = ? , stacks = ? , duration = ? , spell1_charges = ? , spell2_charges = ? , spell3_charges = ? , spell4_charges = ? , spell5_charges = ? , flags = ? , enchant1_id = ? , enchant1_duration = ? , enchant1_charges = ? , enchant2_id = ? , enchant2_duration = ? , enchant2_charges = ? , enchant3_id = ? , enchant3_duration = ? , enchant3_charges = ? , enchant4_id = ? , enchant4_duration = ? , enchant4_charges = ? , enchant5_id = ? , enchant5_duration = ? , enchant5_charges = ? , enchant6_id = ? , enchant6_duration = ? , enchant6_charges = ? , enchant7_id = ? , enchant7_duration = ? , enchant7_charges = ? , enchant8_id = ? , enchant8_duration = ? , enchant8_charges = ? , enchant9_id = ? , enchant9_duration = ? , enchant9_charges = ? , enchant10_id = ? , enchant10_duration = ? , enchant10_charges = ? , enchant11_id = ? , enchant11_duration = ? , enchant11_charges = ? , property_seed = ? , random_prop_id = ? , durability = ? WHERE guid = ?", CONNECTION_ASYNC);
+    */       
+    //Update CHAR_SEL_CHARACTER_INVENTORY_FIELDS_COUNT if you change itemCommonPart
+    //                            0                                              4                                                                               9      10                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          43             44              45          46
+    std::string itemCommonPart = "creatorGuid, giftCreatorGuid, count, duration, spell1_charges, spell2_charges, spell3_charges, spell4_charges, spell5_charges, flags, enchant1_id, enchant1_duration, enchant1_charges, enchant2_id, enchant2_duration, enchant2_charges, enchant3_id, enchant3_duration, enchant3_charges, enchant4_id, enchant4_duration, enchant4_charges, enchant5_id, enchant5_duration, enchant5_charges, enchant6_id, enchant6_duration, enchant6_charges, enchant7_id, enchant7_duration, enchant7_charges, enchant8_id, enchant8_duration, enchant8_charges, enchant9_id, enchant9_duration, enchant9_charges, enchant10_id, enchant10_duration, enchant10_charges, enchant11_id, enchant11_duration, enchant11_charges, property_seed, random_prop_id, durability, itemTextId";
+    //                                                                             47   48
+    PrepareStatement(CHAR_SEL_CHARACTER_INVENTORY, "SELECT " + itemCommonPart + ", bag, slot, "
+        "item, itemEntry FROM character_inventory ci JOIN item_instance ii ON ci.item = ii.guid WHERE ci.guid = ? ORDER BY bag, slot", CONNECTION_ASYNC);
+    //                                                                  47         48         49                                
+    PrepareStatement(CHAR_SEL_MAILITEMS, "SELECT "+ itemCommonPart + ", item_guid, itemEntry, owner_guid FROM mail_items mi JOIN item_instance ii ON mi.item_guid = ii.guid WHERE mail_id = ?", CONNECTION_SYNCH);
+    PrepareStatement(CHAR_SEL_ITEM_INSTANCE, "SELECT " + itemCommonPart + " FROM item_instance WHERE guid = ?", CONNECTION_SYNCH);
+    PrepareStatement(CHAR_SEL_AUCTION_ITEMS, "SELECT " + itemCommonPart + ", itemguid, itemEntry FROM auctionhouse ah JOIN item_instance ii ON ah.itemguid = ii.guid", CONNECTION_SYNCH);
+    //next two (CHAR_REP_ITEM_INSTANCE and CHAR_UPD_ITEM_INSTANCE) must use exactly the same fields
+    PrepareStatement(CHAR_REP_ITEM_INSTANCE, "REPLACE INTO item_instance (guid, owner_guid, itemEntry, container_guid, creatorGuid, giftCreatorGuid, count, duration, spell1_charges, spell2_charges, spell3_charges, spell4_charges, spell5_charges, flags, enchant1_id, enchant1_duration, enchant1_charges, enchant2_id, enchant2_duration, enchant2_charges, enchant3_id, enchant3_duration, enchant3_charges, enchant4_id, enchant4_duration, enchant4_charges, enchant5_id, enchant5_duration, enchant5_charges, enchant6_id, enchant6_duration, enchant6_charges, enchant7_id, enchant7_duration, enchant7_charges, enchant8_id, enchant8_duration, enchant8_charges, enchant9_id, enchant9_duration, enchant9_charges, enchant10_id, enchant10_duration, enchant10_charges, enchant11_id, enchant11_duration, enchant11_charges, property_seed, random_prop_id, durability, itemTextId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_UPD_ITEM_INSTANCE, "UPDATE item_instance SET guid = ? , owner_guid = ? , itemEntry = ? , container_guid = ? , creatorGuid = ? , giftCreatorGuid = ? , count = ? , duration = ? , spell1_charges = ? , spell2_charges = ? , spell3_charges = ? , spell4_charges = ? , spell5_charges = ? , flags = ? , enchant1_id = ? , enchant1_duration = ? , enchant1_charges = ? , enchant2_id = ? , enchant2_duration = ? , enchant2_charges = ? , enchant3_id = ? , enchant3_duration = ? , enchant3_charges = ? , enchant4_id = ? , enchant4_duration = ? , enchant4_charges = ? , enchant5_id = ? , enchant5_duration = ? , enchant5_charges = ? , enchant6_id = ? , enchant6_duration = ? , enchant6_charges = ? , enchant7_id = ? , enchant7_duration = ? , enchant7_charges = ? , enchant8_id = ? , enchant8_duration = ? , enchant8_charges = ? , enchant9_id = ? , enchant9_duration = ? , enchant9_charges = ? , enchant10_id = ? , enchant10_duration = ? , enchant10_charges = ? , enchant11_id = ? , enchant11_duration = ? , enchant11_charges = ? , property_seed = ? , random_prop_id = ? , durability = ?, itemTextId = ? WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_ITEM_INSTANCE_ON_LOAD, "UPDATE item_instance SET guid = ? , owner_guid = ? , duration = ? , flags = ? , durability = ? WHERE guid = ?" , CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_ITEM_INSTANCE, "DELETE FROM item_instance WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_ITEM_INSTANCE_BY_OWNER, "DELETE FROM item_instance WHERE owner_guid = ?", CONNECTION_ASYNC);
@@ -456,26 +468,34 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_SEL_CHAR_CLASS_LVL_AT_LOGIN, "SELECT class, level, at_login, knownTitles FROM characters WHERE guid = ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_SEL_CHAR_AT_LOGIN_TITLES, "SELECT at_login, knownTitles FROM characters WHERE guid = ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_SEL_INSTANCE, "SELECT data, completedEncounters FROM instance WHERE map = ? AND id = ?", CONNECTION_SYNCH);
-    PrepareStatement(CHAR_SEL_CHAR_COD_ITEM_MAIL, "SELECT id, messageType, mailTemplateId, sender, subject, body, money, has_items FROM mail WHERE receiver = ? AND has_items <> 0 AND cod <> 0", CONNECTION_SYNCH);
+    */
+    PrepareStatement(CHAR_SEL_CHAR_COD_ITEM_MAIL, "SELECT id, messageType, mailTemplateId, sender, subject, itemTextId, money, has_items FROM mail WHERE receiver = ? AND has_items <> 0 AND cod <> 0", CONNECTION_SYNCH);
+    /*
     PrepareStatement(CHAR_SEL_CHAR_SOCIAL, "SELECT DISTINCT guid FROM character_social WHERE friend = ?", CONNECTION_SYNCH);
     */
     PrepareStatement(CHAR_SEL_CHAR_OLD_CHARS, "SELECT guid, deleteInfos_Account FROM characters WHERE deleteDate IS NOT NULL AND deleteDate < ?", CONNECTION_SYNCH);
     /*
     PrepareStatement(CHAR_SEL_ARENA_TEAM_ID_BY_PLAYER_GUID, "SELECT arena_team_member.arenateamid FROM arena_team_member JOIN arena_team ON arena_team_member.arenateamid = arena_team.arenateamid WHERE guid = ? AND type = ? LIMIT 1", CONNECTION_SYNCH);
-    PrepareStatement(CHAR_SEL_MAIL, "SELECT id, messageType, sender, receiver, subject, body, has_items, expire_time, deliver_time, money, cod, checked, stationery, mailTemplateId FROM mail WHERE receiver = ? ORDER BY id DESC", CONNECTION_SYNCH);
+    */
+    PrepareStatement(CHAR_SEL_MAIL, "SELECT id, messageType, sender, receiver, subject, itemTextId, has_items, expire_time, deliver_time, money, cod, checked, stationery, mailTemplateId FROM mail WHERE receiver = ? ORDER BY id DESC", CONNECTION_SYNCH);
+    /*
     PrepareStatement(CHAR_SEL_CHAR_PLAYERBYTES2, "SELECT playerBytes2 FROM characters WHERE guid = ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_DEL_CHAR_AURA_FROZEN, "DELETE FROM character_aura WHERE spell = 9454 AND guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_CHAR_INVENTORY_COUNT_ITEM, "SELECT COUNT(itemEntry) FROM character_inventory ci INNER JOIN item_instance ii ON ii.guid = ci.item WHERE itemEntry = ?", CONNECTION_SYNCH);
+    */
     PrepareStatement(CHAR_SEL_MAIL_COUNT_ITEM, "SELECT COUNT(itemEntry) FROM mail_items mi INNER JOIN item_instance ii ON ii.guid = mi.item_guid WHERE itemEntry = ?", CONNECTION_SYNCH);
+    /*
     PrepareStatement(CHAR_SEL_AUCTIONHOUSE_COUNT_ITEM,"SELECT COUNT(itemEntry) FROM auctionhouse ah INNER JOIN item_instance ii ON ii.guid = ah.itemguid WHERE itemEntry = ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_SEL_GUILD_BANK_COUNT_ITEM, "SELECT COUNT(itemEntry) FROM guild_bank_item gbi INNER JOIN item_instance ii ON ii.guid = gbi.item_guid WHERE itemEntry = ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_SEL_CHAR_INVENTORY_ITEM_BY_ENTRY, "SELECT ci.item, cb.slot AS bag, ci.slot, ci.guid, c.account, c.name FROM characters c "
                      "INNER JOIN character_inventory ci ON ci.guid = c.guid "
                      "INNER JOIN item_instance ii ON ii.guid = ci.item "
                      "LEFT JOIN character_inventory cb ON cb.item = ci.bag WHERE ii.itemEntry = ? LIMIT ?", CONNECTION_SYNCH);
+                     */
     PrepareStatement(CHAR_SEL_MAIL_ITEMS_BY_ENTRY, "SELECT mi.item_guid, m.sender, m.receiver, cs.account, cs.name, cr.account, cr.name "
                      "FROM mail m INNER JOIN mail_items mi ON mi.mail_id = m.id INNER JOIN item_instance ii ON ii.guid = mi.item_guid "
                      "INNER JOIN characters cs ON cs.guid = m.sender INNER JOIN characters cr ON cr.guid = m.receiver WHERE ii.itemEntry = ? LIMIT ?", CONNECTION_SYNCH);
+    /*
     PrepareStatement(CHAR_SEL_AUCTIONHOUSE_ITEM_BY_ENTRY, "SELECT  ah.itemguid, ah.itemowner, c.account, c.name FROM auctionhouse ah INNER JOIN characters c ON c.guid = ah.itemowner INNER JOIN item_instance ii ON ii.guid = ah.itemguid WHERE ii.itemEntry = ? LIMIT ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_SEL_GUILD_BANK_ITEM_BY_ENTRY, "SELECT gi.item_guid, gi.guildid, g.name FROM guild_bank_item gi INNER JOIN guild g ON g.guildid = gi.guildid INNER JOIN item_instance ii ON ii.guid = gi.item_guid WHERE ii.itemEntry = ? LIMIT ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_DEL_CHAR_ACHIEVEMENT, "DELETE FROM character_achievement WHERE guid = ?", CONNECTION_ASYNC);
@@ -535,8 +555,10 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_DEL_CHAR_QUESTSTATUS_REWARDED, "DELETE FROM character_queststatus_rewarded WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_REPUTATION, "DELETE FROM character_reputation WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_SPELL, "DELETE FROM character_spell WHERE guid = ?", CONNECTION_ASYNC);
+    */
     PrepareStatement(CHAR_DEL_MAIL, "DELETE FROM mail WHERE receiver = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_MAIL_ITEMS, "DELETE FROM mail_items WHERE receiver = ?", CONNECTION_ASYNC);
+    /*
     PrepareStatement(CHAR_DEL_CHAR_ACHIEVEMENTS, "DELETE FROM character_achievement WHERE guid = ? AND achievement NOT BETWEEN '456' AND '467' AND achievement NOT BETWEEN '1400' AND '1427' AND achievement NOT IN(1463, 3117, 3259)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_EQUIPMENTSETS, "DELETE FROM character_equipmentsets WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_GUILD_EVENTLOG_BY_PLAYER, "DELETE FROM guild_eventlog WHERE PlayerGuid1 = ? OR PlayerGuid2 = ?", CONNECTION_ASYNC);
@@ -550,9 +572,11 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_INS_CHAR_ACTION, "INSERT INTO character_action (guid, spec, button, action, type) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_CHAR_ACTION, "UPDATE character_action SET action = ?, type = ? WHERE guid = ? AND button = ? AND spec = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_ACTION_BY_BUTTON_SPEC, "DELETE FROM character_action WHERE guid = ? and button = ? and spec = ?", CONNECTION_ASYNC);
+    */
     PrepareStatement(CHAR_DEL_CHAR_INVENTORY_BY_ITEM, "DELETE FROM character_inventory WHERE item = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_INVENTORY_BY_BAG_SLOT, "DELETE FROM character_inventory WHERE bag = ? AND slot = ? AND guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_MAIL, "UPDATE mail SET has_items = ?, expire_time = ?, deliver_time = ?, money = ?, cod = ?, checked = ? WHERE id = ?", CONNECTION_ASYNC);
+    /*
     PrepareStatement(CHAR_REP_CHAR_QUESTSTATUS, "REPLACE INTO character_queststatus (guid, quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3, itemcount4, playercount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_QUESTSTATUS_BY_QUEST, "DELETE FROM character_queststatus WHERE guid = ? AND quest = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_CHAR_QUESTSTATUS_REWARDED, "INSERT IGNORE INTO character_queststatus_rewarded (guid, quest, active) VALUES (?, ?, 1)", CONNECTION_ASYNC);

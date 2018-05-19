@@ -157,48 +157,46 @@ bool ChatHandler::HandleListItemCommand(const char* args)
 
     // mail case
     uint32 mail_count = 0;
-    result=CharacterDatabase.PQuery("SELECT COUNT(item_template) FROM mail_items WHERE item_template='%u'", item_id);
-    if(result)
-    {
-        mail_count = (*result)[0].GetUInt32();
-    }
 
-    if(count > 0)
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_COUNT_ITEM);
+    stmt->setUInt32(0, item_id);
+    PreparedQueryResult result2 = CharacterDatabase.Query(stmt);
+
+    if (result2)
+        mail_count = (*result2)[0].GetUInt64();
+    if (count > 0)
     {
-        result=CharacterDatabase.PQuery(
-        //          0                     1            2              3               4            5               6
-            "SELECT mail_items.item_guid, mail.sender, mail.receiver, char_s.account, char_s.name, char_r.account, char_r.name "
-            "FROM mail,mail_items,characters as char_s,characters as char_r "
-            "WHERE mail_items.item_template='%u' AND char_s.guid = mail.sender AND char_r.guid = mail.receiver AND mail.id=mail_items.mail_id LIMIT %u",
-            item_id,uint32(count));
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_ITEMS_BY_ENTRY);
+        stmt->setUInt32(0, item_id);
+        stmt->setUInt32(1, count);
+        result2 = CharacterDatabase.Query(stmt);
     }
     else
-        result = nullptr;
+        result2 = PreparedQueryResult(nullptr);
 
-    if(result)
+    if (result2)
     {
         do
         {
-            Field *fields = result->Fetch();
-            ObjectGuid::LowType item_guid        = fields[0].GetUInt32();
-            uint32 item_s           = fields[1].GetUInt32();
-            uint32 item_r           = fields[2].GetUInt32();
-            uint32 item_s_acc       = fields[3].GetUInt32();
-            std::string item_s_name = fields[4].GetString();
-            uint32 item_r_acc       = fields[5].GetUInt32();
-            std::string item_r_name = fields[6].GetString();
+            Field* fields = result2->Fetch();
+            ObjectGuid::LowType itemGuid = fields[0].GetUInt32();
+            ObjectGuid::LowType itemSender = fields[1].GetUInt32();
+            uint32 itemReceiver = fields[2].GetUInt32();
+            uint32 itemSenderAccountId = fields[3].GetUInt32();
+            std::string itemSenderName = fields[4].GetString();
+            uint32 itemReceiverAccount = fields[5].GetUInt32();
+            std::string itemReceiverName = fields[6].GetString();
 
-            char const* item_pos = "[in mail]";
+            char const* itemPos = "[in mail]";
 
-            PSendSysMessage(LANG_ITEMLIST_MAIL,
-                item_guid,item_s_name.c_str(),item_s,item_s_acc,item_r_name.c_str(),item_r,item_r_acc,item_pos);
-        } while (result->NextRow());
+            PSendSysMessage(LANG_ITEMLIST_MAIL, itemGuid, itemSenderName.c_str(), itemSender, itemSenderAccountId, itemReceiverName.c_str(), itemReceiver, itemReceiverAccount, itemPos);
+        } while (result2->NextRow());
 
-        int64 res_count = result->GetRowCount();
+        uint32 resultCount = uint32(result2->GetRowCount());
 
-        if(count > res_count)
-            count-=res_count;
-        else if(count)
+        if (count > resultCount)
+            count -= resultCount;
+        else if (count)
             count = 0;
     }
 

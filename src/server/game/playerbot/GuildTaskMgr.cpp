@@ -262,13 +262,9 @@ bool GuildTaskMgr::SendItemAdvertisement(uint32 itemId, uint32 owner, uint32 gui
     body << "Best Regards,\n";
     body << guild->GetName() << "\n";
     body << leader->GetName() << "\n";
-    /* PLAYERBOT MailDraft("Guild Task Advertisement", body.str()).SendMailTo(trans, MailReceiver(player), MailSender(leader));
+    MailDraft("Guild Task Advertisement", body.str()).SendMailTo(trans, MailReceiver(player), MailSender(leader));
 
-    CharacterDatabase.CommitTransaction(trans); */
-
-    //dummy mail for now
-    MailItemsInfo mi;
-    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUID().GetCounter(), player->GetGUID().GetCounter(), "Guild Task Advertisement TODO 1", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+    CharacterDatabase.CommitTransaction(trans);
 
     return true;
 }
@@ -294,13 +290,8 @@ bool GuildTaskMgr::SendKillAdvertisement(uint32 creatureId, uint32 owner, uint32
     body << "Best Regards,\n";
     body << guild->GetName() << "\n";
     body << leader->GetName() << "\n";
-    /* TODO PLAYERBOT
     MailDraft("Guild Task Advertisement", body.str()).SendMailTo(trans, MailReceiver(player), MailSender(leader));
-    CharacterDatabase.CommitTransaction(trans);*/
-
-    //dummy mail for now
-    MailItemsInfo mi;
-    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUID().GetCounter(), player->GetGUID().GetCounter(), "Guild Task Advertisement TODO 2", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+    CharacterDatabase.CommitTransaction(trans);
 
     return true;
 }
@@ -338,16 +329,11 @@ bool GuildTaskMgr::SendThanks(uint32 owner, uint32 guildId)
         body << guild->GetName() << "\n";
         body << leader->GetName() << "\n";
 
-        /* TODO PLAYERBOT
             MailDraft("Thank You", body.str()).
                 AddMoney(GetTaskValue(owner, guildId, "payment")).
                 SendMailTo(trans, MailReceiver(player), MailSender(leader));
 
         CharacterDatabase.CommitTransaction(trans);
-        */
-        MailItemsInfo mi;
-        WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUID().GetCounter(), player->GetGUID().GetCounter(), "Guild Task Advertisement TODO 3", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
-
         return true;
     }
 
@@ -662,7 +648,6 @@ bool GuildTaskMgr::Reward(uint32 owner, uint32 guildId)
         body << leader->GetName() << "\n";
     }
 
-    /* TODO PLAYERBOT
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     MailDraft draft("Thank You", body.str());
 
@@ -680,9 +665,6 @@ bool GuildTaskMgr::Reward(uint32 owner, uint32 guildId)
 
     draft.AddMoney(GetTaskValue(owner, guildId, "payment")).SendMailTo(trans, MailReceiver(player), MailSender(leader));
     CharacterDatabase.CommitTransaction(trans);
-    */
-    MailItemsInfo mi;
-    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, leader->GetGUID().GetCounter(), player->GetGUID().GetCounter(), "Thank You TODO", 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
 
     SetTaskValue(owner, guildId, "activeTask", 0, 0);
     return true;

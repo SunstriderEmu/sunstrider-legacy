@@ -42,32 +42,10 @@ void CharacterCache::LoadCharacterCacheStorage()
 
     uint32 count = 0;
 
-    /*
-    // query to load number of mails by receiver
-    std::map<uint32, uint16> _mailCountMap;
-    QueryResult mailCountResult = CharacterDatabase.Query("SELECT receiver, COUNT(receiver) FROM mail GROUP BY receiver");
-    if (mailCountResult)
-    {
-        do
-        {
-            Field* fields = mailCountResult->Fetch();
-            _mailCountMap[fields[0].GetUInt32()] = uint16(fields[1].GetUInt64());
-        } while (mailCountResult->NextRow());
-    }
-    */
-
     do
     {
         Field* fields = result->Fetch();
         ObjectGuid::LowType guidLow = fields[0].GetUInt32();
-
-        // count mails
-        /*
-        uint16 mailCount = 0;
-        std::map<uint32, uint16>::const_iterator itr = _mailCountMap.find(guidLow);
-        if (itr != _mailCountMap.end())
-            mailCount = itr->second;
-        */
 
         AddCharacterCacheEntry(
             guidLow,               /*guid*/
@@ -77,7 +55,6 @@ void CharacterCache::LoadCharacterCacheStorage()
             fields[4].GetUInt8(),  /*race*/
             fields[5].GetUInt8(),  /*class*/
             fields[6].GetUInt8(),  /*level*/
-            //mailCount,             /*mail count*/
             0                      /*guild id*/);
 
         ++count;

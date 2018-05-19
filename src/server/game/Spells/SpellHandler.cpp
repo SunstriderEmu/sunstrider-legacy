@@ -215,7 +215,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         }
     }
 
-    if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))// wrapped?
+    if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_WRAPPED))// wrapped?
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_GIFT_BY_ITEM);
         stmt->setUInt32(0, pItem->GetGUID().GetCounter());
@@ -235,7 +235,7 @@ void WorldSession::HandleOpenWrappedItemCallback(uint16 pos, ObjectGuid itemGuid
     if (!item)
         return;
 
-    if (item->GetGUID() != itemGuid || !item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED)) // during getting result, gift was swapped with another item
+    if (item->GetGUID() != itemGuid || !item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_WRAPPED)) // during getting result, gift was swapped with another item
         return;
 
     if (!result)

@@ -24,13 +24,25 @@ enum AuctionAction
     AUCTION_PLACE_BID = 2
 };
 
+enum MailAuctionAnswers
+{
+    AUCTION_OUTBIDDED           = 0,
+    AUCTION_WON                 = 1,
+    AUCTION_SUCCESSFUL          = 2,
+    AUCTION_EXPIRED             = 3,
+    AUCTION_CANCELLED_TO_BIDDER = 4,
+    AUCTION_CANCELED            = 5,
+    AUCTION_SALE_PENDING        = 6
+};
+
 struct AuctionEntry
 {
     uint32 Id;
     ObjectGuid::LowType auctioneer;                                      // creature low guid
-    ObjectGuid::LowType item_guidlow;
-    uint32 item_template;
+    ObjectGuid::LowType itemGUIDLow;
+    uint32 itemEntry;
     uint32 owner;
+    uint32 itemCount;
     uint32 startbid;                                        //maybe useless
     uint32 bid;
     uint32 buyout;
@@ -48,6 +60,9 @@ struct AuctionEntry
     bool BuildAuctionInfo(WorldPacket & data) const;
     void DeleteFromDB(SQLTransaction& trans) const;
     void SaveToDB(SQLTransaction& trans) const;
+
+    std::string BuildAuctionMailSubject(MailAuctionAnswers response) const;
+    static std::string BuildAuctionMailBody(ObjectGuid::LowType lowGuid, uint32 bid, uint32 buyout, uint32 deposit, uint32 cut, bool includeDeliveryTime = false);
 };
 
 //this class is used as auctionhouse instance
@@ -129,10 +144,13 @@ class AuctionHouseMgr
         }
 
         //auction messages
-        void SendAuctionWonMail( SQLTransaction& trans, AuctionEntry * auction );
-        void SendAuctionSalePendingMail(SQLTransaction& trans, AuctionEntry * auction );
-        void SendAuctionSuccessfulMail(SQLTransaction& trans, AuctionEntry * auction );
-        void SendAuctionExpiredMail(SQLTransaction& trans, AuctionEntry * auction );
+        void SendAuctionWonMail(AuctionEntry * auction, SQLTransaction& trans);
+        void SendAuctionSalePendingMail(AuctionEntry * auction, SQLTransaction& trans);
+        void SendAuctionSuccessfulMail(AuctionEntry * auction, SQLTransaction& trans);
+        void SendAuctionExpiredMail(AuctionEntry * auction, SQLTransaction& trans);
+        void SendAuctionOutbiddedMail(AuctionEntry * auction, uint32 newPrice, Player* newBidder, SQLTransaction& trans);
+        void SendAuctionCancelledToBidderMail(AuctionEntry* auction, SQLTransaction& trans);
+
         static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item *pItem);
         static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId);
         void RemoveAllAuctionsOf(SQLTransaction& trans, ObjectGuid::LowType ownerGUID);
@@ -143,7 +161,7 @@ class AuctionHouseMgr
       void LoadAuctions();
 
       void AddAItem(Item* it);
-      bool RemoveAItem(uint32 id);
+      bool RemoveAItem(ObjectGuid::LowType id, bool deleteItem = false, SQLTransaction* trans = nullptr);
 
       void Update();
 
