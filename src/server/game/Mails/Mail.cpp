@@ -225,7 +225,7 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
 
     time_t expire_time = deliver_time + expire_delay;
 
-    m_itemTextId = sObjectMgr->CreateItemText(trans, m_body);
+    m_itemTextId = m_body.empty() ? 0 : sObjectMgr->CreateItemText(trans, m_body);
 
     // Add to DB
     uint8 index = 0;
