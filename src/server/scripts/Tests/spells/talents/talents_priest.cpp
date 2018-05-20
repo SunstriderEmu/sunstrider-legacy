@@ -1604,6 +1604,742 @@ public:
     }
 };
 
+class SpiritualGuidanceTest : public TestCaseScript
+{
+public:
+    SpiritualGuidanceTest() : TestCaseScript("talents priest spiritual_guidance") { }
+
+    class SpiritualGuidanceTestImpt : public TestCase
+    {
+    public:
+        SpiritualGuidanceTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            float const spirit = priest->GetStat(STAT_SPIRIT);
+
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 183 SP & 550 BH
+            uint32 const bonusHeal = priest->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS);
+            TEST_ASSERT(bonusHeal == 550);
+            uint32 const spellPower = priest->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 183);
+
+            float const talentFactor = 0.25f;
+            uint32 expectedBH = bonusHeal + spirit * talentFactor;
+            uint32 expectedSP = spellPower + spirit * talentFactor;
+
+            LearnTalent(priest, Talents::Priest::SPIRITUAL_GUIDANCE_RNK_5);
+            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS) == int32(expectedBH));
+            TEST_ASSERT(priest->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) == int32(expectedSP));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SpiritualGuidanceTestImpt>();
+    }
+};
+
+class SurgeOfLightTest : public TestCaseScript
+{
+public:
+    SurgeOfLightTest() : TestCaseScript("talents priest surge_of_light") { }
+
+    class SurgeOfLightTestImpt : public TestCase
+    {
+    public:
+        SurgeOfLightTestImpt() : TestCase(STATUS_WIP) { } // Holy Nova do something weird
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* enemy = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(priest, Talents::Priest::SURGE_OF_LIGHT_RNK_2);
+            uint32 const spellProcId = Talents::Priest::SURGE_OF_LIGHT_RNK_2_TRIGGER;
+            float const procChance = 50.f;
+
+            // Smite to be instant cast, no mana, no crit
+            priest->AddAura(spellProcId, priest);
+            TEST_AURA_MAX_DURATION(priest, spellProcId, Seconds(10));
+            TEST_CAST_TIME(priest, ClassSpells::Priest::SMITE_RNK_10, uint32(0));
+            TEST_POWER_COST(priest, ClassSpells::Priest::SMITE_RNK_10, POWER_MANA, uint32(0));
+            uint32 const minSmite = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN;
+            uint32 const maxSmite = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX;
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(priest, enemy, ClassSpells::Priest::SMITE_RNK_10, minSmite, maxSmite, false, [spellProcId](Unit* caster, Unit* victim) {
+                for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
+                    caster->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, 200.f);
+                caster->AddAura(spellProcId, caster);
+            });
+
+            // Damage
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::SMITE_RNK_10, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::HOLY_FIRE_RNK_9, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::MIND_BLAST_RNK_11, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::HOLY_NOVA_RNK_7, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            // Heal
+            TestPlayer* ally = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            GroupPlayer(priest, ally);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::FLASH_HEAL_RNK_9, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::GREATER_HEAL_RNK_7, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::HEAL_RNK_4, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::HOLY_NOVA_RNK_7, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SurgeOfLightTestImpt>();
+    }
+};
+
+class SpiritualHealingTest : public TestCaseScript
+{
+public:
+    SpiritualHealingTest() : TestCaseScript("talents priest spiritual_healing") { }
+
+    class SpiritualHealingTestImpt : public TestCase
+    {
+    public:
+        SpiritualHealingTestImpt() : TestCase(STATUS_WIP) { } // Needs GetHealingDoneInfoTo to find data, test passing otherwise
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* ally = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* enemy = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+
+            GroupPlayer(priest, ally);
+
+            LearnTalent(priest, Talents::Priest::SPIRITUAL_HEALING_RNK_5);
+            float const talentFactor = 1.1f;
+
+            // Binding Heal
+            uint32 const bindingHealMin = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MIN * talentFactor;
+            uint32 const bindingHealMax = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MAX * talentFactor;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin, bindingHealMax, false);
+
+            // Circle of Healing
+            uint32 const cohMin = ClassSpellsDamage::Priest::CIRCLE_OF_HEALING_RNK_5_MIN * talentFactor;
+            uint32 const cohMax = ClassSpellsDamage::Priest::CIRCLE_OF_HEALING_RNK_5_MAX * talentFactor;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, cohMin, cohMax, false);
+
+            // Flash Heal
+            uint32 const flashHealMin = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MIN * talentFactor;
+            uint32 const flashHealMax = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MAX * talentFactor;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::FLASH_HEAL_RNK_9, flashHealMin, flashHealMax, false);
+
+            // Greater Heal
+            uint32 const greaterHealMin = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN * talentFactor;
+            uint32 const greaterHealMax = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX * talentFactor;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::GREATER_HEAL_RNK_7, greaterHealMin, greaterHealMax, false);
+
+            // Heal
+            uint32 const healMin = ClassSpellsDamage::Priest::HEAL_RNK_4_MIN_LVL_70 * talentFactor;
+            uint32 const healMax = ClassSpellsDamage::Priest::HEAL_RNK_4_MAX_LVL_70 * talentFactor;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::HEAL_RNK_4, healMin, healMax, false);
+
+            // Holy Nova
+            uint32 const holyNovaMin = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_HEAL_MIN_LVL_70 * talentFactor;
+            uint32 const holyNovaMax = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_HEAL_MAX_LVL_70 * talentFactor;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::HOLY_NOVA_RNK_7, holyNovaMin, holyNovaMax, false);
+
+            // Lesser Heal
+            uint32 const lesserHealMin = ClassSpellsDamage::Priest::LESSER_HEAL_RNK_3_MIN_LVL_70 * talentFactor;
+            uint32 const lesserHealMax = ClassSpellsDamage::Priest::LESSER_HEAL_RNK_3_MAX_LVL_70 * talentFactor;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::LESSER_HEAL_RNK_3, lesserHealMin, lesserHealMax, false);
+
+            // Lightwell Renew
+            uint32 const lightwellTotal = 3 * floor(ClassSpellsDamage::Priest::LIGHTWELL_RNK_4_TICK * talentFactor);
+            TEST_DOT_DAMAGE(priest, ally, ClassSpells::Priest::LIGHTWELL_RNK_4_TRIGGER, lightwellTotal, false);
+
+            // Prayer of Healing
+            uint32 const pohMin = ClassSpellsDamage::Priest::PRAYER_OF_HEALING_RNK_6_MIN * talentFactor;
+            uint32 const pohMax = ClassSpellsDamage::Priest::PRAYER_OF_HEALING_RNK_6_MAX * talentFactor;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, pohMin, pohMax, false);
+
+            // Renew
+            uint32 const renewTotal = 5 * floor(ClassSpellsDamage::Priest::RENEW_RNK_12_TICK * talentFactor);
+            TEST_DOT_DAMAGE(priest, ally, ClassSpells::Priest::RENEW_RNK_12, renewTotal, false);
+
+            // Prayer of Mending
+            uint32 const pomHeal = ClassSpellsDamage::Priest::PRAYER_OF_MENDING_RNK_1 * talentFactor;
+            ally->DisableRegeneration(true);
+            ally->SetHealth(500);
+            TEST_CAST(priest, ally, ClassSpells::Priest::PRAYER_OF_MENDING_RNK_1);
+            enemy->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            enemy->AttackerStateUpdate(ally);
+            WaitNextUpdate();
+            auto [minDmg, maxDmg] = GetWhiteDamageDoneTo(enemy, ally, BASE_ATTACK, false, 1);
+            uint32 const allyExpectedHealth = 500 - minDmg + pomHeal;
+            ASSERT_INFO("Ally has %u HP but %u HP was expected.", ally->GetHealth(), allyExpectedHealth);
+            TEST_ASSERT(ally->GetHealth() == allyExpectedHealth);
+
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SpiritualHealingTestImpt>();
+    }
+};
+
+class HolyConcentrationTest : public TestCaseScript
+{
+public:
+    HolyConcentrationTest() : TestCaseScript("talents priest holy_concentration") { }
+
+    class HolyConcentrationTestImpt : public TestCase
+    {
+    public:
+        HolyConcentrationTestImpt() : TestCase(STATUS_WIP) { } // Binding Heal can proc the talent on each target meaning 12% proc: bug or not?
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* ally = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            GroupPlayer(priest, ally);
+
+            LearnTalent(priest, Talents::Priest::HOLY_CONCENTRATION_RNK_3);
+            uint32 const spellProcId = Talents::Priest::HOLY_CONCENTRATION_RNK_3_TRIGGER;
+            float const procChance = 6.f;
+
+            // No mana cost
+            priest->AddAura(spellProcId, priest);
+            TEST_AURA_MAX_DURATION(priest, spellProcId, Seconds(15));
+            TEST_POWER_COST(priest, ClassSpells::Priest::FLASH_HEAL_RNK_9, POWER_MANA, uint32(0));
+            TEST_POWER_COST(priest, ClassSpells::Priest::BINDING_HEAL_RNK_1, POWER_MANA, uint32(0));
+            TEST_POWER_COST(priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, POWER_MANA, uint32(0));
+
+            // Proc chance
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::FLASH_HEAL_RNK_9, spellProcId, true, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, spellProcId, true, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::GREATER_HEAL_RNK_7, spellProcId, true, procChance, SPELL_MISS_NONE, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<HolyConcentrationTestImpt>();
+    }
+};
+
+class BlessedResilienceTest : public TestCaseScript
+{
+public:
+    BlessedResilienceTest() : TestCaseScript("talents priest blessed_resilience") { }
+
+    class BlessedResilienceTestImpt : public TestCase
+    {
+    public:
+        BlessedResilienceTestImpt() : TestCase(STATUS_WIP) { } // Need TEST_MELEE_PROC_CHANCE
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* enemy = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+
+            LearnTalent(priest, Talents::Priest::BLESSED_RESILIENCE_RNK_3);
+            uint32 const spellProcId = Talents::Priest::BLESSED_RESILIENCE_RNK_3_TRIGGER;
+            float const procChance = 60.f;
+
+            // Cant be critically hit
+            priest->AddAura(spellProcId, priest);
+            TEST_AURA_MAX_DURATION(priest, spellProcId, Seconds(6));
+            // By spells
+            uint32 const minSmite = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN;
+            uint32 const maxSmite = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX;
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(enemy, priest, ClassSpells::Priest::SMITE_RNK_10, minSmite, maxSmite, false, [spellProcId](Unit* caster, Unit* victim) {
+                for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
+                    caster->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, 200.f);
+                caster->AddAura(spellProcId, caster);
+            });
+            // TODO: By melee
+
+            // Proc chance
+            //TEST_MELEE_PROC_CHANCE(enemy, priest, BASE_ATTACK, spellProcId, false, procChance, MELEE_HIT_CRIT);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<BlessedResilienceTestImpt>();
+    }
+};
+
+class EmpoweredHealingTest : public TestCaseScript
+{
+public:
+    EmpoweredHealingTest() : TestCaseScript("talents priest empowered_healing") { }
+
+    class EmpoweredHealingTestImpt : public TestCase
+    {
+    public:
+        /*
+        Bugs:
+            - Binding Heal doesnt gain an additional 10% on spell coeff
+        */
+        EmpoweredHealingTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* ally = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            GroupPlayer(priest, ally);
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            uint32 const bonusHeal = 550;
+
+            LearnTalent(priest, Talents::Priest::EMPOWERED_HEALING_RNK_5);
+            float const talentGreaterHealFactor = 0.2f;
+            float const talentFlashHealFactor = 0.1f;
+            float const talentBindingHealFactor = 0.1;
+
+            // Binding Heal
+            uint32 const bhBonus = (ClassSpellsCoeff::Priest::BINDING_HEAL + talentBindingHealFactor) * bonusHeal;
+            uint32 const bindingHealMin = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MIN + bhBonus;
+            uint32 const bindingHealMax = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MAX + bhBonus;
+            //TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin, bindingHealMax, false);
+
+            // Flash Heal
+            uint32 const fhBonus = (ClassSpellsCoeff::Priest::FLASH_HEAL + talentFlashHealFactor) * bonusHeal;
+            uint32 const flashHealMin = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MIN + fhBonus;
+            uint32 const flashHealMax = ClassSpellsDamage::Priest::FLASH_HEAL_RNK_9_MAX + fhBonus;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::FLASH_HEAL_RNK_9, flashHealMin, flashHealMax, false);
+
+            // Greater Heal
+            uint32 const ghBonus = (ClassSpellsCoeff::Priest::GREATER_HEAL + talentGreaterHealFactor) * bonusHeal;
+            uint32 const greaterHealMin = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN + ghBonus;
+            uint32 const greaterHealMax = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX + ghBonus;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::GREATER_HEAL_RNK_7, greaterHealMin, greaterHealMax, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<EmpoweredHealingTestImpt>();
+    }
+};
+
+class CircleOfHealingTest : public TestCaseScript
+{
+public:
+    CircleOfHealingTest() : TestCaseScript("talents priest circle_of_healing") { }
+
+    class CircleOfHealingTestImpt : public TestCase
+    {
+    public:
+        CircleOfHealingTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+
+            Position spawn;
+            spawn.MoveInFront(_location, 40.f);
+            TestPlayer* ally = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+            spawn.MoveInFront(_location, 55.f);
+            TestPlayer* allyFarAway = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+
+            ally->SetHealth(1);
+            allyFarAway->SetHealth(1);
+            ally->DisableRegeneration(true);
+            allyFarAway->DisableRegeneration(true);
+            GroupPlayer(priest, ally);
+            GroupPlayer(priest, allyFarAway);
+            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 550 BH
+            uint32 const bonusHeal = 550;
+
+            // Ranges: heals 40m away ally and all allies within 15m
+            TEST_CAST(priest, ally, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5);
+            TEST_ASSERT(ally->GetHealth() > 1);
+            TEST_ASSERT(allyFarAway->GetHealth() > 1);
+
+            // Heal
+            uint32 const cohBonusHeal = ClassSpellsCoeff::Priest::CIRCLE_OF_HEALING * bonusHeal;
+            uint32 const cohHealMin = ClassSpellsDamage::Priest::CIRCLE_OF_HEALING_RNK_5_MIN + cohBonusHeal;
+            uint32 const cohHealMax = ClassSpellsDamage::Priest::CIRCLE_OF_HEALING_RNK_5_MAX + cohBonusHeal;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, cohHealMin, cohHealMax, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<CircleOfHealingTestImpt>();
+    }
+};
+
+class SpiritTapTest : public TestCaseScript
+{
+public:
+    SpiritTapTest() : TestCaseScript("talents priest spirit_tap") { }
+
+    class SpiritTapTestImpt : public TestCase
+    {
+    public:
+        SpiritTapTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            _location.MoveInFront(_location, 10.0f);
+            TestPlayer* enemy = SpawnPlayer(CLASS_PRIEST, RACE_TROLL);
+            enemy->DisableRegeneration(true);
+
+            LearnTalent(priest, Talents::Priest::SPIRIT_TAP_RNK_5);
+            float const expectedSpirit = priest->GetStat(STAT_SPIRIT) * 2.f;
+
+            // Kill enemy
+            enemy->SetHealth(1);
+            FORCE_CAST(priest, enemy, ClassSpells::Priest::SMITE_RNK_10, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            WaitNextUpdate();
+            TEST_ASSERT(enemy->IsDead());
+            TEST_AURA_MAX_DURATION(priest, Talents::Priest::SPIRIT_TAP_RNK_5_TRIGGER, Seconds(15));
+            // Spirit boost
+            TEST_ASSERT(Between<float>(priest->GetStat(STAT_SPIRIT), expectedSpirit - 0.1f, expectedSpirit + 0.1f));
+            // Regen boost
+            float const expectedManaRegen = priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) * 0.5f;
+            TEST_ASSERT(Between<float>(priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT), expectedManaRegen - 0.1f, expectedManaRegen + 0.1f));
+
+            // Doesnt trigger when no killing blow
+            priest->RemoveAurasDueToSpell(Talents::Priest::SPIRIT_TAP_RNK_5_TRIGGER);
+            enemy->ResurrectPlayer(0.01f);
+            FORCE_CAST(priest, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_1);
+            Wait(4000); // Wait for 1 tick
+            FORCE_CAST(enemy, priest, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_1, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            Wait(1000);
+            TEST_ASSERT(enemy->IsDead());
+            TEST_HAS_NOT_AURA(priest, Talents::Priest::SPIRIT_TAP_RNK_5_TRIGGER);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<SpiritTapTestImpt>();
+    }
+};
+
+class BlackoutTest : public TestCaseScript
+{
+public:
+    BlackoutTest() : TestCaseScript("talents priest blackout") { } // Need TEST_MELEE_PROC_CHANCE_CALLBACK
+
+    class BlackoutTestImpt : public TestCase
+    {
+    public:
+        BlackoutTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            TestPlayer* enemy = SpawnPlayer(CLASS_PRIEST, RACE_TROLL);
+
+            LearnTalent(priest, Talents::Priest::BLACKOUT_RNK_5);
+            uint32 const spellProcId = Talents::Priest::BLACKOUT_RNK_5_TRIGGER;
+            float const procChance = 10.f;
+
+            // Only affects shadow damage spells
+            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::MIND_BLAST_RNK_11, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
+                victim->ClearDiminishings();
+            });
+            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
+                victim->ClearDiminishings();
+            });
+            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
+                victim->ClearDiminishings();
+            });
+            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
+                victim->ClearDiminishings();
+            });
+            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
+                victim->ClearDiminishings();
+            });
+            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
+                victim->ClearDiminishings();
+            });
+            //TEST_MELEE_PROC_CHANCE_CALLBACK(enemy, priest, BASE_ATTACK, spellProcId, true, procChance, MELEE_HIT_NORMAL, false, [](Unit* caster, Unit* victim) {
+            //    caster->ClearDiminishings();
+            //    victim->AddAura(ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, victim);
+            //});
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<BlackoutTestImpt>();
+    }
+};
+
+class ShadowAffinityTest : public TestCaseScript
+{
+public:
+    ShadowAffinityTest() : TestCaseScript("talents priest shadow_affinity") { }
+
+    class ShadowAffinityTestImpt : public TestCase
+    {
+    public:
+        ShadowAffinityTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        /*
+        Bugs:
+            - Touch of Weakness's threat is not reduced
+            - Shadow Embrace heals are not reduced
+        */
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(priest, Talents::Priest::SHADOW_AFFINITY_RNK_3);
+            float const talentThreatFactor = 1 - 0.25f;
+
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, talentThreatFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, talentThreatFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, talentThreatFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, talentThreatFactor, false);
+
+            priest->ForceSpellHitResult(SPELL_MISS_NONE);
+
+            // Vampiric Touch
+            float startThreat = dummy->GetThreatManager().GetThreat(priest);
+            float const vtManaRestoreThreat = 5.f * floor(ClassSpellsDamage::Priest::VAMPIRIC_TOUCH_RNK_3_TICK * 0.05f) * 0.5f; //  Power Gain have a 0.5f threat factor
+            float const expectedVTThreat = startThreat + ClassSpellsDamage::Priest::VAMPIRIC_TOUCH_RNK_3_TOTAL * talentThreatFactor + vtManaRestoreThreat;
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
+            Wait(15000);
+            ASSERT_INFO("Dummy has %f threat but %f was expected.", dummy->GetThreatManager().GetThreat(priest), expectedVTThreat);
+            TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedVTThreat - 0.1f, expectedVTThreat + 0.1f));
+
+            // Shadow Embrace
+            priest->SetHealth(500);
+            startThreat = dummy->GetThreatManager().GetThreat(priest);
+            float const mindFlayThreat = 3.f * ClassSpellsDamage::Priest::MIND_FLAY_RNK_7_TICK;
+            float const mindFlayHealThreat = 3.f * floor(ClassSpellsDamage::Priest::MIND_FLAY_RNK_7_TICK * 0.15f);
+            float const expectedVEThreat = startThreat + (mindFlayThreat + mindFlayHealThreat * 0.5f) * talentThreatFactor;
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, SPELL_MISS_NONE, TRIGGERED_IGNORE_GCD);
+            Wait(3000);
+            ASSERT_INFO("Dummy has %f threat but %f was expected.", dummy->GetThreatManager().GetThreat(priest), expectedVEThreat);
+            TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedVEThreat - 0.1f, expectedVEThreat + 0.1f));
+            dummy->RemoveAurasDueToSpell(ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
+
+            // Touch of Weakness
+            startThreat = dummy->GetThreatManager().GetThreat(priest);
+            float const expectedToWThreat = startThreat + ClassSpellsDamage::Priest::TOUCH_OF_WEAKNESS_RNK_7 * talentThreatFactor;
+            TEST_CAST(priest, priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
+            dummy->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            dummy->AttackerStateUpdate(priest, BASE_ATTACK);
+            dummy->AttackStop();
+            ASSERT_INFO("Dummy has %f threat but %f was expected.", dummy->GetThreatManager().GetThreat(priest), expectedToWThreat);
+            TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedToWThreat - 0.1f, expectedToWThreat + 0.1f));
+        }   
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowAffinityTestImpt>();
+    }
+};
+
+class ImprovedShadowWordPainTest : public TestCaseScript
+{
+public:
+    ImprovedShadowWordPainTest() : TestCaseScript("talents priest improved_shadow_word_pain") { }
+
+    class ImprovedShadowWordPainTestImpt : public TestCase
+    {
+    public:
+        ImprovedShadowWordPainTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(priest, Talents::Priest::IMPROVED_SHADOW_WORD_PAIN_RNK_2);
+
+            uint32 const swpTotal = 8 * ClassSpellsDamage::Priest::SHADOW_WORD_PAIN_RNK_10_TICK;
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, swpTotal, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedShadowWordPainTestImpt>();
+    }
+};
+
+class ShadowFocusTest : public TestCaseScript
+{
+public:
+    ShadowFocusTest() : TestCaseScript("talents priest shadow_focus") { }
+
+    class ShadowFocusTestImpt : public TestCase
+    {
+    public:
+        ShadowFocusTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Creature* boss = SpawnBoss();
+
+            LearnTalent(priest, Talents::Priest::SHADOW_FOCUS_RNK_5);
+            float const talentHitFactor = 10.f;
+            float const hitChance = 16.f - talentHitFactor;
+
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_BLAST_RNK_11, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_FLAY_RNK_7, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_SOOTHE_RNK_4, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_VISION_RNK_2, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::SILENCE_RNK_1, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, hitChance, SPELL_MISS_RESIST);
+            boss->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            TEST_SPELL_HIT_CHANCE_CALLBACK(priest, boss, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, hitChance, SPELL_MISS_RESIST, [](Unit* caster, Unit* victim) {
+                victim->AttackerStateUpdate(caster, BASE_ATTACK);
+            });
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowFocusTestImpt>();
+    }
+};
+
+class ImprovedPsychicScreamTest : public TestCaseScript
+{
+public:
+    ImprovedPsychicScreamTest() : TestCaseScript("talents priest improved_psychic_scream") { }
+
+    class ImprovedPsychicScreamTestImpt : public TestCase
+    {
+    public:
+        ImprovedPsychicScreamTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+
+            LearnTalent(priest, Talents::Priest::IMPROVED_PSYCHIC_SCREAM_RNK_2);
+
+            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(26));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedPsychicScreamTestImpt>();
+    }
+};
+
+class ImprovedMindBlastTest : public TestCaseScript
+{
+public:
+    ImprovedMindBlastTest() : TestCaseScript("talents priest improved_mind_blast") { }
+
+    class ImprovedMindBlastTestImpt : public TestCase
+    {
+    public:
+        ImprovedMindBlastTestImpt() : TestCase(STATUS_WIP) { } // Need that TEST_COOLDOWN be in miliSeconds
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            LearnTalent(priest, Talents::Priest::IMPROVED_MIND_BLAST_RNK_5);
+
+            TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, 5500);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedMindBlastTestImpt>();
+    }
+};
+
+class MindFlayTest : public TestCaseScript
+{
+public:
+    MindFlayTest() : TestCaseScript("talents priest mind_flay") { }
+
+    class MindFlayTestImpt : public TestCase
+    {
+    public:
+        MindFlayTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
+
+            // Damage
+            float const tickAmount = 3.f;
+            float const spellCoeff = ClassSpellsCoeff::Priest::MIND_FLAY;
+            uint32 const spellBonus = 292 * spellCoeff / tickAmount;
+            uint32 const expectedMindFlayTick = ClassSpellsDamage::Priest::MIND_FLAY_RNK_7_TICK + spellBonus;
+            TEST_CHANNEL_DAMAGE(priest, dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, ClassSpells::Priest::MIND_FLAY_RNK_7, tickAmount, expectedMindFlayTick);
+
+            // Slow
+            float const expectedSpeed = dummy->GetSpeed(MOVE_RUN) * 0.5f;
+            dummy->AddAura(ClassSpells::Priest::MIND_FLAY_RNK_7, dummy);
+            TEST_AURA_MAX_DURATION(dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, Seconds(3));
+            ASSERT_INFO("Speed: %f - Expected: %f", dummy->GetSpeed(MOVE_RUN), expectedSpeed);
+            TEST_ASSERT(Between(dummy->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
+
+            // Mana cost
+            uint32 const expectedMindFlayMana = 230;
+            TEST_POWER_COST(priest, ClassSpells::Priest::MIND_FLAY_RNK_7, POWER_MANA, expectedMindFlayMana);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<MindFlayTestImpt>();
+    }
+};
+
+class ImprovedFadeTest : public TestCaseScript
+{
+public:
+    ImprovedFadeTest() : TestCaseScript("talents priest improved_fade") { }
+
+    class ImprovedFadeTestImpt : public TestCase
+    {
+    public:
+        ImprovedFadeTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+
+            LearnTalent(priest, Talents::Priest::IMPROVED_FADE_RNK_2);
+
+            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::FADE_RNK_7, Seconds(24));
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ImprovedFadeTestImpt>();
+    }
+};
+
 void AddSC_test_talents_priest()
 {
     // Discipline
@@ -1640,8 +2376,25 @@ void AddSC_test_talents_priest()
     new InspirationTest();
     new HolyReachTest();
     new ImprovedHealingTest();
-	new SearingLightTest();
+    new SearingLightTest();
     new HealingPrayersTest();
     new SpiritOfRedemptionTest();
+    new SpiritualGuidanceTest();
+    new SurgeOfLightTest();
+    new SpiritualHealingTest();
+    new HolyConcentrationTest();
+    // TODO: Lightwell
+    new BlessedResilienceTest();
+    new EmpoweredHealingTest();
+    new CircleOfHealingTest();
     // Shadow
+    new SpiritTapTest();
+    new BlackoutTest();
+    new ShadowAffinityTest();
+    new ImprovedShadowWordPainTest();
+    new ShadowFocusTest();
+    new ImprovedPsychicScreamTest();
+    new ImprovedMindBlastTest();
+    new MindFlayTest();
+    new ImprovedFadeTest();
 }

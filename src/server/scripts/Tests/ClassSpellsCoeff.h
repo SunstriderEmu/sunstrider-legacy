@@ -92,7 +92,7 @@ namespace ClassSpellsCoeff
 
 		// Holy
 		const float BINDING_HEAL = 0.4286f;
-		const float CIRCLE_OF_HEALING = 0.214f;
+		const float CIRCLE_OF_HEALING = 0.214f; // DrDamage
 		const float DESPERATE_PRAYER = 0.4286f;
 		const float FLASH_HEAL = 0.4286f;
         const float GREATER_HEAL = 0.8571f;
