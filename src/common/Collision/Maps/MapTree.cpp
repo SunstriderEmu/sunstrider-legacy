@@ -409,7 +409,7 @@ namespace VMAP
             uint32 numSpawns = 0;
             if (result && fread(&numSpawns, sizeof(uint32), 1, tf) != 1)
                 result = false;
-            for (uint32 i=0; i<numSpawns && result; ++i)
+            for (uint32 i = 0; i<numSpawns && result; ++i)
             {
                 // read model spawns
                 ModelSpawn spawn;
