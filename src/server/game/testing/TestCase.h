@@ -267,6 +267,17 @@ public:
     */
     #define TEST_SPELL_PROC_CHANCE_CALLBACK(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, Optional<TestCallback>(callback)); _ResetCaller(); }
 
+    /* Test the proc chance of given aura on caster or victim by attacking target on melee/ranged
+    selfProc: Check of on caster, else check on target
+    meleeHitOutcome: Force melee hit result
+    chance: 0-100
+    */
+    #define TEST_MELEE_PROC_CHANCE(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, ranged)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, missInfo, ranged, {}); _ResetCaller(); }
+    /* Same but with additional argument:
+    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
+    #define TEST_MELEE_PROC_CHANCE_CALLBACK(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, ranged, callback)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, missInfo, ranged, callback); _ResetCaller(); }
+
     /* caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
     chance: 0-100
     */
@@ -352,6 +363,7 @@ protected:
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, bool checkSelf);
     void _TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, TestCallbackResult callback);
     void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
+    void _TestMeleeProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float chance, MeleeHitOutcome meleeHitOutcome, bool ranged, Optional<TestCallback> callback);
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
     void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, Optional<TestCallback> callback);
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);

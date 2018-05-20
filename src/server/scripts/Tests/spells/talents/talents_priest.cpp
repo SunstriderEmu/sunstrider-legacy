@@ -1127,6 +1127,7 @@ class HealingFocusTest : public TestCaseScript
 public:
     HealingFocusTest() : TestCaseScript("talents priest healing_focus") { }
 
+    //"Gives you a 70% chance to avoid interruption caused by damage while casting any healing spell"
     class HealingFocusTestImpt : public TestCase
     {
     public:

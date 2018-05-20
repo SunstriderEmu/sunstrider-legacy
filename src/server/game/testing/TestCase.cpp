@@ -1430,6 +1430,78 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 }
 
+void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, bool ranged, Optional<TestCallback> callback)
+{
+    auto casterAI = _GetCasterAI(attacker, false);
+    auto victimAI = _GetCasterAI(victim, false);
+    INTERNAL_ASSERT_INFO("Could not find Testing AI for neither caster or victim");
+    INTERNAL_TEST_ASSERT(casterAI != nullptr && victimAI != nullptr);
+
+    _EnsureAlive(attacker, victim);
+    /*SpellInfo const* procSpellInfo =*/ _GetSpellInfo(procSpellID);
+
+    ResetSpellCast(attacker);
+    if (casterAI)
+        casterAI->ResetSpellCounters();
+    if (victimAI)
+        victimAI->ResetSpellCounters();
+    _MaxHealth(attacker);
+    _MaxHealth(victim);
+    MeleeHitOutcome previousForceOutcome = attacker->_forceMeleeResult;
+    attacker->ForceMeleeHitResult(meleeHitOutcome);
+
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
+
+    uint32 procCount = 0;
+    for (uint32 i = 0; i < sampleSize; i++)
+    {
+        if (callback)
+            callback.get()(attacker, victim);
+
+        victim->SetFullHealth();
+        attacker->AttackerStateUpdate(victim, ranged ? RANGED_ATTACK : BASE_ATTACK);
+
+        attacker->RemoveAurasDueToSpell(procSpellID);
+        victim->RemoveAurasDueToSpell(procSpellID);
+
+        HandleThreadPause();
+    }
+
+    Unit* checkTarget = selfProc ? attacker : victim;
+    auto countProcs = [checkTarget, procSpellID](PlayerbotTestingAI* AI) {
+        auto damageToTarget = AI->GetSpellDamageDoneInfo(checkTarget);
+        if (!damageToTarget)
+            return uint32(0);
+
+        uint32 count = 0;
+        for (auto itr : *damageToTarget)
+        {
+            if (itr.damageInfo.SpellID != procSpellID)
+                continue;
+
+            count++;
+        }
+        return count;
+    };
+    //we count both procs from caster to checkTarget and from victim to checkTarget
+    //if this is not flexible enough, consider replacing the selfProc arg with a Unit* checkTarget
+    if (casterAI)
+        procCount += countProcs(casterAI);
+    if (victimAI)
+        procCount += countProcs(victimAI);
+
+    float actualSuccessPercent = 100 * (procCount / float(sampleSize));
+    INTERNAL_ASSERT_INFO("Spell %u proc'd %f % instead of expected %f %", procSpellID, actualSuccessPercent, expectedChancePercent);
+    INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
+
+    //Restore
+    ResetSpellCast(attacker); // some procs may have occured and may still be in flight, remove them
+    _RestoreUnitState(victim);
+    _RestoreUnitState(attacker);
+    attacker->AttackStop();
+    attacker->ForceMeleeHitResult(previousForceOutcome);
+}
+
 void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback)
 {
     auto casterAI = _GetCasterAI(caster, false);
@@ -1468,7 +1540,6 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
                 
         HandleThreadPause();
     }
-
 
     Unit* checkTarget = selfProc ? caster : victim;
     auto countProcs = [checkTarget, procSpellID](PlayerbotTestingAI* AI) {
