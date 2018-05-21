@@ -1934,28 +1934,41 @@ public:
     class ImprovedShadowBoltTestImpt : public TestCase
     {
     public:
-        ImprovedShadowBoltTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { } //Todo: Test if buff is consumed + also consumed by another spell such as priest mind blast
+        ImprovedShadowBoltTestImpt() : TestCase(STATUS_PASSING) { }
+
+        uint32 MAX_STACK = 4;
 
         void Test() override
         {
             TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+            TestPlayer* warlock2 = SpawnRandomPlayer(CLASS_WARLOCK);
+            TestPlayer* priest = SpawnRandomPlayer(CLASS_PRIEST);
             Creature* dummy = SpawnCreature();
 
             LearnTalent(warlock, Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5);
             float const talentFactor = 1.2f;
             EnableCriticals(warlock, true);
 
-            uint32 const IMPROVED_SHADOW_BOLT_RNK_5_PROC = 17800;
+            TriggerCastFlags triggerFlags = TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_PROC_AS_NON_TRIGGERED);
 
             // Buff is applied
-            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_PROC_AS_NON_TRIGGERED));
-            TEST_AURA_MAX_DURATION(dummy, IMPROVED_SHADOW_BOLT_RNK_5_PROC, Seconds(12));
+            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, triggerFlags);
+            TEST_AURA_MAX_DURATION(dummy, Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5_PROC, Seconds(12));
+            Aura* aura = dummy->GetAura(Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5_PROC);
+            TEST_ASSERT(aura != nullptr);
+            TEST_ASSERT(aura->GetStackAmount() == int32(MAX_STACK));
+
+            // Buff is consumed by direct shadow damages
+            FORCE_CAST(warlock2, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, triggerFlags);
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_MISS_NONE, triggerFlags);
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, SPELL_MISS_NONE, triggerFlags); // DoT, should not consume
+            TEST_ASSERT(aura->GetStackAmount() == int32(MAX_STACK) - 2);
 
             uint32 expectedMinDamage = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * talentFactor * 1.5f;
             uint32 expectedMaxDamage = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * talentFactor * 1.5f;
-            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedMinDamage, expectedMaxDamage, true, [IMPROVED_SHADOW_BOLT_RNK_5_PROC](Unit* caster, Unit* target) {
-                if(!target->HasAura(IMPROVED_SHADOW_BOLT_RNK_5_PROC))
-                    target->AddAura(IMPROVED_SHADOW_BOLT_RNK_5_PROC, target);
+            TEST_DIRECT_SPELL_DAMAGE_CALLBACK(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedMinDamage, expectedMaxDamage, true, [](Unit* caster, Unit* target) {
+                if(!target->HasAura(Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5_PROC))
+                    target->AddAura(Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5_PROC, target);
             });
         }
     };

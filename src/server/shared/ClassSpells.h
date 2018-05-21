@@ -1585,6 +1585,7 @@ namespace Talents
             IMPROVED_SHADOW_BOLT_RNK_3 = 17801,
             IMPROVED_SHADOW_BOLT_RNK_4 = 17802,
             IMPROVED_SHADOW_BOLT_RNK_5 = 17803,
+            IMPROVED_SHADOW_BOLT_RNK_5_PROC = 17800,
             CATACLYSM_RNK_1 = 17778,
             CATACLYSM_RNK_2 = 17779,
             CATACLYSM_RNK_3 = 17780,
