@@ -1741,10 +1741,11 @@ class SpiritualHealingTest : public TestCaseScript
 public:
     SpiritualHealingTest() : TestCaseScript("talents priest spiritual_healing") { }
 
+    //"Increases the amount healed by your healing spells by 10%"
     class SpiritualHealingTestImpt : public TestCase
     {
     public:
-        SpiritualHealingTestImpt() : TestCase(STATUS_WIP) { } // Needs GetHealingDoneInfoTo to find data, test passing otherwise
+        SpiritualHealingTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1785,7 +1786,7 @@ public:
             // Holy Nova
             uint32 const holyNovaMin = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_HEAL_MIN_LVL_70 * talentFactor;
             uint32 const holyNovaMax = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_HEAL_MAX_LVL_70 * talentFactor;
-            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::HOLY_NOVA_RNK_7, holyNovaMin, holyNovaMax, false);
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::HOLY_NOVA_RNK_7_HEAL_LINKED, holyNovaMin, holyNovaMax, false);
 
             // Lesser Heal
             uint32 const lesserHealMin = ClassSpellsDamage::Priest::LESSER_HEAL_RNK_3_MIN_LVL_70 * talentFactor;
@@ -1832,10 +1833,11 @@ class HolyConcentrationTest : public TestCaseScript
 public:
     HolyConcentrationTest() : TestCaseScript("talents priest holy_concentration") { }
 
+    //"Gives you a 6% chance to enter a Clearcasting state after casting any Flash Heal, Binding Heal, or Greater Heal spell. The Clearcasting state reduces the mana cost of your next Flash Heal, Binding Heal, or Greater Heal spell by 100%."
     class HolyConcentrationTestImpt : public TestCase
     {
     public:
-        HolyConcentrationTestImpt() : TestCase(STATUS_WIP) { } // Binding Heal can proc the talent on each target meaning 12% proc: bug or not?
+        HolyConcentrationTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1856,8 +1858,10 @@ public:
             TEST_POWER_COST(priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, POWER_MANA, uint32(0));
 
             // Proc chance
+            float twoTargetsProcChance = (1.0f - std::pow(1.0f - procChance / 100.0f, 2)) * 100.0f; //spell hits two targets... two times the proc chances!
             TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::FLASH_HEAL_RNK_9, spellProcId, true, procChance, SPELL_MISS_NONE, false);
-            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, spellProcId, true, procChance, SPELL_MISS_NONE, false);
+            // Binding Heal can proc the talent on each target meaning more procs: bug or not? -> Good question. Consider it's correct for now
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, spellProcId, true, twoTargetsProcChance, SPELL_MISS_NONE, false);
             TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::GREATER_HEAL_RNK_7, spellProcId, true, procChance, SPELL_MISS_NONE, false);
         }
     };
@@ -1873,10 +1877,26 @@ class BlessedResilienceTest : public TestCaseScript
 public:
     BlessedResilienceTest() : TestCaseScript("talents priest blessed_resilience") { }
 
+    //"Critical hits made against you have a 60% chance to prevent you from being critically hit again for 6sec."
     class BlessedResilienceTestImpt : public TestCase
     {
     public:
-        BlessedResilienceTestImpt() : TestCase(STATUS_WIP) { } // Need TEST_MELEE_PROC_CHANCE
+        BlessedResilienceTestImpt() : TestCase(STATUS_PASSING) { } 
+
+        //test if priest can take white melee crit
+        void TestMeleeCrit(Unit* priest, Unit* enemy)
+        {
+            priest->AddAura(Talents::Priest::BLESSED_RESILIENCE_RNK_3_TRIGGER, priest);
+            priest->SetFloatValue(PLAYER_DODGE_PERCENTAGE, 0.0f);
+            EnableCriticals(enemy, true);
+            uint32 const sampleSize = 10;
+            for(uint8 i = 0; i < 10; i++)
+                enemy->AttackerStateUpdate(priest, BASE_ATTACK);
+
+            auto[dealtMin, dealtMax] = GetWhiteDamageDoneTo(enemy, priest, BASE_ATTACK, false, sampleSize);
+            //no need to check damage, if we get here, sampleSize non-crit hits were found by GetWhiteDamageDoneTo
+            //if sample size is wrong here, it might also be because other non normal hits were found (such as dodge)
+        }
 
         void Test() override
         {
@@ -1893,15 +1913,17 @@ public:
             // By spells
             uint32 const minSmite = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN;
             uint32 const maxSmite = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX;
+            //make sure the enemy with 100% critical won't get any crit on our priest
             TEST_DIRECT_SPELL_DAMAGE_CALLBACK(enemy, priest, ClassSpells::Priest::SMITE_RNK_10, minSmite, maxSmite, false, [spellProcId](Unit* caster, Unit* victim) {
                 for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
                     caster->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, 200.f);
                 caster->AddAura(spellProcId, caster);
             });
-            // TODO: By melee
+            TestMeleeCrit(priest, enemy);
 
-            // Proc chance
-            //TEST_MELEE_PROC_CHANCE(enemy, priest, BASE_ATTACK, spellProcId, false, procChance, MELEE_HIT_CRIT);
+            //Proc chance
+            TEST_MELEE_PROC_CHANCE(enemy, priest, spellProcId, false, procChance, MELEE_HIT_CRIT, false);
+            TEST_SPELL_PROC_CHANCE(enemy, priest, ClassSpells::Priest::SMITE_RNK_10, spellProcId, false, procChance, SPELL_MISS_NONE, true);
         }
     };
 

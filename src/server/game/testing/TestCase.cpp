@@ -21,7 +21,7 @@
 #define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) { _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo(); }
 
 //input info for next check, place this before INTERNAL_TEST_ASSERT
-#define INTERNAL_ASSERT_INFO(expr, ...) _InternalAssertInfo(expr, ## __VA_ARGS__);
+#define INTERNAL_ASSERT_INFO(expr, ...) { _InternalAssertInfo(expr, ## __VA_ARGS__); }
 
 TestCase::TestCase(TestStatus status) :
     _failed(false),
@@ -951,7 +951,7 @@ uint32 TestCase::GetChannelDamageTo(Unit* caster, Unit* victim, uint32 spellID, 
 
     /* this functions actually handle two kind of spells:
     - Channels triggering another spells to do their damage
-    - Channels using an aura on target to to damage
+    - Channels using an aura on target to do damage
     */
     if (spellInfo->HasAuraEffect(SPELL_AURA_PERIODIC_DAMAGE))
     {
@@ -1459,7 +1459,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     };
     auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(caster, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
-    INTERNAL_ASSERT_INFO("Spell %u only proc'd %u %f but was expected %f.", spellID, procSpellID, actualSuccessPercent, expectedChancePercent);
+    INTERNAL_ASSERT_INFO("Spell %u proc'd %f % instead of expected %f % (by spell %u)", procSpellID, actualSuccessPercent, expectedChancePercent, spellID);
     INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 
     RestoreCriticals(caster);
