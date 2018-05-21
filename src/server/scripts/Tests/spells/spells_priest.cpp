@@ -2038,7 +2038,7 @@ public:
             // Cooldown
             TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, Seconds(8));
 
-            // Heal
+            // Damage
             float const mindBlastCastTime = 1.5f;
             float const mindBlastCoeff = mindBlastCastTime / 3.5f;
             uint32 const bonusSpell = 292 * mindBlastCoeff;

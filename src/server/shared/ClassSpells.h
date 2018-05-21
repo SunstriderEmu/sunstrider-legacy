@@ -1032,6 +1032,7 @@ namespace Talents
             MISERY_RNK_3 = 33193,
             MISERY_RNK_4 = 33194,
             MISERY_RNK_5 = 33195,
+            MISERY_RNK_5_TRIGGER = 33200,
             VAMPIRIC_TOUCH_RNK_1 = 34914,
         };
     };
