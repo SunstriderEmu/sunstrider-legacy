@@ -1609,6 +1609,7 @@ public:
 
             // Rogue setup
             RemoveAllEquipedItems(rogue);
+
             float const armorFactor = 1 - (dummy->GetArmor() / (dummy->GetArmor() + 10557.5));
             float const startAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
             float const startDmgMin = rogue->GetFloatValue(UNIT_FIELD_MINDAMAGE);
@@ -1621,13 +1622,10 @@ public:
             Wait(1500);
             EQUIP_NEW_ITEM(rogue, 32838); // Warglaive of Azzinoth OH
 
-            float const rogueMHSpeed = 2.8f;
-            float const rogueOHSpeed = 1.4f;
+            auto[expectedMHMinDmg, expectedMHMaxDmg] = CalcMeleeDamage(rogue, warrior, BASE_ATTACK);
+            auto[expectedOHMinDmg, expectedOHMaxDmg] = CalcMeleeDamage(rogue, warrior, OFF_ATTACK);
+
             float const rogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
-            uint32 const expectedMHMinDmg = (214 + (rogueAP / 14 * rogueMHSpeed)) * armorFactor;
-            uint32 const expectedMHMaxDmg = (398 + (rogueAP / 14 * rogueMHSpeed)) * armorFactor;
-            uint32 const expectedOHMinDmg = (107 + (rogueAP / 14 * rogueOHSpeed)) / 2.0f * armorFactor;
-            uint32 const expectedOHMaxDmg = (199 + (rogueAP / 14 * rogueOHSpeed)) / 2.0f * armorFactor;
             TEST_MELEE_DAMAGE(rogue, dummy, BASE_ATTACK, expectedMHMinDmg, expectedMHMaxDmg, false);
             TEST_MELEE_DAMAGE(rogue, dummy, OFF_ATTACK, expectedOHMinDmg, expectedOHMaxDmg, false);
 
@@ -2016,23 +2014,18 @@ public:
             warrior->SetFullHealth();
             TEST_DIRECT_SPELL_DAMAGE(warlock, warrior, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedSBMin, expectedSBMax, false);
             // Melee
-            float const rogueWeaponSpeed = 2.8f;
-            float const rogueAP = rogue->GetTotalAttackPowerValue(BASE_ATTACK);
-            uint32 const weaponMinDamage = 214 + (rogueAP / 14 * rogueWeaponSpeed);
-            uint32 const weaponMaxDamage = 398 + (rogueAP / 14 * rogueWeaponSpeed);
-            uint32 const expectedMHMin = weaponMinDamage * armorFactor * defensiveStanceFactor * shieldWallFactor;
-            uint32 const expectedMHMax = weaponMaxDamage * armorFactor * defensiveStanceFactor * shieldWallFactor;
+            auto[expectedMHMin, expectedMHMax] = CalcMeleeDamage(rogue, warrior, BASE_ATTACK);
+            expectedMHMin *= defensiveStanceFactor * shieldWallFactor;
+            expectedMHMax *= defensiveStanceFactor * shieldWallFactor;
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD);
             warrior->SetMaxHealth(999999999);
             warrior->SetFullHealth();
             TEST_MELEE_DAMAGE(rogue, warrior, BASE_ATTACK, expectedMHMin, expectedMHMax, false);
             // Ranged
-            float const hunterWeaponSpeed = 3.0f;
-            float const hunterAP = hunter->GetTotalAttackPowerValue(RANGED_ATTACK);
-            uint32 const bowMinDamage = 201 + (hunterAP / 14 * hunterWeaponSpeed);
-            uint32 const bowMaxDamage = 374 + (hunterAP / 14 * hunterWeaponSpeed);
-            uint32 const expectedRangedMin = bowMinDamage * armorFactor * defensiveStanceFactor * shieldWallFactor;
-            uint32 const expectedRangedMax = bowMaxDamage * armorFactor * defensiveStanceFactor * shieldWallFactor;
+            auto[expectedRangedMin, expectedRangedMax] = CalcMeleeDamage(hunter, warrior, RANGED_ATTACK);
+            expectedRangedMin *= defensiveStanceFactor * shieldWallFactor;
+            expectedRangedMax *= defensiveStanceFactor * shieldWallFactor;
+
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::SHIELD_WALL_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD);
             warrior->SetMaxHealth(999999999);
             warrior->SetFullHealth();

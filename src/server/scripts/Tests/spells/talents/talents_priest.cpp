@@ -849,13 +849,9 @@ public:
             WaitNextUpdate();
             float const talentReduction = 1 - MAX_STACK * talentDamageTakenFactorPerStack;
             { //melee damage reduction
-                uint32 const weaponMinDmg = 113;
-                uint32 const weaponMaxDmg = 211;
-                float const weaponSpeed = 1.5f;
-                float const AP = shaman->GetTotalAttackPowerValue(BASE_ATTACK);
-                float const armorFactor = 1.0f - (priest->GetArmor() / (priest->GetArmor() + 10557.5f));
-                uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed) * armorFactor * talentReduction;
-                uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed) * armorFactor * talentReduction;
+                auto[minMelee, maxMelee] = CalcMeleeDamage(shaman, priest, BASE_ATTACK);
+                minMelee *= talentReduction;
+                maxMelee *= talentReduction;
                 RefreshProcWithMaxStacks(priest);
                 TEST_MELEE_DAMAGE(shaman, priest, BASE_ATTACK, minMelee, maxMelee, false);
             }
@@ -1058,13 +1054,10 @@ public:
             // Reduces all damage taken by 40%
             EQUIP_NEW_ITEM(shaman, 34165); // Fang of Kalecgos
             WaitNextUpdate();
-            uint32 const weaponMinDmg = 113;
-            uint32 const weaponMaxDmg = 211;
-            float const weaponSpeed = 1.5f;
-            float const AP = shaman->GetTotalAttackPowerValue(BASE_ATTACK);
-            float const armorFactor = 1 - (priest->GetArmor() / (priest->GetArmor() + 10557.5f));
-            uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed) * armorFactor * talentDamageTakenFactor;
-            uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed) * armorFactor * talentDamageTakenFactor;
+
+            auto[minMelee, maxMelee] = CalcMeleeDamage(shaman, priest, BASE_ATTACK);
+            minMelee *= talentDamageTakenFactor;
+            maxMelee *= talentDamageTakenFactor;
             RefreshPainSuppression(priest);
             TEST_MELEE_DAMAGE(shaman, priest, BASE_ATTACK, minMelee, maxMelee, false);
             uint32 const minEarthShock = ClassSpellsDamage::Shaman::EARTH_SHOCK_RNK_8_MIN_LVL_70 * talentDamageTakenFactor;

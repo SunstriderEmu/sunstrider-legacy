@@ -272,7 +272,7 @@ public:
     meleeHitOutcome: Force melee hit result
     chance: 0-100
     */
-    #define TEST_MELEE_PROC_CHANCE(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, ranged)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, missInfo, ranged, {}); _ResetCaller(); }
+    #define TEST_MELEE_PROC_CHANCE(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, ranged)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, ranged, {}); _ResetCaller(); }
     /* Same but with additional argument:
     callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
@@ -410,6 +410,8 @@ protected:
     void _SaveUnitState(Unit* unit);
     //Restore values saved by _SaveUnitState
     void _RestoreUnitState(Unit* unit);
+    //calc min max damage with attacker weapon on target given attacker weapon, ap and target armor
+    std::pair<uint32 /*min*/, uint32 /*max*/> CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType = BASE_ATTACK);
     // <Helpers/>
 
 private:
