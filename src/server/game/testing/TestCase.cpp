@@ -1524,6 +1524,22 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
 
+    Unit* checkTarget = selfProc ? caster : victim;
+    auto hasProcced = [checkTarget, procSpellID](PlayerbotTestingAI* AI) {
+        auto damageToTarget = AI->GetSpellDamageDoneInfo(checkTarget);
+        if (!damageToTarget)
+            return false;
+
+        for (auto itr : *damageToTarget)
+        {
+            if (itr.damageInfo.SpellID != procSpellID)
+                continue;
+
+            return true;
+        }
+        return false;
+    };
+
     uint32 procCount = 0;
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -1537,32 +1553,17 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
 
         caster->RemoveAurasDueToSpell(procSpellID);
         victim->RemoveAurasDueToSpell(procSpellID);
-                
+        
+        //max 1 proc counted per loop
+        if (((casterAI ? hasProcced(casterAI) : false)) || (victimAI ? hasProcced(victimAI) : false))
+            procCount++;
+        if (casterAI)
+            casterAI->ResetSpellCounters();
+        if (victimAI)
+            victimAI->ResetSpellCounters();
+
         HandleThreadPause();
     }
-
-    Unit* checkTarget = selfProc ? caster : victim;
-    auto countProcs = [checkTarget, procSpellID](PlayerbotTestingAI* AI) {
-        auto damageToTarget = AI->GetSpellDamageDoneInfo(checkTarget);
-        if (!damageToTarget)
-            return uint32(0);
-
-        uint32 count = 0;
-        for (auto itr : *damageToTarget)
-        {
-            if (itr.damageInfo.SpellID != procSpellID)
-                continue;
-
-            count++;
-        }
-        return count;
-    };
-    //we count both procs from caster to checkTarget and from victim to checkTarget
-    //if this is not flexible enough, consider replacing the selfProc arg with a Unit* checkTarget
-    if (casterAI)
-        procCount += countProcs(casterAI);
-    if (victimAI)
-        procCount += countProcs(victimAI);
 
     float actualSuccessPercent = 100 * (procCount / float(sampleSize));
     INTERNAL_ASSERT_INFO("Spell %u only proc'd %u %f but was expected %f.", spellID, procSpellID, actualSuccessPercent, expectedChancePercent);

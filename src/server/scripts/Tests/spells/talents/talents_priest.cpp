@@ -1521,6 +1521,7 @@ class ImprovedHealingTest : public TestCaseScript
 public:
     ImprovedHealingTest() : TestCaseScript("talents priest improved_healing") { }
 
+    //"Reduces the mana cost of your Lesser Heal, Heal, and Greater Heal spells by 15%."
     class ImprovedHealingTestImpt : public TestCase
     {
     public:
@@ -1554,6 +1555,7 @@ class HealingPrayersTest : public TestCaseScript
 public:
     HealingPrayersTest() : TestCaseScript("talents priest healing_prayers") { }
 
+    //"Reduces the mana cost of your Prayer of Healing and Prayer of Mending spell by 20%."
     class HealingPrayersTestImpt : public TestCase
     {
     public:
@@ -1585,6 +1587,7 @@ class SpiritOfRedemptionTest : public TestCaseScript
 public:
     SpiritOfRedemptionTest() : TestCaseScript("talents priest spirit_of_redemption") { }
 
+    //"Increases total Spirit by 5% and upon death, the priest becomes the Spirit of Redemption for 15sec. The Spirit of Redemption cannot move, attack, be attacked or targeted by any spells or effects. While in this form the priest can cast any healing spell free of cost. When the effect ends, the priest dies."
     class SpiritOfRedemptionTestImpt : public TestCase
     {
     public:
@@ -1637,6 +1640,7 @@ class SpiritualGuidanceTest : public TestCaseScript
 public:
     SpiritualGuidanceTest() : TestCaseScript("talents priest spiritual_guidance") { }
 
+    //"Increases spell damage and healing by up to 25 % of your total Spirit."
     class SpiritualGuidanceTestImpt : public TestCase
     {
     public:
@@ -1675,16 +1679,16 @@ class SurgeOfLightTest : public TestCaseScript
 public:
     SurgeOfLightTest() : TestCaseScript("talents priest surge_of_light") { }
 
+    //"Your spell criticals have a 50% chance to cause your next Smite spell to be instant cast, cost no mana but be incapable of a critical hit. This effect lasts 10sec."
     class SurgeOfLightTestImpt : public TestCase
     {
     public:
-        SurgeOfLightTestImpt() : TestCase(STATUS_WIP) { } // Holy Nova do something weird
+        SurgeOfLightTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* enemy = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
-            Creature* dummy = SpawnCreature();
 
             LearnTalent(priest, Talents::Priest::SURGE_OF_LIGHT_RNK_2);
             uint32 const spellProcId = Talents::Priest::SURGE_OF_LIGHT_RNK_2_TRIGGER;
@@ -1698,27 +1702,31 @@ public:
             uint32 const minSmite = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN;
             uint32 const maxSmite = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX;
             TEST_DIRECT_SPELL_DAMAGE_CALLBACK(priest, enemy, ClassSpells::Priest::SMITE_RNK_10, minSmite, maxSmite, false, [spellProcId](Unit* caster, Unit* victim) {
+                //priest will have 100% crit chance in the test. Since we're testing with non crit damages this will ensure no crit was done.
                 for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
                     caster->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, 200.f);
                 caster->AddAura(spellProcId, caster);
             });
 
+            float twoTargetsProcChance = (1.0f - std::pow(1.0f - procChance / 100.0f, 2)) * 100.0f; //spell hits two targets... two times the proc chances!
             // Damage
             TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::SMITE_RNK_10, spellProcId, true, procChance, SPELL_MISS_NONE, true);
             TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::HOLY_FIRE_RNK_9, spellProcId, true, procChance, SPELL_MISS_NONE, true);
             TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::MIND_BLAST_RNK_11, spellProcId, true, procChance, SPELL_MISS_NONE, true);
             TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, spellProcId, true, procChance, SPELL_MISS_NONE, true);
-            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::HOLY_NOVA_RNK_7, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::HOLY_NOVA_RNK_7, spellProcId, true, twoTargetsProcChance, SPELL_MISS_NONE, true);
+
             // Heal
+            enemy->KillSelf();
             TestPlayer* ally = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             GroupPlayer(priest, ally);
-            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, spellProcId, true, procChance, SPELL_MISS_NONE, true);
-            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, spellProcId, true, twoTargetsProcChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, spellProcId, true, twoTargetsProcChance, SPELL_MISS_NONE, true);
             TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::FLASH_HEAL_RNK_9, spellProcId, true, procChance, SPELL_MISS_NONE, true);
             TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::GREATER_HEAL_RNK_7, spellProcId, true, procChance, SPELL_MISS_NONE, true);
             TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::HEAL_RNK_4, spellProcId, true, procChance, SPELL_MISS_NONE, true);
-            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, spellProcId, true, procChance, SPELL_MISS_NONE, true);
-            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::HOLY_NOVA_RNK_7, spellProcId, true, procChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, spellProcId, true, twoTargetsProcChance, SPELL_MISS_NONE, true);
+            TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::HOLY_NOVA_RNK_7_HEAL_LINKED, spellProcId, true, twoTargetsProcChance, SPELL_MISS_NONE, true);
         }
     };
 
