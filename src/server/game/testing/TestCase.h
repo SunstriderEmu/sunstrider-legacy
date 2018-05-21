@@ -272,11 +272,11 @@ public:
     meleeHitOutcome: Force melee hit result
     chance: 0-100
     */
-    #define TEST_MELEE_PROC_CHANCE(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, ranged)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, ranged, {}); _ResetCaller(); }
+    #define TEST_MELEE_PROC_CHANCE(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, ranged)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, ranged, {}); _ResetCaller(); }
     /* Same but with additional argument:
     callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
-    #define TEST_MELEE_PROC_CHANCE_CALLBACK(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, ranged, callback)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, missInfo, ranged, callback); _ResetCaller(); }
+    #define TEST_MELEE_PROC_CHANCE_CALLBACK(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, ranged, callback)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, ranged, Optional<TestCallback>(callback)); _ResetCaller(); }
 
     /* caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
     chance: 0-100
