@@ -251,6 +251,7 @@ namespace ClassSpellsDamage
             MANA_BURN_RNK_7_MIN = 1021,
             MANA_BURN_RNK_7_MAX = 1079,
             POWER_WORD_SHIELD_RNK_12 = 1265,
+            STARSHARDS_RNK_8_TICK = 157,
             STARSHARDS_RNK_8_TOTAL = 785,
             FEEDBACK_BURN_RNK_6 = 165,
             // Holy

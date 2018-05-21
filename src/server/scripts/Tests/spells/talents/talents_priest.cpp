@@ -735,8 +735,12 @@ public:
     class ForceOfWillTestImpt : public TestCase
     {
     public:
+        /*
+        Bugs:
+            - Devouring Plague not affected.
+        */
         //"Increases your spell damage by 5% and the critical strike chance of your offensive spells by 5%"
-        ForceOfWillTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { } //TODO: Add devouring plague + starshard
+        ForceOfWillTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
@@ -750,6 +754,14 @@ public:
 
             LearnTalent(priest, Talents::Priest::FORCE_OF_WILL_RNK_5);
             // SP
+            // Devouring Plague
+            uint32 const dpTickAmount = 8;
+            uint32 const expectedDPDoT = dpTickAmount * floor(ClassSpellsDamage::Priest::DEVOURING_PLAGUE_RNK_7_TICK * talentDamageFactor);
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, expectedDPDoT, false);
+            // Starshards
+            uint32 const starshardsTickAmount = 5;
+            uint32 const expectedStarshardsDoT = starshardsTickAmount * floor(ClassSpellsDamage::Priest::STARSHARDS_RNK_8_TICK * talentDamageFactor);
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::STARSHARDS_RNK_8, expectedStarshardsDoT, false);
             // Smite
             uint32 const expectedSmiteMin = ClassSpellsDamage::Priest::SMITE_RNK_10_MIN * talentDamageFactor;
             uint32 const expectedSmiteMax = ClassSpellsDamage::Priest::SMITE_RNK_10_MAX * talentDamageFactor;
