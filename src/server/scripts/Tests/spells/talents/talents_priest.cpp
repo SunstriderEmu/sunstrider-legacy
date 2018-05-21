@@ -1162,6 +1162,7 @@ class ImprovedRenewTest : public TestCaseScript
 public:
     ImprovedRenewTest() : TestCaseScript("talents priest improved_renew") { }
 
+    //"Increases the amount healed by your Renew spell by 15%"
     class ImprovedRenewTestImpt : public TestCase
     {
     public:
@@ -1191,6 +1192,7 @@ class HolySpecializationTest : public TestCaseScript
 public:
     HolySpecializationTest() : TestCaseScript("talents priest holy_specialization") { }
 
+    //"Increases the critical effect chance of your Holy spells by 5%"
     class HolySpecializationTestImpt : public TestCase
     {
     public:
@@ -1217,6 +1219,7 @@ public:
             TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, expectedSpellCritChance);
             TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::HOLY_NOVA_RNK_7, expectedSpellCritChance);
             TEST_SPELL_CRIT_CHANCE(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, expectedSpellCritChance);
+            //Heals from Prayer of Mending will not crit
         }
     };
 
@@ -1231,6 +1234,7 @@ class SpellWardingTest : public TestCaseScript
 public:
     SpellWardingTest() : TestCaseScript("talents priest spell_warding") { }
 
+    //"Reduces all spell damage taken by 10%"
     class SpellWardingTestImpt : public TestCase
     {
     public:
@@ -1267,6 +1271,7 @@ class DivineFuryTest : public TestCaseScript
 public:
     DivineFuryTest() : TestCaseScript("talents priest divine_fury") { }
 
+    //"Reduces the casting time of your Smite, Holy Fire, Heal and Greater Heal spells by 0.5 sec"
     class DivineFuryTestImpt : public TestCase
     {
     public:
@@ -1297,10 +1302,11 @@ class HolyNovaTest : public TestCaseScript
 public:
     HolyNovaTest() : TestCaseScript("talents priest holy_nova") { }
 
+    //Causes an explosion of holy light around the caster, causing 181 to 210 Holy damage to all enemy targets within 10 yards and healing all party members within 10 yards for 302 to 351. These effects cause no threat.
     class HolyNovaTestImpt : public TestCase
     {
     public:
-        HolyNovaTestImpt() : TestCase(STATUS_WIP) { } // Seems like wrong spell coeff, but atm: GetHealingDoneInfoTo found no data for this victim
+        HolyNovaTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1312,25 +1318,35 @@ public:
             ally->SetHealth(1);
             ally->DisableRegeneration(true);
 
+            //check no threat + healing done on group
             FORCE_CAST(priest, priest, ClassSpells::Priest::HOLY_NOVA_RNK_1);
             TEST_ASSERT(ally->GetHealth() == 1); // No heal done on ungrouped players
-            TEST_ASSERT(dummy->GetThreatManager().GetThreat(priest) == 0.f); // No threat
+            TEST_ASSERT(dummy->GetThreatManager().GetThreat(priest) == 0.f); // No threat on enemies
+            GroupPlayer(priest, ally);
+            dummy->EngageWithTarget(ally);
+            FORCE_CAST(priest, priest, ClassSpells::Priest::HOLY_NOVA_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            // Heal was done on grouped player :
+            GetHealingPerSpellsTo(priest, ally, ClassSpells::Priest::HOLY_NOVA_RNK_1_HEAL_LINKED, {}, 1);
+            TEST_ASSERT(ally->GetHealth() > 1);
+            TEST_ASSERT(dummy->GetThreatManager().GetThreat(priest) == 0.f); // but no threat on healing done either
 
-            uint32 const spellLevel = 68;
+            int32 const spellLevel = 68;
             float const pointPerLevel = 1.4f;
-            uint32 const pointPerLevelGain = std::max(priest->GetLevel() - spellLevel, uint32(0)) * pointPerLevel;
+            float const healPointPerLevel = 1.0f;
+            uint32 const pointPerLevelGain = std::max(int32(priest->GetLevel()) - spellLevel, int32(0)) * pointPerLevel;
+            uint32 const pointPerLevelHealGain = std::max(int32(priest->GetLevel()) - spellLevel, int32(0)) * healPointPerLevel;
 
             // Damage
             uint32 spellPower = 183 * ClassSpellsCoeff::Priest::HOLY_NOVA;
             uint32 const holyNovaMinDmg = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_MIN + pointPerLevelGain + spellPower;
             uint32 const holyNovaMaxDmg = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_MAX + pointPerLevelGain + spellPower;
             TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::HOLY_NOVA_RNK_7, holyNovaMinDmg, holyNovaMaxDmg, false);
+
             // Heal
-            GroupPlayer(priest, ally);
             uint32 bonusHeal = 550 * ClassSpellsCoeff::Priest::HOLY_NOVA;
-            uint32 const holyNovaMinHeal = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_MIN + pointPerLevelGain + bonusHeal;
-            uint32 const holyNovaMaxHeal = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_MAX + pointPerLevelGain + bonusHeal;
-            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::HOLY_NOVA_RNK_7, holyNovaMinHeal, holyNovaMaxHeal, false);
+            uint32 const holyNovaMinHeal = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_HEAL_MIN + pointPerLevelHealGain + bonusHeal;
+            uint32 const holyNovaMaxHeal = ClassSpellsDamage::Priest::HOLY_NOVA_RNK_7_HEAL_MAX + pointPerLevelHealGain + bonusHeal;
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::HOLY_NOVA_RNK_7_HEAL_LINKED, holyNovaMinHeal, holyNovaMaxHeal, false);
 
             // Mana cost
             uint32 const expectedHolyNovaManaCost = 875;
@@ -1349,6 +1365,7 @@ class BlessedRecoveryTest : public TestCaseScript
 public:
     BlessedRecoveryTest() : TestCaseScript("talents priest blessed_recovery") { }
 
+    //After being struck by a melee or ranged critical hit, heal 25% of the damage taken over 6sec.
     class BlessedRecoveryTestImpt : public TestCase
     {
     public:
@@ -1379,6 +1396,13 @@ public:
             Wait(6000);
             ASSERT_INFO("Priest has %u HP but %u was expected.", priest->GetHealth(), expectedPriestHealth);
             TEST_ASSERT(priest->GetHealth() == expectedPriestHealth);
+
+            /* WoWWiki: If you receive a critical strike, subsequent critical strikes will NOT stack on top of your existing Blessed Recovery.
+            Instead, it will refresh the ability with the value of your last critical strike. For example, if you take a 3000 damage critical hit,
+            you will receive the Blessed Recovery effect for 750 damage (assuming max rank). If you take a 1000 damage critical strike directly 
+            afterwards, it will overwrite your current Blessed Recovery with a 250 damage restore.*/
+            //Keeping previous value is a very specific implemented with SPELL_ATTR0_CU_ROLLING_PERIODIC on our core... this spell does not have it
+            //worth testing it?
         }
     };
 
