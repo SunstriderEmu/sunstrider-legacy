@@ -362,8 +362,10 @@ protected:
     void _TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS);
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, bool checkSelf);
     void _TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, TestCallbackResult callback);
-    void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float chance, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
-    void _TestMeleeProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float chance, MeleeHitOutcome meleeHitOutcome, bool ranged, Optional<TestCallback> callback);
+    void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
+    void _TestMeleeProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, bool ranged, Optional<TestCallback> callback);
+    //return actual proc chance
+    std::pair<float /*procChance*/, float /*absoluteTolerance*/> _TestProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, TestCallback launchCallback, Optional<TestCallback> callback);
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
     void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, Optional<TestCallback> callback);
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);

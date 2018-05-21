@@ -1432,77 +1432,40 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
 
 void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, bool ranged, Optional<TestCallback> callback)
 {
-    auto casterAI = _GetCasterAI(attacker, false);
-    auto victimAI = _GetCasterAI(victim, false);
-    INTERNAL_ASSERT_INFO("Could not find Testing AI for neither caster or victim");
-    INTERNAL_TEST_ASSERT(casterAI != nullptr && victimAI != nullptr);
-
-    _EnsureAlive(attacker, victim);
-    /*SpellInfo const* procSpellInfo =*/ _GetSpellInfo(procSpellID);
-
-    ResetSpellCast(attacker);
-    if (casterAI)
-        casterAI->ResetSpellCounters();
-    if (victimAI)
-        victimAI->ResetSpellCounters();
-    _MaxHealth(attacker);
-    _MaxHealth(victim);
     MeleeHitOutcome previousForceOutcome = attacker->_forceMeleeResult;
     attacker->ForceMeleeHitResult(meleeHitOutcome);
 
-    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
-
-    uint32 procCount = 0;
-    for (uint32 i = 0; i < sampleSize; i++)
-    {
-        if (callback)
-            callback.get()(attacker, victim);
-
-        victim->SetFullHealth();
+    auto launchCallback = [&](Unit* caster, Unit* victim) {
         attacker->AttackerStateUpdate(victim, ranged ? RANGED_ATTACK : BASE_ATTACK);
-
-        attacker->RemoveAurasDueToSpell(procSpellID);
-        victim->RemoveAurasDueToSpell(procSpellID);
-
-        HandleThreadPause();
-    }
-
-    Unit* checkTarget = selfProc ? attacker : victim;
-    auto countProcs = [checkTarget, procSpellID](PlayerbotTestingAI* AI) {
-        auto damageToTarget = AI->GetSpellDamageDoneInfo(checkTarget);
-        if (!damageToTarget)
-            return uint32(0);
-
-        uint32 count = 0;
-        for (auto itr : *damageToTarget)
-        {
-            if (itr.damageInfo.SpellID != procSpellID)
-                continue;
-
-            count++;
-        }
-        return count;
     };
-    //we count both procs from caster to checkTarget and from victim to checkTarget
-    //if this is not flexible enough, consider replacing the selfProc arg with a Unit* checkTarget
-    if (casterAI)
-        procCount += countProcs(casterAI);
-    if (victimAI)
-        procCount += countProcs(victimAI);
+    auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(attacker, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
-    float actualSuccessPercent = 100 * (procCount / float(sampleSize));
     INTERNAL_ASSERT_INFO("Spell %u proc'd %f % instead of expected %f %", procSpellID, actualSuccessPercent, expectedChancePercent);
     INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 
-    //Restore
-    ResetSpellCast(attacker); // some procs may have occured and may still be in flight, remove them
-    _RestoreUnitState(victim);
-    _RestoreUnitState(attacker);
     attacker->AttackStop();
     attacker->ForceMeleeHitResult(previousForceOutcome);
 }
 
 void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback)
+{
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
+    EnableCriticals(caster, crit);
+
+    auto launchCallback = [&](Unit* caster, Unit* victim) {
+        _ForceCast(caster, victim, spellID, missInfo, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_PROC_AS_NON_TRIGGERED));
+        if (spellInfo->IsChanneled())
+            _UpdateUnitEvents(caster);
+    };
+    auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(caster, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
+
+    INTERNAL_ASSERT_INFO("Spell %u only proc'd %u %f but was expected %f.", spellID, procSpellID, actualSuccessPercent, expectedChancePercent);
+    INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
+
+    RestoreCriticals(caster);
+}
+
+std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProcChance(Unit* caster, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, TestCallback launchCallback, Optional<TestCallback> callback)
 {
     auto casterAI = _GetCasterAI(caster, false);
     auto victimAI = _GetCasterAI(victim, false);
@@ -1510,7 +1473,6 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     INTERNAL_TEST_ASSERT(casterAI != nullptr && victimAI != nullptr);
 
     _EnsureAlive(caster, victim);
-    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
     /*SpellInfo const* procSpellInfo =*/ _GetSpellInfo(procSpellID);
 
     ResetSpellCast(caster);
@@ -1520,7 +1482,6 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
         victimAI->ResetSpellCounters();
     _MaxHealth(caster);
     _MaxHealth(victim);
-    EnableCriticals(caster, crit);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
 
@@ -1543,17 +1504,12 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     uint32 procCount = 0;
     for (uint32 i = 0; i < sampleSize; i++)
     {
+        victim->SetFullHealth();
         if (callback)
             callback.get()(caster, victim);
 
-        victim->SetFullHealth();
-        _ForceCast(caster, victim, spellID, missInfo, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_PROC_AS_NON_TRIGGERED));
-        if (spellInfo->IsChanneled())
-            _UpdateUnitEvents(caster);
+        launchCallback(caster, victim);
 
-        caster->RemoveAurasDueToSpell(procSpellID);
-        victim->RemoveAurasDueToSpell(procSpellID);
-        
         //max 1 proc counted per loop
         if (((casterAI ? hasProcced(casterAI) : false)) || (victimAI ? hasProcced(victimAI) : false))
             procCount++;
@@ -1562,18 +1518,20 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
         if (victimAI)
             victimAI->ResetSpellCounters();
 
+        caster->RemoveAurasDueToSpell(procSpellID);
+        victim->RemoveAurasDueToSpell(procSpellID);
+
         HandleThreadPause();
     }
 
     float actualSuccessPercent = 100 * (procCount / float(sampleSize));
-    INTERNAL_ASSERT_INFO("Spell %u only proc'd %u %f but was expected %f.", spellID, procSpellID, actualSuccessPercent, expectedChancePercent);
-    INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
-
+    
     //Restore
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
     _RestoreUnitState(victim);
     _RestoreUnitState(caster);
-    RestoreCriticals(caster);
+
+    return std::make_pair(actualSuccessPercent, resultingAbsoluteTolerance);
 }
 
 void TestCase::_EnsureAlive(Unit* caster, Unit* target)
