@@ -1931,14 +1931,11 @@ class EmpoweredHealingTest : public TestCaseScript
 public:
     EmpoweredHealingTest() : TestCaseScript("talents priest empowered_healing") { }
 
+    //Your Greater Heal spell gains an additional 20% and your Flash Heal and Binding Heal gain an additional 10% of your bonus healing effects.
     class EmpoweredHealingTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - Binding Heal doesnt gain an additional 10% on spell coeff
-        */
-        EmpoweredHealingTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        EmpoweredHealingTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1958,7 +1955,7 @@ public:
             uint32 const bhBonus = (ClassSpellsCoeff::Priest::BINDING_HEAL + talentBindingHealFactor) * bonusHeal;
             uint32 const bindingHealMin = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MIN + bhBonus;
             uint32 const bindingHealMax = ClassSpellsDamage::Priest::BINDING_HEAL_RNK_1_MAX + bhBonus;
-            //TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin, bindingHealMax, false);
+            TEST_DIRECT_HEAL(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, bindingHealMin, bindingHealMax, false);
 
             // Flash Heal
             uint32 const fhBonus = (ClassSpellsCoeff::Priest::FLASH_HEAL + talentFlashHealFactor) * bonusHeal;
