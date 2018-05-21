@@ -1628,6 +1628,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading SpellAffect definitions..." );
     sSpellMgr->LoadSpellAffects(); 
 
+    TC_LOG_INFO("server.loading", "Loading linked spells...");
+    sSpellMgr->LoadSpellLinked();
+
     TC_LOG_INFO("server.loading", "Loading Spell Proc conditions and data...");
     sSpellMgr->LoadSpellProcs(); //must be after LoadSpellAffects 
 
