@@ -1417,6 +1417,7 @@ class InspirationTest : public TestCaseScript
 public:
     InspirationTest() : TestCaseScript("talents priest inspiration") { }
 
+    //"Increases your target's armor by 25% for 15sec after getting a critical effect from your Flash Heal, Heal, Greater Heal, Binding Heal, Prayer of Healing, or Circle of Healing spell."
     class InspirationTestImpt : public TestCase
     {
     public:
@@ -1462,48 +1463,50 @@ class HolyReachTest : public TestCaseScript
 public:
     HolyReachTest() : TestCaseScript("talents priest holy_reach") { }
 
+    //Increases the range of your Smite and Holy Fire spells and the radius of your Prayer of Healing, Holy Nova and Circle of Healing spells by 20%.
     class HolyReachTestImpt : public TestCase
     {
     public:
-        HolyReachTestImpt() : TestCase(STATUS_WIP) { } // Holy Nova isnt picked up by GetHealingPerSpellsTo, test should pass after that
+        HolyReachTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
-            EnableCriticals(priest, false);
 
             LearnTalent(priest, Talents::Priest::HOLY_REACH_RNK_2);
             float const talentRangeFactor = 1.2f;
 
-            uint32 const expectedSmiteReach = 30 * talentRangeFactor;
-            uint32 const expectedHolyFireReach = 30 * talentRangeFactor;
-            uint32 const expectedPrayerOfHealingReach = 30 * talentRangeFactor;
-            uint32 const expectedHolyNovagReach = 10 * talentRangeFactor;
-            uint32 const expectedCircleOfHealingReach = 40 * talentRangeFactor;
+            uint32 const expectedSmiteReach = 30.0f * talentRangeFactor;
+            uint32 const expectedHolyFireReach = 30.0f * talentRangeFactor;
+            uint32 const expectedPrayerOfHealingReach = 30.0f * talentRangeFactor;
+            uint32 const expectedHolyNovagReach = 10.0f * talentRangeFactor;
+            uint32 const expectedCircleOfHealingReach = 40.0f * talentRangeFactor;
 
             Position spawn;
             spawn.MoveInFront(_location, expectedSmiteReach);
             Creature* dummy = SpawnCreatureWithPosition(spawn);
             TestPlayer* ally = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
             spawn.MoveInFront(_location, expectedHolyNovagReach);
-            TestPlayer* ally2 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+            TestPlayer* allyNova = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+            Creature* dummyNova = SpawnCreatureWithPosition(spawn);
             spawn.MoveInFront(_location, expectedCircleOfHealingReach);
-            TestPlayer* ally3 = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
+            TestPlayer* allyCoH = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF, 70, spawn);
 
             GroupPlayer(priest, ally);
-            GroupPlayer(priest, ally2);
-            GroupPlayer(priest, ally3);
+            GroupPlayer(priest, allyNova);
+            GroupPlayer(priest, allyCoH);
 
             TriggerCastFlags triggerFlags = TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_GCD | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 
             TEST_CAST(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, SPELL_CAST_OK, triggerFlags);
             TEST_CAST(priest, dummy, ClassSpells::Priest::HOLY_FIRE_RNK_9, SPELL_CAST_OK, triggerFlags);
             TEST_CAST(priest, ally, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, SPELL_CAST_OK, triggerFlags);
-            GetHealingPerSpellsTo(priest, ally, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, false, 1);
-            TEST_CAST(priest, ally2, ClassSpells::Priest::HOLY_NOVA_RNK_7, SPELL_CAST_OK, triggerFlags);
-            GetHealingPerSpellsTo(priest, ally2, ClassSpells::Priest::HOLY_NOVA_RNK_7, false, 1);
-            TEST_CAST(priest, ally3, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, SPELL_CAST_OK, triggerFlags);
-            GetHealingPerSpellsTo(priest, ally3, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, false, 1);
+            GetHealingPerSpellsTo(priest, ally, ClassSpells::Priest::PRAYER_OF_HEALING_RNK_6, {}, 1);
+            TEST_CAST(priest, priest, ClassSpells::Priest::HOLY_NOVA_RNK_7, SPELL_CAST_OK, triggerFlags);
+            GetHealingPerSpellsTo(priest, allyNova, ClassSpells::Priest::HOLY_NOVA_RNK_7_HEAL_LINKED, {}, 1);
+            GetDamagePerSpellsTo(priest, dummyNova, ClassSpells::Priest::HOLY_NOVA_RNK_7, {}, 1);
+            TEST_CAST(priest, allyCoH, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, SPELL_CAST_OK, triggerFlags);
+            GetHealingPerSpellsTo(priest, allyCoH, ClassSpells::Priest::CIRCLE_OF_HEALING_RNK_5, {}, 1);
         }
     };
 
