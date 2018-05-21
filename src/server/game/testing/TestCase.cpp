@@ -1430,17 +1430,17 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 }
 
-void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, bool ranged, Optional<TestCallback> callback)
+void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, Optional<TestCallback> callback)
 {
     MeleeHitOutcome previousForceOutcome = attacker->_forceMeleeResult;
     attacker->ForceMeleeHitResult(meleeHitOutcome);
 
     auto launchCallback = [&](Unit* caster, Unit* victim) {
-        attacker->AttackerStateUpdate(victim, ranged ? RANGED_ATTACK : BASE_ATTACK);
+        attacker->AttackerStateUpdate(victim, attackType);
     };
     auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(attacker, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
-    INTERNAL_ASSERT_INFO("Spell %u proc'd %f % instead of expected %f %", procSpellID, actualSuccessPercent, expectedChancePercent);
+    INTERNAL_ASSERT_INFO("Spell %u proc'd %f instead of expected %f", procSpellID, actualSuccessPercent, expectedChancePercent);
     INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 
     attacker->AttackStop();
@@ -1459,7 +1459,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     };
     auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(caster, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
-    INTERNAL_ASSERT_INFO("Spell %u proc'd %f % instead of expected %f % (by spell %u)", procSpellID, actualSuccessPercent, expectedChancePercent, spellID);
+    INTERNAL_ASSERT_INFO("Spell %u proc'd %f instead of expected %f (by spell %u)", procSpellID, actualSuccessPercent, expectedChancePercent, spellID);
     INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 
     RestoreCriticals(caster);

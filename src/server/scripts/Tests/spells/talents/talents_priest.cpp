@@ -1962,7 +1962,7 @@ public:
             TestMeleeCrit(priest, enemy);
 
             //Proc chance
-            TEST_MELEE_PROC_CHANCE(enemy, priest, spellProcId, false, procChance, MELEE_HIT_CRIT, false);
+            TEST_MELEE_PROC_CHANCE(enemy, priest, spellProcId, false, procChance, MELEE_HIT_CRIT, BASE_ATTACK);
             TEST_SPELL_PROC_CHANCE(enemy, priest, ClassSpells::Priest::SMITE_RNK_10, spellProcId, false, procChance, SPELL_MISS_NONE, true);
         }
     };
@@ -2029,6 +2029,7 @@ class CircleOfHealingTest : public TestCaseScript
 public:
     CircleOfHealingTest() : TestCaseScript("talents priest circle_of_healing") { }
 
+    //Heals friendly target and that target's party members within 15 yards of the target for 409 to 452.
     class CircleOfHealingTestImpt : public TestCase
     {
     public:
@@ -2077,6 +2078,8 @@ class SpiritTapTest : public TestCaseScript
 public:
     SpiritTapTest() : TestCaseScript("talents priest spirit_tap") { }
 
+    /*"Gives you a 100 % chance to gain a 100 % bonus to your Spirit after killing a target that yields experience or honor.
+    For the duration, your mana will regenerate at a 50 % rate while casting. Lasts 15sec."*/
     class SpiritTapTestImpt : public TestCase
     {
     public:
@@ -2160,7 +2163,8 @@ public:
             TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
                 victim->ClearDiminishings();
             });
-            TEST_MELEE_PROC_CHANCE_CALLBACK(enemy, priest, spellProcId, true, procChance, MELEE_HIT_NORMAL, false, [](Unit* caster, Unit* victim) {
+            //WoWWiki: Since Shadow damage is dealt to the target, Touch of Weakness will apply a charge of Shadow Weaving to the target, and it also has a chance to proc Blackout, making it a useful tool against Rogues, Warriors, Enhancement Shamans, etc.
+            TEST_MELEE_PROC_CHANCE_CALLBACK(enemy, priest, spellProcId, true, procChance, MELEE_HIT_NORMAL, BASE_ATTACK, [](Unit* caster, Unit* victim) {
                 caster->ClearDiminishings();
                 victim->AddAura(ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, victim);
             });

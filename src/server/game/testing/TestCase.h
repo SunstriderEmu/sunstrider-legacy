@@ -272,11 +272,12 @@ public:
     meleeHitOutcome: Force melee hit result
     chance: 0-100
     */
-    #define TEST_MELEE_PROC_CHANCE(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, ranged)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, ranged, {}); _ResetCaller(); }
+
+    #define TEST_MELEE_PROC_CHANCE(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, attackType)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, attackType, {}); _ResetCaller(); }
     /* Same but with additional argument:
     callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
-    #define TEST_MELEE_PROC_CHANCE_CALLBACK(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, ranged, callback)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, ranged, Optional<TestCallback>(callback)); _ResetCaller(); }
+    #define TEST_MELEE_PROC_CHANCE_CALLBACK(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, attackType, callback)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, attackType, Optional<TestCallback>(callback)); _ResetCaller(); }
 
     /* caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
     chance: 0-100
@@ -363,7 +364,7 @@ protected:
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, bool checkSelf);
     void _TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, TestCallbackResult callback);
     void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
-    void _TestMeleeProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, bool ranged, Optional<TestCallback> callback);
+    void _TestMeleeProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, Optional<TestCallback> callback);
     //return actual proc chance
     std::pair<float /*procChance*/, float /*absoluteTolerance*/> _TestProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, TestCallback launchCallback, Optional<TestCallback> callback);
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
