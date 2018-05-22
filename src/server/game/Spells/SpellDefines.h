@@ -155,6 +155,7 @@ enum TriggerCastFlags : uint32
     TRIGGERED_IGNORE_SPEED                          = 0x00200000,
     TRIGGERED_PROC_AS_NON_TRIGGERED                 = 0x00400000,
     TRIGGERED_IGNORE_TARGET_AURASTATE               = 0x00800000,
+    TRIGGERED_IGNORE_LOS                            = 0x01000000,
     TRIGGERED_FULL_DEBUG_MASK                       = 0xFFFFFFFF,
 };
 

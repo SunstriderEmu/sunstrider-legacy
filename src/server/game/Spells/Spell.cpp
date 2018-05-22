@@ -2071,7 +2071,11 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
                     if (deficit == 0)
                         continue;
 
-                    if ((deficit > maxHPDeficit || foundItr == tempTargets.end()) && target->IsWithinDist(itrTarget, jumpRadius) && target->IsWithinLOSInMap(itrTarget, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+                    if ((deficit > maxHPDeficit || foundItr == tempTargets.end()) 
+                        && target->IsWithinDist(itrTarget, jumpRadius) 
+                        && ((_triggeredCastFlags & TRIGGERED_IGNORE_LOS)
+                            || target->IsWithinLOSInMap(itrTarget, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+                        )
                     {
                         foundItr = itr;
                         maxHPDeficit = deficit;
@@ -2086,10 +2090,16 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
             {
                 if (foundItr == tempTargets.end())
                 {
-                    if ((!isBouncingFar || target->IsWithinDist(*itr, jumpRadius)) && target->IsWithinLOSInMap(*itr, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+                    if ((!isBouncingFar || target->IsWithinDist(*itr, jumpRadius)) 
+                        && (!(_triggeredCastFlags & TRIGGERED_IGNORE_LOS)
+                            || target->IsWithinLOSInMap(*itr, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+                        )
                         foundItr = itr;
                 }
-                else if (target->GetDistanceOrder(*itr, *foundItr) && target->IsWithinLOSInMap(*itr, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+                else if (target->GetDistanceOrder(*itr, *foundItr) 
+                    && (!(_triggeredCastFlags & TRIGGERED_IGNORE_LOS)
+                        || target->IsWithinLOSInMap(*itr, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+                    )
                     foundItr = itr;
             }
         }
@@ -5320,7 +5330,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 return SPELL_FAILED_NOT_READY;
         }
     }
-
+    
     // Check global cooldown
     if (strict && !(_triggeredCastFlags & TRIGGERED_IGNORE_GCD) && HasGlobalCooldown())
         return !m_spellInfo->HasAttribute(SPELL_ATTR0_DISABLED_WHILE_ACTIVE) ? SPELL_FAILED_NOT_READY : SPELL_FAILED_DONT_REPORT;
@@ -5395,7 +5405,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
             }
 
             // Ignore LOS for gameobjects casts
-            if (m_caster->GetTypeId() != TYPEID_GAMEOBJECT)
+            if (m_caster->GetTypeId() != TYPEID_GAMEOBJECT && !(_triggeredCastFlags & TRIGGERED_IGNORE_LOS))
             {
                 WorldObject* losTarget = m_caster;
                 if (IsTriggered() && m_triggeredByAuraSpell)
@@ -7599,7 +7609,9 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
             }
             else 
             {
-                if(m_caster->GetTypeId() != TYPEID_GAMEOBJECT || !m_caster->GetOwnerGUID()) //sun: no los check for non owned traps, speedup and fixes some slightly underground traps
+                if((m_caster->GetTypeId() != TYPEID_GAMEOBJECT || !m_caster->GetOwnerGUID()) //sun: no los check for non owned traps, fixes some slightly underground traps in world
+                   && (_triggeredCastFlags & TRIGGERED_IGNORE_LOS)
+                   ) 
                     if (target != m_caster && !target->IsWithinLOSInMap(caster, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
                         return false;
             }
