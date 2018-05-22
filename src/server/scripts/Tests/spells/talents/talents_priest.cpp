@@ -3014,26 +3014,39 @@ class VampiricTouchTest : public TestCaseScript
 public:
     VampiricTouchTest() : TestCaseScript("talents priest vampiric_touch") { }
 
+    //"Causes 650 Shadow damage over 15sec to your target and causes all party members to gain mana equal to 5% of any Shadow spell damage you deal."
     class VampiricTouchTestImpt : public TestCase
     {
     public:
         VampiricTouchTestImpt() : TestCase(STATUS_PASSING) { }
 
+        float const restoreManaFactor = 0.05f;
+
         // Check if the spell restores some mana through VT. If DoT, wait for its first tick otherwise resolves instantly.
-        void AssertSpellRestoresMana(TestPlayer* priest, Creature* dummy, uint32 spellId, float restoreManaFactor, uint32 spellManaCost, uint32 dotManaRestored = 0)
+        void AssertSpellRestoresMana(TestPlayer* priest, Creature* dummy, uint32 spellId, bool dot = false)
         {
-            priest->SetFullPower(POWER_MANA);
-            if (spellId != ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3)
+            auto AI = _GetCasterAI(priest);
+            AI->ResetSpellCounters();
+            bool isVT = (spellId == ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3);
+            if (!isVT)
+                FORCE_CAST(priest, dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            priest->SetPower(POWER_MANA, 0);
+            priest->DisableRegeneration(true);
+
+            FORCE_CAST(priest, dummy, spellId, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_PROC_AS_NON_TRIGGERED));
+            WaitNextUpdate(); //make sure channel started if any
+            uint32 expectedManaRestored = 0;
+            if (dot)
             {
-                FORCE_CAST(priest, dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3);
-                Wait(1500);
+                Wait(3000); //wait for a/some tick
+                auto[dotDamageToTarget, tickCount] = AI->GetDotDamage(dummy, spellId);
+                TEST_ASSERT(dotDamageToTarget != 0);
+                if (isVT) //ignore VT damage in this case, we want to count it only once
+                    dotDamageToTarget = 0;
+                uint32 manaRestoredPerTick = std::floor((dotDamageToTarget / tickCount) * restoreManaFactor) * tickCount;
+                auto[vtDamage, vtTickCount] = AI->GetDotDamage(dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3);
+                expectedManaRestored = manaRestoredPerTick + std::floor(vtDamage * restoreManaFactor);
             }
-            priest->SetPower(POWER_MANA, spellManaCost);
-            FORCE_CAST(priest, dummy, spellId, SPELL_MISS_NONE);
-            Wait(1500);
-            uint32 expectedManaRestored = dotManaRestored;
-            if (dotManaRestored > 0)
-                Wait(3000);
             else
             {
                 auto[minDmg, maxDmg] = GetDamagePerSpellsTo(priest, dummy, spellId, {}, 1);
@@ -3052,10 +3065,8 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             Creature* dummy = SpawnCreature();
 
-            priest->DisableRegeneration(true);
             EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
             
-            float const restoreManaFactor = 0.05f;
             uint32 const expectedVampiriTouchManaCost = 425;
 
             TEST_POWER_COST(priest, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, POWER_MANA, expectedVampiriTouchManaCost);
@@ -3065,28 +3076,24 @@ public:
             float const spellCoeff = ClassSpellsCoeff::Priest::VAMPIRIC_TOUCH;
             uint32 const spellBonus = 292 * spellCoeff / tickAmount;
             uint32 const expectedTickDamage = ClassSpellsDamage::Priest::VAMPIRIC_TOUCH_RNK_3_TICK + spellBonus;
-            uint32 const manaRestoredPerVTTick = expectedTickDamage * restoreManaFactor;
+            //uint32 const manaRestoredPerVTTick = expectedTickDamage * restoreManaFactor;
             float const expectedVampiricTouchTotal = tickAmount * expectedTickDamage;
             TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, expectedVampiricTouchTotal, false);
 
             // Mana restored - Only wait for 3s tick to assert it gives back mana
             RemoveAllEquipedItems(priest); // Unequip weapon to remove spell power from calculations
-            uint32 const manaRestoredPerVTTIckNoSP = ClassSpellsDamage::Priest::VAMPIRIC_TOUCH_RNK_3_TICK * restoreManaFactor;
             // VT
-            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, restoreManaFactor, 425, manaRestoredPerVTTIckNoSP);
+            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, true);
             // MB
-            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, restoreManaFactor, 450);
+            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11);
             // MF
-            uint32 const expectedMFManaRestored = manaRestoredPerVTTIckNoSP + 3 * floor(ClassSpellsDamage::Priest::MIND_FLAY_RNK_7_TICK * restoreManaFactor);
-            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, restoreManaFactor, 230, expectedMFManaRestored);
+            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, true);
             // SwD
-            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, restoreManaFactor, 309);
+            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2);
             // SwP
-            uint32 const expectedSwPManaRestored = manaRestoredPerVTTIckNoSP + floor(ClassSpellsDamage::Priest::SHADOW_WORD_PAIN_RNK_10_TICK * restoreManaFactor);
-            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, restoreManaFactor, 575, expectedSwPManaRestored);
+            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, true);
             // DP
-            uint32 const expectedDPManaRestored = manaRestoredPerVTTIckNoSP + floor(ClassSpellsDamage::Priest::DEVOURING_PLAGUE_RNK_7_TICK * restoreManaFactor);
-            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, restoreManaFactor, 1145, expectedDPManaRestored);
+            AssertSpellRestoresMana(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, true);
         }
     };
 
