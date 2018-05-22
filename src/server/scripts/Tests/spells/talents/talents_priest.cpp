@@ -2421,6 +2421,7 @@ class ImprovedFadeTest : public TestCaseScript
 public:
     ImprovedFadeTest() : TestCaseScript("talents priest improved_fade") { }
 
+    //Decreases the cooldown of your Fade ability by 6 sec.
     class ImprovedFadeTestImpt : public TestCase
     {
     public:
@@ -2432,7 +2433,7 @@ public:
 
             LearnTalent(priest, Talents::Priest::IMPROVED_FADE_RNK_2);
 
-            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::FADE_RNK_7, Seconds(24));
+            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::FADE_RNK_7, Seconds(24)); //down from 30
         }
     };
 
@@ -2447,6 +2448,7 @@ class ShadowReachTest : public TestCaseScript
 public:
     ShadowReachTest() : TestCaseScript("talents priest shadow_reach") { }
 
+    //Increases the range of your offensive Shadow spells by 20%
     class ShadowReachTestImpt : public TestCase
     {
     public:
@@ -2510,6 +2512,8 @@ public:
     */
     ShadowWeavingTest() : TestCaseScript("talents priest shadow_weaving") { }
 
+    /*"Your Shadow damage spells have a 100% chance to cause your target to be vulnerable to Shadow damage.
+    This vulnerability increases the Shadow damage dealt to your target by 2% and lasts 15sec. Stacks up to 5 times."*/
     class ShadowWeavingTestImpt : public TestCase
     {
     public:
@@ -2534,7 +2538,7 @@ public:
             Creature* dummy = SpawnCreature();
 
             LearnTalent(priest, Talents::Priest::SHADOW_WEAVING_RNK_5);
-            float const talentShadowDamageFactor = 1.1f;
+            float const talentShadowDamageFactor = 1.1f; //with 5 stacks
 
             AssertSpellAppliesShadowWeaving(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7); // https://youtu.be/w0CrmZygCuY?t=15m46s
             AssertSpellAppliesShadowWeaving(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11);
@@ -2569,6 +2573,7 @@ class SilenceTest : public TestCaseScript
 public:
     SilenceTest() : TestCaseScript("talents priest silence") { }
 
+    //"Silences the target, preventing them from casting spells for 5sec."
     class SilenceTestImpt : public TestCase
     {
     public:
@@ -2600,13 +2605,13 @@ class VampiricEmbraceTest : public TestCaseScript
 public:
     VampiricEmbraceTest() : TestCaseScript("talents priest vampiric_embrace") { }
 
+    //"Afflicts your target with Shadow energy that causes all party members to be healed for 15% of any Shadow spell damage you deal for 1min."
     class VampiricEmbraceTestImpt : public TestCase
     {
     public:
         /*
         Bugs:
-            - Spiritual Atunnement is working with VE
-            - VE doesnt stack per priest
+            - Spiritual Atunnement is not working with VE
         */
         VampiricEmbraceTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
@@ -2623,6 +2628,8 @@ public:
             paladin->SetPower(POWER_MANA, 0);
             GroupPlayer(priest, paladin);
             GroupPlayer(priest, priest2);
+            paladin->AddAura(ClassSpells::Paladin::SPIRITUAL_ATTUNEMENT_RNK_2, paladin);
+            TEST_ASSERT(paladin->HasAura(ClassSpells::Paladin::SPIRITUAL_ATTUNEMENT_RNK_2));
 
             TEST_POWER_COST(priest, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, POWER_MANA, 52);
             FORCE_CAST(priest, dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
@@ -2648,6 +2655,8 @@ public:
             TEST_ASSERT(paladin->GetHealth() == paladinExpectedHealth);
 
             // Paladin's Spiritual Attunement works with VE heal (http://wowwiki.wikia.com/wiki/Vampiric_Embrace?oldid=1432448)
+            // Bug here: no mana given. Reason is that currently VE has SPELL_ATTR3_CANT_TRIGGER_PROC and will not trigger spiritual attunement
+            // It's probably more a Spiritual Attunement bug than vampiric embrace bug, we can't remove this attribute from VE. Or SPELL_ATTR3_CANT_TRIGGER_PROC handling is incorrect.
             float const spiritualAttunementFactor = 0.1f;
             uint32 const expectedPaladinMana = expectedVEHeal * spiritualAttunementFactor;
             ASSERT_INFO("Paladin has %u MP but %u was expected through Spiritual Attunement.", paladin->GetPower(POWER_MANA), expectedPaladinMana);
@@ -2660,15 +2669,16 @@ public:
 
             // 1 VE per priest
             FORCE_CAST(priest2, dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
-            uint32 harmfulAuraCount = 0;
+
+            uint32 veCount = 0;
             auto& auras = dummy->GetAppliedAuras();
             for (const auto & i : auras)
             {
-                if (!i.second->IsPositive())
-                    harmfulAuraCount++;
+                if (i.second->GetBase()->GetId() == ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1)
+                    veCount++;
             }
-            ASSERT_INFO("Dummy only has 1 Vampiric Embrace instead of 2.");
-            TEST_ASSERT(harmfulAuraCount == 2);
+            ASSERT_INFO("Dummy only has %u Vampiric Embrace instead of 2.", veCount);
+            TEST_ASSERT(veCount == 2);
 
             // VE heal factor doesnt stack
             auto AI = priest->GetTestingPlayerbotAI();
@@ -2692,6 +2702,7 @@ class ImprovedVampiricEmbraceTest : public TestCaseScript
 public:
     ImprovedVampiricEmbraceTest() : TestCaseScript("talents priest improved_vampiric_embrace") { }
 
+    //"Increases the percentage healed by Vampiric Embrace by an additional 10%"
     class ImprovedVampiricEmbraceTestImpt : public TestCase
     {
     public:
@@ -2730,6 +2741,7 @@ class FocusedMindTest : public TestCaseScript
 public:
     FocusedMindTest() : TestCaseScript("talents priest focused_mind") { }
 
+    //Reduces the mana cost of your Mind Blast, Mind Control and Mind Flay spells by 15%.
     class FocusedMindTestImpt : public TestCase
     {
     public:
@@ -2763,6 +2775,7 @@ class ShadowResilienceTest : public TestCaseScript
 public:
     ShadowResilienceTest() : TestCaseScript("talents priest shadow_resilience") { }
 
+    //""Reduces the chance you'll be critically hit by all spells by 4%."
     class ShadowResilienceTestImpt : public TestCase
     {
     public:
@@ -2776,7 +2789,7 @@ public:
             LearnTalent(priest, Talents::Priest::SHADOW_RESILIENCE_RNK_2);
             float const talentCritFactor = 4.f;
 
-            EQUIP_NEW_ITEM(enemy, 34182); // Some crit spell
+            EQUIP_NEW_ITEM(enemy, 34182); // Some crit spell "Improves spell critical strike rating by 49."
             float const expectedCritChance = enemy->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_SHADOW) - talentCritFactor;
 
             TEST_SPELL_CRIT_CHANCE(enemy, priest, ClassSpells::Priest::MIND_BLAST_RNK_11, expectedCritChance);
@@ -2794,10 +2807,11 @@ class DarknessTest : public TestCaseScript
 public:
     DarknessTest() : TestCaseScript("talents priest darkness") { }
 
+    //"Increases your Shadow spell damage by 10 %"
     class DarknessTestImpt : public TestCase
     {
     public:
-        DarknessTestImpt() : TestCase(STATUS_PASSING) { }
+        DarknessTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { } //Missing Shadowguard
 
         void Test() override
         {
@@ -2825,9 +2839,16 @@ public:
             uint32 const shadowWordPainTotal = 6 * floor(ClassSpellsDamage::Priest::SHADOW_WORD_PAIN_RNK_10_TICK * talentDamageFactor);
             TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, shadowWordPainTotal, false);
 
-            // VT
+            // VT 
             uint32 const vampiricTouchTotal = 5 * floor(ClassSpellsDamage::Priest::VAMPIRIC_TOUCH_RNK_3_TICK * talentDamageFactor);
             TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, vampiricTouchTotal, false);
+
+            // Devouring Plague
+            uint32 const expectedDPDoT = 8 * floor(ClassSpellsDamage::Priest::DEVOURING_PLAGUE_RNK_7_TICK * talentDamageFactor);
+            TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, expectedDPDoT, false);
+
+            //Shadowguard
+            //TODO
         }
     };
 
@@ -2841,7 +2862,8 @@ class ShadowformTest : public TestCaseScript
 {
 public:
     ShadowformTest() : TestCaseScript("talents priest shadowform") { }
-
+    
+    //Assume a Shadowform, increasing your Shadow damage by 15% and reducing Physical damage done to you by 15%. However, you may not cast Holy spells while in this form.
     class ShadowformTestImpt : public TestCase
     {
     public:
@@ -2892,7 +2914,7 @@ public:
             uint32 const vampiricTouchTotal = 5 * floor(ClassSpellsDamage::Priest::VAMPIRIC_TOUCH_RNK_3_TICK * talentShadowDamageFactor);
             TEST_DOT_DAMAGE(priest, dummy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, vampiricTouchTotal, false);
 
-            // Holy spell remove Shadowform
+            // Holy spell remove Shadowform - Client actually removes shadowform by requesting cancel. We need to make sure we can't bypass this though.
             TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_FAILED_NOT_SHAPESHIFT);
         }
     };
@@ -2908,6 +2930,7 @@ class ShadowPowerTest : public TestCaseScript
 public:
     ShadowPowerTest() : TestCaseScript("talents priest shadow_power") { }
 
+    //"Increases the critical strike chance of your Mind Blast and Shadow Word : Death spells by 15%"
     class ShadowPowerTestImpt : public TestCase
     {
     public:
@@ -2939,6 +2962,7 @@ class MiseryTest : public TestCaseScript
 public:
     MiseryTest() : TestCaseScript("talents priest misery") { }
 
+    //Your Shadow Word: Pain, Mind Flay and Vampiric Touch spells also cause the target to take an additional 5% spell damage.
     class MiseryTestImpt : public TestCase
     {
     public:
