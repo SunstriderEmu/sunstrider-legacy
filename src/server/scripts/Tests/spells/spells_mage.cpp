@@ -126,6 +126,62 @@ public:
     }
 };
 
+class ArcaneBrillianceTest : public TestCaseScript
+{
+public:
+    ArcaneBrillianceTest() : TestCaseScript("spells mage arcane_brilliance") { }
+
+    class ArcaneBrillianceTestImpt : public TestCase
+    {
+    public:
+        ArcaneBrillianceTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void AssertArcaneBrillianceWorks(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 reagentId, uint32 manaCost, uint8 intBonus)
+        {
+            float const expectedCasterInt = caster->GetStat(STAT_INTELLECT) + intBonus;
+            float const expectedVictimInt = victim->GetStat(STAT_INTELLECT) + intBonus;
+
+            // Mana cost
+            TEST_POWER_COST(caster, spellId, POWER_MANA, manaCost);
+
+            caster->AddItem(reagentId, 1);
+            TEST_ASSERT(caster->HasItemCount(reagentId, 1, false));
+            TEST_CAST(caster, victim, spellId, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
+            TEST_ASSERT(caster->GetItemCount(reagentId, false) == 0);
+
+            // Aura duration
+            TEST_AURA_MAX_DURATION(caster, spellId, Hours(1));
+            TEST_AURA_MAX_DURATION(victim, spellId, Hours(1));
+
+            // Stats, resistances & armor
+            TEST_ASSERT(caster->GetStat(STAT_INTELLECT) == expectedCasterInt);
+            TEST_ASSERT(victim->GetStat(STAT_INTELLECT) == expectedVictimInt);
+
+            // Reset for next test
+            caster->RemoveAurasDueToSpell(spellId);
+            victim->RemoveAurasDueToSpell(spellId);
+        }
+
+        void Test() override
+        {
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_TROLL);
+
+            GroupPlayer(mage, priest);
+
+            uint32 const ARCANE_POWDER = 17020;
+
+            AssertArcaneBrillianceWorks(mage, priest, ClassSpells::Mage::ARCANE_BRILLIANCE_RNK_1, ARCANE_POWDER, 1500, 31);
+            AssertArcaneBrillianceWorks(mage, priest, ClassSpells::Mage::ARCANE_BRILLIANCE_RNK_2, ARCANE_POWDER, 1800, 40);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ArcaneBrillianceTestImpt>();
+    }
+};
+
 class IceLanceTest : public TestCaseScript
 {
 public:
@@ -234,6 +290,7 @@ void AddSC_test_spells_mage()
     // Arcane
     new AmplifyMagicTest();
     new ArcaneBlastTest();
+    new ArcaneBrillianceTest();
     // Fire
     // Frost
     new IceLanceTest();

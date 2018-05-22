@@ -2326,6 +2326,7 @@ namespace ClassSpells
             ARCANE_BLAST_RNK_1 = 30451,
             ARCANE_BLAST_RNK_1_SELF_DEBUFF = 36032,
             ARCANE_BRILLIANCE_RNK_1 = 23028,
+            ARCANE_BRILLIANCE_RNK_2 = 27127,
             ARCANE_EXPLOSION_RNK_1 = 1449,
             ARCANE_EXPLOSION_RNK_2 = 8437,
             ARCANE_EXPLOSION_RNK_3 = 8438,
