@@ -2153,8 +2153,8 @@ public:
             TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false);
             TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false);
             //WoWWiki: Since Shadow damage is dealt to the target, Touch of Weakness will apply a charge of Shadow Weaving to the target, and it also has a chance to proc Blackout, making it a useful tool against Rogues, Warriors, Enhancement Shamans, etc.
-            //Bugged here, touch of weakness has no chance of proccing
-            TEST_MELEE_PROC_CHANCE(enemy, priest, spellProcId, true, procChance, MELEE_HIT_NORMAL, BASE_ATTACK, [](Unit* caster, Unit* victim) {
+            priest->ForceSpellHitResult(SPELL_MISS_NONE);//force non miss to test touch of weakness proc
+            TEST_MELEE_PROC_CHANCE_CALLBACK(enemy, priest, spellProcId, true, procChance, MELEE_HIT_NORMAL, BASE_ATTACK, [](Unit* caster, Unit* victim) {
                 victim->AddAura(ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, victim);
             });
         }
