@@ -182,6 +182,44 @@ public:
     }
 };
 
+class ArcaneExplosionTest : public TestCaseScript
+{
+public:
+    ArcaneExplosionTest() : TestCaseScript("spells mage arcane_explosion") { }
+
+    class ArcaneExplosionTestImpt : public TestCase
+    {
+    public:
+        ArcaneExplosionTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            uint32 const expectedArcaneExplosionManaCost = 545;
+            TEST_POWER_COST(mage, ClassSpells::Mage::ARCANE_EXPLOSION_RNK_8, POWER_MANA, expectedArcaneExplosionManaCost);
+
+            // Damage
+            EQUIP_NEW_ITEM(mage, 34336); // Sunflare - 292 SP
+            uint32 const spellPower = mage->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            float const castTime = 1.5f;
+            float const spellCoeff = castTime / 3.5f / 2.f;
+
+            uint32 const minArcaneExplosion = ClassSpellsDamage::Mage::ARCANE_EXPLOSION_RNK_8_MIN + spellPower * spellCoeff;
+            uint32 const maxArcaneExplosion = ClassSpellsDamage::Mage::ARCANE_EXPLOSION_RNK_8_MAX + spellPower * spellCoeff;
+            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ARCANE_EXPLOSION_RNK_8, minArcaneExplosion, maxArcaneExplosion, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ArcaneExplosionTestImpt>();
+    }
+};
+
 class IceLanceTest : public TestCaseScript
 {
 public:
@@ -291,6 +329,7 @@ void AddSC_test_spells_mage()
     new AmplifyMagicTest();
     new ArcaneBlastTest();
     new ArcaneBrillianceTest();
+    new ArcaneExplosionTest();
     // Fire
     // Frost
     new IceLanceTest();
