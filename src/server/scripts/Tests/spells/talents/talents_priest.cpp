@@ -2107,11 +2107,12 @@ public:
             float const expectedManaRegen = priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) * 0.5f;
             TEST_ASSERT(Between<float>(priest->GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT), expectedManaRegen - 0.1f, expectedManaRegen + 0.1f));
 
-            // Doesnt trigger when no killing blow
+            // Doesnt trigger when no killing blow. Have the priest tag the enemy but the enemy dies by another cause (swd in this case)
             priest->RemoveAurasDueToSpell(Talents::Priest::SPIRIT_TAP_RNK_5_TRIGGER);
             enemy->ResurrectPlayer(0.01f);
             FORCE_CAST(priest, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_1);
             Wait(4000); // Wait for 1 tick
+            TEST_ASSERT(!enemy->IsDead());
             FORCE_CAST(enemy, priest, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_1, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
             Wait(1000);
             TEST_ASSERT(enemy->IsDead());
@@ -2145,28 +2146,15 @@ public:
             float const procChance = 10.f;
 
             // Only affects shadow damage spells
-            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::MIND_BLAST_RNK_11, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
-                victim->ClearDiminishings();
-            });
-            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
-                victim->ClearDiminishings();
-            });
-            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
-                victim->ClearDiminishings();
-            });
-            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
-                victim->ClearDiminishings();
-            });
-            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
-                victim->ClearDiminishings();
-            });
-            TEST_SPELL_PROC_CHANCE_CALLBACK(priest, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false, [](Unit* caster, Unit* victim) {
-                victim->ClearDiminishings();
-            });
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::MIND_BLAST_RNK_11, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false);
             //WoWWiki: Since Shadow damage is dealt to the target, Touch of Weakness will apply a charge of Shadow Weaving to the target, and it also has a chance to proc Blackout, making it a useful tool against Rogues, Warriors, Enhancement Shamans, etc.
             //Bugged here, touch of weakness has no chance of proccing
-            TEST_MELEE_PROC_CHANCE_CALLBACK(enemy, priest, spellProcId, true, procChance, MELEE_HIT_NORMAL, BASE_ATTACK, [](Unit* caster, Unit* victim) {
-                caster->ClearDiminishings();
+            TEST_MELEE_PROC_CHANCE(enemy, priest, spellProcId, true, procChance, MELEE_HIT_NORMAL, BASE_ATTACK, [](Unit* caster, Unit* victim) {
                 victim->AddAura(ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, victim);
             });
         }
@@ -2305,7 +2293,7 @@ public:
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::SILENCE_RNK_1, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, hitChance, SPELL_MISS_RESIST);
-            TEST_MELEE_PROC_CHANCE_CALLBACK(boss, priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, true, hitChance, MELEE_HIT_NORMAL, false, [](Unit* caster, Unit* victim) {
+            TEST_MELEE_PROC_CHANCE_CALLBACK(boss, priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, true, hitChance, MELEE_HIT_NORMAL, BASE_ATTACK, [](Unit* caster, Unit* victim) {
                 caster->ClearDiminishings();
                 victim->AddAura(ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, victim);
             });

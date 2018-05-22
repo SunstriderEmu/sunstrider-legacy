@@ -1403,8 +1403,8 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
     INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to get aura %u effect %u on victim", spellID, uint32(effIndex));
     INTERNAL_TEST_ASSERT(effect != nullptr);
 
-    uint32 startingHealth = target->GetHealth();
-    uint32 startingMaxHealth = target->GetMaxHealth();
+    _MaxHealth(target);
+    _MaxHealth(caster);
 
     auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
 
@@ -1417,8 +1417,10 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
         caster->RemoveAurasDueToSpell(procSpellId);
         target->RemoveAurasDueToSpell(procSpellId);
 
-        target->SetMaxHealth(startingMaxHealth);
-        target->SetHealth(startingHealth);
+        caster->SetFullHealth();
+        target->SetFullHealth();
+        caster->ClearDiminishings();
+        target->ClearDiminishings();
 
         HandleThreadPause();
     }
@@ -1428,6 +1430,10 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
     float actualSuccessPercent = 100 * (successCount / float(sampleSize));
     INTERNAL_ASSERT_INFO("_TestAuraTickProcChance on spell %u: expected result: %f, result: %f", spellID, expectedResultPercent, actualSuccessPercent);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
+
+    //Restoring
+    _RestoreUnitState(caster);
+    _RestoreUnitState(target);
 }
 
 void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, Optional<TestCallback> callback)
@@ -1520,6 +1526,10 @@ std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProc
 
         caster->RemoveAurasDueToSpell(procSpellID);
         victim->RemoveAurasDueToSpell(procSpellID);
+        caster->SetFullHealth();
+        victim->SetFullHealth();
+        caster->ClearDiminishings();
+        victim->ClearDiminishings();
 
         HandleThreadPause();
     }
