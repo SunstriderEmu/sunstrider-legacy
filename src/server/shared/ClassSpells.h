@@ -3018,6 +3018,7 @@ namespace ClassSpells
             SHADOW_GUARD_RNK_5 = 19311,
             SHADOW_GUARD_RNK_6 = 19312,
             SHADOW_GUARD_RNK_7 = 25477,
+            SHADOW_GUARD_RNK_7_TRIGGER = 28385,
             SHADOW_PROTECTION_RNK_1 = 976,
             SHADOW_PROTECTION_RNK_2 = 10957,
             SHADOW_PROTECTION_RNK_3 = 10958,

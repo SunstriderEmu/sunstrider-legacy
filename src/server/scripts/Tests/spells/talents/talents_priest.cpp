@@ -2175,7 +2175,23 @@ public:
     class ShadowAffinityTestImpt : public TestCase
     {
     public:
-        ShadowAffinityTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { } //Missing death plague + shadow guard
+        ShadowAffinityTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void TestMeleeProcThreat(Unit* dummy, TestPlayer* priest, float talentThreatFactor, uint32 spellId, uint32 expectedDmg)
+        {
+            priest->ForceSpellHitResult(SPELL_MISS_NONE);
+            float startThreat = dummy->GetThreatManager().GetThreat(priest);
+            float const expectedToWThreat = startThreat + expectedDmg * talentThreatFactor;
+            TEST_CAST(priest, priest, spellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            dummy->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+            uint32 targetStartHealth = dummy->GetHealth();
+            dummy->AttackerStateUpdate(priest, BASE_ATTACK);
+            dummy->AttackStop();
+            TEST_ASSERT(dummy->GetHealth() < targetStartHealth); //make sure proc did happen
+            ASSERT_INFO("Dummy has %f threat but %f was expected.", dummy->GetThreatManager().GetThreat(priest), expectedToWThreat);
+            TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedToWThreat - 0.1f, expectedToWThreat + 0.1f));
+        }
+
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
@@ -2188,6 +2204,7 @@ public:
             TEST_THREAT(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, talentThreatFactor, false);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, talentThreatFactor, false);
             TEST_THREAT(priest, dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, talentThreatFactor, false);
+            TEST_THREAT(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, talentThreatFactor, false);
 
             priest->ForceSpellHitResult(SPELL_MISS_NONE);
 
@@ -2215,15 +2232,8 @@ public:
             dummy->RemoveAurasDueToSpell(ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
 
             // Touch of Weakness
-            startThreat = dummy->GetThreatManager().GetThreat(priest);
-            float const expectedToWThreat = startThreat + ClassSpellsDamage::Priest::TOUCH_OF_WEAKNESS_RNK_7 * talentThreatFactor;
-            TEST_CAST(priest, priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
-            dummy->ForceMeleeHitResult(MELEE_HIT_NORMAL);
-            dummy->AttackerStateUpdate(priest, BASE_ATTACK);
-            dummy->AttackStop();
-            TEST_ASSERT(dummy->HasAura(ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER));
-            ASSERT_INFO("Dummy has %f threat but %f was expected.", dummy->GetThreatManager().GetThreat(priest), expectedToWThreat);
-            TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedToWThreat - 0.1f, expectedToWThreat + 0.1f));
+            TestMeleeProcThreat(dummy, priest, talentThreatFactor, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, ClassSpellsDamage::Priest::TOUCH_OF_WEAKNESS_RNK_7);
+            TestMeleeProcThreat(dummy, priest, talentThreatFactor, ClassSpells::Priest::SHADOW_GUARD_RNK_7, ClassSpellsDamage::Priest::SHADOW_GUARD_RNK_7);
         }   
     };
 
@@ -2238,6 +2248,7 @@ class ImprovedShadowWordPainTest : public TestCaseScript
 public:
     ImprovedShadowWordPainTest() : TestCaseScript("talents priest improved_shadow_word_pain") { }
 
+    //Increases the duration of your Shadow Word : Pain spell by 6 sec.
     class ImprovedShadowWordPainTestImpt : public TestCase
     {
     public:
@@ -2266,10 +2277,11 @@ class ShadowFocusTest : public TestCaseScript
 public:
     ShadowFocusTest() : TestCaseScript("talents priest shadow_focus") { }
 
+    //"Reduces your target's chance to resist your Shadow spells by 10%."
     class ShadowFocusTestImpt : public TestCase
     {
     public:
-        ShadowFocusTestImpt() : TestCase(STATUS_WIP) { } // TODO Kelno: find how to test Touch of Weakness
+        ShadowFocusTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //MIND_SOOTHE_RNK_4 cannot be resisted
 
         void Test() override
         {
@@ -2283,6 +2295,7 @@ public:
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_BLAST_RNK_11, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_FLAY_RNK_7, hitChance, SPELL_MISS_RESIST);
+            //Bug here! Mind Soothe currently cannot be resisted
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_SOOTHE_RNK_4, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_VISION_RNK_2, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, hitChance, SPELL_MISS_RESIST);
@@ -2291,10 +2304,10 @@ public:
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::SILENCE_RNK_1, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, hitChance, SPELL_MISS_RESIST);
-            TEST_MELEE_PROC_CHANCE_CALLBACK(boss, priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, true, hitChance, MELEE_HIT_NORMAL, BASE_ATTACK, [](Unit* caster, Unit* victim) {
-                caster->ClearDiminishings();
-                victim->AddAura(ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, victim);
-            });
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, hitChance, SPELL_MISS_RESIST);
+            //touch of weakness and shadow guard, directly test the proc spell (this makes absolutely no difference, proc chance is not tested here)
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, hitChance, SPELL_MISS_RESIST);
+            TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::SHADOW_GUARD_RNK_7_TRIGGER, hitChance, SPELL_MISS_RESIST);
         }
     };
 

@@ -312,6 +312,7 @@ namespace ClassSpellsDamage
             TOUCH_OF_WEAKNESS_RNK_7 = 80,
             VAMPIRIC_TOUCH_RNK_3_TICK = 130,
             VAMPIRIC_TOUCH_RNK_3_TOTAL = 650,
+            SHADOW_GUARD_RNK_7 = 130,
 		};
 	};
 
