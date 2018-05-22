@@ -1,6 +1,56 @@
 #include "../ClassSpellsDamage.h"
 #include "../ClassSpellsCoeff.h"
 
+class AmplifyMagicTest : public TestCaseScript
+{
+public:
+    AmplifyMagicTest() : TestCaseScript("spells mage amplify_magic") { }
+
+    class AmplifyMagicTestImpt : public TestCase
+    {
+    public:
+        /*
+        Bugs:
+            - Boosting is a little less than should be for both
+        */
+        AmplifyMagicTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+
+        void Test() override
+        {
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_TROLL);
+            TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+
+            // Can only cast on group member
+            TEST_CAST(mage, priest, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6, SPELL_FAILED_BAD_TARGETS);
+            GroupPlayer(mage, priest);
+            TEST_CAST(mage, priest, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6, Minutes(10));
+
+            // Spell damage taken and healing boosts
+            float const spellDamageTakenBoost = 120;
+            float const healingBoost = 240;
+
+            uint32 const minSB = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN + spellDamageTakenBoost;
+            uint32 const maxSB = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX + spellDamageTakenBoost;
+            TEST_DIRECT_SPELL_DAMAGE(enemy, priest, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, minSB, maxSB, false);
+
+            uint32 const minGH = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN + healingBoost;
+            uint32 const maxGH = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX + healingBoost;
+            TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, minGH, maxGH, false);
+
+            // Test mana cost
+            uint32 const expectedAmplifyMagicMana = 600;
+            TEST_POWER_COST(priest, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6, POWER_MANA, expectedAmplifyMagicMana);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<AmplifyMagicTestImpt>();
+    }
+};
+
 class IceLanceTest : public TestCaseScript
 {
 public:
@@ -106,6 +156,10 @@ public:
 
 void AddSC_test_spells_mage()
 {
+    // Arcane
+    new AmplifyMagicTest();
+    // Fire
+    // Frost
     new IceLanceTest();
     new FrostboltTest();
 }
