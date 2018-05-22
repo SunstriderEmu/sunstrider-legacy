@@ -2844,9 +2844,32 @@ public:
     }
 };
 
+class ShadowguardTest : public TestCaseScript
+{
+public:
+    ShadowguardTest() : TestCaseScript("spells priest shadowguard") { }
+
+    class ShadowguardTestImpt : public TestCase
+    {
+    public:
+        ShadowguardTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            //TODO
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ShadowguardTestImpt>();
+    }
+};
+
+
 void AddSC_test_spells_priest()
 {
-    // Discipline: 11/11
+    // Discipline: 14/14
     new ConsumeMagicTest();
     new DispelMagicTest();
     new FearWardTest();
@@ -2861,7 +2884,7 @@ void AddSC_test_spells_priest()
     new ShackleUndeadTest();
     new StarshardsTest();
     new SymbolOfHopeTest();
-    // Holy: 14/14
+    // Holy: 16/16
     new AbolishDiseaseTest();
     new BindingHealTest();
     new ChastiseTest();
@@ -2878,7 +2901,7 @@ void AddSC_test_spells_priest()
     new RenewTest();
     new ResurrectionTest();
     new SmiteTest();
-    // Shadow: 13/13
+    // Shadow: 15/16
     new DevouringPlagueTest();
     new FadeTest();
     new HexOfWeaknessTest();
@@ -2894,4 +2917,5 @@ void AddSC_test_spells_priest()
     new ShadowfiendTest();
     new ShadowfiendTestStats();
     new TouchOfWeaknessTest();
+    new ShadowguardTest();
 }
