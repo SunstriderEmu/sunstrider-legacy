@@ -2175,12 +2175,7 @@ public:
     class ShadowAffinityTestImpt : public TestCase
     {
     public:
-        ShadowAffinityTestImpt() : TestCase(STATUS_WIP) { } //Missing death plague + shadow guard
-        /*
-        Bugs:
-            - Touch of Weakness's threat is not reduced
-            - Shadow Embrace heals are not reduced
-        */
+        ShadowAffinityTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { } //Missing death plague + shadow guard
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
@@ -2205,12 +2200,13 @@ public:
             ASSERT_INFO("Dummy has %f threat but %f was expected.", dummy->GetThreatManager().GetThreat(priest), expectedVTThreat);
             TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedVTThreat - 0.1f, expectedVTThreat + 0.1f));
 
-            // Shadow Embrace
+            // Vampiric Embrace
+            // WoWWiki: "It does affect Vampiric Embrace's healing. If you plan to raid as a Shadow priest, this is a worthwhile talent."
             priest->SetHealth(500);
             startThreat = dummy->GetThreatManager().GetThreat(priest);
             float const mindFlayThreat = 3.f * ClassSpellsDamage::Priest::MIND_FLAY_RNK_7_TICK;
-            float const mindFlayHealThreat = 3.f * floor(ClassSpellsDamage::Priest::MIND_FLAY_RNK_7_TICK * 0.15f);
-            float const expectedVEThreat = startThreat + (mindFlayThreat + mindFlayHealThreat * 0.5f) * talentThreatFactor;
+            float const mindFlayHealThreat = 3.f * floor(ClassSpellsDamage::Priest::MIND_FLAY_RNK_7_TICK * 0.15f) * 0.5f;
+            float const expectedVEThreat = startThreat + (mindFlayThreat + mindFlayHealThreat) * talentThreatFactor;
             FORCE_CAST(priest, dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
             FORCE_CAST(priest, dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, SPELL_MISS_NONE, TRIGGERED_IGNORE_GCD);
             Wait(3000);
@@ -2225,6 +2221,7 @@ public:
             dummy->ForceMeleeHitResult(MELEE_HIT_NORMAL);
             dummy->AttackerStateUpdate(priest, BASE_ATTACK);
             dummy->AttackStop();
+            TEST_ASSERT(dummy->HasAura(ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER));
             ASSERT_INFO("Dummy has %f threat but %f was expected.", dummy->GetThreatManager().GetThreat(priest), expectedToWThreat);
             TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedToWThreat - 0.1f, expectedToWThreat + 0.1f));
         }   
