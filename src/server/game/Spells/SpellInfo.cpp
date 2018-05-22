@@ -3014,8 +3014,8 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
 #ifdef LICH_KING
         case SPELL_AURA_MOD_CRIT_PCT:
         case SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK:
-        case SPELL_AURA_MOD_DETECT_RANGE:
 #endif
+        case SPELL_AURA_MOD_DETECT_RANGE:
         case SPELL_AURA_MOD_HIT_CHANCE:
         case SPELL_AURA_MOD_SPELL_HIT_CHANCE:
         case SPELL_AURA_MOD_SPELL_CRIT_CHANCE:
