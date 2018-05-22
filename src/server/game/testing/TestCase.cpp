@@ -238,7 +238,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers pow
     }
 }
 
-void TestCase::_TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond)
+void TestCase::_TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uint32 cooldownMS)
 {
     SpellInfo const* spellInfo = _GetSpellInfo(castSpellID);
 
@@ -256,7 +256,7 @@ void TestCase::_TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uin
     caster->ForceSpellHitResult(previousForceHitResult);
 
     //all setup, proceed to test CD
-    _TestHasCooldown(caster, castSpellID, cooldownSecond);
+    _TestHasCooldown(caster, castSpellID, cooldownMS);
 
     //Cleaning up
     caster->GetSpellHistory()->ResetCooldown(castSpellID);
@@ -1270,7 +1270,7 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
         totalChannelDmg = GetChannelDamageTo(caster, target, testedSpell, expectedTickCount, {});
 
     uint32 actualTickAmount = totalChannelDmg / expectedTickCount;
-    INTERNAL_ASSERT_INFO("Enforcing channel damage. resultTickAmount: %i, expectedTickAmount: %i", actualTickAmount, expectedTickAmount);
+    INTERNAL_ASSERT_INFO("Channel damage: resultTickAmount: %i, expectedTickAmount: %i", actualTickAmount, expectedTickAmount);
     INTERNAL_TEST_ASSERT(actualTickAmount >= (expectedTickAmount - 2) && actualTickAmount <= (expectedTickAmount + 2)); //channels have greater error since they got their damage divided in several ticks
 
     //Restoring
@@ -1938,12 +1938,12 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID)
     }
 }
 
-void TestCase::_TestHasCooldown(Unit* caster, uint32 castSpellID, uint32 cooldownSecond)
+void TestCase::_TestHasCooldown(Unit* caster, uint32 castSpellID, uint32 cooldownMs)
 {
     SpellInfo const* spellInfo = _GetSpellInfo(castSpellID);
     uint32 cooldown = caster->GetSpellHistory()->GetRemainingCooldown(spellInfo);
-    INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName().c_str(), cooldown, castSpellID, cooldownSecond * IN_MILLISECONDS);
-    INTERNAL_TEST_ASSERT(cooldown == cooldownSecond * IN_MILLISECONDS);
+    INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName().c_str(), cooldown, castSpellID, cooldownMs);
+    INTERNAL_TEST_ASSERT(cooldown == cooldownMs);
 }
 
 void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS)

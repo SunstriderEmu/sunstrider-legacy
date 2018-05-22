@@ -2322,6 +2322,7 @@ class ImprovedPsychicScreamTest : public TestCaseScript
 public:
     ImprovedPsychicScreamTest() : TestCaseScript("talents priest improved_psychic_scream") { }
 
+    //"Reduces the cooldown of your Psychic Scream spell by 4 sec."
     class ImprovedPsychicScreamTestImpt : public TestCase
     {
     public:
@@ -2333,7 +2334,7 @@ public:
 
             LearnTalent(priest, Talents::Priest::IMPROVED_PSYCHIC_SCREAM_RNK_2);
 
-            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(26));
+            TEST_COOLDOWN(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(26)); //down from 30
         }
     };
 
@@ -2348,10 +2349,11 @@ class ImprovedMindBlastTest : public TestCaseScript
 public:
     ImprovedMindBlastTest() : TestCaseScript("talents priest improved_mind_blast") { }
 
+    //"Reduces the cooldown of your Mind Blast spell by 2.5 sec."
     class ImprovedMindBlastTestImpt : public TestCase
     {
     public:
-        ImprovedMindBlastTestImpt() : TestCase(STATUS_WIP) { } // TODO Kelno: Need that TEST_COOLDOWN be in miliSeconds
+        ImprovedMindBlastTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2360,7 +2362,7 @@ public:
 
             LearnTalent(priest, Talents::Priest::IMPROVED_MIND_BLAST_RNK_5);
 
-            TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, 5500);
+            TEST_COOLDOWN(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, Milliseconds(5500));
         }
     };
 
@@ -2375,6 +2377,7 @@ class MindFlayTest : public TestCaseScript
 public:
     MindFlayTest() : TestCaseScript("talents priest mind_flay") { }
 
+    //"Assault the target's mind with Shadow energy, causing 426 Shadow damage over 3sec and slowing their movement speed by 50%."
     class MindFlayTestImpt : public TestCase
     {
     public:
@@ -2388,7 +2391,7 @@ public:
             EQUIP_NEW_ITEM(priest, 34336); // Sunflare -- 292 SP
 
             // Damage
-            float const tickAmount = 3.f;
+            uint32 const tickAmount = 3;
             float const spellCoeff = ClassSpellsCoeff::Priest::MIND_FLAY;
             uint32 const spellBonus = 292 * spellCoeff / tickAmount;
             uint32 const expectedMindFlayTick = ClassSpellsDamage::Priest::MIND_FLAY_RNK_7_TICK + spellBonus;

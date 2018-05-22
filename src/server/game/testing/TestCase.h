@@ -217,8 +217,9 @@ public:
 
     /* Cast given spell (fully triggered) and check if CD is triggered
     This will not trigger any CD but keep in mind that spell effects will be applied
+    durationMS: can be either uint32 or std::chrono::duration (such as Milliseconds)
     */
-    #define TEST_COOLDOWN(caster, target, castSpellID, cooldownSecond) { _SetCaller(__FILE__, __LINE__); _TestCooldown(caster, target, castSpellID, cooldownSecond); _ResetCaller(); }
+    #define TEST_COOLDOWN(caster, target, castSpellID, durationMS) { _SetCaller(__FILE__, __LINE__); _TestCooldown(caster, target, castSpellID, durationMS); _ResetCaller(); }
 
     /* Check remaining cooldown for given spellID
     cooldownSecond: can be either uint32 or std::chrono::duration (such as Seconds)
@@ -371,14 +372,14 @@ protected:
     void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, Optional<TestCallback> callback);
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
-    inline void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, Seconds s) { _TestCooldown(caster, target, castSpellID, uint32(s.count())); }
-    void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uint32 cooldownSecond);
+    inline void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, Milliseconds ms) { _TestCooldown(caster, target, castSpellID, uint32(ms.count())); }
+    void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uint32 cooldownMS);
     void _EquipItem(TestPlayer* p, uint32 itemID, bool newItem);
     //if spellID negative, ensure has NOT aura
     void _EnsureHasAura(Unit* target, int32 spellID);
     inline void _EnsureHasNotAura(Unit* target, uint32 spellID) { _EnsureHasAura(target, -int32(spellID)); }
-    void _TestHasCooldown(Unit* caster, uint32 castSpellID, uint32 cooldownSecond);
-    inline void _TestHasCooldown(Unit* caster, uint32 castSpellID, Seconds s) { _TestHasCooldown(caster, castSpellID, uint32(s.count())); }
+    void _TestHasCooldown(Unit* caster, uint32 castSpellID, uint32 cooldownMs);
+    inline void _TestHasCooldown(Unit* caster, uint32 castSpellID, Milliseconds ms) { _TestHasCooldown(caster, castSpellID, uint32(ms.count())); }
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS);
     inline void _TestAuraMaxDuration(Unit* target, uint32 spellID, Milliseconds ms) { _TestAuraMaxDuration(target, spellID, uint32(ms.count())); }
     void _TestAuraStack(Unit* target, uint32 spellID,uint32 stacks, bool stack);
