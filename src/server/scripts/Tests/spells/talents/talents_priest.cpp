@@ -2966,11 +2966,7 @@ public:
     class MiseryTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - Mind Flay doesnt apply Misery
-        */
-        MiseryTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        MiseryTestImpt() : TestCase(STATUS_PASSING) { }
 
         void AssertSpellAppliesMisery(TestPlayer* priest, Creature* dummy, uint32 spellId, Seconds durationTime, uint32 castTime = 0)
         {
@@ -2978,6 +2974,8 @@ public:
             FORCE_CAST(priest, dummy, spellId);
             if (castTime)
                 Wait(castTime);
+            WaitNextUpdate();
+            TEST_HAS_AURA(dummy, spellId);
             ASSERT_INFO("After spell %u, Dummy doesnt have Misery.", spellId);
             TEST_AURA_MAX_DURATION(dummy, Talents::Priest::MISERY_RNK_5_TRIGGER, Seconds(24));
             dummy->RemoveAurasDueToSpell(Talents::Priest::MISERY_RNK_5_TRIGGER);
