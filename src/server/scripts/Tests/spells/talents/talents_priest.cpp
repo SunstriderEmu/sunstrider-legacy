@@ -2281,7 +2281,7 @@ public:
     class ShadowFocusTestImpt : public TestCase
     {
     public:
-        ShadowFocusTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //MIND_SOOTHE_RNK_4 cannot be resisted
+        ShadowFocusTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -2295,7 +2295,7 @@ public:
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_BLAST_RNK_11, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_FLAY_RNK_7, hitChance, SPELL_MISS_RESIST);
-            //Bug here! Mind Soothe currently cannot be resisted
+
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_SOOTHE_RNK_4, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::MIND_VISION_RNK_2, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(priest, boss, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, hitChance, SPELL_MISS_RESIST);
