@@ -2377,11 +2377,11 @@ class MindFlayTest : public TestCaseScript
 public:
     MindFlayTest() : TestCaseScript("talents priest mind_flay") { }
 
-    //"Assault the target's mind with Shadow energy, causing 426 Shadow damage over 3sec and slowing their movement speed by 50%."
+    //"Assault the target's mind with Shadow energy, causing 528 Shadow damage over 3sec and slowing their movement speed by 50%."
     class MindFlayTestImpt : public TestCase
     {
     public:
-        MindFlayTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // No spell coeff?
+        MindFlayTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
