@@ -1024,7 +1024,11 @@ public:
     class CreateSpellstoneTestImpt : public TestCase
     {
     public:
-        CreateSpellstoneTestImpt() : TestCase(STATUS_WIP) { }
+        /*
+        Bugs:
+            - Doesnt remove magic harmful spells
+        */
+        CreateSpellstoneTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
         void CreateSpellstone(TestPlayer* caster, uint32 spellstoneSpellId, uint32 spellstoneItemID, uint32 expectedManaCost, uint32 criticalStrikeRatingBonus)
         {
@@ -1054,6 +1058,8 @@ public:
             TEST_HAS_AURA(caster, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
             TEST_HAS_AURA(caster, ClassSpells::Warrior::HAMSTRING_RNK_4);
             TEST_HAS_AURA(caster, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7);
+            // Spellstone should remove harmful magic auras
+            ASSERT_INFO("After using %u spellstone, Warlock still has Frostbolt.", spellstoneItemID);
             TEST_HAS_NOT_AURA(caster, ClassSpells::Mage::FROSTBOLT_RNK_13);
             caster->RemoveAurasDueToSpell(5760);
             caster->RemoveAurasDueToSpell(35760);
@@ -1319,7 +1325,7 @@ public:
     class SoulshatterTestImpt : public TestCase
     {
     public:
-        SoulshatterTestImpt() : TestCase(STATUS_WIP) { }
+        SoulshatterTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
