@@ -1152,6 +1152,7 @@ int32 TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool
 void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedTotalAmount, bool crit /* = false*/)
 {
     auto AI = _GetCasterAI(caster);
+    AI->ResetSpellCounters();
     bool heal = expectedTotalAmount < 0;
     _MaxHealth(target, heal);
     
