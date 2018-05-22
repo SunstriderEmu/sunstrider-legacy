@@ -450,6 +450,10 @@ public:
     class MassDispelTestImpt : public TestCase
     {
     public:
+        /*
+        Bugs:
+            - For now: only 5 Prayer of Fortitude are dispelled instead of 10 and no Gas Nova dispel
+        */
         MassDispelTestImpt() : TestCase(STATUS_WIP) { }
 
         TestPlayer* SpawnShaman(Races race, Position spawn)
@@ -477,45 +481,45 @@ public:
             // Creature
             Creature* creature = SpawnCreature(6);
 
+            // Setup: spawn 22 players, 11 Alliance, 11 Horde
             // Priest
             TestPlayer* priestA = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
             TestPlayer* priestH = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
 
-            // Setup
             Position spawn(_location);
-            // Paladin
+            // Paladin - 3m
             spawn.MoveInFront(spawn, 3.0f);
             SpawnPlayer(CLASS_PALADIN, RACE_HUMAN, 70, spawn);
             TestPlayer* paladinH = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF, 70, spawn);
-            // Mage
+            // Mage - 6m
             spawn.MoveInFront(spawn, 3.0f);
             TestPlayer* mageA = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
             TestPlayer* mageH = SpawnPlayer(CLASS_MAGE, RACE_BLOODELF, 70, spawn);
-            // Warlock
+            // Warlock - 9m
             spawn.MoveInFront(spawn, 3.0f);
             SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawn);
             TestPlayer* warlockH = SpawnPlayer(CLASS_WARLOCK, RACE_BLOODELF, 70, spawn);
-            // Shaman
+            // Shaman - 12m
             spawn.MoveInFront(spawn, 3.0f);
             TestPlayer* shamanA = SpawnShaman(RACE_DRAENEI, spawn);
             SpawnShaman(RACE_ORC, spawn);
-            // Hunter
+            // Hunter - 15m
             spawn.MoveInFront(spawn, 3.0f);
             SpawnHunter(RACE_DWARF, spawn);
             TestPlayer* hunterH = SpawnHunter(RACE_ORC, spawn);
-            // Warrior
+            // Warrior - 18m
             spawn.MoveInFront(spawn, 3.0f);
             SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
             SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN, 70, spawn);
-            // Druid
+            // Druid - 21m
             spawn.MoveInFront(spawn, 3.0f);
             SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF, 70, spawn);
             SpawnPlayer(CLASS_DRUID, RACE_TAUREN, 70, spawn);
-            // Rogue
+            // Rogue - 24m
             spawn.MoveInFront(spawn, 3.0f);
             SpawnPlayer(CLASS_ROGUE, RACE_NIGHTELF, 70, spawn);
             SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 70, spawn);
-            // RIP
+            // RIP - 27m
             spawn.MoveInFront(spawn, 3.0f);
             TestPlayer* ripA = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
             TestPlayer* ripH = SpawnPlayer(CLASS_ROGUE, RACE_ORC, 70, spawn);
@@ -552,7 +556,9 @@ public:
             TEST_CAST(priestH, ripH, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
 
             // Gas Nova for all
-            TEST_CAST(creature, creature, GAS_NOVA, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            Wait(3000);
+            FORCE_CAST(creature, creature, GAS_NOVA, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            WaitNextUpdate();
             // Everybody has the aura except Totems and creature
             for (WorldObject* object : targets)
             {
@@ -576,41 +582,56 @@ public:
                 }
             }
 
+            // What we expect: Mass Dispel didnt hit ripA & ripH because they were the furthest from the center of the spell
             // Mass dispell
             // Alliance: no more gas nova except ripA
-            // Horde: gas nova but no more priest buff expect ripH
-            TEST_CAST(priestA, shamanA, ClassSpells::Priest::MASS_DISPEL_RNK_1);
+            // Horde: gas nova but no more priest buff except ripH
+            uint32 petsWithoutPrayerOfFortitude = 0;
+            uint32 playersWithoutPrayerOfFortitude = 0;
+            uint32 playersWithPrayerOfFortitude = 0;
+            uint32 playersWithoutGasNova = 0;
+            uint32 petWithoutGasNova = 0;
+            uint32 playersWithGasNova = 0;
+            FORCE_CAST(priestA, shamanA, ClassSpells::Priest::MASS_DISPEL_RNK_1, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
+            Wait(100);
             for (WorldObject* object : targets)
             {
                 if (Player* player = object->ToPlayer())
                 {
                     if (player->GetTeam() == Team::ALLIANCE)
                     {
-                        // 10 allies were already dispelled
-                        if (player == ripA)
+                        if (player == ripA) // 10 allies were already dispelled
                         {
                             TEST_HAS_AURA(player, GAS_NOVA);
+                            playersWithGasNova++;
                             continue;
                         }
-                        TEST_HAS_NOT_AURA(player, GAS_NOVA)
+                        TEST_HAS_NOT_AURA(player, GAS_NOVA);
+                        playersWithoutGasNova++;
                         if (Pet* pet = player->ToPet())
-                            TEST_HAS_NOT_AURA(pet, GAS_NOVA)
+                        {
+                            TEST_HAS_NOT_AURA(pet, GAS_NOVA);
+                            petWithoutGasNova++;
+                        }
                     }
                     else
                     {
-                        // 10 enemies were already dispelled
-                        if (player == ripH)
+                        if (player == ripH) // 10 enemies were already dispelled
                         {
                             TEST_HAS_AURA(player, GAS_NOVA);
                             TEST_HAS_AURA(player, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
+                            playersWithPrayerOfFortitude++;
                             continue;
                         }
-                        TEST_HAS_AURA(player, GAS_NOVA)
+                        TEST_HAS_AURA(player, GAS_NOVA);
+                        ASSERT_INFO("Player with class %u still has Prayer of Fortitude. %u - %u - %u - %u", player->GetClass(), playersWithGasNova, playersWithPrayerOfFortitude, playersWithoutGasNova, playersWithoutPrayerOfFortitude);
                         TEST_HAS_NOT_AURA(player, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
+                        playersWithoutPrayerOfFortitude++;
                         if (Pet* pet = player->ToPet())
                         {
                             TEST_HAS_AURA(pet, GAS_NOVA)
                             TEST_HAS_NOT_AURA(pet, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
+                            petsWithoutPrayerOfFortitude++;
 
                         }
                     }
@@ -629,7 +650,7 @@ public:
             TEST_HAS_AURA(paladinH, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
             TEST_HAS_AURA(elem, ClassSpells::Warlock::BANISH_RNK_2);
 
-            TEST_CAST(priestA, mageH, ClassSpells::Priest::MASS_DISPEL_RNK_1);
+            FORCE_CAST(priestA, mageH, ClassSpells::Priest::MASS_DISPEL_RNK_1, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
 
             TEST_HAS_NOT_AURA(mageH, ClassSpells::Mage::ICE_BLOCK_RNK_1);
             TEST_HAS_NOT_AURA(paladinH, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
@@ -1513,7 +1534,7 @@ public:
     class LesserHealTestImpt : public TestCase
     {
     public:
-        LesserHealTestImpt() : TestCase(STATUS_WIP) { }
+        LesserHealTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -1733,15 +1754,17 @@ public:
     class ResurrectionTestImpt : public TestCase
     {
     public:
-        ResurrectionTestImpt() : TestCase(STATUS_WIP) { }
+        ResurrectionTestImpt() : TestCase(STATUS_PASSING) { }
 
         void TestResurrection(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 expectedHealth, uint32 expectedMana)
         {
             victim->KillSelf(true);
             TEST_POWER_COST(caster, spellId, POWER_MANA, manaCost);
 
-            TEST_CAST(caster, victim, spellId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
-            //victim->AcceptRessurectRequest();
+            TEST_CAST(caster, victim, spellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+            WaitNextUpdate();
+            victim->RessurectUsingRequestData();
+            WaitNextUpdate(); //resurrect needs 1 update to be done
             TEST_ASSERT(victim->GetHealth() == expectedHealth);
             TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
         }
