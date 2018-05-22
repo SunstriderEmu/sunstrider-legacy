@@ -195,6 +195,8 @@ namespace ClassSpellsDamage
 		enum Mage
 		{
             // Arcane
+            ARCANE_BLAST_RNK_1_MIN = 648,
+            ARCANE_BLAST_RNK_1_MAX = 753,
             ARCANE_EXPLOSION_RNK_8_MIN = 377,
             ARCANE_EXPLOSION_RNK_8_MAX = 407,
             // Frost

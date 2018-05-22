@@ -51,6 +51,81 @@ public:
     }
 };
 
+class ArcaneBlastTest : public TestCaseScript
+{
+public:
+    ArcaneBlastTest() : TestCaseScript("spells mage arcane_blast") { }
+
+    class ArcaneBlastTestImpt : public TestCase
+    {
+    public:
+        ArcaneBlastTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            uint32 const expectedArcaneBlastManaCost = 195;
+            uint32 const expectedArcaneBlastManaCostStack1 = 341;
+            uint32 const expectedArcaneBlastManaCostStack2 = 487;
+            uint32 const expectedArcaneBlastManaCostStack3 = 633;
+
+            float const castTimeReductionPerStack = 333.3f;
+            uint32 const expectedArcaneBlastCastTime = 2500;
+            uint32 const expectedArcaneBlastCastTimeStack1 = expectedArcaneBlastCastTime - castTimeReductionPerStack;
+            uint32 const expectedArcaneBlastCastTimeStack2 = expectedArcaneBlastCastTimeStack1 - castTimeReductionPerStack;
+            uint32 const expectedArcaneBlastCastTimeStack3 = expectedArcaneBlastCastTimeStack2 - castTimeReductionPerStack;
+
+            // Stacks, spell cast time, mana cost
+            TEST_CAST_TIME(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1, expectedArcaneBlastCastTime);
+            TEST_POWER_COST(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1, POWER_MANA, expectedArcaneBlastManaCost);
+            FORCE_CAST(mage, dummy, ClassSpells::Mage::ARCANE_BLAST_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            // Stack 1
+            TEST_AURA_MAX_DURATION(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1_SELF_DEBUFF, Seconds(8));
+            TEST_CAST_TIME(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1, expectedArcaneBlastCastTimeStack1);
+            TEST_POWER_COST(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1, POWER_MANA, expectedArcaneBlastManaCostStack1);
+            FORCE_CAST(mage, dummy, ClassSpells::Mage::ARCANE_BLAST_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            // Stack 2
+            TEST_AURA_MAX_DURATION(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1_SELF_DEBUFF, Seconds(8));
+            TEST_CAST_TIME(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1, expectedArcaneBlastCastTimeStack2);
+            TEST_POWER_COST(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1, POWER_MANA, expectedArcaneBlastManaCostStack2);
+            FORCE_CAST(mage, dummy, ClassSpells::Mage::ARCANE_BLAST_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            // Stack 3
+            TEST_AURA_MAX_DURATION(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1_SELF_DEBUFF, Seconds(8));
+            TEST_CAST_TIME(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1, expectedArcaneBlastCastTimeStack3);
+            TEST_POWER_COST(mage, ClassSpells::Mage::ARCANE_BLAST_RNK_1, POWER_MANA, expectedArcaneBlastManaCostStack3);
+            // Max stack = 3
+            FORCE_CAST(mage, dummy, ClassSpells::Mage::ARCANE_BLAST_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            Aura* arcaneBlast = mage->GetAura(ClassSpells::Mage::ARCANE_BLAST_RNK_1_SELF_DEBUFF);
+            TEST_ASSERT(arcaneBlast != nullptr);
+            TEST_ASSERT(arcaneBlast->GetStackAmount() == 3);
+
+            // Damage
+            EQUIP_NEW_ITEM(mage, 34336); // Sunflare - 292 SP
+            uint32 const spellPower = mage->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            float const castTime = 2.5f;
+            float const spellCoeff = castTime / 3.5f;
+
+            uint32 const spellLevel = 64;
+            uint32 const spellMaxLevel = 68;
+            uint32 const perLevelPoint = 5;
+            uint32 const perLevelGain = (spellMaxLevel - spellLevel) * perLevelPoint;
+
+            uint32 const minArcaneBlast = ClassSpellsDamage::Mage::ARCANE_BLAST_RNK_1_MIN + perLevelGain + spellPower * spellCoeff;
+            uint32 const maxArcaneBlast = ClassSpellsDamage::Mage::ARCANE_BLAST_RNK_1_MAX + perLevelGain + spellPower * spellCoeff;
+            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::ARCANE_BLAST_RNK_1, minArcaneBlast, maxArcaneBlast, false);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ArcaneBlastTestImpt>();
+    }
+};
+
 class IceLanceTest : public TestCaseScript
 {
 public:
@@ -158,6 +233,7 @@ void AddSC_test_spells_mage()
 {
     // Arcane
     new AmplifyMagicTest();
+    new ArcaneBlastTest();
     // Fire
     // Frost
     new IceLanceTest();
