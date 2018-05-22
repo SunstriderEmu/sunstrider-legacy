@@ -955,8 +955,7 @@ uint32 TestCase::GetChannelDamageTo(Unit* caster, Unit* victim, uint32 spellID, 
     */
     if (spellInfo->HasAuraEffect(SPELL_AURA_PERIODIC_DAMAGE))
     {
-        uint32 actualTicksCount;
-        int32 dotDmg = AI->GetDotDamage(victim, spellID, actualTicksCount);
+        auto [dotDmg, actualTicksCount] = AI->GetDotDamage(victim, spellID);
         INTERNAL_ASSERT_INFO("GetChannelDamageTo found some damage but tick count is %u instead of %u", actualTicksCount, expectedTickCount);
         INTERNAL_TEST_ASSERT(actualTicksCount == expectedTickCount);
         return dotDmg;
@@ -1158,8 +1157,7 @@ void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 
     
     _CastDotAndWait(caster, target, spellID, crit);
 
-    uint32 tickCount;
-    int32 dotDamageToTarget = AI->GetDotDamage(target, spellID, tickCount);
+    auto [dotDamageToTarget, tickCount] = AI->GetDotDamage(target, spellID);
 	TC_LOG_TRACE("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedTotalAmount: %i", spellID, dotDamageToTarget, expectedTotalAmount);
     INTERNAL_ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedTotalAmount: %i", dotDamageToTarget, expectedTotalAmount);
     INTERNAL_TEST_ASSERT(dotDamageToTarget >= (expectedTotalAmount - tickCount) && dotDamageToTarget <= (expectedTotalAmount + tickCount)); //dots have greater error since they got their damage divided in several ticks

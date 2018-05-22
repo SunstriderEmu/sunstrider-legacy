@@ -1453,13 +1453,13 @@ void PlayerbotTestingAI::PeriodicTick(Unit const* target, int32 amount, uint32 s
     ticksDone[target->GetGUID()].push_back(std::move(info));
 }
 
-int32 PlayerbotTestingAI::GetDotDamage(Unit const* victim, uint32 spellID, uint32& ticksCount) const
+std::pair<int32 /*totalDmg*/, uint32 /*tickCount*/> PlayerbotTestingAI::GetDotDamage(Unit const* victim, uint32 spellID) const
 {
     auto ticksToVictim = ticksDone.find(victim->GetGUID());
     if (ticksToVictim == ticksDone.end())
-        return 0;
+        return std::make_pair(0, 0);
 
-    ticksCount = 0;
+    uint32 ticksCount = 0;
     int32 totalAmount = 0;
     for (auto itr : ticksToVictim->second)
     {
@@ -1469,7 +1469,8 @@ int32 PlayerbotTestingAI::GetDotDamage(Unit const* victim, uint32 spellID, uint3
         totalAmount += itr.amount;
         ticksCount++;
     }
-    return totalAmount;
+
+    return std::make_pair(totalAmount, ticksCount);
 }
 
 std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> const* PlayerbotTestingAI::GetSpellDamageDoneInfo(Unit const* target) const
