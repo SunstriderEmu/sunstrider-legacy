@@ -125,7 +125,7 @@ bool WorldSession::_HandleUseItemOpcode(uint8 bagIndex, uint8 slot, uint8 spell_
     if (!sScriptMgr->OnItemUse(pUser, pItem, targets))
     {
         // no script or script not process request by self
-        pUser->CastItemUseSpell(pItem, targets, cast_count);
+        return pUser->CastItemUseSpell(pItem, targets, cast_count);
     }
     return true;
 }

@@ -7970,7 +7970,7 @@ void Player::CastItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemT
     }
 }
 
-void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex)
+bool Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex)
 {
 #ifdef LICH_KING
     --"todo glyphIndex";
@@ -7985,17 +7985,17 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(SPELL_ID_GENERIC_LEARN);
         if (!spellInfo)
         {
-            TC_LOG_ERROR("FIXME", "Item (Entry: %u) in have wrong spell id %u, ignoring ", proto->ItemId, SPELL_ID_GENERIC_LEARN);
+            TC_LOG_ERROR("entities.player", "Item (Entry: %u) in have wrong spell id %u, ignoring ", proto->ItemId, SPELL_ID_GENERIC_LEARN);
             SendEquipError(EQUIP_ERR_NONE, item, nullptr);
-            return;
+            return false;
         }
 
         auto spell = new Spell(this, spellInfo, TRIGGERED_NONE);
         spell->m_CastItem = item;
         spell->m_cast_count = cast_count;               //set count of casts
         spell->SetSpellValue(SPELLVALUE_BASE_POINT0, learning_spell_id);
-        spell->prepare(targets);
-        return;
+        uint32 res = spell->prepare(targets);
+        return res == SPELL_CAST_OK;
     }
 
     // use triggered flag only for items with many spell casts and for not first cast
@@ -8015,7 +8015,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
         if (!spellInfo)
         {
-            TC_LOG_ERROR("FIXME", "Item (Entry: %u) in have wrong spell id %u, ignoring ", proto->ItemId, spellData.SpellId);
+            TC_LOG_ERROR("entities.player", "Item (Entry: %u) in have wrong spell id %u, ignoring ", proto->ItemId, spellData.SpellId);
             continue;
         }
 
@@ -8041,9 +8041,16 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
     }
 
 
-    // send all spells in one go, prevents crash because container is not set
+    bool castedOneSpell = false;
+    // sunwell: send all spells in one go, prevents crash because container is not set
     for (std::list<Spell*>::const_iterator itr = pushSpells.begin(); itr != pushSpells.end(); ++itr)
-        (*itr)->prepare(targets);
+    {
+        uint32 res = (*itr)->prepare(targets);
+        if(res == SPELL_CAST_OK)
+            castedOneSpell = true;
+    }
+
+    return castedOneSpell;
 }
 
 void Player::_RemoveAllItemMods()
