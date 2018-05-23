@@ -735,12 +735,8 @@ public:
     class ForceOfWillTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - Devouring Plague not affected.
-        */
         //"Increases your spell damage by 5% and the critical strike chance of your offensive spells by 5%"
-        ForceOfWillTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        ForceOfWillTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
