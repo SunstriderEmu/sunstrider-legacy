@@ -666,7 +666,7 @@ public:
     class MassDispelTestImpt : public TestCase
     {
     public:
-        MassDispelTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //currently completely random instead of closest to center to further
+        MassDispelTestImpt() : TestCase(STATUS_PASSING) { } 
 
         void Test() override
         {
@@ -683,7 +683,7 @@ public:
 
             for (uint32 i = 0; i < SPAWN_PLAYER_COUNT; i++)
             {
-                players[i] = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+                players[i] = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN, 70, spawnPos);
                 //free dot for everyone
                 players[i]->AddAura(dotSpellId, players[i]);
                 spawnPos.MoveInFront(spawnPos, 0.5f);
@@ -696,13 +696,13 @@ public:
             //10 closest player should have lost the spell
             for (uint32 i = 0; i < MAX_AFFECTED; i++)
             {
-                ASSERT_INFO("Player with pos %u");
+                ASSERT_INFO("Player with pos %u", i);
                 TEST_HAS_NOT_AURA(players[i], dotSpellId);
             }
             //10 furthest should still have it
             for (uint32 i = MAX_AFFECTED; i < SPAWN_PLAYER_COUNT; i++)
             {
-                ASSERT_INFO("Player with pos %u");
+                ASSERT_INFO("Player with pos %u", i);
                 TEST_HAS_AURA(players[i], dotSpellId);
             }
         }

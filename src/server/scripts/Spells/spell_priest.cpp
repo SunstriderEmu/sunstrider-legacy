@@ -20,6 +20,9 @@ enum PriestSpells
     SPELL_PRIEST_ITEM_EFFICIENCY                    = 37595,
     SPELL_PRIEST_MANA_LEECH_PROC                    = 34650,
     SPELL_PRIEST_BLESSED_RECOVERY_R1                = 27813,
+    SPELL_PRIEST_MASS_DISPEL                        = 32375,
+    SPELL_PRIEST_MASS_DISPEL_ENEMIES                = 32592, //triggered from SPELL_PRIEST_MASS_DISPEL
+    SPELL_PRIEST_MASS_DISPEL_ENEMIES_2              = 39897, //triggered from SPELL_PRIEST_MASS_DISPEL_ENEMIES
 };
 
 class spell_shadowfiend : public SpellScriptLoader
@@ -609,6 +612,57 @@ public:
     }
 };
 
+/* Mass dispel
+32375 - Base spell (dispel allies)
+32592 - Trigger 1 (dispel ennemies)
+39897 - Trigger 2 (dispel MECHANIC_IMMUNE_SHIELD on enemies)
+*/
+template <Targets ImplicitTarget>
+class spell_pri_mass_dispel : public SpellScriptLoader
+{
+public:
+    spell_pri_mass_dispel(char const* ScriptName) : SpellScriptLoader(ScriptName) { }
+
+    class spell_pri_mass_dispel_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_pri_mass_dispel_SpellScript);
+
+        class DistanceOrderPred
+        {
+        public:
+            DistanceOrderPred(SpellDestination dest) : _dest(dest) { }
+
+            bool operator()(WorldObject const* objA, WorldObject const* objB) const
+            {
+                return _dest._position.GetExactDist2d(objA) < _dest._position.GetExactDist2d(objB);
+            }
+        private:
+            SpellDestination _dest;
+        };
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            SpellDestination dest = GetSpell()->GetSpellDestination(EFFECT_0);
+            uint32 maxTargets = GetSpellInfo()->MaxAffectedTargets;
+            if (targets.size() > maxTargets)
+            {
+                targets.sort(DistanceOrderPred(dest));
+                targets.resize(maxTargets);
+            }
+        }
+
+        void Register() override
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_mass_dispel_SpellScript::FilterTargets, EFFECT_0, ImplicitTarget);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_pri_mass_dispel_SpellScript();
+    }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_shadowfiend();
@@ -623,4 +677,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_mana_leech();
     new spell_pri_blessed_recovery();
     new spell_pri_pain_suppression();
+    new spell_pri_mass_dispel<TARGET_UNIT_DEST_AREA_ALLY>("spell_pri_mass_dispel");
+    new spell_pri_mass_dispel<TARGET_UNIT_DEST_AREA_ENEMY>("spell_pri_mass_dispel_enemies");
 }

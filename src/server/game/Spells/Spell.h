@@ -557,6 +557,7 @@ class TC_GAME_API Spell
         bool DoesApplyAuraName(uint32 name);
 
         TriggerCastFlags GetTriggerCastFlags() const { return _triggeredCastFlags; }
+        SpellDestination GetSpellDestination(SpellEffIndex effIndex) const { return m_destTargets[effIndex]; }
 
     protected:
         bool HasGlobalCooldown();
