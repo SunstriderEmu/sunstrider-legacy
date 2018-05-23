@@ -1512,7 +1512,7 @@ public:
             TEST_DIRECT_SPELL_DAMAGE(priest, creature, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMin, holyFireMax, false);
             TEST_DIRECT_SPELL_DAMAGE(priest, creature, ClassSpells::Priest::HOLY_FIRE_RNK_9, holyFireMin * 1.5f, holyFireMax * 1.5f, true);
             
-            // DoT -- wrong DoT Coeff
+            // DoT 
             float const holyFireDoTCoeff = ClassSpellsCoeff::Priest::HOLY_FIRE_DOT;
             uint32 const bonusDoTSP = 292 * holyFireDoTCoeff;
             uint32 const holyFireDoT = (ClassSpellsDamage::Priest::HOLY_FIRE_RNK_9_TOTAL + bonusDoTSP);
@@ -1531,6 +1531,7 @@ class LesserHealTest : public TestCaseScript
 public:
     LesserHealTest() : TestCaseScript("spells priest lesser_heal") { }
 
+    //Heal your target for 135 to 158.
     class LesserHealTestImpt : public TestCase
     {
     public:
@@ -1751,12 +1752,13 @@ class ResurrectionTest : public TestCaseScript
 public:
     ResurrectionTest() : TestCaseScript("spells priest resurrection") { }
 
+    //"Brings a dead player back to life with 1100 health and 1150 mana. Cannot be cast when in combat."
     class ResurrectionTestImpt : public TestCase
     {
     public:
-        ResurrectionTestImpt() : TestCase(STATUS_PASSING) { }
+        ResurrectionTestImpt() : TestCase(STATUS_PASSING) { } 
 
-        void TestResurrection(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 expectedHealth, uint32 expectedMana)
+        void TestResurrection(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 expectedHealth, uint32 expectedMana, bool fail = false)
         {
             victim->KillSelf(true);
             TEST_POWER_COST(caster, spellId, POWER_MANA, manaCost);
@@ -1765,24 +1767,42 @@ public:
             WaitNextUpdate();
             victim->RessurectUsingRequestData();
             WaitNextUpdate(); //resurrect needs 1 update to be done
-            TEST_ASSERT(victim->GetHealth() == expectedHealth);
-            TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
+            if (!fail)
+            {
+                TEST_ASSERT(victim->GetHealth() == expectedHealth);
+                TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
+            } 
+            else
+            {
+                ASSERT_INFO("Victim was resurrected but spell should have failed");
+                TEST_ASSERT(victim->IsDead());
+            }
         }
 
         void Test() override
         {
-            TestPlayer* druid = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* ally = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
             TestPlayer* enemy = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
 
             uint32 manaCost = 1572;
 
-            TestResurrection(druid, ally, ClassSpells::Priest::RESURRECTION_RNK_1, manaCost, 70, 135);
-            TestResurrection(druid, enemy, ClassSpells::Priest::RESURRECTION_RNK_2, manaCost, 160, 300);
-            TestResurrection(druid, ally, ClassSpells::Priest::RESURRECTION_RNK_3, manaCost, 300, 520);
-            TestResurrection(druid, enemy, ClassSpells::Priest::RESURRECTION_RNK_4, manaCost, 500, 750);
-            TestResurrection(druid, ally, ClassSpells::Priest::RESURRECTION_RNK_5, manaCost, 750, 1000);
-            TestResurrection(druid, enemy, ClassSpells::Priest::RESURRECTION_RNK_6, manaCost, 1100, 1150);
+            TestResurrection(priest, ally, ClassSpells::Priest::RESURRECTION_RNK_1, manaCost, 70, 135);
+            TestResurrection(priest, ally, ClassSpells::Priest::RESURRECTION_RNK_2, manaCost, 160, 300);
+            TestResurrection(priest, ally, ClassSpells::Priest::RESURRECTION_RNK_3, manaCost, 300, 520);
+            TestResurrection(priest, ally, ClassSpells::Priest::RESURRECTION_RNK_4, manaCost, 500, 750);
+            TestResurrection(priest, ally, ClassSpells::Priest::RESURRECTION_RNK_5, manaCost, 750, 1000);
+            TestResurrection(priest, ally, ClassSpells::Priest::RESURRECTION_RNK_6, manaCost, 1100, 1150);
+
+            /*WoWWiki: Note that there is no way to tell whether or not a corpse belongs to the player's faction except by inspecting 
+            it visually. If the corpse does belong to the player's faction, it is possible to tell whether the player is still online 
+            or not by typing "/who playername." A response of "0 players found" indicates that the player has logged off (or is of the
+            wrong faction). A response giving the target's race, level, and class indicates that the player is still online and can be 
+            successfully resurrected. Note that landing a resurrection on an offline or cross-faction player's corpses is 
+            indistinguishable from landing one on an online player's corpse who simply declines the resurrection. In both cases, 
+            the mana is wasted, and resurrection will not take place.*/
+            //-> Should not work crossfaction
+            TestResurrection(priest, enemy, ClassSpells::Priest::RESURRECTION_RNK_6, manaCost, 1100, 1150, true);
         }
     };
 

@@ -230,16 +230,21 @@ void Spell::EffectResurrectNew(uint32 i)
     if(!unitTarget->IsInWorld())
         return;
 
-    Player* pTarget = (unitTarget->ToPlayer());
+    //sun: According to WoWWiki, silent fail on cross faction res
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP))
+        if (m_caster->ToPlayer()->GetTeam() != unitTarget->ToPlayer()->GetTeam())
+            return;
 
-    if(pTarget->isRessurectRequested())       // already have one active request
+    Player* target = (unitTarget->ToPlayer());
+
+    if(target->isRessurectRequested())       // already have one active request
         return;
 
     uint32 health = damage;
     uint32 mana = m_spellInfo->Effects[i].MiscValue;
-    ExecuteLogEffectResurrect(i, pTarget);
-    pTarget->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
-    SendResurrectRequest(pTarget);
+    ExecuteLogEffectResurrect(i, target);
+    target->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
+    SendResurrectRequest(target);
 }
 
 void Spell::EffectInstaKill(uint32 /*i*/)
@@ -6417,15 +6422,16 @@ void Spell::EffectResurrect(uint32 effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if(!unitTarget)
-        return;
-    if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+    if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if(unitTarget->IsAlive())
+    if(unitTarget->IsAlive() || !unitTarget->IsInWorld())
         return;
-    if(!unitTarget->IsInWorld())
-        return;
+    
+    //sun: According to WoWWiki, silent fail on cross faction res
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP))
+        if (m_caster->ToPlayer()->GetTeam() != unitTarget->ToPlayer()->GetTeam())
+            return;
 
     switch (m_spellInfo->Id)
     {

@@ -1324,6 +1324,7 @@ class SoulshatterTest : public TestCaseScript
 public:
     SoulshatterTest() : TestCaseScript("spells warlock soulshatter") { }
 
+    //Reduces threat by 50 % for all enemies within 50 yards.
     class SoulshatterTestImpt : public TestCase
     {
     public:

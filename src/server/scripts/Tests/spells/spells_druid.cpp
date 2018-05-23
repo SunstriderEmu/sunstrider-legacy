@@ -2156,9 +2156,8 @@ public:
     public:
         RebirthTestImpt() : TestCase(STATUS_PASSING) { }
 
-        void TestRebirth(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 reagentId, uint32 expectedHealth, uint32 expectedMana)
+        void TestRebirth(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 reagentId, uint32 expectedHealth, uint32 expectedMana, bool fail = false)
         {
-            
             victim->KillSelf(true);
             caster->GetSpellHistory()->ResetAllCooldowns();
             caster->AddItem(reagentId, 1);
@@ -2167,10 +2166,18 @@ public:
             WaitNextUpdate();
             victim->RessurectUsingRequestData();
             WaitNextUpdate(); //resurrect needs 1 update to be done
-            ASSERT_INFO("Victim has %u instead of expected %u health", victim->GetHealth(), expectedHealth);
-            TEST_ASSERT(victim->GetHealth() == expectedHealth);
-            ASSERT_INFO("Victim has %u instead of expected %u mana", victim->GetPower(POWER_MANA), expectedMana);
-            TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
+            if (!fail)
+            {
+                ASSERT_INFO("Victim has %u instead of expected %u health", victim->GetHealth(), expectedHealth);
+                TEST_ASSERT(victim->GetHealth() == expectedHealth);
+                ASSERT_INFO("Victim has %u instead of expected %u mana", victim->GetPower(POWER_MANA), expectedMana);
+                TEST_ASSERT(victim->GetPower(POWER_MANA) == expectedMana);
+            }
+            else 
+            {
+                ASSERT_INFO("Victim was resurrected but spell should have failed");
+                TEST_ASSERT(victim->IsDead());
+            }
 
             TEST_POWER_COST(caster, spellId, POWER_MANA, manaCost);
         }
@@ -2191,11 +2198,21 @@ public:
             uint32 const FLINTWEED_SEED     = 22147;
 
             TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_1, manaCost, MAPLE_SEED, 400, 700);
-            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_2, manaCost, STRANGLETHRON_SEED, 750, 1200);
+            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_2, manaCost, STRANGLETHRON_SEED, 750, 1200);
             TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_3, manaCost, ASHWOOD_SEED, 1100, 1700);
-            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_4, manaCost, HORNBEAM_SEED, 1600, 2200);
+            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_4, manaCost, HORNBEAM_SEED, 1600, 2200);
             TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_5, manaCost, IRONWOOD_SEED, 2200, 2800);
-            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_6, manaCost, FLINTWEED_SEED, 3200, 3200);
+            TestRebirth(druid, ally, ClassSpells::Druid::REBIRTH_RNK_6, manaCost, FLINTWEED_SEED, 3200, 3200);
+
+            /*WoWWiki: Note that there is no way to tell whether or not a corpse belongs to the player's faction except by inspecting
+            it visually. If the corpse does belong to the player's faction, it is possible to tell whether the player is still online
+            or not by typing "/who playername." A response of "0 players found" indicates that the player has logged off (or is of the
+            wrong faction). A response giving the target's race, level, and class indicates that the player is still online and can be
+            successfully resurrected. Note that landing a resurrection on an offline or cross-faction player's corpses is
+            indistinguishable from landing one on an online player's corpse who simply declines the resurrection. In both cases,
+            the mana is wasted, and resurrection will not take place.*/
+            //-> Should not work crossfaction
+            TestRebirth(druid, enemy, ClassSpells::Druid::REBIRTH_RNK_6, manaCost, FLINTWEED_SEED, 3200, 3200, true);
         }
     };
 
