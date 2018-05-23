@@ -153,7 +153,7 @@ public:
             TEST_AURA_MAX_DURATION(caster, spellId, Hours(1));
             TEST_AURA_MAX_DURATION(victim, spellId, Hours(1));
 
-            // Stats, resistances & armor
+            // Stat
             TEST_ASSERT(caster->GetStat(STAT_INTELLECT) == expectedCasterInt);
             TEST_ASSERT(victim->GetStat(STAT_INTELLECT) == expectedVictimInt);
 
@@ -217,6 +217,40 @@ public:
     std::shared_ptr<TestCase> GetTest() const override
     {
         return std::make_shared<ArcaneExplosionTestImpt>();
+    }
+};
+
+class ArcaneIntellectTest : public TestCaseScript
+{
+public:
+    ArcaneIntellectTest() : TestCaseScript("spells mage arcane_intellect") { }
+
+    class ArcaneIntellectTestImpt : public TestCase
+    {
+    public:
+        ArcaneIntellectTestImpt() : TestCase(STATUS_PASSING) { }
+
+        void Test() override
+        {
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+
+            uint32 const intBonus = 40;
+
+            float const expectedInt = mage->GetStat(STAT_INTELLECT) + intBonus;
+
+            uint32 const expectedArcaneIntellectManaCost = 700;
+            TEST_POWER_COST(mage, ClassSpells::Mage::ARCANE_INTELLECT_RNK_6, POWER_MANA, expectedArcaneIntellectManaCost);
+
+            TEST_CAST(mage, mage, ClassSpells::Mage::ARCANE_INTELLECT_RNK_6);
+            TEST_AURA_MAX_DURATION(mage, ClassSpells::Mage::ARCANE_INTELLECT_RNK_6, Minutes(30));
+
+            TEST_ASSERT(mage->GetStat(STAT_INTELLECT) == expectedInt);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ArcaneIntellectTestImpt>();
     }
 };
 
@@ -330,6 +364,7 @@ void AddSC_test_spells_mage()
     new ArcaneBlastTest();
     new ArcaneBrillianceTest();
     new ArcaneExplosionTest();
+    new ArcaneIntellectTest();
     // Fire
     // Frost
     new IceLanceTest();
