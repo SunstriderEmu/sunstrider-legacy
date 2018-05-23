@@ -9939,7 +9939,10 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
 
                 // FORM_SPIRITOFREDEMPTION and related auras
                 pVictim->CastSpell(pVictim, 27827, vDummyAura);
-                //pVictim->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); // should not be attackable
+                //just aesthetics, SoR appears full health and full mana on retail
+                pVictim->SetFullHealth(); 
+                pVictim->SetFullPower(POWER_MANA);
+
                 SpiritOfRedemption = true;
                 if(attacker)
                     (pVictim->ToPlayer())->SetSpiritRedeptionKiller(attacker->GetGUID());

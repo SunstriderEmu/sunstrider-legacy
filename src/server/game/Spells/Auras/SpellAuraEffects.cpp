@@ -6178,6 +6178,7 @@ void AuraEffect::HandleSpiritOfRedemption(AuraApplication const* aurApp, uint8 m
     }
     // die at aura end
     else {
+        m_target->SetHealth(0);
         m_target->SetDeathState(JUST_DIED);
         if (m_target->GetTypeId() == TYPEID_PLAYER) {
             if (m_target->ToPlayer()->InBattleground()) {
