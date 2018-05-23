@@ -6,14 +6,12 @@ class AmplifyMagicTest : public TestCaseScript
 public:
     AmplifyMagicTest() : TestCaseScript("spells mage amplify_magic") { }
 
+    /*Amplifies magic used against the targeted party member, increasing damage taken from
+    spells by up to 120 and healing spells by up to 240. Lasts 10min.*/
     class AmplifyMagicTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - Boosting is a little less than should be for both
-        */
-        AmplifyMagicTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        AmplifyMagicTestImpt() : TestCase(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -28,15 +26,19 @@ public:
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6, Minutes(10));
 
             // Spell damage taken and healing boosts
-            float const spellDamageTakenBoost = 120;
-            float const healingBoost = 240;
+            uint32 const spellDamageTakenBoost = 120;
+            uint32 const healingBoost = 240;
 
-            uint32 const minSB = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN + spellDamageTakenBoost;
-            uint32 const maxSB = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX + spellDamageTakenBoost;
+            float const castTime = 3.0f;
+            float const spellCoefficient = castTime / 3.5f;
+            uint32 const minSB = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN + spellDamageTakenBoost * spellCoefficient;
+            uint32 const maxSB = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX + spellDamageTakenBoost * spellCoefficient;
             TEST_DIRECT_SPELL_DAMAGE(enemy, priest, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, minSB, maxSB, false);
 
-            uint32 const minGH = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN + healingBoost;
-            uint32 const maxGH = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX + healingBoost;
+            float const greaterHealCastTime = 3.0f;
+            float const greaterHealCoeff = greaterHealCastTime / 3.5f;
+            uint32 const minGH = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN + healingBoost * greaterHealCoeff;
+            uint32 const maxGH = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX + healingBoost * greaterHealCoeff;
             TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, minGH, maxGH, false);
 
             // Test mana cost
@@ -56,6 +58,9 @@ class ArcaneBlastTest : public TestCaseScript
 public:
     ArcaneBlastTest() : TestCaseScript("spells mage arcane_blast") { }
 
+    /*Blasts the target with energy, dealing 648 to 753 Arcane damage. 
+    Each time you cast Arcane Blast, the casting time is reduced while
+        mana cost is increased. Effect stacks up to 3 times and lasts 8sec.*/
     class ArcaneBlastTestImpt : public TestCase
     {
     public:
@@ -131,6 +136,7 @@ class ArcaneBrillianceTest : public TestCaseScript
 public:
     ArcaneBrillianceTest() : TestCaseScript("spells mage arcane_brilliance") { }
 
+    //Infuses the target's party with brilliance, increasing their Intellect by 40 for 1h.
     class ArcaneBrillianceTestImpt : public TestCase
     {
     public:
@@ -187,6 +193,7 @@ class ArcaneExplosionTest : public TestCaseScript
 public:
     ArcaneExplosionTest() : TestCaseScript("spells mage arcane_explosion") { }
 
+    //Causes an explosion of arcane magic around the caster, causing 377 to 408 Arcane damage to all targets within 10 yards.
     class ArcaneExplosionTestImpt : public TestCase
     {
     public:
