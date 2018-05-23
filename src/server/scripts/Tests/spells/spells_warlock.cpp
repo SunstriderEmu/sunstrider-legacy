@@ -1021,14 +1021,14 @@ class CreateSpellstoneTest : public TestCaseScript
 public:
     CreateSpellstoneTest() : TestCaseScript("spells warlock create_spellstone") { }
 
+    /*Creates a Master Spellstone for the caster. When equipped and used, 
+    the Master Spellstone dispels all harmful magic effects from the caster. 
+    In addition, equipping the Spellstone improves your spell critical strike rating by 20.
+    Conjured items disappear if logged out for more than 15 minutes.*/
     class CreateSpellstoneTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - Doesnt remove magic harmful spells
-        */
-        CreateSpellstoneTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        CreateSpellstoneTestImpt() : TestCase(STATUS_PASSING) { }
 
         void CreateSpellstone(TestPlayer* caster, uint32 spellstoneSpellId, uint32 spellstoneItemID, uint32 expectedManaCost, uint32 criticalStrikeRatingBonus)
         {
@@ -1049,12 +1049,13 @@ public:
             caster->GetSpellHistory()->ResetAllCooldowns();
             // Use item
             EQUIP_EXISTING_ITEM(caster, spellstoneItemID);
+            caster->GetSpellHistory()->ResetAllCooldowns(); //reset cooldown after equip
             USE_ITEM(caster, caster, spellstoneItemID);
             WaitNextUpdate();
-            ASSERT_INFO("Crit: %u, expected: %u", caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL), expectedSpellCritScore);
+            ASSERT_INFO("Crit: %u, expected: %u (for stone %u)", caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL), expectedSpellCritScore, spellstoneItemID);
             TEST_ASSERT(caster->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_SPELL) == expectedSpellCritScore);
-            TEST_HAS_AURA(caster, 5760);
-            TEST_HAS_AURA(caster, 35760);
+            TEST_HAS_AURA(caster, 5760);  // Poison
+            TEST_HAS_AURA(caster, 35760);  // Disease
             TEST_HAS_AURA(caster, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
             TEST_HAS_AURA(caster, ClassSpells::Warrior::HAMSTRING_RNK_4);
             TEST_HAS_AURA(caster, ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7);
@@ -1066,6 +1067,7 @@ public:
             caster->RemoveAurasDueToSpell(ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4);
             caster->RemoveAurasDueToSpell(ClassSpells::Warrior::HAMSTRING_RNK_4);
             caster->RemoveAurasDueToSpell(ClassSpells::Priest::POWER_WORD_FORTITUDE_RNK_7);
+            RemoveAllEquipedItems(caster); // unequip stone
         }
 
         void Test() override
