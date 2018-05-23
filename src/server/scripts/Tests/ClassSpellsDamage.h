@@ -199,6 +199,7 @@ namespace ClassSpellsDamage
             ARCANE_BLAST_RNK_1_MAX = 753,
             ARCANE_EXPLOSION_RNK_8_MIN = 377,
             ARCANE_EXPLOSION_RNK_8_MAX = 407,
+            ARCANE_MISSILES_RNK_10_TICK = 260,
             // Frost
             ICE_LANCE_RNK_1_MIN = 173,
             ICE_LANCE_RNK_1_MAX = 200,

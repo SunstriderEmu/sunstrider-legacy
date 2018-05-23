@@ -254,6 +254,50 @@ public:
     }
 };
 
+class ArcaneMissilesTest : public TestCaseScript
+{
+public:
+    ArcaneMissilesTest() : TestCaseScript("spells mage arcane_missiles") { }
+
+    class ArcaneMissilesTestImpt : public TestCase
+    {
+    public:
+        ArcaneMissilesTestImpt() : TestCase(STATUS_WIP) { } // TODO Kelno: see about TEST_CHANNEL_DAMAGE not getting full ticks
+
+        void Test() override
+        {
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            uint32 const expectedArcaneMissilesManaCost = 740;
+            TEST_POWER_COST(mage, ClassSpells::Mage::ARCANE_MISSILES_RNK_10, POWER_MANA, expectedArcaneMissilesManaCost);
+
+            // Damage
+            EQUIP_NEW_ITEM(mage, 34336); // Sunflare - 292 SP
+            uint32 const spellPower = mage->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            TEST_ASSERT(spellPower == 292);
+
+            float const castTime = 5.f;
+            float const spellCoeff = castTime / 3.5f;
+
+            uint32 const spellLevel = 64;
+            uint32 const spellMaxLevel = 68;
+            float const perLevelPoint = 1.2f;
+            uint32 const perLevelGain = (spellMaxLevel - spellLevel) * perLevelPoint;
+
+            uint32 const tickAmount = 5;
+            uint32 const spellPowerPerTick = floor(spellPower * spellCoeff) / tickAmount;
+            uint32 const arcaneMissilesDmg = tickAmount * (ClassSpellsDamage::Mage::ARCANE_MISSILES_RNK_10_TICK + perLevelGain + spellPowerPerTick);
+            TEST_CHANNEL_DAMAGE(mage, dummy, ClassSpells::Mage::ARCANE_MISSILES_RNK_10, ClassSpells::Mage::ARCANE_MISSILES_RNK_10_PROC, tickAmount, arcaneMissilesDmg);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<ArcaneMissilesTestImpt>();
+    }
+};
+
 class IceLanceTest : public TestCaseScript
 {
 public:
@@ -365,6 +409,7 @@ void AddSC_test_spells_mage()
     new ArcaneBrillianceTest();
     new ArcaneExplosionTest();
     new ArcaneIntellectTest();
+    new ArcaneMissilesTest();
     // Fire
     // Frost
     new IceLanceTest();
