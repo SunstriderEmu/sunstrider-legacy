@@ -447,18 +447,18 @@ class MassDispelTest : public TestCaseScript
 public:
     MassDispelTest() : TestCaseScript("spells priest mass_dispel") { }
 
+    /*"Dispels magic in a 15 yard radius, removing 1 harmful spell from each friendly target and 1 beneficial spell from each enemy target.
+    Affects a maximum of 10 friendly targets and 10 enemy targets. This dispel is potent enough to remove Magic effects 
+    that are normally undispellable."*/
     class MassDispelTestImpt : public TestCase
     {
     public:
-        /*
-        Bugs:
-            - For now: only 5 Prayer of Fortitude are dispelled instead of 10 and no Gas Nova dispel
-        */
-        MassDispelTestImpt() : TestCase(STATUS_WIP) { }
+        MassDispelTestImpt() : TestCase(STATUS_PASSING) { }
 
-        TestPlayer* SpawnShaman(Races race, Position spawn)
+        //summon shaman with some totems
+        TestPlayer* SpawnShaman(Races race)
         {
-            TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, race, 70, spawn);
+            TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, race);
             EQUIP_NEW_ITEM(shaman, 28523); // Totem
             TEST_CAST(shaman, shaman, ClassSpells::Shaman::MANA_SPRING_TOTEM_RNK_5, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             TEST_CAST(shaman, shaman, ClassSpells::Shaman::GRACE_OF_AIR_TOTEM_RNK_3, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
@@ -467,9 +467,10 @@ public:
             return shaman;
         }
 
-        TestPlayer* SpawnHunter(Races race, Position spawn)
+        //summon hunter with a pet
+        TestPlayer* SpawnHunter(Races race)
         {
-            TestPlayer* hunter = SpawnPlayer(CLASS_HUNTER, race, 70, spawn);
+            TestPlayer* hunter = SpawnPlayer(CLASS_HUNTER, race);
             hunter->SummonPet(20673, hunter->GetPositionX(), hunter->GetPositionY(), hunter->GetPositionZ(), 0.0f, HUNTER_PET, 0); // Wind Serpent
             Pet* pet = hunter->GetPet();
             TEST_ASSERT(pet != nullptr);
@@ -478,60 +479,49 @@ public:
 
         void Test() override
         {
-            // Creature
-            Creature* creature = SpawnCreature(6);
+            uint32 const MAX_DISPEL_TARGETS = 10;
+            float const dist = 35.0f;
+            uint32 const GAS_NOVA = 45855; //100 yard range
 
-            // Setup: spawn 22 players, 11 Alliance, 11 Horde
+            // Setup: spawn 22 players, for each side 11 + 1 hunter pet + some totems
             // Priest
             TestPlayer* priestA = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
             TestPlayer* priestH = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            priestA->ForceSpellHitResult(SPELL_MISS_NONE);
+            priestH->ForceSpellHitResult(SPELL_MISS_NONE);
 
-            Position spawn(_location);
-            // Paladin - 3m
-            spawn.MoveInFront(spawn, 3.0f);
-            SpawnPlayer(CLASS_PALADIN, RACE_HUMAN, 70, spawn);
-            TestPlayer* paladinH = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF, 70, spawn);
-            // Mage - 6m
-            spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* mageA = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
-            TestPlayer* mageH = SpawnPlayer(CLASS_MAGE, RACE_BLOODELF, 70, spawn);
-            // Warlock - 9m
-            spawn.MoveInFront(spawn, 3.0f);
-            SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawn);
-            TestPlayer* warlockH = SpawnPlayer(CLASS_WARLOCK, RACE_BLOODELF, 70, spawn);
-            // Shaman - 12m
-            spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* shamanA = SpawnShaman(RACE_DRAENEI, spawn);
-            SpawnShaman(RACE_ORC, spawn);
-            // Hunter - 15m
-            spawn.MoveInFront(spawn, 3.0f);
-            SpawnHunter(RACE_DWARF, spawn);
-            TestPlayer* hunterH = SpawnHunter(RACE_ORC, spawn);
-            // Warrior - 18m
-            spawn.MoveInFront(spawn, 3.0f);
-            SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
-            SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN, 70, spawn);
-            // Druid - 21m
-            spawn.MoveInFront(spawn, 3.0f);
-            SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF, 70, spawn);
-            SpawnPlayer(CLASS_DRUID, RACE_TAUREN, 70, spawn);
-            // Rogue - 24m
-            spawn.MoveInFront(spawn, 3.0f);
-            SpawnPlayer(CLASS_ROGUE, RACE_NIGHTELF, 70, spawn);
-            SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF, 70, spawn);
-            // RIP - 27m
-            spawn.MoveInFront(spawn, 3.0f);
-            TestPlayer* ripA = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, spawn);
-            TestPlayer* ripH = SpawnPlayer(CLASS_ROGUE, RACE_ORC, 70, spawn);
+            //10 others alliance
+            SpawnPlayer(CLASS_PALADIN, RACE_HUMAN);
+            TestPlayer* mageA = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
+            SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            SpawnShaman(RACE_DRAENEI);
+            SpawnHunter(RACE_DWARF);
+            SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+            SpawnPlayer(CLASS_ROGUE, RACE_NIGHTELF);
+            SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+            SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
 
-            float const dist = 35.0f;
-            uint32 const GAS_NOVA = 45855;
+            //10 others horde
+            TestPlayer* paladinH = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+            SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF);
+            TestPlayer* warlockH = SpawnPlayer(CLASS_WARLOCK, RACE_BLOODELF);
+            TestPlayer* mageH = SpawnPlayer(CLASS_MAGE, RACE_BLOODELF);
+            SpawnShaman(RACE_ORC);
+            SpawnHunter(RACE_ORC);
+            SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF);
+            SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF);
+
+            uint32 const TOTAL_HORDE_PLAYER = 12;
+            uint32 const TOTAL_ALLIANCE_PLAYER = 12;
 
             // Get all the units
             std::vector<WorldObject*> targets;
-            Trinity::AllWorldObjectsInRange u_check(creature, dist);
-            Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(creature, targets, u_check);
-            Cell::VisitAllObjects(creature, searcher, dist);
+            Trinity::AllWorldObjectsInRange u_check(priestA, dist);
+            Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(priestA, targets, u_check);
+            Cell::VisitAllObjects(priestA, searcher, dist);
 
             // Group raid the players
             for (WorldObject* object : targets)
@@ -548,101 +538,100 @@ public:
                 }
             }
 
-            // Buff horde raid
-            uint32 const SACRED_CANDLE = 17029;
-            priestH->AddItem(17029, 2);
-            TEST_CAST(priestH, priestH, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
-            TEST_CAST(priestH, hunterH, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
-            TEST_CAST(priestH, ripH, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
 
             // Gas Nova for all
-            Wait(3000);
-            FORCE_CAST(creature, creature, GAS_NOVA, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             WaitNextUpdate();
-            // Everybody has the aura except Totems and creature
+            Wait(10000);
+            WaitNextUpdate();
+            WaitNextUpdate();
+
+            // Buff everyone + Check if everybody has the gas nova (except Totems)
             for (WorldObject* object : targets)
             {
                 if (Unit* unit = object->ToUnit())
                 {
-                    if(unit->IsTotem() || unit == creature)
-                        TEST_HAS_NOT_AURA(unit, GAS_NOVA)
-                    else
-                        TEST_HAS_AURA(unit, GAS_NOVA)
+                    if (unit->IsTotem())
+                        continue;
 
+                    unit->AddAura(GAS_NOVA, unit);
+                    TEST_HAS_AURA(unit, GAS_NOVA)
                     // Buff priest on horde players & pets
-                    if (Player* player = object->ToPlayer())
-                    {
-                        if (player->GetTeam() == Team::HORDE)
-                        {   
-                            TEST_HAS_AURA(player, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
-                            if (Pet* pet = player->GetPet())
-                                TEST_HAS_AURA(pet, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
-                        }
-                    }
+                    priestH->AddAura(ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3, unit);
+                    TEST_HAS_AURA(unit, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
+                    unit->SetFullHealth();
                 }
             }
 
-            // What we expect: Mass Dispel didnt hit ripA & ripH because they were the furthest from the center of the spell
+            // What we expect: Mass Dispel didnt hit ripA & ripH because they were the too far the center of the spell
             // Mass dispell
-            // Alliance: no more gas nova except ripA
-            // Horde: gas nova but no more priest buff except ripH
-            uint32 petsWithoutPrayerOfFortitude = 0;
-            uint32 playersWithoutPrayerOfFortitude = 0;
-            uint32 playersWithPrayerOfFortitude = 0;
-            uint32 playersWithoutGasNova = 0;
-            uint32 petWithoutGasNova = 0;
-            uint32 playersWithGasNova = 0;
-            FORCE_CAST(priestA, shamanA, ClassSpells::Priest::MASS_DISPEL_RNK_1, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
-            Wait(100);
+            // Alliance: no more gas nova except for 2 targets
+            // Horde: gas nova but no more priest buff except for 2 targets
+            uint32 targetsWithoutPrayerOfFortitude = 0;
+            uint32 targetsWithPrayerOfFortitude = 0;
+            uint32 targetsWithoutGasNova = 0;
+            uint32 targetsWithGasNova = 0;
+            //centered on self
+            FORCE_CAST(priestA, priestA, ClassSpells::Priest::MASS_DISPEL_RNK_1, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
+
+            auto countNova = [&](Unit* unit) {
+                if (unit->HasAura(GAS_NOVA))
+                    targetsWithGasNova++;
+                else
+                    targetsWithoutGasNova++;
+            };
+
+            auto countPrayer = [&](Unit* unit) {
+                if (unit->HasAura(ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3))
+                    targetsWithPrayerOfFortitude++;
+                else
+                    targetsWithoutPrayerOfFortitude++;
+            };
+
             for (WorldObject* object : targets)
             {
                 if (Player* player = object->ToPlayer())
                 {
                     if (player->GetTeam() == Team::ALLIANCE)
                     {
-                        if (player == ripA) // 10 allies were already dispelled
-                        {
-                            TEST_HAS_AURA(player, GAS_NOVA);
-                            playersWithGasNova++;
-                            continue;
-                        }
-                        TEST_HAS_NOT_AURA(player, GAS_NOVA);
-                        playersWithoutGasNova++;
-                        if (Pet* pet = player->ToPet())
-                        {
-                            TEST_HAS_NOT_AURA(pet, GAS_NOVA);
-                            petWithoutGasNova++;
-                        }
+                        countNova(player);
+                        if (Pet* pet = player->GetPet())
+                            countNova(pet);
                     }
                     else
                     {
-                        if (player == ripH) // 10 enemies were already dispelled
-                        {
-                            TEST_HAS_AURA(player, GAS_NOVA);
-                            TEST_HAS_AURA(player, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
-                            playersWithPrayerOfFortitude++;
-                            continue;
-                        }
+                        ASSERT_INFO("At least horde player did not have gas nova after mass dispel");
                         TEST_HAS_AURA(player, GAS_NOVA);
-                        ASSERT_INFO("Player with class %u still has Prayer of Fortitude. %u - %u - %u - %u", player->GetClass(), playersWithGasNova, playersWithPrayerOfFortitude, playersWithoutGasNova, playersWithoutPrayerOfFortitude);
-                        TEST_HAS_NOT_AURA(player, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
-                        playersWithoutPrayerOfFortitude++;
-                        if (Pet* pet = player->ToPet())
-                        {
-                            TEST_HAS_AURA(pet, GAS_NOVA)
-                            TEST_HAS_NOT_AURA(pet, ClassSpells::Priest::PRAYER_OF_FORTITUDE_RNK_3);
-                            petsWithoutPrayerOfFortitude++;
-
-                        }
+                        countPrayer(player);
+                        if (Pet* pet = player->GetPet())
+                            countPrayer(player);
                     }
                 }
             }
+
+            //check results
+            TEST_ASSERT((targetsWithGasNova + targetsWithoutGasNova) == TOTAL_ALLIANCE_PLAYER);
+            TEST_ASSERT((targetsWithPrayerOfFortitude + targetsWithoutPrayerOfFortitude) == TOTAL_HORDE_PLAYER);
+            uint32 const expectedWithNova = TOTAL_ALLIANCE_PLAYER - MAX_DISPEL_TARGETS;
+            ASSERT_INFO("%u alliance units with nova instead of %u", targetsWithGasNova, expectedWithNova);
+            TEST_ASSERT(targetsWithGasNova == expectedWithNova);
+            uint32 const expectedWithPrayer = TOTAL_HORDE_PLAYER - MAX_DISPEL_TARGETS;
+            ASSERT_INFO("%u horde units with prayer instead of %u", targetsWithPrayerOfFortitude, expectedWithPrayer);
+            TEST_ASSERT(targetsWithPrayerOfFortitude == expectedWithPrayer);
+
+            //teleport some units further to avoid targeting unwanted players
+            _location.MoveInFront(_location, 50.0f);
+            mageH->TeleportTo(_location);
+            paladinH->TeleportTo(_location);
+            mageA->TeleportTo(_location);
+            warlockH->TeleportTo(_location);
+            priestA->TeleportTo(_location);
+            WaitNextUpdate();
 
             // Remove Ice Block, Divine Shield, some banish?
             TEST_CAST(mageH, mageH, ClassSpells::Mage::ICE_BLOCK_RNK_1);
             TEST_CAST(paladinH, paladinH, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
             TEST_CAST(mageA, mageA, ClassSpells::Mage::SUMMON_WATER_ELEMENTAL_RNK_1);
-            Pet* elem = mageA->GetPet();
+            Guardian* elem = mageA->GetGuardianPet();
             TEST_ASSERT(elem != nullptr);
             TEST_CAST(warlockH, elem, ClassSpells::Warlock::BANISH_RNK_2, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
