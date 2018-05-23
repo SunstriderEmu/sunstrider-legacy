@@ -298,6 +298,69 @@ public:
     }
 };
 
+class BlinkTest : public TestCaseScript
+{
+public:
+    BlinkTest() : TestCaseScript("spells mage blink") { }
+
+    class BlinkTestImpt : public TestCase
+    {
+    public:
+        BlinkTestImpt() : TestCase(STATUS_WIP) { }
+
+        void Test() override
+        {
+            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+
+            Position expectedBlinkPosition;
+            expectedBlinkPosition.MoveInFront(_location, 20.f);
+
+            uint32 const expectedBlinkManaCost = 470;
+            TEST_POWER_COST(mage, ClassSpells::Mage::BLINK_RNK_1, POWER_MANA, expectedBlinkManaCost);
+
+            TEST_CAST(mage, mage, ClassSpells::Mage::BLINK_RNK_1);
+            TEST_AURA_MAX_DURATION(mage, ClassSpells::Mage::BLINK_RNK_1, Seconds(1));
+            TEST_HAS_COOLDOWN(mage, ClassSpells::Mage::BLINK_RNK_1, Seconds(15));
+            WaitNextUpdate();
+            ASSERT_INFO("Distance: %f", mage->GetDistance(expectedBlinkPosition));
+            TEST_ASSERT(Between<float>(mage->GetDistance(expectedBlinkPosition), 0.f, 1.f));
+            mage->TeleportTo(_location);
+
+            // Spawn rogue behind mage
+            expectedBlinkPosition.MoveInFront(_location, -1.f);
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 70, expectedBlinkPosition);
+
+            auto AI = rogue->GetTestingPlayerbotAI();
+            TEST_ASSERT(AI != nullptr);
+
+            for (uint32 i = 0; i < 100; i++)
+            {
+                if (!mage->HasAura(ClassSpells::Mage::BLINK_RNK_1))
+                    mage->AddAura(ClassSpells::Mage::BLINK_RNK_1, mage);
+                TEST_HAS_AURA(mage, ClassSpells::Mage::BLINK_RNK_1);
+
+                rogue->AddComboPoints(mage, 5);
+                TEST_CAST(rogue, mage, ClassSpells::Rogue::KIDNEY_SHOT_RNK_2, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+
+                auto damageToTarget = AI->GetSpellDamageDoneInfo(mage);
+                TEST_ASSERT(damageToTarget->size() == i + 1);
+                auto& data = damageToTarget->back();
+
+                if (data.damageInfo.SpellID != ClassSpells::Rogue::KIDNEY_SHOT_RNK_2)
+                    continue;
+
+                TEST_ASSERT(data.damageInfo.HitInfo != SPELL_MISS_NONE);
+            }
+        }
+        // TODO: roots + get out of roots + stuns
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<BlinkTestImpt>();
+    }
+};
+
 class IceLanceTest : public TestCaseScript
 {
 public:
@@ -410,6 +473,7 @@ void AddSC_test_spells_mage()
     new ArcaneExplosionTest();
     new ArcaneIntellectTest();
     new ArcaneMissilesTest();
+    new BlinkTest();
     // Fire
     // Frost
     new IceLanceTest();
