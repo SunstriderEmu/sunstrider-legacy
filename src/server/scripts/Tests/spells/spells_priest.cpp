@@ -562,7 +562,6 @@ public:
                 }
             }
 
-            // What we expect: Mass Dispel didnt hit ripA & ripH because they were the too far the center of the spell
             // Mass dispell
             // Alliance: no more gas nova except for 2 targets
             // Horde: gas nova but no more priest buff except for 2 targets
@@ -605,6 +604,9 @@ public:
                         if (Pet* pet = player->GetPet())
                             countPrayer(player);
                     }
+                    player->RemoveAurasDueToSpell(GAS_NOVA);
+                    if (Pet* pet = player->GetPet())
+                        pet->RemoveAurasDueToSpell(GAS_NOVA);
                 }
             }
 
@@ -644,6 +646,65 @@ public:
             TEST_HAS_NOT_AURA(mageH, ClassSpells::Mage::ICE_BLOCK_RNK_1);
             TEST_HAS_NOT_AURA(paladinH, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
             TEST_HAS_NOT_AURA(elem, ClassSpells::Warlock::BANISH_RNK_2);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<MassDispelTestImpt>();
+    }
+};
+
+class MassDispelTest2 : public TestCaseScript
+{
+public:
+    MassDispelTest2() : TestCaseScript("spells priest mass_dispel2") { }
+
+    /*"Dispels magic in a 15 yard radius, removing 1 harmful spell from each friendly target and 1 beneficial spell from each enemy target.
+    Affects a maximum of 10 friendly targets and 10 enemy targets. This dispel is potent enough to remove Magic effects
+    that are normally undispellable."*/
+    class MassDispelTestImpt : public TestCase
+    {
+    public:
+        MassDispelTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //currently completely random instead of closest to center to further
+
+        void Test() override
+        {
+            // What we're testing:
+            // BC WoWWiki: "The spell targets those closest to the casting priest first and then moves outward."
+            // but was changed to "The spell targets those closest to the center of the green targeting circle first and then moves outward." on
+            // the wiki during LK beta. I'm assuming this second text is the right one and the spell did not actually change.
+            
+            uint32 const MAX_AFFECTED = 10;
+            uint32 const SPAWN_PLAYER_COUNT = 20;
+            uint32 const dotSpellId = ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_1;
+            std::vector<TestPlayer*> players(SPAWN_PLAYER_COUNT);
+            Position spawnPos(_location);
+
+            for (uint32 i = 0; i < SPAWN_PLAYER_COUNT; i++)
+            {
+                players[i] = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+                //free dot for everyone
+                players[i]->AddAura(dotSpellId, players[i]);
+                spawnPos.MoveInFront(spawnPos, 0.5f);
+            }
+            //so further player will be at SPAWN_PLAYER_COUNT * 0.5f = 10.0f
+            //(spell max range is 15 so we're okay)
+
+            //cast mass dispel centered on first player
+            FORCE_CAST(players[0], players[0], ClassSpells::Priest::MASS_DISPEL_RNK_1, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
+            //10 closest player should have lost the spell
+            for (uint32 i = 0; i < MAX_AFFECTED; i++)
+            {
+                ASSERT_INFO("Player with pos %u");
+                TEST_HAS_NOT_AURA(players[i], dotSpellId);
+            }
+            //10 furthest should still have it
+            for (uint32 i = MAX_AFFECTED; i < SPAWN_PLAYER_COUNT; i++)
+            {
+                ASSERT_INFO("Player with pos %u");
+                TEST_HAS_AURA(players[i], dotSpellId);
+            }
         }
     };
 
@@ -2887,6 +2948,7 @@ void AddSC_test_spells_priest()
     new LevitateTest();
     new ManaBurnTest();
     new MassDispelTest();
+    new MassDispelTest2();
     new PowerWordFortitudeTest();
     new PowerWordShieldTest();
     new PrayerOfFortitudeTest();
