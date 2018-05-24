@@ -1246,7 +1246,7 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
     auto AI = _GetCasterAI(caster);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
-    //uint32 baseCastTime = spellInfo->CalcCastTime(nullptr);
+
     uint32 baseDurationTime = spellInfo->GetDuration();
     SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
 
@@ -1256,7 +1256,7 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
     EnableCriticals(caster, false);
     _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_TARGET_AURASTATE));
 
-    WaitNextUpdate(); //extra wait, remove if spell system allow to cast channel instantly
+    _UpdateUnitEvents(caster); //remove if spell system allow to cast channel instantly
     Wait(baseDurationTime); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
     caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
     INTERNAL_ASSERT_INFO("caster is still casting channel after baseDurationTime %u", baseDurationTime);

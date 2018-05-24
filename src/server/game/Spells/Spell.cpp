@@ -1077,7 +1077,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
         if (target && target->ToUnit())
             AddUnitTarget(target->ToUnit(), 1 << effIndex);
         else
-        TC_LOG_DEBUG("spells", "SPELL: cannot find channel spell target for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
+            TC_LOG_WARN("spells", "SPELL: cannot find channel spell target for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
         break;
     }
     case TARGET_DEST_CHANNEL_TARGET:
@@ -3192,6 +3192,7 @@ void Spell::DoSpellEffectHit(Unit* unit, uint8 effIndex, TargetInfo& hitInfo)
                     .SetCastItem(m_CastItem)
                     .SetPeriodicReset(resetPeriodicTimer)
                     .SetOwnerEffectMask(aura_effmask)
+                    .SetTriggerCastFlags(_triggeredCastFlags)
                     .IsRefresh = &refresh;
 
                 if (Aura* aura = Aura::TryRefreshStackOrCreate(createInfo))
@@ -4098,9 +4099,9 @@ void Spell::update(uint32 difftime)
     {
         case SPELL_STATE_PREPARING:
         {
-            if(m_timer)
+            if (m_timer > 0)
             {
-                if(difftime >= m_timer)
+                if(difftime >= (uint32)m_timer)
                     m_timer = 0;
                 else
                     m_timer -= difftime;
@@ -4111,7 +4112,7 @@ void Spell::update(uint32 difftime)
         } break;
         case SPELL_STATE_CASTING:
         {
-            if(m_timer > 0)
+            if(m_timer)
             {
                 if( Player* p = m_caster->ToPlayer())
                 {
@@ -4125,8 +4126,8 @@ void Spell::update(uint32 difftime)
                 if(!UpdateChanneledTargetList())
                 {
                     // TC_LOG_DEBUG("spells", "Channeled spell %d is removed due to lack of targets", m_spellInfo->Id);
-
                     m_timer = 0;
+
                     // Also remove applied auras
                     for (TargetInfo const& target : m_UniqueTargetInfo)
                         if (Unit* unit = m_caster->GetGUID() == target.TargetGUID ? m_caster->ToUnit() : ObjectAccessor::GetUnit(*m_caster, target.TargetGUID))
@@ -4137,20 +4138,17 @@ void Spell::update(uint32 difftime)
                         if (m_caster->ToUnit()->m_currentSpells[CURRENT_CHANNELED_SPELL])
                             m_caster->ToUnit()->InterruptSpell(CURRENT_CHANNELED_SPELL, true, true);
                     }
-
-                    SendChannelUpdate(0);
-                    finish();
                 }
 
-                if(difftime >= m_timer)
+                if(difftime >= (uint32)m_timer)
                     m_timer = 0;
                 else
                     m_timer -= difftime;
             }
 
-            if(m_timer == 0)
+            if (m_timer == 0)
             {
-                //old wr system, TC has not this
+                // -- old wr system, TC has not this
                 // channeled spell processed independently for quest targeting
                 // cast at creature (or GO) quest objectives update at successful cast channel finished
                 // ignore autorepeat/melee casts for speed (not exist quest for spells (hm... )
@@ -4180,13 +4178,15 @@ void Spell::update(uint32 difftime)
                         (m_caster->ToPlayer())->CastedCreatureOrGO(go->GetEntry(),go->GetGUID(),m_spellInfo->Id);
                     }
                 }
+                // --
 
+                SendChannelUpdate(0);
                 finish();
             }
-        } break;
+            break;
+        } 
         default:
-        {
-        }break;
+            break;
     }
 }
 
@@ -4205,7 +4205,7 @@ void Spell::finish(bool ok, bool cancelChannel)
 
     if(m_spellInfo->IsChanneled() && cancelChannel)
     {
-        SendChannelUpdate(0,m_spellInfo->Id);
+        SendChannelUpdate(0, m_spellInfo->Id);
         caster->UpdateInterruptMask();
     }
     

@@ -3507,7 +3507,6 @@ void Unit::_UpdateSpells(uint32 diff)
         i_aura->UpdateOwner(diff, this);
     }
 
-
     // remove expired auras - do that after updates(used in scripts?)
     for (AuraMap::iterator i = m_ownedAuras.begin(); i != m_ownedAuras.end();)
     {
@@ -5247,7 +5246,7 @@ uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectTyp
                     overTime = spellProto->GetDuration();
                 break;
             default:
-                /* From sunwell core. Why ? LK ?
+                /* From TC. Why? LK only?
                 // -5% per additional effect
                 ++effects;
                 */

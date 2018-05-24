@@ -756,7 +756,7 @@ class TC_GAME_API Spell
 		void SummonGuardian(uint32 effectIndex, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons);
 
         uint32 m_spellState;
-        uint32 m_timer; //remaining cast time
+        int32 m_timer; //remaining cast time
         SpellEvent* _spellEvent;
 
         float m_castPositionX;

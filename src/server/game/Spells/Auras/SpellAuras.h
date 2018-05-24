@@ -295,6 +295,8 @@ public:
     std::vector<AuraScript*> m_loadedScripts;
 
     ChannelTargetData const* GetChannelTargetData() const { return m_channelData; }
+    TriggerCastFlags GetTriggerCastFlags() const { return m_castFlags; }
+
 private:
     AuraScript * GetScriptByName(std::string const& scriptName) const;
     void _DeleteRemovedApplications();
@@ -341,6 +343,8 @@ protected:
     uint32 m_heartBeatTimer;                        // Heartbeat resist timer
 
     std::chrono::steady_clock::time_point m_procCooldown;
+
+    TriggerCastFlags m_castFlags; //flags used by spell
 
 private:
     std::vector<AuraApplication*> _removedApplications;

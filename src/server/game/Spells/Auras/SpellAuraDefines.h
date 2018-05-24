@@ -374,6 +374,8 @@ struct TC_GAME_API AuraCreateInfo
     AuraCreateInfo& SetPeriodicReset(bool reset) { ResetPeriodicTimer = reset; return *this; }
     AuraCreateInfo& SetOwnerEffectMask(uint8 effMask) { _targetEffectMask = effMask; return *this; }
     AuraCreateInfo& SetFake(bool fake) { Fake = fake; return *this; }
+    AuraCreateInfo& SetTriggerCastFlags(TriggerCastFlags _castFlags) { castFlags = _castFlags; return *this; }
+
 
     SpellInfo const* GetSpellInfo() const { return _spellInfo; }
     uint8 GetAuraEffectMask() const { return _auraEffectMask; }
@@ -385,6 +387,7 @@ struct TC_GAME_API AuraCreateInfo
     bool* IsRefresh = nullptr;
     bool ResetPeriodicTimer = true;
     bool Fake = false; // fake = true won't add aura to owner
+    TriggerCastFlags castFlags = TRIGGERED_NONE; //flags used by spell
 
     private:
         SpellInfo const* _spellInfo = nullptr;

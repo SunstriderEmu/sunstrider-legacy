@@ -1980,6 +1980,9 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 
     CastSpellExtraArgs args(this);
     args.SetOriginalCaster(originalCasterGUID);
+    //sun: inherit ignore speed flag if any. Needed for testing channels.
+    if (GetBase()->GetTriggerCastFlags() & TRIGGERED_IGNORE_SPEED)
+        args.TriggerFlags = TriggerCastFlags(args.TriggerFlags | TRIGGERED_IGNORE_SPEED);
 #ifdef LICH_KING
     //don't know what to do with this on BC but this attribute was already existing. Auras can't crit so this attributes is probably not exact at TC.
     if (GetSpellInfo()->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
