@@ -627,26 +627,15 @@ public:
     {
         PrepareSpellScript(spell_pri_mass_dispel_SpellScript);
 
-        class DistanceOrderPred
-        {
-        public:
-            DistanceOrderPred(SpellDestination dest) : _dest(dest) { }
-
-            bool operator()(WorldObject const* objA, WorldObject const* objB) const
-            {
-                return _dest._position.GetExactDist2d(objA) < _dest._position.GetExactDist2d(objB);
-            }
-        private:
-            SpellDestination _dest;
-        };
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             SpellDestination dest = GetSpell()->GetSpellDestination(EFFECT_0);
             uint32 maxTargets = GetSpellInfo()->MaxAffectedTargets;
             if (targets.size() > maxTargets)
             {
-                targets.sort(DistanceOrderPred(dest));
+                targets.sort([dest](WorldObject const* objA, WorldObject const* objB) {
+                    return dest._position.GetExactDist2d(objA) < dest._position.GetExactDist2d(objB);
+                });
                 targets.resize(maxTargets);
             }
         }
