@@ -294,6 +294,7 @@ public:
 
     std::vector<AuraScript*> m_loadedScripts;
 
+    //sunwell channel targeting logic. See comment above m_objectTargetGUIDChannel for the why TC has it wrong.
     ChannelTargetData const* GetChannelTargetData() const { return m_channelData; }
     TriggerCastFlags GetTriggerCastFlags() const { return m_castFlags; }
 

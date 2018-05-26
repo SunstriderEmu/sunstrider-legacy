@@ -197,7 +197,7 @@ public:
     // sunwell: Channel data
     void SetObjectTargetChannel(ObjectGuid targetGUID);
     void SetDstChannel(SpellDestination const& spellDest);
-    WorldObject* GetObjectTargetChannel(Unit* caster) const;
+    WorldObject* GetObjectTargetChannel(WorldObject* caster) const;
     bool HasDstChannel() const;
     SpellDestination const* GetDstChannel() const;
 
@@ -221,6 +221,9 @@ private:
     std::string m_strTarget;
 
     // sunwell: Save channel data
+    /* sun: Changed from TC logic, we now use this var instead of UNIT_FIELD_CHANNEL_OBJECT for channel targets
+    because UNIT_FIELD_CHANNEL_OBJECT may be cleared prematurely in some cases where spells finishes before
+    a SPELL_AURA_PERIODIC_TRIGGER_SPELL aura does */
     SpellDestination m_dstChannel;
     ObjectGuid m_objectTargetGUIDChannel;
 };
@@ -780,12 +783,12 @@ class TC_GAME_API Spell
 
         // sunwell:
         bool _spellTargetsSelected;
-#ifdef TESTS
-        //we need to keep this variable in spell to allow applying it for channels or for when cast finish
-        SpellMissInfo _forceHitResult;
-#endif
 
         PathGenerator* m_preGeneratedPath;
+#ifdef TESTS
+        // We need to keep this variable in spell to allow applying it for channels or for when cast finish
+        SpellMissInfo _forceHitResult;
+#endif
 };
 
 namespace Trinity

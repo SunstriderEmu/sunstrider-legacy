@@ -496,7 +496,7 @@ void SpellCastTargets::SetDstChannel(SpellDestination const& spellDest)
     m_dstChannel = spellDest;
 }
 
-WorldObject* SpellCastTargets::GetObjectTargetChannel(Unit* caster) const
+WorldObject* SpellCastTargets::GetObjectTargetChannel(WorldObject* caster) const
 {
     return m_objectTargetGUIDChannel ? ((m_objectTargetGUIDChannel == caster->GetGUID()) ? caster : ObjectAccessor::GetWorldObject(*caster, m_objectTargetGUIDChannel)) : nullptr;
 }
@@ -1071,19 +1071,20 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
     case TARGET_UNIT_CHANNEL_TARGET:
     {
         // sunwell: All channel selectors have needed data passed in m_targets structure
-        WorldObject* target = ObjectAccessor::GetUnit(*m_caster, m_originalCaster->GetChannelObjectGuid());
+        // Sun: see comment above m_objectTargetGUIDChannel for the why this is changed from TC
+        WorldObject* target = m_targets.GetObjectTargetChannel(m_caster);
         CallScriptObjectTargetSelectHandlers(target, effIndex, targetType);
         // unit target may be no longer avalible - teleported out of map for example
         if (target && target->ToUnit())
             AddUnitTarget(target->ToUnit(), 1 << effIndex);
         else
-            TC_LOG_WARN("spells", "SPELL: cannot find channel spell target for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
+            TC_LOG_WARN("spells", "SelectImplicitChannelTargets: cannot find channel spell target for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
         break;
     }
     case TARGET_DEST_CHANNEL_TARGET:
         if (m_targets.HasDstChannel())
             m_targets.SetDst(*m_targets.GetDstChannel());
-        else if (WorldObject* target = ObjectAccessor::GetWorldObject(*m_caster, m_originalCaster->GetChannelObjectGuid()))
+        else if (WorldObject* target = m_targets.GetObjectTargetChannel(m_caster))
         {
             CallScriptObjectTargetSelectHandlers(target, effIndex, targetType);
             if (target)
@@ -3283,8 +3284,8 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
     m_caster->GetPosition(m_castPositionX, m_castPositionY, m_castPositionZ);
     m_castOrientation = m_caster->GetOrientation();
 
-    if(triggeredByAura)
-        m_triggeredByAuraSpell  = triggeredByAura->GetSpellInfo();
+    if (triggeredByAura)
+        m_triggeredByAuraSpell = triggeredByAura->GetSpellInfo();
 
     // create and add update event for this spell
     _spellEvent = new SpellEvent(this);

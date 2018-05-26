@@ -508,7 +508,7 @@ m_procCooldown(std::chrono::steady_clock::time_point::min()), m_castFlags(create
     memset(m_effects, 0, sizeof(m_effects));
 
     m_maxDuration = CalcMaxDuration(createInfo.Caster);
-    // channel data structure
+    // sunwell channel data structure
     if(createInfo.Caster)
         if (Spell* spell = createInfo.Caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
             m_channelData = new ChannelTargetData(createInfo.Caster->GetGuidValue(UNIT_FIELD_CHANNEL_OBJECT), spell->m_targets.HasDst() ? spell->m_targets.GetDst() : nullptr);

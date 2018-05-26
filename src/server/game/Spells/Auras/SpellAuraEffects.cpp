@@ -2008,6 +2008,10 @@ void AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit*
             if (GetSpellInfo()->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
                 args.AddSpellMod(SPELLVALUE_CRIT_CHANCE, int32(GetBase()->GetCritChance() * 100.0f)); // @todo: ugly x100 remove when basepoints are double
 #endif
+            //sun: inherit ignore speed flag if any. Needed for testing channels.
+            if (GetBase()->GetTriggerCastFlags() & TRIGGERED_IGNORE_SPEED)
+                args.TriggerFlags = TriggerCastFlags(args.TriggerFlags | TRIGGERED_IGNORE_SPEED);
+
             triggerCaster->CastSpell(target, triggerSpellId, args);
             TC_LOG_DEBUG("spells", "AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
         }
