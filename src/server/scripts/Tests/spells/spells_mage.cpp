@@ -232,6 +232,7 @@ class ArcaneIntellectTest : public TestCaseScript
 public:
     ArcaneIntellectTest() : TestCaseScript("spells mage arcane_intellect") { }
 
+    //"Increases the target's Intellect by 40 for 30min."
     class ArcaneIntellectTestImpt : public TestCase
     {
     public:
@@ -266,10 +267,11 @@ class ArcaneMissilesTest : public TestCaseScript
 public:
     ArcaneMissilesTest() : TestCaseScript("spells mage arcane_missiles") { }
 
+    //"Launches Arcane Missiles at the enemy, causing 240 Arcane damage every 1 sec for 5sec."
     class ArcaneMissilesTestImpt : public TestCase
     {
     public:
-        ArcaneMissilesTestImpt() : TestCase(STATUS_WIP) { } // TODO Kelno: see about TEST_CHANNEL_DAMAGE not getting full ticks
+        ArcaneMissilesTestImpt() : TestCase(STATUS_PASSING) { } 
 
         void Test() override
         {
@@ -294,8 +296,9 @@ public:
 
             uint32 const tickAmount = 5;
             uint32 const spellPowerPerTick = floor(spellPower * spellCoeff) / tickAmount;
-            uint32 const arcaneMissilesDmg = tickAmount * (ClassSpellsDamage::Mage::ARCANE_MISSILES_RNK_10_TICK + perLevelGain + spellPowerPerTick);
-            TEST_CHANNEL_DAMAGE(mage, dummy, ClassSpells::Mage::ARCANE_MISSILES_RNK_10, ClassSpells::Mage::ARCANE_MISSILES_RNK_10_PROC, tickAmount, arcaneMissilesDmg);
+            uint32 const arcaneMissilesDmgPerTick = ClassSpellsDamage::Mage::ARCANE_MISSILES_RNK_10_TICK + perLevelGain + spellPowerPerTick;
+
+            TEST_CHANNEL_DAMAGE(mage, dummy, ClassSpells::Mage::ARCANE_MISSILES_RNK_10, ClassSpells::Mage::ARCANE_MISSILES_RNK_10_PROC, tickAmount, arcaneMissilesDmgPerTick);
         }
     };
 
