@@ -76,6 +76,7 @@ bool TestMgr::Run(std::string args)
     _running = true;
     _loading = true;
     _canceling = false;
+    ASSERT(_remainingTests.empty());
     _Load(args);
     _loading = false;
 
@@ -87,12 +88,13 @@ void TestMgr::Update()
     if (!_running || _loading)
         return;
 
-    //start only some at each updates, since the test setups and beginning are usually very resources intensives, we don't want to start them all at once
-    const uint32 MAX_STARTS_PER_UPDATE = 10;
-    uint32 startedThisUpdate = 0;
-
+    /* Fill currently running tests.
+    This number is arbitrary, we cannot run every test at once because it would fill up server memory.
+    */
+    const uint32 MAX_PARALLEL_TESTS = 10;
+    uint32 loops = 0;
     //For every running test, start if needed and check if it's finished
-    for (decltype(_remainingTests)::iterator itr = _remainingTests.begin(); itr != _remainingTests.end();)
+    for (decltype(_remainingTests)::iterator itr = _remainingTests.begin(); itr != _remainingTests.end() && loops < MAX_PARALLEL_TESTS;)
     {
         //uint32 testID = itr->first;
         auto& testThread = itr->second;
@@ -100,9 +102,6 @@ void TestMgr::Update()
         if (!testThread->IsStarted() && !_canceling)
         {
             testThread->Start();
-            startedThisUpdate++;
-            if (startedThisUpdate >= MAX_STARTS_PER_UPDATE)
-                break;
         }
         else if (testThread->IsFinished())
         {
@@ -112,6 +111,7 @@ void TestMgr::Update()
             continue;
         }
         itr++;
+        loops++;
     }
 
     if (_remainingTests.empty()) //then we're done!
