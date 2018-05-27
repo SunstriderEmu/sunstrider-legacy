@@ -143,7 +143,10 @@ uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls, uint8 race, bool testB
 
 std::string RandomPlayerbotFactory::CreateTestBotName()
 {
+    static std::mutex queryMutex;
     static std::list<std::string> botNames; // a bit of caching since this request is quite heavy
+
+    queryMutex.lock();
     if (botNames.empty())
     {
         QueryResult results = CharacterDatabase.PQuery("SELECT n.name FROM ai_playerbot_names n ORDER BY RAND() LIMIT 100");
@@ -160,6 +163,7 @@ std::string RandomPlayerbotFactory::CreateTestBotName()
     }
     std::string name = botNames.front();
     botNames.pop_front();
+    queryMutex.unlock();
     while (ObjectAccessor::FindConnectedPlayerByName(name.c_str()))
     {
         if (botNames.empty())
