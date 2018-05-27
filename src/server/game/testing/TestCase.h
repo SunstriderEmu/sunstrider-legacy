@@ -209,6 +209,7 @@ public:
     // Test the percentage of a spell hit outcome for already done attacks
     #define TEST_SPELL_OUTCOME_PERCENTAGE(attacker, victim, spellId, missType, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestSpellOutcomePercentage(attacker, victim, spellId, missType, expectedResult, allowedError);  _ResetCaller(); }
 
+    //stub, todo!
     #define TEST_STACK_COUNT(caster, target, talent, castSpellID, testSpellID, requireCount) { _SetCaller(__FILE__, __LINE__); _TestStacksCount(caster, target, castSpellID, testSpellID, requireCount); _ResetCaller(); }
 
     /* Check power cost of spell. Spells is not actually casted and conditions are ignored
@@ -461,6 +462,8 @@ private:
     //return aura amount of effect 0
     int32 _CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool crit = false);
 
+    void ResetSpellCast(Unit* caster);
+
     struct SavedUnitState
     {
         SavedUnitState(uint32 health, uint32 maxHealth, Powers powerType, uint32 power, uint32 maxPower) :
@@ -490,5 +493,15 @@ private:
     std::unordered_map<Unit*, SavedUnitState> _saveUnitStates;
     std::unordered_map<Unit*, SavedCriticalValues> _savedCriticalValues;
 };
+
+// -- internal uses defines:
+//same as TEST_ASSERT but will track caller file and line to print it in case of error
+#define INTERNAL_TEST_ASSERT( expr ) { _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo(); }
+//same as last but does not increase test count
+#define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) { _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo(); }
+
+//input info for next check, place this before INTERNAL_TEST_ASSERT
+#define INTERNAL_ASSERT_INFO(expr, ...) { _InternalAssertInfo(expr, ## __VA_ARGS__); }
+// --
 
 #endif //TESTCASE_H

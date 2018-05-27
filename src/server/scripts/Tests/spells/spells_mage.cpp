@@ -376,6 +376,7 @@ class IceLanceTest : public TestCaseScript
 public:
     IceLanceTest() : TestCaseScript("spells mage ice_lance") { }
 
+    //Deals 161 to 188 Frost damage to an enemy target. Causes triple damage against Frozen targets.
     class IceLanceTestImpt : public TestCase
     {
     public:
@@ -394,8 +395,7 @@ public:
             uint32 const expectedIceLanceManaCost = 150;
             TEST_POWER_COST(mage, ClassSpells::Mage::ICE_LANCE_RNK_1, POWER_MANA, expectedIceLanceManaCost);
 
-            // Damage -- Failure here, something's wrong with spell coeff. 
-            // Spell coeff, like damage, should triple on frozen target
+            // Damage
             float const castTime = 1.5f;
             float const spellCoeff = castTime / 3.5f / 3.0f;
             uint32 const iceLanceMin = ClassSpellsDamage::Mage::ICE_LANCE_RNK_1_MIN + spellPower * spellCoeff;
@@ -427,6 +427,7 @@ class FrostboltTest : public TestCaseScript
 public:
     FrostboltTest() : TestCaseScript("spells mage frostbolt") { }
 
+    //"Launches a bolt of frost at the enemy, causing 597 to 644 Frost damage and slowing movement speed by 40 % for 9sec."
     class FrostboltTestImpt : public TestCase
     {
     public:
@@ -452,7 +453,7 @@ public:
             ASSERT_INFO("Speed: %f - Expected: %f", rogue->GetSpeed(MOVE_RUN), expectedSpeed);
             TEST_ASSERT(Between(rogue->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
 
-            // Damage -- something's wrong with spell coeff, seems that the penalty for extra effect is not taken into account
+            // Damage
             float const castTime = 3.0f;
             float const penaltyForExtraEffect = 0.95f;
             float const spellCoeff = castTime / 3.5f * penaltyForExtraEffect;
