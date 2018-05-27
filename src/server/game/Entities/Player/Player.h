@@ -2255,8 +2255,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         //PlayerTalentMap& GetTalentMap(uint8 spec) { return *m_talents[spec]; }
         #endif
         #ifdef TESTS
-        PlayerbotTestingAI* GetTestingPlayerbotAI();
+        PlayerbotTestingAI* GetTestingPlayerbotAI() const;
         #endif
+        bool IsTestingBot() const;
 
         // Recall position
         WorldLocation m_recall_location;

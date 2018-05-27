@@ -467,12 +467,10 @@ void Pet::SavePetToDB(PetSaveMode mode)
     if(!isControlled())
         return;
 
-#ifdef TESTS
     //do not save pets for testing bots
     if (Player* p = GetOwner())
-        if (auto ai = p->GetTestingPlayerbotAI())
+        if (p->IsTestingBot())
             return;
-#endif
 
     // dont save not player pets
     if (!GetOwnerGUID().IsPlayer())

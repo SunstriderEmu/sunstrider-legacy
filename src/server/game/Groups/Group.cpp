@@ -97,30 +97,34 @@ bool Group::Create(Player* leader, SQLTransaction trans)
         m_dbStoreId = sGroupMgr->GenerateNewGroupDbStoreId();
 
         sGroupMgr->RegisterGroupDbStoreId(m_dbStoreId, this);
-        // Store group in database
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GROUP);
 
-        uint8 index = 0;
+        if (!leader->IsTestingBot())
+        {
+            // Store group in database
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GROUP);
 
-        stmt->setUInt32(index++, m_dbStoreId);
-        stmt->setUInt32(index++, m_leaderGuid.GetCounter());
-        stmt->setUInt8(index++, uint8(m_lootMethod));
-        stmt->setUInt32(index++, m_looterGuid.GetCounter());
-        stmt->setUInt8(index++, uint8(m_lootThreshold));
-        stmt->setUInt64(index++, m_targetIcons[0].GetRawValue());
-        stmt->setUInt64(index++, m_targetIcons[1].GetRawValue());
-        stmt->setUInt64(index++, m_targetIcons[2].GetRawValue());
-        stmt->setUInt64(index++, m_targetIcons[3].GetRawValue());
-        stmt->setUInt64(index++, m_targetIcons[4].GetRawValue());
-        stmt->setUInt64(index++, m_targetIcons[5].GetRawValue());
-        stmt->setUInt64(index++, m_targetIcons[6].GetRawValue());
-        stmt->setUInt64(index++, m_targetIcons[7].GetRawValue());
-        stmt->setUInt8(index++, uint8(m_groupType));
-        stmt->setUInt32(index++, uint8(m_dungeonDifficulty));
-        stmt->setUInt32(index++, uint8(m_raidDifficulty));
-        stmt->setUInt32(index++, m_masterLooterGuid.GetCounter());
+            uint8 index = 0;
 
-        trans->Append(stmt);
+            stmt->setUInt32(index++, m_dbStoreId);
+            stmt->setUInt32(index++, m_leaderGuid.GetCounter());
+            stmt->setUInt8(index++, uint8(m_lootMethod));
+            stmt->setUInt32(index++, m_looterGuid.GetCounter());
+            stmt->setUInt8(index++, uint8(m_lootThreshold));
+            stmt->setUInt64(index++, m_targetIcons[0].GetRawValue());
+            stmt->setUInt64(index++, m_targetIcons[1].GetRawValue());
+            stmt->setUInt64(index++, m_targetIcons[2].GetRawValue());
+            stmt->setUInt64(index++, m_targetIcons[3].GetRawValue());
+            stmt->setUInt64(index++, m_targetIcons[4].GetRawValue());
+            stmt->setUInt64(index++, m_targetIcons[5].GetRawValue());
+            stmt->setUInt64(index++, m_targetIcons[6].GetRawValue());
+            stmt->setUInt64(index++, m_targetIcons[7].GetRawValue());
+            stmt->setUInt8(index++, uint8(m_groupType));
+            stmt->setUInt32(index++, uint8(m_dungeonDifficulty));
+            stmt->setUInt32(index++, uint8(m_raidDifficulty));
+            stmt->setUInt32(index++, m_masterLooterGuid.GetCounter());
+
+            trans->Append(stmt);
+        }
 
         Group::ConvertLeaderInstancesToGroup(leader, this, false);
 
@@ -342,7 +346,7 @@ bool Group::AddMember(Player* player, SQLTransaction trans)
     }
 
     // insert into the table if we're not a battleground group
-    if (!isBGGroup() && !isBFGroup())
+    if (!isBGGroup() && !isBFGroup() && !player->IsTestingBot())
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GROUP_MEMBER);
 
