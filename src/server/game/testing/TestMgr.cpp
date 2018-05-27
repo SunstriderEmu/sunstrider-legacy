@@ -88,10 +88,7 @@ void TestMgr::Update()
     if (!_running || _loading)
         return;
 
-    /* Fill currently running tests.
-    This number is arbitrary, we cannot run every test at once because it would fill up server memory.
-    */
-    const uint32 MAX_PARALLEL_TESTS = 10;
+    const uint32 MAX_PARALLEL_TESTS = sWorld->getConfig(CONFIG_TESTING_MAX_PARALLEL_TESTS);
     uint32 loops = 0;
     //For every running test, start if needed and check if it's finished
     for (decltype(_remainingTests)::iterator itr = _remainingTests.begin(); itr != _remainingTests.end() && loops < MAX_PARALLEL_TESTS;)

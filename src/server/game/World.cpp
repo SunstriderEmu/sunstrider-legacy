@@ -836,10 +836,10 @@ void World::LoadConfigSettings(bool reload)
         m_configs[CONFIG_MIN_PETITION_SIGNS] = 9;
     }
 
-    m_configs[CONFIG_GM_LOGIN_STATE]       = sConfigMgr->GetIntDefault("GM.LoginState",2);
-    m_configs[CONFIG_GM_VISIBLE_STATE]     = sConfigMgr->GetIntDefault("GM.Visible", 2);
-    m_configs[CONFIG_GM_CHAT]              = sConfigMgr->GetIntDefault("GM.Chat",2);
-    m_configs[CONFIG_GM_WISPERING_TO]      = sConfigMgr->GetIntDefault("GM.WhisperingTo",2);
+    m_configs[CONFIG_GM_LOGIN_STATE]       = sConfigMgr->GetIntDefault("GM.LoginState", 1);
+    m_configs[CONFIG_GM_VISIBLE_STATE]     = sConfigMgr->GetIntDefault("GM.Visible", 0);
+    m_configs[CONFIG_GM_CHAT]              = sConfigMgr->GetIntDefault("GM.Chat", 2);
+    m_configs[CONFIG_GM_WISPERING_TO]      = sConfigMgr->GetIntDefault("GM.WhisperingTo", 2);
     m_configs[CONFIG_GM_LEVEL_IN_GM_LIST]  = sConfigMgr->GetIntDefault("GM.InGMList.Level", SEC_GAMEMASTER3);
     m_configs[CONFIG_GM_LEVEL_IN_WHO_LIST] = sConfigMgr->GetIntDefault("GM.InWhoList.Level", SEC_GAMEMASTER3);
     m_configs[CONFIG_START_GM_LEVEL]       = sConfigMgr->GetIntDefault("GM.StartLevel", 1);
@@ -1300,6 +1300,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfigMgr->GetIntDefault("ArenaServer.RepartitionThreshold", 0);
 
     m_configs[CONFIG_BETASERVER_ENABLED] = sConfigMgr->GetIntDefault("BetaServer.Enabled", false);
+    m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] = sConfigMgr->GetIntDefault("Testing.MaxParallel", 10);
+
 
     m_configs[CONFIG_DEBUG_DISABLE_MAINHAND] = sConfigMgr->GetBoolDefault("Debug.DisableMainHand", 0);
     m_configs[CONFIG_DEBUG_DISABLE_ARMOR] = sConfigMgr->GetBoolDefault("Debug.DisableArmor", 0);

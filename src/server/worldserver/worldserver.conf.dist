@@ -2,7 +2,7 @@
 # Trinity Core worldd configuration file #
 ##########################################
 [worldserver]
-ConfVersion=2014090901
+ConfVersion=2018052701
 
 ###################################################################################################################
 # CONNECTIONS AND DIRECTORIES
@@ -961,15 +961,15 @@ Channel.SilentlyGMJoin = 0
 #
 #    GM.LoginState
 #        GM mode at login
-#        Default: 2 (last save state)
+#        Default: 1 (enable)
 #                 0 (disable)
-#                 1 (enable)
+#                 2 (last save state)
 #
 #    GM.Visible
 #        GM visibility at login
-#        Default: 2 (last save state)
-#                 0 (invisible)
+#        Default: 0 (invisible) 
 #                 1 (visible)
+#                 2 (last save state)
 #
 #    GM.Chat
 #        GM chat mode at login
@@ -1022,12 +1022,12 @@ Channel.SilentlyGMJoin = 0
 ###################################################################################################################
 
 GM.LoginState       = 1
-GM.Visible          = 1
+GM.Visible          = 0
 GM.Chat             = 2
 GM.WhisperingTo     = 2
 GM.InGMList.Level   = 3
 GM.InWhoList.Level  = 3
-GM.StartLevel       = 70
+GM.StartLevel       = 1
 GM.AllowInvite      = 0
 GM.AllowFriend      = 0
 GM.DefaultGuild   = 0
@@ -1504,7 +1504,8 @@ CharDelete.KeepDays = 30
 #         Default : 2
 #
 #    ArenaServer.Enabled
-#        (for WM Tournoi) Change the following rules : Non 3v3 arenas are closed, player limitation to Hyjal & ZG & battlegrounds/arenas
+#        (for WM Tournoi) Change the following rules : Non 3v3 arenas are closed, 
+#        player limitation to Hyjal & ZG & battlegrounds/arenas
 #        and more starting spells. NEVER SET THIS TO TRUE IN THE MAIN LIVE SERVER.
 #        Default: 0
 #
@@ -1524,6 +1525,18 @@ CharDelete.KeepDays = 30
 #       Enable some sounds when boats and zeppelins dock
 #       Default: 0 (Disabled)
 #                1 (Enabled)
+#
+#   Teleporter.MinLevel
+#       Minimum level to use the npc_teleporter. If not found, default to 1.
+#
+#   Teleporter.MaxLevel
+#       Maximum level to use the npc_teleporter. If not found, default is 255.
+#
+#   BuggyQuests.AutoComplete
+#       Tells if the autocomplete quest system is activated. If not found, default to false.
+#
+#	BetaServer.Enabled
+#		Enable Beta server features, such as the custom spawning zone.
 #
 ###################################################################################################################
 
@@ -1555,38 +1568,23 @@ ArenaServer.UseCloseSchedule = 1
 ArenaServer.RepartitionThreshold = 0
 ForbiddenMaps = ""
 Transports.DockingSounds = 0
-
-###################################################################################################################
-# BETA SERVER
-#
-#	BetaServer.Enabled
-#		Enable Beta server features, such as the custom spawning zone.
-
+Teleporter.MinLevel = 1
+Teleporter.MaxLevel = 255
+BuggyQuests.AutoComplete = 0
 BetaServer.Enabled = 0
 
 ###################################################################################################################
-# CUSTOM CONTENT
+# TESTING
 #
-#   Teleporter.MinLevel
-#       Minimum level to use the npc_teleporter. If not found, default to 1.
-#
-#   Teleporter.MaxLevel
-#       Maximum level to use the npc_teleporter. If not found, default is 255.
+#	Testing.MaxParallel
+#		Max tests running concurrently (others are queued). We can't start every tests at once because that would fill up server memory.
+
+Testing.MaxParallel = 10
+
 #
 ###################################################################################################################
 
-Teleporter.MinLevel = 1
-Teleporter.MaxLevel = 255
-
 ###################################################################################################################
-# Buggy Quests
-#
-#   BuggyQuests.AutoComplete
-#       Tells if the autocomplete quest system is activated. If not found,
-#       default to false.
-###################################################################################################################
-
-BuggyQuests.AutoComplete = 0
 
 ###############################################################################
 # WARDEN SETTINGS
@@ -2308,7 +2306,7 @@ SaveRespawnTimeImmediately = 1
 
 
 ###################################################################################################
-# LOGGING SETTINGS
+# DB LOGGING SETTINGS
 #
 # Extra logging in logs database.
 #
@@ -2347,7 +2345,6 @@ DBLog.char.rename = 30
 DBLog.gm.char.rename = -1
 DBLog.GMCommands = -1
 DBLog.sanctions = -1
-
 
 #
 ###################################################################################################
