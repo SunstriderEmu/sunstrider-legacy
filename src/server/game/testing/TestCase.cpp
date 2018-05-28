@@ -352,7 +352,11 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     //make sure player is alreary linked to this map before calling _HandlePlayerLogin, else a lot of stuff will be loaded around default player location
     player->ResetMap();
     player->SetMap(_map); 
+    //some functions in _HandlePlayerLogin do not allow concurrency, mutex it
+    static std::mutex loginMutex;
+    loginMutex.lock();
     session->_HandlePlayerLogin((Player*)player, holder);
+    loginMutex.unlock();
 
     player->SetTeleportingToTest(_testMapInstanceId);
 
