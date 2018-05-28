@@ -2105,7 +2105,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
             return ERR_BATTLEGROUND_NONE;
 #endif
         // don't let join if someone from the group is already in that bg queue
-        if (member->InBattlegroundQueueForBattlegroundQueueType(bgQueueTypeId))
+        if (bgOrTemplate->GetTypeID() != BATTLEGROUND_AA && member->InBattlegroundQueueForBattlegroundQueueType(bgQueueTypeId))
 #ifdef LICH_KING
             return ERR_BATTLEGROUND_JOIN_FAILED;  // not blizz-like
 #else
