@@ -172,8 +172,14 @@ void TestCase::_Cleanup()
 {
     Cleanup(); //test defined additional cleanup
 
-    if(_testMapInstanceId) //may have no map if setup failed
+    if (_testMapInstanceId) //may have no map if setup failed
+    {
+        //sMapMgr is not concurrency friendly, mutex it
+        static std::mutex mapMgrMutex;
+        mapMgrMutex.lock();
         sMapMgr->UnloadTestMap(_location.GetMapId(), _testMapInstanceId);
+        mapMgrMutex.unlock();
+    }
 }
 
 bool TestCase::_InternalSetup()
@@ -181,7 +187,11 @@ bool TestCase::_InternalSetup()
     ASSERT(!_map);
     ASSERT(_location.GetMapId() != MAPID_INVALID);
 
+    //sMapMgr is not concurrency friendly, mutex it
+    static std::mutex mapMgrMutex;
+    mapMgrMutex.lock();
     auto pair = sMapMgr->CreateTestMap(_testThread, _location.GetMapId(), _diff, _enableMapObjects);
+    mapMgrMutex.unlock();
     _map = pair.first;
     if (!_map)
         return false;
@@ -358,7 +368,11 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     }
     ai->HandleTeleportAck(); //immediately handle teleport packet
 
+    //this function must be multithread friendly but caracter cache isn't. Let's mutex it
+    static std::mutex cacheMutex;
+    cacheMutex.lock();
     sCharacterCache->AddCharacterCacheEntry(player->GetGUID().GetCounter(), testAccountId, player->GetName(), cci.Gender, cci.Race, cci.Class, level, 0);
+    cacheMutex.unlock();
 
     //usually done in LoadFromDB
     player->SetCanModifyStats(true);

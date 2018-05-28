@@ -3039,12 +3039,12 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
         // do character spell book cleanup (all characters)
         if(!IsInWorld() && !learning)                            // spell load case
         {
-            TC_LOG_ERROR("entities.player","Player::addSpell: Non-existed in SpellStore spell #%u request, deleting for all characters in `character_spell`.",spell_id);
+            TC_LOG_ERROR("entities.player","Player::AddSpell: Non-existed in SpellStore spell #%u request, deleting for all characters in `character_spell`.",spell_id);
             //DeleteSpellFromAllPlayers(spellId);
             CharacterDatabase.PExecute("DELETE FROM character_spell WHERE spell = '%u'",spell_id);
         }
         else
-            TC_LOG_ERROR("entities.player","Player::addSpell: Non-existed in SpellStore spell #%u request.",spell_id);
+            TC_LOG_ERROR("entities.player","Player::AddSpell: Non-existed in SpellStore spell #%u request.",spell_id);
 
         return false;
     }
@@ -3054,12 +3054,12 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
         // do character spell book cleanup (all characters)
         if(!IsInWorld() && !learning)                            // spell load case
         {
-            TC_LOG_ERROR("entities.player","Player::addSpell: Broken spell #%u learning not allowed, deleting for all characters in `character_spell`.",spell_id);
+            TC_LOG_ERROR("entities.player","Player::AddSpell: Broken spell #%u learning not allowed, deleting for all characters in `character_spell`.",spell_id);
             //DeleteSpellFromAllPlayers(spellId);
             CharacterDatabase.PExecute("DELETE FROM character_spell WHERE spell = '%u'",spell_id);
         }
         else
-            TC_LOG_ERROR("entities.player","Player::addSpell: Broken spell #%u learning not allowed.",spell_id);
+            TC_LOG_ERROR("entities.player","Player::AddSpell: Broken spell #%u learning not allowed.",spell_id);
 
         return false;
     }

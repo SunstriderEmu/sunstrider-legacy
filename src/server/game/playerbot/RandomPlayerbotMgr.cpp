@@ -474,7 +474,7 @@ bool RandomPlayerbotMgr::IsRandomBot(uint32 bot)
     return GetEventValue(bot, "add");
 }
 
-list<uint32> RandomPlayerbotMgr::GetBots()
+std::list<uint32> RandomPlayerbotMgr::GetBots()
 {
     list<uint32> bots;
 

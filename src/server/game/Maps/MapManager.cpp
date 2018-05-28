@@ -298,20 +298,20 @@ bool MapManager::UnloadTestMap(uint32 mapId, uint32 instanceId)
     if (itr == i_maps.end())
         return false;
 
-    MapInstanced* map = dynamic_cast<MapInstanced*>(itr->second);
-    ASSERT(map != nullptr);
-    Map* _testMap = map->FindInstanceMap(instanceId);
-    if (!_testMap)
+    MapInstanced* mapInstanced = dynamic_cast<MapInstanced*>(itr->second);
+    ASSERT(mapInstanced != nullptr);
+    Map* map = mapInstanced->FindInstanceMap(instanceId);
+    if (!map)
     {
         TC_LOG_ERROR("test.unit_test", "Failed to delete map %u because it was not found", instanceId);
         return false;
     }
-    if (_testMap->GetMapType() != MAP_TYPE_TEST_MAP)
+    if (map->GetMapType() != MAP_TYPE_TEST_MAP)
     {
         TC_LOG_ERROR("test.unit_test", "Failed to delete map %u because it is not a test map!", instanceId);
         return false;
     }
-    TestMap* testMap = static_cast<TestMap*>(_testMap);
+    TestMap* testMap = static_cast<TestMap*>(map);
 
     testMap->DisconnectAllBots(); //This will delete players objects
     testMap->RemoveAllPlayers();
