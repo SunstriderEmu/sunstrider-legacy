@@ -8543,7 +8543,7 @@ void ObjectMgr::LoadSpellTemplates()
         count++;
     } while (result->NextRow());
 
-    do 
+    do
     {
         fields = result_override->Fetch();
         ASSERT(result_override->GetFieldCount() == 173);
@@ -8554,14 +8554,12 @@ void ObjectMgr::LoadSpellTemplates()
         if (itr != spellTemplates.end()) { // Already existing
             spell = itr->second;
         }
-        else 
+        else
         {
             //we allow new spell in overrides for serverside spells
             spell = new SpellEntry();
             spell->Id = id;
             newSpell = true;
-            if(id > maxSpellId)
-                maxSpellId = id;    
         }
 
         for (uint32 i = 1; i < result_override->GetFieldCount(); i++)
@@ -8572,6 +8570,8 @@ void ObjectMgr::LoadSpellTemplates()
                 {
                     TC_LOG_ERROR("sql.sql", "spell_template_override has new spell %u with some NULL fields. All fields should be filled for new spells. Skipping.", id);
                     delete spell;
+                    spell = nullptr;
+                    newSpell = false;
                     break;
                 }
 
@@ -8724,22 +8724,22 @@ void ObjectMgr::LoadSpellTemplates()
             case 121: spell->SpellIconID = fields[i].GetUInt32(); break;
             case 122: spell->activeIconID = fields[i].GetUInt32(); break;
             case 123: spell->spellPriority = fields[i].GetUInt32(); break;
-            case 124:  
-            case 125: 
-            case 126: 
-            case 127: 
-            case 128: 
-            case 129: 
-            case 130: 
-            case 131: 
-            case 132: 
-            case 133: 
-            case 134: 
-            case 135: 
-            case 136: 
-            case 137: 
-            case 138: 
-            case 139: 
+            case 124:
+            case 125:
+            case 126:
+            case 127:
+            case 128:
+            case 129:
+            case 130:
+            case 131:
+            case 132:
+            case 133:
+            case 134:
+            case 135:
+            case 136:
+            case 137:
+            case 138:
+            case 139:
                 strcpy(spell->SpellName[i - 124], fields[i].GetCString()); break;
             case 140:
             case 141:
@@ -8780,9 +8780,14 @@ void ObjectMgr::LoadSpellTemplates()
                 ASSERT(false); //logic failure
             }
         }
-         
-        if(newSpell)
+
+        if (newSpell)
+        {
+            if (id > maxSpellId)
+                maxSpellId = id;
+
             spellTemplates[id] = spell;
+        }
         count_overrides++;
     } while (result_override->NextRow());
     
