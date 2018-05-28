@@ -423,7 +423,7 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
                                              //   5
                                              "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, faction, npcflag, speed, "
                                              //
-                                             "scale, rank, dmgschool, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, unit_class, unit_flags, unit_flags2, dynamicflags, family,"
+                                             "scale, `rank`, dmgschool, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, unit_class, unit_flags, unit_flags2, dynamicflags, family,"
                                              //   
                                              "trainer_type, trainer_spell, trainer_class, trainer_race, type,"
                                              //  
@@ -3001,7 +3001,7 @@ void ObjectMgr::LoadPlayerInfo()
     {
         uint32 oldMSTime = GetMSTime();
 
-        QueryResult result = WorldDatabase.PQuery("SELECT raceMask, classMask, skill, rank FROM playercreateinfo_skills");
+        QueryResult result = WorldDatabase.PQuery("SELECT raceMask, classMask, skill, `rank` FROM playercreateinfo_skills");
 
         if (!result)
         {
@@ -6239,7 +6239,7 @@ void ObjectMgr::SetHighestGuids()
         _guildId = (*result)[0].GetUInt32()+1;
     }
 
-    result = CharacterDatabase.Query("SELECT MAX(guid) FROM groups");
+    result = CharacterDatabase.Query("SELECT MAX(guid) FROM `groups`");
     if (result)
         sGroupMgr->SetGroupDbStoreSize((*result)[0].GetUInt32() + 1);
 

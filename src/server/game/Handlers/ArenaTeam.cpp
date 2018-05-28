@@ -57,7 +57,7 @@ bool ArenaTeam::Create(ObjectGuid captainGuid, uint32 type, std::string ArenaTea
     trans->PAppend("INSERT INTO arena_team (arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor) "
         "VALUES('%u','%s','%u','%u','%u','%u','%u','%u','%u')",
         Id, ArenaTeamName.c_str(), CaptainGuid.GetCounter(), Type, BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor);
-    trans->PAppend("INSERT INTO arena_team_stats (arenateamid, rating, games, wins, played, wins2, rank) VALUES "
+    trans->PAppend("INSERT INTO arena_team_stats (arenateamid, rating, games, wins, played, wins2, `rank`) VALUES "
         "('%u', '%u', '%u', '%u', '%u', '%u', '%u')", Id, stats.rating, stats.WeekGames, stats.wins_week, stats.SeasonGames, stats.wins_season, stats.rank);
 
     CharacterDatabase.CommitTransaction(trans);
@@ -498,7 +498,7 @@ void ArenaTeam::SetStats(uint32 stat_type, uint32 value)
             break;
         case STAT_TYPE_RANK:
             stats.rank = value;
-            CharacterDatabase.PExecute("UPDATE arena_team_stats SET rank = '%u' WHERE arenateamid = '%u'", value, GetId());
+            CharacterDatabase.PExecute("UPDATE arena_team_stats SET `rank` = '%u' WHERE arenateamid = '%u'", value, GetId());
             break;
         case STAT_TYPE_NONPLAYEDWEEKS:
             stats.non_played_weeks = value;
@@ -807,7 +807,7 @@ void ArenaTeam::SaveToDB()
     // save team and member stats to db
     // called after a match has ended, or when calculating arena_points
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("UPDATE arena_team_stats SET rating = '%u',games = '%u',played = '%u',rank = '%u',wins = '%u',wins2 = '%u', nonplayedweeks = '%u' WHERE arenateamid = '%u'", stats.rating, stats.WeekGames, stats.SeasonGames, stats.rank, stats.wins_week, stats.wins_season, stats.non_played_weeks, GetId());
+    trans->PAppend("UPDATE arena_team_stats SET rating = '%u', games = '%u', played = '%u', `rank` = '%u', wins = '%u', wins2 = '%u', nonplayedweeks = '%u' WHERE arenateamid = '%u'", stats.rating, stats.WeekGames, stats.SeasonGames, stats.rank, stats.wins_week, stats.wins_season, stats.non_played_weeks, GetId());
     for(auto & member : Members)
     {
         // Save effort

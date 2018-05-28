@@ -159,7 +159,7 @@ bool Guild::AddMember(ObjectGuid plGuid, uint32 plRank, SQLTransaction trans)
     CharacterDatabase.EscapeString(dbPnote);
     CharacterDatabase.EscapeString(dbOFFnote);
 
-    trans->PAppend("INSERT INTO guild_member (guildid,guid,rank,pnote,offnote) VALUES ('%u', '%u', '%u','%s','%s')",
+    trans->PAppend("INSERT INTO guild_member (guildid,guid,`rank`,pnote,offnote) VALUES ('%u', '%u', '%u','%s','%s')",
         Id, plGuid.GetCounter(), newmember.RankId, dbPnote.c_str(), dbOFFnote.c_str());
 
     // If player not in game data in data field will be loaded from guild tables, no need to update it!!
@@ -335,8 +335,8 @@ bool Guild::LoadRanksFromDB(uint32 GuildId)
 
 bool Guild::LoadMembersFromDB(uint32 GuildId)
 {
-    //                                                     0                 1     2      3        4                  5
-    QueryResult result = CharacterDatabase.PQuery("SELECT guild_member.guid,rank, pnote, offnote, BankResetTimeMoney,BankRemMoney,"
+    //                                                    0                  1       2      3        4                  5
+    QueryResult result = CharacterDatabase.PQuery("SELECT guild_member.guid, `rank`, pnote, offnote, BankResetTimeMoney,BankRemMoney,"
     //   6                  7                 8                  9                 10                 11
         "BankResetTimeTab0, BankRemSlotsTab0, BankResetTimeTab1, BankRemSlotsTab1, BankResetTimeTab2, BankRemSlotsTab2,"
     //   12                 13                14                 15                16                 17
@@ -547,7 +547,7 @@ void Guild::ChangeRank(ObjectGuid guid, uint32 newRank)
     if(player)
         player->SetRank(newRank);
 
-    CharacterDatabase.PExecute( "UPDATE guild_member SET rank='%u' WHERE guid='%u'", newRank, guid.GetCounter() );
+    CharacterDatabase.PExecute( "UPDATE guild_member SET `rank`='%u' WHERE guid='%u'", newRank, guid.GetCounter() );
 }
 
 void Guild::SetPNOTE(ObjectGuid guid,std::string pnote)
@@ -1479,7 +1479,7 @@ void Guild::SetBankMoneyPerDay(uint32 rankId, uint32 money)
             member.second.BankResetTimeMoney = 0;
 
     CharacterDatabase.PExecute("UPDATE guild_rank SET BankMoneyPerDay='%u' WHERE rid='%u' AND guildid='%u'", money, (rankId+1), Id);
-    CharacterDatabase.PExecute("UPDATE guild_member SET BankResetTimeMoney='0' WHERE guildid='%u' AND rank='%u'", Id, rankId);
+    CharacterDatabase.PExecute("UPDATE guild_member SET BankResetTimeMoney='0' WHERE guildid='%u' AND `rank`='%u'", Id, rankId);
 }
 
 void Guild::SetBankRightsAndSlots(uint32 rankId, uint8 TabId, uint32 right, uint32 nbSlots, bool db)
@@ -1508,7 +1508,7 @@ void Guild::SetBankRightsAndSlots(uint32 rankId, uint8 TabId, uint32 right, uint
         //CharacterDatabase.PExecute("DELETE FROM guild_bank_right WHERE guildid='%u' AND TabId='%u' AND rid='%u'", Id, uint32(TabId), rankId);
         CharacterDatabase.PExecute("REPLACE INTO guild_bank_right (guildid,TabId,rid,gbright,SlotPerDay) VALUES "
             "('%u','%u','%u','%u','%u')", Id, uint32(TabId), rankId, m_ranks[rankId].TabRight[TabId], m_ranks[rankId].TabSlotPerDay[TabId]);
-        CharacterDatabase.PExecute("UPDATE guild_member SET BankResetTimeTab%u='0' WHERE guildid='%u' AND rank='%u'", uint32(TabId), Id, rankId);
+        CharacterDatabase.PExecute("UPDATE guild_member SET BankResetTimeTab%u='0' WHERE guildid='%u' AND `rank`='%u'", uint32(TabId), Id, rankId);
     }
 }
 
