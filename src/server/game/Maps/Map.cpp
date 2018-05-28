@@ -77,12 +77,25 @@ Map::~Map()
     MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), i_InstanceId);
 }
 
+void Map::LoadMMap(int gx, int gy)
+{
+    /*if (!DisableMgr::IsPathfindingEnabled(GetId()))
+        return;*/
+
+    bool mmapLoadResult = MMAP::MMapFactory::createOrGetMMapManager()->loadMap((sWorld->GetDataPath() + "mmaps").c_str(), GetId(), gx, gy);
+
+    if (mmapLoadResult)
+        TC_LOG_DEBUG("mmaps", "MMAP loaded name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
+    else
+        TC_LOG_ERROR("mmaps", "Could not load MMAP name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
+}
+
 void Map::LoadVMap(int x,int y)
 {
     if (!VMAP::VMapFactory::createOrGetVMapManager()->isMapLoadingEnabled())
         return;
                                                             // x and y are swapped !!
-    int vmapLoadResult = VMAP::VMapFactory::createOrGetVMapManager()->loadMap((sWorld->GetDataPath()+ "vmaps").c_str(),  GetId(), x,y);
+    int vmapLoadResult = VMAP::VMapFactory::createOrGetVMapManager()->loadMap((sWorld->GetDataPath() + "vmaps").c_str(), GetId(), x, y);
     switch(vmapLoadResult)
     {
         case VMAP::VMAP_LOAD_RESULT_OK:
@@ -97,64 +110,61 @@ void Map::LoadVMap(int x,int y)
     }
 }
 
-void Map::LoadMap(uint32 mapid, uint32 instanceid, int x,int y)
+void Map::LoadMap(int gx, int gy, bool reload)
 {
-    if( instanceid != 0)
+    if (i_InstanceId != 0)
     {
-        if(GridMaps[x][y])
+        if(GridMaps[gx][gy])
             return;
 
         // load gridmap for base map
-        if (!m_parentMap->GridMaps[x][y])
-            m_parentMap->EnsureGridCreated(GridCoord(63-x,63-y));
+        if (!m_parentMap->GridMaps[gx][gy])
+            m_parentMap->EnsureGridCreated(GridCoord((MAX_NUMBER_OF_GRIDS - 1) - gx, (MAX_NUMBER_OF_GRIDS - 1) - gy));
 
-//+++        if (!baseMap->GridMaps[x][y])  don't check for GridMaps[gx][gy], we need the management for vmaps
-//            return;
-
-        ASSERT(m_parentMap != this);
-        ((MapInstanced*)(m_parentMap))->AddGridMapReference(GridCoord(x,y));
-        GridMaps[x][y] = m_parentMap->GridMaps[x][y];
+        ((MapInstanced*)(m_parentMap))->AddGridMapReference(GridCoord(gx, gy));
+        GridMaps[gx][gy] = m_parentMap->GridMaps[gx][gy];
         return;
     }
 
-    //map already load, delete it before reloading (Is it necessary? Do we really need the ability the reload maps during runtime?)
-    if(GridMaps[x][y])
-    {
-        sScriptMgr->OnUnloadGridMap(this, GridMaps[x][y], x, y);
+    if (GridMaps[gx][gy] && !reload)
+        return;
 
-        TC_LOG_DEBUG("maps","Unloading already loaded map %u before reloading.",mapid);
-        delete (GridMaps[x][y]);
-        GridMaps[x][y]=nullptr;
+    //map already load, delete it before reloading (Is it necessary? Do we really need the ability the reload maps during runtime?)
+    if (GridMaps[gx][gy])
+    {
+        TC_LOG_DEBUG("maps", "Unloading previously loaded map %u before reloading.", GetId());
+        sScriptMgr->OnUnloadGridMap(this, GridMaps[gx][gy], gx, gy);
+
+        delete (GridMaps[gx][gy]);
+        GridMaps[gx][gy] = nullptr;
     }
 
     // map file name
-    char *tmp=nullptr;
+    char *tmp = nullptr;
     // Pihhan: dataPath length + "maps/" + 3+2+2+ ".map" length may be > 32 !
     int len = sWorld->GetDataPath().length()+strlen("maps/%03u%02u%02u.map")+1;
     tmp = new char[len];
-    snprintf(tmp, len, (char *)(sWorld->GetDataPath()+"maps/%03u%02u%02u.map").c_str(),mapid,x,y);
+    snprintf(tmp, len, (char *)(sWorld->GetDataPath() + "maps/%03u%02u%02u.map").c_str(), GetId(), gx, gy);
     TC_LOG_DEBUG("maps","Loading map %s",tmp);
     // loading data
-    GridMaps[x][y] = new GridMap();
-    if (!GridMaps[x][y]->loadData(tmp))
-    {
+    GridMaps[gx][gy] = new GridMap();
+    if (!GridMaps[gx][gy]->loadData(tmp))
         TC_LOG_ERROR("maps","ERROR loading map file: \n %s\n", tmp);
-    }
+
     delete [] tmp;
 
-    sScriptMgr->OnLoadGridMap(this, GridMaps[x][y], x, y);
+    sScriptMgr->OnLoadGridMap(this, GridMaps[gx][gy], gx, gy);
 }
 
-void Map::LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x,int y)
+void Map::LoadMapAndVMap(int gx, int gy)
 {
-    LoadMap(mapid,instanceid,x,y);
-    if(VMAP::VMapFactory::createOrGetVMapManager()->isMapLoadingEnabled() && instanceid == 0) {
-        LoadVMap(x, y);                                     // Only load the data for the base map
-        // load navmesh
-        MMAP::MMapFactory::createOrGetMMapManager()->loadMap((sWorld->GetDataPath() + "mmaps").c_str(),mapid, x, y);
+    LoadMap(gx, gy);
+    if (i_InstanceId == 0)
+    {
+        LoadVMap(gx, gy);
+        LoadMMap(gx, gy);
     }
 }
-
 
 void Map::InitStateMachine()
 {
@@ -418,7 +428,7 @@ void Map::EnsureGridCreated_i(const GridCoord &p)
             int gy = (MAX_NUMBER_OF_GRIDS - 1) - p.y_coord;
 
             if (!GridMaps[gx][gy])
-                Map::LoadMapAndVMap(i_id, i_InstanceId, gx, gy);
+                Map::LoadMapAndVMap(gx, gy);
         }
     }
 }

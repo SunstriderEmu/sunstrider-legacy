@@ -231,7 +231,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 		static void InitStateMachine();
 		static void DeleteStateMachine();
 
-		Map const* GetParent() const { return m_parentMap; }
+        Map const* GetParent() const { return m_parentMap; }
 
 		void AddUpdateObject(Object* obj)
 		{
@@ -242,8 +242,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 		{
 			_updateObjects.erase(obj);
 		}
-
-        void LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x, int y);
 
         // some calls like isInWater should not use vmaps due to processor power
         // can return INVALID_HEIGHT if under z+2 z coord not found height
@@ -540,10 +538,11 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
     private:
 
+        void LoadMapAndVMap(int gx, int gy);
         void LoadVMap(int pX, int pY);
-        void LoadMap(uint32 mapid, uint32 instanceid, int x,int y);
-
-        GridMap *GetGrid(float x, float y);
+        void LoadMap(int gx, int gy, bool reload = false);
+        void LoadMMap(int gx, int gy);
+        GridMap* GetGrid(float x, float y);
 
 		void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
 
@@ -602,13 +601,13 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
 		void SendObjectUpdates();
 
-        //void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
-
         bool AllTransportsEmpty() const; // sunwell
         void AllTransportsRemovePassengers(); // sunwell
         TransportsContainer const& GetAllTransports() const { return _transports; }
 
     protected:
+        void SetUnloadReferenceLock(GridCoord const& p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
+
         std::mutex _mapLock;
         std::mutex _gridLock;
 
@@ -645,6 +644,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         GridMap* GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
+        uint16 GridMapReference[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
 		//these functions used to process player/mob aggro reactions and
