@@ -96,9 +96,12 @@ void TestMgr::Update()
         //uint32 testID = itr->first;
         auto& testThread = itr->second;
 
-        if (!testThread->IsStarted() && !_canceling)
+        if (!testThread->IsStarted())
         {
-            testThread->Start();
+            if(_canceling)
+                itr = _remainingTests.erase(itr);
+            else
+                testThread->Start();
         }
         else if (testThread->IsFinished())
         {
