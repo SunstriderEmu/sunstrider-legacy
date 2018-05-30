@@ -349,6 +349,8 @@ class TC_GAME_API ChatHandler
         bool HandleTestsRunningCommand(const char* args);
         bool HandleTestsGoCommand(const char* args);
         bool HandleTestsCancelCommand(const char* args);
+        bool HandleTestsJoinCommand(const char* args);
+        bool HandleTestsLoopCommand(const char* args);
 
         bool HandleAddHonorCommand(const char* args);
         bool HandleHonorAddKillCommand(const char* args);

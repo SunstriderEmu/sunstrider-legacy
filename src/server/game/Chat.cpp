@@ -682,6 +682,8 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
        { "running",        SEC_ADMINISTRATOR, true,  &ChatHandler::HandleTestsRunningCommand,               "" },
        { "cancel",         SEC_ADMINISTRATOR, true,  &ChatHandler::HandleTestsCancelCommand,                "" },
        { "go",             SEC_ADMINISTRATOR, false, &ChatHandler::HandleTestsGoCommand,                    "" },
+       { "join",           SEC_ADMINISTRATOR, false, &ChatHandler::HandleTestsJoinCommand,                  "" },
+       { "loop",           SEC_ADMINISTRATOR, true,  &ChatHandler::HandleTestsLoopCommand,                  "" },
    };
 
    /**

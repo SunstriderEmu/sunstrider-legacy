@@ -1974,7 +1974,7 @@ bool ChatHandler::HandleTestsStartCommand(const char* args)
         SendSysMessage("Tests started. Results will be dumped to all players.");
     } else {
         std::string testStatus = sTestMgr->GetStatusString();
-        SendSysMessage("Tests currently running or failed to start. Current status:");
+        SendSysMessage("Tests currently running, failed to start or failed to join. Current status:");
         PSendSysMessage("%s", testStatus.c_str());
     }
     return true;
@@ -2020,12 +2020,36 @@ bool ChatHandler::HandleTestsGoCommand(const char* args)
     return true;
 }
 
+
+bool ChatHandler::HandleTestsJoinCommand(const char* testName) 
+{ 
+    bool ok = sTestMgr->Run(testName, GetSession()->GetPlayer());
+    if (ok)
+    {
+        SendSysMessage("Test (join) started. Results will be dumped to all players.");
+    }
+    else {
+        std::string testStatus = sTestMgr->GetStatusString();
+        SendSysMessage("Test currently running or failed to start. Current status:");
+        PSendSysMessage("%s", testStatus.c_str());
+    }
+    return true;
+}
+
+bool ChatHandler::HandleTestsLoopCommand(const char* args) 
+{ 
+    //TODO
+    return true; 
+}
+
 #else
 bool ChatHandler::HandleTestsStartCommand(const char* args) { SendSysMessage("Core has not been compiled with tests"); return true; }
 bool ChatHandler::HandleTestsListCommand(const char* args) { return HandleTestsStartCommand(args); }
 bool ChatHandler::HandleTestsRunningCommand(const char* args) { return HandleTestsStartCommand(args); }
 bool ChatHandler::HandleTestsGoCommand(const char* args) { return HandleTestsStartCommand(args); }
 bool ChatHandler::HandleTestsCancelCommand(const char* args) { return HandleTestsStartCommand(args); }
+bool ChatHandler::HandleTestsJoinCommand(const char* args) { return HandleTestsStartCommand(args); }
+bool ChatHandler::HandleTestsLoopCommand(const char* args) { return HandleTestsStartCommand(args); }
 #endif
 
 bool ChatHandler::HandleYoloCommand(const char* /* args */)

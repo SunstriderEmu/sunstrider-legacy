@@ -858,6 +858,7 @@ public:
     TestMap(TestThread* testThread, uint32 id, uint32 InstanceId, uint8 spawnMode, Map* parent, bool enableMapObjects);
     void Update(const uint32&) override;
     void RemoveAllPlayers() override;
+    bool AddPlayerToMap(Player *) override;
 
     void DisconnectAllBots();
     Player* GetFirstHumanPlayer();

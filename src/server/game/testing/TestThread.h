@@ -24,6 +24,7 @@ public:
     {
         STATE_NOT_STARTED, //not yet setup
         STATE_STARTED, //started but not yet setup
+        STATE_WAITING_FOR_JOIN, //started, setup but waiting for join
         STATE_READY, //started and setup but not yet running
         STATE_RUNNING, //currently updating
         STATE_WAITING, //update is suspended because of waiting time
@@ -42,6 +43,7 @@ public:
     void WakeUp();
     //Resume execution after a previous loop
     void ResumeExecution();
+    void HandlePlayerJoined(Player* player); 
 
     //Main function for thread
     void Run();
@@ -59,11 +61,14 @@ public:
 
     //stop and fail tests as soon as possible
     void Cancel();
+    //test will wait for a player to start running after setup
+    void SetJoiner(ObjectGuid playerJoiner);
 
 private:
     std::shared_ptr<TestCase> _testCase;
     std::future<void> _future; //the actual thread containing the test
     std::atomic<ThreadState> _state; // this thread may be finished either because test finished, or because test was cancelled
+    ObjectGuid _joinerGUID;
 
     //Set wait time for the thread. (will not notify anything)
     void _SetWait(uint32 ms);

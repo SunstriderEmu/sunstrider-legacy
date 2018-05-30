@@ -1,5 +1,6 @@
 #include "TestThread.h"
 #include "TestCase.h"
+#include "TestMgr.h"
 
 TestThread::TestThread(std::shared_ptr<TestCase> test)
     : _testCase(test), 
@@ -42,13 +43,21 @@ void TestThread::Run()
         bool setupSuccess = _testCase->_InternalSetup();
         if(!setupSuccess)
             _testCase->_Fail("Failed to setup test");
-        
-        _state = STATE_READY;
 
+        _state = _joinerGUID ? STATE_WAITING_FOR_JOIN : STATE_READY;
+        bool waitAfterJoin = _joinerGUID;
+        if (_joinerGUID)
+        {
+            Player* joiner = ObjectAccessor::FindConnectedPlayer(_joinerGUID);
+            if(joiner)
+                sTestMgr->GoToTest(joiner, TestMgr::STARTING_TEST_ID);
+        }
         { //Test will actually start the test when map resume execution for the first time
             std::unique_lock<std::mutex> lk(_testCVMutex);
-            _testCV.wait(lk, [this] {return _state > STATE_READY; });
+            _testCV.wait(lk, [this] {return _state >= STATE_RUNNING; });
         }
+        if (waitAfterJoin)
+            Wait(5000); //give some time before starting the test
 
         _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
@@ -86,6 +95,9 @@ void TestThread::WakeUp()
 
 void TestThread::ResumeExecution()
 {
+    if (_joinerGUID) //if we're waiting for someone to join, no resuming
+        return;
+
     ASSERT(_state != STATE_FINISHED && _state != STATE_CANCELING);
     _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
@@ -111,12 +123,14 @@ void TestThread::UpdateWaitTimer(uint32 const mapDiff)
         _SetWait(_waitTimer - mapDiff);
 }
 
-//This function will be executed while the test is running... care for racing conditions
+//This function will be executed while the test is running... be careful for racing conditions
 void TestThread::WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test)
 {
     std::unique_lock<std::mutex> lk(_testCVMutex);
-    if (_state != STATE_RUNNING && (_waitTimer > 0 || _state == STATE_FINISHED || _state == STATE_CANCELING))
-        return; //no sleep to do
+    if (_state == STATE_WAITING_FOR_JOIN || _state == STATE_FINISHED || _state == STATE_CANCELING)
+        return; //test is done or waiting
+    if (_state != STATE_RUNNING && _waitTimer > 0)
+        return; //test reached a wait time
 
     //TC_LOG_TRACE("test.unit_test", "Test tread with test name %s will now WaitUntilDoneOrWaiting", test->GetName().c_str());
     _testCV.wait(lk, [this] {return  _state == STATE_FINISHED || _state == STATE_CANCELING || _state == STATE_WAITING || _state == STATE_PAUSED; });
@@ -179,4 +193,16 @@ void TestThread::HandleThreadPause()
         std::unique_lock<std::mutex> lk(_testCVMutex);
         _testCV.wait(lk, [this] { return _state != STATE_PAUSED; });
     }
+}
+
+void TestThread::SetJoiner(ObjectGuid playerJoiner)
+{
+    _joinerGUID = playerJoiner;
+}
+
+void TestThread::HandlePlayerJoined(Player* player)
+{
+    if (!player->IsTestingBot())
+        _joinerGUID = ObjectGuid::Empty;
+    //no wake up, let map loop do it
 }

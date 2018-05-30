@@ -3184,7 +3184,7 @@ void TestMap::Update(const uint32& diff)
         return;
 
     auto test = _testThread->GetTest();
-    if (_testThread->GetState() < TestThread::STATE_READY)
+    if (_testThread->GetState() < TestThread::STATE_WAITING_FOR_JOIN)
         return; //still setting up
 
     //test thread may have been finish by itself or externally (by a cancel)
@@ -3206,7 +3206,8 @@ void TestMap::Update(const uint32& diff)
     {
         //only valid states at this points. test should never be currently updating at the same time as the map is updating
         auto state = _testThread->GetState();
-        ASSERT(state == TestThread::STATE_READY || state == TestThread::STATE_WAITING || state == TestThread::STATE_PAUSED);
+        ASSERT(state == TestThread::STATE_WAITING_FOR_JOIN || state == TestThread::STATE_READY 
+            || state == TestThread::STATE_WAITING || state == TestThread::STATE_PAUSED);
         InstanceMap::Update(usedDiff);
 
         //When paused, time is frozen in test too
@@ -3218,6 +3219,12 @@ void TestMap::Update(const uint32& diff)
     _testThread->WaitUntilDoneOrWaiting(test);
     //from this line we be sure that the test thread is not currently running
 #endif
+}
+
+bool TestMap::AddPlayerToMap(Player* player)
+{
+    _testThread->HandlePlayerJoined(player);
+    return Map::AddPlayerToMap(player);
 }
 
 void TestMap::RemoveAllPlayers()

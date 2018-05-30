@@ -14,12 +14,12 @@ TestMgr::TestMgr() :
     _canceling(false)
 { }
 
-void TestMgr::_Load(std::string name_or_pattern)
+void TestMgr::_Load(std::string name_or_pattern, Player* joiner /*= nullptr*/)
 {
     _results = {}; //reset results
     _results.SetUsedPattern(name_or_pattern);
 
-    uint32 testId = 1;
+    uint32 testId = STARTING_TEST_ID;
     auto const& allTestsScripts = sScriptMgr->GetAllTests();
     // iterate through multimap's elements (by key)
     decltype(allTestsScripts.equal_range("")) range;
@@ -33,13 +33,21 @@ void TestMgr::_Load(std::string name_or_pattern)
             testCase->_SetName(testScript->second->GetName()); //to improve: move this to ScriptMgr?
             if (_TestMatchPattern(testCase, name_or_pattern))
             {
-                _remainingTests[testId] = std::move(std::make_shared<TestThread>(testCase)); //will immediately start a new thread running the test
+                std::shared_ptr<TestThread> testThread = std::make_shared<TestThread>(testCase);
+                _remainingTests[testId] = testThread; //will immediately start a new thread running the test
                 testId++;
+                if (joiner) //start only one test in join case
+                {
+                    testThread->SetJoiner(joiner->GetGUID());
+                    goto EXIT;
+                }
             }
             else
                 _results.IncreasedIgnored();
         }
     }
+EXIT:
+    return;
 }
 
 bool TestMgr::_TestMatchPattern(std::shared_ptr<TestCase> test, std::string const& pattern) const
@@ -66,7 +74,7 @@ bool TestMgr::_TestMatchPattern(std::shared_ptr<TestCase> test, std::string cons
     return std::regex_match(test->GetName(), regex_pattern);
 }
 
-bool TestMgr::Run(std::string args)
+bool TestMgr::Run(std::string args, Player* joiner /*= nullptr*/)
 {
     if (_running || _loading)
         return false;
@@ -77,7 +85,7 @@ bool TestMgr::Run(std::string args)
     _loading = true;
     _canceling = false;
     ASSERT(_remainingTests.empty());
-    _Load(args);
+    _Load(args, joiner);
     _loading = false;
 
     return true;
