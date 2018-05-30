@@ -4,13 +4,13 @@
 class FlashOfLightTest : public TestCaseScript
 {
 public:
-    
     FlashOfLightTest() : TestCaseScript("spells paladin flash_of_light") { }
     
+    //Heals a friendly target for 448 to 503.
     class FlashOfLightTestImpt : public TestCase
     {
     public:
-        FlashOfLightTestImpt() : TestCase(STATUS_WIP) { }
+        FlashOfLightTestImpt() : TestCase(STATUS_PASSING) { }
         
         void Test() override
         {
@@ -33,10 +33,6 @@ public:
             uint32 const flashOfLightMinHeal = ClassSpellsDamage::Paladin::FLASH_OF_LIGHT_RNK_7_MIN + flashOfLightBHBonus;
             uint32 const flashOfLightMaxHeal = ClassSpellsDamage::Paladin::FLASH_OF_LIGHT_RNK_7_MAX + flashOfLightBHBonus;
             TEST_DIRECT_HEAL(paladin, paladin, ClassSpells::Paladin::FLASH_OF_LIGHT_RNK_7, flashOfLightMinHeal, flashOfLightMaxHeal, false);
-            
-            uint32 const flashOfLightMinCritHeal = flashOfLightMinHeal * 1.5f;
-            uint32 const flashOfLightMaxCritHeal = flashOfLightMaxHeal * 1.5f;
-            TEST_DIRECT_HEAL(paladin, paladin, ClassSpells::Paladin::FLASH_OF_LIGHT_RNK_7, flashOfLightMinCritHeal, flashOfLightMaxCritHeal, true);
         }
     };
     
@@ -50,13 +46,13 @@ public:
 class HolyLightTest : public TestCaseScript
 {
 public:
-    
     HolyLightTest() : TestCaseScript("spells paladin holy_light") { }
     
+    //Heals a friendly target for 2196 to 2447.
     class HolyLightTestImpt : public TestCase
     {
     public:
-        HolyLightTestImpt() : TestCase(STATUS_WIP) { }
+        HolyLightTestImpt() : TestCase(STATUS_PASSING) { }
         
         void Test() override
         {
@@ -79,10 +75,6 @@ public:
             uint32 const holyLightMinHeal = ClassSpellsDamage::Paladin::HOLY_LIGHT_RNK_11_MIN + holyLightBHBonus;
             uint32 const holyLightMaxHeal = ClassSpellsDamage::Paladin::HOLY_LIGHT_RNK_11_MAX + holyLightBHBonus;
             TEST_DIRECT_HEAL(paladin, paladin, ClassSpells::Paladin::HOLY_LIGHT_RNK_11, holyLightMinHeal, holyLightMaxHeal, false);
-            
-            uint32 const holyLightMinCritHeal = holyLightMinHeal * 1.5f;
-            uint32 const holyLightMaxCritHeal = holyLightMaxHeal * 1.5f;
-            TEST_DIRECT_HEAL(paladin, paladin, ClassSpells::Paladin::HOLY_LIGHT_RNK_11, holyLightMinCritHeal, holyLightMaxCritHeal, true);
         }
     };
     

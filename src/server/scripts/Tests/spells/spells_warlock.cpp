@@ -934,7 +934,7 @@ public:
             TEST_ASSERT(spellInfo != nullptr);
             ASSERT_INFO("Spell: %u, cd: %u", soulstoneItemSpellId, caster->GetSpellHistory()->GetRemainingCooldown(spellInfo));
             TEST_ASSERT(caster->GetSpellHistory()->GetRemainingCooldown(spellInfo) > (29 * MINUTE * IN_MILLISECONDS));
-            TEST_ASSERT(caster->GetSpellHistory()->GetRemainingCooldown(spellInfo) > (31 * MINUTE * IN_MILLISECONDS));
+            TEST_ASSERT(caster->GetSpellHistory()->GetRemainingCooldown(spellInfo) < (31 * MINUTE * IN_MILLISECONDS));
             TEST_AURA_MAX_DURATION(caster, soulstoneItemSpellId, Minutes(30));
 
             caster->KillSelf();

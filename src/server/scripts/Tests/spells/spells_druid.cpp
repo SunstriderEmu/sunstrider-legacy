@@ -658,6 +658,7 @@ public:
             TEST_POWER_COST(druid, ClassSpells::Druid::BASH_RNK_3, POWER_RAGE, expectedBashRageCost);
 
             // Aura duration
+            druid->SetFullPower(POWER_RAGE);
             FORCE_CAST(druid, rogue, ClassSpells::Druid::BASH_RNK_3, SPELL_MISS_NONE);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Druid::BASH_RNK_3, Seconds(4));
 		}
@@ -777,6 +778,8 @@ public:
             druid->SetFullPower(POWER_RAGE);
             druid->ForceSpellHitResult(SPELL_MISS_NONE);
             TEST_CAST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
+            // CD
+            TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Minutes(10));
 
             // Aura
             TEST_AURA_MAX_DURATION(creature3m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Seconds(6));
@@ -801,11 +804,6 @@ public:
             // Rage cost
             uint32 const expectedChallengingRoarRage = 15 * 10;
             TEST_POWER_COST(druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, POWER_RAGE, expectedChallengingRoarRage);
-
-            // CD
-            druid->SetFullPower(POWER_RAGE);
-            TEST_CAST(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
-            TEST_COOLDOWN(druid, druid, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Minutes(10));
 		}
 	};
 
@@ -952,8 +950,9 @@ public:
 			int32 expectedAP6m = std::max(startAP6m - 240, 0);
 
             TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1);
-			Wait(1500);
+			Wait(1500); //GCD
 
+            druid->SetFullPower(POWER_RAGE);
             FORCE_CAST(druid, druid, ClassSpells::Druid::DEMORALIZING_ROAR_RNK_6);
 
 			// Aura
@@ -1472,9 +1471,9 @@ public:
 class RavageTest : public TestCaseScript
 {
 public:
-
 	RavageTest() : TestCaseScript("spells druid ravage") { }
 
+    //Ravage the target, causing 385 % damage plus 514 to the target.Must be prowling and behind the target.Awards 1 combo point.
 	class RavageTestImpt : public TestCase
 	{
 	public:
@@ -1487,7 +1486,7 @@ public:
 			Position spawnPosition(_location);
 			spawnPosition.MoveInFront(_location, 3.0f);
 			Creature* creature = SpawnCreatureWithPosition(spawnPosition);
-            creature->SetOrientation(creature->GetOrientation() + M_PI);
+            creature->SetOrientation(druid->GetOrientation() + M_PI); //face druid
 
 			EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
 
@@ -1508,15 +1507,16 @@ public:
 			TEST_POWER_COST(druid, ClassSpells::Druid::RAVAGE_RNK_5, POWER_ENERGY, expectedRavageEnergy);
             
             Wait(1500); //GCD
+            creature->SetOrientation(druid->GetOrientation());
             FORCE_CAST(druid, creature, ClassSpells::Druid::RAVAGE_RNK_5);
 			// Combo
 			TEST_ASSERT(druid->GetComboPoints(creature) == 1);
 
 			/*  Damage -- damage is too high? calculations below are in agreement with DrDamage (I could not find any other source for now)
-             kelno: spell has 147 and not 514 in base points in dbc... that's because 147 x 350% = 514 and "In Patch 2.3.2, damage (all ranks) changed from 350% to 385%." 
+             kelno: spell has 147 in base points in dbc, so should do +565 and not +514... value 514 is because 147 x 350% = 514 and "In Patch 2.3.2, damage (all ranks) changed from 350% to 385%." 
              So I'm pretty sure our calculation is correct, but either:
              - Blizzard forgot to update the tooptip and the bonus damage is actually 565 (147 x 385%) since 2.3.2 (note that the 514 value is hardcoded in the tooltip so that's a likely error)
-             - Blizzard reduced the base value to 133 but our dbc did not follow this change (dbc are indeed sometimes late on patchs)
+             - Blizzard reduced the base value to 133 but our dbc did not follow this change (dbc are indeed sometimes late on patches)
              Failing to find any good source, I'll use the tooltip data for now and update the base value of the spell to 133. 
              It may be a nerf but in case someone looks into it it's looking better to match the tooltip + the spell is not in the dps rotation so that's not a big loss.
             */
@@ -2103,7 +2103,7 @@ public:
             // Mana cost
             TEST_POWER_COST(caster, spellId, POWER_MANA, manaCost);
 
-            TEST_CAST(caster, victim, spellId);
+            TEST_CAST(caster, victim, spellId, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
 
             // Aura duration
             TEST_AURA_MAX_DURATION(victim, spellId, Minutes(30));
@@ -2161,6 +2161,7 @@ public:
             victim->KillSelf(true);
             caster->GetSpellHistory()->ResetAllCooldowns();
             caster->AddItem(reagentId, 1);
+            caster->SetFullPower(POWER_MANA);
             TEST_CAST(caster, victim, spellId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_COOLDOWN(caster, victim, spellId, Minutes(20));
             WaitNextUpdate();
@@ -2267,6 +2268,7 @@ class RegrowthTest : public TestCaseScript
 public:
     RegrowthTest() : TestCaseScript("spells druid regrowth") { }
 
+    // Heals a friendly target for 1215 to 1356 and another 1274 over 21sec.
     class RegrowthTestImpt : public TestCase
     {
     public:
@@ -2287,8 +2289,7 @@ public:
             uint32 const expectedRegrowthMana = 675;
             TEST_POWER_COST(druid, ClassSpells::Druid::REGROWTH_RNK_10, POWER_MANA, expectedRegrowthMana);
 
-            TEST_CAST(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10);
-            Wait(1500);
+            TEST_CAST(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
 
             // Aura
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::REGROWTH_RNK_10, Seconds(21));
@@ -2427,6 +2428,7 @@ public:
             TEST_POWER_COST(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, POWER_MANA, expectedTranquilityMana);
 
             TEST_CAST(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5);
+            WaitNextUpdate();
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, Seconds(8));
 
             // Spell coeffs
