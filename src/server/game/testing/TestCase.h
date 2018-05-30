@@ -415,8 +415,9 @@ protected:
     void _SaveUnitState(Unit* unit);
     //Restore values saved by _SaveUnitState
     void _RestoreUnitState(Unit* unit);
-    //calc min max damage with attacker weapon on target given attacker weapon, ap and target armor
-    std::pair<uint32 /*min*/, uint32 /*max*/> CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType = BASE_ATTACK);
+    /* calc min max damage with attacker weapon on target given attacker weapon damage, weapon class, ap and target armor
+    */
+    std::pair<uint32 /*min*/, uint32 /*max*/> CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType = BASE_ATTACK, uint32 spellBonusDmg = 0, float SpellAPMultiplier = 0.0f);
     // <Helpers/>
 
 private:

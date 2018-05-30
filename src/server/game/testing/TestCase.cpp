@@ -1145,18 +1145,21 @@ void TestCase::Sadness()
     }
 }
 
-std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType)
+std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType, uint32 spellBonusDmg /*= 0*/, float SpellAPMultiplier/* = 0.0f*/)
 {
+    ASSERT_INFO("Both spellBonusDmg and SpellAPMultiplier must be supplied for spells (or left to default for white dmg");
+    TEST_ASSERT(bool(spellBonusDmg) && bool(SpellAPMultiplier));
+
     Item* item = attacker->GetWeaponForAttack(attackType);
     ASSERT_INFO("Failed to get weapon for attack type %u", uint32(attackType));
     TEST_ASSERT(item != nullptr);
     uint32 const weaponMinDmg = item->GetTemplate()->Damage->DamageMin;
     uint32 const weaponMaxDmg = item->GetTemplate()->Damage->DamageMax;
-    float const weaponSpeed = item->GetTemplate()->Delay / 1000.0f;
+    float const weaponSpeed = SpellAPMultiplier ? SpellAPMultiplier : item->GetTemplate()->Delay / 1000.0f;
     float const AP = attacker->GetTotalAttackPowerValue(attackType);
     float const armorFactor = 1.0f - (target->GetArmor() / (target->GetArmor() + (467.5 * attacker->GetLevel() - 22167.5)));
-    uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed) * armorFactor;
-    uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed) * armorFactor;
+    uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * armorFactor;
+    uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * armorFactor;
     return std::make_pair(minMelee, maxMelee);
 }
 
