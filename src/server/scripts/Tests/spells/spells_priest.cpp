@@ -91,6 +91,8 @@ public:
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* enemy1 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
             TestPlayer* enemy2 = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+            enemy1->ForceSpellHitResult(SPELL_MISS_NONE);
+            enemy2->ForceSpellHitResult(SPELL_MISS_NONE);
 
             // Fail -- Bug here
             TEST_CAST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2, SPELL_FAILED_NOTHING_TO_DISPEL, TRIGGERED_IGNORE_GCD);
@@ -166,11 +168,50 @@ public:
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, Minutes(3));
 
             // First fear, should be resisted by ward
-            warlock->ForceSpellHitResult(SPELL_MISS_NONE);
-            TEST_CAST(warlock, priest, ClassSpells::Warlock::FEAR_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            // Cast fear and test immunity. We can't use ForceSpellHitResult because that would bypass immune. Return false if we received the incompressible %. 
+            auto TestFear = [&](bool shouldImmune) {
+                warlock->m_modSpellHitChance = 1.0f; //100% hit chance
+                auto AI = _GetCasterAI(warlock);
+                AI->ResetSpellCounters();
+                TEST_CAST(warlock, priest, ClassSpells::Warlock::FEAR_RNK_3, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_PROC_AS_NON_TRIGGERED)); //TRIGGERED_PROC_AS_NON_TRIGGERED else aura does not get removed
+                auto damageDoneInfo = AI->GetSpellDamageDoneInfo(priest);
+                TEST_ASSERT(damageDoneInfo != nullptr);
+                TEST_ASSERT(damageDoneInfo->size() == 1);
+                for (auto itr : *damageDoneInfo)
+                {
+                    //We got the 1% chance, no luck, try again
+                    if (itr.missInfo == SPELL_MISS_MISS)
+                        return false;
+
+                    //else, we should have received IMMUNE
+                    if (shouldImmune)
+                    {
+                        TEST_ASSERT(itr.missInfo == SPELL_MISS_IMMUNE);
+                    }
+                    else
+                    {
+                        TEST_ASSERT(itr.missInfo == SPELL_MISS_NONE);
+                    }
+
+                    return true;
+                }
+                return false;
+            };
+            uint32 tryCount = 0; //just to make sure we don't do an infinite loop
+            while (!TestFear(true))
+            {
+                TEST_ASSERT(tryCount++ < 100); 
+            }
+            // Fear should be resisted
+            TEST_HAS_NOT_AURA(priest, ClassSpells::Warlock::FEAR_RNK_3);
             // Ward shoud be consumed
             TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::FEAR_WARD_RNK_1);
             // Second fear, priest should be affected
+            tryCount = false;
+            while (!TestFear(false))
+            {
+                TEST_ASSERT(tryCount++ < 100);
+            }
             TEST_CAST(warlock, priest, ClassSpells::Warlock::FEAR_RNK_3, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_HAS_AURA(priest, ClassSpells::Warlock::FEAR_RNK_3);
         }
@@ -514,8 +555,8 @@ public:
             SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF);
             SpawnPlayer(CLASS_ROGUE, RACE_BLOODELF);
 
-            uint32 const TOTAL_HORDE_PLAYER = 12;
-            uint32 const TOTAL_ALLIANCE_PLAYER = 12;
+            uint32 const TOTAL_HORDE_UNITS = 12;
+            uint32 const TOTAL_ALLIANCE_UNITS = 12;
 
             // Get all the units
             std::vector<WorldObject*> targets;
@@ -538,14 +579,9 @@ public:
                 }
             }
 
-
-            // Gas Nova for all
-            WaitNextUpdate();
-            Wait(10000);
-            WaitNextUpdate();
             WaitNextUpdate();
 
-            // Buff everyone + Check if everybody has the gas nova (except Totems)
+            // Buff and debuff everyone + Check if everybody has the gas nova (except Totems)
             for (WorldObject* object : targets)
             {
                 if (Unit* unit = object->ToUnit())
@@ -598,11 +634,11 @@ public:
                     }
                     else
                     {
-                        ASSERT_INFO("At least horde player did not have gas nova after mass dispel");
+                        ASSERT_INFO("At least 1 horde player/pet did not have gas nova after mass dispel");
                         TEST_HAS_AURA(player, GAS_NOVA);
                         countPrayer(player);
                         if (Pet* pet = player->GetPet())
-                            countPrayer(player);
+                            countPrayer(pet);
                     }
                     player->RemoveAurasDueToSpell(GAS_NOVA);
                     if (Pet* pet = player->GetPet())
@@ -611,12 +647,12 @@ public:
             }
 
             //check results
-            TEST_ASSERT((targetsWithGasNova + targetsWithoutGasNova) == TOTAL_ALLIANCE_PLAYER);
-            TEST_ASSERT((targetsWithPrayerOfFortitude + targetsWithoutPrayerOfFortitude) == TOTAL_HORDE_PLAYER);
-            uint32 const expectedWithNova = TOTAL_ALLIANCE_PLAYER - MAX_DISPEL_TARGETS;
+            TEST_ASSERT((targetsWithGasNova + targetsWithoutGasNova) == TOTAL_ALLIANCE_UNITS);
+            TEST_ASSERT((targetsWithPrayerOfFortitude + targetsWithoutPrayerOfFortitude) == TOTAL_HORDE_UNITS);
+            uint32 const expectedWithNova = TOTAL_ALLIANCE_UNITS - MAX_DISPEL_TARGETS;
             ASSERT_INFO("%u alliance units with nova instead of %u", targetsWithGasNova, expectedWithNova);
             TEST_ASSERT(targetsWithGasNova == expectedWithNova);
-            uint32 const expectedWithPrayer = TOTAL_HORDE_PLAYER - MAX_DISPEL_TARGETS;
+            uint32 const expectedWithPrayer = TOTAL_HORDE_UNITS - MAX_DISPEL_TARGETS;
             ASSERT_INFO("%u horde units with prayer instead of %u", targetsWithPrayerOfFortitude, expectedWithPrayer);
             TEST_ASSERT(targetsWithPrayerOfFortitude == expectedWithPrayer);
 
@@ -862,7 +898,7 @@ public:
             // Mana cost & reagents
             TEST_POWER_COST(priest, spellId, POWER_MANA, manaCost);
             priest->AddItem(reagentId, 1); // Reagent
-            TEST_CAST(priest, warrior, spellId);
+            TEST_CAST(priest, warrior, spellId, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
             TEST_ASSERT(priest->GetItemCount(reagentId, false) == 0);
 
             // Aura
@@ -1058,11 +1094,10 @@ public:
     class AbolishDiseaseTestImpt : public TestCase
     {
     public:
-        AbolishDiseaseTestImpt() : TestCase(STATUS_PASSING) { }
+        AbolishDiseaseTestImpt() : TestCase(STATUS_WIP) { } //change logic for random dispel order
 
         void TestDispelDisease(TestPlayer* victim, uint32 Disease1, uint32 Disease2, uint32 Disease3, uint32 Disease4, uint32 Disease5, int8 count)
         {
-            //kelno: Test will probably fail if diff gets high, tofix if this happens
             victim->SetFullHealth();
             ASSERT_INFO("TestDispelDisease maximum trials reached");
             TEST_ASSERT(count < 10);
@@ -2270,6 +2305,7 @@ class MindVisionTest : public TestCaseScript
 public:
     MindVisionTest() : TestCaseScript("spells priest mind_vision") { }
 
+    //Allows the caster to see through the target's eyes for 1min. Will not work if the target is in another instance or on another continent.
     class MindVisionTestImpt : public TestCase
     {
     public:
@@ -2350,6 +2386,7 @@ class PrayerOfShadowProtectionTest : public TestCaseScript
 public:
     PrayerOfShadowProtectionTest() : TestCaseScript("spells priest prayer_of_shadow_protection") { }
 
+    //Power infuses the target's party, increasing their Shadow resistance by 70 for 20min.
     class PrayerOfShadowProtectionTestImpt : public TestCase
     {
     public:
@@ -2363,7 +2400,7 @@ public:
             // Mana cost & Reagent
             TEST_POWER_COST(priest, spellId, POWER_MANA, manaCost);
             priest->AddItem(reagentId, 1);
-            TEST_CAST(priest, warrior, spellId);
+            TEST_CAST(priest, warrior, spellId, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
             TEST_ASSERT(priest->GetItemCount(reagentId, false) == 0);
 
             // Aura
@@ -2403,6 +2440,7 @@ class PsychicScreamTest : public TestCaseScript
 public:
     PsychicScreamTest() : TestCaseScript("spells priest psychic_scream") { }
 
+    //The caster lets out a psychic scream, causing 5 enemies within 8 yards to flee for 8sec. Damage caused may interrupt the effect.
     class PsychicScreamTestImpt : public TestCase
     {
     public:
@@ -2423,7 +2461,7 @@ public:
             TestPlayer* enemy3 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
             TestPlayer* enemy4 = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
             Position spawn(_location);
-            spawn.MoveInFront(spawn, 10.0f);
+            spawn.MoveInFront(spawn, 12.0f); //spell has 8 yard range
             TestPlayer* enemyFurther = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN, 70, spawn);
 
             // Auras & range
@@ -2465,7 +2503,7 @@ public:
             TEST_POWER_COST(priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, POWER_MANA, expectedPsychicScreamMana);
 
             priest->GetSpellHistory()->ResetAllCooldowns();
-            TEST_CAST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4);
+            TEST_CAST(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, SPELL_CAST_OK, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 
             // Cooldown
             TEST_COOLDOWN(priest, priest, ClassSpells::Priest::PSYCHIC_SCREAM_RNK_4, Seconds(30));
@@ -2522,6 +2560,7 @@ class ShadowWordDeathTest : public TestCaseScript
 public:
     ShadowWordDeathTest() : TestCaseScript("spells priest shadow_word_death") { }
 
+    //A word of dark binding that inflicts 572 to 665 Shadow damage to the target.If the target is not killed by Shadow Word : Death, the caster takes damage equal to the damage inflicted upon the target.
     class ShadowWordDeathTestImpt : public TestCase
     {
     public:
@@ -2607,6 +2646,7 @@ public:
             priest->ResetForceSpellHitResult();
 
             // Test damages
+            priest->ResurrectPlayer(1.0f);
             TEST_DIRECT_SPELL_DAMAGE_CALLBACK(priest, dummy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, shadowWordDeathMin, shadowWordDeathMax, false, [](Unit* caster, Unit* target) {
                 caster->SetFullHealth();
             });
@@ -2672,6 +2712,7 @@ class ShadowfiendTest : public TestCaseScript
 public:
     ShadowfiendTest() : TestCaseScript("spells priest shadowfiend") { }
 
+    //Creates a shadowy fiend to attack the target. Caster receives mana when the Shadowfiend deals damage. Lasts 15sec.
     class ShadowfiendTestImpt : public TestCase
     {
     public:
@@ -2825,13 +2866,13 @@ class TouchOfWeaknessTest : public TestCaseScript
 public:
     TouchOfWeaknessTest() : TestCaseScript("spells priest touch_of_weakness") { }
 
+    //The next melee attack on the caster will cause 80 Shadow damage and reduce the damage caused by the attacker by 35 for 2min.
     class TouchOfWeaknessTestImpt : public TestCase
     {
     public:
         TouchOfWeaknessTestImpt() : TestCase(STATUS_PASSING) { }
 
-        void Test() override
-        {
+        void Test() override        {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
@@ -2839,19 +2880,18 @@ public:
 
             EQUIP_NEW_ITEM(priest, 34336); // Sunflare - 292 SP
 
-            // Mana cost, aura & cd
             // Priest cast hex on rogue
+            // Mana cost, aura
             uint32 const expectedTouchOfWeaknessMana = 235;
             TEST_POWER_COST(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, POWER_MANA, expectedTouchOfWeaknessMana);
-            FORCE_CAST(priest, rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
-            TEST_HAS_AURA(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
-            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, Minutes(10));
+            FORCE_CAST(priest, priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
+            TEST_AURA_MAX_DURATION(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, Minutes(10));
 
             // Shouldn't proc on spells
             TEST_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             mage->ResetForceSpellHitResult();
             TEST_HAS_AURA(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
-            TEST_HAS_NOT_AURA(mage, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER);
+            TEST_HAS_NOT_AURA(mage, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER_AURA);
 
             // Should proc on melee
             rogue->ForceMeleeHitResult(MELEE_HIT_NORMAL);
@@ -2861,8 +2901,8 @@ public:
             rogue->ResetForceMeleeHitResult();
             priest->ResetForceSpellHitResult();
             TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7);
-            TEST_HAS_AURA(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER);
-            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, Minutes(2));
+            TEST_HAS_AURA(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER_AURA);
+            TEST_AURA_MAX_DURATION(rogue, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER_AURA, Minutes(2));
 
             // Test damage reduc ON MH, OH, spells
             {
@@ -2903,8 +2943,8 @@ public:
             float const touchOfWeaknessCoeff = ClassSpellsCoeff::Priest::TOUCH_OF_WEAKNESS;
             uint32 const spellBonus = 292 * touchOfWeaknessCoeff;
             uint32 const touchOfWeaknessDmg = ClassSpellsDamage::Priest::TOUCH_OF_WEAKNESS_RNK_7 + spellBonus;
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, touchOfWeaknessDmg, touchOfWeaknessDmg, false);
-            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER, touchOfWeaknessDmg * 1.5f, touchOfWeaknessDmg * 1.5f, true);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER_AURA, touchOfWeaknessDmg, touchOfWeaknessDmg, false);
+            TEST_DIRECT_SPELL_DAMAGE(priest, dummy, ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7_TRIGGER_AURA, touchOfWeaknessDmg * 1.5f, touchOfWeaknessDmg * 1.5f, true);
         }
     };
 
