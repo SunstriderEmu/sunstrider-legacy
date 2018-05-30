@@ -23,6 +23,7 @@ public:
     enum ThreadState : uint8
     {
         STATE_NOT_STARTED, //not yet setup
+        STATE_STARTED, //started but not yet setup
         STATE_READY, //started and setup but not yet running
         STATE_RUNNING, //currently updating
         STATE_WAITING, //update is suspended because of waiting time

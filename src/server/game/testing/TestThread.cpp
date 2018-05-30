@@ -10,12 +10,13 @@ TestThread::TestThread(std::shared_ptr<TestCase> test)
 
 void TestThread::Start()
 {
+    _state = STATE_STARTED;
     _future = std::move(std::async(std::launch::async, [this]() { this->Run(); }));
 }
 
 bool TestThread::IsStarted() const
 {
-    return _state > STATE_NOT_STARTED;
+    return _state >= STATE_STARTED; 
 }
 
 bool TestThread::IsFinished() const
