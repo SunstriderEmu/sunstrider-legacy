@@ -855,17 +855,17 @@ class TC_GAME_API InstanceMap : public Map
 class TC_GAME_API TestMap : public InstanceMap
 {
 public:
-    TestMap(TestThread* testThread, uint32 id, uint32 InstanceId, uint8 spawnMode, Map* parent, bool enableMapObjects);
+    TestMap(std::shared_ptr<TestThread> testThread, uint32 id, uint32 InstanceId, uint8 spawnMode, Map* parent, bool enableMapObjects);
     void Update(const uint32&) override;
     void RemoveAllPlayers() override;
     bool AddPlayerToMap(Player *) override;
 
     void DisconnectAllBots();
     Player* GetFirstHumanPlayer();
-    TestThread const* GetTestThread() const { return _testThread; }
+    std::shared_ptr<TestThread const> GetTestThread() const { return _testThread; }
 
 private:
-    TestThread* _testThread; //TestMap will use the TestThread for some time sync with the test waits
+    std::shared_ptr<TestThread> _testThread; //TestMap will use the TestThread for some time sync with the test waits
 };
 
 class TC_GAME_API BattlegroundMap : public Map

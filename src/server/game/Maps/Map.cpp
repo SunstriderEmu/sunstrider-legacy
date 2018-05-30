@@ -2813,7 +2813,7 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 instanceId, uint8 spaw
     m_unloadTimer = std::max(sWorld->getConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
 }
 
-TestMap::TestMap(TestThread* testThread, uint32 id, uint32 instanceId, uint8 spawnMode, Map* _parent, bool enableMapObjects)
+TestMap::TestMap(std::shared_ptr<TestThread> testThread, uint32 id, uint32 instanceId, uint8 spawnMode, Map* _parent, bool enableMapObjects)
     : InstanceMap(id, 0, instanceId, spawnMode, _parent), _testThread(testThread)
 {
     i_mapType = MAP_TYPE_TEST_MAP;

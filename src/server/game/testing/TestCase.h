@@ -61,6 +61,7 @@ public:
     TestCase(TestStatus status);
     //Use specific position. If only map was specified in location, default coordinates in map may be chosen instead. If you need creatures and objects, use EnableMapObjects in your test constructor
     TestCase(TestStatus status, WorldLocation const specificPosition);
+    ~TestCase() {}
 
     std::string GetName() const { return _testName; }
     bool Failed() const { return _failed; }
@@ -436,7 +437,7 @@ private:
     void _Fail(const char* err, ...) ATTR_PRINTF(2, 3);
     void _FailNoException(std::string);
     void _SetName(std::string name) { _testName = name; }
-    void _SetThread(TestThread* testThread) { _testThread = testThread; }
+    void _SetThread(std::shared_ptr<TestThread> testThread) { _testThread = testThread; }
     //if callerFile and callerLine are specified, also print them in message
     void _Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, bool increaseTestCount, std::string callerFile = "", int32 callerLine = 0);
     void _InternalAssertInfo(const char* err, ...) ATTR_PRINTF(2, 3);
@@ -453,7 +454,7 @@ private:
     Races _GetRandomRaceForClass(Classes race);
     static void _RemoveTestBot(Player* player);
    
-    TestThread* _testThread;
+    std::shared_ptr<TestThread> _testThread;
 
     //those two just to help avoiding calling SpawnRandomPlayer with the wrong arguments, SpawnPlayer should be called in those case
     TestPlayer* SpawnRandomPlayer(Races race, Classes cls) = delete;

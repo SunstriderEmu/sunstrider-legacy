@@ -35,6 +35,8 @@ public:
 
     //Create thread with test, do not start immediately
     TestThread(std::shared_ptr<TestCase> test);
+    ~TestThread() {}
+
     //Start test!
     void Start();
     bool IsStarted() const;

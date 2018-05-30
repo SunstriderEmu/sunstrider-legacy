@@ -37,7 +37,6 @@ bool TestThread::IsPaused() const
 
 void TestThread::Run()
 {
-    _testCase->_SetThread(this);
     try
     {
         bool setupSuccess = _testCase->_InternalSetup();

@@ -67,9 +67,17 @@ public:
         void Cleanup() override
         {
             if (masterCreature)
+            {
+                masterCreature->DisappearAndDie();
                 masterCreature->DeleteFromDB();
+                delete masterCreature;
+            }
             if (slaveCreature)
+            {
+                slaveCreature->DisappearAndDie();
                 slaveCreature->DeleteFromDB();
+                delete slaveCreature;
+            }
         }
     };
 

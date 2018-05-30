@@ -54,7 +54,7 @@ class TC_GAME_API MapInstanced : public Map
        
         std::list<Map*> crashedMaps; //those map have crashed, remove them as soon as possible. Contains either BattlegroundMap or InstanceMap
 
-        TestMap* CreateTestInsteance(TestThread* testThread, uint32 InstanceId, Difficulty difficulty, bool enableMapObjects = false);
+        TestMap* CreateTestInsteance(std::shared_ptr<TestThread> testThread, uint32 InstanceId, Difficulty difficulty, bool enableMapObjects = false);
         InstanceMap* CreateInstance(uint32 InstanceId, InstanceSave *save, Difficulty difficulty);
         BattlegroundMap* CreateBattleground(uint32 InstanceId, Battleground* bg);
 

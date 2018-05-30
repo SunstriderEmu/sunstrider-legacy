@@ -177,25 +177,22 @@ public:
                 auto damageDoneInfo = AI->GetSpellDamageDoneInfo(priest);
                 TEST_ASSERT(damageDoneInfo != nullptr);
                 TEST_ASSERT(damageDoneInfo->size() == 1);
-                for (auto itr : *damageDoneInfo)
+                auto itr = *(damageDoneInfo->begin());
+                //We got the 1% chance, no luck, try again
+                if (itr.missInfo == SPELL_MISS_MISS)
+                    return false;
+
+                //else, we should have received IMMUNE
+                if (shouldImmune)
                 {
-                    //We got the 1% chance, no luck, try again
-                    if (itr.missInfo == SPELL_MISS_MISS)
-                        return false;
-
-                    //else, we should have received IMMUNE
-                    if (shouldImmune)
-                    {
-                        TEST_ASSERT(itr.missInfo == SPELL_MISS_IMMUNE);
-                    }
-                    else
-                    {
-                        TEST_ASSERT(itr.missInfo == SPELL_MISS_NONE);
-                    }
-
-                    return true;
+                    TEST_ASSERT(itr.missInfo == SPELL_MISS_IMMUNE);
                 }
-                return false;
+                else
+                {
+                    TEST_ASSERT(itr.missInfo == SPELL_MISS_NONE);
+                }
+
+                return true;
             };
             uint32 tryCount = 0; //just to make sure we don't do an infinite loop
             while (!TestFear(true))

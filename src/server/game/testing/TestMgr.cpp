@@ -34,6 +34,7 @@ void TestMgr::_Load(std::string name_or_pattern, Player* joiner /*= nullptr*/)
             if (_TestMatchPattern(testCase, name_or_pattern))
             {
                 std::shared_ptr<TestThread> testThread = std::make_shared<TestThread>(testCase);
+                testCase->_SetThread(testThread);
                 _remainingTests[testId] = testThread; //will immediately start a new thread running the test
                 testId++;
                 if (joiner) //start only one test in join case
