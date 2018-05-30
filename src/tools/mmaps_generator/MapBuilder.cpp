@@ -1022,7 +1022,7 @@ namespace MMAP
         if (m_skipJunkMaps)
             switch (mapID)
             {
-                case 13:    // test.wdt
+                //sun: Unjunk this one, used massively in testing // case 13:    // test.wdt
                 case 25:    // ScottTest.wdt
                 case 29:    // Test.wdt
                 case 42:    // Colin.wdt
