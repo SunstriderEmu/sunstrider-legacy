@@ -914,12 +914,14 @@ class CreateSoulstoneTest : public TestCaseScript
 public:
     CreateSoulstoneTest() : TestCaseScript("spells warlock create_soulstone") { }
 
+    //Creates a Master Soulstone.The Soulstone can be used to store one target's soul. If the target dies while his soul is stored, he will be able to resurrect with 2900 health and 3300 mana.
+    //Conjured items disappear if logged out for more than 15 minutes.
     class CreateSoulstoneTestImpt : public TestCase
     {
     public:
-        CreateSoulstoneTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        CreateSoulstoneTestImpt() : TestCase(STATUS_PASSING) { }
 
-        void CreateSoulstone(TestPlayer* caster, uint32 soulstoneSpellId, uint32 soulstoneItemSpellId, uint32 soulstone, uint32 healthRestored, uint32 manaRestored)
+        void TestSoulstone(TestPlayer* caster, uint32 soulstoneSpellId, uint32 soulstoneItemSpellId, uint32 soulstone, uint32 healthRestored, uint32 manaRestored)
         {
             caster->AddItem(SOUL_SHARD, 1);
             TEST_CAST(caster, caster, soulstoneSpellId, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
@@ -971,12 +973,12 @@ public:
             const uint32 MASTER_SOULSTONE   = 22116;
 
             // Assert for each that soulstone is created + assert power costs + resurrected stats
-            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_1, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_1_ITEM, MINOR_SOULSTONE, 400, 700);
-            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_2, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_2_ITEM, LESSER_SOULSTONE, 750, 1200);
-            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_3, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_3_ITEM, SOULSTONE, 1100, 1700);
-            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_4, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_4_ITEM, GREATER_SOULSTONE, 1600, 2200);
-            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_5, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_5_ITEM, MAJOR_SOULSTONE, 2200, 2800);
-            CreateSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM, MASTER_SOULSTONE, 2900, 3300);
+            TestSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_1, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_1_ITEM, MINOR_SOULSTONE, 400, 700);
+            TestSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_2, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_2_ITEM, LESSER_SOULSTONE, 750, 1200);
+            TestSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_3, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_3_ITEM, SOULSTONE, 1100, 1700);
+            TestSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_4, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_4_ITEM, GREATER_SOULSTONE, 1600, 2200);
+            TestSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_5, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_5_ITEM, MAJOR_SOULSTONE, 2200, 2800);
+            TestSoulstone(warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM, MASTER_SOULSTONE, 2900, 3300);
 
             // 2.1: Soulstones can no longer be used on targets not in your party or raid
             Position spawnPos;
@@ -987,11 +989,10 @@ public:
             warlock->AddItem(SOUL_SHARD, 1);
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             TEST_ASSERT(warlock->GetItemCount(MASTER_SOULSTONE, false) == 1);
-            USE_ITEM(warlock, friendly, MASTER_SOULSTONE);
-            Wait(Seconds(3));
-            TEST_ASSERT(warlock->GetItemCount(MASTER_SOULSTONE, false) == 1);
-            TEST_HAS_NOT_AURA(friendly, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM);
-
+            //cannot use USE_ITEM because spell is supposed to fail here // USE_ITEM(warlock, friendly, MASTER_SOULSTONE);
+            //so lets cast the spell item directly
+            TEST_CAST(warlock, friendly, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM, SPELL_FAILED_BAD_TARGETS, TRIGGERED_CAST_DIRECTLY);
+            
             // Put soulstone on target in same group/raid
             GroupPlayer(warlock, friendly);
             WaitNextUpdate();
@@ -1006,7 +1007,6 @@ public:
             WaitNextUpdate();
             TEST_ASSERT(!friendly->IsInSameGroupWith(warlock));
             TEST_HAS_NOT_AURA(friendly, ClassSpells::Warlock::CREATE_SOULSTONE_RNK_6_ITEM); //BUG HERE
-            Wait(5000);
         }
     };
 

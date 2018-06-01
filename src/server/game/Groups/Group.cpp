@@ -775,6 +775,19 @@ void Group::Disband(bool hideDestroy)
         if (!player)
             continue;
 
+        //sun: also remove group buff in disband case
+        for (GroupReference* itr = GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            if (Player* groupMember = itr->GetSource())
+            {
+                if (groupMember->GetGUID() == citr->guid)
+                    continue;
+
+                groupMember->RemoveAllGroupBuffsFromCaster(citr->guid);
+                player->RemoveAllGroupBuffsFromCaster(groupMember->GetGUID());
+            }
+        }
+
         // we cannot call _removeMember because it would invalidate member iterator
         // if we are removing player from battleground raid
         if (isBGGroup() || isBFGroup())

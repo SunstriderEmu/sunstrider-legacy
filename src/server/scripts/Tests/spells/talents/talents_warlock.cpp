@@ -2579,7 +2579,7 @@ public:
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
-            Creature* dummy = SpawnCreature();
+            //Creature* dummy = SpawnCreature();
 
             float const expectedSpellCritChance = warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) + 3.0f;
 
