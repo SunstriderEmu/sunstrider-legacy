@@ -293,6 +293,16 @@ void TestCase::_RemoveTestBot(Player* player)
 //create a player of random level with no equipement, no talents, max skills for his class
 TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint32 level)
 {
+    /* This function is called from TestCase with concurrency, but several things in here don't handle it:
+    - sCharacterCache->AddCharacterCacheEntry
+    - session->_HandlePlayerLogin
+    - player->Create
+
+    Sooo, mutex the whole thing! No need for amazing performance here.
+    */
+    static std::mutex function_mutex;
+    std::lock_guard<std::mutex> lock(function_mutex);
+
     INTERNAL_TEST_ASSERT_NOCOUNT(cls != CLASS_NONE && race != RACE_NONE);
     TC_LOG_TRACE("test.unit_test", "Creating new random bot for class %d", cls);
 
@@ -352,11 +362,7 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     //make sure player is alreary linked to this map before calling _HandlePlayerLogin, else a lot of stuff will be loaded around default player location
     player->ResetMap();
     player->SetMap(_map); 
-    //some functions in _HandlePlayerLogin do not allow concurrency, mutex it
-    static std::mutex loginMutex;
-    loginMutex.lock();
     session->_HandlePlayerLogin((Player*)player, holder);
-    loginMutex.unlock();
 
     player->SetTeleportingToTest(_testMapInstanceId);
 
@@ -372,11 +378,7 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     }
     ai->HandleTeleportAck(); //immediately handle teleport packet
 
-    //this function must be multithread friendly but caracter cache isn't. Let's mutex it
-    static std::mutex cacheMutex;
-    cacheMutex.lock();
     sCharacterCache->AddCharacterCacheEntry(player->GetGUID().GetCounter(), testAccountId, player->GetName(), cci.Gender, cci.Race, cci.Class, level, 0);
-    cacheMutex.unlock();
 
     //usually done in LoadFromDB
     player->SetCanModifyStats(true);
@@ -1147,12 +1149,15 @@ void TestCase::Sadness()
 
 std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType, uint32 spellBonusDmg /*= 0*/, float SpellAPMultiplier/* = 0.0f*/)
 {
-    ASSERT_INFO("Both spellBonusDmg and SpellAPMultiplier must be supplied for spells (or left to default for white dmg");
-    TEST_ASSERT(bool(spellBonusDmg) && bool(SpellAPMultiplier));
+    if (spellBonusDmg || SpellAPMultiplier)
+    {
+        INTERNAL_ASSERT_INFO("Both spellBonusDmg and SpellAPMultiplier must be supplied for spells (or left to default for white dmg");
+        INTERNAL_TEST_ASSERT(bool(spellBonusDmg) && bool(SpellAPMultiplier));
+    }
 
     Item* item = attacker->GetWeaponForAttack(attackType);
-    ASSERT_INFO("Failed to get weapon for attack type %u", uint32(attackType));
-    TEST_ASSERT(item != nullptr);
+    INTERNAL_ASSERT_INFO("Failed to get weapon for attack type %u", uint32(attackType));
+    INTERNAL_TEST_ASSERT(item != nullptr);
     uint32 const weaponMinDmg = item->GetTemplate()->Damage->DamageMin;
     uint32 const weaponMaxDmg = item->GetTemplate()->Damage->DamageMax;
     float const weaponSpeed = SpellAPMultiplier ? SpellAPMultiplier : item->GetTemplate()->Delay / 1000.0f;

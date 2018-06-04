@@ -14,6 +14,8 @@ std::map<uint8, std::vector<uint8>> RandomPlayerbotFactory::availableRaces;
 
 std::map<uint8, std::vector<uint8>> const& RandomPlayerbotFactory::GetAvailableRacesForClasses()
 {
+    static std::mutex initMutex;
+    initMutex.lock();
     if (availableRaces.empty())
     {
         availableRaces[CLASS_WARRIOR].push_back(RACE_HUMAN);
@@ -76,6 +78,7 @@ std::map<uint8, std::vector<uint8>> const& RandomPlayerbotFactory::GetAvailableR
         availableRaces[CLASS_DRUID].push_back(RACE_NIGHTELF);
         availableRaces[CLASS_DRUID].push_back(RACE_TAUREN);
     }
+    initMutex.unlock();
     return availableRaces;
 }
 

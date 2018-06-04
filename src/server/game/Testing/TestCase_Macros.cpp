@@ -336,15 +336,21 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
 
     _UpdateUnitEvents(caster); //remove if spell system allow to cast channel instantly
     Wait(baseDurationTime); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
-    caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    Spell* currentSpell = caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
     INTERNAL_ASSERT_INFO("caster is still casting channel after baseDurationTime %u", baseDurationTime);
-    INTERNAL_TEST_ASSERT(caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL) == nullptr);
+    INTERNAL_TEST_ASSERT(currentSpell == nullptr);
 
     uint32 totalChannelDmg = 0; 
     if (healing)
         totalChannelDmg = GetChannelHealingTo(caster, target, testedSpell, expectedTickCount, {});
     else
         totalChannelDmg = GetChannelDamageTo(caster, target, testedSpell, expectedTickCount, {});
+
+    INTERNAL_ASSERT_INFO("Target still has aura %u", testedSpell);
+    INTERNAL_TEST_ASSERT(!target->HasAura(testedSpell));
+
+    INTERNAL_ASSERT_INFO("Caster still has aura %u", testedSpell);
+    INTERNAL_TEST_ASSERT(!caster->HasAura(spellID));
 
     uint32 actualTickAmount = totalChannelDmg / expectedTickCount;
     INTERNAL_ASSERT_INFO("Channel damage: resultTickAmount: %i, expectedTickAmount: %i", actualTickAmount, expectedTickAmount);
