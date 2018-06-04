@@ -576,42 +576,6 @@ public:
     }
 };
 
-// 33206
-class spell_pri_pain_suppression : public SpellScriptLoader
-{
-public:
-    spell_pri_pain_suppression() : SpellScriptLoader("spell_pri_pain_suppression") { }
-
-    //pain supp: Instantly reduces a friendly target's threat by 5%, reduces all damage taken by 40% and increases resistance to Dispel mechanics by 65% for 8sec.
-    //5% is not handled by spell effects, handled here
-    class spell_pri_pain_suppression_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_pri_pain_suppression_SpellScript);
-
-        void OnHitTarget(SpellEffIndex effIndex, int32& damage)
-        {
-            if (Unit* target = GetHitUnit())
-            {
-                for (auto combatRefs : target->GetCombatManager().GetPvECombatRefs())
-                {
-                    if (Unit* other = combatRefs.second->GetOther(target))
-                        other->GetThreatManager().ModifyThreatByPercent(target, -5);
-                }
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_pri_pain_suppression_SpellScript::OnHitTarget, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_pri_pain_suppression_SpellScript();
-    }
-};
-
 /* Mass dispel
 32375 - Base spell (dispel allies)
 32592 - Trigger 1 (dispel ennemies)
@@ -665,7 +629,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_t3_4p_bonus();
     new spell_pri_mana_leech();
     new spell_pri_blessed_recovery();
-    new spell_pri_pain_suppression();
     new spell_pri_mass_dispel<TARGET_UNIT_DEST_AREA_ALLY>("spell_pri_mass_dispel");
     new spell_pri_mass_dispel<TARGET_UNIT_DEST_AREA_ENEMY>("spell_pri_mass_dispel_enemies");
 }
