@@ -3289,7 +3289,7 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
 
     // create and add update event for this spell
     _spellEvent = new SpellEvent(this);
-    m_caster->m_Events.AddEvent(_spellEvent, m_caster->m_Events.CalculateTime(1));
+    m_caster->m_Events.AddEvent(_spellEvent, m_caster->m_Events.CalculateTime(0)); //sun: changed from 1 to 0, no time should have passed
 
     //Another spell in progress ?
     if(m_caster->ToUnit() && m_caster->ToUnit()->IsNonMeleeSpellCast(false, true, true, m_spellInfo->Id == 75) && m_cast_count && !(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS))

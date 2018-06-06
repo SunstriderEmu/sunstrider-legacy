@@ -337,7 +337,6 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
     auto AI = _GetCasterAI(caster);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
-
     uint32 baseDurationTime = spellInfo->GetDuration();
     SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
 

@@ -1038,26 +1038,20 @@ void TestCase::_StartUnitChannels(Unit* unit)
     //this function actually exists just to have this comment not repeated all over the place:
 
     //Currently, channeled spells start at the next update so we need to wait for it to be applied.
+    //(If this isn't true anymore, this function and all its calls can be deleted)
     //We can't loop on spells thousands of times if we need to wait each time...
     //So we force a SpellEvent update to help with it
-    //If this isn't true anymore, this function and all its call can be deleted
-    EventList& eventList = unit->m_Events.m_events;
-    for (auto itr : eventList)
-    {
-        if (SpellEvent* spellEvent = dynamic_cast<SpellEvent*>(itr.second))
-            if (spellEvent->m_Spell->getState() == SPELL_STATE_PREPARING && spellEvent->m_Spell->GetSpellInfo()->IsChanneled())
-                spellEvent->Execute(unit->m_Events.m_time, 0);
-    }
+    unit->m_Events.Update(0);
 }
 
 void TestCase::HandleSpellsCleanup(Unit* caster)
 {
-    //Spell deletions are done in SpellInfo
+    //Spell deletions are done in SpellEvent
     EventList& eventList = caster->m_Events.m_events;
     for (auto itr = eventList.begin(); itr != eventList.end();)
     {
         if (SpellEvent* spellEvent = dynamic_cast<SpellEvent*>(itr->second))
-            if (spellEvent->m_Spell->getState() == SPELL_STATE_FINISHED)
+            if (spellEvent->m_Spell->getState() == SPELL_STATE_FINISHED && spellEvent->m_Spell->IsDeletable())
             {
                 //what we're doing here is mimicing the EventProcessor::Update + SpellEvent::Execute behavior in this case, that is -> just delete the event.
                 itr = eventList.erase(itr);
