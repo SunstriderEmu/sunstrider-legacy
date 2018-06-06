@@ -122,7 +122,9 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
             callback.get()(caster, target);
 
         _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
+
         HandleThreadPause();
+        HandleSpellsCleanup(caster);
     }
 
     uint32 dealtMin;
@@ -166,7 +168,10 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
         if (attackType != RANGED_ATTACK)
             caster->AttackerStateUpdate(target, attackType);
         else
+        {
             caster->CastSpell(target, 75, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS)); //shoot
+            HandleSpellsCleanup(caster);
+        }
 
         HandleThreadPause();
     }
@@ -342,7 +347,7 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
     EnableCriticals(caster, false);
     _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_TARGET_AURASTATE));
 
-    _UpdateUnitEvents(caster); //remove if spell system allow to cast channel instantly
+    _StartUnitChannels(caster); //remove if spell system allow to cast channel instantly
     Wait(baseDurationTime); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
     Spell* currentSpell = caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
     INTERNAL_ASSERT_INFO("caster is still casting channel after baseDurationTime %u", baseDurationTime);
@@ -390,9 +395,10 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
         victim->SetFullHealth();
         _TestCast(caster, victim, spellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
         if (spellInfo->IsChanneled())
-            _UpdateUnitEvents(caster);
+            _StartUnitChannels(caster);
 
         HandleThreadPause();
+        HandleSpellsCleanup(caster);
     }
 
     _TestSpellOutcomePercentage(caster, victim, spellID, missInfo, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
@@ -479,7 +485,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     auto launchCallback = [&](Unit* caster, Unit* victim) {
         _ForceCast(caster, victim, spellID, missInfo, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_PROC_AS_NON_TRIGGERED | TRIGGERED_IGNORE_LOS));
         if (spellInfo->IsChanneled())
-            _UpdateUnitEvents(caster);
+            _StartUnitChannels(caster);
     };
     auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(caster, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
@@ -550,6 +556,7 @@ std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProc
         victim->ClearDiminishings();
 
         HandleThreadPause();
+        HandleSpellsCleanup(caster);
     }
 
     float actualSuccessPercent = 100 * (procCount / float(sampleSize));
@@ -654,7 +661,7 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
 
         _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
         if (spellInfo->IsChanneled())
-            _UpdateUnitEvents(caster);
+            _StartUnitChannels(caster);
         INTERNAL_ASSERT_INFO("TestCase::_TestSpellDispelResist target has not aura of %u after cast", spellID);
         INTERNAL_TEST_ASSERT(target->HasAura(spellID));
         _ForceCast(dispeler, target, dispelSpellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
@@ -664,6 +671,8 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
         target->RemoveAurasDueToSpell(spellID);
 
         HandleThreadPause();
+        HandleSpellsCleanup(caster);
+        HandleSpellsCleanup(dispeler);
     }
 
     float actualResistPercent = 100.0f * (resistedCount / float(sampleSize));
@@ -899,7 +908,9 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
 
         victim->SetFullHealth();
         _ForceCast(caster, victim, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
+
         HandleThreadPause();
+        HandleSpellsCleanup(caster);
     }
 
     _TestSpellCritPercentage(caster, victim, spellID, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);

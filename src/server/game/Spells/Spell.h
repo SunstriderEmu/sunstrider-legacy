@@ -855,6 +855,8 @@ typedef void(Spell::*SpellEffectHandlerFn)(uint32 i);
 //update spell. Reschedule itself if necessary
 class TC_GAME_API SpellEvent : public BasicEvent
 {
+    friend class TestCase; //allow testCase to affect the events list
+
     public:
         SpellEvent(Spell* spell);
         ~SpellEvent() override;

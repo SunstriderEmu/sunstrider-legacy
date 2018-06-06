@@ -324,6 +324,8 @@ protected:
     void WaitNextUpdate();
     //This will make the thread pause itself and resume in the next udpate if it has been running too long
     void HandleThreadPause();
+    //Free finished spells from memory. This is usually done at next map update but we may go a long time without it in tests.
+    void HandleSpellsCleanup(Unit* caster);
     //Main check function, used by TEST_ASSERT macro. Will stop execution on failure
     void Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition);
 
@@ -408,7 +410,7 @@ protected:
     //Get SpellInfo, fails test if not found
     SpellInfo const* _GetSpellInfo(uint32 spellID);
     //See comments inside
-    void _UpdateUnitEvents(Unit* unit);
+    void _StartUnitChannels(Unit* unit);
     //Set unit hp and max hp to high values. lowHealth = hp to 1 and high max hp. Will also call _SaveUnitState
     void _MaxHealth(Unit* unit, bool lowHealth = false);
     //Save health, max health, power, max power for later usage

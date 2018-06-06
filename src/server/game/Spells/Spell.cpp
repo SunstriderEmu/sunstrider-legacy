@@ -5356,6 +5356,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
             Aura* newAura = Aura::TryCreate(createInfo);
             if (newAura && !target->IsHighestExclusiveAura(newAura))
                 return SPELL_FAILED_AURA_BOUNCED;
+            delete newAura;
         }
 
         if (target != m_caster)

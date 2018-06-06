@@ -70,6 +70,8 @@ typedef std::multimap<uint64, BasicEvent*> EventList;
 
 class TC_COMMON_API EventProcessor
 {
+    friend class TestCase; //allow testCase to affect the events list
+
     public:
         EventProcessor();
         ~EventProcessor();

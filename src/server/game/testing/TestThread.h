@@ -85,7 +85,8 @@ private:
     // Sleep caller execution for given ms (MUST BE called from the TestCase only)
     void Wait(uint32 ms);
     //This will make the thread pause itself and resume in the next udpate if it has been running too long (MUST BE called from the TestCase only)
-    void HandleThreadPause();
+    //return true if thread was paused
+    bool HandleThreadPause();
 };
 
 #endif // TESTTHREAD_H

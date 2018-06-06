@@ -172,13 +172,13 @@ void TestThread::Wait(uint32 ms)
         _state = STATE_RUNNING;
 }
 
-void TestThread::HandleThreadPause()
+bool TestThread::HandleThreadPause()
 {
     if (_state == STATE_CANCELING)  //Test was canceled. Message already set, just throw to exit test
         throw TestException();
 
     if (_state != STATE_RUNNING)
-        return;
+        return false;
 
     //pause if we used too much time in this update
     milliseconds const nowMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
@@ -191,7 +191,9 @@ void TestThread::HandleThreadPause()
         //Now pause exec
         std::unique_lock<std::mutex> lk(_testCVMutex);
         _testCV.wait(lk, [this] { return _state != STATE_PAUSED; });
+        return true;
     }
+    return false;
 }
 
 void TestThread::SetJoiner(ObjectGuid playerJoiner)
