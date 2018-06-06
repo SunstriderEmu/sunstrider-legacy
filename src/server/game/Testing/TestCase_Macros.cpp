@@ -272,6 +272,7 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
 
     _MaxHealth(spellTarget, heal);
     uint32 const spellTargetStartingHealth = spellTarget->GetHealth();
+    uint32 const casterStartingHealth = caster->GetHealth();
 
     spellTarget->RemoveArenaAuras(false); //may help with already present hot and dots breaking the results
 
@@ -303,6 +304,13 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
         totalDamage = spellTargetStartingHealth - spellTarget->GetHealth();
         INTERNAL_ASSERT_INFO("No damage or heal done to target");
         INTERNAL_TEST_ASSERT(totalDamage != 0);
+    }
+    
+    if (!heal) //also add health leech if any
+    {
+        int32 const diff = caster->GetHealth() - casterStartingHealth;
+        if (diff > 0)
+            totalDamage += diff * 0.5f;
     }
 
     float const actualThreatDone = target->GetThreatManager().GetThreat(caster) - startThreat;

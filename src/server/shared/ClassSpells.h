@@ -3047,7 +3047,7 @@ namespace ClassSpells
             TOUCH_OF_WEAKNESS_RNK_5 = 19265,
             TOUCH_OF_WEAKNESS_RNK_6 = 19266,
             TOUCH_OF_WEAKNESS_RNK_7 = 25461,
-            TOUCH_OF_WEAKNESS_RNK_7_TRIGGER = 28598,
+            TOUCH_OF_WEAKNESS_RNK_7_TRIGGER = 28598, //cant cast directly, need triggered source aura to work
             TOUCH_OF_WEAKNESS_RNK_7_TRIGGER_AURA = 25460,
             VAMPIRIC_EMBRACE_RNK_1 = 15286,
             VAMPIRIC_TOUCH_RNK_1 = 34914,
