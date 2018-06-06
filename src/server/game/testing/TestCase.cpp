@@ -963,7 +963,7 @@ void TestCase::EnableCriticals(Unit* caster, bool crit)
 
 void TestCase::SaveCriticals(Unit* caster)
 {
-    SavedCriticalValues values = _savedCriticalValues[caster];
+    SavedCriticalValues& values = _savedCriticalValues[caster];
 
     for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
         values.spellCrit[i] = caster->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i);
