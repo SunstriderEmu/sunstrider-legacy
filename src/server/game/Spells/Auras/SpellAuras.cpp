@@ -58,8 +58,8 @@ void AuraApplication::_UpdateSlot()
     // Try find slot for aura
     uint8 slot = MAX_AURAS;
     // Lookup for auras already applied from spell
-    AuraApplication* foundAura = nullptr;
-    if (foundAura = GetTarget()->GetAuraApplication(GetBase()->GetId(), GetBase()->GetCasterGUID(), GetBase()->GetCastItemGUID()))
+    AuraApplication* foundAura = GetTarget()->GetAuraApplication(GetBase()->GetId(), GetBase()->GetCasterGUID(), GetBase()->GetCastItemGUID());
+    if (foundAura)
     {
 #ifndef LICH_KING //we have to change slot if positivity has changed
         bool inPositiveSlot = foundAura->GetSlot() < GetFirstNegativeSlot(GetTarget());

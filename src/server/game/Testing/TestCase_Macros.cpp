@@ -26,7 +26,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers pow
 {
     SpellInfo const* spellInfo = _GetSpellInfo(castSpellID);
 
-    INTERNAL_ASSERT_INFO("Spell %u has wrong power type %u (instead of %u)", spellInfo->PowerType, uint32(powerType));
+    INTERNAL_ASSERT_INFO("Spell %u has wrong power type %u (instead of %u)", castSpellID, uint32(spellInfo->PowerType), uint32(powerType));
     INTERNAL_TEST_ASSERT(spellInfo->PowerType == powerType);
 
     Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE);

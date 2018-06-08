@@ -238,8 +238,6 @@ Item::Item()
 
 Item::~Item()
 {
-    m_itemProto = m_itemProto;
-    return;
 }
 
 bool Item::Create(ObjectGuid::LowType guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto)
