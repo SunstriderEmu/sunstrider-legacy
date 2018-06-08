@@ -4,29 +4,17 @@
 class ConvectionTest : public TestCaseScript
 {
 public:
-
 	ConvectionTest() : TestCaseScript("talents shaman convection") { }
 
+    //Reduces the mana cost of your Shock, Lightning Bolt and Chain Lightning spells by 10 % .
 	class ConvectionTestImpt : public TestCase
 	{
 	public:
 		ConvectionTestImpt() : TestCase(STATUS_PASSING) { }
 
-		void TestMana(TestPlayer* player, Unit* victim, uint32 spellId, uint32 expectedMana)
-		{
-			player->SetPower(POWER_MANA, expectedMana);
-			uint32 res = player->CastSpell(victim, spellId);
-			ASSERT_INFO("Shaman couldnt cast %u, result: %s", spellId, StringifySpellCastResult(res).c_str());
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			ASSERT_INFO("Shaman had some remaining mana after %u", spellId);
-			TEST_ASSERT(player->GetPower(POWER_MANA) == 0);
-			Wait(2000); // GCD
-		}
-
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
-			Creature* creature = SpawnCreature();
 
 			uint32 const lightningBoltMana = 300;
 			uint32 const chainLightningMana = 760;
@@ -34,11 +22,12 @@ public:
 			uint32 const flameShockMana = 500;
 			uint32 const frostShockMana = 525;
 
-			TestMana(player, creature, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMana);
-			TestMana(player, creature, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMana);
-			TestMana(player, creature, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShocMana);
-			TestMana(player, creature, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMana);
-			TestMana(player, creature, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMana);
+            TEST_POWER_COST(player, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, POWER_MANA, lightningBoltMana);
+			TEST_POWER_COST(player, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, POWER_MANA, lightningBoltMana);
+			TEST_POWER_COST(player, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, POWER_MANA, chainLightningMana);
+			TEST_POWER_COST(player, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, POWER_MANA, earthShocMana);
+			TEST_POWER_COST(player, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, POWER_MANA, flameShockMana);
+			TEST_POWER_COST(player, ClassSpells::Shaman::FROST_SHOCK_RNK_5, POWER_MANA, frostShockMana);
 		}
 	};
 
@@ -51,13 +40,13 @@ public:
 class ConcussionTest : public TestCaseScript
 {
 public:
-
 	ConcussionTest() : TestCaseScript("talents shaman concussion") { }
 
+    //Increases the damage done by your Lightning Bolt, Chain Lightning and Shock spells by 5%.
 	class ConcussionTestImpt : public TestCase
 	{
 	public:
-		ConcussionTestImpt() : TestCase(STATUS_PASSING) { }
+		ConcussionTestImpt() : TestCase(STATUS_WIP) { } //TODO: replace magic numbers
 
 		void Test() override
 		{
@@ -130,24 +119,30 @@ class EnhancingTotemsTest : public TestCaseScript
 public:
 	EnhancingTotemsTest() : TestCaseScript("talents shaman enhancing_totems") { }
 
+    //Increases the effect of your Strength of Earth and Grace of Air Totems by 15%.
 	class EnhancingTotemsTestImpt : public TestCase
 	{
 	public:
-		EnhancingTotemsTestImpt() : TestCase(STATUS_PASSING) { }
+		EnhancingTotemsTestImpt() : TestCase(STATUS_WIP) { }
 
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 
-			uint32 const startAgi = player->GetStat(STAT_AGILITY);
-			uint32 const startStr = player->GetStat(STAT_STRENGTH);
+            float const startAgi = player->GetStat(STAT_AGILITY);
+            float const startStr = player->GetStat(STAT_STRENGTH);
 
 			LearnTalent(player, Talents::Shaman::ENHANCING_TOTEMS_RNK_2);
 
-			uint32 const expectedAgi = startAgi + 77 * 1.15f;
-			uint32 const expectedStr = startAgi + 86 * 1.15f;
+            //TODO: replace magic numbers
+			float const expectedAgi = startAgi + std::floor(77 * 1.15f);
+            float const expectedStr = startAgi + std::floor(86 * 1.15f);
 
+            //TODO: summon totems
+
+            ASSERT_INFO("actual agi: %f - expected %f", player->GetStat(STAT_AGILITY), expectedAgi);
 			TEST_ASSERT(Between<float>(player->GetStat(STAT_AGILITY), expectedAgi - 1, expectedAgi + 1));
+            ASSERT_INFO("actual str: %f - expected %f", player->GetStat(STAT_STRENGTH), expectedStr);
 			TEST_ASSERT(Between<float>(player->GetStat(STAT_STRENGTH), expectedStr - 1, expectedStr + 1));
 		}
 	};
@@ -217,7 +212,7 @@ public:
 	class WeaponMasteryTestImpt : public TestCase
 	{
 	public:
-		WeaponMasteryTestImpt() : TestCase(STATUS_PASSING) { }
+		WeaponMasteryTestImpt() : TestCase(STATUS_WIP) { }
 
 		void Test() override
 		{
@@ -255,7 +250,7 @@ public:
 	class ImprovedHealingWaveTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealingWaveTestImpt() : TestCase(STATUS_PASSING) { }
+		ImprovedHealingWaveTestImpt() : TestCase(STATUS_WIP) { }
 
 		void Test() override
 		{
@@ -284,7 +279,7 @@ public:
 	class TidalFocusTestImpt : public TestCase
 	{
 	public:
-		TidalFocusTestImpt() : TestCase(STATUS_PASSING) { }
+		TidalFocusTestImpt() : TestCase(STATUS_WIP) { }
 
 		void Test() override
 		{
