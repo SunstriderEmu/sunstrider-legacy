@@ -895,7 +895,7 @@ public:
             //Test threat
             uint32 cowerPoints = 1170;
             float const threat = creature->GetThreatManager().GetThreat(druid);
-            ASSERT_INFO("Druids needs to have higher threat than %u to test spell", threat);
+            ASSERT_INFO("Druids needs to have higher threat than %f to test spell", threat);
             TEST_ASSERT(threat > cowerPoints);
             float const expectedThreat = threat - cowerPoints;
             TEST_CAST(druid, creature, ClassSpells::Druid::COWER_RNK_5);
@@ -2060,12 +2060,12 @@ public:
 
             const float expectedDruidThreat = 7 * expectedLifebloomTick / 0.25f;
             const float expectedWarriorThreat = dummy->GetMaxHealth() - dummy->GetHealth();
-            ASSERT_INFO("Druid threat: %f, expected: %u", dummy->GetThreatManager().GetThreat(druid), expectedDruidThreat);
+            ASSERT_INFO("Druid threat: %f, expected: %f", dummy->GetThreatManager().GetThreat(druid), expectedDruidThreat);
             const float druidThreat = dummy->GetThreatManager().GetThreat(druid);
             TEST_ASSERT(Between<float>(druidThreat, druidThreat - 0.1f, druidThreat + 0.1f));
 
             const float warriorthreat = dummy->GetThreatManager().GetThreat(warrior);
-            ASSERT_INFO("Warrior threat: %f, expected: %u", dummy->GetThreatManager().GetThreat(warrior), expectedWarriorThreat);
+            ASSERT_INFO("Warrior threat: %f, expected: %f", dummy->GetThreatManager().GetThreat(warrior), expectedWarriorThreat);
             TEST_ASSERT(Between<float>(warriorthreat, warriorthreat - 0.1f, warriorthreat + 0.1f));
         }
     };

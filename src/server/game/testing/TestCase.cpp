@@ -626,7 +626,7 @@ std::pair<uint32 /*sampleSize*/, float /*absoluteTolerance*/> TestCase::_GetPerc
     //enforce a minimum chance... else sample size will really go through the roof
     INTERNAL_ASSERT_INFO("Expected result %f too low", expectedResult);
     INTERNAL_TEST_ASSERT(expectedResult >= minExpectedResult);
-    INTERNAL_ASSERT_INFO("Expected result %f too high %f", expectedResult);
+    INTERNAL_ASSERT_INFO("Expected result %f too high", expectedResult);
     INTERNAL_TEST_ASSERT(expectedResult <= maxExpectedResult);
 
     //auto tolerance deduction:

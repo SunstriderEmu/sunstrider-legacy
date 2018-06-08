@@ -486,7 +486,7 @@ public:
 
             LearnTalent(priest, Talents::Priest::IMPROVED_INNER_FIRE_RNK_3);
             TEST_CAST(priest, priest, ClassSpells::Priest::INNER_FIRE_RNK_7);
-            ASSERT_INFO("Priest should have %f armor but has %f.", expectedArmor, priest->GetArmor());
+            ASSERT_INFO("Priest should have %u armor but has %u", expectedArmor, priest->GetArmor());
             TEST_ASSERT(priest->GetArmor() == expectedArmor);
         }
     };

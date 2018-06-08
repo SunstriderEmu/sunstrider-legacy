@@ -18,7 +18,7 @@
 
 #include "Mail.h"
 #include "AuctionHouseMgr.h"
-#include "BattlegroundMgr.h"
+#include "BattleGroundMgr.h"
 #include "CharacterCache.h"
 #include "DatabaseEnv.h"
 #include "GameTime.h"

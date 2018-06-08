@@ -6,13 +6,13 @@ target_compile_definitions(trinity-compile-option-interface
 if(DO_WARN)
   target_compile_options(trinity-warning-interface
     INTERFACE
-	  -W
-	  -Wall
-	  -Wextra
-	  -Winit-self
-	  -Wfatal-errors
-	  -Wno-mismatched-tags
-	  -Woverloaded-virtual)
+        -W
+        -Wall
+        -Wextra
+        -Winit-self
+        -Wfatal-errors
+        -Wno-mismatched-tags
+        -Woverloaded-virtual)
  
   message(STATUS "Clang: All warnings enabled")
 endif()
@@ -20,7 +20,7 @@ endif()
 if(DO_DEBUG)
   target_compile_options(trinity-compile-option-interface
     INTERFACE
-	  -g3)
+        -g3)
 	  
   message(STATUS "Clang: Debug-flags set (-g3)")
 
@@ -46,7 +46,7 @@ if(DO_DEBUG)
     message(STATUS "/!\\ Clang: MemorySanitizer enabled. Except SLOWDOWNS on runtime.")
   endif()
   if(CLANG_THREAD_SAFETY_ANALYSIS)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wthread-safety")	
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wthread-safety")	
     message(STATUS "Clang: Thread safety analysis enabled")
   endif()
 endif()
@@ -58,8 +58,8 @@ target_compile_options(trinity-compile-option-interface
   INTERFACE
     -std=c++17
     -Wno-narrowing
-	-Wno-deprecated-register
-	-Wno-switch)
+    -Wno-deprecated-register
+    -Wno-switch)
 	
 target_compile_definitions(trinity-compile-option-interface
   INTERFACE
@@ -69,12 +69,12 @@ if (BUILD_SHARED_LIBS)
   # -fPIC is needed to allow static linking in shared libs.
   target_compile_options(trinity-compile-option-interface
     INTERFACE
-	  -fPIC)
+        -fPIC)
 
    # -fvisibility=hidden sets the default visibility to hidden to prevent exporting of all symbols.
    target_compile_options(trinity-hidden-symbols-interface
      INTERFACE
-        -fvisibility=hidden)
+         -fvisibility=hidden)
 
   # --no-undefined to throw errors when there are undefined symbols
   # (caused through missing TRINITY_*_API macros).
@@ -94,5 +94,5 @@ if(USE_GPERFTOOLS)
 ##hooks with tcmalloc (using gperftools/malloc_hook.h).  The risk is
 #lowest for folks who use tcmalloc_minimal (or, of course, who pass in
 #the above flags :-) ).
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
 endif()
