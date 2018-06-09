@@ -775,13 +775,12 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
         }
     }
 
-    if (GetClientBuild() == BUILD_335)
-    {
-        data.Initialize(/*SMSG_LEARNED_DANCE_MOVES*/ 0x455, 4 + 4);
-        data << uint32(0);
-        data << uint32(0);
-        SendPacket(&data);
-    }
+#ifdef LICH_KING
+    data.Initialize(SMSG_LEARNED_DANCE_MOVES 0x455, 4 + 4);
+    data << uint32(0);
+    data << uint32(0);
+    SendPacket(&data);
+#endif
 
     if (pCurrChar->HasCorpse())
     {

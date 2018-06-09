@@ -52,6 +52,7 @@ public:
 
             rogue->CastSpell(dummy, ClassSpells::Rogue::BLIND_RNK_1, true);
             Wait(1000);
+            WaitNextUpdate();
             TEST_HAS_AURA(dummy, ClassSpells::Rogue::BLIND_RNK_1);
 
             //make sure the target is empty (else visual is wrong)

@@ -326,6 +326,13 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     cci.Race = race;
     cci.Class = cls;
 
+    { //Handle Player::SetMapAtCreation here
+        //Players may cast spells at creation so they need to be on a map in Create
+        player->Relocate(loc);
+        player->SetMap(_map);
+        player->UpdatePositionData();
+    }
+
     if (!player->Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), &cci))
     {
         delete session;
@@ -358,24 +365,7 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     player->LearnAllClassProficiencies();
     player->UpdateSkillsToMaxSkillsForLevel();
 
-    //make sure player is alreary linked to this map before calling _HandlePlayerLogin, else a lot of stuff will be loaded around default player location
-    player->ResetMap();
-    player->SetMap(_map); 
     session->_HandlePlayerLogin((Player*)player, holder);
-
-    player->SetTeleportingToTest(_testMapInstanceId);
-
-    //handle bot position
-    bool teleportOK = player->TeleportTo(WorldLocation(_location.GetMapId(), loc), TELE_TO_GM_MODE);
-    if (!teleportOK)
-    {
-        delete session;
-        delete player;
-        delete ai;
-        delete holder; 
-        return nullptr;
-    }
-    ai->HandleTeleportAck(); //immediately handle teleport packet
 
     sCharacterCache->AddCharacterCacheEntry(player->GetGUID().GetCounter(), testAccountId, player->GetName(), cci.Gender, cci.Race, cci.Class, level, 0);
 
