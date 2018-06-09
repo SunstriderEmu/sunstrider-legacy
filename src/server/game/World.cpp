@@ -1735,7 +1735,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Returning old mails..." );
     sObjectMgr->ReturnOrDeleteOldMails(false);
 
-    TC_LOG_INFO("server.loading","*** Faction change system ***");
     TC_LOG_INFO("server.loading","Loading faction change items...");
     sObjectMgr->LoadFactionChangeItems();
     TC_LOG_INFO("server.loading","Loading faction change spells...");
