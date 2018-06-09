@@ -35,7 +35,38 @@ public:
     }
 };
 
+class BlindTest : public TestCaseScript
+{
+public:
+    BlindTest() : TestCaseScript("spells rogue blind") { }
+
+    class BlindTestImpt : public TestCase
+    {
+    public:
+        BlindTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
+
+        void Test() override
+        {
+            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+            Creature* dummy = SpawnCreature();
+
+            rogue->CastSpell(dummy, ClassSpells::Rogue::BLIND_RNK_1, true);
+            Wait(1000);
+            TEST_HAS_AURA(dummy, ClassSpells::Rogue::BLIND_RNK_1);
+
+            //make sure the target is empty (else visual is wrong)
+            TEST_ASSERT(dummy->GetTarget() == ObjectGuid::Empty);
+        }
+    };
+
+    std::shared_ptr<TestCase> GetTest() const override
+    {
+        return std::make_shared<BlindTestImpt>();
+    }
+};
+
 void AddSC_test_spells_rogue()
 {
     new SinisterStrikeTest();
+    new BlindTest();
 }
