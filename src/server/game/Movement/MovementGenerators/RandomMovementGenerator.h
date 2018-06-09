@@ -8,14 +8,14 @@ template<class T>
 class RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovementGenerator<T> >
 {
     public:
-        RandomMovementGenerator(float spawn_dist = 0.0f) : i_nextMoveTime(0), wander_distance(spawn_dist) { }
+        RandomMovementGenerator(float spawn_dist = 0.0f);
 
-        void _setRandomLocation(T*);
+        void SetRandomLocation(T*);
         bool DoInitialize(T*);
-        void DoFinalize(T*);
+        void DoFinalize(T*, bool, bool);
         void DoReset(T*);
+        void DoDeactivate(T*);
         bool DoUpdate(T*, const uint32);
-        bool GetResetPos(T*, float& x, float& y, float& z);
         MovementGeneratorType GetMovementGeneratorType() const override;
     private:
         TimeTrackerSmall i_nextMoveTime;

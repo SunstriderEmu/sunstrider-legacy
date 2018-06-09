@@ -1241,20 +1241,20 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
 
     PSendSysMessage(LANG_MOVEGENS_LIST,(unit->GetTypeId()==TYPEID_PLAYER ? "Player" : "Creature" ),unit->GetGUID().GetCounter());
 
+    if (unit->GetMotionMaster()->Empty())
+    {
+        SendSysMessage("Empty");
+        return true;
+    }
+
     MotionMaster* motionMaster = unit->GetMotionMaster();
     float x, y, z;
     motionMaster->GetDestination(x, y, z);
 
-    for (uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
+    std::vector<MovementGeneratorInformation> list = unit->GetMotionMaster()->GetMovementGeneratorsInformation();
+    for (MovementGeneratorInformation info : list)
     {
-        MovementGenerator* movementGenerator = motionMaster->GetMotionSlot(MovementSlot(i));
-        if (!movementGenerator)
-        {
-            SendSysMessage("Empty");
-            continue;
-        }
-
-        switch (movementGenerator->GetMovementGeneratorType())
+        switch (info.Type)
         {
             case IDLE_MOTION_TYPE:
                 SendSysMessage(LANG_MOVEGENS_IDLE);
@@ -1273,24 +1273,22 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
                 break;
             case CHASE_MOTION_TYPE:
             {
-                Unit* target = static_cast<ChaseMovementGenerator const*>(movementGenerator)->GetTarget();
-                if (!target)
+                if (info.TargetGUID.IsEmpty())
                     SendSysMessage(LANG_MOVEGENS_CHASE_NULL);
-                else if (target->GetTypeId() == TYPEID_PLAYER)
-                    PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER, target->GetName().c_str(), target->GetGUID().GetCounter());
+                else if (info.TargetGUID.IsPlayer())
+                    PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER, info.TargetName.c_str(), info.TargetGUID.GetCounter());
                 else
-                    PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE, target->GetName().c_str(), target->GetGUID().GetCounter());
+                    PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE, info.TargetName.c_str(), info.TargetGUID.GetCounter());
                 break;
             }
             case FOLLOW_MOTION_TYPE:
             {
-                Unit* target = static_cast<FollowMovementGenerator const*>(movementGenerator)->GetTarget();
-                if (!target)
+                if(info.TargetGUID.IsEmpty())
                     SendSysMessage(LANG_MOVEGENS_FOLLOW_NULL);
-                else if (target->GetTypeId() == TYPEID_PLAYER)
-                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER, target->GetName().c_str(), target->GetGUID().GetCounter());
+                else if (info.TargetGUID.IsPlayer())
+                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER, info.TargetName.c_str(), info.TargetGUID.GetCounter());
                 else
-                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE, target->GetName().c_str(), target->GetGUID().GetCounter());
+                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE, info.TargetName.c_str(), info.TargetGUID.GetCounter());
                 break;
             }
             case HOME_MOTION_TYPE:
@@ -1317,7 +1315,7 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
                 SendSysMessage(LANG_MOVEGENS_EFFECT);
                 break;
             default:
-                PSendSysMessage(LANG_MOVEGENS_UNKNOWN, movementGenerator->GetMovementGeneratorType());
+                PSendSysMessage(LANG_MOVEGENS_UNKNOWN, info.Type);
                 break;
         }
     }

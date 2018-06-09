@@ -511,7 +511,7 @@ void Unit::Update(uint32 p_time)
     }
 
     UpdateSplineMovement(p_time);
-    i_motionMaster->UpdateMotion(p_time);
+    i_motionMaster->Update(p_time);
 }
 
 bool Unit::HaveOffhandWeapon() const
@@ -527,7 +527,7 @@ void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed, bool gen
     Movement::MoveSplineInit init(this);
     init.MoveTo(x, y, z, generatePath, forceDestination);
     init.SetVelocity(speed);
-    GetMotionMaster()->LaunchMoveSpline(std::move(init), 0, MOTION_SLOT_ACTIVE, POINT_MOTION_TYPE);
+    GetMotionMaster()->LaunchMoveSpline(std::move(init), 0, MOTION_PRIORITY_NORMAL, POINT_MOTION_TYPE);
 }
 
 
@@ -2296,7 +2296,12 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
     if (attType != BASE_ATTACK && attType != OFF_ATTACK)
         return;                                             // ignore ranged case
 
-    if (GetTypeId() == TYPEID_UNIT && !HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED))
+    //sun: could we reduce this SetFacingToObject spam? One move packet at each attacker state update
+    if (GetTypeId() == TYPEID_UNIT && !HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED) 
+#ifdef LICH_KING
+        && !HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISABLE_TURN)
+#endif
+        )
         SetFacingToObject(victim, false); // update client side facing to face the target (prevents visual glitches when casting untargeted spells)
     
     // melee attack spell cast at main hand attack only - no normal melee dmg dealt
@@ -4365,7 +4370,8 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     }
 
     //Set our target
-    SetTarget(victim->GetGUID());        
+    if(!HasUnitState(UNIT_STATE_CONTROLLED)) //sun, no setting target for stun, confused, ...
+        SetTarget(victim->GetGUID());        
 
     m_attacking = victim;
     m_attacking->_addAttacker(this);
@@ -7738,7 +7744,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype)
         {
             if (GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
             {
-                Unit* followed = ASSERT_NOTNULL(dynamic_cast<AbstractFollower*>(GetMotionMaster()->top()))->GetTarget();
+                Unit* followed = ASSERT_NOTNULL(dynamic_cast<AbstractFollower*>(GetMotionMaster()->GetCurrentMovementGenerator()))->GetTarget();
                 if (followed && followed->GetGUID() == GetOwnerGUID() && !followed->IsInCombat())
                 {
                     float ownerSpeed = followed->GetSpeedRate(mtype);
@@ -7903,7 +7909,7 @@ void Unit::SetDeathState(DeathState s)
             //  * Using 'call pet' on dead pets
             //  * Using 'call stabled pet'
             //  * Logging in with dead pets
-            GetMotionMaster()->Clear(false);
+            GetMotionMaster()->Clear();
             GetMotionMaster()->MoveIdle();
         }
         StopMoving();
@@ -8892,7 +8898,7 @@ void Unit::CleanupBeforeRemoveFromMap(bool finalCleanup)
     RemoveAllAuras();
     RemoveAllGameObjects();
     RemoveAllDynObjects();
-    GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
+    GetMotionMaster()->Clear();                    // remove different non-standard movement generators.
 
     if (finalCleanup)
         m_cleanupDone = true;
@@ -9449,10 +9455,10 @@ void Unit::PauseMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/, bool forced/*
     if (IsInvalidMovementSlot(slot))
         return;
 
-    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(MovementSlot(slot)))
+    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetCurrentMovementGenerator(MovementSlot(slot)))
         movementGenerator->Pause(timer);
 
-    if(forced)
+    if (forced && GetMotionMaster()->GetCurrentSlot() == MovementSlot(slot))
         StopMoving();
 }
 
@@ -9461,7 +9467,7 @@ void Unit::ResumeMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/)
     if (IsInvalidMovementSlot(slot))
         return;
 
-    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(MovementSlot(slot)))
+    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetCurrentMovementGenerator(MovementSlot(slot)))
         movementGenerator->Resume(timer);
 }
 
@@ -10349,8 +10355,7 @@ void Unit::SetFeared(bool apply)
 
         if (IsAlive())
         {
-            if (GetMotionMaster()->GetCurrentMovementGeneratorType() == FLEEING_MOTION_TYPE)
-                GetMotionMaster()->MovementExpired();
+            GetMotionMaster()->Remove(FLEEING_MOTION_TYPE);
             if (GetVictim())
                 SetTarget(EnsureVictim()->GetGUID());
         }
@@ -10377,8 +10382,7 @@ void Unit::SetConfused(bool apply)
 
         if (IsAlive())
         {
-            if (GetMotionMaster()->GetCurrentMovementGeneratorType() == CONFUSED_MOTION_TYPE)
-                GetMotionMaster()->MovementExpired();
+            GetMotionMaster()->Remove(CONFUSED_MOTION_TYPE);
             if (GetVictim())
                 SetTarget(EnsureVictim()->GetGUID());
         }
@@ -10480,8 +10484,12 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
 
     if (GetTypeId() == TYPEID_UNIT)
     {
+        PauseMovement(0, 0, false);
+        GetMotionMaster()->Clear(MOTION_PRIORITY_NORMAL);
+
+        StopMoving();
+
         ToCreature()->AI()->OnCharmed(charmer, true);
-        GetMotionMaster()->MoveIdle();
     }
     else if (Player* player = ToPlayer())
     {
@@ -10595,7 +10603,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     RestoreFaction();
 
-    GetMotionMaster()->InitDefault();
+    GetMotionMaster()->InitializeDefault();
     if(Creature* c = ToCreature())
         c->ResetCreatureEmote();
     
@@ -10654,7 +10662,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
                     if (GetCharmInfo())
                         GetCharmInfo()->SetPetNumber(0, true);
                     else
-                        TC_LOG_ERROR("entities.unit", "Aura::HandleModCharm: " UI64FMTD " has a charm aura but no charm info!", GetGUID().GetRawValue());
+                        TC_LOG_ERROR("entities.unit", "Unit::RemoveCharmedBy: " UI64FMTD " has a charm aura but no charm info!", GetGUID().GetRawValue());
                 }
             }
             break;
@@ -10687,8 +10695,6 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
         player->SetClientControl(this, true);
     }
-
-    EngageWithTarget(charmer);
 
     // a guardian should always have charminfo
     if(playerCharmer && this != charmer->GetFirstControlled())
@@ -11534,7 +11540,7 @@ public:
 
     bool operator()(Movement::MoveSpline::UpdateResult result)
     {
-        auto motionType = _unit->GetMotionMaster()->GetCurrentMovementGeneratorType();
+        MovementGeneratorType motionType = _unit->GetMotionMaster()->GetCurrentMovementGeneratorType();
         if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived | Movement::MoveSpline::Result_Arrived))
             && _unit->GetTypeId() == TYPEID_UNIT 
             && (motionType == WAYPOINT_MOTION_TYPE)
@@ -11543,8 +11549,9 @@ public:
             Creature* creature = _unit->ToCreature();
             if (creature)
             {
-                _unit->GetMotionMaster()->_cleanFlag |= MOTIONMMASTER_CLEANFLAG_UPDATE;
-                auto moveGenerator = static_cast<WaypointMovementGenerator<Creature>*>(creature->GetMotionMaster()->top());
+                _unit->GetMotionMaster()->AddFlag(MOTIONMASTER_FLAG_UPDATE);
+                MovementGenerator* baseGenerator = creature->GetMotionMaster()->GetCurrentMovementGenerator();
+                WaypointMovementGenerator<Creature>* moveGenerator = static_cast<WaypointMovementGenerator<Creature>*>(baseGenerator);
                 moveGenerator->SplineFinished(creature, creature->movespline->currentPathIdx());
 
                 //warn formation of leader movement if needed. atm members don't use spline movement and move point to point.
@@ -11557,7 +11564,7 @@ public:
                             creature->GetFormation()->LeaderMoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), !creature->IsWalking());
                     }
                 }
-                _unit->GetMotionMaster()->_cleanFlag &= ~MOTIONMMASTER_CLEANFLAG_UPDATE;
+                _unit->GetMotionMaster()->RemoveFlag(MOTIONMASTER_FLAG_UPDATE);
             }
         }
 
@@ -11711,7 +11718,7 @@ void Unit::SetFacingTo(float ori, bool force)
         init.DisableTransportPathTransformations(); // It makes no sense to target global orientation
     init.SetFacing(ori);
 
-    //GetMotionMaster()->LaunchMoveSpline(std::move(init), EVENT_FACE, MOTION_SLOT_CONTROLLED);
+    //GetMotionMaster()->LaunchMoveSpline(std::move(init), EVENT_FACE, MOTION_PRIORITY_HIGHEST);
     init.Launch();
 }
 
@@ -11725,7 +11732,7 @@ void Unit::SetFacingToObject(WorldObject const* object, bool force)
     Movement::MoveSplineInit init(this);
     init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ(), false);
     init.SetFacing(GetAbsoluteAngle(object));   // when on transport, GetAbsoluteAngle will still return global coordinates (and angle) that needs transforming
-    //GetMotionMaster()->LaunchMoveSpline(std::move(init), EVENT_FACE, MOTION_SLOT_CONTROLLED);
+    //GetMotionMaster()->LaunchMoveSpline(std::move(init), EVENT_FACE, MOTION_PRIORITY_HIGHEST);
     init.Launch();
 }
 

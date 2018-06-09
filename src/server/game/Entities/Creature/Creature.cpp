@@ -2277,7 +2277,8 @@ void Creature::Respawn(bool force /* = false */)
 
             SetDeathState(JUST_RESPAWNED);
 
-            GetMotionMaster()->InitDefault();
+            GetMotionMaster()->InitializeDefault();
+
             //Re-initialize reactstate that could be altered by movementgenerators
             InitializeReactState();
 

@@ -538,7 +538,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
                 // stop taxi flight at port
                 if(_player->IsInFlight())
                 {
-                    _player->GetMotionMaster()->MovementExpired();
+                    _player->GetMotionMaster()->Clear(MOTION_PRIORITY_NORMAL);
                     _player->CleanupAfterTaxiFlight();
                 }
 
@@ -675,7 +675,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
         // stop taxi flight at port
         if (_player->IsInFlight())
         {
-            _player->GetMotionMaster()->MovementExpired();
+            _player->GetMotionMaster()->Clear(MOTION_PRIORITY_NORMAL);
             _player->CleanupAfterTaxiFlight();
         }
 

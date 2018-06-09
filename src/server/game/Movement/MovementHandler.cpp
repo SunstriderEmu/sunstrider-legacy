@@ -10,7 +10,7 @@
 #include "MapManager.h"
 #include "Transport.h"
 #include "BattleGround.h"
-#include "WaypointMovementGenerator.h"
+#include "FlightPathMovementGenerator.h"
 #include "InstanceSaveMgr.h"
 #include "ObjectMgr.h"
 #include "World.h"
@@ -130,28 +130,26 @@ void WorldSession::HandleMoveWorldportAck()
     GetPlayer()->SendInitialPacketsAfterAddToMap();
 
     // flight fast teleport case
-    if(GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
+    if (GetPlayer()->IsInFlight())
     {
         if(!_player->InBattleground())
         {
             // short preparations to continue flight
-            FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->top());
+            FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->GetCurrentMovementGenerator());
             flight->Initialize(GetPlayer());
             return;
         }
 
         // battleground state prepare, stop flight
-        GetPlayer()->GetMotionMaster()->MovementExpired();
-        GetPlayer()->CleanupAfterTaxiFlight();
+        GetPlayer()->FinishTaxiFlight();
     }
 
     // resurrect character at enter into instance where his corpse exist after add to map
     if (mEntry->IsDungeon() && !GetPlayer()->IsAlive())
-        if (GetPlayer()->GetCorpseLocation().GetMapId() == mEntry->MapID)
     {
-        if( mEntry->IsDungeon() )
+        if (GetPlayer()->GetCorpseLocation().GetMapId() == mEntry->MapID)
         {
-            GetPlayer()->ResurrectPlayer(0.5f,false);
+            GetPlayer()->ResurrectPlayer(0.5f, false);
             GetPlayer()->SpawnCorpseBones();
             GetPlayer()->SaveToDB();
         }

@@ -9,29 +9,26 @@ class TC_GAME_API DistractMovementGenerator : public MovementGenerator
         explicit DistractMovementGenerator(Unit const* owner, float targetOrientation, uint32 timer);
 
         bool Initialize(Unit*) override;
-        void Finalize(Unit*, bool) override;
-        void Reset(Unit* owner) override{ Initialize(owner); }
+        void Finalize(Unit*, bool, bool) override;
+        void Deactivate(Unit*) override;
+        void Reset(Unit*) override;
         bool Update(Unit*, uint32) override;
         MovementGeneratorType GetMovementGeneratorType() const override;
 
     private:
-        uint32 m_timer;
+        uint32 _timer;
         float originalOrientation;
         float targetOrientation;
 };
 
-class TC_GAME_API AssistanceDistractMovementGenerator : public MovementGenerator
+class TC_GAME_API AssistanceDistractMovementGenerator : public DistractMovementGenerator
 {
     public:
-        AssistanceDistractMovementGenerator(uint32 timer);
+        AssistanceDistractMovementGenerator(Unit const* owner, float orientation, uint32 timer);
         
-        bool Initialize(Unit*) override;
-        void Finalize(Unit*, bool) override;
-        void Reset(Unit* owner) override{ Initialize(owner); }
-        bool Update(Unit*, uint32) override;
+        void Finalize(Unit*, bool, bool) override;
+
         MovementGeneratorType GetMovementGeneratorType() const override;
-    private:
-        uint32 m_timer;
 };
 
 #endif //TRINITY_DISTRACTMOVEMENTGENERATOR_H

@@ -4183,10 +4183,8 @@ void Spell::EffectDistract(uint32 /*i*/)
     if(unitTarget->HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_STUNNED | UNIT_STATE_FLEEING))
         return;
 
-    unitTarget->ClearUnitState(UNIT_STATE_MOVING);
-
-    if(unitTarget->GetTypeId() == TYPEID_UNIT)
-        unitTarget->GetMotionMaster()->MoveDistract(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY(), damage * IN_MILLISECONDS);
+    //can be used on players as well
+    unitTarget->GetMotionMaster()->MoveDistract(damage * IN_MILLISECONDS, unitTarget->GetAbsoluteAngle(destTarget));
 }
 
 void Spell::EffectPickPocket(uint32 /*i*/)

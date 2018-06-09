@@ -44,27 +44,31 @@ enum MovementGeneratorType : uint8
     ASSISTANCE_DISTRACT_MOTION_TYPE = 12,                       // IdleMovementGenerator.h (second part of flee for assistance)
     TIMED_FLEEING_MOTION_TYPE = 13,                             // FleeingMovementGenerator.h (alt.second part of flee for assistance)
     FOLLOW_MOTION_TYPE        = 14,                             // FollowMovementGenerator.h
-    ROTATE_MOTION_TYPE        = 15,
+    ROTATE_MOTION_TYPE        = 15,                             // IdleMovementGenerator.h
     EFFECT_MOTION_TYPE        = 16,
-    STEALTH_WARN_MOTION_TYPE  = 17,                             // StealthWarnMovementGenerator.h TODO, précédence sur les autres générateurs ?
 
     MAX_MOTION_TYPE                          // limit
 };
 
 //this determines priority between movement generators
-enum MovementSlot : uint8
+enum MovementGeneratorMode : uint8
 {
-    MOTION_SLOT_IDLE             = 0, //Default movement, is never deleted unless replaced by another
-    MOTION_SLOT_ACTIVE,
-    MOTION_SLOT_CONTROLLED, 
-    MAX_MOTION_SLOT
+    MOTION_MODE_DEFAULT = 0,
+    MOTION_MODE_OVERRIDE
 };
 
-enum MotionMasterCleanFlags
+enum MovementGeneratorPriority
 {
-    MOTIONMMASTER_CLEANFLAG_NONE    = 0,
-    MOTIONMMASTER_CLEANFLAG_UPDATE  = 1, // Clear or Expire called from update
-    MOTIONMMASTER_CLEANFLAG_RESET   = 2, // Flag if need top()->Reset()
+    MOTION_PRIORITY_NONE = 0,
+    MOTION_PRIORITY_NORMAL,
+    MOTION_PRIORITY_HIGHEST
+};
+
+enum MovementSlot : uint8
+{
+    MOTION_SLOT_DEFAULT = 0,
+    MOTION_SLOT_ACTIVE,
+    MAX_MOTION_SLOT
 };
 
 enum RotateDirection : uint8

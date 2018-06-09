@@ -1,21 +1,6 @@
-/*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #include "FollowMovementGenerator.h"
+#include "Creature.h"
 #include "CreatureAI.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
@@ -25,9 +10,6 @@
 #include "Player.h"
 #include "Unit.h"
 #include "Util.h"
-
-FollowMovementGenerator::FollowMovementGenerator(Unit* target, float range, ChaseAngle angle) : AbstractFollower(ASSERT_NOTNULL(target)), _range(range), _angle(angle) {}
-FollowMovementGenerator::~FollowMovementGenerator() = default;
 
 static void DoMovementInform(Unit* owner, Unit* target)
 {
@@ -44,18 +26,36 @@ static bool PositionOkay(Unit* owner, Unit* target, float range, Optional<ChaseA
     return !angle || angle->IsAngleOkay(target->GetRelativeAngle(owner));
 }
 
+FollowMovementGenerator::FollowMovementGenerator(Unit* target, float range, ChaseAngle angle) : 
+    AbstractFollower(ASSERT_NOTNULL(target)), 
+    MovementGenerator(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_FOLLOW),
+    _range(range), _angle(angle) 
+{}
+FollowMovementGenerator::~FollowMovementGenerator() = default;
+
 bool FollowMovementGenerator::Initialize(Unit* owner)
 {
-    owner->AddUnitState(UNIT_STATE_FOLLOW);
+    RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING);
+    AddFlag(MOVEMENTGENERATOR_FLAG_INITIALIZED);
+
+    owner->StopMoving();
     UpdatePetSpeed(owner);
     _path = nullptr;
+    _lastTargetPosition.Relocate(0.0f, 0.0f, 0.0f);
     return true;
+}
+
+void FollowMovementGenerator::Reset(Unit* owner) 
+{
+    RemoveFlag(MOVEMENTGENERATOR_FLAG_DEACTIVATED);
+
+    Initialize(owner); 
 }
 
 bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
 {
     // owner might be dead or gone
-    if (!owner->IsAlive())
+    if (!owner || !owner->IsAlive())
         return false;
 
     // our target might have gone away
@@ -156,10 +156,20 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
     return true;
 }
 
-void FollowMovementGenerator::Finalize(Unit* owner, bool /*premature*/)
+void FollowMovementGenerator::Deactivate(Unit* owner)
 {
-    owner->ClearUnitState(UNIT_STATE_FOLLOW | UNIT_STATE_FOLLOW_MOVE);
-    UpdatePetSpeed(owner);
+    AddFlag(MOVEMENTGENERATOR_FLAG_DEACTIVATED);
+    owner->ClearUnitState(UNIT_STATE_FOLLOW_MOVE);
+}
+
+void FollowMovementGenerator::Finalize(Unit* owner, bool active, bool/* movementInform*/)
+{
+    AddFlag(MOVEMENTGENERATOR_FLAG_FINALIZED);
+    if (active)
+    {
+        owner->ClearUnitState(UNIT_STATE_FOLLOW_MOVE);
+        UpdatePetSpeed(owner);
+    }
 }
 
 void FollowMovementGenerator::UpdatePetSpeed(Unit* owner)

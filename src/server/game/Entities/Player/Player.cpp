@@ -19248,9 +19248,18 @@ bool Player::ActivateTaxiPathTo(uint32 taxi_path_id, uint32 spellid /*= 0*/)
     return ActivateTaxiPathTo(nodes, nullptr, spellid);
 }
 
+void Player::FinishTaxiFlight()
+{
+    if (!IsInFlight())
+        return;
+
+    GetMotionMaster()->Remove(FLIGHT_MOTION_TYPE);
+    m_taxi.ClearTaxiDestinations(); // not destinations, clear source node
+}
+
 void Player::CleanupAfterTaxiFlight()
 {
-    m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
+    m_taxi.ClearTaxiDestinations(); // not destinations, clear source node
     Dismount();
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_TAXI_FLIGHT);
 }
@@ -21761,11 +21770,7 @@ void Player::SummonIfPossible(bool agree)
     }
 
     // stop taxi flight at summon
-    if(IsInFlight())
-    {
-        GetMotionMaster()->MovementExpired();
-        CleanupAfterTaxiFlight();
-    }
+    FinishTaxiFlight();
 
     // drop flag at summon
     if(Battleground *bg = GetBattleground())
@@ -23533,12 +23538,9 @@ void Player::SetMovedUnit(Unit* target)
     GetSession()->anticheat->OnPlayerMoverChanged(m_unitMovedByMe, target);
 
     m_unitMovedByMe->m_playerMovingMe = nullptr;
-    if (m_unitMovedByMe->GetTypeId() == TYPEID_UNIT)
-        m_unitMovedByMe->GetMotionMaster()->Initialize();
+
     m_unitMovedByMe = target;
     m_unitMovedByMe->m_playerMovingMe = this;
-    if (m_unitMovedByMe->GetTypeId() == TYPEID_UNIT)
-        m_unitMovedByMe->GetMotionMaster()->Initialize();
 }
 
 void Player::SetViewpoint(WorldObject* target, bool apply)

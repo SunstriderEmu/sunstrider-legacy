@@ -236,7 +236,7 @@ void guardAI::UpdateAI(const uint32 diff)
                 //If we are currently moving stop us and set the movement generator
                 if ((*me).GetMotionMaster()->GetCurrentMovementGeneratorType()!=IDLE_MOTION_TYPE)
                 {
-                    (*me).GetMotionMaster()->Clear(false);
+                    (*me).GetMotionMaster()->Clear();
                     (*me).GetMotionMaster()->MoveIdle();
                 }
 
@@ -254,7 +254,7 @@ void guardAI::UpdateAI(const uint32 diff)
             {
                 //Cancel our current spell and then mutate new movement generator
                 me->InterruptNonMeleeSpells(false);
-                (*me).GetMotionMaster()->Clear(false);
+                (*me).GetMotionMaster()->Clear();
                 (*me).GetMotionMaster()->MoveChase(me->GetVictim());
             }
         }

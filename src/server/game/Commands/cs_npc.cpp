@@ -780,16 +780,17 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
         return false;
     }
 
-    if (/*creature->GetMotionMaster()->empty() ||*/
-        creature->GetMotionMaster()->GetCurrentMovementGeneratorType ()!=FOLLOW_MOTION_TYPE)
+    MovementGenerator* movement = creature->GetMotionMaster()->GetMovementGenerator([player](MovementGenerator const* a) -> bool
     {
-        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName().c_str());
-        SetSentErrorMessage(true);
+        if (a->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
+        {
+            FollowMovementGenerator const* followMovement = dynamic_cast<FollowMovementGenerator const*>(a);
+            return followMovement && followMovement->GetTarget() == player;
+        }
         return false;
-    }
+    });
 
-    FollowMovementGenerator const* mgen = static_cast<FollowMovementGenerator const*>((creature->GetMotionMaster()->top()));
-    if (mgen->GetTarget() != player)
+    if (!movement)
     {
         PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName().c_str());
         SetSentErrorMessage(true);
@@ -797,7 +798,7 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
     }
 
     // reset movement
-    creature->GetMotionMaster()->MovementExpired(true);
+    creature->GetMotionMaster()->Remove(movement);
 
     PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU_NOW, creature->GetName().c_str());
     return true;
@@ -1425,7 +1426,8 @@ bool ChatHandler::HandleNpcPathTypeCommand(const char* args)
         return true;
     }
 
-    auto movGenerator = dynamic_cast<WaypointMovementGenerator<Creature>*>(target->GetMotionMaster()->top());
+    MovementGenerator* baseGenerator = target->GetMotionMaster()->GetCurrentMovementGenerator();
+    WaypointMovementGenerator<Creature>* movGenerator = static_cast<WaypointMovementGenerator<Creature>*>(baseGenerator);
     if(!movGenerator)
     {
         SendSysMessage("Could not get movement generator.");
@@ -1458,6 +1460,7 @@ No arguments means print current direction. This DOES NOT update values in db, u
 Possible directions :
 0 - WP_PATH_DIRECTION_NORMAL
 1 - WP_PATH_DIRECTION_REVERSE
+2 - WP_PATH_DIRECTION_RANDOM
 */
 bool ChatHandler::HandleNpcPathDirectionCommand(const char* args)
 {
@@ -1474,8 +1477,9 @@ bool ChatHandler::HandleNpcPathDirectionCommand(const char* args)
         return true;
     }
 
-    auto movGenerator = dynamic_cast<WaypointMovementGenerator<Creature>*>(target->GetMotionMaster()->top());
-    if(!movGenerator)
+    MovementGenerator* baseGenerator = target->GetMotionMaster()->GetCurrentMovementGenerator();
+    WaypointMovementGenerator<Creature>* movGenerator = static_cast<WaypointMovementGenerator<Creature>*>(baseGenerator);
+    if (!movGenerator)
     {
         SendSysMessage("Could not get movement generator.");
         return true;

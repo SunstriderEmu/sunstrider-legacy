@@ -8,23 +8,23 @@
 class PathGenerator;
 
 template<class T>
-class ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMovementGenerator<T> >
+class ConfusedMovementGenerator : public MovementGeneratorMedium<T, ConfusedMovementGenerator<T>>
 {
     public:
-        explicit ConfusedMovementGenerator() :_nextMoveTime(0), _interrupt(false) { }
-        ~ConfusedMovementGenerator();
+        explicit ConfusedMovementGenerator();
 
         bool DoInitialize(T*);
-        void DoFinalize(T*);
         void DoReset(T*);
         bool DoUpdate(T*, uint32);
+        void DoDeactivate(T*);
+        void DoFinalize(T*, bool, bool);
+
+        void UnitSpeedChanged() override { ConfusedMovementGenerator<T>::AddFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING); }
 
         MovementGeneratorType GetMovementGeneratorType() const override;
-        void UnitSpeedChanged() override { } //TODO
 
     private:
         std::unique_ptr<PathGenerator> _path;
-        bool _interrupt;
         TimeTracker _nextMoveTime;
         Position _reference;
 };

@@ -355,10 +355,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 
         // stop flight if need
         if (target->IsInFlight())
-        {
-            target->GetMotionMaster()->MovementExpired();
-            target->CleanupAfterTaxiFlight();
-        }
+            target->FinishTaxiFlight();
         // save only in non-flight case
         else
             target->SaveRecallPosition();
@@ -489,10 +486,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 
         // stop flight if need
         if (_player->IsInFlight())
-        {
-            _player->GetMotionMaster()->MovementExpired();
-            _player->CleanupAfterTaxiFlight();
-        }
+            _player->FinishTaxiFlight();
         // save only in non-flight case
         else
             _player->SaveRecallPosition();
@@ -527,10 +521,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         {
             // stop flight if need
             if (_player->IsInFlight())
-            {
-                _player->GetMotionMaster()->MovementExpired();
-                _player->CleanupAfterTaxiFlight();
-            }
+                _player->FinishTaxiFlight();
             // save only in non-flight case
             else
                 _player->SaveRecallPosition();
@@ -585,11 +576,7 @@ bool ChatHandler::HandleRecallCommand(const char* args)
     }
 
     // stop flight if need
-    if (chr->IsInFlight())
-    {
-        chr->GetMotionMaster()->MovementExpired();
-        chr->CleanupAfterTaxiFlight();
-    }
+    chr->FinishTaxiFlight();
 
     chr->Recall();
     return true;

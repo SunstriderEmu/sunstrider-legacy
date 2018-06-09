@@ -145,7 +145,7 @@ void SmartAI::PausePath(uint32 delay, bool forced)
 {
     if (!HasEscortState(SMART_ESCORT_ESCORTING))
     {
-        me->PauseMovement(delay, MOTION_SLOT_IDLE, forced);
+        me->PauseMovement(delay, MOTION_SLOT_DEFAULT, forced);
         if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE)
         {
             std::pair<uint32, uint32> waypointInfo = me->GetCurrentWaypointInfo();
@@ -590,7 +590,7 @@ void SmartAI::JustReachedHome()
 
     GetScript()->ProcessEventsFor(SMART_EVENT_REACHED_HOME);
 
-    if (me->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_IDLE) != WAYPOINT_MOTION_TYPE && me->GetWaypointPath())
+    if (me->GetMotionMaster()->GetCurrentMovementGeneratorType(MOTION_SLOT_DEFAULT) != WAYPOINT_MOTION_TYPE && me->GetWaypointPath())
         me->GetMotionMaster()->MovePath(me->GetWaypointPath(), true);
     else
         me->ResumeMovement();
@@ -638,6 +638,9 @@ void SmartAI::AttackStart(Unit* who)
 
     if (who && me->Attack(who, me->IsWithinMeleeRange(who)))
     {
+        me->GetMotionMaster()->Clear(MOTION_PRIORITY_NORMAL);
+        me->PauseMovement();
+
         if (mCanCombatMove)
         {
             SetRun(mRun);
@@ -816,31 +819,30 @@ void SmartAI::SetCombatMove(bool on)
 {
     if (mCanCombatMove == on)
         return;
+
     mCanCombatMove = on;
+
     if (!IsAIControlled())
         return;
 
-    if (!HasEscortState(SMART_ESCORT_ESCORTING))
+    if (me->IsEngaged())
     {
-        if (on && me->GetVictim())
+        if (on)
         {
-            if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+            if (!me->HasReactState(REACT_PASSIVE) && me->GetVictim() && !me->GetMotionMaster()->HasMovementGenerator([](MovementGenerator const* movement) -> bool
+            {
+                return movement->Mode == MOTION_MODE_DEFAULT && movement->Priority == MOTION_PRIORITY_NORMAL;
+            }))
             {
                 SetRun(mRun);
                 me->GetMotionMaster()->MoveChase(me->GetVictim());
-                me->CastStop();
             }
         }
-        else if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE || me->IsInCombat()) //sun: also clear if in combat. We don't want creatures to continue patrolling when entering combat with combat movement disabled
+        else if (MovementGenerator* movement = me->GetMotionMaster()->GetMovementGenerator([](MovementGenerator const* a) -> bool
         {
-            if (me->HasUnitState(UNIT_STATE_CONFUSED_MOVE | UNIT_STATE_FLEEING_MOVE))
-                return;
-
-            me->GetMotionMaster()->MovementExpired();
-            me->GetMotionMaster()->Clear(true);
-            me->StopMoving();
-            me->GetMotionMaster()->MoveIdle();
-        }
+            return a->GetMovementGeneratorType() == CHASE_MOTION_TYPE && a->Mode == MOTION_MODE_DEFAULT && a->Priority == MOTION_PRIORITY_NORMAL;
+        }))
+            me->GetMotionMaster()->Remove(movement);
     }
 }
 

@@ -449,7 +449,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         //summon->AI()->EnterEvadeMode();
         if (Unit* owner = summon->GetCharmerOrOwner())
         {
-            summon->GetMotionMaster()->Clear(false);
+            summon->GetMotionMaster()->Clear();
             summon->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, summon->GetFollowAngle(), MOTION_SLOT_ACTIVE);
         }
 

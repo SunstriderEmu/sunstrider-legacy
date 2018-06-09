@@ -32,11 +32,8 @@ bool ChatHandler::HandleGoTicketCommand(const char * args)
 
     Player* _player = m_session->GetPlayer();
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-     else
+        _player->FinishTaxiFlight();
+    else
         _player->SaveRecallPosition();
 
     _player->TeleportTo(mapid, x, y, z, 1, 0);
@@ -105,10 +102,7 @@ bool ChatHandler::HandleGoObjectCommand(const char* args)
 
     // stop flight if need
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();
@@ -152,10 +146,7 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
 
     // stop flight if need
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();
@@ -197,10 +188,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
 
     // stop flight if need
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();
@@ -246,10 +234,7 @@ bool ChatHandler::HandleGoXYZCommand(const char* args)
 
     // stop flight if need
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();
@@ -293,10 +278,7 @@ bool ChatHandler::HandleGoXYZOCommand(const char* args)
 
     // stop flight if need
     if (_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();
@@ -358,10 +340,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
 
     // stop flight if need
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();
@@ -404,10 +383,7 @@ bool ChatHandler::HandleGoTriggerCommand(const char* args)
 
     // stop flight if need
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();
@@ -451,10 +427,7 @@ bool ChatHandler::HandleGoGraveyardCommand(const char* args)
 
     // stop flight if need
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();
@@ -535,10 +508,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
 
                     // stop flight if need
                     if(_player->IsInFlight())
-                    {
-                        _player->GetMotionMaster()->MovementExpired();
-                        _player->CleanupAfterTaxiFlight();
-                    }
+                        _player->FinishTaxiFlight();
                     // save only in non-flight case
                     else
                         _player->SaveRecallPosition();
@@ -581,10 +551,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
 
     // stop flight if need
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();

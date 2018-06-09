@@ -144,7 +144,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
             PSendSysMessage(LANG_TELEPORTING_TO, player->GetName().c_str(),"", "Shattrath");
 
             if (player->IsInFlight()) {
-                player->GetMotionMaster()->MovementExpired();
+                player->GetMotionMaster()->Clear(MOTION_PRIORITY_NORMAL);
                 player->m_taxi.ClearTaxiDestinations();
             } else
                 player->SaveRecallPosition();

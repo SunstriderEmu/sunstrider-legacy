@@ -115,13 +115,9 @@ bool ChatHandler::HandleTeleNameCommand(const char * args)
 
         // stop flight if need
         if(chr->IsInFlight())
-        {
-            chr->GetMotionMaster()->MovementExpired();
-            chr->CleanupAfterTaxiFlight();
-        }
-        // save only in non-flight case
+            chr->FinishTaxiFlight();
         else
-            chr->SaveRecallPosition();
+            chr->SaveRecallPosition();  // save only in non-flight case
 
         chr->TeleportTo(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation);
     }
@@ -192,10 +188,7 @@ bool ChatHandler::HandleTeleGroupCommand(const char * args)
 
         // stop flight if need
         if(pl->IsInFlight())
-        {
-            pl->GetMotionMaster()->MovementExpired();
-            pl->CleanupAfterTaxiFlight();
-        }
+            pl->FinishTaxiFlight();
         // save only in non-flight case
         else
             pl->SaveRecallPosition();
@@ -284,10 +277,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 
         // stop flight if need
         if(pl->IsInFlight())
-        {
-            pl->GetMotionMaster()->MovementExpired();
-            pl->CleanupAfterTaxiFlight();
-        }
+            pl->FinishTaxiFlight();
         // save only in non-flight case
         else
             pl->SaveRecallPosition();
@@ -334,10 +324,7 @@ bool ChatHandler::HandleTeleCommand(const char * args)
 
     // stop flight if need
     if(_player->IsInFlight())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
+        _player->FinishTaxiFlight();
     // save only in non-flight case
     else
         _player->SaveRecallPosition();

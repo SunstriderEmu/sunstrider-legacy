@@ -1324,16 +1324,16 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             break;
         }
-        case SMART_ACTION_STOP_MOTION:
+        case SMART_ACTION_REMOVE_MOVEMENT:
         {
             for (WorldObject* target : targets)
             {
                 if (IsUnit(target))
                 {
-                    if (e.action.stopMotion.stopMovement)
+                    if (e.action.removeMovement.movementType && e.action.removeMovement.movementType < MAX_MOTION_TYPE)
+                        target->ToUnit()->GetMotionMaster()->Remove(MovementGeneratorType(e.action.removeMovement.movementType));
+                    if (e.action.removeMovement.forced)
                         target->ToUnit()->StopMoving();
-                    if (e.action.stopMotion.movementExpired)
-                        target->ToUnit()->GetMotionMaster()->MovementExpired();
                 }
             }
 

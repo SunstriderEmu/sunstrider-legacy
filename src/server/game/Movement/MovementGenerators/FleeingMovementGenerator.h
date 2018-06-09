@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #ifndef TRINITY_FLEEINGMOVEMENTGENERATOR_H
 #define TRINITY_FLEEINGMOVEMENTGENERATOR_H
@@ -26,25 +9,24 @@ template<class T>
 class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
 {
     public:
-        explicit FleeingMovementGenerator(ObjectGuid fleeTargetGUID) : _fleeTargetGUID(fleeTargetGUID), i_nextCheckTime(0) { }
-        ~FleeingMovementGenerator();
+        explicit FleeingMovementGenerator(ObjectGuid fleeTargetGUID);
 
         bool DoInitialize(T*);
-        void DoFinalize(T*);
         void DoReset(T*);
         bool DoUpdate(T*, uint32);
+        void DoDeactivate(T*);
+        void DoFinalize(T*, bool, bool);
 
         MovementGeneratorType GetMovementGeneratorType() const override;
-        void UnitSpeedChanged() override { } //TODO
+        void UnitSpeedChanged() override { FleeingMovementGenerator<T>::AddFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING); }
 
     private:
         void SetTargetLocation(T*);
-        void GetPoint(T*, Position &position);
+        void GetPoint(T*, Position& position);
 
         ObjectGuid _fleeTargetGUID;
         TimeTracker i_nextCheckTime;
         std::unique_ptr<PathGenerator> _path;
-        bool _interrupt;
 };
 
 class TC_GAME_API TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
@@ -54,9 +36,10 @@ class TC_GAME_API TimedFleeingMovementGenerator : public FleeingMovementGenerato
             FleeingMovementGenerator<Creature>(fright),
             _totalFleeTime(time) { }
 
-        MovementGeneratorType GetMovementGeneratorType() const override;
         bool Update(Unit*, uint32) override;
-        void Finalize(Unit*, bool) override;
+        void Finalize(Unit*, bool, bool) override;
+
+        MovementGeneratorType GetMovementGeneratorType() const override;
 
     private:
         TimeTracker _totalFleeTime;

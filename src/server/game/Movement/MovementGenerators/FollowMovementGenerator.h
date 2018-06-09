@@ -1,20 +1,4 @@
-/*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
- 
+
 #ifndef TRINITY_FOLLOWMOVEMENTGENERATOR_H
 #define TRINITY_FOLLOWMOVEMENTGENERATOR_H
 
@@ -35,9 +19,11 @@ class FollowMovementGenerator : public MovementGenerator, public AbstractFollowe
         ~FollowMovementGenerator();
 
         bool Initialize(Unit* owner) override;
-        void Reset(Unit* owner) override { Initialize(owner); }
+        void Reset(Unit* owner) override;
         bool Update(Unit* owner, uint32 diff) override;
-        void Finalize(Unit* owner, bool premature) override;
+        void Deactivate(Unit*) override;
+        void Finalize(Unit*, bool, bool) override;
+
         MovementGeneratorType GetMovementGeneratorType() const override { return FOLLOW_MOTION_TYPE; }
 
         void UnitSpeedChanged() override { _lastTargetPosition.Relocate(0.0f, 0.0f, 0.0f); }

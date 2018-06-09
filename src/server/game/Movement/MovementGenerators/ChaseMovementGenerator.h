@@ -34,9 +34,10 @@ class ChaseMovementGenerator : public MovementGenerator, public AbstractFollower
         ~ChaseMovementGenerator();
 
         bool Initialize(Unit* owner) override;
-        void Reset(Unit* owner) override { Initialize(owner); }
+        void Reset(Unit* owner) override;
         bool Update(Unit* owner, uint32 diff) override;
-        void Finalize(Unit* owner, bool premature) override;
+        void Deactivate(Unit*) override;
+        void Finalize(Unit*, bool, bool) override;
         MovementGeneratorType GetMovementGeneratorType() const override { return CHASE_MOTION_TYPE; }
 
         void UnitSpeedChanged() override { _lastTargetPosition.Relocate(0.0f, 0.0f, 0.0f); }
