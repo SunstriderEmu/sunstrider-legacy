@@ -15,7 +15,7 @@
 
 template<class T>
 FleeingMovementGenerator<T>::FleeingMovementGenerator(ObjectGuid fleeTargetGUID) :
-    MovementGeneratorMedium(MOTION_MODE_DEFAULT, MOTION_PRIORITY_HIGHEST, UNIT_STATE_FLEEING),
+    MovementGeneratorMedium<T, FleeingMovementGenerator<T>>(MOTION_MODE_DEFAULT, MOTION_PRIORITY_HIGHEST, UNIT_STATE_FLEEING),
     _fleeTargetGUID(fleeTargetGUID), i_nextCheckTime(0) 
 { }
 

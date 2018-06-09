@@ -31,7 +31,7 @@
 
 template<class T>
 RandomMovementGenerator<T>::RandomMovementGenerator(float spawn_dist /*= 0.0f*/) 
-    : MovementGeneratorMedium(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING),
+    : MovementGeneratorMedium<T, RandomMovementGenerator<T>>(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING),
     i_nextMoveTime(0), wander_distance(spawn_dist) { }
 
 template RandomMovementGenerator<Creature>::RandomMovementGenerator(float/* distance*/);

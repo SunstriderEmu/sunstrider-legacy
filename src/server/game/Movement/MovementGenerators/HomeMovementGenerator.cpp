@@ -27,7 +27,7 @@
 
 template<class T>
 HomeMovementGenerator<T>::HomeMovementGenerator() : 
-    MovementGeneratorMedium(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING)
+    MovementGeneratorMedium<T, HomeMovementGenerator<T>>(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING)
 {
 }
 

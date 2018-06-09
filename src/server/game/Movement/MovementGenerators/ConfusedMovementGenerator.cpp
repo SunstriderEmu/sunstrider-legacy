@@ -29,7 +29,7 @@
 
 template<class T>
 ConfusedMovementGenerator<T>::ConfusedMovementGenerator() :
-    MovementGeneratorMedium(MOTION_MODE_DEFAULT, MOTION_PRIORITY_HIGHEST, UNIT_STATE_CONFUSED),
+    MovementGeneratorMedium<T, ConfusedMovementGenerator<T>>(MOTION_MODE_DEFAULT, MOTION_PRIORITY_HIGHEST, UNIT_STATE_CONFUSED),
     _nextMoveTime(0)
 { }
 

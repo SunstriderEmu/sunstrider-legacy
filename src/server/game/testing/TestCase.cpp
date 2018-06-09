@@ -11,7 +11,6 @@
 //#include "ClassSpells.h" //I'm avoiding including this for now since it is changed often and will break script rebuild it is modified and TestCase.cpp has to be rebuilt too
 
 #include <boost/math/special_functions/erf.hpp>
-#include <algorithm>
 
 #define MAP_TESTING_ID 13
 
@@ -635,7 +634,9 @@ std::pair<uint32 /*sampleSize*/, float /*absoluteTolerance*/> TestCase::_GetPerc
         float distFromExtreme = expectedResult <= 0.5f ? expectedResult : 1.0f - expectedResult; //distance from 0 or 100, whichever is closer (thus from 0 to 50)
         absoluteTolerance = distFromExtreme * defaultRelativeTolerance;
 
-        absoluteTolerance = std::clamp(absoluteTolerance, minTolerance, maxTolerance);
+	//clamp
+	absoluteTolerance = std::min(absoluteTolerance, maxTolerance);
+	absoluteTolerance = std::max(absoluteTolerance, minTolerance);
     }
     else 
     {
