@@ -19,14 +19,14 @@ private:
     {
         return new ActionNode ("rapid fire",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("readiness"), NULL),
+            /*A*/ NextAction::array({ new NextAction("readiness") }),
             /*C*/ NULL);
     }
     static ActionNode* aspect_of_the_pack(PlayerbotAI* ai)
     {
         return new ActionNode ("aspect of the pack",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("aspect of the cheetah"), NULL),
+            /*A*/ NextAction::array({ new NextAction("aspect of the cheetah") }),
             /*C*/ NULL);
     }
 };
@@ -42,17 +42,17 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::list<TriggerNode*> &trigg
 
     triggers.push_back(new TriggerNode(
         "trueshot aura",
-        NextAction::array(0, new NextAction("trueshot aura", 2.0f), NULL)));
+        NextAction::array({ new NextAction("trueshot aura", 2.0f) })));
 
     triggers.push_back(new TriggerNode(
         "no pet",
-        NextAction::array(0, new NextAction("call pet", 60.0f), NULL)));
+        NextAction::array({ new NextAction("call pet", 60.0f) })));
 
     triggers.push_back(new TriggerNode(
         "hunters pet dead",
-        NextAction::array(0, new NextAction("revive pet", 60.0f), NULL)));
+        NextAction::array({ new NextAction("revive pet", 60.0f) })));
 
     triggers.push_back(new TriggerNode(
         "hunters pet low health",
-        NextAction::array(0, new NextAction("mend pet", 60.0f), NULL)));
+        NextAction::array({ new NextAction("mend pet", 60.0f) })));
 }

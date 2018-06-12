@@ -16,21 +16,21 @@ namespace ai
         {
             return new ActionNode ("mind flay",
                 /*P*/ NULL,
-                /*A*/ NextAction::array(0, new NextAction("shoot"), NULL),
+                /*A*/ NextAction::array({ new NextAction("shoot") }),
                 /*C*/ NULL);
         }
         static ActionNode* mind_blast(PlayerbotAI* ai)
         {
             return new ActionNode ("mind blast",
                 /*P*/ NULL,
-                /*A*/ NextAction::array(0, new NextAction("mind flay"), NULL),
+                /*A*/ NextAction::array({ new NextAction("mind flay") }),
                 /*C*/ NULL);
         }
         static ActionNode* dispersion(PlayerbotAI* ai)
         {
             return new ActionNode ("dispersion",
                 /*P*/ NULL,
-                /*A*/ NextAction::array(0, new NextAction("mana potion"), NULL),
+                /*A*/ NextAction::array({ new NextAction("mana potion") }),
                 /*C*/ NULL);
         }
     };

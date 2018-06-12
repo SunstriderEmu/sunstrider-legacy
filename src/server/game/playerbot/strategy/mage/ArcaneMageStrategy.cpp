@@ -19,21 +19,21 @@ private:
     {
         return new ActionNode ("arcane blast",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("arcane missiles"), NULL),
+            /*A*/ NextAction::array({ new NextAction("arcane missiles") }),
             /*C*/ NULL);
     }
     static ActionNode* arcane_barrage(PlayerbotAI* ai)
     {
         return new ActionNode ("arcane barrage",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("arcane missiles"), NULL),
+            /*A*/ NextAction::array({ new NextAction("arcane missiles") }),
             /*C*/ NULL);
     }
     static ActionNode* arcane_missiles(PlayerbotAI* ai)
     {
         return new ActionNode ("arcane missiles",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("shoot"), NULL),
+            /*A*/ NextAction::array({ new NextAction("shoot") }),
             /*C*/ NULL);
     }
 };
@@ -45,7 +45,7 @@ ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* ai) : GenericMageStrategy(ai
 
 NextAction** ArcaneMageStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("arcane barrage", 10.0f), NULL);
+    return NextAction::array({ new NextAction("arcane barrage", 10.0f) });
 }
 
 void ArcaneMageStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
@@ -54,11 +54,11 @@ void ArcaneMageStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
 
     triggers.push_back(new TriggerNode(
         "arcane blast",
-        NextAction::array(0, new NextAction("arcane blast", 15.0f), NULL)));
+        NextAction::array({ new NextAction("arcane blast", 15.0f) })));
 
     triggers.push_back(new TriggerNode(
         "missile barrage",
-        NextAction::array(0, new NextAction("arcane missiles", 15.0f), NULL)));
+        NextAction::array({ new NextAction("arcane missiles", 15.0f) })));
 
 }
 

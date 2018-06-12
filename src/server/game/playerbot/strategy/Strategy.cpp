@@ -29,7 +29,7 @@ private:
     static ActionNode* melee(PlayerbotAI* ai)
     {
         return new ActionNode ("melee",
-            /*P*/ NextAction::array(0, new NextAction("reach melee"), NULL),
+            /*P*/ NextAction::array({ new NextAction("reach melee") }),
             /*A*/ NULL,
             /*C*/ NULL);
     }
@@ -37,14 +37,14 @@ private:
     {
         return new ActionNode ("healthstone",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("healing potion"), NULL),
+            /*A*/ NextAction::array({ new NextAction("healing potion") }),
             /*C*/ NULL);
     }
     static ActionNode* follow_master_random(PlayerbotAI* ai)
     {
         return new ActionNode ("be near",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("follow"), NULL),
+            /*A*/ NextAction::array({ new NextAction("follow") }),
             /*C*/ NULL);
     }
     static ActionNode* attack_anything(PlayerbotAI* ai)
@@ -58,7 +58,7 @@ private:
     {
         return new ActionNode ("move random",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("stay line"), NULL),
+            /*A*/ NextAction::array({ new NextAction("stay line") }),
             /*C*/ NULL);
     }
     static ActionNode* move_to_loot(PlayerbotAI* ai)
@@ -86,14 +86,14 @@ private:
     {
         return new ActionNode ("mana potion",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("drink"), NULL),
+            /*A*/ NextAction::array({ new NextAction("drink") }),
             /*C*/ NULL);
     }
     static ActionNode* healing_potion(PlayerbotAI* ai)
     {
         return new ActionNode ("healing potion",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("food"), NULL),
+            /*A*/ NextAction::array({ new NextAction("food") }),
             /*C*/ NULL);
     }
     static ActionNode* flee(PlayerbotAI* ai)

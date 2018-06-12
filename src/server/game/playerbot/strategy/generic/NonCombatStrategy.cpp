@@ -8,7 +8,7 @@ void NonCombatStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
 {
     triggers.push_back(new TriggerNode(
         "timer",
-        NextAction::array(0, new NextAction("check mount state", 1.0f), NULL)));
+        NextAction::array({ new NextAction("check mount state", 1.0f) })));
 }
 
 
@@ -16,13 +16,13 @@ void LfgStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
 {
     triggers.push_back(new TriggerNode(
         "no possible targets",
-        NextAction::array(0, new NextAction("lfg join", 1.0f), NULL)));
+        NextAction::array({ new NextAction("lfg join", 1.0f) })));
 
     triggers.push_back(new TriggerNode(
         "lfg proposal",
-        NextAction::array(0, new NextAction("lfg accept", 1.0f), NULL)));
+        NextAction::array({ new NextAction("lfg accept", 1.0f) })));
 
     triggers.push_back(new TriggerNode(
         "lfg proposal active",
-        NextAction::array(0, new NextAction("lfg accept", 1.0f), NULL)));
+        NextAction::array({ new NextAction("lfg accept", 1.0f) })));
 }

@@ -18,7 +18,7 @@ private:
         return new ActionNode ("tank attack chat shortcut",
             /*P*/ NULL,
             /*A*/ NULL,
-            /*C*/ NextAction::array(0, new NextAction("attack my target", 100.0f), NULL));
+            /*C*/ NextAction::array({ new NextAction("attack my target", 100.0f) }));
     }
 };
 
@@ -28,109 +28,109 @@ void ChatCommandHandlerStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
 
     triggers.push_back(new TriggerNode(
         "rep",
-        NextAction::array(0, new NextAction("reputation", relevance), NULL)));
+        NextAction::array({ new NextAction("reputation", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "q",
-        NextAction::array(0,
+        NextAction::array( {
             new NextAction("query quest", relevance),
-            new NextAction("query item usage", relevance), NULL)));
+            new NextAction("query item usage", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "add all loot",
-        NextAction::array(0, new NextAction("add all loot", relevance), new NextAction("loot", relevance), NULL)));
+        NextAction::array({ new NextAction("add all loot", relevance), new NextAction("loot", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "u",
-        NextAction::array(0, new NextAction("use", relevance), NULL)));
+        NextAction::array({ new NextAction("use", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "c",
-        NextAction::array(0, new NextAction("item count", relevance), NULL)));
+        NextAction::array({ new NextAction("item count", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "e",
-        NextAction::array(0, new NextAction("equip", relevance), NULL)));
+        NextAction::array({ new NextAction("equip", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "ue",
-        NextAction::array(0, new NextAction("unequip", relevance), NULL)));
+        NextAction::array({ new NextAction("unequip", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "t",
-        NextAction::array(0, new NextAction("trade", relevance), NULL)));
+        NextAction::array({ new NextAction("trade", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "nt",
-        NextAction::array(0, new NextAction("trade", relevance), NULL)));
+        NextAction::array({ new NextAction("trade", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "s",
-        NextAction::array(0, new NextAction("sell", relevance), NULL)));
+        NextAction::array({ new NextAction("sell", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "b",
-        NextAction::array(0, new NextAction("buy", relevance), NULL)));
+        NextAction::array({ new NextAction("buy", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "r",
-        NextAction::array(0, new NextAction("reward", relevance), NULL)));
+        NextAction::array({ new NextAction("reward", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "attack",
-        NextAction::array(0, new NextAction("attack my target", relevance), NULL)));
+        NextAction::array({ new NextAction("attack my target", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "accept",
-        NextAction::array(0, new NextAction("accept quest", relevance), NULL)));
+        NextAction::array({ new NextAction("accept quest", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "follow",
-        NextAction::array(0, new NextAction("follow chat shortcut", relevance), NULL)));
+        NextAction::array({ new NextAction("follow chat shortcut", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "stay",
-        NextAction::array(0, new NextAction("stay chat shortcut", relevance), NULL)));
+        NextAction::array({ new NextAction("stay chat shortcut", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "flee",
-        NextAction::array(0, new NextAction("flee chat shortcut", relevance), NULL)));
+        NextAction::array({ new NextAction("flee chat shortcut", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "tank attack",
-        NextAction::array(0, new NextAction("tank attack chat shortcut", relevance), NULL)));
+        NextAction::array({ new NextAction("tank attack chat shortcut", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "grind",
-        NextAction::array(0, new NextAction("grind chat shortcut", relevance), NULL)));
+        NextAction::array({ new NextAction("grind chat shortcut", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "talk",
-        NextAction::array(0, new NextAction("gossip hello", relevance), NULL)));
+        NextAction::array({ new NextAction("gossip hello", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "cast",
-        NextAction::array(0, new NextAction("cast custom spell", relevance), NULL)));
+        NextAction::array({ new NextAction("cast custom spell", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "revive",
-        NextAction::array(0, new NextAction("spirit healer", relevance), NULL)));
+        NextAction::array({ new NextAction("spirit healer", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "runaway",
-        NextAction::array(0, new NextAction("runaway chat shortcut", relevance), NULL)));
+        NextAction::array({ new NextAction("runaway chat shortcut", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "warning",
-        NextAction::array(0, new NextAction("runaway chat shortcut", relevance), NULL)));
+        NextAction::array({ new NextAction("runaway chat shortcut", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "max dps",
-        NextAction::array(0, new NextAction("max dps chat shortcut", relevance), NULL)));
+        NextAction::array({ new NextAction("max dps chat shortcut", relevance) })));
 
     triggers.push_back(new TriggerNode(
         "attackers",
-        NextAction::array(0, new NextAction("tell attackers", relevance), NULL)));
+        NextAction::array({ new NextAction("tell attackers", relevance) })));
 }
 
 

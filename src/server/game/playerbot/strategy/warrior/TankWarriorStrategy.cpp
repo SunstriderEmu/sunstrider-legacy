@@ -22,7 +22,7 @@ private:
     static ActionNode* melee(PlayerbotAI* ai)
     {
         return new ActionNode ("melee",
-            /*P*/ NextAction::array(0, new NextAction("defensive stance"), new NextAction("reach melee"), NULL),
+            /*P*/ NextAction::array({ new NextAction("defensive stance"), new NextAction("reach melee") }),
             /*A*/ NULL,
             /*C*/ NULL);
     }
@@ -30,13 +30,13 @@ private:
     {
         return new ActionNode ("shield wall",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("shield block"), NULL),
+            /*A*/ NextAction::array({ new NextAction("shield block") }),
             /*C*/ NULL);
     }
     static ActionNode* rend(PlayerbotAI* ai)
     {
         return new ActionNode ("rend",
-            /*P*/ NextAction::array(0, new NextAction("defensive stance"), NULL),
+            /*P*/ NextAction::array({ new NextAction("defensive stance") }),
             /*A*/ NULL,
             /*C*/ NULL);
     }
@@ -44,28 +44,28 @@ private:
     {
         return new ActionNode ("revenge",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("melee"), NULL),
+            /*A*/ NextAction::array({ new NextAction("melee") }),
             /*C*/ NULL);
     }
     static ActionNode* devastate(PlayerbotAI* ai)
     {
         return new ActionNode ("devastate",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("sunder armor"), NULL),
+            /*A*/ NextAction::array({ new NextAction("sunder armor") }),
             /*C*/ NULL);
     }
     static ActionNode* shockwave(PlayerbotAI* ai)
     {
         return new ActionNode ("shockwave",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("cleave"), NULL),
+            /*A*/ NextAction::array({ new NextAction("cleave") }),
             /*C*/ NULL);
     }
     static ActionNode* taunt(PlayerbotAI* ai)
     {
         return new ActionNode ("taunt",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("mocking blow"), NULL),
+            /*A*/ NextAction::array({ new NextAction("mocking blow") }),
             /*C*/ NULL);
     }
 };
@@ -77,7 +77,7 @@ TankWarriorStrategy::TankWarriorStrategy(PlayerbotAI* ai) : GenericWarriorStrate
 
 NextAction** TankWarriorStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("devastate", ACTION_NORMAL + 1), new NextAction("revenge", ACTION_NORMAL + 1), NULL);
+    return NextAction::array({ new NextAction("devastate", ACTION_NORMAL + 1), new NextAction("revenge", ACTION_NORMAL + 1) });
 }
 
 void TankWarriorStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
@@ -86,41 +86,41 @@ void TankWarriorStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
 
     triggers.push_back(new TriggerNode(
         "medium rage available",
-        NextAction::array(0, new NextAction("shield slam", ACTION_NORMAL + 2), new NextAction("heroic strike", ACTION_NORMAL + 2), NULL)));
+        NextAction::array({ new NextAction("shield slam", ACTION_NORMAL + 2), new NextAction("heroic strike", ACTION_NORMAL + 2) })));
 
     triggers.push_back(new TriggerNode(
         "disarm",
-        NextAction::array(0, new NextAction("disarm", ACTION_NORMAL), NULL)));
+        NextAction::array({ new NextAction("disarm", ACTION_NORMAL) })));
 
     triggers.push_back(new TriggerNode(
         "lose aggro",
-        NextAction::array(0, new NextAction("taunt", ACTION_HIGH + 9), NULL)));
+        NextAction::array({ new NextAction("taunt", ACTION_HIGH + 9) })));
 
     triggers.push_back(new TriggerNode(
         "medium health",
-        NextAction::array(0, new NextAction("shield wall", ACTION_MEDIUM_HEAL), NULL)));
+        NextAction::array({ new NextAction("shield wall", ACTION_MEDIUM_HEAL) })));
 
     triggers.push_back(new TriggerNode(
         "critical health",
-        NextAction::array(0, new NextAction("last stand", ACTION_EMERGENCY + 3), NULL)));
+        NextAction::array({ new NextAction("last stand", ACTION_EMERGENCY + 3) })));
 
     triggers.push_back(new TriggerNode(
         "medium aoe",
-        NextAction::array(0, new NextAction("shockwave", ACTION_HIGH + 2), NULL)));
+        NextAction::array({ new NextAction("shockwave", ACTION_HIGH + 2) })));
 
     triggers.push_back(new TriggerNode(
         "light aoe",
-        NextAction::array(0, new NextAction("thunder clap", ACTION_HIGH + 2), new NextAction("demoralizing shout", ACTION_HIGH + 2),  new NextAction("cleave", ACTION_HIGH + 1), NULL)));
+        NextAction::array({ new NextAction("thunder clap", ACTION_HIGH + 2), new NextAction("demoralizing shout", ACTION_HIGH + 2),  new NextAction("cleave", ACTION_HIGH + 1) })));
 
     triggers.push_back(new TriggerNode(
         "high aoe",
-        NextAction::array(0, new NextAction("challenging shout", ACTION_HIGH + 3), NULL)));
+        NextAction::array({ new NextAction("challenging shout", ACTION_HIGH + 3) })));
 
     triggers.push_back(new TriggerNode(
         "concussion blow",
-        NextAction::array(0, new NextAction("concussion blow", ACTION_INTERRUPT), NULL)));
+        NextAction::array({ new NextAction("concussion blow", ACTION_INTERRUPT) })));
 
     triggers.push_back(new TriggerNode(
         "sword and board",
-        NextAction::array(0, new NextAction("shield slam", ACTION_HIGH + 3), NULL)));
+        NextAction::array({ new NextAction("shield slam", ACTION_HIGH + 3) })));
 }

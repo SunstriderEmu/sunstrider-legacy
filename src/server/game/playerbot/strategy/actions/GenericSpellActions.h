@@ -64,9 +64,9 @@ namespace ai
             if (range > sPlayerbotAIConfig.spellDistance)
                 return NULL;
             else if (range > ATTACK_DISTANCE)
-                return NextAction::merge( NextAction::array(0, new NextAction("reach spell"), NULL), Action::getPrerequisites());
+                return NextAction::merge(NextAction::array({ new NextAction("reach spell") }), Action::getPrerequisites());
             else
-                return NextAction::merge( NextAction::array(0, new NextAction("reach melee"), NULL), Action::getPrerequisites());
+                return NextAction::merge(NextAction::array({ new NextAction("reach melee") }), Action::getPrerequisites());
         }
 
     protected:

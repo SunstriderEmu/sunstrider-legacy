@@ -31,7 +31,7 @@ private:
     static ActionNode* melee(PlayerbotAI* ai)
     {
         return new ActionNode ("melee",
-            /*P*/ NextAction::array(0, new NextAction("feral charge - cat"), NULL),
+            /*P*/ NextAction::array({ new NextAction("feral charge - cat") }),
             /*A*/ NULL,
             /*C*/ NULL);
     }
@@ -39,7 +39,7 @@ private:
     {
         return new ActionNode ("feral charge - cat",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("reach melee"), NULL),
+            /*A*/ NextAction::array({ new NextAction("reach melee") }),
             /*C*/ NULL);
     }
     static ActionNode* cat_form(PlayerbotAI* ai)
@@ -53,14 +53,14 @@ private:
     {
         return new ActionNode ("claw",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("melee"), NULL),
+            /*A*/ NextAction::array({ new NextAction("melee") }),
             /*C*/ NULL);
     }
     static ActionNode* mangle_cat(PlayerbotAI* ai)
     {
         return new ActionNode ("mangle (cat)",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("claw"), NULL),
+            /*A*/ NextAction::array({ new NextAction("claw") }),
             /*C*/ NULL);
     }
     static ActionNode* rake(PlayerbotAI* ai)
@@ -74,7 +74,7 @@ private:
     {
         return new ActionNode ("ferocious bite",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("rip"), NULL),
+            /*A*/ NextAction::array({ new NextAction("rip") }),
             /*C*/ NULL);
     }
     static ActionNode* rip(PlayerbotAI* ai)
@@ -93,7 +93,7 @@ CatDpsDruidStrategy::CatDpsDruidStrategy(PlayerbotAI* ai) : FeralDruidStrategy(a
 
 NextAction** CatDpsDruidStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("mangle (cat)", ACTION_NORMAL + 1), NULL);
+    return NextAction::array({ new NextAction("mangle (cat)", ACTION_NORMAL + 1) });
 }
 
 void CatDpsDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
@@ -102,31 +102,31 @@ void CatDpsDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
 
     triggers.push_back(new TriggerNode(
         "cat form",
-        NextAction::array(0, new NextAction("cat form", ACTION_MOVE + 2), NULL)));
+        NextAction::array({ new NextAction("cat form", ACTION_MOVE + 2) })));
 
     triggers.push_back(new TriggerNode(
         "rake",
-        NextAction::array(0, new NextAction("rake", ACTION_NORMAL + 5), NULL)));
+        NextAction::array({ new NextAction("rake", ACTION_NORMAL + 5) })));
 
     triggers.push_back(new TriggerNode(
         "combo points available",
-        NextAction::array(0, new NextAction("ferocious bite", ACTION_NORMAL + 9), NULL)));
+        NextAction::array({ new NextAction("ferocious bite", ACTION_NORMAL + 9) })));
 
     triggers.push_back(new TriggerNode(
         "medium threat",
-        NextAction::array(0, new NextAction("cower", ACTION_EMERGENCY + 1), NULL)));
+        NextAction::array({ new NextAction("cower", ACTION_EMERGENCY + 1) })));
 
     triggers.push_back(new TriggerNode(
         "faerie fire (feral)",
-        NextAction::array(0, new NextAction("faerie fire (feral)", ACTION_HIGH + 1), NULL)));
+        NextAction::array({ new NextAction("faerie fire (feral)", ACTION_HIGH + 1) })));
 
     triggers.push_back(new TriggerNode(
         "tiger's fury",
-        NextAction::array(0, new NextAction("tiger's fury", ACTION_EMERGENCY + 1), NULL)));
+        NextAction::array({ new NextAction("tiger's fury", ACTION_EMERGENCY + 1) })));
 
     triggers.push_back(new TriggerNode(
         "entangling roots",
-        NextAction::array(0, new NextAction("entangling roots on cc", ACTION_HIGH + 1), NULL)));
+        NextAction::array({ new NextAction("entangling roots on cc", ACTION_HIGH + 1) })));
 
 }
 
@@ -134,6 +134,6 @@ void CatAoeDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
 {
     triggers.push_back(new TriggerNode(
         "medium aoe",
-        NextAction::array(0, new NextAction("swipe (cat)", ACTION_HIGH + 2), NULL)));
+        NextAction::array({ new NextAction("swipe (cat)", ACTION_HIGH + 2) })));
 }
 

@@ -25,29 +25,29 @@ private:
     {
         return new ActionNode ("frostbolt",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("shoot"), NULL),
+            /*A*/ NextAction::array({ new NextAction("shoot") }),
             /*C*/ NULL);
     }
     static ActionNode* fire_blast(PlayerbotAI* ai)
     {
         return new ActionNode ("fire blast",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("scorch"), NULL),
+            /*A*/ NextAction::array({ new NextAction("scorch") }),
             /*C*/ NULL);
     }
     static ActionNode* scorch(PlayerbotAI* ai)
     {
         return new ActionNode ("scorch",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("shoot"), NULL),
+            /*A*/ NextAction::array({ new NextAction("shoot") }),
             /*C*/ NULL);
     }
     static ActionNode* frost_nova(PlayerbotAI* ai)
     {
         return new ActionNode ("frost nova",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("flee"), NULL),
-            /*C*/ NextAction::array(0, new NextAction("flee"), NULL));
+            /*A*/ NextAction::array({ new NextAction("flee") }),
+            /*C*/ NextAction::array({ new NextAction("flee") }));
     }
     static ActionNode* icy_veins(PlayerbotAI* ai)
     {
@@ -67,22 +67,22 @@ private:
     {
         return new ActionNode ("evocation",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("mana potion"), NULL),
+            /*A*/ NextAction::array({ new NextAction("mana potion") }),
             /*C*/ NULL);
     }
     static ActionNode* dragons_breath(PlayerbotAI* ai)
     {
         return new ActionNode ("dragon's breath",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("blast wave"), NULL),
-            /*C*/ NextAction::array(0, new NextAction("flamestrike", 71.0f), NULL));
+            /*A*/ NextAction::array({ new NextAction("blast wave") }),
+            /*C*/ NextAction::array({ new NextAction("flamestrike", 71.0f) }));
     }
     static ActionNode* blast_wave(PlayerbotAI* ai)
     {
         return new ActionNode ("blast wave",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("frost nova"), NULL),
-            /*C*/ NextAction::array(0, new NextAction("flamestrike", 71.0f), NULL));
+            /*A*/ NextAction::array({ new NextAction("frost nova") }),
+            /*C*/ NextAction::array({ new NextAction("flamestrike", 71.0f) }));
     }
 };
 
@@ -97,41 +97,41 @@ void GenericMageStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
 
     triggers.push_back(new TriggerNode(
         "remove curse",
-        NextAction::array(0, new NextAction("remove curse", 41.0f), NULL)));
+        NextAction::array({ new NextAction("remove curse", 41.0f) })));
 
     triggers.push_back(new TriggerNode(
         "remove curse on party",
-        NextAction::array(0, new NextAction("remove curse on party", 40.0f), NULL)));
+        NextAction::array({ new NextAction("remove curse on party", 40.0f) })));
 
     triggers.push_back(new TriggerNode(
         "enemy too close for spell",
-        NextAction::array(0, new NextAction("frost nova", 50.0f), NULL)));
+        NextAction::array({ new NextAction("frost nova", 50.0f) })));
 
     triggers.push_back(new TriggerNode(
         "counterspell",
-        NextAction::array(0, new NextAction("counterspell", 40.0f), NULL)));
+        NextAction::array({ new NextAction("counterspell", 40.0f) })));
 
     triggers.push_back(new TriggerNode(
         "counterspell on enemy healer",
-        NextAction::array(0, new NextAction("counterspell on enemy healer", 40.0f), NULL)));
+        NextAction::array({ new NextAction("counterspell on enemy healer", 40.0f) })));
 
     triggers.push_back(new TriggerNode(
         "critical health",
-        NextAction::array(0, new NextAction("ice block", 80.0f), NULL)));
+        NextAction::array({ new NextAction("ice block", 80.0f) })));
 
     triggers.push_back(new TriggerNode(
         "polymorph",
-        NextAction::array(0, new NextAction("polymorph", 30.0f), NULL)));
+        NextAction::array({ new NextAction("polymorph", 30.0f) })));
 
     triggers.push_back(new TriggerNode(
         "spellsteal",
-        NextAction::array(0, new NextAction("spellsteal", 40.0f), NULL)));
+        NextAction::array({ new NextAction("spellsteal", 40.0f) })));
 
     triggers.push_back(new TriggerNode(
         "medium threat",
-        NextAction::array(0, new NextAction("invisibility", 60.0f), NULL)));
+        NextAction::array({ new NextAction("invisibility", 60.0f) })));
 
     triggers.push_back(new TriggerNode(
         "low mana",
-        NextAction::array(0, new NextAction("evocation", ACTION_EMERGENCY + 5), NULL)));
+        NextAction::array({ new NextAction("evocation", ACTION_EMERGENCY + 5) })));
 }

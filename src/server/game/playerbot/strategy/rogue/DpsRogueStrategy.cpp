@@ -23,28 +23,28 @@ private:
     {
         return new ActionNode ("riposte",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("mutilate"), NULL),
+            /*A*/ NextAction::array({ new NextAction("mutilate") }),
             /*C*/ NULL);
     }
     static ActionNode* mutilate(PlayerbotAI* ai)
     {
         return new ActionNode ("mutilate",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("sinister strike"), NULL),
+            /*A*/ NextAction::array({ new NextAction("sinister strike") }),
             /*C*/ NULL);
     }
     static ActionNode* sinister_strike(PlayerbotAI* ai)
     {
         return new ActionNode ("sinister strike",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("melee"), NULL),
+            /*A*/ NextAction::array({ new NextAction("melee") }),
             /*C*/ NULL);
     }
     static ActionNode* kick(PlayerbotAI* ai)
     {
         return new ActionNode ("kick",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("kidney shot"), NULL),
+            /*A*/ NextAction::array({ new NextAction("kidney shot") }),
             /*C*/ NULL);
     }
     static ActionNode* kidney_shot(PlayerbotAI* ai)
@@ -58,14 +58,14 @@ private:
     {
         return new ActionNode ("rupture",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("eviscerate"), NULL),
+            /*A*/ NextAction::array({ new NextAction("eviscerate") }),
             /*C*/ NULL);
     }
     static ActionNode* backstab(PlayerbotAI* ai)
     {
         return new ActionNode ("backstab",
             /*P*/ NULL,
-            /*A*/ NextAction::array(0, new NextAction("mutilate"), NULL),
+            /*A*/ NextAction::array({ new NextAction("mutilate") }),
             /*C*/ NULL);
     }
 };
@@ -77,7 +77,7 @@ DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* ai) : MeleeCombatStrategy(ai)
 
 NextAction** DpsRogueStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("riposte", ACTION_NORMAL), NULL);
+    return NextAction::array({ new NextAction("riposte", ACTION_NORMAL) });
 }
 
 void DpsRogueStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
@@ -86,25 +86,25 @@ void DpsRogueStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
 
     triggers.push_back(new TriggerNode(
         "combo points available",
-        NextAction::array(0, new NextAction("rupture", ACTION_HIGH + 2), NULL)));
+        NextAction::array({ new NextAction("rupture", ACTION_HIGH + 2) })));
 
     triggers.push_back(new TriggerNode(
         "medium threat",
-        NextAction::array(0, new NextAction("vanish", ACTION_HIGH), NULL)));
+        NextAction::array({ new NextAction("vanish", ACTION_HIGH) })));
 
     triggers.push_back(new TriggerNode(
         "low health",
-        NextAction::array(0, new NextAction("evasion", ACTION_EMERGENCY), new NextAction("feint", ACTION_EMERGENCY), NULL)));
+        NextAction::array({ new NextAction("evasion", ACTION_EMERGENCY), new NextAction("feint", ACTION_EMERGENCY) })));
 
     triggers.push_back(new TriggerNode(
         "kick",
-        NextAction::array(0, new NextAction("kick", ACTION_INTERRUPT + 2), NULL)));
+        NextAction::array({ new NextAction("kick", ACTION_INTERRUPT + 2) })));
 
     triggers.push_back(new TriggerNode(
         "kick on enemy healer",
-        NextAction::array(0, new NextAction("kick on enemy healer", ACTION_INTERRUPT + 1), NULL)));
+        NextAction::array({ new NextAction("kick on enemy healer", ACTION_INTERRUPT + 1) })));
 
     triggers.push_back(new TriggerNode(
         "behind target",
-        NextAction::array(0, new NextAction("backstab", ACTION_NORMAL), NULL)));
+        NextAction::array({ new NextAction("backstab", ACTION_NORMAL) })));
 }

@@ -601,7 +601,7 @@ void SpellMgr::LoadSpellAffects(bool reload)
                 ASSERT(nextSpellInfo);
                 if (!nextSpellInfo->Effects[effect].SpellClassMask)
                     nextSpellInfo->Effects[effect].SpellClassMask = familyMask;
-            } while (next = next->ChainEntry->next);
+            } while ((next = next->ChainEntry->next));
         }
     }
     TC_LOG_INFO("server.loading", ">> Loaded %u spell affect definitions", count);

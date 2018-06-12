@@ -33,7 +33,7 @@ namespace ai {
 
         virtual NextAction** getPrerequisites()
         {
-            return NextAction::merge( NextAction::array(0, new NextAction("reach melee"), NULL), CastDebuffSpellAction::getPrerequisites());
+            return NextAction::merge( NextAction::array({ new NextAction("reach melee") }), CastDebuffSpellAction::getPrerequisites());
         }
     };
 

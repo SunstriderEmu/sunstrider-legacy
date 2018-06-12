@@ -48,27 +48,12 @@ NextAction** NextAction::merge(NextAction** left, NextAction** right)
     return res;
 }
 
-NextAction** NextAction::array(uint8 nil, ...)
+NextAction** NextAction::array(std::initializer_list<NextAction*> args)
 {
-    va_list vl;
-    va_start(vl, nil);
-    
-    int size = 0;
-    NextAction* cur = NULL;
-    do 
-    {
-        cur = va_arg(vl, NextAction*);
-        size++;
-    }
-    while (cur);
-
-    va_end(vl);
-
-    NextAction** res = new NextAction*[size];
-    va_start(vl, nil);
-    for (int i=0; i<size; i++)
-        res[i] = va_arg(vl, NextAction*);
-    va_end(vl);
+    NextAction** res = new NextAction*[args.size()];
+    uint8 i = 0;
+    for (auto elem : args)
+        res[i++] = elem;
 
     return res;
 }
