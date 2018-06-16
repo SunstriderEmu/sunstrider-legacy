@@ -39,7 +39,7 @@ bool FlightPathMovementGenerator::GetResetPosition(Unit*, float& x, float& y, fl
 
 bool FlightPathMovementGenerator::DoInitialize(Player* player)
 {
-    RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING);
+    RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING | MOVEMENTGENERATOR_FLAG_DEACTIVATED);
     AddFlag(MOVEMENTGENERATOR_FLAG_INITIALIZED);
 
     Reset(player);

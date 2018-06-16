@@ -35,7 +35,7 @@ FollowMovementGenerator::~FollowMovementGenerator() = default;
 
 bool FollowMovementGenerator::Initialize(Unit* owner)
 {
-    RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING);
+    RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING | MOVEMENTGENERATOR_FLAG_DEACTIVATED);
     AddFlag(MOVEMENTGENERATOR_FLAG_INITIALIZED);
 
     owner->StopMoving();

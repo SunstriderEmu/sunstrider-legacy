@@ -151,7 +151,7 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
 
 bool WaypointMovementGenerator<Creature>::DoInitialize(Creature* creature)
 {
-    RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING);
+    RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING | MOVEMENTGENERATOR_FLAG_DEACTIVATED | MOVEMENTGENERATOR_FLAG_TRANSITORY);
 
     if (!creature->IsAlive())
         return false;
