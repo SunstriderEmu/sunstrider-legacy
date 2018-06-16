@@ -12,14 +12,14 @@ GenericMovementGenerator::GenericMovementGenerator(Movement::MoveSplineInit&& sp
 
 bool GenericMovementGenerator::Initialize(Unit* /*owner*/)
 {
-    if (HasFlag(MOVEMENTGENERATOR_FLAG_DEACTIVATED)) // Resume spline is not supported
+    if (HasFlag(MOVEMENTGENERATOR_FLAG_DEACTIVATED) && !HasFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING)) // Resume spline is not supported
     {
         RemoveFlag(MOVEMENTGENERATOR_FLAG_DEACTIVATED);
         AddFlag(MOVEMENTGENERATOR_FLAG_FINALIZED);
         return true;
     }
 
-    RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING);
+    RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING | MOVEMENTGENERATOR_FLAG_DEACTIVATED);
     AddFlag(MOVEMENTGENERATOR_FLAG_INITIALIZED);
 
     _duration.Reset(_splineInit.Launch());
