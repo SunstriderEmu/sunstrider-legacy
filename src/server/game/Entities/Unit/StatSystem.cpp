@@ -567,7 +567,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
             {
                 //Check if Predatory Strikes is skilled
                 float mLevelMult = 0.0;
-                if (IsInFeralForm())
+                if (IsInFeralForm() || m_form == FORM_MOONKIN)
                 {
                     if (AuraEffect const* levelMod = GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_DRUID, 1563, EFFECT_0))
                         mLevelMult = CalculatePct(1.0f, levelMod->GetAmount());
