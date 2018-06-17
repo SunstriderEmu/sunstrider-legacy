@@ -10,12 +10,10 @@ uint32 GetMoonkinBaseAP(TestPlayer* player, uint32 level = 70)
 {
 	uint32 const startStr = player->GetStat(STAT_STRENGTH);
 
-
-	uint32 const moonkinBonus = level * 1.5f; // From tooltips
 	uint32 const moonkinLevelBonus = level * 1.5f;
 	uint32 const moonkinMeleeBase = startStr * 2 + moonkinLevelBonus - 20;
 
-	return moonkinMeleeBase + moonkinBonus;
+	return moonkinMeleeBase;
 }
 
 uint32 GetCatBaseAP(TestPlayer* player, uint32 level = 70)
@@ -23,33 +21,30 @@ uint32 GetCatBaseAP(TestPlayer* player, uint32 level = 70)
 	uint32 const startAgi = player->GetStat(STAT_AGILITY);
 	uint32 const startStr = player->GetStat(STAT_STRENGTH);
 
-	uint32 const catBonus = 40 + startAgi; // From tooltip
 	uint32 const catLevelBonus = level * 2.0f;
 	uint32 const catMeleeBase = startStr * 2 + startAgi + catLevelBonus - 20;
 
-	return catMeleeBase + catBonus;
+    return catMeleeBase;
 }
 
 uint32 GetBearBaseAP(TestPlayer* player, uint32 level = 70)
 {
 	uint32 const startStr = player->GetStat(STAT_STRENGTH);
 
-	uint32 const bearBonus = 30; // From tooltip
 	uint32 const bearLevelBonus = level * 3.0f;
 	uint32 const bearMeleeBase = startStr * 2 + bearLevelBonus - 20;
 
-	return bearMeleeBase + bearBonus;
+	return bearMeleeBase;
 }
 
 uint32 GetDireBearBaseAP(TestPlayer* player, uint32 level = 70)
 {
 	uint32 const startStr = player->GetStat(STAT_STRENGTH);
 
-	uint32 const direBearBonus = 120; // From tooltips
 	uint32 const bearLevelBonus = level * 3.0f;
 	uint32 const bearMeleeBase = startStr * 2 + bearLevelBonus - 20;
 
-	return bearMeleeBase + direBearBonus;
+	return bearMeleeBase;
 }
 
 class StarlightWrathTest : public TestCaseScript

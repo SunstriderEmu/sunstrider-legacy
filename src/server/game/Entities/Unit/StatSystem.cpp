@@ -575,13 +575,14 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
 
                 switch(m_form)
                 {
+                    //sun: removed the base level multiplicator part as it actually is the AP bonus from the spell effects... (such as spell 3025 effect 0)
                     case FORM_CAT:
-                        val2 = GetLevel()*(mLevelMult+2.0f) + GetStat(STAT_STRENGTH)*2.0f + GetStat(STAT_AGILITY) - 20.0f; break; // http://wowwiki.wikia.com/wiki/Cat_Form?oldid=1572074
+                        val2 = GetLevel()*mLevelMult + GetStat(STAT_STRENGTH)*2.0f + GetStat(STAT_AGILITY) - 20.0f; break; // http://wowwiki.wikia.com/wiki/Cat_Form?oldid=1572074
                     case FORM_BEAR:
                     case FORM_DIREBEAR:
-                        val2 = GetLevel()*(mLevelMult+3.0f) + GetStat(STAT_STRENGTH)*2.0f - 20.0f; break; //http://wowwiki.wikia.com/wiki/Dire_Bear_Form?oldid=1371376
+                        val2 = GetLevel()*mLevelMult + GetStat(STAT_STRENGTH)*2.0f - 20.0f; break; //http://wowwiki.wikia.com/wiki/Dire_Bear_Form?oldid=1371376
                     case FORM_MOONKIN:
-                        val2 = GetLevel()*(mLevelMult+1.5f) + GetStat(STAT_STRENGTH)*2.0f - 20.0f; break; //http://wowwiki.wikia.com/wiki/Moonkin_Form?oldid=1624337
+                        val2 = GetLevel()*mLevelMult + GetStat(STAT_STRENGTH)*2.0f - 20.0f; break; //http://wowwiki.wikia.com/wiki/Moonkin_Form?oldid=1624337
                     default:
                         val2 = GetStat(STAT_STRENGTH)*2.0f - 20.0f; break;
                 }
