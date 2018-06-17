@@ -7,7 +7,7 @@ namespace ai
     class CastBattleMeleeSpellAction : public CastMeleeSpellAction {
     public:
         CastBattleMeleeSpellAction(PlayerbotAI* ai, std::string spell) : CastMeleeSpellAction(ai, spell) {}
-        virtual NextAction** getPrerequisites() {
+        virtual ActionList getPrerequisites() {
             return NextAction::merge( NextAction::array({ new NextAction("battle stance") }), CastMeleeSpellAction::getPrerequisites());
         }
     };
@@ -16,7 +16,7 @@ namespace ai
     class CastDefensiveMeleeSpellAction : public CastMeleeSpellAction {
     public:
         CastDefensiveMeleeSpellAction(PlayerbotAI* ai, std::string spell) : CastMeleeSpellAction(ai, spell) {}
-        virtual NextAction** getPrerequisites() {
+        virtual ActionList getPrerequisites() {
             return NextAction::merge( NextAction::array({ new NextAction("defensive stance") }), CastMeleeSpellAction::getPrerequisites());
         }
     };
@@ -66,7 +66,7 @@ namespace ai
     class CastTauntAction : public CastSpellAction {
     public:
         CastTauntAction(PlayerbotAI* ai) : CastSpellAction(ai, "taunt") {}
-        virtual NextAction** getPrerequisites() {
+        virtual ActionList getPrerequisites() {
             return NextAction::merge( NextAction::array({ new NextAction("defensive stance") }), CastSpellAction::getPrerequisites());
         }
     };
@@ -75,7 +75,7 @@ namespace ai
     class CastShieldBlockAction : public CastBuffSpellAction {
     public:
         CastShieldBlockAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "shield block") {}
-        virtual NextAction** getPrerequisites() {
+        virtual ActionList getPrerequisites() {
             return NextAction::merge( NextAction::array({ new NextAction("defensive stance") }), CastSpellAction::getPrerequisites());
         }
     };
@@ -111,28 +111,28 @@ namespace ai
 
     // after dodge
     BEGIN_MELEE_SPELL_ACTION(CastRevengeAction, "revenge")
-        virtual NextAction** getPrerequisites();
+        virtual ActionList getPrerequisites();
     END_SPELL_ACTION()
 
 
     //debuffs
     BEGIN_DEBUFF_ACTION(CastRendAction, "rend")
-        virtual NextAction** getPrerequisites();
+        virtual ActionList getPrerequisites();
     END_SPELL_ACTION()
 
     class CastRendOnAttackerAction : public CastDebuffSpellOnAttackerAction
     {
     public:
         CastRendOnAttackerAction(PlayerbotAI* ai) : CastDebuffSpellOnAttackerAction(ai, "rend") {}
-        virtual NextAction** getPrerequisites();
+        virtual ActionList getPrerequisites();
     };
 
     BEGIN_DEBUFF_ACTION(CastDisarmAction, "disarm")
-        virtual NextAction** getPrerequisites();
+        virtual ActionList getPrerequisites();
     END_SPELL_ACTION()
 
     BEGIN_DEBUFF_ACTION(CastSunderArmorAction, "sunder armor") // 5 times
-        virtual NextAction** getPrerequisites();
+        virtual ActionList getPrerequisites();
     END_SPELL_ACTION()
 
     class CastDemoralizingShoutAction : public CastDebuffSpellAction {

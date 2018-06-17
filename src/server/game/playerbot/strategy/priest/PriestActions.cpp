@@ -5,12 +5,12 @@
 using namespace ai;
 
 
-NextAction** CastAbolishDiseaseAction::getAlternatives()
+ActionList CastAbolishDiseaseAction::getAlternatives()
 {
     return NextAction::merge(NextAction::array({ new NextAction("cure disease") }), CastSpellAction::getAlternatives());
 }
 
-NextAction** CastAbolishDiseaseOnPartyAction::getAlternatives()
+ActionList CastAbolishDiseaseOnPartyAction::getAlternatives()
 {
     return NextAction::merge(NextAction::array({ new NextAction("cure disease on party") }), CastSpellAction::getAlternatives());
 }

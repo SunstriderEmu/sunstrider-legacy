@@ -19,22 +19,22 @@ private:
     {
         return new ActionNode ("mark of the wild",
             /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* mark_of_the_wild_on_party(PlayerbotAI* ai)
     {
         return new ActionNode ("mark of the wild on party",
             /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* innervate(PlayerbotAI* ai)
     {
         return new ActionNode ("innervate",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("drink") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 

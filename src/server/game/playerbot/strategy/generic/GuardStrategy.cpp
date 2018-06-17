@@ -5,7 +5,7 @@
 using namespace ai;
 
 
-NextAction** GuardStrategy::getDefaultActions()
+ActionList GuardStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("guard", 4.0f) });
 }

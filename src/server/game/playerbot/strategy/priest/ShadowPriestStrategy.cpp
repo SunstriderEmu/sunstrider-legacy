@@ -11,7 +11,7 @@ ShadowPriestStrategy::ShadowPriestStrategy(PlayerbotAI* ai) : GenericPriestStrat
     actionNodeFactories.Add(new ShadowPriestStrategyActionNodeFactory());
 }
 
-NextAction** ShadowPriestStrategy::getDefaultActions()
+ActionList ShadowPriestStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("mind blast", 10.0f) });
 }

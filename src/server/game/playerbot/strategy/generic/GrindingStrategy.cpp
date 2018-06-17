@@ -5,9 +5,9 @@
 using namespace ai;
 
 
-NextAction** GrindingStrategy::getDefaultActions()
+ActionList GrindingStrategy::getDefaultActions()
 {
-    return NULL;
+    return {};
 }
 
 void GrindingStrategy::InitTriggers(std::list<TriggerNode*> &triggers)

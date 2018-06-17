@@ -18,9 +18,9 @@ private:
     static ActionNode* shadow_bolt(PlayerbotAI* ai)
     {
         return new ActionNode ("shadow bolt",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("shoot") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 
@@ -30,7 +30,7 @@ DpsWarlockStrategy::DpsWarlockStrategy(PlayerbotAI* ai) : GenericWarlockStrategy
 }
 
 
-NextAction** DpsWarlockStrategy::getDefaultActions()
+ActionList DpsWarlockStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("incinirate", 10.0f), new NextAction("shadow bolt", 10.0f) });
 }

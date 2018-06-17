@@ -18,23 +18,23 @@ private:
     static ActionNode* arcane_blast(PlayerbotAI* ai)
     {
         return new ActionNode ("arcane blast",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("arcane missiles") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* arcane_barrage(PlayerbotAI* ai)
     {
         return new ActionNode ("arcane barrage",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("arcane missiles") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* arcane_missiles(PlayerbotAI* ai)
     {
         return new ActionNode ("arcane missiles",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("shoot") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 
@@ -43,7 +43,7 @@ ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* ai) : GenericMageStrategy(ai
     actionNodeFactories.Add(new ArcaneMageStrategyActionNodeFactory());
 }
 
-NextAction** ArcaneMageStrategy::getDefaultActions()
+ActionList ArcaneMageStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("arcane barrage", 10.0f) });
 }

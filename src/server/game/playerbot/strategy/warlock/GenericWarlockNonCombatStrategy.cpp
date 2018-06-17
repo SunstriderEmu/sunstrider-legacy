@@ -17,16 +17,16 @@ private:
     static ActionNode* fel_armor(PlayerbotAI* ai)
     {
         return new ActionNode ("fel armor",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("demon armor") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* demon_armor(PlayerbotAI* ai)
     {
         return new ActionNode ("demon armor",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("demon skin") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 

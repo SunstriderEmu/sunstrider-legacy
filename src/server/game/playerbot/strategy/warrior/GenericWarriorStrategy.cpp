@@ -19,22 +19,22 @@ private:
     {
         return new ActionNode ("hamstring",
             /*P*/ NextAction::array({ new NextAction("battle stance") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* heroic_strike(PlayerbotAI* ai)
     {
         return new ActionNode ("heroic strike",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* battle_shout(PlayerbotAI* ai)
     {
         return new ActionNode ("battle shout",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 

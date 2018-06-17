@@ -711,8 +711,7 @@ bool WaypointMovementGenerator<Creature>::GetResetPosition(Unit*, float& x, floa
     ASSERT(_currentNode < _path->nodes.size(), "WaypointMovementGenerator::GetResetPosition: tried to reference a node id (%u) which is not included in path (%u)", _currentNode, _path->id);
     WaypointNode const &waypoint = _path->nodes.at(_currentNode);
 
-    WaypointNode const& node = _path->nodes.at(_currentNode);
-    x = node.x; y = node.y; z = node.z;
+    x = waypoint.x; y = waypoint.y; z = waypoint.z;
     return true;
 }
 

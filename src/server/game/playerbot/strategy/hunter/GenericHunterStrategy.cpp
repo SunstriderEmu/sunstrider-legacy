@@ -19,23 +19,23 @@ private:
     static ActionNode* rapid_fire(PlayerbotAI* ai)
     {
         return new ActionNode ("rapid fire",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("readiness") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* aspect_of_the_pack(PlayerbotAI* ai)
     {
         return new ActionNode ("aspect of the pack",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("aspect of the cheetah") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* feign_death(PlayerbotAI* ai)
     {
         return new ActionNode ("feign death",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("flee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 

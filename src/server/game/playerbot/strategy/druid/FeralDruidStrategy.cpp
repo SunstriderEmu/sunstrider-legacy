@@ -20,44 +20,44 @@ private:
     static ActionNode* survival_instincts(PlayerbotAI* ai)
     {
         return new ActionNode ("survival instincts",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("barskin") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* thorns(PlayerbotAI* ai)
     {
         return new ActionNode ("thorns",
             /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* cure_poison(PlayerbotAI* ai)
     {
         return new ActionNode ("cure poison",
             /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* cure_poison_on_party(PlayerbotAI* ai)
     {
         return new ActionNode ("cure poison on party",
             /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* abolish_poison(PlayerbotAI* ai)
     {
         return new ActionNode ("abolish poison",
             /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* abolish_poison_on_party(PlayerbotAI* ai)
     {
         return new ActionNode ("abolish poison on party",
             /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
 };
 

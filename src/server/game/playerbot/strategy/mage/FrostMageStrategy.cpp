@@ -10,7 +10,7 @@ FrostMageStrategy::FrostMageStrategy(PlayerbotAI* ai) : GenericMageStrategy(ai)
 {
 }
 
-NextAction** FrostMageStrategy::getDefaultActions()
+ActionList FrostMageStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("frostbolt", 7.0f) });
 }

@@ -16,9 +16,9 @@ namespace ai
         static ActionNode* smite(PlayerbotAI* ai)
         {
             return new ActionNode ("smite",
-                /*P*/ NULL,
+                /*P*/ {},
                 /*A*/ NextAction::array({ new NextAction("shoot") }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
     };
 };
@@ -30,7 +30,7 @@ HolyPriestStrategy::HolyPriestStrategy(PlayerbotAI* ai) : HealPriestStrategy(ai)
     actionNodeFactories.Add(new HolyPriestStrategyActionNodeFactory());
 }
 
-NextAction** HolyPriestStrategy::getDefaultActions()
+ActionList HolyPriestStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("holy fire", 10.0f), new NextAction("smite", 10.0f) });
 }

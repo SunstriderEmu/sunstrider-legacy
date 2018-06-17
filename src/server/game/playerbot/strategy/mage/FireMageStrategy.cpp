@@ -5,7 +5,7 @@
 
 using namespace ai;
 
-NextAction** FireMageStrategy::getDefaultActions()
+ActionList FireMageStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("scorch", 7.0f), new NextAction("fireball", 6.0f), new NextAction("fire blast", 5.0f) });
 }

@@ -17,16 +17,16 @@ private:
     static ActionNode* summon_voidwalker(PlayerbotAI* ai)
     {
         return new ActionNode ("summon voidwalker",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("drain soul") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* banish(PlayerbotAI* ai)
     {
         return new ActionNode ("banish",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("fear") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 
@@ -35,7 +35,7 @@ GenericWarlockStrategy::GenericWarlockStrategy(PlayerbotAI* ai) : RangedCombatSt
     actionNodeFactories.Add(new GenericWarlockStrategyActionNodeFactory());
 }
 
-NextAction** GenericWarlockStrategy::getDefaultActions()
+ActionList GenericWarlockStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("shoot", 10.0f) });
 }

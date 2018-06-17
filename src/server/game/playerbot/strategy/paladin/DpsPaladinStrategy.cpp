@@ -20,30 +20,30 @@ private:
     static ActionNode* seal_of_vengeance(PlayerbotAI* ai)
     {
         return new ActionNode ("seal of vengeance",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("seal of command") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* seal_of_command(PlayerbotAI* ai)
     {
         return new ActionNode ("seal of command",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("seal of wisdom") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* blessing_of_might(PlayerbotAI* ai)
     {
         return new ActionNode ("blessing of might",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("blessing of kings") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* crusader_strike(PlayerbotAI* ai)
     {
         return new ActionNode ("crusader strike",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 
@@ -52,7 +52,7 @@ DpsPaladinStrategy::DpsPaladinStrategy(PlayerbotAI* ai) : GenericPaladinStrategy
     actionNodeFactories.Add(new DpsPaladinStrategyActionNodeFactory());
 }
 
-NextAction** DpsPaladinStrategy::getDefaultActions()
+ActionList DpsPaladinStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("crusader strike", ACTION_NORMAL + 1) });
 }

@@ -190,7 +190,7 @@ namespace ai
     class CastAbolishDiseaseAction : public CastCureSpellAction {
     public:
         CastAbolishDiseaseAction(PlayerbotAI* ai) : CastCureSpellAction(ai, "abolish disease") {}
-        virtual NextAction** getAlternatives();
+        virtual ActionList getAlternatives();
     };
 
     class CastAbolishDiseaseOnPartyAction : public CurePartyMemberAction
@@ -198,7 +198,7 @@ namespace ai
     public:
         CastAbolishDiseaseOnPartyAction(PlayerbotAI* ai) : CurePartyMemberAction(ai, "abolish disease", DISPEL_DISEASE) {}
         virtual std::string getName() { return "abolish disease on party"; }
-        virtual NextAction** getAlternatives();
+        virtual ActionList getAlternatives();
     };
 
     class CastDispelMagicAction : public CastCureSpellAction {

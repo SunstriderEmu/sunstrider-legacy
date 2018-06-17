@@ -17,16 +17,16 @@ private:
     static ActionNode* summon_voidwalker(PlayerbotAI* ai)
     {
         return new ActionNode ("summon voidwalker",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("drain soul") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* summon_felguard(PlayerbotAI* ai)
     {
         return new ActionNode ("summon felguard",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("summon voidwalker") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 
@@ -35,7 +35,7 @@ TankWarlockStrategy::TankWarlockStrategy(PlayerbotAI* ai) : GenericWarlockStrate
     actionNodeFactories.Add(new GenericWarlockStrategyActionNodeFactory());
 }
 
-NextAction** TankWarlockStrategy::getDefaultActions()
+ActionList TankWarlockStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("shoot", 10.0f) });
 }

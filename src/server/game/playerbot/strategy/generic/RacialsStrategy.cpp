@@ -16,9 +16,9 @@ private:
     static ActionNode* lifeblood(PlayerbotAI* ai)
     {
         return new ActionNode ("lifeblood",  
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("gift of the naaru") }), 
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 

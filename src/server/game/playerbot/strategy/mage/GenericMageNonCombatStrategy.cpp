@@ -18,23 +18,23 @@ private:
     static ActionNode* molten_armor(PlayerbotAI* ai)
     {
         return new ActionNode ("molten armor",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("mage armor") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* mage_armor(PlayerbotAI* ai)
     {
         return new ActionNode ("mage armor",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("ice armor") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* ice_armor(PlayerbotAI* ai)
     {
         return new ActionNode ("ice armor",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("frost armor") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 

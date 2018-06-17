@@ -5,7 +5,7 @@
 using namespace ai;
 
 
-NextAction** RunawayStrategy::getDefaultActions()
+ActionList RunawayStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("runaway", 50.0f) });
 }

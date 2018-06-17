@@ -4,7 +4,7 @@
 
 using namespace ai;
 
-NextAction** StayStrategy::getDefaultActions()
+ActionList StayStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("stay", 1.0f) });
 }

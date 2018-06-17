@@ -25,72 +25,72 @@ private:
     static ActionNode* earth_shock(PlayerbotAI* ai)
     {
         return new ActionNode ("earth shock",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("flame shock") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* flametongue_weapon(PlayerbotAI* ai)
     {
         return new ActionNode ("flametongue weapon",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("frostbrand weapon") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* frostbrand_weapon(PlayerbotAI* ai)
     {
         return new ActionNode ("frostbrand weapon",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("rockbiter weapon") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* windfury_weapon(PlayerbotAI* ai)
     {
         return new ActionNode ("windfury weapon",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("rockbiter weapon") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* lesser_healing_wave(PlayerbotAI* ai)
     {
         return new ActionNode ("lesser healing wave",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("healing wave") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* lesser_healing_wave_on_party(PlayerbotAI* ai)
     {
         return new ActionNode ("lesser healing wave on party",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("healing wave on party") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* chain_heal(PlayerbotAI* ai)
     {
         return new ActionNode ("chain heal",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("lesser healing wave") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* riptide(PlayerbotAI* ai)
     {
         return new ActionNode ("riptide",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("healing wave") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* chain_heal_on_party(PlayerbotAI* ai)
     {
         return new ActionNode ("chain heal on party",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("lesser healing wave on party") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* riptide_on_party(PlayerbotAI* ai)
     {
         return new ActionNode ("riptide on party",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("healing wave on party") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 

@@ -26,64 +26,64 @@ private:
     {
         return new ActionNode ("melee",
             /*P*/ NextAction::array({ new NextAction("reach melee") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* caster_form(PlayerbotAI* ai)
     {
         return new ActionNode ("caster form",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* cure_poison(PlayerbotAI* ai)
     {
         return new ActionNode ("cure poison",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* cure_poison_on_party(PlayerbotAI* ai)
     {
         return new ActionNode ("cure poison on party",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* abolish_poison(PlayerbotAI* ai)
     {
         return new ActionNode ("abolish poison",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* abolish_poison_on_party(PlayerbotAI* ai)
     {
         return new ActionNode ("abolish poison on party",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* rebirth(PlayerbotAI* ai)
     {
         return new ActionNode ("rebirth",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* entangling_roots_on_cc(PlayerbotAI* ai)
     {
         return new ActionNode ("entangling roots on cc",
             /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* innervate(PlayerbotAI* ai)
     {
         return new ActionNode ("innervate",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("mana potion") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 

@@ -33,7 +33,7 @@ namespace ai
         virtual void ExternalEvent(std::string param, Player* owner = nullptr) {}
         virtual void ExternalEvent(WorldPacket &packet, Player* owner = nullptr) {}
         virtual bool IsActive() { return false; }
-        virtual NextAction** getHandlers() { return nullptr; }
+        virtual ActionList getHandlers() { return ActionList(); }
         void Update() {}
         virtual void Reset() {}
         virtual Unit* GetTarget();
@@ -57,7 +57,7 @@ namespace ai
     class TriggerNode
     {
     public:
-        TriggerNode(std::string name, NextAction** handlers = nullptr)
+        TriggerNode(std::string name, ActionList const handlers)
         {
             this->name = name;
             this->handlers = handlers;
@@ -74,11 +74,11 @@ namespace ai
         std::string getName() { return name; }
 
     public:
-        NextAction** getHandlers() { return NextAction::merge(NextAction::clone(handlers), trigger->getHandlers()); }
+        ActionList getHandlers() { return NextAction::merge(NextAction::clone(handlers), trigger->getHandlers()); }
 
     private:
         Trigger* trigger;
-        NextAction** handlers;
+        ActionList handlers;
         std::string name;
     };
 }

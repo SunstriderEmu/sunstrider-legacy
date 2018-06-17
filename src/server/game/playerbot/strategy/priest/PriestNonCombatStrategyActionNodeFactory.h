@@ -27,99 +27,99 @@ namespace ai
         {
             return new ActionNode ("holy nova",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* power_word_shield(PlayerbotAI* ai)
         {
             return new ActionNode ("power word: shield",
-                /*P*/ NULL,
+                /*P*/ {},
                 /*A*/ NextAction::array({ new NextAction("renew", 50.0f) }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
         static ActionNode* power_word_shield_on_party(PlayerbotAI* ai)
         {
             return new ActionNode ("power word: shield on party",
-                /*P*/ NULL,
+                /*P*/ {},
                 /*A*/ NextAction::array({ new NextAction("renew on party", 50.0f) }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
         static ActionNode* renew(PlayerbotAI* ai)
         {
             return new ActionNode ("renew",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* renew_on_party(PlayerbotAI* ai)
         {
             return new ActionNode ("renew on party",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* greater_heal(PlayerbotAI* ai)
         {
             return new ActionNode ("greater heal",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
                 /*A*/ NextAction::array({ new NextAction("heal") }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
         static ActionNode* greater_heal_on_party(PlayerbotAI* ai)
         {
             return new ActionNode ("greater heal on party",
-                /*P*/ NULL,
+                /*P*/ {},
                 /*A*/ NextAction::array({ new NextAction("heal on party") }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
         static ActionNode* heal(PlayerbotAI* ai)
         {
             return new ActionNode ("heal",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
                 /*A*/ NextAction::array({ new NextAction("lesser heal") }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
         static ActionNode* heal_on_party(PlayerbotAI* ai)
         {
             return new ActionNode ("heal on party",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
                 /*A*/ NextAction::array({ new NextAction("lesser heal on party") }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
         static ActionNode* lesser_heal(PlayerbotAI* ai)
         {
             return new ActionNode ("lesser heal",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* lesser_heal_on_party(PlayerbotAI* ai)
         {
             return new ActionNode ("lesser heal on party",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* flash_heal(PlayerbotAI* ai)
         {
             return new ActionNode ("flash heal",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* flash_heal_on_party(PlayerbotAI* ai)
         {
             return new ActionNode ("flash heal on party",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* circle_of_healing(PlayerbotAI* ai)
         {
             return new ActionNode ("circle of healing",
                 /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
                 /*A*/ NextAction::array({ new NextAction("flash heal on party") }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
     };
 

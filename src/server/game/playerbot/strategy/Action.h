@@ -5,10 +5,13 @@
 
 namespace ai
 {
+    class NextAction;
+    typedef std::vector<NextAction*> ActionList;
     class NextAction
     {
     public:
-        NextAction(std::string name, float relevance = 0.0f)
+
+        NextAction(std::string const name, float relevance = 0.0f)
         {
             this->name = name;
             this->relevance = relevance;
@@ -18,17 +21,19 @@ namespace ai
             this->name = o.name;
             this->relevance = o.relevance;
         }
+        ~NextAction()
+        {
+        }
 
     public:
         std::string getName() { return name; }
         float getRelevance() {return relevance;}
 
     public:
-        static int size(NextAction** actions);
-        static NextAction** clone(NextAction** actions);
-        static NextAction** merge(NextAction** what, NextAction** with);
-        static NextAction** array(std::initializer_list<NextAction*> args);
-        static void destroy(NextAction** actions);
+        static ActionList clone(ActionList actions);
+        static ActionList merge(ActionList what, ActionList with);
+        static ActionList array(std::initializer_list<NextAction*> args);
+        static void destroy(ActionList& actions);
 
     private:
         float relevance;
@@ -56,9 +61,9 @@ namespace ai
         virtual bool Execute(Event event) { return true; }
         virtual bool isPossible() { return true; }
         virtual bool isUseful() { return true; }
-        virtual NextAction** getPrerequisites() { return nullptr; }
-        virtual NextAction** getAlternatives() { return nullptr; }
-        virtual NextAction** getContinuers() { return nullptr; }
+        virtual ActionList getPrerequisites() { return ActionList(); }
+        virtual ActionList getAlternatives() { return ActionList(); }
+        virtual ActionList getContinuers() { return ActionList(); }
         virtual ActionThreatType getThreatType() { return ACTION_THREAT_NONE; }
         void Update() {}
         void Reset() {}
@@ -74,7 +79,7 @@ namespace ai
     class ActionNode
     {
     public:
-        ActionNode(std::string name, NextAction** prerequisites = nullptr, NextAction** alternatives = nullptr, NextAction** continuers = nullptr)
+        ActionNode(std::string name, ActionList prerequisites = {}, ActionList alternatives = {}, ActionList continuers = {})
         {
             this->action = nullptr;
             this->name = name;
@@ -95,16 +100,16 @@ namespace ai
         std::string getName() { return name; }
 
     public:
-        NextAction** getContinuers() { return NextAction::merge(NextAction::clone(continuers), action->getContinuers()); }
-        NextAction** getAlternatives() { return NextAction::merge(NextAction::clone(alternatives), action->getAlternatives()); }
-        NextAction** getPrerequisites() { return NextAction::merge(NextAction::clone(prerequisites), action->getPrerequisites()); }
+        ActionList getContinuers() { return NextAction::merge(NextAction::clone(continuers), action->getContinuers()); }
+        ActionList getAlternatives() { return NextAction::merge(NextAction::clone(alternatives), action->getAlternatives()); }
+        ActionList getPrerequisites() { return NextAction::merge(NextAction::clone(prerequisites), action->getPrerequisites()); }
 
     private:
         std::string name;
         Action* action;
-        NextAction** continuers;
-        NextAction** alternatives;
-        NextAction** prerequisites;
+        ActionList continuers;
+        ActionList alternatives;
+        ActionList prerequisites;
     };
 
     //---------------------------------------------------------------------------------------------------------------------

@@ -9,7 +9,7 @@ namespace ai
         GrindingStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai) {}
         virtual std::string getName() { return "grind"; }
         virtual int GetType() { return STRATEGY_TYPE_DPS; }
-        NextAction** getDefaultActions();
+        ActionList getDefaultActions();
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);

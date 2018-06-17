@@ -17,16 +17,16 @@ private:
     static ActionNode* earthliving_weapon(PlayerbotAI* ai)
     {
         return new ActionNode ("earthliving weapon",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("flametongue weapon") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* mana_tide_totem(PlayerbotAI* ai)
     {
         return new ActionNode ("mana tide totem",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("mana potion") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 
 };

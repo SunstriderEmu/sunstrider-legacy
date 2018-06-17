@@ -5,7 +5,7 @@
 
 using namespace ai;
 
-NextAction** HealPriestStrategy::getDefaultActions()
+ActionList HealPriestStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("shoot", 10.0f) });
 }

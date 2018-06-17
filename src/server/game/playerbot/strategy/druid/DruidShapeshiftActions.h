@@ -17,7 +17,7 @@ namespace ai {
     public: 
         CastDireBearFormAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "dire bear form") {} 
         
-        virtual NextAction** getAlternatives() {
+        virtual ActionList getAlternatives() {
             return NextAction::merge(NextAction::array({ new NextAction("bear form") }), CastSpellAction::getAlternatives());
         }
     };

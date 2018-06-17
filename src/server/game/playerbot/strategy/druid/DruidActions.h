@@ -59,7 +59,7 @@ namespace ai
     public:
         CastReviveAction(PlayerbotAI* ai) : ResurrectPartyMemberAction(ai, "revive") {}
 
-        virtual NextAction** getPrerequisites() {
+        virtual ActionList getPrerequisites() {
             return NextAction::merge( NextAction::array({ new NextAction("caster form") }), ResurrectPartyMemberAction::getPrerequisites());
         }
     };
@@ -69,7 +69,7 @@ namespace ai
     public:
         CastRebirthAction(PlayerbotAI* ai) : ResurrectPartyMemberAction(ai, "rebirth") {}
 
-        virtual NextAction** getPrerequisites() {
+        virtual ActionList getPrerequisites() {
             return NextAction::merge( NextAction::array({ new NextAction("caster form") }), ResurrectPartyMemberAction::getPrerequisites());
         }
     };
@@ -172,7 +172,7 @@ namespace ai
     {
     public:
         CastAbolishPoisonAction(PlayerbotAI* ai) : CastCureSpellAction(ai, "abolish poison") {}
-        virtual NextAction** getAlternatives();
+        virtual ActionList getAlternatives();
     };
 
     class CastAbolishPoisonOnPartyAction : public CurePartyMemberAction
@@ -180,7 +180,7 @@ namespace ai
     public:
         CastAbolishPoisonOnPartyAction(PlayerbotAI* ai) : CurePartyMemberAction(ai, "abolish poison", DISPEL_POISON) {}
 
-        virtual NextAction** getAlternatives();
+        virtual ActionList getAlternatives();
     };
 
     class CastBarskinAction : public CastBuffSpellAction

@@ -10,12 +10,12 @@ bool CastCasterFormAction::Execute(Event event)
     return true;
 }
 
-NextAction** CastAbolishPoisonAction::getAlternatives()
+ActionList CastAbolishPoisonAction::getAlternatives()
 {
     return NextAction::merge( NextAction::array({ new NextAction("cure poison") }), CastSpellAction::getPrerequisites());
 }
 
-NextAction** CastAbolishPoisonOnPartyAction::getAlternatives()
+ActionList CastAbolishPoisonOnPartyAction::getAlternatives()
 {
     return NextAction::merge( NextAction::array({ new NextAction("cure poison on party") }), CastSpellAction::getPrerequisites());
 }

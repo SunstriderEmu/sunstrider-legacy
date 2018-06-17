@@ -18,22 +18,22 @@ private:
     static ActionNode* stormstrike(PlayerbotAI* ai)
     {
         return new ActionNode ("stormstrike",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("lava lash") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* lava_lash(PlayerbotAI* ai)
     {
         return new ActionNode ("lava lash",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* magma_totem(PlayerbotAI* ai)
     {
         return new ActionNode ("magma totem",
-            /*P*/ NULL,
-            /*A*/ NULL,
+            /*P*/ {},
+            /*A*/ {},
             /*C*/ NextAction::array({ new NextAction("fire nova") }));
     }
 };
@@ -43,7 +43,7 @@ MeleeShamanStrategy::MeleeShamanStrategy(PlayerbotAI* ai) : GenericShamanStrateg
     actionNodeFactories.Add(new MeleeShamanStrategyActionNodeFactory());
 }
 
-NextAction** MeleeShamanStrategy::getDefaultActions()
+ActionList MeleeShamanStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("stormstrike", 10.0f) });
 }

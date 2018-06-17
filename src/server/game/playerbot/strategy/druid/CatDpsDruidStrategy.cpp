@@ -24,65 +24,65 @@ private:
     static ActionNode* faerie_fire_feral(PlayerbotAI* ai)
     {
         return new ActionNode ("faerie fire (feral)",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* melee(PlayerbotAI* ai)
     {
         return new ActionNode ("melee",
             /*P*/ NextAction::array({ new NextAction("feral charge - cat") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* feral_charge_cat(PlayerbotAI* ai)
     {
         return new ActionNode ("feral charge - cat",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("reach melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* cat_form(PlayerbotAI* ai)
     {
         return new ActionNode ("cat form",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* claw(PlayerbotAI* ai)
     {
         return new ActionNode ("claw",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* mangle_cat(PlayerbotAI* ai)
     {
         return new ActionNode ("mangle (cat)",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("claw") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* rake(PlayerbotAI* ai)
     {
         return new ActionNode ("rake",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* ferocious_bite(PlayerbotAI* ai)
     {
         return new ActionNode ("ferocious bite",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("rip") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* rip(PlayerbotAI* ai)
     {
         return new ActionNode ("rip",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
 };
 
@@ -91,7 +91,7 @@ CatDpsDruidStrategy::CatDpsDruidStrategy(PlayerbotAI* ai) : FeralDruidStrategy(a
     actionNodeFactories.Add(new CatDpsDruidStrategyActionNodeFactory());
 }
 
-NextAction** CatDpsDruidStrategy::getDefaultActions()
+ActionList CatDpsDruidStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("mangle (cat)", ACTION_NORMAL + 1) });
 }

@@ -23,58 +23,58 @@ private:
     static ActionNode* overpower(PlayerbotAI* ai)
     {
         return new ActionNode ("overpower",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* melee(PlayerbotAI* ai)
     {
         return new ActionNode ("melee",
             /*P*/ NextAction::array({ new NextAction("charge") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* charge(PlayerbotAI* ai)
     {
         return new ActionNode ("charge",
             /*P*/ NextAction::array({ new NextAction("battle stance") }),
             /*A*/ NextAction::array({ new NextAction("reach melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* bloodthirst(PlayerbotAI* ai)
     {
         return new ActionNode ("bloodthirst",
             /*P*/ NextAction::array({ new NextAction("battle stance") }),
             /*A*/ NextAction::array({ new NextAction("heroic strike") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* rend(PlayerbotAI* ai)
     {
         return new ActionNode ("rend",
             /*P*/ NextAction::array({ new NextAction("battle stance") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* mocking_blow(PlayerbotAI* ai)
     {
         return new ActionNode ("mocking blow",
             /*P*/ NextAction::array({ new NextAction("battle stance") }),
             /*A*/ NextAction::array({ }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* death_wish(PlayerbotAI* ai)
     {
         return new ActionNode ("death wish",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("berserker rage") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* execute(PlayerbotAI* ai)
     {
         return new ActionNode ("execute",
             /*P*/ NextAction::array({ new NextAction("battle stance") }),
             /*A*/ NextAction::array({ new NextAction("heroic strike") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 
@@ -83,7 +83,7 @@ DpsWarriorStrategy::DpsWarriorStrategy(PlayerbotAI* ai) : GenericWarriorStrategy
     actionNodeFactories.Add(new DpsWarriorStrategyActionNodeFactory());
 }
 
-NextAction** DpsWarriorStrategy::getDefaultActions()
+ActionList DpsWarriorStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("bloodthirst", ACTION_NORMAL + 1) });
 }

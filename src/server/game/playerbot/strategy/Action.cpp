@@ -5,42 +5,27 @@
 
 using namespace ai;
 
-int NextAction::size(NextAction** actions)
+ActionList NextAction::clone(ActionList actions)
 {
-    if (!actions)
-        return 0;
+    ActionList res;
+    res.reserve(actions.size());
+    for (auto itr : actions)
+        res.push_back(new NextAction(*itr));
 
-    int size;
-    for (size=0; size<10 && actions[size]; ) 
-        size++;
-    return size;
+    return std::move(res);
 }
 
-NextAction** NextAction::clone(NextAction** actions)
+ActionList NextAction::merge(ActionList left, ActionList right)
 {
-    if (!actions)
-        return NULL;
+    int leftSize = left.size();
+    int rightSize = right.size();
 
-    int size = NextAction::size(actions);
-
-    NextAction** res = new NextAction*[size + 1];
-    for (int i=0; i<size; i++)
-        res[i] = new NextAction(*actions[i]);
-    res[size] = NULL;
-    return res;
-}
-
-NextAction** NextAction::merge(NextAction** left, NextAction** right)
-{
-    int leftSize = NextAction::size(left);
-    int rightSize = NextAction::size(right);
-
-    NextAction** res = new NextAction*[leftSize + rightSize + 1];
-    for (int i=0; i<leftSize; i++)
-        res[i] = new NextAction(*left[i]);
-    for (int i=0; i<rightSize; i++)
-        res[leftSize + i] = new NextAction(*right[i]);
-    res[leftSize + rightSize] = NULL;
+    ActionList res;
+    res.reserve(leftSize + rightSize);
+    for (auto itr : left)
+        res.push_back(new NextAction(*itr));
+    for (auto itr : right)
+        res.push_back(new NextAction(*itr));
 
     NextAction::destroy(left);
     NextAction::destroy(right);
@@ -48,23 +33,22 @@ NextAction** NextAction::merge(NextAction** left, NextAction** right)
     return res;
 }
 
-NextAction** NextAction::array(std::initializer_list<NextAction*> args)
+ActionList NextAction::array(std::initializer_list<NextAction*> args)
 {
-    NextAction** res = new NextAction*[args.size()];
-    uint8 i = 0;
+    ActionList res;
+    res.reserve(args.size());
     for (auto elem : args)
-        res[i++] = elem;
+        res.push_back(elem);
 
     return res;
 }
 
-void NextAction::destroy(NextAction** actions)
+void NextAction::destroy(ActionList& actions)
 {
-    if (!actions)
-        return;
+    for (auto& itr : actions)
+        delete itr;
 
-    for (int i=0; i<10 && actions[i]; i++)
-        delete actions[i];
+    actions.clear();
 }
 
 Value<Unit*>* Action::GetTargetValue()

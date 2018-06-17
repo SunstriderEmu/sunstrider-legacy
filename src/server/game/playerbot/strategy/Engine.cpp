@@ -228,43 +228,38 @@ ActionNode* Engine::CreateActionNode(std::string name)
             return node;
     }
     return new ActionNode (name,
-        /*P*/ NULL,
-        /*A*/ NULL,
-        /*C*/ NULL);
+        /*P*/ {},
+        /*A*/ {},
+        /*C*/ {});
 }
 
-bool Engine::MultiplyAndPush(NextAction** actions, float forceRelevance, bool skipPrerequisites, Event event)
+bool Engine::MultiplyAndPush(ActionList actions, float forceRelevance, bool skipPrerequisites, Event event)
 {
     bool pushed = false;
-    if (actions)
+    if (!actions.empty())
     {
-        for (int j=0; j<10; j++) // TODO: remove 10
+        for(auto& nextAction : actions)
         {
-            NextAction* nextAction = actions[j];
-            if (nextAction)
+            ActionNode* action = CreateActionNode(nextAction->getName());
+            InitializeAction(action);
+
+            float k = nextAction->getRelevance();
+            if (forceRelevance > 0.0f)
             {
-                ActionNode* action = CreateActionNode(nextAction->getName());
-                InitializeAction(action);
-
-                float k = nextAction->getRelevance();
-                if (forceRelevance > 0.0f)
-                {
-                    k = forceRelevance;
-                }
-
-                if (k > 0)
-                {
-                    LogAction("PUSH:%s %f", action->getName().c_str(), k);
-                    queue.Push(new ActionBasket(action, k, skipPrerequisites, event));
-                    pushed = true;
-                }
-
-                delete nextAction;
+                k = forceRelevance;
             }
-            else
-                break;
+
+            if (k > 0)
+            {
+                LogAction("PUSH:%s %f", action->getName().c_str(), k);
+                queue.Push(new ActionBasket(action, k, skipPrerequisites, event));
+                pushed = true;
+            }
+
+            delete nextAction;
+            nextAction = nullptr;
         }
-        delete actions;
+        actions.clear();
     }
     return pushed;
 }
@@ -415,10 +410,9 @@ string Engine::ListStrategies()
 
 void Engine::PushAgain(ActionNode* actionNode, float relevance, Event event)
 {
-    NextAction** nextAction = new NextAction*[2];
-    nextAction[0] = new NextAction(actionNode->getName(), relevance);
-    nextAction[1] = NULL;
-    MultiplyAndPush(nextAction, relevance, true, event);
+    ActionList nextActions(1);
+    nextActions[0] = new NextAction(actionNode->getName(), relevance);
+    MultiplyAndPush(nextActions, relevance, true, event);
     delete actionNode;
 }
 

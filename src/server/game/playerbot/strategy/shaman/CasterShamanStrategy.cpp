@@ -16,8 +16,8 @@ private:
     static ActionNode* magma_totem(PlayerbotAI* ai)
     {
         return new ActionNode ("magma totem",
-            /*P*/ NULL,
-            /*A*/ NULL,
+            /*P*/ {},
+            /*A*/ {},
             /*C*/ NextAction::array({ new NextAction("fire nova") }));
     }
 };
@@ -27,7 +27,7 @@ CasterShamanStrategy::CasterShamanStrategy(PlayerbotAI* ai) : GenericShamanStrat
     actionNodeFactories.Add(new CasterShamanStrategyActionNodeFactory());
 }
 
-NextAction** CasterShamanStrategy::getDefaultActions()
+ActionList CasterShamanStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("lightning bolt", 10.0f) });
 }

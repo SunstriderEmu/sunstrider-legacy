@@ -16,9 +16,9 @@ private:
     static ActionNode* blessing_of_sanctuary(PlayerbotAI* ai)
     {
         return new ActionNode ("blessing of sanctuary",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("blessing of kings") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 
@@ -27,7 +27,7 @@ TankPaladinStrategy::TankPaladinStrategy(PlayerbotAI* ai) : GenericPaladinStrate
     actionNodeFactories.Add(new TankPaladinStrategyActionNodeFactory());
 }
 
-NextAction** TankPaladinStrategy::getDefaultActions()
+ActionList TankPaladinStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("melee", ACTION_NORMAL) });
 }

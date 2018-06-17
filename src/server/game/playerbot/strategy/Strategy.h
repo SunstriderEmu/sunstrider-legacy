@@ -39,7 +39,7 @@ namespace ai
         virtual ~Strategy() = default;
 
     public:
-        virtual NextAction** getDefaultActions() { return nullptr; }
+        virtual ActionList getDefaultActions() { return ActionList(); }
         virtual void InitTriggers(std::list<TriggerNode*> &triggers) {}
         virtual void InitMultipliers(std::list<Multiplier*> &multipliers) {}
         virtual std::string getName() = 0;

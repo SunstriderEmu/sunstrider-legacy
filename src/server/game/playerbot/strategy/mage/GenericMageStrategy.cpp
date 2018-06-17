@@ -24,63 +24,63 @@ private:
     static ActionNode* frostbolt(PlayerbotAI* ai)
     {
         return new ActionNode ("frostbolt",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("shoot") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* fire_blast(PlayerbotAI* ai)
     {
         return new ActionNode ("fire blast",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("scorch") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* scorch(PlayerbotAI* ai)
     {
         return new ActionNode ("scorch",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("shoot") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* frost_nova(PlayerbotAI* ai)
     {
         return new ActionNode ("frost nova",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("flee") }),
             /*C*/ NextAction::array({ new NextAction("flee") }));
     }
     static ActionNode* icy_veins(PlayerbotAI* ai)
     {
         return new ActionNode ("icy veins",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* combustion(PlayerbotAI* ai)
     {
         return new ActionNode ("combustion",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* evocation(PlayerbotAI* ai)
     {
         return new ActionNode ("evocation",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("mana potion") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* dragons_breath(PlayerbotAI* ai)
     {
         return new ActionNode ("dragon's breath",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("blast wave") }),
             /*C*/ NextAction::array({ new NextAction("flamestrike", 71.0f) }));
     }
     static ActionNode* blast_wave(PlayerbotAI* ai)
     {
         return new ActionNode ("blast wave",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("frost nova") }),
             /*C*/ NextAction::array({ new NextAction("flamestrike", 71.0f) }));
     }

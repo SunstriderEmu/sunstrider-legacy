@@ -16,8 +16,8 @@ private:
     static ActionNode* tank_attack_chat_shortcut(PlayerbotAI* ai)
     {
         return new ActionNode ("tank attack chat shortcut",
-            /*P*/ NULL,
-            /*A*/ NULL,
+            /*P*/ {},
+            /*A*/ {},
             /*C*/ NextAction::array({ new NextAction("attack my target", 100.0f) }));
     }
 };

@@ -12,7 +12,7 @@ namespace ai
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
         virtual std::string getName() { return "bear"; }
-        virtual NextAction** getDefaultActions();
+        virtual ActionList getDefaultActions();
         virtual int GetType() { return STRATEGY_TYPE_TANK | STRATEGY_TYPE_MELEE; }
     };
 }

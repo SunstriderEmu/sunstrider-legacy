@@ -21,36 +21,36 @@ private:
     static ActionNode* viper_sting(PlayerbotAI* ai)
     {
         return new ActionNode ("viper sting",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("mana potion", 10.0f) }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* aimed_shot(PlayerbotAI* ai)
     {
         return new ActionNode ("aimed shot",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("chimera shot", 10.0f) }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* chimera_shot(PlayerbotAI* ai)
     {
         return new ActionNode ("chimera shot",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("arcane shot", 10.0f) }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* explosive_shot(PlayerbotAI* ai)
     {
         return new ActionNode ("explosive shot",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("aimed shot") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* concussive_shot(PlayerbotAI* ai)
     {
         return new ActionNode ("concussive shot",
-            /*P*/ NULL,
-            /*A*/ NULL,
+            /*P*/ {},
+            /*A*/ {},
             /*C*/ NextAction::array({ new NextAction("wyvern sting", 11.0f) }));
     }
 
@@ -61,7 +61,7 @@ DpsHunterStrategy::DpsHunterStrategy(PlayerbotAI* ai) : GenericHunterStrategy(ai
     actionNodeFactories.Add(new DpsHunterStrategyActionNodeFactory());
 }
 
-NextAction** DpsHunterStrategy::getDefaultActions()
+ActionList DpsHunterStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("explosive shot", 11.0f), new NextAction("auto shot", 10.0f) });
 }

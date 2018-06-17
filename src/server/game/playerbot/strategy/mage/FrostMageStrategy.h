@@ -13,7 +13,7 @@ namespace ai
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
         virtual std::string getName() { return "frost"; }
-        virtual NextAction** getDefaultActions();
+        virtual ActionList getDefaultActions();
     };
 
     class FrostMageAoeStrategy : public CombatStrategy

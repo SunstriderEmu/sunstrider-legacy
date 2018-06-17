@@ -15,23 +15,23 @@ namespace ai
         static ActionNode* mind_flay(PlayerbotAI* ai)
         {
             return new ActionNode ("mind flay",
-                /*P*/ NULL,
+                /*P*/ {},
                 /*A*/ NextAction::array({ new NextAction("shoot") }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
         static ActionNode* mind_blast(PlayerbotAI* ai)
         {
             return new ActionNode ("mind blast",
-                /*P*/ NULL,
+                /*P*/ {},
                 /*A*/ NextAction::array({ new NextAction("mind flay") }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
         static ActionNode* dispersion(PlayerbotAI* ai)
         {
             return new ActionNode ("dispersion",
-                /*P*/ NULL,
+                /*P*/ {},
                 /*A*/ NextAction::array({ new NextAction("mana potion") }),
-                /*C*/ NULL);
+                /*C*/ {});
         }
     };
 };

@@ -4,7 +4,7 @@
 
 using namespace ai;
 
-NextAction** FollowMasterStrategy::getDefaultActions()
+ActionList FollowMasterStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("follow", 1.0f) });
 }

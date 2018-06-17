@@ -4,27 +4,27 @@
 
 using namespace ai;
 
-NextAction** CastRendAction::getPrerequisites()
+ActionList CastRendAction::getPrerequisites()
 {
     return NextAction::merge( NextAction::array({ new NextAction("reach melee") }), CastDebuffSpellAction::getPrerequisites());
 }
 
-NextAction** CastRendOnAttackerAction::getPrerequisites()
+ActionList CastRendOnAttackerAction::getPrerequisites()
 {
     return NextAction::merge( NextAction::array({ new NextAction("reach melee") }), CastDebuffSpellOnAttackerAction::getPrerequisites());
 }
 
-NextAction** CastDisarmAction::getPrerequisites()
+ActionList CastDisarmAction::getPrerequisites()
 {
     return NextAction::merge( NextAction::array({ new NextAction("reach melee"), new NextAction("defensive stance") }), CastDebuffSpellAction::getPrerequisites());
 }
 
-NextAction** CastSunderArmorAction::getPrerequisites()
+ActionList CastSunderArmorAction::getPrerequisites()
 {
     return NextAction::merge( NextAction::array({ new NextAction("reach melee") }), CastDebuffSpellAction::getPrerequisites());
 }
 
-NextAction** CastRevengeAction::getPrerequisites()
+ActionList CastRevengeAction::getPrerequisites()
 {
     return NextAction::merge( NextAction::array({ new NextAction("defensive stance") }), CastMeleeSpellAction::getPrerequisites());
 }

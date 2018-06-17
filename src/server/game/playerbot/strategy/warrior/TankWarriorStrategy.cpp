@@ -23,50 +23,50 @@ private:
     {
         return new ActionNode ("melee",
             /*P*/ NextAction::array({ new NextAction("defensive stance"), new NextAction("reach melee") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* shield_wall(PlayerbotAI* ai)
     {
         return new ActionNode ("shield wall",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("shield block") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* rend(PlayerbotAI* ai)
     {
         return new ActionNode ("rend",
             /*P*/ NextAction::array({ new NextAction("defensive stance") }),
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* revenge(PlayerbotAI* ai)
     {
         return new ActionNode ("revenge",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* devastate(PlayerbotAI* ai)
     {
         return new ActionNode ("devastate",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("sunder armor") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* shockwave(PlayerbotAI* ai)
     {
         return new ActionNode ("shockwave",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("cleave") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* taunt(PlayerbotAI* ai)
     {
         return new ActionNode ("taunt",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("mocking blow") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 
@@ -75,7 +75,7 @@ TankWarriorStrategy::TankWarriorStrategy(PlayerbotAI* ai) : GenericWarriorStrate
     actionNodeFactories.Add(new TankWarriorStrategyActionNodeFactory());
 }
 
-NextAction** TankWarriorStrategy::getDefaultActions()
+ActionList TankWarriorStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("devastate", ACTION_NORMAL + 1), new NextAction("revenge", ACTION_NORMAL + 1) });
 }

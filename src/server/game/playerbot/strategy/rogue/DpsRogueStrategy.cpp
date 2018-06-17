@@ -22,51 +22,51 @@ private:
     static ActionNode* riposte(PlayerbotAI* ai)
     {
         return new ActionNode ("riposte",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("mutilate") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* mutilate(PlayerbotAI* ai)
     {
         return new ActionNode ("mutilate",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("sinister strike") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* sinister_strike(PlayerbotAI* ai)
     {
         return new ActionNode ("sinister strike",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* kick(PlayerbotAI* ai)
     {
         return new ActionNode ("kick",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("kidney shot") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* kidney_shot(PlayerbotAI* ai)
     {
         return new ActionNode ("kidney shot",
-            /*P*/ NULL,
-            /*A*/ NULL,
-            /*C*/ NULL);
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {});
     }
     static ActionNode* rupture(PlayerbotAI* ai)
     {
         return new ActionNode ("rupture",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("eviscerate") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
     static ActionNode* backstab(PlayerbotAI* ai)
     {
         return new ActionNode ("backstab",
-            /*P*/ NULL,
+            /*P*/ {},
             /*A*/ NextAction::array({ new NextAction("mutilate") }),
-            /*C*/ NULL);
+            /*C*/ {});
     }
 };
 
@@ -75,7 +75,7 @@ DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* ai) : MeleeCombatStrategy(ai)
     actionNodeFactories.Add(new DpsRogueStrategyActionNodeFactory());
 }
 
-NextAction** DpsRogueStrategy::getDefaultActions()
+ActionList DpsRogueStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction("riposte", ACTION_NORMAL) });
 }

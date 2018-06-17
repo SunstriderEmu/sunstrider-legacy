@@ -29,15 +29,15 @@ namespace ai
         {
             return new ActionNode ("rejuvenation",
                 /*P*/ NextAction::array({ new NextAction("caster form") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* healing_touch(PlayerbotAI* ai)
         {
             return new ActionNode ("healing touch",
                 /*P*/ NextAction::array({ new NextAction("caster form") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* regrowth_on_party(PlayerbotAI* ai)
         {
@@ -50,15 +50,15 @@ namespace ai
         {
             return new ActionNode ("rejuvenation on party",
                 /*P*/ NextAction::array({ new NextAction("caster form") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
         static ActionNode* healing_touch_on_party(PlayerbotAI* ai)
         {
             return new ActionNode ("healing touch on party",
                 /*P*/ NextAction::array({ new NextAction("caster form") }),
-                /*A*/ NULL,
-                /*C*/ NULL);
+                /*A*/ {},
+                /*C*/ {});
         }
     };
 

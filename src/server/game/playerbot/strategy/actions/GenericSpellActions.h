@@ -59,10 +59,10 @@ namespace ai
         virtual bool isUseful();
         virtual ActionThreatType getThreatType() { return ACTION_THREAT_SINGLE; }
 
-        virtual NextAction** getPrerequisites()
+        virtual ActionList getPrerequisites()
         {
             if (range > sPlayerbotAIConfig.spellDistance)
-                return NULL;
+                return ActionList();
             else if (range > ATTACK_DISTANCE)
                 return NextAction::merge(NextAction::array({ new NextAction("reach spell") }), Action::getPrerequisites());
             else

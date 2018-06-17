@@ -34,7 +34,7 @@ float MagePullMultiplier::GetValue(Action* _action)
     return PassiveMultiplier::GetValue(_action);
 }
 
-NextAction** PullStrategy::getDefaultActions()
+ActionList PullStrategy::getDefaultActions()
 {
     return NextAction::array({ new NextAction(action, 105.0f), new NextAction("follow", 104.0f), new NextAction("end pull", 103.0f) });
 }
