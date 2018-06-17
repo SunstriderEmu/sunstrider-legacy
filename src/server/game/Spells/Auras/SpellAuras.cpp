@@ -55,6 +55,9 @@ uint32 GetFirstNegativeSlot(Unit const* target)
 
 void AuraApplication::_UpdateSlot()
 {
+    if (!GetBase()->CanBeSentToClient())
+        return;
+
     // Try find slot for aura
     uint8 slot = MAX_AURAS;
     // Lookup for auras already applied from spell
@@ -117,8 +120,7 @@ AuraApplication::AuraApplication(Unit* target, Unit* caster, Aura* aura, uint8 e
     //sun: need to be before slot selection on BC, we need to know if aura is positive
     _InitFlags(caster, effMask);
 
-    if (GetBase()->CanBeSentToClient())
-        _UpdateSlot();
+    _UpdateSlot();
 }
 
 void AuraApplication::_Remove()
