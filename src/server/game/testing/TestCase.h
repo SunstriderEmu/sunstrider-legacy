@@ -175,6 +175,10 @@ public:
     #define TEST_DIRECT_SPELL_DAMAGE_CALLBACK(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true, Optional<TestCallback>(callback)); _ResetCaller(); }
     //Caster must be a TestPlayer or a pet/summon of him
     #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax, crit) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, crit, false, {}); _ResetCaller(); }
+    /* Same but with additional argument:
+    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
+    #define TEST_DIRECT_HEAL_CALLBACK(caster, target, spellID, expectedHealMin, expectedHealMax, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, crit, false, Optional<TestCallback>(callback)); _ResetCaller(); }
     //Caster must be a TestPlayer or a pet/summon of him
     #define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller(); }
 
@@ -204,7 +208,11 @@ public:
     /* Triggers attack from caster on victim, and test if results are chance% given missInfo
     chance: 0-100
     */
-    #define TEST_MELEE_HIT_CHANCE(caster, victim, weaponAttackType, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestMeleeHitChance(caster, victim, weaponAttackType, chance, missInfo); _ResetCaller(); }
+    #define TEST_MELEE_HIT_CHANCE(caster, victim, weaponAttackType, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestMeleeHitChance(caster, victim, weaponAttackType, chance, missInfo, {}); _ResetCaller(); }
+    /* Same but with additional argument:
+    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
+    #define TEST_MELEE_HIT_CHANCE_CALLBACK(caster, victim, weaponAttackType, chance, missInfo, callback) { _SetCaller(__FILE__, __LINE__); _TestMeleeHitChance(caster, victim, weaponAttackType, chance, missInfo, Optional<TestCallback>(callback)); _ResetCaller(); }
     // Test the percentage of a melee hit outcome for already done attacks
     #define TEST_MELEE_OUTCOME_PERCENTAGE(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestMeleeOutcomePercentage(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError);  _ResetCaller(); }
     // Test the percentage of a spell hit outcome for already done attacks
@@ -364,7 +372,7 @@ protected:
     */
     void _TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize = 0);
     void _TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback);
-    void _TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome);
+    void _TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome, Optional<TestCallback> callback);
     void _TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback);
     void _TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS);
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, bool checkSelf);

@@ -682,7 +682,7 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
     _RestoreUnitState(target);
 }
 
-void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome)
+void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome, Optional<TestCallback> callback)
 {
     _EnsureAlive(caster, victim);
     INTERNAL_ASSERT_INFO("_TestMeleeHitChance can only be used with BASE_ATTACK and OFF_ATTACK");
@@ -695,6 +695,10 @@ void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType 
     for (uint32 i = 0; i < sampleSize; i++)
     {
         victim->SetFullHealth();
+
+        if (callback)
+            callback.get()(caster, victim);
+
         caster->AttackerStateUpdate(victim, weaponAttackType);
         HandleThreadPause();
     }
