@@ -830,8 +830,7 @@ public:
 			Creature* creature = SpawnCreature();
 
 			EQUIP_NEW_ITEM(druid, 30883); // Pillar of Ferocity -- 1059 AP
-            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
-			Wait(1500); // GCD
+            druid->AddAura(ClassSpells::Druid::CAT_FORM_RNK_1, druid);
 
             FORCE_CAST(druid, creature, ClassSpells::Druid::CLAW_RNK_6);
 
