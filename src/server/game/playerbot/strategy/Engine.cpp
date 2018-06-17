@@ -321,7 +321,7 @@ void Engine::addStrategy(std::string name)
 void Engine::addStrategies(std::initializer_list<std::string> args)
 {
     for (auto i : args) 
-        addStrategy(i);
+        addStrategy(std::move(i));
 }
 
 bool Engine::removeStrategy(std::string name)

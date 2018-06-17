@@ -5595,8 +5595,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
     }
 
     SpellCastResult castResult = SPELL_CAST_OK;
-
-    if (!IsTriggered())
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_RANGE))
     {
         castResult = CheckRange(strict);
         if (castResult != SPELL_CAST_OK)
@@ -7689,7 +7688,7 @@ bool SpellEvent::Execute(uint64 e_time, uint32 p_time)
                         m_Spell->cancel();
                     }
                     // Check if target of channeled spell still in range
-                    else if (m_Spell->CheckRange(false) != SPELL_CAST_OK)
+                    else if (!(m_Spell->GetTriggerCastFlags() & TRIGGERED_IGNORE_RANGE) && m_Spell->CheckRange(false) != SPELL_CAST_OK)
                         m_Spell->cancel();
                     else
                     {
