@@ -180,7 +180,11 @@ public:
     */
     #define TEST_DIRECT_HEAL_CALLBACK(caster, target, spellID, expectedHealMin, expectedHealMax, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, crit, false, Optional<TestCallback>(callback)); _ResetCaller(); }
     //Caster must be a TestPlayer or a pet/summon of him
-    #define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit); _ResetCaller(); }
+    #define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit, {}); _ResetCaller(); }
+    /* Same but with additional argument:
+    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
+    #define TEST_MELEE_DAMAGE_CALLBACK(player, target, attackType, expectedMin, expectedMax, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit, Optional<TestCallback>(callback)); _ResetCaller(); }
 
     // Will cast spell and check if threat is equal to dmg/healing done multiplied by expectedThreatFactor. Group of caster may be disbanded if any. Target aura and caster aura may be removed.
     #define TEST_THREAT(caster, target, spellID, expectedThreatFactor, heal)  { _SetCaller(__FILE__, __LINE__); _TestThreat(caster, target, spellID, expectedThreatFactor, heal, {}); _ResetCaller(); }
@@ -352,7 +356,7 @@ protected:
 
     // <Test macros related functions>
     void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback); //if !damage, then use healing
-    void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit);
+    void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback);
     void _TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
     void _TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal, Optional<TestCallback> callback);
     void _TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount, bool healing = false);

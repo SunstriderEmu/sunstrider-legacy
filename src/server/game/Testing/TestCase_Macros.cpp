@@ -150,7 +150,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     _RestoreUnitState(target);
 }
 
-void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit)
+void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback)
 {
     auto AI = _GetCasterAI(caster);
 
@@ -165,6 +165,10 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     for (uint32 i = 0; i < sampleSize; i++)
     {
         target->SetFullHealth();
+
+        if (callback)
+            callback.get()(caster, target);
+
         if (attackType != RANGED_ATTACK)
             caster->AttackerStateUpdate(target, attackType);
         else
