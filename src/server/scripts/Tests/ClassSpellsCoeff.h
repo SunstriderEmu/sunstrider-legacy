@@ -6,7 +6,7 @@ namespace ClassSpellsCoeff
 	namespace Druid
 	{
 		// Balance
-		const float ENTANGLING_ROOTS = 1.8f;
+		const float ENTANGLING_ROOTS = 0.9f; // DrDamage & WoWWiki
 		const float FORCE_OF_NATURE = 0.85f;
 		const float HURRICANE = 0.128f;
 		const float INSECT_SWARM = 0.76f;
@@ -17,14 +17,16 @@ namespace ClassSpellsCoeff
 
 		// Restoration
 		const float HEALING_TOUCH = 1.0f;
-		const float LIFEBLOOM = 0.3429f;
-		const float LIFEBLOOM_HOT = 0.518f;
+		const float LIFEBLOOM = 0.3429f; // DrDamage & WoWWiki
+		const float LIFEBLOOM_HOT = 0.51983f; // DrDamage
+        // Choosing 30% and 70% for Regrowth seems to be the best couple
+        // after reviewing WoWWiki talks and DrDamage
 		const float REGROWTH = 0.3f;
 		const float REGROWTH_HOT = 0.7f;
 		const float REJUVENATION = 0.8f;
 		const float SWIFTMEND_REJUVENATION = 1.0f;
 		const float SWIFTMEND_REGROWTH = 0.65f;
-		const float TRANQUILITY_LVL_70 = 0.73f; // scales with level
+		const float TRANQUILITY_LVL_70 = 0.762f; // DrDamage calculated by castTime / 3.5 / 3
 	};
 
 	namespace Mage

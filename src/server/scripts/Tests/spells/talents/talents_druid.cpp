@@ -1287,22 +1287,23 @@ public:
 	class EmpoweredTouchTestImpt : public TestCase
 	{
 	public:
-		EmpoweredTouchTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
+		EmpoweredTouchTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
-			player->DisableRegeneration(true);
+			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 
-			LearnTalent(player, Talents::Druid::EMPOWERED_TOUCH_RNK_2);
+			LearnTalent(druid, Talents::Druid::EMPOWERED_TOUCH_RNK_2);
+            float const talentFactor = 0.2f;
 
-			uint32 const bh = player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
-			uint32 const healingTouchCoeff = ClassSpellsCoeff::Druid::HEALING_TOUCH + 20;
+            EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification -- 183 SP & 550 BH
+
+			uint32 const bh = druid->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS);
+			float const healingTouchCoeff = ClassSpellsCoeff::Druid::HEALING_TOUCH + talentFactor;
 
 			uint32 const healingTouchMin = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN + bh * healingTouchCoeff;
 			uint32 const healingTouchMax = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX + bh * healingTouchCoeff;
-			//TEST_DIRECT_HEAL(player, player, ClassSpells::Druid::HEALING_TOUCH_RNK_13, healingTouchMin, healingTouchMax);
-
+			TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, healingTouchMin, healingTouchMax, false);
 		}
 	};
 
@@ -1320,17 +1321,18 @@ public:
 	class LivingSpiritTestImpt : public TestCase
 	{
 	public:
-		LivingSpiritTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
+		LivingSpiritTestImpt() : TestCase(STATUS_PASSING) { }
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
+			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 
-			uint32 const startSpi = player->GetStat(STAT_SPIRIT);
-			uint32 const expectedSpi = startSpi * 1.15f;
+            float const talentFactor = 1.15f;
+			uint32 const expectedSpi = druid->GetStat(STAT_SPIRIT) * talentFactor;
 
-			LearnTalent(player, Talents::Druid::LIVING_SPIRIT_RNK_3);
-			TEST_ASSERT(Between<float>(player->GetStat(STAT_SPIRIT), expectedSpi - 1, expectedSpi + 1));
+			LearnTalent(druid, Talents::Druid::LIVING_SPIRIT_RNK_3);
+            ASSERT_INFO("Druid has %f Spirit but %f was expected.", druid->GetStat(STAT_SPIRIT), expectedSpi);
+			TEST_ASSERT(Between<float>(druid->GetStat(STAT_SPIRIT), expectedSpi - 1, expectedSpi + 1));
 		}
 	};
 
@@ -1348,127 +1350,75 @@ public:
 	class EmpoweredRejuvenationTestImpt : public TestCase
 	{
 	public:
-		EmpoweredRejuvenationTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
-		void TestHeal(TestPlayer* player, uint32 spellId, uint32 HotTime, uint32 expectedHealth, uint32 crit = 0)
-		{
-			player->SetHealth(1);
-			player->SetMaxHealth(10000);
-			uint32 startHealth = player->GetHealth();
-            TEST_CAST(player, player, spellId);
-			Wait(HotTime + 1000);
-			uint32 currentHealth = player->GetHealth();
-            TC_LOG_TRACE("test.unit_test", "health: %u, expected: %u", currentHealth, startHealth + expectedHealth);
-			if (crit > 0)
-			{
-				if (player->GetHealth() == expectedHealth)
-				{
-					ASSERT_INFO("After spell %u, druid doesnt have health %u but %u", spellId, startHealth + expectedHealth, currentHealth);
-					TEST_ASSERT(currentHealth == startHealth + expectedHealth);
-				}
-				else
-				{
-					ASSERT_INFO("After spell %u, druid doesnt have health %u but %u", spellId, crit, currentHealth);
-					TEST_ASSERT(currentHealth == crit);
-				}
-			}
-			else
-			{
-				ASSERT_INFO("After spell %u, druid doesnt have health %u but %u", spellId, startHealth + expectedHealth, currentHealth);
-				TEST_ASSERT(currentHealth == startHealth + expectedHealth);
-			}
-		}
-
-		void TestRegrowth(TestPlayer* player, uint32 spellId, uint32 HotTime, uint32 expectedHealth)
-		{
-			player->SetHealth(1);
-			uint32 res = player->CastSpell(player, spellId);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Wait(2500);
-			uint32 regrowthStart = player->GetHealth();
-			Wait(HotTime);
-			ASSERT_INFO("After spell %u, druid doesnt have health %u but %u", spellId, regrowthStart + expectedHealth, player->GetHealth());
-			TEST_ASSERT(player->GetHealth() == regrowthStart + expectedHealth);
-		}
-
-		void TestSwiftmend(TestPlayer* player, uint32 spellId, uint32 expectedHealth)
-		{
-			player->GetSpellHistory()->ResetAllCooldowns();
-			player->SetHealth(1);
-			uint32 res = player->CastSpell(player, spellId);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Wait(2000);
-			uint32 startHealth = player->GetHealth();
-			res = player->CastSpell(player, ClassSpells::Druid::SWIFTMEND_RNK_1);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			ASSERT_INFO("After spell %u, druid doesnt have health %u but %u", spellId, startHealth + expectedHealth, player->GetHealth());
-			TEST_ASSERT(player->GetHealth() == startHealth + expectedHealth);
-		}
-
-		uint32 CalculateBH(float spellCoeff)
-		{
-			float const empoweredRejuvenationFactor = 1 + 5 * 0.04f;
-			int32 const bh = 550;
-			uint32 bonus = bh * spellCoeff * empoweredRejuvenationFactor;
-			return bonus;
-		}
-
-		float CalculateTranquilityCoeff(int32 tranquilityCastTime)
-		{
-			// http://wowwiki.wikia.com/wiki/Spell_power?oldid=1576621
-			// (castTime / 3.5) / 2 / nbTick;
-			return tranquilityCastTime / 3.5f / 2.0f / 4.0f;
-		}
+        /*
+        Bugs:
+            - Lifebloom burst should be affected by the talent.
+            - Regrowth has some issues with its spell coeff.
+        */
+		EmpoweredRejuvenationTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_DRUID);
-			player->DisableRegeneration(true);
+			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 
-			EQUIP_NEW_ITEM(player, 34335); // Hammer of Sanctification - 550 SP
+			EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification - 550 SP
+            uint32 const bh = druid->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS);
 
-			LearnTalent(player, Talents::Druid::EMPOWERED_REJUVENATION_RNK_5);
+			LearnTalent(druid, Talents::Druid::EMPOWERED_REJUVENATION_RNK_5);
+            float const talentFactor = 1.2f;
 
-			// Lifebloom
-			uint32 const lifebloomTick = floor(ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_TOTAL + CalculateBH(ClassSpellsCoeff::Druid::LIFEBLOOM_HOT) / 7);
-			uint32 const lifebloomBurst = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_BURST + CalculateBH(ClassSpellsCoeff::Druid::LIFEBLOOM);
-			uint32 const lifebloomBurstCrit = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_BURST + CalculateBH(ClassSpellsCoeff::Druid::LIFEBLOOM) * 1.5f;
-			uint32 const expectedLifebloomHealth = 1 + 7 * lifebloomTick + lifebloomBurst;
-			uint32 const expectedLifebloomHealthCrit = 1 + 7 * lifebloomTick + lifebloomBurstCrit;
-			TC_LOG_TRACE("test.unit_test", "Lifebloom");
-			TestHeal(player, ClassSpells::Druid::LIFEBLOOM_RNK_1, 7000, expectedLifebloomHealth, expectedLifebloomHealthCrit);
+            // Rejuvenation
+            uint32 const rejuvenationTickAmount = 4;
+            uint32 const rejuvenationBhPerTick = bh * ClassSpellsCoeff::Druid::REJUVENATION * talentFactor / rejuvenationTickAmount;
+            uint32 const rejuvenationTick = ClassSpellsDamage::Druid::REJUVENATION_RNK_13_TICK + rejuvenationBhPerTick;
+            uint32 const rejuvenationTotal = rejuvenationTickAmount * rejuvenationTick;
+            TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::REJUVENATION_RNK_13, rejuvenationTotal, false);
 
-			// Tranquility
-			uint32 const tranquilityTickCoeff = CalculateTranquilityCoeff(8);
-			uint32 const tranquilityBH = CalculateBH(tranquilityTickCoeff);
-			uint32 const tranquilityTick = ClassSpellsDamage::Druid::TRANQUILITY_RNK_5_TICK + tranquilityBH;
-			uint32 const expectedTranquilityHealth = 4 * tranquilityTick;
-			TestHeal(player, ClassSpells::Druid::TRANQUILITY_RNK_5, 8000, expectedTranquilityHealth);
+            // Regrowth HoT
+            uint32 const regrowthTick = ClassSpellsDamage::Druid::REGROWTH_RNK_10_TICK + bh * ClassSpellsCoeff::Druid::REGROWTH_HOT * talentFactor;
+            uint32 const expectedRegrowthTotal = 7 * regrowthTick;
+            TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, expectedRegrowthTotal, false);
+            // Regrowth Direct
+            uint32 const regrowthBhBonus = bh * ClassSpellsCoeff::Druid::REGROWTH * talentFactor;
+            uint32 const regrowthMin = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MIN + regrowthBhBonus;
+            uint32 const regrowthMax = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MAX + regrowthBhBonus;
+            TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, regrowthMin, regrowthMax, false);
 
-			// Regrowth HoT
-			uint32 const regrowthTick = floor(ClassSpellsDamage::Druid::REGROWTH_RNK_10_TOTAL + CalculateBH(ClassSpellsCoeff::Druid::REGROWTH_HOT) / 7);
-			uint32 const expectedRegrowthHealth = 7 * regrowthTick;
-            TC_LOG_TRACE("test.unit_test", "Regrowth HoT");
-			TestRegrowth(player, ClassSpells::Druid::REGROWTH_RNK_10, 21000, expectedRegrowthHealth);
-			// Regrowth Direct
-			uint32 const regrowthMin = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MIN + CalculateBH(ClassSpellsCoeff::Druid::REGROWTH);
-			uint32 const regrowthMax = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MAX + CalculateBH(ClassSpellsCoeff::Druid::REGROWTH);
-			//TEST_DIRECT_HEAL(player, player, ClassSpells::Druid::REGROWTH_RNK_10, regrowthMin, regrowthMax);
+            // Swiftmend
+            TEST_DIRECT_HEAL_CALLBACK(druid, druid, ClassSpells::Druid::SWIFTMEND_RNK_1, rejuvenationTotal, rejuvenationTotal, false, [](Unit* caster, Unit* victim) {
+                caster->AddAura(ClassSpells::Druid::REJUVENATION_RNK_13, caster);
+            });
+            uint32 const regrowthTotal = 6 * regrowthTick;
+            TEST_DIRECT_HEAL_CALLBACK(druid, druid, ClassSpells::Druid::SWIFTMEND_RNK_1, regrowthTotal, regrowthTotal, false, [](Unit* caster, Unit* victim) {
+                caster->AddAura(ClassSpells::Druid::REGROWTH_RNK_10, caster);
+            });
 
-			// Swiftmend
-			uint32 const rejuvenationTotal = 4 * floor(ClassSpellsDamage::Druid::REJUVENATION_RNK_13_TOTAL + CalculateBH(ClassSpellsCoeff::Druid::REJUVENATION) / 4);
-			uint32 const regrowthTotal = 6 * floor(ClassSpellsDamage::Druid::REGROWTH_RNK_10_TOTAL + CalculateBH(ClassSpellsCoeff::Druid::REGROWTH_HOT) / 7);
-            TC_LOG_TRACE("test.unit_test", "Rejuvenation Swift");
-			TestSwiftmend(player, ClassSpells::Druid::REJUVENATION_RNK_13, rejuvenationTotal);
-            TC_LOG_TRACE("test.unit_test", "Regrowth Swift");
-			TestSwiftmend(player, ClassSpells::Druid::REGROWTH_RNK_10, regrowthTotal);
+            // Tranquility
+            float const tranquilityTickAmount = 4.f;
+            float const tranquilityTickCoeff = ClassSpellsCoeff::Druid::TRANQUILITY_LVL_70 * talentFactor / tranquilityTickAmount;
+            uint32 const expectedTranquilityTick = ClassSpellsDamage::Druid::TRANQUILITY_RNK_5_TICK + bh * tranquilityTickCoeff;
+            TEST_CHANNEL_HEALING(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, ClassSpells::Druid::TRANQUILITY_RNK_5_PROC, 4, expectedTranquilityTick);
 
-			// Rejuvenation
-			uint32 const rejuvenationBH = CalculateBH(ClassSpellsCoeff::Druid::REJUVENATION);
-			uint32 const rejuvenationTick = floor((ClassSpellsDamage::Druid::REJUVENATION_RNK_13_TOTAL + rejuvenationBH) / 4);
-			uint32 const expectedRejuvenationHealth = 4 * rejuvenationTick;
-			TestHeal(player, ClassSpells::Druid::REJUVENATION_RNK_13, 12000, expectedRejuvenationHealth);
+            // Lifebloom hot
+            druid->SetHealth(1);
+            uint32 const lifebloomTickAmount = 7;
+            uint32 const lifebloomBhPerTick = bh * ClassSpellsCoeff::Druid::LIFEBLOOM_HOT * talentFactor / lifebloomTickAmount;
+            uint32 const lifebloomTick = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_TICK + lifebloomBhPerTick;
+            uint32 const expectedLifebloom = lifebloomTickAmount * lifebloomTick;
+            EnableCriticals(druid, false);
+            TEST_CAST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
+            Wait(7500);
+            auto AI = _GetCasterAI(druid);
+            auto[dotDamageToTarget, tickCount] = AI->GetDotDamage(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
+            TEST_ASSERT(tickCount == lifebloomTickAmount);
+            ASSERT_INFO("HoT did %u instead of %u", dotDamageToTarget, expectedLifebloom);
+            TEST_ASSERT(dotDamageToTarget == expectedLifebloom);
 
+            // Lifebloom burst
+            uint32 const expectedBurst = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_BURST + bh * ClassSpellsCoeff::Druid::LIFEBLOOM * talentFactor;
+            auto[dealtMin, dealtMax] = GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1_FINAL_PROC, false, 1);
+            ASSERT_INFO("Lifebloom bursted for %u instead of %u.", dealtMin, expectedBurst);
+            TEST_ASSERT(dealtMin == expectedBurst);
 		}
 	};
 
