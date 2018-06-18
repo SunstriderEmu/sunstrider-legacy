@@ -55,7 +55,7 @@ void TestResults::TestFinished(TestCase const& test)
         _successes.emplace_back(std::move(result));
 }
 
-std::list<TestResult>&& TestResults::GetFilteredResult(bool success, std::initializer_list<TestStatus> const& statuses) const
+std::list<TestResult> TestResults::GetFilteredResult(bool success, std::initializer_list<TestStatus> const& statuses) const
 {
     std::list<TestResult> filtered;
     auto const& iterateList = success ? _successes : _failures;
@@ -64,7 +64,7 @@ std::list<TestResult>&& TestResults::GetFilteredResult(bool success, std::initia
             if (itr.GetStatus() == status)
                 filtered.push_back(itr);
 
-    return std::move(filtered);
+    return filtered;
 }
 
 void TestResults::HandlePrintResults(std::stringstream& ss, std::string desc, TestResultList container)

@@ -5,14 +5,14 @@
 
 using namespace ai;
 
-ActionList&& NextAction::clone(ActionList actions)
+ActionList NextAction::clone(ActionList actions)
 {
     ActionList res;
     res.reserve(actions.size());
     for (auto itr : actions)
         res.push_back(new NextAction(*itr));
 
-    return std::move(res);
+    return res;
 }
 
 ActionList NextAction::merge(ActionList left, ActionList right)
@@ -23,12 +23,9 @@ ActionList NextAction::merge(ActionList left, ActionList right)
     ActionList res;
     res.reserve(leftSize + rightSize);
     for (auto itr : left)
-        res.push_back(new NextAction(*itr));
+        res.push_back(itr);
     for (auto itr : right)
-        res.push_back(new NextAction(*itr));
-
-    NextAction::destroy(left);
-    NextAction::destroy(right);
+        res.push_back(itr);
 
     return res;
 }

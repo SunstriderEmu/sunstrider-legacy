@@ -733,7 +733,7 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(TestPlayer* caster, bool failOnNotFou
     return AI;
 }
 
-std::vector<PlayerbotTestingAI::SpellDamageDoneInfo>&& TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID)
+std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID)
 {
     auto AI = _GetCasterAI(caster);
     /*SpellInfo const* spellInfo = */ _GetSpellInfo(spellID);
@@ -747,10 +747,10 @@ std::vector<PlayerbotTestingAI::SpellDamageDoneInfo>&& TestCase::GetSpellDamageD
         if (itr.spellID == spellID)
             filteredDamageToTarget.push_back(itr);
 
-    return std::move(filteredDamageToTarget);
+    return filteredDamageToTarget;
 }
 
-std::vector<PlayerbotTestingAI::HealingDoneInfo>&& TestCase::GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID)
+std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID)
 {
     auto AI = _GetCasterAI(caster);
     /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellID);
@@ -765,7 +765,7 @@ std::vector<PlayerbotTestingAI::HealingDoneInfo>&& TestCase::GetHealingDoneInfoT
         if (itr.spellID == spellID)
             filteredHealingToTarget.push_back(itr);
 
-    return std::move(filteredHealingToTarget);
+    return filteredHealingToTarget;
 }
 
 uint32 TestCase::GetChannelDamageTo(Unit* caster, Unit* victim, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit)
