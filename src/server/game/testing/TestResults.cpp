@@ -55,7 +55,7 @@ void TestResults::TestFinished(TestCase const& test)
         _successes.emplace_back(std::move(result));
 }
 
-std::list<TestResult> TestResults::GetFilteredResult(bool success, std::initializer_list<TestStatus> const& statuses) const
+std::list<TestResult>&& TestResults::GetFilteredResult(bool success, std::initializer_list<TestStatus> const& statuses) const
 {
     std::list<TestResult> filtered;
     auto const& iterateList = success ? _successes : _failures;

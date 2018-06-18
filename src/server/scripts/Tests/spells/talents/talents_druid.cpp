@@ -1249,6 +1249,10 @@ public:
             TEST_ASSERT(dotDamageToTarget == expectedLifebloom);
             
             // Lifebloom burst
+            /* Kelno: Spells has no family class flags... and Gift Of Nature class mask affect from LK client does not include it either. 
+            Thus it's very possible that this spell shouldn't be affected, but we have no definitive proof of this and probably should include it,
+            else it will seem bugged
+            */
             uint32 const expectedBurst = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_BURST * giftOfNatureFactor;
             auto[dealtMin, dealtMax] = GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1_FINAL_PROC, false, 1);
             ASSERT_INFO("Lifebloom bursted for %u instead of %u.", dealtMin, expectedBurst);

@@ -30,7 +30,7 @@ namespace ai
         float getRelevance() {return relevance;}
 
     public:
-        static ActionList clone(ActionList actions);
+        static ActionList&& clone(ActionList actions);
         static ActionList merge(ActionList what, ActionList with);
         static ActionList array(std::initializer_list<NextAction*> args);
         static void destroy(ActionList& actions);

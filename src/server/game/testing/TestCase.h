@@ -306,9 +306,9 @@ public:
     #define TEST_PUSHBACK_RESIST_CHANCE(caster, target, spellID, chance)  { _SetCaller(__FILE__, __LINE__); _TestPushBackResistChance(caster, target, spellID, chance); _ResetCaller(); }
 
     //Get raw spell data from caster (+ pets) to target with spellID
-    std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID);
+    std::vector<PlayerbotTestingAI::SpellDamageDoneInfo>&& GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID);
     //Get raw healing data from caster (+ pets) to target with spellID
-    std::vector<PlayerbotTestingAI::HealingDoneInfo> GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID);
+    std::vector<PlayerbotTestingAI::HealingDoneInfo>&& GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID);
     //crit: get only spells that made crit / only spells that did not
     std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> GetDamagePerSpellsTo(Unit* caster, Unit* to, uint32 spellID, Optional<bool> crit, uint32 expectedCount = 0);
     //crit: get only spells that made crit / only spells that did not

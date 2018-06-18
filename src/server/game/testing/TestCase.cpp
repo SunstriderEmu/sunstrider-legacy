@@ -733,7 +733,7 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(TestPlayer* caster, bool failOnNotFou
     return AI;
 }
 
-std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID)
+std::vector<PlayerbotTestingAI::SpellDamageDoneInfo>&& TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID)
 {
     auto AI = _GetCasterAI(caster);
     /*SpellInfo const* spellInfo = */ _GetSpellInfo(spellID);
@@ -750,7 +750,7 @@ std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDon
     return std::move(filteredDamageToTarget);
 }
 
-std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID)
+std::vector<PlayerbotTestingAI::HealingDoneInfo>&& TestCase::GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID)
 {
     auto AI = _GetCasterAI(caster);
     /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellID);

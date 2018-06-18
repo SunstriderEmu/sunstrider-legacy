@@ -720,7 +720,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     {
         uint8 lvl = std::min(GetLevel(), uint32(60)); //not 100% sure about this but it seems feral damage from vanilla to wotlk has not changed
         //sunstrider formula:
-        //exact result for cat lvl 70 at least, regeverse engeneered from videos and screenshots, https://docs.google.com/spreadsheets/d/1zcB4S_1186JVIaJhPU0tPiJF8Bjje5BJm5lPMtwHkMc
+        //exact result for cat lvl 70 at least, reverse engineered from videos and screenshots, https://docs.google.com/spreadsheets/d/1zcB4S_1186JVIaJhPU0tPiJF8Bjje5BJm5lPMtwHkMc
         //some data from here: https://www.youtube.com/watch?v=uK8Ufk9wsc4 (mind the halaa +5% buff)
         //Also needs more data for level scaling
         float const baseDps = lvl * 0.8f - 4; //This is an out of hat formula to match the correct cat 44 base dps at lvl 60/70 and ~10 bear dps at lvl 18, assuming linear growth

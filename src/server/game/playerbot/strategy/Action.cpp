@@ -5,7 +5,7 @@
 
 using namespace ai;
 
-ActionList NextAction::clone(ActionList actions)
+ActionList&& NextAction::clone(ActionList actions)
 {
     ActionList res;
     res.reserve(actions.size());
