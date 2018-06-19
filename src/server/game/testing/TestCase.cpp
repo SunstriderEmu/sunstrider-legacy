@@ -373,6 +373,10 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     player->SetCanModifyStats(true);
     player->UpdateAllStats();
 
+    //usually done in load from DB
+    if (player->GetClass() == CLASS_WARRIOR)
+        player->CastSpell(player, SPELL_ID_PASSIVE_BATTLE_STANCE, true);
+
     return player;
 }
 
