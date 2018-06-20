@@ -936,3 +936,97 @@ void TestCase::_TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedC
     ASSERT_INFO("Cast time did not match: Expected %u - Actual %u", expectedCastTimeMS, actualCastTime);
     TEST_ASSERT(actualCastTime == expectedCastTimeMS);
 }
+
+
+void TestCase::_TestReach(TestPlayer* caster, Unit* target, uint32 spellID, float range)
+{
+    //spells range uses both caster and target combat reach
+    TEST_ASSERT(caster->GetCombatReach() == DEFAULT_PLAYER_COMBAT_REACH);
+    range += caster->GetCombatReach();
+    range += target->GetCombatReach();
+
+    Position originalTargetPos = target->GetPosition();
+    _SaveUnitState(caster);
+    _SaveUnitState(target);
+
+    //Test given range
+    Position pos = caster->GetPosition();
+    pos.MoveInFront(caster, range);
+    target->Relocate(pos);
+
+    TriggerCastFlags triggerFlags = TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_RANGE);
+    _TestCast(caster, target, spellID, SPELL_CAST_OK, triggerFlags);
+
+    //Test ouf of range
+    pos.MoveInFront(pos, 2.0f);
+    target->Relocate(pos);
+    _TestCast(caster, target, spellID, SPELL_FAILED_OUT_OF_RANGE, triggerFlags);
+
+    //Restore
+    target->Relocate(originalTargetPos);
+    _RestoreUnitState(caster);
+    _RestoreUnitState(target);
+}
+
+void TestCase::_TestRadius(TestPlayer* caster, Unit* castTarget, Unit* checkTarget, uint32 spellID, float radius, bool heal, uint32 checkSpellID /*= 0*/, bool includeCasterReach /*= true*/)
+{
+    //spells radius uses caster combat reach in most cases, search for IsProximityBasedAoe in the code
+    if (includeCasterReach)
+    {
+        TEST_ASSERT(caster->GetCombatReach() == DEFAULT_PLAYER_COMBAT_REACH);
+        radius += caster->GetCombatReach();
+    }
+    radius += checkTarget->GetCombatReach();
+    if (!checkSpellID)
+        checkSpellID = spellID;
+
+    Position originalTargetPos = checkTarget->GetPosition();
+    auto ai = _GetCasterAI(caster);
+    ai->ResetSpellCounters();
+    _SaveUnitState(caster);
+    _SaveUnitState(castTarget);
+    _SaveUnitState(checkTarget);
+
+    auto hasData = [&](bool heal) {
+        if (heal)
+            return !GetHealingDoneInfoTo(caster, checkTarget, checkSpellID, false).empty();
+        else
+            return !GetSpellDamageDoneInfoTo(caster, checkTarget, checkSpellID, false).empty();
+    };
+
+    auto moveTarget = [&](Position& pos) {
+        checkTarget->NearTeleportTo(pos);
+        if (checkTarget->GetTypeId() == TYPEID_PLAYER)
+        {
+            auto ai = this->_GetCasterAI(checkTarget);
+            ai->HandleTeleportAck();
+        }
+    };
+
+    auto moveTargetInFront = [&](float range) {
+        Position pos = castTarget->GetPosition();
+        pos.MoveInFront(caster, range);
+        moveTarget(pos);
+    };
+
+    //Test given radius
+    moveTargetInFront(radius - 0.5f); //allow for minor imprecision
+
+    TriggerCastFlags triggerFlags = TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_RANGE);
+    _TestCast(caster, castTarget, spellID, SPELL_CAST_OK, triggerFlags);
+    INTERNAL_ASSERT_INFO("Target was not affected by spell %u, radius may be wrong (or spell does not affect this target)", spellID);
+    INTERNAL_TEST_ASSERT(hasData(heal));
+
+    //Test ouf of range
+    ai->ResetSpellCounters();
+    moveTargetInFront(radius + 3.0f);
+    _TestCast(caster, castTarget, spellID, SPELL_CAST_OK, triggerFlags);
+    INTERNAL_ASSERT_INFO("Target was affected by spell %u but should have been out of range, radius may be wrong", spellID);
+    INTERNAL_TEST_ASSERT(!hasData(heal));
+
+    //Restore
+    moveTarget(originalTargetPos);
+    _RestoreUnitState(caster);
+    _RestoreUnitState(castTarget);
+    _RestoreUnitState(checkTarget);
+}

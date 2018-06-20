@@ -737,13 +737,20 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(TestPlayer* caster, bool failOnNotFou
     return AI;
 }
 
-std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID)
+std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID, bool checkEmpty /*= true*/)
 {
     auto AI = _GetCasterAI(caster);
     /*SpellInfo const* spellInfo = */ _GetSpellInfo(spellID);
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("GetSpellDamageDoneInfoTo found no data for this victim (%s)", victim->GetName().c_str());
-    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
+    if (checkEmpty)
+    {
+        INTERNAL_ASSERT_INFO("GetSpellDamageDoneInfoTo found no data for this victim (%s)", victim->GetName().c_str());
+        INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
+    }
+    else {
+        if (!damageToTarget)
+            return {};
+    }
 
     std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> filteredDamageToTarget;
     //Copy only relevent entries
@@ -754,18 +761,26 @@ std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> TestCase::GetSpellDamageDon
     return filteredDamageToTarget;
 }
 
-std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID)
+std::vector<PlayerbotTestingAI::HealingDoneInfo> TestCase::GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID, bool checkEmpty /*= true*/)
 {
     auto AI = _GetCasterAI(caster);
     /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellID);
 
     auto healingToTarget = AI->GetHealingDoneInfo(target);
-    INTERNAL_ASSERT_INFO("GetHealingDoneInfoTo found no data for this victim (%s)", target->GetName().c_str());
-    INTERNAL_TEST_ASSERT(healingToTarget && !healingToTarget->empty());
+    if (checkEmpty)
+    {
+        INTERNAL_ASSERT_INFO("GetHealingDoneInfoTo found no data for this victim (%s)", target->GetName().c_str());
+        INTERNAL_TEST_ASSERT(healingToTarget && !healingToTarget->empty());
+    }
+    else
+    {
+        if (!healingToTarget)
+            return {};
+    }
 
-    std::vector<PlayerbotTestingAI::HealingDoneInfo> filteredHealingToTarget;
     //Copy only relevent entries
-    for (auto itr : *healingToTarget)
+    std::vector<PlayerbotTestingAI::HealingDoneInfo> filteredHealingToTarget;
+    for (auto& itr : *healingToTarget)
         if (itr.spellID == spellID)
             filteredHealingToTarget.push_back(itr);
 

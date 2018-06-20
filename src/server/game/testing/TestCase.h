@@ -308,11 +308,19 @@ public:
     chance: 0-100
     */
     #define TEST_PUSHBACK_RESIST_CHANCE(caster, target, spellID, chance)  { _SetCaller(__FILE__, __LINE__); _TestPushBackResistChance(caster, target, spellID, chance); _ResetCaller(); }
+    /* Test if target is in range for given spell
+    Spell may or may not be casted on target after this
+    */
+    #define TEST_REACH(caster, target, spellID, range) { _SetCaller(__FILE__, __LINE__); _TestReach(caster, target, spellID, range); _ResetCaller(); }
+    /* Test if target is in range of spell for given radius (use this of AoE spells, else use TEST_REACH)
+    Spell may or may not be casted on target after this
+    */
+    #define TEST_RADIUS(caster, castTarget, checkTarget, spellID, radius, heal, checkSpellID) { _SetCaller(__FILE__, __LINE__); _TestRadius(caster, castTarget, checkTarget, spellID, radius, heal, checkSpellID); _ResetCaller(); }
 
     //Get raw spell data from caster (+ pets) to target with spellID
-    std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID);
+    std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID, bool checkEmpty = true);
     //Get raw healing data from caster (+ pets) to target with spellID
-    std::vector<PlayerbotTestingAI::HealingDoneInfo> GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID);
+    std::vector<PlayerbotTestingAI::HealingDoneInfo> GetHealingDoneInfoTo(Unit* caster, Unit* target, uint32 spellID, bool checkEmpty = true);
     //crit: get only spells that made crit / only spells that did not
     std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> GetDamagePerSpellsTo(Unit* caster, Unit* to, uint32 spellID, Optional<bool> crit, uint32 expectedCount = 0);
     //crit: get only spells that made crit / only spells that did not
@@ -403,6 +411,8 @@ protected:
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, CastSpellExtraArgs args = {});
     void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, CastSpellExtraArgs args = {});
     void _TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId);
+    void _TestReach(TestPlayer* caster, Unit* target, uint32 spellID, float range);
+    void _TestRadius(TestPlayer* caster, Unit* castTarget, Unit* checkTarget, uint32 spellID, float radius, bool heal, uint32 checkSpellID = 0, bool includeCasterReach = true);
     // <Test macros related functions/>
 
     // Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
