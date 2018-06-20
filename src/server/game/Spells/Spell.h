@@ -466,6 +466,14 @@ class TC_GAME_API Spell
 
         int32 CalculateDamage(uint8 effIndex) const;
 
+        bool CheckSpellCancelsAuraEffect(AuraType auraType, uint32* param1) const;
+        bool CheckSpellCancelsCharm(uint32* param1) const;
+        bool CheckSpellCancelsStun(uint32* param1) const;
+        bool CheckSpellCancelsSilence(uint32* param1) const;
+        bool CheckSpellCancelsPacify(uint32* param1) const;
+        bool CheckSpellCancelsFear(uint32* param1) const;
+        bool CheckSpellCancelsConfuse(uint32* param1) const;
+
         void Delayed();
         void DelayedChannel();
         inline uint32 getState() const { return m_spellState; }

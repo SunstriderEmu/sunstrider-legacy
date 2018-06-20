@@ -3464,6 +3464,7 @@ void SpellInfo::_LoadImmunityInfo()
             case 59752: // Every Man for Himself
             case 53490: // Bullheaded
                 mechanicImmunityMask |= IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+                immuneInfo.AuraTypeImmune.insert(SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED);
                 break;
             case 54508: // Demonic Empowerment
                 mechanicImmunityMask |= (1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT) | (1 << MECHANIC_STUN);

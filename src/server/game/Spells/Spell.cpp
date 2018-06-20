@@ -6608,112 +6608,210 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
 
 SpellCastResult Spell::CheckCasterAuras(uint32* param1) const
 {
-    Unit* caster = (m_originalCaster ? m_originalCaster : m_caster->ToUnit());
-    if (!caster)
-        return SPELL_CAST_OK;
-
     // Flag drop spells totally immuned to caster auras
     // FIXME: find more nice check for all totally immuned spells
     // AttributesEx3 & 0x10000000?
-    if(m_spellInfo->Id==23336 || m_spellInfo->Id==23334 || m_spellInfo->Id==34991)
+    if (m_spellInfo->Id == 23336 || m_spellInfo->Id == 23334 || m_spellInfo->Id == 34991)
         return SPELL_CAST_OK;
 
-    uint8 school_immune = 0;
-    uint32 mechanic_immune = 0;
-    uint32 dispel_immune = 0;
+    Unit* unitCaster = (m_originalCaster ? m_originalCaster : m_caster->ToUnit());
+    if (!unitCaster)
+        return SPELL_CAST_OK;
 
-    //Check if the spell grants school or mechanic immunity.
-    //We use bitmasks so the loop is done only once and not on every aura check below.
-    if ( m_spellInfo->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY) )
+    // spells totally immuned to caster auras (wsg flag drop, give marks etc)
+    if (m_spellInfo->HasAttribute(SPELL_ATTR6_IGNORE_CASTER_AURAS))
+        return SPELL_CAST_OK;
+
+    // these attributes only show the spell as usable on the client when it has related aura applied
+    // still they need to be checked against certain mechanics
+
+    // SPELL_ATTR5_USABLE_WHILE_STUNNED by default only MECHANIC_STUN (ie no sleep, knockout, freeze, etc.)
+    bool usableWhileStunned = m_spellInfo->HasAttribute(SPELL_ATTR5_USABLE_WHILE_STUNNED);
+
+    // SPELL_ATTR5_USABLE_WHILE_FEARED by default only fear (ie no horror)
+    bool usableWhileFeared = m_spellInfo->HasAttribute(SPELL_ATTR5_USABLE_WHILE_FEARED);
+
+    // SPELL_ATTR5_USABLE_WHILE_CONFUSED by default only disorient (ie no polymorph)
+    bool usableWhileConfused = m_spellInfo->HasAttribute(SPELL_ATTR5_USABLE_WHILE_CONFUSED);
+
+#ifdef LICH_KING
+    // Glyph of Pain Suppression
+    // there is no other way to handle it
+    if (m_spellInfo->Id == 33206 && !unitCaster->HasAura(63248))
+        usableWhileStunned = false;
+#endif
+
+    // Check whether the cast should be prevented by any state you might have.
+    SpellCastResult result = SPELL_CAST_OK;
+
+    // Get unit state
+    uint32 const unitflag = unitCaster->GetUInt32Value(UNIT_FIELD_FLAGS);
+
+    // this check should only be done when player does cast directly
+    // (ie not when it's called from a script) Breaks for example PlayerAI when charmed
+    /*
+    if (unitCaster->GetCharmerGUID())
     {
-        for(const auto & Effect : m_spellInfo->Effects)
-        {
-            if(Effect.ApplyAuraName == SPELL_AURA_SCHOOL_IMMUNITY)
-                school_immune |= uint32(Effect.MiscValue);
-            else if(Effect.ApplyAuraName == SPELL_AURA_MECHANIC_IMMUNITY)
-                mechanic_immune |= 1 << uint32(Effect.MiscValue);
-            else if(Effect.ApplyAuraName == SPELL_AURA_DISPEL_IMMUNITY)
-                dispel_immune |= GetDispellMask(DispelType(Effect.MiscValue));
-        }
-        //immune movement impairment and loss of control
-        if(m_spellInfo->Id==(uint32)42292)
-            mechanic_immune = IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+    if (Unit* charmer = unitCaster->GetCharmer())
+    if (charmer->GetUnitBeingMoved() != unitCaster && !CheckSpellCancelsCharm(param1))
+    result = SPELL_FAILED_CHARMED;
     }
+    */
 
-    //Check whether the cast should be prevented by any state you might have.
-    SpellCastResult prevented_reason = SPELL_CAST_OK;
-    // Have to check if there is a stun aura. Otherwise will have problems with ghost aura apply while logging out
-    if(!(m_spellInfo->HasAttribute(SPELL_ATTR5_USABLE_WHILE_STUNNED)) && caster->HasAuraType(SPELL_AURA_MOD_STUN))
-        prevented_reason = SPELL_FAILED_STUNNED;
-    else if(caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED) && !(m_spellInfo->HasAttribute(SPELL_ATTR5_USABLE_WHILE_CONFUSED)))
-        prevented_reason = SPELL_FAILED_CONFUSED;
-    else if(caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING) && !(m_spellInfo->HasAttribute(SPELL_ATTR5_USABLE_WHILE_FEARED)))
-        prevented_reason = SPELL_FAILED_FLEEING;
-    else if(caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED) && m_spellInfo->PreventionType==SPELL_PREVENTION_TYPE_SILENCE)
-        prevented_reason = SPELL_FAILED_SILENCED;
-    else if(caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) && m_spellInfo->PreventionType==SPELL_PREVENTION_TYPE_PACIFY)
-        prevented_reason = SPELL_FAILED_PACIFIED;
-
-    // Attr must make flag drop spell totally immune from all effects
-    if(prevented_reason)
+    // spell has attribute usable while having a cc state, check if caster has allowed mechanic auras, another mechanic types must prevent cast spell
+    auto mechanicCheck = [&](AuraType type) -> SpellCastResult
     {
-        if(school_immune || mechanic_immune || dispel_immune)
+        bool foundNotMechanic = false;
+        Unit::AuraEffectList const& auras = unitCaster->GetAuraEffectsByType(type);
+        for (AuraEffect const* aurEff : auras)
         {
-            //Checking auras is needed now, because you are prevented by some state but the spell grants immunity.
-            auto const& auras = caster->GetAppliedAuras();
-            for(const auto & aurApp : auras)
+            uint32 const mechanicMask = aurEff->GetSpellInfo()->GetAllEffectsMechanicMask();
+            if (mechanicMask && !(mechanicMask & GetSpellInfo()->GetAllowedMechanicMask()))
             {
-                for (uint8 i = EFFECT_0; i <= EFFECT_2; i++)
+                foundNotMechanic = true;
+
+                // fill up aura mechanic info to send client proper error message
+                if (param1)
                 {
-                    if (aurApp.second->GetBase()->GetSpellInfo()->GetSchoolMask() & school_immune)
-                        continue;
-
-                    if ((1 << (aurApp.second->GetBase()->GetSpellInfo()->Dispel)) & dispel_immune)
-                        continue;
-
-                    AuraEffect* aura = aurApp.second->GetBase()->GetEffect(i);
-                    if (aura)
-                    {
-                        if (aura->GetBase()->GetSpellInfo()->GetEffectMechanic(i) & mechanic_immune) //not sure, should 
-                            continue;
-
-                        //Make a second check for spell failed so the right SPELL_FAILED message is returned.
-                        //That is needed when your casting is prevented by multiple states and you are only immune to some of them.
-                        switch (aura->GetAuraType())
-                        {
-                        case SPELL_AURA_MOD_STUN:
-                            if (!(m_spellInfo->HasAttribute(SPELL_ATTR5_USABLE_WHILE_STUNNED)))
-                                return SPELL_FAILED_STUNNED;
-                            break;
-                        case SPELL_AURA_MOD_CONFUSE:
-                            if (!(m_spellInfo->HasAttribute(SPELL_ATTR5_USABLE_WHILE_CONFUSED)))
-                                return SPELL_FAILED_CONFUSED;
-                            break;
-                        case SPELL_AURA_MOD_FEAR:
-                            if (!(m_spellInfo->HasAttribute(SPELL_ATTR5_USABLE_WHILE_FEARED)))
-                                return SPELL_FAILED_FLEEING;
-                            break;
-                        case SPELL_AURA_MOD_PACIFY_SILENCE:
-                            if (m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY)
-                                return SPELL_FAILED_PACIFIED;
-                        case SPELL_AURA_MOD_SILENCE:
-                            if (m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
-                                return SPELL_FAILED_SILENCED;
-                            break;
-                        case SPELL_AURA_MOD_PACIFY:
-                            if (m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY)
-                                return SPELL_FAILED_PACIFIED;
-                            break;
-                        }
-                    }
+                    *param1 = aurEff->GetSpellInfo()->Effects[aurEff->GetEffIndex()].Mechanic;
+                    if (!*param1)
+                        *param1 = aurEff->GetSpellInfo()->Mechanic;
                 }
+
+                break;
             }
         }
-        //You are prevented from casting and the spell casted does not grant immunity. Return a failed error.
-        else
-            return prevented_reason;
+
+        if (foundNotMechanic)
+        {
+            switch (type)
+            {
+            case SPELL_AURA_MOD_STUN:
+                return SPELL_FAILED_STUNNED;
+            case SPELL_AURA_MOD_FEAR:
+                return SPELL_FAILED_FLEEING;
+            case SPELL_AURA_MOD_CONFUSE:
+                return SPELL_FAILED_CONFUSED;
+            default:
+                ABORT();
+                //return SPELL_FAILED_NOT_KNOWN;
+            }
+        }
+
+        return SPELL_CAST_OK;
+    };
+
+    if (unitflag & UNIT_FLAG_STUNNED)
+    {
+        if (usableWhileStunned)
+        {
+            SpellCastResult mechanicResult = mechanicCheck(SPELL_AURA_MOD_STUN);
+            if (mechanicResult != SPELL_CAST_OK)
+                result = mechanicResult;
+        }
+        else if (!CheckSpellCancelsStun(param1))
+            result = SPELL_FAILED_STUNNED;
     }
-    return SPELL_CAST_OK;                                               // all ok
+    else if (unitflag & UNIT_FLAG_SILENCED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE && !CheckSpellCancelsSilence(param1))
+        result = SPELL_FAILED_SILENCED;
+    else if (unitflag & UNIT_FLAG_PACIFIED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY && !CheckSpellCancelsPacify(param1))
+        result = SPELL_FAILED_PACIFIED;
+    else if (unitflag & UNIT_FLAG_FLEEING)
+    {
+        if (usableWhileFeared)
+        {
+            SpellCastResult mechanicResult = mechanicCheck(SPELL_AURA_MOD_FEAR);
+            if (mechanicResult != SPELL_CAST_OK)
+                result = mechanicResult;
+        }
+        else if (!CheckSpellCancelsFear(param1))
+            result = SPELL_FAILED_FLEEING;
+    }
+    else if (unitflag & UNIT_FLAG_CONFUSED)
+    {
+        if (usableWhileConfused)
+        {
+            SpellCastResult mechanicResult = mechanicCheck(SPELL_AURA_MOD_CONFUSE);
+            if (mechanicResult != SPELL_CAST_OK)
+                result = mechanicResult;
+        }
+        else if (!CheckSpellCancelsConfuse(param1))
+            result = SPELL_FAILED_CONFUSED;
+    }
+
+    // Attr must make flag drop spell totally immune from all effects
+    if (result != SPELL_CAST_OK)
+        return (param1 && *param1) ? SPELL_FAILED_PREVENTED_BY_MECHANIC : result;
+
+    return SPELL_CAST_OK;
+}
+
+bool Spell::CheckSpellCancelsAuraEffect(AuraType auraType, uint32* param1) const
+{
+    Unit* unitCaster = (m_originalCaster ? m_originalCaster : m_caster->ToUnit());
+    if (!unitCaster)
+        return false;
+
+    // Checking auras is needed now, because you are prevented by some state but the spell grants immunity.
+    Unit::AuraEffectList const& auraEffects = unitCaster->GetAuraEffectsByType(auraType);
+    if (auraEffects.empty())
+        return true;
+
+    for (AuraEffect const* aurEff : auraEffects)
+    {
+        SpellInfo const* auraInfo = aurEff->GetSpellInfo();
+        if (m_spellInfo->SpellCancelsAuraEffect(auraInfo, aurEff->GetEffIndex()))
+            continue;
+
+        if (param1)
+        {
+            *param1 = auraInfo->Effects[aurEff->GetEffIndex()].Mechanic;
+            if (!*param1)
+                *param1 = auraInfo->Mechanic;
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
+bool Spell::CheckSpellCancelsCharm(uint32* param1) const
+{
+    return CheckSpellCancelsAuraEffect(SPELL_AURA_MOD_CHARM, param1) &&
+        CheckSpellCancelsAuraEffect(SPELL_AURA_AOE_CHARM, param1) &&
+        CheckSpellCancelsAuraEffect(SPELL_AURA_MOD_POSSESS, param1);
+}
+
+bool Spell::CheckSpellCancelsStun(uint32* param1) const
+{
+    return CheckSpellCancelsAuraEffect(SPELL_AURA_MOD_STUN, param1) 
+#ifdef LICH_KING
+        && CheckSpellCancelsAuraEffect(SPELL_AURA_STRANGULATE, param1)
+#endif
+    ;
+}
+
+bool Spell::CheckSpellCancelsSilence(uint32* param1) const
+{
+    return CheckSpellCancelsAuraEffect(SPELL_AURA_MOD_SILENCE, param1) &&
+        CheckSpellCancelsAuraEffect(SPELL_AURA_MOD_PACIFY_SILENCE, param1);
+}
+
+bool Spell::CheckSpellCancelsPacify(uint32* param1) const
+{
+    return CheckSpellCancelsAuraEffect(SPELL_AURA_MOD_PACIFY, param1) &&
+        CheckSpellCancelsAuraEffect(SPELL_AURA_MOD_PACIFY_SILENCE, param1);
+}
+
+bool Spell::CheckSpellCancelsFear(uint32* param1) const
+{
+    return CheckSpellCancelsAuraEffect(SPELL_AURA_MOD_FEAR, param1);
+}
+
+bool Spell::CheckSpellCancelsConfuse(uint32* param1) const
+{
+    return CheckSpellCancelsAuraEffect(SPELL_AURA_MOD_CONFUSE, param1);
 }
 
 int32 Spell::CalculateDamage(uint8 effIndex) const
