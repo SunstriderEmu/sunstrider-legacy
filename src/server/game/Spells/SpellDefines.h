@@ -147,12 +147,12 @@ enum TriggerCastFlags : uint32
     TRIGGERED_DONT_RESET_PERIODIC_TIMER             = 0x00020000,   //! Will allow periodic aura timers to keep ticking (instead of resetting)
     TRIGGERED_DONT_REPORT_CAST_ERROR                = 0x00040000,   //! Will return SPELL_FAILED_DONT_REPORT in CheckCast functions
     TRIGGERED_IGNORE_RANGE                          = 0x00080000,   // sunstrider custom
-    TRIGGERED_FULL_MASK                             = 0x0007FFFF,   //! Used when doing CastSpell with triggered == true
+    TRIGGERED_FULL_MASK                             = 0x000FFFFF,   //! Used when doing CastSpell with triggered == true
 
     // debug flags (used with .cast triggered commands)
     TRIGGERED_IGNORE_EQUIPPED_ITEM_REQUIREMENT      = 0x00080000,   //! Will ignore equipped item requirements
     //?
-    //sunstrider custom
+    //sunstrider custom, those should be explicitely called
     TRIGGERED_IGNORE_SPEED                          = 0x00200000,
     TRIGGERED_PROC_AS_NON_TRIGGERED                 = 0x00400000,
     TRIGGERED_IGNORE_TARGET_AURASTATE               = 0x00800000,
