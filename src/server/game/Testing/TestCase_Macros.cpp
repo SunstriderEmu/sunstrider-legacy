@@ -937,8 +937,7 @@ void TestCase::_TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedC
     TEST_ASSERT(actualCastTime == expectedCastTimeMS);
 }
 
-
-void TestCase::_TestReach(TestPlayer* caster, Unit* target, uint32 spellID, float range)
+void TestCase::_TestRange(TestPlayer* caster, Unit* target, uint32 spellID, float range)
 {
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
