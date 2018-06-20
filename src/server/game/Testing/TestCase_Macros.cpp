@@ -940,10 +940,15 @@ void TestCase::_TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedC
 
 void TestCase::_TestReach(TestPlayer* caster, Unit* target, uint32 spellID, float range)
 {
-    //spells range uses both caster and target combat reach
-    TEST_ASSERT(caster->GetCombatReach() == DEFAULT_PLAYER_COMBAT_REACH);
-    range += caster->GetCombatReach();
-    range += target->GetCombatReach();
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
+
+    //spells range usually uses both caster and target combat reach
+    if (spellInfo->NeedsExplicitUnitTarget() || spellInfo->GetExplicitTargetMask() & TARGET_FLAG_CORPSE_MASK) //any others?
+    {
+        TEST_ASSERT(caster->GetCombatReach() == DEFAULT_PLAYER_COMBAT_REACH);
+        range += caster->GetCombatReach();
+        range += target->GetCombatReach();
+    }
 
     Position originalTargetPos = target->GetPosition();
     _SaveUnitState(caster);
