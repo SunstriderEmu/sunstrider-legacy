@@ -8550,7 +8550,7 @@ void Spell::SetForceHitResult(SpellMissInfo result)
 { 
     if (_forceHitResult != SPELL_FORCE_HIT_DEFAULT)
     {
-        TC_LOG_ERROR("spells", "Trying to override spell force hit result when it was already set"); //possibly by _forceHitResultOverride
+        TC_LOG_WARN("spells", "Trying to override spell force hit result when it was already set"); //possibly by _forceHitResultOverride
         return;
     }
 

@@ -4081,7 +4081,7 @@ void Spell::EffectDispel(uint32 effIndex)
             });
 
             if (successItr == successList.end())
-                successList.emplace_back(itr->GetAura(), 0, 1);
+                successList.emplace_back(itr->GetAura(), 0, uint8(1));
             else
                 successItr->IncrementCharges();
 

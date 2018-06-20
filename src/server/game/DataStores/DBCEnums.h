@@ -78,7 +78,7 @@ enum AreaFlags
 #endif
 };
 
-enum Difficulty : uint32
+enum Difficulty : uint8
 {
     REGULAR_DIFFICULTY = 0,
 
