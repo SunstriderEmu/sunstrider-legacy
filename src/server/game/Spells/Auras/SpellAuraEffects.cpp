@@ -1983,6 +1983,9 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     //sun: inherit ignore speed flag if any. Needed for testing channels.
     if (GetBase()->GetTriggerCastFlags() & TRIGGERED_IGNORE_SPEED)
         args.TriggerFlags = TriggerCastFlags(args.TriggerFlags | TRIGGERED_IGNORE_SPEED);
+    //also inherit force hit result from triggering aura
+    args.ForceHitResult = GetBase()->GetForceHitResult();
+
 #ifdef LICH_KING
     //don't know what to do with this on BC but this attribute was already existing. Auras can't crit so this attributes is probably not exact at TC.
     if (GetSpellInfo()->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
@@ -2011,6 +2014,8 @@ void AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit*
             //sun: inherit ignore speed flag if any. Needed for testing channels.
             if (GetBase()->GetTriggerCastFlags() & TRIGGERED_IGNORE_SPEED)
                 args.TriggerFlags = TriggerCastFlags(args.TriggerFlags | TRIGGERED_IGNORE_SPEED);
+            //also inherit force hit result from triggering aura
+            args.ForceHitResult = GetBase()->GetForceHitResult();
 
             triggerCaster->CastSpell(target, triggerSpellId, args);
             TC_LOG_DEBUG("spells", "AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);

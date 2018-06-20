@@ -562,6 +562,10 @@ class TC_GAME_API Spell
         TriggerCastFlags GetTriggerCastFlags() const { return _triggeredCastFlags; }
         SpellDestination GetSpellDestination(SpellEffIndex effIndex) const { return m_destTargets[effIndex]; }
 
+        SpellMissInfo GetForceHitResult() const { return _forceHitResult; }
+        //once set, cannot be changed
+        void SetForceHitResult(SpellMissInfo result);
+
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();
@@ -785,10 +789,8 @@ class TC_GAME_API Spell
         bool _spellTargetsSelected;
 
         PathGenerator* m_preGeneratedPath;
-#ifdef TESTS
         // We need to keep this variable in spell to allow applying it for channels or for when cast finish
         SpellMissInfo _forceHitResult;
-#endif
 };
 
 namespace Trinity

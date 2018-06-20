@@ -822,7 +822,8 @@ WorldObject::WorldObject(bool isWorldObject) :
     m_isFarVisible(false),
     m_isTempWorldObject(false),
     m_transport(nullptr),
-    m_phaseMask(PHASEMASK_NORMAL)
+    m_phaseMask(PHASEMASK_NORMAL),
+    _forceHitResultOverride(SPELL_FORCE_HIT_DEFAULT)
 {
     m_positionX         = 0.0f;
     m_positionY         = 0.0f;
@@ -3581,6 +3582,8 @@ uint32 WorldObject::CastSpell(SpellCastTargets const& targets, uint32 spellId, C
     Spell* spell = new Spell(this, info, args.TriggerFlags, args.OriginalCaster, nullptr, args.SkipHit);
     for (auto const& pair : args.SpellValueOverrides)
         spell->SetSpellValue(pair.first, pair.second);
+
+    spell->SetForceHitResult(args.ForceHitResult);
 
     spell->m_CastItem = args.CastItem;
     return spell->prepare(targets, args.TriggeringAura);

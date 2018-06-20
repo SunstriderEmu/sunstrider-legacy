@@ -170,6 +170,8 @@ struct TC_GAME_API CastSpellExtraArgs
     CastSpellExtraArgs(ObjectGuid const& origCaster) : TriggerFlags(TRIGGERED_FULL_MASK), OriginalCaster(origCaster) {}
     CastSpellExtraArgs(AuraEffect const* eff, ObjectGuid const& origCaster) : TriggerFlags(TRIGGERED_FULL_MASK), TriggeringAura(eff), OriginalCaster(origCaster) {}
     CastSpellExtraArgs(SpellValueMod mod, int32 val) { SpellValueOverrides.AddMod(mod, val); }
+    CastSpellExtraArgs(SpellMissInfo forceHitResult) : TriggerFlags(TRIGGERED_FULL_MASK), ForceHitResult(forceHitResult) {}
+    
 
     CastSpellExtraArgs& SetTriggerFlags(TriggerCastFlags flag) { TriggerFlags = flag; return *this; }
     CastSpellExtraArgs& SetCastItem(Item* item) { CastItem = item; return *this; }
@@ -183,6 +185,8 @@ struct TC_GAME_API CastSpellExtraArgs
     Item* CastItem = nullptr;
     AuraEffect const* TriggeringAura = nullptr;
     ObjectGuid OriginalCaster = ObjectGuid::Empty;
+    //sun
+    SpellMissInfo ForceHitResult = SPELL_FORCE_HIT_DEFAULT;
     struct
     {
         friend class WorldObject;

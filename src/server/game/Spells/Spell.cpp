@@ -571,9 +571,7 @@ Spell::Spell(WorldObject* Caster, SpellInfo const *info, TriggerCastFlags trigge
     targetMissInfo(SPELL_MISS_NONE),
     _spellAura(nullptr),
     _dynObjAura(nullptr),
-#ifdef TESTS
-    _forceHitResult(Caster->_forceHitResult),
-#endif
+    _forceHitResult(Caster->GetForceSpellHitResultOverride()), //if any value other than default get set here, new value will be ignored
     _unitCaster(nullptr)
 {
     m_needComboPoints = m_spellInfo->NeedsComboPoints();
@@ -2280,10 +2278,9 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     // Calculate hit result
     WorldObject* caster = m_originalCaster ? m_originalCaster : m_caster;
     targetInfo.MissCondition = caster->SpellHitResult(target, m_spellInfo, m_canReflect && !(IsPositive() && m_caster->IsFriendlyTo(target)));
-#ifdef TESTS
-    if (_forceHitResult < SPELL_MISS_TOTAL)
+
+    if (_forceHitResult != SPELL_FORCE_HIT_DEFAULT)
         targetInfo.MissCondition = _forceHitResult;
-#endif
 
     // Spell have speed - need calculate incoming time
     // Incoming time is zero for self casts. At least I think so.
@@ -3194,6 +3191,7 @@ void Spell::DoSpellEffectHit(Unit* unit, uint8 effIndex, TargetInfo& hitInfo)
                     .SetPeriodicReset(resetPeriodicTimer)
                     .SetOwnerEffectMask(aura_effmask)
                     .SetTriggerCastFlags(_triggeredCastFlags)
+                    .SetForceHitResult(_forceHitResult)
                     .IsRefresh = &refresh;
 
                 if (Aura* aura = Aura::TryRefreshStackOrCreate(createInfo))
@@ -8546,4 +8544,15 @@ bool Spell::IsIgnoringCooldowns() const
 bool Spell::IsProcDisabled() const
 {
     return (_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS) != 0;
+}
+
+void Spell::SetForceHitResult(SpellMissInfo result) 
+{ 
+    if (_forceHitResult != SPELL_FORCE_HIT_DEFAULT)
+    {
+        TC_LOG_ERROR("spells", "Trying to override spell force hit result when it was already set"); //possibly by _forceHitResultOverride
+        return;
+    }
+
+    _forceHitResult = result; 
 }

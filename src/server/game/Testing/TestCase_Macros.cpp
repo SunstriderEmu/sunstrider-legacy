@@ -56,11 +56,10 @@ void TestCase::_TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uin
         return;
     }
 
-    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
-    caster->ForceSpellHitResult(SPELL_MISS_NONE);
     caster->GetSpellHistory()->ResetCooldown(castSpellID);
-    _TestCast(caster, target, castSpellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
-    caster->ForceSpellHitResult(previousForceHitResult);
+    CastSpellExtraArgs args(TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
+    args.ForceHitResult = SPELL_MISS_NONE;
+    _TestCast(caster, target, castSpellID, SPELL_CAST_OK, args);
 
     //all setup, proceed to test CD
     _TestHasCooldown(caster, castSpellID, cooldownMS);
@@ -70,9 +69,9 @@ void TestCase::_TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, uin
     caster->GetSpellHistory()->ResetGlobalCooldown();
 }
 
-void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode, TriggerCastFlags triggeredFlags)
+void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode, CastSpellExtraArgs args /*= {}*/)
 {
-    uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
+    uint32 res = caster->CastSpell(victim, spellID, args);
     if (expectedCode == SPELL_CAST_OK)
     {
         INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %s", spellID, StringifySpellCastResult(res).c_str());
@@ -85,12 +84,12 @@ void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastRe
 	INTERNAL_TEST_ASSERT(res == uint32(expectedCode));
 }
 
-void TestCase::_ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo, TriggerCastFlags triggeredFlags)
+void TestCase::_ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo, CastSpellExtraArgs args /*= {}*/)
 {
-    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
-    caster->ForceSpellHitResult(forcedMissInfo);
-    uint32 res = caster->CastSpell(victim, spellID, triggeredFlags);
-    caster->ForceSpellHitResult(previousForceHitResult);
+    //forcedMissInfo and args both contains info for forceMissInfo... but we'll keep it to still be able to call this function as a one liner
+    //miss info from args will be ignored
+    args.ForceHitResult = forcedMissInfo;
+    uint32 res = caster->CastSpell(victim, spellID, args);
     INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %s", spellID, StringifySpellCastResult(res).c_str());
     INTERNAL_TEST_ASSERT(res == uint32(SPELL_CAST_OK));
 }
@@ -115,7 +114,6 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
 	EnableCriticals(caster, crit);
 
-    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
     for (uint32 i = 0; i < sampleSize; i++)
     {
         if (callback)
@@ -342,7 +340,6 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
     uint32 baseDurationTime = spellInfo->GetDuration();
-    SpellMissInfo const previousForceHitResult = caster->_forceHitResult;
 
     ResetSpellCast(caster);
     AI->ResetSpellCounters();

@@ -400,8 +400,8 @@ protected:
     void _TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 durationMS);
     inline void _TestAuraMaxDuration(Unit* target, uint32 spellID, Milliseconds ms) { _TestAuraMaxDuration(target, spellID, uint32(ms.count())); }
     void _TestAuraStack(Unit* target, uint32 spellID,uint32 stacks, bool stack);
-    void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
-    void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, TriggerCastFlags triggeredFlags = TRIGGERED_NONE);
+    void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, CastSpellExtraArgs args = {});
+    void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, CastSpellExtraArgs args = {});
     void _TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId);
     // <Test macros related functions/>
 

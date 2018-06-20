@@ -297,6 +297,7 @@ public:
     //sunwell channel targeting logic. See comment above m_objectTargetGUIDChannel for the why TC has it wrong.
     ChannelTargetData const* GetChannelTargetData() const { return m_channelData; }
     TriggerCastFlags GetTriggerCastFlags() const { return m_castFlags; }
+    SpellMissInfo GetForceHitResult() const { return m_forceHitResult; }
 
 private:
     AuraScript * GetScriptByName(std::string const& scriptName) const;
@@ -346,6 +347,7 @@ protected:
     std::chrono::steady_clock::time_point m_procCooldown;
 
     TriggerCastFlags m_castFlags; //flags used by spell
+    SpellMissInfo m_forceHitResult; //spells triggered by this aura will use this force hit result if any
 
 private:
     std::vector<AuraApplication*> _removedApplications;

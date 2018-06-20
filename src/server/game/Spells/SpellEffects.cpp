@@ -3466,7 +3466,8 @@ void Spell::EffectPersistentAA(uint32 effIndex)
     AuraCreateInfo createInfo(m_spellInfo, MAX_EFFECT_MASK, dynObj);
     createInfo
         .SetCaster(_unitCaster)
-        .SetBaseAmount(m_spellValue->EffectBasePoints);
+        .SetBaseAmount(m_spellValue->EffectBasePoints)
+        .SetForceHitResult(_forceHitResult);
 
     if (Aura* aura = Aura::TryCreate(createInfo))
     {

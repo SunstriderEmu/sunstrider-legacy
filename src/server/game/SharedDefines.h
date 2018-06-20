@@ -1166,6 +1166,8 @@ enum SpellMissInfo : uint32
     SPELL_MISS_REFLECT                 = 11,
 
     SPELL_MISS_TOTAL,
+    //sun: default value for spell force hit system, not forcing anything
+    SPELL_FORCE_HIT_DEFAULT = SPELL_MISS_TOTAL,
 };
 
 enum SpellHitType

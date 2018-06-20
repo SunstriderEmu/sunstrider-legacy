@@ -375,7 +375,7 @@ struct TC_GAME_API AuraCreateInfo
     AuraCreateInfo& SetOwnerEffectMask(uint8 effMask) { _targetEffectMask = effMask; return *this; }
     AuraCreateInfo& SetFake(bool fake) { Fake = fake; return *this; }
     AuraCreateInfo& SetTriggerCastFlags(TriggerCastFlags _castFlags) { castFlags = _castFlags; return *this; }
-
+    AuraCreateInfo& SetForceHitResult(SpellMissInfo result) { forceSpellHit = result; return *this; }
 
     SpellInfo const* GetSpellInfo() const { return _spellInfo; }
     uint8 GetAuraEffectMask() const { return _auraEffectMask; }
@@ -388,6 +388,7 @@ struct TC_GAME_API AuraCreateInfo
     bool ResetPeriodicTimer = true;
     bool Fake = false; // fake = true won't add aura to owner
     TriggerCastFlags castFlags = TRIGGERED_NONE; //flags used by spell
+    SpellMissInfo forceSpellHit = SPELL_FORCE_HIT_DEFAULT; //force spell hit for spells triggered from this aura
 
     private:
         SpellInfo const* _spellInfo = nullptr;

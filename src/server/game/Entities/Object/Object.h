@@ -596,12 +596,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         SpellMissInfo SpellHitResult(Unit* victim, SpellInfo const* spellInfo, bool canReflect = false, Item* castItem = nullptr) const;
         void SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo);
 
-#ifdef TESTS
-        SpellMissInfo _forceHitResult = SPELL_MISS_TOTAL;
-        //Force next spells to use hit result missInfo. This might get reset by some testing function so you should re apply it before each cast in testing.
-        void ForceSpellHitResult(SpellMissInfo missInfo) { _forceHitResult = missInfo; }
-        void ResetForceSpellHitResult() { _forceHitResult = SpellMissInfo(-1); }
-#endif
+        //Force ALL spells to use hit result missInfo. You should use CastSpell arguments whenever possible
+        void ForceSpellHitResultOverride(SpellMissInfo missInfo) { _forceHitResultOverride = missInfo; }
+        SpellMissInfo GetForceSpellHitResultOverride() const { return _forceHitResultOverride; }
 
         virtual uint32 GetFaction() const = 0;
         virtual void SetFaction(uint32 /*faction*/) { }
@@ -730,6 +727,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 		bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert = false) const;
 		bool CanDetectInvisibilityOf(WorldObject const* obj) const;
 		bool CanDetectStealthOf(WorldObject const* obj, bool checkAlert = false) const;
+
+        SpellMissInfo _forceHitResultOverride;
 };
 
 namespace Trinity
