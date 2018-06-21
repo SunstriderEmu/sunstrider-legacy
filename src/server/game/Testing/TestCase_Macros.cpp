@@ -480,7 +480,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     EnableCriticals(caster, crit);
 
     auto launchCallback = [&](Unit* caster, Unit* victim) {
-        _ForceCast(caster, victim, spellID, missInfo, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_PROC_AS_NON_TRIGGERED | TRIGGERED_IGNORE_LOS));
+        _ForceCast(caster, victim, spellID, missInfo, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_TREAT_AS_NON_TRIGGERED | TRIGGERED_IGNORE_LOS));
         if (spellInfo->IsChanneled())
             _StartUnitChannels(caster);
     };

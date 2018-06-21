@@ -1238,6 +1238,7 @@ class TC_GAME_API Unit : public WorldObject
 
         void Update( uint32 time ) override;
 
+        //Attack timer = decreasing timer, time left before being ready to attack
         void SetAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }
         void ResetAttackTimer(WeaponAttackType type = BASE_ATTACK);
         uint32 GetAttackTimer(WeaponAttackType type) const { return m_attackTimer[type]; }
@@ -1352,6 +1353,7 @@ class TC_GAME_API Unit : public WorldObject
         void ApplyPowerMod(Powers power, uint32 val, bool apply);
         void ApplyMaxPowerMod(Powers power, uint32 val, bool apply);
 
+        //Attack time = Weapon attack time, fixed value
         uint32 GetAttackTime(WeaponAttackType att) const { return (uint32)(GetFloatValue(UNIT_FIELD_BASEATTACKTIME+att)/m_modAttackSpeedPct[att]); }
         void SetAttackTime(WeaponAttackType att, uint32 val) { SetFloatValue(UNIT_FIELD_BASEATTACKTIME+att,val*m_modAttackSpeedPct[att]); }
         void ApplyAttackTimePercentMod(WeaponAttackType att,float val, bool apply);

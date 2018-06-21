@@ -8605,7 +8605,6 @@ void Spell::PrepareTriggersExecutedOnHit()
 
 bool Spell::IsAutoActionResetSpell() const
 {
-    /// @todo changed SPELL_INTERRUPT_FLAG_INTERRUPT -> SPELL_INTERRUPT_FLAG_INTERRUPT to fix compile - is this check correct at all?
     if (IsTriggered() || !(m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT))
         return false;
 
@@ -8631,7 +8630,7 @@ bool Spell::IsPositive() const
 
 bool Spell::IsTriggered() const
 {
-    return (_triggeredCastFlags & TRIGGERED_FULL_MASK) != 0 && (_triggeredCastFlags & TRIGGERED_PROC_AS_NON_TRIGGERED) == 0;
+    return (_triggeredCastFlags & TRIGGERED_FULL_MASK) != 0 && (_triggeredCastFlags & TRIGGERED_TREAT_AS_NON_TRIGGERED) == 0;
 }
 
 bool Spell::IsIgnoringCooldowns() const
