@@ -111,6 +111,8 @@ void TestCase::_TestDirectValue(bool heal, Unit* caster, Unit* target, uint32 sp
     _MaxHealth(target);
 
     auto[sampleSize, maxPredictionError] = _GetApproximationParams(expectedMin, expectedMax);
+    if (!testedSpellId)
+        testedSpellId = spellID;
 
 	EnableCriticals(caster, crit);
 
@@ -127,18 +129,18 @@ void TestCase::_TestDirectValue(bool heal, Unit* caster, Unit* target, uint32 sp
     uint32 dealtMin;
     uint32 dealtMax;
     if(heal)
-        std::tie(dealtMin, dealtMax) = GetHealingPerSpellsTo(casterOwner, target, spellID, crit, sampleSize);
+        std::tie(dealtMin, dealtMax) = GetHealingPerSpellsTo(casterOwner, target, testedSpellId, crit, sampleSize);
     else
-        std::tie(dealtMin, dealtMax) = GetDamagePerSpellsTo(casterOwner, target, spellID, crit, sampleSize);
+        std::tie(dealtMin, dealtMax) = GetDamagePerSpellsTo(casterOwner, target, testedSpellId, crit, sampleSize);
 
-    TC_LOG_TRACE("test.unit_test", "spellId: %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", spellID, dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
+    TC_LOG_TRACE("test.unit_test", "spellId: %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", testedSpellId, dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
 
     uint32 allowedMin = expectedMin > maxPredictionError ? expectedMin - maxPredictionError : 0; //protect against underflow
     uint32 allowedMax = expectedMax + maxPredictionError;
 
-    INTERNAL_ASSERT_INFO("Enforcing high result for spell %u. allowedMax: %u, dealtMax: %u", spellID, allowedMax, dealtMax);
+    INTERNAL_ASSERT_INFO("Enforcing high result for spell %u. allowedMax: %u, dealtMax: %u", testedSpellId, allowedMax, dealtMax);
     INTERNAL_TEST_ASSERT(dealtMax <= allowedMax);
-    INTERNAL_ASSERT_INFO("Enforcing low result for spell %u. allowedMin: %u, dealtMin: %u", spellID, allowedMin, dealtMin);
+    INTERNAL_ASSERT_INFO("Enforcing low result for spell %u. allowedMin: %u, dealtMin: %u", testedSpellId, allowedMin, dealtMin);
     INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
 
     //Restoring

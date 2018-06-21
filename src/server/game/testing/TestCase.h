@@ -167,6 +167,7 @@ public:
 
         @caster must be a TestPlayer or a pet/summon of him
         @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+        @testedSpellId check result for this spell instead of spellID. May be useful for spell proccing other spells.
      */
     typedef std::function<void(Unit*, Unit*)> TestCallback;
     #define TEST_DIRECT_SPELL_DAMAGE(...) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(false, __VA_ARGS__); _ResetCaller(); }
