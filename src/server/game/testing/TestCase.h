@@ -319,9 +319,12 @@ public:
     */
     #define TEST_PUSHBACK_RESIST_CHANCE(caster, target, spellID, chance)  { _SetCaller(__FILE__, __LINE__); _TestPushBackResistChance(caster, target, spellID, chance); _ResetCaller(); }
     /* Test if target is in range for given spell
-    Spell may or may not be casted on target after this
+    Spell may or may not be really casted on target in this function
+    Caster and target combat reach get automatically added in this function, EXCEPT for ranged weapon spells.
+       Usage:
+         TEST_RANGE(TestPlayer* caster, Unit* target, uint32 spellID, float maxRange, float minRange = 0.0)
     */
-    #define TEST_RANGE(caster, target, spellID, range) { _SetCaller(__FILE__, __LINE__); _TestRange(caster, target, spellID, range); _ResetCaller(); }
+    #define TEST_RANGE(...) { _SetCaller(__FILE__, __LINE__); _TestRange(__VA_ARGS__); _ResetCaller(); }
     /* Test if target is in range of spell for given radius (use this of AoE spells, else use TEST_RANGE)
     Spell may or may not be casted on target after this
        Usage:
@@ -426,7 +429,7 @@ protected:
     void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, CastSpellExtraArgs args = {});
     void _TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId);
     void _TestRadius(TestPlayer* caster, Unit* castTarget, Unit* checkTarget, uint32 spellID, float radius, bool heal = false, uint32 checkSpellID = 0, bool includeCasterReach = true);
-    void _TestRange(TestPlayer* caster, Unit* target, uint32 spellID, float range);
+    void _TestRange(TestPlayer* caster, Unit* target, uint32 spellID, float maxRange, float minRange = 0.0f);
     // <Test macros related functions/>
 
     // Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)

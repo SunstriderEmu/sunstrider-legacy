@@ -930,34 +930,49 @@ void TestCase::_TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedC
     TEST_ASSERT(actualCastTime == expectedCastTimeMS);
 }
 
-void TestCase::_TestRange(TestPlayer* caster, Unit* target, uint32 spellID, float range)
+void TestCase::_TestRange(TestPlayer* caster, Unit* target, uint32 spellID, float maxRange, float minRange /*= 0.0f*/)
 {
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
     //spells range usually uses both caster and target combat reach
+    /* Commented out, let the caller handle this part
+    if (minRange)
+    {
+        if (spellInfo->RangeEntry->type & SPELL_RANGE_RANGED)
+            minRange += caster->GetMeleeRange(target);
+    }*/
     if (spellInfo->NeedsExplicitUnitTarget() || spellInfo->GetExplicitTargetMask() & TARGET_FLAG_CORPSE_MASK) //any others?
     {
         TEST_ASSERT(caster->GetCombatReach() == DEFAULT_PLAYER_COMBAT_REACH);
-        range += caster->GetCombatReach();
-        range += target->GetCombatReach();
+        maxRange += caster->GetCombatReach() + target->GetCombatReach();
+        if (minRange && !(spellInfo->RangeEntry->type & SPELL_RANGE_RANGED))
+            minRange += caster->GetCombatReach() + target->GetCombatReach();
     }
 
     Position originalTargetPos = target->GetPosition();
     _SaveUnitState(caster);
     _SaveUnitState(target);
 
-    //Test given range
-    Position pos = caster->GetPosition();
-    pos.MoveInFront(caster, range);
-    target->Relocate(pos);
+    auto testRange = [&](float range, bool max)
+    {
+        //just in range, should pass
+        Position pos = caster->GetPosition();
+        pos.MoveInFront(caster, max ? range - 1.0f : range + 1.0f);
+        target->Relocate(pos);
 
-    TriggerCastFlags triggerFlags = TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_RANGE);
-    _TestCast(caster, target, spellID, SPELL_CAST_OK, triggerFlags);
+        TriggerCastFlags const triggerFlags = TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_RANGE);
+        _TestCast(caster, target, spellID, SPELL_CAST_OK, triggerFlags);
 
-    //Test ouf of range
-    pos.MoveInFront(pos, 2.0f);
-    target->Relocate(pos);
-    _TestCast(caster, target, spellID, SPELL_FAILED_OUT_OF_RANGE, triggerFlags);
+        //just of ouf range
+        pos.MoveInFront(pos, max ? 1.0f : -1.0f);
+        target->Relocate(pos);
+        _TestCast(caster, target, spellID, SPELL_FAILED_OUT_OF_RANGE, triggerFlags);
+    };
+
+    // -- Test max range
+    testRange(maxRange, true);
+    if (minRange)
+        testRange(minRange, false);
 
     //Restore
     target->Relocate(originalTargetPos);
