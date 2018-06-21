@@ -1,8 +1,12 @@
-project(Sunstrider)
-cmake_minimum_required(VERSION 3.1)
 
-# Don't escape preprocessor definitions automatically.
-cmake_policy(SET CMP0005 OLD)
+cmake_minimum_required(VERSION 3.2)
+
+# add this options before PROJECT keyword
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) 
+
+project(Sunstrider)
+
 if(POLICY CMP0043)
     cmake_policy(SET CMP0043 OLD) # Disable 'Ignore COMPILE_DEFINITIONS_<Config> properties'
 endif(POLICY CMP0043)
@@ -10,12 +14,6 @@ endif(POLICY CMP0043)
 if(POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW) # Only interpret if() arguments as variables or keywords when unquoted - prevents intepreting if (SOME_STRING_VARIABLE MATCHES "MSVC") as if (SOME_STRING_VARIABLE MATCHES "1")
 endif()
-
-# add this options before PROJECT keyword
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) 
-
-#install sunstrider compiled libraries to this directory
 
 # Set RPATH-handing (CMake parameters)
 set(CMAKE_SKIP_BUILD_RPATH 0)
@@ -30,7 +28,7 @@ list(APPEND CMAKE_MODULE_PATH
   
 # build in Release-mode by default if not explicitly set
 if( NOT CMAKE_BUILD_TYPE )
-  set(CMAKE_BUILD_TYPE "Release")
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 endif()
 
 include(CheckIncludeFiles)
@@ -49,24 +47,6 @@ include(FindThreads)
 find_package(MySQL)
 include(FindPCHSupport)
 
-if(UNIX)
-    find_package(ZLIB)
-    if(ZLIB_FOUND)
-        message(STATUS "Found ZLib library (version ${ZLIB_VERSION_STRING}): ${ZLIB_LIBRARY}")
-    else(ZLIB_FOUND)
-        message(SEND_ERROR "** ZLib library not found! Sunstrider cannot be compiled!")
-        return()
-    endif(ZLIB_FOUND)
-
-    find_package(BZip2)
-    if(BZIP2_FOUND)
-        message(STATUS "Found BZip2 libraries (version ${BZIP2_VERSION_STRING}): ${BZIP2_LIBRARIES}")
-    else(BZIP2_FOUND)
-        message(SEND_ERROR "** BZip2 libraries not found! Sunstrider cannot be compiled!")
-        return()
-    endif(BZIP2_FOUND)
-endif()
-
 find_package(Git) 
 
 if(DO_DEBUG)
@@ -82,8 +62,6 @@ if(PLAYERBOT)
 endif()
 
 if(TESTS)
-    #this variable so that libraries trying to link testing lib don't complain
-    set(TESTING_LIB testing)
     add_definitions(-DTESTS)
 endif()
 

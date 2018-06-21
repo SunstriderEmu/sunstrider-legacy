@@ -4462,13 +4462,13 @@ bool Map::IsSpawnGroupActive(uint32 groupId) const
 
 void Map::RemoveGameObjectModel(GameObjectModel const& model) 
 { 
-    TC_LOG_ERROR("maps", "Map %u - Removed model %s", GetId(), model.name.c_str());
+    TC_LOG_TRACE("maps", "Map %u - Removed model %s", GetId(), model.name.c_str());
     _dynamicTree.remove(model); 
 }
 
 void Map::InsertGameObjectModel(GameObjectModel const& model) 
 {
-    TC_LOG_ERROR("maps", "Map %u - Added model %s", GetId(), model.name.c_str());
+    TC_LOG_TRACE("maps", "Map %u - Added model %s", GetId(), model.name.c_str());
     DEBUG_ASSERT(!_dynamicTree.contains(model));
     _dynamicTree.insert(model); 
 }
