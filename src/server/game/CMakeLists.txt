@@ -92,7 +92,7 @@ add_cxx_pch(game ${PRIVATE_PCH_HEADER})
 if(PLAYERBOT)
     if ( UNIX )
         add_definitions(
-            -D_PLAYERBOT_CONFIG='"${CONF_DIR}/aiplayerbot.conf"'
+            -D_PLAYERBOT_CONFIG="${CONF_DIR}/aiplayerbot.conf"
                 )
      endif()
 
