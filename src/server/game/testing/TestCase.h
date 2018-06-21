@@ -456,6 +456,8 @@ protected:
     /* calc min max damage with attacker weapon on target given attacker weapon damage, weapon class, ap and target armor
     */
     std::pair<uint32 /*min*/, uint32 /*max*/> CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType = BASE_ATTACK, uint32 spellBonusDmg = 0, float SpellAPMultiplier = 0.0f);
+    //generic spell id and name printing for errors
+    std::string _SpellString(uint32 spellID);
     // <Helpers/>
 
 private:

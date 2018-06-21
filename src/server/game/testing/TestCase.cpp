@@ -843,12 +843,12 @@ std::pair<uint32 /*minHeal*/, uint32 /*maxHeal*/> TestCase::GetHealingPerSpellsT
         count++;
     }
 
-    INTERNAL_ASSERT_INFO("GetHealingPerSpellsTo was prompted for a target (%s) with no valid data for this spell(ID %u)", target->GetName().c_str(), spellID);
+    INTERNAL_ASSERT_INFO("GetHealingPerSpellsTo was prompted for a target (%s) with no valid data for %s", target->GetName().c_str(), _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(count != 0);
 
     if (expectedCount)
     {
-        INTERNAL_ASSERT_INFO("GetHealingPerSpellsTo did find data for spell %u and target %s, but not expected count (%u instead of %u)", spellID, target->GetName().c_str(), count, expectedCount);
+        INTERNAL_ASSERT_INFO("GetHealingPerSpellsTo did find data for %s and target %s, but not expected count (%u instead of %u)", _SpellString(spellID).c_str(), target->GetName().c_str(), count, expectedCount);
         INTERNAL_TEST_ASSERT(count == expectedCount);
     }
     return std::make_pair(minHeal, maxHeal);
@@ -942,12 +942,12 @@ std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> TestCase::GetDamagePerSpellsTo(U
         count++;
     }
 
-    INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo was prompted for a victim(%s) with no valid data for this spell(ID %u)", victim->GetName().c_str(), spellID);
+    INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo was prompted for a victim(%s) with no valid data for %u", victim->GetName().c_str(), _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(count != 0);
 
     if (expectedCount)
     {
-        INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo did find data for spell %u and target %s, but not expected count (%u instead of %u)", spellID, victim->GetName().c_str(), count, expectedCount);
+        INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo did find data for %u and target %s, but not expected count (%u instead of %u)", _SpellString(spellID).c_str(), victim->GetName().c_str(), count, expectedCount);
         INTERNAL_TEST_ASSERT(count == expectedCount);
     }
     return std::make_pair(minDamage, maxDamage);
@@ -1195,6 +1195,14 @@ std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const
     uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * armorFactor;
     uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * armorFactor;
     return std::make_pair(minMelee, maxMelee);
+}
+
+std::string TestCase::_SpellString(uint32 spellID)
+{
+    SpellInfo const* spellInfo = _GetSpellInfo(spellID);
+    std::stringstream stream;
+    stream << "[Spell " << spellID << "|" << spellInfo->SpellName[LOCALE_enUS] << "]";
+    return stream.str();
 }
 
 std::string TestCase::StringifySpellCastResult(SpellCastResult result)

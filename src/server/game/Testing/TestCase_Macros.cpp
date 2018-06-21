@@ -26,7 +26,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers pow
 {
     SpellInfo const* spellInfo = _GetSpellInfo(castSpellID);
 
-    INTERNAL_ASSERT_INFO("Spell %u has wrong power type %u (instead of %u)", castSpellID, uint32(spellInfo->PowerType), uint32(powerType));
+    INTERNAL_ASSERT_INFO("%s has wrong power type %u (instead of %u)", _SpellString(castSpellID).c_str(), castSpellID, uint32(spellInfo->PowerType), uint32(powerType));
     INTERNAL_TEST_ASSERT(spellInfo->PowerType == powerType);
 
     Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE);
@@ -34,7 +34,7 @@ void TestCase::_TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers pow
     delete spell;
     spell = nullptr;
 
-    INTERNAL_ASSERT_INFO("Spell %u has cost %u power instead of %u", castSpellID, actualCost, expectedPowerCost);
+    INTERNAL_ASSERT_INFO("%s has cost %u power instead of %u", _SpellString(castSpellID).c_str(), actualCost, expectedPowerCost);
     if (expectedPowerCost != 0)
     {
         INTERNAL_TEST_ASSERT(Between(actualCost, expectedPowerCost - 1, expectedPowerCost + 1));
@@ -74,11 +74,11 @@ void TestCase::_TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastRe
     uint32 res = caster->CastSpell(victim, spellID, args);
     if (expectedCode == SPELL_CAST_OK)
     {
-        INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %s", spellID, StringifySpellCastResult(res).c_str());
+        INTERNAL_ASSERT_INFO("Caster couldn't cast %s, error %s", _SpellString(spellID).c_str(), StringifySpellCastResult(res).c_str());
     }
     else
     {
-        INTERNAL_ASSERT_INFO("Caster cast %u returned unexpected result %s", spellID, StringifySpellCastResult(res).c_str());
+        INTERNAL_ASSERT_INFO("Caster cast %s returned unexpected result %s", _SpellString(spellID).c_str(), StringifySpellCastResult(res).c_str());
     }
 
 	INTERNAL_TEST_ASSERT(res == uint32(expectedCode));
@@ -90,7 +90,7 @@ void TestCase::_ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissI
     //miss info from args will be ignored
     args.ForceHitResult = forcedMissInfo;
     uint32 res = caster->CastSpell(victim, spellID, args);
-    INTERNAL_ASSERT_INFO("Caster couldn't cast %u, error %s", spellID, StringifySpellCastResult(res).c_str());
+    INTERNAL_ASSERT_INFO("Caster couldn't cast %s, error %s", _SpellString(spellID).c_str(), StringifySpellCastResult(res).c_str());
     INTERNAL_TEST_ASSERT(res == uint32(SPELL_CAST_OK));
 }
 
@@ -133,14 +133,14 @@ void TestCase::_TestDirectValue(bool heal, Unit* caster, Unit* target, uint32 sp
     else
         std::tie(dealtMin, dealtMax) = GetDamagePerSpellsTo(casterOwner, target, testedSpellId, crit, sampleSize);
 
-    TC_LOG_TRACE("test.unit_test", "spellId: %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", testedSpellId, dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
+    TC_LOG_TRACE("test.unit_test", "%s -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", _SpellString(testedSpellId).c_str(), dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
 
     uint32 allowedMin = expectedMin > maxPredictionError ? expectedMin - maxPredictionError : 0; //protect against underflow
     uint32 allowedMax = expectedMax + maxPredictionError;
 
-    INTERNAL_ASSERT_INFO("Enforcing high result for spell %u. allowedMax: %u, dealtMax: %u", testedSpellId, allowedMax, dealtMax);
+    INTERNAL_ASSERT_INFO("Enforcing high result for %s. allowedMax: %u, dealtMax: %u", _SpellString(testedSpellId).c_str(), allowedMax, dealtMax);
     INTERNAL_TEST_ASSERT(dealtMax <= allowedMax);
-    INTERNAL_ASSERT_INFO("Enforcing low result for spell %u. allowedMin: %u, dealtMin: %u", testedSpellId, allowedMin, dealtMin);
+    INTERNAL_ASSERT_INFO("Enforcing low result for %s. allowedMin: %u, dealtMin: %u", _SpellString(testedSpellId).c_str(), allowedMin, dealtMin);
     INTERNAL_TEST_ASSERT(dealtMin >= allowedMin);
 
     //Restoring
@@ -212,7 +212,7 @@ int32 TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool
         WaitNextUpdate();
 
     Aura* aura = target->GetAura(spellID, caster->GetGUID());
-    INTERNAL_ASSERT_INFO("Target has not %u aura with caster %u after spell successfully casted", spellID, caster->GetGUID().GetCounter());
+    INTERNAL_ASSERT_INFO("Target has not %s aura with caster %u after spell successfully casted", _SpellString(spellID).c_str(), caster->GetGUID().GetCounter());
     INTERNAL_TEST_ASSERT(aura != nullptr);
     int32 auraAmount = 0;
     if(aura->GetEffect(EFFECT_0))
@@ -225,7 +225,7 @@ int32 TestCase::_CastDotAndWait(Unit* caster, Unit* target, uint32 spellID, bool
     aura = nullptr;
 
     //make sure aura expired
-    INTERNAL_ASSERT_INFO("Target still has %u aura after %u ms", spellID, waitTime);
+    INTERNAL_ASSERT_INFO("Target still has %s aura after %u ms", _SpellString(spellID).c_str(), waitTime);
     INTERNAL_TEST_ASSERT(!target->HasAura(spellID, caster->GetGUID()));
 
     //Restoring
@@ -243,8 +243,8 @@ void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 
     _CastDotAndWait(caster, target, spellID, crit);
 
     auto [dotDamageToTarget, tickCount] = AI->GetDotDamage(target, spellID);
-	TC_LOG_TRACE("test.unit_test", "spellId: %u -> dotDamageToTarget: %i - expectedTotalAmount: %i", spellID, dotDamageToTarget, expectedTotalAmount);
-    INTERNAL_ASSERT_INFO("Enforcing dot damage. dotDamageToTarget: %i, expectedTotalAmount: %i", dotDamageToTarget, expectedTotalAmount);
+	//TC_LOG_TRACE("test.unit_test", "%s -> dotDamageToTarget: %i - expectedTotalAmount: %i", _SpellString(spellID).c_str(), dotDamageToTarget, expectedTotalAmount);
+    INTERNAL_ASSERT_INFO("Enforcing dot damage for %s. dotDamageToTarget: %i, expectedTotalAmount: %i", _SpellString(spellID).c_str(), dotDamageToTarget, expectedTotalAmount);
     INTERNAL_TEST_ASSERT(dotDamageToTarget >= (expectedTotalAmount - tickCount) && dotDamageToTarget <= (expectedTotalAmount + tickCount)); //dots have greater error since they got their damage divided in several ticks
 
     _RestoreUnitState(target);
@@ -321,7 +321,7 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     float const actualThreatDone = target->GetThreatManager().GetThreat(caster) - startThreat;
     float const expectedTotalThreat = std::abs(totalDamage) * expectedThreatFactor;
 
-    INTERNAL_ASSERT_INFO("Enforcing threat for overtime spell %u. Creature should have %f threat but has %f.", spellID, expectedTotalThreat, actualThreatDone);
+    INTERNAL_ASSERT_INFO("Enforcing threat for dot/hot %s. Creature should have %f threat but has %f.", _SpellString(spellID).c_str(), expectedTotalThreat, actualThreatDone);
     INTERNAL_TEST_ASSERT(Between<float>(actualThreatDone, expectedTotalThreat - 1.f, expectedTotalThreat + 1.f));
 
     //Cleanup
@@ -348,14 +348,14 @@ void TestCase::_TestChannelDamage(bool healing, Unit* caster, Unit* target, uint
     _StartUnitChannels(caster); //remove if spell system allow to cast channel instantly
     Wait(baseDurationTime); //reason we do this is that currently we can't instantly cast a channeled spell with our spell system
     Spell* currentSpell = caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    INTERNAL_ASSERT_INFO("caster is still casting channel after baseDurationTime %u", baseDurationTime);
+    INTERNAL_ASSERT_INFO("caster is still casting channel (%s) after baseDurationTime %u", _SpellString(spellID).c_str(), baseDurationTime);
     INTERNAL_TEST_ASSERT(currentSpell == nullptr);
 
-    INTERNAL_ASSERT_INFO("Target still has aura %u", testedSpell);
+    INTERNAL_ASSERT_INFO("Target still has aura %s", _SpellString(testedSpell).c_str());
     INTERNAL_TEST_ASSERT(!target->HasAura(testedSpell));
 
-    INTERNAL_ASSERT_INFO("Caster still has aura %u", testedSpell);
-    INTERNAL_TEST_ASSERT(!caster->HasAura(spellID));
+    INTERNAL_ASSERT_INFO("Caster still has aura %s", _SpellString(testedSpell).c_str());
+    INTERNAL_TEST_ASSERT(!caster->HasAura(testedSpell));
 
     uint32 totalChannelDmg = 0; 
     if (healing)
@@ -418,10 +418,10 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
     _EnsureAlive(caster, target);
 
     Aura* aura = caster->AddAura(spellID, target);
-    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to add aura %u on victim", spellID);
+    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to add aura %s on victim", _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(aura != nullptr);
     AuraEffect* effect = aura->GetEffect(effIndex);
-    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to get aura %u effect %u on victim", spellID, uint32(effIndex));
+    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance failed to get aura %s effect %u on victim", _SpellString(spellID).c_str(), uint32(effIndex));
     INTERNAL_TEST_ASSERT(effect != nullptr);
 
     _MaxHealth(target);
@@ -449,7 +449,7 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
 
     float actualSuccessPercent = 100 * (successCount / float(sampleSize));
-    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance on spell %u: expected result: %f, result: %f", spellID, expectedResultPercent, actualSuccessPercent);
+    INTERNAL_ASSERT_INFO("_TestAuraTickProcChance on %s: expected result: %f, result: %f", _SpellString(spellID).c_str(), expectedResultPercent, actualSuccessPercent);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 
     //Restoring
@@ -467,7 +467,7 @@ void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpe
     };
     auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(attacker, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
-    INTERNAL_ASSERT_INFO("Spell %u proc'd %f instead of expected %f", procSpellID, actualSuccessPercent, expectedChancePercent);
+    INTERNAL_ASSERT_INFO("%s proc'd %f instead of expected %f", _SpellString(procSpellID).c_str(), actualSuccessPercent, expectedChancePercent);
     INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 
     attacker->AttackStop();
@@ -486,7 +486,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     };
     auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(caster, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
-    INTERNAL_ASSERT_INFO("Spell %u proc'd %f instead of expected %f (by spell %u)", procSpellID, actualSuccessPercent, expectedChancePercent, spellID);
+    INTERNAL_ASSERT_INFO("%s proc'd %f instead of expected %f (by spell %u)", _SpellString(procSpellID).c_str(), actualSuccessPercent, expectedChancePercent, spellID);
     INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
 
     RestoreCriticals(caster);
@@ -586,7 +586,7 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     if (channeled)
         WaitNextUpdate(); //currently we can't start a channel before next update
     Spell* spell = caster->GetCurrentSpell(channeled ? CURRENT_CHANNELED_SPELL:  CURRENT_GENERIC_SPELL);
-    INTERNAL_ASSERT_INFO("_TestPushBackResistChance: Failed to get spell %u", spellID);
+    INTERNAL_ASSERT_INFO("_TestPushBackResistChance: Failed to get current %s", _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(spell != nullptr);
 
     uint32 pushbackCount = 0;
@@ -612,7 +612,7 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     }
 
     float actualResistPercent = 100.0f * (1 - (pushbackCount / float(sampleSize)));
-    INTERNAL_ASSERT_INFO("_TestPushBackResistChance on spell %u: expected result: %f, result: %f", spellID, expectedResultPercent, actualResistPercent);
+    INTERNAL_ASSERT_INFO("_TestPushBackResistChance on %s: expected result: %f, result: %f", _SpellString(spellID).c_str(), expectedResultPercent, actualResistPercent);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
 
     //restoring
@@ -657,7 +657,7 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
         _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
         if (spellInfo->IsChanneled())
             _StartUnitChannels(caster);
-        INTERNAL_ASSERT_INFO("TestCase::_TestSpellDispelResist target has not aura of %u after cast", spellID);
+        INTERNAL_ASSERT_INFO("TestCase::_TestSpellDispelResist target has not aura of %s after cast", _SpellString(spellID).c_str());
         INTERNAL_TEST_ASSERT(target->HasAura(spellID));
         _ForceCast(dispeler, target, dispelSpellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
         resistedCount += uint32(target->HasAura(spellID));
@@ -671,7 +671,7 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
     }
 
     float actualResistPercent = 100.0f * (resistedCount / float(sampleSize));
-    INTERNAL_ASSERT_INFO("_TestSpellDispelResist on spell %u: expected result: %f, result: %f", spellID, expectedResultPercent, actualResistPercent);
+    INTERNAL_ASSERT_INFO("_TestSpellDispelResist on %s: expected result: %f, result: %f", _SpellString(spellID).c_str(), expectedResultPercent, actualResistPercent);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
 
     //Restore
@@ -750,7 +750,7 @@ void TestCase::_TestSpellOutcomePercentage(Unit* caster, Unit* victim, uint32 sp
     auto AI = _GetCasterAI(caster);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data of %u for this victim (%s)", spellID, victim->GetName().c_str());
+    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data of %s for this victim (%s)", _SpellString(spellID).c_str(), victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
     
     /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellID);
@@ -772,12 +772,12 @@ void TestCase::_TestSpellOutcomePercentage(Unit* caster, Unit* victim, uint32 sp
 
     if (expectedSampleSize)
     {
-        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for spell %u", actualSampleCount, expectedSampleSize, spellID);
+        INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found %u results instead of expected sample size %u for %s", actualSampleCount, expectedSampleSize, _SpellString(spellID).c_str());
         INTERNAL_TEST_ASSERT(actualSampleCount == expectedSampleSize)
     }
 
     float const result = (actualDesiredOutcomeCount / float(actualSampleCount)) * 100.0f;
-    INTERNAL_ASSERT_INFO("TestSpellOutcomePercentage on spell %u: expected result: %f, result: %f", spellID, expectedResult, result);
+    INTERNAL_ASSERT_INFO("TestSpellOutcomePercentage on %s: expected result: %f, result: %f", _SpellString(spellID).c_str(), expectedResult, result);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
@@ -786,7 +786,7 @@ void TestCase::_TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spell
     auto AI = _GetCasterAI(caster);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of spell %u for this victim (%s)", spellId, victim->GetName().c_str());
+    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of %s for this victim (%s)", _SpellString(spellId).c_str(), victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
     
     /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellId);
@@ -806,12 +806,12 @@ void TestCase::_TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spell
 
     if (sampleSize)
     {
-        INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found %u results instead of expected sample size %u for spell %u", uint32(damageToTarget->size()), sampleSize, spellId);
+        INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found %u results instead of expected sample size %u for %s", uint32(damageToTarget->size()), sampleSize, _SpellString(spellId).c_str());
         INTERNAL_TEST_ASSERT(foundCount == sampleSize)
     }
 
     float const result = (critCount / float(foundCount)) * 100.0f;
-    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage on spell %u: expected result: %f, result: %f", spellId, expectedResult, result);
+    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage on %s: expected result: %f, result: %f", _SpellString(spellId).c_str(), expectedResult, result);
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
@@ -822,12 +822,12 @@ void TestCase::_EnsureHasAura(Unit* target, int32 spellID)
     bool hasAura = target->HasAura(spellID);
     if (checkHasAura)
     {
-        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
+        INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of %s", target->GetGUID().GetCounter(), target->GetName().c_str(), _SpellString(spellID).c_str());
         INTERNAL_TEST_ASSERT(hasAura);
     }
     else 
     {
-        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
+        INTERNAL_ASSERT_INFO("Target %u (%s) has aura of %s", target->GetGUID().GetCounter(), target->GetName().c_str(), _SpellString(spellID).c_str());
         INTERNAL_TEST_ASSERT(!hasAura);
     }
 }
@@ -836,7 +836,7 @@ void TestCase::_TestHasCooldown(Unit* caster, uint32 castSpellID, uint32 cooldow
 {
     SpellInfo const* spellInfo = _GetSpellInfo(castSpellID);
     uint32 cooldown = caster->GetSpellHistory()->GetRemainingCooldown(spellInfo);
-    INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for spell %u instead of expected %u", caster->GetName().c_str(), cooldown, castSpellID, cooldownMs);
+    INTERNAL_ASSERT_INFO("Caster %s has cooldown %u for %s instead of expected %u", caster->GetName().c_str(), cooldown, _SpellString(castSpellID).c_str(), cooldownMs);
     INTERNAL_TEST_ASSERT(cooldown == cooldownMs);
 }
 
@@ -846,18 +846,18 @@ void TestCase::_TestAuraMaxDuration(Unit* target, uint32 spellID, uint32 duratio
     INTERNAL_TEST_ASSERT(target->IsAlive());
 
     Aura* aura = target->GetAura(spellID);
-    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
+    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of %s", target->GetGUID().GetCounter(), target->GetName().c_str(), _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
     uint32 auraDuration = aura->GetMaxDuration();
-    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with duration %u instead of %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID, auraDuration, durationMS);
+    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%s) with duration %u instead of %u", target->GetGUID().GetCounter(), target->GetName().c_str(), _SpellString(spellID).c_str(), auraDuration, durationMS);
     INTERNAL_TEST_ASSERT(auraDuration == durationMS);
 }
 
 void TestCase::_TestAuraStack(Unit* target, uint32 spellID, uint32 stacks, bool stack)
 {
     Aura* aura = target->GetAura(spellID);
-    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of spell %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID);
+    INTERNAL_ASSERT_INFO("Target %u (%s) does not have aura of %s", target->GetGUID().GetCounter(), target->GetName().c_str(), _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(aura != nullptr);
 
     uint32 auraStacks = 0;
@@ -869,7 +869,7 @@ void TestCase::_TestAuraStack(Unit* target, uint32 spellID, uint32 stacks, bool 
         auraStacks = aura->GetCharges();
         type = "charges";
     }
-    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%u) with %u %s instead of %u", target->GetGUID().GetCounter(), target->GetName().c_str(), spellID, auraStacks, type.c_str(), stacks);
+    INTERNAL_ASSERT_INFO("Target %u (%s) has aura (%s) with %u %s instead of %u", target->GetGUID().GetCounter(), target->GetName().c_str(), _SpellString(spellID).c_str(), auraStacks, type.c_str(), stacks);
     INTERNAL_TEST_ASSERT(auraStacks == stacks);
 }
 
@@ -926,7 +926,7 @@ void TestCase::_TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedC
     delete spell;
     spell = nullptr;
 
-    ASSERT_INFO("Cast time did not match: Expected %u - Actual %u", expectedCastTimeMS, actualCastTime);
+    ASSERT_INFO("Cast time for %s did not match: Expected %u - Actual %u", _SpellString(spellID).c_str(), expectedCastTimeMS, actualCastTime);
     TEST_ASSERT(actualCastTime == expectedCastTimeMS);
 }
 
@@ -1011,14 +1011,14 @@ void TestCase::_TestRadius(TestPlayer* caster, Unit* castTarget, Unit* checkTarg
 
     TriggerCastFlags triggerFlags = TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_RANGE);
     _TestCast(caster, castTarget, spellID, SPELL_CAST_OK, triggerFlags);
-    INTERNAL_ASSERT_INFO("Target was not affected by spell %u, radius may be wrong (or spell does not affect this target)", spellID);
+    INTERNAL_ASSERT_INFO("Target was not affected by %s, radius may be wrong (or spell does not affect this target)", _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(hasData(heal));
 
     //Test ouf of range
     ai->ResetSpellCounters();
     moveTargetInFront(radius + 3.0f);
     _TestCast(caster, castTarget, spellID, SPELL_CAST_OK, triggerFlags);
-    INTERNAL_ASSERT_INFO("Target was affected by spell %u but should have been out of range, radius may be wrong", spellID);
+    INTERNAL_ASSERT_INFO("Target was affected by %s but should have been out of range, radius may be wrong", _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(!hasData(heal));
 
     //Restore
