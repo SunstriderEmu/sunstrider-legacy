@@ -161,19 +161,21 @@ public:
     // Testing functions 
     // Test must use macro so that we can store from which line their calling. If calling function does a direct call without using the macro, we just print the internal line */
 
+    typedef std::function<void(Unit*, Unit*)> TestCallback;
+    inline static void DefaultCallback(Unit*, Unit*) {};
+
     /* Will cast the spell a bunch of time and test if results match the expected damage.
        Usage: 
-        TEST_DIRECT_SPELL_DAMAGE(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback = {}, uint32 testedSpellId = 0);
+        TEST_DIRECT_SPELL_DAMAGE(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback = {}, uint32 testedSpellId = 0);
 
         @caster must be a TestPlayer or a pet/summon of him
         @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
         @testedSpellId check result for this spell instead of spellID. May be useful for spell proccing other spells.
      */
-    typedef std::function<void(Unit*, Unit*)> TestCallback;
     #define TEST_DIRECT_SPELL_DAMAGE(...) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(false, __VA_ARGS__); _ResetCaller(); }
     /* Same as TEST_DIRECT_SPELL_DAMAGE but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
        Usage:
-        TEST_DIRECT_HEAL(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback = {}, uint32 testedSpellId = 0);
+        TEST_DIRECT_HEAL(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback = {}, uint32 testedSpellId = 0);
 
         @caster must be a TestPlayer or a pet/summon of him
         @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
@@ -181,7 +183,7 @@ public:
     #define TEST_DIRECT_HEAL(...) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(true, __VA_ARGS__); _ResetCaller(); }
     /*
        Usage:
-        TEST_MELEE_DAMAGE((Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback = {})
+        TEST_MELEE_DAMAGE((Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback = {})
 
         @caster must be a TestPlayer or a pet/summon of him
         @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
@@ -190,7 +192,7 @@ public:
 
     /* Will cast spell and check if threat is equal to dmg/healing done multiplied by expectedThreatFactor. Group of caster may be disbanded if any. Target aura and caster aura may be removed.
        Usage:
-        TEST_THREAT(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal = false, Optional<TestCallback> callback = {})
+        TEST_THREAT(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal = false, TestCallback callback = {})
         
         @caster must be a TestPlayer or a pet/summon of him
         @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
@@ -213,7 +215,7 @@ public:
 
     /* Cast given spells a bunch of time from caster on victim, and test if results are chance% given missInfo
        Usage:
-        TEST_SPELL_HIT_CHANCE(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback = {})
+        TEST_SPELL_HIT_CHANCE(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, TestCallback callback = {})
 
         @chance 0-100
         @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
@@ -221,7 +223,7 @@ public:
     #define TEST_SPELL_HIT_CHANCE(...) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(__VA_ARGS__); _ResetCaller(); }
     /* Triggers attack from caster on victim, and test if results are chance% given missInfo
        Usage:
-        TEST_MELEE_HIT_CHANCE(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome, Optional<TestCallback> callback = {})
+        TEST_MELEE_HIT_CHANCE(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome, TestCallback callback = {})
 
         @chance 0-100
         @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
@@ -257,7 +259,7 @@ public:
 
     /* Test the crit chance of given spell on target
        Usage:
-        TEST_SPELL_CRIT_CHANCE(Unit* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback = {})
+        TEST_SPELL_CRIT_CHANCE(Unit* caster, Unit* victim, uint32 spellID, float chance, TestCallback callback = {})
 
         @chance 0-100
         @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
@@ -284,7 +286,7 @@ public:
 
     /* Test the proc chance of given aura on caster or victim by casting a spell on a target
        Usage:
-        TEST_SPELL_PROC_CHANCE(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback = {})
+        TEST_SPELL_PROC_CHANCE(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, TestCallback callback = {})
 
         @selfProc Check of on caster, else check on target
         @missInfo Force spell hit result
@@ -295,7 +297,7 @@ public:
 
     /* Test the proc chance of given aura on caster or victim by attacking target on melee/ranged
        Usage:
-        TEST_MELEE_PROC_CHANCE(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, Optional<TestCallback> callback = {})
+        TEST_MELEE_PROC_CHANCE(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, TestCallback callback = {})
 
         @selfProc Check of on caster, else check on target
         @meleeHitOutcome Force melee hit result
@@ -307,7 +309,7 @@ public:
 
     /* Caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
        Usage:
-        TEST_DISPEL_RESIST_CHANCE(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, Optional<TestCallback> callback = {})
+        TEST_DISPEL_RESIST_CHANCE(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, TestCallback callback = {})
 
         @chance: 0-100
         @callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
@@ -379,10 +381,10 @@ protected:
 
     // <Test macros related functions>
     //heal: check for healing instead of damage
-    void _TestDirectValue(bool heal, Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback = {}, uint32 testedSpellId = 0);
-    void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback = {});
+    void _TestDirectValue(bool heal, Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback = DefaultCallback, uint32 testedSpellId = 0);
+    void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback = DefaultCallback);
     void _TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
-    void _TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal = false, TestCallback callback = {});
+    void _TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal = false, TestCallback callback = DefaultCallback);
 
     void _TestChannelDamage(bool healing, Unit* caster, Unit* target, uint32 spellID, uint32 tickCount, int32 expectedTickAmount, uint32 testedSpell = 0);
     /* if sampleSize != 0, check if results count = sampleSize
@@ -400,18 +402,18 @@ protected:
     allowedError: 0 - 100
     */
     void _TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize = 0);
-    void _TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, TestCallback callback = {});
-    void _TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome, TestCallback callback = {});
-    void _TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float chance, TestCallback callback = {});
+    void _TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, TestCallback callback = DefaultCallback);
+    void _TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome, TestCallback callback = DefaultCallback);
+    void _TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float chance, TestCallback callback = DefaultCallback);
     void _TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS);
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, bool checkSelf);
     void _TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, TestCallbackResult callback);
-    void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, TestCallback callback = {});
-    void _TestMeleeProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, TestCallback callback = {});
+    void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, TestCallback callback = DefaultCallback);
+    void _TestMeleeProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, TestCallback callback = DefaultCallback);
     //return actual proc chance
-    std::pair<float /*procChance*/, float /*absoluteTolerance*/> _TestProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, TestCallback launchCallback, TestCallback callback = {});
+    std::pair<float /*procChance*/, float /*absoluteTolerance*/> _TestProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, TestCallback launchCallback, TestCallback callback = DefaultCallback);
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
-    void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, TestCallback callback = {});
+    void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, TestCallback callback = DefaultCallback);
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
     inline void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, Milliseconds ms) { _TestCooldown(caster, target, castSpellID, uint32(ms.count())); }
