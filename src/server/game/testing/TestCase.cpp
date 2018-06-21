@@ -942,12 +942,12 @@ std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> TestCase::GetDamagePerSpellsTo(U
         count++;
     }
 
-    INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo was prompted for a victim(%s) with no valid data for %u", victim->GetName().c_str(), _SpellString(spellID).c_str());
+    INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo was prompted for a victim(%s) with no valid data for %s", victim->GetName().c_str(), _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(count != 0);
 
     if (expectedCount)
     {
-        INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo did find data for %u and target %s, but not expected count (%u instead of %u)", _SpellString(spellID).c_str(), victim->GetName().c_str(), count, expectedCount);
+        INTERNAL_ASSERT_INFO("GetDamagePerSpellsTo did find data for %s and target %s, but not expected count (%u instead of %u)", _SpellString(spellID).c_str(), victim->GetName().c_str(), count, expectedCount);
         INTERNAL_TEST_ASSERT(count == expectedCount);
     }
     return std::make_pair(minDamage, maxDamage);
