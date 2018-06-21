@@ -9,7 +9,7 @@
  #define _SOURCE_DIRECTORY          R"(@CMAKE_SOURCE_DIR@)"
  #define _BUILD_DIRECTORY           R"(@BUILDDIR@)"
  #define _MYSQL_EXECUTABLE          R"(@MYSQL_EXECUTABLE@)"
- #define _FULL_DATABASE             "world_2017_11_03.sql"
+ #define _FULL_DATABASE             "world_2018_06_21.sql"
  #define VER_COMPANYNAME_STR        "Sunstrider Project"
  #define VER_LEGALCOPYRIGHT_STR     "(c)2008-2017 Sunstrider"
  #define VER_FILEVERSION            0,0,0
