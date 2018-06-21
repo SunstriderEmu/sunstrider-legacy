@@ -94,7 +94,7 @@ void TestCase::_ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissI
     INTERNAL_TEST_ASSERT(res == uint32(SPELL_CAST_OK));
 }
 
-void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback) //if !damage, then use healing
+void TestCase::_TestDirectValue(bool heal, Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback /* = {}*/, uint32 testedSpellId /*= 0*/)
 {
     INTERNAL_TEST_ASSERT(expectedMax >= expectedMin);
     Player* _casterOwner = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -116,8 +116,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
-        if (callback)
-            callback.get()(caster, target);
+        callback(caster, target);
 
         _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
 
@@ -127,10 +126,10 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
 
     uint32 dealtMin;
     uint32 dealtMax;
-    if(damage)
-        std::tie(dealtMin, dealtMax) = GetDamagePerSpellsTo(casterOwner, target, spellID, crit, sampleSize);
-    else 
+    if(heal)
         std::tie(dealtMin, dealtMax) = GetHealingPerSpellsTo(casterOwner, target, spellID, crit, sampleSize);
+    else
+        std::tie(dealtMin, dealtMax) = GetDamagePerSpellsTo(casterOwner, target, spellID, crit, sampleSize);
 
     TC_LOG_TRACE("test.unit_test", "spellId: %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", spellID, dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);
 
@@ -148,7 +147,7 @@ void TestCase::_TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint
     _RestoreUnitState(target);
 }
 
-void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback)
+void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback /* = {}*/)
 {
     auto AI = _GetCasterAI(caster);
 
@@ -163,9 +162,7 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
     for (uint32 i = 0; i < sampleSize; i++)
     {
         target->SetFullHealth();
-
-        if (callback)
-            callback.get()(caster, target);
+        callback(caster, target);
 
         if (attackType != RANGED_ATTACK)
             caster->AttackerStateUpdate(target, attackType);
@@ -251,7 +248,7 @@ void TestCase::_TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 
     _RestoreUnitState(target);
 }
 
-void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal, Optional<TestCallback> callback)
+void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal, TestCallback callback)
 {
     // + It'd be nice to deduce heal arg from spell but I don't see any sure way to do it atm
 
@@ -283,8 +280,7 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
 
     spellTarget->RemoveArenaAuras(false); //may help with already present hot and dots breaking the results
 
-    if (callback)
-        callback.get()(caster, target);
+    callback(caster, target);
 
     uint32 auraAmount = 0;
     if (applyAura)
@@ -334,7 +330,7 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
     _RestoreUnitState(spellTarget);
 }
 
-void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 expectedTickCount, int32 expectedTickAmount, bool healing /* = false*/)
+void TestCase::_TestChannelDamage(bool healing, Unit* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, int32 expectedTickAmount, uint32 testedSpell /* = 0*/)
 {
     auto AI = _GetCasterAI(caster);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
@@ -373,7 +369,7 @@ void TestCase::_TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, ui
     RestoreCriticals(caster);
 }
 
-void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo, Optional<TestCallback> callback)
+void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float expectedResultPercent, SpellMissInfo missInfo, TestCallback callback)
 {
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
@@ -389,8 +385,7 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
-        if (callback)
-            callback.get()(caster, victim);
+        callback(caster, victim);
 
         victim->SetFullHealth();
         _TestCast(caster, victim, spellID, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
@@ -460,7 +455,7 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
     _RestoreUnitState(target);
 }
 
-void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, Optional<TestCallback> callback)
+void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, TestCallback callback)
 {
     MeleeHitOutcome previousForceOutcome = attacker->_forceMeleeResult;
     attacker->ForceMeleeHitResult(meleeHitOutcome);
@@ -477,7 +472,7 @@ void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpe
     attacker->ForceMeleeHitResult(previousForceOutcome);
 }
 
-void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback)
+void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, TestCallback callback)
 {
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
     EnableCriticals(caster, crit);
@@ -495,7 +490,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     RestoreCriticals(caster);
 }
 
-std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProcChance(Unit* caster, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, TestCallback launchCallback, Optional<TestCallback> callback)
+std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProcChance(Unit* caster, Unit* victim, uint32 procSpellID, bool selfProc, float expectedChancePercent, TestCallback launchCallback, TestCallback callback)
 {
     auto casterAI = _GetCasterAI(caster, false);
     auto victimAI = _GetCasterAI(victim, false);
@@ -535,8 +530,7 @@ std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProc
     for (uint32 i = 0; i < sampleSize; i++)
     {
         victim->SetFullHealth();
-        if (callback)
-            callback.get()(caster, victim);
+        callback(caster, victim);
 
         launchCallback(caster, victim);
 
@@ -624,7 +618,7 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     caster->SetHealth(startingHealth);
 }
 
-void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float expectedResultPercent, Optional<TestCallback> callback)
+void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float expectedResultPercent, TestCallback callback)
 {
     //Dispel resist chance is not related to hit chance but is a separate roll
     //https://wow.gamepedia.com/index.php?title=Dispel&oldid=1432725
@@ -656,8 +650,7 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
     {
         target->SetFullHealth();
 
-        if (callback)
-            callback.get()(caster, target);
+        callback(caster, target);
 
         _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
         if (spellInfo->IsChanneled())
@@ -683,7 +676,7 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
     _RestoreUnitState(target);
 }
 
-void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome, Optional<TestCallback> callback)
+void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float expectedResultPercent, MeleeHitOutcome meleeHitOutcome, TestCallback callback)
 {
     _EnsureAlive(caster, victim);
     INTERNAL_ASSERT_INFO("_TestMeleeHitChance can only be used with BASE_ATTACK and OFF_ATTACK");
@@ -697,8 +690,7 @@ void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType 
     {
         victim->SetFullHealth();
 
-        if (callback)
-            callback.get()(caster, victim);
+        callback(caster, victim);
 
         caster->AttackerStateUpdate(victim, weaponAttackType);
         HandleThreadPause();
@@ -892,7 +884,7 @@ void TestCase::_TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId)
     INTERNAL_TEST_ASSERT_NOCOUNT(result);
 }
 
-void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float expectedResultPercent, Optional<TestCallback> callback)
+void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float expectedResultPercent, TestCallback callback)
 {
     auto AI = _GetCasterAI(caster);
 
@@ -907,8 +899,7 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
-        if (callback)
-            callback.get()(caster, victim);
+        callback(caster, victim);
 
         victim->SetFullHealth();
         _ForceCast(caster, victim, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));

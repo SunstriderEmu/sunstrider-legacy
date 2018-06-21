@@ -120,40 +120,34 @@ public:
     static std::string StringifySpellCastResult(SpellCastResult result);
 
     /* # Test macros are guaranteed to 
-    - Preserve health and power of caster and victim
-    - Preserve ForceHitResult values
-    - Preserve critical score
+        - Preserve health and power of caster and victim
+        - Preserve ForceHitResult values
+        - Preserve critical score
        # Not guaranteed
-    - Threat conservation
+        - Threat conservation
     */
 
     /* Cast a spell and check for spell start return value (SpellCastResult)
     Usage:
-    TEST_CAST(caster, victim, spellID)
-    TEST_CAST(caster, victim, spellID, expectedCode)
-    TEST_CAST(caster, victim, spellID, expectedCode, triggeredFlags)
+    TEST_CAST(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, CastSpellExtraArgs args = {})
     */
     #define TEST_CAST( ... ) { _SetCaller(__FILE__, __LINE__);  _TestCast(__VA_ARGS__); _ResetCaller(); }
 
     /* Cast a spell with forced hit result (SpellMissInfo). Fails test if spell fail to launch.
     Usage:
-    FORCE_CAST(caster, victim, spellID)
-    FORCE_CAST(caster, victim, spellID, forcedMissInfo)
-    FORCE_CAST(caster, victim, spellID, forcedMissInfo, triggeredFlags)
+    FORCE_CAST(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, CastSpellExtraArgs args = {})
     */
     #define FORCE_CAST( ... ) { _SetCaller(__FILE__, __LINE__);  _ForceCast(__VA_ARGS__); _ResetCaller(); }
 
-    /* Usage:
-    TEST_HAS_AURA(target, spellID)
+    /* 
     */
-    #define TEST_HAS_AURA( ... ) { _SetCaller(__FILE__, __LINE__); _EnsureHasAura(__VA_ARGS__); _ResetCaller(); }
-    /* Usage:
-    TEST_HAS_NOT_AURA(target, spellID)
+    #define TEST_HAS_AURA(target, spellID) { _SetCaller(__FILE__, __LINE__); _EnsureHasAura(target, spellID); _ResetCaller(); }
+    /*
     */
-    #define TEST_HAS_NOT_AURA( ... ) { _SetCaller(__FILE__, __LINE__); _EnsureHasNotAura(__VA_ARGS__); _ResetCaller(); }
+    #define TEST_HAS_NOT_AURA(target, spellID) { _SetCaller(__FILE__, __LINE__); _EnsureHasNotAura(target, spellID); _ResetCaller(); }
 
     /* check if target has aura and if maximum duration match given duration
-    durationMS: can be either uint32 or std::chrono::duration (such as Milliseconds)
+    @durationMS Can be either uint32 or std::chrono::duration (such as Milliseconds)
     */
     #define TEST_AURA_MAX_DURATION(target, spellID, durationMS) { _SetCaller(__FILE__, __LINE__); _TestAuraMaxDuration(target, spellID, durationMS); _ResetCaller(); }
 
@@ -168,55 +162,70 @@ public:
     // Test must use macro so that we can store from which line their calling. If calling function does a direct call without using the macro, we just print the internal line */
 
     /* Will cast the spell a bunch of time and test if results match the expected damage.
-     Caster must be a TestPlayer or a pet/summon of him*/
-    #define TEST_DIRECT_SPELL_DAMAGE(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true, {}); _ResetCaller(); }
-    // same as TEST_DIRECT_SPELL_DAMAGE but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
-    typedef std::function<void(Unit*, Unit*)> TestCallback;
-    #define TEST_DIRECT_SPELL_DAMAGE_CALLBACK(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedMinDamage, expectedMaxDamage, crit, true, Optional<TestCallback>(callback)); _ResetCaller(); }
-    //Caster must be a TestPlayer or a pet/summon of him
-    #define TEST_DIRECT_HEAL(caster, target, spellID, expectedHealMin, expectedHealMax, crit) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, crit, false, {}); _ResetCaller(); }
-    /* Same but with additional argument:
-    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
-    */
-    #define TEST_DIRECT_HEAL_CALLBACK(caster, target, spellID, expectedHealMin, expectedHealMax, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(caster, target, spellID, expectedHealMin, expectedHealMax, crit, false, Optional<TestCallback>(callback)); _ResetCaller(); }
-    //Caster must be a TestPlayer or a pet/summon of him
-    #define TEST_MELEE_DAMAGE(player, target, attackType, expectedMin, expectedMax, crit) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit, {}); _ResetCaller(); }
-    /* Same but with additional argument:
-    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
-    */
-    #define TEST_MELEE_DAMAGE_CALLBACK(player, target, attackType, expectedMin, expectedMax, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(player, target, attackType, expectedMin, expectedMax, crit, Optional<TestCallback>(callback)); _ResetCaller(); }
+       Usage: 
+        TEST_DIRECT_SPELL_DAMAGE(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback = {}, uint32 testedSpellId = 0);
 
-    // Will cast spell and check if threat is equal to dmg/healing done multiplied by expectedThreatFactor. Group of caster may be disbanded if any. Target aura and caster aura may be removed.
-    #define TEST_THREAT(caster, target, spellID, expectedThreatFactor, heal)  { _SetCaller(__FILE__, __LINE__); _TestThreat(caster, target, spellID, expectedThreatFactor, heal, {}); _ResetCaller(); }
-    /* Same but with additional argument:
-    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+        @caster must be a TestPlayer or a pet/summon of him
+        @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+     */
+    typedef std::function<void(Unit*, Unit*)> TestCallback;
+    #define TEST_DIRECT_SPELL_DAMAGE(...) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(false, __VA_ARGS__); _ResetCaller(); }
+    /* Same as TEST_DIRECT_SPELL_DAMAGE but you can give a callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+       Usage:
+        TEST_DIRECT_HEAL(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback = {}, uint32 testedSpellId = 0);
+
+        @caster must be a TestPlayer or a pet/summon of him
+        @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
-    #define TEST_THREAT_CALLBACK(caster, target, spellID, expectedThreatFactor, heal, callback)  { _SetCaller(__FILE__, __LINE__); _TestThreat(caster, target, spellID, expectedThreatFactor, heal, Optional<TestCallback>(callback)); _ResetCaller(); }
+    #define TEST_DIRECT_HEAL(...) { _SetCaller(__FILE__, __LINE__); _TestDirectValue(true, __VA_ARGS__); _ResetCaller(); }
+    /*
+       Usage:
+        TEST_MELEE_DAMAGE((Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback = {})
+
+        @caster must be a TestPlayer or a pet/summon of him
+        @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
+    #define TEST_MELEE_DAMAGE(...) { _SetCaller(__FILE__, __LINE__); _TestMeleeDamage(__VA_ARGS__); _ResetCaller(); }
+
+    /* Will cast spell and check if threat is equal to dmg/healing done multiplied by expectedThreatFactor. Group of caster may be disbanded if any. Target aura and caster aura may be removed.
+       Usage:
+        TEST_THREAT(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal = false, Optional<TestCallback> callback = {})
+        
+        @caster must be a TestPlayer or a pet/summon of him
+        @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
+    */
+    #define TEST_THREAT(...)  { _SetCaller(__FILE__, __LINE__); _TestThreat(__VA_ARGS__); _ResetCaller(); }
     /* 
     @expectedAmount negative values for healing
     @crit Set crit score of caster to maximum
     */
     #define TEST_DOT_DAMAGE(caster, target, spellID, expectedTotalAmount, crit) { _SetCaller(__FILE__, __LINE__); _TestDotDamage(caster, target, spellID, expectedTotalAmount, crit); _ResetCaller(); }
   
-    #define TEST_CHANNEL_DAMAGE(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount); _ResetCaller(); }
-    #define TEST_CHANNEL_HEALING(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(caster, target, spellID, testedSpellID, tickCount, expectedTickAmount, true); _ResetCaller(); }
+    /* Usage:
+    TEST_CHANNEL_DAMAGE(Unit* caster, Unit* target, uint32 spellID, uint32 tickCount, int32 expectedTickAmount, uint32 testedSpell = 0)
+    */
+    #define TEST_CHANNEL_DAMAGE(...) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(false, __VA_ARGS__); _ResetCaller(); }
+    /* Usage:
+    TEST_CHANNEL_HEALING(Unit* caster, Unit* target, uint32 spellID, uint32 tickCount, int32 expectedTickAmount, uint32 testedSpell = 0)
+    */
+    #define TEST_CHANNEL_HEALING(...) { _SetCaller(__FILE__, __LINE__); _TestChannelDamage(true, __VA_ARGS__); _ResetCaller(); }
 
     /* Cast given spells a bunch of time from caster on victim, and test if results are chance% given missInfo
-    chance: 0-100
+       Usage:
+        TEST_SPELL_HIT_CHANCE(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback = {})
+
+        @chance 0-100
+        @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
-    #define TEST_SPELL_HIT_CHANCE(caster, victim, spellID, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo, {}); _ResetCaller(); }
-    /* Same but with additional argument:
-    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
-    */
-    #define TEST_SPELL_HIT_CHANCE_CALLBACK(caster, victim, spellID, chance, missInfo, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(caster, victim, spellID, chance, missInfo, Optional<TestCallback>(callback)); _ResetCaller(); }
+    #define TEST_SPELL_HIT_CHANCE(...) { _SetCaller(__FILE__, __LINE__); _TestSpellHitChance(__VA_ARGS__); _ResetCaller(); }
     /* Triggers attack from caster on victim, and test if results are chance% given missInfo
-    chance: 0-100
+       Usage:
+        TEST_MELEE_HIT_CHANCE(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome, Optional<TestCallback> callback = {})
+
+        @chance 0-100
+        @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
-    #define TEST_MELEE_HIT_CHANCE(caster, victim, weaponAttackType, chance, missInfo) { _SetCaller(__FILE__, __LINE__); _TestMeleeHitChance(caster, victim, weaponAttackType, chance, missInfo, {}); _ResetCaller(); }
-    /* Same but with additional argument:
-    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
-    */
-    #define TEST_MELEE_HIT_CHANCE_CALLBACK(caster, victim, weaponAttackType, chance, missInfo, callback) { _SetCaller(__FILE__, __LINE__); _TestMeleeHitChance(caster, victim, weaponAttackType, chance, missInfo, Optional<TestCallback>(callback)); _ResetCaller(); }
+    #define TEST_MELEE_HIT_CHANCE(...) { _SetCaller(__FILE__, __LINE__); _TestMeleeHitChance(__VA_ARGS__); _ResetCaller(); }
     // Test the percentage of a melee hit outcome for already done attacks
     #define TEST_MELEE_OUTCOME_PERCENTAGE(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError)  { _SetCaller(__FILE__, __LINE__); _TestMeleeOutcomePercentage(attacker, victim, weaponAttackType, meleeHitOutcome, expectedResult, allowedError);  _ResetCaller(); }
     // Test the percentage of a spell hit outcome for already done attacks
@@ -246,13 +255,13 @@ public:
     #define USE_ITEM(caster, target, itemID) { _SetCaller(__FILE__, __LINE__); _TestUseItem(caster, target, itemID); _ResetCaller(); }
 
     /* Test the crit chance of given spell on target
-    chance: 0-100
+       Usage:
+        TEST_SPELL_CRIT_CHANCE(Unit* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback = {})
+
+        @chance 0-100
+        @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
-    #define TEST_SPELL_CRIT_CHANCE(caster, target, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance, {}); _ResetCaller(); }
-    /* Same but with additional argument:
-    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
-    */
-    #define TEST_SPELL_CRIT_CHANCE_CALLBACK(caster, target, spellID, chance, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(caster, target, spellID, chance, Optional<TestCallback>(callback)); _ResetCaller(); }
+    #define TEST_SPELL_CRIT_CHANCE(...) { _SetCaller(__FILE__, __LINE__); _TestSpellCritChance(__VA_ARGS__); _ResetCaller(); }
 
     /* Check if spell has given cast time for caster 
     (Does not actually cast the spell)
@@ -273,36 +282,36 @@ public:
 
 
     /* Test the proc chance of given aura on caster or victim by casting a spell on a target
-    selfProc: Check of on caster, else check on target
-    missInfo: Force spell hit result
-    chance: 0-100
+       Usage:
+        TEST_SPELL_PROC_CHANCE(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback = {})
+
+        @selfProc Check of on caster, else check on target
+        @missInfo Force spell hit result
+        @chance 0-100
+        @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
-    #define TEST_SPELL_PROC_CHANCE(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, {}); _ResetCaller(); }
-    /* Same but with additional argument:
-    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
-    */
-    #define TEST_SPELL_PROC_CHANCE_CALLBACK(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(caster, target, spellID, procSpellID, selfProc, chance, missInfo, crit, Optional<TestCallback>(callback)); _ResetCaller(); }
+    #define TEST_SPELL_PROC_CHANCE(...) { _SetCaller(__FILE__, __LINE__); _TestSpellProcChance(__VA_ARGS__); _ResetCaller(); }
 
     /* Test the proc chance of given aura on caster or victim by attacking target on melee/ranged
-    selfProc: Check of on caster, else check on target
-    meleeHitOutcome: Force melee hit result
-    chance: 0-100
+       Usage:
+        TEST_MELEE_PROC_CHANCE(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, Optional<TestCallback> callback = {})
+
+        @selfProc Check of on caster, else check on target
+        @meleeHitOutcome Force melee hit result
+        @chance 0-100
+        @callback function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
 
-    #define TEST_MELEE_PROC_CHANCE(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, attackType)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, attackType, {}); _ResetCaller(); }
-    /* Same but with additional argument:
-    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
-    */
-    #define TEST_MELEE_PROC_CHANCE_CALLBACK(attacker, target,  procSpellID, selfProc, chance, meleeHitOutcome, attackType, callback)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(attacker, target, procSpellID, selfProc, chance, meleeHitOutcome, attackType, Optional<TestCallback>(callback)); _ResetCaller(); }
+    #define TEST_MELEE_PROC_CHANCE(...)  { _SetCaller(__FILE__, __LINE__); _TestMeleeProcChance(__VA_ARGS__); _ResetCaller(); }
 
-    /* caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
-    chance: 0-100
+    /* Caster will cast spell on target. Dispeler will then try to dispel it and should be resisted given chance of the time.
+       Usage:
+        TEST_DISPEL_RESIST_CHANCE(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, Optional<TestCallback> callback = {})
+
+        @chance: 0-100
+        @callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
     */
-    #define TEST_DISPEL_RESIST_CHANCE(caster, target, dispeler, spellID, chance) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance, {}); _ResetCaller(); }
-    /* Same but with additional argument:
-    callback: function to use before each cast, with the type std::function<void(Unit*, Unit*)>
-    */
-    #define TEST_DISPEL_RESIST_CHANCE_CALLBACK(caster, target, dispeler, spellID, chance, callback) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(caster, target, dispeler, spellID, chance,  Optional<TestCallback>(callback)); _ResetCaller(); }
+    #define TEST_DISPEL_RESIST_CHANCE(...) { _SetCaller(__FILE__, __LINE__); _TestSpellDispelResist(__VA_ARGS__); _ResetCaller(); }
 
     /* Test how much of the time a cast pushback is resisted (against melee attacks). Target will also be the one attacking the caster.
     chance: 0-100
@@ -314,8 +323,10 @@ public:
     #define TEST_RANGE(caster, target, spellID, range) { _SetCaller(__FILE__, __LINE__); _TestRange(caster, target, spellID, range); _ResetCaller(); }
     /* Test if target is in range of spell for given radius (use this of AoE spells, else use TEST_RANGE)
     Spell may or may not be casted on target after this
+       Usage:
+        TEST_RADIUS(TestPlayer* caster, Unit* castTarget, Unit* checkTarget, uint32 spellID, float radius, bool heal = false, uint32 checkSpellID = 0, bool includeCasterReach = true)
     */
-    #define TEST_RADIUS(caster, castTarget, checkTarget, spellID, radius, heal, checkSpellID) { _SetCaller(__FILE__, __LINE__); _TestRadius(caster, castTarget, checkTarget, spellID, radius, heal, checkSpellID); _ResetCaller(); }
+    #define TEST_RADIUS(...) { _SetCaller(__FILE__, __LINE__); _TestRadius(__VA_ARGS__); _ResetCaller(); }
 
     //Get raw spell data from caster (+ pets) to target with spellID
     std::vector<PlayerbotTestingAI::SpellDamageDoneInfo> GetSpellDamageDoneInfoTo(Unit* caster, Unit* victim, uint32 spellID, bool checkEmpty = true);
@@ -363,11 +374,13 @@ protected:
     void Sadness();
 
     // <Test macros related functions>
-    void _TestDirectValue(Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, bool damage, Optional<TestCallback> callback); //if !damage, then use healing
-    void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, Optional<TestCallback> callback);
+    //heal: check for healing instead of damage
+    void _TestDirectValue(bool heal, Unit* caster, Unit* target, uint32 spellID, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback = {}, uint32 testedSpellId = 0);
+    void _TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType attackType, uint32 expectedMin, uint32 expectedMax, bool crit, TestCallback callback = {});
     void _TestDotDamage(Unit* caster, Unit* target, uint32 spellID, int32 expectedAmount, bool crit = false);
-    void _TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal, Optional<TestCallback> callback);
-    void _TestChannelDamage(Unit* caster, Unit* target, uint32 spellID, uint32 testedSpell, uint32 tickCount, int32 expectedTickAmount, bool healing = false);
+    void _TestThreat(Unit* caster, Creature* target, uint32 spellID, float expectedThreatFactor, bool heal = false, TestCallback callback = {});
+
+    void _TestChannelDamage(bool healing, Unit* caster, Unit* target, uint32 spellID, uint32 tickCount, int32 expectedTickAmount, uint32 testedSpell = 0);
     /* if sampleSize != 0, check if results count = sampleSize
     expectedResult: 0 - 100
     allowedError: 0 - 100
@@ -383,18 +396,18 @@ protected:
     allowedError: 0 - 100
     */
     void _TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize = 0);
-    void _TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, Optional<TestCallback> callback);
-    void _TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome, Optional<TestCallback> callback);
-    void _TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float chance, Optional<TestCallback> callback);
+    void _TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, float chance, SpellMissInfo missInfo, TestCallback callback = {});
+    void _TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType weaponAttackType, float chance, MeleeHitOutcome meleeHitOutcome, TestCallback callback = {});
+    void _TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float chance, TestCallback callback = {});
     void _TestSpellCastTime(Unit* caster, uint32 spellID, uint32 expectedCastTimeMS);
     void _TestAuraTickProcChance(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, bool checkSelf);
     void _TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint32 spellID, SpellEffIndex index, float chance, uint32 procSpellId, TestCallbackResult callback);
-    void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, Optional<TestCallback> callback);
-    void _TestMeleeProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, Optional<TestCallback> callback);
+    void _TestSpellProcChance(Unit* caster, Unit* target, uint32 spellID, uint32 procSpellID, bool selfProc, float expectedChancePercent, SpellMissInfo missInfo, bool crit, TestCallback callback = {});
+    void _TestMeleeProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, MeleeHitOutcome meleeHitOutcome, WeaponAttackType attackType, TestCallback callback = {});
     //return actual proc chance
-    std::pair<float /*procChance*/, float /*absoluteTolerance*/> _TestProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, TestCallback launchCallback, Optional<TestCallback> callback);
+    std::pair<float /*procChance*/, float /*absoluteTolerance*/> _TestProcChance(Unit* attacker, Unit* target, uint32 procSpellID, bool selfProc, float expectedChancePercent, TestCallback launchCallback, TestCallback callback = {});
     void _TestPushBackResistChance(Unit* caster, Unit* target, uint32 spellID, float chance);
-    void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, Optional<TestCallback> callback);
+    void _TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler, uint32 spellID, float chance, TestCallback callback = {});
 	void _TestStacksCount(TestPlayer* caster, Unit* target, uint32 castSpellID, uint32 testSpell, uint32 requireCount);
 	void _TestPowerCost(TestPlayer* caster, uint32 castSpellID, Powers powerType, uint32 expectedPowerCost);
     inline void _TestCooldown(Unit* caster, Unit* target, uint32 castSpellID, Milliseconds ms) { _TestCooldown(caster, target, castSpellID, uint32(ms.count())); }
@@ -411,7 +424,7 @@ protected:
     void _TestCast(Unit* caster, Unit* victim, uint32 spellID, SpellCastResult expectedCode = SPELL_CAST_OK, CastSpellExtraArgs args = {});
     void _ForceCast(Unit* caster, Unit* victim, uint32 spellID, SpellMissInfo forcedMissInfo = SPELL_MISS_NONE, CastSpellExtraArgs args = {});
     void _TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId);
-    void _TestRadius(TestPlayer* caster, Unit* castTarget, Unit* checkTarget, uint32 spellID, float radius, bool heal, uint32 checkSpellID = 0, bool includeCasterReach = true);
+    void _TestRadius(TestPlayer* caster, Unit* castTarget, Unit* checkTarget, uint32 spellID, float radius, bool heal = false, uint32 checkSpellID = 0, bool includeCasterReach = true);
     void _TestRange(TestPlayer* caster, Unit* target, uint32 spellID, float range);
     // <Test macros related functions/>
 
