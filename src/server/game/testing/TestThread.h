@@ -34,8 +34,8 @@ public:
     };
 
     //Create thread with test, do not start immediately
-    TestThread(std::shared_ptr<TestCase> test);
-    ~TestThread() {}
+    TestThread(std::unique_ptr<TestCase>&& test);
+    ~TestThread();
 
     //Start test!
     void Start();
@@ -51,10 +51,10 @@ public:
     void Run();
     //update test Wait Timer but do not notify anything
     void UpdateWaitTimer(uint32 const mapDiff);
-    std::shared_ptr<TestCase> GetTest() const { return _testCase; };
+    TestCase* GetTest() const { return _testCase.get(); };
 
     // Sleep caller execution until ... (this does not sleep the test thread)
-    void WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test);
+    void WaitUntilDoneOrWaiting(TestCase* test);
     uint32 GetWaitTimer() const { return _waitTimer;  }
     bool IsPaused() const;
     bool IsFinished() const;
@@ -67,7 +67,7 @@ public:
     void SetJoiner(ObjectGuid playerJoiner);
 
 private:
-    std::shared_ptr<TestCase> _testCase;
+    std::unique_ptr<TestCase> _testCase;
     std::future<void> _future; //the actual thread containing the test
     std::atomic<ThreadState> _state; // this thread may be finished either because test finished, or because test was cancelled
     ObjectGuid _joinerGUID;

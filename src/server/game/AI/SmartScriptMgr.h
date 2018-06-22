@@ -1658,8 +1658,6 @@ struct SmartScriptHolder
     operator bool() const { return entryOrGuid != 0; }
 };
 
-typedef std::unordered_map<uint32, std::shared_ptr<WayPoint>> WPPath;
-
 typedef std::vector<WorldObject*> ObjectVector;
 
 class ObjectGuidVector

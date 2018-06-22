@@ -29,12 +29,14 @@ void TestMgr::_Load(std::string name_or_pattern, Player* joiner /*= nullptr*/)
         range = allTestsScripts.equal_range(i->first);
         for (auto testScript = range.first; testScript != range.second; ++testScript)
         {
-            auto testCase = testScript->second->GetTest();
+            std::unique_ptr<TestCase> testCase = testScript->second->GetTest();
             testCase->_SetName(testScript->second->GetName()); //to improve: move this to ScriptMgr?
-            if (_TestMatchPattern(testCase, name_or_pattern))
+            if (_TestMatchPattern(testCase.get(), name_or_pattern))
             {
-                std::shared_ptr<TestThread> testThread = std::make_shared<TestThread>(testCase);
-                testCase->_SetThread(testThread);
+                TestCase* _testCase = testCase.get();
+                std::shared_ptr<TestThread> testThread = std::make_shared<TestThread>(std::move(testCase));
+                ASSERT(testCase == nullptr); //testcase in now owned by TestThread
+                _testCase->_SetThread(testThread);
                 _remainingTests[testId] = testThread; //will immediately start a new thread running the test
                 testId++;
                 if (joiner) //start only one test in join case
@@ -51,7 +53,7 @@ EXIT:
     return;
 }
 
-bool TestMgr::_TestMatchPattern(std::shared_ptr<TestCase> test, std::string const& pattern) const
+bool TestMgr::_TestMatchPattern(TestCase* test, std::string const& pattern) const
 {
     if (pattern == "")
         return false;
@@ -174,7 +176,7 @@ std::string TestMgr::ListAvailable(std::string filter) const
         {
             auto testCase = testScript->second->GetTest();
             testCase->_SetName(testScript->second->GetName()); //to improve: move this to ScriptMgr?
-            if (_TestMatchPattern(testCase, filter))
+            if (_TestMatchPattern(testCase.get(), filter))
                 foundList.emplace_back(testCase->GetName());
         }
     }

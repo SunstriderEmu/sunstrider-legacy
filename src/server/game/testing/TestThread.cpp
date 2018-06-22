@@ -2,12 +2,19 @@
 #include "TestCase.h"
 #include "TestMgr.h"
 
-TestThread::TestThread(std::shared_ptr<TestCase> test)
-    : _testCase(test), 
+TestThread::TestThread(std::unique_ptr<TestCase>&& test)
+    : _testCase(std::move(test)), 
     _state(STATE_NOT_STARTED),
     _waitTimer(0)
 {
 }
+
+/* KEEP THIS! We need the destructor to be generated in this cpp (and not in the .h)
+This is because to build the destructor of our unique_ptr member, the compiler need to know the complete type
+By defining the destructor here we can avoid including the complete type in TestThread.h
+If we does not use unique_ptr anymore you should be able to delete this
+*/
+TestThread::~TestThread() = default;
 
 void TestThread::Start()
 {
@@ -123,7 +130,7 @@ void TestThread::UpdateWaitTimer(uint32 const mapDiff)
 }
 
 //This function will be executed while the test is running... be careful for racing conditions
-void TestThread::WaitUntilDoneOrWaiting(std::shared_ptr<TestCase> test)
+void TestThread::WaitUntilDoneOrWaiting(TestCase* test)
 {
     std::unique_lock<std::mutex> lk(_testCVMutex);
     if (_state == STATE_WAITING_FOR_JOIN || _state == STATE_FINISHED || _state == STATE_CANCELING)

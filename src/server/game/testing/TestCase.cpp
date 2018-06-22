@@ -154,7 +154,9 @@ void TestCase::Wait(uint32 ms)
     if (ms == 0)
         return;
 
-    _testThread->Wait(ms);
+    auto thread = _testThread.lock();
+    if(thread)
+        thread->Wait(ms);
 }
 
 void TestCase::WaitNextUpdate()
@@ -164,7 +166,9 @@ void TestCase::WaitNextUpdate()
 
 void TestCase::HandleThreadPause()
 {
-    _testThread->HandleThreadPause();
+    auto thread = _testThread.lock();
+    if(thread)
+        thread->HandleThreadPause();
 }
 
 void TestCase::_Cleanup()

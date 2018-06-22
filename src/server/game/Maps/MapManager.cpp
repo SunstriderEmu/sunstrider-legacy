@@ -277,7 +277,7 @@ void MapManager::UnloadAll()
     Map::DeleteStateMachine();
 }
 
-std::pair<TestMap*, uint32 /*testMapInstanceId*/> MapManager::CreateTestMap(std::shared_ptr<TestThread> testThread, uint32 mapid, Difficulty diff, bool enableMapObjects)
+std::pair<TestMap*, uint32 /*testMapInstanceId*/> MapManager::CreateTestMap(std::weak_ptr<TestThread>& testThread, uint32 mapid, Difficulty diff, bool enableMapObjects)
 {
     MapInstanced* mapInstanced = static_cast<MapInstanced*>(CreateBaseMap(mapid, true));
     if (!mapInstanced)

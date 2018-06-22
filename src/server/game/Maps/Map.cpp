@@ -2813,7 +2813,7 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 instanceId, uint8 spaw
     m_unloadTimer = std::max(sWorld->getConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
 }
 
-TestMap::TestMap(std::shared_ptr<TestThread> testThread, uint32 id, uint32 instanceId, uint8 spawnMode, Map* _parent, bool enableMapObjects)
+TestMap::TestMap(std::weak_ptr<TestThread>& testThread, uint32 id, uint32 instanceId, uint8 spawnMode, Map* _parent, bool enableMapObjects)
     : InstanceMap(id, 0, instanceId, spawnMode, _parent), _testThread(testThread)
 {
     i_mapType = MAP_TYPE_TEST_MAP;
@@ -3183,12 +3183,16 @@ void TestMap::Update(const uint32& diff)
     if (m_unloadTimer) //If map was marked for unload, test is finished
         return;
 
-    auto test = _testThread->GetTest();
-    if (_testThread->GetState() < TestThread::STATE_WAITING_FOR_JOIN)
+    auto testThread = _testThread.lock();
+    if (!testThread)
+        return;
+
+    auto test = testThread->GetTest();
+    if (testThread->GetState() < TestThread::STATE_WAITING_FOR_JOIN)
         return; //still setting up
 
     //test thread may have been finish by itself or externally (by a cancel)
-    if (_testThread->IsFinished() || _testThread->IsCanceling())
+    if (testThread->IsFinished() || testThread->IsCanceling())
     {
         m_unloadTimer = 1; //make sure we're not updating anymore after this, and unload at next update
         return;
@@ -3197,33 +3201,36 @@ void TestMap::Update(const uint32& diff)
     uint32 usedDiff = diff;
 
     //If a test is currently waiting, lets cheat a bit and make sure the wait end time coincide with the map diff if the diff is enough to finish the wait
-    if (uint32 const testWaitTimer = _testThread->GetWaitTimer())
+    if (uint32 const testWaitTimer = testThread->GetWaitTimer())
         if (usedDiff > testWaitTimer)
             usedDiff = testWaitTimer;
 
     //if test asked for a pause, skip this map update
-    if (!_testThread->IsPaused())
+    if (!testThread->IsPaused())
     {
         //only valid states at this points. test should never be currently updating at the same time as the map is updating
-        auto state = _testThread->GetState();
+        auto state = testThread->GetState();
         ASSERT(state == TestThread::STATE_WAITING_FOR_JOIN || state == TestThread::STATE_READY 
             || state == TestThread::STATE_WAITING || state == TestThread::STATE_PAUSED);
         InstanceMap::Update(usedDiff);
 
         //When paused, time is frozen in test too
-        _testThread->UpdateWaitTimer(usedDiff);
+        testThread->UpdateWaitTimer(usedDiff);
     }
 
     ASSERT(test->IsSetup());
-    _testThread->ResumeExecution();
-    _testThread->WaitUntilDoneOrWaiting(test);
+    testThread->ResumeExecution();
+    testThread->WaitUntilDoneOrWaiting(test);
     //from this line we be sure that the test thread is not currently running
 #endif
 }
 
 bool TestMap::AddPlayerToMap(Player* player)
 {
-    _testThread->HandlePlayerJoined(player);
+    auto testThread = _testThread.lock();
+    if (testThread)
+        testThread->HandlePlayerJoined(player);
+
     return Map::AddPlayerToMap(player);
 }
 

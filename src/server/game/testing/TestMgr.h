@@ -35,7 +35,7 @@ public:
 private:
     //defined in TestLoader.cpp, all tests are listed there
     void _Load(std::string name_or_pattern, Player* joiner = nullptr);
-    bool _TestMatchPattern(std::shared_ptr<TestCase> test, std::string const& pattern) const;
+    bool _TestMatchPattern(TestCase* test, std::string const& pattern) const;
 
     std::map<uint32 /*testId*/, std::shared_ptr<TestThread>> _remainingTests; //all remaining tests, tests finished are removed from it
     TestResults _results;

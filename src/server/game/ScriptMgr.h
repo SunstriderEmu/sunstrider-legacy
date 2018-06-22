@@ -219,8 +219,10 @@ protected:
 
 public:
 
+#ifdef TESTS
     // Called when loading tests
-    virtual std::shared_ptr<TestCase> GetTest() const { return nullptr; }
+    virtual std::unique_ptr<TestCase> GetTest() const;
+#endif
 };
 
 // Manages registration, loading, and execution of scripts.

@@ -12,6 +12,9 @@
 #include "SpellScript.h"
 #include "ScriptReloadMgr.h"
 #include "SmartAI.h"
+#ifdef TESTS
+#include "TestCase.h"
+#endif
 
 #ifndef _TRINITY_SCRIPT_CONFIG
 # define _TRINITY_SCRIPT_CONFIG  "worldserver.conf"
@@ -1579,6 +1582,15 @@ TestCaseScript::TestCaseScript(const char* name)
     : ScriptObject(name)
 {
     ScriptRegistry<TestCaseScript>::Instance()->AddScript(this);
+}
+
+/* KEEP THIS!
+This is because to build the destructor of our unique_ptr, the compiler need to know the complete type
+By defining the function here we can avoid including the complete type in ScriptMgr.h
+*/
+std::unique_ptr<TestCase> TestCaseScript::GetTest() const 
+{ 
+    return nullptr; 
 }
 
 SpellScriptLoader::SpellScriptLoader(const char* name)

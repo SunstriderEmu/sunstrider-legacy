@@ -500,7 +500,7 @@ private:
     Races _GetRandomRaceForClass(Classes race);
     static void _RemoveTestBot(Player* player);
    
-    std::shared_ptr<TestThread> _testThread;
+    std::weak_ptr<TestThread> _testThread;
 
     //those two just to help avoiding calling SpawnRandomPlayer with the wrong arguments, SpawnPlayer should be called in those case
     TestPlayer* SpawnRandomPlayer(Races race, Classes cls) = delete;
