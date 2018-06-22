@@ -47,12 +47,12 @@ bool CastAoeHealSpellAction::isUseful()
 }
 
 
-Value<Unit*>* CurePartyMemberAction::GetTargetValue()
+std::shared_ptr<Value<Unit*>> CurePartyMemberAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member to dispel", dispelType);
 }
 
-Value<Unit*>* BuffOnPartyAction::GetTargetValue()
+std::shared_ptr<Value<Unit*>> BuffOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member without aura", spell);
 }

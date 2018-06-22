@@ -20,7 +20,7 @@ bool CastAspectOfTheCheetahAction::isUseful()
     return !ai->HasAnyAuraOf(GetTarget(), "aspect of the cheetah", "aspect of the pack", NULL);
 }
 
-Value<Unit*>* CastFreezingTrap::GetTargetValue()
+std::shared_ptr<Value<Unit*>> CastFreezingTrap::GetTargetValue()
 {
     return context->GetValue<Unit*>("cc target", "freezing trap");
 }

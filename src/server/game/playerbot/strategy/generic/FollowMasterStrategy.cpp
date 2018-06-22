@@ -6,12 +6,12 @@ using namespace ai;
 
 ActionList FollowMasterStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("follow", 1.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("follow", 1.0f) });
 }
 
-void FollowMasterStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void FollowMasterStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "out of react range",
-        NextAction::array({ new NextAction("tell out of react range", 10.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("tell out of react range", 10.0f) })));
 }

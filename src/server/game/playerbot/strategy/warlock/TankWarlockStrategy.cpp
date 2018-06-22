@@ -14,38 +14,38 @@ public:
         creators["summon felguard"] = &summon_felguard;
     }
 private:
-    static ActionNode* summon_voidwalker(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> summon_voidwalker(PlayerbotAI* ai)
     {
-        return new ActionNode ("summon voidwalker",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("drain soul") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("summon voidwalker",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("drain soul") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* summon_felguard(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> summon_felguard(PlayerbotAI* ai)
     {
-        return new ActionNode ("summon felguard",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("summon voidwalker") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("summon felguard",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("summon voidwalker") }),
+            /*C*/ ActionList());
     }
 };
 
 TankWarlockStrategy::TankWarlockStrategy(PlayerbotAI* ai) : GenericWarlockStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericWarlockStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericWarlockStrategyActionNodeFactory>());
 }
 
 ActionList TankWarlockStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("shoot", 10.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("shoot", 10.0f) });
 }
 
-void TankWarlockStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void TankWarlockStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericWarlockStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no pet",
-        NextAction::array({ new NextAction("summon felguard", 50.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("summon felguard", 50.0f) })));
 
 }

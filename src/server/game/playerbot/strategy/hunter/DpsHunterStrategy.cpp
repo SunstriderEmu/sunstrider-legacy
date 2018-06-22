@@ -18,101 +18,101 @@ public:
         creators["viper sting"] = &viper_sting;
     }
 private:
-    static ActionNode* viper_sting(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> viper_sting(PlayerbotAI* ai)
     {
-        return new ActionNode ("viper sting",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("mana potion", 10.0f) }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("viper sting",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("mana potion", 10.0f) }),
+            /*C*/ ActionList());
     }
-    static ActionNode* aimed_shot(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> aimed_shot(PlayerbotAI* ai)
     {
-        return new ActionNode ("aimed shot",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("chimera shot", 10.0f) }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("aimed shot",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("chimera shot", 10.0f) }),
+            /*C*/ ActionList());
     }
-    static ActionNode* chimera_shot(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> chimera_shot(PlayerbotAI* ai)
     {
-        return new ActionNode ("chimera shot",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("arcane shot", 10.0f) }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("chimera shot",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("arcane shot", 10.0f) }),
+            /*C*/ ActionList());
     }
-    static ActionNode* explosive_shot(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> explosive_shot(PlayerbotAI* ai)
     {
-        return new ActionNode ("explosive shot",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("aimed shot") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("explosive shot",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("aimed shot") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* concussive_shot(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> concussive_shot(PlayerbotAI* ai)
     {
-        return new ActionNode ("concussive shot",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ NextAction::array({ new NextAction("wyvern sting", 11.0f) }));
+        return std::make_shared<ActionNode> ("concussive shot",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ NextAction::array({ std::make_shared<NextAction>("wyvern sting", 11.0f) }));
     }
 
 };
 
 DpsHunterStrategy::DpsHunterStrategy(PlayerbotAI* ai) : GenericHunterStrategy(ai)
 {
-    actionNodeFactories.Add(new DpsHunterStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<DpsHunterStrategyActionNodeFactory>());
 }
 
 ActionList DpsHunterStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("explosive shot", 11.0f), new NextAction("auto shot", 10.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("explosive shot", 11.0f), std::make_shared<NextAction>("auto shot", 10.0f) });
 }
 
-void DpsHunterStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsHunterStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericHunterStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "black arrow",
-        NextAction::array({ new NextAction("black arrow", 51.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("black arrow", 51.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low mana",
-        NextAction::array({ new NextAction("viper sting", ACTION_EMERGENCY + 5) })));
+        NextAction::array({ std::make_shared<NextAction>("viper sting", ACTION_EMERGENCY + 5) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no pet",
-        NextAction::array({ new NextAction("call pet", 60.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("call pet", 60.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "hunters pet low health",
-        NextAction::array({ new NextAction("mend pet", 60.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("mend pet", 60.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "hunter's mark",
-        NextAction::array({ new NextAction("hunter's mark", 52.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("hunter's mark", 52.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "freezing trap",
-        NextAction::array({ new NextAction("freezing trap", 83.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("freezing trap", 83.0f) })));
 }
 
-void DpsAoeHunterStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsAoeHunterStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("multi-shot", 20.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("multi-shot", 20.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "high aoe",
-        NextAction::array({ new NextAction("volley", 20.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("volley", 20.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "serpent sting on attacker",
-        NextAction::array({ new NextAction("serpent sting on attacker", 49.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("serpent sting on attacker", 49.0f) })));
 }
 
-void DpsHunterDebuffStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsHunterDebuffStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no stings",
-        NextAction::array({ new NextAction("serpent sting", 50.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("serpent sting", 50.0f) })));
 }

@@ -19,92 +19,92 @@ public:
         creators["backstab"] = &backstab;
     }
 private:
-    static ActionNode* riposte(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> riposte(PlayerbotAI* ai)
     {
-        return new ActionNode ("riposte",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("mutilate") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("riposte",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("mutilate") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* mutilate(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> mutilate(PlayerbotAI* ai)
     {
-        return new ActionNode ("mutilate",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("sinister strike") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("mutilate",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("sinister strike") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* sinister_strike(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> sinister_strike(PlayerbotAI* ai)
     {
-        return new ActionNode ("sinister strike",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("sinister strike",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* kick(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> kick(PlayerbotAI* ai)
     {
-        return new ActionNode ("kick",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("kidney shot") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("kick",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("kidney shot") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* kidney_shot(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> kidney_shot(PlayerbotAI* ai)
     {
-        return new ActionNode ("kidney shot",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("kidney shot",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* rupture(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> rupture(PlayerbotAI* ai)
     {
-        return new ActionNode ("rupture",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("eviscerate") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("rupture",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("eviscerate") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* backstab(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> backstab(PlayerbotAI* ai)
     {
-        return new ActionNode ("backstab",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("mutilate") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("backstab",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("mutilate") }),
+            /*C*/ ActionList());
     }
 };
 
 DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* ai) : MeleeCombatStrategy(ai)
 {
-    actionNodeFactories.Add(new DpsRogueStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<DpsRogueStrategyActionNodeFactory>());
 }
 
 ActionList DpsRogueStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("riposte", ACTION_NORMAL) });
+    return NextAction::array({ std::make_shared<NextAction>("riposte", ACTION_NORMAL) });
 }
 
-void DpsRogueStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsRogueStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     MeleeCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "combo points available",
-        NextAction::array({ new NextAction("rupture", ACTION_HIGH + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("rupture", ACTION_HIGH + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium threat",
-        NextAction::array({ new NextAction("vanish", ACTION_HIGH) })));
+        NextAction::array({ std::make_shared<NextAction>("vanish", ACTION_HIGH) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low health",
-        NextAction::array({ new NextAction("evasion", ACTION_EMERGENCY), new NextAction("feint", ACTION_EMERGENCY) })));
+        NextAction::array({ std::make_shared<NextAction>("evasion", ACTION_EMERGENCY), std::make_shared<NextAction>("feint", ACTION_EMERGENCY) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "kick",
-        NextAction::array({ new NextAction("kick", ACTION_INTERRUPT + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("kick", ACTION_INTERRUPT + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "kick on enemy healer",
-        NextAction::array({ new NextAction("kick on enemy healer", ACTION_INTERRUPT + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("kick on enemy healer", ACTION_INTERRUPT + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "behind target",
-        NextAction::array({ new NextAction("backstab", ACTION_NORMAL) })));
+        NextAction::array({ std::make_shared<NextAction>("backstab", ACTION_NORMAL) })));
 }

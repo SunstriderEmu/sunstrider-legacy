@@ -12,21 +12,21 @@ FrostMageStrategy::FrostMageStrategy(PlayerbotAI* ai) : GenericMageStrategy(ai)
 
 ActionList FrostMageStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("frostbolt", 7.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("frostbolt", 7.0f) });
 }
 
-void FrostMageStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void FrostMageStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericMageStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "icy veins",
-        NextAction::array({ new NextAction("icy veins", 50.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("icy veins", 50.0f) })));
 }
 
-void FrostMageAoeStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void FrostMageAoeStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "high aoe",
-        NextAction::array({ new NextAction("blizzard", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("blizzard", 40.0f) })));
 }

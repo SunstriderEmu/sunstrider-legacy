@@ -15,62 +15,62 @@ public:
         creators["shadow bolt"] = &shadow_bolt;
     }
 private:
-    static ActionNode* shadow_bolt(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> shadow_bolt(PlayerbotAI* ai)
     {
-        return new ActionNode ("shadow bolt",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("shoot") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("shadow bolt",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("shoot") }),
+            /*C*/ ActionList());
     }
 };
 
 DpsWarlockStrategy::DpsWarlockStrategy(PlayerbotAI* ai) : GenericWarlockStrategy(ai)
 {
-    actionNodeFactories.Add(new DpsWarlockStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<DpsWarlockStrategyActionNodeFactory>());
 }
 
 
 ActionList DpsWarlockStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("incinirate", 10.0f), new NextAction("shadow bolt", 10.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("incinirate", 10.0f), std::make_shared<NextAction>("shadow bolt", 10.0f) });
 }
 
-void DpsWarlockStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsWarlockStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericWarlockStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "shadow trance",
-        NextAction::array({ new NextAction("shadow bolt", 20.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("shadow bolt", 20.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "backlash",
-        NextAction::array({ new NextAction("shadow bolt", 20.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("shadow bolt", 20.0f) })));
 }
 
-void DpsAoeWarlockStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsAoeWarlockStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "high aoe",
-        NextAction::array({ new NextAction("rain of fire", 30.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("rain of fire", 30.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("seed of corruption", 31.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("seed of corruption", 31.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "light aoe",
-        NextAction::array({ new NextAction("shadowfury", 29.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("shadowfury", 29.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "corruption on attacker",
-        NextAction::array({ new NextAction("corruption on attacker", 28.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("corruption on attacker", 28.0f) })));
 
 }
 
-void DpsWarlockDebuffStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsWarlockDebuffStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "corruption",
-        NextAction::array({ new NextAction("corruption", 12.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("corruption", 12.0f) })));
 }

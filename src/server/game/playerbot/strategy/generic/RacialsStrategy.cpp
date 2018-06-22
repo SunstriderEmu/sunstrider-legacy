@@ -13,27 +13,27 @@ public:
         creators["lifeblood"] = &lifeblood;
     }
 private:
-    static ActionNode* lifeblood(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> lifeblood(PlayerbotAI* ai)
     {
-        return new ActionNode ("lifeblood",  
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("gift of the naaru") }), 
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("lifeblood",  
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("gift of the naaru") }), 
+            /*C*/ ActionList());
     }
 };
 
-void RacialsStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void RacialsStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low health", 
-        NextAction::array({ new NextAction("lifeblood", 71.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("lifeblood", 71.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low mana", 
-        NextAction::array({ new NextAction("arcane torrent", ACTION_EMERGENCY + 6) })));
+        NextAction::array({ std::make_shared<NextAction>("arcane torrent", ACTION_EMERGENCY + 6) })));
 }
 
 RacialsStrategy::RacialsStrategy(PlayerbotAI* ai) : Strategy(ai)
 {
-    actionNodeFactories.Add(new RacialsStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<RacialsStrategyActionNodeFactory>());
 }

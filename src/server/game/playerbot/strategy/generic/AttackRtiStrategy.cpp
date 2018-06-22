@@ -5,10 +5,10 @@
 using namespace ai;
 
 
-void AttackRtiStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void AttackRtiStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no attackers",
-        NextAction::array({ new NextAction("attack rti target", 60.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("attack rti target", 60.0f) })));
 }
 

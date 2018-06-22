@@ -21,117 +21,117 @@ public:
         creators["blast wave"] = &blast_wave;
     }
 private:
-    static ActionNode* frostbolt(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> frostbolt(PlayerbotAI* ai)
     {
-        return new ActionNode ("frostbolt",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("shoot") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("frostbolt",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("shoot") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* fire_blast(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> fire_blast(PlayerbotAI* ai)
     {
-        return new ActionNode ("fire blast",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("scorch") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("fire blast",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("scorch") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* scorch(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> scorch(PlayerbotAI* ai)
     {
-        return new ActionNode ("scorch",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("shoot") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("scorch",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("shoot") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* frost_nova(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> frost_nova(PlayerbotAI* ai)
     {
-        return new ActionNode ("frost nova",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("flee") }),
-            /*C*/ NextAction::array({ new NextAction("flee") }));
+        return std::make_shared<ActionNode> ("frost nova",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("flee") }),
+            /*C*/ NextAction::array({ std::make_shared<NextAction>("flee") }));
     }
-    static ActionNode* icy_veins(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> icy_veins(PlayerbotAI* ai)
     {
-        return new ActionNode ("icy veins",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("icy veins",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* combustion(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> combustion(PlayerbotAI* ai)
     {
-        return new ActionNode ("combustion",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("combustion",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* evocation(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> evocation(PlayerbotAI* ai)
     {
-        return new ActionNode ("evocation",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("mana potion") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("evocation",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("mana potion") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* dragons_breath(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> dragons_breath(PlayerbotAI* ai)
     {
-        return new ActionNode ("dragon's breath",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("blast wave") }),
-            /*C*/ NextAction::array({ new NextAction("flamestrike", 71.0f) }));
+        return std::make_shared<ActionNode> ("dragon's breath",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("blast wave") }),
+            /*C*/ NextAction::array({ std::make_shared<NextAction>("flamestrike", 71.0f) }));
     }
-    static ActionNode* blast_wave(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> blast_wave(PlayerbotAI* ai)
     {
-        return new ActionNode ("blast wave",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("frost nova") }),
-            /*C*/ NextAction::array({ new NextAction("flamestrike", 71.0f) }));
+        return std::make_shared<ActionNode> ("blast wave",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("frost nova") }),
+            /*C*/ NextAction::array({ std::make_shared<NextAction>("flamestrike", 71.0f) }));
     }
 };
 
 GenericMageStrategy::GenericMageStrategy(PlayerbotAI* ai) : RangedCombatStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericMageStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericMageStrategyActionNodeFactory>());
 }
 
-void GenericMageStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericMageStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     RangedCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "remove curse",
-        NextAction::array({ new NextAction("remove curse", 41.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("remove curse", 41.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "remove curse on party",
-        NextAction::array({ new NextAction("remove curse on party", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("remove curse on party", 40.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy too close for spell",
-        NextAction::array({ new NextAction("frost nova", 50.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("frost nova", 50.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "counterspell",
-        NextAction::array({ new NextAction("counterspell", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("counterspell", 40.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "counterspell on enemy healer",
-        NextAction::array({ new NextAction("counterspell on enemy healer", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("counterspell on enemy healer", 40.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "critical health",
-        NextAction::array({ new NextAction("ice block", 80.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("ice block", 80.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "polymorph",
-        NextAction::array({ new NextAction("polymorph", 30.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("polymorph", 30.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "spellsteal",
-        NextAction::array({ new NextAction("spellsteal", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("spellsteal", 40.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium threat",
-        NextAction::array({ new NextAction("invisibility", 60.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("invisibility", 60.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low mana",
-        NextAction::array({ new NextAction("evocation", ACTION_EMERGENCY + 5) })));
+        NextAction::array({ std::make_shared<NextAction>("evocation", ACTION_EMERGENCY + 5) })));
 }

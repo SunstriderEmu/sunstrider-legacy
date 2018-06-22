@@ -31,10 +31,10 @@ namespace ai
             }
 
         private:
-            static Strategy* nc(PlayerbotAI* ai) { return new GenericDruidNonCombatStrategy(ai); }
-            static Strategy* cat_aoe(PlayerbotAI* ai) { return new CatAoeDruidStrategy(ai); }
-            static Strategy* caster_aoe(PlayerbotAI* ai) { return new CasterDruidAoeStrategy(ai); }
-            static Strategy* caster_debuff(PlayerbotAI* ai) { return new CasterDruidDebuffStrategy(ai); }
+            static std::shared_ptr<Strategy> nc(PlayerbotAI* ai) { return std::make_shared<GenericDruidNonCombatStrategy>(ai); }
+            static std::shared_ptr<Strategy> cat_aoe(PlayerbotAI* ai) { return std::make_shared<CatAoeDruidStrategy>(ai); }
+            static std::shared_ptr<Strategy> caster_aoe(PlayerbotAI* ai) { return std::make_shared<CasterDruidAoeStrategy>(ai); }
+            static std::shared_ptr<Strategy> caster_debuff(PlayerbotAI* ai) { return std::make_shared<CasterDruidDebuffStrategy>(ai); }
         };
 
         class DruidStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -51,10 +51,10 @@ namespace ai
             }
 
         private:
-            static Strategy* bear(PlayerbotAI* ai) { return new BearTankDruidStrategy(ai); }
-            static Strategy* cat(PlayerbotAI* ai) { return new CatDpsDruidStrategy(ai); }
-            static Strategy* caster(PlayerbotAI* ai) { return new CasterDruidStrategy(ai); }
-            static Strategy* heal(PlayerbotAI* ai) { return new HealDruidStrategy(ai); }
+            static std::shared_ptr<Strategy> bear(PlayerbotAI* ai) { return std::make_shared<BearTankDruidStrategy>(ai); }
+            static std::shared_ptr<Strategy> cat(PlayerbotAI* ai) { return std::make_shared<CatDpsDruidStrategy>(ai); }
+            static std::shared_ptr<Strategy> caster(PlayerbotAI* ai) { return std::make_shared<CasterDruidStrategy>(ai); }
+            static std::shared_ptr<Strategy> heal(PlayerbotAI* ai) { return std::make_shared<HealDruidStrategy>(ai); }
         };
     };
 };
@@ -93,26 +93,26 @@ namespace ai
             }
 
         private:
-            static Trigger* eclipse_solar(PlayerbotAI* ai) { return new EclipseSolarTrigger(ai); }
-            static Trigger* eclipse_lunar(PlayerbotAI* ai) { return new EclipseLunarTrigger(ai); }
-            static Trigger* Thorns(PlayerbotAI* ai) { return new ThornsTrigger(ai); }
-            static Trigger* bash(PlayerbotAI* ai) { return new BashInterruptSpellTrigger(ai); }
-            static Trigger* faerie_fire_feral(PlayerbotAI* ai) { return new FaerieFireFeralTrigger(ai); }
-            static Trigger* insect_swarm(PlayerbotAI* ai) { return new InsectSwarmTrigger(ai); }
-            static Trigger* moonfire(PlayerbotAI* ai) { return new MoonfireTrigger(ai); }
-            static Trigger* faerie_fire(PlayerbotAI* ai) { return new FaerieFireTrigger(ai); }
-            static Trigger* natures_grasp(PlayerbotAI* ai) { return new NaturesGraspTrigger(ai); }
-            static Trigger* tigers_fury(PlayerbotAI* ai) { return new TigersFuryTrigger(ai); }
-            static Trigger* rake(PlayerbotAI* ai) { return new RakeTrigger(ai); }
-            static Trigger* mark_of_the_wild(PlayerbotAI* ai) { return new MarkOfTheWildTrigger(ai); }
-            static Trigger* mark_of_the_wild_on_party(PlayerbotAI* ai) { return new MarkOfTheWildOnPartyTrigger(ai); }
-            static Trigger* cure_poison(PlayerbotAI* ai) { return new CurePoisonTrigger(ai); }
-            static Trigger* party_member_cure_poison(PlayerbotAI* ai) { return new PartyMemberCurePoisonTrigger(ai); }
-            static Trigger* entangling_roots(PlayerbotAI* ai) { return new EntanglingRootsTrigger(ai); }
-            static Trigger* bear_form(PlayerbotAI* ai) { return new BearFormTrigger(ai); }
-            static Trigger* cat_form(PlayerbotAI* ai) { return new CatFormTrigger(ai); }
-            static Trigger* tree_form(PlayerbotAI* ai) { return new TreeFormTrigger(ai); }
-            static Trigger* bash_on_enemy_healer(PlayerbotAI* ai) { return new BashInterruptEnemyHealerSpellTrigger(ai); }
+            static std::shared_ptr<Trigger> eclipse_solar(PlayerbotAI* ai) { return std::make_shared<EclipseSolarTrigger>(ai); }
+            static std::shared_ptr<Trigger> eclipse_lunar(PlayerbotAI* ai) { return std::make_shared<EclipseLunarTrigger>(ai); }
+            static std::shared_ptr<Trigger> Thorns(PlayerbotAI* ai) { return std::make_shared<ThornsTrigger>(ai); }
+            static std::shared_ptr<Trigger> bash(PlayerbotAI* ai) { return std::make_shared<BashInterruptSpellTrigger>(ai); }
+            static std::shared_ptr<Trigger> faerie_fire_feral(PlayerbotAI* ai) { return std::make_shared<FaerieFireFeralTrigger>(ai); }
+            static std::shared_ptr<Trigger> insect_swarm(PlayerbotAI* ai) { return std::make_shared<InsectSwarmTrigger>(ai); }
+            static std::shared_ptr<Trigger> moonfire(PlayerbotAI* ai) { return std::make_shared<MoonfireTrigger>(ai); }
+            static std::shared_ptr<Trigger> faerie_fire(PlayerbotAI* ai) { return std::make_shared<FaerieFireTrigger>(ai); }
+            static std::shared_ptr<Trigger> natures_grasp(PlayerbotAI* ai) { return std::make_shared<NaturesGraspTrigger>(ai); }
+            static std::shared_ptr<Trigger> tigers_fury(PlayerbotAI* ai) { return std::make_shared<TigersFuryTrigger>(ai); }
+            static std::shared_ptr<Trigger> rake(PlayerbotAI* ai) { return std::make_shared<RakeTrigger>(ai); }
+            static std::shared_ptr<Trigger> mark_of_the_wild(PlayerbotAI* ai) { return std::make_shared<MarkOfTheWildTrigger>(ai); }
+            static std::shared_ptr<Trigger> mark_of_the_wild_on_party(PlayerbotAI* ai) { return std::make_shared<MarkOfTheWildOnPartyTrigger>(ai); }
+            static std::shared_ptr<Trigger> cure_poison(PlayerbotAI* ai) { return std::make_shared<CurePoisonTrigger>(ai); }
+            static std::shared_ptr<Trigger> party_member_cure_poison(PlayerbotAI* ai) { return std::make_shared<PartyMemberCurePoisonTrigger>(ai); }
+            static std::shared_ptr<Trigger> entangling_roots(PlayerbotAI* ai) { return std::make_shared<EntanglingRootsTrigger>(ai); }
+            static std::shared_ptr<Trigger> bear_form(PlayerbotAI* ai) { return std::make_shared<BearFormTrigger>(ai); }
+            static std::shared_ptr<Trigger> cat_form(PlayerbotAI* ai) { return std::make_shared<CatFormTrigger>(ai); }
+            static std::shared_ptr<Trigger> tree_form(PlayerbotAI* ai) { return std::make_shared<TreeFormTrigger>(ai); }
+            static std::shared_ptr<Trigger> bash_on_enemy_healer(PlayerbotAI* ai) { return std::make_shared<BashInterruptEnemyHealerSpellTrigger>(ai); }
         };
     };
 };
@@ -188,63 +188,63 @@ namespace ai
             }
 
         private:
-            static Action* tranquility(PlayerbotAI* ai) { return new CastTranquilityAction(ai); }
-            static Action* feral_charge_bear(PlayerbotAI* ai) { return new CastFeralChargeBearAction(ai); }
-            static Action* feral_charge_cat(PlayerbotAI* ai) { return new CastFeralChargeCatAction(ai); }
-            static Action* swipe_bear(PlayerbotAI* ai) { return new CastSwipeBearAction(ai); }
-            static Action* faerie_fire_feral(PlayerbotAI* ai) { return new CastFaerieFireFeralAction(ai); }
-            static Action* faerie_fire(PlayerbotAI* ai) { return new CastFaerieFireAction(ai); }
-            static Action* bear_form(PlayerbotAI* ai) { return new CastBearFormAction(ai); }
-            static Action* dire_bear_form(PlayerbotAI* ai) { return new CastDireBearFormAction(ai); }
-            static Action* cat_form(PlayerbotAI* ai) { return new CastCatFormAction(ai); }
-            static Action* tree_form(PlayerbotAI* ai) { return new CastTreeFormAction(ai); }
-            static Action* caster_form(PlayerbotAI* ai) { return new CastCasterFormAction(ai); }
-            static Action* mangle_bear(PlayerbotAI* ai) { return new CastMangleBearAction(ai); }
-            static Action* maul(PlayerbotAI* ai) { return new CastMaulAction(ai); }
-            static Action* bash(PlayerbotAI* ai) { return new CastBashAction(ai); }
-            static Action* swipe(PlayerbotAI* ai) { return new CastSwipeAction(ai); }
-            static Action* growl(PlayerbotAI* ai) { return new CastGrowlAction(ai); }
-            static Action* demoralizing_roar(PlayerbotAI* ai) { return new CastDemoralizingRoarAction(ai); }
-            static Action* moonkin_form(PlayerbotAI* ai) { return new CastMoonkinFormAction(ai); }
-            static Action* hibernate(PlayerbotAI* ai) { return new CastHibernateAction(ai); }
-            static Action* entangling_roots(PlayerbotAI* ai) { return new CastEntanglingRootsAction(ai); }
-            static Action* entangling_roots_on_cc(PlayerbotAI* ai) { return new CastEntanglingRootsCcAction(ai); }
-            static Action* wrath(PlayerbotAI* ai) { return new CastWrathAction(ai); }
-            static Action* starfall(PlayerbotAI* ai) { return new CastStarfallAction(ai); }
-            static Action* insect_swarm(PlayerbotAI* ai) { return new CastInsectSwarmAction(ai); }
-            static Action* moonfire(PlayerbotAI* ai) { return new CastMoonfireAction(ai); }
-            static Action* starfire(PlayerbotAI* ai) { return new CastStarfireAction(ai); }
-            static Action* natures_grasp(PlayerbotAI* ai) { return new CastNaturesGraspAction(ai); }
-            static Action* claw(PlayerbotAI* ai) { return new CastClawAction(ai); }
-            static Action* mangle_cat(PlayerbotAI* ai) { return new CastMangleCatAction(ai); }
-            static Action* swipe_cat(PlayerbotAI* ai) { return new CastSwipeCatAction(ai); }
-            static Action* rake(PlayerbotAI* ai) { return new CastRakeAction(ai); }
-            static Action* ferocious_bite(PlayerbotAI* ai) { return new CastFerociousBiteAction(ai); }
-            static Action* rip(PlayerbotAI* ai) { return new CastRipAction(ai); }
-            static Action* cower(PlayerbotAI* ai) { return new CastCowerAction(ai); }
-            static Action* survival_instincts(PlayerbotAI* ai) { return new CastSurvivalInstinctsAction(ai); }
-            static Action* thorns(PlayerbotAI* ai) { return new CastThornsAction(ai); }
-            static Action* cure_poison(PlayerbotAI* ai) { return new CastCurePoisonAction(ai); }
-            static Action* cure_poison_on_party(PlayerbotAI* ai) { return new CastCurePoisonOnPartyAction(ai); }
-            static Action* abolish_poison(PlayerbotAI* ai) { return new CastAbolishPoisonAction(ai); }
-            static Action* abolish_poison_on_party(PlayerbotAI* ai) { return new CastAbolishPoisonOnPartyAction(ai); }
-            static Action* berserk(PlayerbotAI* ai) { return new CastBerserkAction(ai); }
-            static Action* tigers_fury(PlayerbotAI* ai) { return new CastTigersFuryAction(ai); }
-            static Action* mark_of_the_wild(PlayerbotAI* ai) { return new CastMarkOfTheWildAction(ai); }
-            static Action* mark_of_the_wild_on_party(PlayerbotAI* ai) { return new CastMarkOfTheWildOnPartyAction(ai); }
-            static Action* regrowth(PlayerbotAI* ai) { return new CastRegrowthAction(ai); }
-            static Action* rejuvenation(PlayerbotAI* ai) { return new CastRejuvenationAction(ai); }
-            static Action* healing_touch(PlayerbotAI* ai) { return new CastHealingTouchAction(ai); }
-            static Action* regrowth_on_party(PlayerbotAI* ai) { return new CastRegrowthOnPartyAction(ai); }
-            static Action* rejuvenation_on_party(PlayerbotAI* ai) { return new CastRejuvenationOnPartyAction(ai); }
-            static Action* healing_touch_on_party(PlayerbotAI* ai) { return new CastHealingTouchOnPartyAction(ai); }
-            static Action* rebirth(PlayerbotAI* ai) { return new CastRebirthAction(ai); }
-            static Action* revive(PlayerbotAI* ai) { return new CastReviveAction(ai); }
-            static Action* barskin(PlayerbotAI* ai) { return new CastBarskinAction(ai); }
-            static Action* lacerate(PlayerbotAI* ai) { return new CastLacerateAction(ai); }
-            static Action* hurricane(PlayerbotAI* ai) { return new CastHurricaneAction(ai); }
-            static Action* innervate(PlayerbotAI* ai) { return new CastInnervateAction(ai); }
-            static Action* bash_on_enemy_healer(PlayerbotAI* ai) { return new CastBashOnEnemyHealerAction(ai); }
+            static std::shared_ptr<Action> tranquility(PlayerbotAI* ai) { return std::make_shared<CastTranquilityAction>(ai); }
+            static std::shared_ptr<Action> feral_charge_bear(PlayerbotAI* ai) { return std::make_shared<CastFeralChargeBearAction>(ai); }
+            static std::shared_ptr<Action> feral_charge_cat(PlayerbotAI* ai) { return std::make_shared<CastFeralChargeCatAction>(ai); }
+            static std::shared_ptr<Action> swipe_bear(PlayerbotAI* ai) { return std::make_shared<CastSwipeBearAction>(ai); }
+            static std::shared_ptr<Action> faerie_fire_feral(PlayerbotAI* ai) { return std::make_shared<CastFaerieFireFeralAction>(ai); }
+            static std::shared_ptr<Action> faerie_fire(PlayerbotAI* ai) { return std::make_shared<CastFaerieFireAction>(ai); }
+            static std::shared_ptr<Action> bear_form(PlayerbotAI* ai) { return std::make_shared<CastBearFormAction>(ai); }
+            static std::shared_ptr<Action> dire_bear_form(PlayerbotAI* ai) { return std::make_shared<CastDireBearFormAction>(ai); }
+            static std::shared_ptr<Action> cat_form(PlayerbotAI* ai) { return std::make_shared<CastCatFormAction>(ai); }
+            static std::shared_ptr<Action> tree_form(PlayerbotAI* ai) { return std::make_shared<CastTreeFormAction>(ai); }
+            static std::shared_ptr<Action> caster_form(PlayerbotAI* ai) { return std::make_shared<CastCasterFormAction>(ai); }
+            static std::shared_ptr<Action> mangle_bear(PlayerbotAI* ai) { return std::make_shared<CastMangleBearAction>(ai); }
+            static std::shared_ptr<Action> maul(PlayerbotAI* ai) { return std::make_shared<CastMaulAction>(ai); }
+            static std::shared_ptr<Action> bash(PlayerbotAI* ai) { return std::make_shared<CastBashAction>(ai); }
+            static std::shared_ptr<Action> swipe(PlayerbotAI* ai) { return std::make_shared<CastSwipeAction>(ai); }
+            static std::shared_ptr<Action> growl(PlayerbotAI* ai) { return std::make_shared<CastGrowlAction>(ai); }
+            static std::shared_ptr<Action> demoralizing_roar(PlayerbotAI* ai) { return std::make_shared<CastDemoralizingRoarAction>(ai); }
+            static std::shared_ptr<Action> moonkin_form(PlayerbotAI* ai) { return std::make_shared<CastMoonkinFormAction>(ai); }
+            static std::shared_ptr<Action> hibernate(PlayerbotAI* ai) { return std::make_shared<CastHibernateAction>(ai); }
+            static std::shared_ptr<Action> entangling_roots(PlayerbotAI* ai) { return std::make_shared<CastEntanglingRootsAction>(ai); }
+            static std::shared_ptr<Action> entangling_roots_on_cc(PlayerbotAI* ai) { return std::make_shared<CastEntanglingRootsCcAction>(ai); }
+            static std::shared_ptr<Action> wrath(PlayerbotAI* ai) { return std::make_shared<CastWrathAction>(ai); }
+            static std::shared_ptr<Action> starfall(PlayerbotAI* ai) { return std::make_shared<CastStarfallAction>(ai); }
+            static std::shared_ptr<Action> insect_swarm(PlayerbotAI* ai) { return std::make_shared<CastInsectSwarmAction>(ai); }
+            static std::shared_ptr<Action> moonfire(PlayerbotAI* ai) { return std::make_shared<CastMoonfireAction>(ai); }
+            static std::shared_ptr<Action> starfire(PlayerbotAI* ai) { return std::make_shared<CastStarfireAction>(ai); }
+            static std::shared_ptr<Action> natures_grasp(PlayerbotAI* ai) { return std::make_shared<CastNaturesGraspAction>(ai); }
+            static std::shared_ptr<Action> claw(PlayerbotAI* ai) { return std::make_shared<CastClawAction>(ai); }
+            static std::shared_ptr<Action> mangle_cat(PlayerbotAI* ai) { return std::make_shared<CastMangleCatAction>(ai); }
+            static std::shared_ptr<Action> swipe_cat(PlayerbotAI* ai) { return std::make_shared<CastSwipeCatAction>(ai); }
+            static std::shared_ptr<Action> rake(PlayerbotAI* ai) { return std::make_shared<CastRakeAction>(ai); }
+            static std::shared_ptr<Action> ferocious_bite(PlayerbotAI* ai) { return std::make_shared<CastFerociousBiteAction>(ai); }
+            static std::shared_ptr<Action> rip(PlayerbotAI* ai) { return std::make_shared<CastRipAction>(ai); }
+            static std::shared_ptr<Action> cower(PlayerbotAI* ai) { return std::make_shared<CastCowerAction>(ai); }
+            static std::shared_ptr<Action> survival_instincts(PlayerbotAI* ai) { return std::make_shared<CastSurvivalInstinctsAction>(ai); }
+            static std::shared_ptr<Action> thorns(PlayerbotAI* ai) { return std::make_shared<CastThornsAction>(ai); }
+            static std::shared_ptr<Action> cure_poison(PlayerbotAI* ai) { return std::make_shared<CastCurePoisonAction>(ai); }
+            static std::shared_ptr<Action> cure_poison_on_party(PlayerbotAI* ai) { return std::make_shared<CastCurePoisonOnPartyAction>(ai); }
+            static std::shared_ptr<Action> abolish_poison(PlayerbotAI* ai) { return std::make_shared<CastAbolishPoisonAction>(ai); }
+            static std::shared_ptr<Action> abolish_poison_on_party(PlayerbotAI* ai) { return std::make_shared<CastAbolishPoisonOnPartyAction>(ai); }
+            static std::shared_ptr<Action> berserk(PlayerbotAI* ai) { return std::make_shared<CastBerserkAction>(ai); }
+            static std::shared_ptr<Action> tigers_fury(PlayerbotAI* ai) { return std::make_shared<CastTigersFuryAction>(ai); }
+            static std::shared_ptr<Action> mark_of_the_wild(PlayerbotAI* ai) { return std::make_shared<CastMarkOfTheWildAction>(ai); }
+            static std::shared_ptr<Action> mark_of_the_wild_on_party(PlayerbotAI* ai) { return std::make_shared<CastMarkOfTheWildOnPartyAction>(ai); }
+            static std::shared_ptr<Action> regrowth(PlayerbotAI* ai) { return std::make_shared<CastRegrowthAction>(ai); }
+            static std::shared_ptr<Action> rejuvenation(PlayerbotAI* ai) { return std::make_shared<CastRejuvenationAction>(ai); }
+            static std::shared_ptr<Action> healing_touch(PlayerbotAI* ai) { return std::make_shared<CastHealingTouchAction>(ai); }
+            static std::shared_ptr<Action> regrowth_on_party(PlayerbotAI* ai) { return std::make_shared<CastRegrowthOnPartyAction>(ai); }
+            static std::shared_ptr<Action> rejuvenation_on_party(PlayerbotAI* ai) { return std::make_shared<CastRejuvenationOnPartyAction>(ai); }
+            static std::shared_ptr<Action> healing_touch_on_party(PlayerbotAI* ai) { return std::make_shared<CastHealingTouchOnPartyAction>(ai); }
+            static std::shared_ptr<Action> rebirth(PlayerbotAI* ai) { return std::make_shared<CastRebirthAction>(ai); }
+            static std::shared_ptr<Action> revive(PlayerbotAI* ai) { return std::make_shared<CastReviveAction>(ai); }
+            static std::shared_ptr<Action> barskin(PlayerbotAI* ai) { return std::make_shared<CastBarskinAction>(ai); }
+            static std::shared_ptr<Action> lacerate(PlayerbotAI* ai) { return std::make_shared<CastLacerateAction>(ai); }
+            static std::shared_ptr<Action> hurricane(PlayerbotAI* ai) { return std::make_shared<CastHurricaneAction>(ai); }
+            static std::shared_ptr<Action> innervate(PlayerbotAI* ai) { return std::make_shared<CastInnervateAction>(ai); }
+            static std::shared_ptr<Action> bash_on_enemy_healer(PlayerbotAI* ai) { return std::make_shared<CastBashOnEnemyHealerAction>(ai); }
         };
     };
 };

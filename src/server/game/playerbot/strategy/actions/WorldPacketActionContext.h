@@ -68,40 +68,40 @@ namespace ai
         }
 
     private:
-        static Action* guild_accept(PlayerbotAI* ai) { return new GuildAcceptAction(ai); }
-        static Action* security_check(PlayerbotAI* ai) { return new SecurityCheckAction(ai); }
-        static Action* lfg_teleport(PlayerbotAI* ai) { return new LfgTeleportAction(ai); }
-        static Action* lfg_leave(PlayerbotAI* ai) { return new LfgLeaveAction(ai); }
-        static Action* lfg_accept(PlayerbotAI* ai) { return new LfgAcceptAction(ai); }
-        static Action* lfg_role_check(PlayerbotAI* ai) { return new LfgRoleCheckAction(ai); }
-        static Action* lfg_join(PlayerbotAI* ai) { return new LfgJoinAction(ai); }
-        static Action* uninvite(PlayerbotAI* ai) { return new UninviteAction(ai); }
-        static Action* ready_check_finished(PlayerbotAI* ai) { return new FinishReadyCheckAction(ai); }
-        static Action* ready_check(PlayerbotAI* ai) { return new ReadyCheckAction(ai); }
-        static Action* accept_duel(PlayerbotAI* ai) { return new AcceptDuelAction(ai); }
-        static Action* tell_cast_failed(PlayerbotAI* ai) { return new TellCastFailedAction(ai); }
-        static Action* party_command(PlayerbotAI* ai) { return new PartyCommandAction(ai); }
-        static Action* quest_objective_completed(PlayerbotAI* ai) { return new QuestObjectiveCompletedAction(ai); }
-        static Action* store_loot(PlayerbotAI* ai) { return new StoreLootAction(ai); }
-        static Action* tell_out_of_react_range(PlayerbotAI* ai) { return new OutOfReactRangeAction(ai); }
-        static Action* accept_trade(PlayerbotAI* ai) { return new TradeStatusAction(ai); }
-        static Action* remember_taxi(PlayerbotAI* ai) { return new RememberTaxiAction(ai); }
-        static Action* check_mount_state(PlayerbotAI* ai) { return new CheckMountStateAction(ai); }
-        static Action* area_trigger(PlayerbotAI* ai) { return new AreaTriggerAction(ai); }
-        static Action* reach_area_trigger(PlayerbotAI* ai) { return new ReachAreaTriggerAction(ai); }
-        static Action* use_meeting_stone(PlayerbotAI* ai) { return new UseMeetingStoneAction(ai); }
-        static Action* accept_resurrect(PlayerbotAI* ai) { return new AcceptResurrectAction(ai); }
-        static Action* revive_from_corpse(PlayerbotAI* ai) { return new ReviveFromCorpseAction(ai); }
-        static Action* accept_invitation(PlayerbotAI* ai) { return new AcceptInvitationAction(ai); }
-        static Action* pass_leadership_to_master(PlayerbotAI* ai) { return new PassLeadershipToMasterAction(ai); }
-        static Action* tell_not_enough_money(PlayerbotAI* ai) { return new TellMasterAction(ai, "Not enough money"); }
-        static Action* tell_not_enough_reputation(PlayerbotAI* ai) { return new TellMasterAction(ai, "Not enough reputation"); }
-        static Action* tell_cannot_equip(PlayerbotAI* ai) { return new InventoryChangeFailureAction(ai); }
-        static Action* turn_in_quest(PlayerbotAI* ai) { return new TalkToQuestGiverAction(ai); }
-        static Action* accept_quest(PlayerbotAI* ai) { return new AcceptQuestAction(ai); }
-        static Action* accept_all_quests(PlayerbotAI* ai) { return new AcceptAllQuestsAction(ai); }
-        static Action* accept_quest_share(PlayerbotAI* ai) { return new AcceptQuestShareAction(ai); }
-        static Action* loot_roll(PlayerbotAI* ai) { return (QueryItemUsageAction*)new LootRollAction(ai); }
+        static std::shared_ptr<Action> guild_accept(PlayerbotAI* ai) { return std::make_shared<GuildAcceptAction>(ai); }
+        static std::shared_ptr<Action> security_check(PlayerbotAI* ai) { return std::make_shared<SecurityCheckAction>(ai); }
+        static std::shared_ptr<Action> lfg_teleport(PlayerbotAI* ai) { return std::make_shared<LfgTeleportAction>(ai); }
+        static std::shared_ptr<Action> lfg_leave(PlayerbotAI* ai) { return std::make_shared<LfgLeaveAction>(ai); }
+        static std::shared_ptr<Action> lfg_accept(PlayerbotAI* ai) { return std::make_shared<LfgAcceptAction>(ai); }
+        static std::shared_ptr<Action> lfg_role_check(PlayerbotAI* ai) { return std::make_shared<LfgRoleCheckAction>(ai); }
+        static std::shared_ptr<Action> lfg_join(PlayerbotAI* ai) { return std::make_shared<LfgJoinAction>(ai); }
+        static std::shared_ptr<Action> uninvite(PlayerbotAI* ai) { return std::make_shared<UninviteAction>(ai); }
+        static std::shared_ptr<Action> ready_check_finished(PlayerbotAI* ai) { return std::make_shared<FinishReadyCheckAction>(ai); }
+        static std::shared_ptr<Action> ready_check(PlayerbotAI* ai) { return std::make_shared<ReadyCheckAction>(ai); }
+        static std::shared_ptr<Action> accept_duel(PlayerbotAI* ai) { return std::make_shared<AcceptDuelAction>(ai); }
+        static std::shared_ptr<Action> tell_cast_failed(PlayerbotAI* ai) { return std::make_shared<TellCastFailedAction>(ai); }
+        static std::shared_ptr<Action> party_command(PlayerbotAI* ai) { return std::make_shared<PartyCommandAction>(ai); }
+        static std::shared_ptr<Action> quest_objective_completed(PlayerbotAI* ai) { return std::make_shared<QuestObjectiveCompletedAction>(ai); }
+        static std::shared_ptr<Action> store_loot(PlayerbotAI* ai) { return std::make_shared<StoreLootAction>(ai); }
+        static std::shared_ptr<Action> tell_out_of_react_range(PlayerbotAI* ai) { return std::make_shared<OutOfReactRangeAction>(ai); }
+        static std::shared_ptr<Action> accept_trade(PlayerbotAI* ai) { return std::make_shared<TradeStatusAction>(ai); }
+        static std::shared_ptr<Action> remember_taxi(PlayerbotAI* ai) { return std::make_shared<RememberTaxiAction>(ai); }
+        static std::shared_ptr<Action> check_mount_state(PlayerbotAI* ai) { return std::make_shared<CheckMountStateAction>(ai); }
+        static std::shared_ptr<Action> area_trigger(PlayerbotAI* ai) { return std::make_shared<AreaTriggerAction>(ai); }
+        static std::shared_ptr<Action> reach_area_trigger(PlayerbotAI* ai) { return std::make_shared<ReachAreaTriggerAction>(ai); }
+        static std::shared_ptr<Action> use_meeting_stone(PlayerbotAI* ai) { return std::make_shared<UseMeetingStoneAction>(ai); }
+        static std::shared_ptr<Action> accept_resurrect(PlayerbotAI* ai) { return std::make_shared<AcceptResurrectAction>(ai); }
+        static std::shared_ptr<Action> revive_from_corpse(PlayerbotAI* ai) { return std::make_shared<ReviveFromCorpseAction>(ai); }
+        static std::shared_ptr<Action> accept_invitation(PlayerbotAI* ai) { return std::make_shared<AcceptInvitationAction>(ai); }
+        static std::shared_ptr<Action> pass_leadership_to_master(PlayerbotAI* ai) { return std::make_shared<PassLeadershipToMasterAction>(ai); }
+        static std::shared_ptr<Action> tell_not_enough_money(PlayerbotAI* ai) { return std::make_shared<TellMasterAction>(ai, "Not enough money"); }
+        static std::shared_ptr<Action> tell_not_enough_reputation(PlayerbotAI* ai) { return std::make_shared<TellMasterAction>(ai, "Not enough reputation"); }
+        static std::shared_ptr<Action> tell_cannot_equip(PlayerbotAI* ai) { return std::make_shared<InventoryChangeFailureAction>(ai); }
+        static std::shared_ptr<Action> turn_in_quest(PlayerbotAI* ai) { return std::make_shared<TalkToQuestGiverAction>(ai); }
+        static std::shared_ptr<Action> accept_quest(PlayerbotAI* ai) { return std::make_shared<AcceptQuestAction>(ai); }
+        static std::shared_ptr<Action> accept_all_quests(PlayerbotAI* ai) { return std::make_shared<AcceptAllQuestsAction>(ai); }
+        static std::shared_ptr<Action> accept_quest_share(PlayerbotAI* ai) { return std::make_shared<AcceptQuestShareAction>(ai); }
+        static std::shared_ptr<Action> loot_roll(PlayerbotAI* ai) { return std::static_pointer_cast<QueryItemUsageAction>(std::make_shared<LootRollAction>(ai)); }
     };
 
 

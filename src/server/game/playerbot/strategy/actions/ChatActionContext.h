@@ -118,66 +118,66 @@ namespace ai
         }
 
     private:
-        static Action* formation(PlayerbotAI* ai) { return new SetFormationAction(ai); }
-        static Action* tell_attackers(PlayerbotAI* ai) { return new TellAttackersAction(ai); }
-        static Action* max_dps_chat_shortcut(PlayerbotAI* ai) { return new MaxDpsChatShortcutAction(ai); }
-        static Action* save_mana(PlayerbotAI* ai) { return new SaveManaAction(ai); }
-        static Action* who(PlayerbotAI* ai) { return new WhoAction(ai); }
-        static Action* summon(PlayerbotAI* ai) { return new SummonAction(ai); }
-        static Action* tell_target(PlayerbotAI* ai) { return new TellTargetAction(ai); }
-        static Action* position(PlayerbotAI* ai) { return new PositionAction(ai); }
-        static Action* spirit_healer(PlayerbotAI* ai) { return new SpiritHealerAction(ai); }
-        static Action* rti(PlayerbotAI* ai) { return new RtiAction(ai); }
-        static Action* invite(PlayerbotAI* ai) { return new InviteToGroupAction(ai); }
-        static Action* spell(PlayerbotAI* ai) { return new TellSpellAction(ai); }
-        static Action* cast_custom_spell(PlayerbotAI* ai) { return new CastCustomSpellAction(ai); }
-        static Action* tank_attack_chat_shortcut(PlayerbotAI* ai) { return new TankAttackChatShortcutAction(ai); }
-        static Action* grind_chat_shortcut(PlayerbotAI* ai) { return new GrindChatShortcutAction(ai); }
-        static Action* flee_chat_shortcut(PlayerbotAI* ai) { return new FleeChatShortcutAction(ai); }
-        static Action* runaway_chat_shortcut(PlayerbotAI* ai) { return new GoawayChatShortcutAction(ai); }
-        static Action* stay_chat_shortcut(PlayerbotAI* ai) { return new StayChatShortcutAction(ai); }
-        static Action* follow_chat_shortcut(PlayerbotAI* ai) { return new FollowChatShortcutAction(ai); }
-        static Action* gb(PlayerbotAI* ai) { return new GuildBankAction(ai); }
-        static Action* bank(PlayerbotAI* ai) { return new BankAction(ai); }
-        static Action* help(PlayerbotAI* ai) { return new HelpAction(ai); }
-        static Action* buff(PlayerbotAI* ai) { return new BuffAction(ai); }
-        static Action* destroy(PlayerbotAI* ai) { return new DestroyItemAction(ai); }
-        static Action* home(PlayerbotAI* ai) { return new SetHomeAction(ai); }
-        static Action* chat(PlayerbotAI* ai) { return new ChangeChatAction(ai); }
-        static Action* attack_my_target(PlayerbotAI* ai) { return new AttackMyTargetAction(ai); }
-        static Action* trainer(PlayerbotAI* ai) { return new TrainerAction(ai); }
-        static Action* co(PlayerbotAI* ai) { return new ChangeCombatStrategyAction(ai); }
-        static Action* nc(PlayerbotAI* ai) { return new ChangeNonCombatStrategyAction(ai); }
-        static Action* dead(PlayerbotAI* ai) { return new ChangeDeadStrategyAction(ai); }
-        static Action* spells(PlayerbotAI* ai) { return new ListSpellsAction(ai); }
-        static Action* talents(PlayerbotAI* ai) { return new ChangeTalentsAction(ai); }
+        static std::shared_ptr<Action> formation(PlayerbotAI* ai) { return std::make_shared<SetFormationAction>(ai); }
+        static std::shared_ptr<Action> tell_attackers(PlayerbotAI* ai) { return std::make_shared<TellAttackersAction>(ai); }
+        static std::shared_ptr<Action> max_dps_chat_shortcut(PlayerbotAI* ai) { return std::make_shared<MaxDpsChatShortcutAction>(ai); }
+        static std::shared_ptr<Action> save_mana(PlayerbotAI* ai) { return std::make_shared<SaveManaAction>(ai); }
+        static std::shared_ptr<Action> who(PlayerbotAI* ai) { return std::make_shared<WhoAction>(ai); }
+        static std::shared_ptr<Action> summon(PlayerbotAI* ai) { return std::make_shared<SummonAction>(ai); }
+        static std::shared_ptr<Action> tell_target(PlayerbotAI* ai) { return std::make_shared<TellTargetAction>(ai); }
+        static std::shared_ptr<Action> position(PlayerbotAI* ai) { return std::make_shared<PositionAction>(ai); }
+        static std::shared_ptr<Action> spirit_healer(PlayerbotAI* ai) { return std::make_shared<SpiritHealerAction>(ai); }
+        static std::shared_ptr<Action> rti(PlayerbotAI* ai) { return std::make_shared<RtiAction>(ai); }
+        static std::shared_ptr<Action> invite(PlayerbotAI* ai) { return std::make_shared<InviteToGroupAction>(ai); }
+        static std::shared_ptr<Action> spell(PlayerbotAI* ai) { return std::make_shared<TellSpellAction>(ai); }
+        static std::shared_ptr<Action> cast_custom_spell(PlayerbotAI* ai) { return std::make_shared<CastCustomSpellAction>(ai); }
+        static std::shared_ptr<Action> tank_attack_chat_shortcut(PlayerbotAI* ai) { return std::make_shared<TankAttackChatShortcutAction>(ai); }
+        static std::shared_ptr<Action> grind_chat_shortcut(PlayerbotAI* ai) { return std::make_shared<GrindChatShortcutAction>(ai); }
+        static std::shared_ptr<Action> flee_chat_shortcut(PlayerbotAI* ai) { return std::make_shared<FleeChatShortcutAction>(ai); }
+        static std::shared_ptr<Action> runaway_chat_shortcut(PlayerbotAI* ai) { return std::make_shared<GoawayChatShortcutAction>(ai); }
+        static std::shared_ptr<Action> stay_chat_shortcut(PlayerbotAI* ai) { return std::make_shared<StayChatShortcutAction>(ai); }
+        static std::shared_ptr<Action> follow_chat_shortcut(PlayerbotAI* ai) { return std::make_shared<FollowChatShortcutAction>(ai); }
+        static std::shared_ptr<Action> gb(PlayerbotAI* ai) { return std::make_shared<GuildBankAction>(ai); }
+        static std::shared_ptr<Action> bank(PlayerbotAI* ai) { return std::make_shared<BankAction>(ai); }
+        static std::shared_ptr<Action> help(PlayerbotAI* ai) { return std::make_shared<HelpAction>(ai); }
+        static std::shared_ptr<Action> buff(PlayerbotAI* ai) { return std::make_shared<BuffAction>(ai); }
+        static std::shared_ptr<Action> destroy(PlayerbotAI* ai) { return std::make_shared<DestroyItemAction>(ai); }
+        static std::shared_ptr<Action> home(PlayerbotAI* ai) { return std::make_shared<SetHomeAction>(ai); }
+        static std::shared_ptr<Action> chat(PlayerbotAI* ai) { return std::make_shared<ChangeChatAction>(ai); }
+        static std::shared_ptr<Action> attack_my_target(PlayerbotAI* ai) { return std::make_shared<AttackMyTargetAction>(ai); }
+        static std::shared_ptr<Action> trainer(PlayerbotAI* ai) { return std::make_shared<TrainerAction>(ai); }
+        static std::shared_ptr<Action> co(PlayerbotAI* ai) { return std::make_shared<ChangeCombatStrategyAction>(ai); }
+        static std::shared_ptr<Action> nc(PlayerbotAI* ai) { return std::make_shared<ChangeNonCombatStrategyAction>(ai); }
+        static std::shared_ptr<Action> dead(PlayerbotAI* ai) { return std::make_shared<ChangeDeadStrategyAction>(ai); }
+        static std::shared_ptr<Action> spells(PlayerbotAI* ai) { return std::make_shared<ListSpellsAction>(ai); }
+        static std::shared_ptr<Action> talents(PlayerbotAI* ai) { return std::make_shared<ChangeTalentsAction>(ai); }
 
-        static Action* equip(PlayerbotAI* ai) { return new EquipAction(ai); }
-        static Action* unequip(PlayerbotAI* ai) { return new UnequipAction(ai); }
-        static Action* sell(PlayerbotAI* ai) { return new SellAction(ai); }
-        static Action* buy(PlayerbotAI* ai) { return new BuyAction(ai); }
-        static Action* reward(PlayerbotAI* ai) { return new RewardAction(ai); }
-        static Action* trade(PlayerbotAI* ai) { return new TradeAction(ai); }
+        static std::shared_ptr<Action> equip(PlayerbotAI* ai) { return std::make_shared<EquipAction>(ai); }
+        static std::shared_ptr<Action> unequip(PlayerbotAI* ai) { return std::make_shared<UnequipAction>(ai); }
+        static std::shared_ptr<Action> sell(PlayerbotAI* ai) { return std::make_shared<SellAction>(ai); }
+        static std::shared_ptr<Action> buy(PlayerbotAI* ai) { return std::make_shared<BuyAction>(ai); }
+        static std::shared_ptr<Action> reward(PlayerbotAI* ai) { return std::make_shared<RewardAction>(ai); }
+        static std::shared_ptr<Action> trade(PlayerbotAI* ai) { return std::make_shared<TradeAction>(ai); }
 
-        static Action* item_count(PlayerbotAI* ai) { return new TellItemCountAction(ai); }
-        static Action* use(PlayerbotAI* ai) { return new UseItemAction(ai); }
-        static Action* repair(PlayerbotAI* ai) { return new RepairAllAction(ai); }
-        static Action* taxi(PlayerbotAI* ai) { return new TaxiAction(ai); }
-        static Action* teleport(PlayerbotAI* ai) { return new TeleportAction(ai); }
-        static Action* release(PlayerbotAI* ai) { return new ReleaseSpiritAction(ai); }
-        static Action* query_item_usage(PlayerbotAI* ai) { return new QueryItemUsageAction(ai); }
-        static Action* query_quest(PlayerbotAI* ai) { return new QueryQuestAction(ai); }
-        static Action* drop(PlayerbotAI* ai) { return new DropQuestAction(ai); }
-        static Action* stats(PlayerbotAI* ai) { return new StatsAction(ai); }
-        static Action* quests(PlayerbotAI* ai) { return new ListQuestsAction(ai); }
-        static Action* leave(PlayerbotAI* ai) { return new LeaveGroupAction(ai); }
-        static Action* reputation(PlayerbotAI* ai) { return new TellReputationAction(ai); }
-        static Action* log(PlayerbotAI* ai) { return new LogLevelAction(ai); }
-        static Action* los(PlayerbotAI* ai) { return new TellLosAction(ai); }
-        static Action* ll(PlayerbotAI* ai) { return new LootStrategyAction(ai); }
-        static Action* add_all_loot(PlayerbotAI* ai) { return new AddAllLootAction(ai); }
-        static Action* reset_ai(PlayerbotAI* ai) { return new ResetAiAction(ai); }
-        static Action* gossip_hello(PlayerbotAI* ai) { return new GossipHelloAction(ai); }
+        static std::shared_ptr<Action> item_count(PlayerbotAI* ai) { return std::make_shared<TellItemCountAction>(ai); }
+        static std::shared_ptr<Action> use(PlayerbotAI* ai) { return std::make_shared<UseItemAction>(ai); }
+        static std::shared_ptr<Action> repair(PlayerbotAI* ai) { return std::make_shared<RepairAllAction>(ai); }
+        static std::shared_ptr<Action> taxi(PlayerbotAI* ai) { return std::make_shared<TaxiAction>(ai); }
+        static std::shared_ptr<Action> teleport(PlayerbotAI* ai) { return std::make_shared<TeleportAction>(ai); }
+        static std::shared_ptr<Action> release(PlayerbotAI* ai) { return std::make_shared<ReleaseSpiritAction>(ai); }
+        static std::shared_ptr<Action> query_item_usage(PlayerbotAI* ai) { return std::make_shared<QueryItemUsageAction>(ai); }
+        static std::shared_ptr<Action> query_quest(PlayerbotAI* ai) { return std::make_shared<QueryQuestAction>(ai); }
+        static std::shared_ptr<Action> drop(PlayerbotAI* ai) { return std::make_shared<DropQuestAction>(ai); }
+        static std::shared_ptr<Action> stats(PlayerbotAI* ai) { return std::make_shared<StatsAction>(ai); }
+        static std::shared_ptr<Action> quests(PlayerbotAI* ai) { return std::make_shared<ListQuestsAction>(ai); }
+        static std::shared_ptr<Action> leave(PlayerbotAI* ai) { return std::make_shared<LeaveGroupAction>(ai); }
+        static std::shared_ptr<Action> reputation(PlayerbotAI* ai) { return std::make_shared<TellReputationAction>(ai); }
+        static std::shared_ptr<Action> log(PlayerbotAI* ai) { return std::make_shared<LogLevelAction>(ai); }
+        static std::shared_ptr<Action> los(PlayerbotAI* ai) { return std::make_shared<TellLosAction>(ai); }
+        static std::shared_ptr<Action> ll(PlayerbotAI* ai) { return std::make_shared<LootStrategyAction>(ai); }
+        static std::shared_ptr<Action> add_all_loot(PlayerbotAI* ai) { return std::make_shared<AddAllLootAction>(ai); }
+        static std::shared_ptr<Action> reset_ai(PlayerbotAI* ai) { return std::make_shared<ResetAiAction>(ai); }
+        static std::shared_ptr<Action> gossip_hello(PlayerbotAI* ai) { return std::make_shared<GossipHelloAction>(ai); }
     };
 
 

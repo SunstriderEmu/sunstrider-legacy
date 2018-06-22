@@ -23,103 +23,103 @@ namespace ai
             creators["circle of healing"] = &circle_of_healing;
         }
     private:
-        static ActionNode* holy_nova(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> holy_nova(PlayerbotAI* ai)
         {
-            return new ActionNode ("holy nova",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ {},
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("holy nova",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
         }
-        static ActionNode* power_word_shield(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> power_word_shield(PlayerbotAI* ai)
         {
-            return new ActionNode ("power word: shield",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("renew", 50.0f) }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("power word: shield",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("renew", 50.0f) }),
+                /*C*/ ActionList());
         }
-        static ActionNode* power_word_shield_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> power_word_shield_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("power word: shield on party",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("renew on party", 50.0f) }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("power word: shield on party",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("renew on party", 50.0f) }),
+                /*C*/ ActionList());
         }
-        static ActionNode* renew(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> renew(PlayerbotAI* ai)
         {
-            return new ActionNode ("renew",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ {},
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("renew",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
         }
-        static ActionNode* renew_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> renew_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("renew on party",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ {},
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("renew on party",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
         }
-        static ActionNode* greater_heal(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> greater_heal(PlayerbotAI* ai)
         {
-            return new ActionNode ("greater heal",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NextAction::array({ new NextAction("heal") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("greater heal",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("heal") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* greater_heal_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> greater_heal_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("greater heal on party",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("heal on party") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("greater heal on party",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("heal on party") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* heal(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> heal(PlayerbotAI* ai)
         {
-            return new ActionNode ("heal",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NextAction::array({ new NextAction("lesser heal") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("heal",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("lesser heal") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* heal_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> heal_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("heal on party",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NextAction::array({ new NextAction("lesser heal on party") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("heal on party",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("lesser heal on party") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* lesser_heal(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> lesser_heal(PlayerbotAI* ai)
         {
-            return new ActionNode ("lesser heal",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ {},
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("lesser heal",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
         }
-        static ActionNode* lesser_heal_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> lesser_heal_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("lesser heal on party",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ {},
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("lesser heal on party",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
         }
-        static ActionNode* flash_heal(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> flash_heal(PlayerbotAI* ai)
         {
-            return new ActionNode ("flash heal",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ {},
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("flash heal",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
         }
-        static ActionNode* flash_heal_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> flash_heal_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("flash heal on party",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ {},
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("flash heal on party",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
         }
-        static ActionNode* circle_of_healing(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> circle_of_healing(PlayerbotAI* ai)
         {
-            return new ActionNode ("circle of healing",
-                /*P*/ NextAction::array({ new NextAction("remove shadowform") }),
-                /*A*/ NextAction::array({ new NextAction("flash heal on party") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("circle of healing",
+                /*P*/ NextAction::array({ std::make_shared<NextAction>("remove shadowform") }),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("flash heal on party") }),
+                /*C*/ ActionList());
         }
     };
 

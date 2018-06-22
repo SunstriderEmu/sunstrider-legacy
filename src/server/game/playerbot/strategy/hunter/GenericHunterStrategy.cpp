@@ -16,51 +16,51 @@ public:
         creators["feign death"] = &feign_death;
     }
 private:
-    static ActionNode* rapid_fire(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> rapid_fire(PlayerbotAI* ai)
     {
-        return new ActionNode ("rapid fire",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("readiness") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("rapid fire",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("readiness") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* aspect_of_the_pack(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> aspect_of_the_pack(PlayerbotAI* ai)
     {
-        return new ActionNode ("aspect of the pack",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("aspect of the cheetah") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("aspect of the pack",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("aspect of the cheetah") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* feign_death(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> feign_death(PlayerbotAI* ai)
     {
-        return new ActionNode ("feign death",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("flee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("feign death",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("flee") }),
+            /*C*/ ActionList());
     }
 };
 
 GenericHunterStrategy::GenericHunterStrategy(PlayerbotAI* ai) : RangedCombatStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericHunterStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericHunterStrategyActionNodeFactory>());
 }
 
-void GenericHunterStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericHunterStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     RangedCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy too close for spell",
-        NextAction::array({ new NextAction("wing clip", 50.0f), new NextAction("flee",49.0f), new NextAction("concussive shot", 48.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("wing clip", 50.0f), std::make_shared<NextAction>("flee",49.0f), std::make_shared<NextAction>("concussive shot", 48.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium threat",
-        NextAction::array({ new NextAction("feign death", 52.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("feign death", 52.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "hunters pet low health",
-        NextAction::array({ new NextAction("mend pet", 60.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("mend pet", 60.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "rapid fire",
-        NextAction::array({ new NextAction("rapid fire", 55.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("rapid fire", 55.0f) })));
 }

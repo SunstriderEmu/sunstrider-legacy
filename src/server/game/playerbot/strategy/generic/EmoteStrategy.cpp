@@ -5,13 +5,13 @@
 using namespace ai;
 
 
-void EmoteStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void EmoteStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "random",
-        NextAction::array({ new NextAction("emote", 1.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("emote", 1.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "seldom",
-        NextAction::array({ new NextAction("suggest what to do", 1.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("suggest what to do", 1.0f) })));
 }

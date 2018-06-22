@@ -63,27 +63,27 @@ namespace ai
         }
 
     private:
-        static Strategy* tell_target(PlayerbotAI* ai) { return new TellTargetStrategy(ai); }
-        static Strategy* threat(PlayerbotAI* ai) { return new ThreatStrategy(ai); }
-        static Strategy* cast_time(PlayerbotAI* ai) { return new CastTimeStrategy(ai); }
-        static Strategy* potions(PlayerbotAI* ai) { return new UsePotionsStrategy(ai); }
-        static Strategy* kite(PlayerbotAI* ai) { return new KiteStrategy(ai); }
-        static Strategy* duel(PlayerbotAI* ai) { return new DuelStrategy(ai); }
-        static Strategy* flee(PlayerbotAI* ai) { return new FleeStrategy(ai); }
-        static Strategy* dead(PlayerbotAI* ai) { return new DeadStrategy(ai); }
-        static Strategy* racials(PlayerbotAI* ai) { return new RacialsStrategy(ai); }
-        static Strategy* loot(PlayerbotAI* ai) { return new LootNonCombatStrategy(ai); }
-        static Strategy* gather(PlayerbotAI* ai) { return new GatherStrategy(ai); }
-        static Strategy* emote(PlayerbotAI* ai) { return new EmoteStrategy(ai); }
-        static Strategy* passive(PlayerbotAI* ai) { return new PassiveStrategy(ai); }
-        static Strategy* conserve_mana(PlayerbotAI* ai) { return new ConserveManaStrategy(ai); }
-        static Strategy* food(PlayerbotAI* ai) { return new UseFoodStrategy(ai); }
-        static Strategy* chat(PlayerbotAI* ai) { return new ChatCommandHandlerStrategy(ai); }
-        static Strategy* world_packet(PlayerbotAI* ai) { return new WorldPacketHandlerStrategy(ai); }
-        static Strategy* ready_check(PlayerbotAI* ai) { return new ReadyCheckStrategy(ai); }
-        static Strategy* pvp(PlayerbotAI* ai) { return new AttackEnemyPlayersStrategy(ai); }
-        static Strategy* move_random(PlayerbotAI* ai) { return new MoveRandomStrategy(ai); }
-        static Strategy* lfg(PlayerbotAI* ai) { return new LfgStrategy(ai); }
+        static std::shared_ptr<Strategy> tell_target(PlayerbotAI* ai) { return std::make_shared<TellTargetStrategy>(ai); }
+        static std::shared_ptr<Strategy> threat(PlayerbotAI* ai) { return std::make_shared<ThreatStrategy>(ai); }
+        static std::shared_ptr<Strategy> cast_time(PlayerbotAI* ai) { return std::make_shared<CastTimeStrategy>(ai); }
+        static std::shared_ptr<Strategy> potions(PlayerbotAI* ai) { return std::make_shared<UsePotionsStrategy>(ai); }
+        static std::shared_ptr<Strategy> kite(PlayerbotAI* ai) { return std::make_shared<KiteStrategy>(ai); }
+        static std::shared_ptr<Strategy> duel(PlayerbotAI* ai) { return std::make_shared<DuelStrategy>(ai); }
+        static std::shared_ptr<Strategy> flee(PlayerbotAI* ai) { return std::make_shared<FleeStrategy>(ai); }
+        static std::shared_ptr<Strategy> dead(PlayerbotAI* ai) { return std::make_shared<DeadStrategy>(ai); }
+        static std::shared_ptr<Strategy> racials(PlayerbotAI* ai) { return std::make_shared<RacialsStrategy>(ai); }
+        static std::shared_ptr<Strategy> loot(PlayerbotAI* ai) { return std::make_shared<LootNonCombatStrategy>(ai); }
+        static std::shared_ptr<Strategy> gather(PlayerbotAI* ai) { return std::make_shared<GatherStrategy>(ai); }
+        static std::shared_ptr<Strategy> emote(PlayerbotAI* ai) { return std::make_shared<EmoteStrategy>(ai); }
+        static std::shared_ptr<Strategy> passive(PlayerbotAI* ai) { return std::make_shared<PassiveStrategy>(ai); }
+        static std::shared_ptr<Strategy> conserve_mana(PlayerbotAI* ai) { return std::make_shared<ConserveManaStrategy>(ai); }
+        static std::shared_ptr<Strategy> food(PlayerbotAI* ai) { return std::make_shared<UseFoodStrategy>(ai); }
+        static std::shared_ptr<Strategy> chat(PlayerbotAI* ai) { return std::make_shared<ChatCommandHandlerStrategy>(ai); }
+        static std::shared_ptr<Strategy> world_packet(PlayerbotAI* ai) { return std::make_shared<WorldPacketHandlerStrategy>(ai); }
+        static std::shared_ptr<Strategy> ready_check(PlayerbotAI* ai) { return std::make_shared<ReadyCheckStrategy>(ai); }
+        static std::shared_ptr<Strategy> pvp(PlayerbotAI* ai) { return std::make_shared<AttackEnemyPlayersStrategy>(ai); }
+        static std::shared_ptr<Strategy> move_random(PlayerbotAI* ai) { return std::make_shared<MoveRandomStrategy>(ai); }
+        static std::shared_ptr<Strategy> lfg(PlayerbotAI* ai) { return std::make_shared<LfgStrategy>(ai); }
     };
 
     class MovementStrategyContext : public NamedObjectContext<Strategy>
@@ -99,11 +99,11 @@ namespace ai
         }
 
     private:
-        static Strategy* guard(PlayerbotAI* ai) { return new GuardStrategy(ai); }
-        static Strategy* follow_master(PlayerbotAI* ai) { return new FollowMasterStrategy(ai); }
-        static Strategy* stay(PlayerbotAI* ai) { return new StayStrategy(ai); }
-        static Strategy* runaway(PlayerbotAI* ai) { return new RunawayStrategy(ai); }
-        static Strategy* flee_from_adds(PlayerbotAI* ai) { return new FleeFromAddsStrategy(ai); }
+        static std::shared_ptr<Strategy> guard(PlayerbotAI* ai) { return std::make_shared<GuardStrategy>(ai); }
+        static std::shared_ptr<Strategy> follow_master(PlayerbotAI* ai) { return std::make_shared<FollowMasterStrategy>(ai); }
+        static std::shared_ptr<Strategy> stay(PlayerbotAI* ai) { return std::make_shared<StayStrategy>(ai); }
+        static std::shared_ptr<Strategy> runaway(PlayerbotAI* ai) { return std::make_shared<RunawayStrategy>(ai); }
+        static std::shared_ptr<Strategy> flee_from_adds(PlayerbotAI* ai) { return std::make_shared<FleeFromAddsStrategy>(ai); }
     };
 
     class AssistStrategyContext : public NamedObjectContext<Strategy>
@@ -121,13 +121,13 @@ namespace ai
         }
 
     private:
-        static Strategy* dps_assist(PlayerbotAI* ai) { return new DpsAssistStrategy(ai); }
-        static Strategy* dps_aoe(PlayerbotAI* ai) { return new DpsAoeStrategy(ai); }
-        static Strategy* tank_assist(PlayerbotAI* ai) { return new TankAssistStrategy(ai); }
-        static Strategy* tank_aoe(PlayerbotAI* ai) { return new TankAoeStrategy(ai); }
-        static Strategy* attack_weak(PlayerbotAI* ai) { return new AttackWeakStrategy(ai); }
-        static Strategy* grind(PlayerbotAI* ai) { return new GrindingStrategy(ai); }
-        static Strategy* attack_rti(PlayerbotAI* ai) { return new AttackRtiStrategy(ai); }
+        static std::shared_ptr<Strategy> dps_assist(PlayerbotAI* ai) { return std::make_shared<DpsAssistStrategy>(ai); }
+        static std::shared_ptr<Strategy> dps_aoe(PlayerbotAI* ai) { return std::make_shared<DpsAoeStrategy>(ai); }
+        static std::shared_ptr<Strategy> tank_assist(PlayerbotAI* ai) { return std::make_shared<TankAssistStrategy>(ai); }
+        static std::shared_ptr<Strategy> tank_aoe(PlayerbotAI* ai) { return std::make_shared<TankAoeStrategy>(ai); }
+        static std::shared_ptr<Strategy> attack_weak(PlayerbotAI* ai) { return std::make_shared<AttackWeakStrategy>(ai); }
+        static std::shared_ptr<Strategy> grind(PlayerbotAI* ai) { return std::make_shared<GrindingStrategy>(ai); }
+        static std::shared_ptr<Strategy> attack_rti(PlayerbotAI* ai) { return std::make_shared<AttackRtiStrategy>(ai); }
     };
 
     class QuestStrategyContext : public NamedObjectContext<Strategy>
@@ -140,7 +140,7 @@ namespace ai
         }
 
     private:
-        static Strategy* quest(PlayerbotAI* ai) { return new DefaultQuestStrategy(ai); }
-        static Strategy* accept_all_quests(PlayerbotAI* ai) { return new AcceptAllQuestsStrategy(ai); }
+        static std::shared_ptr<Strategy> quest(PlayerbotAI* ai) { return std::make_shared<DefaultQuestStrategy>(ai); }
+        static std::shared_ptr<Strategy> accept_all_quests(PlayerbotAI* ai) { return std::make_shared<AcceptAllQuestsStrategy>(ai); }
     };
 };

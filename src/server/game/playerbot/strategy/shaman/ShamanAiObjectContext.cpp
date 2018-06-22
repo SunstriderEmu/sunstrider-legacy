@@ -31,10 +31,10 @@ namespace ai
             }
 
         private:
-            static Strategy* nc(PlayerbotAI* ai) { return new ShamanNonCombatStrategy(ai); }
-            static Strategy* totems(PlayerbotAI* ai) { return new TotemsShamanStrategy(ai); }
-            static Strategy* melee_aoe(PlayerbotAI* ai) { return new MeleeAoeShamanStrategy(ai); }
-            static Strategy* caster_aoe(PlayerbotAI* ai) { return new CasterAoeShamanStrategy(ai); }
+            static std::shared_ptr<Strategy> nc(PlayerbotAI* ai) { return std::make_shared<ShamanNonCombatStrategy>(ai); }
+            static std::shared_ptr<Strategy> totems(PlayerbotAI* ai) { return std::make_shared<TotemsShamanStrategy>(ai); }
+            static std::shared_ptr<Strategy> melee_aoe(PlayerbotAI* ai) { return std::make_shared<MeleeAoeShamanStrategy>(ai); }
+            static std::shared_ptr<Strategy> caster_aoe(PlayerbotAI* ai) { return std::make_shared<CasterAoeShamanStrategy>(ai); }
         };
 
         class BuffStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -47,8 +47,8 @@ namespace ai
             }
 
         private:
-            static Strategy* bmana(PlayerbotAI* ai) { return new ShamanBuffManaStrategy(ai); }
-            static Strategy* bdps(PlayerbotAI* ai) { return new ShamanBuffDpsStrategy(ai); }
+            static std::shared_ptr<Strategy> bmana(PlayerbotAI* ai) { return std::make_shared<ShamanBuffManaStrategy>(ai); }
+            static std::shared_ptr<Strategy> bdps(PlayerbotAI* ai) { return std::make_shared<ShamanBuffDpsStrategy>(ai); }
         };
 
         class CombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -63,9 +63,9 @@ namespace ai
             }
 
         private:
-            static Strategy* heal(PlayerbotAI* ai) { return new HealShamanStrategy(ai); }
-            static Strategy* dps(PlayerbotAI* ai) { return new MeleeShamanStrategy(ai); }
-            static Strategy* caster(PlayerbotAI* ai) { return new CasterShamanStrategy(ai); }
+            static std::shared_ptr<Strategy> heal(PlayerbotAI* ai) { return std::make_shared<HealShamanStrategy>(ai); }
+            static std::shared_ptr<Strategy> dps(PlayerbotAI* ai) { return std::make_shared<MeleeShamanStrategy>(ai); }
+            static std::shared_ptr<Strategy> caster(PlayerbotAI* ai) { return std::make_shared<CasterShamanStrategy>(ai); }
         };
     };
 };
@@ -111,33 +111,33 @@ namespace ai
             }
 
         private:
-            static Trigger* maelstrom_weapon(PlayerbotAI* ai) { return new MaelstromWeaponTrigger(ai); }
-            static Trigger* heroism(PlayerbotAI* ai) { return new HeroismTrigger(ai); }
-            static Trigger* bloodlust(PlayerbotAI* ai) { return new BloodlustTrigger(ai); }
-            static Trigger* party_member_cleanse_disease(PlayerbotAI* ai) { return new PartyMemberCleanseSpiritDiseaseTrigger(ai); }
-            static Trigger* party_member_cleanse_curse(PlayerbotAI* ai) { return new PartyMemberCleanseSpiritCurseTrigger(ai); }
-            static Trigger* party_member_cleanse_poison(PlayerbotAI* ai) { return new PartyMemberCleanseSpiritPoisonTrigger(ai); }
-            static Trigger* cleanse_disease(PlayerbotAI* ai) { return new CleanseSpiritDiseaseTrigger(ai); }
-            static Trigger* cleanse_curse(PlayerbotAI* ai) { return new CleanseSpiritCurseTrigger(ai); }
-            static Trigger* cleanse_poison(PlayerbotAI* ai) { return new CleanseSpiritPoisonTrigger(ai); }
-            static Trigger* water_breathing(PlayerbotAI* ai) { return new WaterBreathingTrigger(ai); }
-            static Trigger* water_walking(PlayerbotAI* ai) { return new WaterWalkingTrigger(ai); }
-            static Trigger* water_breathing_on_party(PlayerbotAI* ai) { return new WaterBreathingOnPartyTrigger(ai); }
-            static Trigger* water_walking_on_party(PlayerbotAI* ai) { return new WaterWalkingOnPartyTrigger(ai); }
-            static Trigger* windfury_totem(PlayerbotAI* ai) { return new WindfuryTotemTrigger(ai); }
-            static Trigger* mana_spring_totem(PlayerbotAI* ai) { return new ManaSpringTotemTrigger(ai); }
-            static Trigger* flametongue_totem(PlayerbotAI* ai) { return new FlametongueTotemTrigger(ai); }
-            static Trigger* strength_of_earth_totem(PlayerbotAI* ai) { return new StrengthOfEarthTotemTrigger(ai); }
-            static Trigger* magma_totem(PlayerbotAI* ai) { return new MagmaTotemTrigger(ai); }
-            static Trigger* searing_totem(PlayerbotAI* ai) { return new SearingTotemTrigger(ai); }
-            static Trigger* wind_shear(PlayerbotAI* ai) { return new WindShearInterruptSpellTrigger(ai); }
-            static Trigger* purge(PlayerbotAI* ai) { return new PurgeTrigger(ai); }
-            static Trigger* shaman_weapon(PlayerbotAI* ai) { return new ShamanWeaponTrigger(ai); }
-            static Trigger* water_shield(PlayerbotAI* ai) { return new WaterShieldTrigger(ai); }
-            static Trigger* lightning_shield(PlayerbotAI* ai) { return new LightningShieldTrigger(ai); }
-            static Trigger* shock(PlayerbotAI* ai) { return new ShockTrigger(ai); }
-            static Trigger* frost_shock_snare(PlayerbotAI* ai) { return new FrostShockSnareTrigger(ai); }
-            static Trigger* wind_shear_on_enemy_healer(PlayerbotAI* ai) { return new WindShearInterruptEnemyHealerSpellTrigger(ai); }
+            static std::shared_ptr<Trigger> maelstrom_weapon(PlayerbotAI* ai) { return std::make_shared<MaelstromWeaponTrigger>(ai); }
+            static std::shared_ptr<Trigger> heroism(PlayerbotAI* ai) { return std::make_shared<HeroismTrigger>(ai); }
+            static std::shared_ptr<Trigger> bloodlust(PlayerbotAI* ai) { return std::make_shared<BloodlustTrigger>(ai); }
+            static std::shared_ptr<Trigger> party_member_cleanse_disease(PlayerbotAI* ai) { return std::make_shared<PartyMemberCleanseSpiritDiseaseTrigger>(ai); }
+            static std::shared_ptr<Trigger> party_member_cleanse_curse(PlayerbotAI* ai) { return std::make_shared<PartyMemberCleanseSpiritCurseTrigger>(ai); }
+            static std::shared_ptr<Trigger> party_member_cleanse_poison(PlayerbotAI* ai) { return std::make_shared<PartyMemberCleanseSpiritPoisonTrigger>(ai); }
+            static std::shared_ptr<Trigger> cleanse_disease(PlayerbotAI* ai) { return std::make_shared<CleanseSpiritDiseaseTrigger>(ai); }
+            static std::shared_ptr<Trigger> cleanse_curse(PlayerbotAI* ai) { return std::make_shared<CleanseSpiritCurseTrigger>(ai); }
+            static std::shared_ptr<Trigger> cleanse_poison(PlayerbotAI* ai) { return std::make_shared<CleanseSpiritPoisonTrigger>(ai); }
+            static std::shared_ptr<Trigger> water_breathing(PlayerbotAI* ai) { return std::make_shared<WaterBreathingTrigger>(ai); }
+            static std::shared_ptr<Trigger> water_walking(PlayerbotAI* ai) { return std::make_shared<WaterWalkingTrigger>(ai); }
+            static std::shared_ptr<Trigger> water_breathing_on_party(PlayerbotAI* ai) { return std::make_shared<WaterBreathingOnPartyTrigger>(ai); }
+            static std::shared_ptr<Trigger> water_walking_on_party(PlayerbotAI* ai) { return std::make_shared<WaterWalkingOnPartyTrigger>(ai); }
+            static std::shared_ptr<Trigger> windfury_totem(PlayerbotAI* ai) { return std::make_shared<WindfuryTotemTrigger>(ai); }
+            static std::shared_ptr<Trigger> mana_spring_totem(PlayerbotAI* ai) { return std::make_shared<ManaSpringTotemTrigger>(ai); }
+            static std::shared_ptr<Trigger> flametongue_totem(PlayerbotAI* ai) { return std::make_shared<FlametongueTotemTrigger>(ai); }
+            static std::shared_ptr<Trigger> strength_of_earth_totem(PlayerbotAI* ai) { return std::make_shared<StrengthOfEarthTotemTrigger>(ai); }
+            static std::shared_ptr<Trigger> magma_totem(PlayerbotAI* ai) { return std::make_shared<MagmaTotemTrigger>(ai); }
+            static std::shared_ptr<Trigger> searing_totem(PlayerbotAI* ai) { return std::make_shared<SearingTotemTrigger>(ai); }
+            static std::shared_ptr<Trigger> wind_shear(PlayerbotAI* ai) { return std::make_shared<WindShearInterruptSpellTrigger>(ai); }
+            static std::shared_ptr<Trigger> purge(PlayerbotAI* ai) { return std::make_shared<PurgeTrigger>(ai); }
+            static std::shared_ptr<Trigger> shaman_weapon(PlayerbotAI* ai) { return std::make_shared<ShamanWeaponTrigger>(ai); }
+            static std::shared_ptr<Trigger> water_shield(PlayerbotAI* ai) { return std::make_shared<WaterShieldTrigger>(ai); }
+            static std::shared_ptr<Trigger> lightning_shield(PlayerbotAI* ai) { return std::make_shared<LightningShieldTrigger>(ai); }
+            static std::shared_ptr<Trigger> shock(PlayerbotAI* ai) { return std::make_shared<ShockTrigger>(ai); }
+            static std::shared_ptr<Trigger> frost_shock_snare(PlayerbotAI* ai) { return std::make_shared<FrostShockSnareTrigger>(ai); }
+            static std::shared_ptr<Trigger> wind_shear_on_enemy_healer(PlayerbotAI* ai) { return std::make_shared<WindShearInterruptEnemyHealerSpellTrigger>(ai); }
         };
     };
 };
@@ -204,53 +204,53 @@ namespace ai
             }
 
         private:
-            static Action* heroism(PlayerbotAI* ai) { return new CastHeroismAction(ai); }
-            static Action* bloodlust(PlayerbotAI* ai) { return new CastBloodlustAction(ai); }
-            static Action* thunderstorm(PlayerbotAI* ai) { return new CastThunderstormAction(ai); }
-            static Action* lightning_bolt(PlayerbotAI* ai) { return new CastLightningBoltAction(ai); }
-            static Action* chain_lightning(PlayerbotAI* ai) { return new CastChainLightningAction(ai); }
-            static Action* frost_shock(PlayerbotAI* ai) { return new CastFrostShockAction(ai); }
-            static Action* earth_shock(PlayerbotAI* ai) { return new CastEarthShockAction(ai); }
-            static Action* flame_shock(PlayerbotAI* ai) { return new CastFlameShockAction(ai); }
-            static Action* cleanse_spirit_poison_on_party(PlayerbotAI* ai) { return new CastCleanseSpiritPoisonOnPartyAction(ai); }
-            static Action* cleanse_spirit_disease_on_party(PlayerbotAI* ai) { return new CastCleanseSpiritDiseaseOnPartyAction(ai); }
-            static Action* cleanse_spirit_curse_on_party(PlayerbotAI* ai) { return new CastCleanseSpiritCurseOnPartyAction(ai); }
-            static Action* cleanse_spirit(PlayerbotAI* ai) { return new CastCleanseSpiritAction(ai); }
-            static Action* water_walking(PlayerbotAI* ai) { return new CastWaterWalkingAction(ai); }
-            static Action* water_breathing(PlayerbotAI* ai) { return new CastWaterBreathingAction(ai); }
-            static Action* water_walking_on_party(PlayerbotAI* ai) { return new CastWaterWalkingOnPartyAction(ai); }
-            static Action* water_breathing_on_party(PlayerbotAI* ai) { return new CastWaterBreathingOnPartyAction(ai); }
-            static Action* water_shield(PlayerbotAI* ai) { return new CastWaterShieldAction(ai); }
-            static Action* lightning_shield(PlayerbotAI* ai) { return new CastLightningShieldAction(ai); }
-            static Action* strength_of_earth_totem(PlayerbotAI* ai) { return new CastStrengthOfEarthTotemAction(ai); }
-            static Action* flametongue_totem(PlayerbotAI* ai) { return new CastFlametongueTotemAction(ai); }
-            static Action* magma_totem(PlayerbotAI* ai) { return new CastMagmaTotemAction(ai); }
-            static Action* searing_totem(PlayerbotAI* ai) { return new CastSearingTotemAction(ai); }
-            static Action* fire_nova(PlayerbotAI* ai) { return new CastFireNovaAction(ai); }
-            static Action* windfury_totem(PlayerbotAI* ai) { return new CastWindfuryTotemAction(ai); }
-            static Action* mana_spring_totem(PlayerbotAI* ai) { return new CastManaSpringTotemAction(ai); }
-            static Action* mana_tide_totem(PlayerbotAI* ai) { return new CastManaTideTotemAction(ai); }
-            static Action* healing_stream_totem(PlayerbotAI* ai) { return new CastHealingStreamTotemAction(ai); }
-            static Action* wind_shear(PlayerbotAI* ai) { return new CastWindShearAction(ai); }
-            static Action* rockbiter_weapon(PlayerbotAI* ai) { return new CastRockbiterWeaponAction(ai); }
-            static Action* flametongue_weapon(PlayerbotAI* ai) { return new CastFlametongueWeaponAction(ai); }
-            static Action* frostbrand_weapon(PlayerbotAI* ai) { return new CastFrostbrandWeaponAction(ai); }
-            static Action* windfury_weapon(PlayerbotAI* ai) { return new CastWindfuryWeaponAction(ai); }
-            static Action* earthliving_weapon(PlayerbotAI* ai) { return new CastEarthlivingWeaponAction(ai); }
-            static Action* purge(PlayerbotAI* ai) { return new CastPurgeAction(ai); }
-            static Action* healing_wave(PlayerbotAI* ai) { return new CastHealingWaveAction(ai); }
-            static Action* lesser_healing_wave(PlayerbotAI* ai) { return new CastLesserHealingWaveAction(ai); }
-            static Action* healing_wave_on_party(PlayerbotAI* ai) { return new CastHealingWaveOnPartyAction(ai); }
-            static Action* lesser_healing_wave_on_party(PlayerbotAI* ai) { return new CastLesserHealingWaveOnPartyAction(ai); }
-            static Action* earth_shield(PlayerbotAI* ai) { return new CastEarthShieldAction(ai); }
-            static Action* earth_shield_on_party(PlayerbotAI* ai) { return new CastEarthShieldOnPartyAction(ai); }
-            static Action* chain_heal(PlayerbotAI* ai) { return new CastChainHealAction(ai); }
-            static Action* riptide(PlayerbotAI* ai) { return new CastRiptideAction(ai); }
-            static Action* riptide_on_party(PlayerbotAI* ai) { return new CastRiptideOnPartyAction(ai); }
-            static Action* stormstrike(PlayerbotAI* ai) { return new CastStormstrikeAction(ai); }
-            static Action* lava_lash(PlayerbotAI* ai) { return new CastLavaLashAction(ai); }
-            static Action* ancestral_spirit(PlayerbotAI* ai) { return new CastAncestralSpiritAction(ai); }
-            static Action* wind_shear_on_enemy_healer(PlayerbotAI* ai) { return new CastWindShearOnEnemyHealerAction(ai); }
+            static std::shared_ptr<Action> heroism(PlayerbotAI* ai) { return std::make_shared<CastHeroismAction>(ai); }
+            static std::shared_ptr<Action> bloodlust(PlayerbotAI* ai) { return std::make_shared<CastBloodlustAction>(ai); }
+            static std::shared_ptr<Action> thunderstorm(PlayerbotAI* ai) { return std::make_shared<CastThunderstormAction>(ai); }
+            static std::shared_ptr<Action> lightning_bolt(PlayerbotAI* ai) { return std::make_shared<CastLightningBoltAction>(ai); }
+            static std::shared_ptr<Action> chain_lightning(PlayerbotAI* ai) { return std::make_shared<CastChainLightningAction>(ai); }
+            static std::shared_ptr<Action> frost_shock(PlayerbotAI* ai) { return std::make_shared<CastFrostShockAction>(ai); }
+            static std::shared_ptr<Action> earth_shock(PlayerbotAI* ai) { return std::make_shared<CastEarthShockAction>(ai); }
+            static std::shared_ptr<Action> flame_shock(PlayerbotAI* ai) { return std::make_shared<CastFlameShockAction>(ai); }
+            static std::shared_ptr<Action> cleanse_spirit_poison_on_party(PlayerbotAI* ai) { return std::make_shared<CastCleanseSpiritPoisonOnPartyAction>(ai); }
+            static std::shared_ptr<Action> cleanse_spirit_disease_on_party(PlayerbotAI* ai) { return std::make_shared<CastCleanseSpiritDiseaseOnPartyAction>(ai); }
+            static std::shared_ptr<Action> cleanse_spirit_curse_on_party(PlayerbotAI* ai) { return std::make_shared<CastCleanseSpiritCurseOnPartyAction>(ai); }
+            static std::shared_ptr<Action> cleanse_spirit(PlayerbotAI* ai) { return std::make_shared<CastCleanseSpiritAction>(ai); }
+            static std::shared_ptr<Action> water_walking(PlayerbotAI* ai) { return std::make_shared<CastWaterWalkingAction>(ai); }
+            static std::shared_ptr<Action> water_breathing(PlayerbotAI* ai) { return std::make_shared<CastWaterBreathingAction>(ai); }
+            static std::shared_ptr<Action> water_walking_on_party(PlayerbotAI* ai) { return std::make_shared<CastWaterWalkingOnPartyAction>(ai); }
+            static std::shared_ptr<Action> water_breathing_on_party(PlayerbotAI* ai) { return std::make_shared<CastWaterBreathingOnPartyAction>(ai); }
+            static std::shared_ptr<Action> water_shield(PlayerbotAI* ai) { return std::make_shared<CastWaterShieldAction>(ai); }
+            static std::shared_ptr<Action> lightning_shield(PlayerbotAI* ai) { return std::make_shared<CastLightningShieldAction>(ai); }
+            static std::shared_ptr<Action> strength_of_earth_totem(PlayerbotAI* ai) { return std::make_shared<CastStrengthOfEarthTotemAction>(ai); }
+            static std::shared_ptr<Action> flametongue_totem(PlayerbotAI* ai) { return std::make_shared<CastFlametongueTotemAction>(ai); }
+            static std::shared_ptr<Action> magma_totem(PlayerbotAI* ai) { return std::make_shared<CastMagmaTotemAction>(ai); }
+            static std::shared_ptr<Action> searing_totem(PlayerbotAI* ai) { return std::make_shared<CastSearingTotemAction>(ai); }
+            static std::shared_ptr<Action> fire_nova(PlayerbotAI* ai) { return std::make_shared<CastFireNovaAction>(ai); }
+            static std::shared_ptr<Action> windfury_totem(PlayerbotAI* ai) { return std::make_shared<CastWindfuryTotemAction>(ai); }
+            static std::shared_ptr<Action> mana_spring_totem(PlayerbotAI* ai) { return std::make_shared<CastManaSpringTotemAction>(ai); }
+            static std::shared_ptr<Action> mana_tide_totem(PlayerbotAI* ai) { return std::make_shared<CastManaTideTotemAction>(ai); }
+            static std::shared_ptr<Action> healing_stream_totem(PlayerbotAI* ai) { return std::make_shared<CastHealingStreamTotemAction>(ai); }
+            static std::shared_ptr<Action> wind_shear(PlayerbotAI* ai) { return std::make_shared<CastWindShearAction>(ai); }
+            static std::shared_ptr<Action> rockbiter_weapon(PlayerbotAI* ai) { return std::make_shared<CastRockbiterWeaponAction>(ai); }
+            static std::shared_ptr<Action> flametongue_weapon(PlayerbotAI* ai) { return std::make_shared<CastFlametongueWeaponAction>(ai); }
+            static std::shared_ptr<Action> frostbrand_weapon(PlayerbotAI* ai) { return std::make_shared<CastFrostbrandWeaponAction>(ai); }
+            static std::shared_ptr<Action> windfury_weapon(PlayerbotAI* ai) { return std::make_shared<CastWindfuryWeaponAction>(ai); }
+            static std::shared_ptr<Action> earthliving_weapon(PlayerbotAI* ai) { return std::make_shared<CastEarthlivingWeaponAction>(ai); }
+            static std::shared_ptr<Action> purge(PlayerbotAI* ai) { return std::make_shared<CastPurgeAction>(ai); }
+            static std::shared_ptr<Action> healing_wave(PlayerbotAI* ai) { return std::make_shared<CastHealingWaveAction>(ai); }
+            static std::shared_ptr<Action> lesser_healing_wave(PlayerbotAI* ai) { return std::make_shared<CastLesserHealingWaveAction>(ai); }
+            static std::shared_ptr<Action> healing_wave_on_party(PlayerbotAI* ai) { return std::make_shared<CastHealingWaveOnPartyAction>(ai); }
+            static std::shared_ptr<Action> lesser_healing_wave_on_party(PlayerbotAI* ai) { return std::make_shared<CastLesserHealingWaveOnPartyAction>(ai); }
+            static std::shared_ptr<Action> earth_shield(PlayerbotAI* ai) { return std::make_shared<CastEarthShieldAction>(ai); }
+            static std::shared_ptr<Action> earth_shield_on_party(PlayerbotAI* ai) { return std::make_shared<CastEarthShieldOnPartyAction>(ai); }
+            static std::shared_ptr<Action> chain_heal(PlayerbotAI* ai) { return std::make_shared<CastChainHealAction>(ai); }
+            static std::shared_ptr<Action> riptide(PlayerbotAI* ai) { return std::make_shared<CastRiptideAction>(ai); }
+            static std::shared_ptr<Action> riptide_on_party(PlayerbotAI* ai) { return std::make_shared<CastRiptideOnPartyAction>(ai); }
+            static std::shared_ptr<Action> stormstrike(PlayerbotAI* ai) { return std::make_shared<CastStormstrikeAction>(ai); }
+            static std::shared_ptr<Action> lava_lash(PlayerbotAI* ai) { return std::make_shared<CastLavaLashAction>(ai); }
+            static std::shared_ptr<Action> ancestral_spirit(PlayerbotAI* ai) { return std::make_shared<CastAncestralSpiritAction>(ai); }
+            static std::shared_ptr<Action> wind_shear_on_enemy_healer(PlayerbotAI* ai) { return std::make_shared<CastWindShearOnEnemyHealerAction>(ai); }
         };
     };
 };

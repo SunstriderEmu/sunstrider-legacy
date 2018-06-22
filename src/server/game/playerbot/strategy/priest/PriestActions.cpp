@@ -7,11 +7,11 @@ using namespace ai;
 
 ActionList CastAbolishDiseaseAction::getAlternatives()
 {
-    return NextAction::merge(NextAction::array({ new NextAction("cure disease") }), CastSpellAction::getAlternatives());
+    return NextAction::merge(NextAction::array({ std::make_shared<NextAction>("cure disease") }), CastSpellAction::getAlternatives());
 }
 
 ActionList CastAbolishDiseaseOnPartyAction::getAlternatives()
 {
-    return NextAction::merge(NextAction::array({ new NextAction("cure disease on party") }), CastSpellAction::getAlternatives());
+    return NextAction::merge(NextAction::array({ std::make_shared<NextAction>("cure disease on party") }), CastSpellAction::getAlternatives());
 }
 

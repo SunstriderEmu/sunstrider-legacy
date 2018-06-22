@@ -8,7 +8,7 @@ using namespace ai;
 bool LogLevelAction::Execute(Event event)
 {
     std::string param = event.getParam();
-    Value<LogLevel> *value = ai->GetAiObjectContext()->GetValue<LogLevel>("log level");
+    std::shared_ptr<Value<LogLevel>> value = ai->GetAiObjectContext()->GetValue<LogLevel>("log level");
 
     std::ostringstream out;
     if (param != "?")

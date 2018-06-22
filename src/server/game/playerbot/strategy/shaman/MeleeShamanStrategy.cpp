@@ -15,79 +15,79 @@ public:
         creators["magma totem"] = &magma_totem;
     }
 private:
-    static ActionNode* stormstrike(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> stormstrike(PlayerbotAI* ai)
     {
-        return new ActionNode ("stormstrike",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("lava lash") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("stormstrike",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("lava lash") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* lava_lash(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> lava_lash(PlayerbotAI* ai)
     {
-        return new ActionNode ("lava lash",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("lava lash",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* magma_totem(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> magma_totem(PlayerbotAI* ai)
     {
-        return new ActionNode ("magma totem",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ NextAction::array({ new NextAction("fire nova") }));
+        return std::make_shared<ActionNode> ("magma totem",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ NextAction::array({ std::make_shared<NextAction>("fire nova") }));
     }
 };
 
 MeleeShamanStrategy::MeleeShamanStrategy(PlayerbotAI* ai) : GenericShamanStrategy(ai)
 {
-    actionNodeFactories.Add(new MeleeShamanStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<MeleeShamanStrategyActionNodeFactory>());
 }
 
 ActionList MeleeShamanStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("stormstrike", 10.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("stormstrike", 10.0f) });
 }
 
-void MeleeShamanStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void MeleeShamanStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "shaman weapon",
-        NextAction::array({ new NextAction("windfury weapon", 22.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("windfury weapon", 22.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "searing totem",
-        NextAction::array({ new NextAction("searing totem", 22.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("searing totem", 22.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "shock",
-        NextAction::array({ new NextAction("earth shock", 20.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("earth shock", 20.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "not facing target",
-        NextAction::array({ new NextAction("set facing", ACTION_NORMAL + 7) })));
+        NextAction::array({ std::make_shared<NextAction>("set facing", ACTION_NORMAL + 7) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy too close for melee",
-        NextAction::array({ new NextAction("move out of enemy contact", ACTION_NORMAL + 8) })));
+        NextAction::array({ std::make_shared<NextAction>("move out of enemy contact", ACTION_NORMAL + 8) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("strength of earth totem", ACTION_LIGHT_HEAL) })));
+        NextAction::array({ std::make_shared<NextAction>("strength of earth totem", ACTION_LIGHT_HEAL) })));
 }
 
-void MeleeAoeShamanStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void MeleeAoeShamanStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy out of melee",
-        NextAction::array({ new NextAction("reach melee", ACTION_NORMAL + 8) })));
+        NextAction::array({ std::make_shared<NextAction>("reach melee", ACTION_NORMAL + 8) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "magma totem",
-        NextAction::array({ new NextAction("magma totem", 26.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("magma totem", 26.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("fire nova", 25.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("fire nova", 25.0f) })));
 }

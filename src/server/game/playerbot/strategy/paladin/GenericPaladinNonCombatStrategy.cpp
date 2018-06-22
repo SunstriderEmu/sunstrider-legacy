@@ -8,58 +8,58 @@ using namespace ai;
 
 GenericPaladinNonCombatStrategy::GenericPaladinNonCombatStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericPaladinStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericPaladinStrategyActionNodeFactory>());
 }
 
-void GenericPaladinNonCombatStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericPaladinNonCombatStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "blessing of kings on party",
-        NextAction::array({ new NextAction("blessing of kings on party", 11.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("blessing of kings on party", 11.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member dead",
-        NextAction::array({ new NextAction("redemption", 30.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("redemption", 30.0f) })));
 
-     triggers.push_back(new TriggerNode(
+     triggers.push_back(std::make_shared<TriggerNode>(
         "medium health",
-        NextAction::array({ new NextAction("flash of light", 25.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("flash of light", 25.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member medium health",
-        NextAction::array({ new NextAction("flash of light on party", 26.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("flash of light on party", 26.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low health",
-        NextAction::array({ new NextAction("holy light", 50.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("holy light", 50.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member low health",
-        NextAction::array({ new NextAction("holy light on party", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("holy light on party", 40.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cleanse cure disease",
-        NextAction::array({ new NextAction("cleanse disease", 41.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse disease", 41.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cleanse party member cure disease",
-        NextAction::array({ new NextAction("cleanse disease on party", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse disease on party", 40.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cleanse cure poison",
-        NextAction::array({ new NextAction("cleanse poison", 41.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse poison", 41.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cleanse party member cure poison",
-        NextAction::array({ new NextAction("cleanse poison on party", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse poison on party", 40.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cleanse cure magic",
-        NextAction::array({ new NextAction("cleanse magic", 41.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse magic", 41.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cleanse party member cure magic",
-        NextAction::array({ new NextAction("cleanse magic on party", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse magic on party", 40.0f) })));
 }

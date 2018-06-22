@@ -4,26 +4,26 @@
 
 using namespace ai;
 
-void LootNonCombatStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void LootNonCombatStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "loot available",
-        NextAction::array({ new NextAction("loot", 6.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("loot", 6.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "far from loot target",
-        NextAction::array({ new NextAction("move to loot", 7.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("move to loot", 7.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "can loot",
-        NextAction::array({ new NextAction("open loot", 8.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("open loot", 8.0f) })));
 }
 
-void GatherStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GatherStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no possible targets",
-        NextAction::array({ new NextAction("add gathering loot", 2.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("add gathering loot", 2.0f) })));
 }
 
 

@@ -23,155 +23,155 @@ public:
         creators["nature's grasp"] = &natures_grasp;
     }
 private:
-    static ActionNode* faerie_fire(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> faerie_fire(PlayerbotAI* ai)
     {
-        return new ActionNode ("faerie fire",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("faerie fire",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* hibernate(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> hibernate(PlayerbotAI* ai)
     {
-        return new ActionNode ("hibernate",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ NextAction::array({ new NextAction("entangling roots") }),
-            /*C*/ NextAction::array({ new NextAction("flee", 49.0f) }));
+        return std::make_shared<ActionNode> ("hibernate",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("entangling roots") }),
+            /*C*/ NextAction::array({ std::make_shared<NextAction>("flee", 49.0f) }));
     }
-    static ActionNode* entangling_roots(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> entangling_roots(PlayerbotAI* ai)
     {
-        return new ActionNode ("entangling roots",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ {},
-            /*C*/ NextAction::array({ new NextAction("flee", 49.0f) }));
+        return std::make_shared<ActionNode> ("entangling roots",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ ActionList(),
+            /*C*/ NextAction::array({ std::make_shared<NextAction>("flee", 49.0f) }));
     }
-    static ActionNode* entangling_roots_on_cc(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> entangling_roots_on_cc(PlayerbotAI* ai)
     {
-        return new ActionNode ("entangling roots on cc",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("entangling roots on cc",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* wrath(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> wrath(PlayerbotAI* ai)
     {
-        return new ActionNode ("wrath",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("wrath",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* starfall(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> starfall(PlayerbotAI* ai)
     {
-        return new ActionNode ("starfall",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ NextAction::array({ new NextAction("hurricane") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("starfall",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("hurricane") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* insect_swarm(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> insect_swarm(PlayerbotAI* ai)
     {
-        return new ActionNode ("insect swarm",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("insect swarm",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* moonfire(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> moonfire(PlayerbotAI* ai)
     {
-        return new ActionNode ("moonfire",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("moonfire",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* starfire(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> starfire(PlayerbotAI* ai)
     {
-        return new ActionNode ("starfire",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("starfire",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* natures_grasp(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> natures_grasp(PlayerbotAI* ai)
     {
-        return new ActionNode ("nature's grasp",
-            /*P*/ NextAction::array({ new NextAction("moonkin form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("nature's grasp",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("moonkin form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
 };
 
 CasterDruidStrategy::CasterDruidStrategy(PlayerbotAI* ai) : GenericDruidStrategy(ai)
 {
-    actionNodeFactories.Add(new CasterDruidStrategyActionNodeFactory());
-    actionNodeFactories.Add(new ShapeshiftDruidStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<CasterDruidStrategyActionNodeFactory>());
+    actionNodeFactories.Add(std::make_unique<ShapeshiftDruidStrategyActionNodeFactory>());
 }
 
 ActionList CasterDruidStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("starfire", ACTION_NORMAL + 2), new NextAction("wrath", ACTION_NORMAL + 1) });
+    return NextAction::array({ std::make_shared<NextAction>("starfire", ACTION_NORMAL + 2), std::make_shared<NextAction>("wrath", ACTION_NORMAL + 1) });
 }
 
-void CasterDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void CasterDruidStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericDruidStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy out of spell",
-        NextAction::array({ new NextAction("reach spell", ACTION_MOVE) })));
+        NextAction::array({ std::make_shared<NextAction>("reach spell", ACTION_MOVE) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium health",
-        NextAction::array({ new NextAction("regrowth", ACTION_MEDIUM_HEAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("regrowth", ACTION_MEDIUM_HEAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member medium health",
-        NextAction::array({ new NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("regrowth on party", ACTION_MEDIUM_HEAL + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "almost full health",
-        NextAction::array({ new NextAction("rejuvenation", ACTION_LIGHT_HEAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("rejuvenation", ACTION_LIGHT_HEAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member almost full health",
-        NextAction::array({ new NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("rejuvenation on party", ACTION_LIGHT_HEAL + 1) })));
 
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "insect swarm",
-        NextAction::array({ new NextAction("insect swarm", ACTION_NORMAL + 5) })));
+        NextAction::array({ std::make_shared<NextAction>("insect swarm", ACTION_NORMAL + 5) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "moonfire",
-        NextAction::array({ new NextAction("moonfire", ACTION_NORMAL + 4) })));
+        NextAction::array({ std::make_shared<NextAction>("moonfire", ACTION_NORMAL + 4) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "eclipse (solar)",
-        NextAction::array({ new NextAction("wrath", ACTION_NORMAL + 6) })));
+        NextAction::array({ std::make_shared<NextAction>("wrath", ACTION_NORMAL + 6) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "eclipse (lunar)",
-        NextAction::array({ new NextAction("starfire", ACTION_NORMAL + 6) })));
+        NextAction::array({ std::make_shared<NextAction>("starfire", ACTION_NORMAL + 6) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "moonfire",
-        NextAction::array({ new NextAction("moonfire", ACTION_NORMAL + 4) })));
+        NextAction::array({ std::make_shared<NextAction>("moonfire", ACTION_NORMAL + 4) })));
 
 
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "nature's grasp",
-        NextAction::array({ new NextAction("nature's grasp", ACTION_EMERGENCY) })));
+        NextAction::array({ std::make_shared<NextAction>("nature's grasp", ACTION_EMERGENCY) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "entangling roots",
-        NextAction::array({ new NextAction("entangling roots on cc", ACTION_HIGH + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("entangling roots on cc", ACTION_HIGH + 2) })));
 }
 
-void CasterDruidAoeStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void CasterDruidAoeStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "high aoe",
-        NextAction::array({ new NextAction("starfall", ACTION_HIGH + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("starfall", ACTION_HIGH + 1) })));
 }
 
-void CasterDruidDebuffStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void CasterDruidDebuffStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "faerie fire",
-        NextAction::array({ new NextAction("faerie fire", ACTION_HIGH) })));
+        NextAction::array({ std::make_shared<NextAction>("faerie fire", ACTION_HIGH) })));
 }

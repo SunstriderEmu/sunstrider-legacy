@@ -10,7 +10,7 @@ namespace ai
         DpsWarriorStrategy(PlayerbotAI* ai);
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "dps"; }
         virtual ActionList getDefaultActions();
         virtual int GetType() { return STRATEGY_TYPE_COMBAT | STRATEGY_TYPE_DPS | STRATEGY_TYPE_MELEE; }
@@ -22,7 +22,7 @@ namespace ai
         DpsWarrirorAoeStrategy(PlayerbotAI* ai) : CombatStrategy(ai) {}
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "aoe"; }
     };
 }

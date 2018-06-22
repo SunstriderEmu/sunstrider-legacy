@@ -14,52 +14,52 @@ public:
         creators["demon armor"] = &demon_armor;
     }
 private:
-    static ActionNode* fel_armor(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> fel_armor(PlayerbotAI* ai)
     {
-        return new ActionNode ("fel armor",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("demon armor") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("fel armor",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("demon armor") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* demon_armor(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> demon_armor(PlayerbotAI* ai)
     {
-        return new ActionNode ("demon armor",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("demon skin") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("demon armor",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("demon skin") }),
+            /*C*/ ActionList());
     }
 };
 
 GenericWarlockNonCombatStrategy::GenericWarlockNonCombatStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericWarlockNonCombatStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericWarlockNonCombatStrategyActionNodeFactory>());
 }
 
-void GenericWarlockNonCombatStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericWarlockNonCombatStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "demon armor",
-        NextAction::array({ new NextAction("fel armor", 21.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("fel armor", 21.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no healthstone",
-        NextAction::array({ new NextAction("create healthstone", 15.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("create healthstone", 15.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no firestone",
-        NextAction::array({ new NextAction("create firestone", 14.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("create firestone", 14.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no spellstone",
-        NextAction::array({ new NextAction("create spellstone", 13.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("create spellstone", 13.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "spellstone",
-        NextAction::array({ new NextAction("spellstone", 13.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("spellstone", 13.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no pet",
-        NextAction::array({ new NextAction("summon imp", 10.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("summon imp", 10.0f) })));
 }

@@ -6,8 +6,8 @@
 using namespace ai;
 
 
-void PassiveStrategy::InitMultipliers(std::list<Multiplier*> &multipliers)
+void PassiveStrategy::InitMultipliers(std::list<std::shared_ptr<Multiplier>> &multipliers)
 {
-    multipliers.push_back(new PassiveMultiplier(ai));
+    multipliers.push_back(std::make_shared<PassiveMultiplier>(ai));
 }
 

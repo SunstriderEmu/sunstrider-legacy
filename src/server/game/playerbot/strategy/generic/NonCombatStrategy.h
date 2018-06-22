@@ -7,7 +7,7 @@ namespace ai
     public:
         NonCombatStrategy(PlayerbotAI* ai) : Strategy(ai) {}
         virtual int GetType() { return STRATEGY_TYPE_NONCOMBAT; }
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
     };
 
     class LfgStrategy : public Strategy
@@ -15,7 +15,7 @@ namespace ai
     public:
         LfgStrategy(PlayerbotAI* ai) : Strategy(ai) {}
         virtual int GetType() { return STRATEGY_TYPE_NONCOMBAT; }
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "lfg"; }
     };
 }

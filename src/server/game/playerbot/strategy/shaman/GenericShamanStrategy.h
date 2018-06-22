@@ -11,7 +11,7 @@ namespace ai
         GenericShamanStrategy(PlayerbotAI* ai);
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
 
     };
 
@@ -21,7 +21,7 @@ namespace ai
         ShamanBuffDpsStrategy(PlayerbotAI* ai) : Strategy(ai) {}
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "bdps"; }
 
     };
@@ -32,7 +32,7 @@ namespace ai
         ShamanBuffManaStrategy(PlayerbotAI* ai) : Strategy(ai) {}
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "bmana"; }
 
     };

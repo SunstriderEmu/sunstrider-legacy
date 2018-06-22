@@ -22,111 +22,111 @@ public:
     }
 
 private:
-    static ActionNode* melee(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> melee(PlayerbotAI* ai)
     {
-        return new ActionNode ("melee",
-            /*P*/ NextAction::array({ new NextAction("reach melee") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("melee",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("reach melee") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* caster_form(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> caster_form(PlayerbotAI* ai)
     {
-        return new ActionNode ("caster form",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("caster form",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* cure_poison(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> cure_poison(PlayerbotAI* ai)
     {
-        return new ActionNode ("cure poison",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("cure poison",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* cure_poison_on_party(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> cure_poison_on_party(PlayerbotAI* ai)
     {
-        return new ActionNode ("cure poison on party",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("cure poison on party",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* abolish_poison(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> abolish_poison(PlayerbotAI* ai)
     {
-        return new ActionNode ("abolish poison",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("abolish poison",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* abolish_poison_on_party(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> abolish_poison_on_party(PlayerbotAI* ai)
     {
-        return new ActionNode ("abolish poison on party",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("abolish poison on party",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* rebirth(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> rebirth(PlayerbotAI* ai)
     {
-        return new ActionNode ("rebirth",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("rebirth",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* entangling_roots_on_cc(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> entangling_roots_on_cc(PlayerbotAI* ai)
     {
-        return new ActionNode ("entangling roots on cc",
-            /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("entangling roots on cc",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("caster form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* innervate(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> innervate(PlayerbotAI* ai)
     {
-        return new ActionNode ("innervate",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("mana potion") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("innervate",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("mana potion") }),
+            /*C*/ ActionList());
     }
 };
 
 GenericDruidStrategy::GenericDruidStrategy(PlayerbotAI* ai) : CombatStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericDruidStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericDruidStrategyActionNodeFactory>());
 }
 
-void GenericDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericDruidStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low health",
-        NextAction::array({ new NextAction("regrowth", ACTION_MEDIUM_HEAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("regrowth", ACTION_MEDIUM_HEAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member low health",
-        NextAction::array({ new NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("regrowth on party", ACTION_MEDIUM_HEAL + 1) })));
 
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "critical health",
-        NextAction::array({ new NextAction("regrowth", ACTION_CRITICAL_HEAL + 2), new NextAction("healing touch", ACTION_CRITICAL_HEAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("regrowth", ACTION_CRITICAL_HEAL + 2), std::make_shared<NextAction>("healing touch", ACTION_CRITICAL_HEAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member critical health",
-        NextAction::array({ new NextAction("regrowth on party", ACTION_CRITICAL_HEAL + 1), new NextAction("healing touch on party", ACTION_CRITICAL_HEAL + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("regrowth on party", ACTION_CRITICAL_HEAL + 1), std::make_shared<NextAction>("healing touch on party", ACTION_CRITICAL_HEAL + 1) })));
 
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cure poison",
-        NextAction::array({ new NextAction("abolish poison", ACTION_DISPEL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("abolish poison", ACTION_DISPEL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member cure poison",
-        NextAction::array({ new NextAction("abolish poison on party", ACTION_DISPEL + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("abolish poison on party", ACTION_DISPEL + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member dead",
-        NextAction::array({ new NextAction("rebirth", ACTION_HIGH + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("rebirth", ACTION_HIGH + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low mana",
-        NextAction::array({ new NextAction("innervate", ACTION_EMERGENCY + 5) })));
+        NextAction::array({ std::make_shared<NextAction>("innervate", ACTION_EMERGENCY + 5) })));
 }

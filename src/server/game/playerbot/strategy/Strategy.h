@@ -40,11 +40,11 @@ namespace ai
 
     public:
         virtual ActionList getDefaultActions() { return ActionList(); }
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers) {}
-        virtual void InitMultipliers(std::list<Multiplier*> &multipliers) {}
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers) {}
+        virtual void InitMultipliers(std::list<std::shared_ptr<Multiplier>> &multipliers) {}
         virtual std::string getName() = 0;
         virtual int GetType() { return STRATEGY_TYPE_GENERIC; }
-        virtual ActionNode* GetAction(std::string name);
+        virtual std::shared_ptr<ActionNode> GetAction(std::string name);
         void Update() {}
         void Reset() {}
 

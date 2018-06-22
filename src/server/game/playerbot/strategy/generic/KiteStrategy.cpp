@@ -8,9 +8,9 @@ KiteStrategy::KiteStrategy(PlayerbotAI* ai) : Strategy(ai)
 {
 }
 
-void KiteStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void KiteStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "has aggro",
-        NextAction::array({ new NextAction("runaway", 51.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("runaway", 51.0f) })));
 }

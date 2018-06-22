@@ -133,7 +133,7 @@ namespace ai
     {
     public:
         CastFreezingTrap(PlayerbotAI* ai) : CastDebuffSpellAction(ai, "freezing trap") {}
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
     };
 
     class CastWingClipAction : public CastMeleeSpellAction

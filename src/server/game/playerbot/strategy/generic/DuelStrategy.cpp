@@ -4,17 +4,17 @@
 
 using namespace ai;
 
-void DuelStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DuelStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     PassTroughStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "duel requested",
-        NextAction::array({ new NextAction("accept duel", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("accept duel", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no attackers",
-        NextAction::array({ new NextAction("attack duel opponent", 70.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("attack duel opponent", 70.0f) })));
 }
 
 

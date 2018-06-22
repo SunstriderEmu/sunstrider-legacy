@@ -29,10 +29,10 @@ namespace ai
             }
 
         private:
-            static Strategy* aoe(PlayerbotAI* ai) { return new DpsAoeHunterStrategy(ai); }
-            static Strategy* dps(PlayerbotAI* ai) { return new DpsHunterStrategy(ai); }
-            static Strategy* nc(PlayerbotAI* ai) { return new GenericHunterNonCombatStrategy(ai); }
-            static Strategy* dps_debuff(PlayerbotAI* ai) { return new DpsHunterDebuffStrategy(ai); }
+            static std::shared_ptr<Strategy> aoe(PlayerbotAI* ai) { return std::make_shared<DpsAoeHunterStrategy>(ai); }
+            static std::shared_ptr<Strategy> dps(PlayerbotAI* ai) { return std::make_shared<DpsHunterStrategy>(ai); }
+            static std::shared_ptr<Strategy> nc(PlayerbotAI* ai) { return std::make_shared<GenericHunterNonCombatStrategy>(ai); }
+            static std::shared_ptr<Strategy> dps_debuff(PlayerbotAI* ai) { return std::make_shared<DpsHunterDebuffStrategy>(ai); }
         };
 
         class BuffStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -47,10 +47,10 @@ namespace ai
             }
 
         private:
-            static Strategy* bspeed(PlayerbotAI* ai) { return new HunterBuffSpeedStrategy(ai); }
-            static Strategy* bdps(PlayerbotAI* ai) { return new HunterBuffDpsStrategy(ai); }
-            static Strategy* bmana(PlayerbotAI* ai) { return new HunterBuffManaStrategy(ai); }
-            static Strategy* rnature(PlayerbotAI* ai) { return new HunterNatureResistanceStrategy(ai); }
+            static std::shared_ptr<Strategy> bspeed(PlayerbotAI* ai) { return std::make_shared<HunterBuffSpeedStrategy>(ai); }
+            static std::shared_ptr<Strategy> bdps(PlayerbotAI* ai) { return std::make_shared<HunterBuffDpsStrategy>(ai); }
+            static std::shared_ptr<Strategy> bmana(PlayerbotAI* ai) { return std::make_shared<HunterBuffManaStrategy>(ai); }
+            static std::shared_ptr<Strategy> rnature(PlayerbotAI* ai) { return std::make_shared<HunterNatureResistanceStrategy>(ai); }
         };
     };
 };
@@ -84,19 +84,19 @@ namespace ai
             }
 
         private:
-            static Trigger* serpent_sting_on_attacker(PlayerbotAI* ai) { return new SerpentStingOnAttackerTrigger(ai); }
-            static Trigger* trueshot_aura(PlayerbotAI* ai) { return new TrueshotAuraTrigger(ai); }
-            static Trigger* aspect_of_the_viper(PlayerbotAI* ai) { return new HunterAspectOfTheViperTrigger(ai); }
-            static Trigger* black_arrow(PlayerbotAI* ai) { return new BlackArrowTrigger(ai); }
-            static Trigger* NoStings(PlayerbotAI* ai) { return new HunterNoStingsActiveTrigger(ai); }
-            static Trigger* hunters_pet_dead(PlayerbotAI* ai) { return new HuntersPetDeadTrigger(ai); }
-            static Trigger* hunters_pet_low_health(PlayerbotAI* ai) { return new HuntersPetLowHealthTrigger(ai); }
-            static Trigger* hunters_mark(PlayerbotAI* ai) { return new HuntersMarkTrigger(ai); }
-            static Trigger* freezing_trap(PlayerbotAI* ai) { return new FreezingTrapTrigger(ai); }
-            static Trigger* aspect_of_the_pack(PlayerbotAI* ai) { return new HunterAspectOfThePackTrigger(ai); }
-            static Trigger* rapid_fire(PlayerbotAI* ai) { return new RapidFireTrigger(ai); }
-            static Trigger* aspect_of_the_hawk(PlayerbotAI* ai) { return new HunterAspectOfTheHawkTrigger(ai); }
-            static Trigger* aspect_of_the_wild(PlayerbotAI* ai) { return new HunterAspectOfTheWildTrigger(ai); }
+            static std::shared_ptr<Trigger> serpent_sting_on_attacker(PlayerbotAI* ai) { return std::make_shared<SerpentStingOnAttackerTrigger>(ai); }
+            static std::shared_ptr<Trigger> trueshot_aura(PlayerbotAI* ai) { return std::make_shared<TrueshotAuraTrigger>(ai); }
+            static std::shared_ptr<Trigger> aspect_of_the_viper(PlayerbotAI* ai) { return std::make_shared<HunterAspectOfTheViperTrigger>(ai); }
+            static std::shared_ptr<Trigger> black_arrow(PlayerbotAI* ai) { return std::make_shared<BlackArrowTrigger>(ai); }
+            static std::shared_ptr<Trigger> NoStings(PlayerbotAI* ai) { return std::make_shared<HunterNoStingsActiveTrigger>(ai); }
+            static std::shared_ptr<Trigger> hunters_pet_dead(PlayerbotAI* ai) { return std::make_shared<HuntersPetDeadTrigger>(ai); }
+            static std::shared_ptr<Trigger> hunters_pet_low_health(PlayerbotAI* ai) { return std::make_shared<HuntersPetLowHealthTrigger>(ai); }
+            static std::shared_ptr<Trigger> hunters_mark(PlayerbotAI* ai) { return std::make_shared<HuntersMarkTrigger>(ai); }
+            static std::shared_ptr<Trigger> freezing_trap(PlayerbotAI* ai) { return std::make_shared<FreezingTrapTrigger>(ai); }
+            static std::shared_ptr<Trigger> aspect_of_the_pack(PlayerbotAI* ai) { return std::make_shared<HunterAspectOfThePackTrigger>(ai); }
+            static std::shared_ptr<Trigger> rapid_fire(PlayerbotAI* ai) { return std::make_shared<RapidFireTrigger>(ai); }
+            static std::shared_ptr<Trigger> aspect_of_the_hawk(PlayerbotAI* ai) { return std::make_shared<HunterAspectOfTheHawkTrigger>(ai); }
+            static std::shared_ptr<Trigger> aspect_of_the_wild(PlayerbotAI* ai) { return std::make_shared<HunterAspectOfTheWildTrigger>(ai); }
         };
     };
 };
@@ -148,36 +148,36 @@ namespace ai
             }
 
         private:
-            static Action* feign_death(PlayerbotAI* ai) { return new CastFeignDeathAction(ai); }
-            static Action* trueshot_aura(PlayerbotAI* ai) { return new CastTrueshotAuraAction(ai); }
-            static Action* auto_shot(PlayerbotAI* ai) { return new CastAutoShotAction(ai); }
-            static Action* aimed_shot(PlayerbotAI* ai) { return new CastAimedShotAction(ai); }
-            static Action* chimera_shot(PlayerbotAI* ai) { return new CastChimeraShotAction(ai); }
-            static Action* explosive_shot(PlayerbotAI* ai) { return new CastExplosiveShotAction(ai); }
-            static Action* arcane_shot(PlayerbotAI* ai) { return new CastArcaneShotAction(ai); }
-            static Action* concussive_shot(PlayerbotAI* ai) { return new CastConcussiveShotAction(ai); }
-            static Action* distracting_shot(PlayerbotAI* ai) { return new CastDistractingShotAction(ai); }
-            static Action* multi_shot(PlayerbotAI* ai) { return new CastMultiShotAction(ai); }
-            static Action* volley(PlayerbotAI* ai) { return new CastVolleyAction(ai); }
-            static Action* serpent_sting(PlayerbotAI* ai) { return new CastSerpentStingAction(ai); }
-            static Action* serpent_sting_on_attacker(PlayerbotAI* ai) { return new CastSerpentStingOnAttackerAction(ai); }
-            static Action* wyvern_sting(PlayerbotAI* ai) { return new CastWyvernStingAction(ai); }
-            static Action* viper_sting(PlayerbotAI* ai) { return new CastViperStingAction(ai); }
-            static Action* scorpid_sting(PlayerbotAI* ai) { return new CastScorpidStingAction(ai); }
-            static Action* hunters_mark(PlayerbotAI* ai) { return new CastHuntersMarkAction(ai); }
-            static Action* mend_pet(PlayerbotAI* ai) { return new CastMendPetAction(ai); }
-            static Action* revive_pet(PlayerbotAI* ai) { return new CastRevivePetAction(ai); }
-            static Action* call_pet(PlayerbotAI* ai) { return new CastCallPetAction(ai); }
-            static Action* black_arrow(PlayerbotAI* ai) { return new CastBlackArrow(ai); }
-            static Action* freezing_trap(PlayerbotAI* ai) { return new CastFreezingTrap(ai); }
-            static Action* rapid_fire(PlayerbotAI* ai) { return new CastRapidFireAction(ai); }
-            static Action* readiness(PlayerbotAI* ai) { return new CastReadinessAction(ai); }
-            static Action* aspect_of_the_hawk(PlayerbotAI* ai) { return new CastAspectOfTheHawkAction(ai); }
-            static Action* aspect_of_the_wild(PlayerbotAI* ai) { return new CastAspectOfTheWildAction(ai); }
-            static Action* aspect_of_the_viper(PlayerbotAI* ai) { return new CastAspectOfTheViperAction(ai); }
-            static Action* aspect_of_the_pack(PlayerbotAI* ai) { return new CastAspectOfThePackAction(ai); }
-            static Action* aspect_of_the_cheetah(PlayerbotAI* ai) { return new CastAspectOfTheCheetahAction(ai); }
-            static Action* wing_clip(PlayerbotAI* ai) { return new CastWingClipAction(ai); }
+            static std::shared_ptr<Action> feign_death(PlayerbotAI* ai) { return std::make_shared<CastFeignDeathAction>(ai); }
+            static std::shared_ptr<Action> trueshot_aura(PlayerbotAI* ai) { return std::make_shared<CastTrueshotAuraAction>(ai); }
+            static std::shared_ptr<Action> auto_shot(PlayerbotAI* ai) { return std::make_shared<CastAutoShotAction>(ai); }
+            static std::shared_ptr<Action> aimed_shot(PlayerbotAI* ai) { return std::make_shared<CastAimedShotAction>(ai); }
+            static std::shared_ptr<Action> chimera_shot(PlayerbotAI* ai) { return std::make_shared<CastChimeraShotAction>(ai); }
+            static std::shared_ptr<Action> explosive_shot(PlayerbotAI* ai) { return std::make_shared<CastExplosiveShotAction>(ai); }
+            static std::shared_ptr<Action> arcane_shot(PlayerbotAI* ai) { return std::make_shared<CastArcaneShotAction>(ai); }
+            static std::shared_ptr<Action> concussive_shot(PlayerbotAI* ai) { return std::make_shared<CastConcussiveShotAction>(ai); }
+            static std::shared_ptr<Action> distracting_shot(PlayerbotAI* ai) { return std::make_shared<CastDistractingShotAction>(ai); }
+            static std::shared_ptr<Action> multi_shot(PlayerbotAI* ai) { return std::make_shared<CastMultiShotAction>(ai); }
+            static std::shared_ptr<Action> volley(PlayerbotAI* ai) { return std::make_shared<CastVolleyAction>(ai); }
+            static std::shared_ptr<Action> serpent_sting(PlayerbotAI* ai) { return std::make_shared<CastSerpentStingAction>(ai); }
+            static std::shared_ptr<Action> serpent_sting_on_attacker(PlayerbotAI* ai) { return std::make_shared<CastSerpentStingOnAttackerAction>(ai); }
+            static std::shared_ptr<Action> wyvern_sting(PlayerbotAI* ai) { return std::make_shared<CastWyvernStingAction>(ai); }
+            static std::shared_ptr<Action> viper_sting(PlayerbotAI* ai) { return std::make_shared<CastViperStingAction>(ai); }
+            static std::shared_ptr<Action> scorpid_sting(PlayerbotAI* ai) { return std::make_shared<CastScorpidStingAction>(ai); }
+            static std::shared_ptr<Action> hunters_mark(PlayerbotAI* ai) { return std::make_shared<CastHuntersMarkAction>(ai); }
+            static std::shared_ptr<Action> mend_pet(PlayerbotAI* ai) { return std::make_shared<CastMendPetAction>(ai); }
+            static std::shared_ptr<Action> revive_pet(PlayerbotAI* ai) { return std::make_shared<CastRevivePetAction>(ai); }
+            static std::shared_ptr<Action> call_pet(PlayerbotAI* ai) { return std::make_shared<CastCallPetAction>(ai); }
+            static std::shared_ptr<Action> black_arrow(PlayerbotAI* ai) { return std::make_shared<CastBlackArrow>(ai); }
+            static std::shared_ptr<Action> freezing_trap(PlayerbotAI* ai) { return std::make_shared<CastFreezingTrap>(ai); }
+            static std::shared_ptr<Action> rapid_fire(PlayerbotAI* ai) { return std::make_shared<CastRapidFireAction>(ai); }
+            static std::shared_ptr<Action> readiness(PlayerbotAI* ai) { return std::make_shared<CastReadinessAction>(ai); }
+            static std::shared_ptr<Action> aspect_of_the_hawk(PlayerbotAI* ai) { return std::make_shared<CastAspectOfTheHawkAction>(ai); }
+            static std::shared_ptr<Action> aspect_of_the_wild(PlayerbotAI* ai) { return std::make_shared<CastAspectOfTheWildAction>(ai); }
+            static std::shared_ptr<Action> aspect_of_the_viper(PlayerbotAI* ai) { return std::make_shared<CastAspectOfTheViperAction>(ai); }
+            static std::shared_ptr<Action> aspect_of_the_pack(PlayerbotAI* ai) { return std::make_shared<CastAspectOfThePackAction>(ai); }
+            static std::shared_ptr<Action> aspect_of_the_cheetah(PlayerbotAI* ai) { return std::make_shared<CastAspectOfTheCheetahAction>(ai); }
+            static std::shared_ptr<Action> wing_clip(PlayerbotAI* ai) { return std::make_shared<CastWingClipAction>(ai); }
         };
     };
 };

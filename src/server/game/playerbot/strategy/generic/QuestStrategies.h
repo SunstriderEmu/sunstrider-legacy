@@ -9,7 +9,7 @@ namespace ai
         QuestStrategy(PlayerbotAI* ai);
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
     };
 
     class DefaultQuestStrategy : public QuestStrategy
@@ -18,7 +18,7 @@ namespace ai
         DefaultQuestStrategy(PlayerbotAI* ai);
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "quest"; }
     };
 
@@ -28,7 +28,7 @@ namespace ai
         AcceptAllQuestsStrategy(PlayerbotAI* ai);
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "accept all quests"; }
     };
 }

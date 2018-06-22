@@ -24,147 +24,147 @@ public:
         creators["demoralizing roar"] = &demoralizing_roar;
     }
 private:
-    static ActionNode* melee(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> melee(PlayerbotAI* ai)
     {
-        return new ActionNode ("melee",
-            /*P*/ NextAction::array({ new NextAction("feral charge - bear") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("melee",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("feral charge - bear") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* feral_charge_bear(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> feral_charge_bear(PlayerbotAI* ai)
     {
-        return new ActionNode ("feral charge - bear",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("reach melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("feral charge - bear",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("reach melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* swipe_bear(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> swipe_bear(PlayerbotAI* ai)
     {
-        return new ActionNode ("swipe (bear)",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("swipe (bear)",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* faerie_fire_feral(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> faerie_fire_feral(PlayerbotAI* ai)
     {
-        return new ActionNode ("faerie fire (feral)",
-            /*P*/ NextAction::array({ new NextAction("feral charge - bear") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("faerie fire (feral)",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("feral charge - bear") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* bear_form(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> bear_form(PlayerbotAI* ai)
     {
-        return new ActionNode ("bear form",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("bear form",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* dire_bear_form(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> dire_bear_form(PlayerbotAI* ai)
     {
-        return new ActionNode ("dire bear form",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("bear form") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("dire bear form",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("bear form") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* mangle_bear(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> mangle_bear(PlayerbotAI* ai)
     {
-        return new ActionNode ("mangle (bear)",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("lacerate") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("mangle (bear)",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("lacerate") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* maul(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> maul(PlayerbotAI* ai)
     {
-        return new ActionNode ("maul",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("maul",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* bash(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> bash(PlayerbotAI* ai)
     {
-        return new ActionNode ("bash",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("bash",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* swipe(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> swipe(PlayerbotAI* ai)
     {
-        return new ActionNode ("swipe",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("swipe",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* lacerate(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> lacerate(PlayerbotAI* ai)
     {
-        return new ActionNode ("lacerate",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("maul") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("lacerate",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("maul") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* growl(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> growl(PlayerbotAI* ai)
     {
-        return new ActionNode ("growl",
-            /*P*/ NextAction::array({ new NextAction("reach spell") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("growl",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("reach spell") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* demoralizing_roar(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> demoralizing_roar(PlayerbotAI* ai)
     {
-        return new ActionNode ("demoralizing roar",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("demoralizing roar",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
 };
 
 BearTankDruidStrategy::BearTankDruidStrategy(PlayerbotAI* ai) : FeralDruidStrategy(ai)
 {
-    actionNodeFactories.Add(new BearTankDruidStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<BearTankDruidStrategyActionNodeFactory>());
 }
 
 ActionList BearTankDruidStrategy::getDefaultActions()
 {
     return NextAction::array({
-            new NextAction("lacerate", ACTION_NORMAL + 4),
-            new NextAction("mangle (bear)", ACTION_NORMAL + 3),
-            new NextAction("maul", ACTION_NORMAL + 2),
-            new NextAction("faerie fire (feral)", ACTION_NORMAL + 1) });
+            std::make_shared<NextAction>("lacerate", ACTION_NORMAL + 4),
+            std::make_shared<NextAction>("mangle (bear)", ACTION_NORMAL + 3),
+            std::make_shared<NextAction>("maul", ACTION_NORMAL + 2),
+            std::make_shared<NextAction>("faerie fire (feral)", ACTION_NORMAL + 1) });
 }
 
-void BearTankDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void BearTankDruidStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     FeralDruidStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "thorns",
-        NextAction::array({ new NextAction("thorns", ACTION_HIGH + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("thorns", ACTION_HIGH + 9) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "bear form",
-        NextAction::array({ new NextAction("dire bear form", ACTION_HIGH + 8) })));
+        NextAction::array({ std::make_shared<NextAction>("dire bear form", ACTION_HIGH + 8) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "faerie fire (feral)",
-        NextAction::array({ new NextAction("faerie fire (feral)", ACTION_HIGH + 7) })));
+        NextAction::array({ std::make_shared<NextAction>("faerie fire (feral)", ACTION_HIGH + 7) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "lose aggro",
-        NextAction::array({ new NextAction("growl", ACTION_HIGH + 8) })));
+        NextAction::array({ std::make_shared<NextAction>("growl", ACTION_HIGH + 8) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("demoralizing roar", ACTION_HIGH + 6), new NextAction("swipe (bear)", ACTION_HIGH + 6) })));
+        NextAction::array({ std::make_shared<NextAction>("demoralizing roar", ACTION_HIGH + 6), std::make_shared<NextAction>("swipe (bear)", ACTION_HIGH + 6) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "light aoe",
-        NextAction::array({ new NextAction("swipe (bear)", ACTION_HIGH + 5) })));
+        NextAction::array({ std::make_shared<NextAction>("swipe (bear)", ACTION_HIGH + 5) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "bash",
-        NextAction::array({ new NextAction("bash", ACTION_INTERRUPT + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("bash", ACTION_INTERRUPT + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "bash on enemy healer",
-        NextAction::array({ new NextAction("bash on enemy healer", ACTION_INTERRUPT + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("bash on enemy healer", ACTION_INTERRUPT + 1) })));
 
 }

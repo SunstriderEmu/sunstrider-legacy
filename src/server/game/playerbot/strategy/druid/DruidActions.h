@@ -60,7 +60,7 @@ namespace ai
         CastReviveAction(PlayerbotAI* ai) : ResurrectPartyMemberAction(ai, "revive") {}
 
         virtual ActionList getPrerequisites() {
-            return NextAction::merge( NextAction::array({ new NextAction("caster form") }), ResurrectPartyMemberAction::getPrerequisites());
+            return NextAction::merge( NextAction::array({ std::make_shared<NextAction>("caster form") }), ResurrectPartyMemberAction::getPrerequisites());
         }
     };
 
@@ -70,7 +70,7 @@ namespace ai
         CastRebirthAction(PlayerbotAI* ai) : ResurrectPartyMemberAction(ai, "rebirth") {}
 
         virtual ActionList getPrerequisites() {
-            return NextAction::merge( NextAction::array({ new NextAction("caster form") }), ResurrectPartyMemberAction::getPrerequisites());
+            return NextAction::merge( NextAction::array({ std::make_shared<NextAction>("caster form") }), ResurrectPartyMemberAction::getPrerequisites());
         }
     };
 
@@ -140,7 +140,7 @@ namespace ai
     {
     public:
         CastEntanglingRootsCcAction(PlayerbotAI* ai) : CastSpellAction(ai, "entangling roots on cc") {}
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
         virtual bool Execute(Event event);
     };
 

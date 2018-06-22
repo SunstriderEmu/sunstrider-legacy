@@ -5,9 +5,9 @@
 using namespace ai;
 
 
-void TellTargetStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void TellTargetStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "target changed",
-        NextAction::array({ new NextAction("tell target", 51.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("tell target", 51.0f) })));
 }

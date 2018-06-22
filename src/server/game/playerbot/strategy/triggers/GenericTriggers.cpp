@@ -56,12 +56,12 @@ bool BuffTrigger::IsActive()
         (!AI_VALUE2(bool, "has mana", "self target") || AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig.lowMana);
 }
 
-Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
+std::shared_ptr<Value<Unit*>> BuffOnPartyTrigger::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member without aura", spell);
 }
 
-Value<Unit*>* DebuffOnAttackerTrigger::GetTargetValue()
+std::shared_ptr<Value<Unit*>> DebuffOnAttackerTrigger::GetTargetValue()
 {
     return context->GetValue<Unit*>("attacker without aura", spell);
 }
@@ -236,7 +236,7 @@ bool TargetChangedTrigger::IsActive()
     return target && oldTarget != target;
 }
 
-Value<Unit*>* InterruptEnemyHealerTrigger::GetTargetValue()
+std::shared_ptr<Value<Unit*>> InterruptEnemyHealerTrigger::GetTargetValue()
 {
     return context->GetValue<Unit*>("enemy healer target", spell);
 }

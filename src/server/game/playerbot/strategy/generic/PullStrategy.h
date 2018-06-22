@@ -13,8 +13,8 @@ namespace ai
         }
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual void InitMultipliers(std::list<Multiplier*> &multipliers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
+        virtual void InitMultipliers(std::list<std::shared_ptr<Multiplier>> &multipliers);
         virtual std::string getName() { return "pull"; }
         virtual ActionList getDefaultActions();
 

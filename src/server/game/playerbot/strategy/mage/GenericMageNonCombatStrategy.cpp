@@ -15,73 +15,73 @@ public:
         creators["ice armor"] = &ice_armor;
     }
 private:
-    static ActionNode* molten_armor(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> molten_armor(PlayerbotAI* ai)
     {
-        return new ActionNode ("molten armor",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("mage armor") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("molten armor",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("mage armor") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* mage_armor(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> mage_armor(PlayerbotAI* ai)
     {
-        return new ActionNode ("mage armor",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("ice armor") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("mage armor",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("ice armor") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* ice_armor(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> ice_armor(PlayerbotAI* ai)
     {
-        return new ActionNode ("ice armor",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("frost armor") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("ice armor",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("frost armor") }),
+            /*C*/ ActionList());
     }
 };
 
 GenericMageNonCombatStrategy::GenericMageNonCombatStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericMageNonCombatStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericMageNonCombatStrategyActionNodeFactory>());
 }
 
-void GenericMageNonCombatStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericMageNonCombatStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "arcane intellect",
-        NextAction::array({ new NextAction("arcane intellect", 21.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("arcane intellect", 21.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "arcane intellect on party",
-        NextAction::array({ new NextAction("arcane intellect on party", 20.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("arcane intellect on party", 20.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no drink",
-        NextAction::array({ new NextAction("conjure water", 16.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("conjure water", 16.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no food",
-        NextAction::array({ new NextAction("conjure food", 15.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("conjure food", 15.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "remove curse",
-        NextAction::array({ new NextAction("remove curse", 41.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("remove curse", 41.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "remove curse on party",
-        NextAction::array({ new NextAction("remove curse on party", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("remove curse on party", 40.0f) })));
 }
 
-void MageBuffManaStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void MageBuffManaStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "mage armor",
-        NextAction::array({ new NextAction("mage armor", 19.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("mage armor", 19.0f) })));
 }
 
-void MageBuffDpsStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void MageBuffDpsStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "mage armor",
-        NextAction::array({ new NextAction("molten armor", 19.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("molten armor", 19.0f) })));
 }

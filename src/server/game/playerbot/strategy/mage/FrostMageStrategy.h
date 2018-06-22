@@ -11,7 +11,7 @@ namespace ai
         FrostMageStrategy(PlayerbotAI* ai);
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "frost"; }
         virtual ActionList getDefaultActions();
     };
@@ -22,7 +22,7 @@ namespace ai
         FrostMageAoeStrategy(PlayerbotAI* ai) : CombatStrategy(ai) {}
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "frost aoe"; }
     };
 }

@@ -6,18 +6,17 @@
 using namespace ai;
 
 
-void Queue::Push(ActionBasket *action)
+void Queue::Push(std::shared_ptr<ActionBasket> action)
 {
     if (action)
     {
-        for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
+        for (std::list<std::shared_ptr<ActionBasket>>::iterator iter = actions.begin(); iter != actions.end(); iter++)
         {
-            ActionBasket* basket = *iter;
+            std::shared_ptr<ActionBasket> basket = *iter;
             if (action->getAction()->getName() == basket->getAction()->getName())
             {
                 if (basket->getRelevance() < action->getRelevance())
                     basket->setRelevance(action->getRelevance());
-                delete action;
                 return;
             }
         }
@@ -25,47 +24,40 @@ void Queue::Push(ActionBasket *action)
     }
 }
 
-void Queue::Push(ActionBasket** _actions)
+void Queue::Push(std::list<std::shared_ptr<ActionBasket>> _actions)
 {
-    if (_actions)
-    {
-        for (int i=0; i<sizeof(_actions)/sizeof(ActionBasket*); i++)
-        {
-            Push(_actions[i]);
-        }
-    }
+    actions = _actions;
 }
 
-ActionNode* Queue::Pop()
+std::shared_ptr<ActionNode> Queue::Pop()
 {
     float max = -1;
-    ActionBasket* selection = NULL;
-    for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
+    std::shared_ptr<ActionBasket> selection = nullptr;
+    for (std::list<std::shared_ptr<ActionBasket>>::iterator iter = actions.begin(); iter != actions.end(); iter++)
     {
-        ActionBasket* basket = *iter;
+        std::shared_ptr<ActionBasket> basket = *iter;
         if (basket->getRelevance() > max)
         {
             max = basket->getRelevance();
             selection = basket;
         }
     }
-    if (selection != NULL)
+    if (selection != nullptr)
     {
-        ActionNode* action = selection->getAction();
+        std::shared_ptr<ActionNode> action = selection->getAction();
         actions.remove(selection);
-        delete selection;
         return action;
     }
-    return NULL;
+    return nullptr;
 }
 
-ActionBasket* Queue::Peek()
+std::shared_ptr<ActionBasket> Queue::Peek()
 {
     float max = -1;
-    ActionBasket* selection = NULL;
-    for (std::list<ActionBasket*>::iterator iter = actions.begin(); iter != actions.end(); iter++)
+    std::shared_ptr<ActionBasket> selection = NULL;
+    for (std::list<std::shared_ptr<ActionBasket>>::iterator iter = actions.begin(); iter != actions.end(); iter++)
     {
-        ActionBasket* basket = *iter;
+        std::shared_ptr<ActionBasket> basket = *iter;
         if (basket->getRelevance() > max)
         {
             max = basket->getRelevance();
@@ -78,4 +70,10 @@ ActionBasket* Queue::Peek()
 int Queue::Size()
 {
     return actions.size();
+}
+
+
+void Queue::Clear()
+{
+    actions.clear();
 }

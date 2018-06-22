@@ -28,9 +28,9 @@ namespace ai
             }
 
         private:
-            static Strategy* dps(PlayerbotAI* ai) { return new DpsRogueStrategy(ai); }
-            static Strategy* nc(PlayerbotAI* ai) { return new GenericRogueNonCombatStrategy(ai); }
-            static Strategy* pull(PlayerbotAI* ai) { return new PullStrategy(ai, "shoot"); }
+            static std::shared_ptr<Strategy> dps(PlayerbotAI* ai) { return std::make_shared<DpsRogueStrategy>(ai); }
+            static std::shared_ptr<Strategy> nc(PlayerbotAI* ai) { return std::make_shared<GenericRogueNonCombatStrategy>(ai); }
+            static std::shared_ptr<Strategy> pull(PlayerbotAI* ai) { return std::make_shared<PullStrategy>(ai, "shoot"); }
         };
     };
 };
@@ -55,11 +55,11 @@ namespace ai
             }
 
         private:
-            static Trigger* kick(PlayerbotAI* ai) { return new KickInterruptSpellTrigger(ai); }
-            static Trigger* rupture(PlayerbotAI* ai) { return new RuptureTrigger(ai); }
-            static Trigger* slice_and_dice(PlayerbotAI* ai) { return new SliceAndDiceTrigger(ai); }
-            static Trigger* expose_armor(PlayerbotAI* ai) { return new ExposeArmorTrigger(ai); }
-            static Trigger* kick_on_enemy_healer(PlayerbotAI* ai) { return new KickInterruptEnemyHealerSpellTrigger(ai); }
+            static std::shared_ptr<Trigger> kick(PlayerbotAI* ai) { return std::make_shared<KickInterruptSpellTrigger>(ai); }
+            static std::shared_ptr<Trigger> rupture(PlayerbotAI* ai) { return std::make_shared<RuptureTrigger>(ai); }
+            static std::shared_ptr<Trigger> slice_and_dice(PlayerbotAI* ai) { return std::make_shared<SliceAndDiceTrigger>(ai); }
+            static std::shared_ptr<Trigger> expose_armor(PlayerbotAI* ai) { return std::make_shared<ExposeArmorTrigger>(ai); }
+            static std::shared_ptr<Trigger> kick_on_enemy_healer(PlayerbotAI* ai) { return std::make_shared<KickInterruptEnemyHealerSpellTrigger>(ai); }
         };
     };
 };
@@ -93,20 +93,20 @@ namespace ai
             }
 
         private:
-            static Action* riposte(PlayerbotAI* ai) { return new CastRiposteAction(ai); }
-            static Action* mutilate(PlayerbotAI* ai) { return new CastMutilateAction(ai); }
-            static Action* sinister_strike(PlayerbotAI* ai) { return new CastSinisterStrikeAction(ai); }
-            static Action* kidney_shot(PlayerbotAI* ai) { return new CastKidneyShotAction(ai); }
-            static Action* rupture(PlayerbotAI* ai) { return new CastRuptureAction(ai); }
-            static Action* slice_and_dice(PlayerbotAI* ai) { return new CastSliceAndDiceAction(ai); }
-            static Action* eviscerate(PlayerbotAI* ai) { return new CastEviscerateAction(ai); }
-            static Action* vanish(PlayerbotAI* ai) { return new CastVanishAction(ai); }
-            static Action* evasion(PlayerbotAI* ai) { return new CastEvasionAction(ai); }
-            static Action* kick(PlayerbotAI* ai) { return new CastKickAction(ai); }
-            static Action* feint(PlayerbotAI* ai) { return new CastFeintAction(ai); }
-            static Action* backstab(PlayerbotAI* ai) { return new CastBackstabAction(ai); }
-            static Action* expose_armor(PlayerbotAI* ai) { return new CastExposeArmorAction(ai); }
-            static Action* kick_on_enemy_healer(PlayerbotAI* ai) { return new CastKickOnEnemyHealerAction(ai); }
+            static std::shared_ptr<Action> riposte(PlayerbotAI* ai) { return std::make_shared<CastRiposteAction>(ai); }
+            static std::shared_ptr<Action> mutilate(PlayerbotAI* ai) { return std::make_shared<CastMutilateAction>(ai); }
+            static std::shared_ptr<Action> sinister_strike(PlayerbotAI* ai) { return std::make_shared<CastSinisterStrikeAction>(ai); }
+            static std::shared_ptr<Action> kidney_shot(PlayerbotAI* ai) { return std::make_shared<CastKidneyShotAction>(ai); }
+            static std::shared_ptr<Action> rupture(PlayerbotAI* ai) { return std::make_shared<CastRuptureAction>(ai); }
+            static std::shared_ptr<Action> slice_and_dice(PlayerbotAI* ai) { return std::make_shared<CastSliceAndDiceAction>(ai); }
+            static std::shared_ptr<Action> eviscerate(PlayerbotAI* ai) { return std::make_shared<CastEviscerateAction>(ai); }
+            static std::shared_ptr<Action> vanish(PlayerbotAI* ai) { return std::make_shared<CastVanishAction>(ai); }
+            static std::shared_ptr<Action> evasion(PlayerbotAI* ai) { return std::make_shared<CastEvasionAction>(ai); }
+            static std::shared_ptr<Action> kick(PlayerbotAI* ai) { return std::make_shared<CastKickAction>(ai); }
+            static std::shared_ptr<Action> feint(PlayerbotAI* ai) { return std::make_shared<CastFeintAction>(ai); }
+            static std::shared_ptr<Action> backstab(PlayerbotAI* ai) { return std::make_shared<CastBackstabAction>(ai); }
+            static std::shared_ptr<Action> expose_armor(PlayerbotAI* ai) { return std::make_shared<CastExposeArmorAction>(ai); }
+            static std::shared_ptr<Action> kick_on_enemy_healer(PlayerbotAI* ai) { return std::make_shared<CastKickOnEnemyHealerAction>(ai); }
         };
     };
 };

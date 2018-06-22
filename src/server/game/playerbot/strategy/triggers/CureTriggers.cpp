@@ -11,7 +11,7 @@ bool NeedCureTrigger::IsActive()
     return target && ai->HasAuraToDispel(target, dispelType);
 }
 
-Value<Unit*>* PartyMemberNeedCureTrigger::GetTargetValue()
+std::shared_ptr<Value<Unit*>> PartyMemberNeedCureTrigger::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member to dispel", dispelType);
 }

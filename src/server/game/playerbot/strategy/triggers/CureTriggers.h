@@ -30,6 +30,6 @@ namespace ai
         PartyMemberNeedCureTrigger(PlayerbotAI* ai, std::string spell, uint32 dispelType) :
             NeedCureTrigger(ai, spell, dispelType) {}
 
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
     };
 }

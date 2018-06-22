@@ -21,119 +21,119 @@ public:
         creators["rip"] = &rip;
     }
 private:
-    static ActionNode* faerie_fire_feral(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> faerie_fire_feral(PlayerbotAI* ai)
     {
-        return new ActionNode ("faerie fire (feral)",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("faerie fire (feral)",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* melee(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> melee(PlayerbotAI* ai)
     {
-        return new ActionNode ("melee",
-            /*P*/ NextAction::array({ new NextAction("feral charge - cat") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("melee",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("feral charge - cat") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* feral_charge_cat(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> feral_charge_cat(PlayerbotAI* ai)
     {
-        return new ActionNode ("feral charge - cat",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("reach melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("feral charge - cat",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("reach melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* cat_form(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> cat_form(PlayerbotAI* ai)
     {
-        return new ActionNode ("cat form",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("cat form",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* claw(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> claw(PlayerbotAI* ai)
     {
-        return new ActionNode ("claw",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("claw",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* mangle_cat(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> mangle_cat(PlayerbotAI* ai)
     {
-        return new ActionNode ("mangle (cat)",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("claw") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("mangle (cat)",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("claw") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* rake(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> rake(PlayerbotAI* ai)
     {
-        return new ActionNode ("rake",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("rake",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* ferocious_bite(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> ferocious_bite(PlayerbotAI* ai)
     {
-        return new ActionNode ("ferocious bite",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("rip") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("ferocious bite",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("rip") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* rip(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> rip(PlayerbotAI* ai)
     {
-        return new ActionNode ("rip",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("rip",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
 };
 
 CatDpsDruidStrategy::CatDpsDruidStrategy(PlayerbotAI* ai) : FeralDruidStrategy(ai)
 {
-    actionNodeFactories.Add(new CatDpsDruidStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<CatDpsDruidStrategyActionNodeFactory>());
 }
 
 ActionList CatDpsDruidStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("mangle (cat)", ACTION_NORMAL + 1) });
+    return NextAction::array({ std::make_shared<NextAction>("mangle (cat)", ACTION_NORMAL + 1) });
 }
 
-void CatDpsDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void CatDpsDruidStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     FeralDruidStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cat form",
-        NextAction::array({ new NextAction("cat form", ACTION_MOVE + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("cat form", ACTION_MOVE + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "rake",
-        NextAction::array({ new NextAction("rake", ACTION_NORMAL + 5) })));
+        NextAction::array({ std::make_shared<NextAction>("rake", ACTION_NORMAL + 5) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "combo points available",
-        NextAction::array({ new NextAction("ferocious bite", ACTION_NORMAL + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("ferocious bite", ACTION_NORMAL + 9) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium threat",
-        NextAction::array({ new NextAction("cower", ACTION_EMERGENCY + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("cower", ACTION_EMERGENCY + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "faerie fire (feral)",
-        NextAction::array({ new NextAction("faerie fire (feral)", ACTION_HIGH + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("faerie fire (feral)", ACTION_HIGH + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "tiger's fury",
-        NextAction::array({ new NextAction("tiger's fury", ACTION_EMERGENCY + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("tiger's fury", ACTION_EMERGENCY + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "entangling roots",
-        NextAction::array({ new NextAction("entangling roots on cc", ACTION_HIGH + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("entangling roots on cc", ACTION_HIGH + 1) })));
 
 }
 
-void CatAoeDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void CatAoeDruidStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("swipe (cat)", ACTION_HIGH + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("swipe (cat)", ACTION_HIGH + 2) })));
 }
 

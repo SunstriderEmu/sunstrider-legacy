@@ -9,7 +9,7 @@ namespace ai
         DeadStrategy(PlayerbotAI* ai);
 
     public:
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual std::string getName() { return "dead"; }
     };
 }

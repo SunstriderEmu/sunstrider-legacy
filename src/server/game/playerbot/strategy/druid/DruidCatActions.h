@@ -33,7 +33,7 @@ namespace ai {
 
         virtual ActionList getPrerequisites()
         {
-            return NextAction::merge( NextAction::array({ new NextAction("reach melee") }), CastDebuffSpellAction::getPrerequisites());
+            return NextAction::merge( NextAction::array({ std::make_shared<NextAction>("reach melee") }), CastDebuffSpellAction::getPrerequisites());
         }
     };
 

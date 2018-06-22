@@ -15,44 +15,44 @@ public:
         creators["aspect of the pack"] = &aspect_of_the_pack;
     }
 private:
-    static ActionNode* rapid_fire(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> rapid_fire(PlayerbotAI* ai)
     {
-        return new ActionNode ("rapid fire",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("readiness") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("rapid fire",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("readiness") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* aspect_of_the_pack(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> aspect_of_the_pack(PlayerbotAI* ai)
     {
-        return new ActionNode ("aspect of the pack",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("aspect of the cheetah") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("aspect of the pack",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("aspect of the cheetah") }),
+            /*C*/ ActionList());
     }
 };
 
 GenericHunterNonCombatStrategy::GenericHunterNonCombatStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericHunterNonCombatStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericHunterNonCombatStrategyActionNodeFactory>());
 }
 
-void GenericHunterNonCombatStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericHunterNonCombatStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "trueshot aura",
-        NextAction::array({ new NextAction("trueshot aura", 2.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("trueshot aura", 2.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no pet",
-        NextAction::array({ new NextAction("call pet", 60.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("call pet", 60.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "hunters pet dead",
-        NextAction::array({ new NextAction("revive pet", 60.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("revive pet", 60.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "hunters pet low health",
-        NextAction::array({ new NextAction("mend pet", 60.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("mend pet", 60.0f) })));
 }

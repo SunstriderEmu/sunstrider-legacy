@@ -5,44 +5,44 @@
 
 using namespace ai;
 
-void ShamanNonCombatStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void ShamanNonCombatStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member dead",
-        NextAction::array({ new NextAction("ancestral spirit", 33.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("ancestral spirit", 33.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "water breathing",
-        NextAction::array({ new NextAction("water breathing", 12.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("water breathing", 12.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "water walking",
-        NextAction::array({ new NextAction("water walking", 12.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("water walking", 12.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "water breathing on party",
-        NextAction::array({ new NextAction("water breathing on party", 11.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("water breathing on party", 11.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "water walking on party",
-        NextAction::array({ new NextAction("water walking on party", 11.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("water walking on party", 11.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "critical health",
-        NextAction::array({ new NextAction("healing wave", 70.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("healing wave", 70.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member critical health",
-        NextAction::array({ new NextAction("healing wave on party", 60.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("healing wave on party", 60.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe heal",
-        NextAction::array({ new NextAction("chain heal", 27.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("chain heal", 27.0f) })));
 }
 
-void ShamanNonCombatStrategy::InitMultipliers(std::list<Multiplier*> &multipliers)
+void ShamanNonCombatStrategy::InitMultipliers(std::list<std::shared_ptr<Multiplier>> &multipliers)
 {
     NonCombatStrategy::InitMultipliers(multipliers);
 }

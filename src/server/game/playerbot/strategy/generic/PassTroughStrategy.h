@@ -7,15 +7,15 @@ namespace ai
     public:
         PassTroughStrategy(PlayerbotAI* ai, float relevance = 100.0f) : Strategy(ai), relevance(relevance) {}
 
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers)
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
         {
             for (list<std::string>::iterator i = supported.begin(); i != supported.end(); i++)
             {
                 std::string s = i->c_str();
 
-                triggers.push_back(new TriggerNode(
+                triggers.push_back(std::make_shared<TriggerNode>(
                     s, 
-                    NextAction::array({ new NextAction(s, relevance) })));
+                    NextAction::array({ std::make_shared<NextAction>(s, relevance) })));
             }
         }
 

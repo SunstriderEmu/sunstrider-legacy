@@ -29,9 +29,9 @@ namespace ai
             }
 
         private:
-            static Strategy* nc(PlayerbotAI* ai) { return new GenericWarriorNonCombatStrategy(ai); }
-            static Strategy* aoe(PlayerbotAI* ai) { return new DpsWarrirorAoeStrategy(ai); }
-            static Strategy* pull(PlayerbotAI* ai) { return new PullStrategy(ai, "shoot"); }
+            static std::shared_ptr<Strategy> nc(PlayerbotAI* ai) { return std::make_shared<GenericWarriorNonCombatStrategy>(ai); }
+            static std::shared_ptr<Strategy> aoe(PlayerbotAI* ai) { return std::make_shared<DpsWarrirorAoeStrategy>(ai); }
+            static std::shared_ptr<Strategy> pull(PlayerbotAI* ai) { return std::make_shared<PullStrategy>(ai, "shoot"); }
         };
 
         class CombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -44,8 +44,8 @@ namespace ai
             }
 
         private:
-            static Strategy* tank(PlayerbotAI* ai) { return new TankWarriorStrategy(ai); }
-            static Strategy* dps(PlayerbotAI* ai) { return new DpsWarriorStrategy(ai); }
+            static std::shared_ptr<Strategy> tank(PlayerbotAI* ai) { return std::make_shared<TankWarriorStrategy>(ai); }
+            static std::shared_ptr<Strategy> dps(PlayerbotAI* ai) { return std::make_shared<DpsWarriorStrategy>(ai); }
         };
     };
 };
@@ -77,18 +77,18 @@ namespace ai
             }
 
         private:
-            static Trigger* hamstring(PlayerbotAI* ai) { return new HamstringTrigger(ai); }
-            static Trigger* victory_rush(PlayerbotAI* ai) { return new VictoryRushTrigger(ai); }
-            static Trigger* death_wish(PlayerbotAI* ai) { return new DeathWishTrigger(ai); }
-            static Trigger* battle_shout(PlayerbotAI* ai) { return new BattleShoutTrigger(ai); }
-            static Trigger* rend(PlayerbotAI* ai) { return new RendDebuffTrigger(ai); }
-            static Trigger* rend_on_attacker(PlayerbotAI* ai) { return new RendDebuffOnAttackerTrigger(ai); }
-            static Trigger* bloodrage(PlayerbotAI* ai) { return new BloodrageDebuffTrigger(ai); }
-            static Trigger* shield_bash(PlayerbotAI* ai) { return new ShieldBashInterruptSpellTrigger(ai); }
-            static Trigger* disarm(PlayerbotAI* ai) { return new DisarmDebuffTrigger(ai); }
-            static Trigger* concussion_blow(PlayerbotAI* ai) { return new ConcussionBlowTrigger(ai); }
-            static Trigger* SwordAndBoard(PlayerbotAI* ai) { return new SwordAndBoardTrigger(ai); }
-            static Trigger* shield_bash_on_enemy_healer(PlayerbotAI* ai) { return new ShieldBashInterruptEnemyHealerSpellTrigger(ai); }
+            static std::shared_ptr<Trigger> hamstring(PlayerbotAI* ai) { return std::make_shared<HamstringTrigger>(ai); }
+            static std::shared_ptr<Trigger> victory_rush(PlayerbotAI* ai) { return std::make_shared<VictoryRushTrigger>(ai); }
+            static std::shared_ptr<Trigger> death_wish(PlayerbotAI* ai) { return std::make_shared<DeathWishTrigger>(ai); }
+            static std::shared_ptr<Trigger> battle_shout(PlayerbotAI* ai) { return std::make_shared<BattleShoutTrigger>(ai); }
+            static std::shared_ptr<Trigger> rend(PlayerbotAI* ai) { return std::make_shared<RendDebuffTrigger>(ai); }
+            static std::shared_ptr<Trigger> rend_on_attacker(PlayerbotAI* ai) { return std::make_shared<RendDebuffOnAttackerTrigger>(ai); }
+            static std::shared_ptr<Trigger> bloodrage(PlayerbotAI* ai) { return std::make_shared<BloodrageDebuffTrigger>(ai); }
+            static std::shared_ptr<Trigger> shield_bash(PlayerbotAI* ai) { return std::make_shared<ShieldBashInterruptSpellTrigger>(ai); }
+            static std::shared_ptr<Trigger> disarm(PlayerbotAI* ai) { return std::make_shared<DisarmDebuffTrigger>(ai); }
+            static std::shared_ptr<Trigger> concussion_blow(PlayerbotAI* ai) { return std::make_shared<ConcussionBlowTrigger>(ai); }
+            static std::shared_ptr<Trigger> SwordAndBoard(PlayerbotAI* ai) { return std::make_shared<SwordAndBoardTrigger>(ai); }
+            static std::shared_ptr<Trigger> shield_bash_on_enemy_healer(PlayerbotAI* ai) { return std::make_shared<ShieldBashInterruptEnemyHealerSpellTrigger>(ai); }
         };
     };
 };
@@ -143,41 +143,41 @@ namespace ai
             }
 
         private:
-            static Action* devastate(PlayerbotAI* ai) { return new CastDevastateAction(ai); }
-            static Action* last_stand(PlayerbotAI* ai) { return new CastLastStandAction(ai); }
-            static Action* shockwave(PlayerbotAI* ai) { return new CastShockwaveAction(ai); }
-            static Action* cleave(PlayerbotAI* ai) { return new CastCleaveAction(ai); }
-            static Action* concussion_blow(PlayerbotAI* ai) { return new CastConcussionBlowAction(ai); }
-            static Action* taunt(PlayerbotAI* ai) { return new CastTauntAction(ai); }
-            static Action* revenge(PlayerbotAI* ai) { return new CastRevengeAction(ai); }
-            static Action* slam(PlayerbotAI* ai) { return new CastSlamAction(ai); }
-            static Action* shield_slam(PlayerbotAI* ai) { return new CastShieldSlamAction(ai); }
-            static Action* disarm(PlayerbotAI* ai) { return new CastDisarmAction(ai); }
-            static Action* sunder_armor(PlayerbotAI* ai) { return new CastSunderArmorAction(ai); }
-            static Action* overpower(PlayerbotAI* ai) { return new CastOverpowerAction(ai); }
-            static Action* charge(PlayerbotAI* ai) { return new CastChargeAction(ai); }
-            static Action* bloodthirst(PlayerbotAI* ai) { return new CastBloodthirstAction(ai); }
-            static Action* rend(PlayerbotAI* ai) { return new CastRendAction(ai); }
-            static Action* rend_on_attacker(PlayerbotAI* ai) { return new CastRendOnAttackerAction(ai); }
-            static Action* mocking_blow(PlayerbotAI* ai) { return new CastMockingBlowAction(ai); }
-            static Action* death_wish(PlayerbotAI* ai) { return new CastDeathWishAction(ai); }
-            static Action* berserker_rage(PlayerbotAI* ai) { return new CastBerserkerRageAction(ai); }
-            static Action* victory_rush(PlayerbotAI* ai) { return new CastVictoryRushAction(ai); }
-            static Action* execute(PlayerbotAI* ai) { return new CastExecuteAction(ai); }
-            static Action* defensive_stance(PlayerbotAI* ai) { return new CastDefensiveStanceAction(ai); }
-            static Action* hamstring(PlayerbotAI* ai) { return new CastHamstringAction(ai); }
-            static Action* shield_bash(PlayerbotAI* ai) { return new CastShieldBashAction(ai); }
-            static Action* shield_block(PlayerbotAI* ai) { return new CastShieldBlockAction(ai); }
-            static Action* bloodrage(PlayerbotAI* ai) { return new CastBloodrageAction(ai); }
-            static Action* battle_stance(PlayerbotAI* ai) { return new CastBattleStanceAction(ai); }
-            static Action* heroic_strike(PlayerbotAI* ai) { return new CastHeroicStrikeAction(ai); }
-            static Action* intimidating_shout(PlayerbotAI* ai) { return new CastIntimidatingShoutAction(ai); }
-            static Action* demoralizing_shout(PlayerbotAI* ai) { return new CastDemoralizingShoutAction(ai); }
-            static Action* challenging_shout(PlayerbotAI* ai) { return new CastChallengingShoutAction(ai); }
-            static Action* shield_wall(PlayerbotAI* ai) { return new CastShieldWallAction(ai); }
-            static Action* battle_shout(PlayerbotAI* ai) { return new CastBattleShoutAction(ai); }
-            static Action* thunder_clap(PlayerbotAI* ai) { return new CastThunderClapAction(ai); }
-            static Action* shield_bash_on_enemy_healer(PlayerbotAI* ai) { return new CastShieldBashOnEnemyHealerAction(ai); }
+            static std::shared_ptr<Action> devastate(PlayerbotAI* ai) { return std::make_shared<CastDevastateAction>(ai); }
+            static std::shared_ptr<Action> last_stand(PlayerbotAI* ai) { return std::make_shared<CastLastStandAction>(ai); }
+            static std::shared_ptr<Action> shockwave(PlayerbotAI* ai) { return std::make_shared<CastShockwaveAction>(ai); }
+            static std::shared_ptr<Action> cleave(PlayerbotAI* ai) { return std::make_shared<CastCleaveAction>(ai); }
+            static std::shared_ptr<Action> concussion_blow(PlayerbotAI* ai) { return std::make_shared<CastConcussionBlowAction>(ai); }
+            static std::shared_ptr<Action> taunt(PlayerbotAI* ai) { return std::make_shared<CastTauntAction>(ai); }
+            static std::shared_ptr<Action> revenge(PlayerbotAI* ai) { return std::make_shared<CastRevengeAction>(ai); }
+            static std::shared_ptr<Action> slam(PlayerbotAI* ai) { return std::make_shared<CastSlamAction>(ai); }
+            static std::shared_ptr<Action> shield_slam(PlayerbotAI* ai) { return std::make_shared<CastShieldSlamAction>(ai); }
+            static std::shared_ptr<Action> disarm(PlayerbotAI* ai) { return std::make_shared<CastDisarmAction>(ai); }
+            static std::shared_ptr<Action> sunder_armor(PlayerbotAI* ai) { return std::make_shared<CastSunderArmorAction>(ai); }
+            static std::shared_ptr<Action> overpower(PlayerbotAI* ai) { return std::make_shared<CastOverpowerAction>(ai); }
+            static std::shared_ptr<Action> charge(PlayerbotAI* ai) { return std::make_shared<CastChargeAction>(ai); }
+            static std::shared_ptr<Action> bloodthirst(PlayerbotAI* ai) { return std::make_shared<CastBloodthirstAction>(ai); }
+            static std::shared_ptr<Action> rend(PlayerbotAI* ai) { return std::make_shared<CastRendAction>(ai); }
+            static std::shared_ptr<Action> rend_on_attacker(PlayerbotAI* ai) { return std::make_shared<CastRendOnAttackerAction>(ai); }
+            static std::shared_ptr<Action> mocking_blow(PlayerbotAI* ai) { return std::make_shared<CastMockingBlowAction>(ai); }
+            static std::shared_ptr<Action> death_wish(PlayerbotAI* ai) { return std::make_shared<CastDeathWishAction>(ai); }
+            static std::shared_ptr<Action> berserker_rage(PlayerbotAI* ai) { return std::make_shared<CastBerserkerRageAction>(ai); }
+            static std::shared_ptr<Action> victory_rush(PlayerbotAI* ai) { return std::make_shared<CastVictoryRushAction>(ai); }
+            static std::shared_ptr<Action> execute(PlayerbotAI* ai) { return std::make_shared<CastExecuteAction>(ai); }
+            static std::shared_ptr<Action> defensive_stance(PlayerbotAI* ai) { return std::make_shared<CastDefensiveStanceAction>(ai); }
+            static std::shared_ptr<Action> hamstring(PlayerbotAI* ai) { return std::make_shared<CastHamstringAction>(ai); }
+            static std::shared_ptr<Action> shield_bash(PlayerbotAI* ai) { return std::make_shared<CastShieldBashAction>(ai); }
+            static std::shared_ptr<Action> shield_block(PlayerbotAI* ai) { return std::make_shared<CastShieldBlockAction>(ai); }
+            static std::shared_ptr<Action> bloodrage(PlayerbotAI* ai) { return std::make_shared<CastBloodrageAction>(ai); }
+            static std::shared_ptr<Action> battle_stance(PlayerbotAI* ai) { return std::make_shared<CastBattleStanceAction>(ai); }
+            static std::shared_ptr<Action> heroic_strike(PlayerbotAI* ai) { return std::make_shared<CastHeroicStrikeAction>(ai); }
+            static std::shared_ptr<Action> intimidating_shout(PlayerbotAI* ai) { return std::make_shared<CastIntimidatingShoutAction>(ai); }
+            static std::shared_ptr<Action> demoralizing_shout(PlayerbotAI* ai) { return std::make_shared<CastDemoralizingShoutAction>(ai); }
+            static std::shared_ptr<Action> challenging_shout(PlayerbotAI* ai) { return std::make_shared<CastChallengingShoutAction>(ai); }
+            static std::shared_ptr<Action> shield_wall(PlayerbotAI* ai) { return std::make_shared<CastShieldWallAction>(ai); }
+            static std::shared_ptr<Action> battle_shout(PlayerbotAI* ai) { return std::make_shared<CastBattleShoutAction>(ai); }
+            static std::shared_ptr<Action> thunder_clap(PlayerbotAI* ai) { return std::make_shared<CastThunderClapAction>(ai); }
+            static std::shared_ptr<Action> shield_bash_on_enemy_healer(PlayerbotAI* ai) { return std::make_shared<CastShieldBashOnEnemyHealerAction>(ai); }
 
         };
     };

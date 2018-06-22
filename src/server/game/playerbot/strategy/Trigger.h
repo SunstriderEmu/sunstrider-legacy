@@ -4,7 +4,7 @@
 #include "../PlayerbotAIAware.h"
 
 #define NEXT_TRIGGERS(name, relevance) \
-    virtual NextAction* getNextAction() { return new NextAction(name, relevance); }
+    virtual std::shared_ptr<NextAction> getNextAction() { return std::make_shared<NextAction>(name, relevance); }
 
 #define BEGIN_TRIGGER(clazz, super) \
 class clazz : public super \
@@ -37,7 +37,7 @@ namespace ai
         void Update() {}
         virtual void Reset() {}
         virtual Unit* GetTarget();
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
         virtual std::string GetTargetName() { return "self target"; }
 
         bool needCheck() {
@@ -69,15 +69,15 @@ namespace ai
         }
 
     public:
-        Trigger* getTrigger() { return trigger; }
-        void setTrigger(Trigger* _trigger) { trigger = _trigger; }
+        std::shared_ptr<Trigger> getTrigger() { return trigger; }
+        void setTrigger(std::shared_ptr<Trigger> _trigger) { trigger = _trigger; }
         std::string getName() { return name; }
 
     public:
         ActionList getHandlers() { return NextAction::merge(NextAction::clone(handlers), trigger->getHandlers()); }
 
     private:
-        Trigger* trigger;
+        std::shared_ptr<Trigger> trigger;
         ActionList handlers;
         std::string name;
     };

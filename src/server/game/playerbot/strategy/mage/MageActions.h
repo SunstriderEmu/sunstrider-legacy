@@ -157,7 +157,7 @@ namespace ai
     {
     public:
         CastPolymorphAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "polymorph") {}
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
     };
 
     class CastSpellstealAction : public CastSpellAction

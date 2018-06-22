@@ -15,50 +15,50 @@ public:
         creators["arcane missiles"] = &arcane_missiles;
     }
 private:
-    static ActionNode* arcane_blast(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> arcane_blast(PlayerbotAI* ai)
     {
-        return new ActionNode ("arcane blast",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("arcane missiles") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("arcane blast",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("arcane missiles") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* arcane_barrage(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> arcane_barrage(PlayerbotAI* ai)
     {
-        return new ActionNode ("arcane barrage",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("arcane missiles") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("arcane barrage",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("arcane missiles") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* arcane_missiles(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> arcane_missiles(PlayerbotAI* ai)
     {
-        return new ActionNode ("arcane missiles",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("shoot") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("arcane missiles",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("shoot") }),
+            /*C*/ ActionList());
     }
 };
 
 ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* ai) : GenericMageStrategy(ai)
 {
-    actionNodeFactories.Add(new ArcaneMageStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<ArcaneMageStrategyActionNodeFactory>());
 }
 
 ActionList ArcaneMageStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("arcane barrage", 10.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("arcane barrage", 10.0f) });
 }
 
-void ArcaneMageStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void ArcaneMageStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericMageStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "arcane blast",
-        NextAction::array({ new NextAction("arcane blast", 15.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("arcane blast", 15.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "missile barrage",
-        NextAction::array({ new NextAction("arcane missiles", 15.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("arcane missiles", 15.0f) })));
 
 }
 

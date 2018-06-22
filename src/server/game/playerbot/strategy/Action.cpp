@@ -10,7 +10,7 @@ ActionList NextAction::clone(ActionList actions)
     ActionList res;
     res.reserve(actions.size());
     for (auto itr : actions)
-        res.push_back(new NextAction(*itr));
+        res.push_back(std::make_shared<NextAction>(*itr));
 
     return res;
 }
@@ -30,7 +30,7 @@ ActionList NextAction::merge(ActionList left, ActionList right)
     return res;
 }
 
-ActionList NextAction::array(std::initializer_list<NextAction*> args)
+ActionList NextAction::array(std::initializer_list<std::shared_ptr<NextAction>> args)
 {
     ActionList res;
     res.reserve(args.size());
@@ -42,13 +42,10 @@ ActionList NextAction::array(std::initializer_list<NextAction*> args)
 
 void NextAction::destroy(ActionList& actions)
 {
-    for (auto& itr : actions)
-        delete itr;
-
     actions.clear();
 }
 
-Value<Unit*>* Action::GetTargetValue()
+std::shared_ptr<Value<Unit*>> Action::GetTargetValue()
 {
     return context->GetValue<Unit*>(GetTargetName());
 }

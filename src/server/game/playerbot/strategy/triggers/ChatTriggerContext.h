@@ -75,66 +75,66 @@ namespace ai
         }
 
     private:
-        static Trigger* formation(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "formation"); }
-        static Trigger* attackers(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "attackers"); }
-        static Trigger* max_dps(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "max dps"); }
-        static Trigger* save_mana(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "save mana"); }
-        static Trigger* who(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "who"); }
-        static Trigger* summon(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "summon"); }
-        static Trigger* position(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "position"); }
-        static Trigger* runaway(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "runaway"); }
-        static Trigger* warning(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "warning"); }
-        static Trigger* revive(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "revive"); }
-        static Trigger* rti(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "rti"); }
-        static Trigger* invite(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "invite"); }
-        static Trigger* cast(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "cast"); }
-        static Trigger* talk(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "talk"); }
-        static Trigger* flee(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "flee"); }
-        static Trigger* grind(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "grind"); }
-        static Trigger* tank_attack(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "tank attack"); }
-        static Trigger* stay(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "stay"); }
-        static Trigger* follow(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "follow"); }
-        static Trigger* gb(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "gb"); }
-        static Trigger* bank(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "bank"); }
-        static Trigger* help(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "help"); }
-        static Trigger* buff(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "buff"); }
-        static Trigger* emote(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "emote"); }
-        static Trigger* destroy(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "destroy"); }
-        static Trigger* home(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "home"); }
-        static Trigger* accept(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "accept"); }
-        static Trigger* chat(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "chat"); }
-        static Trigger* attack(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "attack"); }
-        static Trigger* trainer(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "trainer"); }
-        static Trigger* co(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "co"); }
-        static Trigger* nc(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "nc"); }
-        static Trigger* dead(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "dead"); }
-        static Trigger* spells(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "spells"); }
-        static Trigger* talents(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "talents"); }
-        static Trigger* equip(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "e"); }
-        static Trigger* uneqip(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "ue"); }
-        static Trigger* sell(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "s"); }
-        static Trigger* buy(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "b"); }
-        static Trigger* reward(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "r"); }
-        static Trigger* trade(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "t"); }
-        static Trigger* nontrade(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "nt"); }
+        static std::shared_ptr<Trigger> formation(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "formation"); }
+        static std::shared_ptr<Trigger> attackers(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "attackers"); }
+        static std::shared_ptr<Trigger> max_dps(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "max dps"); }
+        static std::shared_ptr<Trigger> save_mana(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "save mana"); }
+        static std::shared_ptr<Trigger> who(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "who"); }
+        static std::shared_ptr<Trigger> summon(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "summon"); }
+        static std::shared_ptr<Trigger> position(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "position"); }
+        static std::shared_ptr<Trigger> runaway(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "runaway"); }
+        static std::shared_ptr<Trigger> warning(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "warning"); }
+        static std::shared_ptr<Trigger> revive(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "revive"); }
+        static std::shared_ptr<Trigger> rti(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "rti"); }
+        static std::shared_ptr<Trigger> invite(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "invite"); }
+        static std::shared_ptr<Trigger> cast(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "cast"); }
+        static std::shared_ptr<Trigger> talk(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "talk"); }
+        static std::shared_ptr<Trigger> flee(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "flee"); }
+        static std::shared_ptr<Trigger> grind(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "grind"); }
+        static std::shared_ptr<Trigger> tank_attack(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "tank attack"); }
+        static std::shared_ptr<Trigger> stay(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "stay"); }
+        static std::shared_ptr<Trigger> follow(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "follow"); }
+        static std::shared_ptr<Trigger> gb(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "gb"); }
+        static std::shared_ptr<Trigger> bank(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "bank"); }
+        static std::shared_ptr<Trigger> help(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "help"); }
+        static std::shared_ptr<Trigger> buff(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "buff"); }
+        static std::shared_ptr<Trigger> emote(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "emote"); }
+        static std::shared_ptr<Trigger> destroy(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "destroy"); }
+        static std::shared_ptr<Trigger> home(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "home"); }
+        static std::shared_ptr<Trigger> accept(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "accept"); }
+        static std::shared_ptr<Trigger> chat(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "chat"); }
+        static std::shared_ptr<Trigger> attack(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "attack"); }
+        static std::shared_ptr<Trigger> trainer(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "trainer"); }
+        static std::shared_ptr<Trigger> co(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "co"); }
+        static std::shared_ptr<Trigger> nc(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "nc"); }
+        static std::shared_ptr<Trigger> dead(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "dead"); }
+        static std::shared_ptr<Trigger> spells(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "spells"); }
+        static std::shared_ptr<Trigger> talents(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "talents"); }
+        static std::shared_ptr<Trigger> equip(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "e"); }
+        static std::shared_ptr<Trigger> uneqip(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "ue"); }
+        static std::shared_ptr<Trigger> sell(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "s"); }
+        static std::shared_ptr<Trigger> buy(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "b"); }
+        static std::shared_ptr<Trigger> reward(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "r"); }
+        static std::shared_ptr<Trigger> trade(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "t"); }
+        static std::shared_ptr<Trigger> nontrade(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "nt"); }
 
-        static Trigger* item_count(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "c"); }
-        static Trigger* use(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "use"); }
-        static Trigger* repair(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "repair"); }
-        static Trigger* taxi(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "taxi"); }
-        static Trigger* teleport(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "teleport"); }
-        static Trigger* q(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "q"); }
-        static Trigger* ll(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "ll"); }
-        static Trigger* drop(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "drop"); }
-        static Trigger* quests(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "quests"); }
-        static Trigger* stats(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "stats"); }
-        static Trigger* leave(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "leave"); }
-        static Trigger* reputation(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "reputation"); }
-        static Trigger* log(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "log"); }
-        static Trigger* los(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "los"); }
-        static Trigger* loot_all(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "add all loot"); }
-        static Trigger* release(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "release"); }
-        static Trigger* reset_ai(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "reset ai"); }
-        static Trigger* spell(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "spell"); }
+        static std::shared_ptr<Trigger> item_count(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "c"); }
+        static std::shared_ptr<Trigger> use(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "use"); }
+        static std::shared_ptr<Trigger> repair(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "repair"); }
+        static std::shared_ptr<Trigger> taxi(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "taxi"); }
+        static std::shared_ptr<Trigger> teleport(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "teleport"); }
+        static std::shared_ptr<Trigger> q(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "q"); }
+        static std::shared_ptr<Trigger> ll(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "ll"); }
+        static std::shared_ptr<Trigger> drop(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "drop"); }
+        static std::shared_ptr<Trigger> quests(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "quests"); }
+        static std::shared_ptr<Trigger> stats(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "stats"); }
+        static std::shared_ptr<Trigger> leave(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "leave"); }
+        static std::shared_ptr<Trigger> reputation(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "reputation"); }
+        static std::shared_ptr<Trigger> log(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "log"); }
+        static std::shared_ptr<Trigger> los(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "los"); }
+        static std::shared_ptr<Trigger> loot_all(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "add all loot"); }
+        static std::shared_ptr<Trigger> release(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "release"); }
+        static std::shared_ptr<Trigger> reset_ai(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "reset ai"); }
+        static std::shared_ptr<Trigger> spell(PlayerbotAI* ai) { return std::make_shared<ChatCommandTrigger>(ai, "spell"); }
     };
 };

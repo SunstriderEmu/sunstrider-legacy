@@ -10,12 +10,13 @@ public:
 public:
     ~Queue(void) = default;
 public:
-    void Push(ActionBasket *action);
-    void Push(ActionBasket **actions);
-    ActionNode* Pop();
-    ActionBasket* Peek();
+    void Push(std::shared_ptr<ActionBasket> action);
+    void Push(std::list<std::shared_ptr<ActionBasket>> _actions);
+    std::shared_ptr<ActionNode> Pop();
+    std::shared_ptr<ActionBasket> Peek();
     int Size();
+    void Clear();
 private:
-    std::list<ActionBasket*> actions;
+    std::list<std::shared_ptr<ActionBasket>> actions;
 };
 }

@@ -17,67 +17,67 @@ public:
     }
 
 private:
-    static ActionNode* seal_of_vengeance(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> seal_of_vengeance(PlayerbotAI* ai)
     {
-        return new ActionNode ("seal of vengeance",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("seal of command") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("seal of vengeance",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("seal of command") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* seal_of_command(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> seal_of_command(PlayerbotAI* ai)
     {
-        return new ActionNode ("seal of command",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("seal of wisdom") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("seal of command",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("seal of wisdom") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* blessing_of_might(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> blessing_of_might(PlayerbotAI* ai)
     {
-        return new ActionNode ("blessing of might",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("blessing of kings") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("blessing of might",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("blessing of kings") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* crusader_strike(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> crusader_strike(PlayerbotAI* ai)
     {
-        return new ActionNode ("crusader strike",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("crusader strike",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
+            /*C*/ ActionList());
     }
 };
 
 DpsPaladinStrategy::DpsPaladinStrategy(PlayerbotAI* ai) : GenericPaladinStrategy(ai)
 {
-    actionNodeFactories.Add(new DpsPaladinStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<DpsPaladinStrategyActionNodeFactory>());
 }
 
 ActionList DpsPaladinStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("crusader strike", ACTION_NORMAL + 1) });
+    return NextAction::array({ std::make_shared<NextAction>("crusader strike", ACTION_NORMAL + 1) });
 }
 
-void DpsPaladinStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsPaladinStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericPaladinStrategy::InitTriggers(triggers);
     
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low health",
-        NextAction::array({ new NextAction("divine shield", ACTION_CRITICAL_HEAL + 2), new NextAction("holy light", ACTION_CRITICAL_HEAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("divine shield", ACTION_CRITICAL_HEAL + 2), std::make_shared<NextAction>("holy light", ACTION_CRITICAL_HEAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "judgement of wisdom",
-        NextAction::array({ new NextAction("judgement of wisdom", ACTION_NORMAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("judgement of wisdom", ACTION_NORMAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "blessing",
-        NextAction::array({ new NextAction("blessing of might", ACTION_HIGH + 8) })));
+        NextAction::array({ std::make_shared<NextAction>("blessing of might", ACTION_HIGH + 8) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("divine storm", ACTION_HIGH + 1), new NextAction("consecration", ACTION_HIGH + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("divine storm", ACTION_HIGH + 1), std::make_shared<NextAction>("consecration", ACTION_HIGH + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "art of war",
-        NextAction::array({ new NextAction("exorcism", ACTION_HIGH + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("exorcism", ACTION_HIGH + 2) })));
 }

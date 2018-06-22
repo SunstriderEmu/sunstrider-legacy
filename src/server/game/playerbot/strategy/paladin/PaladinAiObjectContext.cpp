@@ -26,7 +26,7 @@ namespace ai
             }
 
         private:
-            static Strategy* nc(PlayerbotAI* ai) { return new GenericPaladinNonCombatStrategy(ai); }
+            static std::shared_ptr<Strategy> nc(PlayerbotAI* ai) { return std::make_shared<GenericPaladinNonCombatStrategy>(ai); }
         };
 
         class ResistanceStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -40,9 +40,9 @@ namespace ai
             }
 
         private:
-            static Strategy* rshadow(PlayerbotAI* ai) { return new PaladinShadowResistanceStrategy(ai); }
-            static Strategy* rfrost(PlayerbotAI* ai) { return new PaladinFrostResistanceStrategy(ai); }
-            static Strategy* rfire(PlayerbotAI* ai) { return new PaladinFireResistanceStrategy(ai); }
+            static std::shared_ptr<Strategy> rshadow(PlayerbotAI* ai) { return std::make_shared<PaladinShadowResistanceStrategy>(ai); }
+            static std::shared_ptr<Strategy> rfrost(PlayerbotAI* ai) { return std::make_shared<PaladinFrostResistanceStrategy>(ai); }
+            static std::shared_ptr<Strategy> rfire(PlayerbotAI* ai) { return std::make_shared<PaladinFireResistanceStrategy>(ai); }
         };
 
         class BuffStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -58,11 +58,11 @@ namespace ai
             }
 
         private:
-            static Strategy* bhealth(PlayerbotAI* ai) { return new PaladinBuffHealthStrategy(ai); }
-            static Strategy* bmana(PlayerbotAI* ai) { return new PaladinBuffManaStrategy(ai); }
-            static Strategy* bdps(PlayerbotAI* ai) { return new PaladinBuffDpsStrategy(ai); }
-            static Strategy* barmor(PlayerbotAI* ai) { return new PaladinBuffArmorStrategy(ai); }
-            static Strategy* bspeed(PlayerbotAI* ai) { return new PaladinBuffSpeedStrategy(ai); }
+            static std::shared_ptr<Strategy> bhealth(PlayerbotAI* ai) { return std::make_shared<PaladinBuffHealthStrategy>(ai); }
+            static std::shared_ptr<Strategy> bmana(PlayerbotAI* ai) { return std::make_shared<PaladinBuffManaStrategy>(ai); }
+            static std::shared_ptr<Strategy> bdps(PlayerbotAI* ai) { return std::make_shared<PaladinBuffDpsStrategy>(ai); }
+            static std::shared_ptr<Strategy> barmor(PlayerbotAI* ai) { return std::make_shared<PaladinBuffArmorStrategy>(ai); }
+            static std::shared_ptr<Strategy> bspeed(PlayerbotAI* ai) { return std::make_shared<PaladinBuffSpeedStrategy>(ai); }
         };
 
         class CombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -75,8 +75,8 @@ namespace ai
             }
 
         private:
-            static Strategy* tank(PlayerbotAI* ai) { return new TankPaladinStrategy(ai); }
-            static Strategy* dps(PlayerbotAI* ai) { return new DpsPaladinStrategy(ai); }
+            static std::shared_ptr<Strategy> tank(PlayerbotAI* ai) { return std::make_shared<TankPaladinStrategy>(ai); }
+            static std::shared_ptr<Strategy> dps(PlayerbotAI* ai) { return std::make_shared<DpsPaladinStrategy>(ai); }
         };
     };
 };
@@ -118,29 +118,29 @@ namespace ai
             }
 
         private:
-            static Trigger* holy_shield(PlayerbotAI* ai) { return new HolyShieldTrigger(ai); }
-            static Trigger* righteous_fury(PlayerbotAI* ai) { return new RighteousFuryTrigger(ai); }
-            static Trigger* judgement_of_wisdom(PlayerbotAI* ai) { return new JudgementOfWisdomTrigger(ai); }
-            static Trigger* judgement_of_light(PlayerbotAI* ai) { return new JudgementOfLightTrigger(ai); }
-            static Trigger* blessing(PlayerbotAI* ai) { return new BlessingTrigger(ai); }
-            static Trigger* seal(PlayerbotAI* ai) { return new SealTrigger(ai); }
-            static Trigger* art_of_war(PlayerbotAI* ai) { return new ArtOfWarTrigger(ai); }
-            static Trigger* blessing_of_kings_on_party(PlayerbotAI* ai) { return new BlessingOfKingsOnPartyTrigger(ai); }
-            static Trigger* crusader_aura(PlayerbotAI* ai) { return new CrusaderAuraTrigger(ai); }
-            static Trigger* retribution_aura(PlayerbotAI* ai) { return new RetributionAuraTrigger(ai); }
-            static Trigger* devotion_aura(PlayerbotAI* ai) { return new DevotionAuraTrigger(ai); }
-            static Trigger* shadow_resistance_aura(PlayerbotAI* ai) { return new ShadowResistanceAuraTrigger(ai); }
-            static Trigger* frost_resistance_aura(PlayerbotAI* ai) { return new FrostResistanceAuraTrigger(ai); }
-            static Trigger* fire_resistance_aura(PlayerbotAI* ai) { return new FireResistanceAuraTrigger(ai); }
-            static Trigger* hammer_of_justice_snare(PlayerbotAI* ai) { return new HammerOfJusticeSnareTrigger(ai); }
-            static Trigger* hammer_of_justice_interrupt(PlayerbotAI* ai) { return new HammerOfJusticeInterruptSpellTrigger(ai); }
-            static Trigger* CleanseCureDisease(PlayerbotAI* ai) { return new CleanseCureDiseaseTrigger(ai); }
-            static Trigger* CleanseCurePartyMemberDisease(PlayerbotAI* ai) { return new CleanseCurePartyMemberDiseaseTrigger(ai); }
-            static Trigger* CleanseCurePoison(PlayerbotAI* ai) { return new CleanseCurePoisonTrigger(ai); }
-            static Trigger* CleanseCurePartyMemberPoison(PlayerbotAI* ai) { return new CleanseCurePartyMemberPoisonTrigger(ai); }
-            static Trigger* CleanseCureMagic(PlayerbotAI* ai) { return new CleanseCureMagicTrigger(ai); }
-            static Trigger* CleanseCurePartyMemberMagic(PlayerbotAI* ai) { return new CleanseCurePartyMemberMagicTrigger(ai); }
-            static Trigger* hammer_of_justice_on_enemy_target(PlayerbotAI* ai) { return new HammerOfJusticeEnemyHealerTrigger(ai); }
+            static std::shared_ptr<Trigger> holy_shield(PlayerbotAI* ai) { return std::make_shared<HolyShieldTrigger>(ai); }
+            static std::shared_ptr<Trigger> righteous_fury(PlayerbotAI* ai) { return std::make_shared<RighteousFuryTrigger>(ai); }
+            static std::shared_ptr<Trigger> judgement_of_wisdom(PlayerbotAI* ai) { return std::make_shared<JudgementOfWisdomTrigger>(ai); }
+            static std::shared_ptr<Trigger> judgement_of_light(PlayerbotAI* ai) { return std::make_shared<JudgementOfLightTrigger>(ai); }
+            static std::shared_ptr<Trigger> blessing(PlayerbotAI* ai) { return std::make_shared<BlessingTrigger>(ai); }
+            static std::shared_ptr<Trigger> seal(PlayerbotAI* ai) { return std::make_shared<SealTrigger>(ai); }
+            static std::shared_ptr<Trigger> art_of_war(PlayerbotAI* ai) { return std::make_shared<ArtOfWarTrigger>(ai); }
+            static std::shared_ptr<Trigger> blessing_of_kings_on_party(PlayerbotAI* ai) { return std::make_shared<BlessingOfKingsOnPartyTrigger>(ai); }
+            static std::shared_ptr<Trigger> crusader_aura(PlayerbotAI* ai) { return std::make_shared<CrusaderAuraTrigger>(ai); }
+            static std::shared_ptr<Trigger> retribution_aura(PlayerbotAI* ai) { return std::make_shared<RetributionAuraTrigger>(ai); }
+            static std::shared_ptr<Trigger> devotion_aura(PlayerbotAI* ai) { return std::make_shared<DevotionAuraTrigger>(ai); }
+            static std::shared_ptr<Trigger> shadow_resistance_aura(PlayerbotAI* ai) { return std::make_shared<ShadowResistanceAuraTrigger>(ai); }
+            static std::shared_ptr<Trigger> frost_resistance_aura(PlayerbotAI* ai) { return std::make_shared<FrostResistanceAuraTrigger>(ai); }
+            static std::shared_ptr<Trigger> fire_resistance_aura(PlayerbotAI* ai) { return std::make_shared<FireResistanceAuraTrigger>(ai); }
+            static std::shared_ptr<Trigger> hammer_of_justice_snare(PlayerbotAI* ai) { return std::make_shared<HammerOfJusticeSnareTrigger>(ai); }
+            static std::shared_ptr<Trigger> hammer_of_justice_interrupt(PlayerbotAI* ai) { return std::make_shared<HammerOfJusticeInterruptSpellTrigger>(ai); }
+            static std::shared_ptr<Trigger> CleanseCureDisease(PlayerbotAI* ai) { return std::make_shared<CleanseCureDiseaseTrigger>(ai); }
+            static std::shared_ptr<Trigger> CleanseCurePartyMemberDisease(PlayerbotAI* ai) { return std::make_shared<CleanseCurePartyMemberDiseaseTrigger>(ai); }
+            static std::shared_ptr<Trigger> CleanseCurePoison(PlayerbotAI* ai) { return std::make_shared<CleanseCurePoisonTrigger>(ai); }
+            static std::shared_ptr<Trigger> CleanseCurePartyMemberPoison(PlayerbotAI* ai) { return std::make_shared<CleanseCurePartyMemberPoisonTrigger>(ai); }
+            static std::shared_ptr<Trigger> CleanseCureMagic(PlayerbotAI* ai) { return std::make_shared<CleanseCureMagicTrigger>(ai); }
+            static std::shared_ptr<Trigger> CleanseCurePartyMemberMagic(PlayerbotAI* ai) { return std::make_shared<CleanseCurePartyMemberMagicTrigger>(ai); }
+            static std::shared_ptr<Trigger> hammer_of_justice_on_enemy_target(PlayerbotAI* ai) { return std::make_shared<HammerOfJusticeEnemyHealerTrigger>(ai); }
         };
     };
 };
@@ -211,58 +211,58 @@ namespace ai
             }
 
         private:
-            static Action* righteous_fury(PlayerbotAI* ai) { return new CastRighteousFuryAction(ai); }
-            static Action* blessing_of_sanctuary(PlayerbotAI* ai) { return new CastBlessingOfSanctuaryAction(ai); }
-            static Action* seal_of_command(PlayerbotAI* ai) { return new CastSealOfCommandAction(ai); }
-            static Action* seal_of_vengeance(PlayerbotAI* ai) { return new CastSealOfVengeanceAction(ai); }
-            static Action* blessing_of_might(PlayerbotAI* ai) { return new CastBlessingOfMightAction(ai); }
-            static Action* divine_storm(PlayerbotAI* ai) { return new CastDivineStormAction(ai); }
-            static Action* blessing_of_kings_on_party(PlayerbotAI* ai) { return new CastBlessingOfKingsOnPartyAction(ai); }
-            static Action* redemption(PlayerbotAI* ai) { return new CastRedemptionAction(ai); }
-            static Action* crusader_strike(PlayerbotAI* ai) { return new CastCrusaderStrikeAction(ai); }
-            static Action* crusader_aura(PlayerbotAI* ai) { return new CastCrusaderAuraAction(ai); }
-            static Action* seal_of_light(PlayerbotAI* ai) { return new CastSealOfLightAction(ai); }
-            static Action* devotion_aura(PlayerbotAI* ai) { return new CastDevotionAuraAction(ai); }
-            static Action* holy_wrath(PlayerbotAI* ai) { return new CastHolyWrathAction(ai); }
-            static Action* consecration(PlayerbotAI* ai) { return new CastConsecrationAction(ai); }
-            static Action* cleanse_poison(PlayerbotAI* ai) { return new CastCleansePoisonAction(ai); }
-            static Action* cleanse_disease(PlayerbotAI* ai) { return new CastCleanseDiseaseAction(ai); }
-            static Action* cleanse_magic(PlayerbotAI* ai) { return new CastCleanseMagicAction(ai); }
-            static Action* purify_poison(PlayerbotAI* ai) { return new CastPurifyPoisonAction(ai); }
-            static Action* purify_disease(PlayerbotAI* ai) { return new CastPurifyDiseaseAction(ai); }
-            static Action* cleanse_poison_on_party(PlayerbotAI* ai) { return new CastCleansePoisonOnPartyAction(ai); }
-            static Action* cleanse_disease_on_party(PlayerbotAI* ai) { return new CastCleanseDiseaseOnPartyAction(ai); }
-            static Action* cleanse_magic_on_party(PlayerbotAI* ai) { return new CastCleanseMagicOnPartyAction(ai); }
-            static Action* purify_poison_on_party(PlayerbotAI* ai) { return new CastPurifyPoisonOnPartyAction(ai); }
-            static Action* purify_disease_on_party(PlayerbotAI* ai) { return new CastPurifyDiseaseOnPartyAction(ai); }
-            static Action* seal_of_wisdom(PlayerbotAI* ai) { return new CastSealOfWisdomAction(ai); }
-            static Action* seal_of_justice(PlayerbotAI* ai) { return new CastSealOfJusticeAction(ai); }
-            static Action* seal_of_righteousness(PlayerbotAI* ai) { return new CastSealOfRighteousnessAction(ai); }
-            static Action* flash_of_light(PlayerbotAI* ai) { return new CastFlashOfLightAction(ai); }
-            static Action* hand_of_reckoning(PlayerbotAI* ai) { return new CastHandOfReckoningAction(ai); }
-            static Action* avengers_shield(PlayerbotAI* ai) { return new CastAvengersShieldAction(ai); }
-            static Action* exorcism(PlayerbotAI* ai) { return new CastExorcismAction(ai); }
-            static Action* judgement_of_light(PlayerbotAI* ai) { return new CastJudgementOfLightAction(ai); }
-            static Action* judgement_of_wisdom(PlayerbotAI* ai) { return new CastJudgementOfWisdomAction(ai); }
-            static Action* divine_shield(PlayerbotAI* ai) { return new CastDivineShieldAction(ai); }
-            static Action* divine_protection(PlayerbotAI* ai) { return new CastDivineProtectionAction(ai); }
-            static Action* divine_protection_on_party(PlayerbotAI* ai) { return new CastDivineProtectionOnPartyAction(ai); }
-            static Action* hammer_of_justice(PlayerbotAI* ai) { return new CastHammerOfJusticeAction(ai); }
-            static Action* flash_of_light_on_party(PlayerbotAI* ai) { return new CastFlashOfLightOnPartyAction(ai); }
-            static Action* holy_light(PlayerbotAI* ai) { return new CastHolyLightAction(ai); }
-            static Action* holy_light_on_party(PlayerbotAI* ai) { return new CastHolyLightOnPartyAction(ai); }
-            static Action* lay_on_hands(PlayerbotAI* ai) { return new CastLayOnHandsAction(ai); }
-            static Action* lay_on_hands_on_party(PlayerbotAI* ai) { return new CastLayOnHandsOnPartyAction(ai); }
-            static Action* judgement_of_justice(PlayerbotAI* ai) { return new CastJudgementOfJusticeAction(ai); }
-            static Action* hammer_of_wrath(PlayerbotAI* ai) { return new CastHammerOfWrathAction(ai); }
-            static Action* holy_shield(PlayerbotAI* ai) { return new CastHolyShieldAction(ai); }
-            static Action* hammer_of_the_righteous(PlayerbotAI* ai) { return new CastHammerOfTheRighteousAction(ai); }
-            static Action* blessing_of_kings(PlayerbotAI* ai) { return new CastBlessingOfKingsAction(ai); }
-            static Action* retribution_aura(PlayerbotAI* ai) { return new CastRetributionAuraAction(ai); }
-            static Action* shadow_resistance_aura(PlayerbotAI* ai) { return new CastShadowResistanceAuraAction(ai); }
-            static Action* frost_resistance_aura(PlayerbotAI* ai) { return new CastFrostResistanceAuraAction(ai); }
-            static Action* fire_resistance_aura(PlayerbotAI* ai) { return new CastFireResistanceAuraAction(ai); }
-            static Action* hammer_of_justice_on_enemy_healer(PlayerbotAI* ai) { return new CastHammerOfJusticeOnEnemyHealerAction(ai); }
+            static std::shared_ptr<Action> righteous_fury(PlayerbotAI* ai) { return std::make_shared<CastRighteousFuryAction>(ai); }
+            static std::shared_ptr<Action> blessing_of_sanctuary(PlayerbotAI* ai) { return std::make_shared<CastBlessingOfSanctuaryAction>(ai); }
+            static std::shared_ptr<Action> seal_of_command(PlayerbotAI* ai) { return std::make_shared<CastSealOfCommandAction>(ai); }
+            static std::shared_ptr<Action> seal_of_vengeance(PlayerbotAI* ai) { return std::make_shared<CastSealOfVengeanceAction>(ai); }
+            static std::shared_ptr<Action> blessing_of_might(PlayerbotAI* ai) { return std::make_shared<CastBlessingOfMightAction>(ai); }
+            static std::shared_ptr<Action> divine_storm(PlayerbotAI* ai) { return std::make_shared<CastDivineStormAction>(ai); }
+            static std::shared_ptr<Action> blessing_of_kings_on_party(PlayerbotAI* ai) { return std::make_shared<CastBlessingOfKingsOnPartyAction>(ai); }
+            static std::shared_ptr<Action> redemption(PlayerbotAI* ai) { return std::make_shared<CastRedemptionAction>(ai); }
+            static std::shared_ptr<Action> crusader_strike(PlayerbotAI* ai) { return std::make_shared<CastCrusaderStrikeAction>(ai); }
+            static std::shared_ptr<Action> crusader_aura(PlayerbotAI* ai) { return std::make_shared<CastCrusaderAuraAction>(ai); }
+            static std::shared_ptr<Action> seal_of_light(PlayerbotAI* ai) { return std::make_shared<CastSealOfLightAction>(ai); }
+            static std::shared_ptr<Action> devotion_aura(PlayerbotAI* ai) { return std::make_shared<CastDevotionAuraAction>(ai); }
+            static std::shared_ptr<Action> holy_wrath(PlayerbotAI* ai) { return std::make_shared<CastHolyWrathAction>(ai); }
+            static std::shared_ptr<Action> consecration(PlayerbotAI* ai) { return std::make_shared<CastConsecrationAction>(ai); }
+            static std::shared_ptr<Action> cleanse_poison(PlayerbotAI* ai) { return std::make_shared<CastCleansePoisonAction>(ai); }
+            static std::shared_ptr<Action> cleanse_disease(PlayerbotAI* ai) { return std::make_shared<CastCleanseDiseaseAction>(ai); }
+            static std::shared_ptr<Action> cleanse_magic(PlayerbotAI* ai) { return std::make_shared<CastCleanseMagicAction>(ai); }
+            static std::shared_ptr<Action> purify_poison(PlayerbotAI* ai) { return std::make_shared<CastPurifyPoisonAction>(ai); }
+            static std::shared_ptr<Action> purify_disease(PlayerbotAI* ai) { return std::make_shared<CastPurifyDiseaseAction>(ai); }
+            static std::shared_ptr<Action> cleanse_poison_on_party(PlayerbotAI* ai) { return std::make_shared<CastCleansePoisonOnPartyAction>(ai); }
+            static std::shared_ptr<Action> cleanse_disease_on_party(PlayerbotAI* ai) { return std::make_shared<CastCleanseDiseaseOnPartyAction>(ai); }
+            static std::shared_ptr<Action> cleanse_magic_on_party(PlayerbotAI* ai) { return std::make_shared<CastCleanseMagicOnPartyAction>(ai); }
+            static std::shared_ptr<Action> purify_poison_on_party(PlayerbotAI* ai) { return std::make_shared<CastPurifyPoisonOnPartyAction>(ai); }
+            static std::shared_ptr<Action> purify_disease_on_party(PlayerbotAI* ai) { return std::make_shared<CastPurifyDiseaseOnPartyAction>(ai); }
+            static std::shared_ptr<Action> seal_of_wisdom(PlayerbotAI* ai) { return std::make_shared<CastSealOfWisdomAction>(ai); }
+            static std::shared_ptr<Action> seal_of_justice(PlayerbotAI* ai) { return std::make_shared<CastSealOfJusticeAction>(ai); }
+            static std::shared_ptr<Action> seal_of_righteousness(PlayerbotAI* ai) { return std::make_shared<CastSealOfRighteousnessAction>(ai); }
+            static std::shared_ptr<Action> flash_of_light(PlayerbotAI* ai) { return std::make_shared<CastFlashOfLightAction>(ai); }
+            static std::shared_ptr<Action> hand_of_reckoning(PlayerbotAI* ai) { return std::make_shared<CastHandOfReckoningAction>(ai); }
+            static std::shared_ptr<Action> avengers_shield(PlayerbotAI* ai) { return std::make_shared<CastAvengersShieldAction>(ai); }
+            static std::shared_ptr<Action> exorcism(PlayerbotAI* ai) { return std::make_shared<CastExorcismAction>(ai); }
+            static std::shared_ptr<Action> judgement_of_light(PlayerbotAI* ai) { return std::make_shared<CastJudgementOfLightAction>(ai); }
+            static std::shared_ptr<Action> judgement_of_wisdom(PlayerbotAI* ai) { return std::make_shared<CastJudgementOfWisdomAction>(ai); }
+            static std::shared_ptr<Action> divine_shield(PlayerbotAI* ai) { return std::make_shared<CastDivineShieldAction>(ai); }
+            static std::shared_ptr<Action> divine_protection(PlayerbotAI* ai) { return std::make_shared<CastDivineProtectionAction>(ai); }
+            static std::shared_ptr<Action> divine_protection_on_party(PlayerbotAI* ai) { return std::make_shared<CastDivineProtectionOnPartyAction>(ai); }
+            static std::shared_ptr<Action> hammer_of_justice(PlayerbotAI* ai) { return std::make_shared<CastHammerOfJusticeAction>(ai); }
+            static std::shared_ptr<Action> flash_of_light_on_party(PlayerbotAI* ai) { return std::make_shared<CastFlashOfLightOnPartyAction>(ai); }
+            static std::shared_ptr<Action> holy_light(PlayerbotAI* ai) { return std::make_shared<CastHolyLightAction>(ai); }
+            static std::shared_ptr<Action> holy_light_on_party(PlayerbotAI* ai) { return std::make_shared<CastHolyLightOnPartyAction>(ai); }
+            static std::shared_ptr<Action> lay_on_hands(PlayerbotAI* ai) { return std::make_shared<CastLayOnHandsAction>(ai); }
+            static std::shared_ptr<Action> lay_on_hands_on_party(PlayerbotAI* ai) { return std::make_shared<CastLayOnHandsOnPartyAction>(ai); }
+            static std::shared_ptr<Action> judgement_of_justice(PlayerbotAI* ai) { return std::make_shared<CastJudgementOfJusticeAction>(ai); }
+            static std::shared_ptr<Action> hammer_of_wrath(PlayerbotAI* ai) { return std::make_shared<CastHammerOfWrathAction>(ai); }
+            static std::shared_ptr<Action> holy_shield(PlayerbotAI* ai) { return std::make_shared<CastHolyShieldAction>(ai); }
+            static std::shared_ptr<Action> hammer_of_the_righteous(PlayerbotAI* ai) { return std::make_shared<CastHammerOfTheRighteousAction>(ai); }
+            static std::shared_ptr<Action> blessing_of_kings(PlayerbotAI* ai) { return std::make_shared<CastBlessingOfKingsAction>(ai); }
+            static std::shared_ptr<Action> retribution_aura(PlayerbotAI* ai) { return std::make_shared<CastRetributionAuraAction>(ai); }
+            static std::shared_ptr<Action> shadow_resistance_aura(PlayerbotAI* ai) { return std::make_shared<CastShadowResistanceAuraAction>(ai); }
+            static std::shared_ptr<Action> frost_resistance_aura(PlayerbotAI* ai) { return std::make_shared<CastFrostResistanceAuraAction>(ai); }
+            static std::shared_ptr<Action> fire_resistance_aura(PlayerbotAI* ai) { return std::make_shared<CastFireResistanceAuraAction>(ai); }
+            static std::shared_ptr<Action> hammer_of_justice_on_enemy_healer(PlayerbotAI* ai) { return std::make_shared<CastHammerOfJusticeOnEnemyHealerAction>(ai); }
         };
     };
 };

@@ -41,7 +41,7 @@ namespace ai
         if (name.empty())
             return;
 
-        Trigger* trigger = aiObjectContext->GetTrigger(name);
+        static std::shared_ptr<Trigger> trigger = aiObjectContext->GetTrigger(name);
         if (!trigger)
             return;
 
@@ -51,7 +51,7 @@ namespace ai
 
     bool ExternalEventHelper::HandleCommand(std::string name, std::string param, Player* owner)
     {
-        Trigger* trigger = aiObjectContext->GetTrigger(name);
+        static std::shared_ptr<Trigger> trigger = aiObjectContext->GetTrigger(name);
         if (!trigger)
             return false;
 

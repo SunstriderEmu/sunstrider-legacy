@@ -22,138 +22,138 @@ public:
         creators["earth shock"] = &earth_shock;
     }
 private:
-    static ActionNode* earth_shock(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> earth_shock(PlayerbotAI* ai)
     {
-        return new ActionNode ("earth shock",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("flame shock") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("earth shock",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("flame shock") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* flametongue_weapon(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> flametongue_weapon(PlayerbotAI* ai)
     {
-        return new ActionNode ("flametongue weapon",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("frostbrand weapon") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("flametongue weapon",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("frostbrand weapon") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* frostbrand_weapon(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> frostbrand_weapon(PlayerbotAI* ai)
     {
-        return new ActionNode ("frostbrand weapon",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("rockbiter weapon") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("frostbrand weapon",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("rockbiter weapon") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* windfury_weapon(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> windfury_weapon(PlayerbotAI* ai)
     {
-        return new ActionNode ("windfury weapon",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("rockbiter weapon") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("windfury weapon",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("rockbiter weapon") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* lesser_healing_wave(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> lesser_healing_wave(PlayerbotAI* ai)
     {
-        return new ActionNode ("lesser healing wave",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("healing wave") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("lesser healing wave",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("healing wave") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* lesser_healing_wave_on_party(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> lesser_healing_wave_on_party(PlayerbotAI* ai)
     {
-        return new ActionNode ("lesser healing wave on party",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("healing wave on party") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("lesser healing wave on party",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("healing wave on party") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* chain_heal(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> chain_heal(PlayerbotAI* ai)
     {
-        return new ActionNode ("chain heal",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("lesser healing wave") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("chain heal",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("lesser healing wave") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* riptide(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> riptide(PlayerbotAI* ai)
     {
-        return new ActionNode ("riptide",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("healing wave") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("riptide",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("healing wave") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* chain_heal_on_party(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> chain_heal_on_party(PlayerbotAI* ai)
     {
-        return new ActionNode ("chain heal on party",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("lesser healing wave on party") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("chain heal on party",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("lesser healing wave on party") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* riptide_on_party(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> riptide_on_party(PlayerbotAI* ai)
     {
-        return new ActionNode ("riptide on party",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("healing wave on party") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("riptide on party",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("healing wave on party") }),
+            /*C*/ ActionList());
     }
 };
 
 GenericShamanStrategy::GenericShamanStrategy(PlayerbotAI* ai) : CombatStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericShamanStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericShamanStrategyActionNodeFactory>());
 }
 
-void GenericShamanStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericShamanStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "wind shear",
-        NextAction::array({ new NextAction("wind shear", 23.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("wind shear", 23.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "wind shear on enemy healer",
-        NextAction::array({ new NextAction("wind shear on enemy healer", 23.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("wind shear on enemy healer", 23.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "purge",
-        NextAction::array({ new NextAction("purge", 10.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("purge", 10.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member medium health",
-        NextAction::array({ new NextAction("lesser healing wave on party", 25.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("lesser healing wave on party", 25.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member low health",
-        NextAction::array({ new NextAction("riptide on party", 25.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("riptide on party", 25.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe heal",
-        NextAction::array({ new NextAction("chain heal", 27.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("chain heal", 27.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium health",
-        NextAction::array({ new NextAction("lesser healing wave", 26.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("lesser healing wave", 26.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low health",
-        NextAction::array({ new NextAction("riptide", 26.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("riptide", 26.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "heroism",
-        NextAction::array({ new NextAction("heroism", 31.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("heroism", 31.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "bloodlust",
-        NextAction::array({ new NextAction("bloodlust", 30.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("bloodlust", 30.0f) })));
 }
 
-void ShamanBuffDpsStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void ShamanBuffDpsStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "lightning shield",
-        NextAction::array({ new NextAction("lightning shield", 22.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("lightning shield", 22.0f) })));
 }
 
-void ShamanBuffManaStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void ShamanBuffManaStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "water shield",
-        NextAction::array({ new NextAction("water shield", 22.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("water shield", 22.0f) })));
 }

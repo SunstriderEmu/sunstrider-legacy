@@ -20,7 +20,7 @@ private:
     std::string action;
 };
 
-float MagePullMultiplier::GetValue(Action* _action) 
+float MagePullMultiplier::GetValue(Action* _action)
 {
     if (!_action)
         return 1.0f;
@@ -36,17 +36,17 @@ float MagePullMultiplier::GetValue(Action* _action)
 
 ActionList PullStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction(action, 105.0f), new NextAction("follow", 104.0f), new NextAction("end pull", 103.0f) });
+    return NextAction::array({ std::make_shared<NextAction>(action, 105.0f), std::make_shared<NextAction>("follow", 104.0f), std::make_shared<NextAction>("end pull", 103.0f) });
 }
 
-void PullStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void PullStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     RangedCombatStrategy::InitTriggers(triggers);
 }
 
-void PullStrategy::InitMultipliers(std::list<Multiplier*> &multipliers)
+void PullStrategy::InitMultipliers(std::list<std::shared_ptr<Multiplier>> &multipliers)
 {
-    multipliers.push_back(new MagePullMultiplier(ai, action));
+    multipliers.push_back(std::make_shared<MagePullMultiplier>(ai, action));
     RangedCombatStrategy::InitMultipliers(multipliers);
 }
 

@@ -4,9 +4,9 @@
 
 using namespace ai;
 
-void CombatStrategy::InitTriggers(list<TriggerNode*> &triggers)
+void CombatStrategy::InitTriggers(list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "invalid target",
-        NextAction::array({ new NextAction("drop target", ACTION_HIGH + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("drop target", ACTION_HIGH + 9) })));
 }

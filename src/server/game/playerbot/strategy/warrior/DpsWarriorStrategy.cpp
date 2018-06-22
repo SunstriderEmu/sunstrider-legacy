@@ -20,111 +20,111 @@ public:
         creators["execute"] = &execute;
     }
 private:
-    static ActionNode* overpower(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> overpower(PlayerbotAI* ai)
     {
-        return new ActionNode ("overpower",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("overpower",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* melee(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> melee(PlayerbotAI* ai)
     {
-        return new ActionNode ("melee",
-            /*P*/ NextAction::array({ new NextAction("charge") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("melee",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("charge") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* charge(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> charge(PlayerbotAI* ai)
     {
-        return new ActionNode ("charge",
-            /*P*/ NextAction::array({ new NextAction("battle stance") }),
-            /*A*/ NextAction::array({ new NextAction("reach melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("charge",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("battle stance") }),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("reach melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* bloodthirst(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> bloodthirst(PlayerbotAI* ai)
     {
-        return new ActionNode ("bloodthirst",
-            /*P*/ NextAction::array({ new NextAction("battle stance") }),
-            /*A*/ NextAction::array({ new NextAction("heroic strike") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("bloodthirst",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("battle stance") }),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("heroic strike") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* rend(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> rend(PlayerbotAI* ai)
     {
-        return new ActionNode ("rend",
-            /*P*/ NextAction::array({ new NextAction("battle stance") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("rend",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("battle stance") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* mocking_blow(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> mocking_blow(PlayerbotAI* ai)
     {
-        return new ActionNode ("mocking blow",
-            /*P*/ NextAction::array({ new NextAction("battle stance") }),
+        return std::make_shared<ActionNode> ("mocking blow",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("battle stance") }),
             /*A*/ NextAction::array({ }),
-            /*C*/ {});
+            /*C*/ ActionList());
     }
-    static ActionNode* death_wish(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> death_wish(PlayerbotAI* ai)
     {
-        return new ActionNode ("death wish",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("berserker rage") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("death wish",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("berserker rage") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* execute(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> execute(PlayerbotAI* ai)
     {
-        return new ActionNode ("execute",
-            /*P*/ NextAction::array({ new NextAction("battle stance") }),
-            /*A*/ NextAction::array({ new NextAction("heroic strike") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("execute",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("battle stance") }),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("heroic strike") }),
+            /*C*/ ActionList());
     }
 };
 
 DpsWarriorStrategy::DpsWarriorStrategy(PlayerbotAI* ai) : GenericWarriorStrategy(ai)
 {
-    actionNodeFactories.Add(new DpsWarriorStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<DpsWarriorStrategyActionNodeFactory>());
 }
 
 ActionList DpsWarriorStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("bloodthirst", ACTION_NORMAL + 1) });
+    return NextAction::array({ std::make_shared<NextAction>("bloodthirst", ACTION_NORMAL + 1) });
 }
 
-void DpsWarriorStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsWarriorStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericWarriorStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy out of melee",
-        NextAction::array({ new NextAction("charge", ACTION_NORMAL + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("charge", ACTION_NORMAL + 9) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "target critical health",
-        NextAction::array({ new NextAction("execute", ACTION_HIGH + 4) })));
+        NextAction::array({ std::make_shared<NextAction>("execute", ACTION_HIGH + 4) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "hamstring",
-        NextAction::array({ new NextAction("hamstring", ACTION_INTERRUPT) })));
+        NextAction::array({ std::make_shared<NextAction>("hamstring", ACTION_INTERRUPT) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "victory rush",
-        NextAction::array({ new NextAction("victory rush", ACTION_HIGH + 3) })));
+        NextAction::array({ std::make_shared<NextAction>("victory rush", ACTION_HIGH + 3) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "death wish",
-        NextAction::array({ new NextAction("death wish", ACTION_HIGH + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("death wish", ACTION_HIGH + 2) })));
 }
 
 
-void DpsWarrirorAoeStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsWarrirorAoeStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "rend on attacker",
-        NextAction::array({ new NextAction("rend on attacker", ACTION_HIGH + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("rend on attacker", ACTION_HIGH + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "light aoe",
-        NextAction::array({ new NextAction("thunder clap", ACTION_HIGH + 2), new NextAction("demoralizing shout", ACTION_HIGH + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("thunder clap", ACTION_HIGH + 2), std::make_shared<NextAction>("demoralizing shout", ACTION_HIGH + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("cleave", ACTION_HIGH + 3) })));
+        NextAction::array({ std::make_shared<NextAction>("cleave", ACTION_HIGH + 3) })));
 }

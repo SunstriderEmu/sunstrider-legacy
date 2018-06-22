@@ -7,7 +7,7 @@
 
 using namespace ai;
 
-void GenericRogueNonCombatStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericRogueNonCombatStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
         

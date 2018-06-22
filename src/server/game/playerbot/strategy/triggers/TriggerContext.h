@@ -93,66 +93,66 @@ namespace ai
         }
 
     private:
-        static Trigger* lfg_proposal_active(PlayerbotAI* ai) { return new LfgProposalActiveTrigger(ai); }
-        static Trigger* invalid_target(PlayerbotAI* ai) { return new InvalidTargetTrigger(ai); }
-        static Trigger* critical_aoe_heal(PlayerbotAI* ai) { return new AoeHealTrigger(ai, "critical aoe heal", "critical", 2); }
-        static Trigger* low_aoe_heal(PlayerbotAI* ai) { return new AoeHealTrigger(ai, "low aoe heal", "low", 2); }
-        static Trigger* medium_aoe_heal(PlayerbotAI* ai) { return new AoeHealTrigger(ai, "medium aoe heal", "medium", 2); }
-        static Trigger* target_changed(PlayerbotAI* ai) { return new TargetChangedTrigger(ai); }
-        static Trigger* swimming(PlayerbotAI* ai) { return new IsSwimmingTrigger(ai); }
-        static Trigger* no_possible_targets(PlayerbotAI* ai) { return new NoPossibleTargetsTrigger(ai); }
-        static Trigger* can_loot(PlayerbotAI* ai) { return new CanLootTrigger(ai); }
-        static Trigger* far_from_loot_target(PlayerbotAI* ai) { return new FarFromCurrentLootTrigger(ai); }
-        static Trigger* far_from_master(PlayerbotAI* ai) { return new FarFromMasterTrigger(ai); }
-        static Trigger* behind_target(PlayerbotAI* ai) { return new IsBehindTargetTrigger(ai); }
-        static Trigger* not_facing_target(PlayerbotAI* ai) { return new IsNotFacingTargetTrigger(ai); }
-        static Trigger* panic(PlayerbotAI* ai) { return new PanicTrigger(ai); }
-        static Trigger* no_drink(PlayerbotAI* ai) { return new NoDrinkTrigger(ai); }
-        static Trigger* no_food(PlayerbotAI* ai) { return new NoFoodTrigger(ai); }
-        static Trigger* LightAoe(PlayerbotAI* ai) { return new LightAoeTrigger(ai); }
-        static Trigger* MediumAoe(PlayerbotAI* ai) { return new MediumAoeTrigger(ai); }
-        static Trigger* HighAoe(PlayerbotAI* ai) { return new HighAoeTrigger(ai); }
-        static Trigger* LoseAggro(PlayerbotAI* ai) { return new LoseAggroTrigger(ai); }
-        static Trigger* HasAggro(PlayerbotAI* ai) { return new HasAggroTrigger(ai); }
-        static Trigger* LowHealth(PlayerbotAI* ai) { return new LowHealthTrigger(ai); }
-        static Trigger* MediumHealth(PlayerbotAI* ai) { return new MediumHealthTrigger(ai); }
-        static Trigger* AlmostFullHealth(PlayerbotAI* ai) { return new AlmostFullHealthTrigger(ai); }
-        static Trigger* CriticalHealth(PlayerbotAI* ai) { return new CriticalHealthTrigger(ai); }
-        static Trigger* TargetCriticalHealth(PlayerbotAI* ai) { return new TargetCriticalHealthTrigger(ai); }
-        static Trigger* LowMana(PlayerbotAI* ai) { return new LowManaTrigger(ai); }
-        static Trigger* MediumMana(PlayerbotAI* ai) { return new MediumManaTrigger(ai); }
-        static Trigger* LightRageAvailable(PlayerbotAI* ai) { return new LightRageAvailableTrigger(ai); }
-        static Trigger* MediumRageAvailable(PlayerbotAI* ai) { return new MediumRageAvailableTrigger(ai); }
-        static Trigger* HighRageAvailable(PlayerbotAI* ai) { return new HighRageAvailableTrigger(ai); }
-        static Trigger* LightEnergyAvailable(PlayerbotAI* ai) { return new LightEnergyAvailableTrigger(ai); }
-        static Trigger* MediumEnergyAvailable(PlayerbotAI* ai) { return new MediumEnergyAvailableTrigger(ai); }
-        static Trigger* HighEnergyAvailable(PlayerbotAI* ai) { return new HighEnergyAvailableTrigger(ai); }
-        static Trigger* LootAvailable(PlayerbotAI* ai) { return new LootAvailableTrigger(ai); }
-        static Trigger* NoAttackers(PlayerbotAI* ai) { return new NoAttackersTrigger(ai); }
-        static Trigger* TankAoe(PlayerbotAI* ai) { return new TankAoeTrigger(ai); }
-        static Trigger* Timer(PlayerbotAI* ai) { return new TimerTrigger(ai); }
-        static Trigger* NoTarget(PlayerbotAI* ai) { return new NoTargetTrigger(ai); }
-        static Trigger* TargetInSight(PlayerbotAI* ai) { return new TargetInSightTrigger(ai); }
-        static Trigger* not_least_hp_target_active(PlayerbotAI* ai) { return new NotLeastHpTargetActiveTrigger(ai); }
-        static Trigger* has_nearest_adds(PlayerbotAI* ai) { return new HasNearestAddsTrigger(ai); }
-        static Trigger* enemy_player_is_attacking(PlayerbotAI* ai) { return new EnemyPlayerIsAttacking(ai); }
-        static Trigger* Random(PlayerbotAI* ai) { return new RandomTrigger(ai); }
-        static Trigger* seldom(PlayerbotAI* ai) { return new SeldomTrigger(ai); }
-        static Trigger* often(PlayerbotAI* ai) { return new OftenTrigger(ai); }
-        static Trigger* EnemyOutOfMelee(PlayerbotAI* ai) { return new EnemyOutOfMeleeTrigger(ai); }
-        static Trigger* EnemyOutOfSpell(PlayerbotAI* ai) { return new EnemyOutOfSpellRangeTrigger(ai); }
-        static Trigger* enemy_too_close_for_spell(PlayerbotAI* ai) { return new EnemyTooCloseForSpellTrigger(ai); }
-        static Trigger* enemy_too_close_for_melee(PlayerbotAI* ai) { return new EnemyTooCloseForMeleeTrigger(ai); }
-        static Trigger* ComboPointsAvailable(PlayerbotAI* ai) { return new ComboPointsAvailableTrigger(ai); }
-        static Trigger* MediumThreat(PlayerbotAI* ai) { return new MediumThreatTrigger(ai); }
-        static Trigger* Dead(PlayerbotAI* ai) { return new DeadTrigger(ai); }
-        static Trigger* PartyMemberDead(PlayerbotAI* ai) { return new PartyMemberDeadTrigger(ai); }
-        static Trigger* PartyMemberLowHealth(PlayerbotAI* ai) { return new PartyMemberLowHealthTrigger(ai); }
-        static Trigger* PartyMemberMediumHealth(PlayerbotAI* ai) { return new PartyMemberMediumHealthTrigger(ai); }
-        static Trigger* PartyMemberAlmostFullHealth(PlayerbotAI* ai) { return new PartyMemberAlmostFullHealthTrigger(ai); }
-        static Trigger* PartyMemberCriticalHealth(PlayerbotAI* ai) { return new PartyMemberCriticalHealthTrigger(ai); }
-        static Trigger* no_pet(PlayerbotAI* ai) { return new NoPetTrigger(ai); }
-        static Trigger* has_attackers(PlayerbotAI* ai) { return new HasAttackersTrigger(ai); }
+        static std::shared_ptr<Trigger> lfg_proposal_active(PlayerbotAI* ai) { return std::make_shared<LfgProposalActiveTrigger>(ai); }
+        static std::shared_ptr<Trigger> invalid_target(PlayerbotAI* ai) { return std::make_shared<InvalidTargetTrigger>(ai); }
+        static std::shared_ptr<Trigger> critical_aoe_heal(PlayerbotAI* ai) { return std::make_shared<AoeHealTrigger>(ai, "critical aoe heal", "critical", 2); }
+        static std::shared_ptr<Trigger> low_aoe_heal(PlayerbotAI* ai) { return std::make_shared<AoeHealTrigger>(ai, "low aoe heal", "low", 2); }
+        static std::shared_ptr<Trigger> medium_aoe_heal(PlayerbotAI* ai) { return std::make_shared<AoeHealTrigger>(ai, "medium aoe heal", "medium", 2); }
+        static std::shared_ptr<Trigger> target_changed(PlayerbotAI* ai) { return std::make_shared<TargetChangedTrigger>(ai); }
+        static std::shared_ptr<Trigger> swimming(PlayerbotAI* ai) { return std::make_shared<IsSwimmingTrigger>(ai); }
+        static std::shared_ptr<Trigger> no_possible_targets(PlayerbotAI* ai) { return std::make_shared<NoPossibleTargetsTrigger>(ai); }
+        static std::shared_ptr<Trigger> can_loot(PlayerbotAI* ai) { return std::make_shared<CanLootTrigger>(ai); }
+        static std::shared_ptr<Trigger> far_from_loot_target(PlayerbotAI* ai) { return std::make_shared<FarFromCurrentLootTrigger>(ai); }
+        static std::shared_ptr<Trigger> far_from_master(PlayerbotAI* ai) { return std::make_shared<FarFromMasterTrigger>(ai); }
+        static std::shared_ptr<Trigger> behind_target(PlayerbotAI* ai) { return std::make_shared<IsBehindTargetTrigger>(ai); }
+        static std::shared_ptr<Trigger> not_facing_target(PlayerbotAI* ai) { return std::make_shared<IsNotFacingTargetTrigger>(ai); }
+        static std::shared_ptr<Trigger> panic(PlayerbotAI* ai) { return std::make_shared<PanicTrigger>(ai); }
+        static std::shared_ptr<Trigger> no_drink(PlayerbotAI* ai) { return std::make_shared<NoDrinkTrigger>(ai); }
+        static std::shared_ptr<Trigger> no_food(PlayerbotAI* ai) { return std::make_shared<NoFoodTrigger>(ai); }
+        static std::shared_ptr<Trigger> LightAoe(PlayerbotAI* ai) { return std::make_shared<LightAoeTrigger>(ai); }
+        static std::shared_ptr<Trigger> MediumAoe(PlayerbotAI* ai) { return std::make_shared<MediumAoeTrigger>(ai); }
+        static std::shared_ptr<Trigger> HighAoe(PlayerbotAI* ai) { return std::make_shared<HighAoeTrigger>(ai); }
+        static std::shared_ptr<Trigger> LoseAggro(PlayerbotAI* ai) { return std::make_shared<LoseAggroTrigger>(ai); }
+        static std::shared_ptr<Trigger> HasAggro(PlayerbotAI* ai) { return std::make_shared<HasAggroTrigger>(ai); }
+        static std::shared_ptr<Trigger> LowHealth(PlayerbotAI* ai) { return std::make_shared<LowHealthTrigger>(ai); }
+        static std::shared_ptr<Trigger> MediumHealth(PlayerbotAI* ai) { return std::make_shared<MediumHealthTrigger>(ai); }
+        static std::shared_ptr<Trigger> AlmostFullHealth(PlayerbotAI* ai) { return std::make_shared<AlmostFullHealthTrigger>(ai); }
+        static std::shared_ptr<Trigger> CriticalHealth(PlayerbotAI* ai) { return std::make_shared<CriticalHealthTrigger>(ai); }
+        static std::shared_ptr<Trigger> TargetCriticalHealth(PlayerbotAI* ai) { return std::make_shared<TargetCriticalHealthTrigger>(ai); }
+        static std::shared_ptr<Trigger> LowMana(PlayerbotAI* ai) { return std::make_shared<LowManaTrigger>(ai); }
+        static std::shared_ptr<Trigger> MediumMana(PlayerbotAI* ai) { return std::make_shared<MediumManaTrigger>(ai); }
+        static std::shared_ptr<Trigger> LightRageAvailable(PlayerbotAI* ai) { return std::make_shared<LightRageAvailableTrigger>(ai); }
+        static std::shared_ptr<Trigger> MediumRageAvailable(PlayerbotAI* ai) { return std::make_shared<MediumRageAvailableTrigger>(ai); }
+        static std::shared_ptr<Trigger> HighRageAvailable(PlayerbotAI* ai) { return std::make_shared<HighRageAvailableTrigger>(ai); }
+        static std::shared_ptr<Trigger> LightEnergyAvailable(PlayerbotAI* ai) { return std::make_shared<LightEnergyAvailableTrigger>(ai); }
+        static std::shared_ptr<Trigger> MediumEnergyAvailable(PlayerbotAI* ai) { return std::make_shared<MediumEnergyAvailableTrigger>(ai); }
+        static std::shared_ptr<Trigger> HighEnergyAvailable(PlayerbotAI* ai) { return std::make_shared<HighEnergyAvailableTrigger>(ai); }
+        static std::shared_ptr<Trigger> LootAvailable(PlayerbotAI* ai) { return std::make_shared<LootAvailableTrigger>(ai); }
+        static std::shared_ptr<Trigger> NoAttackers(PlayerbotAI* ai) { return std::make_shared<NoAttackersTrigger>(ai); }
+        static std::shared_ptr<Trigger> TankAoe(PlayerbotAI* ai) { return std::make_shared<TankAoeTrigger>(ai); }
+        static std::shared_ptr<Trigger> Timer(PlayerbotAI* ai) { return std::make_shared<TimerTrigger>(ai); }
+        static std::shared_ptr<Trigger> NoTarget(PlayerbotAI* ai) { return std::make_shared<NoTargetTrigger>(ai); }
+        static std::shared_ptr<Trigger> TargetInSight(PlayerbotAI* ai) { return std::make_shared<TargetInSightTrigger>(ai); }
+        static std::shared_ptr<Trigger> not_least_hp_target_active(PlayerbotAI* ai) { return std::make_shared<NotLeastHpTargetActiveTrigger>(ai); }
+        static std::shared_ptr<Trigger> has_nearest_adds(PlayerbotAI* ai) { return std::make_shared<HasNearestAddsTrigger>(ai); }
+        static std::shared_ptr<Trigger> enemy_player_is_attacking(PlayerbotAI* ai) { return std::make_shared<EnemyPlayerIsAttacking>(ai); }
+        static std::shared_ptr<Trigger> Random(PlayerbotAI* ai) { return std::make_shared<RandomTrigger>(ai); }
+        static std::shared_ptr<Trigger> seldom(PlayerbotAI* ai) { return std::make_shared<SeldomTrigger>(ai); }
+        static std::shared_ptr<Trigger> often(PlayerbotAI* ai) { return std::make_shared<OftenTrigger>(ai); }
+        static std::shared_ptr<Trigger> EnemyOutOfMelee(PlayerbotAI* ai) { return std::make_shared<EnemyOutOfMeleeTrigger>(ai); }
+        static std::shared_ptr<Trigger> EnemyOutOfSpell(PlayerbotAI* ai) { return std::make_shared<EnemyOutOfSpellRangeTrigger>(ai); }
+        static std::shared_ptr<Trigger> enemy_too_close_for_spell(PlayerbotAI* ai) { return std::make_shared<EnemyTooCloseForSpellTrigger>(ai); }
+        static std::shared_ptr<Trigger> enemy_too_close_for_melee(PlayerbotAI* ai) { return std::make_shared<EnemyTooCloseForMeleeTrigger>(ai); }
+        static std::shared_ptr<Trigger> ComboPointsAvailable(PlayerbotAI* ai) { return std::make_shared<ComboPointsAvailableTrigger>(ai); }
+        static std::shared_ptr<Trigger> MediumThreat(PlayerbotAI* ai) { return std::make_shared<MediumThreatTrigger>(ai); }
+        static std::shared_ptr<Trigger> Dead(PlayerbotAI* ai) { return std::make_shared<DeadTrigger>(ai); }
+        static std::shared_ptr<Trigger> PartyMemberDead(PlayerbotAI* ai) { return std::make_shared<PartyMemberDeadTrigger>(ai); }
+        static std::shared_ptr<Trigger> PartyMemberLowHealth(PlayerbotAI* ai) { return std::make_shared<PartyMemberLowHealthTrigger>(ai); }
+        static std::shared_ptr<Trigger> PartyMemberMediumHealth(PlayerbotAI* ai) { return std::make_shared<PartyMemberMediumHealthTrigger>(ai); }
+        static std::shared_ptr<Trigger> PartyMemberAlmostFullHealth(PlayerbotAI* ai) { return std::make_shared<PartyMemberAlmostFullHealthTrigger>(ai); }
+        static std::shared_ptr<Trigger> PartyMemberCriticalHealth(PlayerbotAI* ai) { return std::make_shared<PartyMemberCriticalHealthTrigger>(ai); }
+        static std::shared_ptr<Trigger> no_pet(PlayerbotAI* ai) { return std::make_shared<NoPetTrigger>(ai); }
+        static std::shared_ptr<Trigger> has_attackers(PlayerbotAI* ai) { return std::make_shared<HasAttackersTrigger>(ai); }
 
     };
 };

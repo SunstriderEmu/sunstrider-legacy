@@ -144,82 +144,82 @@ namespace ai
         }
 
     private:
-        static UntypedValue* item_usage(PlayerbotAI* ai) { return new ItemUsageValue(ai); }
-        static UntypedValue* formation(PlayerbotAI* ai) { return new FormationValue(ai); }
-        static UntypedValue* mana_save_level(PlayerbotAI* ai) { return new ManaSaveLevelValue(ai); }
-        static UntypedValue* invalid_target(PlayerbotAI* ai) { return new InvalidTargetValue(ai); }
-        static UntypedValue* balance(PlayerbotAI* ai) { return new BalancePercentValue(ai); }
-        static UntypedValue* attackers(PlayerbotAI* ai) { return new AttackersValue(ai); }
+        static std::shared_ptr<UntypedValue> item_usage(PlayerbotAI* ai) { return std::make_shared<ItemUsageValue>(ai); }
+        static std::shared_ptr<UntypedValue> formation(PlayerbotAI* ai) { return std::make_shared<FormationValue>(ai); }
+        static std::shared_ptr<UntypedValue> mana_save_level(PlayerbotAI* ai) { return std::make_shared<ManaSaveLevelValue>(ai); }
+        static std::shared_ptr<UntypedValue> invalid_target(PlayerbotAI* ai) { return std::make_shared<InvalidTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> balance(PlayerbotAI* ai) { return std::make_shared<BalancePercentValue>(ai); }
+        static std::shared_ptr<UntypedValue> attackers(PlayerbotAI* ai) { return std::make_shared<AttackersValue>(ai); }
 
-        static UntypedValue* position(PlayerbotAI* ai) { return new PositionValue(ai); }
-        static UntypedValue* rti(PlayerbotAI* ai) { return new RtiValue(ai); }
+        static std::shared_ptr<UntypedValue> position(PlayerbotAI* ai) { return std::make_shared<PositionValue>(ai); }
+        static std::shared_ptr<UntypedValue> rti(PlayerbotAI* ai) { return std::make_shared<RtiValue>(ai); }
 
-        static UntypedValue* aoe_heal(PlayerbotAI* ai) { return new AoeHealValue(ai); }
+        static std::shared_ptr<UntypedValue> aoe_heal(PlayerbotAI* ai) { return std::make_shared<AoeHealValue>(ai); }
 
-        static UntypedValue* chat(PlayerbotAI* ai) { return new ChatValue(ai); }
-        static UntypedValue* last_spell_cast(PlayerbotAI* ai) { return new LastSpellCastValue(ai); }
-        static UntypedValue* last_spell_cast_time(PlayerbotAI* ai) { return new LastSpellCastTimeValue(ai); }
-        static UntypedValue* spell_cast_useful(PlayerbotAI* ai) { return new SpellCastUsefulValue(ai); }
-        static UntypedValue* item_for_spell(PlayerbotAI* ai) { return new ItemForSpellValue(ai); }
-        static UntypedValue* spell_id(PlayerbotAI* ai) { return new SpellIdValue(ai); }
-        static UntypedValue* inventory_item(PlayerbotAI* ai) { return new InventoryItemValue(ai); }
-        static UntypedValue* item_count(PlayerbotAI* ai) { return new ItemCountValue(ai); }
-        static UntypedValue* behind(PlayerbotAI* ai) { return new IsBehindValue(ai); }
-        static UntypedValue* facing(PlayerbotAI* ai) { return new IsFacingValue(ai); }
-        static UntypedValue* moving(PlayerbotAI* ai) { return new IsMovingValue(ai); }
-        static UntypedValue* swimming(PlayerbotAI* ai) { return new IsSwimmingValue(ai); }
-        static UntypedValue* distance(PlayerbotAI* ai) { return new DistanceValue(ai); }
-        static UntypedValue* last_movement(PlayerbotAI* ai) { return new LastMovementValue(ai); }
+        static std::shared_ptr<UntypedValue> chat(PlayerbotAI* ai) { return std::make_shared<ChatValue>(ai); }
+        static std::shared_ptr<UntypedValue> last_spell_cast(PlayerbotAI* ai) { return std::make_shared<LastSpellCastValue>(ai); }
+        static std::shared_ptr<UntypedValue> last_spell_cast_time(PlayerbotAI* ai) { return std::make_shared<LastSpellCastTimeValue>(ai); }
+        static std::shared_ptr<UntypedValue> spell_cast_useful(PlayerbotAI* ai) { return std::make_shared<SpellCastUsefulValue>(ai); }
+        static std::shared_ptr<UntypedValue> item_for_spell(PlayerbotAI* ai) { return std::make_shared<ItemForSpellValue>(ai); }
+        static std::shared_ptr<UntypedValue> spell_id(PlayerbotAI* ai) { return std::make_shared<SpellIdValue>(ai); }
+        static std::shared_ptr<UntypedValue> inventory_item(PlayerbotAI* ai) { return std::make_shared<InventoryItemValue>(ai); }
+        static std::shared_ptr<UntypedValue> item_count(PlayerbotAI* ai) { return std::make_shared<ItemCountValue>(ai); }
+        static std::shared_ptr<UntypedValue> behind(PlayerbotAI* ai) { return std::make_shared<IsBehindValue>(ai); }
+        static std::shared_ptr<UntypedValue> facing(PlayerbotAI* ai) { return std::make_shared<IsFacingValue>(ai); }
+        static std::shared_ptr<UntypedValue> moving(PlayerbotAI* ai) { return std::make_shared<IsMovingValue>(ai); }
+        static std::shared_ptr<UntypedValue> swimming(PlayerbotAI* ai) { return std::make_shared<IsSwimmingValue>(ai); }
+        static std::shared_ptr<UntypedValue> distance(PlayerbotAI* ai) { return std::make_shared<DistanceValue>(ai); }
+        static std::shared_ptr<UntypedValue> last_movement(PlayerbotAI* ai) { return std::make_shared<LastMovementValue>(ai); }
 
-        static UntypedValue* can_loot(PlayerbotAI* ai) { return new CanLootValue(ai); }
-        static UntypedValue* available_loot(PlayerbotAI* ai) { return new AvailableLootValue(ai); }
-        static UntypedValue* loot_target(PlayerbotAI* ai) { return new LootTargetValue(ai); }
-        static UntypedValue* has_available_loot(PlayerbotAI* ai) { return new HasAvailableLootValue(ai); }
-        static UntypedValue* always_loot_list(PlayerbotAI* ai) { return new AlwaysLootListValue(ai); }
-        static UntypedValue* loot_strategy(PlayerbotAI* ai) { return new LootStrategyValue(ai); }
+        static std::shared_ptr<UntypedValue> can_loot(PlayerbotAI* ai) { return std::make_shared<CanLootValue>(ai); }
+        static std::shared_ptr<UntypedValue> available_loot(PlayerbotAI* ai) { return std::make_shared<AvailableLootValue>(ai); }
+        static std::shared_ptr<UntypedValue> loot_target(PlayerbotAI* ai) { return std::make_shared<LootTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> has_available_loot(PlayerbotAI* ai) { return std::make_shared<HasAvailableLootValue>(ai); }
+        static std::shared_ptr<UntypedValue> always_loot_list(PlayerbotAI* ai) { return std::make_shared<AlwaysLootListValue>(ai); }
+        static std::shared_ptr<UntypedValue> loot_strategy(PlayerbotAI* ai) { return std::make_shared<LootStrategyValue>(ai); }
 
-        static UntypedValue* attacker_count(PlayerbotAI* ai) { return new AttackerCountValue(ai); }
-        static UntypedValue* my_attacker_count(PlayerbotAI* ai) { return new MyAttackerCountValue(ai); }
-        static UntypedValue* has_aggro(PlayerbotAI* ai) { return new HasAggroValue(ai); }
-        static UntypedValue* mounted(PlayerbotAI* ai) { return new IsMountedValue(ai); }
-        static UntypedValue* health(PlayerbotAI* ai) { return new HealthValue(ai); }
-        static UntypedValue* rage(PlayerbotAI* ai) { return new RageValue(ai); }
-        static UntypedValue* energy(PlayerbotAI* ai) { return new EnergyValue(ai); }
-        static UntypedValue* mana(PlayerbotAI* ai) { return new ManaValue(ai); }
-        static UntypedValue* combo(PlayerbotAI* ai) { return new ComboPointsValue(ai); }
-        static UntypedValue* dead(PlayerbotAI* ai) { return new IsDeadValue(ai); }
-        static UntypedValue* has_mana(PlayerbotAI* ai) { return new HasManaValue(ai); }
-        static UntypedValue* nearest_game_objects(PlayerbotAI* ai) { return new NearestGameObjects(ai); }
-        static UntypedValue* log_level(PlayerbotAI* ai) { return new LogLevelValue(ai); }
-        static UntypedValue* nearest_npcs(PlayerbotAI* ai) { return new NearestNpcsValue(ai); }
-        static UntypedValue* nearest_corpses(PlayerbotAI* ai) { return new NearestCorpsesValue(ai); }
-        static UntypedValue* possible_targets(PlayerbotAI* ai) { return new PossibleTargetsValue(ai); }
-        static UntypedValue* nearest_adds(PlayerbotAI* ai) { return new NearestAdsValue(ai); }
-        static UntypedValue* party_member_without_aura(PlayerbotAI* ai) { return new PartyMemberWithoutAuraValue(ai); }
-        static UntypedValue* attacker_without_aura(PlayerbotAI* ai) { return new AttackerWithoutAuraTargetValue(ai); }
-        static UntypedValue* party_member_to_heal(PlayerbotAI* ai) { return new PartyMemberToHeal(ai); }
-        static UntypedValue* party_member_to_resurrect(PlayerbotAI* ai) { return new PartyMemberToResurrect(ai); }
-        static UntypedValue* party_member_to_dispel(PlayerbotAI* ai) { return new PartyMemberToDispel(ai); }
-        static UntypedValue* current_target(PlayerbotAI* ai) { return new CurrentTargetValue(ai); }
-        static UntypedValue* old_target(PlayerbotAI* ai) { return new CurrentTargetValue(ai); }
-        static UntypedValue* self_target(PlayerbotAI* ai) { return new SelfTargetValue(ai); }
-        static UntypedValue* master(PlayerbotAI* ai) { return new MasterTargetValue(ai); }
-        static UntypedValue* line_target(PlayerbotAI* ai) { return new LineTargetValue(ai); }
-        static UntypedValue* tank_target(PlayerbotAI* ai) { return new TankTargetValue(ai); }
-        static UntypedValue* dps_target(PlayerbotAI* ai) { return new DpsTargetValue(ai); }
-        static UntypedValue* least_hp_target(PlayerbotAI* ai) { return new LeastHpTargetValue(ai); }
-        static UntypedValue* enemy_player_target(PlayerbotAI* ai) { return new EnemyPlayerValue(ai); }
-        static UntypedValue* cc_target(PlayerbotAI* ai) { return new CcTargetValue(ai); }
-        static UntypedValue* current_cc_target(PlayerbotAI* ai) { return new CurrentCcTargetValue(ai); }
-        static UntypedValue* pet_target(PlayerbotAI* ai) { return new PetTargetValue(ai); }
-        static UntypedValue* grind_target(PlayerbotAI* ai) { return new GrindTargetValue(ai); }
-        static UntypedValue* rti_target(PlayerbotAI* ai) { return new RtiTargetValue(ai); }
-        static UntypedValue* duel_target(PlayerbotAI* ai) { return new DuelTargetValue(ai); }
-        static UntypedValue* has_totem(PlayerbotAI* ai) { return new HasTotemValue(ai); }
-        static UntypedValue* threat(PlayerbotAI* ai) { return new ThreatValue(ai); }
-        static UntypedValue* combat(PlayerbotAI* ai) { return new IsInCombatValue(ai); }
-        static UntypedValue* lfg_proposal(PlayerbotAI* ai) { return new LfgProposalValue(ai); }
-        static UntypedValue* bag_space(PlayerbotAI* ai) { return new BagSpaceValue(ai); }
-        static UntypedValue* enemy_healer_target(PlayerbotAI* ai) { return new EnemyHealerTargetValue(ai); }
+        static std::shared_ptr<UntypedValue> attacker_count(PlayerbotAI* ai) { return std::make_shared<AttackerCountValue>(ai); }
+        static std::shared_ptr<UntypedValue> my_attacker_count(PlayerbotAI* ai) { return std::make_shared<MyAttackerCountValue>(ai); }
+        static std::shared_ptr<UntypedValue> has_aggro(PlayerbotAI* ai) { return std::make_shared<HasAggroValue>(ai); }
+        static std::shared_ptr<UntypedValue> mounted(PlayerbotAI* ai) { return std::make_shared<IsMountedValue>(ai); }
+        static std::shared_ptr<UntypedValue> health(PlayerbotAI* ai) { return std::make_shared<HealthValue>(ai); }
+        static std::shared_ptr<UntypedValue> rage(PlayerbotAI* ai) { return std::make_shared<RageValue>(ai); }
+        static std::shared_ptr<UntypedValue> energy(PlayerbotAI* ai) { return std::make_shared<EnergyValue>(ai); }
+        static std::shared_ptr<UntypedValue> mana(PlayerbotAI* ai) { return std::make_shared<ManaValue>(ai); }
+        static std::shared_ptr<UntypedValue> combo(PlayerbotAI* ai) { return std::make_shared<ComboPointsValue>(ai); }
+        static std::shared_ptr<UntypedValue> dead(PlayerbotAI* ai) { return std::make_shared<IsDeadValue>(ai); }
+        static std::shared_ptr<UntypedValue> has_mana(PlayerbotAI* ai) { return std::make_shared<HasManaValue>(ai); }
+        static std::shared_ptr<UntypedValue> nearest_game_objects(PlayerbotAI* ai) { return std::make_shared<NearestGameObjects>(ai); }
+        static std::shared_ptr<UntypedValue> log_level(PlayerbotAI* ai) { return std::make_shared<LogLevelValue>(ai); }
+        static std::shared_ptr<UntypedValue> nearest_npcs(PlayerbotAI* ai) { return std::make_shared<NearestNpcsValue>(ai); }
+        static std::shared_ptr<UntypedValue> nearest_corpses(PlayerbotAI* ai) { return std::make_shared<NearestCorpsesValue>(ai); }
+        static std::shared_ptr<UntypedValue> possible_targets(PlayerbotAI* ai) { return std::make_shared<PossibleTargetsValue>(ai); }
+        static std::shared_ptr<UntypedValue> nearest_adds(PlayerbotAI* ai) { return std::make_shared<NearestAdsValue>(ai); }
+        static std::shared_ptr<UntypedValue> party_member_without_aura(PlayerbotAI* ai) { return std::make_shared<PartyMemberWithoutAuraValue>(ai); }
+        static std::shared_ptr<UntypedValue> attacker_without_aura(PlayerbotAI* ai) { return std::make_shared<AttackerWithoutAuraTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> party_member_to_heal(PlayerbotAI* ai) { return std::make_shared<PartyMemberToHeal>(ai); }
+        static std::shared_ptr<UntypedValue> party_member_to_resurrect(PlayerbotAI* ai) { return std::make_shared<PartyMemberToResurrect>(ai); }
+        static std::shared_ptr<UntypedValue> party_member_to_dispel(PlayerbotAI* ai) { return std::make_shared<PartyMemberToDispel>(ai); }
+        static std::shared_ptr<UntypedValue> current_target(PlayerbotAI* ai) { return std::make_shared<CurrentTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> old_target(PlayerbotAI* ai) { return std::make_shared<CurrentTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> self_target(PlayerbotAI* ai) { return std::make_shared<SelfTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> master(PlayerbotAI* ai) { return std::make_shared<MasterTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> line_target(PlayerbotAI* ai) { return std::make_shared<LineTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> tank_target(PlayerbotAI* ai) { return std::make_shared<TankTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> dps_target(PlayerbotAI* ai) { return std::make_shared<DpsTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> least_hp_target(PlayerbotAI* ai) { return std::make_shared<LeastHpTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> enemy_player_target(PlayerbotAI* ai) { return std::make_shared<EnemyPlayerValue>(ai); }
+        static std::shared_ptr<UntypedValue> cc_target(PlayerbotAI* ai) { return std::make_shared<CcTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> current_cc_target(PlayerbotAI* ai) { return std::make_shared<CurrentCcTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> pet_target(PlayerbotAI* ai) { return std::make_shared<PetTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> grind_target(PlayerbotAI* ai) { return std::make_shared<GrindTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> rti_target(PlayerbotAI* ai) { return std::make_shared<RtiTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> duel_target(PlayerbotAI* ai) { return std::make_shared<DuelTargetValue>(ai); }
+        static std::shared_ptr<UntypedValue> has_totem(PlayerbotAI* ai) { return std::make_shared<HasTotemValue>(ai); }
+        static std::shared_ptr<UntypedValue> threat(PlayerbotAI* ai) { return std::make_shared<ThreatValue>(ai); }
+        static std::shared_ptr<UntypedValue> combat(PlayerbotAI* ai) { return std::make_shared<IsInCombatValue>(ai); }
+        static std::shared_ptr<UntypedValue> lfg_proposal(PlayerbotAI* ai) { return std::make_shared<LfgProposalValue>(ai); }
+        static std::shared_ptr<UntypedValue> bag_space(PlayerbotAI* ai) { return std::make_shared<BagSpaceValue>(ai); }
+        static std::shared_ptr<UntypedValue> enemy_healer_target(PlayerbotAI* ai) { return std::make_shared<EnemyHealerTargetValue>(ai); }
     };
 };

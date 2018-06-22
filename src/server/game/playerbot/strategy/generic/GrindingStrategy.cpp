@@ -10,10 +10,10 @@ ActionList GrindingStrategy::getDefaultActions()
     return {};
 }
 
-void GrindingStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GrindingStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "no target",
-        NextAction::array( { new NextAction("attack anything", 5.0f) })));
+        NextAction::array( { std::make_shared<NextAction>("attack anything", 5.0f) })));
 }
 

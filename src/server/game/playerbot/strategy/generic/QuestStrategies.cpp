@@ -9,33 +9,33 @@ QuestStrategy::QuestStrategy(PlayerbotAI* ai) : PassTroughStrategy(ai)
     supported.push_back("accept quest");
 }
 
-void QuestStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void QuestStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     PassTroughStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "quest share",
-        NextAction::array({ new NextAction("accept quest share", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("accept quest share", relevance) })));
 }
 
 
-void DefaultQuestStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DefaultQuestStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     QuestStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "use game object",
         NextAction::array({
-            new NextAction("talk to quest giver", relevance) })));
+            std::make_shared<NextAction>("talk to quest giver", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "gossip hello",
         NextAction::array( {
-            new NextAction("talk to quest giver", relevance) })));
+            std::make_shared<NextAction>("talk to quest giver", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "complete quest",
-        NextAction::array({ new NextAction("talk to quest giver", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("talk to quest giver", relevance) })));
 }
 
 DefaultQuestStrategy::DefaultQuestStrategy(PlayerbotAI* ai) : QuestStrategy(ai)
@@ -44,24 +44,24 @@ DefaultQuestStrategy::DefaultQuestStrategy(PlayerbotAI* ai) : QuestStrategy(ai)
 
 
 
-void AcceptAllQuestsStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void AcceptAllQuestsStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     QuestStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "use game object",
         NextAction::array({
-            new NextAction("talk to quest giver", relevance), new NextAction("accept all quests", relevance) })));
+            std::make_shared<NextAction>("talk to quest giver", relevance), std::make_shared<NextAction>("accept all quests", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "gossip hello",
         NextAction::array({
-            new NextAction("talk to quest giver", relevance), new NextAction("accept all quests", relevance) })));
+            std::make_shared<NextAction>("talk to quest giver", relevance), std::make_shared<NextAction>("accept all quests", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "complete quest",
         NextAction::array({
-            new NextAction("talk to quest giver", relevance), new NextAction("accept all quests", relevance) })));
+            std::make_shared<NextAction>("talk to quest giver", relevance), std::make_shared<NextAction>("accept all quests", relevance) })));
 }
 
 AcceptAllQuestsStrategy::AcceptAllQuestsStrategy(PlayerbotAI* ai) : QuestStrategy(ai)

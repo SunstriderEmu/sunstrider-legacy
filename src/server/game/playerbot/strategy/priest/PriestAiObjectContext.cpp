@@ -32,10 +32,10 @@ namespace ai
             }
 
         private:
-            static Strategy* nc(PlayerbotAI* ai) { return new PriestNonCombatStrategy(ai); }
-            static Strategy* shadow_aoe(PlayerbotAI* ai) { return new ShadowPriestAoeStrategy(ai); }
-            static Strategy* pull(PlayerbotAI* ai) { return new PullStrategy(ai, "shoot"); }
-            static Strategy* shadow_debuff(PlayerbotAI* ai) { return new ShadowPriestDebuffStrategy(ai); }
+            static std::shared_ptr<Strategy> nc(PlayerbotAI* ai) { return std::make_shared<PriestNonCombatStrategy>(ai); }
+            static std::shared_ptr<Strategy> shadow_aoe(PlayerbotAI* ai) { return std::make_shared<ShadowPriestAoeStrategy>(ai); }
+            static std::shared_ptr<Strategy> pull(PlayerbotAI* ai) { return std::make_shared<PullStrategy>(ai, "shoot"); }
+            static std::shared_ptr<Strategy> shadow_debuff(PlayerbotAI* ai) { return std::make_shared<ShadowPriestDebuffStrategy>(ai); }
         };
 
         class CombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -50,9 +50,9 @@ namespace ai
             }
 
         private:
-            static Strategy* heal(PlayerbotAI* ai) { return new HealPriestStrategy(ai); }
-            static Strategy* dps(PlayerbotAI* ai) { return new ShadowPriestStrategy(ai); }
-            static Strategy* holy(PlayerbotAI* ai) { return new HolyPriestStrategy(ai); }
+            static std::shared_ptr<Strategy> heal(PlayerbotAI* ai) { return std::make_shared<HealPriestStrategy>(ai); }
+            static std::shared_ptr<Strategy> dps(PlayerbotAI* ai) { return std::make_shared<ShadowPriestStrategy>(ai); }
+            static std::shared_ptr<Strategy> holy(PlayerbotAI* ai) { return std::make_shared<HolyPriestStrategy>(ai); }
         };
     };
 };
@@ -87,21 +87,21 @@ namespace ai
             }
 
         private:
-            static Trigger* vampiric_embrace(PlayerbotAI* ai) { return new VampiricEmbraceTrigger(ai); }
-            static Trigger* shadowform(PlayerbotAI* ai) { return new ShadowformTrigger(ai); }
-            static Trigger* vampiric_touch(PlayerbotAI* ai) { return new VampiricTouchTrigger(ai); }
-            static Trigger* devouring_plague(PlayerbotAI* ai) { return new DevouringPlagueTrigger(ai); }
-            static Trigger* shadow_word_pain(PlayerbotAI* ai) { return new PowerWordPainTrigger(ai); }
-            static Trigger* shadow_word_pain_on_attacker(PlayerbotAI* ai) { return new PowerWordPainOnAttackerTrigger(ai); }
-            static Trigger* dispel_magic(PlayerbotAI* ai) { return new DispelMagicTrigger(ai); }
-            static Trigger* dispel_magic_party_member(PlayerbotAI* ai) { return new DispelMagicPartyMemberTrigger(ai); }
-            static Trigger* cure_disease(PlayerbotAI* ai) { return new CureDiseaseTrigger(ai); }
-            static Trigger* party_member_cure_disease(PlayerbotAI* ai) { return new PartyMemberCureDiseaseTrigger(ai); }
-            static Trigger* power_word_fortitude(PlayerbotAI* ai) { return new PowerWordFortitudeTrigger(ai); }
-            static Trigger* power_word_fortitude_on_party(PlayerbotAI* ai) { return new PowerWordFortitudeOnPartyTrigger(ai); }
-            static Trigger* divine_spirit(PlayerbotAI* ai) { return new DivineSpiritTrigger(ai); }
-            static Trigger* divine_spirit_on_party(PlayerbotAI* ai) { return new DivineSpiritOnPartyTrigger(ai); }
-            static Trigger* inner_fire(PlayerbotAI* ai) { return new InnerFireTrigger(ai); }
+            static std::shared_ptr<Trigger> vampiric_embrace(PlayerbotAI* ai) { return std::make_shared<VampiricEmbraceTrigger>(ai); }
+            static std::shared_ptr<Trigger> shadowform(PlayerbotAI* ai) { return std::make_shared<ShadowformTrigger>(ai); }
+            static std::shared_ptr<Trigger> vampiric_touch(PlayerbotAI* ai) { return std::make_shared<VampiricTouchTrigger>(ai); }
+            static std::shared_ptr<Trigger> devouring_plague(PlayerbotAI* ai) { return std::make_shared<DevouringPlagueTrigger>(ai); }
+            static std::shared_ptr<Trigger> shadow_word_pain(PlayerbotAI* ai) { return std::make_shared<PowerWordPainTrigger>(ai); }
+            static std::shared_ptr<Trigger> shadow_word_pain_on_attacker(PlayerbotAI* ai) { return std::make_shared<PowerWordPainOnAttackerTrigger>(ai); }
+            static std::shared_ptr<Trigger> dispel_magic(PlayerbotAI* ai) { return std::make_shared<DispelMagicTrigger>(ai); }
+            static std::shared_ptr<Trigger> dispel_magic_party_member(PlayerbotAI* ai) { return std::make_shared<DispelMagicPartyMemberTrigger>(ai); }
+            static std::shared_ptr<Trigger> cure_disease(PlayerbotAI* ai) { return std::make_shared<CureDiseaseTrigger>(ai); }
+            static std::shared_ptr<Trigger> party_member_cure_disease(PlayerbotAI* ai) { return std::make_shared<PartyMemberCureDiseaseTrigger>(ai); }
+            static std::shared_ptr<Trigger> power_word_fortitude(PlayerbotAI* ai) { return std::make_shared<PowerWordFortitudeTrigger>(ai); }
+            static std::shared_ptr<Trigger> power_word_fortitude_on_party(PlayerbotAI* ai) { return std::make_shared<PowerWordFortitudeOnPartyTrigger>(ai); }
+            static std::shared_ptr<Trigger> divine_spirit(PlayerbotAI* ai) { return std::make_shared<DivineSpiritTrigger>(ai); }
+            static std::shared_ptr<Trigger> divine_spirit_on_party(PlayerbotAI* ai) { return std::make_shared<DivineSpiritOnPartyTrigger>(ai); }
+            static std::shared_ptr<Trigger> inner_fire(PlayerbotAI* ai) { return std::make_shared<InnerFireTrigger>(ai); }
         };
     };
 };
@@ -163,47 +163,47 @@ namespace ai
             }
 
         private:
-            static Action* dispersion(PlayerbotAI* ai) { return new CastDispersionAction(ai); }
-            static Action* vampiric_embrace(PlayerbotAI* ai) { return new CastVampiricEmbraceAction(ai); }
-            static Action* vampiric_touch(PlayerbotAI* ai) { return new CastVampiricTouchAction(ai); }
-            static Action* psychic_scream(PlayerbotAI* ai) { return new CastPsychicScreamAction(ai); }
-            static Action* circle_of_healing(PlayerbotAI* ai) { return new CastCircleOfHealingAction(ai); }
-            static Action* resurrection(PlayerbotAI* ai) { return new CastResurrectionAction(ai); }
-            static Action* shadow_word_pain(PlayerbotAI* ai) { return new CastPowerWordPainAction(ai); }
-            static Action* shadow_word_pain_on_attacker(PlayerbotAI* ai) { return new CastPowerWordPainOnAttackerAction(ai); }
-            static Action* devouring_plague(PlayerbotAI* ai) { return new CastDevouringPlagueAction(ai); }
-            static Action* mind_flay(PlayerbotAI* ai) { return new CastMindFlayAction(ai); }
-            static Action* holy_fire(PlayerbotAI* ai) { return new CastHolyFireAction(ai); }
-            static Action* smite(PlayerbotAI* ai) { return new CastSmiteAction(ai); }
-            static Action* mind_blast(PlayerbotAI* ai) { return new CastMindBlastAction(ai); }
-            static Action* shadowform(PlayerbotAI* ai) { return new CastShadowformAction(ai); }
-            static Action* remove_shadowform(PlayerbotAI* ai) { return new CastRemoveShadowformAction(ai); }
-            static Action* holy_nova(PlayerbotAI* ai) { return new CastHolyNovaAction(ai); }
-            static Action* power_word_fortitude(PlayerbotAI* ai) { return new CastPowerWordFortitudeAction(ai); }
-            static Action* power_word_fortitude_on_party(PlayerbotAI* ai) { return new CastPowerWordFortitudeOnPartyAction(ai); }
-            static Action* divine_spirit(PlayerbotAI* ai) { return new CastDivineSpiritAction(ai); }
-            static Action* divine_spirit_on_party(PlayerbotAI* ai) { return new CastDivineSpiritOnPartyAction(ai); }
-            static Action* power_word_shield(PlayerbotAI* ai) { return new CastPowerWordShieldAction(ai); }
-            static Action* power_word_shield_on_party(PlayerbotAI* ai) { return new CastPowerWordShieldOnPartyAction(ai); }
-            static Action* renew(PlayerbotAI* ai) { return new CastRenewAction(ai); }
-            static Action* renew_on_party(PlayerbotAI* ai) { return new CastRenewOnPartyAction(ai); }
-            static Action* greater_heal(PlayerbotAI* ai) { return new CastGreaterHealAction(ai); }
-            static Action* greater_heal_on_party(PlayerbotAI* ai) { return new CastGreaterHealOnPartyAction(ai); }
-            static Action* heal(PlayerbotAI* ai) { return new CastHealAction(ai); }
-            static Action* heal_on_party(PlayerbotAI* ai) { return new CastHealOnPartyAction(ai); }
-            static Action* lesser_heal(PlayerbotAI* ai) { return new CastLesserHealAction(ai); }
-            static Action* lesser_heal_on_party(PlayerbotAI* ai) { return new CastLesserHealOnPartyAction(ai); }
-            static Action* flash_heal(PlayerbotAI* ai) { return new CastFlashHealAction(ai); }
-            static Action* flash_heal_on_party(PlayerbotAI* ai) { return new CastFlashHealOnPartyAction(ai); }
-            static Action* dispel_magic(PlayerbotAI* ai) { return new CastDispelMagicAction(ai); }
-            static Action* dispel_magic_on_party(PlayerbotAI* ai) { return new CastDispelMagicOnPartyAction(ai); }
-            static Action* dispel_magic_on_target(PlayerbotAI* ai) { return new CastDispelMagicOnTargetAction(ai); }
-            static Action* cure_disease(PlayerbotAI* ai) { return new CastCureDiseaseAction(ai); }
-            static Action* cure_disease_on_party(PlayerbotAI* ai) { return new CastCureDiseaseOnPartyAction(ai); }
-            static Action* abolish_disease(PlayerbotAI* ai) { return new CastAbolishDiseaseAction(ai); }
-            static Action* abolish_disease_on_party(PlayerbotAI* ai) { return new CastAbolishDiseaseOnPartyAction(ai); }
-            static Action* fade(PlayerbotAI* ai) { return new CastFadeAction(ai); }
-            static Action* inner_fire(PlayerbotAI* ai) { return new CastInnerFireAction(ai); }
+            static std::shared_ptr<Action> dispersion(PlayerbotAI* ai) { return std::make_shared<CastDispersionAction>(ai); }
+            static std::shared_ptr<Action> vampiric_embrace(PlayerbotAI* ai) { return std::make_shared<CastVampiricEmbraceAction>(ai); }
+            static std::shared_ptr<Action> vampiric_touch(PlayerbotAI* ai) { return std::make_shared<CastVampiricTouchAction>(ai); }
+            static std::shared_ptr<Action> psychic_scream(PlayerbotAI* ai) { return std::make_shared<CastPsychicScreamAction>(ai); }
+            static std::shared_ptr<Action> circle_of_healing(PlayerbotAI* ai) { return std::make_shared<CastCircleOfHealingAction>(ai); }
+            static std::shared_ptr<Action> resurrection(PlayerbotAI* ai) { return std::make_shared<CastResurrectionAction>(ai); }
+            static std::shared_ptr<Action> shadow_word_pain(PlayerbotAI* ai) { return std::make_shared<CastPowerWordPainAction>(ai); }
+            static std::shared_ptr<Action> shadow_word_pain_on_attacker(PlayerbotAI* ai) { return std::make_shared<CastPowerWordPainOnAttackerAction>(ai); }
+            static std::shared_ptr<Action> devouring_plague(PlayerbotAI* ai) { return std::make_shared<CastDevouringPlagueAction>(ai); }
+            static std::shared_ptr<Action> mind_flay(PlayerbotAI* ai) { return std::make_shared<CastMindFlayAction>(ai); }
+            static std::shared_ptr<Action> holy_fire(PlayerbotAI* ai) { return std::make_shared<CastHolyFireAction>(ai); }
+            static std::shared_ptr<Action> smite(PlayerbotAI* ai) { return std::make_shared<CastSmiteAction>(ai); }
+            static std::shared_ptr<Action> mind_blast(PlayerbotAI* ai) { return std::make_shared<CastMindBlastAction>(ai); }
+            static std::shared_ptr<Action> shadowform(PlayerbotAI* ai) { return std::make_shared<CastShadowformAction>(ai); }
+            static std::shared_ptr<Action> remove_shadowform(PlayerbotAI* ai) { return std::make_shared<CastRemoveShadowformAction>(ai); }
+            static std::shared_ptr<Action> holy_nova(PlayerbotAI* ai) { return std::make_shared<CastHolyNovaAction>(ai); }
+            static std::shared_ptr<Action> power_word_fortitude(PlayerbotAI* ai) { return std::make_shared<CastPowerWordFortitudeAction>(ai); }
+            static std::shared_ptr<Action> power_word_fortitude_on_party(PlayerbotAI* ai) { return std::make_shared<CastPowerWordFortitudeOnPartyAction>(ai); }
+            static std::shared_ptr<Action> divine_spirit(PlayerbotAI* ai) { return std::make_shared<CastDivineSpiritAction>(ai); }
+            static std::shared_ptr<Action> divine_spirit_on_party(PlayerbotAI* ai) { return std::make_shared<CastDivineSpiritOnPartyAction>(ai); }
+            static std::shared_ptr<Action> power_word_shield(PlayerbotAI* ai) { return std::make_shared<CastPowerWordShieldAction>(ai); }
+            static std::shared_ptr<Action> power_word_shield_on_party(PlayerbotAI* ai) { return std::make_shared<CastPowerWordShieldOnPartyAction>(ai); }
+            static std::shared_ptr<Action> renew(PlayerbotAI* ai) { return std::make_shared<CastRenewAction>(ai); }
+            static std::shared_ptr<Action> renew_on_party(PlayerbotAI* ai) { return std::make_shared<CastRenewOnPartyAction>(ai); }
+            static std::shared_ptr<Action> greater_heal(PlayerbotAI* ai) { return std::make_shared<CastGreaterHealAction>(ai); }
+            static std::shared_ptr<Action> greater_heal_on_party(PlayerbotAI* ai) { return std::make_shared<CastGreaterHealOnPartyAction>(ai); }
+            static std::shared_ptr<Action> heal(PlayerbotAI* ai) { return std::make_shared<CastHealAction>(ai); }
+            static std::shared_ptr<Action> heal_on_party(PlayerbotAI* ai) { return std::make_shared<CastHealOnPartyAction>(ai); }
+            static std::shared_ptr<Action> lesser_heal(PlayerbotAI* ai) { return std::make_shared<CastLesserHealAction>(ai); }
+            static std::shared_ptr<Action> lesser_heal_on_party(PlayerbotAI* ai) { return std::make_shared<CastLesserHealOnPartyAction>(ai); }
+            static std::shared_ptr<Action> flash_heal(PlayerbotAI* ai) { return std::make_shared<CastFlashHealAction>(ai); }
+            static std::shared_ptr<Action> flash_heal_on_party(PlayerbotAI* ai) { return std::make_shared<CastFlashHealOnPartyAction>(ai); }
+            static std::shared_ptr<Action> dispel_magic(PlayerbotAI* ai) { return std::make_shared<CastDispelMagicAction>(ai); }
+            static std::shared_ptr<Action> dispel_magic_on_party(PlayerbotAI* ai) { return std::make_shared<CastDispelMagicOnPartyAction>(ai); }
+            static std::shared_ptr<Action> dispel_magic_on_target(PlayerbotAI* ai) { return std::make_shared<CastDispelMagicOnTargetAction>(ai); }
+            static std::shared_ptr<Action> cure_disease(PlayerbotAI* ai) { return std::make_shared<CastCureDiseaseAction>(ai); }
+            static std::shared_ptr<Action> cure_disease_on_party(PlayerbotAI* ai) { return std::make_shared<CastCureDiseaseOnPartyAction>(ai); }
+            static std::shared_ptr<Action> abolish_disease(PlayerbotAI* ai) { return std::make_shared<CastAbolishDiseaseAction>(ai); }
+            static std::shared_ptr<Action> abolish_disease_on_party(PlayerbotAI* ai) { return std::make_shared<CastAbolishDiseaseOnPartyAction>(ai); }
+            static std::shared_ptr<Action> fade(PlayerbotAI* ai) { return std::make_shared<CastFadeAction>(ai); }
+            static std::shared_ptr<Action> inner_fire(PlayerbotAI* ai) { return std::make_shared<CastInnerFireAction>(ai); }
         };
     };
 };

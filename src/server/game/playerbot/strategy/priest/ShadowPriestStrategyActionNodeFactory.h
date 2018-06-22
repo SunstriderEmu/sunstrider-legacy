@@ -12,26 +12,26 @@ namespace ai
             creators["dispersion"] = &dispersion;
         }
     private:
-        static ActionNode* mind_flay(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> mind_flay(PlayerbotAI* ai)
         {
-            return new ActionNode ("mind flay",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("shoot") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("mind flay",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("shoot") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* mind_blast(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> mind_blast(PlayerbotAI* ai)
         {
-            return new ActionNode ("mind blast",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("mind flay") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("mind blast",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("mind flay") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* dispersion(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> dispersion(PlayerbotAI* ai)
         {
-            return new ActionNode ("dispersion",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("mana potion") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("dispersion",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("mana potion") }),
+                /*C*/ ActionList());
         }
     };
 };

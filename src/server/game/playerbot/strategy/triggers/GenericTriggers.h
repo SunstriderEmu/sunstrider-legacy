@@ -238,7 +238,7 @@ namespace ai
     public:
         BuffOnPartyTrigger(PlayerbotAI* ai, std::string spell) : BuffTrigger(ai, spell) {}
     public:
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
     };
 
     BEGIN_TRIGGER(NoAttackersTrigger, Trigger)
@@ -272,7 +272,7 @@ namespace ai
     public:
         DebuffOnAttackerTrigger(PlayerbotAI* ai, std::string spell) : DebuffTrigger(ai, spell) {}
     public:
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
         virtual std::string getName() { return spell + " on attacker"; }
     };
 
@@ -529,7 +529,7 @@ namespace ai
     public:
         InterruptEnemyHealerTrigger(PlayerbotAI* ai, std::string spell) : SpellTrigger(ai, spell) {}
     public:
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
         virtual std::string getName() { return spell + " on enemy healer"; }
     };
 

@@ -13,58 +13,58 @@ public:
         creators["blessing of sanctuary"] = &blessing_of_sanctuary;
     }
 private:
-    static ActionNode* blessing_of_sanctuary(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> blessing_of_sanctuary(PlayerbotAI* ai)
     {
-        return new ActionNode ("blessing of sanctuary",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("blessing of kings") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("blessing of sanctuary",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("blessing of kings") }),
+            /*C*/ ActionList());
     }
 };
 
 TankPaladinStrategy::TankPaladinStrategy(PlayerbotAI* ai) : GenericPaladinStrategy(ai)
 {
-    actionNodeFactories.Add(new TankPaladinStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<TankPaladinStrategyActionNodeFactory>());
 }
 
 ActionList TankPaladinStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("melee", ACTION_NORMAL) });
+    return NextAction::array({ std::make_shared<NextAction>("melee", ACTION_NORMAL) });
 }
 
-void TankPaladinStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void TankPaladinStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericPaladinStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "judgement of light",
-        NextAction::array({ new NextAction("judgement of light", ACTION_NORMAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("judgement of light", ACTION_NORMAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium mana",
-        NextAction::array({ new NextAction("judgement of wisdom", ACTION_NORMAL + 3) })));
+        NextAction::array({ std::make_shared<NextAction>("judgement of wisdom", ACTION_NORMAL + 3) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "righteous fury",
-        NextAction::array({ new NextAction("righteous fury", ACTION_HIGH + 8) })));
+        NextAction::array({ std::make_shared<NextAction>("righteous fury", ACTION_HIGH + 8) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "light aoe",
-        NextAction::array({ new NextAction("hammer of the righteous", ACTION_HIGH + 6), new NextAction("avenger's shield", ACTION_HIGH + 6) })));
+        NextAction::array({ std::make_shared<NextAction>("hammer of the righteous", ACTION_HIGH + 6), std::make_shared<NextAction>("avenger's shield", ACTION_HIGH + 6) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("consecration", ACTION_HIGH + 6) })));
+        NextAction::array({ std::make_shared<NextAction>("consecration", ACTION_HIGH + 6) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "lose aggro",
-        NextAction::array({ new NextAction("hand of reckoning", ACTION_HIGH + 7) })));
+        NextAction::array({ std::make_shared<NextAction>("hand of reckoning", ACTION_HIGH + 7) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "holy shield",
-        NextAction::array({ new NextAction("holy shield", ACTION_HIGH + 7) })));
+        NextAction::array({ std::make_shared<NextAction>("holy shield", ACTION_HIGH + 7) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "blessing",
-        NextAction::array({ new NextAction("blessing of sanctuary", ACTION_HIGH + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("blessing of sanctuary", ACTION_HIGH + 9) })));
 }

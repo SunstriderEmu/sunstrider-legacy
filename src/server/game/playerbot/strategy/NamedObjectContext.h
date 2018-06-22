@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 namespace ai
 {
     using namespace std;
@@ -19,11 +21,11 @@ namespace ai
     template <class T> class NamedObjectFactory
     {
     protected:
-        typedef T* (*ActionCreator) (PlayerbotAI* ai);
+        typedef std::shared_ptr<T> (*ActionCreator) (PlayerbotAI* ai);
         map<string, ActionCreator> creators;
 
     public:
-        T* create(std::string name, PlayerbotAI* ai)
+        std::shared_ptr<T> create(std::string name, PlayerbotAI* ai)
         {
             size_t found = name.find("::");
             std::string qualifier;
@@ -40,8 +42,8 @@ namespace ai
             if (!creator)
                 return nullptr;
 
-            T *object = (*creator)(ai);
-            Qualified *q = dynamic_cast<Qualified *>(object);
+            std::shared_ptr<T> object = (*creator)(ai);
+            std::shared_ptr<Qualified> q = std::dynamic_pointer_cast<Qualified>(object);
             if (q)
                 q->Qualify(qualifier);
 
@@ -64,7 +66,7 @@ namespace ai
         NamedObjectContext(bool shared = false, bool supportsSiblings = false) :
             NamedObjectFactory<T>(), shared(shared), supportsSiblings(supportsSiblings) {}
 
-        T* create(std::string name, PlayerbotAI* ai)
+        std::shared_ptr<T> create(std::string name, PlayerbotAI* ai)
         {
             if (created.find(name) == created.end())
                 return created[name] = NamedObjectFactory<T>::create(name, ai);
@@ -79,18 +81,12 @@ namespace ai
 
         void Clear()
         {
-            for (auto i = created.begin(); i != created.end(); i++)
-            {
-                if (i->second)
-                    delete i->second;
-            }
-
             created.clear();
         }
 
         void Update()
         {
-            for (typename map<string, T*>::iterator i = created.begin(); i != created.end(); i++)
+            for (typename map<string, std::shared_ptr<T>>::iterator i = created.begin(); i != created.end(); i++)
             {
                 if (i->second)
                     i->second->Update();
@@ -99,7 +95,7 @@ namespace ai
 
         void Reset()
         {
-            for (typename map<string, T*>::iterator i = created.begin(); i != created.end(); i++)
+            for (typename map<string, std::shared_ptr<T>>::iterator i = created.begin(); i != created.end(); i++)
             {
                 if (i->second)
                     i->second->Reset();
@@ -118,7 +114,7 @@ namespace ai
         }
 
     protected:
-        map<string, T*> created;
+        map<string, std::shared_ptr<T>> created;
         bool shared;
         bool supportsSiblings;
     };
@@ -141,11 +137,11 @@ namespace ai
             contexts.push_back(context);
         }
 
-        T* GetObject(std::string name, PlayerbotAI* ai)
+        std::shared_ptr<T> GetObject(std::string name, PlayerbotAI* ai)
         {
             for (auto i = contexts.begin(); i != contexts.end(); i++)
             {
-                T* object = (*i)->create(name, ai);
+                std::shared_ptr<T> object = (*i)->create(name, ai);
                 if (object) return object;
             }
             return nullptr;
@@ -224,26 +220,25 @@ namespace ai
     public:
         virtual ~NamedObjectFactoryList()
         {
-            for (auto i = factories.begin(); i != factories.end(); i++)
-                delete *i;
         }
 
-        void Add(NamedObjectFactory<T>* context)
+        void Add(std::unique_ptr<NamedObjectFactory<T>>&& context)
         {
-            factories.push_front(context);
+            factories.push_front(std::move(context));
         }
 
-        T* GetObject(std::string name, PlayerbotAI* ai)
+        std::shared_ptr<T> GetObject(std::string name, PlayerbotAI* ai)
         {
-            for (typename list<NamedObjectFactory<T>*>::iterator i = factories.begin(); i != factories.end(); i++)
+            for (typename list<std::unique_ptr<NamedObjectFactory<T>>>::iterator i = factories.begin(); i != factories.end(); i++)
             {
-                T* object = (*i)->create(name, ai);
-                if (object) return object;
+                std::shared_ptr<T> object = (*i)->create(name, ai);
+                if (object) 
+                    return object;
             }
-            return NULL;
+            return nullptr;
         }
 
     private:
-        list<NamedObjectFactory<T>*> factories;
+        list<std::unique_ptr<NamedObjectFactory<T>>> factories;
     };
 };

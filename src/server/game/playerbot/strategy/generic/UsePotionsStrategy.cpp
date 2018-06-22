@@ -4,15 +4,15 @@
 
 using namespace ai;
 
-void UsePotionsStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void UsePotionsStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     Strategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "critical health",
-        NextAction::array({ new NextAction("healing potion", ACTION_MEDIUM_HEAL) })));
+        NextAction::array({ std::make_shared<NextAction>("healing potion", ACTION_MEDIUM_HEAL) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low mana",
-        NextAction::array({ new NextAction("mana potion", ACTION_EMERGENCY) })));
+        NextAction::array({ std::make_shared<NextAction>("mana potion", ACTION_EMERGENCY) })));
 }

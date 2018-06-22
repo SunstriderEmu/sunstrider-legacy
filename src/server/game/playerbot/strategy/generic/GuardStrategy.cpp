@@ -7,10 +7,10 @@ using namespace ai;
 
 ActionList GuardStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("guard", 4.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("guard", 4.0f) });
 }
 
-void GuardStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GuardStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
 }
 

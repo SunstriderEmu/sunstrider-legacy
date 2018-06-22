@@ -26,7 +26,7 @@ float ThreatMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-void ThreatStrategy::InitMultipliers(std::list<Multiplier*> &multipliers)
+void ThreatStrategy::InitMultipliers(std::list<std::shared_ptr<Multiplier>> &multipliers)
 {
-    multipliers.push_back(new ThreatMultiplier(ai));
+    multipliers.push_back(std::make_shared<ThreatMultiplier>(ai));
 }

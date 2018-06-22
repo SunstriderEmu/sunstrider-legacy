@@ -17,74 +17,74 @@ public:
         creators["abolish poison on party"] = &abolish_poison_on_party;
     }
 private:
-    static ActionNode* survival_instincts(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> survival_instincts(PlayerbotAI* ai)
     {
-        return new ActionNode ("survival instincts",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("barskin") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("survival instincts",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("barskin") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* thorns(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> thorns(PlayerbotAI* ai)
     {
-        return new ActionNode ("thorns",
-            /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("thorns",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("caster form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* cure_poison(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> cure_poison(PlayerbotAI* ai)
     {
-        return new ActionNode ("cure poison",
-            /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("cure poison",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("caster form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* cure_poison_on_party(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> cure_poison_on_party(PlayerbotAI* ai)
     {
-        return new ActionNode ("cure poison on party",
-            /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("cure poison on party",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("caster form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* abolish_poison(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> abolish_poison(PlayerbotAI* ai)
     {
-        return new ActionNode ("abolish poison",
-            /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("abolish poison",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("caster form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* abolish_poison_on_party(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> abolish_poison_on_party(PlayerbotAI* ai)
     {
-        return new ActionNode ("abolish poison on party",
-            /*P*/ NextAction::array({ new NextAction("caster form") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("abolish poison on party",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("caster form") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
 };
 
 FeralDruidStrategy::FeralDruidStrategy(PlayerbotAI* ai) : GenericDruidStrategy(ai)
 {
-    actionNodeFactories.Add(new FeralDruidStrategyActionNodeFactory());
-    actionNodeFactories.Add(new ShapeshiftDruidStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<FeralDruidStrategyActionNodeFactory>());
+    actionNodeFactories.Add(std::make_unique<ShapeshiftDruidStrategyActionNodeFactory>());
 }
 
-void FeralDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void FeralDruidStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericDruidStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "not facing target",
-        NextAction::array({ new NextAction("set facing", ACTION_NORMAL + 7) })));
+        NextAction::array({ std::make_shared<NextAction>("set facing", ACTION_NORMAL + 7) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy out of melee",
-        NextAction::array({ new NextAction("reach melee", ACTION_NORMAL + 8) })));
+        NextAction::array({ std::make_shared<NextAction>("reach melee", ACTION_NORMAL + 8) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy too close for melee",
-        NextAction::array({ new NextAction("move out of enemy contact", ACTION_NORMAL + 8) })));
+        NextAction::array({ std::make_shared<NextAction>("move out of enemy contact", ACTION_NORMAL + 8) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "critical health",
-        NextAction::array({ new NextAction("survival instincts", ACTION_EMERGENCY + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("survival instincts", ACTION_EMERGENCY + 1) })));
 }
 

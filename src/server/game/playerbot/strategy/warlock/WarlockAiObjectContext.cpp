@@ -30,10 +30,10 @@ namespace ai
             }
 
         private:
-            static Strategy* nc(PlayerbotAI* ai) { return new GenericWarlockNonCombatStrategy(ai); }
-            static Strategy* aoe(PlayerbotAI* ai) { return new DpsAoeWarlockStrategy(ai); }
-            static Strategy* dps_debuff(PlayerbotAI* ai) { return new DpsWarlockDebuffStrategy(ai); }
-            static Strategy* pull(PlayerbotAI* ai) { return new PullStrategy(ai, "shoot"); }
+            static std::shared_ptr<Strategy> nc(PlayerbotAI* ai) { return std::make_shared<GenericWarlockNonCombatStrategy>(ai); }
+            static std::shared_ptr<Strategy> aoe(PlayerbotAI* ai) { return std::make_shared<DpsAoeWarlockStrategy>(ai); }
+            static std::shared_ptr<Strategy> dps_debuff(PlayerbotAI* ai) { return std::make_shared<DpsWarlockDebuffStrategy>(ai); }
+            static std::shared_ptr<Strategy> pull(PlayerbotAI* ai) { return std::make_shared<PullStrategy>(ai, "shoot"); }
         };
 
         class CombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -46,8 +46,8 @@ namespace ai
             }
 
         private:
-            static Strategy* tank(PlayerbotAI* ai) { return new TankWarlockStrategy(ai); }
-            static Strategy* dps(PlayerbotAI* ai) { return new DpsWarlockStrategy(ai); }
+            static std::shared_ptr<Strategy> tank(PlayerbotAI* ai) { return std::make_shared<TankWarlockStrategy>(ai); }
+            static std::shared_ptr<Strategy> dps(PlayerbotAI* ai) { return std::make_shared<DpsWarlockStrategy>(ai); }
         };
     };
 };
@@ -81,19 +81,19 @@ namespace ai
             }
 
         private:
-            static Trigger* shadow_trance(PlayerbotAI* ai) { return new ShadowTranceTrigger(ai); }
-            static Trigger* demon_armor(PlayerbotAI* ai) { return new DemonArmorTrigger(ai); }
-            static Trigger* HasHealthstone(PlayerbotAI* ai) { return new HasHealthstoneTrigger(ai); }
-            static Trigger* HasFirestone(PlayerbotAI* ai) { return new HasFirestoneTrigger(ai); }
-            static Trigger* HasSpellstone(PlayerbotAI* ai) { return new HasSpellstoneTrigger(ai); }
-            static Trigger* corruption(PlayerbotAI* ai) { return new CorruptionTrigger(ai); }
-            static Trigger* corruption_on_attacker(PlayerbotAI* ai) { return new CorruptionOnAttackerTrigger(ai); }
-            static Trigger* curse_of_agony(PlayerbotAI* ai) { return new CurseOfAgonyTrigger(ai); }
-            static Trigger* banish(PlayerbotAI* ai) { return new BanishTrigger(ai); }
-            static Trigger* spellstone(PlayerbotAI* ai) { return new SpellstoneTrigger(ai); }
-            static Trigger* backlash(PlayerbotAI* ai) { return new BacklashTrigger(ai); }
-            static Trigger* fear(PlayerbotAI* ai) { return new FearTrigger(ai); }
-            static Trigger* immolate(PlayerbotAI* ai) { return new ImmolateTrigger(ai); }
+            static std::shared_ptr<Trigger> shadow_trance(PlayerbotAI* ai) { return std::make_shared<ShadowTranceTrigger>(ai); }
+            static std::shared_ptr<Trigger> demon_armor(PlayerbotAI* ai) { return std::make_shared<DemonArmorTrigger>(ai); }
+            static std::shared_ptr<Trigger> HasHealthstone(PlayerbotAI* ai) { return std::make_shared<HasHealthstoneTrigger>(ai); }
+            static std::shared_ptr<Trigger> HasFirestone(PlayerbotAI* ai) { return std::make_shared<HasFirestoneTrigger>(ai); }
+            static std::shared_ptr<Trigger> HasSpellstone(PlayerbotAI* ai) { return std::make_shared<HasSpellstoneTrigger>(ai); }
+            static std::shared_ptr<Trigger> corruption(PlayerbotAI* ai) { return std::make_shared<CorruptionTrigger>(ai); }
+            static std::shared_ptr<Trigger> corruption_on_attacker(PlayerbotAI* ai) { return std::make_shared<CorruptionOnAttackerTrigger>(ai); }
+            static std::shared_ptr<Trigger> curse_of_agony(PlayerbotAI* ai) { return std::make_shared<CurseOfAgonyTrigger>(ai); }
+            static std::shared_ptr<Trigger> banish(PlayerbotAI* ai) { return std::make_shared<BanishTrigger>(ai); }
+            static std::shared_ptr<Trigger> spellstone(PlayerbotAI* ai) { return std::make_shared<SpellstoneTrigger>(ai); }
+            static std::shared_ptr<Trigger> backlash(PlayerbotAI* ai) { return std::make_shared<BacklashTrigger>(ai); }
+            static std::shared_ptr<Trigger> fear(PlayerbotAI* ai) { return std::make_shared<FearTrigger>(ai); }
+            static std::shared_ptr<Trigger> immolate(PlayerbotAI* ai) { return std::make_shared<ImmolateTrigger>(ai); }
 
         };
     };
@@ -140,33 +140,33 @@ namespace ai
             }
 
         private:
-            static Action* conflagrate(PlayerbotAI* ai) { return new CastConflagrateAction(ai); }
-            static Action* incinirate(PlayerbotAI* ai) { return new CastIncinirateAction(ai); }
-            static Action* fear_on_cc(PlayerbotAI* ai) { return new CastFearOnCcAction(ai); }
-            static Action* fear(PlayerbotAI* ai) { return new CastFearAction(ai); }
-            static Action* immolate(PlayerbotAI* ai) { return new CastImmolateAction(ai); }
-            static Action* summon_imp(PlayerbotAI* ai) { return new CastSummonImpAction(ai); }
-            static Action* fel_armor(PlayerbotAI* ai) { return new CastFelArmorAction(ai); }
-            static Action* demon_armor(PlayerbotAI* ai) { return new CastDemonArmorAction(ai); }
-            static Action* demon_skin(PlayerbotAI* ai) { return new CastDemonSkinAction(ai); }
-            static Action* create_healthstone(PlayerbotAI* ai) { return new CastCreateHealthstoneAction(ai); }
-            static Action* create_firestone(PlayerbotAI* ai) { return new CastCreateFirestoneAction(ai); }
-            static Action* create_spellstone(PlayerbotAI* ai) { return new CastCreateSpellstoneAction(ai); }
-            static Action* spellstone(PlayerbotAI* ai) { return new UseSpellItemAction(ai, "spellstone", true); }
-            static Action* summon_voidwalker(PlayerbotAI* ai) { return new CastSummonVoidwalkerAction(ai); }
-            static Action* summon_felguard(PlayerbotAI* ai) { return new CastSummonFelguardAction(ai); }
-            static Action* corruption(PlayerbotAI* ai) { return new CastCorruptionAction(ai); }
-            static Action* corruption_on_attacker(PlayerbotAI* ai) { return new CastCorruptionOnAttackerAction(ai); }
-            static Action* curse_of_agony(PlayerbotAI* ai) { return new CastCurseOfAgonyAction(ai); }
-            static Action* shadow_bolt(PlayerbotAI* ai) { return new CastShadowBoltAction(ai); }
-            static Action* drain_soul(PlayerbotAI* ai) { return new CastDrainSoulAction(ai); }
-            static Action* drain_mana(PlayerbotAI* ai) { return new CastDrainManaAction(ai); }
-            static Action* drain_life(PlayerbotAI* ai) { return new CastDrainLifeAction(ai); }
-            static Action* banish(PlayerbotAI* ai) { return new CastBanishAction(ai); }
-            static Action* seed_of_corruption(PlayerbotAI* ai) { return new CastSeedOfCorruptionAction(ai); }
-            static Action* rain_of_fire(PlayerbotAI* ai) { return new CastRainOfFireAction(ai); }
-            static Action* shadowfury(PlayerbotAI* ai) { return new CastShadowfuryAction(ai); }
-            static Action* life_tap(PlayerbotAI* ai) { return new CastLifeTapAction(ai); }
+            static std::shared_ptr<Action> conflagrate(PlayerbotAI* ai) { return std::make_shared<CastConflagrateAction>(ai); }
+            static std::shared_ptr<Action> incinirate(PlayerbotAI* ai) { return std::make_shared<CastIncinirateAction>(ai); }
+            static std::shared_ptr<Action> fear_on_cc(PlayerbotAI* ai) { return std::make_shared<CastFearOnCcAction>(ai); }
+            static std::shared_ptr<Action> fear(PlayerbotAI* ai) { return std::make_shared<CastFearAction>(ai); }
+            static std::shared_ptr<Action> immolate(PlayerbotAI* ai) { return std::make_shared<CastImmolateAction>(ai); }
+            static std::shared_ptr<Action> summon_imp(PlayerbotAI* ai) { return std::make_shared<CastSummonImpAction>(ai); }
+            static std::shared_ptr<Action> fel_armor(PlayerbotAI* ai) { return std::make_shared<CastFelArmorAction>(ai); }
+            static std::shared_ptr<Action> demon_armor(PlayerbotAI* ai) { return std::make_shared<CastDemonArmorAction>(ai); }
+            static std::shared_ptr<Action> demon_skin(PlayerbotAI* ai) { return std::make_shared<CastDemonSkinAction>(ai); }
+            static std::shared_ptr<Action> create_healthstone(PlayerbotAI* ai) { return std::make_shared<CastCreateHealthstoneAction>(ai); }
+            static std::shared_ptr<Action> create_firestone(PlayerbotAI* ai) { return std::make_shared<CastCreateFirestoneAction>(ai); }
+            static std::shared_ptr<Action> create_spellstone(PlayerbotAI* ai) { return std::make_shared<CastCreateSpellstoneAction>(ai); }
+            static std::shared_ptr<Action> spellstone(PlayerbotAI* ai) { return std::make_shared<UseSpellItemAction>(ai, "spellstone", true); }
+            static std::shared_ptr<Action> summon_voidwalker(PlayerbotAI* ai) { return std::make_shared<CastSummonVoidwalkerAction>(ai); }
+            static std::shared_ptr<Action> summon_felguard(PlayerbotAI* ai) { return std::make_shared<CastSummonFelguardAction>(ai); }
+            static std::shared_ptr<Action> corruption(PlayerbotAI* ai) { return std::make_shared<CastCorruptionAction>(ai); }
+            static std::shared_ptr<Action> corruption_on_attacker(PlayerbotAI* ai) { return std::make_shared<CastCorruptionOnAttackerAction>(ai); }
+            static std::shared_ptr<Action> curse_of_agony(PlayerbotAI* ai) { return std::make_shared<CastCurseOfAgonyAction>(ai); }
+            static std::shared_ptr<Action> shadow_bolt(PlayerbotAI* ai) { return std::make_shared<CastShadowBoltAction>(ai); }
+            static std::shared_ptr<Action> drain_soul(PlayerbotAI* ai) { return std::make_shared<CastDrainSoulAction>(ai); }
+            static std::shared_ptr<Action> drain_mana(PlayerbotAI* ai) { return std::make_shared<CastDrainManaAction>(ai); }
+            static std::shared_ptr<Action> drain_life(PlayerbotAI* ai) { return std::make_shared<CastDrainLifeAction>(ai); }
+            static std::shared_ptr<Action> banish(PlayerbotAI* ai) { return std::make_shared<CastBanishAction>(ai); }
+            static std::shared_ptr<Action> seed_of_corruption(PlayerbotAI* ai) { return std::make_shared<CastSeedOfCorruptionAction>(ai); }
+            static std::shared_ptr<Action> rain_of_fire(PlayerbotAI* ai) { return std::make_shared<CastRainOfFireAction>(ai); }
+            static std::shared_ptr<Action> shadowfury(PlayerbotAI* ai) { return std::make_shared<CastShadowfuryAction>(ai); }
+            static std::shared_ptr<Action> life_tap(PlayerbotAI* ai) { return std::make_shared<CastLifeTapAction>(ai); }
 
         };
     };

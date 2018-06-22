@@ -36,7 +36,7 @@ float CastTimeMultiplier::GetValue(Action* action)
 }
 
 
-void CastTimeStrategy::InitMultipliers(std::list<Multiplier*> &multipliers)
+void CastTimeStrategy::InitMultipliers(std::list<std::shared_ptr<Multiplier>> &multipliers)
 {
-    multipliers.push_back(new CastTimeMultiplier(ai));
+    multipliers.push_back(std::make_shared<CastTimeMultiplier>(ai));
 }

@@ -16,7 +16,7 @@ Engine::Engine(PlayerbotAI* ai, AiObjectContext *factory) : PlayerbotAIAware(ai)
 bool ActionExecutionListeners::Before(Action* action, Event event)
 {
     bool result = true;
-    for (list<ActionExecutionListener*>::iterator i = listeners.begin(); i!=listeners.end(); i++)
+    for (list<std::shared_ptr<ActionExecutionListener>>::iterator i = listeners.begin(); i!=listeners.end(); i++)
     {
         result &= (*i)->Before(action, event);
     }
@@ -25,7 +25,7 @@ bool ActionExecutionListeners::Before(Action* action, Event event)
 
 void ActionExecutionListeners::After(Action* action, bool executed, Event event)
 {
-    for (list<ActionExecutionListener*>::iterator i = listeners.begin(); i!=listeners.end(); i++)
+    for (list<std::shared_ptr<ActionExecutionListener>>::iterator i = listeners.begin(); i!=listeners.end(); i++)
     {
         (*i)->After(action, executed, event);
     }
@@ -34,7 +34,7 @@ void ActionExecutionListeners::After(Action* action, bool executed, Event event)
 bool ActionExecutionListeners::OverrideResult(Action* action, bool executed, Event event)
 {
     bool result = executed;
-    for (list<ActionExecutionListener*>::iterator i = listeners.begin(); i!=listeners.end(); i++)
+    for (list<std::shared_ptr<ActionExecutionListener>>::iterator i = listeners.begin(); i!=listeners.end(); i++)
     {
         result = (*i)->OverrideResult(action, result, event);
     }
@@ -44,7 +44,7 @@ bool ActionExecutionListeners::OverrideResult(Action* action, bool executed, Eve
 bool ActionExecutionListeners::AllowExecution(Action* action, Event event)
 {
     bool result = true;
-    for (list<ActionExecutionListener*>::iterator i = listeners.begin(); i!=listeners.end(); i++)
+    for (list<std::shared_ptr<ActionExecutionListener>>::iterator i = listeners.begin(); i!=listeners.end(); i++)
     {
         result &= (*i)->AllowExecution(action, event);
     }
@@ -53,10 +53,6 @@ bool ActionExecutionListeners::AllowExecution(Action* action, Event event)
 
 ActionExecutionListeners::~ActionExecutionListeners()
 {
-    for (list<ActionExecutionListener*>::iterator i = listeners.begin(); i!=listeners.end(); i++)
-    {
-        delete *i;
-    }
     listeners.clear();
 }
 
@@ -70,25 +66,8 @@ Engine::~Engine(void)
 
 void Engine::Reset()
 {
-    ActionNode* action = NULL;
-    do
-    {
-        action = queue.Pop();
-        delete action;
-    } while (action);
-
-    for (list<TriggerNode*>::iterator i = triggers.begin(); i != triggers.end(); i++)
-    {
-        TriggerNode* trigger = *i;
-        delete trigger;
-    }
+    queue.Clear();
     triggers.clear();
-
-    for (list<Multiplier*>::iterator i = multipliers.begin(); i != multipliers.end(); i++)
-    {
-        Multiplier* multiplier = *i;
-        delete multiplier;
-    }
     multipliers.clear();
 }
 
@@ -96,9 +75,9 @@ void Engine::Init()
 {
     Reset();
 
-    for (map<string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
+    for (auto i = strategies.begin(); i != strategies.end(); i++)
     {
-        Strategy* strategy = i->second;
+        std::shared_ptr<Strategy> strategy = i->second;
         strategy->InitMultipliers(multipliers);
         strategy->InitTriggers(triggers);
         Event emptyEvent;
@@ -121,7 +100,7 @@ bool Engine::DoNextAction(Unit* unit, int depth)
         LogValues();
 
     bool actionExecuted = false;
-    ActionBasket* basket = NULL;
+    std::shared_ptr<ActionBasket> basket = NULL;
 
     time_t currentTime = time(0);
     aiObjectContext->Update();
@@ -139,8 +118,8 @@ bool Engine::DoNextAction(Unit* unit, int depth)
             bool skipPrerequisites = basket->isSkipPrerequisites();
             Event event = basket->getEvent();
             // NOTE: queue.Pop() deletes basket
-            ActionNode* actionNode = queue.Pop();
-            Action* action = InitializeAction(actionNode);
+            std::shared_ptr<ActionNode> actionNode = queue.Pop();
+            Action* action = InitializeAction(actionNode.get());
 
             if (!action)
             {
@@ -148,9 +127,9 @@ bool Engine::DoNextAction(Unit* unit, int depth)
             }
             else if (action->isUseful())
             {
-                for (list<Multiplier*>::iterator i = multipliers.begin(); i!= multipliers.end(); i++)
+                for (list<std::shared_ptr<Multiplier>>::iterator i = multipliers.begin(); i!= multipliers.end(); i++)
                 {
-                    Multiplier* multiplier = *i;
+                    std::shared_ptr<Multiplier> multiplier = *i;
                     relevance *= multiplier->GetValue(action);
                     if (!relevance)
                     {
@@ -175,7 +154,6 @@ bool Engine::DoNextAction(Unit* unit, int depth)
                         LogAction("A:%s - OK", action->getName().c_str());
                         MultiplyAndPush(actionNode->getContinuers(), 0, false, event);
                         lastRelevance = relevance;
-                        delete actionNode;
                         break;
                     }
                     else
@@ -195,7 +173,6 @@ bool Engine::DoNextAction(Unit* unit, int depth)
                 lastRelevance = relevance;
                 LogAction("A:%s - USELESS", action->getName().c_str());
             }
-            delete actionNode;
         }
     }
     while (basket);
@@ -218,19 +195,19 @@ bool Engine::DoNextAction(Unit* unit, int depth)
     return actionExecuted;
 }
 
-ActionNode* Engine::CreateActionNode(std::string name)
+std::shared_ptr<ActionNode> Engine::CreateActionNode(std::string name)
 {
-    for (map<string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
+    for (auto i = strategies.begin(); i != strategies.end(); i++)
     {
-        Strategy* strategy = i->second;
-        ActionNode* node = strategy->GetAction(name);
+        std::shared_ptr<Strategy> strategy = i->second;
+        std::shared_ptr<ActionNode> node = strategy->GetAction(name);
         if (node)
             return node;
     }
-    return new ActionNode (name,
-        /*P*/ {},
-        /*A*/ {},
-        /*C*/ {});
+    return std::make_shared<ActionNode> (name,
+        /*P*/ ActionList(),
+        /*A*/ ActionList(),
+        /*C*/ ActionList());
 }
 
 bool Engine::MultiplyAndPush(ActionList actions, float forceRelevance, bool skipPrerequisites, Event event)
@@ -240,8 +217,8 @@ bool Engine::MultiplyAndPush(ActionList actions, float forceRelevance, bool skip
     {
         for(auto& nextAction : actions)
         {
-            ActionNode* action = CreateActionNode(nextAction->getName());
-            InitializeAction(action);
+            std::shared_ptr<ActionNode> action = CreateActionNode(nextAction->getName());
+            InitializeAction(action.get());
 
             float k = nextAction->getRelevance();
             if (forceRelevance > 0.0f)
@@ -252,12 +229,9 @@ bool Engine::MultiplyAndPush(ActionList actions, float forceRelevance, bool skip
             if (k > 0)
             {
                 LogAction("PUSH:%s %f", action->getName().c_str(), k);
-                queue.Push(new ActionBasket(action, k, skipPrerequisites, event));
+                queue.Push(std::make_shared<ActionBasket>(action, k, skipPrerequisites, event));
                 pushed = true;
             }
-
-            delete nextAction;
-            nextAction = nullptr;
         }
         actions.clear();
     }
@@ -268,31 +242,24 @@ ActionResult Engine::ExecuteAction(std::string name)
 {
     bool result = false;
 
-    ActionNode *actionNode = CreateActionNode(name);
+    std::shared_ptr<ActionNode> actionNode = CreateActionNode(name);
     if (!actionNode)
         return ACTION_RESULT_UNKNOWN;
 
-    Action* action = InitializeAction(actionNode);
+    Action* action = InitializeAction(actionNode.get());
     if (!action)
         return ACTION_RESULT_UNKNOWN;
 
     if (!action->isPossible())
-    {
-        delete actionNode;
         return ACTION_RESULT_IMPOSSIBLE;
-    }
 
     if (!action->isUseful())
-    {
-        delete actionNode;
         return ACTION_RESULT_USELESS;
-    }
 
     action->MakeVerbose();
     Event emptyEvent;
     result = ListenAndExecute(action, emptyEvent);
     MultiplyAndPush(action->getContinuers(), 0.0f, false, emptyEvent);
-    delete actionNode;
     return result ? ACTION_RESULT_OK : ACTION_RESULT_FAILED;
 }
 
@@ -300,7 +267,7 @@ void Engine::addStrategy(std::string name)
 {
     removeStrategy(name);
 
-    Strategy* strategy = aiObjectContext->GetStrategy(name);
+    std::shared_ptr<Strategy> strategy = aiObjectContext->GetStrategy(name);
     if (strategy)
     {
         set<std::string> siblings = aiObjectContext->GetSiblingStrategy(name);
@@ -321,7 +288,7 @@ void Engine::addStrategies(std::initializer_list<std::string> args)
 
 bool Engine::removeStrategy(std::string name)
 {
-    map<string, Strategy*>::iterator i = strategies.find(name);
+    auto i = strategies.find(name);
     if (i == strategies.end())
         return false;
 
@@ -350,13 +317,13 @@ bool Engine::HasStrategy(std::string name)
 
 void Engine::ProcessTriggers()
 {
-    for (list<TriggerNode*>::iterator i = triggers.begin(); i != triggers.end(); i++)
+    for (list<std::shared_ptr<TriggerNode>>::iterator i = triggers.begin(); i != triggers.end(); i++)
     {
-        TriggerNode* node = *i;
+        std::shared_ptr<TriggerNode> node = *i;
         if (!node)
             continue;
 
-        Trigger* trigger = node->getTrigger();
+        std::shared_ptr<Trigger> trigger = node->getTrigger();
         if (!trigger)
         {
             trigger = aiObjectContext->GetTrigger(node->getName());
@@ -376,18 +343,19 @@ void Engine::ProcessTriggers()
             MultiplyAndPush(node->getHandlers(), 0.0f, false, event);
         }
     }
-    for (list<TriggerNode*>::iterator i = triggers.begin(); i != triggers.end(); i++)
+    for (list<std::shared_ptr<TriggerNode>>::iterator i = triggers.begin(); i != triggers.end(); i++)
     {
-        Trigger* trigger = (*i)->getTrigger();
-        if (trigger) trigger->Reset();
+        std::shared_ptr<Trigger> trigger = (*i)->getTrigger();
+        if (trigger) 
+            trigger->Reset();
     }
 }
 
 void Engine::PushDefaultActions()
 {
-    for (map<string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
+    for (auto i = strategies.begin(); i != strategies.end(); i++)
     {
-        Strategy* strategy = i->second;
+        std::shared_ptr<Strategy> strategy = i->second;
         Event emptyEvent;
         MultiplyAndPush(strategy->getDefaultActions(), 0.0f, false, emptyEvent);
     }
@@ -400,7 +368,7 @@ string Engine::ListStrategies()
     if (strategies.empty())
         return s;
 
-    for (map<string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
+    for (auto i = strategies.begin(); i != strategies.end(); i++)
     {
         s.append(i->first);
         s.append(", ");
@@ -408,19 +376,18 @@ string Engine::ListStrategies()
     return s.substr(0, s.length() - 2);
 }
 
-void Engine::PushAgain(ActionNode* actionNode, float relevance, Event event)
+void Engine::PushAgain(std::shared_ptr<ActionNode> actionNode, float relevance, Event event)
 {
     ActionList nextActions(1);
-    nextActions[0] = new NextAction(actionNode->getName(), relevance);
+    nextActions[0] = std::make_shared<NextAction>(actionNode->getName(), relevance);
     MultiplyAndPush(nextActions, relevance, true, event);
-    delete actionNode;
 }
 
 bool Engine::ContainsStrategy(StrategyType type)
 {
-    for (map<string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
+    for (auto i = strategies.begin(); i != strategies.end(); i++)
     {
-        Strategy* strategy = i->second;
+        std::shared_ptr<Strategy>& strategy = i->second;
         if (strategy->GetType() & type)
             return true;
     }
@@ -429,13 +396,13 @@ bool Engine::ContainsStrategy(StrategyType type)
 
 Action* Engine::InitializeAction(ActionNode* actionNode)
 {
-    Action* action = actionNode->getAction();
+    std::shared_ptr<Action>& action = actionNode->getAction();
     if (!action)
     {
         action = aiObjectContext->GetAction(actionNode->getName());
         actionNode->setAction(action);
     }
-    return action;
+    return action.get();
 }
 
 bool Engine::ListenAndExecute(Action* action, Event event)

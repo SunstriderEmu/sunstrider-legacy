@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         RangedCombatStrategy(PlayerbotAI* ai) : CombatStrategy(ai) {}
-        virtual void InitTriggers(std::list<TriggerNode*> &triggers);
+        virtual void InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers);
         virtual int GetType() { return STRATEGY_TYPE_COMBAT | STRATEGY_TYPE_RANGED; }
     };
 

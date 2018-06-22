@@ -13,12 +13,12 @@ namespace ai
             creators["smite"] = &smite;
         }
     private:
-        static ActionNode* smite(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> smite(PlayerbotAI* ai)
         {
-            return new ActionNode ("smite",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("shoot") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("smite",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("shoot") }),
+                /*C*/ ActionList());
         }
     };
 };
@@ -27,20 +27,20 @@ using namespace ai;
 
 HolyPriestStrategy::HolyPriestStrategy(PlayerbotAI* ai) : HealPriestStrategy(ai)
 {
-    actionNodeFactories.Add(new HolyPriestStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<HolyPriestStrategyActionNodeFactory>());
 }
 
 ActionList HolyPriestStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("holy fire", 10.0f), new NextAction("smite", 10.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("holy fire", 10.0f), std::make_shared<NextAction>("smite", 10.0f) });
 }
 
-void HolyPriestStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void HolyPriestStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     HealPriestStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy out of spell",
-        NextAction::array({ new NextAction("reach spell", ACTION_NORMAL + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("reach spell", ACTION_NORMAL + 9) })));
 
 }

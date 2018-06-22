@@ -35,17 +35,17 @@ namespace ai
         bool OverrideResult(Action* action, bool executed, Event event) override;
 
     public:
-        void Add(ActionExecutionListener* listener)
+        void Add(std::shared_ptr<ActionExecutionListener> listener)
         {
             listeners.push_back(listener);
         }
-        void Remove(ActionExecutionListener* listener)
+        void Remove(std::shared_ptr<ActionExecutionListener> listener)
         {
             listeners.remove(listener);
         }
 
     private:
-        std::list<ActionExecutionListener*> listeners;
+        std::list<std::shared_ptr<ActionExecutionListener>> listeners;
     };
 
     // -----------------------------------------------------------------------------------------------------------------------
@@ -81,11 +81,11 @@ namespace ai
         ActionResult ExecuteAction(std::string name);
 
     public:
-        void AddActionExecutionListener(ActionExecutionListener* listener)
+        void AddActionExecutionListener(std::shared_ptr<ActionExecutionListener> listener)
         {
             actionExecutionListeners.Add(listener);
         }
-        void removeActionExecutionListener(ActionExecutionListener* listener)
+        void removeActionExecutionListener(std::shared_ptr<ActionExecutionListener> listener)
         {
             actionExecutionListeners.Remove(listener);
         }
@@ -98,8 +98,8 @@ namespace ai
         void Reset();
         void ProcessTriggers();
         void PushDefaultActions();
-        void PushAgain(ActionNode* actionNode, float relevance, Event event);
-        ActionNode* CreateActionNode(std::string name);
+        void PushAgain(std::shared_ptr<ActionNode> actionNode, float relevance, Event event);
+        std::shared_ptr<ActionNode> CreateActionNode(std::string name);
         Action* InitializeAction(ActionNode* actionNode);
         bool ListenAndExecute(Action* action, Event event);
 
@@ -109,10 +109,10 @@ namespace ai
 
     protected:
         Queue queue;
-        std::list<TriggerNode*> triggers;
-        std::list<Multiplier*> multipliers;
+        std::list<std::shared_ptr<TriggerNode>> triggers;
+        std::list<std::shared_ptr<Multiplier>> multipliers;
         AiObjectContext* aiObjectContext;
-        std::map<string, Strategy*> strategies;
+        std::map<string, std::shared_ptr<Strategy>> strategies;
         float lastRelevance;
         std::string lastAction;
 

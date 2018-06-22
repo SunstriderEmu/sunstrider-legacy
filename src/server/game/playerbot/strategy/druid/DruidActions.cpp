@@ -12,15 +12,15 @@ bool CastCasterFormAction::Execute(Event event)
 
 ActionList CastAbolishPoisonAction::getAlternatives()
 {
-    return NextAction::merge( NextAction::array({ new NextAction("cure poison") }), CastSpellAction::getPrerequisites());
+    return NextAction::merge( NextAction::array({ std::make_shared<NextAction>("cure poison") }), CastSpellAction::getPrerequisites());
 }
 
 ActionList CastAbolishPoisonOnPartyAction::getAlternatives()
 {
-    return NextAction::merge( NextAction::array({ new NextAction("cure poison on party") }), CastSpellAction::getPrerequisites());
+    return NextAction::merge( NextAction::array({ std::make_shared<NextAction>("cure poison on party") }), CastSpellAction::getPrerequisites());
 }
 
-Value<Unit*>* CastEntanglingRootsCcAction::GetTargetValue()
+std::shared_ptr<Value<Unit*>> CastEntanglingRootsCcAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("cc target", "entangling roots");
 }

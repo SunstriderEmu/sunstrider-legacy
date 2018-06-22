@@ -8,7 +8,7 @@ namespace ai
     public:
         CastBattleMeleeSpellAction(PlayerbotAI* ai, std::string spell) : CastMeleeSpellAction(ai, spell) {}
         virtual ActionList getPrerequisites() {
-            return NextAction::merge( NextAction::array({ new NextAction("battle stance") }), CastMeleeSpellAction::getPrerequisites());
+            return NextAction::merge( NextAction::array({ std::make_shared<NextAction>("battle stance") }), CastMeleeSpellAction::getPrerequisites());
         }
     };
 
@@ -17,7 +17,7 @@ namespace ai
     public:
         CastDefensiveMeleeSpellAction(PlayerbotAI* ai, std::string spell) : CastMeleeSpellAction(ai, spell) {}
         virtual ActionList getPrerequisites() {
-            return NextAction::merge( NextAction::array({ new NextAction("defensive stance") }), CastMeleeSpellAction::getPrerequisites());
+            return NextAction::merge( NextAction::array({ std::make_shared<NextAction>("defensive stance") }), CastMeleeSpellAction::getPrerequisites());
         }
     };
 
@@ -67,7 +67,7 @@ namespace ai
     public:
         CastTauntAction(PlayerbotAI* ai) : CastSpellAction(ai, "taunt") {}
         virtual ActionList getPrerequisites() {
-            return NextAction::merge( NextAction::array({ new NextAction("defensive stance") }), CastSpellAction::getPrerequisites());
+            return NextAction::merge( NextAction::array({ std::make_shared<NextAction>("defensive stance") }), CastSpellAction::getPrerequisites());
         }
     };
 
@@ -76,7 +76,7 @@ namespace ai
     public:
         CastShieldBlockAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "shield block") {}
         virtual ActionList getPrerequisites() {
-            return NextAction::merge( NextAction::array({ new NextAction("defensive stance") }), CastSpellAction::getPrerequisites());
+            return NextAction::merge( NextAction::array({ std::make_shared<NextAction>("defensive stance") }), CastSpellAction::getPrerequisites());
         }
     };
 

@@ -227,7 +227,7 @@ bool SetFormationAction::Execute(Event event)
 {
     std::string formation = event.getParam();
 
-    Value<Formation*>* value = context->GetValue<Formation*>("formation");
+    std::shared_ptr<Value<Formation*>> value = context->GetValue<Formation*>("formation");
     if (formation == "?" || formation.empty())
     {
         std::ostringstream str; str << "Formation: |cff00ff00" << value->Get()->getName();

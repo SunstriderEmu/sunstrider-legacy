@@ -19,108 +19,108 @@ public:
         creators["taunt"] = &taunt;
     }
 private:
-    static ActionNode* melee(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> melee(PlayerbotAI* ai)
     {
-        return new ActionNode ("melee",
-            /*P*/ NextAction::array({ new NextAction("defensive stance"), new NextAction("reach melee") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("melee",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("defensive stance"), std::make_shared<NextAction>("reach melee") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* shield_wall(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> shield_wall(PlayerbotAI* ai)
     {
-        return new ActionNode ("shield wall",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("shield block") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("shield wall",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("shield block") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* rend(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> rend(PlayerbotAI* ai)
     {
-        return new ActionNode ("rend",
-            /*P*/ NextAction::array({ new NextAction("defensive stance") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("rend",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("defensive stance") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* revenge(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> revenge(PlayerbotAI* ai)
     {
-        return new ActionNode ("revenge",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("melee") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("revenge",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* devastate(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> devastate(PlayerbotAI* ai)
     {
-        return new ActionNode ("devastate",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("sunder armor") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("devastate",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("sunder armor") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* shockwave(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> shockwave(PlayerbotAI* ai)
     {
-        return new ActionNode ("shockwave",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("cleave") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("shockwave",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("cleave") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* taunt(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> taunt(PlayerbotAI* ai)
     {
-        return new ActionNode ("taunt",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("mocking blow") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("taunt",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("mocking blow") }),
+            /*C*/ ActionList());
     }
 };
 
 TankWarriorStrategy::TankWarriorStrategy(PlayerbotAI* ai) : GenericWarriorStrategy(ai)
 {
-    actionNodeFactories.Add(new TankWarriorStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<TankWarriorStrategyActionNodeFactory>());
 }
 
 ActionList TankWarriorStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("devastate", ACTION_NORMAL + 1), new NextAction("revenge", ACTION_NORMAL + 1) });
+    return NextAction::array({ std::make_shared<NextAction>("devastate", ACTION_NORMAL + 1), std::make_shared<NextAction>("revenge", ACTION_NORMAL + 1) });
 }
 
-void TankWarriorStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void TankWarriorStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericWarriorStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium rage available",
-        NextAction::array({ new NextAction("shield slam", ACTION_NORMAL + 2), new NextAction("heroic strike", ACTION_NORMAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("shield slam", ACTION_NORMAL + 2), std::make_shared<NextAction>("heroic strike", ACTION_NORMAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "disarm",
-        NextAction::array({ new NextAction("disarm", ACTION_NORMAL) })));
+        NextAction::array({ std::make_shared<NextAction>("disarm", ACTION_NORMAL) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "lose aggro",
-        NextAction::array({ new NextAction("taunt", ACTION_HIGH + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("taunt", ACTION_HIGH + 9) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium health",
-        NextAction::array({ new NextAction("shield wall", ACTION_MEDIUM_HEAL) })));
+        NextAction::array({ std::make_shared<NextAction>("shield wall", ACTION_MEDIUM_HEAL) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "critical health",
-        NextAction::array({ new NextAction("last stand", ACTION_EMERGENCY + 3) })));
+        NextAction::array({ std::make_shared<NextAction>("last stand", ACTION_EMERGENCY + 3) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("shockwave", ACTION_HIGH + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("shockwave", ACTION_HIGH + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "light aoe",
-        NextAction::array({ new NextAction("thunder clap", ACTION_HIGH + 2), new NextAction("demoralizing shout", ACTION_HIGH + 2),  new NextAction("cleave", ACTION_HIGH + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("thunder clap", ACTION_HIGH + 2), std::make_shared<NextAction>("demoralizing shout", ACTION_HIGH + 2),  std::make_shared<NextAction>("cleave", ACTION_HIGH + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "high aoe",
-        NextAction::array({ new NextAction("challenging shout", ACTION_HIGH + 3) })));
+        NextAction::array({ std::make_shared<NextAction>("challenging shout", ACTION_HIGH + 3) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "concussion blow",
-        NextAction::array({ new NextAction("concussion blow", ACTION_INTERRUPT) })));
+        NextAction::array({ std::make_shared<NextAction>("concussion blow", ACTION_INTERRUPT) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "sword and board",
-        NextAction::array({ new NextAction("shield slam", ACTION_HIGH + 3) })));
+        NextAction::array({ std::make_shared<NextAction>("shield slam", ACTION_HIGH + 3) })));
 }

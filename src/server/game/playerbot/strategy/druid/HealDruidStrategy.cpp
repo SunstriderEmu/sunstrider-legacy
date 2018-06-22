@@ -16,42 +16,42 @@ private:
 
 HealDruidStrategy::HealDruidStrategy(PlayerbotAI* ai) : GenericDruidStrategy(ai)
 {
-    actionNodeFactories.Add(new HealDruidStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<HealDruidStrategyActionNodeFactory>());
 }
 
-void HealDruidStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void HealDruidStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericDruidStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy out of spell",
-        NextAction::array({ new NextAction("reach spell", ACTION_NORMAL + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("reach spell", ACTION_NORMAL + 9) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "tree form",
-        NextAction::array({ new NextAction("tree form", ACTION_HIGH + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("tree form", ACTION_HIGH + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium health",
-        NextAction::array({ new NextAction("regrowth", ACTION_MEDIUM_HEAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("regrowth", ACTION_MEDIUM_HEAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member medium health",
-        NextAction::array({ new NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("regrowth on party", ACTION_MEDIUM_HEAL + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "almost full health",
-        NextAction::array({ new NextAction("rejuvenation", ACTION_LIGHT_HEAL + 2) })));
+        NextAction::array({ std::make_shared<NextAction>("rejuvenation", ACTION_LIGHT_HEAL + 2) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member almost full health",
-        NextAction::array({ new NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("rejuvenation on party", ACTION_LIGHT_HEAL + 1) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe heal",
-        NextAction::array({ new NextAction("tranquility", ACTION_MEDIUM_HEAL + 3) })));
+        NextAction::array({ std::make_shared<NextAction>("tranquility", ACTION_MEDIUM_HEAL + 3) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "entangling roots",
-        NextAction::array({ new NextAction("entangling roots on cc", ACTION_HIGH + 1) })));
+        NextAction::array({ std::make_shared<NextAction>("entangling roots on cc", ACTION_HIGH + 1) })));
 }

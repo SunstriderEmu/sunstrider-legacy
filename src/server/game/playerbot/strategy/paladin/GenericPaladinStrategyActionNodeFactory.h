@@ -25,117 +25,117 @@ namespace ai
             creators["lay on hands on party"] = &lay_on_hands_on_party;
         }
     private:
-        static ActionNode* lay_on_hands(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> lay_on_hands(PlayerbotAI* ai)
         {
-            return new ActionNode ("lay on hands",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("divine shield"), new NextAction("flash of light") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("lay on hands",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("divine shield"), std::make_shared<NextAction>("flash of light") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* lay_on_hands_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> lay_on_hands_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("lay on hands on party",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("flash of light") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("lay on hands on party",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("flash of light") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* seal_of_light(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> seal_of_light(PlayerbotAI* ai)
         {
-            return new ActionNode ("seal of light",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("seal of justice") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("seal of light",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("seal of justice") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* cleanse_poison(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> cleanse_poison(PlayerbotAI* ai)
         {
-            return new ActionNode ("cleanse poison",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("purify poison") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("cleanse poison",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("purify poison") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* cleanse_magic(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> cleanse_magic(PlayerbotAI* ai)
         {
-            return new ActionNode ("cleanse magic",
-                /*P*/ {},
-                /*A*/ {},
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("cleanse magic",
+                /*P*/ ActionList(),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
         }
-        static ActionNode* cleanse_disease(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> cleanse_disease(PlayerbotAI* ai)
         {
-            return new ActionNode ("cleanse disease",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("purify disease") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("cleanse disease",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("purify disease") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* cleanse_poison_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> cleanse_poison_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("cleanse poison on party",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("purify poison on party") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("cleanse poison on party",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("purify poison on party") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* cleanse_disease_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> cleanse_disease_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("cleanse disease on party",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("purify disease on party") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("cleanse disease on party",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("purify disease on party") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* seal_of_wisdom(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> seal_of_wisdom(PlayerbotAI* ai)
         {
-            return new ActionNode ("seal of wisdom",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("seal of justice") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("seal of wisdom",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("seal of justice") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* seal_of_justice(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> seal_of_justice(PlayerbotAI* ai)
         {
-            return new ActionNode ("seal of justice",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("seal of righteousness") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("seal of justice",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("seal of righteousness") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* hand_of_reckoning(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> hand_of_reckoning(PlayerbotAI* ai)
         {
-            return new ActionNode ("hand of reckoning",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("judgement of justice") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("hand of reckoning",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("judgement of justice") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* judgement_of_wisdom(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> judgement_of_wisdom(PlayerbotAI* ai)
         {
-            return new ActionNode ("judgement of wisdom",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("judgement of light") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("judgement of wisdom",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("judgement of light") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* divine_shield(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> divine_shield(PlayerbotAI* ai)
         {
-            return new ActionNode ("divine shield",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("divine protection") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("divine shield",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("divine protection") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* flash_of_light(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> flash_of_light(PlayerbotAI* ai)
         {
-            return new ActionNode ("flash of light",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("holy light") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("flash of light",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("holy light") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* flash_of_light_on_party(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> flash_of_light_on_party(PlayerbotAI* ai)
         {
-            return new ActionNode ("flash of light on party",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("holy light on party") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("flash of light on party",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("holy light on party") }),
+                /*C*/ ActionList());
         }
-        static ActionNode* holy_wrath(PlayerbotAI* ai)
+        static std::shared_ptr<ActionNode> holy_wrath(PlayerbotAI* ai)
         {
-            return new ActionNode ("holy wrath",
-                /*P*/ {},
-                /*A*/ NextAction::array({ new NextAction("consecration") }),
-                /*C*/ {});
+            return std::make_shared<ActionNode> ("holy wrath",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("consecration") }),
+                /*C*/ ActionList());
         }
     };
 

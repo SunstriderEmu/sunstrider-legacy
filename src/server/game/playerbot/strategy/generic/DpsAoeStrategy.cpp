@@ -4,9 +4,9 @@
 
 using namespace ai;
 
-void DpsAoeStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void DpsAoeStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "timer",
-        NextAction::array({ new NextAction("dps assist", 50.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("dps assist", 50.0f) })));
 }

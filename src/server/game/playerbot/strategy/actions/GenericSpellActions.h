@@ -64,9 +64,9 @@ namespace ai
             if (range > sPlayerbotAIConfig.spellDistance)
                 return ActionList();
             else if (range > ATTACK_DISTANCE)
-                return NextAction::merge(NextAction::array({ new NextAction("reach spell") }), Action::getPrerequisites());
+                return NextAction::merge(NextAction::array({ std::make_shared<NextAction>("reach spell") }), Action::getPrerequisites());
             else
-                return NextAction::merge(NextAction::array({ new NextAction("reach melee") }), Action::getPrerequisites());
+                return NextAction::merge(NextAction::array({ std::make_shared<NextAction>("reach melee") }), Action::getPrerequisites());
         }
 
     protected:
@@ -103,7 +103,7 @@ namespace ai
     {
     public:
         CastDebuffSpellOnAttackerAction(PlayerbotAI* ai, std::string spell) : CastAuraSpellAction(ai, spell) {}
-        Value<Unit*>* GetTargetValue()
+        std::shared_ptr<Value<Unit*>> GetTargetValue()
         {
             return context->GetValue<Unit*>("attacker without aura", spell);
         }
@@ -212,7 +212,7 @@ namespace ai
             this->dispelType = dispelType;
         }
 
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
         virtual std::string getName() { return PartyMemberActionNameSupport::getName(); }
 
     protected:
@@ -227,7 +227,7 @@ namespace ai
         BuffOnPartyAction(PlayerbotAI* ai, std::string spell) :
             CastBuffSpellAction(ai, spell), PartyMemberActionNameSupport(spell) {}
     public:
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
         virtual std::string getName() { return PartyMemberActionNameSupport::getName(); }
     };
 
@@ -262,7 +262,7 @@ namespace ai
     {
     public:
         CastSpellOnEnemyHealerAction(PlayerbotAI* ai, std::string spell) : CastSpellAction(ai, spell) {}
-        Value<Unit*>* GetTargetValue()
+        std::shared_ptr<Value<Unit*>> GetTargetValue()
         {
             return context->GetValue<Unit*>("enemy healer target", spell);
         }

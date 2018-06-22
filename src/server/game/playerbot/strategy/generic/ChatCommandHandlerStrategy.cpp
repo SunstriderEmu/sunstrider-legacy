@@ -13,131 +13,131 @@ public:
     }
 
 private:
-    static ActionNode* tank_attack_chat_shortcut(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> tank_attack_chat_shortcut(PlayerbotAI* ai)
     {
-        return new ActionNode ("tank attack chat shortcut",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ NextAction::array({ new NextAction("attack my target", 100.0f) }));
+        return std::make_shared<ActionNode> ("tank attack chat shortcut",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ NextAction::array({ std::make_shared<NextAction>("attack my target", 100.0f) }));
     }
 };
 
-void ChatCommandHandlerStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void ChatCommandHandlerStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     PassTroughStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "rep",
-        NextAction::array({ new NextAction("reputation", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("reputation", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "q",
         NextAction::array( {
-            new NextAction("query quest", relevance),
-            new NextAction("query item usage", relevance) })));
+            std::make_shared<NextAction>("query quest", relevance),
+            std::make_shared<NextAction>("query item usage", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "add all loot",
-        NextAction::array({ new NextAction("add all loot", relevance), new NextAction("loot", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("add all loot", relevance), std::make_shared<NextAction>("loot", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "u",
-        NextAction::array({ new NextAction("use", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("use", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "c",
-        NextAction::array({ new NextAction("item count", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("item count", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "e",
-        NextAction::array({ new NextAction("equip", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("equip", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "ue",
-        NextAction::array({ new NextAction("unequip", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("unequip", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "t",
-        NextAction::array({ new NextAction("trade", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("trade", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "nt",
-        NextAction::array({ new NextAction("trade", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("trade", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "s",
-        NextAction::array({ new NextAction("sell", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("sell", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "b",
-        NextAction::array({ new NextAction("buy", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("buy", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "r",
-        NextAction::array({ new NextAction("reward", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("reward", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "attack",
-        NextAction::array({ new NextAction("attack my target", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("attack my target", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "accept",
-        NextAction::array({ new NextAction("accept quest", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("accept quest", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "follow",
-        NextAction::array({ new NextAction("follow chat shortcut", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("follow chat shortcut", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "stay",
-        NextAction::array({ new NextAction("stay chat shortcut", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("stay chat shortcut", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "flee",
-        NextAction::array({ new NextAction("flee chat shortcut", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("flee chat shortcut", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "tank attack",
-        NextAction::array({ new NextAction("tank attack chat shortcut", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("tank attack chat shortcut", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "grind",
-        NextAction::array({ new NextAction("grind chat shortcut", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("grind chat shortcut", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "talk",
-        NextAction::array({ new NextAction("gossip hello", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("gossip hello", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cast",
-        NextAction::array({ new NextAction("cast custom spell", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("cast custom spell", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "revive",
-        NextAction::array({ new NextAction("spirit healer", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("spirit healer", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "runaway",
-        NextAction::array({ new NextAction("runaway chat shortcut", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("runaway chat shortcut", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "warning",
-        NextAction::array({ new NextAction("runaway chat shortcut", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("runaway chat shortcut", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "max dps",
-        NextAction::array({ new NextAction("max dps chat shortcut", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("max dps chat shortcut", relevance) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "attackers",
-        NextAction::array({ new NextAction("tell attackers", relevance) })));
+        NextAction::array({ std::make_shared<NextAction>("tell attackers", relevance) })));
 }
 
 
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* ai) : PassTroughStrategy(ai)
 {
-    actionNodeFactories.Add(new ChatCommandActionNodeFactoryInternal());
+    actionNodeFactories.Add(std::make_unique<ChatCommandActionNodeFactoryInternal>());
 
     supported.push_back("quests");
     supported.push_back("stats");

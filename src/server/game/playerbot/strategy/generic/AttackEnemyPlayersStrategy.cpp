@@ -4,10 +4,10 @@
 
 using namespace ai;
 
-void AttackEnemyPlayersStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void AttackEnemyPlayersStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy player is attacking",
-        NextAction::array({ new NextAction("attack enemy player", 61.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("attack enemy player", 61.0f) })));
 }
 

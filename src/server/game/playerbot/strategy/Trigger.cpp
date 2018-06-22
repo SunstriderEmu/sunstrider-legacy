@@ -15,7 +15,7 @@ Event Trigger::Check()
     return event;
 }
 
-Value<Unit*>* Trigger::GetTargetValue()
+std::shared_ptr<Value<Unit*>> Trigger::GetTargetValue()
 {
     return context->GetValue<Unit*>(GetTargetName());
 }

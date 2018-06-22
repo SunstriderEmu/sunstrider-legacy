@@ -14,69 +14,69 @@ public:
         creators["mana tide totem"] = &mana_tide_totem;
     }
 private:
-    static ActionNode* earthliving_weapon(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> earthliving_weapon(PlayerbotAI* ai)
     {
-        return new ActionNode ("earthliving weapon",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("flametongue weapon") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("earthliving weapon",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("flametongue weapon") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* mana_tide_totem(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> mana_tide_totem(PlayerbotAI* ai)
     {
-        return new ActionNode ("mana tide totem",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("mana potion") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("mana tide totem",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("mana potion") }),
+            /*C*/ ActionList());
     }
 
 };
 
 HealShamanStrategy::HealShamanStrategy(PlayerbotAI* ai) : GenericShamanStrategy(ai)
 {
-    actionNodeFactories.Add(new HealShamanStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<HealShamanStrategyActionNodeFactory>());
 }
 
-void HealShamanStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void HealShamanStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "enemy out of spell",
-        NextAction::array({ new NextAction("reach spell", ACTION_NORMAL + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("reach spell", ACTION_NORMAL + 9) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "shaman weapon",
-        NextAction::array({ new NextAction("earthliving weapon", 22.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("earthliving weapon", 22.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low mana",
-        NextAction::array({ new NextAction("mana tide totem", ACTION_EMERGENCY + 5) })));
+        NextAction::array({ std::make_shared<NextAction>("mana tide totem", ACTION_EMERGENCY + 5) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cleanse spirit poison",
-        NextAction::array({ new NextAction("cleanse spirit", 24.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse spirit", 24.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cleanse spirit curse",
-        NextAction::array({ new NextAction("cleanse spirit", 24.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse spirit", 24.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "cleanse spirit disease",
-        NextAction::array({ new NextAction("cleanse spirit", 24.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse spirit", 24.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member cleanse spirit poison",
-        NextAction::array({ new NextAction("cleanse spirit poison on party", 23.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse spirit poison on party", 23.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member cleanse spirit curse",
-        NextAction::array({ new NextAction("cleanse spirit curse on party", 23.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse spirit curse on party", 23.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "party member cleanse spirit disease",
-        NextAction::array({ new NextAction("cleanse spirit disease on party", 23.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("cleanse spirit disease on party", 23.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
-        NextAction::array({ new NextAction("healing stream totem", ACTION_LIGHT_HEAL) })));
+        NextAction::array({ std::make_shared<NextAction>("healing stream totem", ACTION_LIGHT_HEAL) })));
 }

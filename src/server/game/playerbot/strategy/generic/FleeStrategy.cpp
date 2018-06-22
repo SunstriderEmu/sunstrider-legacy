@@ -4,24 +4,24 @@
 
 using namespace ai;
 
-void FleeStrategy::InitTriggers(list<TriggerNode*> &triggers)
+void FleeStrategy::InitTriggers(list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "panic",
-        NextAction::array({ new NextAction("flee", ACTION_EMERGENCY + 9) })));
+        NextAction::array({ std::make_shared<NextAction>("flee", ACTION_EMERGENCY + 9) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
        "critical health",
-       NextAction::array({ new NextAction("flee", ACTION_MOVE + 9) })));
+       NextAction::array({ std::make_shared<NextAction>("flee", ACTION_MOVE + 9) })));
 
-   triggers.push_back(new TriggerNode(
+   triggers.push_back(std::make_shared<TriggerNode>(
        "low mana",
-       NextAction::array({ new NextAction("flee", ACTION_MOVE + 9) })));
+       NextAction::array({ std::make_shared<NextAction>("flee", ACTION_MOVE + 9) })));
 }
 
-void FleeFromAddsStrategy::InitTriggers(list<TriggerNode*> &triggers)
+void FleeFromAddsStrategy::InitTriggers(list<std::shared_ptr<TriggerNode>> &triggers)
 {
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "has nearest adds",
-        NextAction::array({ new NextAction("runaway", 50.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("runaway", 50.0f) })));
 }

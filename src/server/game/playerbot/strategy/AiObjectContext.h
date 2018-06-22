@@ -15,26 +15,26 @@ namespace ai
         virtual ~AiObjectContext() = default;
 
     public:
-        virtual Strategy* GetStrategy(std::string name) { return strategyContexts.GetObject(name, ai); }
+        virtual std::shared_ptr<Strategy> GetStrategy(std::string name) { return strategyContexts.GetObject(name, ai); }
         virtual set<std::string> GetSiblingStrategy(std::string name) { return strategyContexts.GetSiblings(name); }
-        virtual Trigger* GetTrigger(std::string name) { return triggerContexts.GetObject(name, ai); }
-        virtual Action* GetAction(std::string name) { return actionContexts.GetObject(name, ai); }
-        virtual UntypedValue* GetUntypedValue(std::string name) { return valueContexts.GetObject(name, ai); }
+        virtual std::shared_ptr<Trigger> GetTrigger(std::string name) { return triggerContexts.GetObject(name, ai); }
+        virtual std::shared_ptr<Action> GetAction(std::string name) { return actionContexts.GetObject(name, ai); }
+        virtual std::shared_ptr<UntypedValue> GetUntypedValue(std::string name) { return valueContexts.GetObject(name, ai); }
 
         template<class T>
-        Value<T>* GetValue(std::string name)
+        std::shared_ptr<Value<T>> GetValue(std::string name)
         {
-            return dynamic_cast<Value<T>*>(GetUntypedValue(name));
+            return std::dynamic_pointer_cast<Value<T>>(GetUntypedValue(name));
         }
 
         template<class T>
-        Value<T>* GetValue(std::string name, std::string param)
+        std::shared_ptr<Value<T>> GetValue(std::string name, std::string param)
         {
             return GetValue<T>((string(name) + "::" + param));
         }
 
         template<class T>
-        Value<T>* GetValue(std::string name, uint32 param)
+        std::shared_ptr<Value<T>> GetValue(std::string name, uint32 param)
         {
             std::ostringstream out; out << param;
             return GetValue<T>(name, out.str());
@@ -51,7 +51,7 @@ namespace ai
             set<std::string> names = valueContexts.GetCreated();
             for (const auto & name : names)
             {
-                UntypedValue* value = GetUntypedValue(name);
+                std::shared_ptr<UntypedValue> value = GetUntypedValue(name);
                 if (!value)
                     continue;
 

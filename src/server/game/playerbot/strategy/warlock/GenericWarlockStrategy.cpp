@@ -14,61 +14,61 @@ public:
         creators["banish"] = &banish;
     }
 private:
-    static ActionNode* summon_voidwalker(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> summon_voidwalker(PlayerbotAI* ai)
     {
-        return new ActionNode ("summon voidwalker",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("drain soul") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("summon voidwalker",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("drain soul") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* banish(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> banish(PlayerbotAI* ai)
     {
-        return new ActionNode ("banish",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("fear") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode> ("banish",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("fear") }),
+            /*C*/ ActionList());
     }
 };
 
 GenericWarlockStrategy::GenericWarlockStrategy(PlayerbotAI* ai) : RangedCombatStrategy(ai)
 {
-    actionNodeFactories.Add(new GenericWarlockStrategyActionNodeFactory());
+    actionNodeFactories.Add(std::make_unique<GenericWarlockStrategyActionNodeFactory>());
 }
 
 ActionList GenericWarlockStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("shoot", 10.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("shoot", 10.0f) });
 }
 
-void GenericWarlockStrategy::InitTriggers(std::list<TriggerNode*> &triggers)
+void GenericWarlockStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &triggers)
 {
     RangedCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "curse of agony",
-        NextAction::array({ new NextAction("curse of agony", 11.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("curse of agony", 11.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "medium health",
-        NextAction::array({ new NextAction("drain life", 40.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("drain life", 40.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "low mana",
-        NextAction::array({ new NextAction("life tap", ACTION_EMERGENCY + 5) })));
+        NextAction::array({ std::make_shared<NextAction>("life tap", ACTION_EMERGENCY + 5) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "target critical health",
-        NextAction::array({ new NextAction("drain soul", 30.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("drain soul", 30.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "banish",
-        NextAction::array({ new NextAction("banish", 21.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("banish", 21.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "fear",
-        NextAction::array({ new NextAction("fear on cc", 20.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("fear on cc", 20.0f) })));
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(std::make_shared<TriggerNode>(
         "immolate",
-        NextAction::array({ new NextAction("immolate", 19.0f), new NextAction("conflagrate", 19.0f) })));
+        NextAction::array({ std::make_shared<NextAction>("immolate", 19.0f), std::make_shared<NextAction>("conflagrate", 19.0f) })));
 }

@@ -6,6 +6,6 @@ using namespace ai;
 
 ActionList StayStrategy::getDefaultActions()
 {
-    return NextAction::array({ new NextAction("stay", 1.0f) });
+    return NextAction::array({ std::make_shared<NextAction>("stay", 1.0f) });
 }
 

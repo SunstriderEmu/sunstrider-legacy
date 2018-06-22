@@ -6,7 +6,7 @@
 namespace ai
 {
     class NextAction;
-    typedef std::vector<NextAction*> ActionList;
+    typedef std::vector<std::shared_ptr<NextAction>> ActionList;
     class NextAction
     {
     public:
@@ -33,7 +33,7 @@ namespace ai
         static ActionList clone(ActionList actions);
         //Merge two list (do not use input list after merging, pointers get stolen by merged list)
         static ActionList merge(ActionList what, ActionList with);
-        static ActionList array(std::initializer_list<NextAction*> args);
+        static ActionList array(std::initializer_list<std::shared_ptr<NextAction>> args);
         static void destroy(ActionList& actions);
 
     private:
@@ -69,7 +69,7 @@ namespace ai
         void Update() {}
         void Reset() {}
         virtual Unit* GetTarget();
-        virtual Value<Unit*>* GetTargetValue();
+        virtual std::shared_ptr<Value<Unit*>> GetTargetValue();
         virtual std::string GetTargetName() { return "self target"; }
         void MakeVerbose() { verbose = true; }
 
@@ -96,8 +96,8 @@ namespace ai
         }
 
     public:
-        Action* getAction() { return action; }
-        void setAction(Action* _action) { action = _action; }
+        std::shared_ptr<Action> getAction() { return action; }
+        void setAction(std::shared_ptr<Action> _action) { action = _action; }
         std::string getName() { return name; }
 
     public:
@@ -107,7 +107,7 @@ namespace ai
 
     private:
         std::string name;
-        Action* action;
+        std::shared_ptr<Action> action;
         ActionList continuers;
         ActionList alternatives;
         ActionList prerequisites;
@@ -118,18 +118,18 @@ namespace ai
     class ActionBasket
     {
     public:
-        ActionBasket(ActionNode* action, float relevance, bool skipPrerequisites, Event event) :
+        ActionBasket(std::shared_ptr<ActionNode> action, float relevance, bool skipPrerequisites, Event event) :
           action(action), relevance(relevance), skipPrerequisites(skipPrerequisites), event(event) {}
         virtual ~ActionBasket(void) = default;
     public:
         float getRelevance() {return relevance;}
-        ActionNode* getAction() {return action;}
+        std::shared_ptr<ActionNode> getAction() {return action;}
         Event getEvent() { return event; }
         bool isSkipPrerequisites() { return skipPrerequisites; }
         void AmendRelevance(float k) {relevance *= k; }
         void setRelevance(float _relevance) { this->relevance = _relevance; }
     private:
-        ActionNode* action;
+        std::shared_ptr<ActionNode> action;
         float relevance;
         bool skipPrerequisites;
         Event event;

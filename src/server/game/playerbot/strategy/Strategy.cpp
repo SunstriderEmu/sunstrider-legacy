@@ -26,91 +26,91 @@ public:
     }
 
 private:
-    static ActionNode* melee(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> melee(PlayerbotAI* ai)
     {
-        return new ActionNode("melee",
-            /*P*/ NextAction::array({ new NextAction("reach melee") }),
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode>("melee",
+            /*P*/ NextAction::array({ std::make_shared<NextAction>("reach melee") }),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* healthstone(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> healthstone(PlayerbotAI* ai)
     {
-        return new ActionNode("healthstone",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("healing potion") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode>("healthstone",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("healing potion") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* follow_master_random(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> follow_master_random(PlayerbotAI* ai)
     {
-        return new ActionNode("be near",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("follow") }),
-            /*C*/{});
+        return std::make_shared<ActionNode>("be near",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("follow") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* attack_anything(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> attack_anything(PlayerbotAI* ai)
     {
-        return new ActionNode("attack anything",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode>("attack anything",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* move_random(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> move_random(PlayerbotAI* ai)
     {
-        return new ActionNode("move random",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("stay line") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode>("move random",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("stay line") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* move_to_loot(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> move_to_loot(PlayerbotAI* ai)
     {
-        return new ActionNode("move to loot",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode>("move to loot",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* food(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> food(PlayerbotAI* ai)
     {
-        return new ActionNode("food",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode>("food",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* drink(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> drink(PlayerbotAI* ai)
     {
-        return new ActionNode("drink",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode>("drink",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
-    static ActionNode* mana_potion(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> mana_potion(PlayerbotAI* ai)
     {
-        return new ActionNode("mana potion",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("drink") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode>("mana potion",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("drink") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* healing_potion(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> healing_potion(PlayerbotAI* ai)
     {
-        return new ActionNode("healing potion",
-            /*P*/ {},
-            /*A*/ NextAction::array({ new NextAction("food") }),
-            /*C*/ {});
+        return std::make_shared<ActionNode>("healing potion",
+            /*P*/ ActionList(),
+            /*A*/ NextAction::array({ std::make_shared<NextAction>("food") }),
+            /*C*/ ActionList());
     }
-    static ActionNode* flee(PlayerbotAI* ai)
+    static std::shared_ptr<ActionNode> flee(PlayerbotAI* ai)
     {
-        return new ActionNode("flee",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {});
+        return std::make_shared<ActionNode>("flee",
+            /*P*/ ActionList(),
+            /*A*/ ActionList(),
+            /*C*/ ActionList());
     }
 };
 
 Strategy::Strategy(PlayerbotAI* ai) : PlayerbotAIAware(ai)
 {
-    actionNodeFactories.Add(new ActionNodeFactoryInternal());
+    actionNodeFactories.Add(std::make_unique<ActionNodeFactoryInternal>());
 }
 
-ActionNode* Strategy::GetAction(std::string name)
+std::shared_ptr<ActionNode> Strategy::GetAction(std::string name)
 {
     return actionNodeFactories.GetObject(name, ai);
 }
