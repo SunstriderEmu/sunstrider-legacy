@@ -1125,7 +1125,7 @@ void World::LoadConfigSettings(bool reload)
         TC_LOG_ERROR("server.loading","Visibility.Distance.BGArenas can't be less max aggro radius %f",45*sWorld->GetRate(RATE_CREATURE_AGGRO));
         m_MaxVisibleDistanceInBGArenas = 45*sWorld->GetRate(RATE_CREATURE_AGGRO);
     }
-    else if (m_MaxVisibleDistanceInBGArenas + MAX_VISIBILITY_DISTANCE)
+    else if (m_MaxVisibleDistanceInBGArenas > MAX_VISIBILITY_DISTANCE)
     {
         TC_LOG_ERROR("server.loading","Visibility.Distance.BGArenas can't be greater %f",MAX_VISIBILITY_DISTANCE);
         m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE ;

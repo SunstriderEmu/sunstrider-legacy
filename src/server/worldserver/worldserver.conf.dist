@@ -2347,6 +2347,8 @@ DBLog.char.rename = 30
 DBLog.gm.char.rename = -1
 DBLog.GMCommands = -1
 DBLog.sanctions = -1
+DBLog.connectionip = 30
+DBLog.gm.connectionip = -1
 
 #
 ###################################################################################################

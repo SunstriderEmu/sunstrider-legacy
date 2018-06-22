@@ -1523,23 +1523,18 @@ void ObjectMgr::LoadCreatures()
         }
 
         data.spawnPoint.WorldRelocate(mapId, fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat(), fields[8].GetFloat());
-        data.displayid      = fields[ 3].GetUInt32();
-        data.equipmentId    = fields[ 4].GetInt8();
-        data.spawntimesecs  = fields[ 9].GetUInt32();
-        data.spawndist      = fields[10].GetFloat();
-        data.currentwaypoint= fields[11].GetUInt32();
-        data.curhealth      = fields[12].GetUInt32();
-        data.curmana        = fields[13].GetUInt32();
-        data.movementType   = fields[14].GetUInt8();
-        data.spawnMask      = fields[15].GetUInt8();
-        int32 gameEvent     = fields[16].GetInt32();
-        data.poolId         = fields[17].GetUInt32(); //Old WR pool system
-//Not sure this is a correct general rule, correct it if needed. My windows MariaDB returns a NEWDECIMAL while our Debian MariaDB returns a LONGLONG
-#if TRINITY_PLATFORM == TRINITY_PLATFORM_UNIX
-        data.instanceEventId = fields[18].GetUInt64();
-#else
+        data.displayid       = fields[ 3].GetUInt32();
+        data.equipmentId     = fields[ 4].GetInt8();
+        data.spawntimesecs   = fields[ 9].GetUInt32();
+        data.spawndist       = fields[10].GetFloat();
+        data.currentwaypoint = fields[11].GetUInt32();
+        data.curhealth       = fields[12].GetUInt32();
+        data.curmana         = fields[13].GetUInt32();
+        data.movementType    = fields[14].GetUInt8();
+        data.spawnMask       = fields[15].GetUInt8();
+        int32 gameEvent      = fields[16].GetInt32();
+        data.poolId          = fields[17].GetUInt32(); //Old WR pool system
         data.instanceEventId = fields[18].GetDouble();
-#endif
         data.scriptId = GetScriptId(fields[19].GetString());
         //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
         if(mapEntry->Instanceable())
@@ -8383,6 +8378,19 @@ void ObjectMgr::LoadItemExtendedCost()
     TC_LOG_INFO("server.loading", ">> Loaded %u item extended cost", count );
 }
 
+bool ValidateSpell(SpellEntry const* entry)
+{
+    //special validation rules for override spells
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+        if (entry->Effect[i] >= TOTAL_SPELL_EFFECTS)
+        {
+            TC_LOG_ERROR("sql.sql", " Spell %u has invalid effect %u at index %u", entry->Id, entry->Effect[i], i);
+            return false;
+        }
+
+    return true;
+}
+
 //This does not erase existing spells and keep pointers valids
 void ObjectMgr::LoadSpellTemplates()
 {
@@ -8779,6 +8787,14 @@ void ObjectMgr::LoadSpellTemplates()
             default:
                 ASSERT(false); //logic failure
             }
+        }
+
+        if (!ValidateSpell(spell))
+        {
+            if (newSpell)
+                spellTemplates.erase(id);
+            else
+                delete spell;
         }
 
         if (newSpell)

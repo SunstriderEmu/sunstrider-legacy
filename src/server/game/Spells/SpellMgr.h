@@ -570,7 +570,7 @@ typedef std::unordered_map<uint32, SpellBonusEntry>     SpellBonusMap;
 
 typedef std::map<uint32, uint8> SpellElixirMap;
 
-enum SpellGroup
+enum SpellGroup : uint32
 {
     SPELL_GROUP_NONE             = 0,
     SPELL_GROUP_ELIXIR_BATTLE    = 1,

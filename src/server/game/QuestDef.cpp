@@ -127,9 +127,9 @@ Quest::Quest(Field * questRecord)
 
     for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
     {
-        if ( RequiredItemId[i] )
+        if ( RequiredItemId[j] )
             ++m_reqitemscount;
-        if ( RequiredNpcOrGo[i] )
+        if ( RequiredNpcOrGo[j] )
             ++m_reqCreatureOrGOcount;
     }
 
