@@ -4271,9 +4271,15 @@ void Spell::finish(bool ok, bool cancelChannel)
 
 void Spell::WriteCastResultInfo(WorldPacket& data, Player* caster, SpellInfo const* spellInfo, uint8 castCount, SpellCastResult result, /*SpellCustomErrors customError, */ uint32* param1 /*= nullptr*/, uint32* param2 /*= nullptr*/)
 {
+#ifdef LICH_KING
+    data << uint8(castCount);                               // single cast or multi 2.3 (0/1)
     data << uint32(spellInfo->Id);
-    data << uint8(result);                              // problem
+    data << uint8(result);                                  // problem
+#else
+    data << uint32(spellInfo->Id);
+    data << uint8(result);                           // problem
     data << uint8(castCount);                        // single cast or multi 2.3 (0/1)
+#endif
     switch (result)
     {
     case SPELL_FAILED_REQUIRES_SPELL_FOCUS:
@@ -4462,7 +4468,6 @@ void Spell::SendCastResult(SpellCastResult result, uint32* param1 /*= nullptr*/,
         if (_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR)
             result = SPELL_FAILED_DONT_REPORT;
 
-        WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
         SendCastResult(m_caster->ToPlayer(), m_spellInfo, m_cast_count, result, /*m_customError, */ param1, param2);
     }
     else

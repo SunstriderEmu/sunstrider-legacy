@@ -43,7 +43,7 @@ namespace ai
                 return nullptr;
 
             std::shared_ptr<T> object = (*creator)(ai);
-            std::shared_ptr<Qualified> q = std::dynamic_pointer_cast<Qualified>(object);
+            Qualified* q = dynamic_cast<Qualified*>(object.get());
             if (q)
                 q->Qualify(qualifier);
 

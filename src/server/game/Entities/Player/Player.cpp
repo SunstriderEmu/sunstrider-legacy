@@ -417,6 +417,11 @@ Player::~Player()
 
     delete m_declinedname;
     delete _cinematicMgr;
+
+#ifdef PLAYERBOT
+    delete m_playerbotAI;
+    delete m_playerbotMgr;
+#endif
 }
 
 void Player::CleanupsBeforeDelete(bool finalCleanup)

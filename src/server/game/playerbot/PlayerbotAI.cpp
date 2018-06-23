@@ -1255,7 +1255,7 @@ void PlayerbotAI::_fillGearScoreData(Player *player, Item* item, std::vector<uin
     if (!item)
         return;
 
-    if (player->CanUseItem(item->GetTemplate()) != EQUIP_ERR_OK)
+    if (!player->CanUseItem(item->GetTemplate()))
         return;
 
     uint8 type   = item->GetTemplate()->InventoryType;

@@ -396,7 +396,7 @@ bool Engine::ContainsStrategy(StrategyType type)
 
 Action* Engine::InitializeAction(ActionNode* actionNode)
 {
-    std::shared_ptr<Action>& action = actionNode->getAction();
+    std::shared_ptr<Action> action = actionNode->getAction();
     if (!action)
     {
         action = aiObjectContext->GetAction(actionNode->getName());

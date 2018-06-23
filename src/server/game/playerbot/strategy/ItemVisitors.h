@@ -50,7 +50,7 @@ namespace ai
 
         virtual bool Visit(Item* item)
         {
-            if (bot->CanUseItem(item->GetTemplate()) == EQUIP_ERR_OK)
+            if (bot->CanUseItem(item->GetTemplate()))
                 return FindItemVisitor::Visit(item);
 
             return true;
