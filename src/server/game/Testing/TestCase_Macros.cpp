@@ -334,6 +334,9 @@ void TestCase::_TestThreat(Unit* caster, Creature* target, uint32 spellID, float
 
 void TestCase::_TestChannelDamage(bool healing, Unit* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, int32 expectedTickAmount, uint32 testedSpell /* = 0*/)
 {
+    if (!testedSpell)
+        testedSpell = spellID;
+
     auto AI = _GetCasterAI(caster);
     SpellInfo const* spellInfo = _GetSpellInfo(spellID);
 
