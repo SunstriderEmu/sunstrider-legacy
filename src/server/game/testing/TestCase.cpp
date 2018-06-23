@@ -1182,12 +1182,6 @@ void TestCase::Sadness()
 
 std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType, uint32 spellBonusDmg /*= 0*/, float spellNormalizedWeaponSpeed /* = 0.0f*/)
 {
-    if (spellBonusDmg || spellNormalizedWeaponSpeed)
-    {
-        INTERNAL_ASSERT_INFO("Both spellBonusDmg and spellNormalizedWeaponSpeed must be supplied for spells (or left to default for white dmg");
-        INTERNAL_TEST_ASSERT(bool(spellBonusDmg) && bool(spellNormalizedWeaponSpeed));
-    }
-
     Item* item = attacker->GetWeaponForAttack(attackType);
     INTERNAL_ASSERT_INFO("Failed to get weapon for attack type %u", uint32(attackType));
     INTERNAL_TEST_ASSERT(item != nullptr);
