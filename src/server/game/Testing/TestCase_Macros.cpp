@@ -159,25 +159,40 @@ void TestCase::_TestMeleeDamage(Unit* caster, Unit* target, WeaponAttackType att
 
     auto[sampleSize, maxPredictionError] = _GetApproximationParams(expectedMin, expectedMax);
 
-    MeleeHitOutcome previousForceMeleeResult = caster->_forceMeleeResult;
-    caster->ForceMeleeHitResult(crit ? MELEE_HIT_CRIT : MELEE_HIT_NORMAL);
-    for (uint32 i = 0; i < sampleSize; i++)
+    if (attackType != RANGED_ATTACK)
     {
-        target->SetFullHealth();
-        callback(caster, target);
-
-        if (attackType != RANGED_ATTACK)
-            caster->AttackerStateUpdate(target, attackType);
-        else
+        MeleeHitOutcome previousForceMeleeResult = caster->_forceMeleeResult;
+        caster->ForceMeleeHitResult(crit ? MELEE_HIT_CRIT : MELEE_HIT_NORMAL);
+        for (uint32 i = 0; i < sampleSize; i++)
         {
-            caster->CastSpell(target, 75, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS)); //shoot
+            target->SetFullHealth();
+            callback(caster, target);
+
+            caster->AttackerStateUpdate(target, attackType);
+
+            HandleThreadPause();
+        }
+        caster->ForceMeleeHitResult(previousForceMeleeResult);
+    }
+    else
+    {
+        EnableCriticals(caster, false);
+        CastSpellExtraArgs args(TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
+        args.ForceHitResult = SPELL_MISS_NONE;
+        uint32 const SHOOT_SPELL_ID = 75;
+        for (uint32 i = 0; i < sampleSize; i++)
+        {
+            target->SetFullHealth();
+            callback(caster, target);
+
+            caster->CastSpell(target, SHOOT_SPELL_ID, args); //shoot
+
             HandleSpellsCleanup(caster);
+            HandleThreadPause();
         }
 
-        HandleThreadPause();
+        RestoreCriticals(caster);
     }
-    caster->ForceMeleeHitResult(previousForceMeleeResult);
-
     auto [dealtMin, dealtMax] = GetWhiteDamageDoneTo(caster, target, attackType, crit, sampleSize);
 
     //TC_LOG_DEBUG("test.unit_test", "attackType: %u - crit %u -> dealtMin: %u - dealtMax %u - expectedMin: %u - expectedMax: %u - sampleSize: %u", uint32(attackType), uint32(crit), dealtMin, dealtMax, expectedMin, expectedMax, sampleSize);

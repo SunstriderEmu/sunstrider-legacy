@@ -860,6 +860,12 @@ std::pair<uint32 /*minHeal*/, uint32 /*maxHeal*/> TestCase::GetHealingPerSpellsT
 
 std::pair<uint32 /*minDmg*/, uint32 /*maxDmg*/> TestCase::GetWhiteDamageDoneTo(Unit* caster, Unit* victim, WeaponAttackType attackType, bool critical, uint32 expectedCount)
 {
+    if (attackType == RANGED_ATTACK)
+    { //shoot is handled like a spell
+        uint32 const SHOOT_SPELL_ID = 75;
+        return GetDamagePerSpellsTo(caster, victim, SHOOT_SPELL_ID, false, expectedCount);
+    }
+
     auto AI = _GetCasterAI(caster);
 
     auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
