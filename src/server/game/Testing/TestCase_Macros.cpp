@@ -118,6 +118,8 @@ void TestCase::_TestDirectValue(bool heal, Unit* caster, Unit* target, uint32 sp
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
+        target->SetFullHealth();
+
         callback(caster, target);
 
         _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
