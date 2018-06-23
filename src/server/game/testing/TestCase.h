@@ -462,6 +462,7 @@ protected:
     @spellBonusDmg How much bonus damage in the spell tooltip, if any
     @spellNormalizedWeaponSpeed See http://wowwiki.wikia.com/wiki/Normalization . May simply be the weapon speed for non normalized attacks.
     */
+    float GetArmorFactor(Player const* attacker, Unit const* target);
     std::pair<uint32 /*min*/, uint32 /*max*/> CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType = BASE_ATTACK, uint32 spellBonusDmg = 0, float spellNormalizedWeaponSpeed = 0.0f);
     //generic spell id and name printing for errors
     std::string _SpellString(uint32 spellID);

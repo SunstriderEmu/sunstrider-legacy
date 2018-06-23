@@ -1186,6 +1186,11 @@ void TestCase::Sadness()
     }
 }
 
+float TestCase::GetArmorFactor(Player const* attacker, Unit const* target)
+{
+    return 1.0f - (target->GetArmor() / (target->GetArmor() + (467.5 * attacker->GetLevel() - 22167.5)));
+}
+
 std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType, uint32 spellBonusDmg /*= 0*/, float spellNormalizedWeaponSpeed /* = 0.0f*/)
 {
     Item* item = attacker->GetWeaponForAttack(attackType);
@@ -1195,9 +1200,10 @@ std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const
     uint32 const weaponMaxDmg = item->GetTemplate()->Damage->DamageMax;
     float const weaponSpeed = spellNormalizedWeaponSpeed ? spellNormalizedWeaponSpeed : item->GetTemplate()->Delay / 1000.0f;
     float const AP = attacker->GetTotalAttackPowerValue(attackType);
-    float const armorFactor = 1.0f - (target->GetArmor() / (target->GetArmor() + (467.5 * attacker->GetLevel() - 22167.5)));
-    uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * armorFactor;
-    uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * armorFactor;
+    float const armorFactor = GetArmorFactor(attacker, target);
+    float const damageMultiplier = attackType == OFF_ATTACK ? 0.5f : 1.f;
+    uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * damageMultiplier * armorFactor;
+    uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * damageMultiplier * armorFactor;
     return std::make_pair(minMelee, maxMelee);
 }
 

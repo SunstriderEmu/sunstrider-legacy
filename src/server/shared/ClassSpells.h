@@ -3838,6 +3838,7 @@ namespace ClassSpells
             SHIELD_BASH_RNK_2 = 1671,
             SHIELD_BASH_RNK_3 = 1672,
             SHIELD_BASH_RNK_4 = 29704,
+            SHIELD_BASH_RNK_4_DAZED = 29703,
             SHIELD_BLOCK_RNK_1 = 2565,
             SHIELD_SLAM_RNK_1 = 23922,
             SHIELD_SLAM_RNK_2 = 23923,
