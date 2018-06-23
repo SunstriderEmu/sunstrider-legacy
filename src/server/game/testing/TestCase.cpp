@@ -1180,12 +1180,12 @@ void TestCase::Sadness()
     }
 }
 
-std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType, uint32 spellBonusDmg /*= 0*/, float SpellAPMultiplier/* = 0.0f*/)
+std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType, uint32 spellBonusDmg /*= 0*/, float spellNormalizedWeaponSpeed /* = 0.0f*/)
 {
-    if (spellBonusDmg || SpellAPMultiplier)
+    if (spellBonusDmg || spellNormalizedWeaponSpeed)
     {
-        INTERNAL_ASSERT_INFO("Both spellBonusDmg and SpellAPMultiplier must be supplied for spells (or left to default for white dmg");
-        INTERNAL_TEST_ASSERT(bool(spellBonusDmg) && bool(SpellAPMultiplier));
+        INTERNAL_ASSERT_INFO("Both spellBonusDmg and spellNormalizedWeaponSpeed must be supplied for spells (or left to default for white dmg");
+        INTERNAL_TEST_ASSERT(bool(spellBonusDmg) && bool(spellNormalizedWeaponSpeed));
     }
 
     Item* item = attacker->GetWeaponForAttack(attackType);
@@ -1193,7 +1193,7 @@ std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const
     INTERNAL_TEST_ASSERT(item != nullptr);
     uint32 const weaponMinDmg = item->GetTemplate()->Damage->DamageMin;
     uint32 const weaponMaxDmg = item->GetTemplate()->Damage->DamageMax;
-    float const weaponSpeed = SpellAPMultiplier ? SpellAPMultiplier : item->GetTemplate()->Delay / 1000.0f;
+    float const weaponSpeed = spellNormalizedWeaponSpeed ? spellNormalizedWeaponSpeed : item->GetTemplate()->Delay / 1000.0f;
     float const AP = attacker->GetTotalAttackPowerValue(attackType);
     float const armorFactor = 1.0f - (target->GetArmor() / (target->GetArmor() + (467.5 * attacker->GetLevel() - 22167.5)));
     uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * armorFactor;
