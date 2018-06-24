@@ -2387,9 +2387,11 @@ void Spell::EffectDummy(uint32 i)
             return;
         }
 
-        auto  spell = new Spell(m_caster, spellInfo, TRIGGERED_FULL_MASK, m_originalCasterGUID, nullptr, true);
+        auto spell = new Spell(m_caster, spellInfo, TRIGGERED_FULL_MASK, m_originalCasterGUID, nullptr, true);
         if(bp) 
             spell->SetSpellValue(SPELLVALUE_BASE_POINT0, bp);
+
+        spell->SetForceHitResult(_forceHitResult); //sun: inherit force hit
 
         SpellCastTargets targets;
         targets.SetUnitTarget(unitTarget);
