@@ -2506,6 +2506,7 @@ namespace ClassSpells
             BLIZZARD_RNK_5 = 10186,
             BLIZZARD_RNK_6 = 10187,
             BLIZZARD_RNK_7 = 27085,
+            BLIZZARD_RNK_7_PROC = 42198,
             CONE_OF_COLD_RNK_1 = 120,
             CONE_OF_COLD_RNK_2 = 8492,
             CONE_OF_COLD_RNK_3 = 10159,
