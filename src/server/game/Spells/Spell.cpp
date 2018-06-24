@@ -5263,7 +5263,7 @@ void Spell::HandleFlatThreat()
         if (!targetUnit)
             continue;
 
-        float threat = flatMod / targetListSize;;
+        float threat = flatMod / float(targetListSize); //sun: cast to float, avoid rounding
 
         //apply threat to every negative targets
         if(!IsPositive())
