@@ -2689,6 +2689,7 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
 
     CastSpellExtraArgs args(m_originalCasterGUID);
     args.SetCastItem(m_CastItem);
+    args.ForceHitResult = _forceHitResult; //sun: inherit force hit result
     // set basepoints for trigger with value effect
     if (m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE)
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -2775,6 +2776,7 @@ void Spell::EffectTriggerMissileSpell(uint32 effIndex)
     CastSpellExtraArgs args(m_originalCasterGUID);
     args.SetTriggerFlags(TriggerCastFlags(TRIGGERED_IGNORE_GCD | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_CAST_DIRECTLY));
     args.SetCastItem(m_CastItem);
+    args.ForceHitResult = _forceHitResult; //sun: inherit force hit result
 
     m_caster->CastSpell(targets, spellInfo->Id, args);
 }
