@@ -1201,6 +1201,9 @@ std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const
     float const weaponSpeed = spellNormalizedWeaponSpeed ? spellNormalizedWeaponSpeed : item->GetTemplate()->Delay / 1000.0f;
     float const AP = attacker->GetTotalAttackPowerValue(attackType);
     float const armorFactor = GetArmorFactor(attacker, target);
+    float const offHandMultiplier = attacker->GetPctModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_PCT);
+    INTERNAL_ASSERT_INFO("Invalid offhand multiplier returned by core %f", offHandMultiplier);
+    INTERNAL_TEST_ASSERT(offHandMultiplier >= 0.5f && offHandMultiplier <= 1.0f);
     float const damageMultiplier = attackType == OFF_ATTACK ? 0.5f : 1.f;
     uint32 const minMelee = floor(weaponMinDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * damageMultiplier * armorFactor;
     uint32 const maxMelee = floor(weaponMaxDmg + AP / 14.f * weaponSpeed + spellBonusDmg) * damageMultiplier * armorFactor;
