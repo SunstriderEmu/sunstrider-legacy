@@ -3473,7 +3473,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
     Unit* m_target = aurApp->GetTarget();
     Powers PowerType = POWER_MANA;
     ShapeshiftForm form = ShapeshiftForm(GetMiscValue());
-    uint32 modelid = m_target->GetModelForForm(form);
+
     switch (form)
     {
     case FORM_CAT:
@@ -3504,38 +3504,35 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
         TC_LOG_ERROR("FIXME", "Auras: Unknown Shapeshift Type: %u for spell %u", form, GetId());
     }
 
-    // remove polymorph before changing display id to keep new display id
-    switch (form)
-    {
-    case FORM_CAT:
-    case FORM_TREE:
-    case FORM_TRAVEL:
-    case FORM_AQUA:
-    case FORM_BEAR:
-    case FORM_DIREBEAR:
-    case FORM_FLIGHT_EPIC:
-    case FORM_FLIGHT:
-    case FORM_MOONKIN:
-        // remove movement affects
-        m_target->RemoveAurasByShapeShift();
-
-        // and polymorphic affects
-        if (m_target->IsPolymorphed())
-            m_target->RemoveAurasDueToSpell(m_target->GetTransForm());
-        break;
-    default:
-        break;
-    }
+    uint32 modelid = m_target->GetModelForForm(form);
 
     if (apply)
     {
+        // remove polymorph before changing display id to keep new display id
+        switch (form)
+        {
+        case FORM_CAT:
+        case FORM_TREE:
+        case FORM_TRAVEL:
+        case FORM_AQUA:
+        case FORM_BEAR:
+        case FORM_DIREBEAR:
+        case FORM_FLIGHT_EPIC:
+        case FORM_FLIGHT:
+        case FORM_MOONKIN:
+            // remove movement affects
+            m_target->RemoveAurasByShapeShift();
+
+            // and polymorphic affects
+            if (m_target->IsPolymorphed())
+                m_target->RemoveAurasDueToSpell(m_target->GetTransForm());
+            break;
+        default:
+            break;
+        }
+
         // remove other shapeshift before applying a new one
         m_target->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT, ObjectGuid::Empty, GetBase());
-
-        m_target->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, form);
-
-        if (modelid > 0)
-            m_target->SetDisplayId(modelid);
 
         if (PowerType != POWER_MANA)
         {
@@ -3605,20 +3602,37 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             }
         }
 
-        m_target->m_ShapeShiftFormSpellId = GetId();
-        m_target->m_form = form;
+        // stop handling the effect if it was removed by linked event
+        if (aurApp->GetRemoveMode())
+            return;
+
+        ShapeshiftForm prevForm = m_target->GetShapeshiftForm();
+        m_target->SetShapeshiftForm(form);
+        // add the shapeshift aura's boosts
+        if (prevForm != form)
+            HandleShapeshiftBoosts(m_target, true);
+
+        if (modelid > 0)
+        {
+            SpellInfo const* transformSpellInfo = sSpellMgr->GetSpellInfo(m_target->GetTransForm());
+            if (!transformSpellInfo || !GetSpellInfo()->IsPositive())
+                m_target->SetDisplayId(modelid);
+        }
     }
     else
     {
-        m_target->SetShapeshiftForm(FORM_NONE);
-        if (m_target->GetClass() == CLASS_DRUID)
+        // reset model id if no other auras present
+        // may happen when aura is applied on linked event on aura removal
+        if (!m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT))
         {
-            m_target->SetPowerType(POWER_MANA);
-            m_target->RemoveAurasByShapeShift();
+            m_target->SetShapeshiftForm(FORM_NONE);
+            if (m_target->GetClass() == CLASS_DRUID)
+            {
+                // Remove movement impairing effects also when shifting out
+                m_target->RemoveAurasByShapeShift();
+            }
         }
-        m_target->m_ShapeShiftFormSpellId = 0;
-        m_target->m_form = FORM_NONE;
-
+        
         if (modelid > 0)
             m_target->RestoreDisplayId();
 
@@ -3643,11 +3657,10 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
         default:
             break;
         }
-    }
 
-    // adding/removing linked auras
-    // add/remove the shapeshift aura's boosts
-    HandleShapeshiftBoosts(m_target, apply);
+        // remove the shapeshift aura's boosts
+        HandleShapeshiftBoosts(m_target, false);
+    }
 
     if (m_target->GetTypeId() == TYPEID_PLAYER)
         (m_target->ToPlayer())->InitDataForForm();
@@ -3657,7 +3670,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
     // force update as too quick shapeshifting and back
     // causes the value to stay the same serverside
     // causes issues clientside (player gets stuck)
-    m_target->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);
+    // sunstrider: removed, I think this is not an issue anymore but not 100% sure // m_target->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);
 }
 
 void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, bool apply) const

@@ -1493,9 +1493,6 @@ void Player::SetDeathState(DeathState s)
 
         clearResurrectRequestData();
 
-        // remove form before other mods to prevent incorrect stats calculation
-        RemoveAurasDueToSpell(m_ShapeShiftFormSpellId);
-
         //FIXME: is pet dismissed at dying or releasing spirit? if second, add SetDeathState(DEAD) to HandleRepopRequestOpcode and define pet unsummon here with (s == DEAD)
         RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT, true, REMOVE_PET_REASON_PLAYER_DIED);
 
@@ -5448,7 +5445,7 @@ void Player::UpdateWeaponSkill(WeaponAttackType attType)
     if(IsInFeralForm())
         return;                                             // always maximized SKILL_FERAL_COMBAT in fact
 
-    if(m_form == FORM_TREE)
+    if(GetShapeshiftForm() == FORM_TREE)
         return;                                             // use weapon but not skill up
 
     uint32 weapon_skill_gain = sWorld->getConfig(CONFIG_SKILL_GAIN_WEAPON);
@@ -6011,7 +6008,7 @@ void Player::CheckAreaExploreAndOutdoor()
             if (!spellInfo || !IsNeedCastSpellAtOutdoor(spellInfo) || HasAuraEffect(itr.first, EFFECT_0))
                 continue;
 
-            if (GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
+            if (CheckShapeshift(spellInfo, GetShapeshiftForm()) == SPELL_CAST_OK)
                 CastSpell(this, itr.first, true);
         }
     }
@@ -7706,7 +7703,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
     if(apply)
     {
         // Cannot be used in this stance/form
-        if(GetErrorAtShapeshiftedCast(spellInfo, m_form) != SPELL_CAST_OK)
+        if(CheckShapeshift(spellInfo, GetShapeshiftForm()) != SPELL_CAST_OK)
             return;
 
         if(form_change)                                     // check aura active state from other form
@@ -7726,7 +7723,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
         if(form_change)                                     // check aura compatibility
         {
             // Cannot be used in this stance/form
-            if(GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
+            if(CheckShapeshift(spellInfo, GetShapeshiftForm()) == SPELL_CAST_OK)
                 return;                                     // and remove only not compatible at form change
         }
 
@@ -19321,7 +19318,7 @@ void Player::ContinueTaxiFlight()
 
 void Player::InitDataForForm(bool reapplyMods)
 {
-    SpellShapeshiftEntry const* ssEntry = sSpellShapeshiftStore.LookupEntry(m_form);
+    SpellShapeshiftEntry const* ssEntry = sSpellShapeshiftStore.LookupEntry(GetShapeshiftForm());
     if(ssEntry && ssEntry->attackSpeed)
     {
         SetAttackTime(BASE_ATTACK,ssEntry->attackSpeed);

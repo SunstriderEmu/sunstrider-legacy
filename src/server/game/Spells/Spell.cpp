@@ -5469,7 +5469,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
 #endif
             {
                 // Cannot be used in this stance/form
-                SpellCastResult shapeError = GetErrorAtShapeshiftedCast(m_spellInfo, caster->m_form);
+                SpellCastResult shapeError = CheckShapeshift(m_spellInfo, caster->GetShapeshiftForm());
                 if (shapeError != SPELL_CAST_OK)
                     return shapeError;
 

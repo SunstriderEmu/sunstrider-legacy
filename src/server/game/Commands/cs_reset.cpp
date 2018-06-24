@@ -29,10 +29,6 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
         return false;
     }
 
-    // reset m_form if no aura
-    if (!player->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT))
-        player->m_form = FORM_NONE;
-
     player->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_PLAYER_BOUNDING_RADIUS);
     player->SetFloatValue(UNIT_FIELD_COMBATREACH, DEFAULT_PLAYER_COMBAT_REACH);
 
@@ -41,7 +37,7 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
     player->SetUInt32Value(UNIT_FIELD_BYTES_0, ((player->GetRace()) | (player->GetClass() << 8) | (player->GetGender() << 16) | (powertype << 24)));
 
     // reset only if player not in some form;
-    if (player->m_form == FORM_NONE)
+    if (player->GetShapeshiftForm() == FORM_NONE)
     {
         switch (player->GetGender())
         {
@@ -60,8 +56,9 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
 
     // set UNIT_FIELD_BYTES_1 to init state but preserve m_form value
     player->SetUInt32Value(UNIT_FIELD_BYTES_1, unitfield);
+    ShapeshiftForm form = player->GetShapeshiftForm();
     player->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5);
-    player->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, player->m_form);
+    player->SetShapeshiftForm(form);
 
     player->SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
 

@@ -321,7 +321,7 @@ bool Player::UpdateStats(Stats stat)
         case STAT_AGILITY:
             UpdateArmor();
             UpdateAttackPowerAndDamage(true);
-            if(GetClass() == CLASS_ROGUE || GetClass() == CLASS_HUNTER || (GetClass() == CLASS_DRUID && m_form == FORM_CAT))
+            if(GetClass() == CLASS_ROGUE || GetClass() == CLASS_HUNTER || (GetClass() == CLASS_DRUID && GetShapeshiftForm() == FORM_CAT))
                 UpdateAttackPowerAndDamage();
 
             UpdateAllCritPercentages();
@@ -417,7 +417,7 @@ void Player::UpdateArmor()
     // Enrage hack
     if (GetAura(5229))
     {
-        switch(m_form)
+        switch(GetShapeshiftForm())
         {
             case FORM_BEAR:
                 value *= 0.73f;
@@ -526,7 +526,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
                 val2 = level        + GetStat(STAT_AGILITY) - 10.0f;    
                 break;
             case CLASS_DRUID:
-                switch(m_form)
+                switch(GetShapeshiftForm())
                 {
                     case FORM_CAT:
                     case FORM_BEAR:
@@ -567,13 +567,13 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
             {
                 //Check if Predatory Strikes is skilled
                 float mLevelMult = 0.0;
-                if (IsInFeralForm() || m_form == FORM_MOONKIN)
+                if (IsInFeralForm() || GetShapeshiftForm() == FORM_MOONKIN)
                 {
                     if (AuraEffect const* levelMod = GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_DRUID, 1563, EFFECT_0))
                         mLevelMult = CalculatePct(1.0f, levelMod->GetAmount());
                 }
 
-                switch(m_form)
+                switch(GetShapeshiftForm())
                 {
                     //sun: removed the base level multiplicator part as it actually is the AP bonus from the spell effects... (such as spell 3025 effect 0)
                     case FORM_CAT:

@@ -90,7 +90,7 @@ bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
     return false;
 }
 
-SpellCastResult GetErrorAtShapeshiftedCast(SpellInfo const *spellInfo, uint32 form)
+SpellCastResult CheckShapeshift(SpellInfo const *spellInfo, uint32 form)
 {
     // talents that learn spells can have stance requirements that need ignore
     // (this requirement only for client-side stance show in talent description)
@@ -115,7 +115,7 @@ SpellCastResult GetErrorAtShapeshiftedCast(SpellInfo const *spellInfo, uint32 fo
         SpellShapeshiftEntry const *shapeInfo = sSpellShapeshiftStore.LookupEntry(form);
         if (!shapeInfo)
         {
-            TC_LOG_ERROR("spell","GetErrorAtShapeshiftedCast: unknown shapeshift %u", form);
+            TC_LOG_ERROR("spell","CheckShapeshift: unknown shapeshift %u", form);
             return SPELL_CAST_OK;
         }
         actAsShifted = !(shapeInfo->flags1 & 1);            // shapeshift acts as normal form for spells

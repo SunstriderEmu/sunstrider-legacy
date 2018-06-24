@@ -1886,8 +1886,6 @@ class TC_GAME_API Unit : public WorldObject
         uint32 m_addDmgOnce;
         ObjectGuid m_SummonSlot[MAX_SUMMON_SLOT];
         ObjectGuid m_ObjectSlot[MAX_GAMEOBJECT_SLOT];
-        uint32 m_ShapeShiftFormSpellId;
-        ShapeshiftForm m_form;
         float m_modMeleeHitChance;
         float m_modRangedHitChance;
         float m_modSpellHitChance;
@@ -2055,6 +2053,7 @@ class TC_GAME_API Unit : public WorldObject
         void SetNativeDisplayId(uint32 modelId) { SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID, modelId); }
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, 3)); }
         void SetShapeshiftForm(ShapeshiftForm form);
+        bool IsInFeralForm() const;
         uint32 GetModelForTotem(PlayerTotemType totemType);
         uint32 GetModelForForm (ShapeshiftForm from) const;
         void SetTransForm(uint32 spellid) { m_transform = spellid;}

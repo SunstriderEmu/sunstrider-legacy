@@ -357,7 +357,6 @@ m_spellHistory(new SpellHistory(this))
     m_rootTimes = 0;
 
     m_state = 0;
-    m_form = FORM_NONE;
     m_deathState = ALIVE;
 
     for (auto & m_currentSpell : m_currentSpells)
@@ -374,7 +373,6 @@ m_spellHistory(new SpellHistory(this))
 
     m_interruptMask = 0;
     m_transform = 0;
-    m_ShapeShiftFormSpellId = 0;
     m_canModifyStats = false;
 
     for (uint8 i = 0; i < UNIT_MOD_END; ++i)
@@ -4182,12 +4180,15 @@ void Unit::SendAttackStateUpdate(uint32 HitInfo, Unit *target, uint8 SwingType, 
 
 void Unit::SetPowerType(Powers new_powertype)
 {
+    if (GetPowerType() == new_powertype)
+        return;
+
     SetByteValue(UNIT_FIELD_BYTES_0, 3, new_powertype);
 
     if(GetTypeId() == TYPEID_PLAYER)
     {
-        if((this->ToPlayer())->GetGroup())
-            (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POWER_TYPE);
+        if(ToPlayer()->GetGroup())
+            ToPlayer()->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POWER_TYPE);
     }
     else if((this->ToCreature())->IsPet())
     {
@@ -8166,7 +8167,7 @@ uint32 Unit::GetCreatureType() const
 {
     if(GetTypeId() == TYPEID_PLAYER)
     {
-        SpellShapeshiftEntry const* ssEntry = sSpellShapeshiftStore.LookupEntry((this->ToPlayer())->m_form);
+        SpellShapeshiftEntry const* ssEntry = sSpellShapeshiftStore.LookupEntry(GetShapeshiftForm());
         if(ssEntry && ssEntry->creatureType > 0)
             return ssEntry->creatureType;
         else
@@ -11734,6 +11735,12 @@ void Unit::SetFacingToObject(WorldObject const* object, bool force)
     init.SetFacing(GetAbsoluteAngle(object));   // when on transport, GetAbsoluteAngle will still return global coordinates (and angle) that needs transforming
     //GetMotionMaster()->LaunchMoveSpline(std::move(init), EVENT_FACE, MOTION_PRIORITY_HIGHEST);
     init.Launch();
+}
+
+bool Unit::IsInFeralForm() const
+{
+    ShapeshiftForm form = GetShapeshiftForm();
+    return form == FORM_CAT || form == FORM_BEAR || form == FORM_DIREBEAR;
 }
 
 bool Unit::IsInDisallowedMountForm() const

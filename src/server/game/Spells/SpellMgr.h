@@ -321,7 +321,7 @@ inline bool IsDispelSpell(SpellInfo const *spellInfo)
     return false;
 }
 
-SpellCastResult GetErrorAtShapeshiftedCast (SpellInfo const *spellInfo, uint32 form);
+SpellCastResult CheckShapeshift (SpellInfo const *spellInfo, uint32 form);
 
 inline bool IsNeedCastSpellAtOutdoor(SpellInfo const* spellInfo)
 {
