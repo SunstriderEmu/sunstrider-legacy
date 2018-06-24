@@ -976,16 +976,17 @@ void TestCase::_TestRange(TestPlayer* caster, Unit* target, uint32 spellID, floa
     auto testRange = [&](float range, bool max)
     {
         //just in range, should pass
-        Position pos = caster->GetPosition();
-        pos.MoveInFront(caster, max ? range - 1.0f : range + 1.0f);
-        target->Relocate(pos);
+        Position inRangePos = caster->GetPosition();
+        inRangePos.MoveInFront(caster, max ? range - 1.0f : range + 1.0f);
+        target->Relocate(inRangePos);
 
         TriggerCastFlags const triggerFlags = TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_RANGE);
         _TestCast(caster, target, spellID, SPELL_CAST_OK, triggerFlags);
 
         //just of ouf range
-        pos.MoveInFront(pos, max ? 1.0f : -1.0f);
-        target->Relocate(pos);
+        Position oorPos = caster->GetPosition();
+        oorPos.MoveInFront(caster, max ? range + 1.0f : range - 1.0f);
+        target->Relocate(oorPos);
         _TestCast(caster, target, spellID, SPELL_FAILED_OUT_OF_RANGE, triggerFlags);
     };
 
