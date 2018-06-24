@@ -458,12 +458,12 @@ protected:
     void _SaveUnitState(Unit* unit);
     //Restore values saved by _SaveUnitState
     void _RestoreUnitState(Unit* unit);
+    float GetArmorFactor(Player const* attacker, Unit const* target);
     /* Calc min max damage with attacker weapon on target given attacker weapon damage, weapon class, ap and target armor
     @spellBonusDmg How much bonus damage in the spell tooltip, if any
     @spellNormalizedWeaponSpeed See http://wowwiki.wikia.com/wiki/Normalization . May simply be the weapon speed for non normalized attacks.
     */
-    float GetArmorFactor(Player const* attacker, Unit const* target);
-    std::pair<uint32 /*min*/, uint32 /*max*/> CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType = BASE_ATTACK, uint32 spellBonusDmg = 0, float spellNormalizedWeaponSpeed = 0.0f);
+    std::pair<uint32 /*min*/, uint32 /*max*/> CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType = BASE_ATTACK, int32 spellBonusDmg = 0, float spellNormalizedWeaponSpeed = 0.0f);
     //generic spell id and name printing for errors
     std::string _SpellString(uint32 spellID);
     // <Helpers/>

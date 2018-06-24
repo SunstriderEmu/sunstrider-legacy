@@ -1191,7 +1191,7 @@ float TestCase::GetArmorFactor(Player const* attacker, Unit const* target)
     return 1.0f - (target->GetArmor() / (target->GetArmor() + (467.5 * attacker->GetLevel() - 22167.5)));
 }
 
-std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType, uint32 spellBonusDmg /*= 0*/, float spellNormalizedWeaponSpeed /* = 0.0f*/)
+std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType, int32 spellBonusDmg /*= 0*/, float spellNormalizedWeaponSpeed /* = 0.0f*/)
 {
     Item* item = attacker->GetWeaponForAttack(attackType);
     INTERNAL_ASSERT_INFO("Failed to get weapon for attack type %u", uint32(attackType));

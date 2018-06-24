@@ -3790,7 +3790,7 @@ namespace ClassSpells
             DEMORALIZING_SHOUT_RNK_5 = 11556,
             DEMORALIZING_SHOUT_RNK_6 = 25202,
             DEMORALIZING_SHOUT_RNK_7 = 25203,
-            EXECUTE_RNK_1 = 5308,
+            EXECUTE_RNK_1 = 20647,
             EXECUTE_RNK_2 = 20658,
             EXECUTE_RNK_3 = 20660,
             EXECUTE_RNK_4 = 20661,
