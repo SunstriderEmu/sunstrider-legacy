@@ -495,6 +495,16 @@ public:
 };
 #define RegisterGameObjectAI(ai_name) new GenericGameObjectScript<ai_name>(#ai_name)
 
+template <class TestClass>
+class GenericTestScript : public TestCaseScript
+{
+public:
+    GenericTestScript(char const* name) : TestCaseScript(name) { }
+    std::unique_ptr<TestCase> GetTest() const override { return std::make_unique<TestClass>(); }
+};
+#define RegisterTestCase(test_name, class_name) new GenericTestScript<class_name>(test_name)
+
+
 //Generic scripting text function
 void TC_GAME_API DoScriptText(int32 textEntry, Unit* pSource, Unit* target = nullptr);
 

@@ -14,9 +14,11 @@
 
 #define MAP_TESTING_ID 13
 
+TestCase::TestCase() 
+    : TestCase(STATUS_PASSING) 
+{}
+
 TestCase::TestCase(TestStatus status) :
-    _failed(false),
-    _testsCount(0),
     _callerLine(0),
     _testMapInstanceId(0),
     _diff(REGULAR_DIFFICULTY),
@@ -81,12 +83,19 @@ void TestCase::_Fail(const char* err, ...)
 
 void TestCase::_FailNoException(std::string msg)
 {
-    _failed = true;
-    _errMsg = msg;
+    TestSectionResult result(_testName,
+        _inSection ? _inSection->title : "<no section>",
+        false,
+        _inSection ? _inSection->status : /*STATUS_PASSING*/ _testStatus, //out of section code is considered always passing
+        msg
+    );
+
     if (!_assertInfo.empty())
-        _errMsg = _errMsg + '\n' + _assertInfo;
+        result.AppendToError(_assertInfo);
     if (!_internalAssertInfo.empty())
-        _errMsg = _errMsg + '\n' + _internalAssertInfo;
+        result.AppendToError(_internalAssertInfo);
+
+    _results.push_back(std::move(result));
 }
 
 void TestCase::_AssertInfo(const char* err, ...)
@@ -123,13 +132,11 @@ void TestCase::_ResetInternalAssertInfo()
 
 void TestCase::Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition)
 {
-    _Assert(file, line, function, condition, failedCondition, true);
+    _Assert(file, line, function, condition, failedCondition);
 }
 
-void TestCase::_Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, bool increaseTestCount, std::string callerFile, int32 callerLine)
+void TestCase::_Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, std::string callerFile, int32 callerLine)
 {
-    if(increaseTestCount)
-        _testsCount++;
     if (!condition)
     {
         if (callerFile.empty() || callerLine == 0)
@@ -220,7 +227,7 @@ TestPlayer* TestCase::SpawnRandomPlayer()
     _GetRandomClassAndRace(cls, race);
     TestPlayer* playerBot = _CreateTestBot(_location, cls, race);
     INTERNAL_ASSERT_INFO("Creating random test bot with class %u and race %u", uint32(cls), uint32(race));
-    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -232,7 +239,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Powers power, uint32 level)
 
     TestPlayer* playerBot = _CreateTestBot(_location, cls, race, level);
     INTERNAL_ASSERT_INFO("Creating random test with power %u and level %u", uint32(power), level);
-    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -240,7 +247,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Races race, uint32 level)
 {
     TestPlayer* playerBot = _CreateTestBot(_location, _GetRandomClassForRace(race), race, level);
     INTERNAL_ASSERT_INFO("Creating random test bot with race %u and level %u", uint32(race), level);
-    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -248,7 +255,7 @@ TestPlayer* TestCase::SpawnRandomPlayer(Classes cls, uint32 level)
 {
     TestPlayer* playerBot = _CreateTestBot(_location, cls, _GetRandomRaceForClass(cls), level);
     INTERNAL_ASSERT_INFO("Creating random test bot with class %u and level %u", uint32(cls), level);
-    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -259,7 +266,7 @@ TestPlayer* TestCase::SpawnPlayer(Classes _class, Races _race, uint32 level, Pos
         targetLocation.Relocate(spawnPosition);
     TestPlayer* playerBot = _CreateTestBot(targetLocation, _class, _race, level);
     INTERNAL_ASSERT_INFO("Creating random test bot with class %u, race %u and level %u", uint32(_class), uint32(_race), level);
-    INTERNAL_TEST_ASSERT_NOCOUNT(playerBot != nullptr);
+    INTERNAL_TEST_ASSERT(playerBot != nullptr);
     return playerBot;
 }
 
@@ -306,7 +313,7 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     static std::mutex function_mutex;
     std::lock_guard<std::mutex> lock(function_mutex);
 
-    INTERNAL_TEST_ASSERT_NOCOUNT(cls != CLASS_NONE && race != RACE_NONE);
+    INTERNAL_TEST_ASSERT(cls != CLASS_NONE && race != RACE_NONE);
     TC_LOG_TRACE("test.unit_test", "Creating new random bot for class %d", cls);
 
     std::string name = RandomPlayerbotFactory::CreateTestBotName();  //note that by doing this test bots name may sometime overlap with other connected bots name... BUT WELL WHATEVER.
@@ -443,7 +450,7 @@ void TestCase::_GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower
     {
         std::map<uint8, std::vector<uint8>> availableRacesForClasses = RandomPlayerbotFactory::GetAvailableRacesForClasses();
         auto availableRacesForClass = availableRacesForClasses[uint8(cls)];
-        INTERNAL_TEST_ASSERT_NOCOUNT(!availableRacesForClass.empty());
+        INTERNAL_TEST_ASSERT(!availableRacesForClass.empty());
         race = Races(availableRacesForClass[urand(0, availableRacesForClass.size() - 1)]);
     }
     //case 2 - we want a random class for given race
@@ -469,7 +476,7 @@ void TestCase::_GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower
                 }
             }
         }
-        INTERNAL_TEST_ASSERT_NOCOUNT(!availableClassesForRace.empty());
+        INTERNAL_TEST_ASSERT(!availableClassesForRace.empty());
         //random on on resulting available classes
         cls = Classes(availableClassesForRace[urand(0, availableClassesForRace.size() - 1)]);
     }
@@ -482,7 +489,7 @@ void TestCase::_GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower
     else 
     {
         //if we reach here, both race and class were specified, so no use using this randomize function
-        INTERNAL_TEST_ASSERT_NOCOUNT(false);
+        INTERNAL_TEST_ASSERT(false);
     }
 }
 
@@ -517,12 +524,12 @@ TempSummon* TestCase::SpawnBoss(bool spawnInFront)
 TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 entry)
 {
     INTERNAL_ASSERT_INFO("Test has no map");
-    INTERNAL_TEST_ASSERT_NOCOUNT(GetMap() != nullptr);
+    INTERNAL_TEST_ASSERT(GetMap() != nullptr);
     uint32 creatureEntry = entry ? entry : TEST_CREATURE_ENTRY;
 
     TempSummon* summon = GetMap()->SummonCreature(creatureEntry, spawnPosition);
     INTERNAL_ASSERT_INFO("Failed to summon creature with entry %u", creatureEntry);
-    INTERNAL_TEST_ASSERT_NOCOUNT(summon != nullptr);
+    INTERNAL_TEST_ASSERT(summon != nullptr);
     summon->SetTempSummonType(TEMPSUMMON_MANUAL_DESPAWN); //Make sur it does not despawn
     return summon;
 }
@@ -546,7 +553,7 @@ void TestCase::_EquipItem(TestPlayer* player, uint32 itemID, bool newItem)
     {
         item = player->AddItem(itemID, 1);
         INTERNAL_ASSERT_INFO("_EquipItem: Failed to add item %u to player", itemID);
-        INTERNAL_TEST_ASSERT_NOCOUNT(item != nullptr);
+        INTERNAL_TEST_ASSERT(item != nullptr);
     }
     else 
     {
@@ -561,13 +568,13 @@ void TestCase::_EquipItem(TestPlayer* player, uint32 itemID, bool newItem)
     uint16 dest;
     uint8 msg = player->CanEquipItem(NULL_SLOT, dest, item, !item->IsBag());
     INTERNAL_ASSERT_INFO("Player cannot equip item %u, reason: %u", itemID, msg);
-    INTERNAL_TEST_ASSERT_NOCOUNT(msg == EQUIP_ERR_OK);
+    INTERNAL_TEST_ASSERT(msg == EQUIP_ERR_OK);
 
     player->GetSession()->_HandleAutoEquipItemOpcode(item->GetBagSlot(), item->GetSlot());
 
     Item* equipedItem = player->GetItemByPos(dest);
     INTERNAL_ASSERT_INFO("Player failed to equip item %u (dest: %u)", itemID, dest);
-    INTERNAL_TEST_ASSERT_NOCOUNT(equipedItem != nullptr);
+    INTERNAL_TEST_ASSERT(equipedItem != nullptr);
 }
 
 void TestCase::LearnTalent(TestPlayer* p, uint32 spellID)
@@ -708,7 +715,7 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster, bool failOnNotFound)
         if (failOnNotFound)
         {
             INTERNAL_ASSERT_INFO("Caster is not a player or a pet/summon of him");
-            INTERNAL_TEST_ASSERT_NOCOUNT(false);
+            INTERNAL_TEST_ASSERT(false);
         }
         else
             return nullptr;
@@ -720,7 +727,7 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster, bool failOnNotFound)
         if (failOnNotFound)
         {
             INTERNAL_ASSERT_INFO("Caster in not a testing bot (or a pet/summon of testing bot)");
-            INTERNAL_TEST_ASSERT_NOCOUNT(false);
+            INTERNAL_TEST_ASSERT(false);
         }
         else
             return nullptr;
@@ -735,7 +742,7 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(TestPlayer* caster, bool failOnNotFou
     if (failOnNotFound)
     {
         INTERNAL_ASSERT_INFO("Caster in not a testing bot");
-        INTERNAL_TEST_ASSERT_NOCOUNT(AI != nullptr);
+        INTERNAL_TEST_ASSERT(AI != nullptr);
     }
 
     return AI;
@@ -1403,4 +1410,63 @@ std::string TestCase::StringifySpellCastResult(SpellCastResult result)
 void TestCase::ResetSpellCast(Unit* caster)
 {
 
+}
+
+void TestCase::SECTION(std::string title, TestStatus status, std::function<void()> func)
+{
+    //special case, only run incomplete sections if test was directly called
+    if (status == STATUS_WIP && _testName != _usedPattern)
+        return;
+
+    _inSection.emplace(title, status);
+    _beforeEach();
+    try 
+    {
+        func();
+        _results.emplace_back(_testName, title, true, status, "(no error)");
+    }
+    catch (TestException e)
+    {
+        // Framework triggered an exception, section failed!
+        // Nothing more to do, _FailNoException has already created a SectionResult
+    }
+    catch (std::exception& e)
+    {
+        // A regular exception happened (not one the framework triggered). Set its what in failure message
+        _FailNoException(e.what());
+    }
+    _inSection.reset();
+}
+
+void TestCase::_Test()
+{
+    try
+    {
+        Test();
+        //no section result for out of section code
+    }
+    catch (TestException e)
+    {
+        // Framework triggered an exception, section failed!
+        // Nothing more to do, _FailNoException has already created a SectionResult
+    }
+    catch (std::exception& e)
+    {
+        // A regular exception happened (not one the framework triggered). Set its what in failure message
+        _FailNoException(e.what());
+    }
+}
+
+void TestCase::BEFORE_EACH(std::function<void()> func)
+{
+    _beforeEach = func;
+}
+
+bool TestCase::HasFailures()
+{
+    for (auto const& itr : _results)
+        if (!itr.IsSuccess())
+            return true;
+
+    return false;
 }

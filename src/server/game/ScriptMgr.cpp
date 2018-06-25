@@ -1584,6 +1584,7 @@ TestCaseScript::TestCaseScript(const char* name)
     ScriptRegistry<TestCaseScript>::Instance()->AddScript(this);
 }
 
+#ifdef TESTS
 /* KEEP THIS!
 This is because to build the destructor of our unique_ptr, the compiler need to know the complete type
 By defining the function here we can avoid including the complete type in ScriptMgr.h
@@ -1592,6 +1593,7 @@ std::unique_ptr<TestCase> TestCaseScript::GetTest() const
 { 
     return nullptr; 
 }
+#endif
 
 SpellScriptLoader::SpellScriptLoader(const char* name)
     : ScriptObject(name)

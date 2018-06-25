@@ -44,18 +44,14 @@ bool TestThread::IsPaused() const
 
 void TestThread::Run()
 {
-    try
+    if (_testCase->_InternalSetup())
     {
-        bool setupSuccess = _testCase->_InternalSetup();
-        if(!setupSuccess)
-            _testCase->_Fail("Failed to setup test");
-
         _state = _joinerGUID ? STATE_WAITING_FOR_JOIN : STATE_READY;
         bool waitAfterJoin = _joinerGUID;
         if (_joinerGUID)
         {
             Player* joiner = ObjectAccessor::FindConnectedPlayer(_joinerGUID);
-            if(joiner)
+            if (joiner)
                 sTestMgr->GoToTest(joiner, TestMgr::STARTING_TEST_ID);
         }
         { //Test will actually start the test when map resume execution for the first time
@@ -67,21 +63,16 @@ void TestThread::Run()
 
         _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
-        _testCase->Test();
-        if (_testCase->GetTestCount() == 0)
-            _testCase->_Fail("No checks executed in test");
-        //Yay time!
-        _testCase->Celebrate();
+        _testCase->_Test();
+
+        if (_testCase->HasFailures())
+            _testCase->Sadness();
+        else
+            _testCase->Celebrate();
     }
-    catch (TestException e)
+    else
     {
-        _testCase->Sadness();
-        //test failed! nothing more to do, failure message is already handled by TestCase
-    }
-    catch (std::exception& e)
-    { 
-        //a regular exception happened (not one we triggered). Set its what in failure message
-        _testCase->_FailNoException(e.what());
+        _testCase->_FailNoException("Failed to setup test");
     }
 
     _testCase->_Cleanup();

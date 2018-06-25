@@ -61,8 +61,6 @@ void PacketHandlingHelper::AddPacket(const WorldPacket& packet)
 PlayerbotAI::PlayerbotAI() : PlayerbotAIBase(), bot(nullptr), aiObjectContext(nullptr),
     currentEngine(nullptr), chatHelper(this), chatFilter(this), accountId(0), security(nullptr), master(nullptr)
 {
-    std::cout << "construct2 PlayerbotAI" << std::endl;
-
     for (int i = 0 ; i < BOT_STATE_MAX; i++)
         engines[i] = nullptr;
 }
@@ -70,8 +68,6 @@ PlayerbotAI::PlayerbotAI() : PlayerbotAIBase(), bot(nullptr), aiObjectContext(nu
 PlayerbotAI::PlayerbotAI(Player* bot) :
     PlayerbotAIBase(), chatHelper(this), chatFilter(this), security(bot), master(nullptr)
 {
-    std::cout << "construct PlayerbotAI" << std::endl;
-
     this->bot = bot;
 
     accountId = sCharacterCache->GetCharacterAccountIdByGuid(bot->GetGUID());
@@ -130,7 +126,6 @@ PlayerbotAI::PlayerbotAI(Player* bot) :
 
 PlayerbotAI::~PlayerbotAI()
 {
-    std::cout << "Destruct PlayerbotAI" << std::endl;
     for (int i = 0 ; i < BOT_STATE_MAX; i++)
     {
         if (engines[i])

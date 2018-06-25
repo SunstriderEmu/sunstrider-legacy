@@ -24145,10 +24145,12 @@ bool Player::CanNoReagentCast(SpellInfo const* spellInfo) const
     return false;
 }
 
+#ifdef TESTS
 PlayerbotTestingAI* Player::GetTestingPlayerbotAI() const
 {
     return dynamic_cast<PlayerbotTestingAI*>(m_playerbotAI);
 }
+#endif
 
 bool Player::IsTestingBot() const
 {

@@ -9,10 +9,9 @@
 #include "ScriptMgr.h"
 #include "Unit.h"
 #include "PlayerbotAI.h"
+#include "TestDefines.h"
+#include "TestSectionResult.h"
 #include <functional>
-
-#define TEST_CREATURE_ENTRY 8
-#define TEST_BOSS_ENTRY 28
 
 class TestMap;
 class TestThread;
@@ -38,18 +37,6 @@ bool Between(T value, T from, T to)
     return value >= from && value <= to;
 }
 
-enum TestStatus
-{
-    //Test is working and should pass. A failure means a regression.
-    STATUS_PASSING,
-    //Test is working, but failure is expected.
-    STATUS_KNOWN_BUG,
-    //Test is working and should pass, but still miss some features (handled as STATUS_PASSING by the core, this is just a way to mark test as "need to be refined")
-    STATUS_PASSING_INCOMPLETE,
-    //Test is not yet finished and will be ignored unless directly called
-    STATUS_WIP,
-};
-
 class TC_GAME_API TestCase
 {
     friend class TestMgr;
@@ -57,26 +44,26 @@ class TC_GAME_API TestCase
     friend class TestMap;
 
 public:
-    //If needMap is specified, test will be done in an instance of the test map (13). 
-    TestCase(TestStatus status);
+    TestCase();
+    TestCase(TestStatus status); //remove later when test global status is removed, kept for legacy compat
     //Use specific position. If only map was specified in location, default coordinates in map may be chosen instead. If you need creatures and objects, use EnableMapObjects in your test constructor
     TestCase(TestStatus status, WorldLocation const specificPosition);
     ~TestCase() {}
+    void SetUsedPattern(std::string const& pattern) { _usedPattern = pattern; }
 
     std::string GetName() const { return _testName; }
-    bool Failed() const { return _failed; }
-    std::string GetError() const { return _errMsg; }
-    uint32 GetTestCount() const { return _testsCount; }
+    //bool Failed() const { return _failed; }
+    //std::string GetError() const { return _errMsg; }
+    std::list<TestSectionResult> const& GetResults() const { return _results; }
+    //return true if any TestSectionResult has failures
+    bool HasFailures();
     bool IsSetup() const { return _setup; }
     WorldLocation const& GetLocation() const { return _location; }
     //Get a hardcoded default position on map to place the test instead of always going to 0,0,0
     static Position GetDefaultPositionForMap(uint32 mapId);
 
-    // Main test function to be implemented by each test
-    virtual void Test() = 0;
-    // Cleanup function, always called after the test whatever the result
-    virtual void Cleanup() { }
-
+    void SECTION(std::string title, TestStatus status, std::function<void()> func);
+    void BEFORE_EACH(std::function<void()> func);
 
     // Utility functions
     void SetDifficulty(Difficulty diff) { _diff = diff; }
@@ -350,9 +337,13 @@ public:
     uint32 GetChannelHealingTo(Unit* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit);
 
     static uint32 GetTestBotAccountId();
-    TestStatus GetTestStatus() const { return _testStatus; }
+    TestStatus GetTestStatus() const { return _testStatus; } //for compat, remove later
 
 protected:
+    // Main test function to be implemented by each test
+    virtual void Test() = 0;
+    // Cleanup function, always called after the test whatever the result
+    virtual void Cleanup() { }
 
     //Scripting function
     void Wait(uint32 ms);
@@ -371,7 +362,7 @@ protected:
     uint32                   _testMapInstanceId;
     Difficulty               _diff;
     WorldLocation            _location;
-
+    
     void _AssertInfo(const char* err, ...) ATTR_PRINTF(2, 3);
     void _ResetAssertInfo();
     void _SetCaller(std::string callerFile, int32 callerLine);
@@ -469,26 +460,35 @@ protected:
     // <Helpers/>
 
 private:
-    std::string              _testName;
-    std::string              _errMsg;
-    uint32                   _testsCount;
-    bool                     _failed;
-    std::atomic<bool>        _setup;
-    bool                     _enableMapObjects;
-    std::string              _callerFile; //used for error output
-    int32                    _callerLine; //used for error output
-    std::string              _internalAssertInfo;
-    std::string              _assertInfo;
-    TestStatus               _testStatus;
+
+    struct InSection
+    {
+        InSection(std::string title, TestStatus status) : title(title), status(status) {}
+        std::string title;
+        TestStatus status;
+    };
+
+    std::string                  _testName;
+    std::string                  _usedPattern;
+    std::optional<InSection>     _inSection;
+    std::list<TestSectionResult> _results;
+    std::atomic<bool>            _setup;
+    bool                         _enableMapObjects;
+    std::string                  _callerFile; //used for error output
+    int32                        _callerLine; //used for error output
+    std::string                  _internalAssertInfo;
+    std::string                  _assertInfo;
+    TestStatus                   _testStatus; //for compat, remove later
 
     bool _InternalSetup();
     void _Cleanup();
+    void _Test(); //main test to call by TestThread. Will call Test() implemented in tests.
     void _Fail(const char* err, ...) ATTR_PRINTF(2, 3);
     void _FailNoException(std::string);
     void _SetName(std::string name) { _testName = name; }
     void _SetThread(std::shared_ptr<TestThread> testThread) { _testThread = testThread; }
     //if callerFile and callerLine are specified, also print them in message
-    void _Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, bool increaseTestCount, std::string callerFile = "", int32 callerLine = 0);
+    void _Assert(std::string file, int32 line, std::string function, bool condition, std::string failedCondition, std::string callerFile = "", int32 callerLine = 0);
     void _InternalAssertInfo(const char* err, ...) ATTR_PRINTF(2, 3);
     void _ResetInternalAssertInfo();
 
@@ -542,13 +542,13 @@ private:
 
     std::unordered_map<Unit*, SavedUnitState> _saveUnitStates;
     std::unordered_map<Unit*, SavedCriticalValues> _savedCriticalValues;
+
+    std::function<void()> _beforeEach;
 };
 
 // -- internal uses defines:
 //same as TEST_ASSERT but will track caller file and line to print it in case of error
-#define INTERNAL_TEST_ASSERT( expr ) { _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, true, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo(); }
-//same as last but does not increase test count
-#define INTERNAL_TEST_ASSERT_NOCOUNT( expr ) { _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, false, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo(); }
+#define INTERNAL_TEST_ASSERT( expr ) { _Assert(__FILE__, __LINE__, __FUNCTION__, (expr == true), #expr, _GetCallerFile(), _GetCallerLine()); _ResetInternalAssertInfo(); }
 
 //input info for next check, place this before INTERNAL_TEST_ASSERT
 #define INTERNAL_ASSERT_INFO(expr, ...) { _InternalAssertInfo(expr, ## __VA_ARGS__); }

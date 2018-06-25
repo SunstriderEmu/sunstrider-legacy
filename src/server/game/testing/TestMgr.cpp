@@ -37,6 +37,7 @@ void TestMgr::_Load(std::string name_or_pattern, Player* joiner /*= nullptr*/)
                 std::shared_ptr<TestThread> testThread = std::make_shared<TestThread>(std::move(testCase));
                 ASSERT(testCase == nullptr); //testcase in now owned by TestThread
                 _testCase->_SetThread(testThread);
+                _testCase->SetUsedPattern(name_or_pattern);
                 _remainingTests[testId] = testThread; //will immediately start a new thread running the test
                 testId++;
                 if (joiner) //start only one test in join case
@@ -60,7 +61,7 @@ bool TestMgr::_TestMatchPattern(TestCase* test, std::string const& pattern) cons
     else if (pattern == "all")
         return true;
 
-    //special case, only run incomplete tests if directly called
+    //special case, only run incomplete tests if directly called (TODO: remove this when global test status are removed)
     if (test->GetTestStatus() == STATUS_WIP)
         return test->GetName() == pattern;
 

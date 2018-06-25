@@ -897,13 +897,13 @@ void TestCase::_TestUseItem(TestPlayer* caster, Unit* target, uint32 itemId)
 {
     Item* firstItem = caster->GetFirstItem(itemId);
     INTERNAL_ASSERT_INFO("_TestUseItem failed to find any item with id %u", itemId);
-    INTERNAL_TEST_ASSERT_NOCOUNT(firstItem != nullptr);
+    INTERNAL_TEST_ASSERT(firstItem != nullptr);
 
     SpellCastTargets targets;
     targets.SetUnitTarget(target);
     bool result = caster->GetSession()->_HandleUseItemOpcode(firstItem->GetBagSlot(), firstItem->GetSlot(), 1, 1, firstItem->GetGUID(), targets);
     INTERNAL_ASSERT_INFO("_TestUseItem failed to use item with id %u", itemId);
-    INTERNAL_TEST_ASSERT_NOCOUNT(result);
+    INTERNAL_TEST_ASSERT(result);
 }
 
 void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, float expectedResultPercent, TestCallback callback)

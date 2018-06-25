@@ -3,43 +3,6 @@
 #include "TestThread.h"
 #include <sstream>
 
-TestResult::TestResult(std::string name, bool success, TestStatus status, std::string errorMsg) :
-    _name(name),
-    _success(success),
-    _errorMsg(errorMsg),
-    _testStatus(status)
-{ }
-
-
-std::string TestResult::ToString() const
-{
-    std::stringstream ss;
-    ss << "  -----------------------------------------------------------------------------" << std::endl;
-    ss << "  Test name: " << _name << std::endl;
-    if (!_errorMsg.empty())
-    {
-        ss << "  Error message:" << std::endl;
-        std::stringstream errorStream(_errorMsg);
-        for (std::string line; std::getline(errorStream, line); ) //making sure the message is indented even if on multiple line
-        {
-            size_t startPos = 0;
-            const uint32 maxLineLength = 75;
-            while (startPos < line.size())
-            {
-                std::string subline = line.substr(startPos, maxLineLength); //substr include as many chars as possible
-                ss << "    " + subline << std::endl;
-                startPos += maxLineLength;
-            }
-        }
-    }
-    return ss.str();
-}
-
-TestStatus TestResult::GetStatus() const 
-{
-    return _testStatus;
-}
-
 TestResults::TestResults() :
     _totalTestsRan(0),
     _ignored(0)
@@ -48,16 +11,17 @@ TestResults::TestResults() :
 void TestResults::TestFinished(TestCase const& test)
 {
     _totalTestsRan++;
-    TestResult result(test.GetName(), test.Failed(), test.GetTestStatus(), test.GetError());
-    if(test.Failed())
-        _failures.emplace_back(std::move(result));
-    else
-        _successes.emplace_back(std::move(result));
+    std::list<TestSectionResult> const& resultList = test.GetResults();
+    for (auto const& result : resultList)
+        if (result.IsSuccess())
+            _successes.emplace_back(result);
+        else
+            _failures.emplace_back(result);
 }
 
-std::list<TestResult> TestResults::GetFilteredResult(bool success, std::initializer_list<TestStatus> const& statuses) const
+std::list<TestSectionResult> TestResults::GetFilteredResult(bool success, std::initializer_list<TestStatus> const& statuses) const
 {
-    std::list<TestResult> filtered;
+    std::list<TestSectionResult> filtered;
     auto const& iterateList = success ? _successes : _failures;
     for (auto itr : iterateList)
         for (auto status : statuses)
@@ -90,17 +54,17 @@ std::string TestResults::ToString()
     std::stringstream ss;
     ss << "===============================================================================" << std::endl;
     ss << "Tests results for input pattern: " << (_usedPattern == "" ? "(empty pattern)" : _usedPattern) << std::endl;
-    ss << " " << std::endl; //empty line are ignored by core
+    ss << " " << std::endl; //empty line are ignored by core, so add space
     if (_totalTestsRan > 0)
     {
         auto partialSuccessCount = GetFilteredResult(true, { STATUS_PASSING_INCOMPLETE }).size();
 
         ss << " " << _totalTestsRan << " | Total tests ran (" << _ignored << " ignored)" << std::endl;
-        ss << " " << successes << " | Successes";
+        ss << " " << successes << " | Section successes";
         if (partialSuccessCount)
             ss << " (partial: " << partialSuccessCount << ")";
         ss << std::endl;
-        ss << " " << failures  << " | Failures (regressions: " << regressions.size() << ", known: " << knownBugs.size() << ")" << std::endl;
+        ss << " " << failures  << " | Section failures (regressions: " << regressions.size() << ", known: " << knownBugs.size() << ")" << std::endl;
         ss << " " << std::endl;
         if(!failures)
             ss << R"( All tests passed \o/)" << std::endl;

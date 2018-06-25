@@ -3227,9 +3227,11 @@ void TestMap::Update(const uint32& diff)
 
 bool TestMap::AddPlayerToMap(Player* player)
 {
+#ifdef TESTS
     auto testThread = _testThread.lock();
     if (testThread)
         testThread->HandlePlayerJoined(player);
+#endif
 
     return Map::AddPlayerToMap(player);
 }

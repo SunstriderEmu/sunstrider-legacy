@@ -1,30 +1,16 @@
 #ifndef TESTRESULTS_H
 #define TESTRESULTS_H
 
+#include "TestSectionResult.h"
 #include "TestCase.h"
 #include "Optional.h"
 
 class TestCase;
 
-class TestResult
-{
-public:
-    TestResult(std::string name, bool success, TestStatus status, std::string errorMsg = "");
-
-    std::string ToString() const;
-    TestStatus GetStatus() const;
-
-private:
-    bool _success;
-    std::string _name;
-    std::string _errorMsg;
-    TestStatus _testStatus;
-};
-
 class TestResults
 {
 public:
-    typedef std::list<TestResult> TestResultList;
+    typedef std::list<TestSectionResult> TestResultList;
 
     TestResults();
 
