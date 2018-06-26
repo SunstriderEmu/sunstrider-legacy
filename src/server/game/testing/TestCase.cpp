@@ -1412,7 +1412,7 @@ void TestCase::ResetSpellCast(Unit* caster)
 
 }
 
-void TestCase::SECTION(std::string title, TestStatus status, std::function<void()> func)
+void TestCase::SECTION(std::string title, std::function<void()> func, TestStatus status /*= STATUS_PASSING*/)
 {
     //special case, only run incomplete sections if test was directly called
     if (status == STATUS_WIP && _testName != _usedPattern)
@@ -1435,6 +1435,7 @@ void TestCase::SECTION(std::string title, TestStatus status, std::function<void(
         // A regular exception happened (not one the framework triggered). Set its what in failure message
         _FailNoException(e.what());
     }
+    _afterEach();
     _inSection.reset();
 }
 
@@ -1460,6 +1461,11 @@ void TestCase::_Test()
 void TestCase::BEFORE_EACH(std::function<void()> func)
 {
     _beforeEach = func;
+}
+
+void TestCase::AFTER_EACH(std::function<void()> func)
+{
+    _afterEach = func;
 }
 
 bool TestCase::HasFailures()

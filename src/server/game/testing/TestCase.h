@@ -62,8 +62,12 @@ public:
     //Get a hardcoded default position on map to place the test instead of always going to 0,0,0
     static Position GetDefaultPositionForMap(uint32 mapId);
 
-    void SECTION(std::string title, TestStatus status, std::function<void()> func);
+    //Define a test section. A test section is executed immediately. Failures are logged but do not stop the test.
+    void SECTION(std::string title, std::function<void()> func, TestStatus status = STATUS_PASSING);
+    //function to execute before each section
     void BEFORE_EACH(std::function<void()> func);
+    //function to execute after each section
+    void AFTER_EACH(std::function<void()> func);
 
     // Utility functions
     void SetDifficulty(Difficulty diff) { _diff = diff; }
@@ -544,6 +548,7 @@ private:
     std::unordered_map<Unit*, SavedCriticalValues> _savedCriticalValues;
 
     std::function<void()> _beforeEach;
+    std::function<void()> _afterEach;
 };
 
 // -- internal uses defines:
