@@ -2,7 +2,7 @@
 #include "TestCase.h"
 #include "TestMgr.h"
 
-TestThread::TestThread(std::unique_ptr<TestCase>&& test)
+TestThread::TestThread(std::unique_ptr<TestCase> test)
     : _testCase(std::move(test)), 
     _state(STATE_NOT_STARTED),
     _waitTimer(0)

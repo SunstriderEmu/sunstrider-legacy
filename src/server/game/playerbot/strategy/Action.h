@@ -16,6 +16,11 @@ namespace ai
             this->name = name;
             this->relevance = relevance;
         }
+        explicit NextAction(std::string const name, int relevance)
+        {
+            this->name = name;
+            this->relevance = float(relevance);
+        }
         NextAction(const NextAction& o)
         {
             this->name = o.name;

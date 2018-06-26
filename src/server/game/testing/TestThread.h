@@ -34,7 +34,7 @@ public:
     };
 
     //Create thread with test, do not start immediately
-    TestThread(std::unique_ptr<TestCase>&& test);
+    TestThread(std::unique_ptr<TestCase> test);
     ~TestThread();
 
     //Start test!

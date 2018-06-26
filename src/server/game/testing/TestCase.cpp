@@ -1412,12 +1412,12 @@ void TestCase::ResetSpellCast(Unit* caster)
 
 }
 
-void TestCase::SECTION(std::string title, std::function<void()> func)
+void TestCase::SECTION(std::string const title, std::function<void()> func)
 {
-    SECTION(title, STATUS_PASSING, func);
+    SECTION(title, STATUS_PASSING, std::move(func));
 }
 
-void TestCase::SECTION(std::string title, TestStatus status, std::function<void()> func)
+void TestCase::SECTION(std::string const title, TestStatus status, std::function<void()> func)
 {
     //special case, only run incomplete sections if test was directly called
     if (status == STATUS_WIP && _testName != _usedPattern)

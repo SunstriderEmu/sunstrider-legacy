@@ -63,9 +63,9 @@ public:
     static Position GetDefaultPositionForMap(uint32 mapId);
 
     //Define a test section. A test section is executed immediately. Failures are logged but do not stop the test.
-    void SECTION(std::string title, TestStatus status, std::function<void()> func);
+    void SECTION(std::string const title, TestStatus status, std::function<void()> func);
     //same but with default STATUS_PASSING
-    void SECTION(std::string title, std::function<void()> func);
+    void SECTION(std::string const title, std::function<void()> func);
     //function to execute before each section
     void BEFORE_EACH(std::function<void()> func);
     //function to execute after each section
