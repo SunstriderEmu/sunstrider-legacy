@@ -264,7 +264,6 @@ void MotionTransport::Update(uint32 diff)
         else if (justStopped)
         {
             UpdatePosition(_currentFrame->Node->LocX, _currentFrame->Node->LocY, _currentFrame->Node->LocZ, _currentFrame->InitialOrientation);
-            UpdateModelPosition(); //sun: just update position on stop for now (instead of doing it in UpdatePosition). Still crashes sometimes on boot, but less often. No idea what's the problem
             JustStopped();
         }
         else
@@ -311,7 +310,7 @@ void MotionTransport::UpdatePosition(float x, float y, float z, float o)
     Cell oldCell(GetPositionX(), GetPositionY());
 
     Relocate(x, y, z, o);
-    //sun: sometimes cause crash on boot, disabled for now// UpdateModelPosition();
+    UpdateModelPosition();
     
     UpdatePassengerPositions(_passengers);
 
