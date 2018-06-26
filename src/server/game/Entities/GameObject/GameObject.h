@@ -108,9 +108,9 @@ struct GameObjectTemplate
         {
             uint32 lockId;                                  //0 -> Lock.dbc
             uint32 level;                                   //1
-            uint32 radius;                                  //2 radius for trap activation
+            uint32 diameter;                                //2 diameter for trap activation
             uint32 spellId;                                 //3
-            uint32 charges;                                 //4 need respawn (if > 0)
+            uint32 type;                                    //4 0 trap with no despawn after cast. 1 trap despawns after cast. 2 bomb casts on spawn.
             uint32 cooldown;                                //5 time in secs
             uint32 autoCloseTime;                           //6
             uint32 startDelay;                              //7
@@ -628,13 +628,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 		bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
 		bool IsInvisibleDueToDespawn() const override;
 
-		uint8 GetLevelForTarget(WorldObject const* target) const override
-		{
-			if (Unit* owner = GetOwner())
-				return owner->GetLevelForTarget(target);
-
-			return 1;
-		}
+        uint8 GetLevelForTarget(WorldObject const* target) const override;
 
         uint32 GetLinkedGameObjectEntry() const
         {
@@ -712,6 +706,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         uint32      m_despawnDelay;                         // ms despawn delay
         Seconds     m_despawnRespawnTime;                   // override respawn time after delayed despawn
         LootState   m_lootState;
+        ObjectGuid  m_lootStateUnitGUID;                    // GUID of the unit passed with SetLootState(LootState, Unit*)
         bool        m_spawnedByDefault;
         time_t      m_cooldownTime;                         // used as internal reaction delay time store (not state change reaction).
                                                             // For traps this: spell casting cooldown, for doors/buttons: reset time.

@@ -544,7 +544,7 @@ void GameObject::Update(uint32 diff)
             if (!m_respawnCompatibilityMode && m_respawnTime > 0)
                 SaveRespawnTime(0, false);
 
-            if(m_inactive)
+            if(m_inactive || !isSpawned())
                 return;
 
             // traps can have time and can not have
@@ -554,102 +554,72 @@ void GameObject::Update(uint32 diff)
                 if (!this->IsInWorld())
                     return;
 
-                // traps
-                Unit* owner = GetOwner();
-                Unit* trapTarget =  nullptr;                            // pointer to appropriate target if found any
+                if (m_cooldownTime > GameTime::GetGameTimeMS())
+                    break;
 
-                if(m_cooldownTime > GameTime::GetGameTimeMS())
-                    return;
-
-                bool IsBattlegroundTrap = false;
-                //FIXME: this is activation radius (in different casting radius that must be selected from spell data)
-                //TODO: move activated state code (cast itself) to GO_ACTIVATED, in this place only check activating and set state
-                float radius = (float)(goInfo->trap.radius)/2; // TODO rename radius to diameter (goInfo->trap.radius) should be (goInfo->trap.diameter)
-
-                if(!radius)
+                // Type 2 (bomb) does not need to be triggered by a unit and despawns after casting its spell.
+                if (goInfo->trap.type == 2)
                 {
-                    if(goInfo->GetCooldown() != 3)            // cast in other case (at some triggering/linked go/etc explicit call)
-                    {
-                        // try to read radius from trap spell
-                        if (const SpellInfo *spellEntry = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
-                            radius = spellEntry->Effects[0].CalcRadius(owner ? owner->GetSpellModOwner(): nullptr);
-
-                        if(!radius)
-                            break;
-                    }
-                    else
-                    {
-                        if(m_respawnTime > 0)
-                            break;
-
-                        radius = goInfo->GetCooldown();       // battlegrounds gameobjects has data2 == 0 && data5 == 3
-                        IsBattlegroundTrap = true;
-                    }
+                    SetLootState(GO_ACTIVATED);
+                    break;
                 }
 
-                bool NeedDespawn = (goInfo->trap.charges != 0);
+                Unit* owner = GetOwner();
+                // Type 0 despawns after being triggered, type 1 does not.
+                /// @todo This is activation radius. Casting radius must be selected from spell data.
+                float radius = 0.0f;
+                if (!goInfo->trap.diameter)
+                {
+                    // Battleground traps: data2 == 0 && data5 == 3
+                    if (goInfo->trap.cooldown != 3)
+                        break;
+
+                    // sun: try to read radius from trap spell
+                    if (const SpellInfo *spellEntry = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
+                        radius = spellEntry->Effects[0].CalcRadius(owner ? owner->GetSpellModOwner() : nullptr);
+
+                    if(!radius)
+                        radius = 3.f;
+                }
+                else
+                    radius = goInfo->trap.diameter / 2.f;
+
+                // Pointer to appropriate target if found any
+                Unit* target = nullptr;
 
                 // Note: this hack with search required until GO casting not implemented
-                // search unfriendly creature
-                if(owner && NeedDespawn)                    // hunter trap
+                if(owner)
                 {
+                    // Hunter trap: Search units which are unfriendly to the trap's owner
                     Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck u_check(this, owner, radius);
-                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck> checker(this, trapTarget, u_check);
-
+                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck> checker(this, target, u_check);
                     Cell::VisitAllObjects(this, checker, radius);
                 }
                 else if (GetOwnerGUID())
-                { // We got a owner but it was not found? Possible case: Hunter traps from disconnected players
+                { // sun: We got a owner but it was not found? Possible case: Hunter traps from disconnected players
                     m_despawnDelay = 1; //trigger despawn
                 }
                 else // environmental & bg traps
                 {
                     // environmental damage spells already have around enemies targeting but this not help in case not existed GO casting support
 
-                    // affect only players
-                    Player* p_ok = nullptr;
-                    Trinity::AnyPlayerInObjectRangeCheck p_check(this, radius);
-                    Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> checker(this, p_ok, p_check);
-                    Cell::VisitWorldObjects(this, checker, radius);
-                    trapTarget = p_ok;
-                    if (!IsBattlegroundTrap) //environmental case only
-                    {
-                        if (trapTarget)
-                        {
-                            CastSpellExtraArgs args;
-                            args.SetOriginalCaster(trapTarget->GetGUID());
-                            CastSpell(trapTarget, goInfo->trap.spellId, args);
-                            m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
-                        }
-                        break;
-                    }
+                    // Environmental trap: Any player
+                    Player* player = nullptr;
+                    Trinity::AnyPlayerInObjectRangeCheck checker(this, radius);
+                    Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, checker);
+                    Cell::VisitWorldObjects(this, searcher, radius);
+                    target = player;
                 }
 
-                if (trapTarget)
-                {
-                    CastSpellExtraArgs args;
-                    args.SetOriginalCaster(GetOwnerGUID());
-                    if (goInfo->trap.spellId)
-                        CastSpell(trapTarget, goInfo->trap.spellId, args);
-
-                    m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
-
-                    if(NeedDespawn)
-                        SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
-
-                    if(IsBattlegroundTrap && trapTarget->GetTypeId() == TYPEID_PLAYER)
-                    {
-                        //Battleground gameobjects case
-                        if((trapTarget->ToPlayer())->InBattleground())
-                            if(Battleground *bg = (trapTarget->ToPlayer())->GetBattleground())
-                                bg->HandleTriggerBuff(GetGUID());
-                    }
-                }
+                if (target)
+                    SetLootState(GO_ACTIVATED, target);
             }
 
             if (m_charges && m_usetimes >= m_charges)
+            {
+                m_usetimes = 0;
                 SetLootState(GO_JUST_DEACTIVATED);          // can be despawned or destroyed
-
+            }
 
             break;
         }
@@ -680,6 +650,39 @@ void GameObject::Update(uint32 diff)
                         else m_groupLootTimer -= diff;
                     }
                     break;
+                case GAMEOBJECT_TYPE_TRAP:
+                {
+                    GameObjectTemplate const* goInfo = GetGOInfo();
+                    if (goInfo->trap.type == 2 && goInfo->trap.spellId)
+                    {
+                        /// @todo nullptr target won't work for target type 1
+                        CastSpell(nullptr, goInfo->trap.spellId);
+                        SetLootState(GO_JUST_DEACTIVATED);
+                    }
+                    else if (Unit* target = ObjectAccessor::GetUnit(*this, m_lootStateUnitGUID))
+                    {
+                        // Some traps do not have a spell but should be triggered
+                        CastSpellExtraArgs args;
+                        args.SetOriginalCaster(GetOwnerGUID());
+                        if (goInfo->trap.spellId)
+                            CastSpell(target, goInfo->trap.spellId, args);
+
+                        // Template value or 4 seconds
+                        m_cooldownTime = GameTime::GetGameTimeMS() + (goInfo->trap.cooldown ? goInfo->trap.cooldown : uint32(4)) * IN_MILLISECONDS;
+
+                        if (goInfo->trap.type == 1)
+                            SetLootState(GO_JUST_DEACTIVATED);
+                        else if (!goInfo->trap.type)
+                            SetLootState(GO_READY);
+
+                        // Battleground gameobjects have data2 == 0 && data5 == 3
+                        if (!goInfo->trap.diameter && goInfo->trap.cooldown == 3)
+                            if (Player* player = target->ToPlayer())
+                                if (Battleground* bg = player->GetBattleground())
+                                    bg->HandleTriggerBuff(GetGUID());
+                    }
+                    break;
+                }
                 default:
                     break;
             }// m_despawnTime ?
@@ -1028,6 +1031,10 @@ void GameObject::DeleteFromDB()
 void GameObject::SetLootState(LootState state, Unit* unit)
 {
     m_lootState = state;
+    if (unit)
+        m_lootStateUnitGUID = unit->GetGUID();
+    else
+        m_lootStateUnitGUID.Clear();
 
     if(AI())
         AI()->OnLootStateChanged(state, unit);
@@ -1452,6 +1459,18 @@ bool GameObject::IsInvisibleDueToDespawn() const
         return true;
 
     return false;
+}
+
+uint8 GameObject::GetLevelForTarget(WorldObject const* target) const
+{
+    if (Unit* owner = GetOwner())
+        return owner->GetLevelForTarget(target);
+
+    //sun: use target level for environmental traps
+    if(Unit const* unitTarget = target->ToUnit())
+        return unitTarget->GetLevel();
+
+    return 1;
 }
 
 void GameObject::SetGoArtKit(uint32 kit)

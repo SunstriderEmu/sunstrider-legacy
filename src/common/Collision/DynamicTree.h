@@ -43,9 +43,9 @@ public:
     */
     float getCeil(float x, float y, float z, float maxSearchDist, uint32 phasemask) const;
 
-    void insert(const GameObjectModel&);
-    void remove(const GameObjectModel&);
-    bool contains(const GameObjectModel&) const;
+    void insert(GameObjectModel const&);
+    void remove(GameObjectModel const&);
+    bool contains(GameObjectModel const&) const;
 
     void balance();
     void update(uint32 diff);
