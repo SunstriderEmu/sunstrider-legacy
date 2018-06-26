@@ -63,7 +63,9 @@ public:
     static Position GetDefaultPositionForMap(uint32 mapId);
 
     //Define a test section. A test section is executed immediately. Failures are logged but do not stop the test.
-    void SECTION(std::string title, std::function<void()> func, TestStatus status = STATUS_PASSING);
+    void SECTION(std::string title, TestStatus status, std::function<void()> func);
+    //same but with default STATUS_PASSING
+    void SECTION(std::string title, std::function<void()> func);
     //function to execute before each section
     void BEFORE_EACH(std::function<void()> func);
     //function to execute after each section
@@ -547,8 +549,9 @@ private:
     std::unordered_map<Unit*, SavedUnitState> _saveUnitStates;
     std::unordered_map<Unit*, SavedCriticalValues> _savedCriticalValues;
 
-    std::function<void()> _beforeEach;
-    std::function<void()> _afterEach;
+    inline static void EmptyCallback() {};
+    std::function<void()> _beforeEach = EmptyCallback;
+    std::function<void()> _afterEach = EmptyCallback;
 };
 
 // -- internal uses defines:
