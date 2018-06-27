@@ -329,48 +329,44 @@ void MotionTransport::UpdatePosition(float x, float y, float z, float o)
     // 4. is handed by grid unload
 }
 
-void MotionTransport::AddPassenger(WorldObject* passenger, bool withAll)
+void MotionTransport::AddPassenger(WorldObject* passenger, bool calcPassengerPosition /*= false*/)
 {
-    std::lock_guard<std::mutex> guard(Lock);
+    if (!IsInWorld())
+        return;
+
+    std::lock_guard<std::mutex> guard(Lock); //do we really need a lock?
     if (_passengers.insert(passenger).second)
     {
-        if (Player* plr = passenger->ToPlayer())
-            sScriptMgr->OnAddPassenger(ToTransport(), plr);
-
-        if (withAll)
+        passenger->SetTransport(this);
+        passenger->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
+        passenger->m_movementInfo.transport.guid = GetGUID();
+        if (calcPassengerPosition)
         {
-            if (Transport* t = passenger->GetTransport()) // SHOULD NEVER HAPPEN
-                t->RemovePassenger(passenger, false);
-
             float x, y, z, o;
             passenger->GetPosition(x, y, z, o);
             CalculatePassengerOffset(x, y, z, &o);
-
-            passenger->SetTransport(this);
-            passenger->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
-            passenger->m_movementInfo.transport.guid = GetGUID();
             passenger->m_movementInfo.transport.pos.Relocate(x, y, z, o);
         }
+
+        if (Player* plr = passenger->ToPlayer())
+            sScriptMgr->OnAddPassenger(ToTransport(), plr);
     }
 }
 
-void MotionTransport::RemovePassenger(WorldObject* passenger, bool withAll)
+void MotionTransport::RemovePassenger(WorldObject* passenger)
 {
-    std::lock_guard<std::mutex> guard(Lock);
+    std::lock_guard<std::mutex> guard(Lock); //do we really need a lock?
     if (_passengers.erase(passenger) || _staticPassengers.erase(passenger))
-    {
+{
+        passenger->SetTransport(nullptr);
+        passenger->m_movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
+        passenger->m_movementInfo.transport.Reset();
+        //TC_LOG_DEBUG("entities.transport", "Object %s removed from transport %s.", passenger->GetName().c_str(), GetName().c_str());
+
         if (Player* plr = passenger->ToPlayer())
         {
             sScriptMgr->OnRemovePassenger(ToTransport(), plr);
             plr->SetFallInformation(time(nullptr), plr->GetPositionZ());
-        }
-
-        if (withAll)
-        {
-            passenger->SetTransport(nullptr);
-            passenger->m_movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
-            passenger->m_movementInfo.transport.guid.Clear();
-            passenger->m_movementInfo.transport.pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         }
     }
 }
@@ -899,9 +895,6 @@ void StaticTransport::CleanupsBeforeDelete(bool finalCleanup /*= true*/)
     {
         WorldObject* obj = *_passengers.begin();
         RemovePassenger(obj);
-        obj->SetTransport(nullptr);
-        obj->m_movementInfo.transport.Reset();
-        obj->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
     }
 
     GameObject::CleanupsBeforeDelete(finalCleanup);
@@ -1078,46 +1071,41 @@ void StaticTransport::UpdatePassengerPositions()
     }
 }
 
-void StaticTransport::AddPassenger(WorldObject* passenger, bool withAll)
+void StaticTransport::AddPassenger(WorldObject* passenger, bool calcPassengerPosition /*= false*/)
 {
     if (_passengers.insert(passenger).second)
     {
-        if (Player* plr = passenger->ToPlayer())
-            sScriptMgr->OnAddPassenger(ToTransport(), plr);
+        if (Transport* t = passenger->GetTransport()) // SHOULD NEVER HAPPEN
+            t->RemovePassenger(passenger);
 
-        if (withAll)
+        passenger->SetTransport(this);
+        passenger->m_movementInfo.flags |= MOVEMENTFLAG_ONTRANSPORT;
+        passenger->m_movementInfo.transport.guid = GetGUID();
+        if (calcPassengerPosition)
         {
-            if (Transport* t = passenger->GetTransport()) // SHOULD NEVER HAPPEN
-                t->RemovePassenger(passenger, false);
-
             float x, y, z, o;
             passenger->GetPosition(x, y, z, o);
             CalculatePassengerOffset(x, y, z, &o);
-
-            passenger->SetTransport(this);
-            passenger->m_movementInfo.flags |= MOVEMENTFLAG_ONTRANSPORT;
-            passenger->m_movementInfo.transport.guid = GetGUID();
             passenger->m_movementInfo.transport.pos.Relocate(x, y, z, o);
         }
+
+        if (Player* plr = passenger->ToPlayer())
+            sScriptMgr->OnAddPassenger(ToTransport(), plr);
     }
 }
 
-void StaticTransport::RemovePassenger(WorldObject* passenger, bool withAll)
+void StaticTransport::RemovePassenger(WorldObject* passenger)
 {
     if (_passengers.erase(passenger))
     {
+        passenger->SetTransport(nullptr);
+        passenger->m_movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
+        passenger->m_movementInfo.transport.Reset();
+
         if (Player* plr = passenger->ToPlayer())
         {
             sScriptMgr->OnRemovePassenger(ToTransport(), plr);
             plr->SetFallInformation(time(nullptr), plr->GetPositionZ());
-        }
-
-        if (withAll)
-        {
-            passenger->SetTransport(nullptr);
-            passenger->m_movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
-            passenger->m_movementInfo.transport.guid.Clear();
-            passenger->m_movementInfo.transport.pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         }
     }
 }

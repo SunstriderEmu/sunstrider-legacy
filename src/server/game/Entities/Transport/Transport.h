@@ -15,8 +15,8 @@ public:
     void CalculatePassengerOffset(float& x, float& y, float& z, float* o = nullptr) const override { TransportBase::CalculatePassengerOffset(x, y, z, o, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation()); }
 
     typedef std::set<WorldObject*> PassengerSet;
-    virtual void AddPassenger(WorldObject* passenger, bool withAll = false) = 0;
-    virtual void RemovePassenger(WorldObject* passenger, bool withAll = false) = 0;
+    virtual void AddPassenger(WorldObject* passenger, bool calcPassengerPosition = false) = 0;
+    virtual void RemovePassenger(WorldObject* passenger) = 0;
     PassengerSet const& GetPassengers() const { return _passengers; }
 
     uint32 GetPathProgress() const;
@@ -41,8 +41,8 @@ public:
     void DelayedUpdate(uint32 diff);
     void UpdatePosition(float x, float y, float z, float o);
 
-    void AddPassenger(WorldObject* passenger, bool withAll = false) override;
-    void RemovePassenger(WorldObject* passenger, bool withAll = false) override;
+    void AddPassenger(WorldObject* passenger, bool calcPassengerPosition = false) override;
+    void RemovePassenger(WorldObject* passenger) override;
     Creature* CreateNPCPassenger(ObjectGuid::LowType guid, CreatureData const* data);
     GameObject* CreateGOPassenger(ObjectGuid::LowType guid, GameObjectData const* data);
 
@@ -111,8 +111,8 @@ public:
     void UpdatePosition(float x, float y, float z, float o);
     void UpdatePassengerPositions();
 
-    void AddPassenger(WorldObject* passenger, bool withAll = false) override;
-    void RemovePassenger(WorldObject* passenger, bool withAll = false) override;
+    void AddPassenger(WorldObject* passenger, bool calcPassengerPosition = false) override;
+    void RemovePassenger(WorldObject* passenger) override;
 
     uint32 GetPauseTime() const { return GetUInt32Value(GAMEOBJECT_LEVEL); }
     void SetPauseTime(uint32 val) { SetUInt32Value(GAMEOBJECT_LEVEL, val); }

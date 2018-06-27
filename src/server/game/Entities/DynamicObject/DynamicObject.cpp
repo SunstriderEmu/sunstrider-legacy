@@ -39,9 +39,9 @@ DynamicObject::~DynamicObject()
     ASSERT(!_aura);
     ASSERT(!_caster);
     ASSERT(!_isViewpoint);
-    ASSERT(!_isViewpoint);
+    ASSERT(!_isViewpoint);  
+    ASSERT(!GetTransport()); //sun: extra check 
 }
-
 
 void DynamicObject::AddToWorld()
 {
@@ -121,23 +121,24 @@ bool DynamicObject::CreateDynamicObject(ObjectGuid::LowType guidlow, Unit *caste
     if (IsWorldObject())
         SetKeepActive(true);    //must before add to map to be put in world container
 
+#ifdef LICH_KING
     Transport* transport = caster->GetTransport();
     if (transport)
     {
-        float x, y, z, o;
-        pos.GetPosition(x, y, z, o);
-        transport->CalculatePassengerOffset(x, y, z, &o);
-        m_movementInfo.transport.pos.Relocate(x, y, z, o);
-
         // This object must be added to transport before adding to map for the client to properly display it
-        transport->AddPassenger(this);
+        transport->AddPassenger(this, true);
     }
+#else
+    //It seems BC do not handled neither gobject or dynamic object on transport... Object::BuildMovementUpdate does not include the info at least.
+    //No use handling it here if this is true.
+#endif
 
     if (!GetMap()->AddToMap(this))
     {
-        // Returning false will cause the object to be deleted - remove from transport
-        if (transport)
+#ifdef LICH_KING
+        if (transport) 
             transport->RemovePassenger(this);
+#endif
 
         return false;
     }

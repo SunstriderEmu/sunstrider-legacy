@@ -260,9 +260,6 @@ void GameObject::RemoveFromWorld()
             if (GetMap()->ContainsGameObjectModel(*m_model))
                 GetMap()->RemoveGameObjectModel(*m_model);
 
-        if (Transport* transport = GetTransport())
-            transport->RemovePassenger(this, true);
-
         GetMap()->GetObjectsStore().Remove<GameObject>(GetGUID());
 
         if (m_spawnId)

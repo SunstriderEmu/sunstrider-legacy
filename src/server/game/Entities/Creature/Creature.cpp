@@ -300,9 +300,6 @@ void Creature::RemoveFromWorld()
         if(m_formation)
             sCreatureGroupMgr->RemoveCreatureFromGroup(m_formation, this);
 
-        if (Transport* transport = GetTransport())
-            transport->RemovePassenger(this, true);
-
         if (m_creaturePoolId)
             FindMap()->RemoveCreatureFromPool(this, m_creaturePoolId);
 
@@ -905,9 +902,9 @@ void Creature::Update(uint32 diff)
                 if (newTransport != GetTransport())
                 {
                     if (GetTransport())
-                        GetTransport()->RemovePassenger(this, true);
+                        GetTransport()->RemovePassenger(this);
                     if (newTransport)
-                        newTransport->AddPassenger(this, true);
+                        newTransport->AddPassenger(this);
                     this->StopMovingOnCurrentPos();
                     //SendMovementFlagUpdate();
                 }
