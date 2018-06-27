@@ -2464,7 +2464,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 #ifdef LICH_KING
     *data << uint16(flags);                                  // update flags
 #else
-    *data << uint8(flags);                                  // update flags
+    *data << uint8(flags);                                   // update flags
 #endif
 
     // 0x20
@@ -2541,10 +2541,10 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         {
             ASSERT(object);
             // 0x02
-            //X Y Z are at 0 for transports on bc for transports but whatever
+            //X Y Z are at 0 for transports on bc for transports but whatever, it does not seem used at all by client for them
             *data << object->GetStationaryX();
             *data << object->GetStationaryY();
-            *data << object->GetStationaryZ() + (unit ? unit->GetHoverOffset() : 0.0f);
+            *data << object->GetStationaryZ();
             *data << object->GetStationaryO();
         }
     }
