@@ -883,12 +883,13 @@ void Map::Update(const uint32 &t_diff)
     //update our transports
     for (_transportsUpdateIter = _transports.begin(); _transportsUpdateIter != _transports.end();)
     {
-        MotionTransport* obj = *_transportsUpdateIter;
+        MotionTransport* obj = *_transportsUpdateIter; 
         ++_transportsUpdateIter;
 
         if (!obj->IsInWorld())
             continue;
 
+        DEBUG_ASSERT(obj->GetMap() == this);
         obj->Update(t_diff);
     }
 

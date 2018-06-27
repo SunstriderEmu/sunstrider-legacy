@@ -35,7 +35,8 @@
 
 // Uncomment the following line to turn off G3D::System memory
 // allocation and use the operating system's malloc.
-//#define NO_BUFFERPOOL
+#define NO_BUFFERPOOL
+//sun: uncommented NO_BUFFERPOOL, else we got a crash in BufferPool::free when removing a transport model... not sure why
 
 #include <cstdlib>
 
