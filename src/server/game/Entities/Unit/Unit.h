@@ -521,7 +521,7 @@ enum UnitFlags : unsigned int
     UNIT_FLAG_SILENCED              = 0x00002000,                // silenced, 2.1.1
     UNIT_FLAG_CANNOT_SWIM           = 0x00004000,                // 2.0.8
     UNIT_FLAG_UNK_15                = 0x00008000,
-    UNIT_FLAG_UNK_16                = 0x00010000,
+    UNIT_FLAG_NON_ATTACKABLE_2      = 0x00010000,
     UNIT_FLAG_PACIFIED              = 0x00020000,
     UNIT_FLAG_STUNNED               = 0x00040000,                // stunned, 2.1.1 old DISABLE_ROTATE
     UNIT_FLAG_IN_COMBAT             = 0x00080000,
