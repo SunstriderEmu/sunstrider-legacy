@@ -1521,8 +1521,8 @@ CharDelete.KeepDays = 30
 #        List of forbidden maps, delimited with a comma
 #        Default: (none)
 #
-#   Transports.DockingSounds
-#       Enable some sounds when boats and zeppelins dock
+#   Transports.DockingSounds (currently not working)
+#       Enable some sounds when boats and zeppelins dock 
 #       Default: 0 (Disabled)
 #                1 (Enabled)
 #
@@ -1830,7 +1830,7 @@ PacketLogFile = ""
 #        Default: 0
 #
 #    Debug.LogLastPackets
-#		  When activated, server will log last packets sent to client after its last response, then print those as errors if a client time out. Use this to debug client crashes. /!\ This dump packets as log entries with error level with filter "network.opcode", make sur this is logged somewhere.
+#		  When activated, server will log last packets sent to client after its last response, then print those as errors if a client time out. Use this to debug client crashes. /!\ This dump packets as log entries with error level with filter "network.opcode", make sure this is logged somewhere.
 #        Default: 0
 #
 #    Debug.LogAllPackets

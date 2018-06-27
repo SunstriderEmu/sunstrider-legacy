@@ -215,6 +215,8 @@ enum SpellCastResult : int
 #else
     SPELL_FAILED_UNKNOWN                        = 0xA8,
 #endif
+
+    MAX_SPELL_FAILED_RESULT,
 };
 
 enum SpellDisableTypes
