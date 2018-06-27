@@ -3756,10 +3756,12 @@ bool WorldObject::IsValidAttackTarget(WorldObject const* target, SpellInfo const
         if (unit->IsFFAPvP() && unitTarget->IsFFAPvP())
             return true;
 
-        /* LK only check ?
+#ifdef LICH_KING
         return unit->HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_UNK1) ||
         unitTarget->HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_UNK1);
-        */
+#else
+        return false; //not 100% sure about this, is there any condition where IsPvP should be bypassed?
+#endif
     }
 
     return true;

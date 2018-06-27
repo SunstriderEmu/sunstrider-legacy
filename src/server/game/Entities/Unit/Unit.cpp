@@ -8179,11 +8179,15 @@ uint32 Unit::GetCreatureType() const
 
 bool Unit::IsInSanctuary() const
 {
+#ifdef LICH_KING
+    return HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK3);
+#else
     const AreaTableEntry *area = sAreaTableStore.LookupEntry(GetAreaId());
     if (area && (area->flags & AREA_FLAG_SANCTUARY || (sWorld->IsZoneSanctuary(area->ID)))) 
         return true;
 
     return false;
+#endif
 }
 
 bool Unit::IsFFAPvP() const 

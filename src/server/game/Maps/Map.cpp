@@ -2787,7 +2787,7 @@ void Map::AllTransportsRemovePassengers()
 {
     for (auto _transport : _transports)
         while (!_transport->GetPassengers().empty())
-            _transport->RemovePassenger(*(_transport->GetPassengers().begin()), true);
+            _transport->RemovePassenger(*(_transport->GetPassengers().begin()));
 }
 
 template TC_GAME_API bool Map::AddToMap(Corpse *, bool);

@@ -1378,11 +1378,7 @@ class TC_GAME_API Unit : public WorldObject
 
             return false;
         }
-#ifdef LICH_KING
-        virtual bool IsInSanctuary() const { return HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK3); }
-#else
         virtual bool IsInSanctuary() const;
-#endif
         bool IsPvP() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
         bool IsFFAPvP() const;
         void SetPvP(bool state) { if(state) SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); else RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
