@@ -444,9 +444,10 @@ void Player::SetMapAtCreation(PlayerInfo const* info)
     if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
         RelocateToBetaZone();
     else
+    {
         Relocate(info->positionX, info->positionY, info->positionZ);
-
-    SetMap(sMapMgr->CreateMap(info->mapId, this));
+        SetMap(sMapMgr->CreateMap(info->mapId, this));
+    }
     UpdatePositionData();
 }
 
