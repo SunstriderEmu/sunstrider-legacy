@@ -165,26 +165,34 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
         }
     }
 
-    auto pCreature = new Creature;
-    if (!pCreature->Create(sObjectMgr->GenerateCreatureSpawnId(), map, chr->GetPhaseMask(), id, { x, y, z, o }))
+    auto creature = new Creature;
+    if (!creature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, chr->GetPhaseMask(), id, { x, y, z, o }))
     {
-        delete pCreature;
+        delete creature;
         return false;
     }
 
-    if(!pCreature->IsPositionValid())
+    if(!creature->IsPositionValid())
     {
-        TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUID().GetCounter(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
-        delete pCreature;
+        TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)", creature->GetGUID().GetCounter(), creature->GetEntry(), creature->GetPositionX(), creature->GetPositionY());
+        delete creature;
         return false;
     }
 
-    pCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
+    creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
 
-    ObjectGuid::LowType db_guid = pCreature->GetSpawnId();
+    ObjectGuid::LowType db_guid = creature->GetSpawnId(); //spawn id gets generated in SaveToDB
 
     // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
-    pCreature->LoadFromDB(db_guid, map, true, false);
+    // current "creature" variable is deleted and created fresh new, otherwise old values might trigger asserts or cause undefined behavior
+    creature->CleanupsBeforeDelete();
+    delete creature;
+    creature = new Creature();
+    if (!creature->LoadFromDB(db_guid, map, true, true))
+    {
+        delete creature;
+        return false;
+    }
 
     sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
     return true;

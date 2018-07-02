@@ -2429,6 +2429,7 @@ void Aura::_ApplyForTarget(Unit* target, Unit* caster, AuraApplication* auraApp)
     // aura mustn't be already applied on target
     ASSERT(!IsAppliedOnTarget(target->GetGUID()) && "Aura::_ApplyForTarget: aura musn't be already applied on target");
 
+    TC_LOG_TRACE("spells", "Adding application for target %u", target->GetGUID().GetCounter());
     m_applications[target->GetGUID()] = auraApp;
 
     // set infinity cooldown state for spells
@@ -2449,6 +2450,7 @@ void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication* auraAp
     ASSERT(auraApp);
 
     ApplicationMap::iterator itr = m_applications.find(target->GetGUID());
+    TC_LOG_TRACE("spells", "Erasing application for target %u", target->GetGUID().GetCounter());
 
     /// @todo Figure out why this happens
     if (itr == m_applications.end())

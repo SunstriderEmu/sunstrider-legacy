@@ -189,7 +189,7 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
         return false;
     }
 
-    if( spawntimeSecs )
+    if (spawntimeSecs)
     {
         uint32 value = atoi((char*)spawntimeSecs);
         pGameObj->SetRespawnTime(value);
@@ -200,9 +200,11 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
     guidLow = pGameObj->GetSpawnId();
 
+    // delete the old object and do a clean load from DB with a fresh new GameObject instance.
+    // this is required to avoid weird behavior and memory leaks
     delete pGameObj;
-    pGameObj = sObjectMgr->IsGameObjectStaticTransport(goI->entry) ? new StaticTransport() : new GameObject();
 
+    pGameObj = sObjectMgr->IsGameObjectStaticTransport(goI->entry) ? new StaticTransport() : new GameObject();
     // this will generate a new guid if the object is in an instance
     if(!pGameObj->LoadFromDB(guidLow, map, true))
     {
@@ -216,7 +218,6 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     PSendSysMessage(LANG_GAMEOBJECT_ADD, id, goI->name.c_str(), guidLow, x, y, z);
     return true;
 }
-
 
 //delete object by selection or guid
 bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
