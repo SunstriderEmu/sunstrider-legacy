@@ -109,8 +109,9 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<Cre
     for(auto guid : guid_set)
     {
         // Don't spawn at all if there's a respawn time
-        if (map->GetCreatureRespawnTime(guid))
-            continue;
+        //sun: Commented out, some systems such as creature formations need creature to be spawned in order to check for respawn conditions (maybe PoolMgr also)
+        /* if (map->GetCreatureRespawnTime(guid)) 
+            continue;*/
 
         CreatureData const* cdata = sObjectMgr->GetCreatureData(guid);
         ASSERT(cdata, "Tried to load creature with spawnId %u, but no such creature exists.", guid);
