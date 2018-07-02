@@ -9,6 +9,7 @@
 #include "AccountMgr.h"
 #include "CellImpl.h"
 #include "MovementDefines.h"
+#include "MMapFactory.h"
 
 bool ChatHandler::HandleHelpCommand(const char* args)
 {
@@ -677,15 +678,16 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     float ground_z = map->GetHeight(obj->GetPositionX(), obj->GetPositionY(), MAX_HEIGHT);
     float floor_z = map->GetHeight(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ());
 
-    GridCoord p = Trinity::ComputeGridCoord(obj->GetPositionX(), obj->GetPositionY());
+    GridCoord gridCoord = Trinity::ComputeGridCoord(obj->GetPositionX(), obj->GetPositionY());
 
-    int gx = 63 - p.x_coord;
-    int gy = 63 - p.y_coord;
+    int gridX = (MAX_NUMBER_OF_GRIDS - 1) - gridCoord.x_coord;
+    int gridY = (MAX_NUMBER_OF_GRIDS - 1) - gridCoord.y_coord;
 
-    uint32 have_map = GridMap::ExistMap(obj->GetMapId(), gx, gy) ? 1 : 0;
-    uint32 have_vmap = GridMap::ExistVMap(obj->GetMapId(), gx, gy) ? 1 : 0;
+    uint32 haveMap = GridMap::ExistMap(obj->GetMapId(), gridX, gridY) ? 1 : 0;
+    uint32 haveVMap = GridMap::ExistVMap(obj->GetMapId(), gridX, gridY) ? 1 : 0;
+    uint32 haveMMap = (/*DisableMgr::IsPathfindingEnabled(mapId) &&*/ MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(GetSession()->GetPlayer()->GetMapId())) ? 1 : 0;
 
-    if (have_vmap)
+    if (haveVMap)
     {
         if (obj->IsOutdoors())
             PSendSysMessage("You are outdoors");
@@ -703,7 +705,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
                 PSendSysMessage(LANG_GPS_WMO_DATA, wmoEntry->Id, wmoEntry->Flags, mogpFlags);
         }*/
     }
-    else PSendSysMessage("no VMAP available for area info");
+        else PSendSysMessage("no VMAP available for area info");
 
     PSendSysMessage(LANG_MAP_POSITION,
         obj->GetMapId(), (mapEntry ? mapEntry->name[GetSessionDbcLocale()] : "<unknown>"),
@@ -711,7 +713,12 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         area_id, (areaEntry ? areaEntry->area_name[GetSessionDbcLocale()] : "<unknown>"),
         obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation(),
         cell.GridX(), cell.GridY(), cell.CellX(), cell.CellY(), obj->GetInstanceId(),
-        zone_x, zone_y, ground_z, floor_z, have_map, have_vmap);
+        zone_x, zone_y, ground_z, floor_z, haveMap, haveVMap, haveMMap);
+
+    LiquidData liquidStatus;
+    ZLiquidStatus status = map->GetLiquidStatus(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus, obj->GetCollisionHeight());
+    if (status)
+        PSendSysMessage(LANG_LIQUID_STATUS, liquidStatus.level, liquidStatus.depth_level, liquidStatus.entry, liquidStatus.type_flags, status);
 
     //more correct format for script, you just have to copy/paste !
     PSendSysMessage(LANG_GPS_FOR_SCRIPT, obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());

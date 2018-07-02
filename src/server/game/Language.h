@@ -158,6 +158,8 @@ enum TrinityStrings
     LANG_SOUND_NOT_EXIST                = 170,
     LANG_TELEPORTED_TO_BY_CONSOLE       = 171,
     LANG_CONSOLE_COMMAND                = 172,
+
+    LANG_LIQUID_STATUS                  = 175,
     // Room for more level 1              173-199 not used
 
     // level 2 chat
