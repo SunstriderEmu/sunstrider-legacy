@@ -1859,8 +1859,7 @@ class TC_GAME_API Unit : public WorldObject
 
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
         
-        bool IsCombatStationary();
-        bool CanReachWithMeleeAttack(Unit* pVictim, float flat_mod = 0.0f) const;
+        bool CanReachWithMeleeAttack(Unit const* pVictim, float flat_mod = 0.0f) const;
 
         float GetCombatDistance() const { return m_CombatDistance; };
         void SetCombatDistance(float dist);

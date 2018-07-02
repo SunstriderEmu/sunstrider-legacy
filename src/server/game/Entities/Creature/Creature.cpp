@@ -1989,9 +1989,6 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool force /* = false */) co
     if(IsCivilian())
         return CAN_ATTACK_RESULT_CIVILIAN;
 
-    if (IsAIEnabled && !AI()->CanAIAttack(who))
-        return CAN_ATTACK_RESULT_OTHERS;
-
     // Do not attack non-combat pets
     if (who->GetTypeId() == TYPEID_UNIT && who->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET)
         return CAN_ATTACK_RESULT_OTHERS;
@@ -2037,16 +2034,13 @@ CanAttackResult Creature::CanCreatureAttack(Unit const* target, bool force /*= t
     if (!IsValidAttackTarget(target))
         return CAN_ATTACK_RESULT_OTHERS;
 
-    if (force) {
-        if (IsFriendlyTo(target))
-            return CAN_ATTACK_RESULT_FRIENDLY;
-    }
-    else if (!IsHostileTo(target))
-        return CAN_ATTACK_RESULT_FRIENDLY;
+    if (IsAIEnabled && !AI()->CanAIAttack(target))
+        return CAN_ATTACK_RESULT_OTHERS;
 
-    if ((target->GetTypeId() == TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator()))
-        || (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !IsPet()) //training dummies
-        )
+    if (target->GetTypeId() == TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator()))
+        return CAN_ATTACK_RESULT_OTHERS;
+
+    if(target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !GetCharmerOrOwnerGUID().IsPlayer()) //training dummies
         return CAN_ATTACK_RESULT_OTHERS;
 
     // we cannot attack in evade mode
@@ -2071,43 +2065,50 @@ CanAttackResult Creature::CanCreatureAttack(Unit const* target, bool force /*= t
     if (target->GetEntry() == 24892 && IsPet())
         return CAN_ATTACK_RESULT_OTHERS;
 
-    if (!CanSeeOrDetect(target, true))
-        return CAN_ATTACK_RESULT_CANNOT_DETECT;
+    //changed logic from TC... it does not handle a handful of case
+    bool outOfRange = IsOutOfThreatArea(target);
+    if (outOfRange)
+        return CAN_ATTACK_RESULT_TOO_FAR;
 
     return CAN_ATTACK_RESULT_OK;
 }
 
 // Used to determined if a creature already in combat is still a valid victim
-bool Creature::IsOutOfThreatArea(Unit* pVictim) const
+bool Creature::IsOutOfThreatArea(Unit const* target) const
 {
-    if (!pVictim)
-        return true;
-
-    if (CanCreatureAttack(pVictim) != CAN_ATTACK_RESULT_OK)
-        return true;
-
-    if (!pVictim->isInAccessiblePlaceFor(this))
-        return true;
-
-    if (((Creature*)this)->IsCombatStationary() && !CanReachWithMeleeAttack(pVictim))
-        return true;
-
-    if (sMapStore.LookupEntry(GetMapId())->IsDungeon())
+    if (GetCharmerOrOwnerGUID().IsPlayer())
         return false;
 
-    float length;
-    if (IsHomeless() || ((Creature*)this)->IsBeingEscorted())
-        length = pVictim->GetDistance(GetPositionX(), GetPositionY(), GetPositionZ());
+    if (!target->isInAccessiblePlaceFor(this))
+        return true;
+
+    if (GetMap()->IsDungeon())
+        return false;
+
+    // don't check distance to home position if recently damaged, this should include taunt auras
+    if (!IsWorldBoss() && (GetLastDamagedTime() > GameTime::GetGameTime() || HasAuraType(SPELL_AURA_MOD_TAUNT)))
+        return false;
+
+    float dist;
+    if (IsHomeless() || IsBeingEscorted())
+        dist = target->GetDistance(GetPositionX(), GetPositionY(), GetPositionZ());
     else {
         float x, y, z, o;
         GetHomePosition(x, y, z, o);
-        length = pVictim->GetDistance(x, y, z);
+        dist = target->GetDistance(x, y, z);
     }
-    float AttackDist = GetAggroRange(pVictim);
-    uint32 ThreatRadius = sWorld->getConfig(CONFIG_THREAT_RADIUS);
+    // include sizes for huge npcs
+    dist += GetCombatReach() + target->GetCombatReach();
 
-    //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
-    return (length > ((ThreatRadius > AttackDist) ? ThreatRadius : AttackDist));
+    // Cap at map visibility range
+    dist = std::min<float>(dist, GetMap()->GetVisibilityRange());
+    // and no more than 2 * cell size
+    dist = std::min<float>(dist, SIZE_OF_GRID_CELL * 2);
+
+    float threatRadius = sWorld->getConfig(CONFIG_THREAT_RADIUS);
+    threatRadius = std::max(threatRadius, GetAggroRange(target)); //Use aggro range in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
+
+    return dist > threatRadius;
 }
 
 float Creature::GetAggroRange(Unit const* pl) const

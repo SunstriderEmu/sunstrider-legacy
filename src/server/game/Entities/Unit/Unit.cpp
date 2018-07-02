@@ -4408,11 +4408,6 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     return true;
 }
 
-bool Unit::IsCombatStationary()
-{
-    return IsInRoots();
-}
-
 bool Unit::AttackStop()
 {
     if (!m_attacking)
@@ -10851,7 +10846,7 @@ void Unit::SetFullTauntImmunity(bool apply)
 }
 
 // From MaNGOS
-bool Unit::CanReachWithMeleeAttack(Unit* pVictim, float flat_mod /*= 0.0f*/) const
+bool Unit::CanReachWithMeleeAttack(Unit const* pVictim, float flat_mod /*= 0.0f*/) const
 {
     if (!pVictim)
         return false;
