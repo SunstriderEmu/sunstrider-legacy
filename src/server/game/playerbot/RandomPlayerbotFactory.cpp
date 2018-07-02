@@ -124,8 +124,8 @@ uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls, uint8 race, bool testB
     if (!player->Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), &cci))
     {
         player->DeleteFromDB(player->GetGUID(), accountId, true/*, true */);
-        delete session;
         delete player;
+        delete session; //delete player before session! Player destructor does reference session
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Unable to create random bot for account %d - name: \"%s\"; race: %u; class: %u; gender: %u; skin: %u; face: %u; hairStyle: %u; hairColor: %u; facialHair: %u; outfitId: %u",
                 accountId, name.c_str(), race, cls, cci.Gender, cci.Skin, cci.Face, cci.HairStyle, cci.HairColor, cci.FacialHair, cci.OutfitId);
         return 0;

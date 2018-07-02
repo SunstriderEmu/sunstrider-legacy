@@ -346,8 +346,8 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
 
     if (!player->Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), &cci))
     {
+        delete player; //delete player before session! Player destructor does reference session
         delete session;
-        delete player;
         TC_LOG_ERROR("test.unit_test", "Unable to create test bot for account %d - name: \"%s\"; race: %u; class: %u; gender: %u; skin: %u; face: %u; hairStyle: %u; hairColor: %u; facialHair: %u; outfitId: %u",
             testAccountId, name.c_str(), race, cls, cci.Gender, cci.Skin, cci.Face, cci.HairStyle, cci.HairColor, cci.FacialHair, cci.OutfitId);
         return nullptr;
