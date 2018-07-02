@@ -676,7 +676,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
 
     Map const *map = obj->GetMap();
     float ground_z = map->GetHeight(obj->GetPositionX(), obj->GetPositionY(), MAX_HEIGHT);
-    float floor_z = map->GetHeight(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ());
+    float floor_z = map->GetHeight(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ() + obj->GetCollisionHeight());
 
     GridCoord gridCoord = Trinity::ComputeGridCoord(obj->GetPositionX(), obj->GetPositionY());
 

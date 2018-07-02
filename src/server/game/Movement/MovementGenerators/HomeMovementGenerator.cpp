@@ -48,7 +48,11 @@ void HomeMovementGenerator<Creature>::SetTargetLocation(Creature* owner)
     //    init.SetFacing(o);
     //}
 
+    //sun: keep z if its really close... that way we can keep creatures at their exact DB position if it didn't changed. Else there are some imprecisions that could lead to feets in the ground, etc.
+    float oldZ = destination.m_positionZ;
     owner->UpdateAllowedPositionZ(destination.m_positionX, destination.m_positionY, destination.m_positionZ);
+    if (oldZ - destination.m_positionZ < 2.0f)
+        destination.m_positionZ = oldZ;
     init.MoveTo(PositionToVector3(destination));
     init.SetFacing(destination.GetOrientation());
     init.SetWalk(false);
