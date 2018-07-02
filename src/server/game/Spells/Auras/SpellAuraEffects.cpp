@@ -1526,8 +1526,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 {
     uint32 triggerSpellId = GetSpellInfo()->Effects[GetEffIndex()].TriggerSpell;
     SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId);
-    //Unit* triggerCaster = triggeredSpellInfo ? (triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? caster : target) : caster;
-    Unit* triggerCaster = caster; //sun: why should be use target as caster? this breaks spell such as Spore Cloud (34168). Experimently disabled previous line
+    Unit* triggerCaster = triggeredSpellInfo ? (triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? caster : target) : caster;
     ObjectGuid originalCasterGUID = GetCasterGUID();
     //old hacks time
     {
@@ -1748,24 +1747,6 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                         return;
                     }
                 } break;
-                // Restoration
-                case 23493:
-                {
-                    if (!caster)
-                        return;
-                    int32 heal = target->GetMaxHealth() / 10;
-                    HealInfo healInfo(target, target, heal, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
-                    caster->HealBySpell(healInfo);
-
-                    int32 mana = target->GetMaxPower(POWER_MANA);
-                    if (mana)
-                    {
-                        mana /= 10;
-                        target->ModifyPower(POWER_MANA, mana);
-                        target->SendEnergizeSpellLog(target, 23493, mana, POWER_MANA);
-                    }
-                    break;
-                }
                 // Brood Affliction: Bronze
                 case 23170:
                 {
@@ -1912,6 +1893,22 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         {
             switch (GetSpellInfo()->Id)
             {
+                // Restoration (bg buff)
+                case 23493:
+                {
+                    int32 heal = target->GetMaxHealth() / 10;
+                    HealInfo healInfo(target, target, heal, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
+                    target->HealBySpell(healInfo);
+
+                    int32 mana = target->GetMaxPower(POWER_MANA);
+                    if (mana)
+                    {
+                        mana /= 10;
+                        target->ModifyPower(POWER_MANA, mana);
+                        target->SendEnergizeSpellLog(target, 23493, mana, POWER_MANA);
+                    }
+                    break;
+                }
                 // Frenzied Regeneration
                 case 22842:
                 case 22895:
@@ -1968,6 +1965,9 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                 return;
             }
         }
+
+        if (!triggerSpellId || !triggerCaster) //May happen if caster disconnects, or if caster is a gobject (they can't own auras, according to TC))
+            return;
     }
 
     SpellCastTargets targets;
@@ -1987,7 +1987,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     args.ForceHitResult = GetBase()->GetForceHitResult();
 
 #ifdef LICH_KING
-    //don't know what to do with this on BC but this attribute was already existing. Auras can't crit so this attributes is probably not exact at TC.
+    //don't know what to do with this on BC but this attribute was already existing. Auras can't crit on BC, so this attributes is probably not exact at TC.
     if (GetSpellInfo()->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
         args.AddSpellMod(SPELLVALUE_CRIT_CHANCE, int32(GetBase()->GetCritChance() * 100.0f)); // @todo: ugly x100 remove when basepoints are double
 #endif

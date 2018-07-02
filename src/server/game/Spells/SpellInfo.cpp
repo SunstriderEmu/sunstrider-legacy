@@ -1482,6 +1482,10 @@ bool SpellInfo::NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uin
             return true;
     }
 
+    //sun: Spells such as Spore Cloud (34168) are broken if cast by target. Tentative generic fix:
+    if (IsTargetingArea())
+        return true;
+
     return false;
 }
 
