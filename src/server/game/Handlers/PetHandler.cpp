@@ -418,15 +418,12 @@ void WorldSession::SendPetNameQuery(ObjectGuid petguid, uint32 petnumber)
     Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, petguid);
     if (!pet || !pet->GetCharmInfo() || pet->GetCharmInfo()->GetPetNumber() != petnumber)
     {
-        // Our (BC) core didn't respond anything in this case before, not sure this is normal. Anyway, LK expects this:
-#ifdef LICH_KING
         WorldPacket data(SMSG_PET_NAME_QUERY_RESPONSE, (4 + 1 + 4 + 1));
         data << uint32(petnumber);
         data << uint8(0);
         data << uint32(0);
         data << uint8(0);
         _player->GetSession()->SendPacket(&data);
-#endif
         return;
     }
 

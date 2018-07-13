@@ -1763,22 +1763,37 @@ void Guild::AppendDisplayGuildBankSlot( WorldPacket& data, GuildBankTab const *t
     if (entry)
     {
         // random item property id +8
-        data << (uint32) pItem->GetItemRandomPropertyId();
+        data << (uint32)pItem->GetItemRandomPropertyId();
         if (pItem->GetItemRandomPropertyId())
             // SuffixFactor +4
-            data << (uint32) pItem->GetItemSuffixFactor();
+            data << (uint32)pItem->GetItemSuffixFactor();
         // +12 // ITEM_FIELD_STACK_COUNT
         data << uint8(pItem->GetCount());
-        data << uint32(0);                                  // +16 // Unknown value
-        data << uint8(0);                                   // unknown 2.4.2
-        if (uint32 Enchant0 = pItem->GetEnchantmentId(PERM_ENCHANTMENT_SLOT))
+        data << uint32(pItem->GetEnchantmentId(PERM_ENCHANTMENT_SLOT));   // +16 Permanent enchantment
+        data << uint8(abs(pItem->GetSpellCharges()));       // Spell charges
+
+        uint8 enchCount = 0;
+        size_t enchCountPos = data.wpos();
+
+        data << uint8(enchCount);                           // Number of enchantments
+#ifdef LICH_KING
+        for (uint32 i = PERM_ENCHANTMENT_SLOT; i < MAX_ENCHANTMENT_SLOT;                    ++i)
+#else
+        for (uint32 i = SOCK_ENCHANTMENT_SLOT; i < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS; ++i)
+#endif
         {
-            data << uint8(1);                               // number of enchantments (max 3) why max 3?
-            data << uint8(PERM_ENCHANTMENT_SLOT);           // enchantment slot (range: 0:2)
-            data << uint32(Enchant0);                       // enchantment id
+            if (uint32 enchId = pItem->GetEnchantmentId(EnchantmentSlot(i)))
+            {
+#ifdef LICH_KING
+                data << uint8(i);
+#else
+                data << uint8(i - SOCK_ENCHANTMENT_SLOT);
+#endif
+                data << uint32(enchId);
+                ++enchCount;
+            }
         }
-        else
-            data << uint8(0);                               // no enchantments (0)
+        data.put<uint8>(enchCountPos, enchCount);
     }
 }
 

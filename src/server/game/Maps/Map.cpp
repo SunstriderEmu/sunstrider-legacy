@@ -3563,28 +3563,25 @@ void Map::SetZoneOverrideLight(uint32 zoneId, uint32 lightId, uint32 fadeInTime)
     }
 }
 
-//LK OK
 void WorldSession::SendPlayMusic(uint32 musicId)
 {
-    WorldPacket data(SMSG_PLAY_MUSIC, 4);
+    WorldPacket data(SMSG_PLAY_MUSIC, 4); // LK OK
     data << uint32(musicId);
     SendPacket(&data);
 }
 
-//LK OK
 void WorldSession::SendWeather(WeatherState weatherId, float weatherGrade, uint8 unk)
 {
-    WorldPacket data(SMSG_WEATHER, 4 + 4 + 4);
+    WorldPacket data(SMSG_WEATHER, 4 + 4 + 4); // LK OK
     data << uint32(weatherId);
     data << float(weatherGrade);
     data << uint8(unk);
     SendPacket(&data);
 }
 
-//LK OK
 void WorldSession::SendOverrideLight(uint32 defaultLightId, uint32 overrideLightId, uint32 fadeTime)
 {
-    WorldPacket data(SMSG_OVERRIDE_LIGHT, 4 + 4 + 4);
+    WorldPacket data(SMSG_OVERRIDE_LIGHT, 4 + 4 + 4); // LK OK
     data << uint32(defaultLightId);
     data << uint32(overrideLightId);
     data << uint32(fadeTime);
@@ -3600,11 +3597,9 @@ bool Map::IsRaidOrHeroicDungeon() const
     return IsRaid() || i_spawnMode > DUNGEON_DIFFICULTY_NORMAL;
 }
 bool Map::IsWorldMap() const { return i_mapEntry && i_mapEntry->IsWorldMap(); }
-
 bool Map::IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
 bool Map::IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
 bool Map::IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }
-
 
 void Map::SaveRespawnTime(SpawnObjectType type, ObjectGuid::LowType spawnId, uint32 entry, time_t respawnTime, uint32 zoneId, uint32 gridId, bool writeDB, bool replace, SQLTransaction dbTrans)
 {

@@ -363,8 +363,9 @@ void ArenaTeam::Roster(WorldSession *session)
     Player *pl = nullptr;
     WorldPacket data(SMSG_ARENA_TEAM_ROSTER, 100);
     data << uint32(GetId());                                // arena team id
-    if(session->GetClientBuild() == BUILD_335)
-        data << uint8(0);                                   // 3.0.8 unknown value but affect packet structure
+#ifdef LICH_KING
+    data << uint8(0);                                       // 3.0.8 unknown value
+#endif
     data << uint32(GetMembersSize());                       // Members count
     data << uint32(GetType());                              // arena team type?
     

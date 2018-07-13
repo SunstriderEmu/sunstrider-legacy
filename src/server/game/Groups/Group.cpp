@@ -1647,7 +1647,7 @@ void Group::SetTargetIcon(uint8 id, ObjectGuid /*whoGuid*/, ObjectGuid targetGui
     m_targetIcons[id] = targetGuid;
 
     WorldPacket data(MSG_RAID_TARGET_UPDATE, (2+8));
-    data << uint8(0);
+    data << uint8(0);                                  // set targets
 #ifdef LICH_KING
     data << uint64(whoGuid);
 #endif

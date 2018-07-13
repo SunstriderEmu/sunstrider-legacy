@@ -650,7 +650,7 @@ void WorldSession::HandleBuyStableSlot( WorldPacket & recvData )
     if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    WorldPacket data(SMSG_STABLE_RESULT, 200);
+    WorldPacket data(SMSG_STABLE_RESULT, 1);
 
     if(GetPlayer()->m_stableSlots < 2)                      // max slots amount = 2
     {
@@ -659,13 +659,13 @@ void WorldSession::HandleBuyStableSlot( WorldPacket & recvData )
         {
             ++GetPlayer()->m_stableSlots;
             _player->ModifyMoney(-int32(SlotPrice->Price));
-            data << uint8(0x0A);                            // success buy
+            data << uint8(STABLE_SUCCESS_BUY_SLOT);                            // success buy
         }
         else
-            data << uint8(0x06);
+            data << uint8(STABLE_ERR_STABLE);
     }
     else
-        data << uint8(0x06);
+        data << uint8(STABLE_ERR_STABLE);
 
     SendPacket(&data);
 }
