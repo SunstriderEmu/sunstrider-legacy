@@ -1,0 +1,1 @@
+ALTER TABLE characters DROP COLUMN IF EXISTS lastGenderChange;
