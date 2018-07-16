@@ -10,7 +10,7 @@ version corresponding to the compiler version (x86 or x64) you will use, else
 the linking will fail.
 
 1. Get Git, and clone the repository
-   (https://github.com/kelno/sunstrider.git).
+   (https://github.com/ValorenWoW/sunstrider-core.git).
 
 2. Install [CMake][cmake]
 
@@ -99,7 +99,7 @@ Otherwise, if those files were missing, outdated, if if you want to do it by you
 
 
 [githubdata]:
-https://github.com/kelno/sunstrider/releases
+https://github.com/ValorenWoW/sunstrider-core/releases
 
 
 <!----------------------------------------------------------------------------->
@@ -119,7 +119,7 @@ https://github.com/kelno/sunstrider/releases
 https://downloads.mariadb.org/
 
 [world_db]:
-https://github.com/kelno/sunstrider/releases
+https://github.com/ValorenWoW/sunstrider-core/releases
 
 [my_ini]:
 http://www.avajava.com/tutorials/lessons/how-do-i-log-on-to-mysql-automatically.html

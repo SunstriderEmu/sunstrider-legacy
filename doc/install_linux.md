@@ -56,7 +56,7 @@ Inside, create the following folders :
 https://downloads.mariadb.org/
 
 [world_db]:
-https://github.com/kelno/sunstrider/releases
+https://github.com/ValorenWoW/sunstrider-core/releases
 
 [my_ini]:
 http://www.avajava.com/tutorials/lessons/how-do-i-log-on-to-mysql-automatically.html
@@ -96,7 +96,7 @@ Otherwise, if those files were missing, outdated, if if you want to do it by you
   directory to `<root_install_folder>/data`. You can delete the `Buildings` directory generated at step 3.
 
 [githubdata]:
-https://github.com/kelno/sunstrider/releases
+https://github.com/ValorenWoW/sunstrider-core/releases
 
 <!----------------------------------------------------------------------------->
 
@@ -130,4 +130,4 @@ Just run both the **worldserver** and the **authserver** in the `<root_install_f
 
 Sunstrider now also has some systemd scripts that you can use, see [this directory][restarterscripts].
 [restarterscripts]:
-https://github.com/kelno/sunstrider/tree/master/contrib/sunstrider
+https://github.com/ValorenWoW/sunstrider-core/tree/master/contrib/sunstrider
