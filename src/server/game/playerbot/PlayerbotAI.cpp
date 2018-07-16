@@ -30,6 +30,10 @@ vector<std::string> split(const std::string &s, char delim);
 ObjectGuid extractGuid(WorldPacket& packet);
 std::string &trim(std::string &s);
 
+PlayerbotChatHandler::PlayerbotChatHandler(Player* pMasterPlayer) 
+    : ChatHandler(pMasterPlayer->GetSession()) 
+{ }
+
 uint32 PlayerbotChatHandler::extractQuestId(std::string str)
 {
     char* source = (char*)str.c_str();

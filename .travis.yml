@@ -1,50 +1,64 @@
-sudo: required
+sudo: false
 dist: trusty
 
 language: cpp
 compiler:
   - clang
-
+ 
 git:
-  depth: 50
+  depth: 1
 
-branch:
-  only:
-    - master
-
-sudo: required
-
-services:
-  - mysql
-
+addons:
+  mariadb: '10.3'
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - sourceline: 'ppa:kzemek/boost'
+    packages:
+      - g++-6
+      - libboost1.58-dev
+      - libboost-filesystem1.58-dev
+      - libboost-iostreams1.58-dev
+      - libboost-program-options1.58-dev
+      - libboost-regex1.58-dev
+      - libboost-system1.58-dev
+      - libboost-thread1.58-dev
+      - libssl-dev
+      - libmariadbclient-dev 
+      - libreadline6-dev
+      - zlib1g-dev
+      - libbz2-dev
+      - p7zip
+      
 before_install:
-  - export DEBIAN_FRONTEND=noninteractive
-  - echo "yes" | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-  - sudo apt-get install python-software-properties
-  - sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
-  - sudo add-apt-repository 'deb [arch=amd64,i386] http://ftp.osuosl.org/pub/mariadb/repo/10.1/ubuntu precise main'
-  - sudo apt-get -qq update
-  - sudo apt-get purge mysql* mariadb*
-  - echo "Y" | sudo apt-get install -qq mariadb-server libmariadbclient-dev libmariadbd-dev
-  - sudo apt-get install -qq gcc-4.9 g++-4.9 make cmake build-essential openssl libtool patch
-  - sudo apt-get install -qq libssl-dev  libreadline-dev zlib1g-dev libbz2-dev libbz2-1.0
-  - sudo apt-get install -qq libboost1.58-dev libboost-thread1.58-dev libboost-system1.58-dev libboost-filesystem1.58-dev libboost-program-options1.58-dev libboost-regex1.58-dev libboost-iostreams1.58-dev
   - git config user.email "travis@build.bot" && git config user.name "Travis CI"
   - git tag -a -m "Travis build" init
 
 install:
   - mysql -uroot -e 'create database test_mysql'
-  - cd ..
-  - mkdir bin
+  - mkdir bin logs data
   - cd bin
-  - cmake -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS="static" -DTESTS=1 -DUSE_GPERFTOOLS=0 ../sunstrider 
-  - cd ../sunstrider
+  - cmake ../ -DDO_WARN=1 -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=check_install
+  - cd ..
 
 script:
   - $CXX --version
-  - mysql -uroot < sql/create_mysql.sql
-  - mysql -utrinity -ptrinity auth < sql/auth.sql
-  - mysql -utrinity -ptrinity characters < sql/characters.sql
-  - mysql -utrinity -ptrinity logs < sql/logs.sql
-  - cd ../bin
-  - make -j 10
+  - mysql -uroot < sql/create/create_mysql.sql
+  - mysql -utrinity -ptrinity auth < sql/base/auth_database.sql
+  - mysql -utrinity -ptrinity characters < sql/base/characters_database.sql
+  - mysql -utrinity -ptrinity logs < sql/base/logs_database.sql
+  - wget https://blob.allumeciga.re/2017_12_17_data.7z
+  - 7zr x 2017_12_17_data.7z -y > /dev/null
+  - rm 2017_12_17_data.7z
+  - ls
+  - cd bin
+  - make -j 10 -k && make install
+  - cd check_install/bin
+  - ./authserver --version
+  - ./worldserver --version
+  - wget https://github.com/ValorenWoW/sunstrider-core/releases/download/2018_07_15/world_2018_07_15.sql.zip
+  - unzip world_2018_07_15.sql.zip
+  - rm world_2018_07_15.sql.zip
+  - sed -e 's!^DataDir\s*=.*!DataDir = "../data/"!g;' -e 's!^LogsDir\s*=.*!LogsDir = "../logs/"!g;' < "worldserver.conf.dist" > "worldserver.conf"
+  - ./worldserver --tests
+

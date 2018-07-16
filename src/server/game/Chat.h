@@ -46,8 +46,8 @@ class TC_GAME_API ChatHandler
         static char* LineFromMessage(char*& pos) { char* start = strtok(pos,"\n"); pos = nullptr; return start; }
         
         // function with different implementation for chat/console
-        virtual bool HasPermission(uint32 permission) const { return m_session->HasPermission(permission); }
-        virtual std::string GetNameLink() const { return GetNameLink(m_session->GetPlayer()); }
+        virtual bool HasPermission(uint32 permission) const;
+        virtual std::string GetNameLink() const;
         virtual LocaleConstant GetSessionDbcLocale() const;
         virtual bool isAvailable(ChatCommand const& cmd) const;
         virtual bool needReportToTarget(Player* chr) const;

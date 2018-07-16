@@ -99,7 +99,6 @@ private:
 uint32 realmID;                                             ///< Id of the realm
 
 void SignalHandler(const boost::system::error_code& error, int signalNumber);
-void FreezeDetectorHandler(const boost::system::error_code& error);
 AsyncAcceptor* StartRaSocketAcceptor(Trinity::Asio::IoContext& ioContext);
 bool StartDB();
 void StopDB();
@@ -154,9 +153,11 @@ extern int main(int argc, char **argv)
     std::string configService;
 
     auto vm = GetConsoleArguments(argc, argv, configFile, configService);
-    // exit if help is enabled
-    if (vm.count("help"))
+    // exit if help or version is enabled
+    if (vm.count("help") || vm.count("version"))
         return 0;
+    if (vm.count("tests"))
+        sWorld->SetCITesting();
 
 #ifdef _WIN32
     /*
@@ -508,6 +509,7 @@ variables_map GetConsoleArguments(int argc, char** argv,  fs::path& configFile, 
     all.add_options()
         ("help,h", "print usage message")
         ("version,v", "print version build info")
+        ("tests,t", "run all tests and display results")
         ("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_TRINITY_CORE_CONFIG)),
             "use <arg> as configuration file");
 #ifdef _WIN32
@@ -532,6 +534,10 @@ variables_map GetConsoleArguments(int argc, char** argv,  fs::path& configFile, 
 
     if (vm.count("help")) {
         std::cout << all << "\n";
+    }
+    else if (vm.count("version"))
+    {
+        std::cout << GitRevision::GetFullVersion() << "\n";
     }
 
     return vm;

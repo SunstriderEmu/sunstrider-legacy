@@ -28,7 +28,8 @@
 #include "G3D/Vector3.h"
 #include "G3D/Matrix3.h"
 
-#include <shared_mutex>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/shared_lock_guard.hpp>
 
 namespace MMAP
 {
@@ -143,7 +144,7 @@ namespace MMAP
             //(adapted from) nost additions
             std::unordered_map<uint32 /*mapID*/, float* /*v9*/> map_V9;
             std::unordered_map<uint32 /*mapID*/, float* /*v8*/> map_V8;
-            std::shared_mutex map_V_mutex;
+            boost::shared_mutex map_V_mutex;
             VMAP::VMapManager2 vmapManager;
             bool m_quick;
     };

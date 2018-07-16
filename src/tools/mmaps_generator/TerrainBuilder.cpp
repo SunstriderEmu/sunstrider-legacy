@@ -217,7 +217,7 @@ namespace MMAP
             if (portion == ENTIRE)
             {
                 {
-                    std::unique_lock<std::shared_mutex> lock(map_V_mutex);
+                    std::unique_lock<boost::shared_mutex> lock(map_V_mutex);
                     if (map_V9.find(mapID) == map_V9.end())
                         map_V9[mapID] = new float[V9_SIZE_SQ];
 
@@ -1137,7 +1137,7 @@ namespace MMAP
         float* m_V9 = nullptr;
 
         {
-            std::shared_lock<std::shared_mutex> lock(map_V_mutex);
+            boost::shared_lock_guard<boost::shared_mutex> lock(map_V_mutex);
             auto v8_itr = map_V8.find(mapID);
             auto v9_itr = map_V9.find(mapID);
             if (v8_itr == map_V8.end() || v9_itr == map_V9.end())

@@ -97,6 +97,7 @@ enum ServerMessageType
 
 /// World constructor
 World::World()
+    : _CITesting(false)
 {
     m_playerLimit = 0;
     m_allowedSecurityLevel = SEC_PLAYER;
@@ -140,6 +141,15 @@ World::~World()
     MMAP::MMapFactory::clear();
 
     //TODO free addSessQueue
+}
+
+void World::SetCITesting()
+{
+#ifdef TESTS
+    _CITesting = true;
+#else
+    std::cout << "Core was not build with tests" << std::endl;
+#endif
 }
 
 /// Find a player in a specified zone
@@ -2212,6 +2222,25 @@ void World::Update(time_t diff)
 
     sMonitor->FinishedWorldLoop();
     sMonitor->Update(diff);
+
+#ifdef TESTS
+    if (_CITesting)
+    {
+        static bool started = false;
+        if (!started)
+        {
+            sTestMgr->Run(".*");
+        }
+        else 
+        {
+            if (!sTestMgr->IsRunning())
+            {
+                _CITesting = false;
+                StopNow(SHUTDOWN_EXIT_CODE);
+            }
+        }
+    }
+#endif
 
    // sScriptMgr->OnWorldUpdate(diff);
 }

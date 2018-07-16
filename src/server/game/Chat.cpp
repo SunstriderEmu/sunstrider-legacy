@@ -1696,6 +1696,16 @@ LocaleConstant ChatHandler::GetSessionDbcLocale() const
     return m_session ? m_session->GetSessionDbcLocale() : LOCALE_enUS;
 }
 
+bool ChatHandler::HasPermission(uint32 permission) const 
+{ 
+    return m_session->HasPermission(permission); 
+}
+
+std::string ChatHandler::GetNameLink() const 
+{ 
+    return GetNameLink(m_session->GetPlayer()); 
+}
+
 const char *CliHandler::GetTrinityString(int32 entry) const
 {
     return sObjectMgr->GetTrinityStringForDBCLocale(entry);

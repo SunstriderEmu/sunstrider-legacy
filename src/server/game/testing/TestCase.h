@@ -476,7 +476,7 @@ private:
 
     std::string                  _testName;
     std::string                  _usedPattern;
-    std::optional<InSection>     _inSection;
+    Optional<InSection>          _inSection;
     std::list<TestSectionResult> _results;
     std::atomic<bool>            _setup;
     bool                         _enableMapObjects;

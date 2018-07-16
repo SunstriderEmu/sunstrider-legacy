@@ -548,6 +548,9 @@ class TC_GAME_API World
         World();
         ~World();
 
+        // Continuous integration testing. If set, all tests are started, then when they're done the world will shutdown.
+        void SetCITesting();
+
         WorldSession* FindSession(uint32 id) const;
         void AddSession(WorldSession *s);
         bool RemoveSession(uint32 id);
@@ -861,6 +864,8 @@ class TC_GAME_API World
         bool _guidAlert;
         uint32 _warnDiff;
         time_t _warnShutdownTime;
+
+        bool _CITesting; //continuous integration testing
 };
 
 TC_GAME_API extern Realm realm;
