@@ -22,7 +22,7 @@
 #include "Define.h"
 #include "IVMapManager.h"
 #include <unordered_map>
-enum LiquidType;
+enum LiquidType : uint32;
 
 //===========================================================
 

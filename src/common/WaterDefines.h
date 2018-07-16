@@ -19,7 +19,7 @@ Most of it isn't for BC though
 MAP_LIQUID_VALUES are not client files values but values stored by the extractors
 */
 
-enum LiquidType
+enum LiquidType : uint32
 {
     LIQUID_TYPE_NO_WATER = 0,
     LIQUID_TYPE_WATER = 1,

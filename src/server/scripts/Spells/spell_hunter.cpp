@@ -137,7 +137,7 @@ public:
             uint32 newAmount = aurEff->GetAmount() + (basevalue + 1) / 10.0f;
             auraEffect->SetAmount(newAmount);
             //cap it
-            if (auraEffect->GetAmount() > maxAmount)
+            if (auraEffect->GetAmount() > int32(maxAmount))
                 auraEffect->SetAmount(maxAmount);
         }
 

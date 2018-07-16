@@ -190,7 +190,7 @@ public:
 
             // if damage is more than need or target die from damage deal finish spell
             // + proc is apparently not supposed to go off on other SoC procs (to be confirmed)
-            if ((aurEff->GetAmount() <= eventInfo.GetDamageInfo()->GetDamage() && eventInfo.GetSpellInfo()->GetFirstRankSpell()->Id != SPELL_WARLOCK_SEED_OF_CORRUPTION_PROC) 
+            if ((uint32(aurEff->GetAmount()) <= eventInfo.GetDamageInfo()->GetDamage() && eventInfo.GetSpellInfo()->GetFirstRankSpell()->Id != SPELL_WARLOCK_SEED_OF_CORRUPTION_PROC) 
                 || GetTarget()->GetHealth() <= eventInfo.GetDamageInfo()->GetDamage())
             {
                 // Remove our seed aura before casting
@@ -357,7 +357,7 @@ public:
             {
                 int32 damage = int32(GetEffectValue() + (caster->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * 0.8f));
 
-                if (damage > target->GetHealth()) 
+                if (uint32(damage) > target->GetHealth()) 
                     return; //shouldn't happen but... just to be sure we can't suicide
 
                 // Shouldn't Appear in Combat Log
