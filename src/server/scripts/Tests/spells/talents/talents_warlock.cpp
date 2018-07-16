@@ -4,29 +4,26 @@
 
 #define SOUL_SHARD 6265
 
-class SuppressionTest : public TestCaseScript
+// "Reduces the chance for enemies to resist your Affliction spells by 10%."
+class SuppressionTest : public TestCase
 {
-public:
-    SuppressionTest() : TestCaseScript("talents warlock suppression") { }
-
-    // "Reduces the chance for enemies to resist your Affliction spells by 10%."
-    class SuppressionTestImpt : public TestCase
+    void Test() override
     {
-    public:
-        SuppressionTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Curse of Doom is not affected, should be.
+        TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+        Creature* dummy = SpawnBoss();
 
-        void Test() override
-        {
-            TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
-            Creature* dummy = SpawnBoss();
+        LearnTalent(warlock, Talents::Warlock::SUPPRESSION_RNK_5);
+        float const talentHitPct = 10.0f;
+        float const hitChance = 16.0f - talentHitPct;
 
-            LearnTalent(warlock, Talents::Warlock::SUPPRESSION_RNK_5);
-            float const talentHitPct = 10.0f;
-            float const hitChance = 16.0f - talentHitPct;
+        //BUG: Curse of Doom is not affected, should be.
+        SECTION("Curse of Doom", STATUS_KNOWN_BUG, [&] {
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, hitChance, SPELL_MISS_RESIST);
+        });
 
+        SECTION("Various affected spells", [&] {
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, hitChance, SPELL_MISS_RESIST);
-            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_THE_ELEMENTS_RNK_4, hitChance, SPELL_MISS_RESIST);
@@ -40,14 +37,11 @@ public:
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, hitChance, SPELL_MISS_RESIST);
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, hitChance, SPELL_MISS_RESIST);
-            //not affected
-            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, 16.0f, SPELL_MISS_RESIST);
-        }
-    };
+        });
 
-    std::unique_ptr<TestCase> GetTest() const override
-    {
-        return std::make_unique<SuppressionTestImpt>();
+        SECTION("Not affected spells", [&] {
+            TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, 16.0f, SPELL_MISS_RESIST);
+        });
     }
 };
 
@@ -841,47 +835,38 @@ public:
 		return std::make_unique<ShadowMasteryTestImpt>();
 	}
 };
-
-class ContagionTest : public TestCaseScript
+class ContagionTest : public TestCase
 {
-public:
+    // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5% and reduces the chance your Affliction spells will be dispelled by an additional 30%." 
     /*
     Bugs:
-        - Unstable Affliction is dispelled 50%.
+    - Unstable Affliction is dispelled 50%.
     */
-	ContagionTest() : TestCaseScript("talents warlock contagion") { }
-
-    // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5% and reduces the chance your Affliction spells will be dispelled by an additional 30%." 
-	class ContagionTestImpt : public TestCase
+	void Test() override
 	{
-	public:
-		ContagionTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+        Creature* dummy = SpawnCreature();
 
-		void Test() override
-		{
-			TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
-            Creature* dummy = SpawnCreature();
+        LearnTalent(warlock, Talents::Warlock::CONTAGION_RNK_5);
+        float const contagionFactor = 1.05f;
 
-            LearnTalent(warlock, Talents::Warlock::CONTAGION_RNK_5);
-            float const contagionFactor = 1.05f;
-
-            // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5 %"
-
+        // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5 %"
+        SECTION("Damage increase", [&] {
             // Corruption
             uint8 const corruptionTickAmount = 6;
-			uint32 const expectedCorruptionDamage = floor(ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TICK * contagionFactor) * corruptionTickAmount;
+            uint32 const expectedCorruptionDamage = floor(ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TICK * contagionFactor) * corruptionTickAmount;
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionDamage, false);
-            
+
             // Curse of Agony
             uint32 const expectedCoABase = 4 * floor(ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * contagionFactor);
             uint32 const expectedCoADamage = (expectedCoABase / 24.0f) + (expectedCoABase / 12.0f) + (expectedCoABase / 8.0f);
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoADamage, false);
-            
+
             // Seed of Corruption
             uint8 const socTickAmount = 6;
-			uint32 const expectedSoCDamage = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * contagionFactor) * socTickAmount;
+            uint32 const expectedSoCDamage = floor(ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * contagionFactor) * socTickAmount;
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCDamage, false);
-            
+
             Creature* dummy2 = SpawnCreature();
             uint32 const expectedDetonationMin = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MIN * contagionFactor;
             uint32 const expectedDetonationMax = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_MAX * contagionFactor;
@@ -891,15 +876,17 @@ public:
             };
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy2, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1_DETONATION, expectedDetonationMin, expectedDetonationMax, false, dirtyCallback);
             dummy2->DespawnOrUnsummon();
+        });
             
-            // Reduces the chance your Affliction spells wtill be dispelled by 30% (5/5)
-            const float dispelTalentFactor = 30.f;
-            float const expectedResist = dispelTalentFactor;
+        // Reduces the chance your Affliction spells will be dispelled by 30% (5/5)
+        const float dispelTalentFactor = 30.f;
+        float const expectedResist = dispelTalentFactor;
             
-            _location.MoveInFront(_location, 5.f);
-            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
-            WaitNextUpdate();
+        _location.MoveInFront(_location, 5.f);
+        TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+        WaitNextUpdate();
             
+        SECTION("Dispel chance", [&] {
             ASSERT_INFO("Corruption");
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedResist);
             ASSERT_INFO("Death Coil");
@@ -916,8 +903,6 @@ public:
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedResist);
             ASSERT_INFO("Siphon Life");
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, expectedResist);
-            ASSERT_INFO("Unstable Affliction");
-            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedResist);
             ASSERT_INFO("Curse of Agony");
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedResist);
             ASSERT_INFO("Curse of Recklessness");
@@ -928,12 +913,13 @@ public:
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, expectedResist);
             ASSERT_INFO("Curse of Weakness");
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, expectedResist);
-		}
-	};
+        });
 
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<ContagionTestImpt>();
+        //dispel chance, moved out from previous section because only this one is bugged
+        SECTION("Unstable Afflication", STATUS_KNOWN_BUG, [&] {
+            ASSERT_INFO("Unstable Affliction");
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedResist);
+        });
 	}
 };
 
@@ -1250,74 +1236,73 @@ public:
 	}
 };
 
-class FelIntellectTest : public TestCaseScript
+//Increases the Intellect of your Imp, Voidwalker, Succubus, Felhunter and Felguard by 15% and increases your maximum mana by 3%
+class FelIntellectTest : public TestCase
 {
-public:
-	FelIntellectTest() : TestCaseScript("talents warlock fel_intellect") { }
-
-    //Increases the Intellect of your Imp, Voidwalker, Succubus, Felhunter and Felguard by 15% and increases your maximum mana by 3%
-	class FelIntellectTestImpt : public TestCase
+	float GetPetIntellect(TestPlayer* caster, uint32 summonPetSpellId)
 	{
-	public:
-		FelIntellectTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //Imp has no bonus intellect, the others probably too
+        TEST_CAST(caster, caster, summonPetSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+        Guardian* pet = caster->GetGuardianPet();
+        TEST_ASSERT(pet != nullptr);
+		return pet->GetStat(STAT_INTELLECT);
+	}
 
-		float GetPetIntellect(TestPlayer* caster, uint32 summonPetSpellId)
-		{
-            TEST_CAST(caster, caster, summonPetSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            Guardian* pet = caster->GetGuardianPet();
-            TEST_ASSERT(pet != nullptr);
-			return pet->GetStat(STAT_INTELLECT);
-		}
+	void Test() override
+	{
+		TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
 
-		void Test() override
-		{
-			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+        LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+        float const intellectTalentFactor = 1.15f;
+        float const manaTalentFactor = 1.03f;
 
-            LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-            float const intellectTalentFactor = 1.15f;
-            float const manaTalentFactor = 1.03f;
+        //Test warlock Mana
+        uint32 const expectedMaxMana = warlock->GetMaxPower(POWER_MANA) * manaTalentFactor;
 
-            //Test warlock Mana
-            uint32 const expectedMaxMana = warlock->GetMaxPower(POWER_MANA) * manaTalentFactor;
+        //Test pets intellect
+		float const expectedImpInt          = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1) * intellectTalentFactor;
+		float const expectedVoidwalkerInt   = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1) * intellectTalentFactor;
+		float const expectedSuccubusInt     = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1) * intellectTalentFactor;
+		float const expectedFelhunterInt    = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1) * intellectTalentFactor;
+		float const expectedFelguardInt     = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1) * intellectTalentFactor;
 
-            //Test pets intellect
-			float const expectedImpInt          = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1) * intellectTalentFactor;
-			float const expectedVoidwalkerInt   = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1) * intellectTalentFactor;
-			float const expectedSuccubusInt     = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1) * intellectTalentFactor;
-			float const expectedFelhunterInt    = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1) * intellectTalentFactor;
-			float const expectedFelguardInt     = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1) * intellectTalentFactor;
+        LearnTalent(warlock, Talents::Warlock::FEL_INTELLECT_RNK_3);
+        Wait(1000);
 
-            LearnTalent(warlock, Talents::Warlock::FEL_INTELLECT_RNK_3);
-            Wait(1000);
-
+        SECTION("Warlock max mana", [&] {
             ASSERT_INFO("Warlock has %u max mana, %u expected.", warlock->GetMaxPower(POWER_MANA), expectedMaxMana);
             TEST_ASSERT(Between<uint32>(warlock->GetMaxPower(POWER_MANA), expectedMaxMana - 1, expectedMaxMana + 1));
+        });
 
-			float const impNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+        //BUG: Imp has no bonus intellect, the others probably too
+        SECTION("Imp", STATUS_KNOWN_BUG, [&] {
+            float const impNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
             ASSERT_INFO("Imp has %f Intellect, %f expected.", impNextInt, expectedImpInt);
-			TEST_ASSERT(Between<float>(impNextInt, expectedImpInt - 1.0f, expectedImpInt + 1.0f));
+            TEST_ASSERT(Between<float>(impNextInt, expectedImpInt - 1.0f, expectedImpInt + 1.0f));
+        });
 
-			float const voidwalkerNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+        SECTION("Voidwalker", STATUS_KNOWN_BUG, [&] {
+            float const voidwalkerNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
             ASSERT_INFO("Voidwalker has %f Intellect, %f expected.", voidwalkerNextInt, expectedVoidwalkerInt);
-			TEST_ASSERT(Between<float>(voidwalkerNextInt, expectedVoidwalkerInt - 1.0f, expectedVoidwalkerInt + 1.0f));
+            TEST_ASSERT(Between<float>(voidwalkerNextInt, expectedVoidwalkerInt - 1.0f, expectedVoidwalkerInt + 1.0f));
+        });
 
-			float const succubusNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+        SECTION("Succubus", STATUS_KNOWN_BUG, [&] {
+            float const succubusNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
             ASSERT_INFO("Succubus has %f Intellect, %f expected.", succubusNextInt, expectedSuccubusInt);
-			TEST_ASSERT(Between<float>(succubusNextInt, expectedSuccubusInt - 1.0f, expectedSuccubusInt + 1.0f));
+            TEST_ASSERT(Between<float>(succubusNextInt, expectedSuccubusInt - 1.0f, expectedSuccubusInt + 1.0f));
+        });
 
-			float const felhunterNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
+        SECTION("Felhunter", STATUS_KNOWN_BUG, [&] {
+		    float const felhunterNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
             ASSERT_INFO("Felhunter has %f Intellect, %f expected.", felhunterNextInt, expectedFelhunterInt);
-			TEST_ASSERT(Between<float>(felhunterNextInt, expectedFelhunterInt - 1.0f, expectedFelhunterInt + 1.0f));
+		    TEST_ASSERT(Between<float>(felhunterNextInt, expectedFelhunterInt - 1.0f, expectedFelhunterInt + 1.0f));
+        });
 
-			float const felguardNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+        SECTION("Felguard", STATUS_KNOWN_BUG, [&] {
+		    float const felguardNextInt = GetPetIntellect(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
             ASSERT_INFO("Felguard has %f Intellect, %f expected.", felguardNextInt, expectedFelguardInt);
-			TEST_ASSERT(Between<float>(felguardNextInt, expectedFelguardInt - 1.0f, expectedFelguardInt + 1.0f));
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<FelIntellectTestImpt>();
+		    TEST_ASSERT(Between<float>(felguardNextInt, expectedFelguardInt - 1.0f, expectedFelguardInt + 1.0f));
+        });
 	}
 };
 
@@ -1444,88 +1429,79 @@ public:
 	}
 };
 
-class DemonicAegisTest : public TestCaseScript
+//Increases the effectiveness of your Demon Armor and Fel Armor spells by 30% 
+// Talent is OK, Demon Armor spell is not
+class DemonicAegisTest : public TestCase
 {
-public:
-	DemonicAegisTest() : TestCaseScript("talents warlock demonic_aegis") { }
+    void TestDemonArmorBonuses(TestPlayer* caster, Creature* victim, float talentFactor, uint32 demonArmorSpellId, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
+    {
+        TEST_ASSERT(caster->IsInCombatWith(victim));
 
-    //Increases the effectiveness of your Demon Armor and Fel Armor spells by 30% 
-	class DemonicAegisTestImpt : public TestCase
-	{
-	public:
-		DemonicAegisTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Talent is OK, Demon Armor spell is not
+        caster->SetHealth(1);
+        uint32 const expectedArmor = caster->GetArmor() + armorBonus * talentFactor;
+        uint32 const expectedShadowRes = caster->GetResistance(SPELL_SCHOOL_SHADOW) + shadowResBonus * talentFactor;
 
-        void TestDemonArmorBonuses(TestPlayer* caster, Creature* victim, float talentFactor, uint32 demonArmorSpellId, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
-        {
-            TEST_ASSERT(caster->IsInCombatWith(victim));
+        TEST_CAST(caster, caster, demonArmorSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+        TEST_ASSERT(caster->GetArmor() == expectedArmor);
+        TEST_ASSERT(caster->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowRes);
 
-            caster->SetHealth(1);
-            uint32 const expectedArmor = caster->GetArmor() + armorBonus * talentFactor;
-            uint32 const expectedShadowRes = caster->GetResistance(SPELL_SCHOOL_SHADOW) + shadowResBonus * talentFactor;
+        uint32 const regenTick = floor(healthRestore * talentFactor / 2.5f);
+        uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
+        Wait(2000);
+        uint32 const afterWaitTime = GameTime::GetGameTimeMS();
+        uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
+        uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 2.0f);
+        uint32 const expectedHealth = 1 + regenTick * expectedTickAmount;
+        ASSERT_INFO("%u, Health: %u, expected: %u", demonArmorSpellId, caster->GetHealth(), expectedHealth);
+        TEST_ASSERT(caster->GetHealth() == expectedHealth);
+    }
 
-            TEST_CAST(caster, caster, demonArmorSpellId);
-            TEST_ASSERT(caster->GetArmor() == expectedArmor);
-            TEST_ASSERT(caster->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowRes);
+    void TestFelArmorBonuses(TestPlayer* caster, TestPlayer* healer, float talentFactor, uint32 felArmorSpellId, uint32 spellDamageBonus)
+    {
+        // Spell power
+        uint32 const expectedSpellDamage = caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) + spellDamageBonus * talentFactor;
+        TEST_CAST(caster, caster, felArmorSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+        TEST_ASSERT(uint32(caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW)) == expectedSpellDamage);
 
-            uint32 const regenTick = floor(healthRestore * talentFactor / 2.5f);
-            uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
-            Wait(2000);
-            uint32 const afterWaitTime = GameTime::GetGameTimeMS();
-            uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
-            uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 2.0f);
-            uint32 const expectedHealth = 1 + regenTick * expectedTickAmount;
-            ASSERT_INFO("%u, Health: %u, expected: %u", demonArmorSpellId, caster->GetHealth(), expectedHealth);
-            TEST_ASSERT(caster->GetHealth() == expectedHealth);
-        }
+        // Healing
+        float const felArmorFactor = 1.0f + (0.2f * 1.3f); //Base 20% heal boost * talent
+        uint32 const expectedHTMin = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN * felArmorFactor;
+        uint32 const expectedHTMax = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX * felArmorFactor;
+        TEST_DIRECT_HEAL(healer, caster, ClassSpells::Druid::HEALING_TOUCH_RNK_13, expectedHTMin, expectedHTMax, false);
 
-        void TestFelArmorBonuses(TestPlayer* caster, TestPlayer* healer, float talentFactor, uint32 felArmorSpellId, uint32 spellDamageBonus)
-        {
-            // Spell power
-            uint32 const expectedSpellDamage = caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) + spellDamageBonus * talentFactor;
-            TEST_CAST(caster, caster, felArmorSpellId);
-            TEST_ASSERT(uint32(caster->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW)) == expectedSpellDamage);
+        caster->RemoveAurasDueToSpell(felArmorSpellId);
+    }
 
-            // Healing
-            float const felArmorFactor = 1.0f + (0.2f * 1.3f); //Base 20% heal boost * talent
-            uint32 const expectedHTMin = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN * felArmorFactor;
-            uint32 const expectedHTMax = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX * felArmorFactor;
-            TEST_DIRECT_HEAL(healer, caster, ClassSpells::Druid::HEALING_TOUCH_RNK_13, expectedHTMin, expectedHTMax, false);
+    void Test() override
+    {
+        TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+        TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
+        Creature* dummy = SpawnCreature();
 
-            caster->RemoveAurasDueToSpell(felArmorSpellId);
-        }
+        warlock->AttackerStateUpdate(dummy, BASE_ATTACK);
 
-        void Test() override
-        {
-            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
-            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_NIGHTELF);
-            Creature* dummy = SpawnCreature();
+        LearnTalent(warlock, Talents::Warlock::DEMONIC_AEGIS_RNK_3);
+        float const talentFactor = 1.3f;
 
-            warlock->AttackerStateUpdate(dummy, BASE_ATTACK);
-
-            LearnTalent(warlock, Talents::Warlock::DEMONIC_AEGIS_RNK_3);
-            float const talentFactor = 1.3f;
-
+        SECTION("Demon Armor", STATUS_KNOWN_BUG, [&] {
             TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_1, 210, 3, 7);
             TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_2, 300, 6, 9);
             TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_3, 390, 9, 11);
             TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_4, 480, 12, 13);
             TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_5, 570, 15, 15);
             TestDemonArmorBonuses(warlock, dummy, talentFactor, ClassSpells::Warlock::DEMON_ARMOR_RNK_6, 660, 18, 18);
+        });
 
-            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+        EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
-            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-            TEST_ASSERT(spellPower == 292);
+        uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+        TEST_ASSERT(spellPower == 292);
 
+        SECTION("Fel Armor", [&] {
             TestFelArmorBonuses(warlock, druid, talentFactor, ClassSpells::Warlock::FEL_ARMOR_RNK_1, 50);
             TestFelArmorBonuses(warlock, druid, talentFactor, ClassSpells::Warlock::FEL_ARMOR_RNK_2, 100);
-        }
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<DemonicAegisTestImpt>();
-	}
+        });
+    }
 };
 
 class MasterSummonerTest : public TestCaseScript
@@ -1789,120 +1765,99 @@ public:
 	}
 };
 
-class ManaFeedTest : public TestCaseScript
+//When you gain mana from Drain Mana or Life Tap spells, your pet gains 100 % of the mana you gain. 
+//BUG: 0 mana given to pet
+class ManaFeedTest : public TestCase
 {
-public:
-	ManaFeedTest() : TestCaseScript("talents warlock mana_feed") { }
-
-    //When you gain mana from Drain Mana or Life Tap spells, your pet gains 100 % of the mana you gain. 
-	class ManaFeedTestImpt : public TestCase
+	void AssertManaFeed(TestPlayer* warlock, TestPlayer* enemy, uint32 summonSpell)
 	{
-	public:
-		ManaFeedTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //0 mana given to pet
+        TEST_CAST(warlock, warlock, summonSpell, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+		Pet* pet = warlock->GetPet();
+		TEST_ASSERT(pet != nullptr);
 
-		void AssertManaFeed(TestPlayer* warlock, TestPlayer* enemy, uint32 summonSpell)
-		{
-            TEST_CAST(warlock, warlock, summonSpell, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-			Pet* pet = warlock->GetPet();
-			TEST_ASSERT(pet != nullptr);
+		pet->DisableRegeneration(true);
+        warlock->DisableRegeneration(true);
+		pet->SetPower(POWER_MANA, 0);
+        uint32 baseMana = 2000;
+        warlock->SetPower(POWER_MANA, baseMana);
+        enemy->SetPower(POWER_MANA, baseMana);
 
-			pet->DisableRegeneration(true);
-            warlock->DisableRegeneration(true);
-			pet->SetPower(POWER_MANA, 0);
-            uint32 baseMana = 2000;
-            warlock->SetPower(POWER_MANA, baseMana);
-            enemy->SetPower(POWER_MANA, baseMana);
+		// Drain Mana -- bug here
+		FORCE_CAST(warlock, enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+        WaitNextUpdate();
+		Wait(5000); //Drain mana has 5s cast time
+        ASSERT_INFO("warlock did not gain mana?");
+        TEST_ASSERT(warlock->GetPower(POWER_MANA) > baseMana);
+        uint32 const warlockManaGain = warlock->GetPower(POWER_MANA) - baseMana;
+        ASSERT_INFO("Drain Mana, Pet (%s), should have %u MP but has %u MP.", _SpellString(summonSpell).c_str(), warlockManaGain, pet->GetPower(POWER_MANA));
+		TEST_ASSERT(pet->GetPower(POWER_MANA) == warlockManaGain);
 
-			// Drain Mana -- bug here
-			FORCE_CAST(warlock, enemy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
-            WaitNextUpdate();
-			Wait(5000); //Drain mana has 5s cast time
-            ASSERT_INFO("warlock did not gain mana?");
-            TEST_ASSERT(warlock->GetPower(POWER_MANA) > baseMana);
-            uint32 const warlockManaGain = warlock->GetPower(POWER_MANA) - baseMana;
-            ASSERT_INFO("Drain Mana, Pet invoqued with %u, should have %u MP but has %u MP.", summonSpell, warlockManaGain, pet->GetPower(POWER_MANA));
-			TEST_ASSERT(pet->GetPower(POWER_MANA) == warlockManaGain);
+		// Life Tap
+        pet->SetPower(POWER_MANA, 0);
+        uint32 const spellLevel = 68;
+        uint32 const perLevelPoint = 1;
+        uint32 const perLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * perLevelPoint;
+        uint32 const expectedManaGained = ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7 + perLevelGain;
+		TEST_CAST(warlock, warlock, ClassSpells::Warlock::LIFE_TAP_RNK_7, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+        ASSERT_INFO("Life Tap Pet invoqued with %u, should have %u MP but has %u MP.", summonSpell, expectedManaGained, pet->GetPower(POWER_MANA));
+		TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedManaGained);
+	}
 
-			// Life Tap
-            pet->SetPower(POWER_MANA, 0);
-            uint32 const spellLevel = 68;
-            uint32 const perLevelPoint = 1;
-            uint32 const perLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * perLevelPoint;
-            uint32 const expectedManaGained = ClassSpellsDamage::Warlock::LIFE_TAP_RNK_7 + perLevelGain;
-			TEST_CAST(warlock, warlock, ClassSpells::Warlock::LIFE_TAP_RNK_7, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            ASSERT_INFO("Life Tap Pet invoqued with %u, should have %u MP but has %u MP.", summonSpell, expectedManaGained, pet->GetPower(POWER_MANA));
-			TEST_ASSERT(pet->GetPower(POWER_MANA) == expectedManaGained);
-		}
-
-		void Test() override
-		{
-			TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
-
-			Position spawnPosition(_location);
-			spawnPosition.MoveInFront(_location, 10.0f);
-			TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawnPosition);
-
-			LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-			LearnTalent(warlock, Talents::Warlock::MANA_FEED_RNK_3);
-			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
-			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
-			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
-			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1);
-			AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
+	void Test() override
 	{
-		return std::make_unique<ManaFeedTestImpt>();
+		TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+
+		Position spawnPosition(_location);
+		spawnPosition.MoveInFront(_location, 10.0f);
+		TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN, 70, spawnPosition);
+
+		LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+		LearnTalent(warlock, Talents::Warlock::MANA_FEED_RNK_3);
+
+        SECTION("Mana gained by pet", STATUS_KNOWN_BUG, [&] {
+            AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_IMP_RNK_1);
+            AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1);
+            AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1);
+            AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1);
+            AssertManaFeed(warlock, enemy, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1);
+        });
 	}
 };
 
-class DemonicKnowledgeTest : public TestCaseScript
+//"Increases your spell damage by an amount equal to 12% of the total of your active demon's Stamina plus Intellect." 
+class DemonicKnowledgeTest : public TestCase
 {
-public:
-	DemonicKnowledgeTest() : TestCaseScript("talents warlock demonic_knowledge") { }
-
-    //"Increases your spell damage by an amount equal to 12% of the total of your active demon's Stamina plus Intellect." 
-	class DemonicKnowledgeTestImpt : public TestCase
+	void AssertDemonicKnowledge(TestPlayer* warlock, uint32 summonSpellId, float spellPower, float talentFactor)
 	{
-	public:
-		DemonicKnowledgeTestImpt() : TestCase(STATUS_KNOWN_BUG) { } //No SP given
+		TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+		Pet* pet = warlock->GetPet();
+		TEST_ASSERT(pet != nullptr);
 
-		void AssertDemonicKnowledge(TestPlayer* warlock, uint32 summonSpellId, float spellPower, float talentFactor)
-		{
-			TEST_CAST(warlock, warlock, summonSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-			Pet* pet = warlock->GetPet();
-			TEST_ASSERT(pet != nullptr);
+        Wait(1); //dunno if needed
 
-            Wait(1); //dunno if needed
+		float const expectedSP = spellPower + (pet->GetStat(STAT_STAMINA) + pet->GetStat(STAT_INTELLECT)) * talentFactor;
+        ASSERT_INFO("After %u, Warlock should have %f SP but has %f SP.", summonSpellId, expectedSP, warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW));
+		TEST_ASSERT(Between<float>(warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW), expectedSP - 0.1f, expectedSP + 0.1f));
+	}
 
-			float const expectedSP = spellPower + (pet->GetStat(STAT_STAMINA) + pet->GetStat(STAT_INTELLECT)) * talentFactor;
-            ASSERT_INFO("After %u, Warlock should have %f SP but has %f SP.", summonSpellId, expectedSP, warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW));
-			TEST_ASSERT(Between<float>(warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW), expectedSP - 0.1f, expectedSP + 0.1f));
-		}
-
-		void Test() override
-		{
-			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
-
-			float const spellPower = warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-            float const talentFactor = 0.12f;
-
-			LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
-			LearnTalent(warlock, Talents::Warlock::DEMONIC_KNOWLEDGE_RNK_3);
-
-			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, spellPower, talentFactor);
-			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, spellPower, talentFactor);
-			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, spellPower, talentFactor);
-			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, spellPower, talentFactor);
-			AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, spellPower, talentFactor);
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
+	void Test() override
 	{
-		return std::make_unique<DemonicKnowledgeTestImpt>();
+		TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
+
+		float const spellPower = warlock->GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+        float const talentFactor = 0.12f;
+
+		LearnTalent(warlock, Talents::Warlock::SUMMON_FELGUARD_RNK_1);
+		LearnTalent(warlock, Talents::Warlock::DEMONIC_KNOWLEDGE_RNK_3);
+
+        //BUG: No SP given
+        SECTION("Bonus SP", STATUS_KNOWN_BUG, [&] {
+            AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_IMP_RNK_1, spellPower, talentFactor);
+            AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_VOIDWALKER_RNK_1, spellPower, talentFactor);
+            AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_SUCCUBUS_RNK_1, spellPower, talentFactor);
+            AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_FELHUNTER_RNK_1, spellPower, talentFactor);
+            AssertDemonicKnowledge(warlock, ClassSpells::Warlock::SUMMON_FELGUARD_RNK_1, spellPower, talentFactor);
+        });
 	}
 };
 
@@ -1914,9 +1869,6 @@ public:
     //"Your Shadow Bolt critical strikes increase Shadow damage dealt to the target by 20% until 4 non-periodic damage sources are applied. Effect lasts a maximum of 12sec." 
     class ImprovedShadowBoltTestImpt : public TestCase
     {
-    public:
-        ImprovedShadowBoltTestImpt() : TestCase(STATUS_PASSING) { }
-
         uint32 MAX_STACK = 4;
 
         void Test() override
@@ -2675,47 +2627,40 @@ public:
     }
 };
 
-class ShadowfuryTest : public TestCaseScript
+class ShadowfuryTest : public TestCase
 {
-public:
-    ShadowfuryTest() : TestCaseScript("talents warlock shadowfury") { }
-
-    class ShadowfuryTestImpt : public TestCase
+    void Test() override
     {
-    public:
-        ShadowfuryTestImpt() : TestCase(STATUS_KNOWN_BUG) { } // Spell Coeff seems slightly off
+        TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+        Creature* dummy = SpawnCreature();
 
-        void Test() override
-        {
-            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
-            Creature* dummy = SpawnCreature();
+        EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
 
-            EQUIP_NEW_ITEM(warlock, 34336); // Sunflare - 292 SP
+        uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+        TEST_ASSERT(spellPower == 292);
 
-            uint32 const spellPower = warlock->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-            TEST_ASSERT(spellPower == 292);
+        uint32 const expectedShadowfuryManaCost = 710;
+        TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOWFURY_RNK_3, POWER_MANA, expectedShadowfuryManaCost);
 
-            uint32 const expectedShadowfuryManaCost = 710;
-            TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOWFURY_RNK_3, POWER_MANA, expectedShadowfuryManaCost);
-
-            // Damage
+        // BUG Spell Coeff seems slightly off... we got 0.214285716 while DrDamage gives 0.193
+        // No particular note on its damage on WoWWiki.
+        SECTION("Damage", [&] {
             float const spellBonus = spellPower * ClassSpellsCoeff::Warlock::SHADOWFURY; // DrDamage
             uint32 const expectedShadowfuryMin = ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MIN + spellBonus;
             uint32 const expectedShadowfuryMax = ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MAX + spellBonus;
             TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWFURY_RNK_3, expectedShadowfuryMin, expectedShadowfuryMax, false);
-        }
-    };
+        });
 
-    std::unique_ptr<TestCase> GetTest() const override
-    {
-        return std::make_unique<ShadowfuryTestImpt>();
+        SECTION("Stun duration", STATUS_WIP, [&] {
+
+        });
     }
 };
 
 void AddSC_test_talents_warlock()
 {
 	// Affliction
-    new SuppressionTest();
+    RegisterTestCase("talents warlock suppression", SuppressionTest);
     new ImprovedCorruptionTest();
     new ImprovedCurseOfWeaknessTest();
     new ImprovedDrainSoulTest();
@@ -2730,8 +2675,8 @@ void AddSC_test_talents_warlock()
     new ShadowEmbraceTest();
     new SiphonLifeTest();
     new CurseOfExhaustionTest();
-	new ShadowMasteryTest();
-	new ContagionTest();
+	new ShadowMasteryTest(); 
+    RegisterTestCase("talents warlock contagion", ContagionTest);
     new DarkPactTest();
     new ImprovedHowOfTerrorTest();
     new MaledictionTest();
@@ -2740,14 +2685,14 @@ void AddSC_test_talents_warlock()
 	new ImprovedHealthstoneTest();
 	new DemonicEmbraceTest();
 	new ImprovedHealthFunnelTest();
-	new FelIntellectTest();
+    RegisterTestCase("talents warlock fel_intellect", FelIntellectTest);
 	new FelDominationTest();
 	new FelStaminaTest();
-	new DemonicAegisTest();
+    RegisterTestCase("talents warlock demonic_aegis", DemonicAegisTest);
 	new MasterSummonerTest();
 	new DemonicSacrificeTest();
-	new DemonicKnowledgeTest();
-	new ManaFeedTest();
+    RegisterTestCase("talents warlock demonic_knowledge", DemonicKnowledgeTest);
+    RegisterTestCase("talents warlock mana_feed", ManaFeedTest);
     // Destruction
     new ImprovedShadowBoltTest();
     new CataclysmTest();
@@ -2769,5 +2714,5 @@ void AddSC_test_talents_warlock()
     new ConflagrateTest();
     // TODO: Soul Leech
     new ShadowAndFlameTest();
-    new ShadowfuryTest();
+    RegisterTestCase("talents warlock shadowfury", ShadowfuryTest);
 }
