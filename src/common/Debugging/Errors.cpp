@@ -107,4 +107,11 @@ void Abort(char const* file, int line, char const* function)
     abort();
 }
 
+void AbortHandler(int /*sigval*/)
+{
+    // nothing useful to log here, no way to pass args
+    *((volatile int*)nullptr) = 0;
+    exit(1);
+}
+
 } // namespace Trinity

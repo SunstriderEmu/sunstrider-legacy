@@ -8,6 +8,8 @@
 #include "Group.h"
 #include "WorldPacket.h"
 #include "Creature.h"
+#include "GridNotifiersImpl.h"
+#include "CellImpl.h"
 
 OPvPCapturePoint::OPvPCapturePoint(OutdoorPvP * pvp)
 : m_PvP(pvp), m_value(0), m_maxValue(0), m_minValue(0.0f), m_team(TEAM_NEUTRAL),
@@ -348,6 +350,7 @@ bool OPvPCapturePoint::Update(uint32 diff)
     float fact_diff = ((float)m_activePlayers[0].size() - (float)m_activePlayers[1].size());
 
     uint32 Challenger = 0;
+    float maxDiff = m_maxSpeed * diff;
 
     if(fact_diff < 0)
     {
@@ -355,8 +358,8 @@ bool OPvPCapturePoint::Update(uint32 diff)
         if (m_State == OBJECTIVESTATE_HORDE && m_value == -m_maxValue)
             return false;
 
-        if(fact_diff < - m_maxSpeed)
-            fact_diff = - m_maxSpeed;
+        if(fact_diff < -maxDiff)
+            fact_diff = -maxDiff;
 
         Challenger = HORDE;
     }
@@ -366,8 +369,8 @@ bool OPvPCapturePoint::Update(uint32 diff)
         if (m_State == OBJECTIVESTATE_ALLIANCE && m_value == m_maxValue)
             return false;
 
-        if(fact_diff > m_maxSpeed)
-            fact_diff = m_maxSpeed;
+        if(fact_diff > maxDiff)
+            fact_diff = maxDiff;
 
         Challenger = ALLIANCE;
     }

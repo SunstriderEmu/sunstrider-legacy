@@ -147,6 +147,7 @@ extern int main(int argc, char **argv)
        printf("Running with -fsanitize=address flag\n");
 #  endif
 #endif
+    signal(SIGABRT, &Trinity::AbortHandler);
 
     ///- Command line parsing to get the configuration file name
     auto configFile = fs::absolute(_TRINITY_CORE_CONFIG);

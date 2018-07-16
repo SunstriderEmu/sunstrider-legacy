@@ -2229,7 +2229,9 @@ void World::Update(time_t diff)
         static bool started = false;
         if (!started)
         {
+            ASSERT(!sTestMgr->IsRunning());
             sTestMgr->Run(".*");
+            started = true;
         }
         else 
         {
