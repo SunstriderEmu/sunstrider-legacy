@@ -2909,7 +2909,6 @@ bool Aura::CanStackWith(Aura const* existingAura) const
         if (!spellInfo_1->SpellFamilyName)
         {
             if ((spellInfo_1->SpellIconID == 156 && spellInfo_2->SpellIconID == 156)
-                || (spellInfo_1->SpellIconID == 240 && spellInfo_2->SpellIconID == 240)
                 || (spellInfo_1->SpellIconID == 502 && spellInfo_2->SpellIconID == 502))
                 return false;
         }

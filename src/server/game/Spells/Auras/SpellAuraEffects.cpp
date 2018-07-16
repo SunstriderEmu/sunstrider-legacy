@@ -2683,23 +2683,23 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                 if (spellInfo && spellInfo->Stances & (1 << form))
                     target->CastSpell(target, 24932, this);
             }
-            // HotW
+            // Heart of the Wild
             if (HotWSpellId)
             {
+                // hacky, but the only way as spell family is not SPELLFAMILY_DRUID
                 Unit::AuraEffectList const& mModTotalStatPct = target->GetAuraEffectsByType(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE);
                 for (auto i : mModTotalStatPct)
                 {
-                    if (i->GetSpellInfo()->SpellIconID == 240 && i->GetMiscValue() == 3)
+                    if (i->GetSpellInfo()->SpellIconID == 240 && i->GetMiscValue() == 3) 
                     {
-                        int32 HotWMod = i->GetAmount();
+                        //20% intellect, 20% druid stamina, 10% cat AP
+                        int32 HotWMod = i->GetAmount(); 
                         if (GetMiscValue() == FORM_CAT)
                             HotWMod /= 2;
 
-                        CastSpellExtraArgs args;
-                        args.TriggerFlags = TRIGGERED_FULL_MASK;
-                        args.AddSpellBP0(int32(HotWMod));
-                        args.SetTriggeringAura(this);
-                        target->CastSpell(target, HotWSpellId, this);
+                        CastSpellExtraArgs args(this);
+                        args.AddSpellMod(SPELLVALUE_BASE_POINT0, HotWMod); 
+                        target->CastSpell(target, HotWSpellId, args);
                         break;
                     }
                 }
