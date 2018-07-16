@@ -62,7 +62,7 @@
 #include "CharacterDatabase.h"
 #include "PlayerTaxi.h"
 #include "CinematicMgr.h"
-#include "AntiCheatMgr.h"
+#include "PlayerAntiCheat.h"
 #include "SpellHistory.h"
 #include "TradeData.h"
 

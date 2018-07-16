@@ -18,7 +18,7 @@
 #include "WardenDataStorage.h"
 #include "Chat.h"
 #include "GameTime.h"
-#include "AntiCheatMgr.h"
+#include "PlayerAntiCheat.h"
 
 CWardenDataStorage WardenDataStorage;
 

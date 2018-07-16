@@ -36,7 +36,7 @@
 #include "PacketUtilities.h"
 #include "ReplayRecorder.h"
 #include "ReplayPlayer.h"
-#include "AntiCheatMgr.h"
+#include "PlayerAntiCheat.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -120,7 +120,7 @@ m_TutorialsChanged(false),
 _warden(nullptr),
 forceExit(false),
 expireTime(60000), // 1 min after socket loss, session is deleted
-anticheat(new MovementAntiCheat(this))
+anticheat(new PlayerAntiCheat(this))
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 

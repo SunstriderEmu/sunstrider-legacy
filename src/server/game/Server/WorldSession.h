@@ -9,7 +9,7 @@
 #include "QueryCallback.h"
 #include "World.h"
 
-class MovementAntiCheat;
+class PlayerAntiCheat;
 class MailItemsInfo;
 struct ItemTemplate;
 struct AuctionEntry;
@@ -424,7 +424,7 @@ class TC_GAME_API WorldSession
 
         bool IsConnectionIdle() const;
 
-        MovementAntiCheat* anticheat;
+        PlayerAntiCheat* anticheat;
 
     public:                                                 // opcodes handlers
 

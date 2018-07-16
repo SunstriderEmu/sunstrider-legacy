@@ -37,7 +37,7 @@
 #include "TemporarySummon.h"
 #include "PlayerAI.h"
 #include "CharacterCache.h"
-#include "AntiCheatMgr.h"
+#include "PlayerAntiCheat.h"
 #include "SpellHistory.h"
 #include "ChaseMovementGenerator.h"
 #include "AbstractFollower.h"
