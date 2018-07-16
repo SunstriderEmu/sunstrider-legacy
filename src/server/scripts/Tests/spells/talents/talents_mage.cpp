@@ -34,52 +34,48 @@ public:
 	}
 };
 
-class MagicAbsorptionTest : public TestCaseScript
+class MagicAbsorptionTest : public TestCase
 {
-public:
-	MagicAbsorptionTest() : TestCaseScript("talents mage magic_absorption") { }
+    /*
+    "Increases all resistances by 10 and causes all spells you fully resist to restore 5% of your total mana. 1 sec. cooldown."
+    Bugs:
+        - Fully resisted spells should restore 5% of total mana
+    */
+    void AssertManaRestored(TestPlayer* mage, Unit* dummy, uint32 spellId, uint32 expectedManaRestored)
+    {
+        TriggerCastFlags flags = TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_SPEED | TRIGGERED_TREAT_AS_NON_TRIGGERED);
+        FORCE_CAST(mage, dummy, spellId, SPELL_MISS_RESIST, flags);
+        ASSERT_INFO("%s didn't return 0.05 of total mana.", _SpellString(spellId).c_str());
+        TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedManaRestored);
+    }
 
-	class MagicAbsorptionTestImpt : public TestCase
+	void Test() override
 	{
-	public:
-        /*
-        Bugs:
-            - Fully resisted spells to restore 5% of total mana
-        */
-		MagicAbsorptionTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
+        mage->DisableRegeneration(true);
+        mage->SetPower(POWER_MANA, 0);
 
-        void AssertManaRestored(TestPlayer* mage, Unit* dummy, uint32 spellId, uint32 expectedManaRestored)
-        {
-            TriggerCastFlags flags = TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_CAST_DIRECTLY | TRIGGERED_IGNORE_SPEED | TRIGGERED_TREAT_AS_NON_TRIGGERED);
-            FORCE_CAST(mage, dummy, spellId, SPELL_MISS_RESIST, flags);
-            ASSERT_INFO("%s didn't return 0.05 of total mana.", _SpellString(spellId).c_str());
-            TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedManaRestored);
-        }
+        uint32 const talentResistBoost = 10;
+        float const talentResistManaBack = 0.05f;
 
-		void Test() override
-		{
-			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
-            mage->DisableRegeneration(true);
-            mage->SetPower(POWER_MANA, 0);
+        // Resistance
+        SECTION("Improved resistance", [&] {
+            uint32 const expectedResArcane = mage->GetResistance(SPELL_SCHOOL_ARCANE) + talentResistBoost;
+            uint32 const expectedResFire = mage->GetResistance(SPELL_SCHOOL_FIRE) + talentResistBoost;
+            uint32 const expectedResFrost = mage->GetResistance(SPELL_SCHOOL_FROST) + talentResistBoost;
+            uint32 const expectedResNature = mage->GetResistance(SPELL_SCHOOL_NATURE) + talentResistBoost;
+            uint32 const expectedResShadow = mage->GetResistance(SPELL_SCHOOL_SHADOW) + talentResistBoost;
 
-            uint32 const talentResistBoost = 10;
-            float const talentResistManaBack = 0.05f;
+            LearnTalent(mage, Talents::Mage::MAGIC_ABSORPTION_RNK_5);
+            TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_ARCANE) == expectedResArcane);
+            TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_FIRE) == expectedResFire);
+            TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_FROST) == expectedResFrost);
+            TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_NATURE) == expectedResNature);
+            TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_SHADOW) == expectedResShadow);
+        });
 
-            // Resistance
-			uint32 const expectedResArcane = mage->GetResistance(SPELL_SCHOOL_ARCANE) + talentResistBoost;
-			uint32 const expectedResFire = mage->GetResistance(SPELL_SCHOOL_FIRE) + talentResistBoost;
-			uint32 const expectedResFrost = mage->GetResistance(SPELL_SCHOOL_FROST) + talentResistBoost;
-			uint32 const expectedResNature = mage->GetResistance(SPELL_SCHOOL_NATURE) + talentResistBoost;
-			uint32 const expectedResShadow = mage->GetResistance(SPELL_SCHOOL_SHADOW) + talentResistBoost;
-
-			LearnTalent(mage, Talents::Mage::MAGIC_ABSORPTION_RNK_5);
-			TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_ARCANE) == expectedResArcane);
-			TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_FIRE) == expectedResFire);
-			TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_FROST) == expectedResFrost);
-			TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_NATURE) == expectedResNature);
-			TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_SHADOW) == expectedResShadow);
-
-			// Fully resisted spells to restore 5% of total mana
+        SECTION("Mana restored on resist", STATUS_KNOWN_BUG, [&] {
+            // Fully resisted spells to restore 5% of total mana
             Creature* dummy = SpawnCreature();
             uint32 const expectedManaRestored = mage->GetMaxPower(POWER_MANA) * talentResistManaBack;
             AssertManaRestored(mage, dummy, ClassSpells::Mage::ARCANE_BLAST_RNK_1, expectedManaRestored);
@@ -102,77 +98,59 @@ public:
             AssertManaRestored(mage, dummy, ClassSpells::Mage::FROST_NOVA_RNK_5, expectedManaRestored);
             AssertManaRestored(mage, dummy, ClassSpells::Mage::FROSTBOLT_RNK_13, expectedManaRestored);
             AssertManaRestored(mage, dummy, ClassSpells::Mage::ICE_LANCE_RNK_1, expectedManaRestored);
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<MagicAbsorptionTestImpt>();
+        });
 	}
 };
 
-class MagicAttunementTest : public TestCaseScript
+class MagicAttunementTest : public TestCase
 {
-public:
-	MagicAttunementTest() : TestCaseScript("talents mage magic_attunement") { }
-
-	class MagicAttunementTestImpt : public TestCase
+    /*
+    Increases the effect of your Amplify Magic and Dampen Magic spells by 50%.
+    Bugs:
+        - No effect
+    */
+	void Test() override
 	{
-	public:
-        /*
-        Bugs:
-            - Should increase the effect of Amplify Magic & Dampen Magic by 50%
-        */
-		MagicAttunementTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
+        TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_TROLL);
+        TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
 
-		void Test() override
-		{
-            TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
-            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_TROLL);
-            TestPlayer* enemy = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
-
-            GroupPlayer(mage, priest);
+        GroupPlayer(mage, priest);
             
-            LearnTalent(mage, Talents::Mage::MAGIC_ATTUNEMENT_RNK_2);
-            float const talentFactor = 1.5f;
+        LearnTalent(mage, Talents::Mage::MAGIC_ATTUNEMENT_RNK_2);
+        float const talentFactor = 1.5f;
 
-            EQUIP_NEW_ITEM(enemy, 34182); // Grand Magister's Staff of Torrents - 266 SP
-            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification - 550 BH
+        EQUIP_NEW_ITEM(enemy, 34182); // Grand Magister's Staff of Torrents - 266 SP
+        EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification - 550 BH
 
-            // Amplify Magic
+        SECTION("Amplify Magic", STATUS_KNOWN_BUG, [&] {
             priest->AddAura(ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6, priest);
 
             uint32 const spellDamageTakenBoost = enemy->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) + 120 * talentFactor;
-            float const spellCoefficient = ClassSpellsCoeff::Warlock::SHADOW_BOLT;
-            uint32 const minSBBoost = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN + spellDamageTakenBoost * spellCoefficient;
-            uint32 const maxSBBoost = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX + spellDamageTakenBoost * spellCoefficient;
+            uint32 const minSBBoost = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN + spellDamageTakenBoost * ClassSpellsCoeff::Warlock::SHADOW_BOLT;
+            uint32 const maxSBBoost = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX + spellDamageTakenBoost * ClassSpellsCoeff::Warlock::SHADOW_BOLT;
             TEST_DIRECT_SPELL_DAMAGE(enemy, priest, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, minSBBoost, maxSBBoost, false);
 
             uint32 const healingBoost = priest->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS) + 240 * talentFactor;
-            float const greaterHealCoeff = ClassSpellsCoeff::Priest::GREATER_HEAL;
-            uint32 const minGHBoost = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN + healingBoost * greaterHealCoeff;
-            uint32 const maxGHBoost = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX + healingBoost * greaterHealCoeff;
+            uint32 const minGHBoost = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN + healingBoost * ClassSpellsCoeff::Priest::GREATER_HEAL;
+            uint32 const maxGHBoost = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX + healingBoost * ClassSpellsCoeff::Priest::GREATER_HEAL;
             TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, minGHBoost, maxGHBoost, false);
-            priest->RemoveAurasDueToSpell(ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6);
+        });
+        priest->RemoveAurasDueToSpell(ClassSpells::Mage::AMPLIFY_MAGIC_RNK_6);
 
-            // Dampen Magic
+        SECTION("Dampen Magic", STATUS_KNOWN_BUG, [&] {
             priest->AddAura(ClassSpells::Mage::DAMPEN_MAGIC_RNK_6, priest);
 
             uint32 const spellDamageTakenMalus = enemy->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) - 120 * talentFactor;
-            uint32 const minSBMalus = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN + spellDamageTakenMalus * spellCoefficient;
-            uint32 const maxSBMalus = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX + spellDamageTakenMalus * spellCoefficient;
+            uint32 const minSBMalus = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN + spellDamageTakenMalus * ClassSpellsCoeff::Warlock::SHADOW_BOLT;
+            uint32 const maxSBMalus = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX + spellDamageTakenMalus * ClassSpellsCoeff::Warlock::SHADOW_BOLT;
             TEST_DIRECT_SPELL_DAMAGE(enemy, priest, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, minSBMalus, maxSBMalus, false);
 
             uint32 const healingMalus = priest->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS) - 240 * talentFactor;
-            uint32 const minGHMalus = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN + healingMalus * greaterHealCoeff;
-            uint32 const maxGHMalus = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX + healingMalus * greaterHealCoeff;
+            uint32 const minGHMalus = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MIN + healingMalus * ClassSpellsCoeff::Priest::GREATER_HEAL;
+            uint32 const maxGHMalus = ClassSpellsDamage::Priest::GREATER_HEAL_RNK_7_MAX + healingMalus * ClassSpellsCoeff::Priest::GREATER_HEAL;
             TEST_DIRECT_HEAL(priest, priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, minGHMalus, maxGHMalus, false);
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<MagicAttunementTestImpt>();
+        });
 	}
 };
 
@@ -716,8 +694,8 @@ void AddSC_test_talents_mage()
 {
 	// Arcane
 	new MageWandSpecializationTest();
-	new MagicAbsorptionTest();
-	new MagicAttunementTest();
+    RegisterTestCase("talents mage magic_absorption", MagicAbsorptionTest);
+    RegisterTestCase("talents mage magic_attunement", MagicAttunementTest);
 	new ArcaneFortitudeTest();
 	new ImprovedCounterspellTest();
 	new ArcaneMindTest();

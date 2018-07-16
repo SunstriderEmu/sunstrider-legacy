@@ -237,32 +237,25 @@ public:
     }
 };
 
-class BramblesTest : public TestCaseScript
+/*
+"Increases damage caused by your Thorns and Entangling Roots spells by 75%."
+Bugs:
+- Entangling roots does 1/3 of the damage it should do (base spell is bugged?)
+*/
+class BramblesTest : public TestCase
 {
 public:
-
-    BramblesTest() : TestCaseScript("talents druid brambles") { }
-
-    class BramblesTestImpt : public TestCase
+    void Test() override
     {
-    public:
-        /*
-        Bugs:
-            - Entangling roots does 1/3 of the damage it should do
-        */
-        BramblesTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+        TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
 
-        void Test() override
-        {
-            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-            TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
+        rogue->ForceMeleeHitResult(MELEE_HIT_NORMAL);
+        druid->ForceSpellHitResultOverride(SPELL_MISS_NONE); //Thorns can miss
+        LearnTalent(druid, Talents::Druid::BRAMBLES_RNK_3);
+        float const talentDamageFactor = 1.75f;
 
-            rogue->ForceMeleeHitResult(MELEE_HIT_NORMAL);
-            druid->ForceSpellHitResultOverride(SPELL_MISS_NONE); //Thorns can miss
-            LearnTalent(druid, Talents::Druid::BRAMBLES_RNK_3);
-            float const talentDamageFactor = 1.75f;
-
-            // Thorns
+        SECTION("Thorns damage", [&]{
             TEST_CAST(druid, druid, ClassSpells::Druid::THORNS_RNK_7);
             uint32 const thornsDmg = ClassSpellsDamage::Druid::THORNS_RNK_7_TICK * talentDamageFactor;
             uint32 const rogueExpectedHealth = rogue->GetHealth() - thornsDmg;
@@ -270,18 +263,14 @@ public:
             rogue->AttackStop();
             ASSERT_INFO("Rogue has %u HP but should have %u HP.", rogue->GetHealth(), rogueExpectedHealth);
             TEST_ASSERT(rogue->GetHealth() == rogueExpectedHealth);
+        });
 
-            // Entangling Roots
+        SECTION("Entangling Roots damage", STATUS_KNOWN_BUG, [&] {
             uint32 const tickAmount = 9;
             uint32 const entanglingRootsTick = ClassSpellsDamage::Druid::ENTANGLING_ROOTS_RNK_7_TICK * talentDamageFactor;
             uint32 const expectedEntanglingRootsDmg = tickAmount * entanglingRootsTick;
             TEST_DOT_DAMAGE(druid, rogue, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, expectedEntanglingRootsDmg, false);
-        }
-    };
-
-    std::unique_ptr<TestCase> GetTest() const override
-    {
-        return std::make_unique<BramblesTestImpt>();
+        });
     }
 };
 
@@ -1044,54 +1033,47 @@ public:
 	}
 };
 
-class HeartOfTheWildTest : public TestCaseScript
+class HeartOfTheWildTest : public TestCase
 {
-public:
-	HeartOfTheWildTest() : TestCaseScript("talents druid heart_of_the_wild") { }
-
-	class HeartOfTheWildTestImpt : public TestCase
+    /*
+    "Increases your Intellect by 20%. In addition, while in Bear or Dire Bear Form your Stamina is increased by 20% and while in Cat Form your attack power is increased by 10%."
+    */
+	void Test() override
 	{
-	public:
-        /*
-        Bugs:
-            - Should add 20% stamina in bear form
-            - Should add 10% AP in cat form
-        */
-		HeartOfTheWildTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+        float const talentIntellectFactor = 1.2f;
+        float const talentStaminaFactor = 1.2f;
+        float const talentAPFactor = 1.1f;
 
-		void Test() override
-		{
-			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-
-            // Int
-            float const talentIntellectFactor = 1.2f;
-			float const expectedInt = druid->GetStat(STAT_INTELLECT) * talentIntellectFactor;
-			LearnTalent(druid, Talents::Druid::HEART_OF_THE_WILD_RNK_5);
-			TEST_ASSERT(Between<float>(druid->GetStat(STAT_INTELLECT), expectedInt - 0.1f, expectedInt + 0.1f));
-            druid->RemoveSpell(Talents::Druid::HEART_OF_THE_WILD_RNK_5);
-
-            // Stam
-            float const talentStaminaFactor = 1.2f;
-            TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            float const expectedSta = druid->GetStat(STAT_STAMINA) * talentStaminaFactor;
+        SECTION("Improved intellect", [&] {
+            float const expectedInt = druid->GetStat(STAT_INTELLECT) * talentIntellectFactor;
             LearnTalent(druid, Talents::Druid::HEART_OF_THE_WILD_RNK_5);
+            TEST_ASSERT(Between<float>(druid->GetStat(STAT_INTELLECT), expectedInt - 0.1f, expectedInt + 0.1f));
+        });
+        druid->RemoveSpell(Talents::Druid::HEART_OF_THE_WILD_RNK_5);
+
+        //Prepare base values for next sections
+        TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+        float const expectedSta = druid->GetStat(STAT_STAMINA) * talentStaminaFactor;
+        TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+        float const expectedAP = druid->GetTotalAttackPowerValue(BASE_ATTACK) * talentAPFactor; //recast after learn
+        druid->RemoveAurasDueToSpell(ClassSpells::Druid::CAT_FORM_RNK_1); 
+
+        SECTION("Bear stamina", [&] {
+            LearnTalent(druid, Talents::Druid::HEART_OF_THE_WILD_RNK_5);
+            TEST_CAST(druid, druid, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_FULL_MASK); 
             ASSERT_INFO("Druid has %f Stamina but %f was expected.", druid->GetStat(STAT_STAMINA), expectedSta);
-            TEST_ASSERT(Between<float>(druid->GetStat(STAT_STAMINA), expectedSta - 0.1f, expectedSta + 0.1f));
-            druid->RemoveSpell(Talents::Druid::HEART_OF_THE_WILD_RNK_5);
+            TEST_ASSERT(Between<float>(druid->GetStat(STAT_STAMINA), expectedSta - 1.f, expectedSta + 1.f));
+        });
+        druid->RemoveSpell(Talents::Druid::HEART_OF_THE_WILD_RNK_5);
             
-            // AP
-            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            float const talentAPFactor = 1.1f;
-            float const expectedAP = druid->GetTotalAttackPowerValue(BASE_ATTACK) * talentAPFactor;
+        SECTION("Cat AP", [&] {
             LearnTalent(druid, Talents::Druid::HEART_OF_THE_WILD_RNK_5);
+            TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             ASSERT_INFO("Druid has %f AP, %f expected.", druid->GetTotalAttackPowerValue(BASE_ATTACK), expectedAP);
-            TEST_ASSERT(Between<float>(druid->GetTotalAttackPowerValue(BASE_ATTACK), expectedAP - 0.1f, expectedAP + 0.1f));
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<HeartOfTheWildTestImpt>();
+            TEST_ASSERT(Between<float>(druid->GetTotalAttackPowerValue(BASE_ATTACK), expectedAP - 1.f, expectedAP + 1.f));
+        });
+        druid->RemoveSpell(Talents::Druid::HEART_OF_THE_WILD_RNK_5);
 	}
 };
 
@@ -1300,39 +1282,28 @@ public:
 	}
 };
 
-class FurorTest : public TestCaseScript
+class FurorTest : public TestCase
 {
-public:
-	FurorTest() : TestCaseScript("talents druid furor") { }
-
-	class FurorTestImpt : public TestCase
+    /*
+    "Gives you 100% chance to gain 10 Rage when you shapeshift into Bear and Dire Bear Form or 40 Energy when you shapeshift into Cat Form."
+    */
+	void Test() override
 	{
-	public:
-        /*
-        Bugs:
-            - Should add 10 Rage upon shifting into Bear form
-        */
-		FurorTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+		LearnTalent(druid, Talents::Druid::FUROR_RNK_5);
 
-		void Test() override
-		{
-			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
-
-			LearnTalent(druid, Talents::Druid::FUROR_RNK_5);
+        SECTION("Bear rage", [&] {
             TEST_CAST(druid, druid, ClassSpells::Druid::BEAR_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
             ASSERT_INFO("Druid has %u Rage but %u was expected.", druid->GetPower(POWER_RAGE), uint32(100));
-			TEST_ASSERT(druid->GetPower(POWER_RAGE) == uint32(100)); // = 10 rage
-            druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1); //we need to dispell it manually, clients send CMSG_CANCEL_AURA when switching form
+            TEST_ASSERT(druid->GetPower(POWER_RAGE) == uint32(100)); // = 10 rage
+        });
+        druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1); //we need to dispell it manually to be able to switch to cat, clients send CMSG_CANCEL_AURA when switching form
 
+        SECTION("Cat power", [&] {
             TEST_CAST(druid, druid, ClassSpells::Druid::CAT_FORM_RNK_1);
             TEST_HAS_AURA(druid, ClassSpells::Druid::CAT_FORM_RNK_1);
-			TEST_ASSERT(druid->GetPower(POWER_ENERGY) == 40);
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<FurorTestImpt>();
+            TEST_ASSERT(druid->GetPower(POWER_ENERGY) == 40);
+        });
 	}
 };
 
@@ -1365,45 +1336,42 @@ public:
 	}
 };
 
-class NaturalShapeshifterTest : public TestCaseScript
+class NaturalShapeshifterTest : public TestCase
 {
-public:
-	NaturalShapeshifterTest() : TestCaseScript("talents druid natural_shapeshifter") { }
-
-	class NaturalShapeshifterTestImpt : public TestCase
+    /*
+    "Reduces the mana cost of all shapeshifting by 30%."
+    Bugs:
+        - Should reduce mana cost of Tree of Life
+    */
+	void Test() override
 	{
-	public:
-        /*
-        Bugs:
-            - Should reduce mana cost of Tree of Life form by 30%
-        */
-		NaturalShapeshifterTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+		LearnTalent(druid, Talents::Druid::NATURAL_SHAPESHIFTER_RNK_3);
+        float const talentFactor = 0.7f;
 
-		void Test() override
-		{
-			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
-			LearnTalent(druid, Talents::Druid::NATURAL_SHAPESHIFTER_RNK_3);
-            float const talentFactor = 0.7f;
+		uint32 const expectedBearMana	= 829 * talentFactor;
+		uint32 const expectedCatMana	= 829 * talentFactor;
+		uint32 const expectedTravelMana = 308 * talentFactor;
+		uint32 const expectedAquaMana	= 308 * talentFactor;
+		uint32 const expectedMoonMana	= 521 * talentFactor;
+		uint32 const expectedTreeMana	= 663 * talentFactor;
 
-			uint32 const expectedBearMana	= 829 * talentFactor;
-			uint32 const expectedCatMana	= 829 * talentFactor;
-			uint32 const expectedTravelMana = 308 * talentFactor;
-			uint32 const expectedAquaMana	= 308 * talentFactor;
-			uint32 const expectedMoonMana	= 521 * talentFactor;
-			uint32 const expectedTreeMana	= 663 * talentFactor;
-
-			TEST_POWER_COST(druid, ClassSpells::Druid::BEAR_FORM_RNK_1, POWER_MANA, expectedBearMana);
+        SECTION("Bear form", [&] {
+            TEST_POWER_COST(druid, ClassSpells::Druid::BEAR_FORM_RNK_1, POWER_MANA, expectedBearMana);
+        });
+        SECTION("Cat form", [&] {
             TEST_POWER_COST(druid, ClassSpells::Druid::CAT_FORM_RNK_1, POWER_MANA, expectedCatMana);
+        });
+        SECTION("Travel form", [&] {
             TEST_POWER_COST(druid, ClassSpells::Druid::TRAVEL_FORM_RNK_1, POWER_MANA, expectedTravelMana);
-			//TEST_POWER_COST(player, ClassSpells::Druid::AQUATIC_FORM_RNK_1, POWER_MANA, expectedAquaMana);
+        });
+		//TEST_POWER_COST(player, ClassSpells::Druid::AQUATIC_FORM_RNK_1, POWER_MANA, expectedAquaMana);
+        SECTION("Moonkin form", [&] {
             TEST_POWER_COST(druid, ClassSpells::Druid::MOONKIN_FORM_RNK_1, POWER_MANA, expectedMoonMana);
+        });
+        SECTION("Tree of life form", STATUS_KNOWN_BUG, [&] {
             TEST_POWER_COST(druid, ClassSpells::Druid::TREE_OF_LIFE_RNK_1, POWER_MANA, expectedTreeMana);
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<NaturalShapeshifterTestImpt>();
+        });
 	}
 };
 
@@ -1505,47 +1473,43 @@ public:
 	}
 };
 
-class GiftOfNatureTest : public TestCaseScript
+class GiftOfNatureTest : public TestCase
 {
-public:
-	GiftOfNatureTest() : TestCaseScript("talents druid gift_of_nature") { }
-
-	class GiftOfNatureTestImpt : public TestCase
+    /*
+    Increases the effect of all healing spells by $s1%.
+    Bugs:
+        - Should affect the Lifebloom burst.
+    */
+	void Test() override
 	{
-	public:
-        /*
-        Bugs:
-            - Should affect the Lifebloom burst.
-        */
-		GiftOfNatureTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
-
-		void Test() override
-		{
-			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+		TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
             
-            druid->DisableRegeneration(true);
+        druid->DisableRegeneration(true);
 
-			LearnTalent(druid, Talents::Druid::GIFT_OF_NATURE_RNK_5);
-			float const giftOfNatureFactor = 1.1f;
+		LearnTalent(druid, Talents::Druid::GIFT_OF_NATURE_RNK_5);
+		float const giftOfNatureFactor = 1.1f;
 
-			// Swiftmend
-			uint32 const rejuvenationTotal = 4 * floor(ClassSpellsDamage::Druid::REJUVENATION_RNK_13_TICK * giftOfNatureFactor);
+        uint32 const regrowthTick = ClassSpellsDamage::Druid::REGROWTH_RNK_10_TICK * giftOfNatureFactor;
+        uint32 const regrowthTotal = 6 * regrowthTick;
+
+        uint32 const rejuvenationTotal = 4 * floor(ClassSpellsDamage::Druid::REJUVENATION_RNK_13_TICK * giftOfNatureFactor);
+        SECTION("Switfmend", [&] {
             TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::SWIFTMEND_RNK_1, rejuvenationTotal, rejuvenationTotal, false, [](Unit* caster, Unit* victim) {
                 caster->AddAura(ClassSpells::Druid::REJUVENATION_RNK_13, caster);
             });
-            uint32 const regrowthTick = ClassSpellsDamage::Druid::REGROWTH_RNK_10_TICK * giftOfNatureFactor;
-			uint32 const regrowthTotal = 6 * regrowthTick;
             TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::SWIFTMEND_RNK_1, regrowthTotal, regrowthTotal, false, [](Unit* caster, Unit* victim) {
                 caster->AddAura(ClassSpells::Druid::REGROWTH_RNK_10, caster);
             });
+        });
 
-			// Rejuvenation
+        SECTION("Rejuvenation", [&] {
             TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::REJUVENATION_RNK_13, rejuvenationTotal, false);
+        });
 
-			// Lifebloom hot
+        SECTION("Lifebloom hot", [&] {
             druid->SetHealth(1);
             uint32 const lifebloomTickAmount = 7;
-			uint32 const lifebloomTick = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_TICK * giftOfNatureFactor;
+            uint32 const lifebloomTick = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_TICK * giftOfNatureFactor;
             uint32 const expectedLifebloom = lifebloomTickAmount * lifebloomTick;
             EnableCriticals(druid, false);
             TEST_CAST(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
@@ -1554,10 +1518,11 @@ public:
             auto[dotDamageToTarget, tickCount] = AI->GetDotDamage(druid, ClassSpells::Druid::LIFEBLOOM_RNK_1);
             TEST_ASSERT(tickCount == lifebloomTickAmount);
             ASSERT_INFO("HoT did %u instead of %u", dotDamageToTarget, expectedLifebloom);
-            TEST_ASSERT(dotDamageToTarget == expectedLifebloom);
-            
-            // Lifebloom burst
-            /* Kelno: Spells has no family class flags... and Gift Of Nature class mask affect from LK client does not include it either. 
+            TEST_ASSERT(dotDamageToTarget == int32(expectedLifebloom));
+        });
+
+        SECTION("Lifebloom burst", STATUS_KNOWN_BUG, [&] {
+            /* Kelno: Spells has no family class flags... and Gift Of Nature class mask affect from LK client does not include it either.
             Thus it's very possible that this spell shouldn't be affected, but we have no definitive proof of this and probably should include it,
             else it will seem bugged
             */
@@ -1565,25 +1530,22 @@ public:
             auto[dealtMin, dealtMax] = GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1_FINAL_PROC, false, 1);
             ASSERT_INFO("Lifebloom bursted for %u instead of %u.", dealtMin, expectedBurst);
             TEST_ASSERT(dealtMin == expectedBurst);
+        });
 
-			// Regrowth HoTs
-			TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, 7 * regrowthTick, false);
-			// Regrowth Direct
-			uint32 const regrowthMin = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MIN * giftOfNatureFactor;
-			uint32 const regrowthMax = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MAX * giftOfNatureFactor;
-			TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, regrowthMin, regrowthMax, false);
+        SECTION("Regrowth", [&] {
+            // Regrowth HoTs
+            TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, 7 * regrowthTick, false);
+            // Regrowth Direct
+            uint32 const regrowthMin = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MIN * giftOfNatureFactor;
+            uint32 const regrowthMax = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MAX * giftOfNatureFactor;
+            TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, regrowthMin, regrowthMax, false);
+        });
 
-			// Healing Touch
-			uint32 const healingTouchMin = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN * giftOfNatureFactor;
-			uint32 const healingTouchMax = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX * giftOfNatureFactor;
-			TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, healingTouchMin, healingTouchMax, false);
-
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<GiftOfNatureTestImpt>();
+        SECTION("Healing Touch", [&] {
+            uint32 const healingTouchMin = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MIN * giftOfNatureFactor;
+            uint32 const healingTouchMax = ClassSpellsDamage::Druid::HEALING_TOUCH_RNK_13_MAX * giftOfNatureFactor;
+            TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, healingTouchMin, healingTouchMax, false);
+        });
 	}
 };
 
@@ -1650,40 +1612,35 @@ public:
 	}
 };
 
-class EmpoweredRejuvenationTest : public TestCaseScript
+class EmpoweredRejuvenationTest : public TestCase
 {
-public:
-	EmpoweredRejuvenationTest() : TestCaseScript("talents druid empowered_rejuvenation") { }
-
-	class EmpoweredRejuvenationTestImpt : public TestCase
+    /*
+    "The bonus healing effects of your healing over time spells is increased by 20%."
+    Bugs:
+        - Lifebloom burst should be affected by the talent.
+        - Regrowth has some issues with its spell coeff.
+    */
+	void Test() override
 	{
-	public:
-        /*
-        Bugs:
-            - Lifebloom burst should be affected by the talent.
-            - Regrowth has some issues with its spell coeff.
-        */
-		EmpoweredRejuvenationTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+		TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
 
-		void Test() override
-		{
-			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
+		EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification - 550 SP
+        uint32 const bh = druid->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS);
 
-			EQUIP_NEW_ITEM(druid, 34335); // Hammer of Sanctification - 550 SP
-            uint32 const bh = druid->GetInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS);
+		LearnTalent(druid, Talents::Druid::EMPOWERED_REJUVENATION_RNK_5);
+        float const talentFactor = 1.2f;
 
-			LearnTalent(druid, Talents::Druid::EMPOWERED_REJUVENATION_RNK_5);
-            float const talentFactor = 1.2f;
-
-            // Rejuvenation
-            uint32 const rejuvenationTickAmount = 4;
-            uint32 const rejuvenationBhPerTick = bh * ClassSpellsCoeff::Druid::REJUVENATION * talentFactor / rejuvenationTickAmount;
-            uint32 const rejuvenationTick = ClassSpellsDamage::Druid::REJUVENATION_RNK_13_TICK + rejuvenationBhPerTick;
-            uint32 const rejuvenationTotal = rejuvenationTickAmount * rejuvenationTick;
+        uint32 const rejuvenationTickAmount = 4;
+        uint32 const rejuvenationBhPerTick = bh * ClassSpellsCoeff::Druid::REJUVENATION * talentFactor / rejuvenationTickAmount;
+        uint32 const rejuvenationTick = ClassSpellsDamage::Druid::REJUVENATION_RNK_13_TICK + rejuvenationBhPerTick;
+        uint32 const rejuvenationTotal = rejuvenationTickAmount * rejuvenationTick;
+        SECTION("Rejuvenation", [&] {
             TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::REJUVENATION_RNK_13, rejuvenationTotal, false);
+        });
 
+        uint32 const regrowthTick = ClassSpellsDamage::Druid::REGROWTH_RNK_10_TICK + bh * ClassSpellsCoeff::Druid::REGROWTH_HOT * talentFactor;
+        SECTION("Regrowth", STATUS_KNOWN_BUG, [&] {
             // Regrowth HoT
-            uint32 const regrowthTick = ClassSpellsDamage::Druid::REGROWTH_RNK_10_TICK + bh * ClassSpellsCoeff::Druid::REGROWTH_HOT * talentFactor;
             uint32 const expectedRegrowthTotal = 7 * regrowthTick;
             TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, expectedRegrowthTotal, false);
             // Regrowth Direct
@@ -1691,8 +1648,9 @@ public:
             uint32 const regrowthMin = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MIN + regrowthBhBonus;
             uint32 const regrowthMax = ClassSpellsDamage::Druid::REGROWTH_RNK_10_MAX + regrowthBhBonus;
             TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, regrowthMin, regrowthMax, false);
+        });
 
-            // Swiftmend
+        SECTION("Swiftmend", [&] {
             TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::SWIFTMEND_RNK_1, rejuvenationTotal, rejuvenationTotal, false, [](Unit* caster, Unit* victim) {
                 caster->AddAura(ClassSpells::Druid::REJUVENATION_RNK_13, caster);
             });
@@ -1700,14 +1658,16 @@ public:
             TEST_DIRECT_HEAL(druid, druid, ClassSpells::Druid::SWIFTMEND_RNK_1, regrowthTotal, regrowthTotal, false, [](Unit* caster, Unit* victim) {
                 caster->AddAura(ClassSpells::Druid::REGROWTH_RNK_10, caster);
             });
+        });
 
-            // Tranquility
+        SECTION("Tranquility", [&] {
             float const tranquilityTickAmount = 4.f;
             float const tranquilityTickCoeff = ClassSpellsCoeff::Druid::TRANQUILITY_LVL_70 * talentFactor / tranquilityTickAmount;
             uint32 const expectedTranquilityTick = ClassSpellsDamage::Druid::TRANQUILITY_RNK_5_TICK + bh * tranquilityTickCoeff;
             TEST_CHANNEL_HEALING(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, ClassSpells::Druid::TRANQUILITY_RNK_5_PROC, 4, expectedTranquilityTick);
+        });
 
-            // Lifebloom hot
+        SECTION("Lifebloom hot", [&] {
             druid->SetHealth(1);
             uint32 const lifebloomTickAmount = 7;
             uint32 const lifebloomBhPerTick = bh * ClassSpellsCoeff::Druid::LIFEBLOOM_HOT * talentFactor / lifebloomTickAmount;
@@ -1721,18 +1681,14 @@ public:
             TEST_ASSERT(tickCount == lifebloomTickAmount);
             ASSERT_INFO("HoT did %u instead of %u", dotDamageToTarget, expectedLifebloom);
             TEST_ASSERT(dotDamageToTarget == int32(expectedLifebloom));
+        });
 
-            // Lifebloom burst
+        SECTION("Lifebloom burst", STATUS_KNOWN_BUG, [&] {
             uint32 const expectedBurst = ClassSpellsDamage::Druid::LIFEBLOOM_RNK_1_BURST + bh * ClassSpellsCoeff::Druid::LIFEBLOOM * talentFactor;
             auto[dealtMin, dealtMax] = GetHealingPerSpellsTo(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1_FINAL_PROC, false, 1);
             ASSERT_INFO("Lifebloom bursted for %u instead of %u.", dealtMin, expectedBurst);
             TEST_ASSERT(dealtMin == expectedBurst);
-		}
-	};
-
-	std::unique_ptr<TestCase> GetTest() const override
-	{
-		return std::make_unique<EmpoweredRejuvenationTestImpt>();
+        });
 	}
 };
 
@@ -1746,7 +1702,7 @@ void AddSC_test_talents_druid()
     new ControlOfNatureTest();
     new FocusedStarlightTest();
     new ImprovedMoonfireTest();
-    new BramblesTest();
+    RegisterTestCase("talents druid brambles", BramblesTest);
 	new InsectSwarmTest();
 	new NaturesReachTest();
     new VengeanceTest();
@@ -1764,19 +1720,19 @@ void AddSC_test_talents_druid()
 	new PredatoryStrikesTest();
 	new SavageFuryTest();
 	new FaerieFireFeralTest();
-	new HeartOfTheWildTest();
+    RegisterTestCase("talents druid heart_of_the_wild", HeartOfTheWildTest);
 	new SurvivalOfTheFittestTest();
 	new MangleTest();
 	// Restoration: 11/20
 	new ImprovedMarkOfTheWildTest();
-	new FurorTest();
+    RegisterTestCase("talents druid furor", FurorTest);
 	new NaturalistTest();
-	new NaturalShapeshifterTest();
+    RegisterTestCase("talents druid natural_shapeshifter", NaturalShapeshifterTest);
 	new IntensityTest();
 	new TranquilSpiritTest();
 	new ImprovedRejuvenationTest();
-	new GiftOfNatureTest();
+    RegisterTestCase("talents druid gift_of_nature", GiftOfNatureTest);
 	new EmpoweredTouchTest();
 	new LivingSpiritTest();
-	new EmpoweredRejuvenationTest();
+    RegisterTestCase("talents druid empowered_rejuvenation", EmpoweredRejuvenationTest);
 }

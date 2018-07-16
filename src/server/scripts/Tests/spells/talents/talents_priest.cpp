@@ -2574,73 +2574,83 @@ public:
     }
 };
 
-class VampiricEmbraceTest : public TestCaseScript
+//"Afflicts your target with Shadow energy that causes all party members to be healed for 15% of any Shadow spell damage you deal for 1min."
+class VampiricEmbraceTest : public TestCase
 {
 public:
-    VampiricEmbraceTest() : TestCaseScript("talents priest vampiric_embrace") { }
+    /*
+    Bugs:
+        - Spiritual Atunnement is not working with VE
+    */
 
-    //"Afflicts your target with Shadow energy that causes all party members to be healed for 15% of any Shadow spell damage you deal for 1min."
-    class VampiricEmbraceTestImpt : public TestCase
+    void Test() override
     {
-    public:
-        /*
-        Bugs:
-            - Spiritual Atunnement is not working with VE
-        */
-        VampiricEmbraceTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
+        TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+        TestPlayer* priest2 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
+        TestPlayer* paladin = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN);
+        Creature* dummy = SpawnCreature();
 
-        void Test() override
-        {
-            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
-            TestPlayer* priest2 = SpawnPlayer(CLASS_PRIEST, RACE_HUMAN);
-            TestPlayer* paladin = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN);
-            Creature* dummy = SpawnCreature();
+        EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 183 SP & 550 BH
+        paladin->DisableRegeneration(true);
+        paladin->SetHealth(1);
+        paladin->SetPower(POWER_MANA, 0);
+        GroupPlayer(priest, paladin);
+        GroupPlayer(priest, priest2);
+        paladin->AddAura(ClassSpells::Paladin::SPIRITUAL_ATTUNEMENT_RNK_2, paladin);
+        TEST_ASSERT(paladin->HasAura(ClassSpells::Paladin::SPIRITUAL_ATTUNEMENT_RNK_2));
 
-            EQUIP_NEW_ITEM(priest, 34335); // Hammer of Sanctification -- 183 SP & 550 BH
-            paladin->DisableRegeneration(true);
-            paladin->SetHealth(1);
-            paladin->SetPower(POWER_MANA, 0);
-            GroupPlayer(priest, paladin);
-            GroupPlayer(priest, priest2);
-            paladin->AddAura(ClassSpells::Paladin::SPIRITUAL_ATTUNEMENT_RNK_2, paladin);
-            TEST_ASSERT(paladin->HasAura(ClassSpells::Paladin::SPIRITUAL_ATTUNEMENT_RNK_2));
+        TEST_POWER_COST(priest, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, POWER_MANA, 52);
+        FORCE_CAST(priest, dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
+        TEST_AURA_MAX_DURATION(dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, Seconds(60));
+        TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, Seconds(10));
 
-            TEST_POWER_COST(priest, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, POWER_MANA, 52);
-            FORCE_CAST(priest, dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
-            TEST_AURA_MAX_DURATION(dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, Seconds(60));
-            TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1, Seconds(10));
-
-            // Heal: only from shadow damage
-            TriggerCastFlags triggerFlags = TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED);
+        TriggerCastFlags triggerFlags = TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED);
+        SECTION("Heal from shadow damage only", [&] {
             FORCE_CAST(priest, dummy, ClassSpells::Priest::SMITE_RNK_10, SPELL_MISS_NONE, triggerFlags);
             FORCE_CAST(priest, dummy, ClassSpells::Mage::FIREBALL_RNK_13, SPELL_MISS_NONE, triggerFlags);
             FORCE_CAST(priest, dummy, ClassSpells::Mage::FROSTBOLT_RNK_13, SPELL_MISS_NONE, triggerFlags);
             FORCE_CAST(priest, dummy, ClassSpells::Mage::ARCANE_EXPLOSION_RNK_8, SPELL_MISS_NONE, triggerFlags);
             FORCE_CAST(priest, dummy, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, SPELL_MISS_NONE, triggerFlags);
             TEST_ASSERT(paladin->GetHealth() == 1);
+        });
 
-            // Healing
+        SECTION("Healing value", [&] {
+            auto AI = _GetCasterAI(priest);
+            AI->ResetSpellCounters();
             FORCE_CAST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_MISS_NONE, triggerFlags);
-            auto [minDmg, maxDmg] = GetDamagePerSpellsTo(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, {}, 1);
+            auto[minDmg, maxDmg] = GetDamagePerSpellsTo(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, {}, 1);
             float const vampiricEmbraceHealFactor = 0.15f;
             uint32 const expectedVEHeal = minDmg * vampiricEmbraceHealFactor;
             uint32 const paladinExpectedHealth = 1 + expectedVEHeal;
             ASSERT_INFO("Paladin has %u HP but %u was expected.", paladin->GetHealth(), paladinExpectedHealth);
             TEST_ASSERT(paladin->GetHealth() == paladinExpectedHealth);
+        });
 
+        SECTION("Paladin spiritual attunement giving mana", STATUS_KNOWN_BUG, [&] {
             // Paladin's Spiritual Attunement works with VE heal (http://wowwiki.wikia.com/wiki/Vampiric_Embrace?oldid=1432448)
             // Bug here: no mana given. Reason is that currently VE has SPELL_ATTR3_CANT_TRIGGER_PROC and will not trigger spiritual attunement
             // It's probably more a Spiritual Attunement bug than vampiric embrace bug, we can't remove this attribute from VE. Or SPELL_ATTR3_CANT_TRIGGER_PROC handling is incorrect.
             float const spiritualAttunementFactor = 0.1f;
+            auto AI = _GetCasterAI(priest);
+            AI->ResetSpellCounters();
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_MISS_NONE, triggerFlags);
+            auto[minDmg, maxDmg] = GetDamagePerSpellsTo(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, {}, 1);
+            float const vampiricEmbraceHealFactor = 0.15f;
+            uint32 const expectedVEHeal = minDmg * vampiricEmbraceHealFactor;
             uint32 const expectedPaladinMana = expectedVEHeal * spiritualAttunementFactor;
             ASSERT_INFO("Paladin has %u MP but %u was expected through Spiritual Attunement.", paladin->GetPower(POWER_MANA), expectedPaladinMana);
             TEST_ASSERT(paladin->GetPower(POWER_MANA) == expectedPaladinMana);
+        });
 
-            // Each priest's VE generates healing from their own shadow damage.
+        // Each priest's VE generates healing from their own shadow damage.
+        SECTION("Only from your own damage", [&] {
+            uint32 paladinStartingHealth = paladin->GetHealth();
             FORCE_CAST(priest2, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_MISS_NONE, triggerFlags);
-            ASSERT_INFO("Priest2 heals through Priest1 Vampiric Embrace.");
-            TEST_ASSERT(paladin->GetHealth() == paladinExpectedHealth);
+            ASSERT_INFO("Priest2 incorrectly heals through Priest1 Vampiric Embrace.");
+            TEST_ASSERT(paladin->GetHealth() == paladinStartingHealth);
+        });
 
+        SECTION("Stacks", [&] {
             // 1 VE per priest
             FORCE_CAST(priest2, dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
 
@@ -2653,21 +2663,7 @@ public:
             }
             ASSERT_INFO("Dummy only has %u Vampiric Embrace instead of 2.", veCount);
             TEST_ASSERT(veCount == 2);
-
-            // VE heal factor doesnt stack
-            auto AI = priest->GetTestingPlayerbotAI();
-            AI->ResetSpellCounters();
-            FORCE_CAST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_MISS_NONE, triggerFlags);
-            auto[minDmg2VE, maxDmg2VE] = GetDamagePerSpellsTo(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, {}, 1);
-            uint32 const paladinExpectedHealthWith2VE = paladinExpectedHealth + minDmg2VE * vampiricEmbraceHealFactor;
-            ASSERT_INFO("With 2 VE, Paladin has %u HP but %u was expected.", paladin->GetHealth(), paladinExpectedHealth);
-            TEST_ASSERT(paladin->GetHealth() == paladinExpectedHealthWith2VE);
-        }
-    };
-
-    std::unique_ptr<TestCase> GetTest() const override
-    {
-        return std::make_unique<VampiricEmbraceTestImpt>();
+        });
     }
 };
 
@@ -3133,7 +3129,7 @@ void AddSC_test_talents_priest()
     new ShadowReachTest();
     new ShadowWeavingTest();
     new SilenceTest();
-    new VampiricEmbraceTest();
+    RegisterTestCase("talents priest vampiric_embrace", VampiricEmbraceTest);
     new ImprovedVampiricEmbraceTest();
     new FocusedMindTest();
     new ShadowResilienceTest();
