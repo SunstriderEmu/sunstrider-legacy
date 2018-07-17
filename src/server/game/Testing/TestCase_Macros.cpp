@@ -122,7 +122,7 @@ void TestCase::_TestDirectValue(bool heal, Unit* caster, Unit* target, uint32 sp
 
         callback(caster, target);
 
-        _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS));
+        _ForceCast(caster, target, spellID, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED | TRIGGERED_IGNORE_LOS | TRIGGERED_IGNORE_TARGET_AURASTATE));
 
         HandleThreadPause();
         HandleSpellsCleanup(caster);
@@ -518,7 +518,7 @@ std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProc
     auto casterAI = _GetCasterAI(caster, false);
     auto victimAI = _GetCasterAI(victim, false);
     INTERNAL_ASSERT_INFO("Could not find Testing AI for neither caster or victim");
-    INTERNAL_TEST_ASSERT(casterAI != nullptr && victimAI != nullptr);
+    INTERNAL_TEST_ASSERT(casterAI != nullptr || victimAI != nullptr);
 
     _EnsureAlive(caster, victim);
     /*SpellInfo const* procSpellInfo =*/ _GetSpellInfo(procSpellID);

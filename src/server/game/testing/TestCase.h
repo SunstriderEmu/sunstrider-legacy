@@ -54,7 +54,7 @@ public:
     std::string GetName() const { return _testName; }
     //bool Failed() const { return _failed; }
     //std::string GetError() const { return _errMsg; }
-    std::list<TestSectionResult> const& GetResults() const { return _results; }
+    std::list<TestSectionResult> GetResults() const;
     //return true if any TestSectionResult has failures
     bool HasFailures();
     bool IsSetup() const { return _setup; }

@@ -1664,7 +1664,7 @@ class EmpoweredRejuvenationTest : public TestCase
             float const tranquilityTickAmount = 4.f;
             float const tranquilityTickCoeff = ClassSpellsCoeff::Druid::TRANQUILITY_LVL_70 * talentFactor / tranquilityTickAmount;
             uint32 const expectedTranquilityTick = ClassSpellsDamage::Druid::TRANQUILITY_RNK_5_TICK + bh * tranquilityTickCoeff;
-            TEST_CHANNEL_HEALING(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, ClassSpells::Druid::TRANQUILITY_RNK_5_PROC, 4, expectedTranquilityTick);
+            TEST_CHANNEL_HEALING(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, 4, expectedTranquilityTick, ClassSpells::Druid::TRANQUILITY_RNK_5_PROC);
         });
 
         SECTION("Lifebloom hot", [&] {

@@ -1889,7 +1889,7 @@ public:
             TEST_AURA_MAX_DURATION(dummy, Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5_PROC, Seconds(12));
             Aura* aura = dummy->GetAura(Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5_PROC);
             TEST_ASSERT(aura != nullptr);
-            TEST_ASSERT(aura->GetStackAmount() == int32(MAX_STACK));
+            TEST_ASSERT(aura->GetCharges() == int32(MAX_STACK));
 
             // Buff is consumed by direct shadow damages
             FORCE_CAST(warlock2, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, triggerFlags);
@@ -2642,9 +2642,9 @@ class ShadowfuryTest : public TestCase
         uint32 const expectedShadowfuryManaCost = 710;
         TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOWFURY_RNK_3, POWER_MANA, expectedShadowfuryManaCost);
 
-        // BUG Spell Coeff seems slightly off... we got 0.214285716 while DrDamage gives 0.193
-        // No particular note on its damage on WoWWiki.
-        SECTION("Damage", [&] {
+        // BUG Spell Coeff seems slightly off... we got 0.214285716 (calculated by default) while DrDamage gives 0.193
+        // No particular note on its damage on WoWWiki. Is DrDamage slightly off or does this spell has a manually slightly lower damage coef at blizzard?
+        SECTION("Damage", STATUS_KNOWN_BUG, [&] {
             float const spellBonus = spellPower * ClassSpellsCoeff::Warlock::SHADOWFURY; // DrDamage
             uint32 const expectedShadowfuryMin = ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MIN + spellBonus;
             uint32 const expectedShadowfuryMax = ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MAX + spellBonus;

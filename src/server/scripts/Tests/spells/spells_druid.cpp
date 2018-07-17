@@ -2353,7 +2353,7 @@ public:
             uint32 const TranquilityTickBHBonus = floor(TranquilityBHBonus / 4.0f);
 
             uint32 const expectedTranquilityTick = ClassSpellsDamage::Druid::TRANQUILITY_RNK_5_TICK + TranquilityTickBHBonus;
-            TEST_CHANNEL_HEALING(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, ClassSpells::Druid::TRANQUILITY_RNK_5_PROC, 4, expectedTranquilityTick);
+            TEST_CHANNEL_HEALING(druid, druid, ClassSpells::Druid::TRANQUILITY_RNK_5, 4, expectedTranquilityTick, ClassSpells::Druid::TRANQUILITY_RNK_5_PROC);
         }
     };
 

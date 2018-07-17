@@ -11,12 +11,19 @@ TestResults::TestResults() :
 void TestResults::TestFinished(TestCase const& test)
 {
     _totalTestsRan++;
-    std::list<TestSectionResult> const& resultList = test.GetResults();
-    for (auto const& result : resultList)
-        if (result.IsSuccess())
-            _successes.emplace_back(result);
-        else
-            _failures.emplace_back(result);
+    std::list<TestSectionResult> resultList = test.GetResults();
+
+    //for tests with no section, create one fake section. If test has failed out of section, another fake section has already been created in TestCase::_FailNoException
+    if (resultList.empty())
+        _successes.emplace_back(test.GetName(), "<no section>", true, STATUS_PASSING, "(no error)");
+    else
+    {
+        for (auto const& result : resultList)
+            if (result.IsSuccess())
+                _successes.emplace_back(result);
+            else
+                _failures.emplace_back(result);
+    }
 }
 
 std::list<TestSectionResult> TestResults::GetFilteredResult(bool success, std::initializer_list<TestStatus> const& statuses) const

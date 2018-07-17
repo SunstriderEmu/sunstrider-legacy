@@ -789,8 +789,8 @@ std::pair<uint32 /*sampleSize*/, uint32 /*absoluteTolerance*/> TestCase::_GetApp
 
 PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster, bool failOnNotFound)
 {
-    caster = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
-    if (caster == nullptr)
+    Unit* playerCaster = caster->GetCharmerOrOwnerPlayerOrPlayerItself();
+    if (playerCaster == nullptr)
     {
         if (failOnNotFound)
         {
@@ -801,7 +801,7 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster, bool failOnNotFound)
             return nullptr;
     }
 
-    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(caster);
+    TestPlayer* casterOwner = dynamic_cast<TestPlayer*>(playerCaster);
     if (casterOwner == nullptr)
     {
         if (failOnNotFound)
@@ -812,7 +812,8 @@ PlayerbotTestingAI* TestCase::_GetCasterAI(Unit*& caster, bool failOnNotFound)
         else
             return nullptr;
     }
-
+    
+    caster = playerCaster; // Update caster for caller if it was found
     return _GetCasterAI(casterOwner, failOnNotFound);
 }
 
@@ -1562,6 +1563,11 @@ void TestCase::BEFORE_EACH(std::function<void()> func)
 void TestCase::AFTER_EACH(std::function<void()> func)
 {
     _afterEach = func;
+}
+
+std::list<TestSectionResult> TestCase::GetResults() const
+{ 
+    return _results; 
 }
 
 bool TestCase::HasFailures()
