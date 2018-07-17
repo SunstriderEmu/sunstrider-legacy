@@ -403,7 +403,7 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
     _EnsureAlive(caster, victim);
     _MaxHealth(victim);
 
-    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -418,7 +418,7 @@ void TestCase::_TestSpellHitChance(Unit* caster, Unit* victim, uint32 spellID, f
         HandleSpellsCleanup(caster);
     }
 
-    _TestSpellOutcomePercentage(caster, victim, spellID, missInfo, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
+    _TestSpellOutcomePercentage(caster, victim, spellID, missInfo, expectedResultPercent, resultingAbsoluteTolerance, sampleSize);
 
     //Restore
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
@@ -447,10 +447,10 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
     _MaxHealth(target);
     _MaxHealth(caster);
 
-    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
-
     uint32 successCount = 0;
-    for (uint32 i = 0; i < sampleSize; i++)
+    uint32 sampleSize = 0;
+    float resultingAbsoluteTolerance = _GetPercentTestTolerance(expectedResultPercent);
+    while (_ShouldIteratePercent(expectedResultPercent, successCount, sampleSize, resultingAbsoluteTolerance))
     {
         effect->PeriodicTick(caster);
         successCount += uint32(callback(caster, target));
@@ -464,13 +464,14 @@ void TestCase::_TestAuraTickProcChanceCallback(Unit* caster, Unit* target, uint3
         target->ClearDiminishings();
 
         HandleThreadPause();
+        sampleSize++;
     }
 
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
 
     float actualSuccessPercent = 100 * (successCount / float(sampleSize));
     INTERNAL_ASSERT_INFO("_TestAuraTickProcChance on %s: expected result: %f, result: %f", _SpellString(spellID).c_str(), expectedResultPercent, actualSuccessPercent);
-    INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
+    INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualSuccessPercent - resultingAbsoluteTolerance, actualSuccessPercent + resultingAbsoluteTolerance));
 
     //Restoring
     _RestoreUnitState(caster);
@@ -488,7 +489,7 @@ void TestCase::_TestMeleeProcChance(Unit* attacker, Unit* victim, uint32 procSpe
     auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(attacker, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
     INTERNAL_ASSERT_INFO("%s proc'd %f instead of expected %f", _SpellString(procSpellID).c_str(), actualSuccessPercent, expectedChancePercent);
-    INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
+    INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance, actualSuccessPercent + resultingAbsoluteTolerance));
 
     attacker->AttackStop();
     attacker->ForceMeleeHitResult(previousForceOutcome);
@@ -507,7 +508,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(caster, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
     INTERNAL_ASSERT_INFO("%s proc'd %f instead of expected %f (by spell %u)", _SpellString(procSpellID).c_str(), actualSuccessPercent, expectedChancePercent, spellID);
-    INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance * 100, actualSuccessPercent + resultingAbsoluteTolerance * 100));
+    INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance, actualSuccessPercent + resultingAbsoluteTolerance));
 
     RestoreCriticals(caster);
 }
@@ -530,8 +531,6 @@ std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProc
     _MaxHealth(caster);
     _MaxHealth(victim);
 
-    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedChancePercent / 100.0f);
-
     Unit* checkTarget = selfProc ? caster : victim;
     auto hasProcced = [checkTarget, procSpellID](PlayerbotTestingAI* AI) {
         auto damageToTarget = AI->GetSpellDamageDoneInfo(checkTarget);
@@ -548,8 +547,10 @@ std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProc
         return false;
     };
 
+    uint32 sampleSize = 0;
     uint32 procCount = 0;
-    for (uint32 i = 0; i < sampleSize; i++)
+    float resultingAbsoluteTolerance = _GetPercentTestTolerance(expectedChancePercent);
+    while (_ShouldIteratePercent(expectedChancePercent, procCount, sampleSize, resultingAbsoluteTolerance))
     {
         victim->SetFullHealth();
         callback(caster, victim);
@@ -573,6 +574,8 @@ std::pair<float /*procChance*/, float /*absoluteTolerance*/> TestCase::_TestProc
 
         HandleThreadPause();
         HandleSpellsCleanup(caster);
+
+        sampleSize++;
     }
 
     float actualSuccessPercent = 100 * (procCount / float(sampleSize));
@@ -592,8 +595,6 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
 
     uint32 startingHealth = caster->GetHealth();
 
-    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
-
     Creature* attackingUnit = SpawnCreature(0, false);
     attackingUnit->ForceMeleeHitResult(MELEE_HIT_NORMAL);
 
@@ -610,7 +611,9 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
     INTERNAL_TEST_ASSERT(spell != nullptr);
 
     uint32 pushbackCount = 0;
-    for (uint32 i = 0; i < sampleSize; i++)
+    uint32 sampleSize = 0;
+    float resultingAbsoluteTolerance = _GetPercentTestTolerance(expectedResultPercent);
+    while (_ShouldIteratePercent(expectedResultPercent, pushbackCount, sampleSize, resultingAbsoluteTolerance))
     {
         caster->SetFullHealth();
 
@@ -629,11 +632,12 @@ void TestCase::_TestPushBackResistChance(Unit* caster, Unit* target, uint32 spel
             pushbackCount++;
 
         HandleThreadPause();
+        sampleSize++;
     }
 
     float actualResistPercent = 100.0f * (1 - (pushbackCount / float(sampleSize)));
     INTERNAL_ASSERT_INFO("_TestPushBackResistChance on %s: expected result: %f, result: %f", _SpellString(spellID).c_str(), expectedResultPercent, actualResistPercent);
-    INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
+    INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance, actualResistPercent + resultingAbsoluteTolerance));
 
     //restoring
     attackingUnit->DisappearAndDie();
@@ -665,10 +669,10 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
 
     _MaxHealth(target);
 
-    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
-
     uint32 resistedCount = 0;
-    for (uint32 i = 0; i < sampleSize; i++)
+    uint32 sampleSize = 0;
+    float resultingAbsoluteTolerance = _GetPercentTestTolerance(expectedResultPercent);
+    while(_ShouldIteratePercent(expectedResultPercent, resistedCount, sampleSize, resultingAbsoluteTolerance))
     {
         target->SetFullHealth();
 
@@ -688,11 +692,13 @@ void TestCase::_TestSpellDispelResist(Unit* caster, Unit* target, Unit* dispeler
         HandleThreadPause();
         HandleSpellsCleanup(caster);
         HandleSpellsCleanup(dispeler);
-    }
 
+        sampleSize++;
+    }
     float actualResistPercent = 100.0f * (resistedCount / float(sampleSize));
+
     INTERNAL_ASSERT_INFO("_TestSpellDispelResist on %s: expected result: %f, result: %f", _SpellString(spellID).c_str(), expectedResultPercent, actualResistPercent);
-    INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance * 100, actualResistPercent + resultingAbsoluteTolerance * 100));
+    INTERNAL_TEST_ASSERT(Between<float>(expectedResultPercent, actualResistPercent - resultingAbsoluteTolerance, actualResistPercent + resultingAbsoluteTolerance));
 
     //Restore
     _RestoreUnitState(target);
@@ -706,7 +712,7 @@ void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType 
 
     _MaxHealth(victim);
 
-    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -718,7 +724,7 @@ void TestCase::_TestMeleeHitChance(Unit* caster, Unit* victim, WeaponAttackType 
         HandleThreadPause();
     }
 
-    _TestMeleeOutcomePercentage(caster, victim, weaponAttackType, meleeHitOutcome, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
+    _TestMeleeOutcomePercentage(caster, victim, weaponAttackType, meleeHitOutcome, expectedResultPercent, resultingAbsoluteTolerance, sampleSize);
 
     //Restore
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them
@@ -917,7 +923,7 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
 
     _MaxHealth(victim);
 
-    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent / 100.0f);
+    auto[sampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResultPercent);
 
     for (uint32 i = 0; i < sampleSize; i++)
     {
@@ -930,7 +936,7 @@ void TestCase::_TestSpellCritChance(Unit* caster, Unit* victim, uint32 spellID, 
         HandleSpellsCleanup(caster);
     }
 
-    _TestSpellCritPercentage(caster, victim, spellID, expectedResultPercent, resultingAbsoluteTolerance * 100, sampleSize);
+    _TestSpellCritPercentage(caster, victim, spellID, expectedResultPercent, resultingAbsoluteTolerance, sampleSize);
 
     //Restore
     ResetSpellCast(caster); // some procs may have occured and may still be in flight, remove them

@@ -613,53 +613,133 @@ float myErfInv2(float x) {
     return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
 }
 
+// Max 10% off from expected result
+#define DEFAULT_RELATIVE_TOLERANCE 0.1f
+// Inferior precision limit, we don't test lower than 1%
+#define MIN_EXPECTED_PERCENT 0.01f
+// Maximum 10% error tolerance
+#define MAX_TOLERANCE 0.1f
+
+#define CONFIDENCE_LEVEL 99.9f
+
+float TestCase::_GetPercentTestTolerance(float const expectedResult)
+{
+    float expectedResultToOne = expectedResult / 100.0f;
+
+    float const minExpectedResult = 0.01f;
+    float const minTolerance = minExpectedResult * DEFAULT_RELATIVE_TOLERANCE;
+
+    float distFromExtreme = expectedResultToOne <= 0.5f ? expectedResultToOne : 1.0f - expectedResultToOne; //distance from 0 or 100, whichever is closer (thus from 0 to 50)
+    float absoluteTolerance = distFromExtreme * DEFAULT_RELATIVE_TOLERANCE;
+
+    // clamp
+    absoluteTolerance = std::min(absoluteTolerance, MAX_TOLERANCE);
+    absoluteTolerance = std::max(absoluteTolerance, minTolerance);
+
+    return absoluteTolerance * 100.0f;
+}
+
+//https://stackoverflow.com/questions/16312900/how-to-calculate-probit-in-c
+template<typename T>
+T probit(T p)
+{
+    T root_2 = sqrt(2);
+
+    return root_2 * boost::math::erf_inv(2 * p - 1);
+}
+
+bool TestCase::_ShouldIteratePercent(float const expectedResult, float const successesSoFars, uint32 const iterationsDone, float const absoluteTolerance)
+{
+    float expectedResultToOne = expectedResult / 100.0f;
+    float absoluteToleranceToOne = absoluteTolerance / 100.0f;
+
+    // Minimal iterations to get accurate values with normal law (law of large numbers)
+    if (iterationsDone < 50 || iterationsDone * expectedResultToOne < 20) //n*min(p,1-p) > 20
+        return true;
+    
+    // Special cases for 0 and 100
+    if (expectedResult == 0.0f)
+    {
+        if (successesSoFars != 0)
+            return false;
+
+        return iterationsDone < 10000;
+    }
+    else if (expectedResult == 100.0f)
+    {
+        if (successesSoFars != iterationsDone)
+            return false;
+        
+        return iterationsDone < 10000;
+    }
+
+    float const minExpectedResult = MIN_EXPECTED_PERCENT;
+    float const maxExpectedResult = 1.0f - minExpectedResult;
+
+    //enforce a minimum chance... else sample size will really go through the roof
+    INTERNAL_ASSERT_INFO("Expected result %f too low", expectedResultToOne);
+    INTERNAL_TEST_ASSERT(expectedResultToOne >= minExpectedResult);
+    INTERNAL_ASSERT_INFO("Expected result %f too high", expectedResultToOne);
+    INTERNAL_TEST_ASSERT(expectedResultToOne <= maxExpectedResult);
+
+    auto[maxSampleSize, resultingAbsoluteTolerance] = _GetPercentApproximationParams(expectedResult, absoluteTolerance);
+    if (iterationsDone >= maxSampleSize)
+        return false;
+
+    float n = iterationsDone;
+    float pEstimator = successesSoFars / n;
+
+    //float varianceUpperBound = std::pow(0.5f, 2) / n; //variance bernouilli: p(1-p)/n, and is maximized when p = 0.5 (https://stats.stackexchange.com/questions/191444/variance-in-estimating-p-for-a-binomial-distribution)
+    float varianceUpperBound = pEstimator * (1.0f - pEstimator) / n;
+
+    float confidenceMultiplier = probit(CONFIDENCE_LEVEL / 100.0f);
+    float pLow  = pEstimator - confidenceMultiplier * sqrt(varianceUpperBound);
+    float pHigh = pEstimator + confidenceMultiplier * sqrt(varianceUpperBound);
+    
+    if (std::abs(pHigh - pLow) < absoluteToleranceToOne / 2.0f) // /2 because we work on the estimator so the errors stack
+        return false;
+
+    return true;
+}
+
 std::pair<uint32 /*sampleSize*/, float /*absoluteTolerance*/> TestCase::_GetPercentApproximationParams(float const expectedResult, float absoluteTolerance /*= 0*/)
 {
+    float const expectedResultPerOne = expectedResult / 100.0f;
+
     //special speedups for extreme cases
-    if(expectedResult == 1.0f || expectedResult == 0.0f)
-        return std::make_pair(1000, 0.0001f);
+    if(expectedResultPerOne == 1.0f || expectedResultPerOne == 0.0f)
+        return std::make_pair(10000, 0.0001f);
 
     float const minExpectedResult = 0.01f;
     float const maxExpectedResult = 1.0f - minExpectedResult;
 
-    float const defaultRelativeTolerance = 0.1f;
-
-    float const minTolerance = minExpectedResult * defaultRelativeTolerance;
-    float const maxTolerance = 0.1f;
+    float const minTolerance = minExpectedResult * DEFAULT_RELATIVE_TOLERANCE;
 
     //enforce a minimum chance... else sample size will really go through the roof
-    INTERNAL_ASSERT_INFO("Expected result %f too low", expectedResult);
-    INTERNAL_TEST_ASSERT(expectedResult >= minExpectedResult);
-    INTERNAL_ASSERT_INFO("Expected result %f too high", expectedResult);
-    INTERNAL_TEST_ASSERT(expectedResult <= maxExpectedResult);
+    INTERNAL_ASSERT_INFO("Expected result %f too low", expectedResultPerOne);
+    INTERNAL_TEST_ASSERT(expectedResultPerOne >= minExpectedResult);
+    INTERNAL_ASSERT_INFO("Expected result %f too high", expectedResultPerOne);
+    INTERNAL_TEST_ASSERT(expectedResultPerOne <= maxExpectedResult);
 
-    //auto tolerance deduction:
     if (!absoluteTolerance)
     {
-        float distFromExtreme = expectedResult <= 0.5f ? expectedResult : 1.0f - expectedResult; //distance from 0 or 100, whichever is closer (thus from 0 to 50)
-        absoluteTolerance = distFromExtreme * defaultRelativeTolerance;
-
-	//clamp
-	absoluteTolerance = std::min(absoluteTolerance, maxTolerance);
-	absoluteTolerance = std::max(absoluteTolerance, minTolerance);
+        //auto tolerance deduction:
+        absoluteTolerance = _GetPercentTestTolerance(expectedResult);
     }
     else 
     {
         INTERNAL_ASSERT_INFO("Invalid input tolerance %f", absoluteTolerance);
-        INTERNAL_TEST_ASSERT(Between(absoluteTolerance, minTolerance, maxTolerance));
+        INTERNAL_TEST_ASSERT(Between(absoluteTolerance, minTolerance * 100, MAX_TOLERANCE * 100));
     }
 
     INTERNAL_ASSERT_INFO("Expected result %f too low for tolerance %f", expectedResult, absoluteTolerance);
     INTERNAL_TEST_ASSERT(expectedResult >= absoluteTolerance);
 
-    float const certainty = 0.999f;
+    float const certainty = CONFIDENCE_LEVEL / 100.0f;
 
-    uint32 sampleSize = 2 * pow(boost::math::erf_inv(certainty) / absoluteTolerance, 2);
+    uint32 sampleSize = 2 * pow(boost::math::erf_inv(certainty) / (absoluteTolerance / 100.0f), 2);
     sampleSize = std::max(sampleSize, uint32(100)); //min sample size
-
-    //temp hack
-    if (sampleSize > 200000)
-        sampleSize = 200000;
+    sampleSize = std::min(sampleSize, uint32(300000)); //cap it... how to handle properly these cases?
 
     return std::make_pair(sampleSize, absoluteTolerance);
 }
@@ -668,7 +748,7 @@ std::pair<uint32 /*sampleSize*/, uint32 /*absoluteTolerance*/> TestCase::_GetApp
 {
     uint32 sampleSize, absoluteAllowedError;
 
-    double certainty = 0.999;
+    double certainty = CONFIDENCE_LEVEL / 100.0f;
     absoluteAllowedError = (expectedMax - expectedMin) / 25; //arbitary
     absoluteAllowedError = std::max(absoluteAllowedError, uint32(1)); //min 1
 

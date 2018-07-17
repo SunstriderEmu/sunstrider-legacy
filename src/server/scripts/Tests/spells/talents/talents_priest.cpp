@@ -1883,7 +1883,7 @@ public:
             TEST_POWER_COST(priest, ClassSpells::Priest::GREATER_HEAL_RNK_7, POWER_MANA, uint32(0));
 
             // Proc chance
-            float twoTargetsProcChance = (1.0f - std::pow(1.0f - procChance / 100.0f, 2)) * 100.0f; //spell hits two targets... two times the proc chances!
+            float twoTargetsProcChance = (1.0f - std::pow(1.0f - procChance / 100.0f, 2)) * 100.0f; //1 - (hit nobody chance) // spell hits two targets... two times the proc chances!
             TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::FLASH_HEAL_RNK_9, spellProcId, true, procChance, SPELL_MISS_NONE, false);
             // Binding Heal can proc the talent on each target meaning more procs: bug or not? -> Good question. Consider it's correct for now
             TEST_SPELL_PROC_CHANCE(priest, ally, ClassSpells::Priest::BINDING_HEAL_RNK_1, spellProcId, true, twoTargetsProcChance, SPELL_MISS_NONE, false);
@@ -2561,7 +2561,7 @@ public:
             TEST_CAST(enemy, enemy, ClassSpells::Priest::GREATER_HEAL_RNK_7);
             FORCE_CAST(priest, enemy, ClassSpells::Priest::SILENCE_RNK_1);
             TEST_AURA_MAX_DURATION(enemy, ClassSpells::Priest::SILENCE_RNK_1, Seconds(5));
-            TEST_CAST(enemy, enemy, ClassSpells::Priest::GREATER_HEAL_RNK_7, SPELL_FAILED_SILENCED);
+            TEST_CAST(enemy, enemy, ClassSpells::Priest::GREATER_HEAL_RNK_7, SPELL_FAILED_PREVENTED_BY_MECHANIC);
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::SILENCE_RNK_1, Seconds(45));
 
             TEST_POWER_COST(priest, ClassSpells::Priest::SILENCE_RNK_1, POWER_MANA, 225);

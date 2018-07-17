@@ -431,13 +431,27 @@ protected:
     void _TestRange(TestPlayer* caster, Unit* target, uint32 spellID, float maxRange, float minRange = 0.0f);
     // <Test macros related functions/>
 
+    /* Gets a default error tolerance for given expected percentage
+    expectedResult: % from 0 to 100
+
+    Returns result from 0 to 100
+    */
+    float _GetPercentTestTolerance(float const expectedResultPercent);
+    /* Return true while the test should continue to iterate to gather enough sample size
+    expectedResult: % from 0 to 100
+    resultsSoFar: Result so far from 0 to 100
+    successesSoFar: How much successes have been done so far
+    absoluteTolerance: % from 0 to 100s. How much error tolerance you're allowing. This is a maximum diff with expectedResult.
+    */
+    bool _ShouldIteratePercent(float const expectedResultPercent, float const successesSoFar, uint32 const iterationsDone, float const absoluteTolerance);
+
     // Returns how much iterations you should do and how much error you should allow for a given damage range (with a 99.9% certainty)
     std::pair<uint32 /*sampleSize*/, uint32 /*absoluteTolerance*/>  _GetApproximationParams(uint32 const expectedMin, uint32 const expectedMax);
     /* Returns how much iterations and how much tolerance you should allow for given:
-    expectedResult: % from absoluteTolerance*2 to 1.0f
-    absoluteTolerance: % from 0.0f to 1.0f. Error tolerance, maximum diff with expectedResult. If 0 given, will use a default value depending on expectedResult.
+    expectedResult: % from absoluteTolerance*2 to 100
+    absoluteTolerance: % from 0 to 100. Error tolerance, maximum diff with expectedResult. If 0 given, will use a default value depending on expectedResult.
     */
-    std::pair<uint32 /*sampleSize*/, float /*resultingAbsoluteTolerance*/> _GetPercentApproximationParams(float const expectedResult, float absoluteTolerance = 0.0f);
+    std::pair<uint32 /*sampleSize*/, float /*resultingAbsoluteTolerance*/> _GetPercentApproximationParams(float const expectedResultPercent, float absoluteTolerancePercent = 0.0f);
 
     // <Helpers>
     void _EnsureAlive(Unit* caster, Unit* victim);
