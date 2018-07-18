@@ -5,7 +5,7 @@
 #define SOUL_SHARD 6265
 
 // "Reduces the chance for enemies to resist your Affliction spells by 10%."
-class SuppressionTest : public TestCase
+class SuppressionTest : public TestCase // "talents warlock suppression"
 {
     void Test() override
     {
@@ -16,8 +16,7 @@ class SuppressionTest : public TestCase
         float const talentHitPct = 10.0f;
         float const hitChance = 16.0f - talentHitPct;
 
-        //BUG: Curse of Doom is not affected, should be.
-        SECTION("Curse of Doom", STATUS_KNOWN_BUG, [&] {
+        SECTION("Curse of Doom", [&] {
             TEST_SPELL_HIT_CHANCE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, hitChance, SPELL_MISS_RESIST);
         });
 
@@ -243,15 +242,20 @@ public:
 
         void IsAffectedByTalent(TestPlayer* warlock, TestPlayer* warlock2, Creature* dummy, uint32 spellId, float talentFactor)
         {
+            ASSERT_INFO("Too great dummy distance to warlock2 : %f", dummy->GetDistance(warlock2));
+            TEST_ASSERT(dummy->GetDistance(warlock2) < 5.0f);
             warlock->SetHealth(1);
             FORCE_CAST(warlock2, dummy, spellId, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+            _StartUnitChannels(warlock2); 
+            ASSERT_INFO("After cast started, target didnt have aura %s. Distance to target %f", _SpellString(spellId).c_str(), warlock2->GetDistance(dummy));
+            TEST_HAS_AURA(dummy, spellId);
             uint32 warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * (1.0f + talentFactor));
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
-            WaitNextUpdate(); //Wait for channel to start
-            ASSERT_INFO("After Drain Life started, target didnt have aura %u.", spellId);
+            _StartUnitChannels(warlock);
+            ASSERT_INFO("After Drain Life started, target didnt have aura %s.", _SpellString(spellId).c_str());
             TEST_HAS_AURA(dummy, spellId);
             Wait(6000); //Wait for drain life to finish
-            ASSERT_INFO("After spell %u, Warlock has %u HP but should have %u HP.", spellId, warlock->GetHealth(), warlockExpectedHealth);
+            ASSERT_INFO("After %s, Warlock has %u HP but should have %u HP.", _SpellString(spellId).c_str(), warlock->GetHealth(), warlockExpectedHealth);
             TEST_ASSERT(warlock->GetHealth() == warlockExpectedHealth);
             dummy->RemoveAurasDueToSpell(spellId);
             warlock->SetPower(POWER_MANA, warlock->GetMaxPower(POWER_MANA));
@@ -278,6 +282,7 @@ public:
             TestPlayer* warlock2 = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
             Creature* dummy = SpawnCreature();
             dummy->_disableSpellBreakChance = true; //needed for fears
+            dummy->AddAura(16093, dummy); //Sleep until canceled. This applies root, helps with dummy running around with fear effects and breaking drain life by getting out of range
 
             LearnTalent(warlock, Talents::Warlock::SOUL_SIPHON_RNK_2);
             float const bonusPerSpell = 0.04f;
@@ -286,7 +291,12 @@ public:
             warlock->SetHealth(1);
             uint32 warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * (1 + bonusPerSpell));
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
+            _StartUnitChannels(warlock);
             Wait(5500);
+            /*Debugging
+            auto AI = _GetCasterAI(warlock);
+            auto damageDone = AI->GetSpellDamageDoneInfo(dummy);
+            auto dotDamage = AI->GetDotDamage(dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);*/
             ASSERT_INFO("After Drain Life, Warlock has %u HP but should have %u HP.", warlock->GetHealth(), warlockExpectedHealth);
             TEST_ASSERT(warlock->GetHealth() == warlockExpectedHealth);
 
@@ -299,13 +309,9 @@ public:
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, 2 * bonusPerSpell);
             //Patch 2.3.0 (2007 - 11 - 13) : Rank 2 changed to 4 % increase per affliction effect from 5 % .It no longer affects Drain Mana.
-            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, 1 * bonusPerSpell); //1 instead of 2
+            IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, 1 * bonusPerSpell); //1 instead of 2, no boost from drain mana
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::FEAR_RNK_3, 2 * bonusPerSpell);
-            dummy->NearTeleportTo(_location);
-            WaitNextUpdate();
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::HOWL_OF_TERROR_RNK_2, 2 * bonusPerSpell);
-            dummy->NearTeleportTo(_location);
-            WaitNextUpdate();
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, 2 * bonusPerSpell);
             IsAffectedByTalent(warlock, warlock2, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, 2 * bonusPerSpell);
@@ -333,7 +339,7 @@ public:
             float const expectedDrainLifeBonus = std::min(1.0f + actualHarmfulAuraCount * bonusPerSpell, 1.60f);
             warlockExpectedHealth = 1 + 5.0f * floor(ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * expectedDrainLifeBonus);
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
-            WaitNextUpdate(); //Wait for channel to start
+            _StartUnitChannels(warlock);
             Wait(6000); //6s cast time
             uint32 const newActualHarmfulAuraCount = GetHarmfulAurasCount(dummy);
             ASSERT_INFO("Dummy has %u harmful auras instead of %u (after drain life cast).", newActualHarmfulAuraCount, expectedHarmfulAuraCount);
@@ -1080,7 +1086,7 @@ public:
             FORCE_CAST(warlock, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             FORCE_CAST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2);
             TEST_AURA_MAX_DURATION(priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE, Seconds(5));
-            TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_FAILED_SILENCED);
+            TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_FAILED_PREVENTED_BY_MECHANIC);
             //But can this spell crit?
             auto[dealtMin, dealtMax] = GetDamagePerSpellsTo(warlock, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE, false, 1);
             uint32 actualDamageDone = dealtMin;
@@ -1869,7 +1875,7 @@ public:
     //"Your Shadow Bolt critical strikes increase Shadow damage dealt to the target by 20% until 4 non-periodic damage sources are applied. Effect lasts a maximum of 12sec." 
     class ImprovedShadowBoltTestImpt : public TestCase
     {
-        uint32 MAX_STACK = 4;
+        int32 MAX_CHARGES = 4;
 
         void Test() override
         {
@@ -1889,13 +1895,13 @@ public:
             TEST_AURA_MAX_DURATION(dummy, Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5_PROC, Seconds(12));
             Aura* aura = dummy->GetAura(Talents::Warlock::IMPROVED_SHADOW_BOLT_RNK_5_PROC);
             TEST_ASSERT(aura != nullptr);
-            TEST_ASSERT(aura->GetCharges() == int32(MAX_STACK));
+            TEST_ASSERT(aura->GetCharges() == MAX_CHARGES);
 
             // Buff is consumed by direct shadow damages
             FORCE_CAST(warlock2, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, triggerFlags);
             FORCE_CAST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_MISS_NONE, triggerFlags);
             FORCE_CAST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, SPELL_MISS_NONE, triggerFlags); // DoT, should not consume
-            TEST_ASSERT(aura->GetStackAmount() == int32(MAX_STACK) - 2);
+            TEST_ASSERT(aura->GetCharges() == MAX_CHARGES - 2);
 
             uint32 expectedMinDamage = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * talentFactor * 1.5f;
             uint32 expectedMaxDamage = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * talentFactor * 1.5f;

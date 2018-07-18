@@ -716,6 +716,7 @@ class CrusadeTest : public TestCaseScript
 public:
 	CrusadeTest() : TestCaseScript("talents paladin crusade") { }
 
+    // "Increases all damage caused against Humanoids, Demons, Undead and Elementals by 3%"
 	class CrusadeTestImpt : public TestCase
 	{
 	public:
@@ -723,11 +724,12 @@ public:
 
 		void TestCreatureType(TestPlayer* player, uint32 entry, bool demonOrUndead = false)
 		{
+            float const crusadeTalentFactor = 1.03f;
+
 			Position spawnPosition(_location);
 			spawnPosition.MoveInFront(_location, 3.0f);
 			Creature* creature = SpawnCreatureWithPosition(spawnPosition, entry);
 			creature->DisableRegeneration(true);
-			creature->SetHealth(creature->GetHealth() - 1); // issue with Hammer of wrath
 
 			player->SetMaxHealth(10000000); // Used for Judgement of Blood and Holy shield
 			player->SetFullHealth();
@@ -737,52 +739,49 @@ public:
 			float const expectedJoRMax = ClassSpellsDamage::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9_MAX * 1.03f;
 			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_RIGHTEOUSNESS_RNK_9, expectedJoRMin, expectedJoRMax, false);
 
-
 			// Consecration
-			uint32 const creatureStartHP = creature->GetHealth();
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::CONSECRATION_RNK_6);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Wait(1500);
-			if (creature->GetHealth() == creatureStartHP) { // wait for second tick
-				Wait(1500);
-				if (creature->GetHealth() == creatureStartHP) // wait for third tick, hopefully it doesnt resist the first 3 ticks ._.
-					Wait(1500);
-			}
-			float const tick = floor(ClassSpellsDamage::Paladin::CONSECRATION_RNK_6_TOTAL * 1.03f / 8.0f);
-			float const expectedHP = creatureStartHP - tick;
-			uint32 const currentHealth = creature->GetHealth();
-			TEST_ASSERT(currentHealth == expectedHP);
+            auto AI = _GetCasterAI(player);
+            AI->ResetSpellCounters();
+            FORCE_CAST(player, player, ClassSpells::Paladin::CONSECRATION_RNK_6, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+            Wait(1500); //wait for first tick
+			uint32 const expectedTick = floor(ClassSpellsDamage::Paladin::CONSECRATION_RNK_6_TOTAL * crusadeTalentFactor / 8.0f);
+            auto dotDone = AI->GetDotDamage(creature, ClassSpells::Paladin::CONSECRATION_RNK_6);
+            uint32 doneTick = dotDone.first / dotDone.second;
+            ASSERT_INFO("damageDone %u - expectedTick %u", doneTick, expectedTick);
+            TEST_ASSERT(doneTick == expectedTick);
 
 			// Exorcism & Holy wrath
 			if (demonOrUndead)
 			{
-				float const expectedExorcismMin = ClassSpellsDamage::Paladin::EXORCISM_RNK_7_MIN * 1.03f;
-				float const expectedExorcismMax = ClassSpellsDamage::Paladin::EXORCISM_RNK_7_MAX * 1.03f;
+				float const expectedExorcismMin = ClassSpellsDamage::Paladin::EXORCISM_RNK_7_MIN * crusadeTalentFactor;
+				float const expectedExorcismMax = ClassSpellsDamage::Paladin::EXORCISM_RNK_7_MAX * crusadeTalentFactor;
 				TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::EXORCISM_RNK_7, expectedExorcismMin, expectedExorcismMax, false);
 
-				float const expectedHolyWrathMin = ClassSpellsDamage::Paladin::HOLY_WRATH_RNK_3_MIN * 1.03f;
-				float const expectedHolyWrathMax = ClassSpellsDamage::Paladin::HOLY_WRATH_RNK_3_MAX * 1.03f;
+				float const expectedHolyWrathMin = ClassSpellsDamage::Paladin::HOLY_WRATH_RNK_3_MIN * crusadeTalentFactor;
+				float const expectedHolyWrathMax = ClassSpellsDamage::Paladin::HOLY_WRATH_RNK_3_MAX * crusadeTalentFactor;
 				TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HOLY_WRATH_RNK_3, expectedHolyWrathMin, expectedHolyWrathMax, false);
 			}
 
 			// Hammer of wrath
-			float const expectedHoWMin = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MIN * 1.03f;
-			float const expectedHoWMax = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MAX * 1.03f;
+			float const expectedHoWMin = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MIN * crusadeTalentFactor;
+			float const expectedHoWMax = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MAX * crusadeTalentFactor;
+            player->ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, true); //force aura state for hammer of wrath
 			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HAMMER_OF_WRATH_RNK_4, expectedHoWMin, expectedHoWMax, false);
 
 			// Holy shock
-			float const expectedHolyShockMin = ClassSpellsDamage::Paladin::HOLY_SHOCK_RNK_5_MIN_DAMAGE * 1.03f;
-			float const expectedHolyShockMax = ClassSpellsDamage::Paladin::HOLY_SHOCK_RNK_5_MAX_DAMAGE * 1.03f;
+			float const expectedHolyShockMin = ClassSpellsDamage::Paladin::HOLY_SHOCK_RNK_5_MIN_DAMAGE * crusadeTalentFactor;
+			float const expectedHolyShockMax = ClassSpellsDamage::Paladin::HOLY_SHOCK_RNK_5_MAX_DAMAGE * crusadeTalentFactor;
 			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HOLY_SHOCK_RNK_5_DMG, expectedHolyShockMin, expectedHolyShockMax, false);
 
 			// Judgement of Blood
-			float const expectedJoBMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_BLOOD_RNK_1_MIN * 1.03f;
-			float const expectedJoBMax = ClassSpellsDamage::Paladin::JUDGEMENT_OF_BLOOD_RNK_1_MAX * 1.03f;
+			float const expectedJoBMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_BLOOD_RNK_1_MIN * crusadeTalentFactor;
+			float const expectedJoBMax = ClassSpellsDamage::Paladin::JUDGEMENT_OF_BLOOD_RNK_1_MAX * crusadeTalentFactor;
 			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_BLOOD_RNK_1, expectedJoBMin, expectedJoBMax, false);
 
 			// Judgement of Vengeance
-			float const expectedJoVMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_VENGEANCE_PER_STACK * 1.03f;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_VENGEANCE_RNK_1, expectedJoBMin, expectedJoVMin, false);
+			float const expectedJoVMin = ClassSpellsDamage::Paladin::JUDGEMENT_OF_VENGEANCE_PER_STACK * crusadeTalentFactor;
+            player->AddAura(ClassSpells::Paladin::HOLY_VENGEANCE, creature); // Add one stack one target
+			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::JUDGEMENT_OF_VENGEANCE_RNK_1, expectedJoVMin, expectedJoVMin, false);
 
 			// Crusader Strike
 			EQUIP_NEW_ITEM(player, 34247); // Apolyon, the Soul-Render - 404-607 damage
@@ -791,10 +790,9 @@ public:
 			float const armorFactor = GetArmorFactor(player, creature);
 			float const weaponMinDamage = 404 + (AP / 14 * 3.3f); // 3.3 weapon speed because it's an normalized spell
 			float const weaponMaxDamage = 607 + (AP / 14 * 3.3f);
-			float const crusadeTalentFactor = 1.03;
 			float const expectedCSMin = (weaponMinDamage * 1.1f) * armorFactor * crusadeTalentFactor;
 			float const expectedCSMax = (weaponMaxDamage * 1.1f) * armorFactor * crusadeTalentFactor;
-			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::CRUSADER_STRIKE_RNK_1, expectedCSMin, expectedCSMax, false);
+            TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::CRUSADER_STRIKE_RNK_1, expectedCSMin, expectedCSMax, false);
 
 			/*
 			// Holy shield
@@ -829,6 +827,7 @@ public:
 
 			LearnTalent(player, Talents::Paladin::CRUSADE_RNK_3);
 
+            //TODO: replace these creatures with creatures dedicated to testing
 			// Creatures are training dummys with 20% HP
 			TestCreatureType(player, 18); // Humanoid
 			TestCreatureType(player, 21, true); // Demon

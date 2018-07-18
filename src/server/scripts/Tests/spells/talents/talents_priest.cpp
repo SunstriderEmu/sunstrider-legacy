@@ -2500,7 +2500,7 @@ public:
             TEST_HAS_NOT_AURA(dummy, Talents::Priest::SHADOW_WEAVING_RNK_5_PROC);
             FORCE_CAST(priest, dummy, spellId, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
             WaitNextUpdate();
-            ASSERT_INFO("After spell %u, Dummy doesnt have Shadow Weaving", spellId);
+            ASSERT_INFO("After %s, Dummy doesnt have Shadow Weaving", _SpellString(spellId).c_str());
             TEST_HAS_AURA(dummy, Talents::Priest::SHADOW_WEAVING_RNK_5_PROC);
             dummy->RemoveAurasDueToSpell(spellId);
             dummy->RemoveAurasDueToSpell(Talents::Priest::SHADOW_WEAVING_RNK_5_PROC);

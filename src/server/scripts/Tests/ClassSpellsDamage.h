@@ -253,8 +253,8 @@ namespace ClassSpellsDamage
             EXORCISM_RNK_7_MAX = 698,
             FLASH_OF_LIGHT_RNK_7_MIN = 458,
             FLASH_OF_LIGHT_RNK_7_MAX = 513,
-            HAMMER_OF_WRATH_RNK_4_MIN = 672,
-            HAMMER_OF_WRATH_RNK_4_MAX = 742,
+            HAMMER_OF_WRATH_RNK_4_MIN = 672, // 665 + 3.5 per level
+            HAMMER_OF_WRATH_RNK_4_MAX = 742, // 735 + 3.5 per level
             HOLY_LIGHT_RNK_11_MIN = 2196,
             HOLY_LIGHT_RNK_11_MAX = 2446,
             HOLY_SHOCK_RNK_5_MIN_DAMAGE = 721,
@@ -275,8 +275,8 @@ namespace ClassSpellsDamage
 
             // Retribution
             BLESSING_OF_MIGHT_RNK_8 = 220,
-            JUDGEMENT_OF_BLOOD_RNK_1_MIN = 295,
-            JUDGEMENT_OF_BLOOD_RNK_1_MAX = 325,
+            JUDGEMENT_OF_BLOOD_RNK_1_MIN = 331, //295 + 6.1 per level 
+            JUDGEMENT_OF_BLOOD_RNK_1_MAX = 361,
         };
     };
 

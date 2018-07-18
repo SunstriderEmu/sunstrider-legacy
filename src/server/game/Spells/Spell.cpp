@@ -5750,7 +5750,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                     if (!m_targets.GetUnitTarget())
                         return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
-                    if(m_targets.GetUnitTarget()->GetHealth() > m_targets.GetUnitTarget()->GetMaxHealth()*0.2)
+                    if (!m_targets.GetUnitTarget()->HasAuraState(AURA_STATE_HEALTHLESS_20_PERCENT))
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 break;
@@ -5767,7 +5767,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
-                SpellInfo const *learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->Effects[i].TriggerSpell);
+                SpellInfo const* learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->Effects[i].TriggerSpell);
 
                 if(!learn_spellproto)
                     return SPELL_FAILED_NOT_KNOWN;
@@ -6317,7 +6317,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                         return SPELL_FAILED_HIGHLEVEL;
 
                     // use SMSG_PET_TAME_FAILURE?
-                    if (!(m_targets.GetUnitTarget()->ToCreature())->GetCreatureTemplate()->IsTameable ())
+                    if (!(m_targets.GetUnitTarget()->ToCreature())->GetCreatureTemplate()->IsTameable())
                         return SPELL_FAILED_BAD_TARGETS;
 
                     if(m_caster->ToUnit()->GetMinionGUID())

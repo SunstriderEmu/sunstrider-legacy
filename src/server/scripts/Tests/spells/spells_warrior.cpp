@@ -1391,21 +1391,32 @@ public:
             warrior->DisableRegeneration(true);
 
             TestRequiresMeleeWeapon(warrior, creature, ClassSpells::Warrior::SLAM_RNK_6);
-            EQUIP_NEW_ITEM(warrior, APOLYON);
+            EQUIP_NEW_ITEM(warrior, 2489); //two handed sword
+            uint32 const weaponAttackTimer = 2900;
+            uint32 const slamCastTime = 1500;
 
             uint32 const expectedSlamRage = 15 * 10;
             TEST_POWER_COST(warrior, ClassSpells::Warrior::SLAM_RNK_6, POWER_RAGE, expectedSlamRage);
 
-            // Reset swing
+            // Reset swing timer
             warrior->Attack(creature, true);
-            Wait(500);
-            uint32 attackTimeBeforeSlam = warrior->GetAttackTimer(BASE_ATTACK); // Should be about 2900
+            Wait(weaponAttackTimer - 1000);
             warrior->SetPower(POWER_RAGE, expectedSlamRage);
             FORCE_CAST(warrior, creature, ClassSpells::Warrior::SLAM_RNK_6);
-            Wait(1600); // Slam cast time
-            // Should have reset swing so AttackTime back to decreasing from 3400 and should be approx 3300
-            ASSERT_INFO("Current Attack Time: %u, BeforeSlam: %u", warrior->GetAttackTimer(BASE_ATTACK), attackTimeBeforeSlam);
-            TEST_ASSERT(warrior->GetAttackTimer(BASE_ATTACK) > attackTimeBeforeSlam);
+            uint32 oneUpdateDiff = 50;
+            Wait(slamCastTime - oneUpdateDiff);
+            //... We need to have two seperate wait because in unit updates, spell reset swings before the attack timer is decreased. If we did Wait(1600) we would have a reset THEN a 1600 decrease.
+            Wait(oneUpdateDiff);
+            // Make sure slam was launched
+            auto AI = _GetCasterAI(warrior);
+            auto damageDone = AI->GetSpellDamageDoneInfo(creature);
+            TEST_ASSERT(damageDone != nullptr && !damageDone->empty())
+            // Should have reset swing so AttackTime back to decreasing from weaponAttackTimer and should be approx weaponAttackTimer, minus time since last update
+            uint32 currentAttackTimer = warrior->GetAttackTimer(BASE_ATTACK);
+            uint32 expectedAttackTimer = weaponAttackTimer - oneUpdateDiff;
+            ASSERT_INFO("Current Attack Time: %u, expected: %u", currentAttackTimer, expectedAttackTimer);
+            //at time of writing, currentAttackTimer is exactly expectedAttackTimer but this may vary a little if implementation changes
+            TEST_ASSERT(Between(currentAttackTimer, expectedAttackTimer - oneUpdateDiff, expectedAttackTimer + oneUpdateDiff));
 
             // Damage
             auto[minSlam, maxSlam] = CalcMeleeDamage(warrior, creature, BASE_ATTACK, ClassSpellsDamage::Warrior::SLAM_RNK_6);

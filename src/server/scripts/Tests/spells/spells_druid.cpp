@@ -1602,9 +1602,9 @@ public:
 class TigersFuryTest : public TestCaseScript
 {
 public:
-
     TigersFuryTest() : TestCaseScript("spells druid tigers_fury") { }
 
+    // "Increases damage done by 40 for 6s."
     class TigersFuryTestImpt : public TestCase
     {
     public:
@@ -1632,23 +1632,23 @@ public:
             TEST_AURA_MAX_DURATION(druid, ClassSpells::Druid::TIGERS_FURY_RNK_4, Seconds(6));
 
             // Damage
-            uint32 const level = 60;
+            //uint32 const level = 60;
             float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
             float const armorFactor = GetArmorFactor(druid, creature);
             uint32 const tigersFuryBonus = 40;
             uint32 const APBonus = AP / 14;
 
             // Melee
-            uint32 const catMeleeMin = (ClassSpellsDamage::Druid::GetCatMinDmg() + APBonus) * armorFactor;
-            uint32 const catMeleeMax = (ClassSpellsDamage::Druid::GetCatMaxDmg() + APBonus) * armorFactor;
+            uint32 const catMeleeMin = (ClassSpellsDamage::Druid::GetCatMinDmg() + APBonus + tigersFuryBonus) * armorFactor;
+            uint32 const catMeleeMax = (ClassSpellsDamage::Druid::GetCatMaxDmg() + APBonus + tigersFuryBonus) * armorFactor;
             TEST_MELEE_DAMAGE(druid, creature, BASE_ATTACK, catMeleeMin, catMeleeMax, false);
             druid->AddAura(ClassSpells::Druid::TIGERS_FURY_RNK_4, druid);
             TEST_MELEE_DAMAGE(druid, creature, BASE_ATTACK, catMeleeMin * 2.0f, catMeleeMax * 2.0f, true);
 
             // Shred
             float const shredFactor = 2.25f;
-            uint32 const shredMinDamage = (ClassSpellsDamage::Druid::GetCatMinDmg() + APBonus) * shredFactor + ClassSpellsDamage::Druid::SHRED_RNK_7;
-            uint32 const shredMaxDamage = (ClassSpellsDamage::Druid::GetCatMaxDmg() + APBonus) * shredFactor + ClassSpellsDamage::Druid::SHRED_RNK_7;
+            uint32 const shredMinDamage = (ClassSpellsDamage::Druid::GetCatMinDmg() + APBonus + tigersFuryBonus) * shredFactor + ClassSpellsDamage::Druid::SHRED_RNK_7;
+            uint32 const shredMaxDamage = (ClassSpellsDamage::Druid::GetCatMaxDmg() + APBonus + tigersFuryBonus) * shredFactor + ClassSpellsDamage::Druid::SHRED_RNK_7;
             uint32 const expectedTigersFuryMin = shredMinDamage * armorFactor;
             uint32 const expectedTigersFuryMax = shredMaxDamage * armorFactor;
             druid->AddAura(ClassSpells::Druid::TIGERS_FURY_RNK_4, druid);

@@ -1314,13 +1314,16 @@ void Player::Update( uint32 p_time )
     {
         if(roll_chance_i(3) && GetTimeInnEnter() > 0)       //freeze update
         {
-            int time_inn = time(nullptr)-GetTimeInnEnter();
+            time_t currTime = GameTime::GetGameTime();
+            int time_inn = currTime - GetTimeInnEnter();
             if (time_inn >= 10)                             //freeze update
             {
-                float bubble = 0.125*sWorld->GetRate(RATE_REST_INGAME);
-                                                            //speed collect rest bonus (section/in hour)
-                SetRestBonus( GetRestBonus()+ time_inn*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble );
-                UpdateInnerTime(time(nullptr));
+                float bubble = 0.125 * sWorld->GetRate(RATE_REST_INGAME);
+                float extraPerSec = ((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP) / 72000.0f) * bubble;
+                                                            
+                //speed collect rest bonus (section/in hour)
+                SetRestBonus(GetRestBonus() + time_inn * extraPerSec);
+                UpdateInnerTime(currTime);
             }
         }
     }
