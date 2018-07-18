@@ -31,7 +31,9 @@ class BlindTest : public TestCase
         Creature* dummy = SpawnCreature();
             
         FORCE_CAST(rogue, dummy, ClassSpells::Rogue::BLIND_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-        Wait(1000); //wait for fly time if any. Our core does have a little fake fly time.
+        //this spell particular implementation takes at least two updates to complete + has a little fly time
+        WaitNextUpdate();
+        Wait(200);
         TEST_HAS_AURA(dummy, ClassSpells::Rogue::BLIND_RNK_1);
 
         SECTION("Target selection", [&] {

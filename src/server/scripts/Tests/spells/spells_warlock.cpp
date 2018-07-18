@@ -426,6 +426,7 @@ public:
             // Doesn't drain mana if there isnt mana (!)
             warlock->SetPower(POWER_MANA, 0);
             FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_MANA_RNK_6, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_GCD));
+            _StartUnitChannels(warlock);
             Wait(5500);
             TEST_ASSERT(warlock->GetPower(POWER_MANA) == 0);
 
@@ -437,6 +438,7 @@ public:
             uint32 warlockExpectedMana = 5.0f * ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK;
             uint32 mageExpectedMana = mage->GetPower(POWER_MANA) - 5.0f * ClassSpellsDamage::Warlock::DRAIN_MANA_RNK_6_TICK;
             FORCE_CAST(warlock, mage, ClassSpells::Warlock::DRAIN_MANA_RNK_6, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            _StartUnitChannels(warlock);
             Wait(5500);
             TEST_ASSERT(mage->GetPower(POWER_MANA) == mageExpectedMana);
             ASSERT_INFO("Mana: %u - Expected: %u", warlock->GetPower(POWER_MANA), warlockExpectedMana);
@@ -660,6 +662,7 @@ public:
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            warlock->ForceSpellHitResultOverride(SPELL_MISS_NONE); //force hit for seed proc
             Creature* dummy1 = SpawnCreature();
             Creature* dummy2 = SpawnCreature();
             Creature* dummy3 = SpawnCreature();
