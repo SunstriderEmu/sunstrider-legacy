@@ -1057,12 +1057,12 @@ private:
         if (IsDebuggerBlockingRebuild())
         {
             if ((_last_time_user_informed == 0) ||
-                (GetMSTimeDiffToNow(_last_time_user_informed) > 7500))
+                (GetMSTimeDiffToNow(_last_time_user_informed) > 15000))
             {
                 _last_time_user_informed = GetMSTime();
 
                 // Informs the user that the attached debugger is blocking the automatic script rebuild.
-                TC_LOG_INFO("scripts.hotswap", "Your attached debugger is blocking the TrinityCore "
+                TC_LOG_INFO("scripts.hotswap", "Your attached debugger is blocking the "
                     "automatic script rebuild, please detach it!");
             }
 

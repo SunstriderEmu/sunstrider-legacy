@@ -599,6 +599,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         //Force ALL spells to use hit result missInfo. You should use CastSpell arguments whenever possible
         void ForceSpellHitResultOverride(SpellMissInfo missInfo) { _forceHitResultOverride = missInfo; }
         SpellMissInfo GetForceSpellHitResultOverride() const { return _forceHitResultOverride; }
+        void ResetForceSpellHitResultOverride() { _forceHitResultOverride = SPELL_FORCE_HIT_DEFAULT; }
 
         virtual uint32 GetFaction() const = 0;
         virtual void SetFaction(uint32 /*faction*/) { }

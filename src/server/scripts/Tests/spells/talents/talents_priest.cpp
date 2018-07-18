@@ -2175,7 +2175,7 @@ public:
             dummy->AttackerStateUpdate(priest, BASE_ATTACK);
             dummy->AttackStop();
             TEST_ASSERT(dummy->GetHealth() < targetStartHealth); //make sure proc did happen
-            ASSERT_INFO("Dummy has %f threat but %f was expected.", dummy->GetThreatManager().GetThreat(priest), expectedToWThreat);
+            ASSERT_INFO("%s, dummy has %f threat but %f was expected.", _SpellString(spellId).c_str(), dummy->GetThreatManager().GetThreat(priest), expectedToWThreat);
             TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedToWThreat - 0.1f, expectedToWThreat + 0.1f));
         }
 
@@ -2212,6 +2212,7 @@ public:
             float const expectedVEThreat = startThreat + (mindFlayThreat + mindFlayHealThreat) * talentThreatFactor;
             FORCE_CAST(priest, dummy, ClassSpells::Priest::VAMPIRIC_EMBRACE_RNK_1);
             FORCE_CAST(priest, dummy, ClassSpells::Priest::MIND_FLAY_RNK_7, SPELL_MISS_NONE, TRIGGERED_IGNORE_GCD);
+            _StartUnitChannels(priest);
             Wait(3000);
             ASSERT_INFO("Dummy has %f threat but %f was expected.", dummy->GetThreatManager().GetThreat(priest), expectedVEThreat);
             TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(priest), expectedVEThreat - 0.1f, expectedVEThreat + 0.1f));

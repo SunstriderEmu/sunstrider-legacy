@@ -211,6 +211,7 @@ class FeedbackTest : public TestCaseScript
 public:
     FeedbackTest() : TestCaseScript("spells priest feedback") { }
 
+    //"The priest becomes surrounded with anti-magic energy. Any successful spell cast against the priest will burn 165 of the attacker's Mana, causing 1 Shadow damage for each point of Mana burned. Lasts 15s."
     class FeedbackTestImpt : public TestCase
     {
     public:
@@ -248,8 +249,9 @@ public:
                 uint32 const expectedMageHealth = mage->GetHealth() - ClassSpellsDamage::Priest::FEEDBACK_BURN_RNK_6;
                 uint32 const expectedMageMana = mage->GetPower(POWER_MANA) - ClassSpellsDamage::Priest::FEEDBACK_BURN_RNK_6;
                 TEST_CAST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-                FORCE_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-                Wait(1000);
+                priest->ForceSpellHitResultOverride(SPELL_MISS_NONE); //force spell miss to allow proc to always hit mage. (Until proved otherwise we'll assume it can be resisted)
+                FORCE_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_SPEED | TRIGGERED_FULL_MASK));
+                priest->ResetForceSpellHitResultOverride();
                 ASSERT_INFO("initial mana: 200, current mana: %u, expected: %u", mage->GetPower(POWER_MANA), expectedMageMana);
                 TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedMageMana);
                 TEST_ASSERT(mage->GetHealth() == expectedMageHealth);

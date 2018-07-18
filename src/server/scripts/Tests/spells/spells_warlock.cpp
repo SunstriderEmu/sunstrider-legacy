@@ -481,8 +481,8 @@ public:
             Wait(2000);
             rogue->SetHealth(1);
             FORCE_CAST(warlock, rogue, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+            _StartUnitChannels(warlock);
             Wait(3500);
-            WaitNextUpdate();
             // Gain soulshard on target's death
             TEST_ASSERT(rogue->IsDead());
             TEST_ASSERT(warlock->HasItemCount(SOUL_SHARD, 1));

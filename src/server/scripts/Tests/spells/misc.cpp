@@ -43,17 +43,25 @@ public:
 
         void Test() override
         {
-            TestPlayer* p = SpawnRandomPlayer(POWER_ENERGY);
+            TestPlayer* p = SpawnRandomPlayer(CLASS_WARRIOR, 1); //lvl 1
             Wait(Seconds(1));
+            //use player to spawn object... we don't have another good and simple way to spawn a gameoject right now
             GameObject* obj = p->SummonGameObject(2061, p->GetPosition(), G3D::Quat(), 0); //campfire
             TEST_ASSERT(obj != nullptr);
             obj->SetOwnerGUID(ObjectGuid::Empty); //remove owner, environmental traps don't have any
 
-            //just test if player has taken any damage
+            // Now, player can resist the damage... loop for a while to make sure he has very little chance of resisting all
+            // Just test if player has taken any damage
             uint32 initialHealth = p->GetHealth();
-            Wait(Seconds(10));
-            uint32 newHealth = p->GetHealth();
-            TEST_ASSERT(newHealth < initialHealth);
+            bool lostHealth = false;
+            for (uint32 i = 0; i < 30 && !lostHealth; i++)
+            {
+                Wait(Seconds(1));
+                uint32 newHealth = p->GetHealth();
+                if (newHealth < initialHealth)
+                    lostHealth = true;
+            }
+            TEST_ASSERT(lostHealth);
         }
     };
 

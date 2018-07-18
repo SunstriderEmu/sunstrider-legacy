@@ -164,6 +164,7 @@ public:
 
             // Threat reduced by 10% for all affliction spells
             Creature* dummy = SpawnCreature();
+            dummy->AddAura(16093, dummy); //Sleep until canceled. This applies root, helps with dummy running around with fear effects getting out of range for seed of corruption testing below
             TEST_THREAT(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, talentThreatFactor);
             TEST_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, talentThreatFactor);
             TEST_THREAT(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, talentThreatFactor);
@@ -755,84 +756,95 @@ class ShadowMasteryTest : public TestCaseScript
 public:
 	ShadowMasteryTest() : TestCaseScript("talents warlock shadow_mastery") { }
 
+    //"Increases the damage dealt or life drained by your Shadow spells by 10%." 
 	class ShadowMasteryTestImpt : public TestCase
 	{
-	public:
-        //"Increases the damage dealt or life drained by your Shadow spells by 10%." 
-		ShadowMasteryTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* warlock = SpawnRandomPlayer(CLASS_WARLOCK);
             Creature* dummy = SpawnCreature();
+            dummy->AddAura(16093, dummy); //Sleep until canceled. This applies root, helps with dummy running around with fear effects and getting out of range
 
             dummy->DisableRegeneration(true);
             warlock->DisableRegeneration(true);
 
             LearnTalent(warlock, Talents::Warlock::SHADOW_MASTERY_RNK_5);
             float const shadowMasteryFactor = 1.1f;
+            
+            SECTION("Corruption", [&] {
+                float const expectedCorruptionDamage = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * shadowMasteryFactor;
+                TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionDamage, false);
+            });
 
-            // Corruption
-			float const expectedCorruptionDamage = ClassSpellsDamage::Warlock::CORRUPTION_RNK_8_TOTAL * shadowMasteryFactor;
-            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CORRUPTION_RNK_8, expectedCorruptionDamage, false);
+            SECTION("Curse of Agony", [&] {
+                float const expectedCoaDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * shadowMasteryFactor;
+                TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoaDamage, false);
+            });
 
-            // Curse of Agony
-			float const expectedCoaDamage = ClassSpellsDamage::Warlock::CURSE_OF_AGONY_RNK_7_TOTAL * shadowMasteryFactor;
-            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_AGONY_RNK_7, expectedCoaDamage, false);
+            SECTION("Curse of Doom", [&] {
+                // Curse of Doom should not be affected by Shadow Mastery cf Leulier's DPS Spreadsheet v1.12 (http://www.leulier.fr/spreadsheet/) and WoWWiki also mentions it
+                TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2, false);
+            });
 
-            // Curse of Doom should not be affected by Shadow Mastery cf Leulier's DPS Spreadsheet v1.12 (http://www.leulier.fr/spreadsheet/) and WoWWiki also mentions it
-            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2, false);
+            SECTION("Death Coil", [&] {
+                uint32 const spellLevel = 68;
+                float const dmgPerLevel = 3.4f;
+                float const dmgPerLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * dmgPerLevel;
+                float const expectedDeathCoilDamage = (ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4 + dmgPerLevelGain) * shadowMasteryFactor;
+                TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoilDamage, expectedDeathCoilDamage, false);
+            });
 
-            // Death Coil
-            uint32 const spellLevel = 68;
-            float const dmgPerLevel = 3.4f;
-            float const dmgPerLevelGain = std::max(warlock->GetLevel() - spellLevel, uint32(0)) * dmgPerLevel;
-			float const expectedDeathCoilDamage = (ClassSpellsDamage::Warlock::DEATH_COIL_RNK_4 + dmgPerLevelGain) * shadowMasteryFactor;
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DEATH_COIL_RNK_4, expectedDeathCoilDamage, expectedDeathCoilDamage, false);
+            SECTION("Drain Life", [&] {
+                float const drainLifeTickAmount = 5.0f;
+                uint32 const expectedDrainLifeTick = ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * shadowMasteryFactor;
+                uint32 const expectedDrainLifeTotal = drainLifeTickAmount * expectedDrainLifeTick;
+                uint32 const dummyExpectedHealth = dummy->GetHealth() - expectedDrainLifeTotal;
+                warlock->SetHealth(1);
+                FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
+                _StartUnitChannels(warlock);
+                Wait(6000);
+                WaitNextUpdate();
+                ASSERT_INFO("Dummy has %u HP but %u was expected.", dummy->GetHealth(), dummyExpectedHealth);
+                TEST_ASSERT(dummy->GetHealth() == dummyExpectedHealth);
+                ASSERT_INFO("Warlock has %u HP but %u was expected.", warlock->GetHealth(), 1 + expectedDrainLifeTotal);
+                TEST_ASSERT(warlock->GetHealth() == 1 + expectedDrainLifeTotal);
+            });
 
-            // Drain Life
-            float const drainLifeTickAmount = 5.0f;
-            uint32 const expectedDrainLifeTick = ClassSpellsDamage::Warlock::DRAIN_LIFE_RNK_8_TICK * shadowMasteryFactor;
-            uint32 const expectedDrainLifeTotal = drainLifeTickAmount * expectedDrainLifeTick;
-            uint32 const dummyExpectedHealth = dummy->GetHealth() - expectedDrainLifeTotal;
-            warlock->SetHealth(1);
-            FORCE_CAST(warlock, dummy, ClassSpells::Warlock::DRAIN_LIFE_RNK_8);
-            Wait(6000);
-            WaitNextUpdate();
-            ASSERT_INFO("Dummy has %u HP but %u was expected.", dummy->GetHealth(), dummyExpectedHealth);
-            TEST_ASSERT(dummy->GetHealth() == dummyExpectedHealth);
-            ASSERT_INFO("Warlock has %u HP but %u was expected.", warlock->GetHealth(), 1 + expectedDrainLifeTotal);
-            TEST_ASSERT(warlock->GetHealth() == 1 + expectedDrainLifeTotal);
+            SECTION("Drain soul", [&] {
+                float const drainSoulTickAmount = 5.0f;
+                uint32 const expectedDrainSoulTick = ClassSpellsDamage::Warlock::DRAIN_SOUL_RNK_5_TICK * shadowMasteryFactor;
+                TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulTickAmount, expectedDrainSoulTick);
+            });
 
-            // Drain Soul
-            float const drainSoulTickAmount = 5.0f;
-            uint32 const expectedDrainSoulTick = ClassSpellsDamage::Warlock::DRAIN_SOUL_RNK_5_TICK * shadowMasteryFactor;
-            TEST_CHANNEL_DAMAGE(warlock, dummy, ClassSpells::Warlock::DRAIN_SOUL_RNK_5, drainSoulTickAmount, expectedDrainSoulTick);
+            SECTION("Seed of corruption", [&] {
+                uint32 const seedOfCorruptionTickAmount = 6;
+                uint32 const expectedSoCTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * shadowMasteryFactor;
+                uint32 const expectedSoCTotalAmount = seedOfCorruptionTickAmount * expectedSoCTick;
+                TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCTotalAmount, true);
+            });
+            //+ Seed of corruption proc?
+            
+            SECTION("Siphon Life", [&] {
+                uint32 const siphonLifetickAmount = 10;
+                uint32 const expectedSLTick = ClassSpellsDamage::Warlock::SIHPON_LIFE_RNK_6_TICK * shadowMasteryFactor;
+                uint32 const expectedSLTotalAmount = expectedSLTick * siphonLifetickAmount;
+                warlock->SetHealth(1);
+                TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, expectedSLTotalAmount, true);
+                ASSERT_INFO("Warlock has %u HP but %u was expected.", warlock->GetHealth(), 1 + expectedSLTotalAmount);
+                TEST_ASSERT(warlock->GetHealth() == 1 + expectedSLTotalAmount);
+            });
 
-            // Seed of Corruption
-            uint32 const seedOfCorruptionTickAmount = 6;
-            uint32 const expectedSoCTick = ClassSpellsDamage::Warlock::SEED_OF_CORRUPTION_RNK_1_TICK * shadowMasteryFactor;
-            uint32 const expectedSoCTotalAmount = seedOfCorruptionTickAmount * expectedSoCTick;
-            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SEED_OF_CORRUPTION_RNK_1, expectedSoCTotalAmount, true);
+            SECTION("Shadow Bolt", [&] {
+                uint32 const expectedShadowBoltMin = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * shadowMasteryFactor;
+                uint32 const expectedShadowBoltMax = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * shadowMasteryFactor;
+                TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax, false);
+            });
 
-            // Siphon Life 
-            uint32 const siphonLifetickAmount = 10;
-            uint32 const expectedSLTick = ClassSpellsDamage::Warlock::SIHPON_LIFE_RNK_6_TICK * siphonLifetickAmount;
-            uint32 const expectedSLTotalAmount = expectedSLTick * shadowMasteryFactor;
-            warlock->SetHealth(1);
-            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::SIPHON_LIFE_RNK_6, expectedSLTotalAmount, true);
-            ASSERT_INFO("Warlock has %u HP but %u was expected.", warlock->GetHealth(), 1 + expectedSLTotalAmount);
-            TEST_ASSERT(warlock->GetHealth() == 1 + expectedSLTotalAmount);
-
-            // Shadow Bolt
-            uint32 const expectedShadowBoltMin = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN * shadowMasteryFactor;
-            uint32 const expectedShadowBoltMax = ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX * shadowMasteryFactor;
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, expectedShadowBoltMin, expectedShadowBoltMax, false);
-
-            // Shadowburn
-            uint32 const expectedShadowBurnMin = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * shadowMasteryFactor;
-            uint32 const expectedShadowBurnMax = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * shadowMasteryFactor;
-            TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowBurnMin, expectedShadowBurnMax, false);
+            SECTION("Shadowburn", [&] {
+                uint32 const expectedShadowBurnMin = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MIN * shadowMasteryFactor;
+                uint32 const expectedShadowBurnMax = ClassSpellsDamage::Warlock::SHADOWBURN_RNK_8_MAX * shadowMasteryFactor;
+                TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOWBURN_RNK_8, expectedShadowBurnMin, expectedShadowBurnMax, false);
+            });
 		}
 	};
 
@@ -922,7 +934,7 @@ class ContagionTest : public TestCase
         });
 
         //dispel chance, moved out from previous section because only this one is bugged
-        SECTION("Unstable Afflication", STATUS_KNOWN_BUG, [&] {
+        SECTION("Unstable Afflication dispel chance", STATUS_KNOWN_BUG, [&] {
             ASSERT_INFO("Unstable Affliction");
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedResist);
         });
@@ -1071,27 +1083,31 @@ public:
             TEST_POWER_COST(warlock, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, POWER_MANA, expectedUnstableAfflictionManaCost);
 
             // DoT
-            float const spellCoefficient = ClassSpellsCoeff::Warlock::UNSTABLE_AFFLICTION_DOT;
-            float const tickAmount = 6.0f;
-            uint32 const expectedUnstableAfflictionTick = ClassSpellsDamage::Warlock::UNSTABLE_AFFLICTION_RNK_3_TICK + spellPower * spellCoefficient / tickAmount;
-            uint32 const expectedUnstableAfflictionTotal = expectedUnstableAfflictionTick * tickAmount;
-            TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedUnstableAfflictionTotal, false);
+            SECTION("Dot damage", [&] {
+                float const spellCoefficient = ClassSpellsCoeff::Warlock::UNSTABLE_AFFLICTION_DOT;
+                float const tickAmount = 6.0f;
+                uint32 const expectedUnstableAfflictionTick = ClassSpellsDamage::Warlock::UNSTABLE_AFFLICTION_RNK_3_TICK + spellPower * spellCoefficient / tickAmount;
+                uint32 const expectedUnstableAfflictionTotal = expectedUnstableAfflictionTick * tickAmount;
+                TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedUnstableAfflictionTotal, false);
+            });
 
             // Dispell & damage
-            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
-            priest->SetMaxHealth(10000);
-            priest->SetFullHealth();
-            priest->DisableRegeneration(true);
-            uint32 const expectedUADamage = ClassSpellsDamage::Warlock::UNSTABLE_AFFLICTION_RNK_3_DISPELLED + spellPower * ClassSpellsCoeff::Warlock::UNSTABLE_AFFLICTION;
-            FORCE_CAST(warlock, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-            FORCE_CAST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2);
-            TEST_AURA_MAX_DURATION(priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE, Seconds(5));
-            TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_FAILED_PREVENTED_BY_MECHANIC);
-            //But can this spell crit?
-            auto[dealtMin, dealtMax] = GetDamagePerSpellsTo(warlock, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE, false, 1);
-            uint32 actualDamageDone = dealtMin;
-            ASSERT_INFO("actualDamageDone %u, expectedDamageDone %u", actualDamageDone, expectedUADamage);
-            TEST_ASSERT(Between(actualDamageDone, expectedUADamage - 3, expectedUADamage + 3)); //larger tolerance due to error related to tick approximation
+            SECTION("Dispell & damage", [&] {
+                TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+                priest->SetMaxHealth(10000);
+                priest->SetFullHealth();
+                priest->DisableRegeneration(true);
+                EnableCriticals(warlock, false); //disable crit for warlock, because UA can crit and we choose to check the non crit damage
+                uint32 const expectedUADamage = ClassSpellsDamage::Warlock::UNSTABLE_AFFLICTION_RNK_3_DISPELLED + spellPower * ClassSpellsCoeff::Warlock::UNSTABLE_AFFLICTION;
+                FORCE_CAST(warlock, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
+                FORCE_CAST(priest, priest, ClassSpells::Priest::DISPEL_MAGIC_RNK_2);
+                TEST_AURA_MAX_DURATION(priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE, Seconds(5));
+                TEST_CAST(priest, priest, ClassSpells::Priest::RENEW_RNK_12, SPELL_FAILED_PREVENTED_BY_MECHANIC);
+                auto[dealtMin, dealtMax] = GetDamagePerSpellsTo(warlock, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE, false, 1);
+                uint32 actualDamageDone = dealtMin;
+                ASSERT_INFO("actualDamageDone %u, expectedDamageDone %u", actualDamageDone, expectedUADamage);
+                TEST_ASSERT(Between(actualDamageDone, expectedUADamage - 3, expectedUADamage + 3)); //larger tolerance due to error related to tick approximation
+            });
         }
     };
 
@@ -2168,7 +2184,7 @@ public:
             TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOWBURN_RNK_8, POWER_MANA, expectedShadowburnManaCost);
             
             warlock->AddItem(SOUL_SHARD, 1);
-            TEST_CAST(warlock, enemy, ClassSpells::Warlock::SHADOWBURN_RNK_8, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
+            FORCE_CAST(warlock, enemy, ClassSpells::Warlock::SHADOWBURN_RNK_8, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
             // Consumes a Soul Shard
             TEST_ASSERT(warlock->GetItemCount(SOUL_SHARD, false) == 0);
             TEST_HAS_COOLDOWN(warlock, ClassSpells::Warlock::SHADOWBURN_RNK_8, Seconds(15));
