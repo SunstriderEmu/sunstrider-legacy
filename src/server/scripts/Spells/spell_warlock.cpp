@@ -458,8 +458,36 @@ public:
     }
 };
 
+
+// -17794 - Shadow Vulnerability (from Improved Shadowbolt Talent)
+class spell_warl_shadow_vulnerability : public AuraScript
+{
+    PrepareAuraScript(spell_warl_shadow_vulnerability);
+
+    //"Your Shadow Bolt critical strikes increase Shadow damage dealt to the target by 20% until 4 non-periodic damage sources are applied."
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        SpellInfo const* spellInfo = eventInfo.GetSpellInfo();
+        if (!spellInfo)
+            return false;
+
+        // By default dots do trigger this spell with PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG...
+        // Can dots be excluded by updating the spell_proc entry? Can't see how.
+        if (spellInfo->HasAuraEffect(SPELL_AURA_PERIODIC_DAMAGE))
+            return false;
+
+        return true;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_warl_shadow_vulnerability::CheckProc);
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
+    RegisterAuraScript(spell_warl_shadow_vulnerability);
     new spell_warl_pyroclasm();
     new spell_warl_drainsoul();
     new spell_warl_seed_of_corruption();

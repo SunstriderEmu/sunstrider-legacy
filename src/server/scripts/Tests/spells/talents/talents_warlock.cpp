@@ -1900,6 +1900,7 @@ public:
             // Buff is consumed by direct shadow damages
             FORCE_CAST(warlock2, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, triggerFlags);
             FORCE_CAST(priest, dummy, ClassSpells::Priest::MIND_BLAST_RNK_11, SPELL_MISS_NONE, triggerFlags);
+            TEST_ASSERT(aura->GetCharges() == MAX_CHARGES - 2);
             FORCE_CAST(priest, dummy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, SPELL_MISS_NONE, triggerFlags); // DoT, should not consume
             TEST_ASSERT(aura->GetCharges() == MAX_CHARGES - 2);
 
