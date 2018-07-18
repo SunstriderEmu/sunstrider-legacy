@@ -1614,7 +1614,7 @@ public:
 
 class EmpoweredRejuvenationTest : public TestCase
 {
-    /*
+    /* "talents druid empowered_rejuvenation"
     "The bonus healing effects of your healing over time spells is increased by 20%."
     Bugs:
         - Lifebloom burst should be affected by the talent.
@@ -1639,7 +1639,7 @@ class EmpoweredRejuvenationTest : public TestCase
         });
 
         uint32 const regrowthTick = ClassSpellsDamage::Druid::REGROWTH_RNK_10_TICK + bh * ClassSpellsCoeff::Druid::REGROWTH_HOT * talentFactor;
-        SECTION("Regrowth", STATUS_KNOWN_BUG, [&] {
+        SECTION("Regrowth", [&] {
             // Regrowth HoT
             uint32 const expectedRegrowthTotal = 7 * regrowthTick;
             TEST_DOT_DAMAGE(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10, expectedRegrowthTotal, false);

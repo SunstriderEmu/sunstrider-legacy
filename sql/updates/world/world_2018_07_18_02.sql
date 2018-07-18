@@ -1,0 +1,1 @@
+REPLACE INTO spell_bonus_data VALUES (8936, 0.3, 0.7, -1, -1, "Regrowth");
