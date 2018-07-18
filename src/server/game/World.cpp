@@ -1311,7 +1311,8 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_BETASERVER_ENABLED] = sConfigMgr->GetIntDefault("BetaServer.Enabled", false);
     m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] = sConfigMgr->GetIntDefault("Testing.MaxParallel", 10);
-
+    if (m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] == 0)
+        m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] = 10;
 
     m_configs[CONFIG_DEBUG_DISABLE_MAINHAND] = sConfigMgr->GetBoolDefault("Debug.DisableMainHand", 0);
     m_configs[CONFIG_DEBUG_DISABLE_ARMOR] = sConfigMgr->GetBoolDefault("Debug.DisableArmor", 0);
