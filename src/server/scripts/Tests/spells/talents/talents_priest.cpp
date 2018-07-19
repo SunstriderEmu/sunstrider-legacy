@@ -2940,7 +2940,10 @@ public:
             TEST_HAS_NOT_AURA(dummy, Talents::Priest::MISERY_RNK_5_TRIGGER);
             FORCE_CAST(priest, dummy, spellId);
             if (castTime)
+            {
+                _StartUnitChannels(priest);
                 Wait(castTime);
+            }
             WaitNextUpdate();
             TEST_HAS_AURA(dummy, spellId);
             ASSERT_INFO("After spell %u, Dummy doesnt have Misery.", spellId);

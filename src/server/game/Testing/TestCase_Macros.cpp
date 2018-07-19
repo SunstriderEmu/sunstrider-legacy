@@ -736,7 +736,7 @@ void TestCase::_TestMeleeOutcomePercentage(Unit* attacker, Unit* victim, WeaponA
     auto AI = _GetCasterAI(attacker);
 
     auto damageToTarget = AI->GetMeleeDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("_TestMeleeOutcomePercentage found no data for this victim (%s)", victim->GetName().c_str());
+    INTERNAL_ASSERT_INFO("_TestMeleeOutcomePercentage found no data for target (%s)", victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
 
     uint32 success = 0;
@@ -776,7 +776,7 @@ void TestCase::_TestSpellOutcomePercentage(Unit* caster, Unit* victim, uint32 sp
     auto AI = _GetCasterAI(caster);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data of %s for this victim (%s)", _SpellString(spellID).c_str(), victim->GetName().c_str());
+    INTERNAL_ASSERT_INFO("_TestSpellOutcomePercentage found no data of %s for target (%s)", _SpellString(spellID).c_str(), victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
     
     /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellID);
@@ -812,7 +812,7 @@ void TestCase::_TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spell
     auto AI = _GetCasterAI(caster);
 
     auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of %s for this victim (%s)", _SpellString(spellId).c_str(), victim->GetName().c_str());
+    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of %s for target (%s)", _SpellString(spellId).c_str(), victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
     
     /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellId);

@@ -768,8 +768,9 @@ public:
             SECTION("Hammer of wrath", [&] {
                 float const expectedHoWMin = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MIN * crusadeTalentFactor;
                 float const expectedHoWMax = ClassSpellsDamage::Paladin::HAMMER_OF_WRATH_RNK_4_MAX * crusadeTalentFactor;
-                player->ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, true); //force aura state for hammer of wrath
-                TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HAMMER_OF_WRATH_RNK_4, expectedHoWMin, expectedHoWMax, false);
+                TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::HAMMER_OF_WRATH_RNK_4, expectedHoWMin, expectedHoWMax, false, [](Unit* caster, Unit* victim) {
+                    victim->ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, true); //force aura state for hammer of wrath
+                });
             });
 
             SECTION("Holy shock", [&] {
