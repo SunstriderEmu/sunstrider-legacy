@@ -533,7 +533,9 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
     SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, gender);
     SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_POWER_TYPE, powertype);
     SetUInt32Value(UNIT_FIELD_BYTES_1, unitfield);
-    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5 );
+#ifndef LICH_KING
+    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT);
+#endif
     SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED );
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);               // fix cast time showed in spell tooltip on client
 
@@ -6975,8 +6977,6 @@ uint32 Player::GetLevelFromStorage(ObjectGuid guid)
 
 void Player::UpdatePvPState(bool onlyFFA)
 {
-    /// @todo should we always synchronize UNIT_FIELD_BYTES_2, 1 of controller and controlled?
-    // no, we shouldn't, those are checked for affecting player by client
     if (!pvpInfo.IsInNoPvPArea && !IsGameMaster()
         && (pvpInfo.IsInFFAPvPArea || sWorld->IsFFAPvPRealm()))
     {
@@ -15490,7 +15490,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         return false;
     }
 
-    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5 );
+#ifndef LICH_KING
+    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT);
+#endif
     //SetByteValue(PLAYER_BYTES_3, 0, m_gender);
     SetUInt32Value(PLAYER_BYTES, fields[LOAD_DATA_PLAYERBYTES].GetUInt32());   // PlayerBytes
     SetUInt32Value(PLAYER_BYTES_2, fields[LOAD_DATA_PLAYERBYTES2].GetUInt32()); // PlayerBytes2

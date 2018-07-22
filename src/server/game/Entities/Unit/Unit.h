@@ -107,9 +107,9 @@ enum UnitBytes1Offsets
 
 enum UnitBytes2Offsets
 {
-    UNIT_BYTES_2_OFFSET_SHEATH_STATE = 0,
-    UNIT_BYTES_2_OFFSET_1_UNK = 1, //Not sure what this index is for. TC has UNIT_BYTES_2_OFFSET_PVP_FLAG = 1, but this may not be on BC since PvP handling has changed a lot
-    UNIT_BYTES_2_OFFSET_PET_FLAGS = 2,
+    UNIT_BYTES_2_OFFSET_SHEATH_STATE    = 0,
+    UNIT_BYTES_2_OFFSET_BUFF_LIMIT      = 1, //According to cmangos. (TC has UNIT_BYTES_2_OFFSET_PVP_FLAG = 1, but it makes sense this flag changed with LK since debuff limit disappeared and PvP handling changed a lot)
+    UNIT_BYTES_2_OFFSET_PET_FLAGS       = 2,
     UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM = 3,
 };
 
@@ -120,6 +120,13 @@ enum UnitBytes1_Flags
     UNIT_BYTE1_FLAG_HOVER           = 0x02,
     UNIT_BYTE1_FLAG_UNK_3           = 0x04,
     UNIT_BYTE1_FLAG_ALL             = 0xFF
+};
+
+// byte flags value (UNIT_FIELD_BYTES_2,1) (according to cmangos)
+enum UnitBytes2_Flags
+{
+    UNIT_BYTE2_CREATURE_BUFF_LIMIT          = 16,
+    UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT = 40,
 };
 
 // high byte (3 from 0..3) of UNIT_FIELD_BYTES_2
@@ -159,20 +166,6 @@ enum SheathState
 };
 
 #define MAX_SHEATH_STATE    3
-
-// byte (1 from 0..3) of UNIT_FIELD_BYTES_2 // UNIT_BYTES_2_OFFSET_1_UNK
-// All these seem to have changed with LK
-enum UnitBytes2_Flags
-{
-    UNIT_BYTE2_FLAG_UNK0  = 0x01, //TC has UNIT_BYTE2_FLAG_PVP, but this is probably new with Lich King, since we use UNIT_FLAG_PVP instead
-    UNIT_BYTE2_FLAG_UNK1  = 0x02, //seems related to PvP mode in LK, not sure this is valid in BC
-    UNIT_BYTE2_FLAG_UNK2  = 0x04, //TC has UNIT_BYTE2_FLAG_FFA_PVP, but this is probably new with Lich King, since we use PLAYER_FLAGS_FFA_PVP instead
-    UNIT_BYTE2_FLAG_UNK3  = 0x08, //in current logic, always set on player and pet. What is this for? Mangos has UNIT_BYTE2_FLAG_SUPPORTABLE  =  allows for being targeted for healing/bandaging by friendlies
-    UNIT_BYTE2_FLAG_AURAS = 0x10, // show positive auras as positive, and allow its dispel (?? Not sure this is okay)
-    UNIT_BYTE2_FLAG_UNK5  = 0x20, //Currently always set on player, not sure what this does // mangos has: show negative auras as positive, *not* allowing dispel (at least for pets)
-    UNIT_BYTE2_FLAG_UNK6  = 0x40, //currently unused
-    UNIT_BYTE2_FLAG_UNK7  = 0x80, //currently unused
-};
 
 // byte (2 from 0..3) of UNIT_FIELD_BYTES_2 // UNIT_BYTES_2_OFFSET_PET_FLAGS
 // Those has changed with LK

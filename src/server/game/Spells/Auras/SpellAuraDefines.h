@@ -14,8 +14,6 @@ class WorldObject;
 #else
 #define MAX_AURAS 56
 #endif
-#define MAX_POSITIVE_AURAS_PLAYERS      40
-#define MAX_POSITIVE_AURAS_CREATURES    16
 
 enum AuraFlags
 {

@@ -407,7 +407,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
     CreatureTemplate const *normalInfo = sObjectMgr->GetCreatureTemplate(Entry);
     if(!normalInfo)
     {
-        TC_LOG_ERROR("FIXME","Creature::UpdateEntry creature entry %u does not exist.", Entry);
+        TC_LOG_ERROR("sql.sql","Creature::UpdateEntry creature entry %u does not exist.", Entry);
         return false;
     }
 
@@ -422,7 +422,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
             cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->difficulty_entry_1);
             if(!cinfo)
             {
-                TC_LOG_ERROR("FIXME","Creature::UpdateEntry creature heroic entry %u does not exist.", actualEntry);
+                TC_LOG_ERROR("sql.sql","Creature::UpdateEntry creature heroic entry %u does not exist.", actualEntry);
                 return false;
             }
         }
@@ -433,6 +433,9 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
 
     // equal to player Race field, but creature does not have race
     SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE, 0);
+#ifndef LICH_KING
+    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, UNIT_BYTE2_CREATURE_BUFF_LIMIT);
+#endif
 
     // known valid are: CLASS_WARRIOR, CLASS_PALADIN, CLASS_ROGUE, CLASS_MAGE
     SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, uint8(cinfo->unit_class));
@@ -455,7 +458,6 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
     SetDisplayId(display_id);
     SetNativeDisplayId(display_id);
 
-    // equal to player Race field, but creature does not have race
     SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, minfo->gender);
 
     LastUsedScriptID = GetScriptId();
@@ -512,7 +514,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     // creatures always have melee weapon ready if any unless specified otherwise
     SetSheath(SHEATH_STATE_MELEE);
 
-    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_AURAS );
+    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, UNIT_BYTE2_CREATURE_BUFF_LIMIT);
 
     SelectLevel();
     SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, cInfo->faction);
@@ -1704,7 +1706,8 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
 
     if (m_respawnTime)                          // respawn on Update
     {
-        ASSERT(m_respawnCompatibilityMode || sPoolMgr->IsPartOfAPool<Creature>(spawnId), "Creature (SpawnID %u) trying to load despite a respawn timer in progress.", spawnId);
+        //ASSERT(m_respawnCompatibilityMode || sPoolMgr->IsPartOfAPool<Creature>(spawnId), "Creature (SpawnID %u) trying to load despite a respawn timer in progress.", spawnId);
+        //Sun: removed this check because of a change in LoadHelper
         m_deathState = DEAD;
         if (CanFly())
         {

@@ -264,20 +264,15 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             petlevel=owner->GetLevel();
 
             SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, uint8(CLASS_MAGE));
-            SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-                                                            // this enables popup window (pet dismiss, cancel)
             break;
         case HUNTER_PET:
             SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, CLASS_WARRIOR);
             SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, GENDER_NONE);
             SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_PET_LOYALTY, fields[8].GetUInt32());
             SetSheath(SHEATH_STATE_MELEE);
-            SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK3);
 
             SetByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PET_FLAGS, fields[12].GetBool() ? UNIT_RENAME_NOT_ALLOWED : UNIT_RENAME_ALLOWED);
 
-            SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-                                                            // this enables popup window (pet abandon, cancel)
             SetTP(fields[9].GetInt32());
             SetMaxPower(POWER_HAPPINESS,GetCreatePowers(POWER_HAPPINESS));
             SetPower(   POWER_HAPPINESS,fields[15].GetUInt32());
@@ -287,6 +282,10 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             TC_LOG_ERROR("entities.pet","Pet have incorrect type (%u) for pet loading.",getPetType());
     }
 
+    SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED); // this enables popup window (pet abandon, cancel) 
+#ifndef LICH_KING
+    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT);
+#endif
     SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(nullptr));
     SetCreatorGUID(owner->GetGUID());
 
@@ -1002,6 +1001,9 @@ bool Pet::CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phas
     SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, uint32(sObjectMgr->GetXPForLevel(GetLevel() + 1)*PET_XP_FACTOR));
     SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
     SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+#ifndef LICH_KING
+    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT);
+#endif
 
     m_loyaltyPoints = 1000;
     if (cinfo->type == CREATURE_TYPE_BEAST)
@@ -1994,9 +1996,12 @@ bool Pet::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32
         return false;
 
     SetSheath(SHEATH_STATE_MELEE);
-    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK3);
+#ifdef LICH_KING
+    // Force regen flag for player pets, just like we do for players themselves
+    SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER);
+#endif
 
-    if(getPetType() == MINI_PET)                            // always non-attackable
+    if(getPetType() == MINI_PET) // always non-attackable
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
     GetThreatManager().Initialize();

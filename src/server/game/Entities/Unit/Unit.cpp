@@ -3358,19 +3358,23 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                 fieldBuffer << dynamicFlags;
             } break;
             // FG: pretend that OTHER players in own group are friendly ("blue")
-            case UNIT_FIELD_BYTES_2:
+#ifdef LICH_KING
+            case UNIT_FIELD_BYTES_2: //UNIT_FIELD_BYTES_2 is not used for factions or pvp in BC
+#endif
             case UNIT_FIELD_FACTIONTEMPLATE:
             {
-                if (/* IsControlledByPlayer() && */ target != this && target->GetCharmerOrOwnerGUID().IsPlayer() && sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && IsInRaidWith(target))
+                if (IsControlledByPlayer() && target != this && sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && IsInRaidWith(target))
                 {
                     FactionTemplateEntry const* ft1 = GetFactionTemplateEntry();
                     FactionTemplateEntry const* ft2 = target->GetFactionTemplateEntry();
                     if (ft1 && ft2 && !ft1->IsFriendlyTo(*ft2))
                     {
+#ifdef LICH_KING
                         if (index == UNIT_FIELD_BYTES_2)
                             // Allow targetting opposite faction in party when enabled in config
                             fieldBuffer << (m_uint32Values[UNIT_FIELD_BYTES_2] & ((UNIT_BYTE2_FLAG_UNK3) << 8)); // this flag is at uint8 offset 1 !!
                         else
+#endif
                             // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
                             fieldBuffer << uint32(target->GetFaction());
                     }

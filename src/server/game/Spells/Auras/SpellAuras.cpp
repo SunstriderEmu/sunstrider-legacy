@@ -44,15 +44,6 @@ AuraCreateInfo::AuraCreateInfo(SpellInfo const* spellInfo, uint8 auraEffMask, Wo
     ASSERT(auraEffMask <= MAX_EFFECT_MASK);
 }
 
-#ifndef LICH_KING
-uint32 GetFirstNegativeSlot(Unit const* target)
-{
-    bool isPlayer = target->GetTypeId() == TYPEID_PLAYER;
-    //BC use defined slots for positive/negative auras. Negatives auras occupy the end of the range.
-    return isPlayer ? MAX_POSITIVE_AURAS_PLAYERS : MAX_POSITIVE_AURAS_CREATURES;
-}
-#endif
-
 void AuraApplication::_UpdateSlot()
 {
     if (!GetBase()->CanBeSentToClient())
@@ -65,7 +56,7 @@ void AuraApplication::_UpdateSlot()
     if (foundAura)
     {
 #ifndef LICH_KING //we have to change slot if positivity has changed
-        bool inPositiveSlot = foundAura->GetSlot() < GetFirstNegativeSlot(GetTarget());
+        bool inPositiveSlot = foundAura->GetSlot() < GetTarget()->GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT);
         if (foundAura->IsPositive() != inPositiveSlot)
         {
             GetTarget()->RemoveVisibleAura(foundAura->GetSlot());
@@ -82,7 +73,9 @@ void AuraApplication::_UpdateSlot()
 #ifdef LICH_KING
         uint32 const firstSlot = 0;
 #else
-        uint32 const firstSlot = IsPositive() ? 0 : GetFirstNegativeSlot(GetTarget());
+        uint32 buffLimit = GetTarget()->GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT);
+        uint32 const firstSlot = IsPositive() ? 0 : buffLimit; //BC use defined slots for positive/negative auras. Negatives auras occupy the end of the range.
+        ASSERT(buffLimit == UNIT_BYTE2_CREATURE_BUFF_LIMIT || buffLimit == UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT);
 #endif
         Unit::VisibleAuraMap::const_iterator itr = visibleAuras->find(firstSlot);
         // lookup for free slots in units visibleAuras
