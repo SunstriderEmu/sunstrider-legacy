@@ -51,7 +51,7 @@ script:
   - make -j 10 -k && make install
   - cd check_install
   - wget https://blob.allumeciga.re/2017_12_17_data.7z
-  - 7zr x 2017_12_17_data.7z -y 
+  - 7zr x 2017_12_17_data.7z -y > /dev/null
   - rm 2017_12_17_data.7z
   - ls
   - cd bin
