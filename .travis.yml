@@ -48,7 +48,7 @@ script:
   - mysql -utrinity -ptrinity characters < sql/base/characters_database.sql
   - mysql -utrinity -ptrinity logs < sql/base/logs_database.sql
   - cd bin
-  - make -j 10 -k && make install
+  - make -j 10 -k && make install && make clean
   - cd check_install
   - wget https://blob.allumeciga.re/2017_12_17_data.7z
   - 7zr x 2017_12_17_data.7z -y > /dev/null
