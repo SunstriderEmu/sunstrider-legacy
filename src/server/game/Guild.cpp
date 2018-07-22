@@ -1776,19 +1776,11 @@ void Guild::AppendDisplayGuildBankSlot( WorldPacket& data, GuildBankTab const *t
         size_t enchCountPos = data.wpos();
 
         data << uint8(enchCount);                           // Number of enchantments
-#ifdef LICH_KING
-        for (uint32 i = PERM_ENCHANTMENT_SLOT; i < MAX_ENCHANTMENT_SLOT;                    ++i)
-#else
         for (uint32 i = SOCK_ENCHANTMENT_SLOT; i < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS; ++i)
-#endif
         {
             if (uint32 enchId = pItem->GetEnchantmentId(EnchantmentSlot(i)))
             {
-#ifdef LICH_KING
-                data << uint8(i);
-#else
                 data << uint8(i - SOCK_ENCHANTMENT_SLOT);
-#endif
                 data << uint32(enchId);
                 ++enchCount;
             }
