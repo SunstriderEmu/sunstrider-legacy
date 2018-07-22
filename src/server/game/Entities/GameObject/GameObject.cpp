@@ -2087,7 +2087,7 @@ void GameObject::SetRespawnTime(int32 respawn)
         UpdateObjectVisibility(true);
 }
 
-void GameObject::DespawnOrUnsummon(Milliseconds const& delay, Seconds const& forceRespawnTime)
+void GameObject::DespawnOrUnsummon(Milliseconds const& delay, Seconds forceRespawnTime)
 {
     if (delay > 0ms)
     {

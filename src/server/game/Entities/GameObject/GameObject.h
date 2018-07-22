@@ -553,7 +553,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         uint32 GetDespawnDelay() const { return m_despawnDelay; }
 
         //Force despawn after specified time 
-        void DespawnOrUnsummon(Milliseconds const& delay = 0ms, Seconds const& forceRespawnTime = 0s);
+        void DespawnOrUnsummon(Milliseconds const& delay = 0ms, Seconds forceRespawnTime = 0s);
         void SetRespawnTime(int32 respawn);
         void Respawn();
         bool isSpawned() const
