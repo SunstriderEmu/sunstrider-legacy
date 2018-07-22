@@ -1256,46 +1256,6 @@ bool SpellMgr::IsSpellLearnToSpell(uint32 spell_id1, uint32 spell_id2) const
     return false;
 }
 
-SpellInfo const* SpellMgr::SelectAuraRankForPlayerLevel(SpellInfo const* spellInfo, uint32 playerLevel, bool hostileTarget) const
-{
-    // ignore passive spells
-    if(spellInfo->IsPassive())
-        return spellInfo;
-
-    bool needRankSelection = false;
-    for(int i=0;i<3;i++)
-    {
-        if( spellInfo->IsPositiveEffect(i, hostileTarget) && (
-            spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA ||
-            spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_PARTY
-            ) )
-        {
-            needRankSelection = true;
-            break;
-        }
-    }
-
-    // not required
-    if(!needRankSelection)
-        return spellInfo;
-
-    for(uint32 nextSpellId = spellInfo->Id; nextSpellId != 0; nextSpellId = GetPrevSpellInChain(nextSpellId))
-    {
-        SpellInfo const *nextSpellInfo = sSpellMgr->GetSpellInfo(nextSpellId);
-        if(!nextSpellInfo)
-            break;
-
-        // if found appropriate level
-        if(playerLevel + 10 >= nextSpellInfo->SpellLevel)
-            return nextSpellInfo;
-
-        // one rank less then
-    }
-
-    // not found
-    return nullptr;
-}
-
 void SpellMgr::LoadSpellRequired()
 {
     mSpellsReqSpell.clear();                                   // need for reload case

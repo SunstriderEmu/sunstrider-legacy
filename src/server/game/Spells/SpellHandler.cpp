@@ -356,17 +356,24 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // auto-selection buff level base at target level (in spellInfo)
     if(targets.GetUnitTarget())
     {
-        SpellInfo const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(spellInfo,targets.GetUnitTarget()->GetLevel(),_player->IsHostileTo(targets.GetUnitTarget()));
+        if (spellInfo->IsPositive())
+        {
+            if (Unit* target = targets.GetUnitTarget())
+            {
+                SpellInfo const* actualSpellInfo = spellInfo->GetAuraRankForLevel(target->GetLevel());
 
-        // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
-        if(actualSpellInfo)
-            spellInfo = actualSpellInfo;
-    } else if (spellInfo->Effects[0].ApplyAuraName == SPELL_AURA_BIND_SIGHT) {
+                // if rank not found then function return NULL but in explicit cast case original spell can be cast and later failed with appropriate error message
+                if (actualSpellInfo)
+                    spellInfo = actualSpellInfo;
+            }
+        }
+    } else if (spellInfo->Effects[0].ApplyAuraName == SPELL_AURA_BIND_SIGHT) 
+    {
         //client doesn't send target if it's not in range, so we have to pick it from UNIT_FIELD_TARGET
         if(ObjectGuid targetGUID = _player->GetGuidValue(UNIT_FIELD_TARGET))
             if(Unit* target = ObjectAccessor::GetUnit(*_player, targetGUID))
                 targets.SetUnitTarget(target);
-    }
+    }   
     
     if (spellInfo->IsAutoRepeatRangedSpell())
     {

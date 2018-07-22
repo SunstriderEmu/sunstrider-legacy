@@ -919,8 +919,6 @@ class TC_GAME_API SpellMgr
         bool IsRankSpellDueToSpell(SpellInfo const *spellInfo_1,uint32 spellId_2) const;
         static bool canStackSpellRanks(SpellInfo const *spellInfo);
 
-        SpellInfo const* SelectAuraRankForPlayerLevel(SpellInfo const* spellInfo, uint32 playerLevel, bool hostileTarget) const;
-
         bool IsNearbyEntryEffect(SpellInfo const* spellInfo, uint8 effect) const;
 
         // Spell learning
