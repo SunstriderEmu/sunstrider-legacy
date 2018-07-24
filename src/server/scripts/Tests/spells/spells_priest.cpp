@@ -241,28 +241,33 @@ public:
             uint32 const rogueHealth = rogue->GetHealth();
             FORCE_CAST(rogue, priest, ClassSpells::Rogue::SINISTER_STRIKE_RNK_10, SPELL_MISS_NONE);
             TEST_ASSERT(rogue->GetHealth() == rogueHealth);
-            //IMPROVE ME, check if the spell has actually procced
+            //IMPROVE ME, check if the spell has actually procced, because it could have but with 0 burn
 
             // Burn mana + damage
             {
-                //mage cast ice lance on priest
                 uint32 const expectedMageHealth = mage->GetHealth() - ClassSpellsDamage::Priest::FEEDBACK_BURN_RNK_6;
                 uint32 const expectedMageMana = mage->GetPower(POWER_MANA) - ClassSpellsDamage::Priest::FEEDBACK_BURN_RNK_6;
-                TEST_CAST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-                priest->ForceSpellHitResultOverride(SPELL_MISS_NONE); //force spell miss to allow proc to always hit mage. (Until proved otherwise we'll assume it can be resisted)
-                FORCE_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_IGNORE_SPEED | TRIGGERED_FULL_MASK));
-                priest->ResetForceSpellHitResultOverride();
-                ASSERT_INFO("initial mana: 200, current mana: %u, expected: %u", mage->GetPower(POWER_MANA), expectedMageMana);
-                TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedMageMana);
-                TEST_ASSERT(mage->GetHealth() == expectedMageHealth);
+
+                //mage cast ice lance on priest
+                SECTION("Mana burn", [&] {
+                    TEST_CAST(priest, priest, ClassSpells::Priest::FEEDBACK_RNK_6, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                    priest->ForceSpellHitResultOverride(SPELL_MISS_NONE); //force spell proc to allow proc to always hit mage. (Until proved otherwise we'll assume it can be resisted)
+                    FORCE_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+                    priest->ResetForceSpellHitResultOverride();
+                    ASSERT_INFO("initial mana: 200, current mana: %u, expected: %u", mage->GetPower(POWER_MANA), expectedMageMana);
+                    TEST_ASSERT(mage->GetPower(POWER_MANA) == expectedMageMana);
+                    TEST_ASSERT(mage->GetHealth() == expectedMageHealth);
+                });
 
                 //mage cast a second ice lance, but has only 35 (expectedMageMana) mana left. Remaining mana should be burned and damage should only amount to this burned mana
-                FORCE_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TRIGGERED_FULL_MASK);
-                Wait(1000); //wait for spell to hit + proc to hit
-                WaitNextUpdate();
-                ASSERT_INFO("initial mana: 35, current mana: %u, expected: 0", mage->GetPower(POWER_MANA));
-                TEST_ASSERT(mage->GetPower(POWER_MANA) == 0);
-                TEST_ASSERT(mage->GetHealth() == expectedMageHealth - expectedMageMana);
+                SECTION("Mana burn 2", [&] {
+                    priest->ForceSpellHitResultOverride(SPELL_MISS_NONE); //force spell proc to allow proc to always hit mage. (Until proved otherwise we'll assume it can be resisted)
+                    FORCE_CAST(mage, priest, ClassSpells::Mage::ICE_LANCE_RNK_1, SPELL_MISS_NONE, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+                    priest->ResetForceSpellHitResultOverride();
+                    ASSERT_INFO("initial mana: %u, current mana: %u, expected: 0", expectedMageMana, mage->GetPower(POWER_MANA));
+                    TEST_ASSERT(mage->GetPower(POWER_MANA) == 0);
+                    TEST_ASSERT(mage->GetHealth() == expectedMageHealth - expectedMageMana);
+                });
             }
         }
     };
@@ -1911,7 +1916,7 @@ public:
             uint32 const expectedDevouringPlagueMana = 1145;
             TEST_POWER_COST(priest, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, POWER_MANA, expectedDevouringPlagueMana);
 
-            TEST_CAST(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7);
+            FORCE_CAST(priest, dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7);
             TEST_AURA_MAX_DURATION(dummy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, Seconds(24));
             TEST_HAS_COOLDOWN(priest, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, Minutes(3));
 
@@ -2135,42 +2140,56 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* enemy = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
-
-            float const baseAttackSpeed = enemy->GetAttackTimer(BASE_ATTACK);
-            float const expectedAttackSpeed = baseAttackSpeed * 1.25f;
+            uint32 const baseAttackSpeed = enemy->GetAttackTime(BASE_ATTACK);
 
             // Mana cost
             uint32 const expectedMindControlMana = 750;
             TEST_POWER_COST(priest, ClassSpells::Priest::MIND_CONTROL_RNK_3, POWER_MANA, expectedMindControlMana);
 
             FORCE_CAST(priest, enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
-            Wait(5000); //wait for spell to be cast (TRIGGERED_CAST_DIRECTLY does not work currently with channeled)
+            Wait(5000);
+            _StartUnitChannels(priest);
 
-            // Aura
+            // PvP Duration
             TEST_AURA_MAX_DURATION(enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, Seconds(10));
 
-            // Attack Speed +25%
-            TEST_ASSERT(enemy->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
+            SECTION("Attack Speed +25%", [&] {
+                uint32 const expectedAttackSpeed = baseAttackSpeed * 1.25f;
+                enemy->ResetAttackTimer(BASE_ATTACK);
+                TEST_ASSERT(Between(enemy->GetAttackTimer(BASE_ATTACK), expectedAttackSpeed - 1, expectedAttackSpeed + 1));
+            });
 
-            // Some statuses and flags
-            TEST_ASSERT(enemy->IsPossessedByPlayer());
-            TEST_ASSERT(priest->GetPlayerBeingMoved() == enemy);
-            TEST_ASSERT(priest->GetUnitBeingMoved() == enemy);
-            TEST_ASSERT(priest->GetViewpoint() == enemy);
-            TEST_ASSERT(enemy->HasUnitState(UNIT_STATE_POSSESSED));
-            TEST_ASSERT(enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED));
-            TEST_ASSERT(priest->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL));
+            SECTION("Statuses and flag", [&] {
+                TEST_ASSERT(enemy->IsPossessedByPlayer());
+                TEST_ASSERT(priest->GetPlayerBeingMoved() == enemy);
+                TEST_ASSERT(priest->GetUnitBeingMoved() == enemy);
+                TEST_ASSERT(priest->GetViewpoint() == enemy);
+                TEST_ASSERT(enemy->HasUnitState(UNIT_STATE_POSSESSED));
+                TEST_ASSERT(enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED));
+                TEST_ASSERT(priest->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL));
+            });
 
             priest->InterruptNonMeleeSpells(true);
             WaitNextUpdate();
              
-            TEST_ASSERT(!enemy->IsPossessed());
-            TEST_ASSERT(priest->GetPlayerBeingMoved() == priest);
-            TEST_ASSERT(priest->GetUnitBeingMoved() == priest);
-            TEST_ASSERT(priest->GetViewpoint() == nullptr);
-            TEST_ASSERT(!enemy->HasUnitState(UNIT_STATE_POSSESSED));
-            TEST_ASSERT(!enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED));
-            TEST_ASSERT(!priest->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL));
+            SECTION("Unapply", [&] {
+                TEST_ASSERT(!enemy->IsPossessed());
+                TEST_ASSERT(priest->GetPlayerBeingMoved() == priest);
+                TEST_ASSERT(priest->GetUnitBeingMoved() == priest);
+                TEST_ASSERT(priest->GetViewpoint() == nullptr);
+                TEST_ASSERT(!enemy->HasUnitState(UNIT_STATE_POSSESSED));
+                TEST_ASSERT(!enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED));
+                TEST_ASSERT(!priest->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL));
+            });
+
+            SECTION("Resist bug", [&] {
+                // Previously, resisting a MC was leaving the dummy aura as well as the channeling on the priest
+                FORCE_CAST(priest, enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, SPELL_MISS_IMMUNE, TRIGGERED_CAST_DIRECTLY);
+                Wait(5000);
+                _StartUnitChannels(priest);
+                TEST_ASSERT(priest->m_currentSpells[CURRENT_CHANNELED_SPELL] == nullptr);
+                TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::MIND_CONTROL_RNK_3);
+            });
         }
     };
 

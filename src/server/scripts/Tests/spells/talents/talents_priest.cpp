@@ -2929,7 +2929,9 @@ class MiseryTest : public TestCaseScript
 public:
     MiseryTest() : TestCaseScript("talents priest misery") { }
 
-    //Your Shadow Word: Pain, Mind Flay and Vampiric Touch spells also cause the target to take an additional 5% spell damage.
+    /* "Your Shadow Word: Pain, Mind Flay and Vampiric Touch spells also cause the target to take an additional 5% spell damage."
+    We assume Misery cannot be resisted, resist being already rolled on the spell proccing it
+    */
     class MiseryTestImpt : public TestCase
     {
     public:
@@ -2946,7 +2948,7 @@ public:
             }
             WaitNextUpdate();
             TEST_HAS_AURA(dummy, spellId);
-            ASSERT_INFO("After spell %u, Dummy doesnt have Misery.", spellId);
+            ASSERT_INFO("After spell %s, Dummy doesnt have Misery.", _SpellString(spellId).c_str());
             TEST_AURA_MAX_DURATION(dummy, Talents::Priest::MISERY_RNK_5_TRIGGER, Seconds(24));
             dummy->RemoveAurasDueToSpell(Talents::Priest::MISERY_RNK_5_TRIGGER);
             dummy->RemoveAurasDueToSpell(spellId);
