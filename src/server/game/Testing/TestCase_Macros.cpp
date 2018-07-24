@@ -807,21 +807,18 @@ void TestCase::_TestSpellOutcomePercentage(Unit* caster, Unit* victim, uint32 sp
     INTERNAL_TEST_ASSERT(Between<float>(expectedResult, result - allowedError, result + allowedError));
 }
 
-void TestCase::_TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize)
+template <class T>
+void GetCritDone(uint32& critCount, uint32& foundCount, std::vector<T> const* doneToTarget, std::function<bool(T const)> check)
 {
-    auto AI = _GetCasterAI(caster);
+    critCount = 0;
+    foundCount = 0;
 
-    auto damageToTarget = AI->GetSpellDamageDoneInfo(victim);
-    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of %s for target (%s)", _SpellString(spellId).c_str(), victim->GetName().c_str());
-    INTERNAL_TEST_ASSERT(damageToTarget && !damageToTarget->empty());
-    
-    /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellId);
+    if (!doneToTarget || doneToTarget->empty())
+        return;
 
-    uint32 critCount = 0;
-    uint32 foundCount = 0;
-    for (auto itr : *damageToTarget)
+    for (auto itr : *doneToTarget)
     {
-        if (itr.damageInfo.SpellID != spellId)
+        if (!check(itr))
             continue;
 
         foundCount++;
@@ -829,10 +826,27 @@ void TestCase::_TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spell
         if (itr.crit)
             critCount++;
     }
+};
+
+void TestCase::_TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spellId, float expectedResult, float allowedError, uint32 sampleSize /* = 0*/)
+{
+    auto AI = _GetCasterAI(caster);
+
+    /*SpellInfo const* spellInfo =*/ _GetSpellInfo(spellId);
+
+    uint32 critCount = 0;
+    uint32 foundCount = 0;
+    GetCritDone<PlayerbotTestingAI::SpellDamageDoneInfo>(critCount, foundCount, AI->GetSpellDamageDoneInfo(victim), [&](auto info) { return info.damageInfo.SpellID == spellId; });
+    if (!foundCount)
+        GetCritDone<PlayerbotTestingAI::HealingDoneInfo>(critCount, foundCount, AI->GetHealingDoneInfo(victim), [&](auto info) { return info.spellID == spellId; });
+
+    INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of %s for target (%s)", _SpellString(spellId).c_str(), victim->GetName().c_str());
+    INTERNAL_TEST_ASSERT(foundCount != 0);
+
 
     if (sampleSize)
     {
-        INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found %u results instead of expected sample size %u for %s", uint32(damageToTarget->size()), sampleSize, _SpellString(spellId).c_str());
+        INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found %u results instead of expected sample size %u for %s", foundCount, sampleSize, _SpellString(spellId).c_str());
         INTERNAL_TEST_ASSERT(foundCount == sampleSize)
     }
 
