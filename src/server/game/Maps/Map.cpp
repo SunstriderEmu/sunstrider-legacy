@@ -35,6 +35,8 @@
 #include "Totem.h"
 #include "Transport.h"
 #include "ScriptMgr.h"
+#include <unordered_set>
+#include <vector>
 #ifdef TESTS
 #include "TestCase.h"
 #include "TestThread.h"
@@ -862,12 +864,24 @@ void Map::Update(const uint32 &t_diff)
             for (Unit* unit : toVisit)
                 VisitNearbyCellsOf(unit, grid_object_update, world_object_update);
         }
+
+        { // Update any creatures that own auras the player has applications of
+            std::unordered_set<Unit*> toVisit;
+            for (std::pair<uint32, AuraApplication*> pair : player->GetAppliedAuras())
+            {
+                if (Unit* caster = pair.second->GetBase()->GetCaster())
+                    if (caster->GetTypeId() != TYPEID_PLAYER && !caster->IsWithinDistInMap(player, GetVisibilityRange(), false))
+                        toVisit.insert(caster);
+            }
+            for (Unit* unit : toVisit)
+                VisitNearbyCellsOf(unit, grid_object_update, world_object_update);
+        }
     }
 
     //must be done before creatures update
     for (auto itr : CreatureGroupHolder)
         itr.second->Update(t_diff);
-
+    
     // non-player active objects, increasing iterator in the loop in case of object removal
     for (m_activeForcedNonPlayersIter = m_activeForcedNonPlayers.begin(); m_activeForcedNonPlayersIter != m_activeForcedNonPlayers.end();)
     {
