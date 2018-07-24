@@ -2631,6 +2631,8 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
     }
 
     // All calculated do it!
+    bool passive = spell->m_damage <= 0 && spell->m_healing <= 0;
+
     // Do healing
     std::unique_ptr<DamageInfo> spellDamageInfo;
     std::unique_ptr<HealInfo> healInfo;
@@ -2744,9 +2746,9 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
                 p->GetPlayerbotAI()->CastedDamageSpell(spell->unitTarget, damageInfo, MissCondition, IsCrit);
 #endif
     }
-    // Passive spell hits/misses or active spells only misses (only triggers)
-    // sun: added the 'else', we don't want to do both the first if and this one. This can happen if damage is entirely absorbed.
-    else if (spell->m_damage <= 0 && spell->m_healing <= 0)
+    // Passive spell hits/misses --or active spells only misses (only triggers)-- 
+    // sun: Seems strange to me to proc PROC_SPELL_TYPE_NO_DMG_HEAL when spell was fully absorbed for example, or if healing spell was entirely overheal. Edited logic to allow this bloc to run only if no damage or no healing have been done.
+    if (passive)
     {
         // Fill base damage struct (unitTarget - is real spell target)
         SpellNonMeleeDamage damageInfo(caster, spell->unitTarget, spell->m_spellInfo->Id, spell->m_spellSchoolMask);
