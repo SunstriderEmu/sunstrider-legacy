@@ -41,7 +41,7 @@ bool FollowMovementGenerator::Initialize(Unit* owner)
     owner->StopMoving();
     UpdatePetSpeed(owner);
     _path = nullptr;
-    _lastTargetPosition.Relocate(0.0f, 0.0f, 0.0f);
+    _lastTargetPosition.reset();
     return true;
 }
 
@@ -66,6 +66,7 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
     if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || owner->IsMovementPreventedByCasting())
     {
         owner->StopMoving();
+        _lastTargetPosition.reset();
         return true;
     }
 
@@ -93,7 +94,7 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
         DoMovementInform(owner, target);
     }
 
-    if (_lastTargetPosition.GetExactDistSq(target->GetPosition()) > 0.0f)
+    if (!_lastTargetPosition || _lastTargetPosition->GetExactDistSq(target->GetPosition()) > 0.0f)
     {
         _lastTargetPosition = target->GetPosition();
         if (owner->HasUnitState(UNIT_STATE_FOLLOW_MOVE) || !PositionOkay(owner, target, _range + FOLLOW_RANGE_TOLERANCE))

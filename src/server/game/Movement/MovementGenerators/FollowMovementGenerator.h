@@ -26,7 +26,7 @@ class FollowMovementGenerator : public MovementGenerator, public AbstractFollowe
 
         MovementGeneratorType GetMovementGeneratorType() const override { return FOLLOW_MOTION_TYPE; }
 
-        void UnitSpeedChanged() override { _lastTargetPosition.Relocate(0.0f, 0.0f, 0.0f); }
+        void UnitSpeedChanged() override { _lastTargetPosition.reset(); }
 
     private:
         static constexpr uint32 CHECK_INTERVAL = 500;
@@ -38,7 +38,7 @@ class FollowMovementGenerator : public MovementGenerator, public AbstractFollowe
 
         uint32 _checkTimer = CHECK_INTERVAL;
         std::unique_ptr<PathGenerator> _path;
-        Position _lastTargetPosition;
+        Optional<Position> _lastTargetPosition;
 };
 
 #endif
