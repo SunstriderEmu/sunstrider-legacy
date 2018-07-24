@@ -3868,6 +3868,57 @@ void Spell::DoProcessTargetContainer(Container& targetContainer)
         target.DoDamageAndTriggers(this);
 }
 
+uint32 Spell::GetChannelStartDuration() const
+{
+    if (!m_spellInfo->IsChanneled())
+        return 0;
+
+    bool const useAuraDuration = m_spellInfo->HasAnyAura() && m_spellInfo->NeedsExplicitUnitTarget();
+    auto auraDuration = [this]() {
+        if (!_spellAura)
+            return 0;
+
+        // 1 - Get first spell effect needing explicit target
+        uint8 i = EFFECT_0;
+        bool unused, unused2;
+        for (; ; i++)
+        {
+            auto effect = m_spellInfo->Effects[i];
+            if (!effect.IsEffect() || !effect.IsAura())
+                continue;
+
+            if (effect.TargetA.GetExplicitTargetMask(unused, unused2) & TARGET_FLAG_UNIT_MASK)
+                break;
+
+            if (i >= MAX_SPELL_EFFECTS)
+                return 0;
+        }
+
+        // 2 - Select first target unit with this effect applied as channel target
+        Unit const* channelTarget = nullptr;
+        for (auto const target : m_UniqueTargetInfo)
+        {
+            if (target.MissCondition != SPELL_MISS_NONE || !target.HitAura)
+                continue;
+
+            if (!(target.EffectMask & (1 << i)))
+                continue;
+
+            channelTarget = target.GetSpellHitTarget();
+            if (channelTarget)
+                break;
+        }
+
+        // 3 - Use aura duration if channel target has aura, else 0
+        if(channelTarget)
+            return _spellAura->IsAppliedOnTarget(channelTarget->GetGUID()) ? _spellAura->GetDuration() : 0;
+
+        return 0;
+    };
+   
+    return useAuraDuration ? auraDuration() : m_spellInfo->GetDuration();
+}
+
 void Spell::handle_immediate()
 {
     //TC_LOG_DEBUG("FIXME","Spell %u - handle_immediate()",m_spellInfo->Id);
@@ -3886,9 +3937,7 @@ void Spell::handle_immediate()
     if (m_spellInfo->IsChanneled())
     {
         // sun: changed logic to use aura duration for channel if applicable. 
-        bool const useAuraDuration = m_spellInfo->HasAnyAura() && m_spellInfo->NeedsExplicitUnitTarget();
-        auto auraDuration = [this]() { return _spellAura ? _spellAura->GetDuration() : 0; };
-        int32 duration = useAuraDuration ? auraDuration() : m_spellInfo->GetDuration();
+        int32 duration = GetChannelStartDuration();
         if (duration > 0)
         {
             //apply haste mods

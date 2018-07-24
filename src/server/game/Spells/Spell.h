@@ -685,8 +685,10 @@ class TC_GAME_API Spell
             bool   Positive = true;
             UnitAura* HitAura = nullptr;
 
+            Unit const* GetSpellHitTarget() const { return _spellHitTarget; }
+
         private:
-            Unit * _spellHitTarget = nullptr; // changed for example by reflect
+            Unit* _spellHitTarget = nullptr; // changed for example by reflect
             bool _enablePVP = false;         // need to enable PVP at DoDamageAndTriggers?
         };
         std::vector<TargetInfo> m_UniqueTargetInfo;
@@ -799,6 +801,7 @@ class TC_GAME_API Spell
         PathGenerator* m_preGeneratedPath;
         // We need to keep this variable in spell to allow applying it for channels or for when cast finish
         SpellMissInfo _forceHitResult;
+        uint32 GetChannelStartDuration() const;
 };
 
 namespace Trinity
