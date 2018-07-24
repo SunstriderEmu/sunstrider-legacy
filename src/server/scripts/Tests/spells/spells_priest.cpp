@@ -2139,6 +2139,10 @@ public:
             float const baseAttackSpeed = enemy->GetAttackTimer(BASE_ATTACK);
             float const expectedAttackSpeed = baseAttackSpeed * 1.25f;
 
+            // Mana cost
+            uint32 const expectedMindControlMana = 750;
+            TEST_POWER_COST(priest, ClassSpells::Priest::MIND_CONTROL_RNK_3, POWER_MANA, expectedMindControlMana);
+
             FORCE_CAST(priest, enemy, ClassSpells::Priest::MIND_CONTROL_RNK_3, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
             Wait(5000); //wait for spell to be cast (TRIGGERED_CAST_DIRECTLY does not work currently with channeled)
 
@@ -2148,12 +2152,25 @@ public:
             // Attack Speed +25%
             TEST_ASSERT(enemy->GetAttackTimer(BASE_ATTACK) == expectedAttackSpeed);
 
+            // Some statuses and flags
+            TEST_ASSERT(enemy->IsPossessedByPlayer());
+            TEST_ASSERT(priest->GetPlayerBeingMoved() == enemy);
+            TEST_ASSERT(priest->GetUnitBeingMoved() == enemy);
+            TEST_ASSERT(priest->GetViewpoint() == enemy);
+            TEST_ASSERT(enemy->HasUnitState(UNIT_STATE_POSSESSED));
+            TEST_ASSERT(enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED));
+            TEST_ASSERT(priest->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL));
+
             priest->InterruptNonMeleeSpells(true);
             WaitNextUpdate();
-
-            // Mana cost
-            uint32 const expectedMindControlMana = 750;
-            TEST_POWER_COST(priest, ClassSpells::Priest::MIND_CONTROL_RNK_3, POWER_MANA, expectedMindControlMana);
+             
+            TEST_ASSERT(!enemy->IsPossessed());
+            TEST_ASSERT(priest->GetPlayerBeingMoved() == priest);
+            TEST_ASSERT(priest->GetUnitBeingMoved() == priest);
+            TEST_ASSERT(priest->GetViewpoint() == nullptr);
+            TEST_ASSERT(!enemy->HasUnitState(UNIT_STATE_POSSESSED));
+            TEST_ASSERT(!enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED));
+            TEST_ASSERT(!priest->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL));
         }
     };
 

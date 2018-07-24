@@ -722,7 +722,7 @@ void AuraEffect::HandleEffect(AuraApplication* aurApp, uint8 mode, bool apply)
     if (!prevented)
         (*this.*AuraEffectHandler[GetAuraType()])(aurApp, mode, apply);
 
-    // check if the default handler reemoved the aura
+    // check if the default handler removed the aura
     if (apply && aurApp->GetRemoveMode())
         return;
 

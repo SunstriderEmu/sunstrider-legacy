@@ -616,6 +616,69 @@ public:
     }
 };
 
+
+// -605 - Mind Control 
+class spell_pri_mind_control : public AuraScript
+{
+    PrepareAuraScript(spell_pri_mind_control);
+
+    //Dummy effect shouldn't be applied if target has resisted... I see no explicit info in the spell from which we could deduce this generically, so we're handling this as a specific case
+    void HandleEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    {
+        bool hasTarget = false;
+        for (auto auraApp : aurEff->GetBase()->GetApplicationMap())
+            if (auraApp.second->GetTarget() && auraApp.second->GetTarget() != aurEff->GetBase()->GetCaster())
+            {
+                hasTarget = true;
+                break;
+            }
+
+        if (!hasTarget)
+            Remove(AURA_REMOVE_BY_DEFAULT);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_pri_mind_control::HandleEffectApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+/*
+class spell_pri_mind_control : public SpellScriptLoader
+{
+public:
+    spell_pri_mind_control() : SpellScriptLoader("spell_pri_mind_control") { }
+
+    class spell_pri_mind_control_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_pri_mind_control_SpellScript);
+
+        void AfterHit()
+        {
+            //
+            Spell* spell = GetSpell();
+            Unit* target = nullptr;
+            Unit* caster = nullptr;
+            if ((target = spell->m_targets.GetUnitTarget()) && !target->HasAura(spell->GetSpellInfo()->Id))
+                if(spell->GetCaster() && (caster = spell->GetCaster()->ToUnit()))
+                    if (Aura* aura = caster->GetAura(spell->GetSpellInfo()->Id))
+                        caster->
+
+        }
+
+        void Register() override
+        {
+            AfterHit += SpellHitFn(spell_pri_mind_control_SpellScript::AfterHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_pri_mind_control_SpellScript();
+    }
+};
+*/
+
 void AddSC_priest_spell_scripts()
 {
     new spell_shadowfiend();
@@ -631,4 +694,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_blessed_recovery();
     new spell_pri_mass_dispel<TARGET_UNIT_DEST_AREA_ALLY>("spell_pri_mass_dispel");
     new spell_pri_mass_dispel<TARGET_UNIT_DEST_AREA_ENEMY>("spell_pri_mass_dispel_enemies");
+    RegisterAuraScript(spell_pri_mind_control);
 }
