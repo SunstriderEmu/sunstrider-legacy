@@ -2491,7 +2491,9 @@ void Spell::TargetInfo::PreprocessTarget(Spell* spell)
     if (MissCondition == SPELL_MISS_NONE)
         _spellHitTarget = unit;
     else if (MissCondition == SPELL_MISS_REFLECT && ReflectResult == SPELL_MISS_NONE)
-        _spellHitTarget = spell->m_caster->ToUnit();
+        _spellHitTarget = spell->m_caster->ToUnit();    
+    
+    _enablePVP = false; // need to check PvP state before spell effects, but act on it afterwards
     if (_spellHitTarget)
     {
         // if target is flagged for pvp also flag caster if a player
@@ -3140,7 +3142,7 @@ SpellMissInfo Spell::PreprocessSpellHit(Unit* unit, bool scaleAura, TargetInfo& 
                     hitInfo.AuraSpellInfo->Effects[i].IsUnitOwnedAuraEffect() &&
                     !hitInfo.AuraSpellInfo->IsPositiveEffect(i))
                 {
-                    hitInfo.Positive = false;
+                    hitInfo.Positive = false; break;
                 }
             }
         }
@@ -3869,10 +3871,24 @@ void Spell::DoProcessTargetContainer(Container& targetContainer)
 void Spell::handle_immediate()
 {
     //TC_LOG_DEBUG("FIXME","Spell %u - handle_immediate()",m_spellInfo->Id);
+    PrepareTargetProcessing();
+
+    // process immediate effects (items, ground, etc.) also initialize some variables
+    _handle_immediate_phase();
+
+    // consider spell hit for some spells without target, so they may proc on finish phase correctly
+    if (m_UniqueTargetInfo.empty())
+        m_hitMask = PROC_HIT_NORMAL;
+    else
+        DoProcessTargetContainer(m_UniqueTargetInfo);
+
     // start channeling if applicable
-    if(m_spellInfo->IsChanneled())
+    if (m_spellInfo->IsChanneled())
     {
-        int32 duration = m_spellInfo->GetDuration();
+        // sun: changed logic to use aura duration for channel if applicable. 
+        bool const useAuraDuration = m_spellInfo->HasAnyAura() && m_spellInfo->NeedsExplicitUnitTarget();
+        auto auraDuration = [this]() { return _spellAura ? _spellAura->GetDuration() : 0; };
+        int32 duration = useAuraDuration ? auraDuration() : m_spellInfo->GetDuration();
         if (duration > 0)
         {
             //apply haste mods
@@ -3892,17 +3908,6 @@ void Spell::handle_immediate()
             ASSERT_NOTNULL(m_caster->ToUnit())->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
         }
     }
-
-    PrepareTargetProcessing();
-
-    // process immediate effects (items, ground, etc.) also initialize some variables
-    _handle_immediate_phase();
-
-    // consider spell hit for some spells without target, so they may proc on finish phase correctly
-    if (m_UniqueTargetInfo.empty())
-        m_hitMask = PROC_HIT_NORMAL;
-    else
-        DoProcessTargetContainer(m_UniqueTargetInfo);
 
     DoProcessTargetContainer(m_UniqueGOTargetInfo);
 
@@ -4131,12 +4136,6 @@ void Spell::update(uint32 difftime)
                     for (TargetInfo const& target : m_UniqueTargetInfo)
                         if (Unit* unit = m_caster->GetGUID() == target.TargetGUID ? m_caster->ToUnit() : ObjectAccessor::GetUnit(*m_caster, target.TargetGUID))
                             unit->RemoveOwnedAura(m_spellInfo->Id, m_originalCasterGUID, 0, AURA_REMOVE_BY_CANCEL);
-
-                    //WR hack drain soul
-                    if (m_caster->ToUnit() && m_spellInfo->HasVisual(788) && m_spellInfo->SpellIconID == 113 && m_spellInfo->SpellFamilyName == 5) { // Drain soul hack, must remove aura on caster
-                        if (m_caster->ToUnit()->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                            m_caster->ToUnit()->InterruptSpell(CURRENT_CHANNELED_SPELL, true, true);
-                    }
                 }
 
                 if(difftime >= (uint32)m_timer)
