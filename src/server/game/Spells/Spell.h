@@ -509,6 +509,7 @@ class TC_GAME_API Spell
         void SendChannelUpdate(uint32 time);
         void SendChannelUpdate(uint32 time, uint32 spellId); //only update if channeling given spell
         void SendChannelStart(uint32 duration);
+        ObjectGuid GetStartChannelTarget() const;
         void SendResurrectRequest(Player* target);
 
         void HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i, SpellEffectHandleMode mode);

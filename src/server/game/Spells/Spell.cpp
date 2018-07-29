@@ -3929,13 +3929,22 @@ void Spell::handle_immediate()
     // process immediate effects (items, ground, etc.) also initialize some variables
     _handle_immediate_phase();
 
+    // sun: set channel target before processing targets. Aura of channeling spells needs this to be set beforehand.
+    if (m_spellInfo->IsChanneled())
+        if (Unit* caster = m_caster->ToUnit())
+        {
+            ObjectGuid channelTarget = GetStartChannelTarget();
+            if (channelTarget)
+                caster->SetChannelObjectGuid(channelTarget);
+        }
+
     // consider spell hit for some spells without target, so they may proc on finish phase correctly
     if (m_UniqueTargetInfo.empty())
         m_hitMask = PROC_HIT_NORMAL;
     else
         DoProcessTargetContainer(m_UniqueTargetInfo);
 
-    // start channeling if applicable
+    // start channeling if applicable (sun: moved after target processing to allow _spellAura to be init)
     if (m_spellInfo->IsChanneled())
     {
         // sun: changed logic to use aura duration for channel if applicable. 
@@ -3947,6 +3956,7 @@ void Spell::handle_immediate()
             // Apply duration mod
             if (Player* modOwner = m_caster->GetSpellModOwner())
                 modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
+
             SendChannelStart(duration);
         }
         else if (duration == -1)
@@ -3957,6 +3967,12 @@ void Spell::handle_immediate()
             m_spellState = SPELL_STATE_CASTING;
             // GameObjects shouldn't cast channeled spells
             ASSERT_NOTNULL(m_caster->ToUnit())->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
+        }
+        //sun: extra consistency check, needed because of possible wrong SetChannelObjectGuid a bit higher... would be better with a refactor but I'm also trying to stay close to TC
+        if (Unit* caster = m_caster->ToUnit())
+        {
+            if (!caster->GetUInt32Value(UNIT_CHANNEL_SPELL))
+                caster->SetChannelObjectGuid(ObjectGuid::Empty);
         }
     }
 
@@ -5019,6 +5035,16 @@ void Spell::SendChannelUpdate(uint32 time, uint32 spellId)
     Spell::SendChannelUpdate(time);
 }
 
+ObjectGuid Spell::GetStartChannelTarget() const
+{
+    ObjectGuid channelTarget = m_targets.GetObjectTargetGUID();
+    if (!channelTarget && !m_spellInfo->NeedsExplicitUnitTarget())
+        if (m_UniqueTargetInfo.size() + m_UniqueGOTargetInfo.size() == 1)   // this is for TARGET_SELECT_CATEGORY_NEARBY
+            channelTarget = !m_UniqueTargetInfo.empty() ? m_UniqueTargetInfo.front().TargetGUID : m_UniqueGOTargetInfo.front().TargetGUID;
+
+    return channelTarget;
+}
+
 void Spell::SendChannelStart(uint32 duration)
 {
     // GameObjects don't channel
@@ -5026,10 +5052,7 @@ void Spell::SendChannelStart(uint32 duration)
     if (!caster)
         return;
 
-    ObjectGuid channelTarget = m_targets.GetObjectTargetGUID();
-    if (!channelTarget && !m_spellInfo->NeedsExplicitUnitTarget())
-        if (m_UniqueTargetInfo.size() + m_UniqueGOTargetInfo.size() == 1)   // this is for TARGET_SELECT_CATEGORY_NEARBY
-            channelTarget = !m_UniqueTargetInfo.empty() ? m_UniqueTargetInfo.front().TargetGUID : m_UniqueGOTargetInfo.front().TargetGUID;
+    ObjectGuid channelTarget = GetStartChannelTarget();
 
     WorldPacket data( MSG_CHANNEL_START, (8+4+4) );
     data << caster->GetPackGUID();
