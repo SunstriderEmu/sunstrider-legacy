@@ -143,6 +143,7 @@ public:
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
+            warlock->ApplyRatingMod(CR_HIT_SPELL, 500, true); //Make sure the warlock is hit capped
 
             uint32 const expectedFearWardMana = 78;
             TEST_POWER_COST(priest, ClassSpells::Priest::FEAR_WARD_RNK_1, POWER_MANA, expectedFearWardMana);
@@ -168,13 +169,18 @@ public:
                 if (itr.missInfo == SPELL_MISS_MISS)
                     return false;
 
+                //should not happen if warlock is properly capped
+                TEST_ASSERT(itr.missInfo != SPELL_MISS_RESIST);
+
                 //else, we should have received IMMUNE
                 if (shouldImmune)
                 {
+                    ASSERT_INFO("Wrong missInfo %u", uint32(itr.missInfo));
                     TEST_ASSERT(itr.missInfo == SPELL_MISS_IMMUNE);
                 }
                 else
                 {
+                    ASSERT_INFO("Wrong missInfo %u", uint32(itr.missInfo));
                     TEST_ASSERT(itr.missInfo == SPELL_MISS_NONE);
                 }
 

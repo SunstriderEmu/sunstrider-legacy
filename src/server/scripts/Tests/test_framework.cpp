@@ -1,5 +1,6 @@
 #include "TestCase.h"
 #include "TestPlayer.h"
+#include "TestMgr.h"
 
 class DummyTest : public TestCaseScript
 {
@@ -101,8 +102,24 @@ public:
     }
 };
 
+//use this one to slow world updates and simulate delay
+class FakeSlowdownsTest : public TestCase
+{
+    void Test() override
+    {
+        for (uint32 i = 0; i < 1000; i++)
+        {
+           /* std::this_thread::sleep_for(10s);
+            HandleThreadPause();*/
+            /*if (sTestMgr->GetRemainingTestsCount() == 1)
+                break;*/
+        }
+    }
+};
+
 void AddSC_test_dummy()
 {
     new DummyTest();
     new SpawnPlayersTest();
+    RegisterTestCase("testing framework slowdowns", FakeSlowdownsTest);
 }

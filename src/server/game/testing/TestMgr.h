@@ -29,6 +29,7 @@ public:
     void Update();
     //cancel all tests, print to all players when stopped. This is not instantaneous since test are stopped on next Wait or completion
     void Cancel();
+    uint32 GetRemainingTestsCount() const;
 
     std::string GetStatusString() const;
 

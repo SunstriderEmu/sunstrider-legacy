@@ -1506,34 +1506,69 @@ public:
             uint32 const expectedWhirldwindRage = 25 * 10;
             TEST_POWER_COST(warrior, ClassSpells::Warrior::WHIRLWIND_RNK_1, POWER_RAGE, expectedWhirldwindRage);
 
-            // Damage
-            Creature* creature1 = SpawnCreature();
-            float const normalizedSwordSpeed = 2.4f;
-            // MH
-            auto[minMH, maxMH] = CalcMeleeDamage(warrior, creature1, BASE_ATTACK, 0, normalizedSwordSpeed);
-            TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, minMH, maxMH, false);
-            // OH
-            auto[minOH, maxOH] = CalcMeleeDamage(warrior, creature1, OFF_ATTACK, 0, normalizedSwordSpeed);
-            TEST_DIRECT_SPELL_DAMAGE(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1, minOH, maxOH, false, DefaultCallback, ClassSpells::Warrior::WHIRLWIND_RNK_1_TRIGGER);
+            SECTION("Damages", [&] {
+                // Damage
+                Creature* creature = SpawnCreature();
+                float const normalizedSwordSpeed = 2.4f;
+                // MH
+                auto[minMH, maxMH] = CalcMeleeDamage(warrior, creature, BASE_ATTACK, 0, normalizedSwordSpeed);
+                TEST_DIRECT_SPELL_DAMAGE(warrior, creature, ClassSpells::Warrior::WHIRLWIND_RNK_1, minMH, maxMH, false);
+                // OH
+                auto[minOH, maxOH] = CalcMeleeDamage(warrior, creature, OFF_ATTACK, 0, normalizedSwordSpeed);
+                TEST_DIRECT_SPELL_DAMAGE(warrior, creature, ClassSpells::Warrior::WHIRLWIND_RNK_1, minOH, maxOH, false, DefaultCallback, ClassSpells::Warrior::WHIRLWIND_RNK_1_TRIGGER);
 
-            // Hit max 4 besides main target
-            // WoWWiki: It does Weapon Damage to 4 adjacent enemies, in any direction and has a 10 second cooldown.
-            // (reading the spell values also provides the idea that it hits main target, then triggers an aoe spell on 4 more)
-            creature1->SetFullHealth();
-            Creature* creature2 = SpawnCreature();
-            Creature* creature3 = SpawnCreature();
-            Creature* creature4 = SpawnCreature();
-            Creature* creature5 = SpawnCreature();
-            Creature* creature6 = SpawnCreature();
+                creature->DisappearAndDie();
+            });
 
-            warrior->SetFullPower(POWER_RAGE);
-            FORCE_CAST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1);
-            uint32 lostHealthCount = 0;
-            for (auto creature : { creature2, creature3, creature4, creature5, creature6 })
-                lostHealthCount += uint32(!creature->IsFullHealth());
+            SECTION("Target counts", [&] {
+                // Hit max 4 targets
+                // WoWWiki: It does Weapon Damage to 4 adjacent enemies, in any direction and has a 10 second cooldown.
+                // (reading the spell values also provides the idea that it hits main target, then triggers an aoe spell on 4 more)
+                // BUT: Since the spell triggers a second aoe spell for the off hand, and it may not hit the same targets as the main spell. Is this supposed to happen?
+                // This is coherent with the spell effects and targets, but Blizzard may have hacked something to make sure offhand hit the same targets.
+                // Unless proven though, we're gonna suppose it is NOT the case.
+                Creature* creature1 = SpawnCreature();
+                Creature* creature2 = SpawnCreature();
+                Creature* creature3 = SpawnCreature();
+                Creature* creature4 = SpawnCreature();
+                Creature* creature5 = SpawnCreature();
+                Creature* creature6 = SpawnCreature();
 
-            ASSERT_INFO("Whirlwind should hit 4 max, but actually hit %u.", lostHealthCount);
-            TEST_ASSERT(lostHealthCount == 4);
+                warrior->SetFullPower(POWER_RAGE);
+                auto AI = _GetCasterAI(warrior);
+                AI->ResetSpellCounters();
+
+                FORCE_CAST(warrior, creature1, ClassSpells::Warrior::WHIRLWIND_RNK_1);
+
+                auto HasSpellHit = [&](Unit const* target, uint32 spellId) {
+                    auto damageDone = AI->GetSpellDamageDoneInfo(target);
+                    if (!damageDone)
+                        return false;
+                    for (auto info : *damageDone)
+                    {
+                        if (info.spellID == spellId)
+                            return true;
+                    }
+                    return false;
+                };
+
+                auto CountHits = [&](uint32 spellId) {
+                    uint32 hits = 0;
+                    for (auto creature : { creature1, creature2, creature3, creature4, creature5, creature6 })
+                        hits += uint32(HasSpellHit(creature, spellId));
+
+                    return hits;
+                };
+
+                uint32 MHandHits = CountHits(ClassSpells::Warrior::WHIRLWIND_RNK_1);
+                uint32 OHandHits = CountHits(ClassSpells::Warrior::WHIRLWIND_RNK_1_TRIGGER);
+
+
+                ASSERT_INFO("Whirlwind MH should hit 4 max, but actually hit %u.", MHandHits);
+                TEST_ASSERT(MHandHits == 4);
+                ASSERT_INFO("Whirlwind OH should hit 4 max, but actually hit %u.", OHandHits);
+                TEST_ASSERT(OHandHits == 4);
+            });
         }
     };
 
