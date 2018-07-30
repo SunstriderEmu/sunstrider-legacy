@@ -10,7 +10,7 @@ public:
 	class ConvectionTestImpt : public TestCase
 	{
 	public:
-		ConvectionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void Test() override
 		{
@@ -45,9 +45,6 @@ public:
     //Increases the damage done by your Lightning Bolt, Chain Lightning and Shock spells by 5%.
 	class ConcussionTestImpt : public TestCase
 	{
-	public:
-		ConcussionTestImpt() : TestCase(STATUS_WIP) { } //TODO: replace magic numbers
-
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
@@ -73,12 +70,15 @@ public:
 
 			Creature* dummyTarget = SpawnCreature();
 
-			//Test improved damage 5%
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage * 1.05f, lightningBoltMaxDamage * 1.05f, false);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage * 1.05f, chainLightningMaxDamage * 1.05f, false);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage * 1.05f, earthShockMaxDamage * 1.05f, false);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage * 1.05f, flameShockMinDoT * 1.05f, false);
-			TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage * 1.05f, frostShockMaxDamage * 1.05f, false);
+            //TODO: replace magic numbers in this test
+            SECTION("Improved damage", STATUS_WIP, [&] {
+                //Test improved damage 5%
+                TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::LIGHTNING_BOLT_RNK_12, lightningBoltMinDamage * 1.05f, lightningBoltMaxDamage * 1.05f, false);
+                TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::CHAIN_LIGHTNING_RNK_6, chainLightningMinDamage * 1.05f, chainLightningMaxDamage * 1.05f, false);
+                TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::EARTH_SHOCK_RNK_8, earthShockMinDamage * 1.05f, earthShockMaxDamage * 1.05f, false);
+                TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FLAME_SHOCK_RNK_7, flameShockMinDamage * 1.05f, flameShockMinDoT * 1.05f, false);
+                TEST_DIRECT_SPELL_DAMAGE(player, dummyTarget, ClassSpells::Shaman::FROST_SHOCK_RNK_5, frostShockMinDamage * 1.05f, frostShockMaxDamage * 1.05f, false);
+            });
 		}
 	};
 
@@ -96,7 +96,7 @@ public:
 	class AncestralKnowledgeTestImpt : public TestCase
 	{
 	public:
-		AncestralKnowledgeTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void Test() override
 		{
@@ -122,28 +122,27 @@ public:
     //Increases the effect of your Strength of Earth and Grace of Air Totems by 15%.
 	class EnhancingTotemsTestImpt : public TestCase
 	{
-	public:
-		EnhancingTotemsTestImpt() : TestCase(STATUS_WIP) { }
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 
-            float const startAgi = player->GetStat(STAT_AGILITY);
-            float const startStr = player->GetStat(STAT_STRENGTH);
+                float const startAgi = player->GetStat(STAT_AGILITY);
+                float const startStr = player->GetStat(STAT_STRENGTH);
 
-			LearnTalent(player, Talents::Shaman::ENHANCING_TOTEMS_RNK_2);
+                LearnTalent(player, Talents::Shaman::ENHANCING_TOTEMS_RNK_2);
 
-            //TODO: replace magic numbers
-			float const expectedAgi = startAgi + std::floor(77 * 1.15f);
-            float const expectedStr = startAgi + std::floor(86 * 1.15f);
+                //TODO: replace magic numbers
+                float const expectedAgi = startAgi + std::floor(77 * 1.15f);
+                float const expectedStr = startAgi + std::floor(86 * 1.15f);
 
-            //TODO: summon totems
+                //TODO: summon totems
 
-            ASSERT_INFO("actual agi: %f - expected %f", player->GetStat(STAT_AGILITY), expectedAgi);
-			TEST_ASSERT(Between<float>(player->GetStat(STAT_AGILITY), expectedAgi - 1, expectedAgi + 1));
-            ASSERT_INFO("actual str: %f - expected %f", player->GetStat(STAT_STRENGTH), expectedStr);
-			TEST_ASSERT(Between<float>(player->GetStat(STAT_STRENGTH), expectedStr - 1, expectedStr + 1));
+                ASSERT_INFO("actual agi: %f - expected %f", player->GetStat(STAT_AGILITY), expectedAgi);
+                TEST_ASSERT(Between<float>(player->GetStat(STAT_AGILITY), expectedAgi - 1, expectedAgi + 1));
+                ASSERT_INFO("actual str: %f - expected %f", player->GetStat(STAT_STRENGTH), expectedStr);
+                TEST_ASSERT(Between<float>(player->GetStat(STAT_STRENGTH), expectedStr - 1, expectedStr + 1));
+            });
 		}
 	};
 
@@ -161,7 +160,7 @@ public:
 	class ToughnessTestImpt : public TestCase
 	{
 	public:
-		ToughnessTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void Test() override
 		{
@@ -211,28 +210,27 @@ public:
 
 	class WeaponMasteryTestImpt : public TestCase
 	{
-	public:
-		WeaponMasteryTestImpt() : TestCase(STATUS_WIP) { }
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
-			LearnTalent(player, Talents::Shaman::DUAL_WIELD_RNK_1);
-			player->SetSkill(44, 0, 350, 350); // Axe
-			EQUIP_NEW_ITEM(player, 34331); // Rising Tide MH
-			player->SetSkill(473, 0, 350, 350); // Fist weapon
-			EQUIP_NEW_ITEM(player, 34203); // Grip of Mannoroth OH
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+                LearnTalent(player, Talents::Shaman::DUAL_WIELD_RNK_1);
+                player->SetSkill(44, 0, 350, 350); // Axe
+                EQUIP_NEW_ITEM(player, 34331); // Rising Tide MH
+                player->SetSkill(473, 0, 350, 350); // Fist weapon
+                EQUIP_NEW_ITEM(player, 34203); // Grip of Mannoroth OH
 
-			uint32 const minOH = 113;
-			uint32 const maxMH = 313;
+                uint32 const minOH = 113;
+                uint32 const maxMH = 313;
 
-			//Creature* dummyTarget = SpawnCreature();
-			// Test regular damage
-			//TestDamage(player, dummyTarget, minOH, maxMH);
+                //Creature* dummyTarget = SpawnCreature();
+                // Test regular damage
+                //TestDamage(player, dummyTarget, minOH, maxMH);
 
-			// Test improved 10%
-			LearnTalent(player, Talents::Shaman::WEAPON_MASTERY_RNK_5);
-			//TestDamage(player, dummyTarget, minOH * 1.1f, maxMH * 1.1f);
+                // Test improved 10%
+                LearnTalent(player, Talents::Shaman::WEAPON_MASTERY_RNK_5);
+                //TestDamage(player, dummyTarget, minOH * 1.1f, maxMH * 1.1f);
+            });
 		}
 	};
 
@@ -249,19 +247,18 @@ public:
 
 	class ImprovedHealingWaveTestImpt : public TestCase
 	{
-	public:
-		ImprovedHealingWaveTestImpt() : TestCase(STATUS_WIP) { }
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 
-			float const startCastTime = 3.0f;
-			float const expectedCastTime = 2.5f;
+                float const startCastTime = 3.0f;
+                float const expectedCastTime = 2.5f;
 
-			// Test before
-			LearnTalent(player, Talents::Shaman::IMPROVED_HEALING_WAVE_RNK_5);
-			// Test after
+                // Test before
+                LearnTalent(player, Talents::Shaman::IMPROVED_HEALING_WAVE_RNK_5);
+                // Test after
+            });
 		}
 	};
 
@@ -278,37 +275,36 @@ public:
 
 	class TidalFocusTestImpt : public TestCase
 	{
-	public:
-		TidalFocusTestImpt() : TestCase(STATUS_WIP) { }
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 
-			uint32 const startCH = 540;
-			uint32 const startHW = 720;
-			uint32 const startLHW = 440;
+                uint32 const startCH = 540;
+                uint32 const startHW = 720;
+                uint32 const startLHW = 440;
 
-			uint32 const expectedCH = 513;
-			uint32 const expectedHW = 684;
-			uint32 const expectedLHW = 418;
+                uint32 const expectedCH = 513;
+                uint32 const expectedHW = 684;
+                uint32 const expectedLHW = 418;
 
-			// Test regular
-			player->SetMaxPower(POWER_MANA, startCH);
-			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::CHAIN_HEAL_RNK_5, player);
-			player->SetMaxPower(POWER_MANA, startHW);
-			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::HEALING_WAVE_RNK_12, player);
-			player->SetMaxPower(POWER_MANA, startLHW);
-			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::LESSER_HEALING_WAVE_RNK_7, player);
+                // Test regular
+                player->SetMaxPower(POWER_MANA, startCH);
+                //TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::CHAIN_HEAL_RNK_5, player);
+                player->SetMaxPower(POWER_MANA, startHW);
+                //TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::HEALING_WAVE_RNK_12, player);
+                player->SetMaxPower(POWER_MANA, startLHW);
+                //TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::LESSER_HEALING_WAVE_RNK_7, player);
 
-			// Test improved
-			LearnTalent(player, Talents::Shaman::TIDAL_FOCUS_RNK_5);
-			player->SetMaxPower(POWER_MANA, expectedCH);
-			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::CHAIN_HEAL_RNK_5, player);
-			player->SetMaxPower(POWER_MANA, expectedHW);
-			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::HEALING_WAVE_RNK_12, player);
-			player->SetMaxPower(POWER_MANA, expectedLHW);
-			//TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::LESSER_HEALING_WAVE_RNK_7, player);
+                // Test improved
+                LearnTalent(player, Talents::Shaman::TIDAL_FOCUS_RNK_5);
+                player->SetMaxPower(POWER_MANA, expectedCH);
+                //TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::CHAIN_HEAL_RNK_5, player);
+                player->SetMaxPower(POWER_MANA, expectedHW);
+                //TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::HEALING_WAVE_RNK_12, player);
+                player->SetMaxPower(POWER_MANA, expectedLHW);
+                //TEST_ASSERT(player->CanCastSpell(ClassSpells::Shaman::LESSER_HEALING_WAVE_RNK_7, player);
+            });
 		}
 	};
 
@@ -326,7 +322,7 @@ public:
 	class NaturesBlessingTestImpt : public TestCase
 	{
 	public:
-		NaturesBlessingTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void Test() override
 		{
@@ -355,13 +351,10 @@ public:
 class ImprovedChainHealTest : public TestCaseScript
 {
 public:
-	ImprovedChainHealTest() : TestCaseScript("talents shaman improved_chain_heal") { }
+    ImprovedChainHealTest() : TestCaseScript("talents shaman improved_chain_heal") {}
 
 	class ImprovedChainHealTestImpt : public TestCase
 	{
-	public:
-		ImprovedChainHealTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
 		void Test() override
 		{
 			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
@@ -378,7 +371,9 @@ public:
 			LearnTalent(player, Talents::Shaman::IMPROVED_CHAIN_HEAL_RNK_2);
             TEST_DIRECT_HEAL(player, player, ClassSpells::Shaman::CHAIN_HEAL_RNK_5, minChainHeal * improvedChainHealFactor, maxChainHeal * improvedChainHealFactor, false);
 
-			// TODO: test bounces : spawn 2 players, group players, each bounce 50% less
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: test bounces : spawn 2 players, group players, each bounce 50% less
+            });
 		}
 	};
 

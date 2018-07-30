@@ -55,9 +55,6 @@ public:
 
 	class StarlightWrathTestImpt : public TestCase
 	{
-	public:
-		StarlightWrathTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -80,9 +77,6 @@ public:
 
     class NaturesGraspTestImpt : public TestCase
     {
-    public:
-        NaturesGraspTestImpt() : TestCase(STATUS_PASSING) { }
-
         void Test() override
         {
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -111,9 +105,6 @@ public:
 
 	class ImprovedNaturesGraspTestImpt : public TestCase
 	{
-	public:
-		ImprovedNaturesGraspTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -142,18 +133,18 @@ public:
 
     class ControlOfNatureTestImpt : public TestCase
     {
-    public:
-        ControlOfNatureTestImpt() : TestCase(STATUS_WIP) { }
-
         void Test() override
         {
-            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+                TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
 
-            LearnTalent(druid, Talents::Druid::CONTROL_OF_NATURE_RNK_3);
-            float const talentResistPushbackFactor = 100.f;
+                LearnTalent(druid, Talents::Druid::CONTROL_OF_NATURE_RNK_3);
+                float const talentResistPushbackFactor = 100.f;
 
-            TEST_PUSHBACK_RESIST_CHANCE(druid, warrior, ClassSpells::Druid::NATURES_GRASP_RNK_7, talentResistPushbackFactor);
+                TEST_PUSHBACK_RESIST_CHANCE(druid, warrior, ClassSpells::Druid::NATURES_GRASP_RNK_7, talentResistPushbackFactor);
+            });
         }
     };
 
@@ -171,20 +162,20 @@ public:
 
     class FocusedStarlightTestImpt : public TestCase
     {
-    public:
-        FocusedStarlightTestImpt() : TestCase(STATUS_WIP) { }
-
         void Test() override
         {
-            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-            Creature* dummy = SpawnCreature();
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+                Creature* dummy = SpawnCreature();
 
-            LearnTalent(druid, Talents::Druid::FOCUSED_STARLIGHT_RNK_2);
-            float const talentCritFactor = 4.f;
-            float const expectedCritChance = druid->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_SHADOW) + talentCritFactor;
+                LearnTalent(druid, Talents::Druid::FOCUSED_STARLIGHT_RNK_2);
+                float const talentCritFactor = 4.f;
+                float const expectedCritChance = druid->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + SPELL_SCHOOL_SHADOW) + talentCritFactor;
 
-            TEST_SPELL_CRIT_CHANCE(druid, dummy, ClassSpells::Druid::WRATH_RNK_10, expectedCritChance);
-            TEST_SPELL_CRIT_CHANCE(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8, expectedCritChance);
+                TEST_SPELL_CRIT_CHANCE(druid, dummy, ClassSpells::Druid::WRATH_RNK_10, expectedCritChance);
+                TEST_SPELL_CRIT_CHANCE(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8, expectedCritChance);
+            });
         }
     };
 
@@ -202,9 +193,6 @@ public:
 
     class ImprovedMoonfireTestImpt : public TestCase
     {
-    public:
-        ImprovedMoonfireTestImpt() : TestCase(STATUS_PASSING) { }
-
         void Test() override
         {
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -281,9 +269,6 @@ public:
 
 	class InsectSwarmTestImpt : public TestCase
 	{
-	public:
-		InsectSwarmTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -334,9 +319,6 @@ public:
 
 	class NaturesReachTestImpt : public TestCase
 	{
-	public:
-		NaturesReachTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -386,30 +368,30 @@ public:
 
     class VengeanceTestImpt : public TestCase
     {
-    public:
-        VengeanceTestImpt() : TestCase(STATUS_WIP) { }
-
         void Test() override
         {
-            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-            Creature* dummy = SpawnCreature();
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+                Creature* dummy = SpawnCreature();
 
-            LearnTalent(druid, Talents::Druid::VENGEANCE_RNK_5);
+                LearnTalent(druid, Talents::Druid::VENGEANCE_RNK_5);
 
-            // Starfire
-            uint32 const expectedStarfireMinCrit = ClassSpellsDamage::Druid::STARFIRE_RNK_8_MIN * 2;
-            uint32 const expectedStarfireMaxCrit = ClassSpellsDamage::Druid::STARFIRE_RNK_8_MAX * 2;
-            TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8, expectedStarfireMinCrit, expectedStarfireMaxCrit, true);
+                // Starfire
+                uint32 const expectedStarfireMinCrit = ClassSpellsDamage::Druid::STARFIRE_RNK_8_MIN * 2;
+                uint32 const expectedStarfireMaxCrit = ClassSpellsDamage::Druid::STARFIRE_RNK_8_MAX * 2;
+                TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8, expectedStarfireMinCrit, expectedStarfireMaxCrit, true);
 
-            // Moonfire
-            uint32 const expectedMoonfireMinCrit = ClassSpellsDamage::Druid::MOONFIRE_RNK_12_MIN * 2;
-            uint32 const expectedMoonfireMaxCrit = ClassSpellsDamage::Druid::MOONFIRE_RNK_12_MAX * 2;
-            TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::MOONFIRE_RNK_12, expectedMoonfireMinCrit, expectedMoonfireMaxCrit, true);
+                // Moonfire
+                uint32 const expectedMoonfireMinCrit = ClassSpellsDamage::Druid::MOONFIRE_RNK_12_MIN * 2;
+                uint32 const expectedMoonfireMaxCrit = ClassSpellsDamage::Druid::MOONFIRE_RNK_12_MAX * 2;
+                TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::MOONFIRE_RNK_12, expectedMoonfireMinCrit, expectedMoonfireMaxCrit, true);
 
-            // Wrath
-            uint32 const expectedWrathMinCrit = ClassSpellsDamage::Druid::WRATH_RNK_10_MIN * 2;
-            uint32 const expectedWrathMaxCrit = ClassSpellsDamage::Druid::WRATH_RNK_10_MAX * 2;
-            TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::WRATH_RNK_10, expectedWrathMinCrit, expectedWrathMaxCrit, true);
+                // Wrath
+                uint32 const expectedWrathMinCrit = ClassSpellsDamage::Druid::WRATH_RNK_10_MIN * 2;
+                uint32 const expectedWrathMaxCrit = ClassSpellsDamage::Druid::WRATH_RNK_10_MAX * 2;
+                TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::WRATH_RNK_10, expectedWrathMinCrit, expectedWrathMaxCrit, true);
+            });
         }
     };
 
@@ -427,26 +409,26 @@ public:
 
     class CelestialFocusTestImpt : public TestCase
     {
-    public:
-        CelestialFocusTestImpt() : TestCase(STATUS_WIP) { }
-
         void Test() override
         {
-            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+                TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_HUMAN);
 
-            LearnTalent(druid, Talents::Druid::CELESTIAL_FOCUS_RNK_3);
-            float const talentResistPushbackFactor = 70.f;
-            float const talentStunChance = 35.f;
+                LearnTalent(druid, Talents::Druid::CELESTIAL_FOCUS_RNK_3);
+                float const talentResistPushbackFactor = 70.f;
+                float const talentStunChance = 35.f;
 
-            // Proc
-            druid->AddAura(Talents::Druid::CELESTIAL_FOCUS_PROC, druid);
-            TEST_AURA_MAX_DURATION(druid, Talents::Druid::CELESTIAL_FOCUS_PROC, Seconds(3));
-            TEST_ASSERT(druid->HasAuraType(SPELL_AURA_MOD_STUN));
-            TEST_SPELL_PROC_CHANCE(druid, warrior, ClassSpells::Druid::STARFIRE_RNK_8, Talents::Druid::CELESTIAL_FOCUS_PROC, false, talentStunChance, SPELL_MISS_NONE, false);
+                // Proc
+                druid->AddAura(Talents::Druid::CELESTIAL_FOCUS_PROC, druid);
+                TEST_AURA_MAX_DURATION(druid, Talents::Druid::CELESTIAL_FOCUS_PROC, Seconds(3));
+                TEST_ASSERT(druid->HasAuraType(SPELL_AURA_MOD_STUN));
+                TEST_SPELL_PROC_CHANCE(druid, warrior, ClassSpells::Druid::STARFIRE_RNK_8, Talents::Druid::CELESTIAL_FOCUS_PROC, false, talentStunChance, SPELL_MISS_NONE, false);
 
-            // Resist pushback
-            TEST_PUSHBACK_RESIST_CHANCE(druid, warrior, ClassSpells::Druid::WRATH_RNK_10, talentResistPushbackFactor);
+                // Resist pushback
+                TEST_PUSHBACK_RESIST_CHANCE(druid, warrior, ClassSpells::Druid::WRATH_RNK_10, talentResistPushbackFactor);
+            });
         }
     };
 
@@ -463,9 +445,6 @@ public:
 
 	class LunarGuidanceTestImpt : public TestCase
 	{
-	public:
-		LunarGuidanceTestImpt() : TestCase(STATUS_PASSING) { } //Need whole file review
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -496,12 +475,10 @@ public:
 
     class NaturesGraceTestImpt : public TestCase
     {
-    public:
         /*
         Infos:
             - Patch 2.1: This talent is now triggered by Swiftmend and Lifebloom, and is triggered by and affects Cyclone.
         */
-        NaturesGraceTestImpt() : TestCase(STATUS_WIP) { }
 
         void AssertSpellProcsTalent(TestPlayer* druid, Unit* victim, uint32 spellId, uint32 wait = 0)
         {
@@ -515,35 +492,37 @@ public:
 
         void Test() override
         {
-            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-            Creature* dummy = SpawnCreature();
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+                Creature* dummy = SpawnCreature();
 
-            EnableCriticals(druid, true);
+                EnableCriticals(druid, true);
 
-            LearnTalent(druid, Talents::Druid::NATURES_GRACE_RNK_1);
+                LearnTalent(druid, Talents::Druid::NATURES_GRACE_RNK_1);
 
-            // Procs on...
-            AssertSpellProcsTalent(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13);
-            AssertSpellProcsTalent(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10);
-            AssertSpellProcsTalent(druid, dummy, ClassSpells::Druid::MOONFIRE_RNK_12);
-            AssertSpellProcsTalent(druid, dummy, ClassSpells::Druid::WRATH_RNK_10);
-            AssertSpellProcsTalent(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8);
-            druid->AddAura(ClassSpells::Druid::REJUVENATION_RNK_13, druid);
-            AssertSpellProcsTalent(druid, druid, ClassSpells::Druid::SWIFTMEND_RNK_1);
-            AssertSpellProcsTalent(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, 7500);
+                // Procs on...
+                AssertSpellProcsTalent(druid, druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13);
+                AssertSpellProcsTalent(druid, druid, ClassSpells::Druid::REGROWTH_RNK_10);
+                AssertSpellProcsTalent(druid, dummy, ClassSpells::Druid::MOONFIRE_RNK_12);
+                AssertSpellProcsTalent(druid, dummy, ClassSpells::Druid::WRATH_RNK_10);
+                AssertSpellProcsTalent(druid, dummy, ClassSpells::Druid::STARFIRE_RNK_8);
+                druid->AddAura(ClassSpells::Druid::REJUVENATION_RNK_13, druid);
+                AssertSpellProcsTalent(druid, druid, ClassSpells::Druid::SWIFTMEND_RNK_1);
+                AssertSpellProcsTalent(druid, druid, ClassSpells::Druid::LIFEBLOOM_RNK_1, 7500);
 
-            // Reduces cast time of...
-            druid->AddAura(Talents::Druid::NATURES_GRACE_PROC, druid);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::CYCLONE_RNK_1, 1000);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, 1000);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, 3000);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::HIBERNATE_RNK_3, 1000);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::HURRICANE_RNK_4, 9500);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::REGROWTH_RNK_10, 1500);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::SOOTHE_ANIMAL_RNK_4, 1000);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::STARFIRE_RNK_8, 3000);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, 7500);
-            TEST_CAST_TIME(druid, ClassSpells::Druid::WRATH_RNK_10, 1500);
+                // Reduces cast time of...
+                druid->AddAura(Talents::Druid::NATURES_GRACE_PROC, druid);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::CYCLONE_RNK_1, 1000);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::ENTANGLING_ROOTS_RNK_7, 1000);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, 3000);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::HIBERNATE_RNK_3, 1000);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::HURRICANE_RNK_4, 9500);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::REGROWTH_RNK_10, 1500);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::SOOTHE_ANIMAL_RNK_4, 1000);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::STARFIRE_RNK_8, 3000);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::TRANQUILITY_RNK_5, 7500);
+                TEST_CAST_TIME(druid, ClassSpells::Druid::WRATH_RNK_10, 1500);
+            });
         }
     };
 
@@ -560,9 +539,6 @@ public:
 
 	class MoonglowTestImpt : public TestCase
 	{
-	public:
-		MoonglowTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -600,9 +576,6 @@ public:
 
 	class MoonfuryTestImpt : public TestCase
 	{
-	public:
-		MoonfuryTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -644,9 +617,6 @@ public:
 
 	class DreamstateTestImpt : public TestCase
 	{
-	public:
-		DreamstateTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -680,9 +650,6 @@ public:
 
 	class WrathOfCenariusTestImpt : public TestCase
 	{
-	public:
-        WrathOfCenariusTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -721,34 +688,33 @@ public:
 
 	class FerocityTestImpt : public TestCase
 	{
-	public:
-		FerocityTestImpt() : TestCase(STATUS_WIP) { }
-
 		void Test() override
 		{
-			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
-			LearnTalent(druid, Talents::Druid::FEROCITY_RNK_5);
-			uint32 const talentPowerFactor = 5;
+                LearnTalent(druid, Talents::Druid::FEROCITY_RNK_5);
+                uint32 const talentPowerFactor = 5;
 
-			uint32 const expectedMaulRage = (15 - talentPowerFactor) * 10;
-			uint32 const expectedSwipeRage = (20 - talentPowerFactor) * 10;
-			uint32 const expectedMangleRage = (20 - talentPowerFactor) * 10;
+                uint32 const expectedMaulRage = (15 - talentPowerFactor) * 10;
+                uint32 const expectedSwipeRage = (20 - talentPowerFactor) * 10;
+                uint32 const expectedMangleRage = (20 - talentPowerFactor) * 10;
 
-			uint32 const expectedClawEnergy	= 45 - talentPowerFactor;
-			uint32 const expectedRakeEnergy	= 40 - talentPowerFactor;
-			uint32 const expectedMangleEnergy = 45 - talentPowerFactor;
+                uint32 const expectedClawEnergy = 45 - talentPowerFactor;
+                uint32 const expectedRakeEnergy = 40 - talentPowerFactor;
+                uint32 const expectedMangleEnergy = 45 - talentPowerFactor;
 
-			druid->AddAura(ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, druid);
-            TEST_POWER_COST(druid, ClassSpells::Druid::MAUL_RNK_8, POWER_RAGE, expectedMaulRage);
-            TEST_POWER_COST(druid, ClassSpells::Druid::SWIPE_RNK_6, POWER_RAGE, expectedSwipeRage);
-            TEST_POWER_COST(druid, ClassSpells::Druid::MANGLE_BEAR_RNK_3, POWER_RAGE, expectedMangleRage);
-			druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
+                druid->AddAura(ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, druid);
+                TEST_POWER_COST(druid, ClassSpells::Druid::MAUL_RNK_8, POWER_RAGE, expectedMaulRage);
+                TEST_POWER_COST(druid, ClassSpells::Druid::SWIPE_RNK_6, POWER_RAGE, expectedSwipeRage);
+                TEST_POWER_COST(druid, ClassSpells::Druid::MANGLE_BEAR_RNK_3, POWER_RAGE, expectedMangleRage);
+                druid->RemoveAurasDueToSpell(ClassSpells::Druid::BEAR_FORM_RNK_1);
 
-            druid->AddAura(ClassSpells::Druid::CAT_FORM_RNK_1, druid);
-            TEST_POWER_COST(druid, ClassSpells::Druid::CLAW_RNK_6, POWER_ENERGY, expectedClawEnergy);
-            TEST_POWER_COST(druid, ClassSpells::Druid::RAKE_RNK_5, POWER_ENERGY, expectedRakeEnergy);
-            TEST_POWER_COST(druid, ClassSpells::Druid::MANGLE_CAT_RNK_3, POWER_ENERGY, expectedMangleEnergy);
+                druid->AddAura(ClassSpells::Druid::CAT_FORM_RNK_1, druid);
+                TEST_POWER_COST(druid, ClassSpells::Druid::CLAW_RNK_6, POWER_ENERGY, expectedClawEnergy);
+                TEST_POWER_COST(druid, ClassSpells::Druid::RAKE_RNK_5, POWER_ENERGY, expectedRakeEnergy);
+                TEST_POWER_COST(druid, ClassSpells::Druid::MANGLE_CAT_RNK_3, POWER_ENERGY, expectedMangleEnergy);
+            });
 		}
 	};
 
@@ -766,9 +732,6 @@ public:
 
 	class BrutalImpactTestImpt : public TestCase
 	{
-	public:
-		BrutalImpactTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -801,13 +764,7 @@ public:
 
 	class ThickHideTestImpt : public TestCase
 	{
-	public:
-        /*
-        Bugs:
-            - Should take the 140 hidden armor into account (ArmorDamageModifier)
-        */
-		ThickHideTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
-
+        //Increases your Armor contribution from items by 10%.
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -817,18 +774,18 @@ public:
 			uint32 const startingArmorViaAgi = druid->GetStat(STAT_AGILITY) * 2;
 			uint32 const startingArmor = druid->GetArmor() - startingArmorViaAgi;
 
-			EQUIP_NEW_ITEM(druid, 34392); // Demontooth Shoulderpads - 514 Armor (140 hidden) - 38 Agi
+			EQUIP_NEW_ITEM(druid, 34392); // Demontooth Shoulderpads - 514 Armor - 38 Agi
 
-			uint32 const itemArmor = 514 + 140;
-			uint32 const itemAgi = 38 * 2;
-			uint32 currentArmor = startingArmor + itemArmor +startingArmorViaAgi + itemAgi;
+			uint32 const itemArmor = 514;
+			uint32 const itemArmorFromAgi = 38 * 2;
+			uint32 currentArmor = startingArmor + itemArmor +startingArmorViaAgi + itemArmorFromAgi;
 			ASSERT_INFO("Druid armor: %u armor, expected: %u", druid->GetArmor(), currentArmor);
 			TEST_ASSERT(druid->GetArmor() == currentArmor);
 
 			LearnTalent(druid, Talents::Druid::THICK_HIDE_RNK_3);
             float const talentFactor = 1.1f;
 
-			uint32 const expectedArmor = (startingArmor + itemArmor) * talentFactor + startingArmorViaAgi + itemAgi;
+			uint32 const expectedArmor = (startingArmor + itemArmor) * talentFactor + startingArmorViaAgi + itemArmorFromAgi;
 			ASSERT_INFO("Druid armor: %u armor, expected: %u", druid->GetArmor(), expectedArmor);
 			TEST_ASSERT(druid->GetArmor() == expectedArmor);
 
@@ -852,9 +809,6 @@ public:
 
 	class ShreddingAttacksTestImpt : public TestCase
 	{
-	public:
-		ShreddingAttacksTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -883,9 +837,6 @@ public:
 
 	class PredatoryStrikesTestImpt : public TestCase
 	{
-	public:
-		PredatoryStrikesTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void TestAP(TestPlayer* druid, uint32 spellId, uint32 expectedAP)
 		{
             druid->AddAura(spellId, druid);
@@ -896,21 +847,24 @@ public:
 
 		void Test() override
 		{
-			uint32 const level = 70;
-			TestPlayer* player = SpawnPlayer(CLASS_DRUID, RACE_TAUREN, level);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                uint32 const level = 70;
+                TestPlayer* player = SpawnPlayer(CLASS_DRUID, RACE_TAUREN, level);
 
-			LearnTalent(player, Talents::Druid::PREDATORY_STRIKES_RNK_3);
-			uint32 const predatoryStrikesBonus = level * 1.5f;
+                LearnTalent(player, Talents::Druid::PREDATORY_STRIKES_RNK_3);
+                uint32 const predatoryStrikesBonus = level * 1.5f;
 
-			uint32 const expectedMoonkinAP	= GetMoonkinBaseAP(player, level)  + predatoryStrikesBonus;
-			uint32 const expectedCatAP		= GetCatBaseAP(player, level)	   + predatoryStrikesBonus;
-			uint32 const expectedBearAP		= GetBearBaseAP(player, level)	   + predatoryStrikesBonus;
-			uint32 const expectedDireBearAP = GetDireBearBaseAP(player, level) + predatoryStrikesBonus;
+                uint32 const expectedMoonkinAP = GetMoonkinBaseAP(player, level) + predatoryStrikesBonus;
+                uint32 const expectedCatAP = GetCatBaseAP(player, level) + predatoryStrikesBonus;
+                uint32 const expectedBearAP = GetBearBaseAP(player, level) + predatoryStrikesBonus;
+                uint32 const expectedDireBearAP = GetDireBearBaseAP(player, level) + predatoryStrikesBonus;
 
-            TestAP(player, ClassSpells::Druid::MOONKIN_FORM_RNK_1, expectedMoonkinAP);
-			TestAP(player, ClassSpells::Druid::CAT_FORM_RNK_1, expectedCatAP);
-			TestAP(player, ClassSpells::Druid::BEAR_FORM_RNK_1, expectedBearAP);
-			TestAP(player, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, expectedDireBearAP);
+                TestAP(player, ClassSpells::Druid::MOONKIN_FORM_RNK_1, expectedMoonkinAP);
+                TestAP(player, ClassSpells::Druid::CAT_FORM_RNK_1, expectedCatAP);
+                TestAP(player, ClassSpells::Druid::BEAR_FORM_RNK_1, expectedBearAP);
+                TestAP(player, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, expectedDireBearAP);
+            });
 		}
 	};
 
@@ -928,47 +882,46 @@ public:
 
 	class SavageFuryTestImpt : public TestCase
 	{
-	public:
-		SavageFuryTestImpt() : TestCase(STATUS_WIP) { }
-
 		void Test() override
 		{
-			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-			Creature* dummy = SpawnCreature();
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+                Creature* dummy = SpawnCreature();
 
-            druid->AddAura(ClassSpells::Druid::CAT_FORM_RNK_1, druid);
-			LearnTalent(druid, Talents::Druid::SAVAGE_FURY_RNK_2);
+                druid->AddAura(ClassSpells::Druid::CAT_FORM_RNK_1, druid);
+                LearnTalent(druid, Talents::Druid::SAVAGE_FURY_RNK_2);
 
-			float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
-			float const armorFactor = GetArmorFactor(druid, dummy);
-			float const minDamage = ClassSpellsDamage::Druid::GetCatMinDmg() + AP / 14;
-			float const maxDamage = ClassSpellsDamage::Druid::GetCatMaxDmg() + AP / 14;
-			float const savageFuryFactor = 1.2f;
+                float const AP = druid->GetTotalAttackPowerValue(BASE_ATTACK);
+                float const armorFactor = GetArmorFactor(druid, dummy);
+                float const minDamage = ClassSpellsDamage::Druid::GetCatMinDmg() + AP / 14;
+                float const maxDamage = ClassSpellsDamage::Druid::GetCatMaxDmg() + AP / 14;
+                float const savageFuryFactor = 1.2f;
 
-			// Mangle (Cat)
-            uint32 const mangleDmgBonus = 264;
-            float  const mangleDmgCoeff = 1.6f;
-			uint32 const expectedMangleMinDmg = floor((minDamage * mangleDmgCoeff + mangleDmgBonus) * savageFuryFactor) * armorFactor;
-            uint32 const expectedMangleMaxDmg = floor((maxDamage * mangleDmgCoeff + mangleDmgBonus) * savageFuryFactor) * armorFactor;
-			TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::MANGLE_CAT_RNK_3, expectedMangleMinDmg, expectedMangleMaxDmg, false);
-            dummy->RemoveAurasDueToSpell(ClassSpells::Druid::MANGLE_CAT_RNK_3);
+                // Mangle (Cat)
+                uint32 const mangleDmgBonus = 264;
+                float  const mangleDmgCoeff = 1.6f;
+                uint32 const expectedMangleMinDmg = floor((minDamage * mangleDmgCoeff + mangleDmgBonus) * savageFuryFactor) * armorFactor;
+                uint32 const expectedMangleMaxDmg = floor((maxDamage * mangleDmgCoeff + mangleDmgBonus) * savageFuryFactor) * armorFactor;
+                TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::MANGLE_CAT_RNK_3, expectedMangleMinDmg, expectedMangleMaxDmg, false);
+                dummy->RemoveAurasDueToSpell(ClassSpells::Druid::MANGLE_CAT_RNK_3);
 
-			// Rake -- Coeffs are from http://wowwiki.wikia.com/wiki/Rake?oldid=1524037
-            // Initial
-            uint32 const expectedRakeInitialBleed = floor(AP / 100 + ClassSpellsDamage::Druid::RAKE_RNK_5) * savageFuryFactor;
-            //TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::RAKE_RNK_5, expectedRakeInitialBleed, expectedRakeInitialBleed, false);
-            // Bleed
-            float const rakeAPCoeff = 0.06f;
-            float const rakeTickCount = 3.0f;
-            uint32 const rakeBleedTotal = (AP * rakeAPCoeff + ClassSpellsDamage::Druid::RAKE_RNK_5_BLEED) * savageFuryFactor;
-            uint32 const rakeBleedTick = floor(rakeBleedTotal / rakeTickCount);
-            uint32 const expectedRakeBleedDamage = 3 * rakeBleedTick;
-            //TEST_DOT_DAMAGE(druid, dummy, ClassSpells::Druid::RAKE_RNK_5, expectedRakeBleedDamage, false);
+                // Rake -- Coeffs are from http://wowwiki.wikia.com/wiki/Rake?oldid=1524037
+                // Initial
+                uint32 const expectedRakeInitialBleed = floor(AP / 100 + ClassSpellsDamage::Druid::RAKE_RNK_5) * savageFuryFactor;
+                //TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::RAKE_RNK_5, expectedRakeInitialBleed, expectedRakeInitialBleed, false);
+                // Bleed
+                float const rakeAPCoeff = 0.06f;
+                float const rakeTickCount = 3.0f;
+                uint32 const rakeBleedTotal = (AP * rakeAPCoeff + ClassSpellsDamage::Druid::RAKE_RNK_5_BLEED) * savageFuryFactor;
+                uint32 const rakeBleedTick = floor(rakeBleedTotal / rakeTickCount);
+                uint32 const expectedRakeBleedDamage = 3 * rakeBleedTick;
+                //TEST_DOT_DAMAGE(druid, dummy, ClassSpells::Druid::RAKE_RNK_5, expectedRakeBleedDamage, false);
 
-			// Claw
-			uint32 const expectedClawMin = floor((ClassSpellsDamage::Druid::CLAW_RNK_6 + minDamage) * savageFuryFactor) * armorFactor;
-            uint32 const expectedClawMax = floor((ClassSpellsDamage::Druid::CLAW_RNK_6 + maxDamage) * savageFuryFactor) * armorFactor;
-			TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::CLAW_RNK_6, expectedClawMin, expectedClawMax, false);
+                // Claw
+                uint32 const expectedClawMin = floor((ClassSpellsDamage::Druid::CLAW_RNK_6 + minDamage) * savageFuryFactor) * armorFactor;
+                uint32 const expectedClawMax = floor((ClassSpellsDamage::Druid::CLAW_RNK_6 + maxDamage) * savageFuryFactor) * armorFactor;
+                TEST_DIRECT_SPELL_DAMAGE(druid, dummy, ClassSpells::Druid::CLAW_RNK_6, expectedClawMin, expectedClawMax, false);
+            });
 		}
 	};
 
@@ -986,9 +939,6 @@ public:
 
 	class FaerieFireFeralTestImpt : public TestCase
 	{
-	public:
-		FaerieFireFeralTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -1084,9 +1034,6 @@ public:
 
 	class SurvivalOfTheFittestTestImpt : public TestCase
 	{
-	public:
-		SurvivalOfTheFittestTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void TestStat(TestPlayer* player, Stats stat, uint32 expectedStat)
 		{
 			ASSERT_INFO("Druid stat %u is: %f, expected: %u", stat, player->GetStat(stat), expectedStat);
@@ -1132,12 +1079,9 @@ public:
 
 	class MangleTestImpt : public TestCase
 	{
-	public:
-		MangleTestImpt() : TestCase(STATUS_WIP) { }
-
 		void TestMangle(TestPlayer* druidWithMangle, TestPlayer* druidTestDamage, Unit* creature, uint32 mangleSpellId)
 		{
-			// Calcul base
+			// Calc base
 			float const AP = druidTestDamage->GetTotalAttackPowerValue(BASE_ATTACK);
             float const armorFactor = GetArmorFactor(druidTestDamage, creature);
 			uint32 const minDamage = ClassSpellsDamage::Druid::GetCatMinDmg() + AP / 14;
@@ -1181,34 +1125,36 @@ public:
 
 		void Test() override
 		{
-			// Initialize 2 druids, same stats
-			TestPlayer* druidWithMangle = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
-			TestPlayer* druidTestDamage = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+            SECTION("WIP", STATUS_WIP, [&] {
+                // Initialize 2 druids, same stats
+                TestPlayer* druidWithMangle = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+                TestPlayer* druidTestDamage = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
-			Position spawnPosition(_location);
-			spawnPosition.MoveInFront(_location, 3.0f);
-			Creature* creature = SpawnCreatureWithPosition(spawnPosition, 17); // 0 armor
+                Position spawnPosition(_location);
+                spawnPosition.MoveInFront(_location, 3.0f);
+                Creature* creature = SpawnCreatureWithPosition(spawnPosition, 17); // 0 armor
 
-			EQUIP_NEW_ITEM(druidWithMangle, 30883); // Pillar of Ferocity
-			EQUIP_NEW_ITEM(druidTestDamage, 30883); // Pillar of Ferocity
+                EQUIP_NEW_ITEM(druidWithMangle, 30883); // Pillar of Ferocity
+                EQUIP_NEW_ITEM(druidTestDamage, 30883); // Pillar of Ferocity
 
-			LearnTalent(druidWithMangle, Talents::Druid::MANGLE_RNK_1);
-			TEST_ASSERT(druidWithMangle->HasSpell(ClassSpells::Druid::MANGLE_BEAR_RNK_1));
-			TEST_ASSERT(druidWithMangle->HasSpell(ClassSpells::Druid::MANGLE_CAT_RNK_1));
-			TEST_ASSERT(druidWithMangle->GetTotalAttackPowerValue(BASE_ATTACK) == druidTestDamage->GetTotalAttackPowerValue(BASE_ATTACK));
+                LearnTalent(druidWithMangle, Talents::Druid::MANGLE_RNK_1);
+                TEST_ASSERT(druidWithMangle->HasSpell(ClassSpells::Druid::MANGLE_BEAR_RNK_1));
+                TEST_ASSERT(druidWithMangle->HasSpell(ClassSpells::Druid::MANGLE_CAT_RNK_1));
+                TEST_ASSERT(druidWithMangle->GetTotalAttackPowerValue(BASE_ATTACK) == druidTestDamage->GetTotalAttackPowerValue(BASE_ATTACK));
 
-			// Morph both druids in cat form
-            TEST_CAST(druidWithMangle, druidWithMangle, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            TEST_CAST(druidTestDamage, druidTestDamage, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            druidWithMangle->Regenerate(POWER_ENERGY);
-            druidTestDamage->Regenerate(POWER_ENERGY);
-			TestMangle(druidWithMangle, druidTestDamage, creature, ClassSpells::Druid::MANGLE_CAT_RNK_3);
+                // Morph both druids in cat form
+                TEST_CAST(druidWithMangle, druidWithMangle, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                TEST_CAST(druidTestDamage, druidTestDamage, ClassSpells::Druid::CAT_FORM_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                druidWithMangle->Regenerate(POWER_ENERGY);
+                druidTestDamage->Regenerate(POWER_ENERGY);
+                TestMangle(druidWithMangle, druidTestDamage, creature, ClassSpells::Druid::MANGLE_CAT_RNK_3);
 
-            // Druid with Mangle shapeshift into Bear
-            druidWithMangle->RemoveAurasDueToSpell(ClassSpells::Druid::CAT_FORM_RNK_1);
-            TEST_CAST(druidWithMangle, druidWithMangle, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            druidWithMangle->Regenerate(POWER_RAGE);
-			TestMangle(druidWithMangle, druidTestDamage, creature, ClassSpells::Druid::MANGLE_BEAR_RNK_3);
+                // Druid with Mangle shapeshift into Bear
+                druidWithMangle->RemoveAurasDueToSpell(ClassSpells::Druid::CAT_FORM_RNK_1);
+                TEST_CAST(druidWithMangle, druidWithMangle, ClassSpells::Druid::DIRE_BEAR_FORM_RNK_2, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                druidWithMangle->Regenerate(POWER_RAGE);
+                TestMangle(druidWithMangle, druidTestDamage, creature, ClassSpells::Druid::MANGLE_BEAR_RNK_3);
+            });
 		}
 	};
 
@@ -1225,9 +1171,6 @@ public:
 
 	class ImprovedMarkOfTheWildTestImpt : public TestCase
 	{
-	public:
-		ImprovedMarkOfTheWildTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void TestSpellOfTheWild(TestPlayer* player, TestPlayer* victim, uint32 spellId)
 		{
 			LearnTalent(player, Talents::Druid::IMPROVED_MARK_OF_THE_WILD_RNK_5);
@@ -1314,9 +1257,6 @@ public:
 
 	class NaturalistTestImpt : public TestCase
 	{
-	public:
-		NaturalistTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -1326,7 +1266,9 @@ public:
             // Healing Touch reduced cast time by 0.5s
             TEST_CAST_TIME(druid, ClassSpells::Druid::HEALING_TOUCH_RNK_13, 3000);
 
-			// TODO: increases physical damage dealt in all forms by 10%
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: increases physical damage dealt in all forms by 10%
+            });
 		}
 	};
 
@@ -1382,9 +1324,6 @@ public:
 
 	class IntensityTestImpt : public TestCase
 	{
-	public:
-		IntensityTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -1419,9 +1358,6 @@ public:
 
 	class TranquilSpiritTestImpt : public TestCase
 	{
-	public:
-		TranquilSpiritTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -1450,9 +1386,6 @@ public:
 
 	class ImprovedRejuvenationTestImpt : public TestCase
 	{
-	public:
-		ImprovedRejuvenationTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -1556,9 +1489,6 @@ public:
 
 	class EmpoweredTouchTestImpt : public TestCase
 	{
-	public:
-		EmpoweredTouchTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -1590,9 +1520,6 @@ public:
 
 	class LivingSpiritTestImpt : public TestCase
 	{
-	public:
-		LivingSpiritTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);

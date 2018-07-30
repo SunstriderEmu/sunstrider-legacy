@@ -10,7 +10,7 @@ public:
     class CreatureLinkedRespawnTestImpl : public TestCase
     {
     public:
-        CreatureLinkedRespawnTestImpl() : TestCase(STATUS_PASSING, WorldLocation(560)),
+        CreatureLinkedRespawnTestImpl() : TestCase(WorldLocation(560)),
             masterCreature(nullptr), slaveCreature(nullptr) 
         { }
 

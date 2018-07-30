@@ -72,7 +72,7 @@ public:
     class DispelMagicTestImpt : public TestCase
     {
     public:
-        DispelMagicTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -137,7 +137,7 @@ public:
     class FearWardTestImpt : public TestCase
     {
     public:
-        FearWardTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -221,7 +221,7 @@ public:
     class FeedbackTestImpt : public TestCase
     {
     public:
-        FeedbackTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -292,7 +292,7 @@ public:
     class InnerFireTestImpt : public TestCase
     {
     public:
-        InnerFireTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -361,9 +361,6 @@ public:
 
     class LevitateTestImpt : public TestCase
     {
-    public:
-        LevitateTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
@@ -387,7 +384,9 @@ public:
             rogue->AttackStop();
             TEST_ASSERT(!priest->HasAura(ClassSpells::Priest::LEVITATE_RNK_1));
 
-            // TODO: over water, slow fall
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: over water, slow fall
+            });
         }
     };
 
@@ -405,7 +404,7 @@ public:
     class ManaBurnTestImpt : public TestCase
     {
     public:
-        ManaBurnTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestManaBurn(TestPlayer* priest, Unit* victim, uint32 expectedMin, uint32 expectedMax)
         {
@@ -722,7 +721,7 @@ public:
     class PowerWordFortitudeTestImpt : public TestCase
     {
     public:
-        PowerWordFortitudeTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -761,7 +760,7 @@ public:
     class PowerWordShieldTestImpt : public TestCase
     {
     public:
-        PowerWordShieldTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -852,7 +851,7 @@ public:
     class PrayerOfFortitudeTestImpt : public TestCase
     {
     public:
-        PrayerOfFortitudeTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestPrayerOfFortitude(TestPlayer* priest, Unit* warrior, uint32 spellId, uint32 reagentId, uint32 manaCost, uint32 staminaBonus, uint32 priestStartHealth, uint32 warriorStartHealth)
         {
@@ -907,7 +906,7 @@ public:
     class ShackleUndeadTestImpt : public TestCase
     {
     public:
-        ShackleUndeadTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -955,7 +954,7 @@ public:
     class StarshardsTestImpt : public TestCase
     {
     public:
-        StarshardsTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1004,7 +1003,7 @@ public:
     class SymbolOfHopeTestImpt : public TestCase
     {
     public:
-        SymbolOfHopeTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1054,94 +1053,30 @@ class AbolishDiseaseTest : public TestCaseScript
 public:
     AbolishDiseaseTest() : TestCaseScript("spells priest abolish_disease") { }
 
+    //"Attempts to cure 1 disease effect on the target, and 1 more disease effect every 5 seconds thereafter for 20 sec."
     class AbolishDiseaseTestImpt : public TestCase
     {
-    public:
-        AbolishDiseaseTestImpt() : TestCase(STATUS_WIP) { } //change logic for random dispel order
-
-        void TestDispelDisease(TestPlayer* victim, uint32 Disease1, uint32 Disease2, uint32 Disease3, uint32 Disease4, uint32 Disease5, int8 count)
-        {
-            victim->SetFullHealth();
-            ASSERT_INFO("TestDispelDisease maximum trials reached");
-            TEST_ASSERT(count < 10);
-            count++;
-
-            uint32 tickTime = 5 * SECOND * IN_MILLISECONDS;
-
-            if (victim->HasAura(Disease5))
-            {
-                TEST_ASSERT(victim->HasAura(Disease4));
-                TEST_ASSERT(victim->HasAura(Disease3));
-                TEST_ASSERT(victim->HasAura(Disease2));
-                TEST_ASSERT(victim->HasAura(Disease1));
-                Wait(tickTime); // wait for next tick
-                TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-            }
-            else
-            {
-                if (victim->HasAura(Disease4))
-                {
-                    TEST_ASSERT(victim->HasAura(Disease3));
-                    TEST_ASSERT(victim->HasAura(Disease2));
-                    TEST_ASSERT(victim->HasAura(Disease1));
-                    Wait(tickTime); // wait for next tick
-                    TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-                }
-                else
-                {
-                    if (victim->HasAura(Disease3))
-                    {
-                        TEST_ASSERT(victim->HasAura(Disease2));
-                        TEST_ASSERT(victim->HasAura(Disease1));
-                        Wait(tickTime); // wait for next tick
-                        TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-                    }
-                    else
-                    {
-                        if (victim->HasAura(Disease2))
-                        {
-                            TEST_ASSERT(victim->HasAura(Disease1));
-                            Wait(tickTime); // wait for next tick
-                            TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-                        }
-                        else
-                        {
-                            if (victim->HasAura(Disease1))
-                            {
-                                Wait(tickTime); // wait for next tick
-                                TestDispelDisease(victim, Disease1, Disease2, Disease3, Disease4, Disease5, count);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+            _location.MoveInFront(_location, 10.f);
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
-
-            // setup
-            priest->DisableRegeneration(true);
+            warrior->SetMaxHealth(1000000);
+            warrior->SetFullHealth();
 
             uint32 const WEAKENING_DISEASE = 18633;
-            uint32 const SPORE_DISEASE     = 31423;
-            uint32 const FEVERED_DISEASE   = 34363;
-            uint32 const DISEASE_BUFFET    = 46481;
-            uint32 const VOLATILE_DISEASE  = 46483;
+            uint32 const DISEASED_SLIME    = 6907;
+            uint32 const FEVERED_DISEASE   = 32903;
+            uint32 const DISEASE_SHOT      = 11397;
+            uint32 const DEVOURING_PLAGUE  = ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7;
 
             // Apply
+            uint32 const baseDiseaseCount = 5;
             warrior->AddAura(WEAKENING_DISEASE, warrior);
-            WaitNextUpdate();
-            warrior->AddAura(SPORE_DISEASE, warrior);
-            WaitNextUpdate();
+            warrior->AddAura(DISEASED_SLIME, warrior);
             warrior->AddAura(FEVERED_DISEASE, warrior);
-            WaitNextUpdate();
-            warrior->AddAura(DISEASE_BUFFET, warrior);
-            WaitNextUpdate();
-            warrior->AddAura(VOLATILE_DISEASE, warrior);
-            WaitNextUpdate();
+            warrior->AddAura(DISEASE_SHOT, warrior);
+            warrior->AddAura(DEVOURING_PLAGUE, warrior);
 
             // Mana cost
             uint32 const expectedAbolishDiseaseMana = 314;
@@ -1152,9 +1087,30 @@ public:
             // Aura duration
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Priest::ABOLISH_DISEASE_RNK_1, Seconds(20));
 
-            Wait(500);
-            int8 count = 0;
-            TestDispelDisease(warrior, WEAKENING_DISEASE, SPORE_DISEASE, FEVERED_DISEASE, DISEASE_BUFFET, VOLATILE_DISEASE, count);
+            SECTION("Dispel", [&] {
+                auto CountDisease = [&]() {
+                    TEST_ASSERT(warrior->IsAlive());
+                    return uint32(warrior->HasAura(WEAKENING_DISEASE))
+                         + uint32(warrior->HasAura(DISEASED_SLIME))
+                         + uint32(warrior->HasAura(FEVERED_DISEASE))
+                         + uint32(warrior->HasAura(DISEASE_SHOT))
+                         + uint32(warrior->HasAura(DEVOURING_PLAGUE));
+                };
+                ASSERT_INFO("One disease should already be dispelled, but found %u disease", CountDisease());
+                TEST_ASSERT(CountDisease() == baseDiseaseCount - 1);
+
+                Wait(500);
+                //check each dispel tick. No dispel resist chance are present here.
+                auto tickTime = 5s;
+                for (uint32 i = 0; i < baseDiseaseCount - 1; i++)
+                {
+                    Wait(tickTime); 
+                    uint32 expectedDiseasesCount = baseDiseaseCount - i - 2; //from 3 to 0
+                    uint32 actualDiseasesCount = CountDisease();
+                    ASSERT_INFO("Target has %u diseases instead of %u", actualDiseasesCount, expectedDiseasesCount);
+                    TEST_ASSERT(actualDiseasesCount == expectedDiseasesCount);
+                }
+            });
         }
     };
 
@@ -1172,7 +1128,7 @@ public:
     class BindingHealTestImpt : public TestCase
     {
     public:
-        BindingHealTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1227,7 +1183,7 @@ public:
     class ChastiseTestImpt : public TestCase
     {
     public:
-        ChastiseTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1283,7 +1239,7 @@ public:
     class CureDiseaseTestImpt : public TestCase
     {
     public:
-        CureDiseaseTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1331,7 +1287,7 @@ public:
     class DesperatePrayerTestImpt : public TestCase
     {
     public:
-        DesperatePrayerTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1378,7 +1334,7 @@ public:
     class ElunesGraceTestImpt : public TestCase
     {
     public:
-        ElunesGraceTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1422,7 +1378,7 @@ public:
     class FlashHealTestImpt : public TestCase
     {
     public:
-        FlashHealTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1459,7 +1415,7 @@ public:
     class GreaterHealTestImpt : public TestCase
     {
     public:
-        GreaterHealTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1496,7 +1452,7 @@ public:
     class HealTestImpt : public TestCase
     {
     public:
-        HealTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1539,7 +1495,7 @@ public:
     class HolyFireTestImpt : public TestCase
     {
     public:
-        HolyFireTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1583,7 +1539,7 @@ public:
     class LesserHealTestImpt : public TestCase
     {
     public:
-        LesserHealTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1627,7 +1583,7 @@ public:
     class PrayerOfHealingTestImpt : public TestCase
     {
     public:
-        PrayerOfHealingTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1704,7 +1660,7 @@ public:
     class PrayerOfMendingTestImpt : public TestCase
     {
     public:
-        PrayerOfMendingTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1768,7 +1724,7 @@ public:
     class RenewTestImpt : public TestCase
     {
     public:
-        RenewTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1804,7 +1760,7 @@ public:
     class ResurrectionTestImpt : public TestCase
     {
     public:
-        ResurrectionTestImpt() : TestCase(STATUS_PASSING) { } 
+
 
         void TestResurrection(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 expectedHealth, uint32 expectedMana, bool fail = false)
         {
@@ -1868,7 +1824,7 @@ public:
     class SmiteTestImpt : public TestCase
     {
     public:
-        SmiteTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1906,7 +1862,7 @@ public:
     class DevouringPlagueTestImpt : public TestCase
     {
     public:
-        DevouringPlagueTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1955,7 +1911,7 @@ public:
     class FadeTestImpt : public TestCase
     {
     public:
-        FadeTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2032,7 +1988,7 @@ public:
     class HexOfWeaknessTestImpt : public TestCase
     {
     public:
-        HexOfWeaknessTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2098,7 +2054,7 @@ public:
     class MindBlastTestImpt : public TestCase
     {
     public:
-        MindBlastTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2140,7 +2096,7 @@ public:
     class MindControlTestImpt : public TestCase
     {
     public:
-        MindControlTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2212,10 +2168,6 @@ public:
 
     class MindSootheTestImpt : public TestCase
     {
-    public:
-        MindSootheTestImpt() : TestCase(STATUS_WIP) { }
-        //INCOMPLETE: Logic seems to be ok and distance is affected by spell, but creatures aggro distance is wonky. More precisely, it appears creatures aggro on a tick basis. FIXME?
-
         //get approximative aggro range (may be around 1y wrong max)
         float GetAggroRange(TestPlayer* priest, Creature* target, float maxDistance)
         {
@@ -2235,42 +2187,46 @@ public:
         }
 
         void Test() override
-        {
-            TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
-            Position spawn(_location);
-            float const spawnDistance = 40.0f;
-            spawn.MoveInFront(_location, spawnDistance);
-            Creature* humanoid = SpawnCreatureWithPosition(spawn, 25363); //sunblade cabalist
-            Creature* beast = SpawnCreatureWithPosition(spawn, 22885);
+        { 
+            //INCOMPLETE: Logic seems to be ok and distance is affected by spell, but creatures aggro distance is wonky.
+            // More precisely, it appears creatures aggro on a tick basis. FIXME
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
+                Position spawn(_location);
+                float const spawnDistance = 40.0f;
+                spawn.MoveInFront(_location, spawnDistance);
+                Creature* humanoid = SpawnCreatureWithPosition(spawn, 25363); //sunblade cabalist
+                Creature* beast = SpawnCreatureWithPosition(spawn, 22885);
 
-            // Only cast on humanoid
-            TEST_CAST(priest, beast, ClassSpells::Priest::MIND_SOOTHE_RNK_4, SPELL_FAILED_BAD_TARGETS);
-            beast->DespawnOrUnsummon();
+                // Only cast on humanoid
+                TEST_CAST(priest, beast, ClassSpells::Priest::MIND_SOOTHE_RNK_4, SPELL_FAILED_BAD_TARGETS);
+                beast->DespawnOrUnsummon();
 
-            // Get initial aggro range
-            float const aggroRange = GetAggroRange(priest, humanoid, spawnDistance);
+                // Get initial aggro range
+                float const aggroRange = GetAggroRange(priest, humanoid, spawnDistance);
 
-            // Reset to find aggro range with Mind Soothe
-            priest->TeleportTo(_location);
-            humanoid->AI()->EnterEvadeMode();
-            Wait(Seconds(5));
+                // Reset to find aggro range with Mind Soothe
+                priest->TeleportTo(_location);
+                humanoid->AI()->EnterEvadeMode();
+                Wait(Seconds(5));
 
-            // Mana cost
-            uint32 const expectedMindSootheMana = 120;
-            TEST_POWER_COST(priest, ClassSpells::Priest::MIND_SOOTHE_RNK_4, POWER_MANA, expectedMindSootheMana);
+                // Mana cost
+                uint32 const expectedMindSootheMana = 120;
+                TEST_POWER_COST(priest, ClassSpells::Priest::MIND_SOOTHE_RNK_4, POWER_MANA, expectedMindSootheMana);
 
-            FORCE_CAST(priest, humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4);
+                FORCE_CAST(priest, humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4);
 
-            // Aura
-            TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15));
+                // Aura
+                TEST_AURA_MAX_DURATION(humanoid, ClassSpells::Priest::MIND_SOOTHE_RNK_4, Seconds(15));
 
-            WaitNextUpdate();
-            float const reducedAggroRange = GetAggroRange(priest, humanoid, spawnDistance);
+                WaitNextUpdate();
+                float const reducedAggroRange = GetAggroRange(priest, humanoid, spawnDistance);
 
-            float const mindSootheRangeEffect = aggroRange - reducedAggroRange;
-            //TC_LOG_DEBUG("test.unit_test", "aggroRange: %f, reduced: %f, diff: %f", aggroRange, reducedAggroRange, mindSootheRangeEffect);
-            TEST_ASSERT(mindSootheRangeEffect > 0);
-            TEST_ASSERT(Between<float>(mindSootheRangeEffect, aggroRange - 11.0f, aggroRange - 9.0f));
+                float const mindSootheRangeEffect = aggroRange - reducedAggroRange;
+                //TC_LOG_DEBUG("test.unit_test", "aggroRange: %f, reduced: %f, diff: %f", aggroRange, reducedAggroRange, mindSootheRangeEffect);
+                TEST_ASSERT(mindSootheRangeEffect > 0);
+                TEST_ASSERT(Between<float>(mindSootheRangeEffect, aggroRange - 11.0f, aggroRange - 9.0f));
+            });
         }
     };
 
@@ -2289,7 +2245,7 @@ public:
     class MindVisionTestImpt : public TestCase
     {
     public:
-        MindVisionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2370,7 +2326,7 @@ public:
     class PrayerOfShadowProtectionTestImpt : public TestCase
     {
     public:
-        PrayerOfShadowProtectionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestPrayerOfShadowProtection(TestPlayer* priest, Unit* warrior, uint32 spellId, uint32 reagentId, uint32 manaCost, uint32 shadowResistanceBonus, uint32 priestStartShadowResistance, uint32 warriorStartShadowResistance)
         {
@@ -2424,7 +2380,7 @@ public:
     class PsychicScreamTestImpt : public TestCase
     {
     public:
-        PsychicScreamTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         bool isFeared(Unit* victim)
         {
@@ -2502,7 +2458,7 @@ public:
     class ShadowProtectionTestImpt : public TestCase
     {
     public:
-        ShadowProtectionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2542,7 +2498,7 @@ public:
     class ShadowWordDeathTestImpt : public TestCase
     {
     public:
-        ShadowWordDeathTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2657,7 +2613,7 @@ public:
     class ShadowWordPainTestImpt : public TestCase
     {
     public:
-        ShadowWordPainTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2688,9 +2644,6 @@ public:
 //Creates a shadowy fiend to attack the target. Caster receives mana when the Shadowfiend deals damage. Lasts 15sec.
 class ShadowfiendTest : public TestCase
 {
-public:
-    ShadowfiendTest() : TestCase() { }
-
     /*
     Data:
     - http://wowwiki.wikia.com/wiki/Shadowfiend?oldid=1581560
@@ -2783,6 +2736,7 @@ public:
 
         SECTION("Shadowfiend stats", STATUS_KNOWN_BUG, [&] {
             // Has Shadow Armor, 90% dodge
+            // TODO: sources on this?
             TEST_HAS_AURA(shadowfiend, 34424);
             TEST_ASSERT(warrior->GetUnitDodgeChance(BASE_ATTACK, shadowfiend) >= 90.0f);
             TEST_ASSERT(warrior->GetUnitDodgeChance(RANGED_ATTACK, shadowfiend) >= 90.0f);
@@ -2809,7 +2763,7 @@ public:
     class TouchOfWeaknessTestImpt : public TestCase
     {
     public:
-        TouchOfWeaknessTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override        {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
@@ -2886,12 +2840,11 @@ public:
 
     class ShadowguardTestImpt : public TestCase
     {
-    public:
-        ShadowguardTestImpt() : TestCase(STATUS_WIP) { }
-
         void Test() override
         {
-            //TODO
+            SECTION("WIP", STATUS_WIP, [&] {
+                //TODO
+            });
         }
     };
 

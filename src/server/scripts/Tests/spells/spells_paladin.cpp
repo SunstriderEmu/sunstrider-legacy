@@ -10,7 +10,7 @@ public:
     class FlashOfLightTestImpt : public TestCase
     {
     public:
-        FlashOfLightTestImpt() : TestCase(STATUS_PASSING) { }
+
         
         void Test() override
         {
@@ -52,7 +52,7 @@ public:
     class HolyLightTestImpt : public TestCase
     {
     public:
-        HolyLightTestImpt() : TestCase(STATUS_PASSING) { }
+
         
         void Test() override
         {

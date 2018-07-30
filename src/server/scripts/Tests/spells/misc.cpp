@@ -9,18 +9,17 @@ public:
 
     class NextMeleeHitTestImpt : public TestCase
     {
-    public:
-        NextMeleeHitTestImpt() : TestCase(STATUS_WIP) { }
-
         void Test() override
         {
-            // 1 - No rage is expended on parry or dodge
-            //For example:
-            // http://wowwiki.wikia.com/wiki/Heroic_Strike?oldid=1513476
-            // TODO: No Rage is expended if Heroic Strike is parried or dodged. Rage is expended if Heroic Strike hits or is blocked.
+            SECTION("WIP", STATUS_WIP, [&] {
+                // 1 - No rage is expended on parry or dodge
+                //For example:
+                // http://wowwiki.wikia.com/wiki/Heroic_Strike?oldid=1513476
+                // TODO: No Rage is expended if Heroic Strike is parried or dodged. Rage is expended if Heroic Strike hits or is blocked.
 
-            // 2 - outgoing parry / dodge generates rage
-            //Proof: https ://youtu.be/X_JFagC8klM?t=5m20s
+                // 2 - outgoing parry / dodge generates rage
+                //Proof: https ://youtu.be/X_JFagC8klM?t=5m20s
+            });
         }
     };
 
@@ -33,13 +32,12 @@ public:
 class EnvironmentalTrapTest : public TestCaseScript
 {
 public:
-
     EnvironmentalTrapTest() : TestCaseScript("environmental traps") { }
 
     class EnvironmentalTrapImpl : public TestCase
     {
     public:
-        EnvironmentalTrapImpl() : TestCase(STATUS_PASSING) {  }
+
 
         void Test() override
         {
@@ -74,14 +72,10 @@ public:
 class StackingRulesTest : public TestCaseScript
 {
 public:
-
     StackingRulesTest() : TestCaseScript("spells rules stacking") { }
 
     class StackingTestImpl : public TestCase
     {
-    public:
-        StackingTestImpl() : TestCase(STATUS_PASSING_INCOMPLETE) {  }
-
         TestPlayer* p1;
         TestPlayer* p2;
         Creature* creatureTarget;
@@ -221,7 +215,6 @@ public:
 
             //earth shield
             TestNotStack(974, 974);
-            //todo: also need to test more powerful spell here
 
             //armor debuffs
             uint32 const sunderArmor = 7386;
@@ -266,6 +259,10 @@ public:
             TestNotStack(33876, 33878); //Mangle cat + bear
             TestNotStack(19977); //blessing of light
             TestNotStack(31944); // Doomfire DoT - only one per target
+
+            SECTION("WIP", STATUS_WIP, [&] {
+                //More powerful spells?
+            });
         }
     };
 
@@ -278,14 +275,10 @@ public:
 class SpellPositivity : public TestCaseScript
 {
 public:
-
     SpellPositivity() : TestCaseScript("spells positivity") { }
 
     class SpellPositivityImpl : public TestCase
     {
-    public:
-        SpellPositivityImpl() : TestCase(STATUS_PASSING_INCOMPLETE) {  }
-
         void Test() override
         {
             static std::list<std::pair<uint32, bool>> spellList = {
@@ -299,20 +292,23 @@ public:
                 { 36895, false }, // Transporter Malfunction (increase size case)
                 { 42792, false }, // Recently Dropped Flag (prevent cancel)
                 { 7268,  false }, // Arcane Missile
+                //Add much more spells here as we fix them
             };
 
-            for (auto itr : spellList)
-            {
-                uint32 const spellId = itr.first;
-                bool const positive = itr.second;
+            SECTION("Positivity", [&] {
+                for (auto itr : spellList)
+                {
+                    uint32 const spellId = itr.first;
+                    bool const positive = itr.second;
 
-                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-                ASSERT_INFO("Failed to find spell %u", spellId);
-                TEST_ASSERT(spellInfo != nullptr);
+                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+                    ASSERT_INFO("Failed to find spell %u", spellId);
+                    TEST_ASSERT(spellInfo != nullptr);
 
-                ASSERT_INFO("Spell %u is positivity is %u when it should be %u", spellId, uint32(positive), uint32(spellInfo->IsPositive()));
-                TEST_ASSERT(spellInfo->IsPositive() == positive);
-            }
+                    ASSERT_INFO("Spell %u is positivity is %u when it should be %u", spellId, uint32(positive), uint32(spellInfo->IsPositive()));
+                    TEST_ASSERT(spellInfo->IsPositive() == positive);
+                }
+            });
         }
     };
 

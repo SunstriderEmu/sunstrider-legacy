@@ -14,26 +14,20 @@
 
 #define MAP_TESTING_ID 13
 
-TestCase::TestCase() 
-    : TestCase(STATUS_PASSING) 
-{}
-
-TestCase::TestCase(TestStatus status) :
+TestCase::TestCase() :
     _callerLine(0),
     _testMapInstanceId(0),
     _diff(REGULAR_DIFFICULTY),
     _map(nullptr),
     _enableMapObjects(false),
-    _setup(false),
-    _testStatus(status)
+    _setup(false)
 {
     //default pos:
     if (_location.GetMapId() == MAPID_INVALID) //not yet defined by the other constructor
         _location = std::move(WorldLocation(MAP_TESTING_ID, TestCase::GetDefaultPositionForMap(MAP_TESTING_ID)));
 }
 
-TestCase::TestCase(TestStatus status, WorldLocation const specificPosition)
-    : TestCase(status)
+TestCase::TestCase(WorldLocation const specificPosition)
 {
     bool useDefaultPos = specificPosition.GetPositionX() == 0.0f && specificPosition.GetPositionY() == 0.0f && specificPosition.GetPositionZ() == 0.0f;
     _location = specificPosition;
@@ -86,7 +80,7 @@ void TestCase::_FailNoException(std::string msg)
     TestSectionResult result(_testName,
         _inSection ? _inSection->title : "<no section>",
         false,
-        _inSection ? _inSection->status : /*STATUS_PASSING*/ _testStatus, //out of section code is considered always passing
+        _inSection ? _inSection->status : STATUS_PASSING, //out of section code is considered always passing
         msg
     );
 

@@ -61,10 +61,6 @@ bool TestMgr::_TestMatchPattern(TestCase* test, std::string const& pattern) cons
     else if (pattern == "all")
         return true;
 
-    //special case, only run incomplete tests if directly called (TODO: remove this when global test status are removed)
-    if (test->GetTestStatus() == STATUS_WIP)
-        return test->GetName() == pattern;
-
     std::regex regex_pattern;
     try
     {

@@ -626,6 +626,7 @@ class spell_pri_mind_control : public AuraScript
     void HandleEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         bool hasTarget = false;
+        // Search application on any unit other than caster
         for (auto auraApp : aurEff->GetBase()->GetApplicationMap())
             if (auraApp.second->GetTarget() && auraApp.second->GetTarget() != aurEff->GetBase()->GetCaster())
             {
@@ -642,42 +643,6 @@ class spell_pri_mind_control : public AuraScript
         OnEffectApply += AuraEffectApplyFn(spell_pri_mind_control::HandleEffectApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
-
-/*
-class spell_pri_mind_control : public SpellScriptLoader
-{
-public:
-    spell_pri_mind_control() : SpellScriptLoader("spell_pri_mind_control") { }
-
-    class spell_pri_mind_control_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_pri_mind_control_SpellScript);
-
-        void AfterHit()
-        {
-            //
-            Spell* spell = GetSpell();
-            Unit* target = nullptr;
-            Unit* caster = nullptr;
-            if ((target = spell->m_targets.GetUnitTarget()) && !target->HasAura(spell->GetSpellInfo()->Id))
-                if(spell->GetCaster() && (caster = spell->GetCaster()->ToUnit()))
-                    if (Aura* aura = caster->GetAura(spell->GetSpellInfo()->Id))
-                        caster->
-
-        }
-
-        void Register() override
-        {
-            AfterHit += SpellHitFn(spell_pri_mind_control_SpellScript::AfterHit);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_pri_mind_control_SpellScript();
-    }
-};
-*/
 
 void AddSC_priest_spell_scripts()
 {

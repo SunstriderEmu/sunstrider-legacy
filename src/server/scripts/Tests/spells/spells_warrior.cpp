@@ -31,8 +31,8 @@ Resources:
 class TestCaseWarrior : public TestCase
 {
 public:
-    TestCaseWarrior(TestStatus status, bool needMap = true) : TestCase(status) {}
-    TestCaseWarrior(TestStatus status, WorldLocation const& loc) : TestCase(status, loc) {}
+    TestCaseWarrior() {}
+    TestCaseWarrior(WorldLocation const& loc) : TestCase(loc) {}
 
     uint32 GetStance(TestPlayer* warrior)
     {
@@ -107,7 +107,7 @@ public:
     class ChargeTestImpt : public TestCaseWarrior
     {
     public:
-        ChargeTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -172,7 +172,6 @@ public:
             - Ciderhelm: 181
         Decided: 181
         */
-        HamstringTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
 
         void Test() override
         {
@@ -227,7 +226,6 @@ public:
 
     class HeroicStrikeTestImpt : public TestCaseWarrior
     {
-    public:
         /*
         Bugs:
             - Should deal +61.6 dmg when victim is Dazed
@@ -238,8 +236,6 @@ public:
             - Ciderhelm: 196
         Decided: 196
         */
-        HeroicStrikeTestImpt() : TestCaseWarrior(STATUS_KNOWN_BUG) { }
-
         void Test() override
         {
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
@@ -252,24 +248,28 @@ public:
             uint32 const expectedHeroicStrikeRage = 15 * 10;
             TEST_POWER_COST(warrior, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, POWER_RAGE, expectedHeroicStrikeRage);
 
-            // Damage
-            auto[minHeroicStrike, maxHeroicStrike] = CalcMeleeDamage(warrior, warlock, BASE_ATTACK, ClassSpellsDamage::Warrior::HEROIC_STRIKE_RNK_10);
-            TEST_DIRECT_SPELL_DAMAGE(warrior, warlock, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, minHeroicStrike, maxHeroicStrike, false);
+            SECTION("Damage", [&] {
+                auto[minHeroicStrike, maxHeroicStrike] = CalcMeleeDamage(warrior, warlock, BASE_ATTACK, ClassSpellsDamage::Warrior::HEROIC_STRIKE_RNK_10);
+                TEST_DIRECT_SPELL_DAMAGE(warrior, warlock, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, minHeroicStrike, maxHeroicStrike, false);
+            });
 
-            // Threat
-            Creature* creature = SpawnCreature();
-            FORCE_CAST(warrior, creature, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
-            warrior->AttackerStateUpdate(creature, BASE_ATTACK);
-            auto[minDmg, maxDmg] = GetDamagePerSpellsTo(warrior, creature, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, {}, 1);
-            float const expectedThreat = (196 + minDmg) * WARRIOR_STANCE_THREAT_MOD;
-            ASSERT_INFO("Warrior has %f on Creature but %f was expected.", creature->GetThreatManager().GetThreat(warrior), expectedThreat);
-            TEST_ASSERT(Between<float>(creature->GetThreatManager().GetThreat(warrior), expectedThreat - 0.1f, expectedThreat + 0.1f));
+            SECTION("Threat", [&] {
+                Creature* creature = SpawnCreature();
+                FORCE_CAST(warrior, creature, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, SPELL_MISS_NONE, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+                warrior->AttackerStateUpdate(creature, BASE_ATTACK);
+                auto[minDmg, maxDmg] = GetDamagePerSpellsTo(warrior, creature, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, {}, 1);
+                float const expectedThreat = (196 + minDmg) * WARRIOR_STANCE_THREAT_MOD;
+                ASSERT_INFO("Warrior has %f on Creature but %f was expected.", creature->GetThreatManager().GetThreat(warrior), expectedThreat);
+                TEST_ASSERT(Between<float>(creature->GetThreatManager().GetThreat(warrior), expectedThreat - 0.1f, expectedThreat + 0.1f));
+            });
 
-            // Dazed
-            float const hsDazedBonus = 61.6f;
-            auto[minHeroicStrikeDazed, maxHeroicStrikeDazed] = CalcMeleeDamage(warrior, warlock, BASE_ATTACK, ClassSpellsDamage::Warrior::HEROIC_STRIKE_RNK_10 + hsDazedBonus);
-            TEST_DIRECT_SPELL_DAMAGE(warrior, warlock, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, minHeroicStrikeDazed, maxHeroicStrikeDazed, false, [](Unit* caster, Unit* victim) {
-                victim->AddAura(1604, victim); // Dazed
+            SECTION("Dazed Damage", STATUS_KNOWN_BUG, [&] {
+                float const hsDazedBonus = 61.6f;
+                auto[minHeroicStrikeDazed, maxHeroicStrikeDazed] = CalcMeleeDamage(warrior, warlock, BASE_ATTACK, ClassSpellsDamage::Warrior::HEROIC_STRIKE_RNK_10 + hsDazedBonus);
+                TEST_DIRECT_SPELL_DAMAGE(warrior, warlock, ClassSpells::Warrior::HEROIC_STRIKE_RNK_10, minHeroicStrikeDazed, maxHeroicStrikeDazed, false, [](Unit* caster, Unit* victim) {
+                    victim->AddAura(1604, victim); // Dazed
+
+                });
             });
         }
     };
@@ -296,7 +296,7 @@ public:
             - Ciderhelm: 290
         Decided: 290
         */
-        MockingBlowTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -360,9 +360,6 @@ public:
 
     class OverpowerTestImpt : public TestCaseWarrior
     {
-    public:
-        OverpowerTestImpt() : TestCaseWarrior(STATUS_PASSING_INCOMPLETE) { }
-
         void Test() override
         {
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
@@ -374,8 +371,10 @@ public:
             uint32 const expectedOverpowerRage = 5 * 10;
             TEST_POWER_COST(warrior, ClassSpells::Warrior::OVERPOWER_RNK_4, POWER_RAGE, expectedOverpowerRage);
 
-            // TODO: Overpower only usable after target dodged.
-            // TODO: Overpower cannot be blocked, dodged or parried.
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: Overpower only usable after target dodged.
+                // TODO: Overpower cannot be blocked, dodged or parried.
+            }); 
 
             // Damage
             float const normalizedSpeed = 3.3f;
@@ -398,7 +397,7 @@ public:
     class RendTestImpt : public TestCaseWarrior
     {
     public:
-        RendTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -443,7 +442,7 @@ public:
     class RetaliationTestImpt : public TestCaseWarrior
     {
     public:
-        RetaliationTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -524,7 +523,7 @@ public:
             - Ciderhelm: 175%
         Decided: 175%
         */
-        ThunderClapTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -597,7 +596,7 @@ public:
             - Ciderhelm: 69
         Decided: 69
         */
-        BattleShoutTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -685,7 +684,7 @@ public:
     class BerserkerRageTestImpt : public TestCaseWarrior
     {
     public:
-        BerserkerRageTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void TestImmunity(TestPlayer* warrior, TestPlayer* caster, uint32 spellId)
         {
@@ -729,13 +728,14 @@ public:
                 TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::BERSERKER_RAGE_RNK_1, Seconds(30));
             });
 
+            // Berserker Rage generates doubles the rages generated by being hit
             SECTION("Extra rage", STATUS_KNOWN_BUG, [&] {
                 TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
 
                 float const berserkerRageFactor = 2.f;
                 auto AI = rogue->GetTestingPlayerbotAI();
                 uint32 const level = 70;
-                float const rageConversion = 0.0091107836f * level * level + 3.225598133f * level + 4.2652911f;
+                float const rageConversion = 0.0091107836f * level * level + 3.225598133f * level + 4.2652911f; //formula from?
 
                 for (uint32 i = 0; i < 75; i++)
                 {
@@ -780,7 +780,7 @@ public:
     class ChallengingShoutTestImpt : public TestCase
     {
     public:
-        ChallengingShoutTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -857,7 +857,7 @@ public:
             - Ciderhelm: 130
         Decided: 130
         */
-        CleaveTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -930,7 +930,7 @@ public:
     class CommandingShoutTestImpt : public TestCaseWarrior
     {
     public:
-        CommandingShoutTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1013,7 +1013,7 @@ public:
             - Lavina: 56
         Decided: 56
         */
-        DemoralizingShoutTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1089,7 +1089,7 @@ public:
             - Ciderhelm: 100% (Unaffected by Stance Multiplier)
         Decided: 100%
         */
-        ExecuteTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1152,7 +1152,7 @@ public:
     class InterceptTestImpt : public TestCaseWarrior
     {
     public:
-        InterceptTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1214,7 +1214,7 @@ public:
     class IntidimidatingShoutTestImpt : public TestCaseWarrior
     {
     public:
-        IntidimidatingShoutTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1275,7 +1275,7 @@ public:
     class PummelTestImpt : public TestCaseWarrior
     {
     public:
-        PummelTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1334,7 +1334,7 @@ public:
     class RecklessnessTestImpt : public TestCaseWarrior
     {
     public:
-        RecklessnessTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1381,7 +1381,7 @@ public:
     class SlamTestImpt : public TestCaseWarrior
     {
     public:
-        SlamTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1438,7 +1438,7 @@ public:
     class VictoryRushTestImpt : public TestCaseWarrior
     {
     public:
-        VictoryRushTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1493,7 +1493,7 @@ public:
     class WhirlwindTestImpt : public TestCaseWarrior
     {
     public:
-        WhirlwindTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1523,10 +1523,10 @@ public:
             SECTION("Target counts", [&] {
                 // Hit max 4 targets
                 // WoWWiki: It does Weapon Damage to 4 adjacent enemies, in any direction and has a 10 second cooldown.
-                // (reading the spell values also provides the idea that it hits main target, then triggers an aoe spell on 4 more)
-                // BUT: Since the spell triggers a second aoe spell for the off hand, and it may not hit the same targets as the main spell. Is this supposed to happen?
-                // This is coherent with the spell effects and targets, but Blizzard may have hacked something to make sure offhand hit the same targets.
-                // Unless proven though, we're gonna suppose it is NOT the case.
+                // BUT: Since the spell triggers a second aoe spell for the off hand, and it may not hit the same targets as the main spell. 
+                // Is this supposed to happen? This is coherent with the spell effects and targets, but Blizzard may have hacked something
+                // to make sure off hand spell hit the same targets.
+                // Unless proven though, we're gonna suppose that is NOT the case.
                 Creature* creature1 = SpawnCreature();
                 Creature* creature2 = SpawnCreature();
                 Creature* creature3 = SpawnCreature();
@@ -1586,7 +1586,7 @@ public:
     class BloodrageTestImpt : public TestCaseWarrior
     {
     public:
-        BloodrageTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1636,7 +1636,7 @@ public:
     class DisarmTestImpt : public TestCaseWarrior
     {
     public:
-        DisarmTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1723,7 +1723,7 @@ public:
     class InterveneTestImpt : public TestCaseWarrior
     {
     public:
-        InterveneTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1788,7 +1788,7 @@ public:
     class RevengeTestImpt : public TestCaseWarrior
     {
     public:
-        RevengeTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void TestRevengeTrigger(TestPlayer* warrior, TestPlayer* rogue, MeleeHitOutcome meleeHitOutcome)
         {
@@ -1859,7 +1859,7 @@ public:
     class ShieldBashTestImpt : public TestCaseWarrior
     {
     public:
-        ShieldBashTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1917,7 +1917,7 @@ public:
     class ShieldBlockTestImpt : public TestCaseWarrior
     {
     public:
-        ShieldBlockTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1966,7 +1966,7 @@ public:
     class ShieldWallTestImpt : public TestCaseWarrior
     {
     public:
-        ShieldWallTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2029,23 +2029,10 @@ public:
             Ciderhelm: 100%
         Decided: 100%
         */
-        SpellReflectionTestImpt() : TestCaseWarrior(STATUS_KNOWN_BUG) { }
 
         void Test() override
         {
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
-
-            Position spawn(_location);
-            spawn.MoveInFront(spawn, 15.0f);
-            TestPlayer* fire = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
-            LearnTalent(fire, Talents::Mage::IMPROVED_FIREBALL_RNK_5);
-            TestPlayer* frost = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
-
-            warrior->SetFullHealth();
-            fire->SetFacingToObject(warrior);
-            fire->SetFullHealth();
-            frost->SetFullHealth();
-            frost->SetFacingToObject(warrior);
 
             // Rage cost
             uint32 const expectedSpellReflectionRage = 25 * 10;
@@ -2055,37 +2042,60 @@ public:
             TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, Seconds(5));
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, Seconds(10));
-            // Reflect
-            TriggerCastFlags flags = TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED);
-            for (int i = 0; i < 5; i++)
-            {
-                TEST_CAST(fire, warrior, ClassSpells::Mage::FIREBALL_RNK_1, SPELL_CAST_OK, flags);
-                TEST_CAST(frost, warrior, ClassSpells::Mage::FROSTBOLT_RNK_1, SPELL_CAST_OK, flags);
-            }
-            WaitNextUpdate();
-            // https://youtu.be/ohnzL-deZDM?t=1m24s
-            // Spell reflection should be removed as soon as the spell is reflected not when the reflected spells hits its caster
-            TEST_HAS_NOT_AURA(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
-            TEST_ASSERT(warrior->IsFullHealth());
-            TEST_ASSERT(!fire->IsFullHealth());
-            TEST_ASSERT(!frost->IsFullHealth());
 
-            // Threat
-            Creature* dummy = SpawnCreature();
-            TEST_ASSERT(dummy->IsFullHealth());
-            dummy->DisableRegeneration(true);
-            TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            FORCE_CAST(dummy, warrior, ClassSpells::Mage::FROSTBOLT_RNK_1, SPELL_MISS_NONE, flags);
-            WaitNextUpdate();
-            uint32 const damage = dummy->GetMaxHealth() - dummy->GetHealth();
-            float const expectedThreat = damage * WARRIOR_STANCE_THREAT_MOD;
-            TEST_ASSERT(Between<float>(dummy->GetThreatManager().GetThreat(warrior), expectedThreat - 0.1f, expectedThreat + 0.1f));
-            dummy->DespawnOrUnsummon();
+            SECTION("Reflect", [&] {
+                Position spawn(_location);
+                spawn.MoveInFront(spawn, 15.0f);
+                TestPlayer* fire = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
+                LearnTalent(fire, Talents::Mage::IMPROVED_FIREBALL_RNK_5);
+                TestPlayer* frost = SpawnPlayer(CLASS_MAGE, RACE_HUMAN, 70, spawn);
+                fire->SetFacingToObject(warrior);
+                frost->SetFacingToObject(warrior);
+                //Make sure the mages are hit capped
+                fire->ApplyRatingMod(CR_HIT_SPELL, 500, true); 
+                frost->ApplyRatingMod(CR_HIT_SPELL, 500, true);
 
-            // Aura removed when no shield
-            TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
-            RemoveAllEquipedItems(warrior);
-            TEST_HAS_NOT_AURA(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
+                // Reflect
+                TriggerCastFlags flags = TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED);
+                for (int i = 0; i < 5; i++) //throw some more than 1 spell to make sure we avoid the incompressible resist
+                {
+                    TEST_CAST(fire, warrior, ClassSpells::Mage::FIREBALL_RNK_1, SPELL_CAST_OK, flags);
+                    TEST_CAST(frost, warrior, ClassSpells::Mage::FROSTBOLT_RNK_1, SPELL_CAST_OK, flags);
+                }
+                WaitNextUpdate();
+                // https://youtu.be/ohnzL-deZDM?t=1m24s
+                // Spell reflection should be removed as soon as the spell is reflected not when the reflected spells hits its caster
+                // Note: On Vanilla/BC (and possibly for some time later), spell reflection could reflect several spell if they were processed in the same batch
+                // (To reproduce this we could simply have the spell remove itself a bit after the first reflect instead of immediately, don't remember how this is currently done)
+                TEST_HAS_NOT_AURA(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
+                TEST_ASSERT(warrior->IsFullHealth());
+                TEST_ASSERT(!fire->IsFullHealth());
+                TEST_ASSERT(!frost->IsFullHealth());
+            });
+           
+            SECTION("Threat", STATUS_KNOWN_BUG, [&] {
+                //Currently 0 threat, threat actually goes to the original caster in spell system atm. (so is this case dummy tries to add threat to dummy and it has no effect)
+                Creature* dummy = SpawnCreature();
+                TEST_ASSERT(dummy->IsFullHealth());
+                dummy->DisableRegeneration(true);
+                TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                for (int i = 0; i < 50; i++) //throw some more than 1 spell to make sure we avoid resist
+                    TEST_CAST(dummy, warrior, ClassSpells::Mage::FIREBALL_RNK_1, SPELL_CAST_OK, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_IGNORE_SPEED));
+                WaitNextUpdate();
+                uint32 const damage = dummy->GetMaxHealth() - dummy->GetHealth();
+                TEST_ASSERT(damage != 0);
+                float const expectedThreat = damage * WARRIOR_STANCE_THREAT_MOD;
+                float currentThreat = dummy->GetThreatManager().GetThreat(warrior);
+                ASSERT_INFO("Threat %f instead of expected %f", currentThreat, expectedThreat);
+                TEST_ASSERT(Between<float>(currentThreat, expectedThreat - 0.1f, expectedThreat + 0.1f));
+                dummy->DespawnOrUnsummon();
+            });
+
+            SECTION("Removed on shield unequip", STATUS_KNOWN_BUG, [&]{
+                TEST_CAST(warrior, warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                RemoveAllEquipedItems(warrior);
+                TEST_HAS_NOT_AURA(warrior, ClassSpells::Warrior::SPELL_REFLECTION_RNK_1);
+            });
         }
     };
 
@@ -2104,7 +2114,7 @@ public:
     class StanceMasteryTestImpt : public TestCaseWarrior
     {
     public:
-        StanceMasteryTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void TestStanceRage(TestPlayer* warrior, uint32 stanceSpellId)
         {
@@ -2147,7 +2157,7 @@ public:
     class SunderArmorTestImpt : public TestCaseWarrior
     {
     public:
-        SunderArmorTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void TestSunderArmor(TestPlayer* warrior, Unit* victim, uint32 startArmor, int sunderArmorStack, uint32 armorReduced)
         {
@@ -2208,7 +2218,7 @@ public:
     class TauntTestImpt : public TestCaseWarrior
     {
     public:
-        TauntTestImpt() : TestCaseWarrior(STATUS_PASSING) { }
+
 
         void Test() override
         {

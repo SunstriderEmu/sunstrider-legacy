@@ -45,9 +45,8 @@ class TC_GAME_API TestCase
 
 public:
     TestCase();
-    TestCase(TestStatus status); //remove later when test global status is removed, kept for legacy compat
     //Use specific position. If only map was specified in location, default coordinates in map may be chosen instead. If you need creatures and objects, use EnableMapObjects in your test constructor
-    TestCase(TestStatus status, WorldLocation const specificPosition);
+    TestCase(WorldLocation const specificPosition);
     ~TestCase() {}
     void SetUsedPattern(std::string const& pattern) { _usedPattern = pattern; }
 
@@ -343,7 +342,6 @@ public:
     uint32 GetChannelHealingTo(Unit* caster, Unit* target, uint32 spellID, uint32 expectedTickCount, Optional<bool> crit);
 
     static uint32 GetTestBotAccountId();
-    TestStatus GetTestStatus() const { return _testStatus; } //for compat, remove later
 
 protected:
     // Main test function to be implemented by each test
@@ -498,7 +496,6 @@ private:
     int32                        _callerLine; //used for error output
     std::string                  _internalAssertInfo;
     std::string                  _assertInfo;
-    TestStatus                   _testStatus; //for compat, remove later
 
     bool _InternalSetup();
     void _Cleanup();

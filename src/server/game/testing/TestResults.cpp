@@ -54,7 +54,7 @@ std::string TestResults::ToString()
     uint32 failures = _failures.size();
     auto unexpectedSuccesses = GetFilteredResult(true, { STATUS_KNOWN_BUG });
     auto incompleteSuccess = GetFilteredResult(true, { STATUS_WIP });
-    auto regressions = GetFilteredResult(false, { STATUS_PASSING, STATUS_PASSING_INCOMPLETE });
+    auto regressions = GetFilteredResult(false, { STATUS_PASSING });
     auto knownBugs = GetFilteredResult(false, { STATUS_KNOWN_BUG });
     auto incompleteFailures = GetFilteredResult(false, { STATUS_WIP });
 
@@ -64,12 +64,8 @@ std::string TestResults::ToString()
     ss << " " << std::endl; //empty line are ignored by core, so add space
     if (_totalTestsRan > 0)
     {
-        auto partialSuccessCount = GetFilteredResult(true, { STATUS_PASSING_INCOMPLETE }).size();
-
         ss << " " << _totalTestsRan << " | Total tests ran (" << _ignored << " ignored)" << std::endl;
         ss << " " << successes << " | Section successes";
-        if (partialSuccessCount)
-            ss << " (partial: " << partialSuccessCount << ")";
         ss << std::endl;
         ss << " " << failures  << " | Section failures (regressions: " << regressions.size() << ", known: " << knownBugs.size() << ")" << std::endl;
         ss << " " << std::endl;

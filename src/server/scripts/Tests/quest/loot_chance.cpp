@@ -16,9 +16,6 @@ public:
 
     class QuestLootChanceTestImpl : public TestCase
     {
-    public:
-        QuestLootChanceTestImpl() : TestCase(STATUS_PASSING) { }
-
         void Test() override
         {
             const float lootChance = 0.35f; //Scroll of Demonic Unbanishing loot chance. Change if value changed in db. // SELECT * FROM creature_loot_template WHERE entry = 21503 AND item = 30811

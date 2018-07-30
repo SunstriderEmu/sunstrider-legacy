@@ -12,7 +12,7 @@ public:
     class CorruptionTestImpt : public TestCase
     {
     public:
-        CorruptionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -50,7 +50,7 @@ public:
     class CurseOfAgonyTestImpt : public TestCase
     {
     public:
-        CurseOfAgonyTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -86,9 +86,6 @@ public:
 
     class CurseOfDoomTestImpt : public TestCase
     {
-    public:
-        CurseOfDoomTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
@@ -115,7 +112,9 @@ public:
             float const expectedCoDDamage = ClassSpellsDamage::Warlock::CURSE_OF_DOOM_RNK_2 + spellPower * spellCoefficient;
             TEST_DOT_DAMAGE(warlock, dummy, ClassSpells::Warlock::CURSE_OF_DOOM_RNK_2, expectedCoDDamage, true);
 
-            // TODO: test Doomguard summon
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: test Doomguard summon
+            });
         }
     };
 
@@ -130,11 +129,10 @@ class CurseOfRecklessnessTest : public TestCaseScript
 public:
     CurseOfRecklessnessTest() : TestCaseScript("spells warlock curse_of_recklessness") { }
 
+    // Curses the target with recklessness, increasing melee attack power by $s1 but reducing armor by $s2 for $d. 
+    // Cursed enemies will not flee and will ignore Fear and Horror effects. Only one Curse per Warlock can be active on any one target.
     class CurseOfRecklessnessTestImpt : public TestCase
     {
-    public:
-        CurseOfRecklessnessTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
-
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
@@ -149,12 +147,23 @@ public:
             uint32 const expectedCurseOfRecklessnessManaCost = 160;
             TEST_CAST(warlock, rogue, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5);
             TEST_AURA_MAX_DURATION(rogue, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, Minutes(2));
-            // Fear should be removed by the curse - Bugged here
-            TEST_HAS_NOT_AURA(rogue, ClassSpells::Warlock::FEAR_RNK_3);
-            // Check armor and AP is reduced as intended
-            ASSERT_INFO("Armor: %u - Expected: %u", rogue->GetArmor(), expectedRogueArmor);
-            TEST_ASSERT(rogue->GetArmor() == expectedRogueArmor);
-            TEST_ASSERT(rogue->GetTotalAttackPowerValue(BASE_ATTACK) == expectedRogueAP);
+
+            SECTION("Fear nullified", STATUS_WIP, [&] {
+                  // Fear should NOT be removed by the curse, but be nullified
+                  // WoWWiki: Curse of Recklessness also nullifies Fear. This means that a Warlock can easily CC by casting fear on a mob, 
+                  //          and then casting CoR just before it gets out of range.This allows time for a pet to take aggro or your party 
+                  //          to finish it off.If the mob gets back to you before the original fear would have run out you can cast another 
+                  //          curse, canceling CoR and the mob will start running again.
+
+                 // How to test?
+            });
+
+            SECTION("Armor reduced", [&] {
+                // Check armor and AP is reduced as intended
+                ASSERT_INFO("Armor: %u - Expected: %u", rogue->GetArmor(), expectedRogueArmor);
+                TEST_ASSERT(rogue->GetArmor() == expectedRogueArmor);
+                TEST_ASSERT(rogue->GetTotalAttackPowerValue(BASE_ATTACK) == expectedRogueAP);
+            });
 
             TEST_POWER_COST(warlock, ClassSpells::Warlock::CURSE_OF_RECKLESSNESS_RNK_5, POWER_MANA, expectedCurseOfRecklessnessManaCost);
         }
@@ -174,7 +183,7 @@ public:
     class CurseOfElementsTestImpt : public TestCase
     {
     public:
-        CurseOfElementsTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -226,7 +235,7 @@ public:
     class CurseOfTonguesTestImpt : public TestCase
     {
     public:
-        CurseOfTonguesTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -264,7 +273,7 @@ public:
     class CurseOfWeaknessTestImpt : public TestCase
     {
     public:
-        CurseOfWeaknessTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -297,7 +306,7 @@ public:
     class DeathCoilTestImpt : public TestCase
     {
     public:
-        DeathCoilTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -350,7 +359,7 @@ public:
     class DrainLifeTestImpt : public TestCase
     {
     public:
-        DrainLifeTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -407,7 +416,7 @@ public:
     class DrainManaTestImpt : public TestCase
     {
     public:
-        DrainManaTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -460,7 +469,7 @@ public:
     class DrainSoulTestImpt : public TestCase
     {
     public:
-        DrainSoulTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -511,7 +520,7 @@ public:
     class FearTestImpt : public TestCase
     {
     public:
-        FearTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -552,7 +561,7 @@ public:
     class HowlOfTerrorTestImpt : public TestCase
     {
     public:
-        HowlOfTerrorTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         bool isFeared(Unit* victim)
         {
@@ -605,7 +614,7 @@ public:
     class LifeTapTestImpt : public TestCase
     {
     public:
-        LifeTapTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -649,7 +658,7 @@ public:
     class SeedOfCorruptionTestImpt : public TestCase
     {
     public:
-        SeedOfCorruptionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void ResetDummiesHealth(Creature* dummy1, Creature* dummy2, Creature* dummy3) {
             dummy1->SetFullHealth();
@@ -738,7 +747,7 @@ public:
     class BanishTestImpt : public TestCase
     {
     public:
-        BanishTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -792,9 +801,6 @@ public:
 
     class CreateFirestoneTestImpt : public TestCase
     {
-    public:
-        CreateFirestoneTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
         void CreateFirestone(TestPlayer* caster, uint32 firestoneSpellId, uint32 firestone, uint32 expectedManaCost)
         {
             TEST_POWER_COST(caster, firestoneSpellId, POWER_MANA, expectedManaCost);
@@ -842,7 +848,9 @@ public:
                 TEST_DIRECT_SPELL_DAMAGE(warlock, dummy, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MIN, ClassSpellsDamage::Warlock::SHADOW_BOLT_RNK_11_MAX, false);
             }
 
-            // TODO: melee proc chance of passive (ClassSpells::Warlock::CREATE_FIRESTONE_PASSIVE_RNK_5)
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: melee proc chance of passive (ClassSpells::Warlock::CREATE_FIRESTONE_PASSIVE_RNK_5)
+            });
         }
     };
 
@@ -860,7 +868,7 @@ public:
     class CreateHealthstoneTestImpt : public TestCase
     {
     public:
-        CreateHealthstoneTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void CreateHealthstone(TestPlayer* caster, uint32 healthstoneSpellId, uint32 healthstone, uint32 expectedManaCost, uint32 healthRestored)
         {
@@ -921,7 +929,7 @@ public:
     class CreateSoulstoneTestImpt : public TestCase
     {
     public:
-        CreateSoulstoneTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestSoulstone(TestPlayer* caster, uint32 soulstoneSpellId, uint32 soulstoneItemSpellId, uint32 soulstone, uint32 healthRestored, uint32 manaRestored)
         {
@@ -1030,7 +1038,7 @@ public:
     class CreateSpellstoneTestImpt : public TestCase
     {
     public:
-        CreateSpellstoneTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void CreateSpellstone(TestPlayer* caster, uint32 spellstoneSpellId, uint32 spellstoneItemID, uint32 expectedManaCost, uint32 criticalStrikeRatingBonus)
         {
@@ -1100,42 +1108,55 @@ class DemonArmorTest : public TestCaseScript
 public:
     DemonArmorTest() : TestCaseScript("spells warlock demon_armor") { }
 
+    //Protects the caster, increasing armor by 660, Shadow resistance by 18 and restores 18 health every 5 sec. Only one type of Armor spell can be active on the Warlock at any time. Lasts 30min.
     class DemonArmorTestImpt : public TestCase
     {
-    public:
-        DemonArmorTestImpt() : TestCase(STATUS_KNOWN_BUG) { }
-
         void TestDemonArmorBonuses(TestPlayer* caster, Creature* victim, uint32 demonArmorSpellId, uint32 expectedManaCost, uint32 armorBonus, uint32 shadowResBonus, uint32 healthRestore)
         {
-            uint32 const startHealth = 1;
-            caster->SetHealth(startHealth);
-            caster->EngageWithTarget(victim);
-            TEST_ASSERT(caster->IsInCombatWith(victim));
-            uint32 const expectedArmor = caster->GetArmor() + armorBonus;
-            uint32 const expectedShadowRes = caster->GetResistance(SPELL_SCHOOL_SHADOW) + shadowResBonus;
-
-            // Only one armor active
-            TEST_CAST(caster, caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
-            TEST_HAS_AURA(caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
-
             TEST_POWER_COST(caster, demonArmorSpellId, POWER_MANA, expectedManaCost);
-            TEST_CAST(caster, caster, demonArmorSpellId, SPELL_CAST_OK, TRIGGERED_IGNORE_GCD);
-            TEST_ASSERT(caster->GetArmor() == expectedArmor);
-            TEST_ASSERT(caster->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowRes);
+            TEST_CAST(caster, caster, demonArmorSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
             TEST_AURA_MAX_DURATION(caster, demonArmorSpellId, Minutes(30));
-            TEST_HAS_NOT_AURA(caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
 
-            uint32 const regenTickAmount = floor(healthRestore / 2.5f);
-            uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
-            Wait(2000);
-            TEST_ASSERT(caster->IsInCombatWith(victim));
-            uint32 const afterWaitTime = GameTime::GetGameTimeMS();
-            uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
-            uint32 const expectedTicksElapsed = floor(elapsedTimeInSeconds / 2.0f);
-            uint32 const expectedHealth = startHealth + regenTickAmount * expectedTicksElapsed;
-            ASSERT_INFO("Health: %u, expected: %u, regenTickAmount %u, expectedTicksElapsed %u", caster->GetHealth(), expectedHealth, regenTickAmount, expectedTicksElapsed);
-            //BUG HERE: health regen is fully added at each tick (2s) instead of having its value per 5s
-            TEST_ASSERT(caster->GetHealth() == expectedHealth);
+            SECTION("One armor active", [&] {
+                TEST_CAST(caster, caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
+                TEST_HAS_AURA(caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
+
+                caster->SetFullPower(POWER_MANA);
+                TEST_CAST(caster, caster, demonArmorSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                TEST_HAS_NOT_AURA(caster, ClassSpells::Warlock::FEL_ARMOR_RNK_2);
+                TEST_HAS_AURA(caster, demonArmorSpellId);
+            });
+
+            SECTION("Bonuses", [&] {
+                caster->RemoveAurasDueToSpell(demonArmorSpellId);
+                uint32 const expectedArmor = caster->GetArmor() + armorBonus;
+                uint32 const expectedShadowRes = caster->GetResistance(SPELL_SCHOOL_SHADOW) + shadowResBonus;
+
+                TEST_CAST(caster, caster, demonArmorSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+
+                ASSERT_INFO("Current armor %u - Expected %u", caster->GetArmor(), expectedArmor);
+                TEST_ASSERT(caster->GetArmor() == expectedArmor);
+                TEST_ASSERT(caster->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowRes);
+            });
+
+            SECTION("Health regen", STATUS_KNOWN_BUG, [&] {
+                uint32 const startHealth = 1;
+                auto regenTickTime = 2s;
+
+                //Set in combat to disable ooc regen
+                caster->EngageWithTarget(victim);
+                TEST_ASSERT(caster->IsInCombatWith(victim));
+
+                TEST_CAST(caster, caster, demonArmorSpellId, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+                caster->SetHealth(startHealth);
+                uint32 const regenTickAmount = floor(healthRestore / 2.5f);
+                Wait(regenTickTime);
+                TEST_ASSERT(caster->IsInCombatWith(victim));
+                uint32 const expectedHealth = startHealth + regenTickAmount;
+                ASSERT_INFO("Health: %u, expected: %u, regenTickAmount %u", caster->GetHealth(), expectedHealth, regenTickAmount);
+                //BUG HERE: health regen is fully added at each tick (2s) instead of having its value per 5s
+                TEST_ASSERT(Between(caster->GetHealth(), expectedHealth - 1, expectedHealth + 1));
+            });
         }
 
         void Test() override
@@ -1166,7 +1187,7 @@ public:
     class FelArmorTestImpt : public TestCase
     {
     public:
-        FelArmorTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestFelArmorBonuses(TestPlayer* caster, TestPlayer* healer, uint32 felArmorSpellId, uint32 expectedManaCost, uint32 spellDamageBonus)
         {
@@ -1223,7 +1244,7 @@ public:
     class HealthFunnelTestImpt : public TestCase
     {
     public:
-        HealthFunnelTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1288,7 +1309,7 @@ public:
     class ShadowWardTestImpt : public TestCase
     {
     public:
-        ShadowWardTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1330,7 +1351,7 @@ public:
     class SoulshatterTestImpt : public TestCase
     {
     public:
-        SoulshatterTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1377,7 +1398,7 @@ public:
     class SummonDreadsteedTestImpt : public TestCase
     {
     public:
-        SummonDreadsteedTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1408,7 +1429,7 @@ public:
     class SummonFelhunterTestImpt : public TestCase
     {
     public:
-        SummonFelhunterTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1448,7 +1469,7 @@ public:
     class SummonFelsteedTestImpt : public TestCase
     {
     public:
-        SummonFelsteedTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1479,7 +1500,7 @@ public:
     class SummonImpTestImpt : public TestCase
     {
     public:
-        SummonImpTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1513,7 +1534,7 @@ public:
     class SummonSuccubusTestSuccubust : public TestCase
     {
     public:
-        SummonSuccubusTestSuccubust() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1552,7 +1573,7 @@ public:
     class SummonVoidwalkerTestVoidwalkert : public TestCase
     {
     public:
-        SummonVoidwalkerTestVoidwalkert() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1590,9 +1611,6 @@ public:
 
     class UnendingBreathTestVoidwalkert : public TestCase
     {
-    public:
-        UnendingBreathTestVoidwalkert() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
         void Test() override
         {
             TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_HUMAN);
@@ -1603,7 +1621,9 @@ public:
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::UNENDING_BREATH_RNK_1);
             TEST_AURA_MAX_DURATION(warlock, ClassSpells::Warlock::UNENDING_BREATH_RNK_1, Minutes(10));
 
-            // TODO: breathing underwater for 10min
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: breathing underwater for 10min
+            });
         }
     };
 
@@ -1621,7 +1641,7 @@ public:
     class HellfireTestImpt : public TestCase
     {
     public:
-        HellfireTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1683,7 +1703,7 @@ public:
     class ImmolateTestImpt : public TestCase
     {
     public:
-        ImmolateTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1735,7 +1755,7 @@ public:
     class IncinerateTestImpt : public TestCase
     {
     public:
-        IncinerateTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1782,7 +1802,7 @@ public:
     class RainOfFireTestImpt : public TestCase
     {
     public:
-        RainOfFireTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1828,7 +1848,7 @@ public:
     class SearingPainTestImpt : public TestCase
     {
     public:
-        SearingPainTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1870,7 +1890,7 @@ public:
     class ShadowBoltTestImpt : public TestCase
     {
     public:
-        ShadowBoltTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1909,7 +1929,7 @@ public:
     class SoulFireTestImpt : public TestCase
     {
     public:
-        SoulFireTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {

@@ -184,7 +184,7 @@ namespace ClassSpellsCoeff
         const float SEARING_PAIN = 0.4286f;
         const float SHADOW_BOLT = 0.8571f;
         const float SHADOWBURN = 0.4286f;
-        const float SHADOWFURY = 0.193f;
+        const float SHADOWFURY = 0.193f; // DrDamage: 0.193f - WoWWiki: 0.195f
         const float SHADOW_WARD = 0.3f;
         const float SOUL_FIRE = 0.115f;
     };

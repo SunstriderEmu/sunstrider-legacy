@@ -10,7 +10,7 @@ public:
     class DummyTestImpl : public TestCase
     {
     public:
-        DummyTestImpl() : TestCase(STATUS_PASSING, WorldLocation(209)) { }
+        DummyTestImpl() : TestCase(WorldLocation(209)) { }
 
         void Test() override
         {
@@ -49,7 +49,7 @@ public:
     class SpawnPlayersTestImplt : public TestCase
     {
     public:
-        SpawnPlayersTestImplt() : TestCase(STATUS_PASSING, WorldLocation(209)) { /* EnableMapObjects();*/ }
+        SpawnPlayersTestImplt() : TestCase(WorldLocation(209)) { /* EnableMapObjects();*/ }
 
         void Test() override
         {

@@ -53,7 +53,7 @@ public:
     class ImprovedCorruptionTestImpt : public TestCase
     {
     public:
-        ImprovedCorruptionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestCorruptionCastTime(TestPlayer* caster, uint32 talentSpellId, uint32 talentFactor)
         {
@@ -91,7 +91,7 @@ public:
     class ImprovedCurseOfWeaknessTestImpt : public TestCase
     {
     public:
-        ImprovedCurseOfWeaknessTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -127,7 +127,7 @@ public:
     class ImprovedDrainSoulTestImpt : public TestCase
     {
     public:
-        ImprovedDrainSoulTestImpt() : TestCase(STATUS_PASSING) { } 
+
 
         void Test() override
         {
@@ -195,7 +195,7 @@ public:
 	class ImprovedLifeTapTestImpt : public TestCase
 	{
 	public:
-		ImprovedLifeTapTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void Test() override
 		{
@@ -231,7 +231,7 @@ public:
     class SoulSiphonTestImpt : public TestCase
     {
     public:
-        SoulSiphonTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Add4AfflictionSpell(TestPlayer* warlock, Creature* dummy)
         {
@@ -366,7 +366,7 @@ public:
     class AmplifyCurseTestImpt : public TestCase
     {
     public:
-        AmplifyCurseTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -418,7 +418,7 @@ public:
 	class ImprovedCurseOfAgonyTestImpt : public TestCase
 	{
 	public:
-		ImprovedCurseOfAgonyTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void Test() override
 		{
@@ -451,7 +451,7 @@ public:
     class FelConcentrationTestImpt : public TestCase
     {
     public:
-        FelConcentrationTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -482,7 +482,7 @@ public:
     class GrimReachTestImpt : public TestCase
     {
     public:
-        GrimReachTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -526,7 +526,7 @@ public:
     class NightfallTestImpt : public TestCase
     {
     public:
-        NightfallTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -564,7 +564,7 @@ public:
 	class EmpoweredCorruptionTestImpt : public TestCase
 	{
 	public:
-		EmpoweredCorruptionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void Test() override
 		{
@@ -602,7 +602,7 @@ public:
     public:
         //See hack in AuraEffect::CleanupTriggeredSpells for spell cleanup handling
         //"Your Corruption, Curse of Agony, Siphon Life and Seed of Corruption spells also cause the Shadow Embrace effect, which reduces physical damage caused by 5 %" 
-        ShadowEmbraceTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void SpellAppliesAndRemovesShadowEmbrace(TestPlayer* warlock, TestPlayer* victim, uint32 spellId, Seconds dotTime, uint32 shadowEmbraceId)
         {
@@ -674,7 +674,7 @@ public:
     class SiphonLifeTestImpt : public TestCase
     {
     public:
-        SiphonLifeTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestCorruptionCastTime(TestPlayer* caster, Creature* victim, uint32 talentSpellId, uint32 talentFactor)
         {
@@ -724,7 +724,7 @@ public:
     class CurseOfExhaustionTestImpt : public TestCase
     {
     public:
-        CurseOfExhaustionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -853,13 +853,11 @@ public:
 		return std::make_unique<ShadowMasteryTestImpt>();
 	}
 };
+
+//"talents warlock contagion"
 class ContagionTest : public TestCase
 {
     // "Increases the damage of Curse of Agony, Corruption and Seed of Corruption by 5% and reduces the chance your Affliction spells will be dispelled by an additional 30%." 
-    /*
-    Bugs:
-    - Unstable Affliction is dispelled 50%.
-    */
 	void Test() override
 	{
 		TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
@@ -931,12 +929,10 @@ class ContagionTest : public TestCase
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_TONGUES_RNK_2, expectedResist);
             ASSERT_INFO("Curse of Weakness");
             TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::CURSE_OF_WEAKNESS_RNK_8, expectedResist);
-        });
-
-        //dispel chance, moved out from previous section because only this one is bugged
-        SECTION("Unstable Afflication dispel chance", STATUS_KNOWN_BUG, [&] {
             ASSERT_INFO("Unstable Affliction");
-            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedResist);
+            TEST_DISPEL_RESIST_CHANCE(warlock, priest, priest, ClassSpells::Warlock::UNSTABLE_AFFLICTION_RNK_3, expectedResist, [&](Unit* caster, Unit* victim) {
+                victim->RemoveAurasDueToSpell(ClassSpells::Warlock::UNSTABLE_AFFLICTION_SILENCE);
+            });
         });
 	}
 };
@@ -950,7 +946,7 @@ public:
     class DarkPactTestImpt : public TestCase
     {
     public:
-        DarkPactTestImpt() : TestCase(STATUS_PASSING) { } // Not affected by Spell Coefficient
+
 
         void Test() override
         {
@@ -997,7 +993,7 @@ public:
     class ImprovedHowOfTerrorTestImpt : public TestCase
     {
     public:
-        ImprovedHowOfTerrorTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1028,7 +1024,7 @@ public:
     class MaledictionTestImpt : public TestCase
     {
     public:
-        MaledictionTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1067,7 +1063,7 @@ public:
     class UnstableAfflictionTestImpt : public TestCase
     {
     public:
-        UnstableAfflictionTestImpt() : TestCase(STATUS_PASSING) { } 
+
 
         void Test() override
         {
@@ -1126,7 +1122,7 @@ public:
 	class ImprovedHealthstoneTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealthstoneTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestImprovedHealthstone(TestPlayer* caster, float talentFactor, uint32 healthstoneSpellId, uint32 healthstoneItemId, uint32 healthRestored)
         {
@@ -1181,7 +1177,7 @@ public:
 	class DemonicEmbraceTestImpt : public TestCase
 	{
 	public:
-		DemonicEmbraceTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void Test() override
 		{
@@ -1214,7 +1210,7 @@ public:
 	class ImprovedHealthFunnelTestImpt : public TestCase
 	{
 	public:
-		ImprovedHealthFunnelTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void Test() override
 		{
@@ -1337,7 +1333,7 @@ public:
 	class FelDominationTestImpt : public TestCase
 	{
 	public:
-		FelDominationTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void TestSummonManaCost(TestPlayer* warlock, uint32 summonSpellId, uint32 expectedManaCost)
 		{
@@ -1396,7 +1392,7 @@ public:
 	class FelStaminaTestImpt : public TestCase
 	{
 	public:
-		FelStaminaTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		float GetPetStamina(TestPlayer* warlock, uint32 summonSpellId)
 		{
@@ -1535,7 +1531,7 @@ public:
 	class MasterSummonerTestImpt : public TestCase
 	{
 	public:
-		MasterSummonerTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestSummonManaCost(TestPlayer* warlock, uint32 summonSpellId, uint32 expectedManaCost, bool useFelDomination = false)
         {
@@ -1607,7 +1603,7 @@ public:
 	class DemonicSacrificeTestImpt : public TestCase
 	{
 	public:
-		DemonicSacrificeTestImpt() : TestCase(STATUS_PASSING) { }
+
 
 		void SacrificePet(TestPlayer* warlock, uint32 summonSpellId, uint32 aura, uint32 previousAura = 0)
 		{
@@ -1944,7 +1940,7 @@ public:
     class CataclysmTestImpt : public TestCase
     {
     public:
-        CataclysmTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -1981,7 +1977,7 @@ public:
     class BaneTestImpt : public TestCase
     {
     public:
-        BaneTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void TestCorruptionCastTime(TestPlayer* caster, uint32 talentSpellId, uint32 talentPoint, uint32 shadowbBoltImmolateFactor, uint32 soulFireFactor)
         {
@@ -2024,7 +2020,7 @@ public:
     class AftermathTestImpt : public TestCase
     {
     public:
-        AftermathTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2063,7 +2059,7 @@ public:
     class ImprovedFireboltTestImpt : public TestCase
     {
     public:
-        ImprovedFireboltTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2095,7 +2091,7 @@ public:
     class ImprovedLashOfPainTestImpt : public TestCase
     {
     public:
-        ImprovedLashOfPainTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2128,7 +2124,7 @@ public:
     class DevastationTestImpt : public TestCase
     {
     public:
-        DevastationTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2167,7 +2163,7 @@ public:
     class ShadowburnTestImpt : public TestCase
     {
     public:
-        ShadowburnTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2220,7 +2216,7 @@ public:
     class WarlockIntensityTestImpt : public TestCase
     {
     public:
-        WarlockIntensityTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2256,7 +2252,7 @@ public:
     class DestructiveReachTestImpt : public TestCase
     {
     public:
-        DestructiveReachTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2305,7 +2301,7 @@ public:
     class ImprovedSearingPainTestImpt : public TestCase
     {
     public:
-        ImprovedSearingPainTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2335,7 +2331,7 @@ public:
     class PyroclasmTestImpt : public TestCase
     {
     public:
-        PyroclasmTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2368,7 +2364,7 @@ public:
     class ImprovedImmolateTestImpt : public TestCase
     {
     public:
-        ImprovedImmolateTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2401,7 +2397,7 @@ public:
     class RuinTestImpt : public TestCase
     {
     public:
-        RuinTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2439,7 +2435,7 @@ public:
     class NetherProtectionTestImpt : public TestCase
     {
     public:
-        NetherProtectionTestImpt() : TestCase(STATUS_PASSING) { } 
+
 
         void Test() override
         {
@@ -2479,7 +2475,7 @@ public:
     class EmberstormTestImpt : public TestCase
     {
     public:
-        EmberstormTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2523,34 +2519,33 @@ public:
 
     class BacklashTestImpt : public TestCase
     {
-    public:
-        BacklashTestImpt() : TestCase(STATUS_WIP) { }
-
         void Test() override
         {
-            TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
-            //Creature* dummy = SpawnCreature();
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* warlock = SpawnPlayer(CLASS_WARLOCK, RACE_ORC);
+                //Creature* dummy = SpawnCreature();
 
-            float const expectedSpellCritChance = warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) + 3.0f;
+                float const expectedSpellCritChance = warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) + 3.0f;
 
-            LearnTalent(warlock, Talents::Warlock::BACKLASH_RNK_3);
-            float const talentFactor = 5.0f;
+                LearnTalent(warlock, Talents::Warlock::BACKLASH_RNK_3);
+                float const talentFactor = 5.0f;
 
-            uint32 const backlashSpellProcId = 34936;
+                uint32 const backlashSpellProcId = 34936;
 
-            // +3% spell crit
-            TEST_ASSERT(warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) == expectedSpellCritChance);
+                // +3% spell crit
+                TEST_ASSERT(warlock->GetFloatValue(PLAYER_CRIT_PERCENTAGE) == expectedSpellCritChance);
 
-            // Provides instant Shadow Bolt or Incinerate
-            warlock->AddAura(backlashSpellProcId, warlock);
-            TEST_CAST_TIME(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, uint32(0));
-            TEST_CAST_TIME(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, uint32(0));
+                // Provides instant Shadow Bolt or Incinerate
+                warlock->AddAura(backlashSpellProcId, warlock);
+                TEST_CAST_TIME(warlock, ClassSpells::Warlock::INCINERATE_RNK_2, uint32(0));
+                TEST_CAST_TIME(warlock, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, uint32(0));
 
-            // Proc
-            // Rogue attack
-            // after each attack:
-            // if aura auraCount++ + remove aura
-            // totalcount++
+                // Proc
+                // Rogue attack
+                // after each attack:
+                // if aura auraCount++ + remove aura
+                // totalcount++
+            });
         }
     };
 
@@ -2569,7 +2564,7 @@ public:
     class ConflagrateTestImpt : public TestCase
     {
     public:
-        ConflagrateTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2613,7 +2608,7 @@ public:
     class ShadowAndFlameTestImpt : public TestCase
     {
     public:
-        ShadowAndFlameTestImpt() : TestCase(STATUS_PASSING) { }
+
 
         void Test() override
         {
@@ -2650,6 +2645,7 @@ public:
     }
 };
 
+// "talents warlock shadowfury"
 class ShadowfuryTest : public TestCase
 {
     void Test() override
@@ -2665,9 +2661,10 @@ class ShadowfuryTest : public TestCase
         uint32 const expectedShadowfuryManaCost = 710;
         TEST_POWER_COST(warlock, ClassSpells::Warlock::SHADOWFURY_RNK_3, POWER_MANA, expectedShadowfuryManaCost);
 
-        // BUG Spell Coeff seems slightly off... we got 0.214285716 (calculated by default) while DrDamage gives 0.193
+        // Default Spell Coeff seems slightly off... we got 0.214285716 (calculated by default) while DrDamage gives 0.193
         // No particular note on its damage on WoWWiki. Is DrDamage slightly off or does this spell has a manually slightly lower damage coef at blizzard?
-        SECTION("Damage", STATUS_KNOWN_BUG, [&] {
+        // I'm gonna go with the DrDamage modifier
+        SECTION("Damage", [&] {
             float const spellBonus = spellPower * ClassSpellsCoeff::Warlock::SHADOWFURY; // DrDamage
             uint32 const expectedShadowfuryMin = ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MIN + spellBonus;
             uint32 const expectedShadowfuryMax = ClassSpellsDamage::Warlock::SHADOWFURY_RNK_3_MAX + spellBonus;

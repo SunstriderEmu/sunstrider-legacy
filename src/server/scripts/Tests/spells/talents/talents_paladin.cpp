@@ -10,12 +10,11 @@ public:
 
 	class SalvationTestImpt : public TestCase
 	{
-	public:
-		SalvationTestImpt() : TestCase(STATUS_WIP) { }
-
 		void Test() override
 		{
-			// TODO
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO
+            });
 		}
 	};
 
@@ -32,18 +31,18 @@ public:
 
 	class DivineStrengthTestImpt : public TestCase
 	{
-	public:
-		DivineStrengthTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			uint32 const startStr = player->GetStat(STAT_STRENGTH);
-			uint32 const expectedStr = startStr * 1.1f;
+                uint32 const startStr = player->GetStat(STAT_STRENGTH);
+                uint32 const expectedStr = startStr * 1.1f;
 
-			LearnTalent(player, Talents::Paladin::DIVINE_STRENGTH_RNK_5);
-			TEST_ASSERT(Between<float>(player->GetStat(STAT_STRENGTH), expectedStr - 1, expectedStr + 1));
+                LearnTalent(player, Talents::Paladin::DIVINE_STRENGTH_RNK_5);
+                TEST_ASSERT(Between<float>(player->GetStat(STAT_STRENGTH), expectedStr - 1, expectedStr + 1));
+            });
 		}
 	};
 
@@ -60,18 +59,18 @@ public:
 
 	class DivineIntellectTestImpt : public TestCase
 	{
-	public:
-		DivineIntellectTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			uint32 const startInt = player->GetStat(STAT_INTELLECT);
-			uint32 const expectedInt = startInt * 1.1f;
+                uint32 const startInt = player->GetStat(STAT_INTELLECT);
+                uint32 const expectedInt = startInt * 1.1f;
 
-			LearnTalent(player, Talents::Paladin::DIVINE_INTELLECT_RNK_5);
-			TEST_ASSERT(Between<float>(player->GetStat(STAT_INTELLECT), expectedInt - 1, expectedInt + 1));
+                LearnTalent(player, Talents::Paladin::DIVINE_INTELLECT_RNK_5);
+                TEST_ASSERT(Between<float>(player->GetStat(STAT_INTELLECT), expectedInt - 1, expectedInt + 1));
+            });
 		}
 	};
 
@@ -88,22 +87,22 @@ public:
 
 	class ImprovedSealOfRighteousnessTestImpt : public TestCase
 	{
-	public:
-		ImprovedSealOfRighteousnessTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			uint32 const bh = player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
-			uint32 const expectedFoLMin = ClassSpellsDamage::Paladin::FLASH_OF_LIGHT_RNK_7_MIN * 1.12f + bh * ClassSpellsCoeff::Paladin::FLASH_OF_LIGHT;
-			uint32 const expectedFoLMax = ClassSpellsDamage::Paladin::FLASH_OF_LIGHT_RNK_7_MAX * 1.12f + bh * ClassSpellsCoeff::Paladin::FLASH_OF_LIGHT;
-			uint32 const expectedHLMin = ClassSpellsDamage::Paladin::HOLY_LIGHT_RNK_11_MIN * 1.12f + bh * ClassSpellsCoeff::Paladin::HOLY_LIGHT;
-			uint32 const expectedHLMax = ClassSpellsDamage::Paladin::HOLY_LIGHT_RNK_11_MAX * 1.12f + bh * ClassSpellsCoeff::Paladin::HOLY_LIGHT;
+                uint32 const bh = player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
+                uint32 const expectedFoLMin = ClassSpellsDamage::Paladin::FLASH_OF_LIGHT_RNK_7_MIN * 1.12f + bh * ClassSpellsCoeff::Paladin::FLASH_OF_LIGHT;
+                uint32 const expectedFoLMax = ClassSpellsDamage::Paladin::FLASH_OF_LIGHT_RNK_7_MAX * 1.12f + bh * ClassSpellsCoeff::Paladin::FLASH_OF_LIGHT;
+                uint32 const expectedHLMin = ClassSpellsDamage::Paladin::HOLY_LIGHT_RNK_11_MIN * 1.12f + bh * ClassSpellsCoeff::Paladin::HOLY_LIGHT;
+                uint32 const expectedHLMax = ClassSpellsDamage::Paladin::HOLY_LIGHT_RNK_11_MAX * 1.12f + bh * ClassSpellsCoeff::Paladin::HOLY_LIGHT;
 
-			LearnTalent(player, Talents::Paladin::HEALING_LIGHT_RNK_3);
-			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::FLASH_OF_LIGHT_RNK_7, expectedFoLMin, expectedFoLMax, false);
-			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::HOLY_LIGHT_RNK_11, expectedHLMin, expectedHLMax, false);
+                LearnTalent(player, Talents::Paladin::HEALING_LIGHT_RNK_3);
+                TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::FLASH_OF_LIGHT_RNK_7, expectedFoLMin, expectedFoLMax, false);
+                TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::HOLY_LIGHT_RNK_11, expectedHLMin, expectedHLMax, false);
+            });
 		}
 	};
 
@@ -120,43 +119,43 @@ public:
 
 	class ImprovedLayOnHandsTestImpt : public TestCase
 	{
-	public:
-		ImprovedLayOnHandsTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			uint32 const startInt = player->GetStat(STAT_INTELLECT);
-			uint32 const expectedInt = startInt * 1.1f;
+                uint32 const startInt = player->GetStat(STAT_INTELLECT);
+                uint32 const expectedInt = startInt * 1.1f;
 
-            RemoveAllEquipedItems(player);
-			uint32 const startingArmor = player->GetArmor();
-			EQUIP_NEW_ITEM(player, 34185); // Sword Breaker's Bulwark - 6459 armor
+                RemoveAllEquipedItems(player);
+                uint32 const startingArmor = player->GetArmor();
+                EQUIP_NEW_ITEM(player, 34185); // Sword Breaker's Bulwark - 6459 armor
 
-			uint32 const shieldArmor = player->GetArmor() - startingArmor;
-			TEST_ASSERT(shieldArmor == 6459);
+                uint32 const shieldArmor = player->GetArmor() - startingArmor;
+                TEST_ASSERT(shieldArmor == 6459);
 
-			// Assert cooldown, armor through items, mana restored
-			LearnTalent(player, Talents::Paladin::IMPROVED_LAY_ON_HANDS_RNK_2);
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-            TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4, Minutes(40));
-			uint32 const newShieldArmor = player->GetArmor() - startingArmor;
-			uint32 const expectedShieldArmor = shieldArmor * 1.3f;
-			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
-            ASSERT_INFO("player mana %u", player->GetPower(POWER_MANA));
-			TEST_ASSERT(player->GetPower(POWER_MANA) == 900); //fails because mana is removed AFTER getting the 900 mana
+                // Assert cooldown, armor through items, mana restored
+                LearnTalent(player, Talents::Paladin::IMPROVED_LAY_ON_HANDS_RNK_2);
+                uint32 res = player->CastSpell(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4, Minutes(40));
+                uint32 const newShieldArmor = player->GetArmor() - startingArmor;
+                uint32 const expectedShieldArmor = shieldArmor * 1.3f;
+                TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
+                ASSERT_INFO("player mana %u", player->GetPower(POWER_MANA));
+                TEST_ASSERT(player->GetPower(POWER_MANA) == 900); //fails because mana is removed AFTER getting the 900 mana
 
-			// Assert armor not from items is not taken into account
-			player->AddAura(33079, player); // Scroll of Protection V - 300 armor
-			player->RemoveAurasDueToSpell(20236); // Remove Lay on Hands proc aura
-			player->GetSpellHistory()->ResetAllCooldowns();
-			res = player->CastSpell(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
+                // Assert armor not from items is not taken into account
+                player->AddAura(33079, player); // Scroll of Protection V - 300 armor
+                player->RemoveAurasDueToSpell(20236); // Remove Lay on Hands proc aura
+                player->GetSpellHistory()->ResetAllCooldowns();
+                res = player->CastSpell(player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
 
-			TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4, player->GetHealth(), player->GetHealth(), false);
+                TEST_DIRECT_HEAL(player, player, ClassSpells::Paladin::LAY_ON_HANDS_RNK_4, player->GetHealth(), player->GetHealth(), false);
+            });
 		}
 	};
 
@@ -173,9 +172,6 @@ public:
 
 	class ImprovedBlessingOfWisdomTestImpt : public TestCase
 	{
-	public:
-		ImprovedBlessingOfWisdomTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		// Wait for next tick and return mana at new tick
 		uint32 WaitNextManaTick(Player* p)
 		{
@@ -193,73 +189,76 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
 
-			const float spiritRegen = sqrt(player->GetStat(STAT_SPIRIT)) * player->OCTRegenMPPerSpirit();
-			const float blessingRegen = ClassSpellsDamage::Paladin::BLESSING_OF_WISDOM_RNK_7_MIN / 5.0f;
-			TC_LOG_TRACE("test.unit_test", "regen: %f, wisdomRegen: %f", spiritRegen, blessingRegen);
+                const float spiritRegen = sqrt(player->GetStat(STAT_SPIRIT)) * player->OCTRegenMPPerSpirit();
+                const float blessingRegen = ClassSpellsDamage::Paladin::BLESSING_OF_WISDOM_RNK_7_MIN / 5.0f;
+                TC_LOG_TRACE("test.unit_test", "regen: %f, wisdomRegen: %f", spiritRegen, blessingRegen);
 
-			const uint32 startMana = 150; // Blessing of Wisdom mana cost
+                const uint32 startMana = 150; // Blessing of Wisdom mana cost
 
-			player->DisableRegeneration(false);
-			player->SetMaxPower(POWER_MANA, 10000);
-			player->SetPower(POWER_MANA, startMana);
-			TEST_ASSERT(player->GetPower(POWER_MANA) == startMana);
+                player->DisableRegeneration(false);
+                player->SetMaxPower(POWER_MANA, 10000);
+                player->SetPower(POWER_MANA, startMana);
+                TEST_ASSERT(player->GetPower(POWER_MANA) == startMana);
 
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_ASSERT(player->GetPower(POWER_MANA) == 0);
+                uint32 res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                TEST_ASSERT(player->GetPower(POWER_MANA) == 0);
 
-			uint32 lastMana = 0;
-			uint32 newMana = WaitNextManaTick(player);
-			//between 0 - 2s have passed, we're still in fsr
-			uint32 expectedMana = floor(2 * blessingRegen);
-			lastMana = newMana;
-			TC_LOG_TRACE("test.unit_test", "t1: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(newMana == expectedMana);
+                uint32 lastMana = 0;
+                uint32 newMana = WaitNextManaTick(player);
+                //between 0 - 2s have passed, we're still in fsr
+                uint32 expectedMana = floor(2 * blessingRegen);
+                lastMana = newMana;
+                TC_LOG_TRACE("test.unit_test", "t1: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+                TEST_ASSERT(newMana == expectedMana);
 
-			//between 2 - 4s have passed, we're still in fsr
-			newMana = WaitNextManaTick(player);
-			expectedMana = lastMana + floor(2 * blessingRegen);
-			lastMana = newMana;
-			TC_LOG_TRACE("test.unit_test", "t2: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(newMana == expectedMana);
+                //between 2 - 4s have passed, we're still in fsr
+                newMana = WaitNextManaTick(player);
+                expectedMana = lastMana + floor(2 * blessingRegen);
+                lastMana = newMana;
+                TC_LOG_TRACE("test.unit_test", "t2: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+                TEST_ASSERT(newMana == expectedMana);
 
-			//wait some ticks to make sure we're out of fsr
-			WaitNextManaTick(player);
-			WaitNextManaTick(player);
-			lastMana = WaitNextManaTick(player);
-			newMana = WaitNextManaTick(player);
-			expectedMana = lastMana + floor(2 * blessingRegen + 2 * spiritRegen);       //spirit should now increase regen                                         
-			lastMana = newMana;
-			TC_LOG_TRACE("test.unit_test", "t3: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(newMana == expectedMana);
+                //wait some ticks to make sure we're out of fsr
+                WaitNextManaTick(player);
+                WaitNextManaTick(player);
+                lastMana = WaitNextManaTick(player);
+                newMana = WaitNextManaTick(player);
+                expectedMana = lastMana + floor(2 * blessingRegen + 2 * spiritRegen);       //spirit should now increase regen                                         
+                lastMana = newMana;
+                TC_LOG_TRACE("test.unit_test", "t3: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+                TEST_ASSERT(newMana == expectedMana);
 
-			//one last time to be sure
-			newMana = WaitNextManaTick(player);
-			expectedMana = lastMana + floor(2 * blessingRegen + 2 * spiritRegen);
-			lastMana = newMana;
-			TC_LOG_TRACE("test.unit_test", "t4: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(newMana == expectedMana);
+                //one last time to be sure
+                newMana = WaitNextManaTick(player);
+                expectedMana = lastMana + floor(2 * blessingRegen + 2 * spiritRegen);
+                lastMana = newMana;
+                TC_LOG_TRACE("test.unit_test", "t4: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+                TEST_ASSERT(newMana == expectedMana);
 
-			//now with talent!
-			LearnTalent(player, Talents::Paladin::IMPROVED_BLESSING_OF_WISDOM_RNK_2);
-			const float improvedBlessingRegen = blessingRegen * 1.2f;
-			//re cast spell
-			res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
-			TEST_ASSERT(res == SPELL_CAST_OK);
+                //now with talent!
+                LearnTalent(player, Talents::Paladin::IMPROVED_BLESSING_OF_WISDOM_RNK_2);
+                const float improvedBlessingRegen = blessingRegen * 1.2f;
+                //re cast spell
+                res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_WISDOM_RNK_7, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+                TEST_ASSERT(res == SPELL_CAST_OK);
 
-			newMana = WaitNextManaTick(player);
-			expectedMana = lastMana + floor(2 * improvedBlessingRegen + 2 * spiritRegen);
-			lastMana = newMana;
-			TC_LOG_TRACE("test.unit_test", "t5: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(Between<uint32>(newMana, expectedMana - 1, expectedMana + 1));
+                newMana = WaitNextManaTick(player);
+                expectedMana = lastMana + floor(2 * improvedBlessingRegen + 2 * spiritRegen);
+                lastMana = newMana;
+                TC_LOG_TRACE("test.unit_test", "t5: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+                TEST_ASSERT(Between<uint32>(newMana, expectedMana - 1, expectedMana + 1));
 
-			newMana = WaitNextManaTick(player);
-			expectedMana = lastMana + floor(2 * improvedBlessingRegen + 2 * spiritRegen);
-			lastMana = newMana;
-			TC_LOG_TRACE("test.unit_test", "t6: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
-			TEST_ASSERT(Between<uint32>(newMana, expectedMana - 1, expectedMana + 1));
+                newMana = WaitNextManaTick(player);
+                expectedMana = lastMana + floor(2 * improvedBlessingRegen + 2 * spiritRegen);
+                lastMana = newMana;
+                TC_LOG_TRACE("test.unit_test", "t6: current: %u, expected: %u", player->GetPower(POWER_MANA), expectedMana);
+                TEST_ASSERT(Between<uint32>(newMana, expectedMana - 1, expectedMana + 1));
+            });
 		}
 	};
 
@@ -276,25 +275,25 @@ public:
 
 	class HolyGuidanceTestImpt : public TestCase
 	{
-	public:
-		HolyGuidanceTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			int32 const startBH = player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
-			int32 const startSP = player->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                int32 const startBH = player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
+                int32 const startSP = player->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
 
-			float const startInt = player->GetStat(STAT_INTELLECT);
-			int32 const expectedBH = startBH + startInt * 0.35f;
-			int32 const expectedSP = startSP + startInt * 0.35f;
+                float const startInt = player->GetStat(STAT_INTELLECT);
+                int32 const expectedBH = startBH + startInt * 0.35f;
+                int32 const expectedSP = startSP + startInt * 0.35f;
 
-			LearnTalent(player, Talents::Paladin::HOLY_GUIDANCE_RNK_5);
-            TC_LOG_TRACE("test.unit_test", "current bh: %i, expected: %i", player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedBH);
-			TEST_ASSERT(Between<int32>(player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedBH - 1, expectedBH + 1));
-            TC_LOG_TRACE("test.unit_test", "current sp: %i, expected: %i", player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedSP);
-			TEST_ASSERT(Between<int32>(player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedSP - 1, expectedSP + 1));
+                LearnTalent(player, Talents::Paladin::HOLY_GUIDANCE_RNK_5);
+                TC_LOG_TRACE("test.unit_test", "current bh: %i, expected: %i", player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedBH);
+                TEST_ASSERT(Between<int32>(player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedBH - 1, expectedBH + 1));
+                TC_LOG_TRACE("test.unit_test", "current sp: %i, expected: %i", player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedSP);
+                TEST_ASSERT(Between<int32>(player->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL), expectedSP - 1, expectedSP + 1));
+            });
 		}
 	};
 
@@ -311,19 +310,19 @@ public:
 
 	class ImprovedDevotionAuraTestImpt : public TestCase
 	{
-	public:
-		ImprovedDevotionAuraTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			float const expectedArmor = player->GetArmor() + ClassSpellsDamage::Paladin::DEVOTION_AURA_RNK_8 * 1.4f;
+                float const expectedArmor = player->GetArmor() + ClassSpellsDamage::Paladin::DEVOTION_AURA_RNK_8 * 1.4f;
 
-			LearnTalent(player, Talents::Paladin::IMPROVED_DEVOTION_AURA_RNK_5);
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::DEVOTION_AURA_RNK_8);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_ASSERT(Between<float>(player->GetArmor(), expectedArmor - 1, expectedArmor + 1));
+                LearnTalent(player, Talents::Paladin::IMPROVED_DEVOTION_AURA_RNK_5);
+                uint32 res = player->CastSpell(player, ClassSpells::Paladin::DEVOTION_AURA_RNK_8);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                TEST_ASSERT(Between<float>(player->GetArmor(), expectedArmor - 1, expectedArmor + 1));
+            });
 		}
 	};
 
@@ -340,25 +339,25 @@ public:
 
 	class GuardiansFavorTestImpt : public TestCase
 	{
-	public:
-		GuardiansFavorTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
 
-			// Blessing of protection
-			LearnTalent(player, Talents::Paladin::GUARDIANS_FAVOR_RNK_2);
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_PROTECTION_RNK_3);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::BLESSING_OF_PROTECTION_RNK_3, Minutes(3));
-			Wait(1500);
+                // Blessing of protection
+                LearnTalent(player, Talents::Paladin::GUARDIANS_FAVOR_RNK_2);
+                uint32 res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_PROTECTION_RNK_3);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::BLESSING_OF_PROTECTION_RNK_3, Minutes(3));
+                Wait(1500);
 
-			// Blessing of freedom
-			res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_FREEDOM_RNK_1);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Aura* aura = player->GetAura(ClassSpells::Paladin::BLESSING_OF_FREEDOM_RNK_1);
-			TEST_ASSERT(aura->GetDuration() == 14 * SECOND * IN_MILLISECONDS);
+                // Blessing of freedom
+                res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_FREEDOM_RNK_1);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                Aura* aura = player->GetAura(ClassSpells::Paladin::BLESSING_OF_FREEDOM_RNK_1);
+                TEST_ASSERT(aura->GetDuration() == 14 * SECOND * IN_MILLISECONDS);
+            });
 		}
 	};
 
@@ -375,29 +374,29 @@ public:
 
 	class ToughnessTestImpt : public TestCase
 	{
-	public:
-		ToughnessTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-            RemoveAllEquipedItems(player);
-			uint32 const startingArmor = player->GetArmor();
-			EQUIP_NEW_ITEM(player, 34135); // Sword Breaker's Bulwark - 6459 armor
+                RemoveAllEquipedItems(player);
+                uint32 const startingArmor = player->GetArmor();
+                EQUIP_NEW_ITEM(player, 34135); // Sword Breaker's Bulwark - 6459 armor
 
-			uint32 const shieldArmor = player->GetArmor() - startingArmor;
-			TEST_ASSERT(shieldArmor == 6459);
+                uint32 const shieldArmor = player->GetArmor() - startingArmor;
+                TEST_ASSERT(shieldArmor == 6459);
 
-			// Assert armor through items
-			LearnTalent(player, Talents::Paladin::TOUGHNESS_RNK_5);
-			uint32 const newShieldArmor = player->GetArmor() - startingArmor;
-			uint32 const expectedShieldArmor = shieldArmor * 1.1f;
-			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
+                // Assert armor through items
+                LearnTalent(player, Talents::Paladin::TOUGHNESS_RNK_5);
+                uint32 const newShieldArmor = player->GetArmor() - startingArmor;
+                uint32 const expectedShieldArmor = shieldArmor * 1.1f;
+                TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
 
-			// Assert armor not from items is not taken into account
-			player->AddAura(33079, player); // Scroll of Protection V - 300 armor
-			TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
+                // Assert armor not from items is not taken into account
+                player->AddAura(33079, player); // Scroll of Protection V - 300 armor
+                TEST_ASSERT(Between<uint32>(newShieldArmor, expectedShieldArmor - 1, expectedShieldArmor + 1));
+            });
 		}
 	};
 
@@ -414,17 +413,17 @@ public:
 
 	class AnticipationTestImpt : public TestCase
 	{
-	public:
-		AnticipationTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			uint32 const expectedDef = player->GetDefenseSkillValue() + 20;
+                uint32 const expectedDef = player->GetDefenseSkillValue() + 20;
 
-			LearnTalent(player, Talents::Paladin::ANTICIPATION_RNK_5);
-			TEST_ASSERT(player->GetDefenseSkillValue() == expectedDef);
+                LearnTalent(player, Talents::Paladin::ANTICIPATION_RNK_5);
+                TEST_ASSERT(player->GetDefenseSkillValue() == expectedDef);
+            });
 		}
 	};
 
@@ -441,18 +440,18 @@ public:
 
 	class ImprovedHammerOfJusticeTestImpt : public TestCase
 	{
-	public:
-		ImprovedHammerOfJusticeTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
-			Creature* dummyTarget = SpawnCreature();
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+                Creature* dummyTarget = SpawnCreature();
 
-			LearnTalent(player, Talents::Paladin::IMPROVED_HAMMER_OF_JUSTICE_RNK_3);
-			uint32 res = player->CastSpell(dummyTarget, ClassSpells::Paladin::HAMMER_OF_JUSTICE_RNK_4);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::HAMMER_OF_JUSTICE_RNK_4, Seconds(45));
+                LearnTalent(player, Talents::Paladin::IMPROVED_HAMMER_OF_JUSTICE_RNK_3);
+                uint32 res = player->CastSpell(dummyTarget, ClassSpells::Paladin::HAMMER_OF_JUSTICE_RNK_4);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::HAMMER_OF_JUSTICE_RNK_4, Seconds(45));
+            });
 		}
 	};
 
@@ -469,24 +468,24 @@ public:
 
 	class SacredDutyTestImpt : public TestCase
 	{
-	public:
-		SacredDutyTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			// +6% stamina
-			uint32 const expectedSta = player->GetStat(STAT_STAMINA) * 1.06f;
-			LearnTalent(player, Talents::Paladin::SACRED_DUTY_RNK_2);
-			TEST_ASSERT(Between<float>(player->GetStat(STAT_STAMINA), expectedSta - 1, expectedSta + 1));
+                // +6% stamina
+                uint32 const expectedSta = player->GetStat(STAT_STAMINA) * 1.06f;
+                LearnTalent(player, Talents::Paladin::SACRED_DUTY_RNK_2);
+                TEST_ASSERT(Between<float>(player->GetStat(STAT_STAMINA), expectedSta - 1, expectedSta + 1));
 
-			// -1min cooldown on Divine Shield
-			uint32 startAttackTime = player->GetAttackTime(BASE_ATTACK);
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2, Minutes(4));
-			TEST_ASSERT(player->GetAttackTime(BASE_ATTACK) == startAttackTime);
+                // -1min cooldown on Divine Shield
+                uint32 startAttackTime = player->GetAttackTime(BASE_ATTACK);
+                uint32 res = player->CastSpell(player, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::DIVINE_SHIELD_RNK_2, Minutes(4));
+                TEST_ASSERT(player->GetAttackTime(BASE_ATTACK) == startAttackTime);
+            });
 		}
 	};
 
@@ -503,24 +502,24 @@ public:
 
 	class ImprovedHolyShieldTestImpt : public TestCase
 	{
-	public:
-		ImprovedHolyShieldTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			EQUIP_NEW_ITEM(player, 34164); // 1H Sword
-			EQUIP_NEW_ITEM(player, 34185); // Shield
-			
-			// Holy shield stacks
-			LearnTalent(player, Talents::Paladin::HOLY_SHIELD_RNK_1);
-			LearnTalent(player, Talents::Paladin::IMPROVED_HOLY_SHIELD_RNK_2);
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			Aura* aura = player->GetAura(ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
-			TEST_ASSERT(aura != nullptr);
-			TEST_ASSERT(aura->GetCharges() == 8);
+                EQUIP_NEW_ITEM(player, 34164); // 1H Sword
+                EQUIP_NEW_ITEM(player, 34185); // Shield
+
+                // Holy shield stacks
+                LearnTalent(player, Talents::Paladin::HOLY_SHIELD_RNK_1);
+                LearnTalent(player, Talents::Paladin::IMPROVED_HOLY_SHIELD_RNK_2);
+                uint32 res = player->CastSpell(player, ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                Aura* aura = player->GetAura(ClassSpells::Paladin::HOLY_SHIELD_RNK_4);
+                TEST_ASSERT(aura != nullptr);
+                TEST_ASSERT(aura->GetCharges() == 8);
+            });
 		}
 	};
 
@@ -537,23 +536,23 @@ public:
 
 	class CombatExpertiseTestImpt : public TestCase
 	{
-	public:
-		CombatExpertiseTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			uint32 const expectedSta = player->GetStat(STAT_STAMINA) * 1.1f;
-			uint32 const expectedExp = 5;
+                uint32 const expectedSta = player->GetStat(STAT_STAMINA) * 1.1f;
+                uint32 const expectedExp = 5;
 
-			LearnTalent(player, Talents::Paladin::COMBAT_EXPERTISE_RNK_5);
+                LearnTalent(player, Talents::Paladin::COMBAT_EXPERTISE_RNK_5);
 
-			// +10% stamina
-			TEST_ASSERT(Between<float>(player->GetStat(STAT_STAMINA), expectedSta - 1, expectedSta + 1));
+                // +10% stamina
+                TEST_ASSERT(Between<float>(player->GetStat(STAT_STAMINA), expectedSta - 1, expectedSta + 1));
 
-			// +5 expertise
-			//TEST_ASSERT( == expectedExp);
+                // +5 expertise
+                //TEST_ASSERT( == expectedExp);
+            });
 		}
 	};
 
@@ -570,19 +569,19 @@ public:
 
 	class ImprovedBlessingOfMightTestImpt : public TestCase
 	{
-	public:
-		ImprovedBlessingOfMightTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			float const expectedAP = player->GetTotalAttackPowerValue(BASE_ATTACK) + ClassSpellsDamage::Paladin::BLESSING_OF_MIGHT_RNK_8 * 1.2f;
+                float const expectedAP = player->GetTotalAttackPowerValue(BASE_ATTACK) + ClassSpellsDamage::Paladin::BLESSING_OF_MIGHT_RNK_8 * 1.2f;
 
-			LearnTalent(player, Talents::Paladin::IMPROVED_BLESSING_OF_MIGHT_RNK_5);
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_MIGHT_RNK_8);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_ASSERT(Between<float>(player->GetTotalAttackPowerValue(BASE_ATTACK), expectedAP - 1, expectedAP + 1));
+                LearnTalent(player, Talents::Paladin::IMPROVED_BLESSING_OF_MIGHT_RNK_5);
+                uint32 res = player->CastSpell(player, ClassSpells::Paladin::BLESSING_OF_MIGHT_RNK_8);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                TEST_ASSERT(Between<float>(player->GetTotalAttackPowerValue(BASE_ATTACK), expectedAP - 1, expectedAP + 1));
+            });
 		}
 	};
 
@@ -599,9 +598,6 @@ public:
 
 	class BenedictionTestImpt : public TestCase
 	{
-	public:
-		BenedictionTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void TestSealMana(TestPlayer* player, TestPlayer* enemy, uint32 sealSpellId, uint32 expectedSealMana)
 		{
 			player->SetPower(POWER_MANA, expectedSealMana);
@@ -613,34 +609,37 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
-			Position spawnPosition(_location);
-			spawnPosition.MoveInFront(_location, 5.0f);
-			TestPlayer* enemy = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN, 70, spawnPosition);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+                Position spawnPosition(_location);
+                spawnPosition.MoveInFront(_location, 5.0f);
+                TestPlayer* enemy = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN, 70, spawnPosition);
 
-			player->DisableRegeneration(true);
+                player->DisableRegeneration(true);
 
-			uint32 const expectedSealOfLightMana			= floor(280 * 0.85f);
-			uint32 const expectedSealOfRighteousnessMana	= floor(260 * 0.85f);
-			uint32 const expectedSealOfVengeanceMana		= floor(250 * 0.85f);
-			uint32 const expectedSealOfWisdomMana			= floor(270 * 0.85f);
-			uint32 const expectedSealOfJusticeMana			= floor(295 * 0.85f);
-			uint32 const expectedSealOfBloodMana			= floor(210 * 0.85f);
-			uint32 const expectedSealOfCommandMana			= floor(280 * 0.85f);
-			uint32 const expectedSealOfCrusaderMana			= floor(210 * 0.85f);
-			uint32 const expectedJudgementMana				= floor(147 * 0.85f);
+                uint32 const expectedSealOfLightMana = floor(280 * 0.85f);
+                uint32 const expectedSealOfRighteousnessMana = floor(260 * 0.85f);
+                uint32 const expectedSealOfVengeanceMana = floor(250 * 0.85f);
+                uint32 const expectedSealOfWisdomMana = floor(270 * 0.85f);
+                uint32 const expectedSealOfJusticeMana = floor(295 * 0.85f);
+                uint32 const expectedSealOfBloodMana = floor(210 * 0.85f);
+                uint32 const expectedSealOfCommandMana = floor(280 * 0.85f);
+                uint32 const expectedSealOfCrusaderMana = floor(210 * 0.85f);
+                uint32 const expectedJudgementMana = floor(147 * 0.85f);
 
-			LearnTalent(player, Talents::Paladin::BENEDICTION_RNK_5);
+                LearnTalent(player, Talents::Paladin::BENEDICTION_RNK_5);
 
-			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5, expectedSealOfLightMana);
-			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_RIGHTEOUSNESS_RNK_9, expectedSealOfRighteousnessMana);
-			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RNK_1, expectedSealOfVengeanceMana);
-			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_WISDOM_RNK_4, expectedSealOfWisdomMana);
-			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_JUSTICE_RNK_2, expectedSealOfJusticeMana);
-			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_BLOOD_RNK_1, expectedSealOfBloodMana);
-			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_COMMAND_RNK_6, expectedSealOfCommandMana);
-			TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_THE_CRUSADER_RNK_7, expectedSealOfCrusaderMana);
-			TestSealMana(player, enemy, ClassSpells::Paladin::JUDGEMENT_RNK_1, expectedJudgementMana);
+                TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5, expectedSealOfLightMana);
+                TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_RIGHTEOUSNESS_RNK_9, expectedSealOfRighteousnessMana);
+                TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RNK_1, expectedSealOfVengeanceMana);
+                TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_WISDOM_RNK_4, expectedSealOfWisdomMana);
+                TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_JUSTICE_RNK_2, expectedSealOfJusticeMana);
+                TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_BLOOD_RNK_1, expectedSealOfBloodMana);
+                TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_COMMAND_RNK_6, expectedSealOfCommandMana);
+                TestSealMana(player, player, ClassSpells::Paladin::SEAL_OF_THE_CRUSADER_RNK_7, expectedSealOfCrusaderMana);
+                TestSealMana(player, enemy, ClassSpells::Paladin::JUDGEMENT_RNK_1, expectedJudgementMana);
+            });
 		}
 	};
 
@@ -657,24 +656,24 @@ public:
 
 	class ImprovedJudgementTestImpt : public TestCase
 	{
-	public:
-		ImprovedJudgementTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
-			Position spawnPosition(_location);
-			spawnPosition.MoveInFront(_location, 5.0f);
-			TestPlayer* enemy = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN, 70, spawnPosition);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+                Position spawnPosition(_location);
+                spawnPosition.MoveInFront(_location, 5.0f);
+                TestPlayer* enemy = SpawnPlayer(CLASS_PALADIN, RACE_HUMAN, 70, spawnPosition);
 
-			LearnTalent(player, Talents::Paladin::IMPROVED_JUDGEMENT_RNK_2);
+                LearnTalent(player, Talents::Paladin::IMPROVED_JUDGEMENT_RNK_2);
 
-			uint32 res = player->CastSpell(player, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5);
-			TEST_ASSERT(res == SPELL_CAST_OK);
+                uint32 res = player->CastSpell(player, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5);
+                TEST_ASSERT(res == SPELL_CAST_OK);
 
-			res = player->CastSpell(enemy, ClassSpells::Paladin::JUDGEMENT_RNK_1);
-			TEST_ASSERT(res == SPELL_CAST_OK);
-			TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::JUDGEMENT_RNK_1, Seconds(8));
+                res = player->CastSpell(enemy, ClassSpells::Paladin::JUDGEMENT_RNK_1);
+                TEST_ASSERT(res == SPELL_CAST_OK);
+                TEST_HAS_COOLDOWN(player, ClassSpells::Paladin::JUDGEMENT_RNK_1, Seconds(8));
+            });
 		}
 	};
 
@@ -691,17 +690,17 @@ public:
 
 	class DeflectionTestImpt : public TestCase
 	{
-	public:
-		DeflectionTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_PALADIN);
 
-			float const expectedParry = player->GetUnitParryChance(BASE_ATTACK, player) + 5.0f;
+                float const expectedParry = player->GetUnitParryChance(BASE_ATTACK, player) + 5.0f;
 
-			LearnTalent(player, Talents::Paladin::DEFLECTION_RNK_5);
-			TEST_ASSERT(player->GetUnitParryChance(BASE_ATTACK, player) == expectedParry);
+                LearnTalent(player, Talents::Paladin::DEFLECTION_RNK_5);
+                TEST_ASSERT(player->GetUnitParryChance(BASE_ATTACK, player) == expectedParry);
+            });
 		}
 	};
 
@@ -719,9 +718,6 @@ public:
     // "Increases all damage caused against Humanoids, Demons, Undead and Elementals by 3%"
 	class CrusadeTestImpt : public TestCase
 	{
-	public:
-		CrusadeTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
 		void TestCreatureType(TestPlayer* player, uint32 entry, bool demonOrUndead = false)
 		{
             float const crusadeTalentFactor = 1.03f;
@@ -824,10 +820,12 @@ public:
 			TEST_ASSERT(avgDamageDealt == expectedDamage);
 			*/
 
-			// TODO: Seal of Righteouness: melee attack
-			// Crusader Strike
-			// Avenger's Shield
-			// Melee
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: Seal of Righteouness: melee attack
+                // Crusader Strike
+                // Avenger's Shield
+                // Melee
+            });
 		}
 
 		void Test() override
@@ -858,9 +856,6 @@ public:
 
 	class SanctifiedJudgementTestImpt : public TestCase
 	{
-	public:
-		SanctifiedJudgementTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void TestSealMana(TestPlayer* player, Creature* creature, uint32 sealSpellId, uint32 sealManaCost)
 		{
 			player->Regenerate(POWER_MANA);
@@ -884,33 +879,36 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
 
-			player->DisableRegeneration(true);
-			LearnTalent(player, Talents::Paladin::SANCTIFIED_JUDGEMENT_RNK_3);
+                player->DisableRegeneration(true);
+                LearnTalent(player, Talents::Paladin::SANCTIFIED_JUDGEMENT_RNK_3);
 
-			Position spawnPosition(_location);
-			spawnPosition.MoveInFront(_location, 3.0f);
-			Creature* creature = SpawnCreatureWithPosition(spawnPosition, 18); // Dummy Humanoid 20% HP
+                Position spawnPosition(_location);
+                spawnPosition.MoveInFront(_location, 3.0f);
+                Creature* creature = SpawnCreatureWithPosition(spawnPosition, 18); // Dummy Humanoid 20% HP
 
-			int32 const judgementMana = 147;
-			int32 const sealOfLightMana = 280;
-			int32 const sealOfRighteousnessMana = 260;
-			int32 const sealOfVengeanceMana = 250;
-			int32 const sealOfWisdomMana = 270;
-			int32 const sealOfJusticeMana = 295;
-			int32 const sealOfBloodMana = 210;
-			int32 const sealOfCommandMana = 280;
-			int32 const sealOfCrusaderMana = 210;
+                int32 const judgementMana = 147;
+                int32 const sealOfLightMana = 280;
+                int32 const sealOfRighteousnessMana = 260;
+                int32 const sealOfVengeanceMana = 250;
+                int32 const sealOfWisdomMana = 270;
+                int32 const sealOfJusticeMana = 295;
+                int32 const sealOfBloodMana = 210;
+                int32 const sealOfCommandMana = 280;
+                int32 const sealOfCrusaderMana = 210;
 
-			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5, sealOfLightMana);
-			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_RIGHTEOUSNESS_RNK_9, sealOfRighteousnessMana);
-			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RNK_1, sealOfVengeanceMana);
-			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_WISDOM_RNK_4, sealOfWisdomMana);
-			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_JUSTICE_RNK_2, sealOfJusticeMana);
-			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_BLOOD_RNK_1, sealOfBloodMana);
-			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_COMMAND_RNK_6, sealOfCommandMana);
-			TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_THE_CRUSADER_RNK_7, sealOfCrusaderMana);
+                TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5, sealOfLightMana);
+                TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_RIGHTEOUSNESS_RNK_9, sealOfRighteousnessMana);
+                TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RNK_1, sealOfVengeanceMana);
+                TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_WISDOM_RNK_4, sealOfWisdomMana);
+                TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_JUSTICE_RNK_2, sealOfJusticeMana);
+                TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_BLOOD_RNK_1, sealOfBloodMana);
+                TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_COMMAND_RNK_6, sealOfCommandMana);
+                TestSealMana(player, creature, ClassSpells::Paladin::SEAL_OF_THE_CRUSADER_RNK_7, sealOfCrusaderMana);
+            });
 		}
 	};
 
@@ -927,9 +925,6 @@ public:
 
 	class SanctifiedSealsTestImpt : public TestCase
 	{
-	public:
-		SanctifiedSealsTestImpt() : TestCase(STATUS_WIP) { } //Need whole file review
-
 		void TestDispelSeal(TestPlayer* player, TestPlayer* shaman, uint32 sealSpellId)
 		{
 			// Seal
@@ -946,21 +941,24 @@ public:
 
 		void Test() override
 		{
-			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
-			LearnTalent(player, Talents::Paladin::SANCTIFIED_SEALS_RNK_3);
+            //Need whole file review
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
+                LearnTalent(player, Talents::Paladin::SANCTIFIED_SEALS_RNK_3);
 
-			Position spawnPosition(_location);
-			spawnPosition.MoveInFront(_location, -5.0f);
-			TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, RACE_DRAENEI, 70, spawnPosition); // Spawn behind the paladin
+                Position spawnPosition(_location);
+                spawnPosition.MoveInFront(_location, -5.0f);
+                TestPlayer* shaman = SpawnPlayer(CLASS_SHAMAN, RACE_DRAENEI, 70, spawnPosition); // Spawn behind the paladin
 
-			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5);
-			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_RIGHTEOUSNESS_RNK_9);
-			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RNK_1);
-			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_WISDOM_RNK_4);
-			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_JUSTICE_RNK_2);
-			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_BLOOD_RNK_1);
-			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_COMMAND_RNK_6);
-			TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_THE_CRUSADER_RNK_7);
+                TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_LIGHT_RNK_5);
+                TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_RIGHTEOUSNESS_RNK_9);
+                TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_VENGEANCE_RNK_1);
+                TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_WISDOM_RNK_4);
+                TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_JUSTICE_RNK_2);
+                TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_BLOOD_RNK_1);
+                TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_COMMAND_RNK_6);
+                TestDispelSeal(player, shaman, ClassSpells::Paladin::SEAL_OF_THE_CRUSADER_RNK_7);
+            });
 		}
 	};
 
@@ -977,9 +975,6 @@ public:
 
 	class CrusaderStrikeTestImpt : public TestCase
 	{
-	public:
-		CrusaderStrikeTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
 		void Test() override
 		{
 			TestPlayer* player = SpawnPlayer(CLASS_PALADIN, RACE_BLOODELF);
@@ -998,7 +993,9 @@ public:
 			uint32 const expectedCSMax = weaponMaxDamage * 1.1f * armorFactor;
 			TEST_DIRECT_SPELL_DAMAGE(player, creature, ClassSpells::Paladin::CRUSADER_STRIKE_RNK_1, expectedCSMin, expectedCSMax, false);
 
-			// TODO: refresh judgements
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: refresh judgements
+            });
 		}
 	};
 

@@ -8,9 +8,6 @@ public:
 
 	class WandSpecializationTestImpt : public TestCase
 	{
-	public:
-		WandSpecializationTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -161,9 +158,6 @@ public:
 
 	class ArcaneFortitudeTestImpt : public TestCase
 	{
-	public:
-		ArcaneFortitudeTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -188,9 +182,6 @@ public:
 
 	class ImprovedCounterspellTestImpt : public TestCase
 	{
-	public:
-		ImprovedCounterspellTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -216,9 +207,6 @@ public:
 
 	class ArcaneMindTestImpt : public TestCase
 	{
-	public:
-		ArcaneMindTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -245,9 +233,6 @@ public:
 
 	class ArcaneInstabilityTestImpt : public TestCase
 	{
-	public:
-		ArcaneInstabilityTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -278,9 +263,6 @@ public:
 
 	class EmpoweredArcaneMissilesTestImpt : public TestCase
 	{
-	public:
-		EmpoweredArcaneMissilesTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -314,9 +296,6 @@ public:
 
 	class MindMasteryTestImpt : public TestCase
 	{
-	public:
-		MindMasteryTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -341,9 +320,6 @@ public:
 
 	class CriticalMassTestImpt : public TestCase
 	{
-	public:
-		CriticalMassTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -370,51 +346,50 @@ public:
 
 	class FirePowerTestImpt : public TestCase
 	{
-	public:
-		FirePowerTestImpt() : TestCase(STATUS_WIP) { }
-
 		void Test() override
 		{
-			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
-			Creature* dummy = SpawnCreature();
+            SECTION("WIP", STATUS_WIP, [&] {
+                TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
+                Creature* dummy = SpawnCreature();
 
-            LearnTalent(mage, Talents::Mage::FIRE_POWER_RNK_5);
-            float const talentFactor = 1.1f;
+                LearnTalent(mage, Talents::Mage::FIRE_POWER_RNK_5);
+                float const talentFactor = 1.1f;
 
-			// Fireblast
-			uint32 const fireblastMinDamage = ClassSpellsDamage::Mage::FIREBALL_RNK_13_MIN_LVL_70 * talentFactor;
-			uint32 const fireblastMaxDamage = ClassSpellsDamage::Mage::FIREBALL_RNK_13_MAX_LVL_70 * talentFactor;
-            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::FIRE_BLAST_RNK_9, fireblastMinDamage, fireblastMaxDamage, false);
+                // Fireblast
+                uint32 const fireblastMinDamage = ClassSpellsDamage::Mage::FIREBALL_RNK_13_MIN_LVL_70 * talentFactor;
+                uint32 const fireblastMaxDamage = ClassSpellsDamage::Mage::FIREBALL_RNK_13_MAX_LVL_70 * talentFactor;
+                TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::FIRE_BLAST_RNK_9, fireblastMinDamage, fireblastMaxDamage, false);
 
-			// Fireball
-            uint32 const fireballTickAmount = 4;
-            uint32 const fireballTick = ClassSpellsDamage::Mage::FIREBALL_RNK_13_TICK * talentFactor;
-            uint32 const fireballTotal = fireballTick * fireballTickAmount;
-            TEST_DOT_DAMAGE(mage, dummy, ClassSpells::Mage::FIREBALL_RNK_13, fireballTotal, false);
-			uint32 const fireballMinDamage = ClassSpellsDamage::Mage::FIREBALL_RNK_13_MIN_LVL_70  * talentFactor;
-			uint32 const fireballMaxDamage = ClassSpellsDamage::Mage::FIREBALL_RNK_13_MAX_LVL_70  * talentFactor;
-            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage, fireballMaxDamage, false);
+                // Fireball
+                uint32 const fireballTickAmount = 4;
+                uint32 const fireballTick = ClassSpellsDamage::Mage::FIREBALL_RNK_13_TICK * talentFactor;
+                uint32 const fireballTotal = fireballTick * fireballTickAmount;
+                TEST_DOT_DAMAGE(mage, dummy, ClassSpells::Mage::FIREBALL_RNK_13, fireballTotal, false);
+                uint32 const fireballMinDamage = ClassSpellsDamage::Mage::FIREBALL_RNK_13_MIN_LVL_70  * talentFactor;
+                uint32 const fireballMaxDamage = ClassSpellsDamage::Mage::FIREBALL_RNK_13_MAX_LVL_70  * talentFactor;
+                TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::FIREBALL_RNK_13, fireballMinDamage, fireballMaxDamage, false);
 
-			// Flamestrike
-            uint32 const flamestrikeTickAmount = 4;
-            uint32 const flamestrikeTick = ClassSpellsDamage::Mage::FLAMESTRIKE_RNK_7_TICK * talentFactor;
-            uint32 const flamestrikeTotal = flamestrikeTickAmount * flamestrikeTick;
-            TEST_DOT_DAMAGE(mage, dummy, ClassSpells::Mage::FLAMESTRIKE_RNK_7, flamestrikeTotal, false);
-			uint32 const flamestrikeMinDamage = ClassSpellsDamage::Mage::FLAMESTRIKE_RNK_7_MIN_LVL_70 * talentFactor;
-			uint32 const flamestrikeMaxDamage = ClassSpellsDamage::Mage::FLAMESTRIKE_RNK_7_MAX_LVL_70 * talentFactor;
-			TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::FLAMESTRIKE_RNK_7, flamestrikeMinDamage, flamestrikeMaxDamage, false);
+                // Flamestrike
+                uint32 const flamestrikeTickAmount = 4;
+                uint32 const flamestrikeTick = ClassSpellsDamage::Mage::FLAMESTRIKE_RNK_7_TICK * talentFactor;
+                uint32 const flamestrikeTotal = flamestrikeTickAmount * flamestrikeTick;
+                TEST_DOT_DAMAGE(mage, dummy, ClassSpells::Mage::FLAMESTRIKE_RNK_7, flamestrikeTotal, false);
+                uint32 const flamestrikeMinDamage = ClassSpellsDamage::Mage::FLAMESTRIKE_RNK_7_MIN_LVL_70 * talentFactor;
+                uint32 const flamestrikeMaxDamage = ClassSpellsDamage::Mage::FLAMESTRIKE_RNK_7_MAX_LVL_70 * talentFactor;
+                TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::FLAMESTRIKE_RNK_7, flamestrikeMinDamage, flamestrikeMaxDamage, false);
 
-			// Molten armor rank 1
-			uint32 const moltenArmorDamage = ClassSpellsDamage::Mage::MOLTEN_ARMOR_RNK_1 * talentFactor;
-            auto callback = [](Unit* caster, Unit* victim) {
-                victim->AttackerStateUpdate(caster, BASE_ATTACK);
-            };
-            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::MOLTEN_ARMOR_RNK_1, moltenArmorDamage, moltenArmorDamage, false, callback,  ClassSpells::Mage::MOLTEN_ARMOR_RNK_1_PROC);
+                // Molten armor rank 1
+                uint32 const moltenArmorDamage = ClassSpellsDamage::Mage::MOLTEN_ARMOR_RNK_1 * talentFactor;
+                auto callback = [](Unit* caster, Unit* victim) {
+                    victim->AttackerStateUpdate(caster, BASE_ATTACK);
+                };
+                TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::MOLTEN_ARMOR_RNK_1, moltenArmorDamage, moltenArmorDamage, false, callback, ClassSpells::Mage::MOLTEN_ARMOR_RNK_1_PROC);
 
-			// Scorch rank 9
-			uint32 const scorchMinDamage = ClassSpellsDamage::Mage::SCORCH_RNK_9_MIN * talentFactor;
-			uint32 const scorchMaxDamage = ClassSpellsDamage::Mage::SCORCH_RNK_9_MAX * talentFactor;
-            TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::SCORCH_RNK_9, scorchMinDamage, scorchMaxDamage, false);
+                // Scorch rank 9
+                uint32 const scorchMinDamage = ClassSpellsDamage::Mage::SCORCH_RNK_9_MIN * talentFactor;
+                uint32 const scorchMaxDamage = ClassSpellsDamage::Mage::SCORCH_RNK_9_MAX * talentFactor;
+                TEST_DIRECT_SPELL_DAMAGE(mage, dummy, ClassSpells::Mage::SCORCH_RNK_9, scorchMinDamage, scorchMaxDamage, false);
+            });
 		}
 	};
 
@@ -432,9 +407,6 @@ public:
 
     class EmpoweredFireballTestImpt : public TestCase
     {
-    public:
-        EmpoweredFireballTestImpt() : TestCase(STATUS_PASSING) { }
-
         void Test() override
         {
             TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -469,9 +441,6 @@ public:
 
 	class FrostWardingTestImpt : public TestCase
 	{
-	public:
-		FrostWardingTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -498,7 +467,9 @@ public:
 			TEST_ASSERT(mage->GetArmor() == expectedArmorIA);
 			TEST_ASSERT(mage->GetResistance(SPELL_SCHOOL_FROST) == expectedFrostResIA);
 
-            // TODO: Frost Ward reflects 20% of frost spells
+            SECTION("WIP", STATUS_WIP, [&] {
+                // TODO: Frost Ward reflects 20% of frost spells
+            });
 		}
 	};
 
@@ -516,9 +487,6 @@ public:
 
 	class PiercingIceTestImpt : public TestCase
 	{
-	public:
-		PiercingIceTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -567,9 +535,6 @@ public:
 
 	class ImprovedConeOfColdTestImpt : public TestCase
 	{
-	public:
-		ImprovedConeOfColdTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
@@ -598,9 +563,6 @@ public:
 
 	class ArcticWindsTestImpt : public TestCase
 	{
-	public:
-		ArcticWindsTestImpt() : TestCase(STATUS_PASSING_INCOMPLETE) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_TROLL);
@@ -638,7 +600,9 @@ public:
             TestPlayer* hunter = SpawnPlayer(CLASS_HUNTER, RACE_DWARF);
             float const expectedMissChance = 5.f + talentMissFactor; // Same level players have a 5% miss chance
             TEST_MELEE_HIT_CHANCE(hunter, mage, BASE_ATTACK, expectedMissChance, MELEE_HIT_MISS);
-            //TEST_MELEE_HIT_CHANCE(hunter, mage, RANGED_ATTACK, expectedMissChance, MELEE_HIT_MISS);
+            SECTION("WIP", STATUS_WIP, [&] {
+                //TEST_MELEE_HIT_CHANCE(hunter, mage, RANGED_ATTACK, expectedMissChance, MELEE_HIT_MISS);
+            });
 		}
 	};
 
@@ -656,9 +620,6 @@ public:
 
 	class EmpoweredFrostboltTestImpt : public TestCase
 	{
-	public:
-		EmpoweredFrostboltTestImpt() : TestCase(STATUS_PASSING) { }
-
 		void Test() override
 		{
 			TestPlayer* mage = SpawnRandomPlayer(CLASS_MAGE);
