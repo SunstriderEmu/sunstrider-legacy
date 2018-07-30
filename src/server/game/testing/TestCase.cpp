@@ -28,6 +28,7 @@ TestCase::TestCase() :
 }
 
 TestCase::TestCase(WorldLocation const specificPosition)
+    : TestCase()
 {
     bool useDefaultPos = specificPosition.GetPositionX() == 0.0f && specificPosition.GetPositionY() == 0.0f && specificPosition.GetPositionZ() == 0.0f;
     _location = specificPosition;
