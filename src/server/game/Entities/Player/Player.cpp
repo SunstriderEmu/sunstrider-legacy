@@ -7541,6 +7541,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
         UnitModifierFlatType modType = TOTAL_VALUE;
         if (proto->Class == ITEM_CLASS_ARMOR)
         {
+            // Why this distinction? Why does armor from a weapon or trinket is handled differently?
             switch (proto->SubClass)
             {
             case ITEM_SUBCLASS_ARMOR_CLOTH:
@@ -7556,8 +7557,19 @@ void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
     }
 
     // Add armor bonus from ArmorDamageModifier if > 0
+    /* sun: 
+    For BC: The "green" armor seems to point to the fact that the item has high base armor for its level and quality, 
+    and not that even more armor is added beyond what is shown.
+    - This green value (ArmorDamageModifier) is not shown anywhere in the client so green armor would mean "unknown hidden bonus armor" if it was added
+    - This handling has probably changed the way this is handled. Note that LK client has changed the way it is showned and explicitely give the bonus armor value besides the armor.
+    - Corecraft also ignore this bonus armor
+    - Patch 3.0.8 (2009-01-20): Bonus armor beyond the base armor of an item will no longer be multiplied by any talents or by the bonuses of  [Bear Form],  [Dire Bear Form], or  [Frost Presence].
+    - http://www.wowhead.com/forums&topic=64127/green-numbers-for-armor 
+   */
+#ifdef LICH_KING
     if (proto->ArmorDamageModifier > 0)
         HandleStatFlatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, float(proto->ArmorDamageModifier), apply);
+#endif
 
     if (proto->Block)
         HandleBaseModFlatValue(SHIELD_BLOCK_VALUE, float(proto->Block), apply);
