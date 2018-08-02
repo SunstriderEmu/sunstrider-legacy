@@ -765,31 +765,34 @@ public:
 	class ThickHideTestImpt : public TestCase
 	{
         //Increases your Armor contribution from items by 10%.
-		void Test() override
-		{
-			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
+        void Test() override
+        {
+            TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
 
-			RemoveAllEquipedItems(druid);
+            RemoveAllEquipedItems(druid);
 
-			uint32 const startingArmorViaAgi = druid->GetStat(STAT_AGILITY) * 2;
-			uint32 const startingArmor = druid->GetArmor() - startingArmorViaAgi;
+            uint32 const startingArmorFromAgi = druid->GetStat(STAT_AGILITY) * 2;
+            uint32 const startingItemArmor = druid->GetArmor() - startingArmorFromAgi;
 
-			EQUIP_NEW_ITEM(druid, 34392); // Demontooth Shoulderpads - 514 Armor - 38 Agi
+            EQUIP_NEW_ITEM(druid, 34392); // Demontooth Shoulderpads - 514 Armor - 38 Agi
 
-			uint32 const itemArmor = 514;
-			uint32 const itemArmorFromAgi = 38 * 2;
-			uint32 currentArmor = startingArmor + itemArmor +startingArmorViaAgi + itemArmorFromAgi;
-			ASSERT_INFO("Druid armor: %u armor, expected: %u", druid->GetArmor(), currentArmor);
-			TEST_ASSERT(druid->GetArmor() == currentArmor);
+            uint32 const itemArmor = 514;
+            uint32 const itemArmorFromAgi = 38 * 2;
+            { //this part is just a consistency check
+            uint32 expectedArmorBeforeTalent = startingItemArmor + itemArmor + startingArmorFromAgi + itemArmorFromAgi;
+            ASSERT_INFO("Druid armor: %u armor, expected: %u", druid->GetArmor(), expectedArmorBeforeTalent);
+            TEST_ASSERT(druid->GetArmor() == expectedArmorBeforeTalent);
+            }
 
 			LearnTalent(druid, Talents::Druid::THICK_HIDE_RNK_3);
             float const talentFactor = 1.1f;
 
-			uint32 const expectedArmor = (startingArmor + itemArmor) * talentFactor + startingArmorViaAgi + itemArmorFromAgi;
+			uint32 expectedArmor = (startingItemArmor + itemArmor) * talentFactor + startingArmorFromAgi + itemArmorFromAgi;
 			ASSERT_INFO("Druid armor: %u armor, expected: %u", druid->GetArmor(), expectedArmor);
 			TEST_ASSERT(druid->GetArmor() == expectedArmor);
 
             druid->AddAura(33079, druid); // Scroll of Protection V - 300 armor
+            expectedArmor += 300;
 			ASSERT_INFO("Druid armor: %u armor, expected: %u", druid->GetArmor(), expectedArmor);
 			TEST_ASSERT(druid->GetArmor() == expectedArmor);
 		}
