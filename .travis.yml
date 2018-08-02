@@ -33,7 +33,12 @@ addons:
 before_install:
   - git config user.email "travis@build.bot" && git config user.name "Travis CI"
   - git tag -a -m "Travis build" init
-
+  # Some core dump info
+  - ulimit -c
+  - ulimit -a -S
+  - ulimit -a -H
+  - cat /proc/sys/kernel/core_pattern
+ 
 install:
   - mysql -uroot -e 'create database test_mysql'
   - mkdir bin logs data
@@ -61,4 +66,8 @@ script:
   - unzip world_2018_07_15.sql.zip
   - rm world_2018_07_15.sql.zip
   - sed -e 's!^DataDir\s*=.*!DataDir = "../data/"!g;' -e 's!^LogsDir\s*=.*!LogsDir = "../logs/"!g;'  -e 's!^Testing.MaxParallel\s*=.*!Testing.MaxParallel = 1000!g;' -e 's!^Logger.scripts.ai\s*=.*!Logger.scripts.ai=6,Console Server!g;' < "../etc/worldserver.conf.dist" > "../etc/worldserver.conf"
+  - ulimit -c unlimited -S
   - ./worldserver --tests
+  - ls -l
+  - for i in $(find ./ -maxdepth 1 -name 'core*' -print); do gdb worldserver core* -ex "thread apply all bt" -ex "set pagination 0" -batch; done;
+  
