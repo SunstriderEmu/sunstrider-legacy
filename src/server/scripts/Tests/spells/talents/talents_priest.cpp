@@ -2057,6 +2057,8 @@ class BlackoutTest : public TestCaseScript
 public:
     BlackoutTest() : TestCaseScript("talents priest blackout") { }
 
+    //Gives your Shadow damage spells a $h% chance to stun the target for $15269d.
+    //WoWWiki: It does not trigger off spell ticks (such as each tick of Shadow Word: Pain), only at the initial hit of the spell.
     class BlackoutTestImpt : public TestCase
     {
         void Test() override
@@ -2074,20 +2076,27 @@ public:
                 TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::SHADOW_WORD_DEATH_RNK_2, spellProcId, false, procChance, SPELL_MISS_NONE, false);
                 TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::SHADOW_WORD_PAIN_RNK_10, spellProcId, false, procChance, SPELL_MISS_NONE, false);
                 TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::VAMPIRIC_TOUCH_RNK_3, spellProcId, false, procChance, SPELL_MISS_NONE, false);
-                TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false);
                 TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::HEX_OF_WEAKNESS_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            }); 
+            
+            SECTION("Mind Flay", [&] {
+                TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::MIND_FLAY_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false);
+            });
+            SECTION("Touch of weakness", [&] {
                 //WoWWiki: Since Shadow damage is dealt to the target, Touch of Weakness will apply a charge of Shadow Weaving to the target, and it also has a chance to proc Blackout, making it a useful tool against Rogues, Warriors, Enhancement Shamans, etc.
                 priest->ForceSpellHitResultOverride(SPELL_MISS_NONE);//force non miss to test touch of weakness proc
                 TEST_MELEE_PROC_CHANCE(enemy, priest, spellProcId, true, procChance, MELEE_HIT_NORMAL, BASE_ATTACK, [](Unit* caster, Unit* victim) {
                     victim->AddAura(ClassSpells::Priest::TOUCH_OF_WEAKNESS_RNK_7, victim);
                 });
             });
-
-            SECTION("Devouring plague and shadowguard", [&] {
+            SECTION("Devouring plague", [&] {
                 TEST_SPELL_PROC_CHANCE(priest, enemy, ClassSpells::Priest::DEVOURING_PLAGUE_RNK_7, spellProcId, false, procChance, SPELL_MISS_NONE, false);
             });
             SECTION("Shadowguard", STATUS_WIP, [&] {
-                //TODO!
+                priest->ForceSpellHitResultOverride(SPELL_MISS_NONE);//force non miss to test shadowguard proc
+                TEST_MELEE_PROC_CHANCE(enemy, priest, spellProcId, true, procChance, MELEE_HIT_NORMAL, BASE_ATTACK, [](Unit* caster, Unit* victim) {
+                    victim->AddAura(ClassSpells::Priest::SHADOW_GUARD_RNK_7, victim);
+                });
             });
         }
     };

@@ -19831,7 +19831,7 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
 
         if(bg->IsArena() && bg->isRated() && bg->GetStatus() == STATUS_WAIT_JOIN) //if game has not end then make sure that personal raiting is decreased
         {
-            //decrease private raiting here
+            //decrease private rating here
             Team Loser = (Team)bg->GetPlayerTeam(GetGUID());
             Team Winner = Loser == ALLIANCE ? HORDE : ALLIANCE;
             ArenaTeam* WinnerTeam = sObjectMgr->GetArenaTeamById(bg->GetArenaTeamIdForTeam(Winner));

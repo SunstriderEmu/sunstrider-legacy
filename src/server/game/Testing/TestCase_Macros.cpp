@@ -507,7 +507,7 @@ void TestCase::_TestSpellProcChance(Unit* caster, Unit* victim, uint32 spellID, 
     };
     auto[actualSuccessPercent, resultingAbsoluteTolerance] = _TestProcChance(caster, victim, procSpellID, selfProc, expectedChancePercent, launchCallback, callback);
 
-    INTERNAL_ASSERT_INFO("%s proc'd %f instead of expected %f (by spell %u)", _SpellString(procSpellID).c_str(), actualSuccessPercent, expectedChancePercent, spellID);
+    INTERNAL_ASSERT_INFO("%s proc'd %f instead of expected %f (by %s)", _SpellString(procSpellID).c_str(), actualSuccessPercent, expectedChancePercent, _SpellString(spellID).c_str());
     INTERNAL_TEST_ASSERT(Between<float>(expectedChancePercent, actualSuccessPercent - resultingAbsoluteTolerance, actualSuccessPercent + resultingAbsoluteTolerance));
 
     RestoreCriticals(caster);
