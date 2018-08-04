@@ -28,7 +28,10 @@ addons:
       - libreadline6-dev
       - zlib1g-dev
       - libbz2-dev
+      # For data archive
       - p7zip
+      # For post run debug
+      - gdb
       
 before_install:
   - git config user.email "travis@build.bot" && git config user.name "Travis CI"
