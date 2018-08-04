@@ -44,7 +44,7 @@ Most high level instance scripts are decent seeing other BC server ones (but sti
 
 ## Additional features (non blizzlike)
 
-* [Playerbots](https://github.com/ike3/playerbot)
+* [Playerbots](https://github.com/ike3/mangosbot)
 * [Fully reworked stealth mechanics](http://wiki.valoren.org/index.php/Stealth_mechanics)
 * Transports includes static npcs (ship crew), and supports pet combat.
 * Dynamic PvP titles system depending on player rank in arena ladder (Disabled by default)
