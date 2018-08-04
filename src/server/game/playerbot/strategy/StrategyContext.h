@@ -16,11 +16,7 @@
 #include "generic/UseFoodStrategy.h"
 #include "generic/ConserveManaStrategy.h"
 #include "generic/EmoteStrategy.h"
-#include "generic/AttackRtiStrategy.h"
-#include "generic/AttackWeakStrategy.h"
 #include "generic/TankAoeStrategy.h"
-#include "generic/TankAssistStrategy.h"
-#include "generic/DpsAoeStrategy.h"
 #include "generic/DpsAssistStrategy.h"
 #include "generic/PassiveStrategy.h"
 #include "generic/GrindingStrategy.h"
@@ -112,22 +108,14 @@ namespace ai
         AssistStrategyContext() : NamedObjectContext<Strategy>(false, true)
         {
             creators["dps assist"] = &AssistStrategyContext::dps_assist;
-            creators["dps aoe"] = &AssistStrategyContext::dps_aoe;
-            creators["tank assist"] = &AssistStrategyContext::tank_assist;
             creators["tank aoe"] = &AssistStrategyContext::tank_aoe;
-            creators["attack weak"] = &AssistStrategyContext::attack_weak;
             creators["grind"] = &AssistStrategyContext::grind;
-            creators["attack rti"] = &AssistStrategyContext::attack_rti;
         }
 
     private:
         static std::shared_ptr<Strategy> dps_assist(PlayerbotAI* ai) { return std::make_shared<DpsAssistStrategy>(ai); }
-        static std::shared_ptr<Strategy> dps_aoe(PlayerbotAI* ai) { return std::make_shared<DpsAoeStrategy>(ai); }
-        static std::shared_ptr<Strategy> tank_assist(PlayerbotAI* ai) { return std::make_shared<TankAssistStrategy>(ai); }
         static std::shared_ptr<Strategy> tank_aoe(PlayerbotAI* ai) { return std::make_shared<TankAoeStrategy>(ai); }
-        static std::shared_ptr<Strategy> attack_weak(PlayerbotAI* ai) { return std::make_shared<AttackWeakStrategy>(ai); }
         static std::shared_ptr<Strategy> grind(PlayerbotAI* ai) { return std::make_shared<GrindingStrategy>(ai); }
-        static std::shared_ptr<Strategy> attack_rti(PlayerbotAI* ai) { return std::make_shared<AttackRtiStrategy>(ai); }
     };
 
     class QuestStrategyContext : public NamedObjectContext<Strategy>

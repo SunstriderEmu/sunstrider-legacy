@@ -57,6 +57,7 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
     if (bot)
     {
         bot->GetPlayerbotAI()->TellMaster("Goodbye!");
+        sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %s logged out", bot->GetName());
         //bot->SaveToDB();
 
         WorldSession * botWorldSessionPtr = bot->GetSession();
@@ -121,6 +122,7 @@ void PlayerbotHolder::OnBotLogin(Player * const bot, bool testingBot)
 
     ai->ResetStrategies();
     ai->TellMaster("Hello!");
+    sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %s logged in", bot->GetName());
 }
 
 string PlayerbotHolder::ProcessBotCommand(std::string cmd, ObjectGuid guid, bool admin, uint32 masterAccountId, uint32 masterGuildId)

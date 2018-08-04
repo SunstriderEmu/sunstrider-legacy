@@ -5,26 +5,8 @@
 
 using namespace ai;
 
-class TankPaladinStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
-{
-public:
-    TankPaladinStrategyActionNodeFactory()
-    {
-        creators["blessing of sanctuary"] = &blessing_of_sanctuary;
-    }
-private:
-    static std::shared_ptr<ActionNode> blessing_of_sanctuary(PlayerbotAI* ai)
-    {
-        return std::make_shared<ActionNode> ("blessing of sanctuary",
-            /*P*/ ActionList(),
-            /*A*/ NextAction::array({ std::make_shared<NextAction>("blessing of kings") }),
-            /*C*/ ActionList());
-    }
-};
-
 TankPaladinStrategy::TankPaladinStrategy(PlayerbotAI* ai) : GenericPaladinStrategy(ai)
 {
-    actionNodeFactories.Add(std::make_unique<TankPaladinStrategyActionNodeFactory>());
 }
 
 ActionList TankPaladinStrategy::getDefaultActions()

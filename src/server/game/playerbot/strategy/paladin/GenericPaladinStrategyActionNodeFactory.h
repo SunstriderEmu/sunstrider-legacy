@@ -23,8 +23,63 @@ namespace ai
             creators["holy wrath"] = &holy_wrath;
             creators["lay on hands"] = &lay_on_hands;
             creators["lay on hands on party"] = &lay_on_hands_on_party;
+            creators["hammer of wrath"] = &hammer_of_wrath;
+            creators["retribution aura"] = &retribution_aura;
+            creators["blessing of kings"] = &blessing_of_kings;
+            creators["blessing of wisdom"] = &blessing_of_wisdom;
+            creators["blessing of kings on party"] = &blessing_of_kings_on_party;
+            creators["blessing of wisdom on party"] = &blessing_of_wisdom_on_party;
+            creators["blessing of sanctuary"] = &blessing_of_sanctuary;
         }
     private:
+        static std::shared_ptr<ActionNode> blessing_of_sanctuary(PlayerbotAI* ai)
+        {
+            return std::make_shared<ActionNode>("blessing of sanctuary",
+                /*P*/ ActionList(),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
+        }
+
+        static std::shared_ptr<ActionNode> blessing_of_kings(PlayerbotAI* ai)
+        {
+            return std::make_shared<ActionNode>("blessing of kings",
+                /*P*/ ActionList(),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
+        }
+
+        static std::shared_ptr<ActionNode> blessing_of_wisdom(PlayerbotAI* ai)
+        {
+            return std::make_shared<ActionNode>("blessing of wisdom",
+                /*P*/ ActionList(),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
+        }
+
+        static std::shared_ptr<ActionNode> blessing_of_kings_on_party(PlayerbotAI* ai)
+        {
+            return std::make_shared<ActionNode>("blessing of kings on party",
+                /*P*/ ActionList(),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
+        }
+        
+        static std::shared_ptr<ActionNode> blessing_of_wisdom_on_party(PlayerbotAI* ai)
+        {
+            return std::make_shared<ActionNode>("blessing of wisdom on party",
+                /*P*/ ActionList(),
+                /*A*/ ActionList(),
+                /*C*/ ActionList());
+        }
+
+        static std::shared_ptr<ActionNode> retribution_aura(PlayerbotAI* ai)
+        {
+            return std::make_shared<ActionNode>("retribution aura",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("devotion aura") }),
+                /*C*/ ActionList());
+        }
+
         static std::shared_ptr<ActionNode> lay_on_hands(PlayerbotAI* ai)
         {
             return std::make_shared<ActionNode> ("lay on hands",
@@ -135,6 +190,13 @@ namespace ai
             return std::make_shared<ActionNode> ("holy wrath",
                 /*P*/ ActionList(),
                 /*A*/ NextAction::array({ std::make_shared<NextAction>("consecration") }),
+                /*C*/ ActionList());
+        }
+        static std::shared_ptr<ActionNode> hammer_of_wrath(PlayerbotAI* ai)
+        {
+            return std::make_shared<ActionNode>("hammer of wrath",
+                /*P*/ ActionList(),
+                /*A*/ NextAction::array({ std::make_shared<NextAction>("melee") }),
                 /*C*/ ActionList());
         }
     };

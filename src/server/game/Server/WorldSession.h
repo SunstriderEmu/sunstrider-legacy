@@ -226,7 +226,9 @@ class TC_GAME_API WorldSession
         void SendQueryTimeResponse();
 
         void SendAuthResponse(uint8 code, bool shortForm, uint32 queuePos = 0);
+#ifdef LICH_KING
         void SendClientCacheVersion(uint32 version);
+#endif
 
         void InitializeSession();
         void InitializeSessionCallback(SQLQueryHolder* realmHolder);

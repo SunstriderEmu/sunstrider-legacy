@@ -46,7 +46,7 @@ namespace ai
             creators["no attackers"] = &TriggerContext::NoAttackers;
             creators["no target"] = &TriggerContext::NoTarget;
             creators["target in sight"] = &TriggerContext::TargetInSight;
-            creators["not least hp target active"] = &TriggerContext::not_least_hp_target_active;
+            creators["not dps target active"] = &TriggerContext::not_dps_target_active;
             creators["has nearest adds"] = &TriggerContext::has_nearest_adds;
             creators["enemy player is attacking"] = &TriggerContext::enemy_player_is_attacking;
 
@@ -133,7 +133,7 @@ namespace ai
         static std::shared_ptr<Trigger> Timer(PlayerbotAI* ai) { return std::make_shared<TimerTrigger>(ai); }
         static std::shared_ptr<Trigger> NoTarget(PlayerbotAI* ai) { return std::make_shared<NoTargetTrigger>(ai); }
         static std::shared_ptr<Trigger> TargetInSight(PlayerbotAI* ai) { return std::make_shared<TargetInSightTrigger>(ai); }
-        static std::shared_ptr<Trigger> not_least_hp_target_active(PlayerbotAI* ai) { return std::make_shared<NotLeastHpTargetActiveTrigger>(ai); }
+        static std::shared_ptr<Trigger> not_dps_target_active(PlayerbotAI* ai) { return std::make_shared<NotDpsTargetActiveTrigger>(ai); }
         static std::shared_ptr<Trigger> has_nearest_adds(PlayerbotAI* ai) { return std::make_shared<HasNearestAddsTrigger>(ai); }
         static std::shared_ptr<Trigger> enemy_player_is_attacking(PlayerbotAI* ai) { return std::make_shared<EnemyPlayerIsAttacking>(ai); }
         static std::shared_ptr<Trigger> Random(PlayerbotAI* ai) { return std::make_shared<RandomTrigger>(ai); }

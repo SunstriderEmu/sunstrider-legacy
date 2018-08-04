@@ -20597,8 +20597,10 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_PROFICIENCY
     // SMSG_UPDATE_AURA_DURATION
 
-    if(GetSession()->GetClientBuild() == BUILD_243)
-        GetSession()->SendTutorialsData(); //LK send those at session opening
+#ifndef LICH_KING
+    //LK send those at session opening
+    GetSession()->SendTutorialsData();
+#endif
 
     SendInitialSpells();
 

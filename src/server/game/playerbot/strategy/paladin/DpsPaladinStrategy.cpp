@@ -70,10 +70,6 @@ void DpsPaladinStrategy::InitTriggers(std::list<std::shared_ptr<TriggerNode>> &t
         NextAction::array({ std::make_shared<NextAction>("judgement of wisdom", ACTION_NORMAL + 2) })));
 
     triggers.push_back(std::make_shared<TriggerNode>(
-        "blessing",
-        NextAction::array({ std::make_shared<NextAction>("blessing of might", ACTION_HIGH + 8) })));
-
-    triggers.push_back(std::make_shared<TriggerNode>(
         "medium aoe",
         NextAction::array({ std::make_shared<NextAction>("divine storm", ACTION_HIGH + 1), std::make_shared<NextAction>("consecration", ACTION_HIGH + 1) })));
 

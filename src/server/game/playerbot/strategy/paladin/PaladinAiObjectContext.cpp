@@ -8,6 +8,7 @@
 #include "DpsPaladinStrategy.h"
 #include "PaladinBuffStrategies.h"
 #include "../NamedObjectContext.h"
+#include "HealPaladinStrategy.h"
 
 using namespace ai;
 
@@ -55,6 +56,7 @@ namespace ai
                 creators["bdps"] = &paladin::BuffStrategyFactoryInternal::bdps;
                 creators["barmor"] = &paladin::BuffStrategyFactoryInternal::barmor;
                 creators["bspeed"] = &paladin::BuffStrategyFactoryInternal::bspeed;
+                creators["bthreat"] = &paladin::BuffStrategyFactoryInternal::bthreat;
             }
 
         private:
@@ -63,6 +65,7 @@ namespace ai
             static std::shared_ptr<Strategy> bdps(PlayerbotAI* ai) { return std::make_shared<PaladinBuffDpsStrategy>(ai); }
             static std::shared_ptr<Strategy> barmor(PlayerbotAI* ai) { return std::make_shared<PaladinBuffArmorStrategy>(ai); }
             static std::shared_ptr<Strategy> bspeed(PlayerbotAI* ai) { return std::make_shared<PaladinBuffSpeedStrategy>(ai); }
+            static std::shared_ptr<Strategy> bthreat(PlayerbotAI* ai) { return std::make_shared<PaladinBuffThreatStrategy>(ai); }
         };
 
         class CombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -72,11 +75,13 @@ namespace ai
             {
                 creators["tank"] = &paladin::CombatStrategyFactoryInternal::tank;
                 creators["dps"] = &paladin::CombatStrategyFactoryInternal::dps;
+                creators["heal"] = &paladin::CombatStrategyFactoryInternal::heal;
             }
 
         private:
             static std::shared_ptr<Strategy> tank(PlayerbotAI* ai) { return std::make_shared<TankPaladinStrategy>(ai); }
             static std::shared_ptr<Strategy> dps(PlayerbotAI* ai) { return std::make_shared<DpsPaladinStrategy>(ai); }
+            static std::shared_ptr<Strategy> heal(PlayerbotAI* ai) { return std::make_shared<HealPaladinStrategy>(ai); }
         };
     };
 };
