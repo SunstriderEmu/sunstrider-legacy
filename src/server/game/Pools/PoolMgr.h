@@ -11,6 +11,7 @@
 struct PoolTemplateData
 {
     uint32  MaxLimit;
+    float   MaxLimitPercent; //sun custom
 };
 
 struct PoolObject
@@ -63,7 +64,7 @@ class TC_GAME_API PoolGroup
         PoolObject* RollOne(ActivePoolData& spawns, uint32 triggerFrom);
         void DespawnObject(ActivePoolData& spawns, ObjectGuid::LowType guid=0);
         void Despawn1Object(ObjectGuid::LowType guid);
-        void SpawnObject(ActivePoolData& spawns, uint32 limit, uint32 triggerFrom);
+        void SpawnObject(ActivePoolData& spawns, uint32 limit, float limitPercent, uint32 triggerFrom);
 
         void Spawn1Object(PoolObject* obj);
         void ReSpawn1Object(PoolObject* obj);
@@ -128,6 +129,8 @@ class TC_GAME_API PoolMgr
     private:
         template<typename T>
         void SpawnPool(uint32 pool_id, uint32 db_guid_or_pool_id);
+        template<typename T, typename P>
+        void _SpawnPool(uint32 pool_id, uint32 db_guid, P& poolGroup); //sun refactor to avoid code duplication
 
         typedef std::unordered_map<uint32, PoolTemplateData>      PoolTemplateDataMap;
         typedef std::unordered_map<uint32, PoolGroup<Creature>>   PoolGroupCreatureMap;

@@ -730,12 +730,6 @@ void Creature::Update(uint32 diff)
             //From TC. Removed as this is VERY costly in cpu time for little to no gain
             //UpdateMovementFlags();
 
-            if (m_corpseRemoveTime <= time(nullptr))
-            {
-                RemoveCorpse(false);
-                TC_LOG_DEBUG("entities.unit","Removing alive corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
-            }
-
             if(IsInCombat() && 
                 (IsWorldBoss() || GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
                 GetMap() && GetMap()->IsDungeon())

@@ -293,8 +293,24 @@ void PoolGroup<Pool>::RemoveOneRelation(uint32 child_pool_id)
 }
 
 template <class T>
-void PoolGroup<T>::SpawnObject(ActivePoolData& spawns, uint32 limit, uint32 triggerFrom)
+void PoolGroup<T>::SpawnObject(ActivePoolData& spawns, uint32 limit, float limitPercent, uint32 triggerFrom)
 {
+    /* Sun:
+     Logic may seem strange but it's apparently voluntary... read https://trinitycore.atlassian.net/wiki/spaces/tc/pages/2130273/pool+creature
+     I still made some adaptations because TC seems to handle only the limit = 1 case. With no limit TC code does not spawn any object.
+     The "If the pool spawns more than one creature, the chance is ignored and all the creatures in the pool are rolled in one step with equal chance." is enforced at AddEntry time (ExplicitlyChanced is then empty)
+    */
+
+    // use either limit or limitPercent, whichever is lower
+    if (float const limitPercentRatio = limitPercent / 100.0f)
+    {
+        uint32 const limitFromPercent = std::round(EqualChanced.size() * limitPercentRatio); //we use EqualChanced only because limit is used only for equal chanced
+        if (limit)
+            limit = std::min(limit, limitFromPercent);
+        else
+            limit = limitFromPercent;
+    }
+
     int count = limit - spawns.GetActiveObjectCount(poolId);
 
     // If triggered from some object respawn this object is still marked as spawned
@@ -303,11 +319,13 @@ void PoolGroup<T>::SpawnObject(ActivePoolData& spawns, uint32 limit, uint32 trig
     if (triggerFrom)
         ++count;
 
-    if (count > 0)
+    if (count > 0 || !limit)
     {
         PoolObjectList rolledObjects;
-        rolledObjects.reserve(count);
+        if(count > 0)
+            rolledObjects.reserve(count);
 
+        //TC Wiki: "First, only the explicitly-chanced (chance > 0) creatures of the pool are rolled. If this roll does not produce any creature, all the creatures without explicit chance (chance = 0) are rolled with equal chance."
         // roll objects to be spawned
         if (!ExplicitlyChanced.empty())
         {
@@ -332,7 +350,8 @@ void PoolGroup<T>::SpawnObject(ActivePoolData& spawns, uint32 limit, uint32 trig
                 return object.guid == triggerFrom || !spawns.IsActiveObject<T>(object.guid);
             });
 
-            Trinity::Containers::RandomResize(rolledObjects, count);
+            if(limit) 
+                Trinity::Containers::RandomResize(rolledObjects, count);
         }
 
         // try to spawn rolled objects
@@ -556,7 +575,7 @@ void PoolMgr::LoadFromDB()
     {
         uint32 oldMSTime = GetMSTime();
 
-        QueryResult result = WorldDatabase.Query("SELECT entry, max_limit FROM pool_template");
+        QueryResult result = WorldDatabase.Query("SELECT entry, max_limit, max_limit_percent FROM pool_template");
         if (!result)
         {
             mPoolTemplate.clear();
@@ -573,6 +592,7 @@ void PoolMgr::LoadFromDB()
 
             PoolTemplateData& pPoolTemplate = mPoolTemplate[pool_id];
             pPoolTemplate.MaxLimit = fields[1].GetUInt32();
+            pPoolTemplate.MaxLimitPercent = fields[2].GetFloat();
 
             ++count;
         } while (result->NextRow());
@@ -616,7 +636,7 @@ void PoolMgr::LoadFromDB()
                     TC_LOG_ERROR("sql.sql", "`pool_creature` pool id (%u) is not in `pool_template`, skipped.", pool_id);
                     continue;
                 }
-                if (chance < 0 || chance > 100)
+                if (chance < 0.0f || chance > 100.0f)
                 {
                     TC_LOG_ERROR("sql.sql", "`pool_creature` has an invalid chance (%f) for creature guid (%u) in pool id (%u), skipped.", chance, guid, pool_id);
                     continue;
@@ -992,14 +1012,20 @@ void PoolMgr::LoadFromDB()
 //    SaveQuestsToDB();
 //}
 
+template<typename T, typename P>
+void PoolMgr::_SpawnPool(uint32 pool_id, uint32 db_guid, P& poolGroup)
+{
+    auto it = poolGroup.find(pool_id);
+    if (it != poolGroup.end() && !it->second.isEmpty())
+        it->second.SpawnObject(mSpawnedData, mPoolTemplate[pool_id].MaxLimit, mPoolTemplate[pool_id].MaxLimitPercent, db_guid);
+}
+
 // Call to spawn a pool, if cache if true the method will spawn only if cached entry is different
 // If it's same, the creature is respawned only (added back to map)
 template<>
 void PoolMgr::SpawnPool<Creature>(uint32 pool_id, uint32 db_guid)
 {
-    auto it = mPoolCreatureGroups.find(pool_id);
-    if (it != mPoolCreatureGroups.end() && !it->second.isEmpty())
-        it->second.SpawnObject(mSpawnedData, mPoolTemplate[pool_id].MaxLimit, db_guid);
+    _SpawnPool<Creature>(pool_id, db_guid, mPoolCreatureGroups);
 }
 
 // Call to spawn a pool, if cache if true the method will spawn only if cached entry is different
@@ -1007,9 +1033,7 @@ void PoolMgr::SpawnPool<Creature>(uint32 pool_id, uint32 db_guid)
 template<>
 void PoolMgr::SpawnPool<GameObject>(uint32 pool_id, uint32 db_guid)
 {
-    auto it = mPoolGameobjectGroups.find(pool_id);
-    if (it != mPoolGameobjectGroups.end() && !it->second.isEmpty())
-        it->second.SpawnObject(mSpawnedData, mPoolTemplate[pool_id].MaxLimit, db_guid);
+    _SpawnPool<GameObject>(pool_id, db_guid, mPoolGameobjectGroups);
 }
 
 // Call to spawn a pool, if cache if true the method will spawn only if cached entry is different
@@ -1017,18 +1041,14 @@ void PoolMgr::SpawnPool<GameObject>(uint32 pool_id, uint32 db_guid)
 template<>
 void PoolMgr::SpawnPool<Pool>(uint32 pool_id, uint32 sub_pool_id)
 {
-    auto it = mPoolPoolGroups.find(pool_id);
-    if (it != mPoolPoolGroups.end() && !it->second.isEmpty())
-        it->second.SpawnObject(mSpawnedData, mPoolTemplate[pool_id].MaxLimit, sub_pool_id);
+    _SpawnPool<Pool>(pool_id, sub_pool_id, mPoolPoolGroups);
 }
 
 //// Call to spawn a pool
 //template<>
 //void PoolMgr::SpawnPool<Quest>(uint32 pool_id, uint32 quest_id)
 //{
-//    auto it = mPoolQuestGroups.find(pool_id);
-//    if (it != mPoolQuestGroups.end() && !it->second.isEmpty())
-//        it->second.SpawnObject(mSpawnedData, mPoolTemplate[pool_id].MaxLimit, quest_id);
+//    _SpawnPool<Pool>(pool_id, quest_id, mPoolQuestGroups);
 //}
 
 void PoolMgr::SpawnPool(uint32 pool_id)
