@@ -965,7 +965,7 @@ class TC_GAME_API ObjectMgr
             return Trinity::Containers::MapGetValuePtr(_gameObjectDataStore, guid);
         }
 
-        GameObjectDataContainer const& GetGameObjectDataMap() const
+        GameObjectDataContainer const& GetAllGameObjectData() const
         {
             return _gameObjectDataStore;
         }

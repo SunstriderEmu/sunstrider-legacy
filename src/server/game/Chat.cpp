@@ -285,8 +285,9 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "setzoneweather", SEC_SUPERADMIN,   false, &ChatHandler::HandleDebugZoneWeatherCommand,      "" },
         { "setarmor",       SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugSetArmorCommand,         "" },
         { "getarmor",       SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugGetArmorCommand,         "" },
+        { "boundary",       SEC_GAMEMASTER3,  false, &ChatHandler::HandleDebugBoundaryCommand,         "" },
+        //Dev utilities
         { "spawnbatchobjects",SEC_SUPERADMIN, false, &ChatHandler::HandleSpawnBatchObjects,            "" },
-        { "boundary",      SEC_GAMEMASTER3,   false, &ChatHandler::HandleDebugBoundaryCommand,         "" },
     };
 
     static std::vector<ChatCommand> eventCommandTable =
@@ -490,6 +491,8 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "item",           SEC_GAMEMASTER3,  true,  &ChatHandler::HandleListItemCommand,            "" },
         { "object",         SEC_GAMEMASTER3,  true,  &ChatHandler::HandleListObjectCommand,          "" },
         { "auras",          SEC_GAMEMASTER3,  false, &ChatHandler::HandleListAurasCommand,           "" },
+        { "spawnpoints",    SEC_GAMEMASTER3,  false, &ChatHandler::HandleListSpawnPointsCommand,     "" },
+        { "respawns",       SEC_GAMEMASTER3,  false, &ChatHandler::HandleListRespawnsCommand,        "" },
     };
 
     static std::vector<ChatCommand> teleCommandTable =
@@ -547,7 +550,9 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "goto",           SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcGotoCommand,             "" },
         { "fly",            SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcFlyCommand,              "" },
         { "near",           SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcNearCommand,             "" },
-        { "name",           SEC_GAMEMASTER2,     false, &ChatHandler::HandleNpcNameCommand,                "" },
+        { "name",           SEC_GAMEMASTER2,     false, &ChatHandler::HandleNpcNameCommand,             "" },
+        { "spawngroup",     SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcSpawnGroup,              "" },
+        { "despawngroup",   SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcDespawnGroup,            "" },
 
         //{ TODO: fix or remove this commands
         { "seteventid",     SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcSetInstanceEventCommand, "" },
@@ -586,6 +591,9 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "unlinkgameevent",SEC_ADMINISTRATOR,   false, &ChatHandler::HandleGobUnlinkGameEventCommand,  "" },
         { "getvalue",       SEC_GAMEMASTER3,     false, &ChatHandler::HandleGobGetValueCommand,         "" },
         { "setvalue",       SEC_GAMEMASTER3,     false, &ChatHandler::HandleGobSetValueCommand,         "" },
+        { "spawngroup",     SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcSpawnGroup,              "" },
+        { "despawngroup",   SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcDespawnGroup,            "" },
+
     };
 
     static std::vector<ChatCommand> questCommandTable =

@@ -392,6 +392,8 @@ class TC_GAME_API ChatHandler
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNpcNameCommand(const char* args);
+        bool HandleNpcSpawnGroup(const char* args);
+        bool HandleNpcDespawnGroup(const char* args);
         bool HandleItemMoveCommand(const char* args);
         bool HandleDeMorphCommand(const char* args);
         bool HandleNpcAddVendorItemCommand(const char* args);
@@ -506,6 +508,8 @@ class TC_GAME_API ChatHandler
         bool HandleTeleAddCommand(const char * args);
         bool HandleTeleDelCommand(const char * args);
         bool HandleListAurasCommand(const char * args);
+        bool HandleListSpawnPointsCommand(const char * args);
+        bool HandleListRespawnsCommand(const char * args);
         bool HandleBlinkCommand(const char* args);
 
         bool HandleResetHonorCommand(const char * args);

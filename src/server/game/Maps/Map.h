@@ -724,7 +724,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         // The force flag can be used to force spawning additional copies even if old copies are still around from a previous spawn
         bool SpawnGroupSpawn(uint32 groupId, bool ignoreRespawn = false, bool force = false, std::vector<WorldObject*>* spawnedObjects = nullptr);
         // Despawn all creatures in the spawn group if spawned, optionally delete their respawn timer, and disable the group
-        bool SpawnGroupDespawn(uint32 groupId, bool deleteRespawnTimes = false);
+        bool SpawnGroupDespawn(uint32 groupId, bool deleteRespawnTimes = false, size_t* count = nullptr);
 
         // Disable the spawn group, which prevents any creatures in the group from respawning until re-enabled
         // This will not affect any already-present creatures in the group

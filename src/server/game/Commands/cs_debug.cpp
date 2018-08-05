@@ -1590,7 +1590,7 @@ bool ChatHandler::HandleSpawnBatchObjects(const char* args)
     }
 
     //Check validity for each. Also remove from the object list the one we already have on our server
-    auto goDataMap = sObjectMgr->GetGameObjectDataMap();
+    auto goDataMap = sObjectMgr->GetAllGameObjectData();
     for (std::vector<FileGameObject>::iterator itr2 = fileObjects.begin(); itr2 != fileObjects.end(); )
     {
         FileGameObject& fileObject = *itr2;

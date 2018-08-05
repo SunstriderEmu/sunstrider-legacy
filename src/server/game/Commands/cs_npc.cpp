@@ -1384,6 +1384,86 @@ bool ChatHandler::HandleNpcNameCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleNpcSpawnGroup(const char* args)
+{
+    if (!*args)
+        return false;
+
+    bool ignoreRespawn = false;
+    bool force = false;
+    uint32 groupId = 0;
+
+    // Decode arguments
+    char* arg = strtok((char*)args, " ");
+    while (arg)
+    {
+        std::string thisArg = arg;
+        std::transform(thisArg.begin(), thisArg.end(), thisArg.begin(), ::tolower);
+        if (thisArg == "ignorerespawn")
+            ignoreRespawn = true;
+        else if (thisArg == "force")
+            force = true;
+        else if (thisArg.empty() || !(std::count_if(thisArg.begin(), thisArg.end(), ::isdigit) == (int)thisArg.size()))
+            return false;
+        else
+            groupId = atoi(thisArg.c_str());
+
+        arg = strtok(nullptr, " ");
+    }
+
+    Player* player = GetSession()->GetPlayer();
+
+    std::vector <WorldObject*> creatureList;
+    if (!player->GetMap()->SpawnGroupSpawn(groupId, ignoreRespawn, force, &creatureList))
+    {
+        PSendSysMessage("Spawn group %u not found", groupId);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    PSendSysMessage("Spawned a total of %zu objects:", creatureList.size());
+
+    return true;
+}
+
+bool ChatHandler::HandleNpcDespawnGroup(const char* args)
+{
+    if (!*args)
+        return false;
+
+    bool deleteRespawnTimes = false;
+    uint32 groupId = 0;
+
+    // Decode arguments
+    char* arg = strtok((char*)args, " ");
+    while (arg)
+    {
+        std::string thisArg = arg;
+        std::transform(thisArg.begin(), thisArg.end(), thisArg.begin(), ::tolower);
+        if (thisArg == "removerespawntime")
+            deleteRespawnTimes = true;
+        else if (thisArg.empty() || !(std::count_if(thisArg.begin(), thisArg.end(), ::isdigit) == (int)thisArg.size()))
+            return false;
+        else
+            groupId = atoi(thisArg.c_str());
+
+        arg = strtok(nullptr, " ");
+    }
+
+    Player* player = GetSession()->GetPlayer();
+
+    size_t n = 0;
+    if (!player->GetMap()->SpawnGroupDespawn(groupId, deleteRespawnTimes, &n))
+    {
+        PSendSysMessage("Spawn group %u not found", groupId);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    PSendSysMessage("Despawned a total of %zu objects.", n);
+
+    return true;
+}
+
 bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
 {
     ARGS_CHECK
