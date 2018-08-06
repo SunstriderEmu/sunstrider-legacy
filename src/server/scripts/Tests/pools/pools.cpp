@@ -48,7 +48,7 @@ public:
     void Test() override
     {
         /* Commented out for now because:
-        Currently PoolMgr handle handle continent. This test spawn creatures on continent instead of its own map but this
+        Currently PoolMgr only handle continents. This test spawn creatures on continent instead of its own map but this
         leads to various racing conditions, we're not supposed to handle creatures on a map from another. I see no way of
         testing this without having the PoolMgr handle instances.
 
