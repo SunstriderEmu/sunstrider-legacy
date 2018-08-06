@@ -21,12 +21,14 @@ void AddSC_test_talents_shaman();
 void AddSC_test_talents_warlock();
 void AddSC_test_talents_warrior();
 void AddSC_test_creature();
+void AddSC_test_pools();
 
 void AddTestsScripts()
 {
     AddSC_test_dummy();
     AddSC_test_loot_chance();
     AddSC_test_creature();
+	AddSC_test_pools();
 
 	AddSC_test_spells_druid();
 	AddSC_test_spells_hunter();

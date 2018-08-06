@@ -149,7 +149,7 @@ void TestMgr::Cancel()
         itr.second->Cancel();
 }
 
-uint32 TestMgr::GetRemainingTestsCount() const
+TC_GAME_API uint32 TestMgr::GetRemainingTestsCount() const
 {
     return _remainingTests.size();
 }

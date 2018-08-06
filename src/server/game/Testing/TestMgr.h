@@ -6,7 +6,7 @@ class TestThread;
 #include "TestResults.h"
 #include <atomic>
 
-class TestMgr
+class TC_GAME_API TestMgr
 {
 public:
     static uint32 const STARTING_TEST_ID = 1;

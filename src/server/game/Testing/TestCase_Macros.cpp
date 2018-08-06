@@ -1083,3 +1083,30 @@ void TestCase::_TestRadius(TestPlayer* caster, Unit* castTarget, Unit* checkTarg
     _RestoreUnitState(castTarget);
     _RestoreUnitState(checkTarget);
 }
+
+Creature* TestCase::SpawnDatabaseCreature()
+{
+    Creature* creature = new Creature;
+    if (!creature->Create(sObjectMgr->GenerateCreatureSpawnId(), GetMap(), PHASEMASK_NORMAL, TEST_CREATURE_ENTRY, _location))
+    {
+        delete creature;
+        INTERNAL_TEST_ASSERT(false);
+    }
+
+    creature->SaveToDB(GetMap()->GetId(), (1 << GetMap()->GetSpawnMode()));
+    ObjectGuid::LowType db_guid = creature->GetSpawnId();
+    creature->LoadFromDB(db_guid, GetMap(), true, false);
+
+    sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
+    return creature;
+}
+
+void TestCase::CleanupDBCreature(Creature* c)
+{
+    if (!c)
+        return;
+
+    c->DisappearAndDie();
+    c->DeleteFromDB();
+    delete c;
+}

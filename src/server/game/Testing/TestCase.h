@@ -475,6 +475,9 @@ protected:
     std::pair<uint32 /*min*/, uint32 /*max*/> CalcMeleeDamage(Player const* attacker, Unit const* target, WeaponAttackType attackType = BASE_ATTACK, int32 spellBonusDmg = 0, float spellNormalizedWeaponSpeed = 0.0f);
     //generic spell id and name printing for errors
     std::string _SpellString(uint32 spellID);
+    // Will spawn a creature with a spawnId and save it to db. ALWAYS REMOVE IT AFTERWARDS using CleanupDBCreature in Cleanup()
+    Creature* SpawnDatabaseCreature();
+    void CleanupDBCreature(Creature* c);
     // <Helpers/>
 
 private:

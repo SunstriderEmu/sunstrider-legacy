@@ -86,13 +86,23 @@ typedef std::multimap<uint32, uint32> PooledQuestRelation;
 typedef std::pair<PooledQuestRelation::const_iterator, PooledQuestRelation::const_iterator> PooledQuestRelationBounds;
 typedef std::pair<PooledQuestRelation::iterator, PooledQuestRelation::iterator> PooledQuestRelationBoundsNC;
 */
+class PoolsMaxLimitTest;
+
 class TC_GAME_API PoolMgr
 {
+    friend class PoolsMaxLimitTest;
+
     private:
         PoolMgr();
         ~PoolMgr() { };
 
     public:
+        typedef std::unordered_map<uint32, PoolTemplateData>      PoolTemplateDataMap;
+        typedef std::unordered_map<uint32, PoolGroup<Creature>>   PoolGroupCreatureMap;
+        typedef std::unordered_map<uint32, PoolGroup<GameObject>> PoolGroupGameObjectMap;
+        typedef std::unordered_map<uint32, PoolGroup<Pool>>       PoolGroupPoolMap;
+        //typedef std::unordered_map<uint32, PoolGroup<Quest>>      PoolGroupQuestMap;
+
         static PoolMgr* instance();
 
         void LoadFromDB();
@@ -133,15 +143,10 @@ class TC_GAME_API PoolMgr
         template<typename T>
         void SpawnPool(uint32 pool_id, uint32 db_guid_or_pool_id);
         template<typename T, typename P>
-        void _SpawnPool(uint32 pool_id, uint32 db_guid, P& poolGroup); //sun refactor to avoid code duplication
+        void SpawnPool(uint32 pool_id, uint32 db_guid_or_pool_id, P& poolGroup); //sun refactor to avoid code duplication
 
-        typedef std::unordered_map<uint32, PoolTemplateData>      PoolTemplateDataMap;
-        typedef std::unordered_map<uint32, PoolGroup<Creature>>   PoolGroupCreatureMap;
-        typedef std::unordered_map<uint32, PoolGroup<GameObject>> PoolGroupGameObjectMap;
-        typedef std::unordered_map<uint32, PoolGroup<Pool>>       PoolGroupPoolMap;
-        //typedef std::unordered_map<uint32, PoolGroup<Quest>>      PoolGroupQuestMap;
         typedef std::pair<uint32, uint32>           SearchPair;
-        typedef std::map<uint32, uint32>            SearchMap;
+        typedef std::map<uint32 /*guid*/, uint32 /*poolId*/>            SearchMap;
 
         PoolTemplateDataMap    mPoolTemplate;
         PoolGroupCreatureMap   mPoolCreatureGroups;
@@ -152,6 +157,17 @@ class TC_GAME_API PoolMgr
         SearchMap mGameobjectSearchMap;
         SearchMap mPoolSearchMap;
         //SearchMap mQuestSearchMap;
+
+        // LoadFromDB helpers
+        template<typename T>
+        void LoadEntry(uint32 poolid, ObjectGuid::LowType db_guid_or_pool_id, float chance);
+        template<typename T, typename G, typename S>
+        void LoadEntry(G& groupsMap, S& searchMap, uint32 poolid, ObjectGuid::LowType db_guid_or_pool_id, float chance);
+        void LoadPoolTemplate(uint32 poolId, uint32 maxLimit, float maxLimitPercent);
+
+        // For testing, probably inefficient
+        template<typename T>
+        uint32 GetFirstFreePoolId() const;
 
         // dynamic data
         ActivePoolData mSpawnedData;
