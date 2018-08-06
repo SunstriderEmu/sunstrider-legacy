@@ -37,6 +37,11 @@ bool TestThread::IsCanceling() const
     return _state == STATE_CANCELING;
 }
 
+bool TestThread::CanUnloadMap() const
+{
+    return IsFinished() || IsCanceling();
+}
+
 bool TestThread::IsPaused() const
 {
     return _state == STATE_PAUSED; 

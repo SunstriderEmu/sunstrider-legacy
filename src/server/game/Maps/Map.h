@@ -172,13 +172,13 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
     friend class MapReference;
     public:
 		explicit Map(MapType type, uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* parent = nullptr);
-        ~Map() override;
+        virtual ~Map() override;
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
         MapType GetMapType() const { return i_mapType; }
 
         // currently unused for normal maps
-        bool CanUnload(uint32 diff);
+        virtual bool CanUnload(uint32 diff);
 
         virtual bool AddPlayerToMap(Player *);
         virtual void RemovePlayerFromMap(Player *, bool);
@@ -856,9 +856,11 @@ class TC_GAME_API TestMap : public InstanceMap
 {
 public:
     TestMap(std::weak_ptr<TestThread>& testThread, uint32 id, uint32 InstanceId, uint8 spawnMode, Map* parent, bool enableMapObjects);
+    ~TestMap();
     void Update(const uint32&) override;
     void RemoveAllPlayers() override;
     bool AddPlayerToMap(Player *) override;
+    bool CanUnload(uint32 diff) override;
 
     void DisconnectAllBots();
     Player* GetFirstHumanPlayer();

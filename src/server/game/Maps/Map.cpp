@@ -2832,9 +2832,31 @@ TestMap::TestMap(std::weak_ptr<TestThread>& testThread, uint32 id, uint32 instan
     : InstanceMap(id, 0, instanceId, spawnMode, _parent), _testThread(testThread)
 {
     i_mapType = MAP_TYPE_TEST_MAP;
-    m_unloadTimer = 0; //disable unload for test maps
     m_unloadWhenEmpty = true;
     m_disableMapObjects = !enableMapObjects;
+}
+
+TestMap::~TestMap()
+{
+#ifdef TESTS
+    auto testThread = _testThread.lock();
+    if (!testThread)
+        return;
+
+    ASSERT(testThread->CanUnloadMap());
+#endif
+}
+
+bool TestMap::CanUnload(uint32 diff)
+{
+#ifdef TESTS
+    auto testThread = _testThread.lock();
+    if (!testThread)
+        return true;
+
+    return testThread->CanUnloadMap();
+#endif
+    return true;
 }
 
 InstanceMap::~InstanceMap()
@@ -3195,23 +3217,17 @@ void Map::RemoveAllPlayers()
 void TestMap::Update(const uint32& diff)
 {
 #ifdef TESTS
-    if (m_unloadTimer) //If map was marked for unload, test is finished
-        return;
-
     auto testThread = _testThread.lock();
     if (!testThread)
+        return;
+
+    //test thread may have been finish by itself or externally (by a cancel)
+    if (testThread->CanUnloadMap())
         return;
 
     auto test = testThread->GetTest();
     if (testThread->GetState() < TestThread::STATE_WAITING_FOR_JOIN)
         return; //still setting up
-
-    //test thread may have been finish by itself or externally (by a cancel)
-    if (testThread->IsFinished() || testThread->IsCanceling())
-    {
-        m_unloadTimer = 1; //make sure we're not updating anymore after this, and unload at next update
-        return;
-    }
 
     uint32 usedDiff = diff;
 

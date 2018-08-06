@@ -59,6 +59,7 @@ public:
     bool IsPaused() const;
     bool IsFinished() const;
     bool IsCanceling() const;
+    bool CanUnloadMap() const;
     ThreadState GetState() const { return _state; }
 
     //stop and fail tests as soon as possible
