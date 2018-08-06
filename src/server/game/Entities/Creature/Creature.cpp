@@ -335,12 +335,12 @@ void Creature::SearchFormation()
 
 void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
 {
-    if( GetDeathState() != CORPSE )
+    if (GetDeathState() != CORPSE)
         return;
 
     if (m_respawnCompatibilityMode)
     {
-        m_corpseRemoveTime = time(nullptr);
+        m_corpseRemoveTime = GameTime::GetGameTime();
         SetDeathState(DEAD);
         RemoveAllAuras();
         loot.clear();
@@ -353,7 +353,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
 
         // Should get removed later, just keep "compatibility" with scripts
         if (setSpawnTime)
-            m_respawnTime = std::max<time_t>(time(NULL) + m_respawnDelay, m_respawnTime);
+            m_respawnTime = std::max<time_t>(GameTime::GetGameTime() + m_respawnDelay, m_respawnTime);
 
         // if corpse was removed during falling, the falling will continue and override relocation to respawn position
         if (IsFalling())
@@ -387,7 +387,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
         if (setSpawnTime)
         {
             uint32 respawnDelay = m_respawnDelay;
-            m_respawnTime = std::max<time_t>(time(NULL) + respawnDelay, m_respawnTime);
+            m_respawnTime = std::max<time_t>(GameTime::GetGameTime() + respawnDelay, m_respawnTime);
 
             SaveRespawnTime(0, false);
         }
@@ -618,7 +618,7 @@ void Creature::Update(uint32 diff)
             break;
         case JUST_DIED:
             // Must not be called, see Creature::setDeathState JUST_DIED -> CORPSE promoting.
-            TC_LOG_ERROR("entities.unit","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_DEAD (1)",GetGUID().GetCounter(),GetEntry());
+            TC_LOG_ERROR("entities.unit","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_DIED (1)",GetGUID().GetCounter(),GetEntry());
             break;
         case DEAD:
         {
@@ -627,7 +627,7 @@ void Creature::Update(uint32 diff)
                 TC_LOG_ERROR("entities.unit", "Creature (GUID: %u Entry: %u) in wrong state: DEAD (3)", GetGUID().GetCounter(), GetEntry());
                 break;
             }
-            time_t now = time(nullptr);
+            time_t now = GameTime::GetGameTime();
             if( m_respawnTime <= now )
             {
                 // Delay respawn if spawn group is not active
@@ -650,7 +650,8 @@ void Creature::Update(uint32 diff)
                     }
                     else // event is DONE or SPECIAL, don't respawn until tag reset
                     {
-                        SetRespawnTime(7 * DAY); SaveRespawnTime(); // also save to DB immediately
+                        SetRespawnTime(7 * DAY); 
+                        SaveRespawnTime(); // also save to DB immediately
                         break;
                     }
                 }
@@ -686,7 +687,7 @@ void Creature::Update(uint32 diff)
         {
             Unit::Update(diff);
 
-            if (m_corpseRemoveTime <= time(nullptr))
+            if (m_corpseRemoveTime <= GameTime::GetGameTime())
             {
                 RemoveCorpse(false);
                 TC_LOG_DEBUG("entities.unit","Removing corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
@@ -1637,13 +1638,17 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
                 }
                 else
                 {
+                    if (!itr->second->GetRespawnCompatibilityMode())
+                        continue; // It will be automatically removed with corpse decay
                     despawnList.push_back(itr->second);
                     TC_LOG_DEBUG("maps", "Despawned dead instance of spawn %u", spawnId);
                 }
             }
 
             for (Creature* despawnCreature : despawnList)
+            {
                 despawnCreature->AddObjectToRemoveList();
+            }
         }
     }
 
@@ -1690,6 +1695,8 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
     m_deathState = ALIVE;
 
     m_respawnTime = GetMap()->GetCreatureRespawnTime(m_spawnId);
+    if (sPoolMgr->IsPartOfAPool<Creature>(spawnId)) //sun: just make sure we never spawn dead from pools
+        m_respawnTime = 0;
 
     if (!m_respawnTime && !map->IsSpawnGroupActive(data->spawnGroupData->groupId))
     {
@@ -1700,9 +1707,13 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
 
     if (m_respawnTime)                          // respawn on Update
     {
-        //ASSERT(m_respawnCompatibilityMode || sPoolMgr->IsPartOfAPool<Creature>(spawnId), "Creature (SpawnID %u) trying to load despite a respawn timer in progress.", spawnId);
         //Sun: removed this check because of a change in LoadHelper
-        m_deathState = DEAD;
+        //ASSERT(m_respawnCompatibilityMode || sPoolMgr->IsPartOfAPool<Creature>(spawnId), "Creature (SpawnID %u) trying to load despite a respawn timer in progress.", spawnId);
+        if (!m_respawnCompatibilityMode)
+            m_deathState = CORPSE; //DEAD is used for respawn handling in compat mode
+        else
+            m_deathState = DEAD;
+
         if (CanFly())
         {
             float tz = map->GetHeight(GetPhaseMask(), data->spawnPoint, true, MAX_FALL_DISTANCE);
@@ -1967,7 +1978,7 @@ bool Creature::IsInvisibleDueToDespawn() const
     if (Unit::IsInvisibleDueToDespawn())
         return true;
 
-    if (IsAlive() || IsDying() || m_corpseRemoveTime > time(NULL))
+    if (IsAlive() || IsDying() || m_corpseRemoveTime > GameTime::GetGameTime())
         return false;
 
     return true;
@@ -2152,7 +2163,7 @@ void Creature::SetDeathState(DeathState s)
     Unit::SetDeathState(s);
     if (s == JUST_DIED)
     {
-        m_corpseRemoveTime = time(nullptr) + m_corpseDelay;
+        m_corpseRemoveTime = GameTime::GetGameTime() + m_corpseDelay;
 
         uint32 respawnDelay = m_respawnDelay;
         if (uint32 scalingMode = sWorld->getIntConfig(CONFIG_RESPAWN_DYNAMICMODE))
@@ -2163,14 +2174,14 @@ void Creature::SetDeathState(DeathState s)
             if (IsDungeonBoss() && !m_respawnDelay)
                 m_respawnTime = std::numeric_limits<time_t>::max(); // never respawn in this instance
             else
-                m_respawnTime = time(nullptr) + respawnDelay + m_corpseDelay;
+                m_respawnTime = GameTime::GetGameTime() + respawnDelay + m_corpseDelay;
         }
         else
         {
             if (IsDungeonBoss() && !m_respawnDelay)
                 m_respawnTime = std::numeric_limits<time_t>::max(); // never respawn in this instance
             else
-                m_respawnTime = time(nullptr) + respawnDelay;
+                m_respawnTime = GameTime::GetGameTime() + respawnDelay;
         }
 
         // always save boss respawn time at death to prevent crash cheating
@@ -2178,6 +2189,11 @@ void Creature::SetDeathState(DeathState s)
             SaveRespawnTime();
         else if (!m_respawnCompatibilityMode)
             SaveRespawnTime(0, false);
+
+        //sun: notify the PoolMgr of our death, so that it may already consider this creature as removed
+        uint32 poolid = GetSpawnId() ? sPoolMgr->IsPartOfAPool<Creature>(GetSpawnId()) : 0;
+        if (poolid)
+            sPoolMgr->RemoveActiveObject<Creature>(poolid, GetSpawnId());
 
         Map *map = FindMap();
         if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
@@ -2192,10 +2208,6 @@ void Creature::SetDeathState(DeathState s)
         SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);       // if creature is mounted on a virtual mount, remove it at death
 
         SetKeepActive(false);
-
-        if(!IsPet() && GetCreatureTemplate()->SkinLootId)
-            if ( LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId) )
-                SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
         //Dismiss group if is leader
         if (m_formation && m_formation->getLeader() == this)
@@ -2308,6 +2320,8 @@ void Creature::Respawn(bool force /* = false */)
     {
         if (m_spawnId)
             GetMap()->RemoveRespawnTime(SPAWN_TYPE_CREATURE, m_spawnId, true);
+        
+        //Map will handle the respawn
     }
 
     TC_LOG_DEBUG("entities.unit", "Respawning creature %s (%u)",
@@ -2367,7 +2381,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn, Seconds forceRespawnTimer)
             uint32 respawnDelay = m_respawnDelay;
             if (uint32 scalingMode = sWorld->getIntConfig(CONFIG_RESPAWN_DYNAMICMODE))
                 GetMap()->ApplyDynamicModeRespawnScaling(this, m_spawnId, respawnDelay, scalingMode);
-            m_respawnTime = time(NULL) + respawnDelay;
+            m_respawnTime = GameTime::GetGameTime() + respawnDelay;
             SaveRespawnTime();
         }
 
@@ -2529,42 +2543,6 @@ SpellInfo const *Creature::reachWithSpellCure(Unit *pVictim)
     }
     return nullptr;
 }
-
-/*
-bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
-{
-    // gamemaster in GM mode see all, including ghosts
-    if(pl->IsGameMaster() || pl->isSpectator())
-        return true;
-
-    // CREATURE_FLAG_EXTRA_GHOST_VISIBILITY handling
-    if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_GHOST_VISIBILITY)
-        return pl->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
-
-    // Live player (or with not release body see live creatures or death creatures with corpse disappearing time > 0
-    if(pl->IsAlive() || pl->GetDeathTimer() > 0)
-    {
-        if( GetEntry() == VISUAL_WAYPOINT && !pl->IsGameMaster() )
-            return false;
-        return IsAlive() || m_corpseRemoveTime > time(nullptr);
-    }
-
-    // Dead player see creatures near own corpse
-    Corpse *corpse = pl->GetCorpse();
-    if (corpse) {
-        // 20 - aggro distance for same level, 25 - max additional distance if player level less that creature level
-        if (corpse->IsWithinDistInMap(this,(20+25)*sWorld->GetRate(RATE_CREATURE_AGGRO)))
-            return true;
-    }
-
-    // Dead player see Spirit Healer or Spirit Guide
-    if(IsSpiritService())
-        return true;
-
-    // and not see any other
-    return false;
-}
-*/
 
 void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
 {
@@ -2828,7 +2806,7 @@ void Creature::SaveRespawnTime(uint32 forceDelay, bool savetodb)
         return;
     }
 
-    time_t thisRespawnTime = forceDelay ? time(NULL) + forceDelay : m_respawnTime;
+    time_t thisRespawnTime = forceDelay ? GameTime::GetGameTime() + forceDelay : m_respawnTime;
     GetMap()->SaveRespawnTime(SPAWN_TYPE_CREATURE, m_spawnId, GetEntry(), thisRespawnTime, GetMap()->GetZoneId(GetHomePosition()), Trinity::ComputeGridCoord(GetHomePosition().GetPositionX(), GetHomePosition().GetPositionY()).GetId(), savetodb && m_creatureData && m_creatureData->dbData);
 }
 
@@ -2909,7 +2887,7 @@ bool Creature::HasSpell(uint32 spellID) const
 
 time_t Creature::GetRespawnTimeEx() const
 {
-    time_t now = time(nullptr);
+    time_t now = GameTime::GetGameTime();
     if (m_respawnTime > now)
         return m_respawnTime;
     else
@@ -2955,24 +2933,25 @@ CreatureMovementData const& Creature::GetMovementTemplate() const
 
 void Creature::AllLootRemovedFromCorpse()
 {
-    if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
-    {
-        time_t now = time(nullptr);
-        // Do not reset corpse remove time if corpse is already removed
-        if(m_corpseRemoveTime <= now)
-            return;
+    if (loot.loot_type != LOOT_SKINNING && !IsPet() && GetCreatureTemplate()->SkinLootId)
+        if (LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId))
+            SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
+
+    time_t now = GameTime::GetGameTime();
+    // Do not reset corpse remove time if corpse is already removed
+    if(m_corpseRemoveTime <= now)
+        return;
             
-        float decayRate = sWorld->GetRate(RATE_CORPSE_DECAY_LOOTED);
-        CreatureTemplate const *cinfo = GetCreatureTemplate();
+    float decayRate = sWorld->GetRate(RATE_CORPSE_DECAY_LOOTED);
+    CreatureTemplate const *cinfo = GetCreatureTemplate();
 
-        // corpse skinnable, but without skinning flag, and then skinned, corpse will despawn next update
-        if (cinfo && cinfo->SkinLootId)
-            m_corpseRemoveTime = now;
-        else
-            m_corpseRemoveTime = now + uint32(m_corpseDelay * decayRate);
+    // corpse skinnable, but without skinning flag, and then skinned, corpse will despawn next update
+    if (cinfo && cinfo->SkinLootId)
+        m_corpseRemoveTime = now;
+    else
+        m_corpseRemoveTime = now + uint32(m_corpseDelay * decayRate);
 
-        m_respawnTime = std::max<time_t>(m_corpseRemoveTime + m_respawnDelay, m_respawnTime);
-    }
+    m_respawnTime = std::max<time_t>(m_corpseRemoveTime + m_respawnDelay, m_respawnTime);
 }
 
 uint8 Creature::GetLevelForTarget( WorldObject const* target ) const
@@ -3036,7 +3015,7 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
 
     VendorItemCount* vCount = &*itr;
 
-    time_t ptime = time(nullptr);
+    time_t ptime = GameTime::GetGameTime();
 
     if( vCount->lastIncrementTime + vItem->incrtime <= ptime )
     {
@@ -3075,7 +3054,7 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
 
     VendorItemCount* vCount = &*itr;
 
-    time_t ptime = time(nullptr);
+    time_t ptime = GameTime::GetGameTime();
 
     if( vCount->lastIncrementTime + vItem->incrtime <= ptime )
         if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(vItem->item))

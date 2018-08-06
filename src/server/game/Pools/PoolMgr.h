@@ -118,6 +118,9 @@ class TC_GAME_API PoolMgr
         template<typename T>
         void UpdatePool(uint32 pool_id, uint32 db_guid_or_pool_id);
 
+        template<typename T>
+        void RemoveActiveObject(uint32 pool_id, uint32 db_guid_or_pool_id);
+
         /*
         void ChangeDailyQuests();
         void ChangeWeeklyQuests();

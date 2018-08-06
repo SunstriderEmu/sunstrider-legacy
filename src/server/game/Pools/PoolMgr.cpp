@@ -142,31 +142,22 @@ bool PoolGroup<T>::CheckPool() const
 template<class T>
 void PoolGroup<T>::DespawnObject(ActivePoolData& spawns, ObjectGuid::LowType guid)
 {
-    for (size_t i = 0; i < EqualChanced.size(); ++i)
-    {
-        // if spawned
-        if (spawns.IsActiveObject<T>(EqualChanced[i].guid))
+    auto Despawn = [&](PoolObjectList& list) {
+        for (size_t i = 0; i < list.size(); ++i)
         {
-            if (!guid || EqualChanced[i].guid == guid)
+            // if spawned
+            if (spawns.IsActiveObject<T>(list[i].guid))
             {
-                Despawn1Object(EqualChanced[i].guid);
-                spawns.RemoveObject<T>(EqualChanced[i].guid, poolId);
+                if (!guid || list[i].guid == guid)
+                {
+                    Despawn1Object(list[i].guid);
+                    spawns.RemoveObject<T>(list[i].guid, poolId);
+                }
             }
         }
-    }
-
-    for (size_t i = 0; i < ExplicitlyChanced.size(); ++i)
-    {
-        // spawned
-        if (spawns.IsActiveObject<T>(ExplicitlyChanced[i].guid))
-        {
-            if (!guid || ExplicitlyChanced[i].guid == guid)
-            {
-                Despawn1Object(ExplicitlyChanced[i].guid);
-                spawns.RemoveObject<T>(ExplicitlyChanced[i].guid, poolId);
-            }
-        }
-    }
+    };
+    Despawn(EqualChanced);
+    Despawn(ExplicitlyChanced);
 }
 
 // Method that is actualy doing the removal job on one creature
@@ -188,7 +179,8 @@ void PoolGroup<Creature>::Despawn1Object(ObjectGuid::LowType guid)
                 // For dynamic spawns, save respawn time here
                 if (!creature->GetRespawnCompatibilityMode())
                     creature->SaveRespawnTime(0, false);
-                creature->AddObjectToRemoveList();
+                else //sun: Dynamic spawn will remove the creature by itself with corpse decay, else remove it immediately
+                    creature->AddObjectToRemoveList();
             }
         }
     }
@@ -316,7 +308,8 @@ void PoolGroup<T>::SpawnObject(ActivePoolData& spawns, uint32 limit, float limit
     // If triggered from some object respawn this object is still marked as spawned
     // and also counted into m_SpawnedPoolAmount so we need increase count to be
     // spawned by 1
-    if (triggerFrom)
+    // Sun: may not be the case anymore in our impl because of RemoveActiveObject usage, so added IsActiveObject check. Probably a good idea in any case.
+    if (triggerFrom && spawns.IsActiveObject<T>(triggerFrom))
         ++count;
 
     if (count > 0 || !limit)
@@ -359,6 +352,8 @@ void PoolGroup<T>::SpawnObject(ActivePoolData& spawns, uint32 limit, float limit
         {
             if (obj.guid == triggerFrom)
             {
+                if (!spawns.IsActiveObject<T>(obj.guid)) //sun: object might have been deactivated at death
+                    spawns.ActivateObject<T>(obj.guid, poolId);
                 ReSpawn1Object(&obj);
                 triggerFrom = 0;
             }
@@ -375,7 +370,7 @@ void PoolGroup<T>::SpawnObject(ActivePoolData& spawns, uint32 limit, float limit
         DespawnObject(spawns, triggerFrom);
 }
 
-// Method that is actualy doing the spawn job on 1 creature
+// Method that is actually doing the spawn job on 1 creature
 template <>
 void PoolGroup<Creature>::Spawn1Object(PoolObject* obj)
 {
@@ -419,11 +414,12 @@ void PoolGroup<GameObject>::Spawn1Object(PoolObject* obj)
                 delete pGameobject;
                 return;
             }
-            else
-            {
-                if (pGameobject->isSpawnedByDefault())
-                    map->AddToMap(pGameobject);
-            }
+
+            if (pGameobject->isSpawnedByDefault())
+                map->AddToMap(pGameobject);
+            //sun: trigger respawn in all case
+            if (!pGameobject->GetRespawnCompatibilityMode())
+                pGameobject->SaveRespawnTime(0, false);
         }
     }
 }
@@ -531,9 +527,29 @@ void PoolGroup<Pool>::Spawn1Object(PoolObject* obj)
 
 // Method that does the respawn job on the specified creature
 template <>
-void PoolGroup<Creature>::ReSpawn1Object(PoolObject* /*obj*/)
+void PoolGroup<Creature>::ReSpawn1Object(PoolObject* obj)
 {
     // Creature is still on map, nothing to do
+
+    //sun: for dynamic respawn, spawn a new object (for old compat mode, creature will handle respawn itself)
+    if (CreatureData const* data = sObjectMgr->GetCreatureData(obj->guid))
+    {
+        Map* map = sMapMgr->CreateBaseMap(data->spawnPoint.GetMapId());
+        if (!map->Instanceable())
+        {
+            auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(obj->guid);
+            for (auto itr = creatureBounds.first; itr != creatureBounds.second;)
+            {
+                Creature* creature = itr->second;
+                if (!creature->GetRespawnCompatibilityMode())
+                {
+                    //crash map->RemoveRespawnTime(SPAWN_TYPE_CREATURE, obj->guid);
+                    Spawn1Object(obj);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 // Method that does the respawn job on the specified gameobject
@@ -541,6 +557,8 @@ template <>
 void PoolGroup<GameObject>::ReSpawn1Object(PoolObject* /*obj*/)
 {
     // GameObject is still on map, nothing to do
+
+    //sun: might have to remove respawn time if !GetRespawnCompatibilityMode()
 }
 
 // Nothing to do for a child Pool
@@ -1135,6 +1153,20 @@ void PoolMgr::UpdatePool(uint32 pool_id, uint32 db_guid_or_pool_id)
         SpawnPool<Pool>(motherpoolid, pool_id);
     else
         SpawnPool<T>(pool_id, db_guid_or_pool_id);
+}
+
+template<>
+void PoolMgr::RemoveActiveObject<Creature>(uint32 pool_id, uint32 db_guid_or_pool_id)
+{
+    if (mSpawnedData.IsActiveObject<Creature>(db_guid_or_pool_id))
+        mSpawnedData.RemoveObject<Creature>(db_guid_or_pool_id, pool_id);
+}
+
+template<>
+void PoolMgr::RemoveActiveObject<GameObject>(uint32 pool_id, uint32 db_guid_or_pool_id)
+{
+    if (mSpawnedData.IsActiveObject<GameObject>(db_guid_or_pool_id))
+        mSpawnedData.RemoveObject<GameObject>(db_guid_or_pool_id, pool_id);
 }
 
 template void PoolMgr::UpdatePool<Pool>(uint32 pool_id, uint32 db_guid_or_pool_id);

@@ -482,6 +482,12 @@ void GameObject::Update(uint32 diff)
                             else
                                 m_respawnTime = (now > linkedRespawntime ? now : linkedRespawntime) + urand(5, MINUTE); // else copy time from master and add a little
                             SaveRespawnTime(); // also save to DB immediately
+
+                            //sun: notify the PoolMgr of our despawn, so that it may already consider this object as removed
+                            uint32 poolid = GetSpawnId() ? sPoolMgr->IsPartOfAPool<GameObject>(GetSpawnId()) : 0;
+                            if (poolid)
+                                sPoolMgr->RemoveActiveObject<GameObject>(poolid, GetSpawnId());
+
                             return;
                         }
 
@@ -754,6 +760,11 @@ void GameObject::Update(uint32 diff)
             // if option not set then object will be saved at grid unload
             if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
                 SaveRespawnTime();
+
+            //sun: notify the PoolMgr of our despawn, so that it may already consider this gameobject as removed
+            uint32 poolid = GetSpawnId() ? sPoolMgr->IsPartOfAPool<GameObject>(GetSpawnId()) : 0;
+            if (poolid)
+                sPoolMgr->RemoveActiveObject<GameObject>(poolid, GetSpawnId());
 
             if (!m_respawnCompatibilityMode)
             {
