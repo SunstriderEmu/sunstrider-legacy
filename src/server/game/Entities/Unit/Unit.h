@@ -483,18 +483,6 @@ enum DamageEffectType : unsigned int
     TOTAL_DAMAGE_EFFECT_TYPE,
 };
 
-/*
-enum UnitVisibility : unsigned int
-{
-    VISIBILITY_OFF                = 0,                      // absolute, not detectable, GM-like, can see all other
-    VISIBILITY_ON                 = 1,
-    VISIBILITY_GROUP_STEALTH      = 2,                      // detect chance, seen and can see group members
-    //VISIBILITY_GROUP_INVISIBILITY = 3,                      // invisibility, can see and can be seen only another invisible unit or invisible detection unit, set only if not stealthed, and in checks not used (mask used instead)
-    //VISIBILITY_GROUP_NO_DETECT    = 4,                      // state just at stealth apply for update Grid state. Don't remove, otherwise stealth spells will break
-    VISIBILITY_RESPAWN            = 5                       // special totally not detectable visibility for force delete object at respawn command
-};
-*/
-
 // Value masks for UNIT_FIELD_FLAGS
 enum UnitFlags : unsigned int
 {
@@ -522,7 +510,7 @@ enum UnitFlags : unsigned int
     UNIT_FLAG_DISARMED              = 0x00200000,                // disable melee spells casting..., "Required melee weapon" added to melee spells tooltip.
     UNIT_FLAG_CONFUSED              = 0x00400000,
     UNIT_FLAG_FLEEING               = 0x00800000,
-    UNIT_FLAG_POSSESSED     = 0x01000000,                // used in spell Eyes of the Beast for pet... Let attack by controlled creature
+    UNIT_FLAG_POSSESSED             = 0x01000000,                // used in spell Eyes of the Beast for pet... Let attack by controlled creature
     UNIT_FLAG_NOT_SELECTABLE        = 0x02000000,
     UNIT_FLAG_SKINNABLE             = 0x04000000,
     UNIT_FLAG_MOUNT                 = 0x08000000,
@@ -530,8 +518,9 @@ enum UnitFlags : unsigned int
     UNIT_FLAG_UNK_29                = 0x20000000,                // used in Feing Death spell
     UNIT_FLAG_SHEATHE               = 0x40000000,
     UNIT_FLAG_UNK_31                = 0x80000000,
-    MAX_UNIT_FLAGS                  = 33
 };
+
+#define MAX_UNIT_FLAGS 33
 
 // Value masks for UNIT_FIELD_FLAGS_2
 enum UnitFlags2 : unsigned int
@@ -1656,7 +1645,7 @@ class TC_GAME_API Unit : public WorldObject
 		void RemoveAllMinionsByEntry(uint32 entry);
         //void SetPet(Pet* pet);
 		void SetCharm(Unit* target, bool apply);
-		bool SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp = NULL);
+		bool SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp = nullptr);
         void RemoveCharmedBy(Unit* charmer);
         void RestoreFaction();
 

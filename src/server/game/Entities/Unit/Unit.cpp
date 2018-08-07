@@ -10400,7 +10400,7 @@ void Unit::SetConfused(bool apply)
     }
 }
 
-bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp)
+bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp /*= nullptr*/)
 {
     if (!charmer)
         return false;
@@ -10457,15 +10457,15 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     // Charmer stop charming
     if (playerCharmer)
     {
-        playerCharmer->StopCastingCharm(aurApp->GetBase()); //sun, exclude this aura, else spell such as 30019 (Control Piece) will delete itself
-        playerCharmer->StopCastingBindSight(aurApp->GetBase());
+        playerCharmer->StopCastingCharm(aurApp ? aurApp->GetBase() : nullptr); //sun, exclude this aura, else spell such as 30019 (Control Piece) will delete itself
+        playerCharmer->StopCastingBindSight(aurApp ? aurApp->GetBase() : nullptr);
     }
 
     // Charmed stop charming
     if (GetTypeId() == TYPEID_PLAYER)
     {
-        ToPlayer()->StopCastingCharm(aurApp->GetBase()); //sun, exclude this aura, else spell such as 30019 (Control Piece) will delete itself
-        ToPlayer()->StopCastingBindSight(aurApp->GetBase());
+        ToPlayer()->StopCastingCharm(aurApp ? aurApp->GetBase() : nullptr); //sun, exclude this aura, else spell such as 30019 (Control Piece) will delete itself
+        ToPlayer()->StopCastingBindSight(aurApp ? aurApp->GetBase() : nullptr);
     }
 
     // StopCastingCharm may remove a possessed pet?
