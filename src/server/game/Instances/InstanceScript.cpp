@@ -55,13 +55,13 @@ bool InstanceScript::IsEncounterInProgress() const
 void InstanceScript::OnCreatureCreate(Creature* creature)
 {
     AddObject(creature, true);
-    //AddMinion(creature, true);
+    AddMinion(creature, true);
 }
 
 void InstanceScript::OnCreatureRemove(Creature* creature)
 {
     AddObject(creature, false);
-    //AddMinion(creature, false);
+    AddMinion(creature, false);
 }
 
 void InstanceScript::OnGameObjectCreate(GameObject* go)
@@ -153,7 +153,6 @@ void InstanceScript::LoadBossBoundaries(BossBoundaryData const& data)
             bosses[entry.BossId].boundary.push_back(entry.Boundary);
 }
 
-/* NYI
 void InstanceScript::LoadMinionData(MinionData const* data)
 {
     while (data->entry)
@@ -165,7 +164,6 @@ void InstanceScript::LoadMinionData(MinionData const* data)
     }
     TC_LOG_DEBUG("scripts", "InstanceScript::LoadMinionData: " UI64FMTD " minions loaded.", uint64(minions.size()));
 }
-*/
 
 void InstanceScript::LoadDoorData(DoorData const* data)
 {
@@ -179,7 +177,6 @@ void InstanceScript::LoadDoorData(DoorData const* data)
     TC_LOG_DEBUG("scripts", "InstanceScript::LoadDoorData: " UI64FMTD " doors loaded.", uint64(doors.size()));
 }
 
-/*NYI
 void InstanceScript::LoadObjectData(ObjectData const* creatureData, ObjectData const* gameObjectData)
 {
     if (creatureData)
@@ -200,7 +197,6 @@ void InstanceScript::LoadObjectData(ObjectData const* data, ObjectInfoMap& objec
         ++data;
     }
 }
-*/
 
 void InstanceScript::UpdateDoorState(GameObject* door)
 {
@@ -231,7 +227,6 @@ void InstanceScript::UpdateDoorState(GameObject* door)
     door->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
 }
 
-/* NYI
 void InstanceScript::UpdateMinionState(Creature* minion, EncounterState state)
 {
     switch (state)
@@ -252,7 +247,6 @@ void InstanceScript::UpdateMinionState(Creature* minion, EncounterState state)
             break;
     }
 }
-*/
 
 void InstanceScript::UpdateSpawnGroups()
 {
@@ -341,7 +335,6 @@ void InstanceScript::AddDoor(GameObject* door, bool add)
         UpdateDoorState(door);
 }
 
-/*NYI
 void InstanceScript::AddMinion(Creature* minion, bool add)
 {
     MinionInfoMap::iterator itr = minions.find(minion->GetEntry());
@@ -353,7 +346,6 @@ void InstanceScript::AddMinion(Creature* minion, bool add)
     else
         itr->second.bossInfo->minion.erase(minion->GetGUID());
 }
-*/
 
 bool InstanceScript::SetBossState(uint32 id, EncounterState state)
 {
@@ -377,13 +369,11 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
                 return false;
             }
 
-            /*NYI
             if (state == DONE)
                 for (GuidSet::iterator i = bossInfo->minion.begin(); i != bossInfo->minion.end(); ++i)
                     if (Creature* minion = instance->GetCreature(*i))
-                        if (minion->isWorldBoss() && minion->IsAlive())
+                        if (minion->IsWorldBoss() && minion->IsAlive())
                             return false;
-                            */
 
             bossInfo->state = state;
             SaveToDB();
@@ -393,11 +383,11 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
             for (GuidSet::iterator i = bossInfo->door[type].begin(); i != bossInfo->door[type].end(); ++i)
                 if (GameObject* door = instance->GetGameObject(*i))
                     UpdateDoorState(door);
-        /*NYI
+
         for (GuidSet::iterator i = bossInfo->minion.begin(); i != bossInfo->minion.end(); ++i)
             if (Creature* minion = instance->GetCreature(*i))
                 UpdateMinionState(minion, state);
-        */
+
         UpdateSpawnGroups();
         return true;
     }

@@ -60,12 +60,10 @@ private:
     StorageType _data;
 };
 
-/* NYI
 struct MinionData
 {
     uint32 entry, bossId;
 };
-*/
 
 struct ObjectData
 {
@@ -80,7 +78,7 @@ struct BossInfo
     BossInfo() : state(TO_BE_DECIDED) { }
     EncounterState state;
     GuidSet door[MAX_DOOR_TYPES];
-    //NYI GuidSet minion;
+    GuidSet minion;
     CreatureBoundary boundary;
 };
 
@@ -92,18 +90,16 @@ struct DoorInfo
     DoorType type;
 };
 
-/* NYI
 struct MinionInfo
 {
     explicit MinionInfo(BossInfo* _bossInfo) : bossInfo(_bossInfo) {}
     BossInfo* bossInfo;
 };
-*/
 
 typedef std::multimap<uint32 /*entry*/, DoorInfo> DoorInfoMap;
 typedef std::pair<DoorInfoMap::const_iterator, DoorInfoMap::const_iterator> DoorInfoMapBounds;
 
-//NYI typedef std::map<uint32 /*entry*/, MinionInfo> MinionInfoMap;
+typedef std::map<uint32 /*entry*/, MinionInfo> MinionInfoMap;
 typedef std::map<uint32 /*type*/, ObjectGuid /*guid*/> ObjectGuidMap;
 typedef std::map<uint32 /*entry*/, uint32 /*type*/> ObjectInfoMap;
 
@@ -211,17 +207,18 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void SetBossNumber(uint32 number) { bosses.resize(number); }
         void LoadBossBoundaries(BossBoundaryData const& data);
         void LoadDoorData(DoorData const* data);
-        //NYI void LoadMinionData(MinionData const* data);
+        void LoadMinionData(MinionData const* data);
+        void LoadObjectData(ObjectData const* creatureData, ObjectData const* gameObjectData);
 
         void AddObject(Creature* obj, bool add);
         void AddObject(GameObject* obj, bool add);
         void AddObject(WorldObject* obj, uint32 type, bool add);
 
         void AddDoor(GameObject* door, bool add);
-        //NYI void AddMinion(Creature* minion, bool add);
+        void AddMinion(Creature* minion, bool add);
 
         void UpdateDoorState(GameObject* door);
-        //NYI void UpdateMinionState(Creature* minion, EncounterState state);
+        void UpdateMinionState(Creature* minion, EncounterState state);
 
         void UpdateSpawnGroups();
 
@@ -239,13 +236,13 @@ class TC_GAME_API InstanceScript : public ZoneScript
 
         bool _SkipCheckRequiredBosses(Player const* player = nullptr) const;
     private:
-        //NYI static void LoadObjectData(ObjectData const* creatureData, ObjectInfoMap& objectInfo);
+        static void LoadObjectData(ObjectData const* creatureData, ObjectInfoMap& objectInfo);
         //LK? void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source);
 
         std::vector<char> headers;
         std::vector<BossInfo> bosses;
         DoorInfoMap doors;
-        //NYI MinionInfoMap minions;
+        MinionInfoMap minions;
         ObjectInfoMap _creatureInfo;
         ObjectInfoMap _gameObjectInfo;
         ObjectGuidMap _objectGuids;
@@ -254,8 +251,6 @@ class TC_GAME_API InstanceScript : public ZoneScript
 #endif
         std::vector<InstanceSpawnGroupInfo> const* const _instanceSpawnGroups;
         //NYI std::unordered_set<uint32> _activatedAreaTriggers;
-
-        //NYI MinionInfoMap minions;
 
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
         // Strong reference to the associated script module

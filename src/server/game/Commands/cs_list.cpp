@@ -452,7 +452,7 @@ bool ChatHandler::HandleListRespawnsCommand(const char * args)
         range = atoi((char*)args);
 
     std::vector<RespawnInfo*> respawns;
-    LocaleConstant locale = GetSession()->GetSessionDbcLocale();
+    //LocaleConstant locale = GetSession()->GetSessionDbcLocale();
     char const* stringOverdue = "overdue"; // sObjectMgr->GetTrinityString(LANG_LIST_RESPAWNS_OVERDUE, locale);
     char const* stringCreature = "creatures"; //sObjectMgr->GetTrinityString(LANG_LIST_RESPAWNS_CREATURES, locale);
     char const* stringGameobject = "gameobjects"; //sObjectMgr->GetTrinityString(LANG_LIST_RESPAWNS_GAMEOBJECTS, locale);
@@ -462,6 +462,7 @@ bool ChatHandler::HandleListRespawnsCommand(const char * args)
         PSendSysMessage(/*LANG_LIST_RESPAWNS_RANGE*/"Listing %s respawns within %uyd", stringCreature, range);
     else
         PSendSysMessage(/*LANG_LIST_RESPAWNS_ZONE*/"Listing %s respawns for %s (zone %u)", stringCreature, GetZoneName(zoneId, GetSessionDbcLocale()), zoneId);
+
     PSendSysMessage(/*LANG_LIST_RESPAWNS_LISTHEADER*/"SpawnID | Entry | GridXY| Zone | Respawn time (Full)");
     map->GetRespawnInfo(respawns, SPAWN_TYPEMASK_CREATURE, range ? 0 : zoneId);
     for (RespawnInfo* ri : respawns)
