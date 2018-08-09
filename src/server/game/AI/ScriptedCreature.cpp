@@ -17,68 +17,102 @@ struct TSpellSummary
     uint8 Effects;                                          // set of enum SelectEffect
 } extern* SpellSummary;
 
-void SummonList::Despawn(Creature *summon)
+void SummonList::Summon(Creature const* summon)
 {
-    ObjectGuid guid = summon->GetGUID();
-    for(auto i = begin(); i != end(); ++i)
-    {
-        if(*i == guid)
-        {
-            erase(i);
-            return;
-        }
-    }
+    storage_.push_back(summon->GetGUID());
+}
+
+void SummonList::Despawn(Creature const* summon)
+{
+    storage_.remove(summon->GetGUID());
 }
 
 void SummonList::DespawnEntry(uint32 entry)
 {
-    for(auto itr = begin(); itr != end();)
+    for (StorageType::iterator i = storage_.begin(); i != storage_.end();)
     {
-        if(Creature *summon = ObjectAccessor::GetCreature(*me, *itr))
+        Creature* summon = ObjectAccessor::GetCreature(*me, *i);
+        if (!summon)
+            i = storage_.erase(i);
+        else if (summon->GetEntry() == entry)
         {
-            if(summon->GetEntry() == entry)
-            {
-                summon->RemoveFromWorld();
-                summon->SetDeathState(JUST_DIED);
-                summon->RemoveCorpse();
-                itr = erase(itr);
-                continue;
-            }
+            i = storage_.erase(i);
+            summon->DespawnOrUnsummon();
         }
-        itr++;
+        else
+            ++i;
     }
 }
 
 void SummonList::DespawnAll(bool withoutWorldBoss)
 {
-    for(ObjectGuid & i : *this)
+    while (!storage_.empty())
     {
-        if(Creature *summon = ObjectAccessor::GetCreature(*me, i))
-        {
-            if (withoutWorldBoss && summon->IsWorldBoss())
-                continue;
-
-            summon->AddObjectToRemoveList();
-        }
+        Creature* summon = ObjectAccessor::GetCreature(*me, storage_.front());
+        storage_.pop_front();
+        if (summon)
+            summon->DespawnOrUnsummon();
     }
-    clear();
 }
 
-bool SummonList::IsEmpty()
+void SummonList::RemoveNotExisting()
 {
-    return empty();
+    for (StorageType::iterator i = storage_.begin(); i != storage_.end();)
+    {
+        if (ObjectAccessor::GetCreature(*me, *i))
+            ++i;
+        else
+            i = storage_.erase(i);
+    }
 }
 
 Creature* SummonList::GetCreatureWithEntry(uint32 entry) const
 {
-    for (ObjectGuid i : *this)
+    for (StorageType::const_iterator i = storage_.begin(); i != storage_.end(); ++i)
     {
-        if (Creature* summon = ObjectAccessor::GetCreature(*me, i))
-            if (summon->GetEntry() == entry)
-                return summon;
+        Creature* summon = ObjectAccessor::GetCreature(*me, *i);
+        if (summon && summon->GetEntry() == entry)
+            return summon;
     }
 
     return nullptr;
+}
+
+void SummonList::DoZoneInCombat(uint32 entry, float maxRangeToNearestTarget)
+{
+    for (StorageType::iterator i = storage_.begin(); i != storage_.end();)
+    {
+        Creature* summon = ObjectAccessor::GetCreature(*me, *i);
+        ++i;
+        if (summon && summon->IsAIEnabled
+            && (!entry || summon->GetEntry() == entry))
+        {
+            summon->AI()->DoZoneInCombat(nullptr, maxRangeToNearestTarget);
+        }
+    }
+}
+
+bool SummonList::IsAlive()
+{
+    for (ObjectGuid const i : *this)
+    {
+        if (Creature* summon = ObjectAccessor::GetCreature(*me, i))
+        {
+            if (summon->IsAlive())
+                return true;
+        }
+    }
+    return false;
+}
+
+void SummonList::DoActionImpl(int32 action, StorageType const& summons)
+{
+    for (auto const& guid : summons)
+    {
+        Creature* summon = ObjectAccessor::GetCreature(*me, guid);
+        if (summon && summon->IsAIEnabled)
+            summon->AI()->DoAction(action);
+    }
 }
 
 void BumpHelper::Update(const uint32 diff)
