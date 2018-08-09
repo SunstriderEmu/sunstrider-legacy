@@ -728,8 +728,8 @@ void SmartAI::OnCharmed(Unit* charmer, bool apply)
         else
             me->SetWalk(!mRun);
 
-        if (charmer)
-            AttackStart(charmer);
+        if (charmer && !me->IsFriendlyTo(charmer))
+            me->EngageWithTarget(charmer);
     }
 
     GetScript()->ProcessEventsFor(SMART_EVENT_CHARMED, nullptr, 0, 0, apply);

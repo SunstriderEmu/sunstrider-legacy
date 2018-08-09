@@ -64,7 +64,7 @@ bool CreatureAI::AssistPlayerInCombatAgainst(Unit* who)
         {
             //already fighting someone?
             if (!me->GetVictim())
-                AttackStart(itr);
+                me->EngageWithTarget(itr);
             else
             {
                 me->GetThreatManager().AddThreat(itr, 0.0f);
@@ -255,7 +255,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature /*= nullptr*/, float maxRange
         if (!creature->HasReactState(REACT_PASSIVE) && !creature->GetVictim())
         {
             if (Unit* nearTarget = creature->SelectNearestTarget(maxRangeToNearestTarget))
-                creature->AI()->AttackStart(nearTarget);
+                creature->EngageWithTarget(nearTarget);
             else if (creature->IsSummon())
             {
                 if (Unit* summoner = creature->ToTempSummon()->GetSummoner())
@@ -264,7 +264,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature /*= nullptr*/, float maxRange
                     {
                         Unit* target = summoner->GetAttackerForHelper();
                         if (target && creature->IsHostileTo(target))
-                            creature->AI()->AttackStart(target);
+                            creature->EngageWithTarget(target);
                     }
                 }
             }
