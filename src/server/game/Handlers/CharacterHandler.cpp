@@ -990,11 +990,9 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
 
     delete holder;
 
-    //avoid bug abuse to enter in heroic instance without needed reputation level
+    //sun: Avoid bug abuse to enter in heroic instance without needed reputation level
     if (sMapMgr->PlayerCannotEnter(pCurrChar->GetMap()->GetId(), pCurrChar))
-    {
         pCurrChar->RepopAtGraveyard();
-    }
 }
 
 void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)

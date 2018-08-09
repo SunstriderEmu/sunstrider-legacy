@@ -2889,12 +2889,13 @@ float InstanceMap::GetVisibilityNotifierPeriod() const
 */
 Map::EnterState InstanceMap::CannotEnter(Player* player)
 {
+    /* Sun: Removed this check. We may want to check this on a player login in in map
     if(player->GetMapRef().getTarget() == this)
     {
         TC_LOG_ERROR("maps","InstanceMap::CanEnter - player %s(%u) already in map %d,%d,%d!", player->GetName().c_str(), player->GetGUID().GetCounter(), GetId(), GetInstanceId(), GetSpawnMode());
         ABORT();
         // return CANNOT_ENTER_ALREADY_IN_MAP;
-    }
+    }*/
     
     // cannot enter if the instance is full (player cap), GMs don't count
     InstanceTemplate const* instanceTemplate = sObjectMgr->GetInstanceTemplate(GetId());
