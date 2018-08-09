@@ -520,6 +520,21 @@ void CallOfHelpCreatureInRangeDo::operator()(Creature* u)
 
 bool AnyDeadUnitCheck::operator()(Unit* u) { return !u->IsAlive(); }
 
+bool NearestHostileUnit::operator()(Unit* u)
+{
+    if (!me->IsWithinDistInMap(u, m_range))
+        return false;
+
+    if (!me->IsValidAttackTarget(u))
+        return false;
+
+    if (i_playerOnly && u->GetTypeId() != TYPEID_PLAYER)
+        return false;
+
+    m_range = me->GetDistance(u);   // use found unit range as new range limit for next check
+    return true;
+}
+
 bool NearestHostileUnitInAttackDistanceCheck::operator()(Unit* u)
 {
     //is in range

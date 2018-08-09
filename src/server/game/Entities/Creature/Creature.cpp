@@ -2581,8 +2581,8 @@ Unit* Creature::SelectNearestTarget(float dist, bool playerOnly /* = false */, b
         if (dist == 0.0f)
             dist = MAX_SEARCHER_DISTANCE;
 
-        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, playerOnly, furthest);
-        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(this, target, u_check);
+        Trinity::NearestHostileUnitCheck u_check(this, playerOnly, furthest);
+        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitCheck> searcher(this, target, u_check);
         Cell::VisitAllObjects(this, searcher, dist);
     }
 

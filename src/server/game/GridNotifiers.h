@@ -784,6 +784,23 @@ namespace Trinity
 
     // Creature checks
 
+    class NearestHostileUnitCheck
+    {
+    public:
+        explicit NearestHostileUnitCheck(Creature const* creature, float dist = 0.f, bool playerOnly = false) : me(creature), i_playerOnly(playerOnly)
+        {
+            m_range = (dist == 0.f ? 9999.f : dist);
+        }
+
+        bool operator()(Unit* u);
+
+    private:
+        Creature const* me;
+        float m_range;
+        bool i_playerOnly;
+        NearestHostileUnitCheck(NearestHostileUnitCheck const&) = delete;
+    };
+
     class TC_GAME_API NearestHostileUnitInAttackDistanceCheck
     {
         public:
