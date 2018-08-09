@@ -109,7 +109,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<Cre
     for(auto guid : guid_set)
     {
         // Don't spawn at all if there's a respawn time
-        //sun: Commented out, some systems such as creature formations need creature to be spawned in order to check for respawn conditions (maybe PoolMgr also)
+        //sun: Commented out, some systems such as creature formations need creature to be spawned in order to check for respawn conditions
         /* if (map->GetCreatureRespawnTime(guid)) 
             continue;*/
 
@@ -129,6 +129,11 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<Cre
             delete obj;
             continue;
         }
+
+        //sun, disable duplicate for compatibility mode (needed because of change higher allowing dead creatures to be loaded)
+        //respawn time shouldn't be handled by map for compat mode in the first place but well... not gonna change the whole TC implementation
+        if (obj->GetRespawnCompatibilityMode())
+            map->RemoveRespawnTime(SPAWN_TYPE_CREATURE, obj->GetSpawnId());
 
         AddObjectHelper(cell, m, count, map, obj);
     }
