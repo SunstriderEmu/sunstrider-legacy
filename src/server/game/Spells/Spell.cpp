@@ -8307,6 +8307,9 @@ namespace Trinity
                     return false;
                 break;
             default:
+                // sun: exclude gamemasters from TARGET_CHECK_ENTRY case. It may happen on spell such as 30541
+                if (unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->ToPlayer()->IsGameMaster())
+                    return false;
                 break;
             }
         }
