@@ -1572,6 +1572,9 @@ void World::SetInitialWorldSettings()
         sObjectMgr->LoadCreatureMovementOverrides();                 // must be after LoadCreatures()
     }
 
+    TC_LOG_INFO("server.loading", "Loading Temporary Summon Data...");
+    sObjectMgr->LoadTempSummons();                               // must be after LoadCreatureTemplates() and LoadGameObjectTemplates()
+
     if (!getConfig(CONFIG_DEBUG_DISABLE_GAMEOBJECTS_LOADING))
     {
         TC_LOG_INFO("server.loading", "Loading Gameobject Data...");

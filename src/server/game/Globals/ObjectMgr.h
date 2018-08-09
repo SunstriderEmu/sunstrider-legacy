@@ -37,6 +37,46 @@ struct PageText
     uint16 NextPage;
 };
 
+enum SummonerType
+{
+    SUMMONER_TYPE_CREATURE = 0,
+    SUMMONER_TYPE_GAMEOBJECT = 1,
+    SUMMONER_TYPE_MAP = 2
+};
+
+#pragma pack(push, 1)
+
+/// Key for storing temp summon data in TempSummonDataContainer
+struct TempSummonGroupKey
+{
+    TempSummonGroupKey(uint32 summonerEntry, SummonerType summonerType, uint8 group)
+        : _summonerEntry(summonerEntry), _summonerType(summonerType), _summonGroup(group)
+    {
+    }
+
+    bool operator<(TempSummonGroupKey const& rhs) const
+    {
+        return std::tie(_summonerEntry, _summonerType, _summonGroup) <
+            std::tie(rhs._summonerEntry, rhs._summonerType, rhs._summonGroup);
+    }
+
+private:
+    uint32 _summonerEntry;      ///< Summoner's entry
+    SummonerType _summonerType; ///< Summoner's type, see SummonerType for available types
+    uint8 _summonGroup;         ///< Summon's group id
+};
+
+/// Stores data for temp summons
+struct TempSummonData
+{
+    uint32 entry;        ///< Entry of summoned creature
+    Position pos;        ///< Position, where should be creature spawned
+    TempSummonType type; ///< Summon type, see TempSummonType for available types
+    uint32 time;         ///< Despawn time, usable only with certain temp summon types
+};
+
+#pragma pack(pop)
+
 struct GameTele
 {
     float  position_x;
@@ -344,6 +384,7 @@ typedef std::unordered_map<uint32, PointOfInterestLocale> PointOfInterestLocaleC
 typedef std::unordered_map<uint32, SpawnGroupTemplateData> SpawnGroupDataContainer;
 typedef std::multimap<uint32, SpawnData const*> SpawnGroupLinkContainer;
 typedef std::unordered_map<uint16, std::vector<InstanceSpawnGroupInfo>> InstanceSpawnGroupContainer;
+typedef std::map<TempSummonGroupKey, std::vector<TempSummonData>> TempSummonDataContainer;
 
 typedef std::multimap<uint32,uint32> QuestRelations;
 
@@ -760,6 +801,7 @@ class TC_GAME_API ObjectMgr
         void LoadCreatureTemplate(Field* fields);
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
         void CheckCreatureMovement(char const* table, uint64 id, CreatureMovementData& creatureMovement);
+        void LoadTempSummons();
         void LoadCreatures();
         void LoadLinkedRespawn();
         /* 
@@ -896,6 +938,24 @@ class TC_GAME_API ObjectMgr
         CellObjectGuidsMap const& GetMapObjectGuids(uint16 mapid, uint8 spawnMode)
         {
             return _mapObjectGuidsStore[MAKE_PAIR32(mapid, spawnMode)];
+        }
+
+        /**
+        * Gets temp summon data for all creatures of specified group.
+        *
+        * @param summonerId   Summoner's entry.
+        * @param summonerType Summoner's type, see SummonerType for available types.
+        * @param group        Id of required group.
+        *
+        * @return null if group was not found, otherwise reference to the creature group data
+        */
+        std::vector<TempSummonData> const* GetSummonGroup(uint32 summonerId, SummonerType summonerType, uint8 group) const
+        {
+            TempSummonDataContainer::const_iterator itr = _tempSummonDataStore.find(TempSummonGroupKey(summonerId, summonerType, group));
+            if (itr != _tempSummonDataStore.end())
+                return &itr->second;
+
+            return nullptr;
         }
 
         BroadcastText const* GetBroadcastText(uint32 id) const
@@ -1209,6 +1269,8 @@ class TC_GAME_API ObjectMgr
         SpawnGroupDataContainer _spawnGroupDataStore;
         SpawnGroupLinkContainer _spawnGroupMapStore;
         InstanceSpawnGroupContainer _instanceSpawnGroupStore;
+        /// Stores temp summon data grouped by summoner's entry, summoner's type and group id
+        TempSummonDataContainer _tempSummonDataStore;
         InstanceTemplateContainer _instanceTemplateStore;
         CreatureModelContainer _creatureModelStore;
         InstanceTemplateAddonContainer _instanceTemplateAddonStore;
@@ -1223,7 +1285,6 @@ class TC_GAME_API ObjectMgr
 
     private:
         void LoadScripts(ScriptMapMap& scripts, char const* tablename);
-        void ConvertCreatureAddonAuras(CreatureAddon* addon, char const* table, char const* guidEntryStr);
         void LoadQuestRelationsHelper(QuestRelations& map,char const* table);
 
         typedef std::unordered_map<uint32 /*creatureId*/, std::unique_ptr<PetLevelInfo[] /*level*/>> PetLevelInfoContainer;

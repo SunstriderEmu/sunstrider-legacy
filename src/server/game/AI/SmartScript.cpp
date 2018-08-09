@@ -2386,15 +2386,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_SUMMON_CREATURE_GROUP:
         {
-            /*
             std::list<TempSummon*> summonList;
             GetBaseObject()->SummonCreatureGroup(e.action.creatureGroup.group, &summonList);
 
-            for (std::list<TempSummon*>::const_iterator itr = summonList.begin(); itr != summonList.end(); ++itr)
+            for (TempSummon* summon : summonList)
                 if (unit && e.action.creatureGroup.attackInvoker)
-                    target->AI()->AttackStart(unit);
-
-            */
+                    summon->AI()->AttackStart(unit);
             break;
         }
         case SMART_ACTION_SET_POWER:
