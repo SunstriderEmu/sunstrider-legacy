@@ -1850,13 +1850,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = 1;
             spellInfo->EffectImplicitTargetB[0] = 0;
             break;
-        case 30541: //Maghteridon SPELL_BLAZE_TARGET
-            spellInfo->EffectImplicitTargetA[0] = 6; // target 7, random target with certain entry spell, need core fix
-            spellInfo->EffectImplicitTargetB[0] = 0;
-            break;
-        case 30657: //maghteridon SPELL_QUAKE_TRIGGER
-            spellInfo->EffectTriggerSpell[0] = 30571; // SPELL_QUAKE_KNOCKBACK
-            break;
         case 42821: //Headless horseman SPELL_WISP_BLUE
         case 42818: //Headless horseman SPELL_WISP_FLIGHT_PORT
             //that's hack but there are no info about range of this spells in dbc
