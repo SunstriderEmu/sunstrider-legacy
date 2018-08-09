@@ -391,6 +391,19 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
     if (spawnid)
         m_spawnId = spawnid;
 
+    /*TC
+    if (uint32 linkedEntry = GetGOInfo()->GetLinkedGameObjectEntry())
+    {
+        GameObject* linkedGO = new GameObject();
+        if (linkedGO->Create(map->GenerateLowGuid<HighGuid::GameObject>(), linkedEntry, map, phaseMask, pos, rotation, 255, GO_STATE_READY))
+        {
+            SetLinkedTrap(linkedGO);
+            map->AddToMap(linkedGO);
+        }
+        else
+            delete linkedGO;
+    }*/
+
     return true;
 }
 
@@ -635,10 +648,13 @@ void GameObject::Update(uint32 diff)
             {
                 case GAMEOBJECT_TYPE_DOOR:
                 case GAMEOBJECT_TYPE_BUTTON:
+                    if (GetAutoCloseTime() && GameTime::GetGameTimeMS() >= m_cooldownTime)
+                        ResetDoorOrButton();
+                    break;
                 case GAMEOBJECT_TYPE_GOOBER:
                     if(GetAutoCloseTime() && (m_cooldownTime < GameTime::GetGameTimeMS()))
                     {
-                        SwitchDoorOrButton(false);
+                        RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                         SetLootState(GO_JUST_DEACTIVATED);
                     }
                     break;
@@ -702,6 +718,7 @@ void GameObject::Update(uint32 diff)
             */
 
             //if Gameobject should cast spell, then this, but some GOs (type = 10) should be destroyed
+            /*TC but cast is already handled in GameObject::Use
             if (GetGoType() == GAMEOBJECT_TYPE_GOOBER)
             {
                 uint32 spellId = GetGOInfo()->goober.spellId;
@@ -720,6 +737,7 @@ void GameObject::Update(uint32 diff)
                     m_usetimes = 0;
                 }
             }
+            */
 
             if(GetOwnerGUID())
             {
@@ -778,7 +796,7 @@ void GameObject::Update(uint32 diff)
                 return;
             }
 
-            DestroyForNearbyPlayers(); // old UpdateObjectVisibility()
+            DestroyForNearbyPlayers();
             break;
         }
     }
@@ -1418,7 +1436,6 @@ void GameObject::ResetDoorOrButton()
     m_cooldownTime = 0;
 }
 
-
 bool GameObject::IsNeverVisible() const
 {
     if (WorldObject::IsNeverVisible())
@@ -1518,6 +1535,15 @@ void GameObject::Use(Unit* user)
             return;
     }
 
+    // If cooldown data present in template
+    if (uint32 cooldown = GetGOInfo()->GetCooldown())
+    {
+        if (GameTime::GetGameTimeMS() < m_cooldownTime)
+            return;
+
+        m_cooldownTime = GameTime::GetGameTimeMS() + cooldown * IN_MILLISECONDS;
+    }
+
     switch(GetGoType())
     {
         case GAMEOBJECT_TYPE_DOOR:                          //0
@@ -1547,7 +1573,7 @@ void GameObject::Use(Unit* user)
             if(!info)
                 return;
 
-            if(user->GetTypeId()!=TYPEID_PLAYER)
+            if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
             Player* player = user->ToPlayer();
@@ -1599,17 +1625,16 @@ void GameObject::Use(Unit* user)
         {
             GameObjectTemplate const* info = GetGOInfo();
 
-            if(user->GetTypeId()==TYPEID_PLAYER)
+            if(Player* player = user->ToPlayer())
             {
-                Player* player = user->ToPlayer();
-
                 // show page
                 if(info->goober.pageId)
                 {
                     WorldPacket data(SMSG_GAMEOBJECT_PAGETEXT, 8);
                     data << GetGUID();
                     player->SendDirectMessage(&data);
-                } else if (info->goober.gossipID)
+                } 
+                else if (info->goober.gossipID)
                 {
                     player->PrepareGossipMenu(this, info->goober.gossipID);
                     player->SendPreparedGossip(this);
@@ -1623,6 +1648,14 @@ void GameObject::Use(Unit* user)
                 }
 
                 // possible quest objective for active quests
+                if (info->goober.questId && sObjectMgr->GetQuestTemplate(info->goober.questId))
+                {
+                    //Quest require to be active for GO using
+                    if (player->GetQuestStatus(info->goober.questId) != QUEST_STATUS_INCOMPLETE)
+                        break;
+                }
+
+                // possible quest objective for active quests
                 player->CastedCreatureOrGO(info->entry, GetGUID(), 0);
             }
 
@@ -1632,7 +1665,12 @@ void GameObject::Use(Unit* user)
                 SetLootState(GO_ACTIVATED, user);
                 if (!info->goober.customAnim)
                     SetGoState(GO_STATE_ACTIVE);
+                else
+                    SendCustomAnim(GetGoAnimProgress());
             }
+
+            //sun: note that this overwrites the cooldown decided by info->GetCooldown() at the beginning of this func. Is this normal?
+            m_cooldownTime = GameTime::GetGameTimeMS() + info->GetAutoCloseTime();
 
             // cast this spell later if provided
             spellId = info->goober.spellId;
