@@ -804,7 +804,7 @@ namespace Trinity
     class TC_GAME_API NearestHostileUnitInAttackDistanceCheck
     {
         public:
-            explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0, bool playerOnly = false, bool furthest = false) : m_creature(creature), i_playerOnly(playerOnly), m_minRange(0), i_furthest(furthest)
+            explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0, bool playerOnly = false, bool furthest = false) : me(creature), i_playerOnly(playerOnly), m_minRange(0), i_furthest(furthest)
             {
                 m_range = (dist == 0 ? 9999 : dist);
                 m_force = (dist == 0 ? false : true);
@@ -812,12 +812,12 @@ namespace Trinity
             bool operator()(Unit* u);
             float GetLastRange() const { return m_range; }
         private:
-            Creature const *m_creature;
+            Creature const* me;
             float m_range, m_minRange;
             bool m_force;
             bool i_playerOnly;
             bool i_furthest;
-            NearestHostileUnitInAttackDistanceCheck(NearestHostileUnitInAttackDistanceCheck const&);
+            NearestHostileUnitInAttackDistanceCheck(NearestHostileUnitInAttackDistanceCheck const&) = delete;
     };
 
     class TC_GAME_API NearestHostileUnitInAggroRangeCheck
