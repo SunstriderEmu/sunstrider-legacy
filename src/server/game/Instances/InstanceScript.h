@@ -215,9 +215,17 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void AddObject(WorldObject* obj, uint32 type, bool add);
 
         void AddDoor(GameObject* door, bool add);
+        /* 
+        LoadMinionData must be done first before calling this.
+        Add creature to minions for the boss it was registered for, and call UpdateMinionState whenever boss state changes.
+        */
         void AddMinion(Creature* minion, bool add);
 
         void UpdateDoorState(GameObject* door);
+        /* For:
+        NOT_STARTED: Respawn creature if dead, reset it if alive
+        IN_PROGRESS: Respawn creature if dead. DoZoneInCombat if no victim.
+        */
         void UpdateMinionState(Creature* minion, EncounterState state);
 
         void UpdateSpawnGroups();
