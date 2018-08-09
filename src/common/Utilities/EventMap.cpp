@@ -40,6 +40,8 @@ void EventMap::ScheduleEvent(uint32 eventId, Milliseconds minTime, Milliseconds 
 
 void EventMap::ScheduleEvent(uint32 eventId, uint32 time, uint32 group /*= 0*/, uint8 phase /*= 0*/)
 {
+    DEBUG_ASSERT(eventId != 0); //sun: extra check, EventMap is not working with id 0
+
     if (group && group <= 8)
         eventId |= (1 << (group + 15));
 
