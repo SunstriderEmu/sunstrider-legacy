@@ -3175,8 +3175,9 @@ void Spell::DoSpellEffectHit(Unit* unit, uint8 effIndex, TargetInfo& hitInfo)
             if (m_spellInfo->Speed > 0.0f && !m_spellInfo->IsChanneled())
             {
                 _spellAura = nullptr;
-                if (Aura* aura = unit->GetAura(m_spellInfo->Id, caster->GetGUID(), m_CastItem ? m_CastItem->GetGUID() : ObjectGuid::Empty, aura_effmask))
-                    _spellAura = aura->ToUnitAura();
+                //sun: Wrong! This will prevent spells such as 30531 to stack. I don't understand the intent of the next following line though.
+                //if (Aura* aura = unit->GetAura(m_spellInfo->Id, caster->GetGUID(), m_CastItem ? m_CastItem->GetGUID() : ObjectGuid::Empty, aura_effmask))
+                //    _spellAura = aura->ToUnitAura();
             }
 
             if (!_spellAura)
