@@ -22459,7 +22459,7 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
 
 void Player::ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData, bool /*updateCreatureLiquid*/)
 {
-    if (IsFlying())
+    if (IsFlying() || IsInFlight()) //sun: also check IsInFlight 
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWATER_INDARKWATER);
         return;
