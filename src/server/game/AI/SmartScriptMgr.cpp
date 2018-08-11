@@ -960,6 +960,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             // no break
         }
         case SMART_ACTION_ADD_AURA:
+        case SMART_ACTION_SELF_CAST:
         case SMART_ACTION_CAST:
         {
             if (!IsSpellValid(e, e.action.cast.spell))
