@@ -11798,7 +11798,7 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
 
     WorldPacket data(SMSG_PERIODICAURALOG, 30);
     data << GetPackGUID();
-    data.appendPackGUID(aura->GetCasterGUID());
+    data << aura->GetCasterGUID().WriteAsPacked();
     data << uint32(aura->GetId());                          // spellId
     data << uint32(1);                                      // count
     data << uint32(aura->GetAuraType());                    // auraId
@@ -11807,13 +11807,24 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
         case SPELL_AURA_PERIODIC_DAMAGE:
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
             data << uint32(pInfo->damage);                  // damage
+#ifdef LICH_KING
+            data << uint32(pInfo->overDamage);              // overkill?
+#endif
             data << uint32(aura->GetSpellInfo()->SchoolMask);
             data << uint32(pInfo->absorb);                  // absorb
             data << uint32(pInfo->resist);                  // resist
+#ifdef LICH_KING
+            data << uint8(pInfo->critical);                 // new 3.1.2 critical tick
+#endif
             break;
         case SPELL_AURA_PERIODIC_HEAL:
         case SPELL_AURA_OBS_MOD_HEALTH:
             data << uint32(pInfo->damage);                  // damage
+#ifdef LICH_KING
+            data << uint32(pInfo->overDamage);              // overheal
+            data << uint32(pInfo->absorb);                  // absorb
+            data << uint8(pInfo->critical);                 // new 3.1.2 critical tick
+#endif
             break;
         case SPELL_AURA_OBS_MOD_POWER:
         case SPELL_AURA_PERIODIC_ENERGIZE:

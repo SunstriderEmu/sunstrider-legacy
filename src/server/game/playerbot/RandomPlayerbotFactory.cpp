@@ -90,10 +90,10 @@ RandomPlayerbotFactory::RandomPlayerbotFactory(uint32 accountId) : accountId(acc
 uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
 {
     uint8 race = availableRaces[cls][urand(0, availableRaces[cls].size() - 1)];
-    return CreateRandomBot(cls, race, false);
+    return CreateRandomBot(cls, race);
 }
 
-uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls, uint8 race, bool testBot)
+uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls, uint8 race)
 {
     sLog->outMessage("playerbot", LOG_LEVEL_DEBUG, "Creating new random bot for class %d", cls);
 
@@ -109,11 +109,7 @@ uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls, uint8 race, bool testB
         return 0;
     }
 
-    Player* player;
-    if(testBot)
-        player = new Player(session);
-    else
-        player = new TestPlayer(session);
+    Player* player = new Player(session);
 
     CharacterCreateInfo cci;
     cci.RandomizeAppearance();
@@ -123,7 +119,7 @@ uint32 RandomPlayerbotFactory::CreateRandomBot(uint8 cls, uint8 race, bool testB
 
     if (!player->Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), &cci))
     {
-        player->DeleteFromDB(player->GetGUID(), accountId, true/*, true */);
+        player->DeleteFromDB(player->GetGUID(), accountId, true, true);
         delete player;
         delete session; //delete player before session! Player destructor does reference session
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Unable to create random bot for account %d - name: \"%s\"; race: %u; class: %u; gender: %u; skin: %u; face: %u; hairStyle: %u; hairColor: %u; facialHair: %u; outfitId: %u",

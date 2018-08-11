@@ -1,6 +1,8 @@
 
 -- Remove Burning Abyssal and Channelers C++ Scripts + Add missing trigger flags
 UPDATE creature_template SET ScriptName = "", AIName = "SmartAI" where entry IN (17256, 17454);
+-- Allow silence on channelers
+UPDATE creature_template SET mechanic_immune_mask = mechanic_immune_mask & ~0x100 WHERE entry = 17256;
 UPDATE creature_template SET ScriptName = "npc_magtheridon_room", flags_extra = 128 WHERE entry = 17516;
 UPDATE creature_template SET flags_extra = 128 WHERE entry = 17474;
 -- Change cube cooldown

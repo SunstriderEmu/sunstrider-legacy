@@ -22,7 +22,7 @@ class RandomPlayerbotFactory
         //return bot guid 
         uint32 CreateRandomBot(uint8 cls);
         //return bot guid
-        uint32 CreateRandomBot(uint8 cls, uint8 race, bool testBot = false);
+        uint32 CreateRandomBot(uint8 cls, uint8 race);
         static void CreateRandomBots();
         static void CreateRandomGuilds();
 
