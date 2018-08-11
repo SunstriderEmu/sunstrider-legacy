@@ -88,13 +88,13 @@ class FakeSlowdownsTest : public TestCase
 public:
     void Test() override
     {
-        for (uint32 i = 0; i < 1000; i++)
-        {
-            std::this_thread::sleep_for(10s);
-            HandleThreadPause();
-            if (sTestMgr->GetRemainingTestsCount() == 1)
-                break;
-        }
+        //for (uint32 i = 0; i < 1000; i++)
+        //{
+        //    std::this_thread::sleep_for(10s);
+        //    HandleThreadPause();
+        //    if (sTestMgr->GetRemainingTestsCount() == 1)
+        //        break;
+        //}
     }
 };
 
