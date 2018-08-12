@@ -129,10 +129,12 @@ void PointMovementGenerator<T>::DoFinalize(T* owner, bool active, bool movementI
 template<class T>
 void PointMovementGenerator<T>::DoReset(T* unit)
 {
+    MovementGenerator::RemoveFlag(MOVEMENTGENERATOR_FLAG_TRANSITORY | MOVEMENTGENERATOR_FLAG_DEACTIVATED);
+
     if (!unit->IsStopped())
         unit->StopMoving();
 
-    unit->AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
+    DoInitialize(owner);
 }
 
 template<class T>
