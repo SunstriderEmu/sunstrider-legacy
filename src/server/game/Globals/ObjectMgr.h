@@ -368,7 +368,6 @@ struct QuestGreetingLocale
     std::vector<std::string> greeting;
 };
 
-typedef std::map<ObjectGuid, ObjectGuid> LinkedRespawnContainer;
 typedef std::unordered_map<uint32,CreatureData> CreatureDataContainer;
 typedef std::unordered_map<uint32,GameObjectData> GameObjectDataContainer;
 typedef std::unordered_map<uint32,CreatureLocale> CreatureLocaleContainer;
@@ -803,13 +802,6 @@ class TC_GAME_API ObjectMgr
         void CheckCreatureMovement(char const* table, uint64 id, CreatureMovementData& creatureMovement);
         void LoadTempSummons();
         void LoadCreatures();
-        void LoadLinkedRespawn();
-        /* 
-        spawnId: spawnId of the creature or gameobject you want to link.
-        linkedSpawnId: spawnId of the creature or gameobject (boss most likely) that you want to link to.
-        use linkedSpawnId = 0 to remove link.
-        */
-        bool SetCreatureLinkedRespawn(ObjectGuid::LowType spawnId, ObjectGuid::LowType linkedSpawnId);
         void LoadCreatureAddons();
         void LoadCreatureTemplateAddons();
         void LoadCreatureModelInfo();
@@ -981,12 +973,6 @@ class TC_GAME_API ObjectMgr
         }
         CreatureData& NewOrExistCreatureData(ObjectGuid::LowType guid) { return _creatureDataStore[guid]; }
         void DeleteCreatureData(ObjectGuid::LowType guid);
-        ObjectGuid GetLinkedRespawnGuid(ObjectGuid guid) const
-        {
-            LinkedRespawnContainer::const_iterator itr = _linkedRespawnStore.find(guid);
-            if (itr == _linkedRespawnStore.end()) return ObjectGuid::Empty;
-            return itr->second;
-        }
         CreatureLocale const* GetCreatureLocale(uint32 entry) const
         {
             return Trinity::Containers::MapGetValuePtr(_creatureLocaleStore, entry);
@@ -1265,7 +1251,6 @@ class TC_GAME_API ObjectMgr
 
         PageTextContainer _pageTextStore;
         EquipmentInfoContainer _equipmentInfoStore;
-        LinkedRespawnContainer _linkedRespawnStore;
         SpawnGroupDataContainer _spawnGroupDataStore;
         SpawnGroupLinkContainer _spawnGroupMapStore;
         InstanceSpawnGroupContainer _instanceSpawnGroupStore;

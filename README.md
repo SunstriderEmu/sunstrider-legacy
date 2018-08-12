@@ -12,7 +12,7 @@ You can think of this core as TrinityCore on TBC.
 Over the years all majors systems were rewritten using TC as a base. This allows us to continuously make us of the TrinityCore recent developments and have a dev-friendly core using the well known infrastructure of TC. 
 When a system has been imported from TC, differences (either improvements or TBC adaptations) with original TC are usually highlighted by comments.
 * Partly open source  
-With the exception of instance and creatures scripts, as well as the AntiCheat. The core is not currently meant to be used as is outside of the Valoren server.
+With the exception of instance and creatures scripts, as well as the AntiCheat. The core is not currently meant to be used as is outside of the Valoren server, but you're free to re use parts of it.
 * Automated testing system  
 Our star feature! Mainly used for spells at the moment.
 * [Continuous integration](https://travis-ci.org/ValorenWoW/sunstrider-core)  

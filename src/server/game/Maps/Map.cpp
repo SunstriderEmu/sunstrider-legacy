@@ -3715,22 +3715,6 @@ void Map::DeleteRespawnTimesInDB(uint16 mapId, uint32 instanceId)
     CharacterDatabase.Execute(stmt);
 }
 
-time_t Map::GetLinkedRespawnTime(ObjectGuid guid) const
-{
-    ObjectGuid linkedGuid = sObjectMgr->GetLinkedRespawnGuid(guid);
-    switch (linkedGuid.GetHigh())
-    {
-    case HighGuid::Unit:
-        return GetCreatureRespawnTime(linkedGuid.GetCounter());
-    case HighGuid::GameObject:
-        return GetGORespawnTime(linkedGuid.GetCounter());
-    default:
-        break;
-    }
-
-    return time_t(0);
-}
-
 void Map::LoadCorpseData()
 {
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CORPSES);
@@ -4082,22 +4066,6 @@ bool Map::CheckRespawn(RespawnInfo* info)
             info->respawnTime = 0;
             return false;
         }
-    }
-
-    // next, check linked respawn time
-    ObjectGuid thisGUID = ObjectGuid((info->type == SPAWN_TYPE_GAMEOBJECT) ? HighGuid::GameObject : HighGuid::Unit, info->entry, info->spawnId);
-    if (time_t linkedTime = GetLinkedRespawnTime(thisGUID))
-    {
-        time_t now = time(NULL);
-        time_t respawnTime;
-        if (linkedTime == std::numeric_limits<time_t>::max())
-            respawnTime = linkedTime;
-        else if (sObjectMgr->GetLinkedRespawnGuid(thisGUID) == thisGUID) // never respawn, save "something" in DB
-            respawnTime = now + WEEK;
-        else // set us to check again shortly after linked unit
-            respawnTime = std::max<time_t>(now, linkedTime) + urand(5, 15);
-        info->respawnTime = respawnTime;
-        return false;
     }
 
     // now, check if we're part of a pool

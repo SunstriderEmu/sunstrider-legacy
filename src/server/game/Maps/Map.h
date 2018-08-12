@@ -281,10 +281,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         //get dynamic collision (gameobjects only ?)
         bool getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
 
-        /*
-        RESPAWN TIMES
-        */
-        time_t GetLinkedRespawnTime(ObjectGuid guid) const;
         time_t GetCreatureRespawnTime(ObjectGuid::LowType dbGuid) const
         {
             RespawnInfoMap::const_iterator itr = _creatureRespawnTimesBySpawnId.find(dbGuid);

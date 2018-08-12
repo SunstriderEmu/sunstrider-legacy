@@ -694,9 +694,6 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage(LANG_NPCINFO_MOVEMENT_DATA, target->GetMovementTemplate().ToString().c_str());
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
     PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
-    if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
-        if(CreatureTemplate const *master = sObjectMgr->GetCreatureTemplate(linked->id))
-            PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(ObjectGuid(HighGuid::Unit, target->GetEntry(), target->GetSpawnId())), linked->id, master->Name.c_str());
 
 
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
@@ -941,39 +938,6 @@ bool ChatHandler::HandleNpcRemoveFormationCommand(const char* args)
 
     PSendSysMessage("Creature removed from formation.");
 
-    return true;
-}
-
-bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
-{
-    ARGS_CHECK
-
-    ObjectGuid::LowType linkguid = (uint32) atoi((char*)args);
-
-    Creature* pCreature = GetSelectedCreature();
-
-    if(!pCreature)
-    {
-        SendSysMessage(LANG_SELECT_CREATURE);
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    if(!pCreature->GetSpawnId())
-    {
-        PSendSysMessage("Selected creature [guidlow:%u] isn't in `creature` table", pCreature->GetGUID().GetCounter());
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    if(!sObjectMgr->SetCreatureLinkedRespawn(pCreature->GetSpawnId(), linkguid))
-    {
-        PSendSysMessage("Selected creature can't link with guid '%u'.", linkguid);
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    PSendSysMessage("LinkGUID '%u' added to creature with DBTableGUID: '%u'.", linkguid, pCreature->GetSpawnId());
     return true;
 }
 

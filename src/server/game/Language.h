@@ -670,7 +670,7 @@ enum TrinityStrings
     LANG_BG_AV_H_NEAR_LOSE              = 747,
     LANG_BG_AV_H_CAPTAIN_DEAD           = 748,
     LANG_BG_AV_A_CAPTAIN_DEAD           = 749,
-    LANG_NPCINFO_LINKGUID               = 750,
+    //UNUSED                            = 750,
     
     LANG_RATED_ARENA_DISABLED           = 751,
     LANG_RATED_ARENA_CLOSED_DURING_NIGHT = 752,

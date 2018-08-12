@@ -227,7 +227,6 @@ class TC_GAME_API ChatHandler
         bool HandleNpcYellCommand(const char* args);
         bool HandleNpcAddFormationCommand(const char* args);
         bool HandleNpcRemoveFormationCommand(const char* args);
-        bool HandleNpcSetLinkCommand(const char* args);
         bool HandleNpcGoBackHomeCommand(const char* args);
         bool HandleNpcSetPoolCommand(const char* args);
         bool HandleNpcSetInstanceEventCommand(const char* args);
@@ -259,7 +258,6 @@ class TC_GAME_API ChatHandler
         bool HandleReloadCreatureTemplateCommand(const char* args);
         bool HandleReloadCreatureQuestStartersCommand(const char* args);
         bool HandleReloadCreatureQuestEndersCommand(const char* args);
-        bool HandleLinkedRespawnCommand(const char* args);
         bool HandleReloadGameEventCommand(const char* args);
         bool HandleReloadGameGraveyardZoneCommand(const char* args);
         bool HandleReloadGameObjectScriptsCommand(const char* args);

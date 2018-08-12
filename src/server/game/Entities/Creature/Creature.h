@@ -764,9 +764,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         ObjectGuid::LowType lootingGroupLowGUID;                         // used to find group which is looting corpse
 
-        // Linked Creature Respawning System
-        const CreatureData* GetLinkedRespawnCreatureData() const;
-
         void SendZoneUnderAttackMessage(Player* attacker);
 
         bool HasQuest(uint32 quest_id) const override;

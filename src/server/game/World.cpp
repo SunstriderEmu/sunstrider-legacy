@@ -1584,9 +1584,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Spawn Group Data...");
     sObjectMgr->LoadSpawnGroups();
 
-    TC_LOG_INFO("server.loading", "Loading Linked Respawn...");
-    sObjectMgr->LoadLinkedRespawn();                     // must be after LoadCreatures(), LoadGameObjects()
-
     TC_LOG_INFO("server.loading", "Loading Transport templates...");
     sTransportMgr->LoadTransportTemplates();
 

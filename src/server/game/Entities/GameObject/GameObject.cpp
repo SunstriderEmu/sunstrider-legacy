@@ -485,25 +485,6 @@ void GameObject::Update(uint32 diff)
                     time_t now = time(nullptr);
                     if (m_respawnTime <= now)            // timer expired
                     {
-                        ObjectGuid dbtableHighGuid(HighGuid::GameObject, GetEntry(), m_spawnId);
-                        time_t linkedRespawntime = GetMap()->GetLinkedRespawnTime(dbtableHighGuid);
-                        if (linkedRespawntime)             // Can't respawn, the master is dead
-                        {
-                            ObjectGuid targetGuid = sObjectMgr->GetLinkedRespawnGuid(dbtableHighGuid);
-                            if (targetGuid == dbtableHighGuid) // if linking self, never respawn
-                                SetRespawnTime(WEEK);
-                            else
-                                m_respawnTime = (now > linkedRespawntime ? now : linkedRespawntime) + urand(5, MINUTE); // else copy time from master and add a little
-                            SaveRespawnTime(); // also save to DB immediately
-
-                            //sun: notify the PoolMgr of our despawn, so that it may already consider this object as removed
-                            uint32 poolid = GetSpawnId() ? sPoolMgr->IsPartOfAPool<GameObject>(GetSpawnId()) : 0;
-                            if (poolid)
-                                sPoolMgr->RemoveActiveObject<GameObject>(poolid, GetSpawnId());
-
-                            return;
-                        }
-
                         m_respawnTime = 0;
                         m_SkillupList.clear();
                         m_usetimes = 0;
@@ -1033,26 +1014,6 @@ void GameObject::DeleteFromDB()
     trans->Append(stmt);
 
     trans->PAppend("DELETE FROM game_event_gameobject WHERE guid = '%u'", m_spawnId);
-
-    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN);
-    stmt->setUInt32(0, m_spawnId);
-    stmt->setUInt32(1, LINKED_RESPAWN_GO_TO_GO);
-    trans->Append(stmt);
-    
-    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN);
-    stmt->setUInt32(0, m_spawnId);
-    stmt->setUInt32(1, LINKED_RESPAWN_GO_TO_CREATURE);
-    trans->Append(stmt);
-    
-    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN_MASTER);
-    stmt->setUInt32(0, m_spawnId);
-    stmt->setUInt32(1, LINKED_RESPAWN_GO_TO_GO);
-    trans->Append(stmt);
-   
-    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN_MASTER);
-    stmt->setUInt32(0, m_spawnId);
-    stmt->setUInt32(1, LINKED_RESPAWN_CREATURE_TO_GO);
-    trans->Append(stmt);
 
     WorldDatabase.CommitTransaction(trans);
 }

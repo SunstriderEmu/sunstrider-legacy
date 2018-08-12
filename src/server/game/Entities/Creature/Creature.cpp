@@ -656,30 +656,7 @@ void Creature::Update(uint32 diff)
                     }
                 }
 
-                ObjectGuid dbtableHighGuid(HighGuid::Unit, GetEntry(), m_spawnId);
-                time_t linkedRespawnTime = GetMap()->GetLinkedRespawnTime(dbtableHighGuid);
-                if (!linkedRespawnTime)             // Can respawn
-                    Respawn();
-                else  // the master is dead
-                { 
-                    ObjectGuid targetGuid = sObjectMgr->GetLinkedRespawnGuid(dbtableHighGuid);
-                    if (targetGuid == dbtableHighGuid) // if linking self, never respawn
-                        SetRespawnTime(WEEK);
-                    else
-                    {
-                        // else copy time from master and add a little offset
-                        time_t baseRespawnTime = std::max(linkedRespawnTime, now);
-                        time_t const offset = urand(5, MINUTE);
-
-                        // linked guid can be a boss, uses std::numeric_limits<time_t>::max to never respawn in that instance
-                        // we shall inherit it instead of adding and causing an overflow
-                        if (baseRespawnTime <= std::numeric_limits<time_t>::max() - offset)
-                            m_respawnTime = baseRespawnTime + offset;
-                        else
-                            m_respawnTime = std::numeric_limits<time_t>::max();
-                    }
-                    SaveRespawnTime(); // also save to DB immediately
-                }
+                Respawn();
             }
             break;
         }
@@ -1859,26 +1836,6 @@ void Creature::DeleteFromDB()
     trans->PAppend("DELETE FROM creature_addon WHERE guid = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_creature WHERE guid = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_spawnId);
-
-    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN);
-    stmt->setUInt32(0, m_spawnId);
-    stmt->setUInt32(1, LINKED_RESPAWN_CREATURE_TO_CREATURE);
-    trans->Append(stmt);
-    
-    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN);
-    stmt->setUInt32(0, m_spawnId);
-    stmt->setUInt32(1, LINKED_RESPAWN_CREATURE_TO_GO);
-    trans->Append(stmt);
-    
-    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN_MASTER);
-    stmt->setUInt32(0, m_spawnId);
-    stmt->setUInt32(1, LINKED_RESPAWN_CREATURE_TO_CREATURE);
-    trans->Append(stmt);
-    
-    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_LINKED_RESPAWN_MASTER);
-    stmt->setUInt32(0, m_spawnId);
-    stmt->setUInt32(1, LINKED_RESPAWN_GO_TO_CREATURE);
-    trans->Append(stmt);
 
     WorldDatabase.CommitTransaction(trans);
 }
@@ -3090,18 +3047,6 @@ std::string const& Creature::GetNameForLocaleIdx(LocaleConstant loc_idx) const
     }
 
     return GetName();
-}
-
-const CreatureData* Creature::GetLinkedRespawnCreatureData() const
-{
-    if(!m_spawnId) // only hard-spawned creatures from DB can have a linked master
-        return nullptr;
-
-    ObjectGuid linkedGuid = ObjectGuid(HighGuid::Unit, GetEntry(), m_spawnId);
-    if(ObjectGuid targetGuid = sObjectMgr->GetLinkedRespawnGuid(linkedGuid))
-        return sObjectMgr->GetCreatureData(targetGuid);
-
-    return nullptr;
 }
 
 void Creature::AreaCombat()
