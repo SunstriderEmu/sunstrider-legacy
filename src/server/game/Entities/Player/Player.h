@@ -1690,6 +1690,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool ResetTalents(bool no_cost = false);
         uint32 ResetTalentsCost() const;
         void InitTalentForLevel();
+#ifdef LICH_KING
+        void SendTalentsInfoData(bool pet);
+#endif
+        void LearnTalent(uint32 talentId, uint32 talentRank);
 
         uint32 GetFreePrimaryProffesionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS2); }
         void SetFreePrimaryProffesions(uint16 profs) { SetUInt32Value(PLAYER_CHARACTER_POINTS2,profs); }

@@ -2781,6 +2781,129 @@ void Player::InitTalentForLevel()
     }
 }
 
+void Player::LearnTalent(uint32 talentId, uint32 talentRank)
+{
+    uint32 CurTalentPoints = GetFreeTalentPoints();
+
+    if (CurTalentPoints == 0)
+        return;
+
+    if (talentRank >= MAX_TALENT_RANK)
+        return;
+
+    TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
+
+    if (!talentInfo)
+        return;
+
+    TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+
+    if (!talentTabInfo)
+        return;
+
+    // prevent learn talent for different class (cheating)
+    if ((GetClassMask() & talentTabInfo->ClassMask) == 0)
+        return;
+
+    // prevent skip talent ranks (cheating)
+    if (talentRank > 0 && !HasSpell(talentInfo->RankID[talentRank - 1]))
+        return;
+
+    // find current max talent rank (0~5)
+    uint8 curtalent_maxrank = 0; // 0 = not learned any rank
+    for (int8 rank = MAX_TALENT_RANK - 1; rank >= 0; --rank)
+    {
+        if (talentInfo->RankID[rank] && HasSpell(talentInfo->RankID[rank]))
+        {
+            curtalent_maxrank = (rank + 1);
+            break;
+        }
+    }
+
+    // we already have same or higher talent rank learned
+    if (curtalent_maxrank >= (talentRank + 1))
+        return;
+
+    // check if we have enough talent points
+    if (CurTalentPoints < (talentRank - curtalent_maxrank + 1))
+        return;
+
+    // Check if it requires another talent
+    if (talentInfo->DependsOn > 0)
+    {
+        if (TalentEntry const *depTalentInfo = sTalentStore.LookupEntry(talentInfo->DependsOn))
+        {
+            bool hasEnoughRank = false;
+            for (int i = talentInfo->DependsOnRank; i < MAX_TALENT_RANK; i++)
+            {
+                if (depTalentInfo->RankID[i] != 0)
+                    if (HasSpell(depTalentInfo->RankID[i]))
+                        hasEnoughRank = true;
+            }
+            if (!hasEnoughRank)
+                return;
+        }
+    }
+
+    // Check if it requires spell
+    if (talentInfo->DependsOnSpell && !HasSpell(talentInfo->DependsOnSpell))
+        return;
+
+    // Find out how many points we have in this field
+    uint32 spentPoints = 0;
+
+    uint32 tTab = talentInfo->TalentTab;
+    if (talentInfo->Row > 0)
+        for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)          // Loop through all talents.
+            if (TalentEntry const* tmpTalent = sTalentStore.LookupEntry(i))                                  // the way talents are tracked
+                if (tmpTalent->TalentTab == tTab)
+                    for (int j = 0; j < MAX_TALENT_RANK; j++)
+                        if (tmpTalent->RankID[j] != 0)
+                            if (HasSpell(tmpTalent->RankID[j]))
+                                spentPoints += j + 1;
+
+    // not have required min points spent in talent tree
+    if (spentPoints < (talentInfo->Row * MAX_TALENT_RANK))
+        return;
+
+    // spell not set in talent.dbc
+    uint32 spellid = talentInfo->RankID[talentRank];
+    if (spellid == 0)
+    {
+        TC_LOG_ERROR("entities.player", "Talent.dbc have for talent: %u Rank: %u spell id = 0", talentId, talentRank);
+        return;
+    }
+    // Old WR hacks: 
+    //Hack for Divine Spirit - talent learns more than one spell
+    if (spellid == 14752) {
+        if (HasSpellButDisabled(27681))
+            LearnSpell(27681, false);
+    }
+    else if (spellid == 20217) {    // Benediction of Kings
+        if (HasSpellButDisabled(25898))
+            LearnSpell(25898, false);
+    }
+    else if (spellid == 20911 || spellid == 20912 || spellid == 20913 || spellid == 20914 || spellid == 27168) {
+        if (HasSpellButDisabled(27169))
+            LearnSpell(27169, false);
+        else if (HasSpellButDisabled(25899))
+            LearnSpell(25899, false);
+    }
+
+    // already known
+    if (HasSpell(spellid))
+        return;
+
+    // learn! (other talent ranks will unlearned at learning)
+    LearnSpell(spellid, false);
+    //TC AddTalent(spellid, m_activeSpec, true);
+
+    TC_LOG_DEBUG("misc", "Player::LearnTalent: TalentID: %u Rank: %u Spell: %u\n", talentId, talentRank, spellid);
+
+    // update free talent points
+    SetFreeTalentPoints(CurTalentPoints - (talentRank - curtalent_maxrank + 1)); //always 1 on BC? This is TC logic, probably needed because of the preview system skipping lower ranks
+}
+
 void Player::InitStatsForLevel(bool reapplyMods)
 {
     if(reapplyMods)                                         //reapply stats values only on .reset stats (level) command
