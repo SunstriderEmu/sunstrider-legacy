@@ -1944,7 +1944,7 @@ class TC_GAME_API Unit : public WorldObject
 
         bool m_ControlledByPlayer;
 
-        bool HandleSpellClick(Unit* clicker, int8 seatId = -1);
+        void HandleSpellClick(Unit* clicker, int8 seatId = -1);
 #ifdef LICH_KING
         void EnterVehicle(Unit* base, int8 seatId = -1);
         void EnterVehicleUnattackable(Unit *base, int8 seatId = -1);

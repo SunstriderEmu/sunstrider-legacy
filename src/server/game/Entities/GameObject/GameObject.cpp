@@ -980,6 +980,8 @@ bool GameObject::LoadFromDB(uint32 spawnId, Map* map, bool addToMap, bool)
     }
     else
     {
+        //'Using a negative value will result in the object starting out by being "despawned" until a script will spawn it. It will then despawn after the amount of time specified here has passed.'
+        //Not compatible with dynamic spawn system atm
         if (!m_respawnCompatibilityMode)
         {
             TC_LOG_WARN("sql.sql", "GameObject %u (SpawnID %u) is not spawned by default, but tries to use a non-hack spawn system. This will not work. Defaulting to compatibility mode.", entry, spawnId);

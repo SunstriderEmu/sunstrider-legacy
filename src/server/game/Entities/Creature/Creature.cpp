@@ -402,9 +402,9 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
 /**
  * change the entry of creature until respawn
  */
-bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
+bool Creature::InitEntry(uint32 Entry, const CreatureData *data)
 {
-    CreatureTemplate const *normalInfo = sObjectMgr->GetCreatureTemplate(Entry);
+    CreatureTemplate const* normalInfo = sObjectMgr->GetCreatureTemplate(Entry);
     if(!normalInfo)
     {
         TC_LOG_ERROR("sql.sql","Creature::UpdateEntry creature entry %u does not exist.", Entry);
@@ -1546,33 +1546,44 @@ void Creature::SelectLevel()
     UpdateLevelDependantStats();
 }
 
-bool Creature::CreateFromProto(ObjectGuid::LowType guidlow, uint32 Entry, const CreatureData *data)
+bool Creature::CreateFromProto(ObjectGuid::LowType guidlow, uint32 entry, const CreatureData *data)
 {
-    CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(Entry);
+    SetZoneScript();
+    if (GetZoneScript() && data)
+    {
+        entry = GetZoneScript()->GetCreatureEntry(guidlow, data);
+        if (!entry)
+            return false;
+    }
+
+    CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(entry);
     if(!cinfo)
     {
-        TC_LOG_ERROR("FIXME","Error: creature entry %u does not exist.", Entry);
+        TC_LOG_ERROR("sql.sql","Error: creature entry %u does not exist.", entry);
         return false;
     }
-    m_originalEntry = Entry;
+    SetOriginalEntry(entry);
 
-    Object::_Create(guidlow, Entry, HighGuid::Unit);
+    Object::_Create(guidlow, entry, HighGuid::Unit);
 
-    if(!UpdateEntry(Entry, data))
+    if(!UpdateEntry(entry, data))
         return false;
 
-    //Notify the map's instance data.
-    //Only works if you create the object in it, not if it is moves to that map.
-    //Normally non-players do not teleport to other maps.
-    Map *map = FindMap();
-    if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
+#ifdef LICH_KING
+    if (!vehId)
     {
-        // TODO: Need position_x in OnCreatureCreate for Felmyst
-        if (data)
-            m_positionX = data->spawnPoint.GetPositionX();
-        ((InstanceMap*)map)->GetInstanceScript()->OnCreatureCreate(this);
+        if (GetCreatureTemplate()->VehicleId)
+        {
+            vehId = GetCreatureTemplate()->VehicleId;
+            entry = GetCreatureTemplate()->Entry;
+        }
+        else
+            vehId = cinfo->VehicleId;
     }
 
+    if (vehId)
+        CreateVehicleKit(vehId, entry);
+#endif
     return true;
 }
 

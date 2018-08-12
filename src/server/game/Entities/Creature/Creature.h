@@ -805,7 +805,10 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         }
         void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() / 2; }
         uint32 m_PlayerDamageReq;
-        
+
+        uint32 GetOriginalEntry() const { return m_originalEntry; }
+        void SetOriginalEntry(uint32 entry) { m_originalEntry = entry; }
+
         uint32 GetQuestPoolId() const { return m_questPoolId; }
         void SetQuestPoolId(uint32 id) { m_questPoolId = id; }
         uint32 GetCreaturePoolId() const { return m_creaturePoolId; }

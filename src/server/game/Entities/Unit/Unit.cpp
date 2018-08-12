@@ -11277,19 +11277,99 @@ void Unit::SetInFront(float x, float y)
         SetOrientation(GetAbsoluteAngle(x,y));
 }
 
-bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
+void Unit::HandleSpellClick(Unit* clicker, int8 seatId)
 {
+    bool spellClickHandled = false;
 #ifdef LICH_KING
-    - "TODO LK vehicules";
-#endif
+    uint32 spellClickEntry = GetVehicleKit() ? GetVehicleKit()->GetCreatureEntry() : GetEntry();
+    TriggerCastFlags const flags = GetVehicleKit() ? TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE : TRIGGERED_NONE;
 
-    bool result = true;
+    auto clickBounds = sObjectMgr->GetSpellClickInfoMapBounds(spellClickEntry);
+    for (auto const& clickPair : clickBounds)
+    {
+        //! First check simple relations from clicker to clickee
+        if (!clickPair.second.IsFitToRequirements(clicker, this))
+            continue;
+
+        //! Check database conditions
+        if (!sConditionMgr->IsObjectMeetingSpellClickConditions(spellClickEntry, clickPair.second.spellId, clicker, this))
+            continue;
+
+        Unit* caster = (clickPair.second.castFlags & NPC_CLICK_CAST_CASTER_CLICKER) ? clicker : this;
+        Unit* target = (clickPair.second.castFlags & NPC_CLICK_CAST_TARGET_CLICKER) ? clicker : this;
+        ObjectGuid origCasterGUID = (clickPair.second.castFlags & NPC_CLICK_CAST_ORIG_CASTER_OWNER) ? GetOwnerGUID() : clicker->GetGUID();
+
+        SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(clickPair.second.spellId);
+        // if (!spellEntry) should be checked at npc_spellclick load
+
+        if (seatId > -1)
+        {
+            uint8 i = 0;
+            bool valid = false;
+            while (i < MAX_SPELL_EFFECTS && !valid)
+            {
+                if (spellEntry->Effects[i].ApplyAuraName == SPELL_AURA_CONTROL_VEHICLE)
+                {
+                    valid = true;
+                    break;
+                }
+                ++i;
+            }
+
+            if (!valid)
+            {
+                TC_LOG_ERROR("sql.sql", "Spell %u specified in npc_spellclick_spells is not a valid vehicle enter aura!", clickPair.second.spellId);
+                continue;
+            }
+
+            if (IsInMap(caster))
+            {
+                CastSpellExtraArgs args(flags);
+                args.OriginalCaster = origCasterGUID;
+                args.AddSpellMod(SpellValueMod(SPELLVALUE_BASE_POINT0 + i), seatId + 1);
+                caster->CastSpell(target, clickPair.second.spellId, args);
+            }
+            else    // This can happen during Player::_LoadAuras
+            {
+                int32 bp[MAX_SPELL_EFFECTS] = {};
+                for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+                    bp[j] = spellEntry->Effects[j].BasePoints;
+
+                bp[i] = seatId;
+
+                AuraCreateInfo createInfo(spellEntry, MAX_EFFECT_MASK, this);
+                createInfo
+                    .SetCaster(clicker)
+                    .SetBaseAmount(bp)
+                    .SetCasterGUID(origCasterGUID);
+
+                Aura::TryRefreshStackOrCreate(createInfo);
+            }
+        }
+        else
+        {
+            if (IsInMap(caster))
+                caster->CastSpell(target, spellEntry->Id, CastSpellExtraArgs().SetOriginalCaster(origCasterGUID));
+            else
+            {
+                AuraCreateInfo createInfo(spellEntry, MAX_EFFECT_MASK, this);
+                createInfo
+                    .SetCaster(clicker)
+                    .SetCasterGUID(origCasterGUID);
+
+                Aura::TryRefreshStackOrCreate(createInfo);
+            }
+        }
+
+        spellClickHandled = true;
+    }
+#else
+    spellClickHandled = true;
+#endif
 
     Creature* creature = ToCreature();
     if (creature && creature->IsAIEnabled)
-        creature->AI()->OnSpellClick(clicker, result);
-
-    return result;
+        creature->AI()->OnSpellClick(clicker, spellClickHandled);
 }
 
 TransportBase* Unit::GetDirectTransport() const

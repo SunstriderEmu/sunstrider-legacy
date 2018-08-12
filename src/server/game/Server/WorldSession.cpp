@@ -1627,7 +1627,6 @@ void WorldSession::HandleSpellClick(WorldPacket& recvData)
     unit->HandleSpellClick(_player);
 }
 
-
 void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
 {
     data >> mi->flags;
