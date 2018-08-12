@@ -1327,15 +1327,14 @@ void ObjectMgr::LoadTempSummons()
 void ObjectMgr::LoadCreatures()
 {
     uint32 count = 0;
-    //                                                0              1   2    3
+    //                                                0             1   2    3
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13           14            15       16      17                   18                                        19                20
-        "curhealth, curmana, MovementType, spawnMask, event, pool_id, COALESCE(creature_encounter_respawn.eventid, -1), creature.ScriptName, pool_entry "
+    //   12         13       14            15         16     17       18                   19
+        "curhealth, curmana, MovementType, spawnMask, event, pool_id, creature.ScriptName, pool_entry "
         "FROM creature "
         "LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
-        "LEFT OUTER JOIN creature_encounter_respawn ON creature.guid = creature_encounter_respawn.guid "
         "LEFT OUTER JOIN pool_creature ON creature.guid = pool_creature.guid "
         );
 
@@ -1390,14 +1389,13 @@ void ObjectMgr::LoadCreatures()
         data.spawnMask       = fields[15].GetUInt8();
         int32 gameEvent      = fields[16].GetInt32();
         data.poolId          = fields[17].GetUInt32(); //Old WR pool system
-        data.instanceEventId = fields[18].GetDouble();
-        data.scriptId = GetScriptId(fields[19].GetString());
+        data.scriptId = GetScriptId(fields[18].GetString());
         //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
         if(mapEntry->Instanceable())
             data.spawnGroupData = &_spawnGroupDataStore[1]; //Legacy group
         else
             data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
-        uint32 PoolId = fields[20].GetUInt32();
+        uint32 poolId = fields[19].GetUInt32();
 
         // Skip spawnMask check for transport maps
         if (!IsTransportMap(data.spawnPoint.GetMapId()))
@@ -1455,7 +1453,7 @@ void ObjectMgr::LoadCreatures()
         }
 
         // Add to grid if not managed by the game event or pool system
-        if (gameEvent == 0 && PoolId == 0)
+        if (gameEvent == 0 && poolId == 0)
             AddCreatureToGrid(guid, &data);
 
         ++count;

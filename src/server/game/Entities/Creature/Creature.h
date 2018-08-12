@@ -377,7 +377,6 @@ struct CreatureData : public SpawnData
     uint8 movementType = 0;
     uint32 poolId = 0; //old windrunner link system
     uint32 scriptId = 0;
-    uint32 instanceEventId = 0; // If spawned in raid, don't respawn if corresponding instance event is != NOT_STARTED (creature_encounter_respawn table)
 };
 
 // from `creature_addon` table
@@ -663,7 +662,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         std::string GetScriptName();
         uint32 GetScriptId();
         std::string GetAIName() const;
-        uint32 getInstanceEventId();
 
         void ResetCreatureEmote();
 

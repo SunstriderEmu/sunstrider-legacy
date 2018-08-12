@@ -551,11 +551,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "name",           SEC_GAMEMASTER2,     false, &ChatHandler::HandleNpcNameCommand,             "" },
         { "spawngroup",     SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcSpawnGroup,              "" },
         { "despawngroup",   SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcDespawnGroup,            "" },
-
-        //{ TODO: fix or remove this commands
-        { "seteventid",     SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcSetInstanceEventCommand, "" },
-        //}
-
         { "path",           SEC_GAMEMASTER1,     false, nullptr,                                        "", npcPathTable },
     };
 

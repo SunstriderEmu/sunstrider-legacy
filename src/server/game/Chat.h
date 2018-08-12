@@ -220,7 +220,6 @@ class TC_GAME_API ChatHandler
         bool HandleNpcSetMoveTypeCommand(const char* args);
         bool HandleNpcSpawnDistCommand(const char* args);
         bool HandleNpcSpawnTimeCommand(const char* args);
-        bool HandleNpcTameCommand(const char* args);
         bool HandleNpcTextEmoteCommand(const char* args);
         bool HandleNpcUnFollowCommand(const char* args);
         bool HandleNpcWhisperCommand(const char* args);
@@ -229,7 +228,6 @@ class TC_GAME_API ChatHandler
         bool HandleNpcRemoveFormationCommand(const char* args);
         bool HandleNpcGoBackHomeCommand(const char* args);
         bool HandleNpcSetPoolCommand(const char* args);
-        bool HandleNpcSetInstanceEventCommand(const char* args);
         bool HandleNpcGuidCommand(const char* args);
         bool HandleNpcPathTypeCommand(const char* args);
         bool HandleNpcPathDirectionCommand(const char* args);
@@ -441,7 +439,6 @@ class TC_GAME_API ChatHandler
         bool HandleGoZoneXYCommand(const char* args);
         bool HandleGoGridCommand(const char* args);
         bool HandleNpcAddWeaponCommand(const char* args);
-        bool HandleGoCommand(const char* args);
         bool HandleGoATCommand(const char* args);
 
         bool HandleCooldownCommand(const char* args);
@@ -583,7 +580,6 @@ class TC_GAME_API ChatHandler
         bool HandleCastTargetCommand(const char *args);
         bool HandleComeToMeCommand(const char *args);
         bool HandleCombatStopCommand(const char *args);
-        bool HandleCharDeleteCommand(const char *args);
         bool HandleSendMessageCommand(const char * args);
         bool HandleFlushArenaPointsCommand(const char *args);
         bool HandlePlayAllCommand(const char* args);

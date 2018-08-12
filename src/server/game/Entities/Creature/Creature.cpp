@@ -636,26 +636,7 @@ void Creature::Update(uint32 diff)
                     m_respawnTime = now + urand(4, 7);
                     break; // Will be rechecked on next Update call after delay expires
                 }
-
-                //old windrunner code, still in use
-                Map* map = FindMap();
-                uint32 eventId = getInstanceEventId();
-                if (eventId != uint32(-1) && map && map->IsRaid() && ((InstanceMap*)map)->GetInstanceScript()) {
-                    if ((((InstanceMap*)map)->GetInstanceScript())->GetData(eventId) == NOT_STARTED)
-                        ; //respawn is allowed by instanceEventId system, continue with usual logic
-                    else if ((((InstanceMap*)map)->GetInstanceScript())->GetData(eventId) == IN_PROGRESS)
-                    {
-                        SetRespawnTime(5 * MINUTE); // Delay next respawn check (5 minutes)
-                        break;
-                    }
-                    else // event is DONE or SPECIAL, don't respawn until tag reset
-                    {
-                        SetRespawnTime(7 * DAY); 
-                        SaveRespawnTime(); // also save to DB immediately
-                        break;
-                    }
-                }
-
+                
                 Respawn();
             }
             break;
@@ -2929,14 +2910,6 @@ std::string Creature::GetScriptName()
 {
     return sObjectMgr->GetScriptName(GetScriptId());
 }
-
-uint32 Creature::getInstanceEventId()
-{
-    if (CreatureData const* myData = sObjectMgr->GetCreatureData(m_spawnId))
-        return myData->instanceEventId;
-        
-    return 0;
-}   
 
 uint32 Creature::GetScriptId()
 {

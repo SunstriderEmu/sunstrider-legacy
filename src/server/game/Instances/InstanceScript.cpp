@@ -261,7 +261,9 @@ void InstanceScript::UpdateSpawnGroups()
         states& curValue = newStates[info.SpawnGroupId]; // makes sure there's a BLOCK value in the map
         if (curValue == FORCEBLOCK) // nothing will change this
             continue;
-        if (!((1 << GetBossState(info.BossStateId)) & info.BossStates))
+        //sun: compat for older instance scripts
+        EncounterState state = HasAnyBossState() ? GetBossState(info.BossStateId) : EncounterState(GetData(info.BossStateId));
+        if (!((1 << state) & info.BossStates))
             continue;
         if (info.Flags & InstanceSpawnGroupInfo::FLAG_BLOCK_SPAWN)
             curValue = FORCEBLOCK;

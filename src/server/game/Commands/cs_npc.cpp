@@ -693,7 +693,6 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("ScriptName: %s", target->GetScriptName().c_str());
     PSendSysMessage(LANG_NPCINFO_MOVEMENT_DATA, target->GetMovementTemplate().ToString().c_str());
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
-    PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
 
 
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
@@ -1425,33 +1424,6 @@ bool ChatHandler::HandleNpcDespawnGroup(const char* args)
     }
     PSendSysMessage("Despawned a total of %zu objects.", n);
 
-    return true;
-}
-
-bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
-{
-    ARGS_CHECK
-    
-    Creature* target = GetSelectedCreature();
-    if (!target || (target && target->GetTypeId() != TYPEID_UNIT)) {
-        PSendSysMessage("Vous devez sélectionner une créature.");
-        return true;
-    }
-    
-    char* eventIdStr = strtok((char*)args, " ");
-    if (!eventIdStr)
-        return false;
-        
-    int eventId = atoi(eventIdStr);
-    
-    if (eventId == -1) {
-        WorldDatabase.PExecute("DELETE FROM creature_encounter_respawn WHERE guid = %u", target->GetSpawnId());
-        return true;
-    }
-    
-    WorldDatabase.PExecute("REPLACE INTO creature_encounter_respawn VALUES (%u, %u)", target->GetSpawnId(), eventId);
-    PSendSysMessage("Creature (%u) respawn linked to event %u.",target->GetSpawnId(),eventId);
-    
     return true;
 }
 
