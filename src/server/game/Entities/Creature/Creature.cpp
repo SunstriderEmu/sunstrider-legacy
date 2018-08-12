@@ -407,7 +407,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data)
     CreatureTemplate const* normalInfo = sObjectMgr->GetCreatureTemplate(Entry);
     if(!normalInfo)
     {
-        TC_LOG_ERROR("sql.sql","Creature::UpdateEntry creature entry %u does not exist.", Entry);
+        TC_LOG_ERROR("sql.sql","Creature::InitEntry creature entry %u does not exist.", Entry);
         return false;
     }
 
@@ -2786,7 +2786,16 @@ bool Creature::InitCreatureAddon(bool reload)
         SetUInt32Value(UNIT_FIELD_BYTES_1, m_creatureInfoAddon->bytes1);
 
     if (m_creatureInfoAddon->bytes2 != 0)
+    {
+#ifndef LICH_KING
+        //sun: keep buff limit intact
+        uint8 const buffLimit = GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT);
         SetUInt32Value(UNIT_FIELD_BYTES_2, m_creatureInfoAddon->bytes2);
+        SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, buffLimit);
+#else
+        SetUInt32Value(UNIT_FIELD_BYTES_2, m_creatureInfoAddon->bytes2);
+#endif
+    }
 
     if (m_creatureInfoAddon->emote != 0)
         SetEmoteState(m_creatureInfoAddon->emote);

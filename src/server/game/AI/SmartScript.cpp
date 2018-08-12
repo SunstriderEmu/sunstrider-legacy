@@ -2188,8 +2188,16 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             break;
         }
-        case SMART_ACTION_SET_UNIT_FIELD_BYTES_1:
         case SMART_ACTION_SET_UNIT_FIELD_BYTES_2:
+        {
+#ifndef LICH_KING
+            //sun: don't allow changing this field
+            if (e.action.setunitByte.type == UNIT_BYTES_2_OFFSET_BUFF_LIMIT)
+                break;
+#endif
+        }
+        //no break
+        case SMART_ACTION_SET_UNIT_FIELD_BYTES_1:
         {
             uint32 field = (e.GetActionType() == SMART_ACTION_SET_UNIT_FIELD_BYTES_1 ? UNIT_FIELD_BYTES_1 : UNIT_FIELD_BYTES_2);
             for (WorldObject* target : targets)
