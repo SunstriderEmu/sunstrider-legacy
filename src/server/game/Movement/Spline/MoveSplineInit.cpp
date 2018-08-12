@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
@@ -55,7 +38,7 @@ namespace Movement
         return MOVE_RUN;
     }
 
-    // send to player having this unit in sight, according to their client version. Will build packet for version only if needed
+    // send to player having this unit in sight
     void SendLaunchToSet(Unit* unit, bool transport)
     {
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
@@ -102,7 +85,7 @@ namespace Movement
         if (args.path.empty())
             return 0;
 
-        // corrent first vertex
+        // current first vertex
         args.path[0] = real_position;
         args.initialOrientation = real_position.orientation;
         move_spline.onTransport = transport;
@@ -138,7 +121,7 @@ namespace Movement
 
         if (!args.Validate(unit))
         {
-            //kelno: make sure this flag is correctly removed if it's already there when entering this function.
+            //sun: make sure this flag is correctly removed if it's already there when entering this function.
             unit->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_SPLINE_ENABLED);
             return 0;
         }
@@ -250,47 +233,6 @@ namespace Movement
         TransportPathTransform transform(unit, args.TransformForTransport);
         args.path[1] = transform(dest);
     }
-    /*
-    void MoveSplineInit::MoveTo(const Vector3& dest, const Vector3& nextDestination, bool forceDestination)
-    {
-        //generate path to destination
-        PathGenerator path(unit);
-        bool result = path.CalculatePath(dest.x, dest.y, dest.z, forceDestination);
-
-         //if we fail generating it, default to straight line
-        if(!result || (path.GetPathType() & PATHFIND_NOPATH))
-        {
-            args.path_Idx_offset = 0;
-            args.path.resize(2);
-            TransportPathTransform transform(unit, args.TransformForTransport);
-            args.path[1] = transform(dest);
-            return;
-        }
-
-        //generate path from destination to next point
-        const Position nextPos { nextDestination.x, nextDestination.y, nextDestination.z };
-      //  PathGenerator nextPath(nextPos,unit->GetMapId(),unit->GetInstanceId(),path.GetOptions()); //use same options here
-        //result = nextPath.CalculatePath(nextDestination.x, nextDestination.y, nextDestination.z, forceDestination);
-
-        // if failed generating second path, return to default behavior
-        //if (!result || (nextPath.GetPathType() & PATHFIND_NOPATH)) 
-       // {
-        //    MovebyPath(path.GetPath());
-        //    return;
-        //}
-        //we succeeded to generate both path, lets contact those, without nextPath first point
-    //    Movement::PointsArray newPath;
-        //newPath.reserve(path.GetPath().size() + nextPath.GetPath().size()-1 );
-     //   newPath.reserve(path.GetPath().size() +1 );
-     //   newPath.insert(newPath.end(),path.GetPath().begin(),path.GetPath().end());
-        //newPath.insert(newPath.end(),nextPath.GetPath().begin()+1,nextPath.GetPath().end());
-     //   G3D::Vector3 vec { nextPos.m_positionX, nextPos.m_positionY, nextPos.m_positionZ };
-     //   newPath.push_back(vec);
-
-     //   //we're good to go !
-      //  MovebyPath(newPath);
-   // }
-     * */
 
     Vector3 TransportPathTransform::operator()(Vector3 input)
     {

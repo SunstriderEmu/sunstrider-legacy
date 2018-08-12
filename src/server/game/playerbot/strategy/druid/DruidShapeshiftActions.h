@@ -42,8 +42,8 @@ namespace ai {
         CastCasterFormAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "caster form") {} 
 
         virtual bool isUseful() {
-            return ai->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form", "aquatic form", 
-                "flight form", "swift flight form", "moonkin form", "tree of life");
+            return ai->HasAnyAuraOf(GetTarget(), { "dire bear form", "bear form", "cat form", "travel form", "aquatic form",
+                "flight form", "swift flight form", "moonkin form", "tree of life" });
         }
         virtual bool isPossible() { return true; }
         

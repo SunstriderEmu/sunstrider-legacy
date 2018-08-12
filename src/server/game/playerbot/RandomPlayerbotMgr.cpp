@@ -119,8 +119,11 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
 
     if (!GetPlayerBot(guid))
     {
-        sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %d logged in", bot);
-        AddPlayerBot(guid, 0);
+        if(AddPlayerBot(guid, 0) != nullptr)
+            sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %d logged in", bot);
+        else
+            sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %d tried to log in but failed", bot);
+
         if (!GetEventValue(bot, "online"))
         {
             SetEventValue(bot, "online", 1, sPlayerbotAIConfig.minRandomBotInWorldTime);
@@ -413,8 +416,8 @@ uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, 
     if (results)
     {
         Field* fields = results->Fetch();
-        uint8 zoneMinLevel = fields[0].GetUInt8();
-        uint8 zoneMaxLevel = fields[1].GetUInt8();
+        uint8 zoneMinLevel = uint8(fields[0].GetDouble());
+        uint8 zoneMaxLevel = uint8(fields[1].GetDouble());
         level = urand(zoneMinLevel, zoneMaxLevel);
         if (level > zoneMaxLevel)
             level = zoneMaxLevel;

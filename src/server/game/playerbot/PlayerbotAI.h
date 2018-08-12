@@ -144,7 +144,7 @@ public:
     virtual bool CanCastSpell(std::string name, Unit* target);
     virtual bool CastSpell(std::string name, Unit* target);
     virtual bool HasAura(std::string spellName, Unit* player);
-    virtual bool HasAnyAuraOf(Unit* player, ...);
+    virtual bool HasAnyAuraOf(Unit* player, std::initializer_list<std::string>);
 
     virtual bool IsInterruptableSpellCasting(Unit* player, std::string spell);
     virtual bool HasAuraToDispel(Unit* player, uint32 dispelType);

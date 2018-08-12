@@ -232,7 +232,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
     buf << (uint8)m_objectTypeId;
 
     BuildMovementUpdate(&buf, flags);
-    BuildValuesUpdate(updateType, &buf, target );
+    BuildValuesUpdate(updateType, &buf, target);
     data->AddUpdateBlock(buf);
 }
 

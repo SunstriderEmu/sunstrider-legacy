@@ -591,20 +591,20 @@ enum MoveFlags : int
 
 enum MovementFlags : int
 {
-    MOVEMENTFLAG_NONE           = 0x00000000,
-    MOVEMENTFLAG_FORWARD        = 0x00000001,
-    MOVEMENTFLAG_BACKWARD       = 0x00000002,
-    MOVEMENTFLAG_STRAFE_LEFT    = 0x00000004,
-    MOVEMENTFLAG_STRAFE_RIGHT   = 0x00000008,
-    MOVEMENTFLAG_LEFT           = 0x00000010,               // Turning left
-    MOVEMENTFLAG_RIGHT          = 0x00000020,               // Turning right
-    MOVEMENTFLAG_PITCH_UP       = 0x00000040,
-    MOVEMENTFLAG_PITCH_DOWN     = 0x00000080,
-    MOVEMENTFLAG_WALKING        = 0x00000100,               // Walking
-    MOVEMENTFLAG_ONTRANSPORT    = 0x00000200,               // Used for flying on some creatures
+    MOVEMENTFLAG_NONE                  = 0x00000000,
+    MOVEMENTFLAG_FORWARD               = 0x00000001,
+    MOVEMENTFLAG_BACKWARD              = 0x00000002,
+    MOVEMENTFLAG_STRAFE_LEFT           = 0x00000004,
+    MOVEMENTFLAG_STRAFE_RIGHT          = 0x00000008,
+    MOVEMENTFLAG_LEFT                  = 0x00000010,        // Turning left
+    MOVEMENTFLAG_RIGHT                 = 0x00000020,        // Turning right
+    MOVEMENTFLAG_PITCH_UP              = 0x00000040,        
+    MOVEMENTFLAG_PITCH_DOWN            = 0x00000080,        
+    MOVEMENTFLAG_WALKING               = 0x00000100,        // Walking
+    MOVEMENTFLAG_ONTRANSPORT           = 0x00000200,        // Used for flying on some creatures
     /** Unit appears suspended (swimming in the air) instead of falling */
-    MOVEMENTFLAG_DISABLE_GRAVITY= 0x00000400,
-    MOVEMENTFLAG_ROOT           = 0x00000800,               // Must not be set along with MOVEMENTFLAG_MASK_MOVING
+    MOVEMENTFLAG_DISABLE_GRAVITY       = 0x00000400,
+    MOVEMENTFLAG_ROOT                  = 0x00000800,        // Must not be set along with MOVEMENTFLAG_MASK_MOVING
     MOVEMENTFLAG_JUMPING_OR_FALLING    = 0x00001000,        // TC: MOVEMENTFLAG_FALLING // damage dealt on that type of falling
     MOVEMENTFLAG_FALLING_FAR           = 0x00002000,        // Falling under the map boundaries (clientside the camera will remain at the boundaries and let see the character fall below)
     MOVEMENTFLAG_PENDING_STOP          = 0x00004000,

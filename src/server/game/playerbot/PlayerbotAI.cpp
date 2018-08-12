@@ -584,7 +584,7 @@ bool PlayerbotAI::IsRanged(Player* player)
     case CLASS_ROGUE:
         return false;
     case CLASS_DRUID:
-        return !HasAnyAuraOf(player, "cat form", "bear form", "dire bear form", NULL);
+        return !HasAnyAuraOf(player, { "cat form", "bear form", "dire bear form" });
     }
     return true;
 }
@@ -602,7 +602,7 @@ bool PlayerbotAI::IsTank(Player* player)
     case CLASS_WARRIOR:
         return true;
     case CLASS_DRUID:
-        return HasAnyAuraOf(player, "bear form", "dire bear form", NULL);
+        return HasAnyAuraOf(player, { "bear form", "dire bear form" });
     }
     return false;
 }
@@ -618,7 +618,7 @@ bool PlayerbotAI::IsHeal(Player* player)
     case CLASS_PRIEST:
         return true;
     case CLASS_DRUID:
-        return HasAnyAuraOf(player, "tree of life form", NULL);
+        return HasAnyAuraOf(player, { "tree of life form" });
     }
     return false;
 }
@@ -802,25 +802,15 @@ bool PlayerbotAI::HasAura(uint32 spellId, const Unit* unit)
     return false;
 }
 
-bool PlayerbotAI::HasAnyAuraOf(Unit* player, ...)
+bool PlayerbotAI::HasAnyAuraOf(Unit* player, std::initializer_list<string> auras)
 {
     if (!player)
         return false;
 
-    va_list vl;
-    va_start(vl, player);
-
-    const char* cur;
-    do {
-        cur = va_arg(vl, const char*);
-        if (cur && HasAura(cur, player)) {
-            va_end(vl);
+    for (auto aura : auras)
+        if (!aura.empty() && HasAura(aura, player))
             return true;
-        }
-    }
-    while (cur);
 
-    va_end(vl);
     return false;
 }
 

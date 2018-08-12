@@ -4,13 +4,13 @@
 
 std::string ChatHandler::PGetParseString(int32 entry, ...)
 {
-        const char *format = GetTrinityString(entry);
-        va_list ap;
-        char str [1024];
-        va_start(ap, entry);
-        vsnprintf(str,1024,format, ap );
-        va_end(ap);
-        return (std::string)str;
+    const char *format = GetTrinityString(entry);
+    va_list ap;
+    char str [1024];
+    va_start(ap, entry);
+    vsnprintf(str,1024,format, ap );
+    va_end(ap);
+    return (std::string)str;
 }
 
 void ChatHandler::SendTicket(GM_Ticket const* ticket, time_t currentTime, bool showMessage, bool showComment, bool showAge, bool showAssign, bool globalMessage)

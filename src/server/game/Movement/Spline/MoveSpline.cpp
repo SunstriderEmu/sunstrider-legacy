@@ -126,6 +126,7 @@ struct CommonInitializer
 
 void MoveSpline::init_spline(const MoveSplineInitArgs& args)
 {
+    ASSERT(args.path.size() > 0);
     const SplineBase::EvaluationMode modes[2] = {SplineBase::ModeLinear, SplineBase::ModeCatmullrom};
     if (args.flags.cyclic)
     {
