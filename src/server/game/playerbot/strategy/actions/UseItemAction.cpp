@@ -73,10 +73,10 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
     if (bot->IsNonMeleeSpellCast(true))
         return false;
 
-    /* TODO PLAYERBOT
+#ifdef LICH_KING
     if (bot->IsInCombat() && item->IsPotion() && bot->GetLastPotionId())
         return false;
-        */
+#endif
 
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();

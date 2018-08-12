@@ -996,55 +996,90 @@ void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
 
 void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 {
+    //TC_LOG_DEBUG("guild", "CMSG_GUILD_BANK_SWAP_ITEMS [%s]", GetPlayerInfo().c_str());
+
     ObjectGuid GoGuid;
-    uint8 BankToBank;
-
-    uint8 BankTab, BankTabSlot, AutoStore = 0, AutoStoreCount, PlayerSlot = 0, PlayerBag = 0, SplitedAmount = 0;
-    uint8 BankTabDst = 0, BankTabSlotDst = 0, unk2, ToChar = 1;
-    uint32 ItemEntry, unk1;
-
-    
-    recvData >> GoGuid >> BankToBank;
+    recvData >> GoGuid;
 
     if (!GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+    {
+        recvData.rfinish();                   // Prevent additional spam at rejected packet
         return;
+    }
+
+    Guild* guild = GetPlayer()->GetGuild();
+    if (!guild)
+    {
+        recvData.rfinish();                   // Prevent additional spam at rejected packet
+        return;
+    }
+
+    uint8 BankToBank;
+    recvData >> BankToBank;
+
+    uint8 tabId;
+    uint8 slotId;
+    uint32 itemEntry;
+    uint32 splitedAmount = 0;
+
+    uint8 AutoStoreCount, PlayerSlot = 0, PlayerBag = 0;
 
     if (BankToBank)
     {
-        recvData >> BankTabDst;
-        recvData >> BankTabSlotDst;
-        recvData >> unk1;                                  // always 0
-        recvData >> BankTab;
-        recvData >> BankTabSlot;
-        recvData >> ItemEntry;
-        recvData >> unk2;                                  // always 0
-        recvData >> SplitedAmount;
+        uint8 destTabId;
+        recvData >> destTabId;
 
-        if (BankTabSlotDst >= GUILD_BANK_MAX_SLOTS)
-            return;
-        if (BankTabDst == BankTab && BankTabSlotDst == BankTabSlot)
-            return;
+        uint8 destSlotId;
+        recvData >> destSlotId;
+        recvData.read_skip<uint32>();                      // Always 0
+
+        recvData >> tabId;
+        recvData >> slotId;
+        recvData >> itemEntry;
+        recvData.read_skip<uint8>();                       // Always 0
+        recvData >> splitedAmount;
+
+        guild->SwapItems(GetPlayer(), tabId, slotId, destTabId, destSlotId, splitedAmount);
     }
     else
     {
-        recvData >> BankTab;
-        recvData >> BankTabSlot;
-        recvData >> ItemEntry;
-        recvData >> AutoStore;
-        if (AutoStore)
+        uint8 playerBag = NULL_BAG;
+        uint8 playerSlotId = NULL_SLOT;
+        uint8 toChar = 1;
+
+        recvData >> tabId;
+        recvData >> slotId;
+        recvData >> itemEntry;
+
+        uint8 autoStore;
+        recvData >> autoStore;
+        if (autoStore)
         {
+            //OLD CODE
+            /*
             recvData >> AutoStoreCount;
+            recvData >> PlayerBag;
+            recvData >> PlayerSlot;
+            */
+            recvData.read_skip<uint32>();                  // autoStoreCount
+            recvData.read_skip<uint8>();                   // ToChar (?), always and expected to be 1 (autostore only triggered in Bank -> Char)
+            recvData.read_skip<uint32>();                  // Always 0
         }
-        recvData >> PlayerBag;
-        recvData >> PlayerSlot;
-        if (!AutoStore)
+        else 
         {
-            recvData >> ToChar;
-            recvData >> SplitedAmount;
+            recvData >> PlayerBag;
+            recvData >> PlayerSlot;
+            recvData >> toChar;
+            recvData >> splitedAmount;
         }
 
-        if (BankTabSlot >= GUILD_BANK_MAX_SLOTS && BankTabSlot != 0xFF)
-            return;
+
+        // Player <-> Bank
+        // Allow to work with inventory only
+        if (!Player::IsInventoryPos(playerBag, playerSlotId) && !(playerBag == NULL_BAG && playerSlotId == NULL_SLOT))
+            GetPlayer()->SendEquipError(EQUIP_ERR_NONE, nullptr);
+        else
+            guild->SwapItemsWithInventory(GetPlayer(), toChar != 0, tabId, slotId, playerBag, playerSlotId, splitedAmount);
     }
 
     uint32 GuildId = GetPlayer()->GetGuildId();

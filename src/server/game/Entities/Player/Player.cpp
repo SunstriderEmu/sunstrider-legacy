@@ -12914,7 +12914,7 @@ void Player::RemoveItemFromBuyBackSlot(uint32 slot, bool del)
     }
 }
 
-void Player::SendEquipError(uint8 msg, Item* pItem, Item *pItem2, uint32 /*itemid*/) const
+void Player::SendEquipError(uint8 msg, Item* pItem, Item* pItem2 /*= nullptr*/, uint32 /*itemid*/ /*= 0*/) const
 {
     WorldPacket data(SMSG_INVENTORY_CHANGE_FAILURE, (msg == EQUIP_ERR_CANT_EQUIP_LEVEL_I ? 22 : (msg == EQUIP_ERR_OK ? 1 : 18)));
     data << uint8(msg);

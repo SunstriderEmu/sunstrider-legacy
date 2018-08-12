@@ -1,6 +1,7 @@
 
 #include "playerbot.h"
 #include "ChatHelper.h"
+#include "AiFactory.h"
 
 using namespace ai;
 using namespace std;
@@ -421,40 +422,20 @@ bool ChatHelper::parseable(std::string text)
 
 string ChatHelper::formatClass(Player* player, int spec)
 {
-   /* TODO PLAYERBOT
    uint8 cls = player->GetClass();
 
     std::ostringstream out;
     out << specs[cls][spec] << " (";
 
     int c0 = 0, c1 = 0, c2 = 0;
-    PlayerTalentMap& talentMap = player->GetTalentMap(0);
-    for (PlayerTalentMap::iterator i = talentMap.begin(); i != talentMap.end(); ++i)
-    {
-        uint32 spellId = i->first;
-        TalentSpellPos const* talentPos = GetTalentSpellPos(spellId);
-        if(!talentPos)
-            continue;
-
-        TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentPos->talent_id);
-
-        if (!talentInfo)
-            continue;
-
-        uint32 const* talentTabIds = GetTalentTabPages(player->GetClass());
-        if (talentInfo->TalentTab == talentTabIds[0]) c0++;
-        if (talentInfo->TalentTab == talentTabIds[1]) c1++;
-        if (talentInfo->TalentTab == talentTabIds[2]) c2++;
-    }
-
+    AiFactory::CountTalentsPerTab(player, c0, c1, c2);
+    
     out << (c0 ? "|h|cff00ff00" : "") << c0 << "|h|cffffffff/";
     out << (c1 ? "|h|cff00ff00" : "") << c1 << "|h|cffffffff/";
     out << (c2 ? "|h|cff00ff00" : "") << c2 << "|h|cffffffff";
 
     out <<  ") " << classes[cls];
     return out.str();
-    */
-    return "TODO FORMAT CLASS";
 }
 
 string ChatHelper::formatClass(uint8 cls)

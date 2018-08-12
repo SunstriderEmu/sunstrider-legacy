@@ -92,7 +92,7 @@ AiPlayerbot.LowMana = 15
 AiPlayerbot.MediumMana = 40
 
 # Enable random bot system
-AiPlayerbot.RandomBotAutologin = 1
+AiPlayerbot.RandomBotAutologin = 0
 
 # Random bot default strategies (applied after defaults)
 AiPlayerbot.RandomBotCombatStrategies = +dps,+dps assist,-threat
@@ -102,8 +102,8 @@ AiPlayerbot.RandomBotNonCombatStrategies = +grind,+move random,+loot
 AiPlayerbot.RandomBotAutoCreate = 0
 
 # Random bot count
-AiPlayerbot.MinRandomBots = 50
-AiPlayerbot.MaxRandomBots = 200
+AiPlayerbot.MinRandomBots = 40
+AiPlayerbot.MaxRandomBots = 50
 AiPlayerbot.RandomBotMinLevel = 1
 AiPlayerbot.RandomBotMaxLevel = 255
 
@@ -155,7 +155,7 @@ AiPlayerbot.RandomBotJoinLfg = 0
 AiPlayerbot.RandomBotTeleLevel = 3
 
 # Intervals
-AiPlayerbot.RandomBotUpdateInterval = 60
+AiPlayerbot.RandomBotUpdateInterval = 300
 AiPlayerbot.RandomBotCountChangeMinInterval = 86400
 AiPlayerbot.RandomBotCountChangeMaxInterval = 259200
 AiPlayerbot.MinRandomBotInWorldTime = 7200
@@ -169,7 +169,7 @@ AiPlayerbot.MinRandomBotsPriceChangeInterval = 7200
 AiPlayerbot.MaxRandomBotsPriceChangeInterval = 172800
 
 # Log on all random bots on start
-AiPlayerbot.RandomBotLoginAtStartup = 1
+AiPlayerbot.RandomBotLoginAtStartup = 0
 
 # How far random bots are teleported after death
 AiPlayerbot.RandomBotTeleportDistance = 1000

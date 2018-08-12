@@ -52,16 +52,19 @@ AiObjectContext* AiFactory::createAiObjectContext(Player* player, PlayerbotAI* a
     return new AiObjectContext(ai);
 }
 
-int AiFactory::GetPlayerSpecTab(Player* player)
+void AiFactory::CountTalentsPerTab(Player* player, int& tab1, int& tab2, int& tab3)
 {
-    /*  TODO PLAYERBOT
-    int c0 = 0, c1 = 0, c2 = 0;
+    tab1 = 0;
+    tab2 = 0;
+    tab3 = 0;
+    
+#ifdef LICH_KING
     PlayerTalentMap& talentMap = player->GetTalentMap(0);
     for (PlayerTalentMap::iterator i = talentMap.begin(); i != talentMap.end(); ++i)
     {
         uint32 spellId = i->first;
         TalentSpellPos const* talentPos = GetTalentSpellPos(spellId);
-        if(!talentPos)
+        if (!talentPos)
             continue;
 
         TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentPos->talent_id);
@@ -69,17 +72,63 @@ int AiFactory::GetPlayerSpecTab(Player* player)
             continue;
 
         uint32 const* talentTabIds = GetTalentTabPages(player->GetClass());
-        if (talentInfo->TalentTab == talentTabIds[0]) c0++;
-        if (talentInfo->TalentTab == talentTabIds[1]) c1++;
-        if (talentInfo->TalentTab == talentTabIds[2]) c2++;
+        if (talentInfo->TalentTab == talentTabIds[0]) tab1++;
+        if (talentInfo->TalentTab == talentTabIds[1]) tab2++;
+        if (talentInfo->TalentTab == talentTabIds[2]) tab3++;
     }
+#else
+    //We don't have any talents saved on BC so, another way to do this:
+    uint32 classMask = player->GetClassMask();
+    map<uint32, vector<TalentEntry const*> > spells;
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
+    {
+        TalentEntry const *talentInfo = sTalentStore.LookupEntry(i);
+        if (!talentInfo)
+            continue;
+
+        TalentTabEntry const *talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+        if (!talentTabInfo)
+            continue;
+
+        if ((classMask & talentTabInfo->ClassMask) == 0)
+            continue;
+
+        spells[talentTabInfo->tabpage].push_back(talentInfo);
+    }
+    auto CountTalents = [&](int tab) {
+        uint32 count = 0;
+        for (auto talent : spells[tab])
+        {
+            for (int rank = 0; rank < MAX_TALENT_RANK; ++rank)
+            {
+                uint32 spellId = talent->RankID[rank];
+                if (!spellId)
+                    continue;
+
+                if (player->HasSpell(spellId))
+                    count++;
+            }
+        }
+        return count;
+    };
+
+    tab1 = CountTalents(0);
+    tab2 = CountTalents(1);
+    tab3 = CountTalents(2);
+#endif
+}
+
+int AiFactory::GetPlayerSpecTab(Player* player)
+{
+    int c0 = 0, c1 = 0, c2 = 0;
+    AiFactory::CountTalentsPerTab(player, c0, c1, c2);
 
     if (c0 >= c1 && c0 >= c2)
         return 0;
 
     if (c1 >= c0 && c1 >= c2)
         return 1;
-        */
+
     return 2;
 }
 

@@ -3,6 +3,7 @@
 #include "TradeAction.h"
 #include "../ItemVisitors.h"
 #include "../values/ItemCountValue.h"
+#include "TradeData.h"
 
 using namespace ai;
 
@@ -31,7 +32,6 @@ bool TradeAction::Execute(Event event)
 
 bool TradeAction::TradeItem(const Item& item, int8 slot)
 {
-    /* TODO PLAYERBOT
     if (!bot->GetTrader() || item.IsInTrade())
         return false;
 
@@ -79,7 +79,6 @@ bool TradeAction::TradeItem(const Item& item, int8 slot)
     *packet << (uint8) tradeSlot << (uint8) item.GetBagSlot()
         << (uint8) item.GetSlot();
     bot->GetSession()->QueuePacket(packet);
-    */
     return true;
 }
 

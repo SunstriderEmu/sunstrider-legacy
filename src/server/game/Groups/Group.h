@@ -309,6 +309,7 @@ class TC_GAME_API Group
         void CountTheRoll(Rolls::iterator roll, Map* allowedMap);
         void CountRollVote(ObjectGuid playerGUID, ObjectGuid Guid, uint8 Choise);
         void EndRoll(Loot* loot, Map* allowedMap);
+        Rolls const* GetRolls() { return &RollId; }
 
         void LinkMember(GroupReference* pRef);
         void DelinkMember(ObjectGuid guid);

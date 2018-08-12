@@ -16,5 +16,6 @@ public:
     static void AddDefaultCombatStrategies(Player* player, PlayerbotAI* const facade, Engine* engine);
 
 public:
+    static void CountTalentsPerTab(Player* player, int& tab1, int& tab2, int& tab3);
     static int GetPlayerSpecTab(Player* player);
 };

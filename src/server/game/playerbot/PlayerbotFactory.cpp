@@ -1093,7 +1093,6 @@ void PlayerbotFactory::InitSpecialSpells()
 
 void PlayerbotFactory::InitTalents(uint32 specNo)
 {
-    /* TODO PLAYERBOT
     uint32 classMask = bot->GetClassMask();
     map<uint32, vector<TalentEntry const*> > spells;
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
@@ -1144,6 +1143,7 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
         freePoints = bot->GetFreeTalentPoints();
     }
 
+    /* LK
     for (uint32 i = 0; i < MAX_TALENT_SPECS; ++i)
     {
         for (PlayerTalentMap::iterator itr = bot->GetTalentMap(i).begin(); itr != bot->GetTalentMap(i).end(); ++itr)
@@ -1151,8 +1151,7 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
             if (itr->second->state != PLAYERSPELL_REMOVED)
                 itr->second->state = PLAYERSPELL_CHANGED;
         }
-    }
-    */
+    }*/
 }
 
 ObjectGuid PlayerbotFactory::GetRandomBot()
