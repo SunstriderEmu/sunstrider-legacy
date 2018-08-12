@@ -153,48 +153,38 @@ void InstanceScript::LoadBossBoundaries(BossBoundaryData const& data)
             bosses[entry.BossId].boundary.push_back(entry.Boundary);
 }
 
-void InstanceScript::LoadMinionData(MinionData const* data)
+void InstanceScript::LoadMinionData(std::vector<MinionData> const datas)
 {
-    while (data->entry)
-    {
-        if (data->bossId < bosses.size())
-            minions.insert(std::make_pair(data->entry, MinionInfo(&bosses[data->bossId])));
+    for (auto data : datas)
+        if (data.bossId < bosses.size())
+            minions.insert(std::make_pair(data.entry, MinionInfo(&bosses[data.bossId])));
 
-        ++data;
-    }
     TC_LOG_DEBUG("scripts", "InstanceScript::LoadMinionData: " UI64FMTD " minions loaded.", uint64(minions.size()));
 }
 
-void InstanceScript::LoadDoorData(DoorData const* data)
+void InstanceScript::LoadDoorData(std::vector<DoorData> const datas)
 {
-    while (data->entry)
-    {
-        if (data->bossId < bosses.size())
-            doors.insert(std::make_pair(data->entry, DoorInfo(&bosses[data->bossId], data->type)));
+    for(auto data : datas)
+        if (data.bossId < bosses.size())
+            doors.insert(std::make_pair(data.entry, DoorInfo(&bosses[data.bossId], data.type)));
 
-        ++data;
-    }
     TC_LOG_DEBUG("scripts", "InstanceScript::LoadDoorData: " UI64FMTD " doors loaded.", uint64(doors.size()));
 }
 
-void InstanceScript::LoadObjectData(ObjectData const* creatureData, ObjectData const* gameObjectData)
+void InstanceScript::LoadObjectData(std::vector<ObjectData> const creatureData, std::vector<ObjectData> const gameObjectData)
 {
-    if (creatureData)
-        LoadObjectData(creatureData, _creatureInfo);
-
-    if (gameObjectData)
-        LoadObjectData(gameObjectData, _gameObjectInfo);
+    LoadObjectData(creatureData, _creatureInfo);
+    LoadObjectData(gameObjectData, _gameObjectInfo);
 
     TC_LOG_DEBUG("scripts", "InstanceScript::LoadObjectData: " SZFMTD " objects loaded.", _creatureInfo.size() + _gameObjectInfo.size());
 }
 
-void InstanceScript::LoadObjectData(ObjectData const* data, ObjectInfoMap& objectInfo)
+void InstanceScript::LoadObjectData(std::vector<ObjectData> const datas, ObjectInfoMap& objectInfo)
 {
-    while (data->entry)
+    for (auto data : datas)
     {
-        ASSERT(objectInfo.find(data->entry) == objectInfo.end());
-        objectInfo[data->entry] = data->type;
-        ++data;
+        ASSERT(objectInfo.find(data.entry) == objectInfo.end());
+        objectInfo[data.entry] = data.type;
     }
 }
 

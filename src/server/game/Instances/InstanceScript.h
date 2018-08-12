@@ -207,9 +207,9 @@ class TC_GAME_API InstanceScript : public ZoneScript
         void SetHeaders(std::string const& dataHeaders);
         void SetBossNumber(uint32 number) { bosses.resize(number); }
         void LoadBossBoundaries(BossBoundaryData const& data);
-        void LoadDoorData(DoorData const* data);
-        void LoadMinionData(MinionData const* data);
-        void LoadObjectData(ObjectData const* creatureData, ObjectData const* gameObjectData);
+        void LoadDoorData(std::vector<DoorData> const data);
+        void LoadMinionData(std::vector<MinionData> const data);
+        void LoadObjectData(std::vector<ObjectData> const creatureData, std::vector<ObjectData> const gameObjectData);
 
         void AddObject(Creature* obj, bool add);
         void AddObject(GameObject* obj, bool add);
@@ -245,7 +245,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
 
         bool _SkipCheckRequiredBosses(Player const* player = nullptr) const;
     private:
-        static void LoadObjectData(ObjectData const* creatureData, ObjectInfoMap& objectInfo);
+        static void LoadObjectData(std::vector<ObjectData> const creatureData, ObjectInfoMap& objectInfo);
         //LK? void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source);
 
         std::vector<char> headers;
