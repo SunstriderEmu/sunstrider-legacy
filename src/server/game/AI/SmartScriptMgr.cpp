@@ -15,6 +15,7 @@
 #include "SmartScriptMgr.h"
 #include "WaypointDefines.h"
 
+//from waypoints table
 WaypointPath const* SmartWaypointMgr::GetPath(uint32 id)
 {
     auto itr = _waypointStore.find(id);
@@ -22,7 +23,6 @@ WaypointPath const* SmartWaypointMgr::GetPath(uint32 id)
         return &itr->second;
     return nullptr;
 }
-
 
 void SmartWaypointMgr::LoadFromDB()
 {

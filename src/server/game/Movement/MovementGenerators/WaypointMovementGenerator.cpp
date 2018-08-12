@@ -227,11 +227,11 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 a
     }
 
     // Inform script
+    creature->UpdateCurrentWaypointInfo(arrivedNode.id, _path->id);
     MovementInform(creature, arrivedNode.id);
 
     //update _currentNode to next node
     bool hasNextPoint = GetNextMemoryNode(_currentNode, _currentNode, true);
-    creature->UpdateCurrentWaypointInfo(arrivedNode.id, _path->id);
 
     _done = !hasNextPoint && creature->movespline->Finalized();
     if (_done)
@@ -293,6 +293,9 @@ bool WaypointMovementGenerator<Creature>::HasNextMemoryNode(uint32 fromNode, boo
 
 bool WaypointMovementGenerator<Creature>::GetNextMemoryNode(uint32 fromNode, uint32& nextNode, bool allowReverseDirection)
 {
+    if (!_path->nodes.size()) //it may have been emptied by a script (atm SmartScript does that in SmartAI::EndPath)
+        return false;
+
     if (IsLastMemoryNode(fromNode))
     {
         if (path_type == WP_PATH_TYPE_ONCE)
@@ -562,8 +565,10 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
         break;
     }
 
-    /* kelno: Strange behavior with this, not sure how to use it.
-    Not much time right now but if you want to try if you want to enable it : From what I see, MoveSplineInit inserts a first point into the spline that fucks this up, this needs to be changed first (else the creature position at this time will be included in the loop)
+    /* sun: Strange behavior with this, not sure how to use it.
+    Not much time right now but if you want to try if you want to enable it: 
+    - From what I see, MoveSplineInit inserts a first point into the spline that fucks this up, 
+    Check flag Enter_Cycle, probably the solution to this
     if (path_type == WP_PATH_TYPE_LOOP)
         init.SetCyclic();
     */
