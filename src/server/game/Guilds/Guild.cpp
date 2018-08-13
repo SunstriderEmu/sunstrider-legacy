@@ -392,9 +392,9 @@ void Guild::BankTab::LoadFromDB(Field* fields)
 bool Guild::BankTab::LoadItemFromDB(Field* fields)
 {
     uint32 startIndex = CHAR_SEL_ITEM_INSTANCE_FIELDS_COUNT;
-    uint8 slotId = fields[startIndex + 2].GetUInt8();
-    ObjectGuid::LowType itemGuid = fields[startIndex + 3].GetUInt32();
-    uint32 itemEntry = fields[startIndex + 4].GetUInt32();
+    uint8 slotId = fields[startIndex + 1].GetUInt8();
+    ObjectGuid::LowType itemGuid = fields[startIndex + 2].GetUInt32();
+    uint32 itemEntry = fields[startIndex + 3].GetUInt32();
     if (slotId >= GUILD_BANK_MAX_SLOTS)
     {
         TC_LOG_ERROR("guild", "Invalid slot for item (GUID: %u, id: %u) in guild bank, skipped.", itemGuid, itemEntry);
@@ -1180,7 +1180,8 @@ Guild::Guild():
     m_createdDate(0),
     m_accountsNumber(0),
     m_bankMoney(0),
-    m_eventLog(nullptr)
+    m_eventLog(nullptr),
+    m_bankloaded(false)
 {
     memset(&m_bankEventLog, 0, (GUILD_BANK_MAX_TABS + 1) * sizeof(LogHolder*));
 }
@@ -1485,6 +1486,11 @@ void Guild::HandleSetLeader(WorldSession* session, std::string const& name)
 
 void Guild::HandleSetBankTabInfo(WorldSession* session, uint8 tabId, std::string const& name, std::string const& icon)
 {
+    if (!m_bankloaded)
+    {
+        TC_LOG_ERROR("guild", "Guild::HandleSetBankTabInfo guild bank for guild %u is not yet loaded", GetId());
+        return;
+    }
     BankTab* tab = GetBankTab(tabId);
     if (!tab)
     {
@@ -1535,6 +1541,12 @@ void Guild::HandleSetRankInfo(WorldSession* session, uint8 rankId, std::string c
 
 void Guild::HandleBuyBankTab(WorldSession* session, uint8 tabId)
 {
+    if (!m_bankloaded)
+    {
+        TC_LOG_ERROR("guild", "Guild::HandleBuyBankTab guild bank for guild %u is not yet loaded", GetId());
+        return;
+    }
+
     Player* player = session->GetPlayer();
     if (!player)
         return;
@@ -2130,11 +2142,11 @@ void Guild::LoadBankTabFromDB(Field* fields)
 bool Guild::LoadBankItemFromDB(Field* fields)
 {
     uint32 startIndex = CHAR_SEL_ITEM_INSTANCE_FIELDS_COUNT;
-    uint8 tabId = fields[startIndex + 1].GetUInt8();
+    uint8 tabId = fields[startIndex].GetUInt8();
     if (tabId >= _GetPurchasedTabsSize())
     {
         TC_LOG_ERROR("guild", "Invalid tab for item (GUID: %u, id: #%u) in guild bank, skipped.",
-            fields[startIndex + 3].GetUInt32(), fields[startIndex +4].GetUInt32());
+            fields[startIndex + 2].GetUInt32(), fields[startIndex + 3].GetUInt32());
         return false;
     }
     return m_bankTabs[tabId]->LoadItemFromDB(fields);
@@ -2398,6 +2410,12 @@ bool Guild::ChangeMemberRank(SQLTransaction& trans, ObjectGuid guid, uint8 newRa
 // Bank (items move)
 void Guild::SwapItems(Player* player, uint8 tabId, uint8 slotId, uint8 destTabId, uint8 destSlotId, uint32 splitedAmount)
 {
+    if (!m_bankloaded)
+    {
+        TC_LOG_ERROR("guild", "Guild::SwapItems guild bank for guild %u is not yet loaded", GetId());
+        return;
+    }
+
     if (tabId >= _GetPurchasedTabsSize() || slotId >= GUILD_BANK_MAX_SLOTS ||
         destTabId >= _GetPurchasedTabsSize() || destSlotId >= GUILD_BANK_MAX_SLOTS)
         return;
@@ -2412,6 +2430,12 @@ void Guild::SwapItems(Player* player, uint8 tabId, uint8 slotId, uint8 destTabId
 
 void Guild::SwapItemsWithInventory(Player* player, bool toChar, uint8 tabId, uint8 slotId, uint8 playerBag, uint8 playerSlotId, uint32 splitedAmount)
 {
+    if (!m_bankloaded)
+    {
+        TC_LOG_ERROR("guild", "Guild::SwapItemsWithInventory guild bank for guild %u is not yet loaded", GetId());
+        return;
+    }
+
     if ((slotId >= GUILD_BANK_MAX_SLOTS && slotId != NULL_SLOT) || tabId >= _GetPurchasedTabsSize())
         return;
 
@@ -2574,6 +2598,18 @@ bool Guild::_ModifyBankMoney(SQLTransaction& trans, uint64 amount, bool add)
     stmt->setUInt32(1, m_id);
     trans->Append(stmt);
     return true;
+}
+
+void Guild::_UnloadGuildBank()
+{
+    for (uint8 tabId = 0; tabId < _GetPurchasedTabsSize(); ++tabId)
+    {
+        SQLTransaction trans(nullptr);
+        m_bankTabs[tabId]->Delete(trans, false);
+        delete m_bankTabs[tabId];
+        m_bankTabs[tabId] = nullptr;
+    }
+    m_bankTabs.clear();
 }
 
 void Guild::_SetLeaderGUID(Member* pLeader)

@@ -2112,6 +2112,8 @@ void World::Update(time_t diff)
 
     // Update groups
     sGroupMgr->Update(diff);
+    // Update guilds
+    sGuildMgr->Update(); 
 
     RecordTimeDiff("UpdateGroups");
 

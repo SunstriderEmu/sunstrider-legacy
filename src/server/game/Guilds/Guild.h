@@ -31,6 +31,7 @@ class WorldSession;
 struct ItemPosCount;
 enum InventoryResult : uint8;
 enum LocaleConstant : uint8;
+class GuildMgr;
 
 enum GuildMisc
 {
@@ -712,9 +713,10 @@ class TC_GAME_API Guild
 
         // Bank tabs
         void SetBankTabText(uint8 tabId, std::string const& text);
+        void SetBankLoaded(bool loaded) { m_bankloaded = loaded; }
 
         void ResetTimes();
-
+        
     protected:
         ObjectGuid::LowType m_id;
         std::string m_name;
@@ -797,6 +799,10 @@ class TC_GAME_API Guild
         int32 _GetMemberRemainingMoney(Member const* member) const;
         void _UpdateMemberWithdrawSlots(SQLTransaction& trans, ObjectGuid guid, uint8 tabId);
         bool _MemberHasTabRights(ObjectGuid guid, uint8 tabId, uint32 rights) const;
+
+        friend class GuildMgr;
+        void _UnloadGuildBank();
+        bool m_bankloaded;
 
         void _LogEvent(GuildEventLogTypes eventType, ObjectGuid::LowType playerGuid1, ObjectGuid::LowType playerGuid2 = 0, uint8 newRank = 0);
         void _LogBankEvent(SQLTransaction& trans, GuildBankEventLogTypes eventType, uint8 tabId, ObjectGuid::LowType playerGuid, uint32 itemOrMoney, uint16 itemStackCount = 0, uint8 destTabId = 0);

@@ -49,10 +49,27 @@ public:
     void SetNextGuildId(ObjectGuid::LowType Id) { NextGuildId = Id; }
 
     void ResetTimes();
+
+    enum GuildBankLoadState
+    {
+        UNLOADED,
+        LOADING,
+        LOADED,
+    };
+    void LoadGuildBank(uint32 guildId);
+    void UnloadGuildBank(uint32 guildId);
+
+
+    void Update();
+    void ProcessQueryCallbacks();
+    QueryCallbackProcessor _queryProcessor;
+
 protected:
     typedef std::unordered_map<ObjectGuid::LowType, Guild*> GuildContainer;
     ObjectGuid::LowType NextGuildId;
     GuildContainer GuildStore;
+
+    std::unordered_map<ObjectGuid::LowType, GuildBankLoadState> _guildBankLoadStates;
 };
 
 #define sGuildMgr GuildMgr::instance()

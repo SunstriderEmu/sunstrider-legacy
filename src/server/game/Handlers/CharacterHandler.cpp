@@ -743,7 +743,10 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     {
         Guild* guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId());
         if (guild)
+        {
             guild->SendLoginInfo(this);
+            sGuildMgr->LoadGuildBank(pCurrChar->GetGuildId());
+        }
         else
         {
             // remove wrong guild data
