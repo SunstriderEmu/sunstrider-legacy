@@ -100,7 +100,6 @@ void ArenaTeamMgr::LoadArenaTeams()
         "SELECT arenaTeamId, atm.guid, atm.weekGames, atm.weekWins, atm.seasonGames, atm.seasonWins, c.name, class, personalRating FROM arena_team_member atm"
         " INNER JOIN arena_team ate USING (arenaTeamId)"
         " LEFT JOIN characters AS c ON atm.guid = c.guid"
-        " LEFT JOIN character_arena_stats AS cas ON c.guid = cas.guid AND (cas.slot = 0 AND ate.type = 2 OR cas.slot = 1 AND ate.type = 3 OR cas.slot = 2 AND ate.type = 5)"
         " ORDER BY atm.arenateamid ASC");
 
     uint32 count = 0;

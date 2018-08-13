@@ -182,24 +182,6 @@ bool ArenaTeam::LoadArenaTeamFromDB(QueryResult const result)
     Stats.Rank = fields[14].GetUInt32();
     Stats.NonPlayedWeeks = fields[15].GetUInt32();
 
-    if(Empty())
-    {
-        // arena team is empty, delete from db
-        TC_LOG_ERROR("arena","ArenaTeam %u does not have any Members, deleting from db.", TeamId);
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARENA_TEAM);
-        stmt->setUInt32(0, TeamId);
-        trans->Append(stmt);
-
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARENA_TEAM_MEMBERS);
-        stmt->setUInt32(0, TeamId);
-        trans->Append(stmt);
-
-        CharacterDatabase.CommitTransaction(trans);
-        return false;
-    }
-
     return true;
 }
 
@@ -334,19 +316,23 @@ void ArenaTeam::DeleteMember(ObjectGuid guid, bool cleanDb)
 
 void ArenaTeam::Disband(WorldSession *session)
 {
-    if (Player *plr = session->GetPlayer()) {
-        if (plr->InArena()) {
-            ChatHandler chH = ChatHandler(plr);
-            //chH.PSendSysMessage("Vous ne pouvez pas détruire une équipe d'arène pendant un match d'arène."); //TODO TRanslate
-            chH.PSendSysMessage("Not while in arena.");
-            return;
+    if(session)
+        if (Player *plr = session->GetPlayer()) {
+            if (plr->InArena()) {
+                ChatHandler chH = ChatHandler(plr);
+                //chH.PSendSysMessage("Vous ne pouvez pas détruire une équipe d'arène pendant un match d'arène."); //TODO TRanslate
+                chH.PSendSysMessage("Not while in arena.");
+                return;
+            }
         }
-    }
     
-    // event
-    WorldPacket data;
-    session->BuildArenaTeamEventPacket(&data, ERR_ARENA_TEAM_DISBANDED_S, 2, session->GetPlayerName(), GetName(), "");
-    BroadcastPacket(&data);
+    // Broadcast update
+    if (session)
+    {
+        WorldPacket data;
+        session->BuildArenaTeamEventPacket(&data, ERR_ARENA_TEAM_DISBANDED_S, 2, session->GetPlayerName(), GetName(), "");
+        BroadcastPacket(&data);
+    }
 
     while (!Members.empty())
     {
@@ -354,7 +340,7 @@ void ArenaTeam::Disband(WorldSession *session)
         DeleteMember(Members.front().Guid, false);
     }
 
-    Player *player = session->GetPlayer();
+    Player* player = session ? session->GetPlayer() : nullptr;
     if(player)
         TC_LOG_DEBUG("arena","Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUID().GetCounter(), GetType(), GetId());
   
