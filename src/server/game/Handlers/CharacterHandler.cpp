@@ -26,6 +26,8 @@
 #include "LogsDatabaseAccessor.h"
 #include "GitRevision.h"
 #include "CharacterCache.h"
+#include "GuildMgr.h"
+#include "ArenaTeamMgr.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -542,7 +544,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     std::string name;
 
     // is guild leader
-    if(sObjectMgr->IsGuildLeader(guid))
+    if (sGuildMgr->GetGuildByLeader(guid))
     {
         //        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
         SendCharDelete(CHAR_DELETE_FAILED_GUILD_LEADER);
@@ -550,7 +552,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     }
 
     // is arena team captain
-    if(sObjectMgr->IsArenaTeamCaptain(guid))
+    if (sArenaTeamMgr->GetArenaTeamByCaptain(guid))
     {
         //        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
         SendCharDelete(CHAR_DELETE_FAILED_ARENA_CAPTAIN);
@@ -697,25 +699,19 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
         {
             if (guildId == 0)
             {
-                Guild* gmGuild = sObjectMgr->GetGuildById(defaultGuildId);
+                Guild* gmGuild = sGuildMgr->GetGuildById(defaultGuildId);
                 if (gmGuild)
                 {
                     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                    if (gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank(), trans))
-                    {
+                    if (gmGuild->AddMember(trans, pCurrChar->GetGUID()))
                         guildId = defaultGuildId;
-                        pCurrChar->SetInGuild(defaultGuildId);
-                        pCurrChar->SetRank(gmGuild->GetLowestRank());
-                    }
                     else
-                    {
                         TC_LOG_ERROR("entities.player", "Could not add player to default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUID().GetCounter());
-                    }
+
                     CharacterDatabase.CommitTransaction(trans);
                 }
-                else {
+                else
                     TC_LOG_ERROR("entities.player", "Could not find default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUID().GetCounter());
-                }
             }
         }
 
@@ -724,49 +720,30 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
         {
             if (GMForcedGuildId != guildId)
             {
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 //remove from current guild if any
-                if (Guild* currentGuild = sObjectMgr->GetGuildById(guildId))
-                    currentGuild->DeleteMember(pCurrChar->GetGUID());
+                if (Guild* currentGuild = sGuildMgr->GetGuildById(guildId))
+                    currentGuild->DeleteMember(trans, pCurrChar->GetGUID());
 
-                if (Guild* gmGuild = sObjectMgr->GetGuildById(GMForcedGuildId))
+                if (Guild* gmGuild = sGuildMgr->GetGuildById(GMForcedGuildId))
                 {
-                    if (gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank()))
+                    if (gmGuild->AddMember(trans, pCurrChar->GetGUID()))
                     {
-                        pCurrChar->SetInGuild(GMForcedGuildId);
-                        pCurrChar->SetRank(gmGuild->GetLowestRank());
                     }
                     else {
                         TC_LOG_ERROR("entities.player", "Could not add player to forced guild Id %u for GM player %s (%u)", GMForcedGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUID().GetCounter());
                     }
                 }
+                CharacterDatabase.CommitTransaction(trans);
             }
         }
     }
 
     if (pCurrChar->GetGuildId() != 0)
     {
-        Guild* guild = sObjectMgr->GetGuildById(pCurrChar->GetGuildId());
+        Guild* guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId());
         if (guild)
-        {
-            data.Initialize(SMSG_GUILD_EVENT, (2 + guild->GetMOTD().size() + 1));
-            data << (uint8)GE_MOTD;
-            data << (uint8)1;
-            data << guild->GetMOTD();
-            SendPacket(&data);
-            TC_LOG_DEBUG("network", "WORLD: Sent guild-motd (SMSG_GUILD_EVENT)");
-
-            data.Initialize(SMSG_GUILD_EVENT, (5 + 10));      // we guess size
-            data << (uint8)GE_SIGNED_ON;
-            data << (uint8)1;
-            data << pCurrChar->GetName();
-            data << pCurrChar->GetGUID();
-            guild->BroadcastPacket(&data);
-
-            TC_LOG_DEBUG("network", "WORLD: Sent guild-signed-on (SMSG_GUILD_EVENT)");
-
-            // Increment online members of the guild
-            guild->IncOnlineMemberCount();
-        }
+            guild->SendLoginInfo(this);
         else
         {
             // remove wrong guild data

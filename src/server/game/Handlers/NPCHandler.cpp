@@ -36,12 +36,15 @@ enum StableResultCode
 #endif
 };
 
+void WorldSession::SendStableResult(uint8 res)
+{
+    WorldPacket data(SMSG_STABLE_RESULT, 1);
+    data << uint8(res);
+    SendPacket(&data);
+}
+
 void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     ObjectGuid guid;
     recvData >> guid;
 
@@ -68,10 +71,6 @@ void WorldSession::SendTabardVendorActivate( ObjectGuid guid )
 
 void WorldSession::HandleBankerActivateOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     ObjectGuid guid;
     recvData >> guid;
 
@@ -99,10 +98,6 @@ void WorldSession::SendShowBank( ObjectGuid guid )
 
 void WorldSession::HandleTrainerListOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     ObjectGuid guid;
 
     recvData >> guid;
@@ -784,28 +779,16 @@ void WorldSession::HandleRepairItemOpcode( WorldPacket & recvData )
     // reputation discount
     float discountMod = _player->GetReputationPriceDiscount(unit);
 
-    uint32 TotalCost = 0;
     if (itemGUID)
     {
         Item* item = _player->GetItemByGuid(itemGUID);
 
         if(item)
-            TotalCost= _player->DurabilityRepair(item->GetPos(),true,discountMod,guildBank>0?true:false);
+            _player->DurabilityRepair(item->GetPos(), true, discountMod, guildBank != 0);
     }
     else
     {
-        TotalCost = _player->DurabilityRepairAll(true,discountMod,guildBank>0?true:false);
-    }
-    if (guildBank)
-    {
-        uint32 GuildId = _player->GetGuildId();
-        if (!GuildId)
-            return;
-        Guild *pGuild = sObjectMgr->GetGuildById(GuildId);
-        if (!pGuild)
-            return;
-        pGuild->LogBankEvent(GUILD_BANK_LOG_REPAIR_MONEY, 0, _player->GetGUID().GetCounter(), TotalCost);
-        pGuild->SendMoneyInfo(this, _player->GetGUID().GetCounter());
+        _player->DurabilityRepairAll(true, discountMod, guildBank != 0);
     }
 }
 

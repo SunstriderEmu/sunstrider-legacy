@@ -21,8 +21,6 @@
 #include <unordered_map>
 
 class Group;
-class Guild;
-class ArenaTeam;
 class Item;
 enum PetNameInvalidReason : int;
 class Player;
@@ -606,10 +604,6 @@ class TC_GAME_API ObjectMgr
 
         typedef std::set<Group*> GroupSet;
 
-        typedef std::unordered_map<uint32, Guild*> GuildMap;
-
-        typedef std::unordered_map<uint32, ArenaTeam*> ArenaTeamMap;
-
         typedef std::unordered_map<uint32, Quest> QuestContainer;
 
         typedef std::unordered_map<uint32, AreaTrigger> AreaTriggerMap;
@@ -637,32 +631,6 @@ class TC_GAME_API ObjectMgr
         bool IsGameObjectStaticTransport(uint32 entry);
 
         void LoadGameObjectTemplate();
-        
-        bool IsGuildLeader(ObjectGuid const&guid) const;
-
-        Guild* GetGuildByLeader(ObjectGuid const&guid) const;
-        Guild* GetGuildById(const uint32 GuildId);
-        Guild* GetGuildByName(const std::string& guildname);
-        std::string GetGuildNameById(const uint32 GuildId);
-
-        void AddGuild(Guild* guild);
-        void RemoveGuild(uint32 Id);
-        bool RenameGuild(uint32 Id, std::string newName);
-
-        ArenaTeam* _GetArenaTeamById(const uint32 arenateamid) const;
-        ArenaTeam* _GetArenaTeamByName(const std::string& arenateamname) const;
-
-        ArenaTeam* GetArenaTeamById(const uint32 arenateamid);
-        ArenaTeam* GetArenaTeamByName(const std::string& arenateamname);
-
-        ArenaTeam* _GetArenaTeamByCaptain(ObjectGuid const& guid) const;
-        bool IsArenaTeamCaptain(ObjectGuid const& guid) const;
-
-        //Add a team to the team list. Given team object will be destroyed upon ObjectMgr destruction.
-        void AddArenaTeam(ArenaTeam* arenaTeam);
-        void RemoveArenaTeam(uint32 Id);
-        ArenaTeamMap::iterator GetArenaTeamMapBegin() { return mArenaTeamMap.begin(); }
-        ArenaTeamMap::iterator GetArenaTeamMapEnd()   { return mArenaTeamMap.end(); }
 
         CreatureTemplateContainer const& GetCreatureTemplates() const { return _creatureTemplateStore; }
         CreatureTemplate const* GetCreatureTemplate( uint32 id );
@@ -759,8 +727,6 @@ class TC_GAME_API ObjectMgr
             return nullptr;
         }
 
-        void LoadGuilds();
-        void LoadArenaTeams();
         void LoadQuests();
         void LoadQuestRelations()
         {
@@ -895,8 +861,6 @@ class TC_GAME_API ObjectMgr
         uint32 GenerateMailID();
         uint32 GenerateItemTextID();
         uint32 GeneratePetNumber();
-        uint32 GenerateArenaTeamId();
-        uint32 GenerateGuildId();
 		uint32 GenerateCreatureSpawnId();
 		uint32 GenerateGameObjectSpawnId();
 
@@ -1073,9 +1037,6 @@ class TC_GAME_API ObjectMgr
         bool IsCreatureSpellDisabled(uint32 spellid) { return (m_DisabledCreatureSpells.count(spellid) != 0); }
         bool IsPetSpellDisabled(uint32 spellid) { return (m_DisabledPetSpells.count(spellid) != 0); }
 
-        // guild bank tabs
-        uint32 GetGuildBankTabPrice(uint8 Index) const { return Index < GUILD_BANK_MAX_TABS ? mGuildBankTabPrice[Index] : 0; }
-
         GameTele const* GetGameTele(uint32 id) const
         {
             auto itr = m_GameTeleMap.find(id);
@@ -1182,8 +1143,6 @@ class TC_GAME_API ObjectMgr
         uint32 _auctionId;
 		std::atomic<uint32> _mailid;
         uint32 _ItemTextId;
-        uint32 _arenaTeamId;
-        uint32 _guildId;
 		std::atomic<uint32> _hiPetNumber;
         uint64 _GMticketid;
 
@@ -1210,9 +1169,6 @@ class TC_GAME_API ObjectMgr
         typedef std::unordered_map<uint32, std::string> ItemTextMap;
         typedef std::set<uint32> TavernAreaTriggerSet;
         typedef std::set<uint32> GameObjectForQuestSet;
-
-        GuildMap            mGuildMap;
-        ArenaTeamMap        mArenaTeamMap;
 
         ItemMap             mItems;
         ItemTextMap         mItemTexts;
@@ -1305,9 +1261,6 @@ class TC_GAME_API ObjectMgr
         GossipMenuItemsLocaleContainer _gossipMenuItemsLocaleStore;
         PointOfInterestLocaleContainer _pointOfInterestLocaleStore;
         QuestGreetingLocaleContainer _questGreetingLocaleStore;
-
-        typedef std::vector<uint32> GuildBankTabPriceMap;
-        GuildBankTabPriceMap mGuildBankTabPrice;
 
         GossipMenusContainer _gossipMenusStore;
         GossipMenuItemsContainer _gossipMenuItemsStore;

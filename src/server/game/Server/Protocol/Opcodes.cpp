@@ -1103,7 +1103,7 @@ void OpcodeTable::Initialize()
     /*0x3E3*/ DEFINE_HANDLER(CMSG_REPORT_PVP_AFK,                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleReportPvPAFK              );
     /*0x3E4*/ DEFINE_SERVER_OPCODE_HANDLER(SMSG_REPORT_PVP_AFK_RESULT,      STATUS_NEVER);
     /*0x3E5*/ DEFINE_HANDLER(CMSG_GUILD_BANKER_ACTIVATE,                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankerActivate       );
-    /*0x3E6*/ DEFINE_HANDLER(CMSG_GUILD_BANK_QUERY_TAB,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankerActivateTab    );
+    /*0x3E6*/ DEFINE_HANDLER(CMSG_GUILD_BANK_QUERY_TAB,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankQueryTab    );
     /*0x3E7*/ DEFINE_SERVER_OPCODE_HANDLER(SMSG_GUILD_BANK_LIST,            STATUS_NEVER);
     /*0x3E8*/ DEFINE_HANDLER(CMSG_GUILD_BANK_SWAP_ITEMS,                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankSwapItems        );
     /*0x3E9*/ DEFINE_HANDLER(CMSG_GUILD_BANK_BUY_TAB,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankBuyTab           );
@@ -1127,7 +1127,7 @@ void OpcodeTable::Initialize()
     /*0x3FB*/ DEFINE_SERVER_OPCODE_HANDLER(SMSG_VOICESESSION_FULL,          STATUS_NEVER);
     /*0x3FC*/ DEFINE_HANDLER(MSG_GUILD_PERMISSIONS,                         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildPermissions          );
     /*0x3FD*/ DEFINE_HANDLER(MSG_GUILD_BANK_MONEY_WITHDRAWN,                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankMoneyWithdrawn   );
-    /*0x3FE*/ DEFINE_HANDLER(MSG_GUILD_EVENT_LOG_QUERY,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildEventLogOpcode       );
+    /*0x3FE*/ DEFINE_HANDLER(MSG_GUILD_EVENT_LOG_QUERY,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildEventLogQueryOpcode       );
     /*0x3FF*/ DEFINE_HANDLER(CMSG_MAELSTROM_RENAME_GUILD,                   STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     /*0x400*/ DEFINE_HANDLER(CMSG_GET_MIRRORIMAGE_DATA,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleMirrorImageDataRequest    );
     /*0x401*/ DEFINE_SERVER_OPCODE_HANDLER(SMSG_MIRRORIMAGE_DATA,           STATUS_NEVER);
@@ -2180,7 +2180,7 @@ void OpcodeTable::Initialize()
     /*0x3E4*/ DEFINE_HANDLER_LK(LK_CMSG_REPORT_PVP_AFK,                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleReportPvPAFK );
     /*0x3E5*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_REPORT_PVP_AFK_RESULT,      STATUS_NEVER);
     /*0x3E6*/ DEFINE_HANDLER_LK(LK_CMSG_GUILD_BANKER_ACTIVATE,                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankerActivate );
-    /*0x3E7*/ DEFINE_HANDLER_LK(LK_CMSG_GUILD_BANK_QUERY_TAB,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankerActivateTab );
+    /*0x3E7*/ DEFINE_HANDLER_LK(LK_CMSG_GUILD_BANK_QUERY_TAB,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankQueryTab );
     /*0x3E8*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_GUILD_BANK_LIST,            STATUS_NEVER);
     /*0x3E9*/ DEFINE_HANDLER_LK(LK_CMSG_GUILD_BANK_SWAP_ITEMS,                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankSwapItems );
     /*0x3EA*/ DEFINE_HANDLER_LK(LK_CMSG_GUILD_BANK_BUY_TAB,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankBuyTab );
@@ -2204,7 +2204,7 @@ void OpcodeTable::Initialize()
     /*0x3FC*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_VOICESESSION_FULL,          STATUS_NEVER);
     /*0x3FD*/ DEFINE_HANDLER_LK(LK_MSG_GUILD_PERMISSIONS,                         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildPermissions );
     /*0x3FE*/ DEFINE_HANDLER_LK(LK_MSG_GUILD_BANK_MONEY_WITHDRAWN,                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankMoneyWithdrawn );
-    /*0x3FF*/ DEFINE_HANDLER_LK(LK_MSG_GUILD_EVENT_LOG_QUERY,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildEventLogOpcode );
+    /*0x3FF*/ DEFINE_HANDLER_LK(LK_MSG_GUILD_EVENT_LOG_QUERY,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildEventLogQueryOpcode );
     /*0x400*/ DEFINE_HANDLER_LK(LK_CMSG_MAELSTROM_RENAME_GUILD,                   STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL );
     /*0x401*/ DEFINE_HANDLER_LK(LK_CMSG_GET_MIRRORIMAGE_DATA,                     STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleMirrorImageDataRequest );
     /*0x402*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_MIRRORIMAGE_DATA,           STATUS_NEVER);

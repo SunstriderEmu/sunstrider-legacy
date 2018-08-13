@@ -1,7 +1,7 @@
 
 #include "playerbot.h"
 #include "PlayerbotFactory.h"
-//#include "../../server/game/Guilds/GuildMgr.h"
+#include "GuildMgr.h"
 #include "../ItemPrototype.h"
 #include "PlayerbotAIConfig.h"
 //#include "DBCStore.h"
@@ -9,6 +9,7 @@
 //#include "../ahbot/AhBot.h"
 #include "Pet.h"
 #include "RandomPlayerbotFactory.h"
+
 
 using namespace ai;
 using namespace std;
@@ -1689,7 +1690,7 @@ void PlayerbotFactory::InitGuild()
 
     int index = urand(0, guilds.size() - 1);
     uint32 guildId = guilds[index];
-    Guild* guild = sObjectMgr->GetGuildById(guildId);
+    Guild* guild = sGuildMgr->GetGuildById(guildId);
     if (!guild)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Invalid guild %u", guildId);
@@ -1697,5 +1698,9 @@ void PlayerbotFactory::InitGuild()
     }
 
     if (guild->GetMemberCount() < 10)
-        guild->AddMember(bot->GetGUID(), urand(GR_OFFICER, GR_INITIATE));
+    {
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        guild->AddMember(trans, bot->GetGUID(), urand(GR_OFFICER, GR_INITIATE));
+        CharacterDatabase.CommitTransaction(trans);
+    }
 }

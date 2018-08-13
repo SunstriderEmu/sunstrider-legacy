@@ -18,7 +18,7 @@ struct ItemSetEffect
     SpellInfo const *spells[8];
 };
 
-enum InventoryResult
+enum InventoryResult : uint8
 {
     EQUIP_ERR_OK                                 = 0,
     EQUIP_ERR_CANT_EQUIP_LEVEL_I                 = 1,

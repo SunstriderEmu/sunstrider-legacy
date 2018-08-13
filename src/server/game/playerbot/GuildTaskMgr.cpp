@@ -2,6 +2,7 @@
 #include "playerbot.h"
 #include "PlayerbotAIConfig.h"
 #include "GuildTaskMgr.h"
+#include "GuildMgr.h"
 
 //#include "../../plugins/ahbot/AhBot.h"
 //#include "GuildMgr.h"
@@ -159,14 +160,14 @@ bool GuildTaskMgr::CreateItemTask(uint32 owner, uint32 guildId)
     if (!itemId)
     {
         sLog->outMessage("gtask", LOG_LEVEL_ERROR, "%s / %s: no items avaible for item task",
-                sObjectMgr->GetGuildById(guildId)->GetName().c_str(), player->GetName().c_str());
+                sGuildMgr->GetGuildById(guildId)->GetName().c_str(), player->GetName().c_str());
         return false;
     }
 
     uint32 count = GetMaxItemTaskCount(itemId);
 
     sLog->outMessage("gtask", LOG_LEVEL_DEBUG, "%s / %s: item task %u (x%d)",
-            sObjectMgr->GetGuildById(guildId)->GetName().c_str(), player->GetName().c_str(),
+            sGuildMgr->GetGuildById(guildId)->GetName().c_str(), player->GetName().c_str(),
             itemId, count);
 
     SetTaskValue(owner, guildId, "itemCount", count, sPlayerbotAIConfig.maxGuildTaskChangeTime);
@@ -201,7 +202,7 @@ bool GuildTaskMgr::CreateKillTask(uint32 owner, uint32 guildId)
     if (ids.empty())
     {
         sLog->outMessage("gtask", LOG_LEVEL_ERROR, "%s / %s: no rare creatures available for kill task",
-                sObjectMgr->GetGuildById(guildId)->GetName().c_str(), player->GetName().c_str());
+                sGuildMgr->GetGuildById(guildId)->GetName().c_str(), player->GetName().c_str());
         return false;
     }
 
@@ -209,7 +210,7 @@ bool GuildTaskMgr::CreateKillTask(uint32 owner, uint32 guildId)
     uint32 creatureId = ids[index];
 
     sLog->outMessage("gtask", LOG_LEVEL_DEBUG, "%s / %s: kill task %u",
-            sObjectMgr->GetGuildById(guildId)->GetName().c_str(), player->GetName().c_str(),
+            sGuildMgr->GetGuildById(guildId)->GetName().c_str(), player->GetName().c_str(),
             creatureId);
 
     SetTaskValue(owner, guildId, "killTask", creatureId, sPlayerbotAIConfig.maxGuildTaskChangeTime);
@@ -218,7 +219,7 @@ bool GuildTaskMgr::CreateKillTask(uint32 owner, uint32 guildId)
 
 bool GuildTaskMgr::SendAdvertisement(uint32 owner, uint32 guildId)
 {
-    Guild *guild = sObjectMgr->GetGuildById(guildId);
+    Guild *guild = sGuildMgr->GetGuildById(guildId);
     if (!guild)
         return false;
 
@@ -243,7 +244,7 @@ bool GuildTaskMgr::SendAdvertisement(uint32 owner, uint32 guildId)
 
 bool GuildTaskMgr::SendItemAdvertisement(uint32 itemId, uint32 owner, uint32 guildId)
 {
-    Guild *guild = sObjectMgr->GetGuildById(guildId);
+    Guild *guild = sGuildMgr->GetGuildById(guildId);
     Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, (owner)));
     Player* leader = ObjectAccessor::FindPlayer(guild->GetLeaderGUID());
 
@@ -276,7 +277,7 @@ bool GuildTaskMgr::SendItemAdvertisement(uint32 itemId, uint32 owner, uint32 gui
 
 bool GuildTaskMgr::SendKillAdvertisement(uint32 creatureId, uint32 owner, uint32 guildId)
 {
-    Guild *guild = sObjectMgr->GetGuildById(guildId);
+    Guild *guild = sGuildMgr->GetGuildById(guildId);
     Player* player = ObjectAccessor::FindPlayer(ObjectGuid(HighGuid::Player, owner));
     Player* leader = ObjectAccessor::FindPlayer(guild->GetLeaderGUID());
 
@@ -302,7 +303,7 @@ bool GuildTaskMgr::SendKillAdvertisement(uint32 creatureId, uint32 owner, uint32
 
 bool GuildTaskMgr::SendThanks(uint32 owner, uint32 guildId)
 {
-    Guild *guild = sObjectMgr->GetGuildById(guildId);
+    Guild *guild = sGuildMgr->GetGuildById(guildId);
     if (!guild)
         return false;
 
@@ -500,7 +501,7 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
                 uint32 guildId = fields[3].GetUInt32();
                 std::string type = fields[4].GetString();
 
-                Guild *guild = sObjectMgr->GetGuildById(guildId);
+                Guild *guild = sGuildMgr->GetGuildById(guildId);
                 if (!guild)
                     continue;
 
@@ -556,7 +557,7 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
             {
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
-                Guild *guild = sObjectMgr->GetGuildById(guildId);
+                Guild *guild = sGuildMgr->GetGuildById(guildId);
                 if (!guild)
                     continue;
 
@@ -621,7 +622,7 @@ void GuildTaskMgr::CheckItemTask(uint32 itemId, uint32 obtained, Player* ownerPl
 
 bool GuildTaskMgr::Reward(uint32 owner, uint32 guildId)
 {
-    Guild *guild = sObjectMgr->GetGuildById(guildId);
+    Guild *guild = sGuildMgr->GetGuildById(guildId);
     if (!guild)
         return false;
 
@@ -701,7 +702,7 @@ void GuildTaskMgr::CheckKillTask(Player* player, Unit* victim)
     {
         uint32 guildId = i->first;
         uint32 value = i->second;
-        Guild* guild = sObjectMgr->GetGuildById(guildId);
+        Guild* guild = sGuildMgr->GetGuildById(guildId);
 
         if (value != creature->GetCreatureTemplate()->Entry)
             continue;

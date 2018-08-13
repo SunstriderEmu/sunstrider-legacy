@@ -1,6 +1,5 @@
 
 #include "Log.h"
-
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "World.h"
@@ -41,13 +40,13 @@
 #include "SpellHistory.h"
 #include "ChaseMovementGenerator.h"
 #include "AbstractFollower.h"
-
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
 #include "Transport.h"
 #include "InstanceScript.h"
 #include "UpdateFieldFlags.h"
 #include "LogsDatabaseAccessor.h"
+#include "GuildMgr.h"
 
 #include <math.h>
 
@@ -11972,7 +11971,7 @@ void Unit::LogBossDown(Creature* cVictim)
         std::string bossNameFr = cVictim->GetNameForLocaleIdx(LOCALE_frFR);
         const char* guildname = "-"; //we'll have to replace this by wathever we want on the website
         if (downByGuildId)
-            guildname = sObjectMgr->GetGuildNameById(downByGuildId).c_str();
+            guildname = sGuildMgr->GetGuildNameById(downByGuildId).c_str();
 
         uint32 logEntry = cVictim->GetEntry();
                 

@@ -243,7 +243,7 @@ void AuctionHouseMgr::LoadAuctionItems()
     {
         fields = result->Fetch();
 
-        uint32 startIndex = CHAR_SEL_CHARACTER_INVENTORY_FIELDS_COUNT;
+        uint32 startIndex = CHAR_SEL_ITEM_INSTANCE_FIELDS_COUNT;
         ObjectGuid::LowType item_guid = fields[startIndex++].GetUInt32();
         uint32 itemEntry = fields[startIndex++].GetUInt32();
 

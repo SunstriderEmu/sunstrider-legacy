@@ -1681,6 +1681,64 @@ GameTele const* ChatHandler::extractGameTeleFromLink(char* text)
     return sObjectMgr->GetGameTele(cId);
 }
 
+void ChatHandler::extractOptFirstArg(char* args, char** arg1, char** arg2)
+{
+    char* p1 = strtok(args, " ");
+    char* p2 = strtok(nullptr, " ");
+
+    if (!p2)
+    {
+        p2 = p1;
+        p1 = nullptr;
+    }
+
+    if (arg1)
+        *arg1 = p1;
+
+    if (arg2)
+        *arg2 = p2;
+}
+
+char* ChatHandler::extractQuotedArg(char* args)
+{
+    if (!args || !*args)
+        return nullptr;
+
+    if (*args == '"')
+        return strtok(args + 1, "\"");
+    else
+    {
+        // skip spaces
+        while (*args == ' ')
+        {
+            args += 1;
+            continue;
+        }
+
+        // return nullptr if we reached the end of the string
+        if (!*args)
+            return nullptr;
+
+        // since we skipped all spaces, we expect another token now
+        if (*args == '"')
+        {
+            // return an empty string if there are 2 "" in a row.
+            // strtok doesn't handle this case
+            if (*(args + 1) == '"')
+            {
+                strtok(args, " ");
+                static char arg[1];
+                arg[0] = '\0';
+                return arg;
+            }
+            else
+                return strtok(args + 1, "\"");
+        }
+        else
+            return nullptr;
+    }
+}
+
 std::string const ChatHandler::GetName() const
 {
     return m_session->GetPlayer()->GetName();

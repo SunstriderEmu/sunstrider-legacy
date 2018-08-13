@@ -1097,8 +1097,14 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
     _player->SetSelection(guid);
 
-    Player *plr = ObjectAccessor::GetPlayer(*_player, guid);
+    Player* plr = ObjectAccessor::GetPlayer(*_player, guid);
     if(!plr)                                                // wrong player
+        return;
+
+    if (!GetPlayer()->IsWithinDistInMap(plr, INSPECT_DISTANCE, false))
+        return;
+
+    if (GetPlayer()->IsValidAttackTarget(plr))
         return;
 
     uint32 talent_points = 0x3D; //bc talent count
@@ -1188,6 +1194,12 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
         TC_LOG_ERROR("network","InspectHonorStats: player not found...");
         return;
     }
+
+    if (!GetPlayer()->IsWithinDistInMap(player, INSPECT_DISTANCE, false))
+        return;
+
+    if (GetPlayer()->IsValidAttackTarget(player))
+        return;
 
     WorldPacket data(MSG_INSPECT_HONOR_STATS, 8+1+4*4);
     data << uint64(player->GetGUID());

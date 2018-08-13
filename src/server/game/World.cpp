@@ -2,6 +2,7 @@
 #include "AccountMgr.h"
 #include "AddonMgr.h"
 #include "ArenaTeam.h"
+#include "ArenaTeamMgr.h"
 #include "AuctionHouseMgr.h"
 #include "BattleGroundMgr.h"
 #include "CellImpl.h"
@@ -21,6 +22,7 @@
 #include "GlobalEvents.h"
 #include "GridNotifiersImpl.h"
 #include "GroupMgr.h"
+#include "GuildMgr.h"
 #include "InstanceSaveMgr.h"
 #include "ItemEnchantmentMgr.h"
 #include "Language.h"
@@ -39,6 +41,7 @@
 #include "ObjectMgr.h"
 #include "Opcodes.h"
 #include "OutdoorPvPMgr.h"
+#include "PetitionMgr.h"
 #include "Player.h"
 #include "Pet.h"
 #include "PoolMgr.h"
@@ -1335,6 +1338,13 @@ void World::LoadConfigSettings(bool reload)
             TC_LOG_ERROR("server.loading", "ClientCacheVersion can't be negative %d, ignored.", clientCacheId);
     }
 
+    m_configs[CONFIG_GUILD_EVENT_LOG_COUNT] = sConfigMgr->GetIntDefault("Guild.EventLogRecordsCount", GUILD_EVENTLOG_MAX_RECORDS);
+    if (m_configs[CONFIG_GUILD_EVENT_LOG_COUNT] > GUILD_EVENTLOG_MAX_RECORDS)
+        m_configs[CONFIG_GUILD_EVENT_LOG_COUNT] = GUILD_EVENTLOG_MAX_RECORDS;
+    m_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] = sConfigMgr->GetIntDefault("Guild.BankEventLogRecordsCount", GUILD_BANKLOG_MAX_RECORDS);
+    if (m_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] > GUILD_BANKLOG_MAX_RECORDS)
+        m_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] = GUILD_BANKLOG_MAX_RECORDS;
+
     LoadSanctuaryAndFFAZones();
     LoadFishingWords();
 
@@ -1688,11 +1698,11 @@ void World::SetInitialWorldSettings()
     sAuctionMgr->LoadAuctionItems();
     sAuctionMgr->LoadAuctions();
 
-//    TC_LOG_INFO("server.loading", "Loading Guilds..." );
-//    sObjectMgr->LoadGuilds();
+    TC_LOG_INFO("server.loading", "Loading Guilds..." );
+    sGuildMgr->LoadGuilds();
 
     TC_LOG_INFO("server.loading", "Loading ArenaTeams..." );
-    sObjectMgr->LoadArenaTeams();
+    sArenaTeamMgr->LoadArenaTeams();
 
     TC_LOG_INFO("server.loading", "Loading Groups..." );
     sGroupMgr->LoadGroups();
@@ -1784,6 +1794,12 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading","Loading SmartAI scripts...");
     sSmartScriptMgr->LoadSmartAIFromDB();
+
+    TC_LOG_INFO("server.loading", "Loading Petitions...");
+    sPetitionMgr->LoadPetitions();
+
+    TC_LOG_INFO("server.loading", "Loading Signatures...");
+    sPetitionMgr->LoadSignatures();
 
     TC_LOG_INFO("server.loading", "Loading Item loot...");
     sLootItemStorage->LoadStorageFromDB();
@@ -2758,17 +2774,17 @@ void World::UpdateSessions(uint32 diff)
 
 bool compareRank (ArenaTeam* first, ArenaTeam* second)
 {
-    return first->GetStats().rank < second->GetStats().rank;
+    return first->GetStats().Rank < second->GetStats().Rank;
 }
 
 // /!\ There can be multiple team with rank 1 and so on
 void World::updateArenaLeaderTeams(uint8 maxcount, uint8 type, uint32 minimalRating)
 {
     firstArenaTeams.clear();
-    for (auto i = sObjectMgr->GetArenaTeamMapBegin(); i != sObjectMgr->GetArenaTeamMapEnd(); ++i)
+    for (auto i = sArenaTeamMgr->GetArenaTeamMapBegin(); i != sArenaTeamMgr->GetArenaTeamMapEnd(); ++i)
     {
         if(ArenaTeam* team = i->second)
-            if (team->GetType() == type && team->GetStats().rank != 0 && team->GetStats().rank <= maxcount && team->GetStats().rating > minimalRating)
+            if (team->GetType() == type && team->GetStats().Rank != 0 && team->GetStats().Rank <= maxcount && team->GetStats().Rating > minimalRating)
                 firstArenaTeams.push_back(team);
     }
 

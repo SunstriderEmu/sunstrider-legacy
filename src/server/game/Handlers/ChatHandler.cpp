@@ -20,6 +20,7 @@
 #include "Util.h"
 #include "ScriptMgr.h"
 #include "LogsDatabaseAccessor.h"
+#include "GuildMgr.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -323,9 +324,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             if (!guildId)
                 return;
 
-            Guild *guild = sObjectMgr->GetGuildById(guildId);
+            Guild* guild = sGuildMgr->GetGuildById(guildId);
             if (guild) {
-                guild->BroadcastToGuild(this, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
+                guild->BroadcastToGuild(this, false, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
             }
             #ifdef PLAYERBOT
             // Playerbot mod: broadcast message to bot members
@@ -348,11 +349,8 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         case CHAT_MSG_OFFICER:
         {
             if (GetPlayer()->GetGuildId())
-            {
-                Guild *guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
-                if (guild)
-                    guild->BroadcastToOfficers(this, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
-            }
+                if (Guild *guild = sGuildMgr->GetGuildById(GetPlayer()->GetGuildId()))
+                    guild->BroadcastToGuild(this, true, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
             break;
         }
         case CHAT_MSG_RAID:

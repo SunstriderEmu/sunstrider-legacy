@@ -4,6 +4,7 @@
 #include "PlayerDump.h"
 #include "AuctionHouseMgr.h"
 #include "BattleGround.h"
+#include "GuildMgr.h"
 
 bool ChatHandler::HandleViewCreditsCommand(const char *args)
 {
@@ -437,32 +438,32 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     if (m_session->GetPlayer()->IsInCombat()) {
         //TODO translate
-        PSendSysMessage("Impossible en combat.");
-        //SendSysMessage("Cannot do this in combat.");
+        //SendSysMessage("Impossible en combat.");
+        SendSysMessage("Cannot do this in combat.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (m_session->GetPlayer()->GetBattleground()) {
         //TODO translate
-        PSendSysMessage("Impossible en champ de bataille ou en arène.");
-        //PSendSysMessage("Impossible in battleground or arena.");
+        //SendSysMessage("Impossible en champ de bataille ou en arène.");
+        SendSysMessage("Impossible in battleground or arena.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (m_session->GetPlayer()->GetGroup()) {
         //TODO translate
-        PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
-        //PSendSysMessage("Please leave your group to perform the change.");
+        //PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
+        SendSysMessage("Please leave your group to perform the change.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (m_session->GetPlayer()->GetInstanceId() != 0) {
         //TODO translate
-        PSendSysMessage("Impossible en instance.");
-        //PSendSysMessage("Impossible in instance.");
+        //PSendSysMessage("Impossible en instance.");
+        SendSysMessage("Impossible in instance.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -477,8 +478,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     if (!result) {
         //TODO translate
-        PSendSysMessage("Personnage cible non trouvé.");
-        //PSendSysMessage("Targeted character not found.");
+        //SendSysMessage("Personnage cible non trouvé.");
+        SendSysMessage("Targeted character not found.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -505,16 +506,16 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     if (m_guid == t_guid) {
         //TODO translate
-        PSendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum !");
-        //PSendSysMessage("You tried to perform a change on yourself. Please read the dedicated post on the forums.");
+        //SendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum !");
+        SendSysMessage("You tried to perform a change on yourself. Please read the dedicated post on the forums.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (!force && m_account != t_account) {
         //TODO translate
-        PSendSysMessage("Le personnage modèle doit être présent sur votre compte.");
-        //PSendSysMessage("The model character must be on your account.");
+        //SendSysMessage("Le personnage modèle doit être présent sur votre compte.");
+        SendSysMessage("The model character must be on your account.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -537,8 +538,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     PlayerInfo const* targetInfo = sObjectMgr->GetPlayerInfo(t_race, m_class);
     if (!targetInfo) {
         //TODO translate
-        PSendSysMessage("La race du personnage cible est incompatible avec votre classe.");
-        //PSendSysMessage("The targeted character's race is incompatible with your class.");
+        //SendSysMessage("La race du personnage cible est incompatible avec votre classe.");
+        SendSysMessage("The targeted character's race is incompatible with your class.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -552,9 +553,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         {
             if(!sWorld->getConfig(CONFIG_FACTION_CHANGE_A2H)) 
             {
-                //TODO translate
-                PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
-                //PSendSysMessage("Faction change from Alliance to Horde is deactivated.");
+                //SendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
+                SendSysMessage("Faction change from Alliance to Horde is deactivated.");
                 SetSentErrorMessage(true);
                 return false;
             }
@@ -564,8 +564,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_H2A)) 
             {
                 //TODO translate
-                PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
-                //PSendSysMessage("Faction change from Horde to Alliance is deactivated.");
+                //SendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
+                SendSysMessage("Faction change from Horde to Alliance is deactivated.");
                 SetSentErrorMessage(true);
                 return false;
             }
@@ -596,11 +596,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     // Check guild and arena team, friends are removed after the SaveToDB() call
     // Guild
     if (factionChange) {
-        Guild* guild = sObjectMgr->GetGuildById(plr->GetGuildId());
+        Guild* guild = sGuildMgr->GetGuildById(plr->GetGuildId());
         if (guild) {
             //TODO translate
-            PSendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
-            //PSendSysMessage("You must leave your guild to perform faction change.");
+            //SendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
+            SendSysMessage("You must leave your guild to perform faction change.");
             SetSentErrorMessage(true);
             return false;
         }
@@ -611,9 +611,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUID().GetCounter());
 
         if (result) {
-            //TODO translate
-            PSendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
-            //PSendSysMessage("You must leave your arena team(s) to perform faction change.");
+            //SendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
+            SendSysMessage("You must leave your arena team(s) to perform faction change.");
             SetSentErrorMessage(true);
             return false;
         }
@@ -1001,15 +1000,13 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                     CharacterDatabase.PExecute("UPDATE character_queststatus SET quest = %u WHERE guid = %u AND quest = %u", quest_horde, plr->GetGUID().GetCounter(), quest_alliance);
             }
         }
-    }
 
-    // Friend list
-    if (factionChange)
+        // Friend list
         CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = %u OR friend = %u", plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter());
 
-    // Relocation
-    if (factionChange) {
-        switch (t_race) {
+        // Relocation
+        switch (t_race) 
+        {
         case RACE_HUMAN:
         case RACE_DWARF:
         case RACE_NIGHTELF:
@@ -1028,6 +1025,5 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             break;
         }
     }
-    
     return true;
 }

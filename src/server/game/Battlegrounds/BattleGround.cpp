@@ -8,6 +8,7 @@
 #include "Chat.h"
 #include "SpellAuras.h"
 #include "ArenaTeam.h"
+#include "ArenaTeamMgr.h"
 #include "World.h"
 #include "Util.h"
 #include "SpellMgr.h"
@@ -562,18 +563,18 @@ void Battleground::EndBattleground(uint32 winner)
     {
         if(winner == ALLIANCE)
         {
-            winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
-            loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+            winner_arena_team = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+            loser_arena_team = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
         }
         else if(winner == HORDE)
         {
-            winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
-            loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+            winner_arena_team = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+            loser_arena_team = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
         }
         if(winner_arena_team && loser_arena_team)
         {
-            loser_rating = loser_arena_team->GetStats().rating;
-            winner_rating = winner_arena_team->GetStats().rating;
+            loser_rating = loser_arena_team->GetStats().Rating;
+            winner_rating = winner_arena_team->GetStats().Rating;
             int32 winner_change = winner_arena_team->WonAgainst(loser_rating);
             int32 loser_change = loser_arena_team->LostAgainst(winner_rating);
             if(winner == ALLIANCE)
@@ -587,8 +588,8 @@ void Battleground::EndBattleground(uint32 winner)
                 SetArenaTeamRatingChangeForTeam(ALLIANCE, loser_change);
             }
             
-            final_loser_rating = loser_arena_team->GetStats().rating;
-            final_winner_rating = winner_arena_team->GetStats().rating;
+            final_loser_rating = loser_arena_team->GetStats().Rating;
+            final_winner_rating = winner_arena_team->GetStats().Rating;
 
             TC_LOG_DEBUG("arena","Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, _arenaTeamIds[TEAM_ALLIANCE], _arenaTeamIds[TEAM_HORDE], winner_arena_team->GetId(), final_winner_rating, final_loser_rating, winner_change);
             for (auto itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr) {
@@ -1103,13 +1104,13 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
                     ArenaTeam * loser_arena_team = nullptr;
                     if(team == HORDE)
                     {
-                        winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
-                        loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+                        winner_arena_team = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+                        loser_arena_team = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
                     }
                     else
                     {
-                        winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
-                        loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+                        winner_arena_team = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+                        loser_arena_team = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
                     }
                     if(winner_arena_team && loser_arena_team)
                     {
@@ -2140,7 +2141,7 @@ void Battleground::BuildPvPLogDataPacket(WorldPacket& data)
         
         for (int i = 1; i >= 0; --i) {
             uint32 teamId = _arenaTeamIds[i];
-            ArenaTeam* at = sObjectMgr->GetArenaTeamById(teamId);
+            ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(teamId);
             if (at)
                 data << at->GetName();
             else

@@ -106,6 +106,7 @@ enum TempSummonType
 #define CONTACT_DISTANCE            0.5f
 #define INTERACTION_DISTANCE        5.0f
 #define ATTACK_DISTANCE             5.0f
+#define INSPECT_DISTANCE            28.0f
 #define MAX_SEARCHER_DISTANCE       150.0f // sunwell: replace the use of MAX_VISIBILITY_DISTANCE in searchers, because MAX_VISIBILITY_DISTANCE is quite too big for this purpos
 #define MAX_VISIBILITY_DISTANCE     250.0f      // max distance for visible object show, limited in 333 yards
 #define VISIBILITY_INC_FOR_GOBJECTS 30.0f // sunwell

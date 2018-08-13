@@ -2390,12 +2390,11 @@ enum PetDiet : uint32
 
 #define CHAIN_SPELL_JUMP_RADIUS 10
 
-// Max values for Guild & Guild Bank
-#define GUILD_BANK_MAX_TABS         6
-#define GUILD_BANK_MAX_SLOTS        98
-#define GUILD_BANK_MAX_LOGS         24
-#define GUILD_EVENTLOG_MAX_ENTRIES  100
-#define GUILD_MAX_RANKS_COUNT       10
+enum GuildLogs
+{
+    GUILD_BANKLOG_MAX_RECORDS   = 25,
+    GUILD_EVENTLOG_MAX_RECORDS  = 100,
+};
 
 enum AIReaction : uint32
 {
@@ -2403,7 +2402,7 @@ enum AIReaction : uint32
     AI_REACTION_FRIENDLY = 1,                               // (NOT used in client packet handler)
     AI_REACTION_HOSTILE  = 2,                               // sent on every attack, triggers aggro sound (used in client packet handler)
     AI_REACTION_AFRAID   = 3,                               // seen for polymorph (when AI not in control of self?) (NOT used in client packet handler)
-    AI_REACTION_DESTROY  = 4                                // used on object destroy (NOT used in client packet handler)
+    AI_REACTION_DESTROY  = 4,                               // used on object destroy (NOT used in client packet handler)
 };
 
 // Diminishing Returns Types

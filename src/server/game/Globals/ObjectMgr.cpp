@@ -102,19 +102,8 @@ ObjectMgr::ObjectMgr() :
     _hiPetNumber(1),
     _ItemTextId(1),
     _mailid(1),
-    _guildId(1),
-    _arenaTeamId(1),
     _auctionId(1)
 {
-
-    mGuildBankTabPrice.resize(GUILD_BANK_MAX_TABS);
-    mGuildBankTabPrice[0] = 100;
-    mGuildBankTabPrice[1] = 250;
-    mGuildBankTabPrice[2] = 500;
-    mGuildBankTabPrice[3] = 1000;
-    mGuildBankTabPrice[4] = 2500;
-    mGuildBankTabPrice[5] = 5000;
-
     for (uint8 i = 0; i < MAX_CLASSES; ++i)
     {
         _playerClassInfo[i] = nullptr;
@@ -134,11 +123,6 @@ ObjectMgr::~ObjectMgr()
 
     _areaTriggerStore.clear();
 
-    for (auto & itr : mGuildMap)
-        delete itr.second;
-
-    mGuildMap.clear();
-
     for (auto & itr : m_mCacheVendorItemMap)
         itr.second.Clear();
 
@@ -146,189 +130,7 @@ ObjectMgr::~ObjectMgr()
         itr.second.Clear();
 
     for (auto itr : spellTemplates)
-    {
-        SpellEntry* entry = itr.second;
-        delete entry;
-        entry = nullptr;
-    }
-
-    for (auto itr : mArenaTeamMap)
-    {
         delete itr.second;
-        itr.second = nullptr;
-    }
-    
-}
-
-Guild * ObjectMgr::GetGuildById(const uint32 GuildId)
-{
-    GuildMap::const_iterator itr = mGuildMap.find(GuildId);
-    if (itr != mGuildMap.end())
-        return itr->second;
-
-    auto  guild = new Guild;
-    if (guild->LoadGuildFromDB(GuildId)) {
-        AddGuild(guild);
-        return guild;
-    }
-
-    guild->Disband();
-    delete guild;
-    return nullptr;
-}
-
-Guild * ObjectMgr::GetGuildByName(const std::string& guildname)
-{
-    for(GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-        if (itr->second->GetName() == guildname)
-            return itr->second;
-
-    auto  guild = new Guild;
-    if (guild->LoadGuildFromDB(guildname)) {
-        AddGuild(guild);
-        return guild;
-    }
-
-    guild->Disband();
-    delete guild;
-    return nullptr;
-}
-
-std::string ObjectMgr::GetGuildNameById(const uint32 GuildId)
-{
-    GuildMap::const_iterator itr = mGuildMap.find(GuildId);
-    if (itr != mGuildMap.end())
-        return itr->second->GetName();
-
-    auto guild = new Guild;
-    if (guild->LoadGuildFromDB(GuildId)) {
-        AddGuild(guild);
-        return guild->GetName();
-    }
-
-    guild->Disband();
-    delete guild;
-    return "";
-}
-
-Guild* ObjectMgr::GetGuildByLeader(const ObjectGuid &guid) const
-{
-    for(const auto & itr : mGuildMap)
-        if (itr.second->GetLeaderGUID() == guid)
-            return itr.second;
-
-    return nullptr;
-}
-
-bool ObjectMgr::IsGuildLeader(const ObjectGuid &guid) const
-{
-    QueryResult result = CharacterDatabase.PQuery("SELECT guildid FROM guild WHERE leaderguid=%u", uint32(guid));
-    if (!result)
-        return false;
-
-    return true;
-}
-
-void ObjectMgr::AddGuild(Guild* guild)
-{
-    mGuildMap[guild->GetId()] = guild;
-}
-
-void ObjectMgr::RemoveGuild(uint32 Id)
-{
-    mGuildMap.erase(Id);
-}
-
-bool ObjectMgr::RenameGuild(uint32 Id, std::string newName)
-{
-    if (newName.empty())
-        return false;
-
-    auto itr = mGuildMap.find(Id);
-    if (itr == mGuildMap.end())
-        return false;
-
-    itr->second->SetName(newName);
-    CharacterDatabase.PExecute("UPDATE guild SET name = '%s' WHERE guildid = %u", newName, Id);
-    return true;
-}
-
-ArenaTeam* ObjectMgr::_GetArenaTeamById(const uint32 arenateamid) const
-{
-    auto itr = mArenaTeamMap.find(arenateamid);
-    if (itr != mArenaTeamMap.end())
-        return itr->second;
-
-    return nullptr;
-}
-
-ArenaTeam* ObjectMgr::GetArenaTeamById(const uint32 arenateamid)
-{
-    ArenaTeam *team = _GetArenaTeamById(arenateamid);
-    if (team)
-        return team;
-
-    team = new ArenaTeam;
-    if (team->LoadArenaTeamFromDB(arenateamid)) {
-        AddArenaTeam(team);
-        return team;
-    }
-
-    delete team;
-    return nullptr;
-}
-
-ArenaTeam* ObjectMgr::_GetArenaTeamByName(const std::string& arenateamname) const
-{
-    for(const auto & itr : mArenaTeamMap)
-        if (itr.second->GetName() == arenateamname)
-            return itr.second;
-
-    return nullptr;
-}
-
-ArenaTeam* ObjectMgr::GetArenaTeamByName(const std::string& arenateamname)
-{
-    ArenaTeam *team = _GetArenaTeamByName(arenateamname);
-    if (team)
-        return team;
-
-    team = new ArenaTeam;
-    if (team->LoadArenaTeamFromDB(arenateamname)) {
-        AddArenaTeam(team);
-        return team;
-    }
-
-    delete team;
-    return nullptr;
-}
-
-ArenaTeam* ObjectMgr::_GetArenaTeamByCaptain(ObjectGuid const& guid) const
-{
-    for(const auto & itr : mArenaTeamMap)
-        if (itr.second->GetCaptain() == guid)
-            return itr.second;
-
-    return nullptr;
-}
-
-bool ObjectMgr::IsArenaTeamCaptain(ObjectGuid const& guid) const
-{
-    QueryResult result = CharacterDatabase.PQuery("SELECT arenateamid FROM arena_team WHERE captainguid=%u", uint32(guid));
-    if (!result)
-        return false;
-
-    return true;
-}
-
-void ObjectMgr::AddArenaTeam(ArenaTeam* arenaTeam)
-{
-    mArenaTeamMap[arenaTeam->GetId()] = arenaTeam;
-}
-
-void ObjectMgr::RemoveArenaTeam(uint32 Id)
-{
-    mArenaTeamMap.erase(Id);
 }
 
 CreatureTemplate const* ObjectMgr::GetCreatureTemplate(uint32 entry)
@@ -3320,72 +3122,6 @@ void ObjectMgr::BuildPlayerLevelInfo(uint8 race, uint8 _class, uint8 level, Play
     }
 }
 
-void ObjectMgr::LoadGuilds()
-{
-    Guild *newguild;
-    uint32 count = 0;
-
-    QueryResult result = CharacterDatabase.Query( "SELECT guildid FROM guild" );
-
-    if( !result )
-    {
-        TC_LOG_INFO("server.loading", ">> Loaded %u guild definitions", count );
-        return;
-    }
-
-    do
-    {
-        Field *fields = result->Fetch();
-
-        ++count;
-
-        newguild = new Guild;
-        if(!newguild->LoadGuildFromDB(fields[0].GetUInt32()))
-        {
-            newguild->Disband();
-            delete newguild;
-            continue;
-        }
-        AddGuild(newguild);
-
-    }while( result->NextRow() );
-
-    TC_LOG_INFO("server.loading", ">> Loaded %u guild definitions", count );
-}
-
-void ObjectMgr::LoadArenaTeams()
-{
-    uint32 count = 0;
-
-    QueryResult result = CharacterDatabase.Query( "SELECT arenateamid FROM arena_team" );
-
-    if( !result )
-    {
-        TC_LOG_INFO("server.loading", ">> Loaded %u arenateam definitions", count );
-        return;
-    }
-
-    do
-    {
-        Field *fields = result->Fetch();
-
-        ++count;
-
-        auto newarenateam = new ArenaTeam;
-        if(!newarenateam->LoadArenaTeamFromDB(fields[0].GetUInt32()))
-        {
-            delete newarenateam;
-            continue;
-        }
-        AddArenaTeam(newarenateam);
-    }while( result->NextRow() );
-
-    if(sWorld->getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
-        sWorld->updateArenaLeadersTitles();
-
-    TC_LOG_INFO("server.loading", ">> Loaded %u arenateam definitions", count );
-}
-
 void ObjectMgr::LoadQuests()
 {
     // For reload case
@@ -6077,18 +5813,6 @@ void ObjectMgr::SetHighestGuids()
         _ItemTextId = (*result)[0].GetUInt32()+1;
     }
 
-    result = CharacterDatabase.Query("SELECT MAX(arenateamid) FROM arena_team");
-    if (result)
-    {
-        _arenaTeamId = (*result)[0].GetUInt32()+1;
-    }
-
-    result = CharacterDatabase.Query( "SELECT MAX(guildid) FROM guild" );
-    if (result)
-    {
-        _guildId = (*result)[0].GetUInt32()+1;
-    }
-
     result = CharacterDatabase.Query("SELECT MAX(guid) FROM `groups`");
     if (result)
         sGroupMgr->SetGroupDbStoreSize((*result)[0].GetUInt32() + 1);
@@ -6101,26 +5825,6 @@ void ObjectMgr::SetHighestGuids()
     result = WorldDatabase.Query("SELECT MAX(guid) FROM gameobject");
     if (result)
         _gameObjectSpawnId = (*result)[0].GetUInt32() + 1;
-}
-
-uint32 ObjectMgr::GenerateArenaTeamId()
-{
-    if(_arenaTeamId>=0xFFFFFFFE)
-    {
-        TC_LOG_ERROR("server","Arena team ids overflow!! Can't continue, shutting down server. ");
-        World::StopNow(ERROR_EXIT_CODE);
-    }
-    return _arenaTeamId++;
-}
-
-uint32 ObjectMgr::GenerateGuildId()
-{
-    if(_guildId>=0xFFFFFFFE)
-    {
-        TC_LOG_ERROR("server","Guild ids overflow!! Can't continue, shutting down server. ");
-        World::StopNow(ERROR_EXIT_CODE);
-    }
-    return _guildId++;
 }
 
 uint32 ObjectMgr::GenerateAuctionID()

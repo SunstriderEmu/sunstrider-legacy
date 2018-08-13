@@ -65,6 +65,9 @@
 #include "PlayerAntiCheat.h"
 #include "SpellHistory.h"
 #include "TradeData.h"
+#include "GuildMgr.h"
+#include "ArenaTeamMgr.h"
+#include "PetitionMgr.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -159,6 +162,8 @@ static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 //== Player ====================================================
 
 const int32 Player::ReputationRank_Length[MAX_REPUTATION_RANK] = {36000, 3000, 3000, 3000, 6000, 12000, 21000, 1000};
+
+uint32 const MAX_MONEY_AMOUNT = static_cast<uint32>(std::numeric_limits<int32>::max());
 
 Player::Player(WorldSession *session) :
     Unit(true),
@@ -4015,7 +4020,7 @@ void Player::LeaveAllArenaTeams(ObjectGuid guid)
         uint32 arenaTeamId = characterInfo->arenaTeamId[i];
         if (arenaTeamId != 0)
         {
-            ArenaTeam* arenaTeam = sObjectMgr->GetArenaTeamById(arenaTeamId);
+            ArenaTeam* arenaTeam = sArenaTeamMgr->GetArenaTeamById(arenaTeamId);
             if (arenaTeam)
                 arenaTeam->DeleteMember(guid, true);
         }
@@ -4056,14 +4061,10 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
     if (characterInfo)
         name = characterInfo->name;
 
-    // remove from guild
-    uint32 guildId = Player::GetGuildIdFromCharacterInfo(playerguid);
-    if(guildId != 0)
-    {
-        Guild* guild = sObjectMgr->GetGuildById(guildId);
-        if(guild)
-            guild->DeleteMember(ObjectGuid(HighGuid::Player, guid));
-    }
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    if(ObjectGuid::LowType guildId = sCharacterCache->GetCharacterGuildIdByGuid(playerguid))
+        if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+            guild->DeleteMember(trans, playerguid, false, false, true);
 
     // remove from arena teams
     LeaveAllArenaTeams(playerguid);
@@ -4072,15 +4073,13 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GROUP_MEMBER);
     stmt->setUInt32(0, guid);
     PreparedQueryResult resultGroup = CharacterDatabase.Query(stmt);
+
     if(resultGroup)
-    {
         if (Group* group = sGroupMgr->GetGroupByDbStoreId((*resultGroup)[0].GetUInt32()))
             RemoveFromGroup(group, playerguid);
-    }
 
     // remove signs from petitions (also remove petitions if owner);
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    RemovePetitionsAndSigns(playerguid, 10, trans);
+    RemovePetitionsAndSigns(trans, playerguid, CHARTER_TYPE_ANY);
 
     switch (charDelete_method)
     {
@@ -4666,14 +4665,15 @@ uint32 Player::DurabilityRepairAll(bool cost, float discountMod, bool guildBank)
     uint32 TotalCost = 0;
     // equipped, backpack, bags itself
     for(int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; i++)
-        TotalCost += DurabilityRepair(( (INVENTORY_SLOT_BAG_0 << 8) | i ),cost,discountMod, guildBank);
+        TotalCost += DurabilityRepair(((INVENTORY_SLOT_BAG_0 << 8) | i), cost, discountMod, guildBank);
 
     // bank, buyback and keys not repaired
 
     // items in inventory bags
     for(int j = INVENTORY_SLOT_BAG_START; j < INVENTORY_SLOT_BAG_END; j++)
         for(int i = 0; i < MAX_BAG_SIZE; i++)
-            TotalCost += DurabilityRepair(( (j << 8) | i ),cost,discountMod, guildBank);
+            TotalCost += DurabilityRepair(((j << 8) | i), cost, discountMod, guildBank);
+
     return TotalCost;
 }
 
@@ -4723,37 +4723,19 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
 
             if (guildBank)
             {
-                if (GetGuildId()==0)
+                if (GetGuildId() == 0)
                 {
                     TC_LOG_DEBUG("entities.player","You are not member of a guild");
                     return TotalCost;
                 }
 
-                Guild *pGuild = sObjectMgr->GetGuildById(GetGuildId());
-                if (!pGuild)
+                Guild *guild = sGuildMgr->GetGuildById(GetGuildId());
+                if (!guild)
                     return TotalCost;
 
-                if (!pGuild->HasRankRight(GetRank(), GR_RIGHT_WITHDRAW_REPAIR))
-                {
-                    TC_LOG_DEBUG("entities.player","You do not have rights to withdraw for repairs");
+                if (!guild->HandleMemberWithdrawMoney(GetSession(), costs, true))
                     return TotalCost;
-                }
 
-                if (pGuild->GetMemberMoneyWithdrawRem(GetGUID().GetCounter()) < costs)
-                {
-                    TC_LOG_DEBUG("entities.player","You do not have enough money withdraw amount remaining");
-                    return TotalCost;
-                }
-
-                if (pGuild->GetGuildBankMoney() < costs)
-                {
-                    TC_LOG_DEBUG("entities.player","There is not enough money in bank");
-                    return TotalCost;
-                }
-
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                pGuild->HandleMemberWithdrawMoney(costs, GetGUID().GetCounter(), trans);
-                CharacterDatabase.CommitTransaction(trans);
                 TotalCost = costs;
             }
             else if (GetMoney() < costs)
@@ -4771,7 +4753,8 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
 
     // reapply mods for total broken and repaired item if equipped
     if(IsEquipmentPos(pos) && !curDurability)
-        _ApplyItemMods(item,pos & 255, true);
+        _ApplyItemMods(item, pos & 255, true);
+
     return TotalCost;
 }
 
@@ -7022,36 +7005,65 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
     return true;
 }
 
-void Player::ModifyHonorPoints( int32 value )
+void Player::SetHonorPoints(uint32 value)
 {
-    if(value < 0)
-    {
-        if (GetHonorPoints() > sWorld->getConfig(CONFIG_MAX_HONOR_POINTS))
-            SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, sWorld->getConfig(CONFIG_MAX_HONOR_POINTS) + value);
-        else
-            SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, GetHonorPoints() > uint32(-value) ? GetHonorPoints() + value : 0);
-    }
-    else
-        SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, GetHonorPoints() < sWorld->getConfig(CONFIG_MAX_HONOR_POINTS) - value ? GetHonorPoints() + value : sWorld->getConfig(CONFIG_MAX_HONOR_POINTS));
+    if (value > sWorld->getIntConfig(CONFIG_MAX_HONOR_POINTS))
+        value = sWorld->getIntConfig(CONFIG_MAX_HONOR_POINTS);
+    SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, value);
+#ifdef LICH_KING
+    if (value)
+        AddKnownCurrency(ITEM_HONOR_POINTS_ID);
+#endif
 }
 
-void Player::ModifyArenaPoints( int32 value )
+void Player::SetArenaPoints(uint32 value)
 {
-    if(value < 0)
+    if (value > sWorld->getIntConfig(CONFIG_MAX_ARENA_POINTS))
+        value = sWorld->getIntConfig(CONFIG_MAX_ARENA_POINTS);
+    SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, value);
+#ifdef LICH_KING
+    if (value)
+        AddKnownCurrency(ITEM_ARENA_POINTS_ID);
+#endif
+}
+
+void Player::ModifyHonorPoints(int32 value, SQLTransaction trans)
+{
+    int32 newValue = int32(GetHonorPoints()) + value;
+    if (newValue < 0)
+        newValue = 0;
+
+    SetHonorPoints(uint32(newValue));
+
+    if (trans)
     {
-        if (GetArenaPoints() > sWorld->getConfig(CONFIG_MAX_ARENA_POINTS))
-            SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, sWorld->getConfig(CONFIG_MAX_ARENA_POINTS) + value);
-        else
-            SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, GetArenaPoints() > uint32(-value) ? GetArenaPoints() + value : 0);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_HONOR_POINTS);
+        stmt->setUInt32(0, newValue);
+        stmt->setUInt32(1, GetGUID().GetCounter());
+        trans->Append(stmt);
     }
-    else
-        SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, GetArenaPoints() < sWorld->getConfig(CONFIG_MAX_ARENA_POINTS) - value ? GetArenaPoints() + value : sWorld->getConfig(CONFIG_MAX_ARENA_POINTS));
+}
+
+void Player::ModifyArenaPoints(int32 value, SQLTransaction trans)
+{
+    int32 newValue = int32(GetArenaPoints()) + value;
+    if (newValue < 0)
+        newValue = 0;
+    SetArenaPoints(uint32(newValue));
+
+    if (trans)
+    {
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_ARENA_POINTS);
+        stmt->setUInt32(0, newValue);
+        stmt->setUInt32(1, GetGUID().GetCounter());
+        trans->Append(stmt);
+    }
 }
 
 Guild* Player::GetGuild() const
 {
     uint32 guildId = GetGuildId();
-    return guildId ? sObjectMgr->GetGuildById(guildId) : nullptr;
+    return guildId ? sGuildMgr->GetGuildById(guildId) : nullptr;
 }
 
 uint32 Player::GetZoneIdFromDB(ObjectGuid guid)
@@ -15450,7 +15462,7 @@ void Player::_LoadArenaTeamInfo(PreparedQueryResult result)
         uint32 played_season   = fields[2].GetUInt32();
         uint32 PersonalRating = fields[3].GetUInt32();
 
-        ArenaTeam* aTeam = sObjectMgr->GetArenaTeamById(arenateamid);
+        ArenaTeam* aTeam = sArenaTeamMgr->GetArenaTeamById(arenateamid);
         if(!aTeam)
         {
             TC_LOG_ERROR("entities.player","FATAL: couldn't load arenateam %u", arenateamid);
@@ -15716,7 +15728,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         if(!arena_team_id)
             continue;
 
-        if(ArenaTeam * at = sObjectMgr->GetArenaTeamById(arena_team_id))
+        if(ArenaTeam * at = sArenaTeamMgr->GetArenaTeamById(arena_team_id))
             if(at->HaveMember(GetGUID()))
                 continue;
 
@@ -16510,7 +16522,7 @@ void Player::LoadCorpse(PreparedQueryResult result)
 Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, Field* fields)
 {
     Item* item = nullptr;
-    uint32 startIndex = CHAR_SEL_CHARACTER_INVENTORY_FIELDS_COUNT + 2;
+    uint32 startIndex = CHAR_SEL_ITEM_INSTANCE_FIELDS_COUNT + 2;
     ObjectGuid::LowType itemGuid = fields[startIndex++].GetUInt32();
     uint32 itemEntry = fields[startIndex++].GetUInt32();
     if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry))
@@ -16661,7 +16673,7 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
             Field *fields = result->Fetch();
             if (Item* item = _LoadItem(trans, zoneId, timeDiff, fields))
             {
-                uint32 startIndex = CHAR_SEL_CHARACTER_INVENTORY_FIELDS_COUNT;
+                uint32 startIndex = CHAR_SEL_ITEM_INSTANCE_FIELDS_COUNT;
                 ObjectGuid::LowType bagGuid = fields[startIndex++].GetUInt32();
                 uint8 slot = fields[startIndex++].GetUInt8();
 
@@ -16782,7 +16794,7 @@ void Player::_LoadMailedItems(Mail *mail)
     {
         Field* fields = result->Fetch();
 
-        uint32 startIndex = CHAR_SEL_CHARACTER_INVENTORY_FIELDS_COUNT;
+        uint32 startIndex = CHAR_SEL_ITEM_INSTANCE_FIELDS_COUNT;
         ObjectGuid::LowType itemGuid = fields[startIndex++].GetUInt32();
         uint32 itemTemplate = fields[startIndex++].GetUInt32();
 
@@ -19104,44 +19116,10 @@ void Player::SendProficiency(uint8 pr1, uint32 pr2)
     GetSession()->SendPacket (&data);
 }
 
-void Player::RemovePetitionsAndSigns(ObjectGuid guid, uint32 type, SQLTransaction trans)
+void Player::RemovePetitionsAndSigns(SQLTransaction trans, ObjectGuid guid, CharterTypes type)
 {
-    QueryResult result = nullptr;
-    if(type==10)
-        result = CharacterDatabase.PQuery("SELECT ownerguid,petitionguid FROM petition_sign WHERE playerguid = '%u'", guid.GetCounter());
-    else
-        result = CharacterDatabase.PQuery("SELECT ownerguid,petitionguid FROM petition_sign WHERE playerguid = '%u' AND type = '%u'", guid.GetCounter(), type);
-    if(result)
-    {
-        do                                                  // this part effectively does nothing, since the deletion / modification only takes place _after_ the PetitionQuery. Though I don't know if the result remains intact if I execute the delete query beforehand.
-        {                                                   // and SendPetitionQueryOpcode reads data from the DB
-            Field *fields = result->Fetch();
-            ObjectGuid ownerguid = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
-            ObjectGuid petitionguid = ObjectGuid(HighGuid::Item, fields[1].GetUInt32());
-
-            // send update if charter owner in game
-            Player* owner = ObjectAccessor::FindPlayer(ownerguid);
-            if(owner)
-                owner->GetSession()->SendPetitionQueryOpcode(petitionguid);
-
-        } while ( result->NextRow() );
-
-        if(type==10)
-            trans->PAppend("DELETE FROM petition_sign WHERE playerguid = '%u'", guid.GetCounter());
-        else
-            trans->PAppend("DELETE FROM petition_sign WHERE playerguid = '%u' AND type = '%u'", guid.GetCounter(), type);
-    }
-
-    if(type == 10)
-    {
-        trans->PAppend("DELETE FROM petition WHERE ownerguid = '%u'", guid.GetCounter());
-        trans->PAppend("DELETE FROM petition_sign WHERE ownerguid = '%u'", guid.GetCounter());
-    }
-    else
-    {
-        trans->PAppend("DELETE FROM petition WHERE ownerguid = '%u' AND type = '%u'", guid.GetCounter(), type);
-        trans->PAppend("DELETE FROM petition_sign WHERE ownerguid = '%u' AND type = '%u'", guid.GetCounter(), type);
-    }
+    sPetitionMgr->RemoveSignaturesBySignerAndType(trans, guid, type);
+    sPetitionMgr->RemovePetitionsByOwnerAndType(trans, guid, type);
 }
 
 void Player::SetRestBonus (float rest_bonus_new)
@@ -19712,7 +19690,7 @@ uint32 Player::GetMaxPersonalArenaRatingRequirement()
     uint32 max_personal_rating = 0;
     for(int i = 0; i < MAX_ARENA_SLOT; ++i)
     {
-        if(ArenaTeam * at = sObjectMgr->GetArenaTeamById(GetArenaTeamId(i)))
+        if(ArenaTeam * at = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamId(i)))
         {
             uint32 p_rating = GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (i * 6) + 5);
             uint32 t_rating = at->GetRating();
@@ -19957,10 +19935,10 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
             //decrease private rating here
             Team Loser = (Team)bg->GetPlayerTeam(GetGUID());
             Team Winner = Loser == ALLIANCE ? HORDE : ALLIANCE;
-            ArenaTeam* WinnerTeam = sObjectMgr->GetArenaTeamById(bg->GetArenaTeamIdForTeam(Winner));
-            ArenaTeam* LoserTeam = sObjectMgr->GetArenaTeamById(bg->GetArenaTeamIdForTeam(Loser));
+            ArenaTeam* WinnerTeam = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdForTeam(Winner));
+            ArenaTeam* LoserTeam = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdForTeam(Loser));
             if (WinnerTeam && LoserTeam)
-                LoserTeam->MemberLost(this,WinnerTeam->GetStats().rating);
+                LoserTeam->MemberLost(this, WinnerTeam->GetStats().Rating);
         }
         if (bg->GetTypeID() == BATTLEGROUND_WS) {
             RemoveAurasDueToSpell(46392);
@@ -23511,10 +23489,10 @@ void Player::UpdateArenaTitles()
         bool sameTeam = itr->GetId() == teamid;
         bool closeRating = false;
 
-        ArenaTeam * at = sObjectMgr->GetArenaTeamById(teamid);
+        ArenaTeam * at = sArenaTeamMgr->GetArenaTeamById(teamid);
         if(at)
             if(ArenaTeamMember* member = at->GetMember(GetGUID()))
-                closeRating = ((int)at->GetStats().rating - (int)member->PersonalRating) < 100; //no more than 100 under the team rating
+                closeRating = ((int)at->GetStats().Rating - (int)member->PersonalRating) < 100; //no more than 100 under the team rating
 
         hasRank[rank-1] = sameTeam && closeRating;
     }
@@ -24223,9 +24201,13 @@ uint32 Player::GetGuildIdFromCharacterInfo(ObjectGuid::LowType guid)
     return 0;
 }
 
-void Player::SetInArenaTeam(uint32 ArenaTeamId, uint8 slot)
+void Player::SetInArenaTeam(uint32 ArenaTeamId, uint8 slot, uint8 type)
 {
+#ifdef LICH_KING
+    TODO
+#else
     SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6), ArenaTeamId);
+#endif
 }
 
 uint32 Player::GetArenaTeamIdFromCharacterInfo(ObjectGuid guid, uint8 type)

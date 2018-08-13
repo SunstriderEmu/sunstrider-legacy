@@ -10,6 +10,7 @@
 #include "CellImpl.h"
 #include "MovementDefines.h"
 #include "MMapFactory.h"
+#include "ArenaTeamMgr.h"
 
 bool ChatHandler::HandleHelpCommand(const char* args)
 {
@@ -1162,7 +1163,7 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
 
     PSendSysMessage("Team (id %u) name changed to \"%s\"", arenateamid, newName);
 
-    ArenaTeam* team = sObjectMgr->GetArenaTeamById(arenateamid);
+    ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(arenateamid);
     if (team)
     {
         team->SetName(newName);

@@ -1003,7 +1003,8 @@ enum PlayerDelayedOperations
 
 // Player summoning auto-decline time (in secs)
 #define MAX_PLAYER_SUMMON_DELAY                   (2*MINUTE)
-#define MAX_MONEY_AMOUNT                       (0x7FFFFFFF-1)
+// Maximum money amount : 2^31 - 1
+TC_GAME_API extern uint32 const MAX_MONEY_AMOUNT;
 
 struct InstancePlayerBind
 {
@@ -1794,11 +1795,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Guild* GetGuild() const;
         uint32 GetRank() const;
         int GetGuildIdInvited() const { return _guildIdInvited; }
-        static void RemovePetitionsAndSigns(ObjectGuid guid, uint32 type, SQLTransaction trans);
+        static void RemovePetitionsAndSigns(SQLTransaction trans, ObjectGuid guid, CharterTypes type);
         static uint32 GetGuildIdFromCharacterInfo(ObjectGuid::LowType guid);
 
         // Arena Team
-        void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot);
+        void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot, uint8 type);
         static uint32 GetArenaTeamIdFromCharacterInfo(ObjectGuid guid, uint8 slot);
         uint32 GetArenaTeamId(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6)); }
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { _arenaTeamIdInvited = ArenaTeamId; }
@@ -2050,10 +2051,12 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool RewardHonor(Unit *pVictim, uint32 groupsize, float honor = -1, bool pvptoken = false);
         uint32 GetHonorPoints() { return GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY); }
         uint32 GetArenaPoints() { return GetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY); }
-        void ModifyHonorPoints( int32 value );
-        void ModifyArenaPoints( int32 value );
+        void ModifyHonorPoints(int32 value, SQLTransaction trans = SQLTransaction(nullptr));      //! If trans is specified, honor save query will be added to trans
+        void ModifyArenaPoints(int32 value, SQLTransaction trans = SQLTransaction(nullptr));      //! If trans is specified, arena point save query will be added to trans
         uint32 GetMaxPersonalArenaRatingRequirement();
         void UpdateKnownPvPTitles();
+        void SetHonorPoints(uint32 value);
+        void SetArenaPoints(uint32 value);
 
         //End of PvP System
 

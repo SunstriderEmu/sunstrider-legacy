@@ -171,7 +171,7 @@ enum GMGroups
     GMGROUP_SPY     = 5, //can't be seen by other gm's with lesser ranks
 };
 */
-enum LocaleConstant
+enum LocaleConstant : uint8
 {
     LOCALE_enUS = 0,
     LOCALE_koKR = 1,

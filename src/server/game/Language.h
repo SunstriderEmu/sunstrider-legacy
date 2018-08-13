@@ -676,8 +676,14 @@ enum TrinityStrings
     LANG_RATED_ARENA_CLOSED_DURING_NIGHT = 752,
     LANG_ARENASERVER_CLOSED             = 753,
     LANG_ARENASERVER_ONLY_3V3           = 754,
-
-    // Room for BG/ARENA                  753-769 not used
+        
+    LANG_DIST_ARENA_POINTS_START        = 755,
+    LANG_DIST_ARENA_POINTS_ONLINE_START = 756,
+    LANG_DIST_ARENA_POINTS_ONLINE_END   = 757,
+    LANG_DIST_ARENA_POINTS_TEAM_START   = 758,
+    LANG_DIST_ARENA_POINTS_TEAM_END     = 759,
+    LANG_DIST_ARENA_POINTS_END          = 760,
+    // Room for BG/ARENA                  761-784 not used
 
     LANG_ARENA_TESTING                  = 785,
 
@@ -718,7 +724,13 @@ enum TrinityStrings
     // 810 is taken: 'Your must be in a raid group to enter the instance %s!'
     // 811 is taken: 'You cannot enter %s while in a ghost mode!'
     LANG_WARNING_MAIL_CHANGED           = 812,
-    // Room for in-game strings           813-999 not used
+
+    LANG_GUILD_MASTER                   = 813,
+    LANG_GUILD_OFFICER                  = 814,
+    LANG_GUILD_VETERAN                  = 815,
+    LANG_GUILD_MEMBER                   = 816,
+    LANG_GUILD_INITIATE                 = 817,
+    // Room for in-game strings           818-999 not used
 
     // Level 4 (CLI only commands)
     LANG_COMMAND_EXIT                   = 1000,

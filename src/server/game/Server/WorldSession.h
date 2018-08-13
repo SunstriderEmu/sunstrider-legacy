@@ -36,6 +36,7 @@ class WorldSession;
 class LoginQueryHolder;
 class CharacterHandler;
 struct TradeStatusInfo;
+struct Petition;
 
 #ifdef LICH_KING
 namespace lfg
@@ -107,6 +108,9 @@ enum PartyResult
 
 enum CharterTypes
 {
+    CHARTER_TYPE_NONE                             = 0,
+    CHARTER_TYPE_ANY                              = 10,
+
     GUILD_CHARTER_TYPE                            = 9,
     ARENA_TEAM_CHARTER_2v2_TYPE                   = 2,
     ARENA_TEAM_CHARTER_3v3_TYPE                   = 3,
@@ -375,12 +379,10 @@ class TC_GAME_API WorldSession
         void SendDiscoverNewTaxiNode(uint32 nodeid);
 
         // Guild/Arena Team
-        void SendGuildCommandResult(uint32 typecmd, const std::string& str, uint32 cmdresult);
         void SendArenaTeamCommandResult(uint32 team_action, const std::string& team, const std::string& player, uint32 error_id);
         void BuildArenaTeamEventPacket(WorldPacket *data, uint8 eventid, uint8 str_count, const std::string& str1, const std::string& str2, const std::string& str3);
         void SendNotInArenaTeamPacket(uint8 type);
         void SendPetitionShowList( ObjectGuid guid );
-        void SendSaveGuildEmblem( uint32 msg );
 
         // Dynamic map data
         void SendPlayMusic(uint32 musicId);
@@ -581,6 +583,7 @@ class TC_GAME_API WorldSession
 
         void HandlePetitionBuyOpcode(WorldPacket& recvData);
         void HandlePetitionShowSignOpcode(WorldPacket& recvData);
+        void SendPetitionSigns(Petition const* petition, Player* sendTo);
         void HandlePetitionQueryOpcode(WorldPacket& recvData);
         void HandlePetitionRenameOpcode(WorldPacket& recvData);
         void HandlePetitionSignOpcode(WorldPacket& recvData);
@@ -595,7 +598,7 @@ class TC_GAME_API WorldSession
         void HandleGuildAcceptOpcode(WorldPacket& recvPacket);
         void HandleGuildDeclineOpcode(WorldPacket& recvPacket);
         void HandleGuildInfoOpcode(WorldPacket& recvPacket);
-        void HandleGuildEventLogOpcode(WorldPacket& recvPacket);
+        void HandleGuildEventLogQueryOpcode(WorldPacket& recvPacket);
         void HandleGuildRosterOpcode(WorldPacket& recvPacket);
         void HandleGuildPromoteOpcode(WorldPacket& recvPacket);
         void HandleGuildDemoteOpcode(WorldPacket& recvPacket);
@@ -864,7 +867,7 @@ class TC_GAME_API WorldSession
         void HandleGuildPermissions(WorldPacket& recvData);
         void HandleGuildBankMoneyWithdrawn(WorldPacket& recvData);
         void HandleGuildBankerActivate(WorldPacket& recvData);
-        void HandleGuildBankerActivateTab(WorldPacket& recvData);
+        void HandleGuildBankQueryTab(WorldPacket& recvData);
         void HandleGuildBankLogQuery(WorldPacket& recvData);
         void HandleGuildBankDepositMoney(WorldPacket& recvData);
         void HandleGuildBankWithdrawMoney(WorldPacket& recvData);

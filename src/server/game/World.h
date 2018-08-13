@@ -350,6 +350,9 @@ enum WorldConfigs
 
     CONFIG_CLIENTCACHE_VERSION,
 
+    CONFIG_GUILD_EVENT_LOG_COUNT,
+    CONFIG_GUILD_BANK_EVENT_LOG_COUNT,
+
 	CONFIG_MONITORING_ENABLED,
 	CONFIG_MONITORING_GENERALINFOS_UPDATE,
 	CONFIG_MONITORING_KEEP_DURATION,
@@ -743,12 +746,14 @@ class TC_GAME_API World
         void ResetDailyQuests();
         void LoadAutoAnnounce();
 
+        // Custom Dynamic Arena titles system
         std::vector<ArenaTeam*> getArenaLeaderTeams() { return firstArenaTeams; };
         void updateArenaLeaderTeams(uint8 maxcount, uint8 type = 2, uint32 minimalRating = 1800);
         void updateArenaLeadersTitles();
         //must be between 1 and 3
         CharTitlesEntry const* getArenaLeaderTitle(uint8 rank);
         CharTitlesEntry const* getGladiatorTitle(uint8 rank);
+        // --
 
         void TriggerGuidWarning();
         void TriggerGuidAlert();

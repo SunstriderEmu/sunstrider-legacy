@@ -2,6 +2,7 @@
 #include "Language.h"
 #include "CharacterCache.h"
 #include "Guild.h"
+#include "GuildMgr.h"
 
 /** \brief GM command level 3 - Create a guild.
  *
@@ -13,7 +14,6 @@
  */
 bool ChatHandler::HandleGuildCreateCommand(const char* args)
 {
-
     ARGS_CHECK
 
     char *lname = strtok ((char*)args, " ");
@@ -24,8 +24,8 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
 
     if (!gname)
     {
-        SendSysMessage (LANG_INSERT_GUILD_NAME);
-        SetSentErrorMessage (true);
+        SendSysMessage(LANG_INSERT_GUILD_NAME);
+        SetSentErrorMessage(true);
         return false;
     }
 
@@ -34,8 +34,8 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
     Player* player = ObjectAccessor::FindPlayerByName (lname);
     if (!player)
     {
-        SendSysMessage (LANG_PLAYER_NOT_FOUND);
-        SetSentErrorMessage (true);
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
         return false;
     }
 
@@ -46,15 +46,15 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
     }
 
     auto guild = new Guild;
-    if (!guild->create (player->GetGUID (),guildname))
+    if (!guild->Create(player, guildname))
     {
         delete guild;
-        SendSysMessage (LANG_GUILD_NOT_CREATED);
-        SetSentErrorMessage (true);
+        SendSysMessage(LANG_GUILD_NOT_CREATED);
+        SetSentErrorMessage(true);
         return false;
     }
 
-    sObjectMgr->AddGuild (guild);
+    sGuildMgr->AddGuild(guild);
     return true;
 }
 
@@ -68,7 +68,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         return false;
 
     std::string glName = par2;
-    Guild* targetGuild = sObjectMgr->GetGuildByName (glName);
+    Guild* targetGuild = sGuildMgr->GetGuildByName (glName);
     if (!targetGuild)
         return false;
 
@@ -95,7 +95,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
 
     // player's guild membership checked in AddMember before add
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    if (!targetGuild->AddMember(plGuid, targetGuild->GetLowestRank(), trans))
+    if (!targetGuild->AddMember(trans, plGuid))
     {
         SendSysMessage("Could not add to guild (Is player already in a guild?)");
         SetSentErrorMessage(true);
@@ -123,7 +123,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     }
 
     ObjectGuid plGuid;
-    uint32 glId   = 0;
+    uint32 glId = 0;
     if (Player* targetPlayer = ObjectAccessor::FindPlayerByName (plName.c_str ()))
     {
         plGuid = targetPlayer->GetGUID ();
@@ -146,14 +146,15 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
         return true;
     }
 
-    Guild* targetGuild = sObjectMgr->GetGuildById (glId);
+    Guild* targetGuild = sGuildMgr->GetGuildById (glId);
     if (!targetGuild)
     {
         SendSysMessage("Could not find guild %u", glId);
         return true;
     }
 
-    targetGuild->DeleteMember (plGuid);
+    SQLTransaction trans(nullptr);
+    targetGuild->DeleteMember(trans, plGuid, false, true, true);
 
     return true;
 }
@@ -162,45 +163,29 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
 {
     ARGS_CHECK
 
-    char* par1 = strtok ((char*)args, " ");
-    char* par2 = strtok (nullptr, " ");
-    if (!par1 || !par2)
-        return false;
-    std::string plName = par1;
-    if (!normalizePlayerName (plName))
-    {
-        SendSysMessage (LANG_PLAYER_NOT_FOUND);
-        SetSentErrorMessage (true);
-        return false;
-    }
-
-    ObjectGuid plGuid;
-    uint32 glId   = 0;
-    if (Player* targetPlayer = ObjectAccessor::FindPlayerByName (plName.c_str ()))
-    {
-        plGuid = targetPlayer->GetGUID ();
-        glId   = targetPlayer->GetGuildId ();
-    }
-    else
-    {
-        plGuid = sCharacterCache->GetCharacterGuidByName(plName.c_str ());
-        glId = Player::GetGuildIdFromCharacterInfo(plGuid);
-    }
-
-    if (!plGuid || !glId)
+    char* nameStr;
+    char* rankStr;
+    extractOptFirstArg((char*)args, &nameStr, &rankStr);
+    if (!rankStr)
         return false;
 
-    Guild* targetGuild = sObjectMgr->GetGuildById (glId);
+    Player* target;
+    ObjectGuid targetGuid;
+    std::string target_name;
+    if (!extractPlayerTarget(nameStr, &target, &targetGuid, &target_name))
+        return false;
+
+    ObjectGuid::LowType guildId = target ? target->GetGuildId() : sCharacterCache->GetCharacterGuildIdByGuid(targetGuid);
+    if (!guildId)
+        return false;
+
+    Guild* targetGuild = sGuildMgr->GetGuildById(guildId);
     if (!targetGuild)
         return false;
 
-    uint32 newrank = uint32 (atoi (par2));
-    if (newrank > targetGuild->GetLowestRank ())
-        return false;
-
-    targetGuild->ChangeRank(plGuid, newrank);
-
-    return true;
+    uint8 newRank = uint8(atoi(rankStr));
+    SQLTransaction trans(nullptr);
+    return targetGuild->ChangeMemberRank(trans, targetGuid, newRank);
 }
 
 bool ChatHandler::HandleGuildDeleteCommand(const char* args)
@@ -218,9 +203,9 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
     if (gld == "id") {
         if (!par2)
             return false;
-        targetGuild = sObjectMgr->GetGuildById(atoi(par2));
+        targetGuild = sGuildMgr->GetGuildById(atoi(par2));
     } else {
-        targetGuild = sObjectMgr->GetGuildByName (gld);
+        targetGuild = sGuildMgr->GetGuildByName (gld);
     }
 
     if (!targetGuild)
@@ -253,17 +238,24 @@ bool ChatHandler::HandleGuildRenameCommand(const char* args)
         return false;
     
     uint32 guildId = atoi(guildIdStr);
-    Guild* g = sObjectMgr->GetGuildById(guildId);
-    if (!g)
+    Guild* guild = sGuildMgr->GetGuildById(guildId);
+    if (!guild)
     {
         PSendSysMessage("Guild (id %u) not found", guildId);
         SetSentErrorMessage(true);
         return false;
     }
 
-    std::string oldName = g->GetName();
+    if (sGuildMgr->GetGuildByName(newName))
+    {
+        PSendSysMessage("Guild %s already exists", newName);
+        SetSentErrorMessage(true);
+        return false;
+    }
 
-    if (sObjectMgr->RenameGuild(guildId, newName))
+    std::string oldName = guild->GetName();
+
+    if (guild->SetName(newName))
     {
         PSendSysMessage("Guild (id %u) renamed from %s to %s", guildId, oldName.c_str(), newName);
         return true;

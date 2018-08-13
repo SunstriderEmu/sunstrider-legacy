@@ -3,6 +3,7 @@
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "WorldSession.h"
+#include "GuildMgr.h"
 
 WhoListStorageMgr* WhoListStorageMgr::instance()
 {
@@ -29,7 +30,7 @@ void WhoListStorageMgr::Update()
 
         wstrToLower(widePlayerName);
 
-        std::string guildName = sObjectMgr->GetGuildNameById(itr->second->GetGuildId());
+        std::string guildName = sGuildMgr->GetGuildNameById(itr->second->GetGuildId());
         std::wstring wideGuildName;
         if (!Utf8toWStr(guildName, wideGuildName))
             continue;

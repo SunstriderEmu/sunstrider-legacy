@@ -13,7 +13,6 @@ enum ArenaTeamCommandTypes
 
 enum ArenaTeamCommandErrors
 {
-    //ARENA_TEAM_PLAYER_NO_MORE_IN_ARENA_TEAM = 0x00,
     ERR_ARENA_TEAM_INTERNAL                 = 0x01,
     ERR_ALREADY_IN_ARENA_TEAM               = 0x02,
     ERR_ALREADY_IN_ARENA_TEAM_S             = 0x03,
@@ -27,7 +26,8 @@ enum ArenaTeamCommandErrors
     ERR_ARENA_TEAM_PLAYER_NOT_IN_TEAM_SS    = 0x0A,
     ERR_ARENA_TEAM_PLAYER_NOT_FOUND_S       = 0x0B,
     ERR_ARENA_TEAM_NOT_ALLIED               = 0x0C,
-    ERR_ARENA_TEAM_PLAYER_TO_LOW            = 0x15,
+    ERR_ARENA_TEAM_IGNORING_YOU_S           = 0x13,
+    ERR_ARENA_TEAM_TARGET_TOO_LOW_S         = 0x15,
     ERR_ARENA_TEAM_FULL                     = 0x16
 };
 
@@ -78,32 +78,29 @@ enum ArenaTeamTypes
 struct TC_GAME_API ArenaTeamMember
 {
     ObjectGuid Guid;
+    std::string Name;
+    uint8 Class;
     uint32 WeekGames;
-    uint32 wins_week;
+    uint32 WeekWins;
     uint32 SeasonGames;
-    uint32 wins_season;
+    uint32 SeasonWins;
     uint32 PersonalRating;
 
-    void ModifyPersonalRating(Player* plr, int32 mod, uint32 slot)
-    {
-        if ((int32(PersonalRating) + mod) < 0)
-            PersonalRating = 0;
-        else
-            PersonalRating += mod;
-        if(plr)
-            plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot*6) + 5, PersonalRating);
-    }
+    void ModifyPersonalRating(Player* plr, int32 mod, uint32 slot);
+#ifdef LICH_KING
+    void ModifyMatchmakerRating(int32 mod, uint32 slot);
+#endif
 };
 
 struct ArenaTeamStats
 {
-    uint32 rating;
-    uint32 WeekGames;
-    uint32 wins_week;
-    uint32 SeasonGames;
-    uint32 wins_season;
-    uint32 rank;
-    uint32 non_played_weeks;
+    uint16 Rating;
+    uint16 WeekGames;
+    uint16 WeekWins;
+    uint16 SeasonGames;
+    uint16 SeasonWins;
+    uint32 Rank;
+    uint32 NonPlayedWeeks;
 };
 
 #define MAX_ARENA_SLOT 3                                    // 0..2 slots
@@ -114,23 +111,22 @@ class TC_GAME_API ArenaTeam
         ArenaTeam();
         ~ArenaTeam();
 
-        bool Create(ObjectGuid CaptainGuid, uint32 type, std::string ArenaTeamName);
+        bool Create(ObjectGuid captainGuid, uint8 type, std::string const teamName, uint32 backgroundColor, uint8 emblemStyle, uint32 emblemColor, uint8 borderStyle, uint32 borderColor);
         void Disband(WorldSession *session);
 
         typedef std::list<ArenaTeamMember> MemberList;
 
-        uint32 GetId() const              { return Id; }
+        uint32 GetId() const              { return TeamId; }
         uint32 GetType() const            { return Type; }
         uint8  GetSlot() const            { return GetSlotByType(GetType()); }
         static uint8 GetSlotByType(uint32 type);
         const ObjectGuid& GetCaptain() const  { return CaptainGuid; }
-        std::string const& GetName() const       { return Name; }
-        void SetName(std::string const& name) { Name = name; }
-        const ArenaTeamStats& GetStats() const { return stats; }
-        void SetStats(uint32 stat_type, uint32 value);
-        uint32 GetRating() const          { return stats.rating; }
+        std::string const& GetName() const       { return TeamName; }
+        bool SetName(std::string const& name);
+        const ArenaTeamStats& GetStats() const { return Stats; }
+        uint32 GetRating() const          { return Stats.Rating; }
         //uint32 GetAverageMMR(Group* group) const;
-        uint32 GetRank() const            { return stats.rank;   }
+        uint32 GetRank() const            { return Stats.Rank;   }
 
         uint32 GetEmblemStyle() const     { return EmblemStyle; }
         uint32 GetEmblemColor() const     { return EmblemColor; }
@@ -144,8 +140,6 @@ class TC_GAME_API ArenaTeam
         // Shouldn't be const uint64& ed, because than can reference guid from members on Disband
         // and this method removes given record from list. So invalid reference can happen.
         void DeleteMember(ObjectGuid guid, bool cleanDb = true);
-
-        void SetEmblem(uint32 backgroundColor, uint32 emblemStyle, uint32 emblemColor, uint32 borderStyle, uint32 borderColor);
 
         void HandleDecay();
 
@@ -162,10 +156,11 @@ class TC_GAME_API ArenaTeam
 
         bool IsFighting() const;
 
-        bool LoadArenaTeamFromDB(uint32 ArenaTeamId);
+        bool LoadArenaTeamFromDB(QueryResult const arenaTeamDataResult);
+        bool LoadMembersFromDB(QueryResult const arenaTeamMembersResult);
+        /*bool LoadArenaTeamFromDB(uint32 ArenaTeamId);
         bool LoadArenaTeamFromDB(const std::string teamname);
-        void LoadMembersFromDB(uint32 ArenaTeamId);
-        void LoadStatsFromDB(uint32 ArenaTeamId);
+        bool LoadMembersFromDB(uint32 ArenaTeamId);*/
 
         void SaveToDB();
 
@@ -173,8 +168,8 @@ class TC_GAME_API ArenaTeam
 
         void Roster(WorldSession *session);
         void Query(WorldSession *session);
-        void Stats(WorldSession *session);
-        void InspectStats(WorldSession *session, ObjectGuid guid);
+        void SendStats(WorldSession *session);
+        void Inspect(WorldSession *session, ObjectGuid guid);
 
         uint32 GetPoints(uint32 MemberRating);
         int32 GetRatingMod(uint32 ownRating, uint32 opponentRating, bool won);
@@ -195,10 +190,10 @@ class TC_GAME_API ArenaTeam
 
     protected:
 
-        uint32 Id;
-        uint32 Type;
-        std::string Name;
-        ObjectGuid CaptainGuid;
+        uint32      TeamId;
+        uint8       Type;
+        std::string TeamName;
+        ObjectGuid  CaptainGuid;
 
         uint32 BackgroundColor; // ARGB format
         uint32 EmblemStyle;     // icon id
@@ -207,7 +202,7 @@ class TC_GAME_API ArenaTeam
         uint32 BorderColor;     // ARGB format
 
         MemberList Members;
-        ArenaTeamStats stats;
+        ArenaTeamStats Stats;
 };
 #endif
 

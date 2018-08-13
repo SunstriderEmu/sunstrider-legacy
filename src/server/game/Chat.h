@@ -94,6 +94,10 @@ class TC_GAME_API ChatHandler
         uint32    extractSpellIdFromLink(char* text);
         GameTele const* extractGameTeleFromLink(char* text);
 
+        // if args have single value then it return in arg2 and arg1 == nullptr
+        void      extractOptFirstArg(char* args, char** arg1, char** arg2);
+        char*     extractQuotedArg(char* args);
+
         Player*   GetSelectedPlayer() const;
         Creature* GetSelectedCreature() const;
         Unit*     GetSelectedUnit() const;

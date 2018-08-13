@@ -6,7 +6,7 @@
 #include "PlayerbotAI.h"
 #include "Player.h"
 #include "Guild.h"
-//#include "GuildMgr.h"
+#include "GuildMgr.h"
 #include "RandomPlayerbotFactory.h"
 #include "TestPlayer.h"
 
@@ -309,7 +309,7 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
         for (vector<uint32>::iterator i = randomBots.begin(); i != randomBots.end(); ++i)
         {
             ObjectGuid leader(HighGuid::Player, *i);
-            Guild* guild = sObjectMgr->GetGuildByLeader(leader);
+            Guild* guild = sGuildMgr->GetGuildByLeader(leader);
             if (guild) 
                 guild->Disband();
         }
@@ -321,7 +321,7 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
     for (vector<uint32>::iterator i = randomBots.begin(); i != randomBots.end(); ++i)
     {
         ObjectGuid leader(HighGuid::Player, *i);
-        Guild* guild = sObjectMgr->GetGuildByLeader(leader);
+        Guild* guild = sGuildMgr->GetGuildByLeader(leader);
         if (guild)
         {
             ++guildNumber;
@@ -357,13 +357,13 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
         }
 
         Guild* guild = new Guild();
-        if (!guild->create(player->GetGUID(), guildName))
+        if (!guild->Create(player, guildName))
         {
             sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Error creating guild %s", guildName.c_str());
             break;
         }
 
-        sObjectMgr->AddGuild(guild);
+        sGuildMgr->AddGuild(guild);
         sPlayerbotAIConfig.randomBotGuilds.push_back(guild->GetId());
     }
 

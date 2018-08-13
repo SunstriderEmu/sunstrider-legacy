@@ -11,21 +11,33 @@
 #include "Language.h"
 #include "CharacterCache.h"
 #include "BattleGroundMgr.h"
+#include "ArenaTeamMgr.h"
 
 void WorldSession::HandleInspectArenaTeamsOpcode(WorldPacket & recvData)
 {
+    TC_LOG_DEBUG("network", "MSG_INSPECT_ARENA_TEAMS");
+
     ObjectGuid guid;
     recvData >> guid;
+    TC_LOG_DEBUG("network", "Inspect Arena stats %s", guid.ToString().c_str());
 
-    if(Player *plr = ObjectAccessor::FindPlayer(guid))
+    Player* player = ObjectAccessor::FindPlayer(guid);
+
+    if (!player)
+        return;
+
+    if (!GetPlayer()->IsWithinDistInMap(player, INSPECT_DISTANCE, false))
+        return;
+
+    if (GetPlayer()->IsValidAttackTarget(player))
+        return;
+
+    for (uint8 i = 0; i < MAX_ARENA_SLOT; ++i)
     {
-        for (uint8 i = 0; i < MAX_ARENA_SLOT; i++)
+        if (uint32 a_id = player->GetArenaTeamId(i))
         {
-            if(uint32 a_id = plr->GetArenaTeamId(i))
-            {
-                if(ArenaTeam *at = sObjectMgr->GetArenaTeamById(a_id))
-                    at->InspectStats(this, plr->GetGUID());
-            }
+            if (ArenaTeam* arenaTeam = sArenaTeamMgr->GetArenaTeamById(a_id))
+                arenaTeam->Inspect(this, player->GetGUID());
         }
     }
 }
@@ -35,12 +47,12 @@ void WorldSession::HandleArenaTeamQueryOpcode(WorldPacket & recvData)
     uint32 ArenaTeamId;
     recvData >> ArenaTeamId;
 
-    ArenaTeam *arenateam = sObjectMgr->GetArenaTeamById(ArenaTeamId);
+    ArenaTeam *arenateam = sArenaTeamMgr->GetArenaTeamById(ArenaTeamId);
     if(!arenateam)                                          // arena team not found
         return;
 
     arenateam->Query(this);
-    arenateam->Stats(this);
+    arenateam->SendStats(this);
 }
 
 void WorldSession::HandleArenaTeamRosterOpcode(WorldPacket & recvData)
@@ -48,7 +60,7 @@ void WorldSession::HandleArenaTeamRosterOpcode(WorldPacket & recvData)
     uint32 ArenaTeamId;                                     // arena team id
     recvData >> ArenaTeamId;
 
-    ArenaTeam *arenateam = sObjectMgr->GetArenaTeamById(ArenaTeamId);
+    ArenaTeam *arenateam = sArenaTeamMgr->GetArenaTeamById(ArenaTeamId);
     if(!arenateam)
         return;
 
@@ -57,34 +69,34 @@ void WorldSession::HandleArenaTeamRosterOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleArenaTeamInviteOpcode(WorldPacket & recvData)
 {
-    uint32 ArenaTeamId;                                     // arena team id
-    std::string Invitedname;
+    uint32 arenaTeamId;                                     // arena team id
+    std::string invitedName;
 
     Player * player = nullptr;
 
-    recvData >> ArenaTeamId >> Invitedname;
+    recvData >> arenaTeamId >> invitedName;
 
-    if(!Invitedname.empty())
+    if(!invitedName.empty())
     {
-        if(!normalizePlayerName(Invitedname))
+        if(!normalizePlayerName(invitedName))
             return;
 
-        player = ObjectAccessor::FindPlayerByName(Invitedname.c_str());
+        player = ObjectAccessor::FindPlayerByName(invitedName.c_str());
     }
 
     if(!player)
     {
-        SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", Invitedname, ERR_ARENA_TEAM_PLAYER_NOT_FOUND_S);
+        SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", invitedName, ERR_ARENA_TEAM_PLAYER_NOT_FOUND_S);
         return;
     }
 
     if(player->GetLevel() < sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
     {
-        SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", player->GetName(), ERR_ARENA_TEAM_PLAYER_TO_LOW);
+        SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", player->GetName(), ERR_ARENA_TEAM_TARGET_TOO_LOW_S);
         return;
     }
 
-    ArenaTeam *arenateam = sObjectMgr->GetArenaTeamById(ArenaTeamId);
+    ArenaTeam *arenateam = sArenaTeamMgr->GetArenaTeamById(arenaTeamId);
     if(!arenateam)
     {
         SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", "", ERR_ARENA_TEAM_PLAYER_NOT_IN_TEAM);
@@ -129,7 +141,7 @@ void WorldSession::HandleArenaTeamInviteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleArenaTeamAcceptOpcode(WorldPacket & /*recvData*/)
 {
-    ArenaTeam *at = sObjectMgr->GetArenaTeamById(_player->GetArenaTeamIdInvited());
+    ArenaTeam *at = sArenaTeamMgr->GetArenaTeamById(_player->GetArenaTeamIdInvited());
     if(!at)
         return;
 
@@ -169,7 +181,7 @@ void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recvData)
     uint32 ArenaTeamId;                                     // arena team id
     recvData >> ArenaTeamId;
 
-    ArenaTeam* at = sObjectMgr->GetArenaTeamById(ArenaTeamId);
+    ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(ArenaTeamId);
     if(!at)
         return;
     if(_player->GetGUID() == at->GetCaptain() && at->GetMembersSize() > 1)
@@ -218,7 +230,7 @@ void WorldSession::HandleArenaTeamDisbandOpcode(WorldPacket & recvData)
     uint32 ArenaTeamId;                                     // arena team id
     recvData >> ArenaTeamId;
 
-    ArenaTeam *at = sObjectMgr->GetArenaTeamById(ArenaTeamId);
+    ArenaTeam *at = sArenaTeamMgr->GetArenaTeamById(ArenaTeamId);
     if(!at)
         return;
 
@@ -250,7 +262,7 @@ void WorldSession::HandleArenaTeamRemoveOpcode(WorldPacket & recvData)
     recvData >> ArenaTeamId;
     recvData >> name;
 
-    ArenaTeam *at = sObjectMgr->GetArenaTeamById(ArenaTeamId);
+    ArenaTeam *at = sArenaTeamMgr->GetArenaTeamById(ArenaTeamId);
     if(!at)                                                 // arena team not found
         return;
 
@@ -314,7 +326,7 @@ void WorldSession::HandleArenaTeamLeaderOpcode(WorldPacket & recvData)
     recvData >> ArenaTeamId;
     recvData >> name;
 
-    ArenaTeam *at = sObjectMgr->GetArenaTeamById(ArenaTeamId);
+    ArenaTeam *at = sArenaTeamMgr->GetArenaTeamById(ArenaTeamId);
     if(!at)                                                 // arena team not found
         return;
 

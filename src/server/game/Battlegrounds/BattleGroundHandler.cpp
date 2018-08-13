@@ -18,6 +18,7 @@
 #include "Language.h"
 #include "World.h"
 #include "GameTime.h"
+#include "ArenaTeamMgr.h"
 
 void WorldSession::HandleBattleMasterHelloOpcode( WorldPacket & recvData )
 {
@@ -566,7 +567,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
                 // if player leaves rated arena match before match start, it is counted as he played but he lost
                 if (israted)
                 {
-                    ArenaTeam * at = sObjectMgr->GetArenaTeamById(team);
+                    ArenaTeam * at = sArenaTeamMgr->GetArenaTeamById(team);
                     if (at)
                     {
                         at->MemberLost(_player, opponentsRating);
@@ -710,7 +711,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
         // if player leaves rated arena match before match start, it is counted as he played but he lost
         if (ginfo.IsRated && ginfo.IsInvitedToBGInstanceGUID)
         {
-            ArenaTeam* at = sObjectMgr->GetArenaTeamById(ginfo.Team); //sArenaTeamMgr->GetArenaTeamById(ginfo.Team);
+            ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(ginfo.Team); //sArenaTeamMgr->GetArenaTeamById(ginfo.Team);
             if (at)
             {
                 TC_LOG_DEBUG("bg.battleground", "UPDATING memberLost's personal arena rating for %u by opponents rating: %u, because he has left queue!", _player->GetGUID().GetCounter(), ginfo.OpponentsTeamRating);
@@ -1015,7 +1016,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
 #endif
         ateamId = _player->GetArenaTeamId(arenaslot);
         // check real arenateam existence only here (if it was moved to group->CanJoin .. () then we would have to get it twice)
-        ArenaTeam * at = sObjectMgr->GetArenaTeamById(ateamId); //sArenaTeamMgr->GetArenaTeamById(ateamId);
+        ArenaTeam * at = sArenaTeamMgr->GetArenaTeamById(ateamId); //sArenaTeamMgr->GetArenaTeamById(ateamId);
         if(!at)
         {
             _player->GetSession()->SendNotInArenaTeamPacket(arenatype);
