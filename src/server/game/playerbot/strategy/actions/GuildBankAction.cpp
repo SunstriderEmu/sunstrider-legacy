@@ -56,7 +56,6 @@ bool GuildBankAction::MoveFromCharToBank(Item* item, GameObject* bank)
     guild->SwapItems(bot, 0, playerSlot, 0, INVENTORY_SLOT_BAG_0, 0);
 
     std::ostringstream out; out << chat->formatItem(item->GetTemplate()) << " put to guild bank";
-    ai->TellMaster("TODO PLAYERBOT");
-
+    ai->TellMaster(out);
     return true;
 }

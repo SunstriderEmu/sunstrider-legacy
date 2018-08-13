@@ -258,20 +258,22 @@ void RandomPlayerbotFactory::CreateRandomBots()
         sPlayerbotAIConfig.randomBotAccounts.push_back(accountId);
 
         int count = sAccountMgr->GetCharactersCount(accountId);
+        totalRandomBotChars += count;
         if (count >= 10)
-        {
-            totalRandomBotChars += count;
             continue;
-        }
+
+        int playerToCreate = 10 - count;
+        int created = 0;
 
         RandomPlayerbotFactory factory(accountId);
-        for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES; ++cls)
+        for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES && created < playerToCreate; ++cls)
         {
             if (cls != 10 && cls != CLASS_DEATH_KNIGHT)
-                factory.CreateRandomBot(cls);
+                if (factory.CreateRandomBot(cls))
+                    created++;
         }
 
-        totalRandomBotChars += sAccountMgr->GetCharactersCount(accountId);
+        totalRandomBotChars += created;
     }
 
     sLog->outMessage("playerbot", LOG_LEVEL_INFO, "%d random bot accounts with %d characters available", sPlayerbotAIConfig.randomBotAccounts.size(), totalRandomBotChars);
