@@ -148,6 +148,9 @@ void TestThread::_SetWait(uint32 ms)
 
 void TestThread::Cancel()
 {
+    if (_state == STATE_FINISHED)
+        return;
+
     _state = STATE_CANCELING;
     GetTest()->_FailNoException("Test was canceled (thread)");
     WakeUp();
