@@ -525,7 +525,9 @@ TempSummon* TestCase::SpawnCreatureWithPosition(Position spawnPosition, uint32 e
     TempSummon* summon = GetMap()->SummonCreature(creatureEntry, spawnPosition);
     INTERNAL_ASSERT_INFO("Failed to summon creature with entry %u", creatureEntry);
     INTERNAL_TEST_ASSERT(summon != nullptr);
-    summon->SetTempSummonType(TEMPSUMMON_MANUAL_DESPAWN); //Make sur it does not despawn
+    summon->SetTempSummonType(TEMPSUMMON_MANUAL_DESPAWN); //Make sure it does not despawn
+
+    summon->SetKeepActive(true); //always keep active by default
     return summon;
 }
 
