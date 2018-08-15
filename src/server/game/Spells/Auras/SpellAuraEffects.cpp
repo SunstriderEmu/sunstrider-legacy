@@ -5445,26 +5445,20 @@ void AuraEffect::HandleAuraModIncreaseHealth(AuraApplication const* aurApp, uint
 {
     if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
         return;
-    Unit* m_target = aurApp->GetTarget();
-    if (apply)
-    {
-        m_target->HandleStatFlatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(GetAmount()), apply);
-        m_target->ModifyHealth(GetAmount());
-    }
-    else
-    {
-        if (m_target->GetHealth() > 0)
-        {
-            int32 value = std::min<int32>(m_target->GetHealth() - 1, GetAmount());  //shouldn't it be GetAmount ?
-            m_target->ModifyHealth(-value);
-        }
+    Unit* target = aurApp->GetTarget();
+   
+    int32 const amt = apply ? GetAmount() : -GetAmount();
+    if (amt < 0)
+        target->ModifyHealth(std::max<int32>(1 - target->GetHealth(), amt));
 
-        m_target->HandleStatFlatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(GetAmount()), apply);
-    }
+    target->HandleStatFlatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, GetAmount(), apply);
+
+    if (amt > 0)
+        target->ModifyHealth(amt);
 
     //HACK
-    if (!apply && GetId() == 30421 && !m_target->HasAura(30421))
-        m_target->AddAura(38637, m_target);
+    if (!apply && GetId() == 30421 && !target->HasAura(30421))
+        target->AddAura(38637, target);
 }
 
 void  AuraEffect::HandleAuraModIncreaseMaxHealth(AuraApplication const* aurApp, uint8 mode, bool apply) const
