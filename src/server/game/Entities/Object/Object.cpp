@@ -877,6 +877,10 @@ void WorldObject::SetKeepActive( bool on )
             map->AddToForceActive(this->ToCreature());
         else if(GetTypeId() == TYPEID_DYNAMICOBJECT)
             map->AddToForceActive((DynamicObject*)this);
+
+        //sun: load grid if not done. Else unit won't update properly if grid wasn't loaded beforehand
+        if (!map->IsGridLoaded(GetPositionX(), GetPositionY()))
+            map->LoadGrid(GetPositionX(), GetPositionY());
     }
     else
     {
