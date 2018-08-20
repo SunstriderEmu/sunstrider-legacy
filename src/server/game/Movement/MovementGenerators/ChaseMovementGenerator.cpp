@@ -89,6 +89,8 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
     if (!owner || !owner->IsAlive())
         return false;
 
+    Creature* cOwner = owner->ToCreature();
+
     // our target might have gone away
     Unit* const target = GetTarget();
     if (!target)
@@ -103,6 +105,8 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
     {
         owner->StopMoving();
         _lastTargetPosition.reset();
+        if (cOwner)
+            cOwner->SetCannotReachTarget(false);
         return true;
     }
 
@@ -137,6 +141,8 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
     if (owner->HasUnitState(UNIT_STATE_CHASE_MOVE) && owner->movespline->Finalized())
     {
         _path = nullptr;
+        if (cOwner)
+            cOwner->SetCannotReachTarget(false);
         owner->ClearUnitState(UNIT_STATE_CHASE_MOVE);
         owner->SetInFront(target);
         DoMovementInform(owner, target);
@@ -149,7 +155,6 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
         _mutualChase = mutualChase;
         if (owner->HasUnitState(UNIT_STATE_CHASE_MOVE) || !PositionOkay(owner, target, minRange, maxRange, angle))
         {
-            Creature* const cOwner = owner->ToCreature();
             // can we get to the target?
             if (cOwner && !target->isInAccessiblePlaceFor(cOwner))
             {
@@ -200,6 +205,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             {
                 if (cOwner)
                     cOwner->SetCannotReachTarget(true);
+
                 owner->StopMoving();
                 return true;
             }
@@ -209,6 +215,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
 
             if (cOwner)
                 cOwner->SetCannotReachTarget(false);
+
             owner->AddUnitState(UNIT_STATE_CHASE_MOVE);
 
             Movement::MoveSplineInit init(owner);
@@ -228,6 +235,8 @@ void ChaseMovementGenerator::Deactivate(Unit* owner)
 {
     AddFlag(MOVEMENTGENERATOR_FLAG_DEACTIVATED);
     owner->ClearUnitState(UNIT_STATE_CHASE_MOVE);
+    if (Creature* cOwner = owner->ToCreature())
+        cOwner->SetCannotReachTarget(false);
 }
 
 void ChaseMovementGenerator::Finalize(Unit* owner, bool active, bool/* movementInform*/)
