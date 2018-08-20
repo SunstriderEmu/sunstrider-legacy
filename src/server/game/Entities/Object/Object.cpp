@@ -1780,16 +1780,12 @@ bool WorldObject::CanDetectInvisibilityOf(WorldObject const* obj) const
 bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) const
 {
     // custom sunstrider rules, based on http://wolfendonkane.pagesperso-orange.fr/furtivite.html
-
-    // Combat reach is the minimal distance (both in front and behind),
-    //   and it is also used in the range calculation.
     // One stealth point increases the visibility range by 0.3 yard.
 
     if (!obj->m_stealth.GetFlags())
         return true;
 
-    float distance = GetExactDist(obj);
-    float combatReach = 0.0f;
+    float distance = GetDistance(obj); // This uses this unit and target combat reach
 
     Unit const* unit = ToUnit();
     if (unit && !unit->IsAlive())
@@ -1800,12 +1796,9 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) co
     {
         if (unitTarget->HasAura(18461)) //vanish dummy spell, 2.5s duration after vanish
             return false;
-
-        //use combat reach of target unit instead of our own, else rogue won't be able to approach some big units
-        combatReach = unit->GetCombatReach();
     }
 
-    if (distance < combatReach) //collision
+    if (distance <= 0.0f) //collision
         return true;
 
     if (!HasInArc(M_PI / 2.0f*3.0f, obj)) // can't see 90° behind
@@ -1824,15 +1817,7 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) co
         {
         default:
         case STEALTH_GENERAL:
-            visibleDistance = 17.5 + combatReach;
-            //SPELL_AURA_MOD_STEALTH and SPELL_AURA_MOD_STEALTH_LEVEL are both affecting m_stealth. 
-            //SPELL_AURA_MOD_STEALTH is the base stealth spell while SPELL_AURA_MOD_STEALTH_LEVEL are bonus auras and talents
-            //max level stealth spell have 350 SPELL_AURA_MOD_STEALTH
-            //so for this next line will equal 0 if for the same level and no talent/items boost
-            //Talent such as "Master of Deception" will descrease the detect range by 15 when maxed out
-            visibleDistance += float(GetLevelForTarget(obj)) - obj->m_stealth.GetValue(StealthType(i)) / 5.0f;
-            //spells like Track Hidden have 30 here, so you can see 30 yards further. 
-            visibleDistance += (float)m_stealthDetect.GetValue(StealthType(i));
+            visibleDistance = 17.5;
             break;
         case STEALTH_TRAP:
             //according to some sources, only stealth units can see traps
@@ -1840,11 +1825,18 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) co
                 break;
 
             visibleDistance = 0.0f;
-            visibleDistance += float(GetLevelForTarget(obj)) - obj->m_stealth.GetValue(StealthType(i)) / 5.0f;
-            //Rogue trap detects also have 70. Dunno how to use this, let's divide it by 5
-            visibleDistance += (float)m_stealthDetect.GetValue(StealthType(i)) / 5.0f;
             break;
         }
+
+        // General rule is : one level difference = 1 yard of visibility
+        // SPELL_AURA_MOD_STEALTH and SPELL_AURA_MOD_STEALTH_LEVEL are both affecting m_stealth. 
+        // SPELL_AURA_MOD_STEALTH are the base stealth spells while SPELL_AURA_MOD_STEALTH_LEVEL are bonus auras and talents
+        // Max level stealth spell have 350 SPELL_AURA_MOD_STEALTH
+        // So for this next line will equal 0 for the same level and no talent/items boost
+        // Talent such as "Master of Deception" (= 15 stealth level) will decrease the detect range by 15y when maxed out
+        visibleDistance += float(GetLevelForTarget(obj)) - obj->m_stealth.GetValue(StealthType(i)) / 5.0f;
+        // spells like Track Hidden have 30 here, so you can see 30 yards further. Rogue trap detects has 70.
+        visibleDistance += (float)m_stealthDetect.GetValue(StealthType(i));
 
         if (visibleDistance <= 0.0f)
             break; //in this case we can already stop here

@@ -3747,7 +3747,6 @@ void Spell::_cast(bool skipCheck /*= false*/)
 
     HandleLaunchPhase();
 
-
     SendSpellGo();                                          // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
 
     if (!m_spellInfo->IsChanneled())
