@@ -843,7 +843,6 @@ void TestCase::_TestSpellCritPercentage(Unit* caster, Unit* victim, uint32 spell
     INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found no data of %s for target (%s)", _SpellString(spellId).c_str(), victim->GetName().c_str());
     INTERNAL_TEST_ASSERT(foundCount != 0);
 
-
     if (sampleSize)
     {
         INTERNAL_ASSERT_INFO("_TestSpellCritPercentage found %u results instead of expected sample size %u for %s", foundCount, sampleSize, _SpellString(spellId).c_str());

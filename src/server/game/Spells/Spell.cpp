@@ -3584,15 +3584,15 @@ void Spell::_cast(bool skipCheck /*= false*/)
         return;
     }
 
-    if (Unit *pTarget = m_targets.GetUnitTarget())
+    // Prevent casting on a stealthed target we cannot see, prevent cheating. Maybe this should be more lax?
+    if (Unit* pTarget = m_targets.GetUnitTarget())
     {
-        if (!IsTriggered() && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->CanSeeOrDetect(m_caster, false))
+        if (!IsTriggered() && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !m_caster->CanSeeOrDetect(pTarget, false))
         {
             SendCastResult(SPELL_FAILED_BAD_TARGETS);
             finish(false);
             return;
         }
-
     }
 
     if (Player* playerCaster = m_caster->ToPlayer())
@@ -3601,7 +3601,7 @@ void Spell::_cast(bool skipCheck /*= false*/)
         // should be done before the spell is actually executed
         // sScriptMgr->OnPlayerSpellCast(playerCaster, this, skipCheck);
 
-        // As of 3.0.2 pets begin attacking their owner's target immediately
+        // As of 3.0.2 pets begin attacking their owner's target immediately (sun: we're keeping that change despite being on BC)
         // Let any pets know we've attacked something. Check DmgClass for harmful spells only
         // This prevents spells such as Hunter's Mark from triggering pet attack
         if (this->GetSpellInfo()->DmgClass != SPELL_DAMAGE_CLASS_NONE)
