@@ -132,9 +132,9 @@ void GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, ui
 void GossipMenu::AddMenuItemTextID(uint8 icon, uint32 textID, uint32 sender, uint32 action)
 {
     uint32 loc_idx = GetLocale();
-    NpcTextLocale const *ntl;
+    NpcTextLocale const* ntl;
 
-    GossipText *pGossip;
+    GossipText const* pGossip;
 
     std::string sItemText;
     ntl = sObjectMgr->GetNpcTextLocale(textID);

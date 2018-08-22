@@ -116,11 +116,6 @@ ObjectMgr::~ObjectMgr()
 {
     _questTemplates.clear( );
 
-    for(auto & i : _gossipTextStore)
-        delete i.second;
-
-    _gossipTextStore.clear( );
-
     _areaTriggerStore.clear();
 
     for (auto & itr : m_mCacheVendorItemMap)
@@ -4656,13 +4651,6 @@ InstanceTemplateAddon const* ObjectMgr::GetInstanceTemplateAddon(uint32 mapID)
     return Trinity::Containers::MapGetValuePtr(_instanceTemplateAddonStore, uint16(mapID));
 }
 
-void ObjectMgr::AddGossipText(GossipText *pGText)
-{
-    ASSERT( pGText->Text_ID );
-    ASSERT( _gossipTextStore.find(pGText->Text_ID) == _gossipTextStore.end() );
-    _gossipTextStore[pGText->Text_ID] = pGText;
-}
-
 BattlegroundTypeId ObjectMgr::GetBattleMasterBG(uint32 entry) const
 {
     auto itr = _battleMastersStore.find(entry);
@@ -4673,23 +4661,17 @@ BattlegroundTypeId ObjectMgr::GetBattleMasterBG(uint32 entry) const
     return BATTLEGROUND_WS;
 }
 
-GossipText *ObjectMgr::GetGossipText(uint32 Text_ID)
+GossipText const* ObjectMgr::GetGossipText(uint32 Text_ID)
 {
-    GossipTextMap::const_iterator itr;
-    for (itr = _gossipTextStore.begin(); itr != _gossipTextStore.end(); ++itr)
-    {
-        if(itr->second->Text_ID == Text_ID)
-            return itr->second;
-    }
+    GossipTextContainer::const_iterator itr = _gossipTextStore.find(Text_ID);
+    if (itr != _gossipTextStore.end())
+        return &itr->second;
     return nullptr;
 }
 
 void ObjectMgr::LoadGossipText()
 {
-    for (auto itr : _gossipTextStore)
-        delete itr.second;
-
-    _gossipTextStore.clear();
+    uint32 oldMSTime = GetMSTime();
 
     GossipText *pGText;
     QueryResult result = WorldDatabase.Query("SELECT ID, "
@@ -4703,13 +4685,15 @@ void ObjectMgr::LoadGossipText()
         "text7_0, text7_1, BroadcastTextID7, lang7, prob7, em7_0, em7_1, em7_2, em7_3, em7_4, em7_5 "
         "FROM gossip_text");
 
-    int count = 0;
-    if( !result )
+    if (!result)
     {
-        TC_LOG_INFO("server.loading", ">> Loaded %u npc texts", count );        
+        TC_LOG_INFO("server.loading", ">> Loaded 0 gossip texts, table is empty!");
         return;
     }
 
+    _gossipTextStore.rehash(result->GetRowCount());
+
+    int count = 0;
     int cic;
 
     do
@@ -4717,38 +4701,52 @@ void ObjectMgr::LoadGossipText()
         ++count;
         cic = 0;
 
-        Field *fields = result->Fetch();
+        Field* fields = result->Fetch();
 
-        pGText = new GossipText;
-        pGText->Text_ID    = fields[cic++].GetUInt32();
-
-        for (auto & Option : pGText->Options)
+        uint32 id = fields[cic++].GetUInt32();
+        if (!id)
         {
-            Option.Text_0           = fields[cic++].GetString();
-            Option.Text_1           = fields[cic++].GetString();
+            TC_LOG_ERROR("sql.sql", "Table `gossip_text` has record with reserved id 0, ignore.");
+            continue;
+        }
 
-            Option.BroadcastTextID  = fields[cic++].GetUInt32();
+        GossipText& gText = _gossipTextStore[id];
 
-            Option.Language         = fields[cic++].GetUInt8();
-            Option.Probability      = fields[cic++].GetFloat();
+        for (uint8 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
+        {
+            GossipTextOption& gOption = gText.Options[i];
+            gOption.Text_0 = fields[cic++].GetString();
+            gOption.Text_1 = fields[cic++].GetString();
+            gOption.BroadcastTextID = fields[cic++].GetUInt32();
+            gOption.Language = fields[cic++].GetUInt8();
+            gOption.Probability = fields[cic++].GetFloat();
 
             for (uint8 j = 0; j < MAX_GOSSIP_TEXT_EMOTES; ++j)
             {
-                Option.Emotes[j]._Delay = fields[cic++].GetUInt16();
-                Option.Emotes[j]._Emote = fields[cic++].GetUInt16();
+                gOption.Emotes[j]._Delay = fields[cic++].GetUInt16();
+                gOption.Emotes[j]._Emote = fields[cic++].GetUInt16();
+            }
+
+            // check broadcast_text correctness
+            if (gOption.BroadcastTextID)
+            {
+                if (BroadcastText const* bcText = sObjectMgr->GetBroadcastText(gOption.BroadcastTextID))
+                {
+                    if (bcText->MaleText[DEFAULT_LOCALE] != gOption.Text_0)
+                        TC_LOG_ERROR("sql.sql", "Row %u in table `gossip_text` has mismatch between text%u_0 and the corresponding MaleText in `broadcast_text` row %u", id, i, gOption.BroadcastTextID);
+                    if (bcText->FemaleText[DEFAULT_LOCALE] != gOption.Text_1)
+                        TC_LOG_ERROR("sql.sql", "Row %u in table `gossip_text` has mismatch between text%u_1 and the corresponding FemaleText in `broadcast_text` row %u", id, i, gOption.BroadcastTextID);
+                }
+                else
+                {
+                    TC_LOG_ERROR("sql.sql", "GossipText (Id: %u) in table `npc_text` has non-existing or incompatible BroadcastTextID%u %u.", id, i, gOption.BroadcastTextID);
+                    gOption.BroadcastTextID = 0;
+                }
             }
         }
-
-        if ( !pGText->Text_ID ){
-          delete pGText;
-          continue;
-        }
-
-        AddGossipText( pGText );
-
     } while( result->NextRow() );
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u npc texts", count );
+    TC_LOG_INFO("server.loading", ">> Loaded %u gossip texts in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     
 }
 
@@ -4770,7 +4768,6 @@ void ObjectMgr::LoadGossipTextLocales()
     if(!result)
     {
         TC_LOG_INFO("server.loading",">> Loaded 0 gossip locale strings. DB table `locales_gossip_text` is empty.");
-        
         return;
     }
 
@@ -4794,7 +4791,6 @@ void ObjectMgr::LoadGossipTextLocales()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gossip text locale strings", mGossipTextLocaleMap.size());
-    
 }
 
 //not very fast function but it is called only once a day, or on starting-up

@@ -683,8 +683,7 @@ class TC_GAME_API ObjectMgr
 
         BattlegroundTypeId GetBattleMasterBG(uint32 entry) const;
 
-        void AddGossipText(GossipText *pGText);
-        GossipText *GetGossipText(uint32 Text_ID);
+        GossipText const* GetGossipText(uint32 Text_ID);
         QuestGreeting const* GetQuestGreeting(ObjectGuid guid) const;
 
         WorldSafeLocsEntry const *GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team);
@@ -1163,7 +1162,7 @@ class TC_GAME_API ObjectMgr
 
         QuestContainer            _questTemplates;
 
-        typedef std::unordered_map<uint32, GossipText*> GossipTextMap;
+        typedef std::unordered_map<uint32, GossipText> GossipTextContainer;
         typedef std::unordered_map<uint32, uint32> QuestAreaTriggerMap;
         typedef std::unordered_map<uint32, BattlegroundTypeId> BattleMastersMap;
         typedef std::unordered_map<uint32, std::string> ItemTextMap;
@@ -1177,7 +1176,7 @@ class TC_GAME_API ObjectMgr
         BattleMastersMap    _battleMastersStore;
         TavernAreaTriggerSet _tavernAreaTriggerStore;
         GameObjectForQuestSet _gameObjectForQuestStore;
-        GossipTextMap       _gossipTextStore;
+        GossipTextContainer _gossipTextStore;
         QuestGreetingContainer _questGreetingStore;
         AreaTriggerMap      _areaTriggerStore;
         AreaTriggerScriptMap  _areaTriggerScriptStore;
