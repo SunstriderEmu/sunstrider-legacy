@@ -18,68 +18,40 @@
 #include "AccountMgr.h"
 #include "LogsDatabaseAccessor.h"
 #include "CharacterCache.h"
+#include "ScriptMgr.h"
 
-bool ChatHandler::load_command_table = true;
+// Lazy loading of the command table cache from commands and the
+// ScriptMgr should be thread safe since the player commands,
+// cli commands and ScriptMgr updates are all dispatched one after
+// one inside the world update loop.
+static Optional<std::vector<ChatCommand>> commandTableCache;
 
-bool ChatHandler::SetDataForCommandInTable(std::vector<ChatCommand>& table, char const* text, uint32 securityLevel, std::string const& help, std::string const& fullcommand)
+std::vector<ChatCommand> const& ChatHandler::getCommandTable()
 {
-    std::string cmd = "";
-
-    //get first word in 'cmd'
-    while (*text != ' ' && *text != '\0')
+    if (!commandTableCache)
     {
-        cmd += *text;
-        ++text;
-    }
+        // We need to initialize this at top since SetDataForCommandInTable
+        // calls getCommandTable() recursively.
+        commandTableCache = sScriptMgr->GetChatCommands();
 
-    //make text point on next word
-    while (*text == ' ') ++text;
-
-    for (auto & i : table)
-    {
-        if (!i.Name)
-            return false;
-
-        // for data fill use full explicit command names
-        if (i.Name != cmd)
-            continue;
-
-        // select subcommand from child commands list (including "")
-        if (!i.ChildCommands.empty())
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_COMMANDS);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+        if (result)
         {
-            if (SetDataForCommandInTable(i.ChildCommands, text, securityLevel, help, fullcommand))
-                return true;
-            else if (*text)
-                return false;
+            do
+            {
+                Field* fields = result->Fetch();
+                std::string name = fields[0].GetString();
 
-            // fail with "" subcommands, then use normal level up command instead
+                SetDataForCommandInTable(*commandTableCache, name.c_str(), fields[1].GetUInt8(), fields[2].GetString(), name);
+            } while (result->NextRow());
         }
-        // expected subcommand by full name DB content
-        else if (*text)
-        {
-            TC_LOG_ERROR("sql.sql", "Table `command` have unexpected subcommand '%s' in command '%s', skip.", text, fullcommand.c_str());
-            return false;
-        }
-
-        if (i.SecurityLevel != securityLevel)
-            TC_LOG_DEBUG("misc", "Table `command` overwrite for command '%s' default permission (%u) by %u", fullcommand.c_str(), i.SecurityLevel, securityLevel);
-
-        i.SecurityLevel = securityLevel;
-        i.Help = help;
-        return true;
     }
 
-    // in case "" command let process by caller
-    if (!cmd.empty())
-    {
-        if (&table == &getCommandTable())
-            TC_LOG_ERROR("sql.sql", "Table `command` have not existing command '%s', skip.", cmd.c_str());
-        else
-            TC_LOG_ERROR("sql.sql", "Table `command` have not existing subcommand '%s' in command '%s', skip.", cmd.c_str(), fullcommand.c_str());
-    }
-    return true;
+    return *commandTableCache;
 }
 
+/*
 std::vector<ChatCommand> const& ChatHandler::getCommandTable()
 {
     static std::vector<ChatCommand> accountSetCommandTable =
@@ -687,9 +659,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
        { "loop",           SEC_ADMINISTRATOR, true,  &ChatHandler::HandleTestsLoopCommand,                  "" },
    };
 
-   /**
-    * The values here may be overwritten by the database and are here as defaults.
-    */
     static std::vector<ChatCommand> commandTable =
     {
         { "account",        SEC_PLAYER,       true,  nullptr,                                        "", accountCommandTable },
@@ -824,9 +793,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "bot",            SEC_SUPERADMIN,   true,  &ChatHandler::HandlePlayerbotMgrCommand,        "" },
     };
 
-    /**
-     * Values in database take precedence over default values in command table
-     */
     if(load_command_table)
     {
         load_command_table = false;
@@ -846,6 +812,66 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
     }
 
     return commandTable;
+}
+*/
+
+bool ChatHandler::SetDataForCommandInTable(std::vector<ChatCommand>& table, char const* text, uint32 securityLevel, std::string const& help, std::string const& fullcommand)
+{
+    std::string cmd = "";
+
+    //get first word in 'cmd'
+    while (*text != ' ' && *text != '\0')
+    {
+        cmd += *text;
+        ++text;
+    }
+
+    //make text point on next word
+    while (*text == ' ') ++text;
+
+    for (auto & i : table)
+    {
+        if (!i.Name)
+            return false;
+
+        // for data fill use full explicit command names
+        if (i.Name != cmd)
+            continue;
+
+        // select subcommand from child commands list (including "")
+        if (!i.ChildCommands.empty())
+        {
+            if (SetDataForCommandInTable(i.ChildCommands, text, securityLevel, help, fullcommand))
+                return true;
+            else if (*text)
+                return false;
+
+            // fail with "" subcommands, then use normal level up command instead
+        }
+        // expected subcommand by full name DB content
+        else if (*text)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `command` have unexpected subcommand '%s' in command '%s', skip.", text, fullcommand.c_str());
+            return false;
+        }
+
+        if (i.SecurityLevel != securityLevel)
+            TC_LOG_DEBUG("misc", "Table `command` overwrite for command '%s' default permission (%u) by %u", fullcommand.c_str(), i.SecurityLevel, securityLevel);
+
+        i.SecurityLevel = securityLevel;
+        i.Help = help;
+        return true;
+    }
+
+    // in case "" command let process by caller
+    if (!cmd.empty())
+    {
+        if (&table == &getCommandTable())
+            TC_LOG_ERROR("sql.sql", "Table `command` have not existing command '%s', skip.", cmd.c_str());
+        else
+            TC_LOG_ERROR("sql.sql", "Table `command` have not existing subcommand '%s' in command '%s', skip.", cmd.c_str(), fullcommand.c_str());
+    }
+    return true;
 }
 
 ChatHandler::ChatHandler(WorldSession* session)
@@ -885,10 +911,8 @@ void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
 
 void ChatHandler::invalidateCommandTable()
 {
-    //TC commandTableCache.reset();
-    load_command_table = true;
+    commandTableCache.reset();
 }
-
 
 bool ChatHandler::HasLowerSecurity(Player* target, ObjectGuid guid, bool strong)
 {

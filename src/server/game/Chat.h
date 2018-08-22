@@ -118,6 +118,7 @@ class TC_GAME_API ChatHandler
         bool ShowHelpForCommand(std::vector<ChatCommand> const& table, const char* cmd);
         bool ShowHelpForSubCommands(std::vector<ChatCommand> const& table, char const* cmd, char const* subcmd);
 
+        /*
         bool HandleAccountCommand(const char* args);
         bool HandleAccountCreateCommand(const char* args);
         bool HandleAccountDeleteCommand(const char* args);
@@ -670,6 +671,7 @@ class TC_GAME_API ChatHandler
         bool HandleExploreCheatCommand(const char* args);
         bool HandleWaterwalkCheatCommand(const char* args);
         bool HandleTaxiCheatCommand(const char* args);
+        */
 
         bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, ObjectGuid &guid, bool offline = false);
 

@@ -26,6 +26,7 @@ class CreatureAI;
 class GameObject;
 class GameObjectAI;
 class InstanceScript;
+class ChatCommand;
 class Quest;
 class Item;
 class SpellCastTargets;
@@ -223,6 +224,18 @@ public:
     // Called when loading tests
     virtual std::unique_ptr<TestCase> GetTest() const;
 #endif
+};
+
+class TC_GAME_API CommandScript : public ScriptObject
+{
+protected:
+
+    CommandScript(char const* name);
+
+public:
+
+    // Should return a pointer to a valid command table (ChatCommand array) to be used by ChatHandler.
+    virtual std::vector<ChatCommand> GetCommands() const = 0;
 };
 
 // Manages registration, loading, and execution of scripts.
@@ -430,6 +443,10 @@ public: /* Script contexts */
     public: /* AreaTriggerScript */
 
         bool OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger);
+
+    public: /* CommandScript */
+
+        std::vector<ChatCommand> GetChatCommands();
 
     private:
 

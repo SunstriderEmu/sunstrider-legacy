@@ -805,7 +805,6 @@ private:
 };
 
 /// This hook is responsible for swapping CommandScript's
-/*
 template<typename Base>
 class ScriptRegistrySwapHooks<CommandScript, Base>
     : public ScriptRegistrySwapHookBase
@@ -826,7 +825,6 @@ public:
         ChatHandler::invalidateCommandTable();
     }
 };
-*/
 
 // Database unbound script registry
 template<typename ScriptType>
@@ -1500,6 +1498,25 @@ bool ScriptMgr::OnItemExpire(Player* player, ItemTemplate const* proto)
     return tmpscript->OnExpire(player, proto);
 }
 
+std::vector<ChatCommand> ScriptMgr::GetChatCommands()
+{
+    std::vector<ChatCommand> table;
+
+    FOR_SCRIPTS_RET(CommandScript, itr, end, table)
+    {
+        std::vector<ChatCommand> cmds = itr->second->GetCommands();
+        table.insert(table.end(), cmds.begin(), cmds.end());
+    }
+
+    // Sort commands in alphabetical order
+    std::sort(table.begin(), table.end(), [](ChatCommand const& a, ChatCommand const& b)
+    {
+        return strcmp(a.Name, b.Name) < 0;
+    });
+
+    return table;
+}
+
 SpellScriptLoader* ScriptMgr::GetSpellScriptLoader(uint32 scriptId)
 {
     return ScriptRegistry<SpellScriptLoader>::Instance()->GetScriptById(scriptId);
@@ -1582,6 +1599,12 @@ TestCaseScript::TestCaseScript(const char* name)
     : ScriptObject(name)
 {
     ScriptRegistry<TestCaseScript>::Instance()->AddScript(this);
+}
+
+CommandScript::CommandScript(char const* name)
+    : ScriptObject(name)
+{
+    ScriptRegistry<CommandScript>::Instance()->AddScript(this);
 }
 
 #ifdef TESTS
@@ -1704,32 +1727,32 @@ std::unordered_multimap<std::string, std::unique_ptr<TestCaseScript>> const& Scr
 // Specialize for each script type class like so:
 template class ScriptRegistry<SpellScriptLoader>;
 /*
-template class ScriptRegistry<ServerScript>;
-template class ScriptRegistry<WorldScript>;
-template class ScriptRegistry<FormulaScript>;
+template class TC_GAME_API ScriptRegistry<ServerScript>;
+template class TC_GAME_API ScriptRegistry<WorldScript>;
+template class TC_GAME_API ScriptRegistry<FormulaScript>;
 */
-template class ScriptRegistry<WorldMapScript>;
-template class ScriptRegistry<InstanceMapScript>;
-template class ScriptRegistry<BattlegroundMapScript>;
-template class ScriptRegistry<ItemScript>;
-template class ScriptRegistry<CreatureScript>;
-template class ScriptRegistry<GameObjectScript>;
-template class ScriptRegistry<AreaTriggerScript>;
-template class ScriptRegistry<TestCaseScript>;
+template class TC_GAME_API ScriptRegistry<WorldMapScript>;
+template class TC_GAME_API ScriptRegistry<InstanceMapScript>;
+template class TC_GAME_API ScriptRegistry<BattlegroundMapScript>;
+template class TC_GAME_API ScriptRegistry<ItemScript>;
+template class TC_GAME_API ScriptRegistry<CreatureScript>;
+template class TC_GAME_API ScriptRegistry<GameObjectScript>;
+template class TC_GAME_API ScriptRegistry<AreaTriggerScript>;
+template class TC_GAME_API ScriptRegistry<TestCaseScript>;
+template class TC_GAME_API ScriptRegistry<CommandScript>;
 /*
-template class ScriptRegistry<BattlegroundScript>;
-template class ScriptRegistry<OutdoorPvPScript>;
-template class ScriptRegistry<CommandScript>;
-template class ScriptRegistry<WeatherScript>;
-template class ScriptRegistry<AuctionHouseScript>;
-template class ScriptRegistry<ConditionScript>;
-template class ScriptRegistry<VehicleScript>;
-template class ScriptRegistry<DynamicObjectScript>;
-template class ScriptRegistry<TransportScript>;
-template class ScriptRegistry<AchievementCriteriaScript>;
-template class ScriptRegistry<PlayerScript>;
-template class ScriptRegistry<GuildScript>;
-template class ScriptRegistry<GroupScript>;
+template class TC_GAME_API ScriptRegistry<BattlegroundScript>;
+template class TC_GAME_API ScriptRegistry<OutdoorPvPScript>;
+template class TC_GAME_API ScriptRegistry<WeatherScript>;
+template class TC_GAME_API ScriptRegistry<AuctionHouseScript>;
+template class TC_GAME_API ScriptRegistry<ConditionScript>;
+template class TC_GAME_API ScriptRegistry<VehicleScript>;
+template class TC_GAME_API ScriptRegistry<DynamicObjectScript>;
+template class TC_GAME_API ScriptRegistry<TransportScript>;
+template class TC_GAME_API ScriptRegistry<AchievementCriteriaScript>;
+template class TC_GAME_API ScriptRegistry<PlayerScript>;
+template class TC_GAME_API ScriptRegistry<GuildScript>;
+template class TC_GAME_API ScriptRegistry<GroupScript>;
 */
 
 // Undefine utility macros.
