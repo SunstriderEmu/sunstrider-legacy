@@ -18,7 +18,7 @@ CollectSourceFiles(
   ${EXCLUDE_PLAYERBOT}
   ${EXCLUDE_TESTS}
 )
-
+ 
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/gamePCH.h)
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})

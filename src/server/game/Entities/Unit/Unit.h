@@ -17,7 +17,7 @@
 #include <list>
 #include "SpellDefines.h"
 #include "SpellInfo.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 struct AbstractFollower;
 class UnitAI;
 class SpellCastTargets;
@@ -175,7 +175,8 @@ enum UnitRename
     UNIT_RENAME_ALLOWED     = 0x03
 };
 
-#define MAX_CREATURE_SPELLS     8
+static const uint32 MAX_CREATURE_SPELLS = 8;
+static const uint32 MAX_CREATURE_MODELS = 4;
 
 enum VictimState
 {

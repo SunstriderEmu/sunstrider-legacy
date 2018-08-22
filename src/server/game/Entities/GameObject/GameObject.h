@@ -10,6 +10,7 @@
 #include "GameObjectAI.h"
 #include <G3D/Quat.h>
 #include "Loot.h"
+#include "WorldPacket.h"
 
 class StaticTransport;
 class MotionTransport;
@@ -386,8 +387,12 @@ struct GameObjectTemplate
     uint32 GetLockId() const;
     uint32 GetEventScriptId() const;
 
+    void InitializeQueryData();
+    WorldPacket BuildQueryData(LocaleConstant loc) const;
+
     std::string AIName;
     uint32 ScriptId;
+    WorldPacket QueryData[TOTAL_LOCALES];
 };
 
 struct TransportAnimation;

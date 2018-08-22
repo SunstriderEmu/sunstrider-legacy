@@ -18,7 +18,7 @@
 #include "LootItemStorage.h"
 #include "DatabaseEnv.h"
 #include "Item.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "Log.h"
 #include "Loot.h"
 #include "LootMgr.h"

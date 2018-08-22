@@ -20,6 +20,7 @@
 #include "GameObjectAI.h"
 #include "Language.h"
 #include "ScriptedGossip.h"
+#include "QuestPackets.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 {
@@ -202,15 +203,12 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
     }
 }
 
-void WorldSession::HandleQuestQueryOpcode( WorldPacket & recvData )
+void WorldSession::HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuestInfo& query)
 {
-    uint32 quest;
-    recvData >> quest;
+    //TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUEST_QUERY quest = %u", query.QuestID);
 
-    //TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUEST_QUERY quest = %u", questId);
-
-    if(Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest))
-        _player->PlayerTalkClass->SendQuestQueryResponse( pQuest );
+    if (Quest const* quest = sObjectMgr->GetQuestTemplate(query.QuestID))
+        _player->PlayerTalkClass->SendQuestQueryResponse(quest);
 }
 
 void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )

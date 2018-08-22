@@ -5,6 +5,7 @@
 #include "Opcodes.h"
 #include "UpdateMask.h"
 #include "NPCHandler.h"
+#include "QueryPackets.h"
 #include "CharacterCache.h"
 
 void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
@@ -71,154 +72,56 @@ void WorldSession::SendQueryTimeResponse()
 }
 
 /// Only _static_ data send in this packet !!!
-void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
+void WorldSession::HandleCreatureQueryOpcode(WorldPackets::Query::QueryCreature& query)
 {
-    uint32 entry;
-    recvData >> entry;
-#ifdef LICH_KING
-    ObjectGuid guid;
-    if(GetClientBuild() == BUILD_335)
-        recvData >> guid;
-#endif
-
-    CreatureTemplate const *ci = sObjectMgr->GetCreatureTemplate(entry);
-    if (ci)
+    if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(query.CreatureID))
     {
-        std::string Name, SubName;
-        Name = ci->Name;
-        SubName = ci->SubName;
-
-        LocaleConstant loc_idx = GetSessionDbcLocale();
-        if (loc_idx >= 0)
-        {
-            CreatureLocale const *cl = sObjectMgr->GetCreatureLocale(entry);
-            if (cl)
-            {
-                ObjectMgr::GetLocaleString(cl->Name, loc_idx, Name);
-                ObjectMgr::GetLocaleString(cl->SubName, loc_idx, SubName);
-            }
-        }
-//        TC_LOG_DEBUG("network","WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", ci->Name.c_str(), entry);
-        // guess size
-        WorldPacket data( SMSG_CREATURE_QUERY_RESPONSE, 100 );
-        data << (uint32)entry;                              // creature entry
-        data << Name;
-        data << uint8(0) << uint8(0) << uint8(0);           // name2, name3, name4, always empty
-        data << SubName;
-        data << ci->IconName;                               // "Directions" for guard, string for Icons 2.3.0
-        data << (uint32)ci->type_flags;                     // flags          wdbFeild7=wad flags1
-        data << (uint32)ci->type;
-        data << (uint32)ci->family;                         // family         wdbFeild9
-        data << (uint32)ci->rank;                           // rank           wdbFeild10
-#ifdef LICH_KING
-        data << uint32(ci->KillCredit[0]);                  // new in 3.1, kill credit
-        data << uint32(ci->KillCredit[1]);                  // new in 3.1, kill credit
-#else
-        data << (uint32)0;                                  // unknown        wdbFeild11
-        data << (uint32)ci->PetSpellDataId;                 // Id from CreatureSpellData.dbc    wdbField12
-#endif
-        data << (uint32)ci->Modelid1;                       // Modelid1
-        data << (uint32)ci->Modelid2;                       // Modelid2
-        data << (uint32)ci->Modelid3;                       // Modelid3
-        data << (uint32)ci->Modelid4;                       // Modelid4
-        data << float(ci->ModHealth);                       // dmg/hp modifier
-        data << float(ci->ModMana);                         // dmg/mana modifier
-        data << (uint8)ci->RacialLeader;
-
-#ifdef LICH_KING
-        CreatureQuestItemList const* items = sObjectMgr->GetCreatureQuestItemList(entry);
-        if (items)
-            for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
-                data << (i < items->size() ? uint32((*items)[i]) : uint32(0));
+        TC_LOG_DEBUG("network", "WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", ci->Name.c_str(), query.CreatureID);
+        if (sWorld->getBoolConfig(CONFIG_CACHE_DATA_QUERIES))
+            SendPacket(&ci->QueryData[static_cast<uint32>(GetSessionDbLocaleIndex())]);
         else
-            for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
-                data << uint32(0);
-
-        data << uint32(ci->movementId);                     // CreatureMovementInfo.dbc
-#endif
-
-        SendPacket( &data );
+        {
+            WorldPacket response = ci->BuildQueryData(GetSessionDbLocaleIndex());
+            SendPacket(&response);
+        }
+        TC_LOG_DEBUG("network", "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
     }
     else
     {
-        ObjectGuid guid;
-        recvData >> guid;
+        TC_LOG_DEBUG("network", "WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (ENTRY: %u)",
+            query.CreatureID);
 
-        TC_LOG_ERROR("network","WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (GUID: %u, ENTRY: %u)",
-            guid.GetCounter(), entry);
-        WorldPacket data( SMSG_CREATURE_QUERY_RESPONSE, 4 );
-        data << uint32(entry | 0x80000000);
-        SendPacket( &data );
+        WorldPackets::Query::QueryCreatureResponse response;
+        response.CreatureID = query.CreatureID;
+        SendPacket(response.Write());
+        TC_LOG_DEBUG("network", "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
     }
-    TC_LOG_TRACE("network", "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
 }
 
 /// Only _static_ data send in this packet !!!
-void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
+void WorldSession::HandleGameObjectQueryOpcode(WorldPackets::Query::QueryGameObject& query)
 {
-    uint32 entryID;
-    recvData >> entryID;
-#ifdef LICH_KING
-    ObjectGuid guid;
-    if(GetClientBuild() == BUILD_335)
-        recvData >> guid;
-#endif
-
-    const GameObjectTemplate *info = sObjectMgr->GetGameObjectTemplate(entryID);
-    if(info)
+    if (GameObjectTemplate const* info = sObjectMgr->GetGameObjectTemplate(query.GameObjectID))
     {
-        std::string Name;
-        std::string IconName;
-        std::string CastBarCaption;
-
-        Name = info->name;
-        IconName = info->IconName;
-        CastBarCaption = info->castBarCaption;
-
-        LocaleConstant loc_idx = GetSessionDbcLocale();
-        if (loc_idx >= 0)
+        if (sWorld->getBoolConfig(CONFIG_CACHE_DATA_QUERIES))
+            SendPacket(&info->QueryData[static_cast<uint32>(GetSessionDbLocaleIndex())]);
+        else
         {
-            GameObjectLocale const *gl = sObjectMgr->GetGameObjectLocale(entryID);
-            if (gl)
-            {
-                if (gl->Name.size() > loc_idx && !gl->Name[loc_idx].empty())
-                    Name = gl->Name[loc_idx];
-                if (gl->CastBarCaption.size() > loc_idx && !gl->CastBarCaption[loc_idx].empty())
-                    CastBarCaption = gl->CastBarCaption[loc_idx];
-            }
+            WorldPacket response = info->BuildQueryData(GetSessionDbLocaleIndex());
+            SendPacket(&response);
         }
-       // TC_LOG_DEBUG("network.opcode","WORLD: CMSG_GAMEOBJECT_QUERY '%s' - Entry: %u. ", info->name.c_str(), entryID);
-        WorldPacket data ( SMSG_GAMEOBJECT_QUERY_RESPONSE, 150 );
-        data << uint32(entryID);
-        data << uint32(info->type);
-        data << uint32(info->displayId);
-        data << Name;
-        data << uint8(0) << uint8(0) << uint8(0);           // name2, name3, name4
-        data << IconName;                                   // 2.0.3, string
-        data << CastBarCaption;                             // 2.0.3, string. Text will appear in Cast Bar when using GO (ex: "Collecting")
-        data << uint8(0);                                   // 2.0.3, probably string
-        data.append(info->raw.data, MAX_GAMEOBJECT_DATA);
-
-#ifdef LICH_KING
-        for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
-            data << uint32(info->questItems[i]);              // itemId[6], quest drop
-#endif
-
-        SendPacket( &data );
+        TC_LOG_DEBUG("network", "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
     }
     else
     {
+        TC_LOG_DEBUG("network", "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (ENTRY: %u)",
+            query.GameObjectID);
 
-        ObjectGuid guid;
-        recvData >> guid;
-
-        TC_LOG_ERROR("FIXME",  "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (GUID: %u, ENTRY: %u)",
-            guid.GetCounter(), entryID );
-        WorldPacket data ( SMSG_GAMEOBJECT_QUERY_RESPONSE, 4 );
-        data << uint32(entryID | 0x80000000);
-        SendPacket( &data );
+        WorldPackets::Query::QueryGameObjectResponse response;
+        response.GameObjectID = query.GameObjectID;
+        SendPacket(response.Write());
+        TC_LOG_DEBUG("network", "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
     }
-        //TC_LOG_DEBUG("network", "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
 }
 
 void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recvData*/)

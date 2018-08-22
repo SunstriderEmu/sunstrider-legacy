@@ -377,6 +377,8 @@ enum WorldConfigs
 
     CONFIG_DB_PING_INTERVAL,
 
+    CONFIG_CACHE_DATA_QUERIES,
+
     CONFIG_VALUE_COUNT,
 };
 

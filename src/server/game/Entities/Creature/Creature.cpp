@@ -8,6 +8,7 @@
 #include "SpellMgr.h"
 #include "Creature.h"
 #include "QuestDef.h"
+#include "QueryPackets.h"
 #include "GossipDef.h"
 #include "Player.h"
 #include "Opcodes.h"
@@ -145,6 +146,61 @@ uint32 CreatureTemplate::GetFirstInvisibleModel() const
     */
 
     return 11686;
+}
+
+void CreatureTemplate::InitializeQueryData()
+{
+    for (uint8 loc = LOCALE_enUS; loc < TOTAL_LOCALES; ++loc)
+        QueryData[loc] = BuildQueryData(static_cast<LocaleConstant>(loc));
+}
+
+WorldPacket CreatureTemplate::BuildQueryData(LocaleConstant loc) const
+{
+    WorldPackets::Query::QueryCreatureResponse queryTemp;
+
+    std::string locName = Name, locTitle = Title;
+    if (CreatureLocale const* cl = sObjectMgr->GetCreatureLocale(Entry))
+    {
+        ObjectMgr::GetLocaleString(cl->Name, loc, locName);
+        ObjectMgr::GetLocaleString(cl->Title, loc, locTitle);
+    }
+
+    queryTemp.CreatureID = Entry;
+    queryTemp.Allow = true;
+
+    queryTemp.Stats.Name = locName;
+    queryTemp.Stats.NameAlt = locTitle;
+    queryTemp.Stats.CursorName = IconName;
+    queryTemp.Stats.Flags = type_flags;
+    queryTemp.Stats.CreatureType = type;
+    queryTemp.Stats.CreatureFamily = family;
+    queryTemp.Stats.Classification = rank;
+#ifdef LICH_KING
+    memcpy(queryTemp.Stats.ProxyCreatureID, KillCredit, sizeof(uint32) * MAX_KILL_CREDIT);
+#else
+    queryTemp.Stats.PetSpellDataId = PetSpellDataId;
+#endif
+    queryTemp.Stats.CreatureDisplayID[0] = Modelid1;
+    queryTemp.Stats.CreatureDisplayID[1] = Modelid2;
+    queryTemp.Stats.CreatureDisplayID[2] = Modelid3;
+    queryTemp.Stats.CreatureDisplayID[3] = Modelid4;
+    queryTemp.Stats.HpMulti = ModHealth;
+    queryTemp.Stats.EnergyMulti = ModMana;
+    queryTemp.Stats.Leader = RacialLeader;
+
+#ifdef LICH_KING
+    for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
+        queryTemp.Stats.QuestItems[i] = 0;
+
+    if (std::vector<uint32> const* items = sObjectMgr->GetCreatureQuestItemList(Entry))
+        for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
+            if (i < items->size())
+                queryTemp.Stats.QuestItems[i] = (*items)[i];
+
+    queryTemp.Stats.CreatureMovementInfoID = movementId;
+#endif
+    queryTemp.Write();
+    return queryTemp.Move();
 }
 
 CreatureBaseStats const* CreatureBaseStats::GetBaseStats(uint8 level, uint8 unitClass)

@@ -2,7 +2,7 @@
 #include "playerbot.h"
 #include "PlayerbotFactory.h"
 #include "GuildMgr.h"
-#include "../ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "PlayerbotAIConfig.h"
 //#include "DBCStore.h"
 #include "SharedDefines.h"
@@ -1115,18 +1115,18 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
     uint32 freePoints = bot->GetFreeTalentPoints();
     for (map<uint32, vector<TalentEntry const*> >::iterator i = spells.begin(); i != spells.end(); ++i)
     {
-        vector<TalentEntry const*> &spells = i->second;
-        if (spells.empty())
+        vector<TalentEntry const*>& _spells = i->second;
+        if (_spells.empty())
         {
             sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "%s: No spells for talent row %d", bot->GetName().c_str(), i->first);
             continue;
         }
 
         int attemptCount = 0;
-        while (!spells.empty() && (int)freePoints - (int)bot->GetFreeTalentPoints() < 5 && attemptCount++ < 3 && bot->GetFreeTalentPoints())
+        while (!_spells.empty() && (int)freePoints - (int)bot->GetFreeTalentPoints() < 5 && attemptCount++ < 3 && bot->GetFreeTalentPoints())
         {
-            int index = urand(0, spells.size() - 1);
-            TalentEntry const *talentInfo = spells[index];
+            int index = urand(0, _spells.size() - 1);
+            TalentEntry const *talentInfo = _spells[index];
             int maxRank = 0;
             for (int rank = 0; rank < min((uint32)MAX_TALENT_RANK, bot->GetFreeTalentPoints()); ++rank)
             {
@@ -1138,13 +1138,13 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
             }
 
             bot->LearnTalent(talentInfo->TalentID, maxRank);
-            spells.erase(spells.begin() + index);
+            _spells.erase(_spells.begin() + index);
         }
 
         freePoints = bot->GetFreeTalentPoints();
     }
 
-    /* LK
+#ifdef LICH_KING
     for (uint32 i = 0; i < MAX_TALENT_SPECS; ++i)
     {
         for (PlayerTalentMap::iterator itr = bot->GetTalentMap(i).begin(); itr != bot->GetTalentMap(i).end(); ++itr)
@@ -1152,7 +1152,8 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
             if (itr->second->state != PLAYERSPELL_REMOVED)
                 itr->second->state = PLAYERSPELL_CHANGED;
         }
-    }*/
+    }
+#endif
 }
 
 ObjectGuid PlayerbotFactory::GetRandomBot()

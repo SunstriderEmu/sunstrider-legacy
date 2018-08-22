@@ -51,6 +51,23 @@ struct LfgUpdateData;
 }
 #endif
 
+namespace WorldPackets
+{
+    namespace Query
+    {
+        class QueryCreature;
+        class QueryGameObject;
+        class QueryItemSingle;
+#ifdef LICH_KING
+        class QuestPOIQuery;
+#endif
+    }
+    namespace Quest
+    {
+        class QueryQuestInfo;
+    }
+}
+
 enum AccountDataType
 {
     GLOBAL_CONFIG_CACHE             = 0,                    // 0x01 g
@@ -542,9 +559,9 @@ class TC_GAME_API WorldSession
 
         void HandleQueryTimeOpcode(WorldPacket& recvPacket);
 
-        void HandleCreatureQueryOpcode(WorldPacket& recvPacket);
+        void HandleCreatureQueryOpcode(WorldPackets::Query::QueryCreature& query);
 
-        void HandleGameObjectQueryOpcode(WorldPacket& recvPacket);
+        void HandleGameObjectQueryOpcode(WorldPackets::Query::QueryGameObject& query);
 
         void HandleMoveWorldportAckOpcode(WorldPacket& recvPacket);
         void HandleMoveWorldportAck();                // for server-side calls
@@ -685,7 +702,7 @@ class TC_GAME_API WorldSession
         void HandleDestroyItemOpcode(WorldPacket& recvPacket);
         void _HandleAutoEquipItemOpcode(uint8 srcBag, uint8 srcSlot);
         void HandleAutoEquipItemOpcode(WorldPacket& recvPacket);
-        void HandleItemQuerySingleOpcode(WorldPacket& recvPacket);
+        void HandleItemQuerySingleOpcode(WorldPackets::Query::QueryItemSingle& query);
         void HandleSellItemOpcode(WorldPacket& recvPacket);
         void HandleBuyItemInSlotOpcode(WorldPacket& recvPacket);
         void HandleBuyItemOpcode(WorldPacket& recvPacket);
@@ -724,7 +741,7 @@ class TC_GAME_API WorldSession
         void HandleQuestgiverQueryQuestOpcode(WorldPacket& recvPacket);
         void HandleQuestgiverChooseRewardOpcode(WorldPacket& recvPacket);
         void HandleQuestgiverRequestRewardOpcode(WorldPacket& recvPacket);
-        void HandleQuestQueryOpcode(WorldPacket& recvPacket);
+        void HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuestInfo& query);
         void HandleQuestgiverCancel(WorldPacket& recvData );
         void HandleQuestLogSwapQuest(WorldPacket& recvData );
         void HandleQuestLogRemoveQuest(WorldPacket& recvData);

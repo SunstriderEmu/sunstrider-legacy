@@ -21,6 +21,8 @@
 #include "QuestDef.h"
 #include "Player.h"
 #include "World.h"
+#include "QuestPackets.h"
+#include "ObjectMgr.h"
 
 Quest::Quest(Field * questRecord)
 {
@@ -55,7 +57,7 @@ Quest::Quest(Field * questRecord)
     Title = questRecord[i++].GetString();
     Details = questRecord[i++].GetString();
     Objectives = questRecord[i++].GetString();
-    EndText = questRecord[i++].GetString();
+    AreaDescription = questRecord[i++].GetString();
 
     for (int j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
         ObjectiveText[j] = questRecord[i++].GetString();
@@ -240,7 +242,7 @@ uint32 Quest::XPValue( Player *pPlayer ) const
     return 0;
 }
 
-int32  Quest::GetRewOrReqMoney() const
+int32 Quest::GetRewOrReqMoney() const
 {
     if(RewardOrReqMoney <=0)
         return RewardOrReqMoney;
@@ -255,4 +257,146 @@ bool Quest::IsAutoComplete() const
         || HasFlag(QUEST_FLAGS_AUTOCOMPLETE)
 #endif
         ;
+}
+
+void Quest::InitializeQueryData()
+{
+    for (uint8 loc = LOCALE_enUS; loc < TOTAL_LOCALES; ++loc)
+        QueryData[loc] = BuildQueryData(static_cast<LocaleConstant>(loc));
+}
+
+WorldPacket Quest::BuildQueryData(LocaleConstant loc) const
+{
+    WorldPackets::Quest::QueryQuestInfoResponse response;
+
+    std::string locQuestTitle = GetTitle();
+    std::string locQuestDetails = GetDetails();
+    std::string locQuestObjectives = GetObjectives();
+    std::string locQuestAreaDescription = GetAreaDescription();
+#ifdef LICH_KING
+    std::string locQuestCompletedText = GetCompletedText();
+#endif
+
+    std::string locQuestObjectiveText[QUEST_OBJECTIVES_COUNT];
+    for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        locQuestObjectiveText[i] = ObjectiveText[i];
+
+    if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(GetQuestId()))
+    {
+        ObjectMgr::GetLocaleString(localeData->Title, loc, locQuestTitle);
+        ObjectMgr::GetLocaleString(localeData->Details, loc, locQuestDetails);
+        ObjectMgr::GetLocaleString(localeData->Objectives, loc, locQuestObjectives);
+        ObjectMgr::GetLocaleString(localeData->AreaDescription, loc, locQuestAreaDescription);
+#ifdef LICH_KING
+        ObjectMgr::GetLocaleString(localeData->CompletedText, loc, locQuestCompletedText);
+#endif
+
+        for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+            ObjectMgr::GetLocaleString(localeData->ObjectiveText[i], loc, locQuestObjectiveText[i]);
+    }
+
+    response.Info.QuestID = GetQuestId();
+    response.Info.QuestMethod = GetQuestMethod();
+    response.Info.QuestLevel = GetQuestLevel();
+#ifdef LICH_KING
+    response.Info.QuestMinLevel = GetMinLevel();
+#endif
+    response.Info.QuestSortID = GetZoneOrSort();
+
+    response.Info.QuestType = GetType();
+    response.Info.SuggestedGroupNum = GetSuggestedPlayers();
+
+    response.Info.RequiredFactionId[0] = GetRepObjectiveFaction();
+    response.Info.RequiredFactionValue[0] = GetRepObjectiveValue();
+
+#ifdef LICH_KING
+    response.Info.RequiredFactionId[1] = GetRepObjectiveFaction2();
+    response.Info.RequiredFactionValue[1] = GetRepObjectiveValue2();
+#else
+    response.Info.RequiredFactionId[1] = 0;  //always 0 on BC
+    response.Info.RequiredFactionValue[1] = 0;  //always 0 on BC
+#endif
+
+    response.Info.RewardNextQuest = GetNextQuestInChain();
+#ifdef LICH_KING
+    response.Info.RewardXPDifficulty = GetXPId();
+#endif
+
+    response.Info.RewardMoney = GetRewOrReqMoney();
+    response.Info.RewardBonusMoney = GetRewMoneyMaxLevel();
+    response.Info.RewardDisplaySpell = GetRewSpell();
+    response.Info.RewardSpell = GetRewSpellCast();
+
+#ifdef LICH_KING
+    response.Info.RewardHonor = GetRewHonorAddition();
+    response.Info.RewardKillHonor = GetRewHonorMultiplier();
+#else
+    response.Info.RewardHonorForPlayer = GetRewHonorableKills();
+#endif
+
+    response.Info.StartItem = GetSrcItemId();
+    response.Info.Flags = GetFlags();
+    response.Info.RewardTitleId = GetCharTitleId();
+#ifdef LICH_KING
+    response.Info.RequiredPlayerKills = GetPlayersSlain();
+    response.Info.RewardTalents = GetBonusTalents();
+    response.Info.RewardArenaPoints = GetRewArenaPoints();
+#endif
+
+    for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+    {
+        response.Info.RewardItems[i] = RewardItemId[i];
+        response.Info.RewardAmount[i] = RewardItemIdCount[i];
+    }
+
+    for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+    {
+        response.Info.UnfilteredChoiceItems[i].ItemID = RewardChoiceItemId[i];
+        response.Info.UnfilteredChoiceItems[i].Quantity = RewardChoiceItemCount[i];
+    }
+
+#ifdef LICH_KING
+    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)             // reward factions ids
+        response.Info.RewardFactionID[i] = RewardFactionId[i];
+
+    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)             // columnid+1 QuestFactionReward.dbc?
+        response.Info.RewardFactionValue[i] = RewardFactionValueId[i];
+
+    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)             // unk (0)
+        response.Info.RewardFactionValueOverride[i] = RewardFactionValueIdOverride[i];
+#endif
+
+    response.Info.POIContinent = GetPOIContinent();
+    response.Info.POIx = GetPOIx();
+    response.Info.POIy = GetPOIy();
+    response.Info.POIPriority = GetPointOpt();
+
+    response.Info.Title = locQuestTitle;
+    response.Info.Objectives = locQuestObjectives;
+    response.Info.Details = locQuestDetails;
+    response.Info.AreaDescription = locQuestAreaDescription;
+#ifdef LICH_KING
+    response.Info.CompletedText = locQuestCompletedText;
+#endif
+
+    for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    {
+        response.Info.RequiredNpcOrGo[i] = RequiredNpcOrGo[i];
+        response.Info.RequiredNpcOrGoCount[i] = RequiredNpcOrGoCount[i];
+#ifdef LICH_KING
+        response.Info.ItemDrop[i] = ItemDrop[i];
+#endif
+    }
+
+    for (uint8 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
+    {
+        response.Info.RequiredItemId[i] = RequiredItemId[i];
+        response.Info.RequiredItemCount[i] = RequiredItemCount[i];
+    }
+
+    for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        response.Info.ObjectiveText[i] = locQuestObjectiveText[i];
+
+    response.Write();
+    return response.Move();
 }

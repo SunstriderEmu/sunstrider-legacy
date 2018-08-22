@@ -4,11 +4,12 @@
 
 #include "Common.h"
 #include "Unit.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "LootMgr.h"
 #include "CreatureGroups.h"
 #include "Duration.h"
 #include "Loot.h"
+#include "WorldPacket.h"
 
 #include <list>
 #include <string>
@@ -210,7 +211,7 @@ struct CreatureTemplate
     uint32  Modelid3;
     uint32  Modelid4;
     std::string Name;
-    std::string SubName;
+    std::string Title;
     std::string IconName;
     uint32  GossipMenuId;
     uint32  minlevel;
@@ -260,6 +261,7 @@ struct CreatureTemplate
     uint32  flags_extra;
     uint32  ScriptID;
     uint32  QuestPoolId;
+    WorldPacket QueryData[TOTAL_LOCALES];
     uint32 GetRandomValidModelId() const;
     uint32 GetFirstValidModelId() const;
     uint32  GetFirstInvisibleModel() const;
@@ -292,6 +294,9 @@ struct CreatureTemplate
         // if can tame exotic then can tame any tameable
         return canTameExotic || !IsExotic();
     }
+
+    void InitializeQueryData();
+    WorldPacket BuildQueryData(LocaleConstant loc) const;
 };
 
 typedef std::unordered_map<uint32, CreatureTemplate> CreatureTemplateContainer;
@@ -340,7 +345,7 @@ typedef std::unordered_map<uint16, CreatureBaseStats> CreatureBaseStatsContainer
 struct CreatureLocale
 {
     std::vector<std::string> Name;
-    std::vector<std::string> SubName;
+    std::vector<std::string> Title;
 };
 
 struct GossipMenuItemsLocale
@@ -544,7 +549,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool HasMainWeapon() const override;
 
         uint32 GetSpawnId() const { return m_spawnId; }
-        std::string const& GetSubName() const { return GetCreatureTemplate()->SubName; }
+        std::string const& GetTitle() const { return GetCreatureTemplate()->Title; }
 
         void Update( uint32 time ) override;
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr, float* dist =nullptr) const;

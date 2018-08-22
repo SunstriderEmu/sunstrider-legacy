@@ -2,7 +2,7 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "Unit.h"
 #include "Item.h"
 

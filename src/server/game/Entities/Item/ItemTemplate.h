@@ -2,6 +2,7 @@
 #define _ITEMPROTOTYPE_H
 
 #include "Common.h"
+#include "WorldPacket.h"
 
 enum ItemModType
 {
@@ -298,7 +299,11 @@ enum ItemSubclassArmor
     ITEM_SUBCLASS_ARMOR_TOTEM                   = 9
 };
 
-#define MAX_ITEM_SUBCLASS_ARMOR                   10
+#ifdef LICH_KING
+const uint32 MAX_ITEM_SUBCLASS_ARMOR = 11;
+#else
+const uint32 MAX_ITEM_SUBCLASS_ARMOR = 10;
+#endif
 
 enum ItemSubclassReagent
 {
@@ -593,27 +598,12 @@ struct ItemTemplate
     uint32 MinMoneyLoot;
     uint32 MaxMoneyLoot;
     int32 Duration;                                         // negative = realtime, positive = ingame time
+    WorldPacket QueryData[TOTAL_LOCALES];
 
     // helpers
-    bool CanChangeEquipStateInCombat() const
-    {
-        switch(InventoryType)
-        {
-            case INVTYPE_RELIC:
-            case INVTYPE_SHIELD:
-            case INVTYPE_HOLDABLE:
-                return true;
-        }
+    bool CanChangeEquipStateInCombat() const;
 
-        switch(Class)
-        {
-            case ITEM_CLASS_WEAPON:
-            case ITEM_CLASS_PROJECTILE:
-                return true;
-        }
-
-        return false;
-    }
+    uint32 GetSkill() const;
 
     bool IsCurrencyToken() const { return (BagFamily & BAG_FAMILY_MASK_CURRENCY_TOKENS) != 0; }
     bool IsPotion() const { return Class == ITEM_CLASS_CONSUMABLE && SubClass == ITEM_SUBCLASS_POTION; }
@@ -627,6 +617,9 @@ struct ItemTemplate
     {
         return (Stackable == 2147483647 || Stackable <= 0) ? uint32(0x7FFFFFFF-1) : uint32(Stackable);
     }
+
+    void InitializeQueryData();
+    WorldPacket BuildQueryData(LocaleConstant loc) const;
 };
 
 typedef std::unordered_map<uint32, ItemTemplate> ItemTemplateContainer;

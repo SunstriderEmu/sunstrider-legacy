@@ -773,6 +773,17 @@ Guild.BankEventLogRecordsCount = 25
 
 Guild.EventLogRecordsCount = 100
 
+#
+#   CacheDataQueries
+#        Description: Server caches data queries at startup. 
+#                     Can be disabled if not enough memory is available.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+#
+#
+
+CacheDataQueries = 1
+
 ###################################################################################################################
 # PLAYER INTERACTION
 #

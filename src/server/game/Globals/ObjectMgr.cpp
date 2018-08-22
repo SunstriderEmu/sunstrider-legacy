@@ -33,6 +33,7 @@
 #include "Formulas.h"
 #include "SpawnData.h"
 #include "GameTime.h"
+#include "QueryPackets.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -164,7 +165,7 @@ void ObjectMgr::LoadCreatureLocales()
         {
             LocaleConstant locale = (LocaleConstant) i;
             AddLocaleString(fields[1 + 2 * (i - 1)].GetString(), locale, data.Name);
-            AddLocaleString(fields[1 + 2 * (i - 1) + 1].GetString(), locale, data.SubName);
+            AddLocaleString(fields[1 + 2 * (i - 1) + 1].GetString(), locale, data.Title);
         }
     } while (result->NextRow());
 
@@ -273,7 +274,7 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.Modelid3         = fields[f++].GetUInt32();
     creatureTemplate.Modelid4         = fields[f++].GetUInt32();
     creatureTemplate.Name             = fields[f++].GetString();
-    creatureTemplate.SubName          = fields[f++].GetString();
+    creatureTemplate.Title            = fields[f++].GetString();
     creatureTemplate.IconName         = fields[f++].GetString();
     creatureTemplate.GossipMenuId     = fields[f++].GetUInt32();
     creatureTemplate.minlevel         = fields[f++].GetUInt8();
@@ -3884,7 +3885,7 @@ void ObjectMgr::LoadQuestLocales()
             AddLocaleString(fields[1 + 10 * (i - 1) + 2].GetString(), locale, data.Objectives);
             AddLocaleString(fields[1 + 10 * (i - 1) + 3].GetString(), locale, data._offerRewardText);
             AddLocaleString(fields[1 + 10 * (i - 1) + 4].GetString(), locale, data._requestItemsText);
-            AddLocaleString(fields[1 + 10 * (i - 1) + 5].GetString(), locale, data.EndText);
+            AddLocaleString(fields[1 + 10 * (i - 1) + 5].GetString(), locale, data.AreaDescription);
 
             for (uint8 k = 0; k < 4; ++k)
                 AddLocaleString(fields[1 + 10 * (i - 1) + 6 + k].GetString(), locale, data.ObjectiveText[k]);
@@ -4673,7 +4674,6 @@ void ObjectMgr::LoadGossipText()
 {
     uint32 oldMSTime = GetMSTime();
 
-    GossipText *pGText;
     QueryResult result = WorldDatabase.Query("SELECT ID, "
         "text0_0, text0_1, BroadcastTextID0, lang0, prob0, em0_0, em0_1, em0_2, em0_3, em0_4, em0_5, "
         "text1_0, text1_1, BroadcastTextID1, lang1, prob1, em1_0, em1_1, em1_2, em1_3, em1_4, em1_5, "
@@ -8865,4 +8865,38 @@ std::string ScriptInfo::GetScriptCommandName(ScriptCommands command)
         }
     }
     return res;
+}
+
+void ObjectMgr::InitializeQueriesData(QueryDataGroup mask)
+{
+    // cache disabled
+    if (!sWorld->getBoolConfig(CONFIG_CACHE_DATA_QUERIES))
+        return;
+
+    // Initialize Query data for creatures
+    if (mask & QUERY_DATA_CREATURES)
+        for (auto& creatureTemplatePair : _creatureTemplateStore)
+            creatureTemplatePair.second.InitializeQueryData();
+
+    // Initialize Query Data for gameobjects
+    if (mask & QUERY_DATA_GAMEOBJECTS)
+        for (auto& gameObjectTemplatePair : _gameObjectTemplateStore)
+            gameObjectTemplatePair.second.InitializeQueryData();
+
+    // Initialize Query Data for items
+    if (mask & QUERY_DATA_ITEMS)
+        for (auto& itemTemplatePair : _itemTemplateStore)
+            itemTemplatePair.second.InitializeQueryData();
+
+    // Initialize Query Data for quests
+    if (mask & QUERY_DATA_QUESTS)
+        for (auto& questTemplatePair : _questTemplates)
+            questTemplatePair.second.InitializeQueryData();
+
+#ifdef LICH_KING
+    // Initialize Quest POI data
+    if (mask & QUERY_DATA_POIS)
+        for (auto& poiWrapperPair : _questPOIStore)
+            poiWrapperPair.second.InitializeQueryData();
+#endif
 }

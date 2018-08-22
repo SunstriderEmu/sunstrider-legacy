@@ -5,7 +5,7 @@
 #include "Creature.h"
 #include "GameObject.h"
 #include "QuestDef.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "NPCHandler.h"
 #include "Map.h"
 #include "ObjectAccessor.h"
@@ -583,6 +583,19 @@ struct LanguageDesc
 extern LanguageDesc lang_description[LANGUAGES_COUNT];
 LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
+enum QueryDataGroup
+{
+    QUERY_DATA_CREATURES        = 0x01,
+    QUERY_DATA_GAMEOBJECTS      = 0x02,
+    QUERY_DATA_ITEMS            = 0x04,
+    QUERY_DATA_QUESTS           = 0x08,
+#ifdef LICH_KING
+    QUERY_DATA_POIS             = 0x10,
+#endif
+
+    QUERY_DATA_ALL              = 0xFF
+};
+
 class PlayerDumpReader;
 
 class TC_GAME_API ObjectMgr
@@ -823,6 +836,8 @@ class TC_GAME_API ObjectMgr
         void LoadCreatureGossip();
         void LoadVendors();
         void LoadTrainerSpell();
+
+        void InitializeQueriesData(QueryDataGroup mask);
 
         void LoadGMTickets();
 

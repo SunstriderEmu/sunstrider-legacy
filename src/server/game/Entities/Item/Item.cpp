@@ -11,6 +11,7 @@
 #include "ScriptMgr.h"
 #include "LootItemStorage.h"
 #include "TradeData.h"
+#include "QueryPackets.h"
 
 void AddItemsSetItem(Player*player,Item *item)
 {
@@ -517,43 +518,6 @@ Player* Item::GetOwner()const
     return ObjectAccessor::FindPlayer(GetOwnerGUID());
 }
 
-uint32 Item::GetSkill()
-{
-    const static uint32 item_weapon_skills[MAX_ITEM_SUBCLASS_WEAPON] =
-    {
-        SKILL_AXES,     SKILL_2H_AXES,  SKILL_BOWS,          SKILL_GUNS,         SKILL_MACES,
-        SKILL_2H_MACES, SKILL_POLEARMS, SKILL_SWORDS,        SKILL_2H_SWORDS,    0,
-        SKILL_STAVES,   0,              0,                   SKILL_FIST_WEAPONS, 0,
-        SKILL_DAGGERS,  SKILL_THROWN,   SKILL_ASSASSINATION, SKILL_CROSSBOWS,    SKILL_WANDS,
-        SKILL_FISHING
-    };
-
-    const static uint32 item_armor_skills[MAX_ITEM_SUBCLASS_ARMOR] =
-    {
-        0,SKILL_CLOTH,SKILL_LEATHER,SKILL_MAIL,SKILL_PLATE_MAIL,0,SKILL_SHIELD,0,0,0
-    };
-
-    ItemTemplate const* proto = GetTemplate();
-
-    switch (proto->Class)
-    {
-        case ITEM_CLASS_WEAPON:
-            if( proto->SubClass >= MAX_ITEM_SUBCLASS_WEAPON )
-                return 0;
-            else
-                return item_weapon_skills[proto->SubClass];
-
-        case ITEM_CLASS_ARMOR:
-            if( proto->SubClass >= MAX_ITEM_SUBCLASS_ARMOR )
-                return 0;
-            else
-                return item_armor_skills[proto->SubClass];
-
-        default:
-            return 0;
-    }
-}
-
 uint32 Item::GetSpell()
 {
     ItemTemplate const* proto = GetTemplate();
@@ -1035,6 +999,13 @@ ObjectGuid Item::GetOwnerGUID() const
 void Item::SetOwnerGUID(ObjectGuid const& guid) 
 { 
     SetGuidValue(ITEM_FIELD_OWNER, guid); 
+}
+
+// Just a "legacy shortcut" for proto->GetSkill()
+uint32 Item::GetSkill()
+{
+    ItemTemplate const* proto = GetTemplate();
+    return proto->GetSkill();
 }
 
 void Item::SetBinding(bool val) 

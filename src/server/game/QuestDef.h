@@ -4,6 +4,7 @@
 #include "Define.h"
 #include "Database/DatabaseEnv.h"
 #include "SharedDefines.h"
+#include "WorldPacket.h"
 
 #include <string>
 #include <vector>
@@ -159,7 +160,7 @@ struct QuestLocale
     std::vector<std::string> Objectives;
     std::vector<std::string> _offerRewardText;
     std::vector<std::string> _requestItemsText;
-    std::vector<std::string> EndText;
+    std::vector<std::string> AreaDescription;
     std::vector< std::vector<std::string> > ObjectiveText;
 };
 
@@ -212,7 +213,7 @@ class Quest
         std::string GetObjectives() const { return Objectives; }
         std::string GetOfferRewardText() const { return _offerRewardText; }
         std::string GetRequestItemsText() const { return _requestItemsText; }
-        std::string GetEndText() const { return EndText; }
+        inline std::string GetAreaDescription() const { return AreaDescription; } //compat
         int32  GetRewOrReqMoney() const;
         uint32 GetRewHonorableKills() const { return RewardHonorableKills; }
         uint32 GetRewMoneyMaxLevel() const { return RewardMoneyMaxLevel; }
@@ -222,9 +223,9 @@ class Quest
         uint32 GetRewMailTemplateId() const { return RewardMailTemplateId; }
         uint32 GetRewMailDelaySecs() const { return RewardMailDelaySecs; }
         uint32 GetRewMailSenderEntry() const { return RewardMailSenderEntry; }
-        uint32 GetPointMapId() const { return PointMapId; }
-        float  GetPointX() const { return PointX; }
-        float  GetPointY() const { return PointY; }
+        uint32 GetPOIContinent() const { return PointMapId; }
+        float  GetPOIx() const { return PointX; }
+        float  GetPOIy() const { return PointY; }
         uint32 GetPointOpt() const { return PointOpt; }
         uint32 GetIncompleteEmote() const { return _emoteOnIncomplete; }
         uint32 GetCompleteEmote() const { return _emoteOnComplete; }
@@ -285,6 +286,10 @@ class Quest
         typedef std::vector<uint32> PrevChainQuests;
         PrevChainQuests prevChainQuests;
 
+        void InitializeQueryData();
+        WorldPacket BuildQueryData(LocaleConstant loc) const;
+
+        WorldPacket QueryData[TOTAL_LOCALES];
         // cached data
     private:
         uint32 m_reqitemscount;
@@ -326,7 +331,7 @@ class Quest
         std::string Objectives;
         std::string _offerRewardText;
         std::string _requestItemsText;
-        std::string EndText;
+        std::string AreaDescription;
         uint32 RewardHonorableKills;
         int32  RewardOrReqMoney;
         uint32 RewardMoneyMaxLevel;

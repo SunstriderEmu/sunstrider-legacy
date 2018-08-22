@@ -32,9 +32,56 @@
 #include "GossipDef.h"
 #include "PoolMgr.h"
 #include "SpawnData.h"
+#include "QueryPackets.h"
 
 #include "Models/GameObjectModel.h"
 #include "DynamicTree.h"
+
+void GameObjectTemplate::InitializeQueryData()
+{
+    for (uint8 loc = LOCALE_enUS; loc < TOTAL_LOCALES; ++loc)
+        QueryData[loc] = BuildQueryData(static_cast<LocaleConstant>(loc));
+}
+
+WorldPacket GameObjectTemplate::BuildQueryData(LocaleConstant loc) const
+{
+    WorldPackets::Query::QueryGameObjectResponse queryTemp;
+
+    std::string locName = name;
+    std::string locIconName = IconName;
+    std::string locCastBarCaption = castBarCaption;
+
+    if (GameObjectLocale const* gameObjectLocale = sObjectMgr->GetGameObjectLocale(entry))
+    {
+        ObjectMgr::GetLocaleString(gameObjectLocale->Name, loc, locName);
+        ObjectMgr::GetLocaleString(gameObjectLocale->CastBarCaption, loc, locCastBarCaption);
+    }
+
+    queryTemp.GameObjectID = entry;
+    queryTemp.Allow = true;
+
+    queryTemp.Stats.Type = type;
+    queryTemp.Stats.DisplayID = displayId;
+    queryTemp.Stats.Name = locName;
+    queryTemp.Stats.IconName = locIconName;
+    queryTemp.Stats.CastBarCaption = locCastBarCaption;
+    queryTemp.Stats.UnkString = ""; // unk1;
+    memcpy(queryTemp.Stats.Data, raw.data, sizeof(uint32) * MAX_GAMEOBJECT_DATA);
+    queryTemp.Stats.Size = size;
+
+#ifdef LICH_KING
+    for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
+        queryTemp.Stats.QuestItems[i] = 0;
+
+    if (std::vector<uint32> const* items = sObjectMgr->GetGameObjectQuestItemList(entry))
+        for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
+            if (i < items->size())
+                queryTemp.Stats.QuestItems[i] = (*items)[i];
+#endif
+
+    queryTemp.Write();
+    return queryTemp.Move();
+}
 
 GameObject::GameObject() : WorldObject(false), MapObject(),
     m_AI(nullptr), 

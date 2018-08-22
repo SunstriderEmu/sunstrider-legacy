@@ -50,7 +50,6 @@ bool GuildBankAction::Execute(std::string text, GameObject* bank)
 bool GuildBankAction::MoveFromCharToBank(Item* item, GameObject* bank)
 {
     uint32 playerSlot = item->GetSlot();
-    uint32 playerBag = item->GetBagSlot();
 
     Guild* guild = sGuildMgr->GetGuildById(bot->GetGuildId());
     guild->SwapItems(bot, 0, playerSlot, 0, INVENTORY_SLOT_BAG_0, 0);

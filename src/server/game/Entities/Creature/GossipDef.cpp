@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #include "QuestDef.h"
 #include "GossipDef.h"
@@ -23,6 +6,7 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Formulas.h"
+#include "QuestPackets.h"
 
 GossipMenu::GossipMenu()
 {
@@ -439,10 +423,10 @@ void PlayerMenu::SendQuestGiverStatus(uint8 questStatus, ObjectGuid npcGUID) con
 
 void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGUID, bool activateAccept) const
 {
-    std::string questTitle      = quest->GetTitle();
-    std::string questDetails    = quest->GetDetails();
-    std::string questObjectives = quest->GetObjectives();
-    std::string questEndText    = quest->GetEndText();
+    std::string questTitle           = quest->GetTitle();
+    std::string questDetails         = quest->GetDetails();
+    std::string questObjectives      = quest->GetObjectives();
+    std::string questAreaDescription = quest->GetAreaDescription();
 
     int32 locale = _session->GetSessionDbLocaleIndex();
     if (locale >= 0)
@@ -452,12 +436,9 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
             ObjectMgr::GetLocaleString(localeData->Title, locale, questTitle);
             ObjectMgr::GetLocaleString(localeData->Details, locale, questDetails);
             ObjectMgr::GetLocaleString(localeData->Objectives, locale, questObjectives);
-            ObjectMgr::GetLocaleString(localeData->EndText, locale, questEndText);
+            ObjectMgr::GetLocaleString(localeData->AreaDescription, locale, questAreaDescription);
         }
     }
-
-  /*  if (sWorld->GetConfig(CONFIG_UI_QUESTLEVELS_IN_DIALOGS))
-        AddQuestLevelToTitle(questTitle, quest->GetQuestLevel());*/
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_DETAILS, 100);   // guess size
     data << uint64(npcGUID);
@@ -574,178 +555,22 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
 
 void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
 {
-    std::string questTitle = quest->GetTitle();
-    std::string questDetails = quest->GetDetails();
-    std::string questObjectives = quest->GetObjectives();
-    std::string questEndText = quest->GetEndText();
-#ifdef LICH_KING
-    std::string questCompletedText = quest->GetCompletedText();
-#endif
-
-    std::string questObjectiveText[QUEST_OBJECTIVES_COUNT];
-    for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-        questObjectiveText[i] = quest->ObjectiveText[i];
-
-    int32 locale = _session->GetSessionDbLocaleIndex();
-    if (locale >= 0)
-    {
-        if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
-        {
-            ObjectMgr::GetLocaleString(localeData->Title, locale, questTitle);
-            ObjectMgr::GetLocaleString(localeData->Details, locale, questDetails);
-            ObjectMgr::GetLocaleString(localeData->Objectives, locale, questObjectives);
-            ObjectMgr::GetLocaleString(localeData->EndText, locale, questEndText);
-#ifdef LICH_KING
-            ObjectMgr::GetLocaleString(localeData->CompletedText, locale, questCompletedText);
-#endif
-
-            for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-                ObjectMgr::GetLocaleString(localeData->ObjectiveText[i], locale, questObjectiveText[i]);
-        }
-    }
-
-    WorldPacket data(SMSG_QUEST_QUERY_RESPONSE, 100);       // guess size
-
-    data << uint32(quest->GetQuestId());                    // quest id
-    data << uint32(quest->GetQuestMethod());                // Accepted values: 0, 1 or 2. 0 == IsAutoComplete() (skip objectives/details)
-    data << uint32(quest->GetQuestLevel());                 // may be -1, static data, in other cases must be used dynamic level: Player::GetQuestLevel (0 is not known, but assuming this is no longer valid for quest intended for client)
-#ifdef LICH_KING
-    data << uint32(quest->GetMinLevel());                   // min level
-#endif
-
-    data << uint32(quest->GetZoneOrSort());                 // zone or sort to display in quest log
-
-    data << uint32(quest->GetType());                       // quest type
-    data << uint32(quest->GetSuggestedPlayers());           // suggested players count
-
-    data << uint32(quest->GetRepObjectiveFaction());        // shown in quest log as part of quest objective
-    data << uint32(quest->GetRepObjectiveValue());          // shown in quest log as part of quest objective
-    
-#ifdef LICH_KING
-    data << uint32(quest->GetRepObjectiveFaction2());       // shown in quest log as part of quest objective OPPOSITE faction
-    data << uint32(quest->GetRepObjectiveValue2());         // shown in quest log as part of quest objective OPPOSITE faction
-#else
-    data << uint32(0); //always 0 on BC
-    data << uint32(0); //always 0 on BC
-#endif
-
-    data << uint32(quest->GetNextQuestInChain());           // client will request this quest from NPC, if not 0
-
-#ifdef LICH_KING
-    // data << uint32(quest->GetXPId());                       // used for calculating rewarded experience
-    data << uint32(0);
-#endif
-
-    if (quest->HasFlag(QUEST_FLAGS_HIDDEN_REWARDS))
-        data << uint32(0);                                  // Hide money rewarded
+    WorldPacket queryPacket;
+    //sun: copy packet instead of directly using it, because we modify it below
+    if (sWorld->getBoolConfig(CONFIG_CACHE_DATA_QUERIES))
+        queryPacket = quest->QueryData[static_cast<uint32>(_session->GetSessionDbLocaleIndex())];
     else
-        data << uint32(quest->GetRewOrReqMoney());          // reward money (below max lvl)
+        queryPacket = quest->BuildQueryData(_session->GetSessionDbLocaleIndex());
 
-    data << uint32(quest->GetRewMoneyMaxLevel());           // used in XP calculation at client
-    data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if RewardSpellCast == 0)
-    data << uint32(quest->GetRewSpellCast());                // cast spell
-
-    // rewarded honor points
-    data << uint32(Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->GetLevel(), quest->GetRewHonorableKills()));// TrinityCore : data << uint32(quest->GetRewHonorAddition());
-    if(_session->GetClientBuild() == BUILD_335)
-    {
-        //TODO LK data << float(quest->GetRewHonorMultiplier());
-         data << uint32(0);
-    }
-    data << uint32(quest->GetSrcItemId());                  // source item id
-    data << uint32(quest->GetFlags() & 0xFFFF);             // quest flags
-    data << uint32(quest->GetCharTitleId());                // CharTitleId, new 2.4.0, player gets this title (id from CharTitles)
-#ifdef BUILD_335_SUPPORT
-    if(_session->GetClientBuild() == BUILD_335)
-    {
-       /* data << uint32(quest->GetPlayersSlain());               // players slain
-        data << uint32(quest->GetBonusTalents());               // bonus talents
-        data << uint32(quest->GetRewArenaPoints());             // bonus arena points */
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-
-        data << uint32(0);                                      // review rep show mask
-    }
+#ifndef LICH_KING
+    // Workaround for BC. The query system is designed for static paquets but this info is not static because 
+    // the field RewardHonorForPlayer depends on the player level.
+    size_t offset = WorldPackets::Quest::QueryQuestInfoResponse::RewardHonorForPlayerPos;
+    queryPacket.put<uint32>(offset, Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->GetLevel(), queryPacket.read<uint32>(offset)));
 #endif
 
-    if (quest->HasFlag(QUEST_FLAGS_HIDDEN_REWARDS))
-    {
-        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
-            data << uint32(0) << uint32(0);
-        for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-            data << uint32(0) << uint32(0);
-    }
-    else
-    {
-        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
-        {
-            data << uint32(quest->RewardItemId[i]);
-            data << uint32(quest->RewardItemIdCount[i]);
-        }
-        for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-        {
-            data << uint32(quest->RewardChoiceItemId[i]);
-            data << uint32(quest->RewardChoiceItemCount[i]);
-        }
-    }
+    _session->SendPacket(&queryPacket);
 
-#ifdef LICH_KING
-    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)        // reward factions ids
-        data << uint32(quest->RewardFactionId[i]);
-
-    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)        // columnid+1 QuestFactionReward.dbc?
-        data << int32(quest->RewardFactionValueId[i]);
-
-    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)        // unk (0)
-        data << int32(quest->RewardFactionValueIdOverride[i]);
-#endif
-
-    data << uint32(quest->GetPointMapId());
-    data << float(quest->GetPointX());
-    data << float(quest->GetPointY());
-    data << uint32(quest->GetPointOpt());
-
-#ifdef LICH_KING
-    if (sWorld->getBoolConfig(CONFIG_UI_QUESTLEVELS_IN_DIALOGS))
-        AddQuestLevelToTitle(questTitle, quest->GetQuestLevel());
-#endif
-
-    data << questTitle;
-    data << questObjectives;
-    data << questDetails;
-    data << questEndText;
-#ifdef LICH_KING
-    data << questCompletedText;                                 // display in quest objectives window once all objectives are completed
-#endif
-
-    for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-    {
-        if (quest->RequiredNpcOrGo[i] < 0)
-            data << uint32((quest->RequiredNpcOrGo[i] * (-1)) | 0x80000000);    // client expects gameobject template id in form (id|0x80000000)
-        else
-            data << uint32(quest->RequiredNpcOrGo[i]);
-
-        data << uint32(quest->RequiredNpcOrGoCount[i]);
-        data << uint32(quest->RequiredItemId[i]);
-        data << uint32(quest->RequiredItemCount[i]); 
-        /* Trinity core for the last two ones.
-        data << uint32(quest->ItemDrop[i]);
-        data << uint32(0);                                  // req source count?
-        */
-    }
-
-    if(_session->GetClientBuild() == BUILD_335)
-        for (uint8 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
-        {
-            data << uint32(quest->RequiredItemId[i]);
-            data << uint32(quest->RequiredItemCount[i]);
-        }
-
-    for (auto & i : questObjectiveText)
-        data << i;
-
-    _session->SendPacket(&data);
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUEST_QUERY_RESPONSE questid=%u", quest->GetQuestId());
 }
 
@@ -763,9 +588,6 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, ObjectGuid npcGUI
             ObjectMgr::GetLocaleString(localeData->_offerRewardText, locale, questOfferRewardText);
         }
     }
-
-  /* TrinityCore  if (sWorld->Config(CONFIG_UI_QUESTLEVELS_IN_DIALOGS))
-        AddQuestLevelToTitle(questTitle, quest->GetQuestLevel()); */
 
     WorldPacket data(SMSG_QUESTGIVER_OFFER_REWARD, 50);     // guess size
     data << uint64(npcGUID);
@@ -959,3 +781,4 @@ void PlayerMenu::AddQuestLevelToTitle(std::string &title, int32 level)
     questTitlePretty << "[" << level << "] " << title;
     title = questTitlePretty.str();
 }
+

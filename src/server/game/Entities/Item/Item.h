@@ -4,7 +4,7 @@
 
 #include "Object.h"
 #include "LootMgr.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "Transaction.h"
 #include "Loot.h"
 

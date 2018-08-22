@@ -1360,6 +1360,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_HOTSWAP_PREFIX_CORRECTION_ENABLED] = sConfigMgr->GetBoolDefault("HotSwap.EnablePrefixCorrection", true);
 
     m_configs[CONFIG_DB_PING_INTERVAL] = sConfigMgr->GetIntDefault("MaxPingTime", 5);
+
+    m_configs[CONFIG_CACHE_DATA_QUERIES] = sConfigMgr->GetBoolDefault("CacheDataQueries", true);
 }
 
 /// Initialize the World
@@ -1803,6 +1805,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Item loot...");
     sLootItemStorage->LoadStorageFromDB();
+
+    TC_LOG_INFO("server.loading", "Initialize query data...");
+    sObjectMgr->InitializeQueriesData(QUERY_DATA_ALL);
 
     ///- Initialize game time and timers
     TC_LOG_INFO("server.loading", "Initialize game time and timers");

@@ -1,7 +1,7 @@
 #include "Loot.h"
 #include "Group.h"
 #include "ItemEnchantmentMgr.h"
-#include "ItemPrototype.h"
+#include "ItemTemplate.h"
 #include "Log.h"
 #include "LootMgr.h"
 #include "ObjectAccessor.h"
