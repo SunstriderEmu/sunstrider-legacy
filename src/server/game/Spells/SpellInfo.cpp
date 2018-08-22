@@ -1669,8 +1669,8 @@ SpellCastResult SpellInfo::CheckTarget(WorldObject const* caster, WorldObject co
     if (AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF && caster == target)
         return SPELL_FAILED_BAD_TARGETS;
 
-    // check visibility - ignore stealth for implicit (area) targets
-    if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && !caster->CanSeeOrDetect(target, implicit))
+    // check visibility - ignore stealth for implicit (area) targets - sun: Added some leeway, helps with latency
+    if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && !caster->CanSeeOrDetect(target, implicit, false, false, 5.0f))
         return SPELL_FAILED_BAD_TARGETS;
     
     Unit const* unitTarget = target->ToUnit();

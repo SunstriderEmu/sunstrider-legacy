@@ -528,7 +528,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 		float GetGridActivationRange() const;
 		float GetVisibilityRange() const;
 		float GetSightRange(WorldObject const* target = nullptr) const;
-		bool CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false, bool checkAlert = false) const;
+        // @tolerance: Absolute distance added to detect range
+		bool CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false, bool checkAlert = false, float tolerance = 0.0f) const;
 
 		FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealth;
 		FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealthDetect;
@@ -726,9 +727,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         bool mSemaphoreTeleport;
 
-		bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert = false) const;
+		bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert = false, float tolerance = 0.0f) const;
 		bool CanDetectInvisibilityOf(WorldObject const* obj) const;
-		bool CanDetectStealthOf(WorldObject const* obj, bool checkAlert = false) const;
+		bool CanDetectStealthOf(WorldObject const* obj, bool checkAlert = false, float tolerance = 0.0f) const;
 
         SpellMissInfo _forceHitResultOverride;
 };

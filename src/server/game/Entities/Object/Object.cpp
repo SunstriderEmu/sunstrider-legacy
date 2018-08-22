@@ -1614,7 +1614,7 @@ float WorldObject::GetSightRange(const WorldObject* target) const
     return 0.0f;
 }
 
-bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck, bool checkAlert) const
+bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck, bool checkAlert, float tolerance /*= 0.0f*/) const
 {
     if (this == obj)
         return true;
@@ -1637,8 +1637,8 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
                 if (Corpse* corpse = thisPlayer->GetCorpse())
                 {
                     corpseCheck = true;
-                    if (corpse->IsWithinDist(thisPlayer, GetSightRange(obj), false))
-                        if (corpse->IsWithinDist(obj, GetSightRange(obj), false))
+                    if (corpse->IsWithinDist(thisPlayer, GetSightRange(obj) + tolerance, false))
+                        if (corpse->IsWithinDist(obj, GetSightRange(obj) + tolerance, false))
                             corpseVisibility = true;
                 }
             }
@@ -1661,7 +1661,7 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
         if (!viewpoint)
             viewpoint = this;
 
-        if (!corpseCheck && !viewpoint->IsWithinDist(obj, GetSightRange(obj), false))
+        if (!corpseCheck && !viewpoint->IsWithinDist(obj, GetSightRange(obj) + tolerance, false))
             return false;
     }
 
@@ -1711,7 +1711,7 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (obj->IsInvisibleDueToDespawn())
         return false;
 
-    if (!CanDetect(obj, ignoreStealth, checkAlert))
+    if (!CanDetect(obj, ignoreStealth, checkAlert, tolerance))
         return false;
 
     return true;
@@ -1723,7 +1723,7 @@ bool WorldObject::CanNeverSee(WorldObject const* obj) const
     return GetMap() != obj->GetMap() || !InSamePhase(obj);
 }
 
-bool WorldObject::CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert) const
+bool WorldObject::CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert, float tolerance /*= 0.0f*/) const
 {
     const WorldObject* seer = this;
 
@@ -1738,7 +1738,7 @@ bool WorldObject::CanDetect(WorldObject const* obj, bool ignoreStealth, bool che
     if (!ignoreStealth && !seer->CanDetectInvisibilityOf(obj))
         return false;
 
-    if (!ignoreStealth && !seer->CanDetectStealthOf(obj, checkAlert))
+    if (!ignoreStealth && !seer->CanDetectStealthOf(obj, checkAlert, tolerance))
         return false;
 
     return true;
@@ -1777,7 +1777,7 @@ bool WorldObject::CanDetectInvisibilityOf(WorldObject const* obj) const
     return true;
 }
 
-bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) const
+bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert, float tolerance /* = 0.0f */) const
 {
     // custom sunstrider rules, based on http://wolfendonkane.pagesperso-orange.fr/furtivite.html
     // One stealth point increases the visibility range by 0.3 yard.
@@ -1838,9 +1838,6 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) co
         // spells like Track Hidden have 30 here, so you can see 30 yards further. Rogue trap detects has 70.
         visibleDistance += (float)m_stealthDetect.GetValue(StealthType(i));
 
-        if (visibleDistance <= 0.0f)
-            break; //in this case we can already stop here
-
         /* Reduce range depending on angle. Logic here is :
         - Full range in 90° in front
         - else /1.5 range if in 180° front
@@ -1853,7 +1850,15 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) co
             visibleDistance = visibleDistance / 1.5;
 
         if (checkAlert)
-            visibleDistance += (visibleDistance * 0.08f) + 1.5f;
+        {
+            visibleDistance *= 1.08f;
+            visibleDistance += 1.5f;
+        }
+
+        visibleDistance += tolerance;
+
+        if (visibleDistance <= 0.0f)
+            break; //in this case we can already stop here
 
         // If this unit is an NPC then player detect range doesn't apply
         if (unit && unit->GetTypeId() == TYPEID_PLAYER && visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)

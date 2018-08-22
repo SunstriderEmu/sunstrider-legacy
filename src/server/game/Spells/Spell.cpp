@@ -3584,17 +3584,6 @@ void Spell::_cast(bool skipCheck /*= false*/)
         return;
     }
 
-    // Prevent casting on a stealthed target we cannot see, prevent cheating. Maybe this should be more lax?
-    if (Unit* pTarget = m_targets.GetUnitTarget())
-    {
-        if (!IsTriggered() && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !m_caster->CanSeeOrDetect(pTarget, false))
-        {
-            SendCastResult(SPELL_FAILED_BAD_TARGETS);
-            finish(false);
-            return;
-        }
-    }
-
     if (Player* playerCaster = m_caster->ToPlayer())
     {
         // now that we've done the basic check, now run the scripts

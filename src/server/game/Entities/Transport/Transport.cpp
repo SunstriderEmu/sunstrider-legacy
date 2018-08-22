@@ -738,7 +738,7 @@ void MotionTransport::UpdatePassengerPositions(PassengerSet& passengers)
 
 void MotionTransport::JustStopped()
 {
-    //not working for now... Player does not received sound packet because of check player->HaveAtClient in MessageDistDeliverer::SendPacket
+    //not working for now... Player does not receive sound packet because of check player->HaveAtClient in MessageDistDeliverer::SendPacket
     /*
     if (sWorld->getConfig(CONFIG_TRANSPORT_DOCKING_SOUNDS))
     {
