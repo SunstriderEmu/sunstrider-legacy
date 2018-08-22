@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/ValorenWoW/sunstrider-core.svg?branch=master)](https://travis-ci.org/ValorenWoW/sunstrider-core)
 
 Sunstrider is a WoW 2.4.3 emulator used and developed by the Valoren private server.
-Development started in 2009 from a [trinitycore1](https://bitbucket.org/KPsN/trinitycore-243) fork as the core started being used on WoWMania, a french server, and was then named "Windrunner", where is was continuously developed for 5 years. You can find the last Windrunner version [here](https://github.com/kelno/windrunner). Starting with our departure from WoWMania the core was renamed Sunstrider.
+Development started in 2009 from a [trinitycore1](https://bitbucket.org/KPsN/trinitycore-243) fork as the core started being used on WoWMania, a french server, and was then rebranded "Windrunner", where it was continuously developed for about 5 years. You can find the last Windrunner version [here](https://github.com/kelno/windrunner). Starting with our departure from WoWMania the core was renamed Sunstrider.
 
 ## Main features
 
