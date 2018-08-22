@@ -720,13 +720,23 @@ void GameObject::Update(uint32 diff)
             }
             */
 
-            if(GetOwnerGUID())
+            //! The GetOwnerGUID() check is mostly for compatibility with hacky scripts - 99% of the time summoning should be done trough spells.
+            if (GetSpellId() || GetOwnerGUID())
             {
                 if (Unit* owner = GetOwner())
                     owner->RemoveGameObject(this, false);
 
-                m_respawnTime = 0;
-                Delete();
+                //Don't delete spell spawned chests, which are not consumed on loot
+                if (m_respawnTime > 0 && GetGoType() == GAMEOBJECT_TYPE_CHEST && !GetGOInfo()->IsDespawnAtAction())
+                {
+                    UpdateObjectVisibility();
+                    SetLootState(GO_READY);
+                }
+                else
+                {
+                    SetRespawnTime(0);
+                    Delete();
+                }
                 return;
             }
 
@@ -754,6 +764,7 @@ void GameObject::Update(uint32 diff)
             uint32 respawnDelay = m_respawnDelayTime;
             if (uint32 scalingMode = sWorld->getIntConfig(CONFIG_RESPAWN_DYNAMICMODE))
                 GetMap()->ApplyDynamicModeRespawnScaling(this, this->m_spawnId, respawnDelay, scalingMode);
+
             m_respawnTime = time(nullptr) + respawnDelay;
 
             // if option not set then object will be saved at grid unload
