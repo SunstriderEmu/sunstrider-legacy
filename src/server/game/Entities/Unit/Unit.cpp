@@ -4645,7 +4645,7 @@ bool Unit::HasAuraState(AuraStateType flag, SpellInfo const* spellProto, Unit co
     return HasFlag(UNIT_FIELD_AURASTATE, 1 << (flag - 1));
 }
 
-Unit *Unit::GetCharmer() const
+Unit* Unit::GetCharmer() const
 {
     if(ObjectGuid charmerid = GetCharmerGUID())
         return ObjectAccessor::GetUnit(*this, charmerid);
@@ -4655,6 +4655,11 @@ Unit *Unit::GetCharmer() const
 bool Unit::IsCharmedOwnedByPlayerOrPlayer() const 
 { 
     return GetCharmerOrOwnerOrOwnGUID().IsPlayer();
+}
+
+ObjectGuid Unit::GetCharmerOrOwnerGUID() const
+{
+    return GetCharmerGUID() ? GetCharmerGUID() : GetOwnerGUID();
 }
 
 Pet* Unit::GetPet() const
@@ -8648,7 +8653,6 @@ void Unit::SetAI(UnitAI* newAI)
 
 void Unit::ScheduleAIChange()
 {
-    printf("ScheduleAIChange %s\n", GetName().c_str());
     bool const charmed = IsCharmed();
     // if charm is applied, we can't have disabled AI already, and vice versa
     if (charmed)
@@ -8903,7 +8907,7 @@ void Unit::UpdateCharmAI()
         i_AI.reset(newAI);
         newAI->OnCharmed(true);
         AIUpdateTick(0, true);
-        }
+    }
     else
     {
         RestoreDisabledAI();
@@ -8925,6 +8929,7 @@ void Unit::DeleteCharmInfo()
     if(!m_charmInfo)
         return;
 
+    m_charmInfo->RestoreState();
     delete m_charmInfo;
     m_charmInfo = nullptr;
 }
@@ -8944,12 +8949,12 @@ CharmInfo::CharmInfo(Unit* unit)
     }
 }
 
-CharmInfo::~CharmInfo()
+CharmInfo::~CharmInfo() { }
+
+void CharmInfo::RestoreState()
 {
-    if(_unit->GetTypeId() == TYPEID_UNIT)
-    {
-        (_unit->ToCreature())->SetReactState(_oldReactState);
-    }
+    if (Creature* creature = _unit->ToCreature())
+        creature->SetReactState(_oldReactState);
 }
 
 void CharmInfo::InitPetActionBar()
@@ -10524,9 +10529,9 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
 #ifdef LICH_KING
     // Vehicle should not attack its passenger after he exists the seat
+#endif
     if (type != CHARM_TYPE_VEHICLE)
         LastCharmerGUID = ASSERT_NOTNULL(charmer)->GetGUID();
-#endif
 
     // If charmer still exists
     if (!charmer)
@@ -10537,8 +10542,16 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     ASSERT(type != CHARM_TYPE_VEHICLE || (GetTypeId() == TYPEID_UNIT && IsVehicle()));
 #endif
 
-    charmer->SetCharm(this, false);
     Player* playerCharmer = charmer->ToPlayer();
+    { // sun: moved this block higher, else GetFirstControlled always return nullptr (currently bugged at TC)
+        // a guardian should always have charminfo
+        if (playerCharmer && this != charmer->GetFirstControlled())
+            playerCharmer->SendRemoveControlBar();
+        else if (GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !IsGuardian()))
+            DeleteCharmInfo();
+    }
+
+    charmer->SetCharm(this, false);
 
     if (playerCharmer)
     {
@@ -10596,12 +10609,6 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
     if (Player* player = ToPlayer())
         player->SetClientControl(this, true);
-
-    // a guardian should always have charminfo
-    if(playerCharmer && this != charmer->GetFirstControlled())
-        playerCharmer->SendRemoveControlBar();
-    else if (GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !IsGuardian()))
-        DeleteCharmInfo();
 
     // reset confused movement for example
     ApplyControlStatesIfNeeded();

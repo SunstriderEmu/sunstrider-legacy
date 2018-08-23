@@ -71,7 +71,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
                     }
 
                     // only place where pet can be player
-                    Unit *TargetUnit = ObjectAccessor::GetUnit(*_player, guid2);
+                    Unit* TargetUnit = ObjectAccessor::GetUnit(*_player, guid2);
                     if(!TargetUnit)
                         return;
 

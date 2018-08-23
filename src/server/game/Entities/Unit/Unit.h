@@ -1030,6 +1030,7 @@ class TC_GAME_API CharmInfo
     public:
         explicit CharmInfo(Unit* unit);
         ~CharmInfo();
+        void RestoreState();
         uint32 GetPetNumber() const { return _petnumber; }
         void SetPetNumber(uint32 petnumber, bool statwindow);
 
@@ -1637,6 +1638,7 @@ class TC_GAME_API Unit : public WorldObject
 #endif
 
         bool IsControlledByPlayer() const { return m_ControlledByPlayer; }
+        ObjectGuid GetCharmerOrOwnerGUID() const override;
         bool IsCharmedOwnedByPlayerOrPlayer() const;
 
         Pet* GetPet() const;
